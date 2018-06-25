@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle injection framework
-Date: Mon, 25 Jun 2018 10:34:48 +0200
-Message-ID: <CAJZ5v0gPmMbpFMTQ8mdhxKC86QsUaVQEzBxWyN9MdiTdR1QgWw@mail.gmail.com>
+Date: Mon, 25 Jun 2018 10:41:31 +0200
+Message-ID: <CAJZ5v0gv9jWyKvhYXrL2a8CqdhrWsNDJ59EDci_ezmfku-2_Ww@mail.gmail.com>
 References: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
@@ -17,51 +17,60 @@ On Tue, Jun 19, 2018 at 3:23 PM, Daniel Lezcano
 
 [cut]
 
-> +/**
-> + * idle_injection_wakeup - Wake up all idle injection threads
-> + * @ii_dev: the idle injection device
-> + *
-> + * Every idle injection task belonging to the idle injection device
-> + * and running on an online CPU will be wake up by this call.
-> + */
-> +static void idle_injection_wakeup(struct idle_injection_device *ii_dev)
-> +{
-> +       struct idle_injection_thread *iit;
-> +       unsigned int cpu;
-> +
-> +       for_each_cpu_and(cpu, to_cpumask(ii_dev->cpumask), cpu_online_mask) {
-> +               iit = per_cpu_ptr(&idle_injection_thread, cpu);
-> +               iit->should_run = 1;
-> +               wake_up_process(iit->tsk);
-> +       }
-> +}
-> +
-> +/**
-> + * idle_injection_wakeup_fn - idle injection timer callback
-> + * @timer: a hrtimer structure
-> + *
-> + * This function is called when the idle injection timer expires which
-> + * will wake up the idle injection tasks and these ones, in turn, play
-> + * idle a specified amount of time.
-> + *
-> + * Return: HRTIMER_RESTART.
-> + */
-> +static enum hrtimer_restart idle_injection_wakeup_fn(struct hrtimer *timer)
-> +{
-> +       unsigned int duration_ms;
-> +       struct idle_injection_device *ii_dev =
-> +               container_of(timer, struct idle_injection_device, timer);
-> +
-> +       duration_ms = READ_ONCE(ii_dev->run_duration_ms);
-> +       duration_ms += READ_ONCE(ii_dev->idle_duration_ms);
-> +
-> +       idle_injection_wakeup(ii_dev);
-> +
-> +       hrtimer_forward_now(timer, ms_to_ktime(duration_ms));
-> +
-> +       return HRTIMER_RESTART;
-> +}
+One more thing.
 
-Also, I'd rename the above to idle_inject_timer_fn() for clarity.
-_wakeup_fn() is kind of too similar to _wakeup() IMO and a bit
-confusing.
+> +/**
+> + * idle_injection_register - idle injection init routine
+> + * @cpumask: the list of CPUs managed by the idle injection device
+> + *
+> + * This is the initialization function in charge of creating the
+> + * initializing of the timer and allocate the structures. It does not
+> + * starts the idle injection cycles.
+> + *
+> + * Return: NULL if an allocation fails.
+> + */
+> +struct idle_injection_device *idle_injection_register(struct cpumask *cpumask)
+> +{
+> +       struct idle_injection_device *ii_dev;
+> +       int cpu, cpu_rb;
+> +
+> +       ii_dev = kzalloc(sizeof(*ii_dev) + cpumask_size(), GFP_KERNEL);
+> +       if (!ii_dev)
+> +               return NULL;
+> +
+> +       cpumask_copy(to_cpumask(ii_dev->cpumask), cpumask);
+> +       hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> +       ii_dev->timer.function = idle_injection_wakeup_fn;
+> +
+> +       for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
+> +
+> +               if (per_cpu(idle_injection_device, cpu)) {
+> +                       pr_err("cpu%d is already registered\n", cpu);
+
+If you print something like this, it should be clear what it is about
+and what piece of code it comes from as there will be no context
+around it it the log.
+
+> +                       goto out_rollback_per_cpu;
+
+Shorten the label perhaps?
+
+> +               }
+> +
+> +               per_cpu(idle_injection_device, cpu) = ii_dev;
+> +       }
+> +
+> +       return ii_dev;
+> +
+> +out_rollback_per_cpu:
+> +       for_each_cpu(cpu_rb, to_cpumask(ii_dev->cpumask)) {
+> +               if (cpu == cpu_rb)
+> +                       break;
+> +               per_cpu(idle_injection_device, cpu_rb) = NULL;
+> +       }
+> +
+> +       kfree(ii_dev);
+> +
+> +       return NULL;
+> +}
+> +
