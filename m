@@ -1,95 +1,89 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 20/23] arm64: dts: marvell: move AP806/CP110 thermal nodes
- into a new syscon
-Date: Mon, 25 Jun 2018 17:12:36 +0200
-Message-ID: <20180625151239.20976-21-miquel.raynal@bootlin.com>
-References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 09/12] dt-bindings: PM / OPP: add opp-throttlers
+ property
+Date: Mon, 25 Jun 2018 11:50:37 -0700
+Message-ID: <20180625185037.GE129942@google.com>
+References: <20180621015237.100100-1-mka@chromium.org>
+ <20180621015237.100100-10-mka@chromium.org>
+ <20180625153341.GB23270@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180625151239.20976-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180625153341.GB23270@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-New bindings impose to declare the thermal IP from within a new syscon.
+Hi Rob,
 
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 14 ++++++++++----
- arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 18 ++++++++++++------
- 2 files changed, 22 insertions(+), 10 deletions(-)
+On Mon, Jun 25, 2018 at 09:33:41AM -0600, Rob Herring wrote:
+> On Wed, Jun 20, 2018 at 06:52:34PM -0700, Matthias Kaehlcke wrote:
+> > The optional opp-throttlers property is used to configure the throttlers
+> > (see drivers/misc/throttler/*) that use a given OPP to throttle the
+> > corresponding device(s).
+> > 
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > Reviewed-by: Brian Norris <briannorris@chromium.org>
+> > ---
+> > Changes in v4:
+> > - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+> > 
+> > Changes in v3:
+> > - none
+> > 
+> > Changes in v2:
+> > - patch added to series
+> > ---
+> >  Documentation/devicetree/bindings/opp/opp.txt | 3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> > index c396c4c0af92..747e79740c75 100644
+> > --- a/Documentation/devicetree/bindings/opp/opp.txt
+> > +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> > @@ -170,6 +170,9 @@ Optional properties:
+> >    functioning of the current device at the current OPP (where this property is
+> >    present).
+> >  
+> > +- opp-throttlers: Array with phandles of throttlers that use this OPP to
+> > +  throttle the corresponding device(s).
+> > +
+> 
+> I think it would be better to make this a boolean for each OPP entry and 
+> then add "operating-points-v2" property to the EC node to point to the 
+> OPP table.
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 550f03b8c96f..3c6896fb96e6 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -258,10 +258,16 @@
- 				};
- 			};
- 
--			ap_thermal: thermal@6f808c {
--				compatible = "marvell,armada-ap806-thermal";
--				reg = <0x6f808c 0x4>,
--				      <0x6f8084 0x8>;
-+			ap_syscon1: system-controller@6f8000 {
-+				compatible = "syscon", "simple-mfd";
-+				reg = <0x6f8000 0x1000>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+
-+				ap_thermal: ap-thermal@80 {
-+					compatible = "marvell,armada-ap806-thermal";
-+					reg = <0x80 0x10>;
-+				};
- 			};
- 		};
- 	};
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-index ab31ba20aa2a..65039292b398 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-@@ -177,12 +177,6 @@
- 			interrupts = <77 IRQ_TYPE_LEVEL_HIGH>;
- 		};
- 
--		CP110_LABEL(thermal): thermal@400078 {
--			compatible = "marvell,armada-cp110-thermal";
--			reg = <0x400078 0x4>,
--			<0x400070 0x8>;
--		};
--
- 		CP110_LABEL(syscon0): system-controller@440000 {
- 			compatible = "syscon", "simple-mfd";
- 			reg = <0x440000 0x2000>;
-@@ -223,6 +217,18 @@
- 			};
- 		};
- 
-+		CP110_LABEL(syscon1): system-controller@400000 {
-+			compatible = "syscon", "simple-mfd";
-+			reg = <0x400000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			CP110_LABEL(thermal): thermal@70 {
-+				compatible = "marvell,armada-cp110-thermal";
-+				reg = <0x70 0x10>;
-+			};
-+		};
-+
- 		CP110_LABEL(usb3_0): usb3@500000 {
- 			compatible = "marvell,armada-8k-xhci",
- 			"generic-xhci";
--- 
-2.14.1
+Thanks for your suggestion. "operating-points-v2" would have to be an
+array of phandles, a single thottler can have multiple throttling
+devices.
+
+> Unless there is some need for a different throttler for each OPP entry?
+
+Having the option to use different OPPs per throttler would be my
+preference. E.g. there could be configurations where one throttler
+only interacts with certain throttling devices and another one
+with others.
+
+I see another option to achieve this, if you don't like the reference
+to the throttlers in the OPPs. The throttler could have a list of OPPs
+(as phandles, not frequencies as in v1). The main inconvenient I see
+here is that the used OPPs would need a label, which they usually
+don't have. Maybe this is no soooo bad, since the label could be added
+at device level, only on devices that use a throttler, so it wouldn't
+clutter the platform .dts files.
+
+This could be a single array with all OPPs from different devices,
+or multiple arrays, one for each throttling device:
+
+throttler-opps-0 = <&cpu0_opp_03 &cpu0_opp_05>;
+throttler-opps-1 = <&gpu_opp_02 &gpu_opp_04>;
+
+My preference would be multiple arrays, because it's easier to read.
+
+What do you think?
+
+Thanks
+
+Matthias
