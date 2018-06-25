@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 21/23] arm64: dts: marvell: add thermal-zone node in ap806
+Subject: [PATCH v2 23/23] arm64: dts: marvell: add thermal-zone node in cp110
  DTSI file
-Date: Mon, 25 Jun 2018 17:12:37 +0200
-Message-ID: <20180625151239.20976-22-miquel.raynal@bootlin.com>
+Date: Mon, 25 Jun 2018 17:12:39 +0200
+Message-ID: <20180625151239.20976-24-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,93 +22,57 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a thermal-zone node and fill in all the sensors available in an
-ap806 (one in the IC plus one per CPU).
+Add a thermal-zone node and fill in all the sensors available in a
+cp110 (only one in the thermal IP).
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 60 +++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 3c6896fb96e6..575171f89dd5 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
+index 65039292b398..6d42efebba0d 100644
+--- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
 @@ -6,6 +6,7 @@
   */
  
- #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/interrupt-controller/mvebu-icu.h>
 +#include <dt-bindings/thermal/thermal.h>
  
- /dts-v1/;
+ #include "armada-common.dtsi"
  
-@@ -267,8 +268,67 @@
- 				ap_thermal: ap-thermal@80 {
- 					compatible = "marvell,armada-ap806-thermal";
- 					reg = <0x80 0x10>;
-+					#thermal-sensor-cells = <1>;
- 				};
- 			};
- 		};
- 	};
+@@ -19,6 +20,23 @@
+ 	 * save one indentation level
+ 	 */
+ 	CP110_NAME: CP110_NAME { };
 +
 +	/*
-+	 * The thermal IP features one internal sensor plus, if applicable, one
-+	 * remote channel wired to one sensor per CPU.
++	 * CPs only have one sensor in the thermal IC.
 +	 *
-+	 * The cooling maps are always empty as there are no cooling devices.
++	 * The cooling maps are empty as there are no cooling devices.
 +	 */
 +	thermal-zones {
-+		ap_thermal_ic: ap-thermal-ic {
++		CP110_LABEL(thermal_ic): CP110_NODE_NAME(thermal-ic) {
 +			polling-delay-passive = <1000>;
 +			polling-delay = <1000>;
 +
-+			thermal-sensors = <&ap_thermal 0>;
++			thermal-sensors = <&CP110_LABEL(thermal) 0>;
 +
 +			trips {	};
 +			cooling-maps { };
 +		};
-+
-+		ap_thermal_cpu1: ap-thermal-cpu1 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 1>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu2: ap-thermal-cpu2 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 2>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu3: ap-thermal-cpu3 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 3>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu4: ap-thermal-cpu4 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 4>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
 +	};
  };
+ 
+ &CP110_NAME {
+@@ -226,6 +244,7 @@
+ 			CP110_LABEL(thermal): thermal@70 {
+ 				compatible = "marvell,armada-cp110-thermal";
+ 				reg = <0x70 0x10>;
++				#thermal-sensor-cells = <1>;
+ 			};
+ 		};
+ 
 -- 
 2.14.1
