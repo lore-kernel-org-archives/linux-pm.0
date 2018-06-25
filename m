@@ -1,77 +1,68 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
-Date: Tue, 26 Jun 2018 00:14:57 +0200
-Message-ID: <CAJZ5v0jPp5GyrHCGLxXzbUOM2MzSL1ikkiEAMt32mcsuY1Gp4Q@mail.gmail.com>
-References: <cover.1529486870.git.yu.c.chen@intel.com> <20180621085332.GA21807@amd>
- <CAJZ5v0izS8CNzhsd_bjB40xTkZxaxh13NtHsJi9LYXEr84MoMA@mail.gmail.com>
- <20180621191443.GB14623@amd> <CAJZ5v0gHPRa-9btfCCYEDDphZrEy8DTrXjsn57MoKMAu7sKMEA@mail.gmail.com>
- <20180625115913.GD17001@amd>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V9] powercap/drivers/idle_injection: Add an idle injection
+ framework
+Date: Tue, 26 Jun 2018 00:15:01 +0200
+Message-ID: <dd30daab-caf6-91d6-2f72-998f640f85ae@linaro.org>
+References: <1529414627-5638-1-git-send-email-daniel.lezcano@linaro.org>
+ <CAJZ5v0iyS7wUx5sYnyhZxhRD7EMEWyKzcpBu7vXUGxuwM4+prw@mail.gmail.com>
+ <98f43bb6-9ab5-2f79-05f2-be68a0f7f88e@linaro.org>
+ <CAJZ5v0gv_y9DfEsqq_46D5hi3SA+UYy7cUoaCwb3_+HtRadDOg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180625115913.GD17001@amd>
+In-Reply-To: <CAJZ5v0gv_y9DfEsqq_46D5hi3SA+UYy7cUoaCwb3_+HtRadDOg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 25, 2018 at 1:59 PM, Pavel Machek <pavel@ucw.cz> wrote:
->
->
->> > Well, AFAICT in this case userland has the key and encrypted data are
->> > on disk. That does not seem to be improvement.
+On 25/06/2018 23:55, Rafael J. Wysocki wrote:
+> On Mon, Jun 25, 2018 at 1:52 PM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>> On 25/06/2018 10:23, Rafael J. Wysocki wrote:
 >>
->> Not really.
+>> [ ... ]
 >>
->> With the encryption in the kernel, if the kernel is careful enough,
->> use space will not be able to read the image even if it knows the
->> passphrase, unless it can also add itself to the initramfs image
->> loaded by the restore kernel, which (at least) can be made way more
->> difficult than simply reading the plain-text image data via an I/F
->> readily provided by the kernel.
->
-> I still do not see the improvement. If you are root, you can modify
-> the initramfs and decrypt the data.
-
-Even so, this requires additional effort which already makes the life
-of attackers harder.
-
-> Please explain in the changelog how this is better than existing solution.
-
-That can be done.
-
->> >> Besides, the user space part of what you are calling uswsusp has not
->> >> been actively maintained for years now and honestly I don't know how
->> >> many users of it there are.
->> >
->> > I'd assume distros want progress bars so they still use it?
+>>>> + * It is up to the user of this framework to provide a lock at an
+>>>> + * upper level to prevent stupid things to happen, like starting while
+>>>> + * we are unregistering.
+>>>> + */
+>>>
+>>> The English above and elsewhere needs some polishing IMO, but I can
+>>> take care of that. :-)
 >>
->> I'd rather not speak for distros, but if hibernation images are
->> written to fast storage, progress bars are not that useful any more.
->> They are not used on Windows any more, for one.
+>> I can give a try and if you are still unhappy, you change them in a
+>> better way.
+> 
+> Well, I could tell you what I would write, but then it'll take less
+> time and effort if I just write it myself. :-)
+
+Ok.
+
+>> [ ... ]
 >>
->> > Anyway, there's solution for encrypted hibernation.
+>>>> +static void idle_injection_setup(unsigned int cpu)
+>>>> +{
+>>>> +       struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO / 2 };
+>>>> +
+>>>> +       set_freezable();
+>>>
+>>> Why do you need set_freezable() here?
 >>
->> Which is suboptimal and you know it.
->
-> If this is better, please explain how in the changelog.
->
->> > If Intel wants to invent different solution for that, and put it into kernel, they
->> > should explain what the advantages are, relative to existing solution.
->>
->> I'm not sure what "they" is supposed to mean here, but the advantages
->> are quite clear to me: better security and reduced syscall overhead.
->
-> Better security against which attack?
+>> We don't want to continue injecting idle cycles when the system is
+>> suspended.
+> 
+> And where's the corresponding try_to_freeze() called?
 
-If kernel memory is encrypted by the kernel, it doesn't have to worry
-about bugs in user space utilities and similar, for example.
+Yes, it is missing. I suppose try_to_freeze() should be put at the
+beginning of the idle_inject_fn() function, right ?
 
-> Syscall overhead is not a problem for hibernation, and you know it.
 
-Oh well.
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-I wrote the majority of the code you seem to be defending and I don't
-really share your enthusiasm about it.  It was good enough at the time
-it was written, but not today and this discussion is over as far as
-I'm concerned.
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
