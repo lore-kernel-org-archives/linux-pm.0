@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 17/23] dt-bindings: cp110: add the thermal node in the
- syscon file
-Date: Mon, 25 Jun 2018 17:12:33 +0200
-Message-ID: <20180625151239.20976-18-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 21/23] arm64: dts: marvell: add thermal-zone node in ap806
+ DTSI file
+Date: Mon, 25 Jun 2018 17:12:37 +0200
+Message-ID: <20180625151239.20976-22-miquel.raynal@bootlin.com>
 References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,65 +22,93 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Explain the thermal bindings now that the thermal IP is described being
-inside of a system controller. Add a reference to the thermal-zone node.
+Add a thermal-zone node and fill in all the sensors available in an
+ap806 (one in the IC plus one per CPU).
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- .../arm/marvell/cp110-system-controller.txt        | 37 ++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 60 +++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-index 54b0d64ce819..cd4a7a57491e 100644
---- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-@@ -11,6 +11,9 @@ For the top level node:
-  - compatible: must be: "syscon", "simple-mfd";
-  - reg: register area of the CP110 system controller
+diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+index 3c6896fb96e6..575171f89dd5 100644
+--- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+@@ -6,6 +6,7 @@
+  */
  
-+SYSTEM CONTROLLER 0
-+===================
-+
- Clocks:
- -------
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/thermal.h>
  
-@@ -186,3 +189,37 @@ CP110_LABEL(syscon0): system-controller@440000 {
+ /dts-v1/;
+ 
+@@ -267,8 +268,67 @@
+ 				ap_thermal: ap-thermal@80 {
+ 					compatible = "marvell,armada-ap806-thermal";
+ 					reg = <0x80 0x10>;
++					#thermal-sensor-cells = <1>;
+ 				};
+ 			};
+ 		};
  	};
- 
- };
 +
-+SYSTEM CONTROLLER 1
-+===================
++	/*
++	 * The thermal IP features one internal sensor plus, if applicable, one
++	 * remote channel wired to one sensor per CPU.
++	 *
++	 * The cooling maps are always empty as there are no cooling devices.
++	 */
++	thermal-zones {
++		ap_thermal_ic: ap-thermal-ic {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
 +
-+Thermal:
-+--------
++			thermal-sensors = <&ap_thermal 0>;
 +
-+The thermal IP can probe the temperature all around the processor. It
-+may feature several channels, each of them wired to one sensor.
++			trips {	};
++			cooling-maps { };
++		};
 +
-+For common binding part and usage, refer to
-+Documentation/devicetree/bindings/thermal/thermal.txt
++		ap_thermal_cpu1: ap-thermal-cpu1 {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
 +
-+Required properties:
-+- compatible: must be one of:
-+  * marvell,armada-cp110-thermal
-+- reg: register range associated with the thermal functions.
++			thermal-sensors = <&ap_thermal 1>;
 +
-+Optional properties:
-+- #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
-+  to this IP and represents the channel ID. There is one sensor per
-+  channel. O refers to the thermal IP internal channel.
++			trips { };
++			cooling-maps { };
++		};
 +
-+Example:
-+CP110_LABEL(syscon1): system-controller@6f8000 {
-+	compatible = "syscon", "simple-mfd";
-+	reg = <0x6f8000 0x1000>;
++		ap_thermal_cpu2: ap-thermal-cpu2 {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
 +
-+	CP110_LABEL(thermal): ap-thermal@70 {
-+		compatible = "marvell,armada-cp110-thermal";
-+		reg = <0x70 0x10>;
-+		#thermal-sensor-cells = <1>;
++			thermal-sensors = <&ap_thermal 2>;
++
++			trips { };
++			cooling-maps { };
++		};
++
++		ap_thermal_cpu3: ap-thermal-cpu3 {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&ap_thermal 3>;
++
++			trips { };
++			cooling-maps { };
++		};
++
++		ap_thermal_cpu4: ap-thermal-cpu4 {
++			polling-delay-passive = <1000>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&ap_thermal 4>;
++
++			trips { };
++			cooling-maps { };
++		};
 +	};
-+};
+ };
 -- 
 2.14.1
