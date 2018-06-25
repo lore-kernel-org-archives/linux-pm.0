@@ -1,80 +1,215 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/3][RFC] tools: create power/crypto utility
-Date: Tue, 26 Jun 2018 00:16:15 +0200
-Message-ID: <20180625221615.GA15249@amd>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
- <20180621090142.GB21807@amd>
- <CAJZ5v0hDhsxwU4X6_dCqc7P5GaTtpBeMUeJTHo9YJ8QtWinYfg@mail.gmail.com>
- <20180621190401.GA14623@amd>
- <CAJZ5v0jQQ7neWDc_cy5ZJPVJp155BLF7fQFmeNJ3Nn0Jho7AeA@mail.gmail.com>
- <20180625115405.GB17001@amd>
- <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
+From: Thomas Garnier via Virtualization
+	<virtualization@lists.linux-foundation.org>
+Subject: [PATCH v5 00/27] x86: PIE support and option to extend KASLR
+	randomization
+Date: Mon, 25 Jun 2018 15:38:48 -0700
+Message-ID: <20180625224014.134829-1-thgarnie@google.com>
+Reply-To: Thomas Garnier <thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, Ted Ts'o <tytso@mit.edu>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Stephan Mueller <smueller@chronox.de>, Eric Biggers <ebiggers3@gmail.com>, Denis Kenzior <denkenz@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: kernel-hardening@lists.openwall.com
+Cc: Kate Stewart <kstewart@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Jan Kiszka <jan.kiszka@siemens.com>, Christopher Li <sparse@chrisli.org>, Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, Masahiro Yamada <yamada.masahiro@socionext.com>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, linux-arch@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Joerg Roedel <joro@8bytes.org>, x86@kernel.org, Daniel Micay <danielmicay@gmail.com>, linux-doc@vger.kernel.org, xen-devel@lists.xenproject.org, linux-sparse@vger.kernel.org, Ingo
 List-Id: linux-pm@vger.kernel.org
 
+Changes:
+ - patch v5:
+   - Adapt new crypto modules for PIE.
+   - Improve per-cpu commit message.
+   - Fix xen 32-bit build error with .quad.
+   - Remove extra code for ftrace.
+ - patch v4:
+   - Simplify early boot by removing global variables.
+   - Modify the mcount location script for __mcount_loc intead of the address
+     read in the ftrace implementation.
+   - Edit commit description to explain better where the kernel can be located.
+   - Streamlined the testing done on each patch proposal. Always testing
+     hibernation, suspend, ftrace and kprobe to ensure no regressions.
+ - patch v3:
+   - Update on message to describe longer term PIE goal.
+   - Minor change on ftrace if condition.
+   - Changed code using xchgq.
+ - patch v2:
+   - Adapt patch to work post KPTI and compiler changes
+   - Redo all performance testing with latest configs and compilers
+   - Simplify mov macro on PIE (MOVABS now)
+   - Reduce GOT footprint
+ - patch v1:
+   - Simplify ftrace implementation.
+   - Use gcc mstack-protector-guard-reg=%gs with PIE when possible.
+ - rfc v3:
+   - Use --emit-relocs instead of -pie to reduce dynamic relocation space on
+     mapped memory. It also simplifies the relocation process.
+   - Move the start the module section next to the kernel. Remove the need for
+     -mcmodel=large on modules. Extends module space from 1 to 2G maximum.
+   - Support for XEN PVH as 32-bit relocations can be ignored with
+     --emit-relocs.
+   - Support for GOT relocations previously done automatically with -pie.
+   - Remove need for dynamic PLT in modules.
+   - Support dymamic GOT for modules.
+ - rfc v2:
+   - Add support for global stack cookie while compiler default to fs without
+     mcmodel=kernel
+   - Change patch 7 to correctly jump out of the identity mapping on kexec load
+     preserve.
 
---ReaqsoxgOBHFXBhH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+These patches make the changes necessary to build the kernel as Position
+Independent Executable (PIE) on x86_64. A PIE kernel can be relocated below
+the top 2G of the virtual address space. It allows to optionally extend the
+KASLR randomization range from 1G to 3G. The chosen range is the one currently
+available, future changes will allow the kernel module to have a wider
+randomization range.
 
-Hi!
+Thanks a lot to Ard Biesheuvel & Kees Cook on their feedback on compiler
+changes, PIE support and KASLR in general. Thanks to Roland McGrath on his
+feedback for using -pie versus --emit-relocs and details on compiler code
+generation.
 
-> >> >> > If you want to maintain uswsusp in kernel tree, I guess that woul=
-d be
-> >> >> > an option, too.
-> >> >>
-> >> >> No, it isn't an option due to the dependencies on crypto libraries.
-> >> >
-> >> > Why not?
-> >>
-> >> You need a specific set of devel libraries for the utilities to build
-> >> and that need not be present on all systems I suppose?
-> >>
-> >> Besides, s2disk is currently tangled with s2ram which is obsolete, so
-> >> I'd rather not.
-> >
-> > Its not tangled.
->=20
-> Yes, it is.
+The patches:
+ - 1-3, 5-13, 18-19: Change in assembly code to be PIE compliant.
+ - 4: Add a new _ASM_MOVABS macro to fetch a symbol address generically.
+ - 14: Adapt percpu design to work correctly when PIE is enabled.
+ - 15: Provide an option to default visibility to hidden except for key symbols.
+       It removes errors between compilation units.
+ - 16: Add PROVIDE_HIDDEN replacement on the linker script for weak symbols to
+       reduce GOT footprint.
+ - 17: Adapt relocation tool to handle PIE binary correctly.
+ - 20: Add support for global cookie.
+ - 21: Support ftrace with PIE (used on Ubuntu config).
+ - 22: Add option to move the module section just after the kernel.
+ - 23: Adapt module loading to support PIE with dynamic GOT.
+ - 24: Make the GOT read-only.
+ - 25: Add the CONFIG_X86_PIE option (off by default).
+ - 26: Adapt relocation tool to generate a 64-bit relocation table.
+ - 27: Add the CONFIG_RANDOMIZE_BASE_LARGE option to increase relocation range
+       from 1G to 3G (off by default).
 
-I checked the Makefile, and it builds from separate sources. Yes, it
-is in one repository, but s2disk does not depend on s2ram (s2both does).
+Performance/Size impact:
 
-Anyway... that's really besides a point.
+Size of vmlinux (Default configuration):
+ File size:
+ - PIE disabled: +0.18%
+ - PIE enabled: -1.977% (less relocations)
+ .text section:
+ - PIE disabled: same
+ - PIE enabled: same
 
-Interested parties can easily fix up the userland parts of uswsusp,
-change crypto, add or remove dependencies, move it to other hosting,
-or drop it and start again. Kernel interface is flexible enough. If
-Chen wants to move the s2disk encryption into kernel, it is his task
-to explain why that is neccessary.
+Size of vmlinux (Ubuntu configuration):
+ File size:
+ - PIE disabled: +0.21%
+ - PIE enabled: +10%
+ .text section:
+ - PIE disabled: same
+ - PIE enabled: +0.001%
 
-								Pavel
+The size increase is mainly due to not having access to the 32-bit signed
+relocation that can be used with mcmodel=kernel. A small part is due to reduced
+optimization for PIE code. This bug [1] was opened with gcc to provide a better
+code generation for kernel PIE.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Hackbench (50% and 1600% on thread/process for pipe/sockets):
+ - PIE disabled: no significant change (avg -/+ 0.5% on latest test).
+ - PIE enabled: between -1% to +1% in average (default and Ubuntu config).
 
---ReaqsoxgOBHFXBhH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Kernbench (average of 10 Half and Optimal runs):
+ Elapsed Time:
+ - PIE disabled: no significant change (avg -0.5%)
+ - PIE enabled: average -0.5% to +0.5%
+ System Time:
+ - PIE disabled: no significant change (avg -0.1%)
+ - PIE enabled: average -0.4% to +0.4%.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+[1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82303
 
-iEYEARECAAYFAlsxaa8ACgkQMOfwapXb+vJyFwCfWUccgGfheRduGC2ZOul4mXrL
-40oAoI1WWJXf10/e9kxVdLKXp09QFciq
-=NQCN
------END PGP SIGNATURE-----
-
---ReaqsoxgOBHFXBhH--
+diffstat:
+ Documentation/x86/x86_64/mm.txt              |    3 v
+ arch/x86/Kconfig                             |   45 ++++++
+ arch/x86/Makefile                            |   58 ++++++++
+ arch/x86/boot/boot.h                         |    2 
+ arch/x86/boot/compressed/Makefile            |    5 
+ arch/x86/boot/compressed/misc.c              |   10 +
+ arch/x86/crypto/aegis128-aesni-asm.S         |    6 
+ arch/x86/crypto/aegis128l-aesni-asm.S        |    8 -
+ arch/x86/crypto/aegis256-aesni-asm.S         |    6 
+ arch/x86/crypto/aes-x86_64-asm_64.S          |   45 ++++--
+ arch/x86/crypto/aesni-intel_asm.S            |    8 -
+ arch/x86/crypto/aesni-intel_avx-x86_64.S     |    6 
+ arch/x86/crypto/camellia-aesni-avx-asm_64.S  |   42 +++---
+ arch/x86/crypto/camellia-aesni-avx2-asm_64.S |   44 +++---
+ arch/x86/crypto/camellia-x86_64-asm_64.S     |    8 -
+ arch/x86/crypto/cast5-avx-x86_64-asm_64.S    |   50 ++++---
+ arch/x86/crypto/cast6-avx-x86_64-asm_64.S    |   44 +++---
+ arch/x86/crypto/des3_ede-asm_64.S            |   96 +++++++++-----
+ arch/x86/crypto/ghash-clmulni-intel_asm.S    |    4 
+ arch/x86/crypto/glue_helper-asm-avx.S        |    4 
+ arch/x86/crypto/glue_helper-asm-avx2.S       |    6 
+ arch/x86/crypto/morus1280-avx2-asm.S         |    4 
+ arch/x86/crypto/morus1280-sse2-asm.S         |    8 -
+ arch/x86/crypto/morus640-sse2-asm.S          |    6 
+ arch/x86/crypto/sha256-avx2-asm.S            |   23 ++-
+ arch/x86/entry/calling.h                     |    2 
+ arch/x86/entry/entry_32.S                    |    3 
+ arch/x86/entry/entry_64.S                    |   25 ++-
+ arch/x86/include/asm/asm.h                   |    1 
+ arch/x86/include/asm/bug.h                   |    2 
+ arch/x86/include/asm/jump_label.h            |    8 -
+ arch/x86/include/asm/kvm_host.h              |    8 -
+ arch/x86/include/asm/module.h                |   11 +
+ arch/x86/include/asm/page_64_types.h         |    9 +
+ arch/x86/include/asm/paravirt_types.h        |   12 +
+ arch/x86/include/asm/percpu.h                |   25 ++-
+ arch/x86/include/asm/pgtable_64_types.h      |    6 
+ arch/x86/include/asm/pm-trace.h              |    2 
+ arch/x86/include/asm/processor.h             |   16 +-
+ arch/x86/include/asm/sections.h              |    4 
+ arch/x86/include/asm/setup.h                 |    2 
+ arch/x86/include/asm/stackprotector.h        |   19 ++
+ arch/x86/kernel/Makefile                     |    6 
+ arch/x86/kernel/acpi/wakeup_64.S             |   31 ++--
+ arch/x86/kernel/asm-offsets.c                |    3 
+ arch/x86/kernel/asm-offsets_32.c             |    3 
+ arch/x86/kernel/asm-offsets_64.c             |    3 
+ arch/x86/kernel/cpu/common.c                 |    3 
+ arch/x86/kernel/cpu/microcode/core.c         |    4 
+ arch/x86/kernel/ftrace.c                     |   51 +++++++
+ arch/x86/kernel/head64.c                     |   23 ++-
+ arch/x86/kernel/head_32.S                    |    3 
+ arch/x86/kernel/head_64.S                    |   31 +++-
+ arch/x86/kernel/kvm.c                        |    6 
+ arch/x86/kernel/module.c                     |  181 ++++++++++++++++++++++++++-
+ arch/x86/kernel/module.lds                   |    3 
+ arch/x86/kernel/process.c                    |    5 
+ arch/x86/kernel/relocate_kernel_64.S         |   16 +-
+ arch/x86/kernel/setup_percpu.c               |    5 
+ arch/x86/kernel/vmlinux.lds.S                |   13 +
+ arch/x86/kvm/svm.c                           |    4 
+ arch/x86/lib/cmpxchg16b_emu.S                |    8 -
+ arch/x86/mm/dump_pagetables.c                |    3 
+ arch/x86/power/hibernate_asm_64.S            |    4 
+ arch/x86/tools/relocs.c                      |  169 +++++++++++++++++++++++--
+ arch/x86/tools/relocs.h                      |    4 
+ arch/x86/tools/relocs_common.c               |   15 +-
+ arch/x86/xen/xen-asm.S                       |   12 -
+ arch/x86/xen/xen-head.S                      |   11 -
+ arch/x86/xen/xen-pvh.S                       |   14 +-
+ drivers/base/firmware_loader/main.c          |    4 
+ include/asm-generic/sections.h               |    6 
+ include/asm-generic/vmlinux.lds.h            |   12 +
+ include/linux/compiler.h                     |    7 +
+ init/Kconfig                                 |   16 ++
+ kernel/kallsyms.c                            |   16 +-
+ kernel/trace/trace.h                         |    4 
+ lib/dynamic_debug.c                          |    4 
+ scripts/link-vmlinux.sh                      |   14 ++
+ scripts/recordmcount.c                       |   79 +++++++----
+ 80 files changed, 1134 insertions(+), 358 deletions(-)
