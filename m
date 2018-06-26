@@ -1,41 +1,64 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
-Date: Tue, 26 Jun 2018 14:19:44 -0600
-Message-ID: <20180626201944.GA24678@rob-hp-laptop>
-References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on
+ suspend-to-RAM
+Date: Tue, 26 Jun 2018 15:32:14 -0500
+Message-ID: <20180626203214.GA181504@bhelgaas-glaptop.roam.corp.google.com>
+References: <35587465.8Nave9aG7d@aspire.rjw.lan>
+ <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0jc5oJzEX6QVDVjsQLmLxXHg3PSyepbh50dLXOtnHPgrA@mail.gmail.com>
+ <20180626171406.GC146680@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0gt+4FiiBxEjdsEYLT+dQq=Q=mC7JtZPsYxps0_a1w-rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+In-Reply-To: <CAJZ5v0gt+4FiiBxEjdsEYLT+dQq=Q=mC7JtZPsYxps0_a1w-rg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>
-Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>, David S. Mill
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jun 17, 2018 at 04:31:18PM +0200, Jonathan Neuschäfer wrote:
-> Multiple binding documents have various forms of unbalanced quotation
-> marks. Fix them.
+On Tue, Jun 26, 2018 at 07:19:29PM +0200, Rafael J. Wysocki wrote:
+> On Tue, Jun 26, 2018 at 7:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Tue, Jun 26, 2018 at 04:22:00PM +0200, Rafael J. Wysocki wrote:
+> >> On Tue, Jun 26, 2018 at 4:01 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> >> > On Tue, Jun 26, 2018 at 12:06:01PM +0200, Rafael J. Wysocki wrote:
+> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> >> >> +     /*
+> >> >> +      * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
+> >> >> +      * confuses the platform firmware, so avoid doing that, unless the
+> >> >> +      * bridge has a driver that should take care of PM handling.
+> >> >> +      */
+> >> >> +     if (pci_is_bridge(dev) && !dev->driver)
+> >> >> +             return true;
+> >> >
+> >> > It sounds like the question of whether leaving a bridge in D3 confuses
+> >> > the firmware has a platform-specific answer.
+> >>
+> >> Well, it may confuse the platform firmware in general.
+> >>
+> >> > How does the driver PM handling know how to do the right thing?
+> >>
+> >> For endpoints this is not an issue as they always have been expected
+> >> to be in D3 before passing control to the platform firmware on S3
+> >> entry, but we've never done that for bridges by default, except for
+> >> PCIe ports with PM enabled (in which case the driver decides whether
+> >> or not to enable it).
+> >
+> > If there's any spec reference for the expected power states of devices
+> > when entering S3, that would be useful here.  I can't tell if there's
+> > any guidance for this or if it's just figured out experimentally.
 > 
-> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
-> ---
+> It is not direct, but Section 16.1.6 of ACPI 6.2 says this in step 4
+> of the system suspend outline:
 > 
-> Should I split this patch so that different parts can go through different trees?
+> OSPM places all device drivers into their respective Dx state. If the
+> device is enabled for wake,
+> it enters the Dx state associated with the wake capability. If the
+> device is not enabled to wake
+> the system, it enters the D3 state.
 
-No, I applied it. Thanks.
+Thanks, that's a very useful citation!
 
-> ---
->  .../devicetree/bindings/arm/samsung/samsung-boards.txt          | 2 +-
->  .../devicetree/bindings/gpio/nintendo,hollywood-gpio.txt        | 2 +-
->  Documentation/devicetree/bindings/input/touchscreen/hideep.txt  | 2 +-
->  .../bindings/interrupt-controller/nvidia,tegra20-ictlr.txt      | 2 +-
->  .../devicetree/bindings/interrupt-controller/st,stm32-exti.txt  | 2 +-
->  Documentation/devicetree/bindings/mips/brcm/soc.txt             | 2 +-
->  Documentation/devicetree/bindings/net/fsl-fman.txt              | 2 +-
->  Documentation/devicetree/bindings/power/power_domain.txt        | 2 +-
->  Documentation/devicetree/bindings/regulator/tps65090.txt        | 2 +-
->  Documentation/devicetree/bindings/reset/st,sti-softreset.txt    | 2 +-
->  Documentation/devicetree/bindings/sound/qcom,apq8016-sbc.txt    | 2 +-
->  Documentation/devicetree/bindings/sound/qcom,apq8096.txt        | 2 +-
->  12 files changed, 12 insertions(+), 12 deletions(-)
+Bjorn
