@@ -1,82 +1,87 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/2] PM / wakeup: Add callback for wake-up change notification
-Date: Tue, 26 Jun 2018 15:55:58 +0200
-Message-ID: <CAJZ5v0gAnDKe=S916ZB4489H3Sx26gkBVPqpKD45jY2f4G4wng@mail.gmail.com>
-References: <20180619135518.8990-1-geert+renesas@glider.be>
- <20180620132507.GE6242@sirena.org.uk> <CAMuHMdXYL+=mBOofUqQ06Ld4zUF7BWqt+S2dFTw6AEAPuDsZPQ@mail.gmail.com>
- <1705903.rOAenNWc8f@aspire.rjw.lan> <CAMuHMdUYtao4fgQUwBArZG1y+yfbwHE0SHuM6v2NGnhY7GSjkA@mail.gmail.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on
+ suspend-to-RAM
+Date: Tue, 26 Jun 2018 09:01:15 -0500
+Message-ID: <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
+References: <35587465.8Nave9aG7d@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUYtao4fgQUwBArZG1y+yfbwHE0SHuM6v2NGnhY7GSjkA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <35587465.8Nave9aG7d@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
+On Tue, Jun 26, 2018 at 12:06:01PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
+> handling for devices with no callbacks) introduced a system suspend
+> regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
+> port) to stay in D3 over suspend-to-RAM, which is a side effect of
+> setting power.direct_complete for the children of that bridge that
+> have no PM callbacks.
+> 
+> On the majority of systems PCI bridges are not allowed to be
+> runtime-suspended (the power/control sysfs attribute is set to "on"
+> for them by default), but user space can change that setting and if
+> it does so and a given bridge has no children with PM callbacks, the
+> direct_complete optimization will be applied to it and it will stay
+> in suspend over system suspend.  Apparently, that confuses the
 
-On Tue, Jun 26, 2018 at 12:29 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Hi Rafael,
->
-> On Tue, Jun 26, 2018 at 12:17 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Tuesday, June 26, 2018 12:06:16 PM CEST Geert Uytterhoeven wrote:
->> > On Wed, Jun 20, 2018 at 3:25 PM Mark Brown <broonie@kernel.org> wrote:
->> > > On Wed, Jun 20, 2018 at 02:15:38PM +0200, Rafael J. Wysocki wrote:
->> > > > On Wed, Jun 20, 2018 at 12:35 PM, Mark Brown <broonie@kernel.org> wrote:
->> > >
->> > > > > The flip side of that is that either suspend and resume or poweroff are
->> > > > > broken for userspace unless they know about this magic sysfs file which
->> > > > > isn't great either.
->> > >
->> > > > But to me that isn't that much different from an RTC wake alarm, say.
->> > >
->> > > > Enabling it to wake up the system in general isn't sufficient, you
->> > > > also need to actually set the alarm using a different interface.
->> >
->> > The RTC wake alarm time is indeed different, as it is not a simple boolean flag.
->> > It is also more natural for the user, who expects to need to find some way to
->> > configure the wake-up time.
->>
->> OK, take Ethernet.  You need to configure WoL on that to wake up the system
->> in addition to setting power/wakeup for it.
->>
->> Take WiFi: You need to set up WoW on that.
->>
->> And so on.
->
-> I always found it strange that you have both "ethtool wol" and and a
-> "wakeup" file
-> in sysfs (does "ethtool wol" predate the wakeup file in sysfs?)
+"stay in D3 over system suspend"? (just to be explicit about what "in
+suspend" means)
 
-Yes, it does.
+> platform firmware on the affected machine and that may very well
+> happen elsewhere, so avoid the direct_complete optimization for
+> PCI bridges with no drivers (if there is a driver, it should take
+> care of the PM handling) on suspend-to-RAM altogether (that should
+> not matter for suspend-to-idle as platform firmware is not involved
+> in it).
+> 
+> Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
+> Reported-by: n0000b.n000b@gmail.com
+> Tested-by: n0000b.n000b@gmail.com
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/pci/pci-acpi.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -638,6 +638,14 @@ static bool acpi_pci_need_resume(struct
+>  	if (acpi_target_system_state() == ACPI_STATE_S0)
+>  		return false;
+>  
+> +	/*
+> +	 * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
+> +	 * confuses the platform firmware, so avoid doing that, unless the
+> +	 * bridge has a driver that should take care of PM handling.
+> +	 */
+> +	if (pci_is_bridge(dev) && !dev->driver)
+> +		return true;
 
-> I believe originally WoL supported MagicPacket only (many systems still
-> support only that), so originally it was boolean.
+It sounds like the question of whether leaving a bridge in D3 confuses
+the firmware has a platform-specific answer.  How does the driver PM
+handling know how to do the right thing?  Does it need to know whether
+it's safe to put the device in D3?  Or maybe a device is never put in
+D3 for system suspend if it has a driver?
 
-I don't recall the details here.  When looked at it first time
-multiple options had been there already.
+But I'm just kibbitzing; since you merged c62ec4610c40, I'm happy if
+you also merge this:
 
->> > > It seems more like hardware breakage we're trying to fix than a feature
->> > > - it's not like it's adding something we didn't have already (like
->> > > setting a time in an alarm where the alarm is an additional thing), more
->> > > just trying to execute on an existing user interface successfully.  I
->> > > can see that there's a case that it doesn't map very well onto the
->> > > standard interfaces so perhaps we have to add something on the side as
->> > > the hardware is just too horrible to fit in with the standard interfaces
->> > > and we have to do that.
->> >
->> > My main worry is usability: with a separate sysfs file, we need to document the
->> > file, and the user needs to be aware of it.
->>
->> That's right, but it will be very hard to convince me that changing the
->> meaning of the "wakeup" attribute just in order to work around this issue
->> (which arguably is a consequence of "unfortunate" hardware design) is a
->> good idea. :-)
->
-> OK.
->
-> Next question: where to document device-specific sysfs files for regulators?
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Under Documentation/ABI/ I suppose.
+>  	return !!adev->power.flags.dsw_present;
+>  }
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
