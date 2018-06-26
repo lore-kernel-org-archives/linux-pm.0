@@ -1,7 +1,7 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH 2/2] power: generic-adc-battery: check for duplicate properties copied from iio channels
-Date: Tue, 26 Jun 2018 15:28:30 +0200
-Message-ID: <0df4d5dc7d3591b8341dba50481d10fbb201fa9d.1530019688.git.hns@goldelico.com>
+Subject: [PATCH 1/2] power: generic-adc-battery: fix out-of-bounds write when copying channel properties
+Date: Tue, 26 Jun 2018 15:28:29 +0200
+Message-ID: <06e010990476a1ab0d3f3d4006c7623a77aa4041.1530019688.git.hns@goldelico.com>
 References: <cover.1530019688.git.hns@goldelico.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1530019688.git.hns@goldelico.com>
@@ -12,54 +12,93 @@ To: Sebastian Reichel <sre@kernel.org>, anish kumar <anish198519851985@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com, "H. Nikolaus Schaller" <hns@goldelico.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-If an iio channel defines a basic property, there are duplicate entries
-in /sys/class/power/*/uevent.
+We did have sporadic problems in the pinctrl framework during boot
+where a pin group name unexpectedly became NULL leading to a NULL
+dereference in strcmp.
 
-So add a check to avoid duplicates. Since all channels may be duplicates,
-we have to modify the related error check.
+Detailled analysis of the failing cases did reveal that there were
+two devm allocated objects close to each other. The second one was
+the affected group_desc in pinmux and the first one was the
+psy_desc->properties buffer of the gab driver.
+
+Review of the gab code showed that the address calculation for
+one memcpy() is wrong. It does
+
+	properties + sizeof(type) * index
+
+but C is defined to do the index multiplication already for
+pointer + integer additions. Hence the factor was applied twice
+and the memcpy() does write outside of the properties buffer.
+Sometimes it happened to be the pinctrl and triggered the strcmp(NULL).
+
+Anyways, it is overkill to use a memcpy() here instead of a simple
+assignment, which is easier to read and has less risk for wrong
+address calculations. So we change code to a simple assignment.
+
+If we initialize the index to the first free location, we can even
+remove the local variable 'properties'.
+
+This bug seems to exist right from the beginning in 3.7-rc1 in
+
+commit e60fea794e6e ("power: battery: Generic battery driver using IIO")
 
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 Cc: stable@vger.kernel.org
 ---
- drivers/power/supply/generic-adc-battery.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/power/supply/generic-adc-battery.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index 11f59275bff4..bc462d1ec963 100644
+index 28dc056eaafa..11f59275bff4 100644
 --- a/drivers/power/supply/generic-adc-battery.c
 +++ b/drivers/power/supply/generic-adc-battery.c
-@@ -244,6 +244,7 @@ static int gab_probe(struct platform_device *pdev)
+@@ -241,10 +241,9 @@ static int gab_probe(struct platform_device *pdev)
+ 	struct power_supply_desc *psy_desc;
+ 	struct power_supply_config psy_cfg = {};
+ 	struct gab_platform_data *pdata = pdev->dev.platform_data;
+-	enum power_supply_property *properties;
  	int ret = 0;
  	int chan;
- 	int index = ARRAY_SIZE(gab_props);
-+	bool any = false;
+-	int index = 0;
++	int index = ARRAY_SIZE(gab_props);
  
  	adc_bat = devm_kzalloc(&pdev->dev, sizeof(*adc_bat), GFP_KERNEL);
  	if (!adc_bat) {
-@@ -290,12 +291,22 @@ static int gab_probe(struct platform_device *pdev)
+@@ -278,8 +277,6 @@ static int gab_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	memcpy(psy_desc->properties, gab_props, sizeof(gab_props));
+-	properties = (enum power_supply_property *)
+-			((char *)psy_desc->properties + sizeof(gab_props));
+ 
+ 	/*
+ 	 * getting channel from iio and copying the battery properties
+@@ -293,15 +290,12 @@ static int gab_probe(struct platform_device *pdev)
  			adc_bat->channel[chan] = NULL;
  		} else {
  			/* copying properties for supported channels only */
--			psy_desc->properties[index++] = gab_dyn_props[chan];
-+			int index2;
-+
-+			for (index2 = 0; index2 < index; index2++) {
-+				if (psy_desc->properties[index2] ==
-+				    gab_dyn_props[chan])
-+					break;	/* already known */
-+			}
-+			if (index2 == index)	/* really new */
-+				psy_desc->properties[index++] =
-+					gab_dyn_props[chan];
-+			any = true;
+-			memcpy(properties + sizeof(*(psy_desc->properties)) * index,
+-					&gab_dyn_props[chan],
+-					sizeof(gab_dyn_props[chan]));
+-			index++;
++			psy_desc->properties[index++] = gab_dyn_props[chan];
  		}
  	}
  
  	/* none of the channels are supported so let's bail out */
--	if (index == ARRAY_SIZE(gab_props)) {
-+	if (!any) {
+-	if (index == 0) {
++	if (index == ARRAY_SIZE(gab_props)) {
  		ret = -ENODEV;
  		goto second_mem_fail;
  	}
+@@ -312,7 +306,7 @@ static int gab_probe(struct platform_device *pdev)
+ 	 * as come channels may be not be supported by the device.So
+ 	 * we need to take care of that.
+ 	 */
+-	psy_desc->num_properties = ARRAY_SIZE(gab_props) + index;
++	psy_desc->num_properties = index;
+ 
+ 	adc_bat->psy = power_supply_register(&pdev->dev, psy_desc, &psy_cfg);
+ 	if (IS_ERR(adc_bat->psy)) {
 -- 
 2.12.2
