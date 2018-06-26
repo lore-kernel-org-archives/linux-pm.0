@@ -1,145 +1,151 @@
-From: Vadim Pasternak <vadimp@mellanox.com>
-Subject: RE: [patch net-next RFC 03/12] mlxsw: core: Add core environment
- module for port temperature reading
-Date: Tue, 26 Jun 2018 17:50:51 +0000
-Message-ID: <HE1PR0502MB375314997425DFF8DA5D3D1BA2490@HE1PR0502MB3753.eurprd05.prod.outlook.com>
-References: <1530015037-67361-1-git-send-email-vadimp@mellanox.com>
- <1530015037-67361-4-git-send-email-vadimp@mellanox.com>
- <20180626142238.GB5064@lunn.ch> <20180626170012.GA28370@roeck-us.net>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 09/12] dt-bindings: PM / OPP: add opp-throttlers
+ property
+Date: Tue, 26 Jun 2018 11:11:39 -0700
+Message-ID: <20180626181139.GL129942@google.com>
+References: <20180621015237.100100-1-mka@chromium.org>
+ <20180621015237.100100-10-mka@chromium.org>
+ <20180625153341.GB23270@rob-hp-laptop>
+ <20180625185037.GE129942@google.com>
+ <20180625200304.GF129942@google.com>
+ <CAL_JsqLkYn66nrjphfLQzsO-eG1KZWdHxZbW5NEgkX4EhLbwAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <20180626170012.GA28370@roeck-us.net>
-Content-Language: en-US
-Sender: netdev-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Andrew Lunn <andrew@lunn.ch>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "jiri@resnulli.us" <jiri@resnulli.us>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqLkYn66nrjphfLQzsO-eG1KZWdHxZbW5NEgkX4EhLbwAQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Brian Norris <briannorris@chromium.org>, Doug Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-> -----Original Message-----
-> From: Guenter Roeck [mailto:linux@roeck-us.net]
-> Sent: Tuesday, June 26, 2018 8:00 PM
-> To: Andrew Lunn <andrew@lunn.ch>
-> Cc: Vadim Pasternak <vadimp@mellanox.com>; linux-pm@vger.kernel.org;
-> netdev@vger.kernel.org; rui.zhang@intel.com; edubezval@gmail.com;
-> jiri@resnulli.us
-> Subject: Re: [patch net-next RFC 03/12] mlxsw: core: Add core environment
-> module for port temperature reading
->=20
-> On Tue, Jun 26, 2018 at 04:22:38PM +0200, Andrew Lunn wrote:
-> > On Tue, Jun 26, 2018 at 12:10:28PM +0000, Vadim Pasternak wrote:
+On Tue, Jun 26, 2018 at 09:49:49AM -0600, Rob Herring wrote:
+> On Mon, Jun 25, 2018 at 2:03 PM Matthias Kaehlcke <mka@chromium.org> wrote:
 > >
-> > Adding the linux-pm@vger.kernel.org list.
-> >
-> > > Add new core_env module to allow port temperature reading. This
-> > > information has most critical impact on system's thermal monitoring
-> > > and is to be used by core_hwmon and core_thermal modules.
+> > On Mon, Jun 25, 2018 at 11:50:37AM -0700, Matthias Kaehlcke wrote:
+> > > Hi Rob,
 > > >
-> > > New internal API reads the temperature from all the modules, which
-> > > are equipped with the thermal sensor and exposes temperature
-> > > according to the worst measure. All individual temperature values
-> > > are normalized to pre-defined range.
+> > > On Mon, Jun 25, 2018 at 09:33:41AM -0600, Rob Herring wrote:
+> > > > On Wed, Jun 20, 2018 at 06:52:34PM -0700, Matthias Kaehlcke wrote:
+> > > > > The optional opp-throttlers property is used to configure the throttlers
+> > > > > (see drivers/misc/throttler/*) that use a given OPP to throttle the
+> > > > > corresponding device(s).
+> > > > >
+> > > > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > > > > Reviewed-by: Brian Norris <briannorris@chromium.org>
+> > > > > ---
+> > > > > Changes in v4:
+> > > > > - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+> > > > >
+> > > > > Changes in v3:
+> > > > > - none
+> > > > >
+> > > > > Changes in v2:
+> > > > > - patch added to series
+> > > > > ---
+> > > > >  Documentation/devicetree/bindings/opp/opp.txt | 3 +++
+> > > > >  1 file changed, 3 insertions(+)
+> > > > >
+> > > > > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> > > > > index c396c4c0af92..747e79740c75 100644
+> > > > > --- a/Documentation/devicetree/bindings/opp/opp.txt
+> > > > > +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> > > > > @@ -170,6 +170,9 @@ Optional properties:
+> > > > >    functioning of the current device at the current OPP (where this property is
+> > > > >    present).
+> > > > >
+> > > > > +- opp-throttlers: Array with phandles of throttlers that use this OPP to
+> > > > > +  throttle the corresponding device(s).
+> > > > > +
+> > > >
+> > > > I think it would be better to make this a boolean for each OPP entry and
+> > > > then add "operating-points-v2" property to the EC node to point to the
+> > > > OPP table.
+> > >
+> > > Thanks for your suggestion. "operating-points-v2" would have to be an
+> > > array of phandles, a single thottler can have multiple throttling
+> > > devices.
+> 
+> I don't see any issue with allowing that.
+> 
+> > > > Unless there is some need for a different throttler for each OPP entry?
+> > >
+> > > Having the option to use different OPPs per throttler would be my
+> > > preference. E.g. there could be configurations where one throttler
+> > > only interacts with certain throttling devices and another one
+> > > with others.
+> 
+> Your terminology is confusing. By "throttling device", you mean an OPP
+> table (or OPP entry) which is not a device. OPPs are just a table of
+> state information.
+
+It reads OPP entries, but it interacts with hardware entities (not
+necessarily devices in the kernel sense) like CPUs, GPUs, which is
+what I call 'throttling devices'. I'm open to suggestions for a better
+terminology :)
+
+> > > I see another option to achieve this, if you don't like the reference
+> > > to the throttlers in the OPPs. The throttler could have a list of OPPs
+> > > (as phandles, not frequencies as in v1). The main inconvenient I see
+> > > here is that the used OPPs would need a label, which they usually
+> > > don't have. Maybe this is no soooo bad, since the label could be added
+> > > at device level, only on devices that use a throttler, so it wouldn't
+> > > clutter the platform .dts files.
+> > >
+> > > This could be a single array with all OPPs from different devices,
+> > > or multiple arrays, one for each throttling device:
+> > >
+> > > throttler-opps-0 = <&cpu0_opp_03 &cpu0_opp_05>;
+> > > throttler-opps-1 = <&gpu_opp_02 &gpu_opp_04>;
+> > >
+> > > My preference would be multiple arrays, because it's easier to read.
 > >
-> > This patchset has been sent to the netdev list before. I raised a few
-> > questions about this, which is why it is now being posted to a bigger
-> > group for review.
+> > I take the preference back. The OPPs for each device (group) can be
+> > clustered within the single array and if needed clarifying comments
+> > can be added:
 > >
-> > The hardware has up to 64 temperature sensors. These sensors are
-> > hot-plugable, since they are inside SFP modules, which are
-> > hot-plugable. Different SFP modules can have different operating
-> > temperature ranges. They contain an EEPROM which lists upper and lower
-> > warning and fail temperatures, and report alarms when these thresholds
-> > a reached.
+> > throttler-opps = <&cpu0_opp_03 &cpu0_opp_05  /* CPU0 */
+> >                   &gpu_opp_02 &gpu_opp_04>;  /* GPU */
 > >
-> > This code takes the 64 sensors readings and calculates a single value
-> > it passes to one thermal zone. That thermal zone then controls one fan
-> > to keep this single value in range.
-> >
-> > I queried is this is the correct way to do this? Would it not be
-> > better to have up to 64 thermal zones? Leave the thermal core to
-> > iterate over all the zones in order to determine how the fan should be
-> > driven?
-> >
-> I very much think so. This problem must exist elsewhere; essentially it i=
-s the
-> bundling of multiple temperature sensors into a single thermal zone. I am=
- not
-> sure if this should be 64 thermal zones or one thermal zone with up to 64
-> sensors and some algorithm to select the relevant temperature; that would=
- be
-> up to the thermal subsystem maintainers to decide. Either case, the senso=
-rs
-> should be handled and reported as individual sensors, with appropriate li=
-mits,
-> not as single sensor.
-> Yes, I understand that means we'll have hundreds of hwmon devices, but th=
-at
-> should not be a problem (and if it is, we'll have to fix the problem, not=
- the code
-> exposing it).
+> > This is simpler algorithmically and there is no need for an additional
+> > property indicating the number of OPP groups or probing.
+> 
+> I'm still trying to understand why you would have say throttler-A
+> wanting to set cpu freq to X and throttler-B wanting to set cpu freq
+> to Y. There's both the question of why/when would you have 2 or more
+> throttlers (in DT) and how would you resolve multiple requests.
 
-I guess that many thermal zones with single PWM control will not work.
-PWM will never stabilize in case there are some hot and some cold modules.
+The two throttlers could monitor different types of events, e.g. the
+cros-ec throttler from this series and a throttler responding to a
+GPIO change (real world example from an older platform, addressed with
+a custom driver because there was no throttler).
 
-It seems it could be only temperature input array providing to the thermal
-zone. And additionally it should have arrays at least for the warning and c=
-ritical
-thresholds.
+Multiple requests are resolved by the cpufreq and devfreq
+framework. The CPU/DEVFREQ_ADJUST callback allows callees to adjust
+min/max frequencies (devfreq support for this is added in this
+series). Well behaved callees use cpufreq/devfreq_verify_within_limits()
+for the adjustment to ensure the most restrictive settings are applied.
 
-We are using step-wise thermal algorithm as a default.
-In case thermal zone will have multi temperature inputs this algorithm poss=
-ibly
-should be adapted for handling temperature arrays (input and thresholds)
-along with the thermal zone normalization parameters - more or less the sam=
-e
-normalization process as I provided in this patch, but generic for the ther=
-mal
-subsystem.
+> The whole design of a throttler directly dealing with OPPs especially
+> for non-cpu devices seems like it is missing some level of
+> abstraction. What if you want to throttle by some means other than
+> frequency such as idling cores? I guess abstraction would make it hard
+> to make things optimal for every platform when in the end you just
+> want to set specific frequencies on a number of devices. It seems like
+> a similar situation as early big.LITTLE designs vs. EAS.
 
-Or another possibility - to add some new thermal algorithm "step-wise-multi=
-"
-or something like that.
+For non-CPU devices the throttler currently supports devfreq devices,
+which have a level of abstraction similar to cpufreq. I don't have a
+comprehensive view of other devices that use OPPs, but if there is a
+need in the future to support them I agree that there should probably
+be an abstraction, or they should be integrated with devfreq if
+applicable.
 
-However, I have some concerns on this matter.
-Our hardware provides bulk reading of the modules temperature, means
-I can get all inputs by one hardware request, which is important optimizati=
-on.
-Reading each module individually will be resulted in huge overhead and will
-require maybe some cashing of temperature inputs. =20
+As of now I don't have plans to throttle by other means than
+frequency. This can certainly come up, but I'd suggest we'll cross the
+bridge when we get there, unless it is already evident that the
+current bindings would cause problems.
 
-And also, now we have up to 64 modules per system and on the way the
-system supporting 128 modules.
-Would it be good to have such huge number of hwmon configuration records,
-like:=20
-HWMON_T_INPUT | HWMON_T_MAX_ALARM | HWMON_T_CRIT_ALARM ?
+Thanks
 
-
->=20
-> I understand that the thermal subsystem does not currently support handli=
-ng this
-> problem. There may also be some missing pieces between the hwmon and
-> thermal subsystems, such as reporting limits or alarms when a hwmon drive=
-r
-> register with the thermal subsystem.
->=20
-> Maybe it is time to add this support as part of this patch series ?
->=20
-> > This is possibly the first board with so many sensors. However, i
-> > doubt it is totally unique. Other big Ethernet switches with lots of
-> > SFP modules may be added later. Also, 10G copper PHYs often have
-> > temperature sensors, so this is not limited to just boards with
-> > optical ports. So having a generic solution would be good.
->=20
-> Agreed.
->=20
-> Thanks,
-> Guenter
->=20
-> >
-> > What do the Linux PM exports say about this?
-> >
-> > Thanks
-> > 	Andrew
+Matthias
