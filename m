@@ -1,136 +1,77 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: Fwd: [Bug 199879] New: Very basic the Pci device is not resumed
- from suspend mode
-Date: Mon, 25 Jun 2018 18:26:33 -0500
-Message-ID: <20180625232633.GB191076@bhelgaas-glaptop.roam.corp.google.com>
-References: <bug-199879-41252@https.bugzilla.kernel.org/>
- <CAErSpo5U9D5kmYix2SbcJH_mW8urpmZcgN6Zh=FbGtLch+ACuA@mail.gmail.com>
- <20180620211349.GB108993@bhelgaas-glaptop.roam.corp.google.com>
+From: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH v2 14/23] dt-bindings: cp110: prepare the syscon file to
+ list other syscons nodes
+Date: Tue, 26 Jun 2018 06:35:56 +0300
+Message-ID: <20180626033556.bsub25ykdseflsta@tarshish>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+ <20180625151239.20976-15-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20180620211349.GB108993@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafal <uzg@wp.pl>
-Cc: linux-pci@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Huang Ying <ying.huang@intel.com>, Martin Mares <mj@ucw.cz>
+In-Reply-To: <20180625151239.20976-15-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Rob Herring <robh+dt@kernel.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-[+cc Rafael, Huang, Martin]
+Hi Miquel,
 
-On Wed, Jun 20, 2018 at 04:13:49PM -0500, Bjorn Helgaas wrote:
-> [+to Rafal]
+On Mon, Jun 25, 2018 at 05:12:30PM +0200, Miquel Raynal wrote:
+> There are multiple system controllers in CP110. Because all syscon nodes
+> use the same compatible, it is pertinent to use this same file to list
+> IPs inside it. Thus, change the header to be more generic, and align
+> with AP806 file.
 > 
-> Sorry, I'm an idiot and forgot to include Rafal, the submitter, when I
-> forwarded this report to the mailing lists.
+> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+
+This patch and the file rename in patch #12 should be squashed together, I 
+think.
+
+baruch
+
+> ---
+>  .../bindings/arm/marvell/cp110-system-controller.txt       | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 > 
-> I suspect that the config accessors used by lspci should temporarily
-> wake up devices that are asleep, instead of reporting 0xff data (or if
-> that's not feasible, maybe we should add a comment in the kernel and a
-> note in the lspci man page).
+> diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+> index 29cdbae6c5ac..56e7fb1153e7 100644
+> --- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+> +++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+> @@ -1,15 +1,15 @@
+> -Marvell Armada CP110 System Controller 0
+> -========================================
+> +Marvell Armada CP110 System Controller
+> +======================================
+>  
+>  The CP110 is one of the two core HW blocks of the Marvell Armada 7K/8K
+> -SoCs. It contains two sets of system control registers, System
+> -Controller 0 and System Controller 1. This Device Tree binding allows
+> -to describe the first system controller, which provides registers to
+> -configure various aspects of the SoC.
+> +SoCs. It contains system controllers, which provide several registers
+> +giving access to numerous features: clocks, pin-muxing and many other
+> +SoC configuration items. This DT binding allows to describe these
+> +system controllers.
+>  
+>  For the top level node:
+>   - compatible: must be: "syscon", "simple-mfd";
+> - - reg: register area of the CP110 system controller 0
+> + - reg: register area of the CP110 system controller
+>  
+>  Clocks:
+>  -------
 
-The lspci output you attached
-(https://bugzilla.kernel.org/attachment.cgi?id=276771) shows this:
-
-  01:00.0 3D controller: NVIDIA Corporation GK107M [GeForce GT 745M] (rev ff) (prog-if ff)
-	!!! Unknown header type 7f
-
-I think that means the config reads are returning ~0 data (0xff),
-probably because the device is powered off and the config reads don't
-work.
-
-But I don't understand that because both proc_bus_pci_read() (for
-reads vis /proc) and pci_read_config() (for reads via /sys) call
-pci_config_pm_runtime_get(), and I thought that would wake up the
-device so we could read config space.
-
-Is it the intended behavior that lspci will show this sort of invalid
-data sometimes?  It's pretty confusing to users.  Or is there
-something wrong with the pci_config_pm_runtime_get() path in those
-config accessors?
-
-Bjorn
-
-> On Wed, May 30, 2018 at 07:41:35AM -0700, Bjorn Helgaas wrote:
-> > [+cc linux-pci, linux-kernel, linux-pm]
-> > 
-> > I'm not sure I understand the problem yet, so please correct me if I'm wrong:
-> > 
-> >   - Your system has both Nvidia and Intel graphics devices
-> > 
-> >   - When you use Intel graphics, lspci, lshw, and /proc/bus/pci for
-> > the Nvidia device show invalid data (0xff) after suspend/resume
-> > 
-> >   - When you use Nvidia graphics, suspend/resume doesn't work (instead
-> > of resuming, you just get a blank screen)
-> > 
-> > Can you attach the output of "sudo lspci -vv" to the bugzilla, please?
-> > 
-> > ---------- Forwarded message ---------
-> > From: <bugzilla-daemon@bugzilla.kernel.org>
-> > Date: Tue, May 29, 2018 at 1:29 PM
-> > Subject: [Bug 199879] New: Very basic the Pci device is not resumed
-> > from suspend mode
-> > To: <bhelgaas@google.com>
-> > 
-> > 
-> > https://bugzilla.kernel.org/show_bug.cgi?id=199879
-> > 
-> >             Bug ID: 199879
-> >            Summary: Very basic the Pci device is not resumed from suspend
-> >                     mode
-> >            Product: Drivers
-> >            Version: 2.5
-> >     Kernel Version: kernel-4.15.17
-> >           Hardware: x86-64
-> >                 OS: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: high
-> >           Priority: P1
-> >          Component: PCI
-> >           Assignee: drivers_pci@kernel-bugs.osdl.org
-> >           Reporter: uzg@wp.pl
-> >         Regression: No
-> > 
-> > Hi, I have problem with very basic device. Device pci-e not resume from
-> > suspend. Only sleep.
-> > 
-> > I have a problem with anyone interested in it, because everyone thinks it is
-> > the fault of the device drivers themselves. But this is not a problem.
-> > 
-> > This device is a basic device. I've already installed drivers on various
-> > hardware and it has always been ok, but not this time.
-> > 
-> > I'm an electronics technician. After diagnosing what I managed, in my opinion
-> > the device remains asleep.
-> > 
-> > Where does my application come from?
-> > I have multiuser mode and I do not use this device. After suspend lspci and
-> > lshw show normal data. Normal data is in /proc/bus/pci/...
-> > Next suspend and resume, and...
-> > lspci see hardware, but is error
-> > lshw see hardware as undefined device
-> > data in /proc/bus/pci/... is only 0xFF
-> > Hardware sleep, not work, not ready. This is bug.
-> > 
-> > But since the problem concerns the graphics card in the configuration with the
-> > second default Intel card, everyone thinks that this is another driver problem
-> > as always and nobody wants to take a look at it :(
-> > 
-> > The problem is easy to recognize. On the internet, I've seen a lot of
-> > unresolved problems in which I could see exactly what I found.
-> > 
-> > My hardware is Lenovo with NVidia and Intel Graphics. Problem is with NVidia. I
-> > tested Z710 and Z50-70. The first symptom of the problem is lspci in multiuser
-> > mode (or when is XServer with intel graphics). After suspend NVidia have e.g
-> > "rev. A1", after resume is "rev. FF". Next symptom lshw and /proc/bus/pci/...
-> > When system started with normal NVidia driver, system not resume and halt, only
-> > black screen.
-> > 
-> > There are many examples on the Internet with unsolved problems e.g
-> > https://www.lwks.com/index.php?option=com_kunena&func=view&catid=21&id=124374&Itemid=81
-> > 
-> > --
-> > You are receiving this mail because:
-> > You are watching the assignee of the bug.
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
