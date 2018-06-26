@@ -1,100 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
-Date: Tue, 26 Jun 2018 16:22:00 +0200
-Message-ID: <CAJZ5v0jc5oJzEX6QVDVjsQLmLxXHg3PSyepbh50dLXOtnHPgrA@mail.gmail.com>
-References: <35587465.8Nave9aG7d@aspire.rjw.lan> <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [patch net-next RFC 03/12] mlxsw: core: Add core environment
+ module for port temperature reading
+Date: Tue, 26 Jun 2018 16:22:38 +0200
+Message-ID: <20180626142238.GB5064@lunn.ch>
+References: <1530015037-67361-1-git-send-email-vadimp@mellanox.com>
+ <1530015037-67361-4-git-send-email-vadimp@mellanox.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1530015037-67361-4-git-send-email-vadimp@mellanox.com>
+Sender: netdev-owner@vger.kernel.org
+To: Vadim Pasternak <vadimp@mellanox.com>, linux-pm@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux@roeck-us.net, rui.zhang@intel.com, edubezval@gmail.com, jiri@resnulli.us
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 26, 2018 at 4:01 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Tue, Jun 26, 2018 at 12:06:01PM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
->> handling for devices with no callbacks) introduced a system suspend
->> regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
->> port) to stay in D3 over suspend-to-RAM, which is a side effect of
->> setting power.direct_complete for the children of that bridge that
->> have no PM callbacks.
->>
->> On the majority of systems PCI bridges are not allowed to be
->> runtime-suspended (the power/control sysfs attribute is set to "on"
->> for them by default), but user space can change that setting and if
->> it does so and a given bridge has no children with PM callbacks, the
->> direct_complete optimization will be applied to it and it will stay
->> in suspend over system suspend.  Apparently, that confuses the
->
-> "stay in D3 over system suspend"? (just to be explicit about what "in
-> suspend" means)
+On Tue, Jun 26, 2018 at 12:10:28PM +0000, Vadim Pasternak wrote:
 
-OK
+Adding the linux-pm@vger.kernel.org list.
 
->> platform firmware on the affected machine and that may very well
->> happen elsewhere, so avoid the direct_complete optimization for
->> PCI bridges with no drivers (if there is a driver, it should take
->> care of the PM handling) on suspend-to-RAM altogether (that should
->> not matter for suspend-to-idle as platform firmware is not involved
->> in it).
->>
->> Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
->> Reported-by: n0000b.n000b@gmail.com
->> Tested-by: n0000b.n000b@gmail.com
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  drivers/pci/pci-acpi.c |    8 ++++++++
->>  1 file changed, 8 insertions(+)
->>
->> Index: linux-pm/drivers/pci/pci-acpi.c
->> ===================================================================
->> --- linux-pm.orig/drivers/pci/pci-acpi.c
->> +++ linux-pm/drivers/pci/pci-acpi.c
->> @@ -638,6 +638,14 @@ static bool acpi_pci_need_resume(struct
->>       if (acpi_target_system_state() == ACPI_STATE_S0)
->>               return false;
->>
->> +     /*
->> +      * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
->> +      * confuses the platform firmware, so avoid doing that, unless the
->> +      * bridge has a driver that should take care of PM handling.
->> +      */
->> +     if (pci_is_bridge(dev) && !dev->driver)
->> +             return true;
->
-> It sounds like the question of whether leaving a bridge in D3 confuses
-> the firmware has a platform-specific answer.
+> Add new core_env module to allow port temperature reading. This
+> information has most critical impact on system's thermal monitoring and
+> is to be used by core_hwmon and core_thermal modules.
+> 
+> New internal API reads the temperature from all the modules, which are
+> equipped with the thermal sensor and exposes temperature according to
+> the worst measure. All individual temperature values are normalized to
+> pre-defined range.
 
-Well, it may confuse the platform firmware in general.
+This patchset has been sent to the netdev list before. I raised a few
+questions about this, which is why it is now being posted to a bigger
+group for review.
 
-> How does the driver PM handling know how to do the right thing?
+The hardware has up to 64 temperature sensors. These sensors are
+hot-plugable, since they are inside SFP modules, which are
+hot-plugable. Different SFP modules can have different operating
+temperature ranges. They contain an EEPROM which lists upper and lower
+warning and fail temperatures, and report alarms when these thresholds
+a reached.
 
-For endpoints this is not an issue as they always have been expected
-to be in D3 before passing control to the platform firmware on S3
-entry, but we've never done that for bridges by default, except for
-PCIe ports with PM enabled (in which case the driver decides whether
-or not to enable it).
+This code takes the 64 sensors readings and calculates a single value
+it passes to one thermal zone. That thermal zone then controls one fan
+to keep this single value in range.
 
-> Does it need to know whether
-> it's safe to put the device in D3?  Or maybe a device is never put in
-> D3 for system suspend if it has a driver?
+I queried is this is the correct way to do this? Would it not be
+better to have up to 64 thermal zones? Leave the thermal core to
+iterate over all the zones in order to determine how the fan should be
+driven?
 
-As per the above, endpoints should be OK (or they are quirky if not),
-but bridges are sort of a gray area.  PCIe ports for which we enable
-PM should be fine, for the rest it's better to be conservative and
-resume them IMO.
+This is possibly the first board with so many sensors. However, i
+doubt it is totally unique. Other big Ethernet switches with lots of
+SFP modules may be added later. Also, 10G copper PHYs often have
+temperature sensors, so this is not limited to just boards with
+optical ports. So having a generic solution would be good.
 
-> But I'm just kibbitzing; since you merged c62ec4610c40, I'm happy if
-> you also merge this:
->
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->
->>       return !!adev->power.flags.dsw_present;
->>  }
+What do the Linux PM exports say about this?
 
-Thanks!
+Thanks
+	Andrew
