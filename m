@@ -1,104 +1,82 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH 1/2] power: generic-adc-battery: fix out-of-bounds write when copying channel properties
-Date: Tue, 26 Jun 2018 15:28:29 +0200
-Message-ID: <06e010990476a1ab0d3f3d4006c7623a77aa4041.1530019688.git.hns@goldelico.com>
-References: <cover.1530019688.git.hns@goldelico.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 1/2] PM / wakeup: Add callback for wake-up change notification
+Date: Tue, 26 Jun 2018 15:55:58 +0200
+Message-ID: <CAJZ5v0gAnDKe=S916ZB4489H3Sx26gkBVPqpKD45jY2f4G4wng@mail.gmail.com>
+References: <20180619135518.8990-1-geert+renesas@glider.be>
+ <20180620132507.GE6242@sirena.org.uk> <CAMuHMdXYL+=mBOofUqQ06Ld4zUF7BWqt+S2dFTw6AEAPuDsZPQ@mail.gmail.com>
+ <1705903.rOAenNWc8f@aspire.rjw.lan> <CAMuHMdUYtao4fgQUwBArZG1y+yfbwHE0SHuM6v2NGnhY7GSjkA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1530019688.git.hns@goldelico.com>
-In-Reply-To: <cover.1530019688.git.hns@goldelico.com>
-References: <cover.1530019688.git.hns@goldelico.com>
+In-Reply-To: <CAMuHMdUYtao4fgQUwBArZG1y+yfbwHE0SHuM6v2NGnhY7GSjkA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, anish kumar <anish198519851985@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Anton Vorontsov <cbouatmailru@gmail.com>, Jonathan Cameron <jic23@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com, "H. Nikolaus Schaller" <hns@goldelico.com>, stable@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-We did have sporadic problems in the pinctrl framework during boot
-where a pin group name unexpectedly became NULL leading to a NULL
-dereference in strcmp.
+Hi Geert,
 
-Detailled analysis of the failing cases did reveal that there were
-two devm allocated objects close to each other. The second one was
-the affected group_desc in pinmux and the first one was the
-psy_desc->properties buffer of the gab driver.
+On Tue, Jun 26, 2018 at 12:29 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Rafael,
+>
+> On Tue, Jun 26, 2018 at 12:17 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Tuesday, June 26, 2018 12:06:16 PM CEST Geert Uytterhoeven wrote:
+>> > On Wed, Jun 20, 2018 at 3:25 PM Mark Brown <broonie@kernel.org> wrote:
+>> > > On Wed, Jun 20, 2018 at 02:15:38PM +0200, Rafael J. Wysocki wrote:
+>> > > > On Wed, Jun 20, 2018 at 12:35 PM, Mark Brown <broonie@kernel.org> wrote:
+>> > >
+>> > > > > The flip side of that is that either suspend and resume or poweroff are
+>> > > > > broken for userspace unless they know about this magic sysfs file which
+>> > > > > isn't great either.
+>> > >
+>> > > > But to me that isn't that much different from an RTC wake alarm, say.
+>> > >
+>> > > > Enabling it to wake up the system in general isn't sufficient, you
+>> > > > also need to actually set the alarm using a different interface.
+>> >
+>> > The RTC wake alarm time is indeed different, as it is not a simple boolean flag.
+>> > It is also more natural for the user, who expects to need to find some way to
+>> > configure the wake-up time.
+>>
+>> OK, take Ethernet.  You need to configure WoL on that to wake up the system
+>> in addition to setting power/wakeup for it.
+>>
+>> Take WiFi: You need to set up WoW on that.
+>>
+>> And so on.
+>
+> I always found it strange that you have both "ethtool wol" and and a
+> "wakeup" file
+> in sysfs (does "ethtool wol" predate the wakeup file in sysfs?)
 
-Review of the gab code showed that the address calculation for
-one memcpy() is wrong. It does
+Yes, it does.
 
-	properties + sizeof(type) * index
+> I believe originally WoL supported MagicPacket only (many systems still
+> support only that), so originally it was boolean.
 
-but C is defined to do the index multiplication already for
-pointer + integer additions. Hence the factor was applied twice
-and the memcpy() does write outside of the properties buffer.
-Sometimes it happened to be the pinctrl and triggered the strcmp(NULL).
+I don't recall the details here.  When looked at it first time
+multiple options had been there already.
 
-Anyways, it is overkill to use a memcpy() here instead of a simple
-assignment, which is easier to read and has less risk for wrong
-address calculations. So we change code to a simple assignment.
+>> > > It seems more like hardware breakage we're trying to fix than a feature
+>> > > - it's not like it's adding something we didn't have already (like
+>> > > setting a time in an alarm where the alarm is an additional thing), more
+>> > > just trying to execute on an existing user interface successfully.  I
+>> > > can see that there's a case that it doesn't map very well onto the
+>> > > standard interfaces so perhaps we have to add something on the side as
+>> > > the hardware is just too horrible to fit in with the standard interfaces
+>> > > and we have to do that.
+>> >
+>> > My main worry is usability: with a separate sysfs file, we need to document the
+>> > file, and the user needs to be aware of it.
+>>
+>> That's right, but it will be very hard to convince me that changing the
+>> meaning of the "wakeup" attribute just in order to work around this issue
+>> (which arguably is a consequence of "unfortunate" hardware design) is a
+>> good idea. :-)
+>
+> OK.
+>
+> Next question: where to document device-specific sysfs files for regulators?
 
-If we initialize the index to the first free location, we can even
-remove the local variable 'properties'.
-
-This bug seems to exist right from the beginning in 3.7-rc1 in
-
-commit e60fea794e6e ("power: battery: Generic battery driver using IIO")
-
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-Cc: stable@vger.kernel.org
----
- drivers/power/supply/generic-adc-battery.c | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/supply/generic-adc-battery.c
-index 28dc056eaafa..11f59275bff4 100644
---- a/drivers/power/supply/generic-adc-battery.c
-+++ b/drivers/power/supply/generic-adc-battery.c
-@@ -241,10 +241,9 @@ static int gab_probe(struct platform_device *pdev)
- 	struct power_supply_desc *psy_desc;
- 	struct power_supply_config psy_cfg = {};
- 	struct gab_platform_data *pdata = pdev->dev.platform_data;
--	enum power_supply_property *properties;
- 	int ret = 0;
- 	int chan;
--	int index = 0;
-+	int index = ARRAY_SIZE(gab_props);
- 
- 	adc_bat = devm_kzalloc(&pdev->dev, sizeof(*adc_bat), GFP_KERNEL);
- 	if (!adc_bat) {
-@@ -278,8 +277,6 @@ static int gab_probe(struct platform_device *pdev)
- 	}
- 
- 	memcpy(psy_desc->properties, gab_props, sizeof(gab_props));
--	properties = (enum power_supply_property *)
--			((char *)psy_desc->properties + sizeof(gab_props));
- 
- 	/*
- 	 * getting channel from iio and copying the battery properties
-@@ -293,15 +290,12 @@ static int gab_probe(struct platform_device *pdev)
- 			adc_bat->channel[chan] = NULL;
- 		} else {
- 			/* copying properties for supported channels only */
--			memcpy(properties + sizeof(*(psy_desc->properties)) * index,
--					&gab_dyn_props[chan],
--					sizeof(gab_dyn_props[chan]));
--			index++;
-+			psy_desc->properties[index++] = gab_dyn_props[chan];
- 		}
- 	}
- 
- 	/* none of the channels are supported so let's bail out */
--	if (index == 0) {
-+	if (index == ARRAY_SIZE(gab_props)) {
- 		ret = -ENODEV;
- 		goto second_mem_fail;
- 	}
-@@ -312,7 +306,7 @@ static int gab_probe(struct platform_device *pdev)
- 	 * as come channels may be not be supported by the device.So
- 	 * we need to take care of that.
- 	 */
--	psy_desc->num_properties = ARRAY_SIZE(gab_props) + index;
-+	psy_desc->num_properties = index;
- 
- 	adc_bat->psy = power_supply_register(&pdev->dev, psy_desc, &psy_cfg);
- 	if (IS_ERR(adc_bat->psy)) {
--- 
-2.12.2
+Under Documentation/ABI/ I suppose.
