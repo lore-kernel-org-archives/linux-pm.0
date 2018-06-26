@@ -1,63 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
-Date: Tue, 26 Jun 2018 12:06:01 +0200
-Message-ID: <35587465.8Nave9aG7d@aspire.rjw.lan>
+Subject: [PATCH] Documentation: admin-guide: intel_pstate: Fix sysfs path
+Date: Tue, 26 Jun 2018 12:09:51 +0200
+Message-ID: <2419155.1rRbCxiQ6f@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PCI <linux-pci@vger.kernel.org>
-Cc: n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Pawit Pornkitprasan <p.pawit@gmail.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
-handling for devices with no callbacks) introduced a system suspend
-regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
-port) to stay in D3 over suspend-to-RAM, which is a side effect of
-setting power.direct_complete for the children of that bridge that
-have no PM callbacks.
+Fix an incorrect sysfs path in the intel_pstate admin-guide
+documentation.
 
-On the majority of systems PCI bridges are not allowed to be
-runtime-suspended (the power/control sysfs attribute is set to "on"
-for them by default), but user space can change that setting and if
-it does so and a given bridge has no children with PM callbacks, the
-direct_complete optimization will be applied to it and it will stay
-in suspend over system suspend.  Apparently, that confuses the
-platform firmware on the affected machine and that may very well
-happen elsewhere, so avoid the direct_complete optimization for
-PCI bridges with no drivers (if there is a driver, it should take
-care of the PM handling) on suspend-to-RAM altogether (that should
-not matter for suspend-to-idle as platform firmware is not involved
-in it).
-
-Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
-Reported-by: n0000b.n000b@gmail.com
-Tested-by: n0000b.n000b@gmail.com
+Fixes: 33fc30b47098 (cpufreq: intel_pstate: Document the current behavior and user interface)
+Reported-by: Pawit Pornkitprasan <p.pawit@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/pci-acpi.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ Documentation/admin-guide/pm/intel_pstate.rst |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux-pm/drivers/pci/pci-acpi.c
+Index: linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
 ===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -638,6 +638,14 @@ static bool acpi_pci_need_resume(struct
- 	if (acpi_target_system_state() == ACPI_STATE_S0)
- 		return false;
+--- linux-pm.orig/Documentation/admin-guide/pm/intel_pstate.rst
++++ linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -324,8 +324,7 @@ Global Attributes
  
-+	/*
-+	 * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
-+	 * confuses the platform firmware, so avoid doing that, unless the
-+	 * bridge has a driver that should take care of PM handling.
-+	 */
-+	if (pci_is_bridge(dev) && !dev->driver)
-+		return true;
-+
- 	return !!adev->power.flags.dsw_present;
- }
+ ``intel_pstate`` exposes several global attributes (files) in ``sysfs`` to
+ control its functionality at the system level.  They are located in the
+-``/sys/devices/system/cpu/cpufreq/intel_pstate/`` directory and affect all
+-CPUs.
++``/sys/devices/system/cpu/intel_pstate/`` directory and affect all CPUs.
  
+ Some of them are not present if the ``intel_pstate=per_cpu_perf_limits``
+ argument is passed to the kernel in the command line.
