@@ -1,64 +1,41 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [patch net-next RFC 03/12] mlxsw: core: Add core environment
- module for port temperature reading
-Date: Tue, 26 Jun 2018 21:35:28 +0200
-Message-ID: <20180626193528.GB9800@lunn.ch>
-References: <1530015037-67361-1-git-send-email-vadimp@mellanox.com>
- <1530015037-67361-4-git-send-email-vadimp@mellanox.com>
- <20180626142238.GB5064@lunn.ch>
- <20180626170012.GA28370@roeck-us.net>
- <HE1PR0502MB375314997425DFF8DA5D3D1BA2490@HE1PR0502MB3753.eurprd05.prod.outlook.com>
- <20180626181821.GA9800@lunn.ch>
- <HE1PR0502MB37535AE1B1E7093E198F0A67A2490@HE1PR0502MB3753.eurprd05.prod.outlook.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] dt-bindings: Fix unbalanced quotation marks
+Date: Tue, 26 Jun 2018 14:19:44 -0600
+Message-ID: <20180626201944.GA24678@rob-hp-laptop>
+References: <20180617143127.11421-1-j.neuschaefer@gmx.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <HE1PR0502MB37535AE1B1E7093E198F0A67A2490@HE1PR0502MB3753.eurprd05.prod.outlook.com>
-Sender: netdev-owner@vger.kernel.org
-To: Vadim Pasternak <vadimp@mellanox.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "jiri@resnulli.us" <jiri@resnulli.us>
+In-Reply-To: <20180617143127.11421-1-j.neuschaefer@gmx.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>
+Cc: devicetree@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre Torgue <alexandre.torgue@st.com>, Hauke Mehrtens <hauke@hauke-m.de>, =?utf-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Madalin Bucur <madalin.bucur@nxp.com>, David S. Mill
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 26, 2018 at 07:01:32PM +0000, Vadim Pasternak wrote:
+On Sun, Jun 17, 2018 at 04:31:18PM +0200, Jonathan Neuschäfer wrote:
+> Multiple binding documents have various forms of unbalanced quotation
+> marks. Fix them.
 > 
+> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> ---
 > 
-> > -----Original Message-----
-> > From: Andrew Lunn [mailto:andrew@lunn.ch]
-> > Sent: Tuesday, June 26, 2018 9:18 PM
-> > To: Vadim Pasternak <vadimp@mellanox.com>
-> > Cc: Guenter Roeck <linux@roeck-us.net>; linux-pm@vger.kernel.org;
-> > netdev@vger.kernel.org; rui.zhang@intel.com; edubezval@gmail.com;
-> > jiri@resnulli.us
-> > Subject: Re: [patch net-next RFC 03/12] mlxsw: core: Add core environment
-> > module for port temperature reading
-> > 
-> > > However, I have some concerns on this matter.
-> > > Our hardware provides bulk reading of the modules temperature, means I
-> > > can get all inputs by one hardware request, which is important optimization.
-> > > Reading each module individually will be resulted in huge overhead and
-> > > will require maybe some cashing of temperature inputs.
-> > 
-> > Well, you can cache the SFP calibration values, and the 4 limit values. To get an
-> > actually temperature you need to read 2 bytes from the SFP module. I don't see
-> > why that would be expensive. You talk to the firmware over PCIe right? So you
-> > have lots of bandwidth.
-> 
-> Yes, but FW in its turn will run I2C transaction to read temperature sensor.
+> Should I split this patch so that different parts can go through different trees?
 
-So how does that add overhead? It needs to read the same two bytes
-independent of if it is getting readings from one sensor, or all
-sensors.
+No, I applied it. Thanks.
 
-> And we also run hwmon and thermal parts of our driver on BMC (Based
-> Management Controller) on system equipped with it.
-> In such case host CPU performs networking stuff, while BMC system related
-> stuff. And in such configuration BMC talks to FW over I2C.
-
-So you have a 20MHz I2C bus between your BMC and the firmware. Lets
-assume a relativity dumb protocol. 2 bytes for command to read an sfp
-sensor, 3 bytes for a replay. 5 bytes, at 20Mbps allows you to read
-500,000 sensors per second. And for environment monitoring, 64 sensors
-one per second should be sufficient.
-
-    Andrew
+> ---
+>  .../devicetree/bindings/arm/samsung/samsung-boards.txt          | 2 +-
+>  .../devicetree/bindings/gpio/nintendo,hollywood-gpio.txt        | 2 +-
+>  Documentation/devicetree/bindings/input/touchscreen/hideep.txt  | 2 +-
+>  .../bindings/interrupt-controller/nvidia,tegra20-ictlr.txt      | 2 +-
+>  .../devicetree/bindings/interrupt-controller/st,stm32-exti.txt  | 2 +-
+>  Documentation/devicetree/bindings/mips/brcm/soc.txt             | 2 +-
+>  Documentation/devicetree/bindings/net/fsl-fman.txt              | 2 +-
+>  Documentation/devicetree/bindings/power/power_domain.txt        | 2 +-
+>  Documentation/devicetree/bindings/regulator/tps65090.txt        | 2 +-
+>  Documentation/devicetree/bindings/reset/st,sti-softreset.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8016-sbc.txt    | 2 +-
+>  Documentation/devicetree/bindings/sound/qcom,apq8096.txt        | 2 +-
+>  12 files changed, 12 insertions(+), 12 deletions(-)
