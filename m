@@ -1,46 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] Documentation: intel_pstate: Describe hwp_dynamic_boost sysfs knob
-Date: Tue, 26 Jun 2018 17:20:43 +0200
-Message-ID: <306013127.TOMvMKusHN@aspire.rjw.lan>
+Subject: Re: [PATCH v2 10/21] cpufreq: intel_pstate: use match_string() helper
+Date: Tue, 26 Jun 2018 17:23:10 +0200
+Message-ID: <1633797.WhvbXNE1Nx@aspire.rjw.lan>
+References: <1527765086-19873-1-git-send-email-xieyisheng1@huawei.com> <1527765086-19873-11-git-send-email-xieyisheng1@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1527765086-19873-11-git-send-email-xieyisheng1@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux Documentation <linux-doc@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>
+To: Yisheng Xie <xieyisheng1@huawei.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, andy.shevchenko@gmail.com, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, May 31, 2018 1:11:15 PM CEST Yisheng Xie wrote:
+> match_string() returns the index of an array for a matching string,
+> which can be used instead of open coded variant.
+> 
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
+> ---
+> v2:
+>  - add Reviewed-by tag.
+> 
+>  drivers/cpufreq/intel_pstate.c | 15 ++++++---------
+>  1 file changed, 6 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 17e566af..d701e26 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -645,21 +645,18 @@ static ssize_t store_energy_performance_preference(
+>  {
+>  	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+>  	char str_preference[21];
+> -	int ret, i = 0;
+> +	int ret;
+>  
+>  	ret = sscanf(buf, "%20s", str_preference);
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	while (energy_perf_strings[i] != NULL) {
+> -		if (!strcmp(str_preference, energy_perf_strings[i])) {
+> -			intel_pstate_set_energy_pref_index(cpu_data, i);
+> -			return count;
+> -		}
+> -		++i;
+> -	}
+> +	ret = match_string(energy_perf_strings, -1, str_preference);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	return -EINVAL;
+> +	intel_pstate_set_energy_pref_index(cpu_data, ret);
+> +	return count;
+>  }
+>  
+>  static ssize_t show_energy_performance_preference(
+> 
 
-Document the recently introduced hwp_dynamic_boost sysfs knob
-allowing user space to tell intel_pstate to use iowait boosting
-in the active mode with HWP enabled (to improve performance).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/admin-guide/pm/intel_pstate.rst |   11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-Index: linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
-===================================================================
---- linux-pm.orig/Documentation/admin-guide/pm/intel_pstate.rst
-+++ linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -378,6 +378,17 @@ argument is passed to the kernel in the
- 	but it affects the maximum possible value of per-policy P-state	limits
- 	(see `Interpretation of Policy Attributes`_ below for details).
- 
-+``hwp_dynamic_boost``
-+	This attribute is only present if ``intel_pstate`` works in the
-+	`active mode with the HWP feature enabled <Active Mode With HWP_>`_ in
-+	the processor.  If set (equal to 1), it causes the minimum P-state limit
-+	to be increased dynamically for a short time whenever a task previously
-+	waiting on I/O is selected to run on a given logical CPU (the purpose
-+	of this mechanism is to improve performance).
-+
-+	This setting has no effect on logical CPUs whose minimum P-state limit
-+	is directly set to the highest non-turbo P-state or above it.
-+
- .. _status_attr:
- 
- ``status``
+Srinivas, any concerns?
