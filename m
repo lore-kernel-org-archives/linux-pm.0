@@ -1,74 +1,59 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/3][RFC] tools: create power/crypto utility
-Date: Tue, 26 Jun 2018 13:12:45 +0200
-Message-ID: <20180626111245.GA25323@amd>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
- <20180621090142.GB21807@amd>
- <CAJZ5v0hDhsxwU4X6_dCqc7P5GaTtpBeMUeJTHo9YJ8QtWinYfg@mail.gmail.com>
- <20180621190401.GA14623@amd>
- <CAJZ5v0jQQ7neWDc_cy5ZJPVJp155BLF7fQFmeNJ3Nn0Jho7AeA@mail.gmail.com>
- <20180625115405.GB17001@amd>
- <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
- <20180625221615.GA15249@amd>
- <1530009024.20417.5.camel@suse.com>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH 1/1] device core: Add flag to autoremove device link on
+ supplier unbind
+Date: Tue, 26 Jun 2018 17:18:19 +0530
+Message-ID: <CAFp+6iEapavf-Fta9Gs8Dg8g6CDtvymAWdjT=Jng7mnjiCNxpA@mail.gmail.com>
+References: <20180530095704.5788-1-vivek.gautam@codeaurora.org>
+ <541c84e9-47fc-e7bc-8249-1477b9e63455@codeaurora.org> <CAFp+6iGwcbOm0p33o9NEE7YBZNNvRsBeU0ySy0HcEmvq8mhBJA@mail.gmail.com>
+ <6354476.UjADPVylrh@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1530009024.20417.5.camel@suse.com>
+In-Reply-To: <6354476.UjADPVylrh@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Ted Ts'o <tytso@mit.edu>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Stephan Mueller <smueller@chronox.de>, Eric Biggers <ebiggers3@gmail.com>, Denis Kenzior <denkenz@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Greg KH <gregkh@linuxfoundation.org>, lukas@wunner.de, dmitry.torokhov@gmail.com, aspriel@gmail.com, Robin Murphy <robin.murphy@arm.com>, open list <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jun 26, 2018 at 3:49 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, June 26, 2018 12:03:44 PM CEST Vivek Gautam wrote:
+>> On Wed, May 30, 2018 at 6:21 PM, Vivek Gautam
+>> <vivek.gautam@codeaurora.org> wrote:
+>>
+>> Adding Ulf and Marek for their side of comments.
+>> In summary, we do not want to not maintain a device link pointer
+>> when adding a device link in supplier's driver, to delete the link later.
+>> An autoremove flag from the suppliers side (similar to what we already
+>> have for consumer side) can help autoremove the device link
+>> when supplier driver goes away.
+>>
+>> Hi Rafael, Lukas,
+>> Gentle ping. Can you please consider reviewing this patch.
+>
+> ISTR telling you that I didn't like the DL_FLAG_AUTOREMOVE_S name
+> as it is too similar to another existing flag.  That hasn't changed.
 
-On Tue 2018-06-26 12:30:24, Oliver Neukum wrote:
-> On Di, 2018-06-26 at 00:16 +0200, Pavel Machek wrote:
-> > Interested parties can easily fix up the userland parts of uswsusp,
-> >=20
-> > change crypto, add or remove dependencies, move it to other hosting,
-> >=20
-> > or drop it and start again. Kernel interface is flexible enough. If
-> >=20
-> > Chen wants to move the s2disk encryption into kernel, it is his task
-> >=20
-> > to explain why that is neccessary.
->=20
-> We would have to assume that the kernel is on a higher level of trust.
-> To a certain extent it is.You cannot drop support for /dev/kmem conceptio=
-nally
-> if there is an ioctl to snapshot it.
+Right. I thought to gather more comments about the patch overall
+before attempting to respin with the changed name.
+I will send the next version.
 
-If I understood the description, proposed patches give userspace encryption
-key + image encrypted with that key. So... that's not really an
-improvement.
+>
+> BTW, please CC the patch to linux-pm when you resend it.
 
-Anyway, I guess it makes sense to wait for v2 of patches with better
-description of security goals of this.
+Sure. I will do that. Thanks.
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Best regards
+Vivek
 
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+>
+> Thanks,
+> Rafael
+>
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iEYEARECAAYFAlsyH60ACgkQMOfwapXb+vKehgCffChO2ruu+N5DchYHAWeASRY2
-SdwAnRV3WMx9+4VZYNEGdcksH56NWYmO
-=7OFp
------END PGP SIGNATURE-----
 
---fdj2RfSjLxBAspz7--
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
