@@ -1,20 +1,21 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH V10] powercap/drivers/idle_inject: Add an idle injection
  framework
-Date: Tue, 26 Jun 2018 16:31:05 +0530
-Message-ID: <20180626110105.qqsrslavtfxuubcm@vireshk-i7>
+Date: Tue, 26 Jun 2018 13:02:10 +0200
+Message-ID: <7d9403db-e26e-619e-c0d4-e601b6d51a78@linaro.org>
 References: <1530010416-30692-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <1530010416-30692-1-git-send-email-daniel.lezcano@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26-06-18, 12:53, Daniel Lezcano wrote:
+On 26/06/2018 12:53, Daniel Lezcano wrote:
 > Initially, the cpu_cooling device for ARM was changed by adding a new
 > policy inserting idle cycles. The intel_powerclamp driver does a
 > similar action.
@@ -50,7 +51,18 @@ On 26-06-18, 12:53, Daniel Lezcano wrote:
 >    - Rename 'idle_injection_wakeup_fn()' to 'idle_inject_timer_fn()' (Rafael J. Wysocki)
 >    - Shorten label 'out_rollback_per_cpu' to 'out_rollback' (Rafael J. Wysocki)
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+According to these changes I updated :
+
+https://git.linaro.org/people/daniel.lezcano/linux.git
+thermal/idle-inject-v4
+
+  -- Daniel
+
 
 -- 
-viresh
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
