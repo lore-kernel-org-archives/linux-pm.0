@@ -1,68 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V10] powercap/drivers/idle_inject: Add an idle injection
- framework
-Date: Tue, 26 Jun 2018 13:02:10 +0200
-Message-ID: <7d9403db-e26e-619e-c0d4-e601b6d51a78@linaro.org>
-References: <1530010416-30692-1-git-send-email-daniel.lezcano@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/3][RFC] tools: create power/crypto utility
+Date: Tue, 26 Jun 2018 13:12:45 +0200
+Message-ID: <20180626111245.GA25323@amd>
+References: <cover.1529486870.git.yu.c.chen@intel.com>
+ <78af30838d0bac69bdd6e138b659bcbb8464fd13.1529486870.git.yu.c.chen@intel.com>
+ <20180621090142.GB21807@amd>
+ <CAJZ5v0hDhsxwU4X6_dCqc7P5GaTtpBeMUeJTHo9YJ8QtWinYfg@mail.gmail.com>
+ <20180621190401.GA14623@amd>
+ <CAJZ5v0jQQ7neWDc_cy5ZJPVJp155BLF7fQFmeNJ3Nn0Jho7AeA@mail.gmail.com>
+ <20180625115405.GB17001@amd>
+ <CAJZ5v0jBh_0Uz54-Y2-qwdJNeD+KMpGEsH7q0XOdbCq5VCP1Ng@mail.gmail.com>
+ <20180625221615.GA15249@amd>
+ <1530009024.20417.5.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1530010416-30692-1-git-send-email-daniel.lezcano@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1530009024.20417.5.camel@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rui Zhang <rui.zhang@intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Andrea Parri <andrea.parri@amarulasolutions.com>, "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Ted Ts'o <tytso@mit.edu>, Len Brown <len.brown@intel.com>, "Lee, Chun-Yi" <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Stephan Mueller <smueller@chronox.de>, Eric Biggers <ebiggers3@gmail.com>, Denis Kenzior <denkenz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 26/06/2018 12:53, Daniel Lezcano wrote:
-> Initially, the cpu_cooling device for ARM was changed by adding a new
-> policy inserting idle cycles. The intel_powerclamp driver does a
-> similar action.
-> 
-> Instead of implementing idle injections privately in the cpu_cooling
-> device, move the idle injection code in a dedicated framework and give
-> the opportunity to other frameworks to make use of it.
-> 
-> The framework relies on the smpboot kthreads which handles via its
-> main loop the common code for hotplugging and [un]parking.
-> 
-> This code was previously tested with the cpu cooling device and went
-> through several iterations. It results now in split code and API
-> exported in the header file. It was tested with the cpu cooling device
-> with success.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Javi Merino <javi.merino@kernel.org>
-> Cc: Leo Yan <leo.yan@linaro.org>
-> Cc: Kevin Wangtao <kevin.wangtao@linaro.org>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Cc: Rui Zhang <rui.zhang@intel.com>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Andrea Parri <andrea.parri@amarulasolutions.com>
-> ---
-> 
-> V10:
->    - Remove set_freezable (Rafael J. Wysocki)
->    - Reduce the prefixed names 'injection' by 'inject" (Rafael J. Wysocki)
->    - Rename 'idle_injection_wakeup_fn()' to 'idle_inject_timer_fn()' (Rafael J. Wysocki)
->    - Shorten label 'out_rollback_per_cpu' to 'out_rollback' (Rafael J. Wysocki)
 
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-According to these changes I updated :
+On Tue 2018-06-26 12:30:24, Oliver Neukum wrote:
+> On Di, 2018-06-26 at 00:16 +0200, Pavel Machek wrote:
+> > Interested parties can easily fix up the userland parts of uswsusp,
+> >=20
+> > change crypto, add or remove dependencies, move it to other hosting,
+> >=20
+> > or drop it and start again. Kernel interface is flexible enough. If
+> >=20
+> > Chen wants to move the s2disk encryption into kernel, it is his task
+> >=20
+> > to explain why that is neccessary.
+>=20
+> We would have to assume that the kernel is on a higher level of trust.
+> To a certain extent it is.You cannot drop support for /dev/kmem conceptio=
+nally
+> if there is an ioctl to snapshot it.
 
-https://git.linaro.org/people/daniel.lezcano/linux.git
-thermal/idle-inject-v4
+If I understood the description, proposed patches give userspace encryption
+key + image encrypted with that key. So... that's not really an
+improvement.
 
-  -- Daniel
+Anyway, I guess it makes sense to wait for v2 of patches with better
+description of security goals of this.
 
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlsyH60ACgkQMOfwapXb+vKehgCffChO2ruu+N5DchYHAWeASRY2
+SdwAnRV3WMx9+4VZYNEGdcksH56NWYmO
+=7OFp
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
