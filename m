@@ -1,66 +1,41 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
-Date: Wed, 27 Jun 2018 09:16:27 +0200
-Message-ID: <CAJZ5v0huyohQP1FF+9kbwCKFrJ5zJE_rCddqg7+V1msdpLZZOQ@mail.gmail.com>
-References: <35587465.8Nave9aG7d@aspire.rjw.lan> <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
- <CAJZ5v0jc5oJzEX6QVDVjsQLmLxXHg3PSyepbh50dLXOtnHPgrA@mail.gmail.com>
- <20180626171406.GC146680@bhelgaas-glaptop.roam.corp.google.com>
- <CAJZ5v0gt+4FiiBxEjdsEYLT+dQq=Q=mC7JtZPsYxps0_a1w-rg@mail.gmail.com> <20180626203214.GA181504@bhelgaas-glaptop.roam.corp.google.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v2 9/9] PM / Domains: Add dev_pm_domain_attach_by_id() to
+ manage multi PM domains
+Date: Wed, 27 Jun 2018 14:25:07 +0530
+Message-ID: <ebec2f66-d28d-7b94-3cef-be980617cd6f@codeaurora.org>
+References: <20180529100421.31022-1-ulf.hansson@linaro.org>
+ <20180529100421.31022-10-ulf.hansson@linaro.org>
+ <cc6f36ce-32b7-4b69-f9a9-98cf0b12a9d1@nvidia.com>
+ <CAPDyKFoiEctBuyw1nVS6ruQ92-jOsMMSAUsWKew42dkmk64_8A@mail.gmail.com>
+ <f214cf2b-49ee-2f7c-babd-1cee7dcae927@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180626203214.GA181504@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <f214cf2b-49ee-2f7c-babd-1cee7dcae927@nvidia.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+To: Jon Hunter <jonathanh@nvidia.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Todor Tomov <todor.tomov@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-tegra@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 26, 2018 at 10:32 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Tue, Jun 26, 2018 at 07:19:29PM +0200, Rafael J. Wysocki wrote:
->> On Tue, Jun 26, 2018 at 7:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
->> > On Tue, Jun 26, 2018 at 04:22:00PM +0200, Rafael J. Wysocki wrote:
->> >> On Tue, Jun 26, 2018 at 4:01 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
->> >> > On Tue, Jun 26, 2018 at 12:06:01PM +0200, Rafael J. Wysocki wrote:
->> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> >> >> +     /*
->> >> >> +      * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
->> >> >> +      * confuses the platform firmware, so avoid doing that, unless the
->> >> >> +      * bridge has a driver that should take care of PM handling.
->> >> >> +      */
->> >> >> +     if (pci_is_bridge(dev) && !dev->driver)
->> >> >> +             return true;
->> >> >
->> >> > It sounds like the question of whether leaving a bridge in D3 confuses
->> >> > the firmware has a platform-specific answer.
->> >>
->> >> Well, it may confuse the platform firmware in general.
->> >>
->> >> > How does the driver PM handling know how to do the right thing?
->> >>
->> >> For endpoints this is not an issue as they always have been expected
->> >> to be in D3 before passing control to the platform firmware on S3
->> >> entry, but we've never done that for bridges by default, except for
->> >> PCIe ports with PM enabled (in which case the driver decides whether
->> >> or not to enable it).
->> >
->> > If there's any spec reference for the expected power states of devices
->> > when entering S3, that would be useful here.  I can't tell if there's
->> > any guidance for this or if it's just figured out experimentally.
->>
->> It is not direct, but Section 16.1.6 of ACPI 6.2 says this in step 4
->> of the system suspend outline:
->>
->> OSPM places all device drivers into their respective Dx state. If the
->> device is enabled for wake,
->> it enters the Dx state associated with the wake capability. If the
->> device is not enabled to wake
->> the system, it enters the D3 state.
->
-> Thanks, that's a very useful citation!
 
-You're welcome! :-)
 
-I actually need to withdraw the $subject patch as it doesn't help (I
-misread the reporters response) and the one that does work is a bit
-too intrusive IMO, so I'll investigate this a bit more.
+On 05/30/2018 08:00 PM, Jon Hunter wrote:
+>>> My only other comments on this series are ...
+>>>
+>>> 1. I think it would be nice to have an dev_pm_domain_attach_by_name() and
+>>>    that the DT binding has a 'power-domain-names' property.
+>> I think it makes sense, but my plan was to do that as second step on
+>> top. Are you okay with that as well?
+> Yes that is fine with me.
+
+Ulf, do you have a patch for this? I am working on moving some of qcom
+remoteproc drivers to use this series and it will help to have a
+dev_pm_domain_attach_by_name() api.
+
+Thanks,
+Rajendra
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
