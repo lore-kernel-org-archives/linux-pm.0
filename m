@@ -1,43 +1,90 @@
-From: Thierry Escande <thierry.escande@linaro.org>
-Subject: Re: [PATCH v10 00/14] Krait clocks + Krait CPUfreq
-Date: Wed, 27 Jun 2018 11:31:46 +0200
-Message-ID: <a58c2d2c-64d1-7223-dc98-8f749397375d@linaro.org>
-References: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: [PATCH 2/2] device core: Add flag to autoremove device link on supplier unbind
+Date: Wed, 27 Jun 2018 18:20:56 +0530
+Message-ID: <20180627125056.12851-2-vivek.gautam@codeaurora.org>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
-Content-Language: en-US
+In-Reply-To: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, ctatlor97@gmail.com
+To: rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+Cc: Vivek Gautam <vivek.gautam@codeaurora.org>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sricharan,
+Add a flag to autoremove the device links on supplier driver
+unbind. This obviates the need to explicitly delete the link
+in the remove path.
+We remove these links only when the supplier's link to its
+consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
 
-On 19/06/2018 15:45, Sricharan R wrote:
-> Sricharan R (2):
->    clk: qcom: Add safe switch hook for krait mux clocks
->    dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
-> 
-> Stephen Boyd (12):
->    ARM: Add Krait L2 register accessor functions
->    clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
->    clk: qcom: Add HFPLL driver
->    dt-bindings: clock: Document qcom,hfpll
->    clk: qcom: Add MSM8960/APQ8064's HFPLLs
->    clk: qcom: Add IPQ806X's HFPLLs
->    clk: qcom: Add support for Krait clocks
->    clk: qcom: Add KPSS ACC/GCC driver
->    dt-bindings: arm: Document qcom,kpss-gcc
->    clk: qcom: Add Krait clock controller driver
->    dt-bindings: clock: Document qcom,krait-cc
->    cpufreq: Add module to register cpufreq on Krait CPUs
+Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+Suggested-by: Lukas Wunner <lukas@wunner.de>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org
+---
+ Documentation/driver-api/device_link.rst |  4 ++++
+ drivers/base/core.c                      | 10 ++++++++++
+ include/linux/device.h                   |  2 ++
+ 3 files changed, 16 insertions(+)
 
-Tested on apq8064 (db600c).
-
-Tested-By: Thierry Escande <thierry.escande@linaro.org>
-
-Best regards,
-Thierry
+diff --git a/Documentation/driver-api/device_link.rst b/Documentation/driver-api/device_link.rst
+index a005b904a264..d6763272e747 100644
+--- a/Documentation/driver-api/device_link.rst
++++ b/Documentation/driver-api/device_link.rst
+@@ -86,6 +86,10 @@ automatically purged when the consumer fails to probe or later unbinds.
+ This obviates the need to explicitly delete the link in the ``->remove``
+ callback or in the error path of the ``->probe`` callback.
+ 
++Similarly, when the device link is added from supplier's ``->probe`` callback,
++``DL_FLAG_AUTOREMOVE_SUPPLIER`` causes the device link to be automatically
++purged when the supplier fails to probe or later unbinds.
++
+ Limitations
+ ===========
+ 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 14c1e3151e08..e721218bf352 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -518,6 +518,16 @@ void device_links_driver_cleanup(struct device *dev)
+ 
+ 		WARN_ON(link->flags & DL_FLAG_AUTOREMOVE_CONSUMER);
+ 		WARN_ON(link->status != DL_STATE_SUPPLIER_UNBIND);
++
++		/*
++		 * autoremove the links between this @dev and its consumer
++		 * devices that are not active, i.e. where the link state
++		 * has moved to DL_STATE_SUPPLIER_UNBIND.
++		 */
++		if (link->status == DL_STATE_SUPPLIER_UNBIND &&
++		    link->flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
++			kref_put(&link->kref, __device_link_del);
++
+ 		WRITE_ONCE(link->status, DL_STATE_DORMANT);
+ 	}
+ 
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 3929805cdd59..e80920452b49 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -787,11 +787,13 @@ enum device_link_state {
+  * AUTOREMOVE_CONSUMER: Remove the link automatically on consumer driver unbind.
+  * PM_RUNTIME: If set, the runtime PM framework will use this link.
+  * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
++ * AUTOREMOVE_SUPPLIER: Remove the link automatically on supplier driver unbind.
+  */
+ #define DL_FLAG_STATELESS		BIT(0)
+ #define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
+ #define DL_FLAG_PM_RUNTIME		BIT(2)
+ #define DL_FLAG_RPM_ACTIVE		BIT(3)
++#define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
+ 
+ /**
+  * struct device_link - Device link representation.
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
