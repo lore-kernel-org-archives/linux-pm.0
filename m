@@ -1,51 +1,66 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 1/8] interconnect: Add generic on-chip interconnect API
-Date: Wed, 27 Jun 2018 08:19:20 +0200
-Message-ID: <CAKfTPtBApjf9rhJm3paeXdgbVG50ALeun=zMUddc-f+RnrvkqQ@mail.gmail.com>
-References: <20180620121141.15403-1-georgi.djakov@linaro.org> <20180620121141.15403-2-georgi.djakov@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
+Date: Wed, 27 Jun 2018 09:16:27 +0200
+Message-ID: <CAJZ5v0huyohQP1FF+9kbwCKFrJ5zJE_rCddqg7+V1msdpLZZOQ@mail.gmail.com>
+References: <35587465.8Nave9aG7d@aspire.rjw.lan> <20180626140115.GA146680@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0jc5oJzEX6QVDVjsQLmLxXHg3PSyepbh50dLXOtnHPgrA@mail.gmail.com>
+ <20180626171406.GC146680@bhelgaas-glaptop.roam.corp.google.com>
+ <CAJZ5v0gt+4FiiBxEjdsEYLT+dQq=Q=mC7JtZPsYxps0_a1w-rg@mail.gmail.com> <20180626203214.GA181504@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180620121141.15403-2-georgi.djakov@linaro.org>
+In-Reply-To: <20180626203214.GA181504@bhelgaas-glaptop.roam.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, mturquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "Sweeney, Sean" <seansw@qti.qualcomm.com>, daidavid1@codeaurora.org, Evan Green <evgreen@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, abailon@baylibre.com, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, n0000b.n000b@gmail.com, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Georgi
+On Tue, Jun 26, 2018 at 10:32 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Tue, Jun 26, 2018 at 07:19:29PM +0200, Rafael J. Wysocki wrote:
+>> On Tue, Jun 26, 2018 at 7:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> > On Tue, Jun 26, 2018 at 04:22:00PM +0200, Rafael J. Wysocki wrote:
+>> >> On Tue, Jun 26, 2018 at 4:01 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> >> > On Tue, Jun 26, 2018 at 12:06:01PM +0200, Rafael J. Wysocki wrote:
+>> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> >> >> +     /*
+>> >> >> +      * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
+>> >> >> +      * confuses the platform firmware, so avoid doing that, unless the
+>> >> >> +      * bridge has a driver that should take care of PM handling.
+>> >> >> +      */
+>> >> >> +     if (pci_is_bridge(dev) && !dev->driver)
+>> >> >> +             return true;
+>> >> >
+>> >> > It sounds like the question of whether leaving a bridge in D3 confuses
+>> >> > the firmware has a platform-specific answer.
+>> >>
+>> >> Well, it may confuse the platform firmware in general.
+>> >>
+>> >> > How does the driver PM handling know how to do the right thing?
+>> >>
+>> >> For endpoints this is not an issue as they always have been expected
+>> >> to be in D3 before passing control to the platform firmware on S3
+>> >> entry, but we've never done that for bridges by default, except for
+>> >> PCIe ports with PM enabled (in which case the driver decides whether
+>> >> or not to enable it).
+>> >
+>> > If there's any spec reference for the expected power states of devices
+>> > when entering S3, that would be useful here.  I can't tell if there's
+>> > any guidance for this or if it's just figured out experimentally.
+>>
+>> It is not direct, but Section 16.1.6 of ACPI 6.2 says this in step 4
+>> of the system suspend outline:
+>>
+>> OSPM places all device drivers into their respective Dx state. If the
+>> device is enabled for wake,
+>> it enters the Dx state associated with the wake capability. If the
+>> device is not enabled to wake
+>> the system, it enters the D3 state.
+>
+> Thanks, that's a very useful citation!
 
-On Wed, 20 Jun 2018 at 14:11, Georgi Djakov <georgi.djakov@linaro.org> wrote:
+You're welcome! :-)
 
-[snip]
-
-> +
-> +static struct icc_path *path_allocate(struct icc_node *dst, ssize_t num_nodes)
-> +{
-> +       struct icc_node *node = dst;
-> +       struct icc_path *path;
-> +       size_t i;
-> +
-> +       path = kzalloc(sizeof(*path) + num_nodes * sizeof(*path->reqs),
-
-Should be (num_nodes -1) * sizeof(*path->reqs) as there is already 1
-icc_req in icc_path struct
-
-> +                      GFP_KERNEL);
-> +       if (!path)
-> +               return ERR_PTR(-ENOMEM);
-> +
-> +       path->num_nodes = num_nodes;
-> +
-> +       for (i = 0; i < num_nodes; i++) {
-> +               hlist_add_head(&path->reqs[i].req_node, &node->req_list);
-> +
-> +               path->reqs[i].node = node;
-> +               /* reference to previous node was saved during path traversal */
-> +               node = node->reverse;
-> +       }
-> +
-> +       return path;
-> +}
-> +
-
-[snip]
+I actually need to withdraw the $subject patch as it doesn't help (I
+misread the reporters response) and the one that does work is a bit
+too intrusive IMO, so I'll investigate this a bit more.
