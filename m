@@ -1,48 +1,53 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 00/11] Add throttler driver for non-thermal throttling
-Date: Thu, 28 Jun 2018 20:52:16 +0200
-Message-ID: <20180628185216.GA5316@amd>
-References: <20180607181214.30338-1-mka@chromium.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="ZGiS0Q5IWpPtfppv"
+From: Rob Herring <robh@kernel.org>
+Subject: [PATCH v3 6/6] PM / Domains: Stop deferring probe at the end of initcall
+Date: Thu, 28 Jun 2018 14:43:44 -0600
+Message-ID: <20180628204344.13973-7-robh@kernel.org>
+References: <20180628204344.13973-1-robh@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180607181214.30338-1-mka@chromium.org>
+In-Reply-To: <20180628204344.13973-1-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Alexander Graf <agraf@suse.de>, Bjorn Andersson <bjorn.andersson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>, Mark Brown <broonie@kernel.org>, Frank Rowand <frowand.list@gmail.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, boot-architecture@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+All PM domain drivers must be built-in (at least those using DT), so
+there is no point deferring probe after initcalls are done. Continuing
+to defer probe may prevent booting successfully even if managing PM
+domains is not required. This can happen if the user failed to enable
+the driver or if power-domains are added to a platform's DT, but there
+is not yet a driver (e.g. a new DTB with an old kernel).
 
---ZGiS0Q5IWpPtfppv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Call the driver core function driver_deferred_probe_check_init_done()
+instead of just returning -EPROBE_DEFER to stop deferring probe when
+initcalls are done.
 
-On Thu 2018-06-07 11:12:03, Matthias Kaehlcke wrote:
-> This series adds the throttler driver, for non-thermal throttling of
-> CPUs and devfreq devices. A use case for non-thermal throttling could
-> be the detection of a high battery discharge voltage, close to the
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+v3:
+  - Update to new function name
 
-voltage -> current.
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 4925af5c4cf0..8c12213875c6 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+ 		mutex_unlock(&gpd_list_lock);
+ 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+ 			__func__, PTR_ERR(pd));
+-		return -EPROBE_DEFER;
++		return driver_deferred_probe_check_state(dev);
+ 	}
 
---ZGiS0Q5IWpPtfppv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAls1LmAACgkQMOfwapXb+vIyfACgsyILgIb3RCimjdyeOSMPEUfR
-fHIAn2/X/IZxbUejdst4yYgL0rFAX+yF
-=o9eh
------END PGP SIGNATURE-----
-
---ZGiS0Q5IWpPtfppv--
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+--
+2.17.1
