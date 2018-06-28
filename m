@@ -1,54 +1,51 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v10 00/14] Krait clocks + Krait CPUfreq
-Date: Thu, 28 Jun 2018 09:59:13 +0530
-Message-ID: <410263b4-9434-ed49-626d-2a14efe350f0@codeaurora.org>
-References: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
- <a58c2d2c-64d1-7223-dc98-8f749397375d@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Daniel Mack <daniel@zonque.org>
+Subject: [PATCH v2 0/4] Add devicetree functionality to w1 busses
+Date: Thu, 28 Jun 2018 09:55:36 +0200
+Message-ID: <20180628075540.1757-1-daniel@zonque.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a58c2d2c-64d1-7223-dc98-8f749397375d@linaro.org>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Escande <thierry.escande@linaro.org>
-Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, ctatlor97@gmail.com
+To: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu
+Cc: sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thierry,
+This patch set contains four small patches that bring devicetree
+functionality to w1 bus masters and slaves in general. As an example,
+the DS2760 driver is made aware of devicetree nodes as an example.
+Other drivers can easily be ported later.
 
-On 6/27/2018 3:01 PM, Thierry Escande wrote:
-> Hi Sricharan,
-> 
-> On 19/06/2018 15:45, Sricharan R wrote:
->> Sricharan R (2):
->>    clk: qcom: Add safe switch hook for krait mux clocks
->>    dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
->>
->> Stephen Boyd (12):
->>    ARM: Add Krait L2 register accessor functions
->>    clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
->>    clk: qcom: Add HFPLL driver
->>    dt-bindings: clock: Document qcom,hfpll
->>    clk: qcom: Add MSM8960/APQ8064's HFPLLs
->>    clk: qcom: Add IPQ806X's HFPLLs
->>    clk: qcom: Add support for Krait clocks
->>    clk: qcom: Add KPSS ACC/GCC driver
->>    dt-bindings: arm: Document qcom,kpss-gcc
->>    clk: qcom: Add Krait clock controller driver
->>    dt-bindings: clock: Document qcom,krait-cc
->>    cpufreq: Add module to register cpufreq on Krait CPUs
-> 
-> Tested on apq8064 (db600c).
-> 
-> Tested-By: Thierry Escande <thierry.escande@linaro.org>
-> 
+W1 masters scan their bus in order to discover slave devices. Once
+one is found, a driver matching the family of the device is instanciated
+which handles it.
 
-  Thanks for testing this !!
-  I Will try to merge the kryo cpu-freq and this one if that looks neat.
+All that's needed for now is a call to of_find_matching_node() when
+a slave device is attached, so the corresponding of_node pointer is
+set. For devices such as the DS2760, another driver is probed which
+can access the w1 slave through dev->parent.
 
-Regards,
- Sricharan
+Patch #1 adds some DT bindings documentation
+Patch #2 adds the call to of_find_matching_node()
+Patch #3 implements the match table for the DS2760 w1 slave
+Patch #4 makes the DS2760 supply driver aware of DT environments
+
+This works fine on a PXA3xx based board with a battery attached to
+the w1-gpio bus master controller.
+
+Daniel Mack (4):
+  dt-bindings: w1: document sub-node bindings for DS2760
+  w1: core: match sub-nodes of bus masters in devicetree
+  w1: ds2760: add devicetree matching glue
+  power: ds2760_battery: add device tree glue
+
+ .../devicetree/bindings/w1/maxim,ds2760.txt    | 15 +++++++++++++++
+ .../devicetree/bindings/w1/w1-gpio.txt         |  6 ++++++
+ Documentation/devicetree/bindings/w1/w1.txt    | 18 ++++++++++++++++++
+ drivers/power/supply/ds2760_battery.c          |  6 +++++-
+ drivers/w1/slaves/w1_ds2760.c                  |  9 +++++++++
+ drivers/w1/w1.c                                |  3 +++
+ include/linux/w1.h                             |  2 ++
+ 7 files changed, 58 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/w1/maxim,ds2760.txt
+ create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
 
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+2.17.1
