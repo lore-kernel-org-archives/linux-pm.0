@@ -1,7 +1,7 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: [RFC PATCH v4 12/12] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Thu, 28 Jun 2018 12:40:43 +0100
-Message-ID: <20180628114043.24724-13-quentin.perret@arm.com>
+Subject: [RFC PATCH v4 11/12] OPTIONAL: arch_topology: Start Energy Aware Scheduling
+Date: Thu, 28 Jun 2018 12:40:42 +0100
+Message-ID: <20180628114043.24724-12-quentin.perret@arm.com>
 References: <20180628114043.24724-1-quentin.perret@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180628114043.24724-1-quentin.perret@arm.com>
@@ -10,112 +10,68 @@ To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux
 Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-*******************************************************************
-* This patch illustrates the usage of the newly introduced Energy *
-* Model framework and isn't supposed to be merged as-is.          *
-*******************************************************************
+Energy Aware Scheduling (EAS) starts when the scheduling domains are
+built if the Energy Model (EM) is present. However, in the typical case
+of Arm/Arm64 systems, the EM is provided after the scheduling domains
+are first built at boot time, which results in EAS staying disabled.
 
-The Energy Model framework provides an API to register the active power
-of CPUs. Call this API from the cpufreq-dt driver with an estimation
-of the power as P = C * V^2 * f with C, V, and f respectively the
-capacitance of the CPU and the voltage and frequency of the OPP.
+Fix this issue by re-building the scheduling domain from the arch
+topology driver, once CPUfreq is up and running and when the CPU
+capacities have been updated to their final value.
 
-The CPU capacitance is read from the "dynamic-power-coefficient" DT
-binding (originally introduced for thermal/IPA), and the voltage and
-frequency values from PM_OPP.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
- drivers/cpufreq/cpufreq-dt.c | 45 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+ drivers/base/arch_topology.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 190ea0dccb79..5a0747f73121 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -16,6 +16,7 @@
- #include <linux/cpu_cooling.h>
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index e7cb0c6ade81..2022174f5ac5 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -10,7 +10,9 @@
+ #include <linux/arch_topology.h>
+ #include <linux/cpu.h>
  #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
++#include <linux/cpuset.h>
+ #include <linux/device.h>
 +#include <linux/energy_model.h>
- #include <linux/err.h>
- #include <linux/module.h>
  #include <linux/of.h>
-@@ -149,8 +150,47 @@ static int resources_available(void)
+ #include <linux/slab.h>
+ #include <linux/string.h>
+@@ -173,6 +175,9 @@ static cpumask_var_t cpus_to_visit;
+ static void parsing_done_workfn(struct work_struct *work);
+ static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
+ 
++static void start_eas_workfn(struct work_struct *work);
++static DECLARE_WORK(start_eas_work, start_eas_workfn);
++
+ static int
+ init_cpu_capacity_callback(struct notifier_block *nb,
+ 			   unsigned long val,
+@@ -204,6 +209,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+ 		free_raw_capacity();
+ 		pr_debug("cpu_capacity: parsing done\n");
+ 		schedule_work(&parsing_done_work);
++		schedule_work(&start_eas_work);
+ 	}
+ 
  	return 0;
+@@ -249,6 +255,15 @@ static void parsing_done_workfn(struct work_struct *work)
+ 	free_cpumask_var(cpus_to_visit);
  }
  
-+static int of_est_power(unsigned long *mW, unsigned long *KHz, int cpu)
++static void start_eas_workfn(struct work_struct *work)
 +{
-+	unsigned long mV, Hz, MHz;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	struct device_node *np;
-+	u32 cap;
-+	u64 tmp;
++	/* Make sure the EM knows about the updated CPU capacities. */
++	em_rescale_cpu_capacity();
 +
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -EINVAL;
-+
-+	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-+		return -EINVAL;
-+
-+	Hz = *KHz * 1000;
-+	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-+	if (IS_ERR(opp))
-+		return -EINVAL;
-+
-+	mV = dev_pm_opp_get_voltage(opp) / 1000;
-+	dev_pm_opp_put(opp);
-+
-+	MHz = Hz / 1000000;
-+	tmp = (u64)cap * mV * mV * MHz;
-+	do_div(tmp, 1000000000);
-+
-+	*mW = (unsigned long)tmp;
-+	*KHz = Hz / 1000;
-+
-+	return 0;
++	/* Inform the scheduler about the EM availability. */
++	rebuild_sched_domains();
 +}
 +
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
-+	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
- 	struct cpufreq_frequency_table *freq_table;
- 	struct opp_table *opp_table = NULL;
- 	struct private_data *priv;
-@@ -159,7 +199,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	unsigned int transition_latency;
- 	bool fallback = false;
- 	const char *name;
--	int ret;
-+	int ret, nr_opp;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -226,6 +266,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		ret = -EPROBE_DEFER;
- 		goto out_free_opp;
- 	}
-+	nr_opp = ret;
- 
- 	if (fallback) {
- 		cpumask_setall(policy->cpus);
-@@ -278,6 +319,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	em_register_freq_domain(policy->cpus, nr_opp, &em_cb);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
+ #else
+ core_initcall(free_raw_capacity);
+ #endif
 -- 
 2.17.1
