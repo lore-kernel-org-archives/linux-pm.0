@@ -1,38 +1,54 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: imx6q: check speed grades for i.MX6ULL
-Date: Thu, 28 Jun 2018 08:48:38 +0800
-Message-ID: <20180628004837.GB22683@dragon>
-References: <20180522062853.24799-1-sebastien.szymanski@armadeus.com>
- <20180611053826.GC16091@dragon>
- <2d63a25f-7265-7aa7-a7dc-fd2379240804@armadeus.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v10 00/14] Krait clocks + Krait CPUfreq
+Date: Thu, 28 Jun 2018 09:59:13 +0530
+Message-ID: <410263b4-9434-ed49-626d-2a14efe350f0@codeaurora.org>
+References: <1529415925-28915-1-git-send-email-sricharan@codeaurora.org>
+ <a58c2d2c-64d1-7223-dc98-8f749397375d@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2d63a25f-7265-7aa7-a7dc-fd2379240804@armadeus.com>
+In-Reply-To: <a58c2d2c-64d1-7223-dc98-8f749397375d@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?iso-8859-1?Q?S=E9bastien?= Szymanski <sebastien.szymanski@armadeus.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Stefan Agner <stefan@agner.ch>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
+To: Thierry Escande <thierry.escande@linaro.org>
+Cc: robh@kernel.org, viresh.kumar@linaro.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, ctatlor97@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 25, 2018 at 10:01:44AM +0200, S�bastien Szymanski wrote:
-> Hi,
-> 
-> On 06/11/2018 07:38 AM, Shawn Guo wrote:
-> > On Tue, May 22, 2018 at 08:28:51AM +0200, S�bastien Szymanski wrote:
-> >> Check the max speed supported from the fuses for i.MX6ULL and update the
-> >> operating points table accordingly.
-> >>
-> >> Signed-off-by: S�bastien Szymanski <sebastien.szymanski@armadeus.com>
-> > 
-> > Acked-by: Shawn Guo <shawnguo@kernel.org>
-> > 
-> 
-> Thanks, but what about the two others patches ? Now that patch 1 is in
-> 4.18-rc1, should I resend the two others patches ? Should I merge them
-> together ?
+Hi Thierry,
 
-Yes, please.  That's what Viresh and Stefan were asking in the review.
+On 6/27/2018 3:01 PM, Thierry Escande wrote:
+> Hi Sricharan,
+> 
+> On 19/06/2018 15:45, Sricharan R wrote:
+>> Sricharan R (2):
+>>    clk: qcom: Add safe switch hook for krait mux clocks
+>>    dt-bindings: cpufreq: Document operating-points-v2-krait-cpu
+>>
+>> Stephen Boyd (12):
+>>    ARM: Add Krait L2 register accessor functions
+>>    clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+>>    clk: qcom: Add HFPLL driver
+>>    dt-bindings: clock: Document qcom,hfpll
+>>    clk: qcom: Add MSM8960/APQ8064's HFPLLs
+>>    clk: qcom: Add IPQ806X's HFPLLs
+>>    clk: qcom: Add support for Krait clocks
+>>    clk: qcom: Add KPSS ACC/GCC driver
+>>    dt-bindings: arm: Document qcom,kpss-gcc
+>>    clk: qcom: Add Krait clock controller driver
+>>    dt-bindings: clock: Document qcom,krait-cc
+>>    cpufreq: Add module to register cpufreq on Krait CPUs
+> 
+> Tested on apq8064 (db600c).
+> 
+> Tested-By: Thierry Escande <thierry.escande@linaro.org>
+> 
 
-Shawn
+  Thanks for testing this !!
+  I Will try to merge the kryo cpu-freq and this one if that looks neat.
+
+Regards,
+ Sricharan
+
+-- 
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
