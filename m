@@ -1,53 +1,76 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH v3 6/6] PM / Domains: Stop deferring probe at the end of initcall
-Date: Thu, 28 Jun 2018 14:43:44 -0600
-Message-ID: <20180628204344.13973-7-robh@kernel.org>
-References: <20180628204344.13973-1-robh@kernel.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [RESEND PATCH v3 2/2] thermal: core: introduce thermal zone
+ device mode control
+Date: Thu, 28 Jun 2018 17:33:02 -0700
+Message-ID: <20180629003302.GT129942@google.com>
+References: <20180226144118.24693-1-enric.balletbo@collabora.com>
+ <20180226144118.24693-2-enric.balletbo@collabora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180628204344.13973-1-robh@kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180226144118.24693-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Alexander Graf <agraf@suse.de>, Bjorn Andersson <bjorn.andersson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>, Mark Brown <broonie@kernel.org>, Frank Rowand <frowand.list@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, boot-architecture@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: rui.zhang@intel.com, rjw@rjwysocki.net, groeck@chromium.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, snanda@chromium.org, lenb@kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-All PM domain drivers must be built-in (at least those using DT), so
-there is no point deferring probe after initcalls are done. Continuing
-to defer probe may prevent booting successfully even if managing PM
-domains is not required. This can happen if the user failed to enable
-the driver or if power-domains are added to a platform's DT, but there
-is not yet a driver (e.g. a new DTB with an old kernel).
+Hi,
 
-Call the driver core function driver_deferred_probe_check_init_done()
-instead of just returning -EPROBE_DEFER to stop deferring probe when
-initcalls are done.
+I stumbled across this patch since I'm currently poking around with
+early thermal bringup on a platform and this patch has been integrated
+in our development tree.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
-v3:
-  - Update to new function name
+I'm seeing some unexpected behaviors, which could entirely due to
+wrong expectation from my side. I only have some basic working
+knowledge of the thermal framework, just want to double check and
+perhaps learn a thing or two.
 
- drivers/base/power/domain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Feb 26, 2018 at 03:41:18PM +0100, Enric Balletbo i Serra wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> Thermal "mode" sysfs attribute is introduced to enable/disable a thermal
+> zone, and .get_mode()/.set_mode() callback is introduced for platform
+> thermal driver to enable/disable the hardware thermal control logic. And
+> thermal core takes no action upon thermal zone enable/disable.
+> 
+> Actually, this is not quite right because thermal core still pokes those
+> disabled thermal zones occasionally, e.g. upon system resume.
+> 
+> To fix this, a new flag 'mode' is introduced in struct thermal_zone_device
+> to represent the thermal zone mode, and several decisions have been made
+> based on this flag, including
+> 1. check the thermal zone mode right after it's registered.
+> 2. skip updating thermal zone if the zone is disabled
+> 3. stop the polling timer when the thermal zone is disabled
+> 
+> Note: basically, this patch doesn't affect the existing always-enabled
+> thermal zones much, with just one exception -
+> thermal zone .get_mode() must be well prepared to reflect the real thermal
+> zone status upon the thermal zone registration.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 4925af5c4cf0..8c12213875c6 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
- 		mutex_unlock(&gpd_list_lock);
- 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
- 			__func__, PTR_ERR(pd));
--		return -EPROBE_DEFER;
-+		return driver_deferred_probe_check_state(dev);
- 	}
+>From my perspective this looks like a pretty significant change. For
+the platform I'm working on I added a thermal zone to the device tree,
+with the expectation that it would be enabled. Judging from the code
+without this patch this expectation seems to be naive, since
+of-thermal.c sets tz->mode to THERMAL_DEVICE_DISABLED, so apparently
+either userspace or some driver should call _set_mode(tz,
+THERMAL_DEVICE_ENABLED). However even without this the thermal zone
+appears to be active (I didn't really test end-to-end yet, but at
+least thermal_zone_device_update() is called and calls
+handle_thermal_trip()). Not sure why this is the case with
+THERMAL_DEVICE_DISABLED, but before I learned about the existence of
+the flag my expectation was that the zone would be enabled.
 
- 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
---
-2.17.1
+With this patch thermal_zone_device_update() is skipped if the zone
+hasn't been explictly enabled, which may be consistent with the state
+of 'tz->mode', but effectively changes the previous/current behavior.
+
+Not sure if I'm just dumbly overlooking something obvious or if there
+is an actual problem with of_thermal (and maybe others).
+
+Any insights?
+
+Thanks
+
+Matthias
