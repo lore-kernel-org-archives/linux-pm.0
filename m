@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 01/10] OPP: Parse OPP table's DT properties from _of_init_opp_table()
-Date: Fri, 29 Jun 2018 11:49:31 +0530
-Message-ID: <415e586b2dedcc6f97ee07a76bd54124c4b7e8bb.1530252803.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/10] OPP: Separate out custom OPP handler specific code
+Date: Fri, 29 Jun 2018 11:49:33 +0530
+Message-ID: <152adbb18a6d7129327a0f320cf8c60e5434dead.1530252803.git.viresh.kumar@linaro.org>
 References: <cover.1530252803.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
@@ -10,131 +10,112 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vi
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Parse the DT properties present in the OPP table from
-_of_init_opp_table(), which is a dedicated routine of DT parsing.
-
-Minor relocation of helpers was required for this.
+Create a separate routine to take care of custom set_opp() handler
+specific stuff.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/of.c | 77 +++++++++++++++++++++++++++++-------------------
- 1 file changed, 47 insertions(+), 30 deletions(-)
+ drivers/opp/core.c | 67 +++++++++++++++++++++++++++-------------------
+ 1 file changed, 40 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 7af0ddec936b..44a6b81fd228 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -23,6 +23,24 @@
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 31ff03dbeb83..c0c657fdbf33 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -630,6 +630,34 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 	return ret;
+ }
  
- #include "opp.h"
- 
-+/*
-+ * Returns opp descriptor node for a device node, caller must
-+ * do of_node_put().
-+ */
-+static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
-+						     int index)
++static int _set_opp_custom(const struct opp_table *opp_table,
++			   struct device *dev, unsigned long old_freq,
++			   unsigned long freq,
++			   struct dev_pm_opp_supply *old_supply,
++			   struct dev_pm_opp_supply *new_supply)
 +{
-+	/* "operating-points-v2" can be an array for power domain providers */
-+	return of_parse_phandle(np, "operating-points-v2", index);
-+}
++	struct dev_pm_set_opp_data *data;
++	int size;
 +
-+/* Returns opp descriptor node for a device, caller must do of_node_put() */
-+struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
-+{
-+	return _opp_of_get_opp_desc_node(dev->of_node, 0);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
++	data = opp_table->set_opp_data;
++	data->regulators = opp_table->regulators;
++	data->regulator_count = opp_table->regulator_count;
++	data->clk = opp_table->clk;
++	data->dev = dev;
 +
- static struct opp_table *_managed_opp(const struct device_node *np)
- {
- 	struct opp_table *opp_table, *managed_table = NULL;
-@@ -54,22 +72,35 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
- {
--	struct device_node *np;
-+	struct device_node *np, *opp_np;
-+	u32 val;
- 
- 	/*
- 	 * Only required for backward compatibility with v1 bindings, but isn't
- 	 * harmful for other cases. And so we do it unconditionally.
- 	 */
- 	np = of_node_get(dev->of_node);
--	if (np) {
--		u32 val;
--
--		if (!of_property_read_u32(np, "clock-latency", &val))
--			opp_table->clock_latency_ns_max = val;
--		of_property_read_u32(np, "voltage-tolerance",
--				     &opp_table->voltage_tolerance_v1);
--		of_node_put(np);
--	}
-+	if (!np)
-+		return;
-+
-+	if (!of_property_read_u32(np, "clock-latency", &val))
-+		opp_table->clock_latency_ns_max = val;
-+	of_property_read_u32(np, "voltage-tolerance",
-+			     &opp_table->voltage_tolerance_v1);
-+
-+	/* Get OPP table node */
-+	opp_np = _opp_of_get_opp_desc_node(np, 0);
-+	of_node_put(np);
-+
-+	if (!opp_np)
-+		return;
-+
-+	if (of_property_read_bool(opp_np, "opp-shared"))
-+		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
++	data->old_opp.rate = old_freq;
++	size = sizeof(*old_supply) * opp_table->regulator_count;
++	if (IS_ERR(old_supply))
++		memset(data->old_opp.supplies, 0, size);
 +	else
-+		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
++		memcpy(data->old_opp.supplies, old_supply, size);
 +
-+	of_node_put(opp_np);
- }
- 
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
-@@ -249,22 +280,6 @@ void dev_pm_opp_of_remove_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
- 
--/* Returns opp descriptor node for a device node, caller must
-- * do of_node_put() */
--static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
--						     int index)
--{
--	/* "operating-points-v2" can be an array for power domain providers */
--	return of_parse_phandle(np, "operating-points-v2", index);
--}
--
--/* Returns opp descriptor node for a device, caller must do of_node_put() */
--struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
--{
--	return _opp_of_get_opp_desc_node(dev->of_node, 0);
--}
--EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
--
++	data->new_opp.rate = freq;
++	memcpy(data->new_opp.supplies, new_supply, size);
++
++	return opp_table->set_opp(data);
++}
++
  /**
-  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
-  * @opp_table:	OPP table
-@@ -431,11 +446,13 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	if (pstate_count)
- 		opp_table->genpd_performance_state = true;
+  * dev_pm_opp_set_rate() - Configure new OPP based on frequency
+  * @dev:	 device for which we do this operation
+@@ -644,7 +672,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	unsigned long freq, old_freq;
+ 	struct dev_pm_opp *old_opp, *opp;
+ 	struct clk *clk;
+-	int ret, size;
++	int ret;
  
-+	/*
-+	 * This is used by _managed_opp() to find OPP tables that are fully
-+	 * initialized by other devices sharing clock/voltage rails with current
-+	 * device. And so we can't set this from _of_init_opp_table() as tables
-+	 * aren't fully initialized at that point.
-+	 */
- 	opp_table->np = opp_np;
--	if (of_property_read_bool(opp_np, "opp-shared"))
--		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
--	else
--		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
+ 	if (unlikely(!target_freq)) {
+ 		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
+@@ -697,8 +725,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
+ 		old_freq, freq);
  
- put_opp_table:
- 	dev_pm_opp_put_opp_table(opp_table);
+-	/* Only frequency scaling */
+-	if (!opp_table->regulators) {
++	if (opp_table->set_opp) {
++		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
++				      IS_ERR(old_opp) ? NULL : old_opp->supplies,
++				      opp->supplies);
++	} else if (opp_table->regulators) {
++		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
++						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
++						 opp->supplies);
++	} else {
++		/* Only frequency scaling */
++
+ 		/*
+ 		 * We don't support devices with both regulator and
+ 		 * domain performance-state for now.
+@@ -709,30 +746,6 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 						      opp->pstate);
+ 		else
+ 			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+-	} else if (!opp_table->set_opp) {
+-		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
+-						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
+-						 opp->supplies);
+-	} else {
+-		struct dev_pm_set_opp_data *data;
+-
+-		data = opp_table->set_opp_data;
+-		data->regulators = opp_table->regulators;
+-		data->regulator_count = opp_table->regulator_count;
+-		data->clk = clk;
+-		data->dev = dev;
+-
+-		data->old_opp.rate = old_freq;
+-		size = sizeof(*opp->supplies) * opp_table->regulator_count;
+-		if (IS_ERR(old_opp))
+-			memset(data->old_opp.supplies, 0, size);
+-		else
+-			memcpy(data->old_opp.supplies, old_opp->supplies, size);
+-
+-		data->new_opp.rate = freq;
+-		memcpy(data->new_opp.supplies, opp->supplies, size);
+-
+-		ret = opp_table->set_opp(data);
+ 	}
+ 
+ 	dev_pm_opp_put(opp);
 -- 
 2.18.0.rc1.242.g61856ae69a2c
