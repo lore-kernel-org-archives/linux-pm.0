@@ -1,55 +1,58 @@
 From: Daniel Mack <daniel@zonque.org>
-Subject: [PATCH v3 0/4] Add devicetree functionality to w1 busses and ds2760
-Date: Fri, 29 Jun 2018 19:31:33 +0200
-Message-ID: <20180629173137.12690-1-daniel@zonque.org>
+Subject: [PATCH v3 2/4] w1: core: match sub-nodes of bus masters in devicetree
+Date: Fri, 29 Jun 2018 19:31:35 +0200
+Message-ID: <20180629173137.12690-3-daniel@zonque.org>
+References: <20180629173137.12690-1-daniel@zonque.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180629173137.12690-1-daniel@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu
 Cc: sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch set contains four small patches that bring devicetree
-functionality to w1 bus masters and slaves in general. As an example,
-the DS2760 driver is made aware of devicetree nodes as an example.
-Other drivers can easily be ported later.
+Once a new slave device is detected, match it against all sub-nodes of the
+master bus controller. If a match is found, set the slave device's of_node
+pointer.
 
-W1 masters scan their bus in order to discover slave devices. Once
-one is found, a driver matching the family of the device is instanciated
-which handles it.
+Signed-off-by: Daniel Mack <daniel@zonque.org>
+---
+ drivers/w1/w1.c    | 3 +++
+ include/linux/w1.h | 2 ++
+ 2 files changed, 5 insertions(+)
 
-All that's needed for now is a call to of_find_matching_node() when
-a slave device is attached, so the corresponding of_node pointer is
-set.
-
-The series also contains a patch that merges the w1 slave driver for the
-DS2760 battery monitor into its only user, the ds2760 supply driver.
-The indirection with two drivers never had any benefit, and here is
-a good opportunity to clean this up.
-
-Patch #1 adds some DT bindings documentation
-Patch #2 adds the call to of_find_matching_node()
-Patch #3 merges the w1 slave and the supply driver for ds2760
-Patch #4 makes the ds2760 supply driver aware of DT environments
-
-This works fine on a PXA3xx based board with a battery attached to
-the w1-gpio bus master controller.
-
-Daniel Mack (4):
-  dt-bindings: w1: document sub-node bindings for DS2760
-  w1: core: match sub-nodes of bus masters in devicetree
-  w1: ds2760: add devicetree matching glue
-  power: ds2760_battery: add device tree glue
-
- .../devicetree/bindings/w1/maxim,ds2760.txt    | 15 +++++++++++++++
- .../devicetree/bindings/w1/w1-gpio.txt         |  6 ++++++
- Documentation/devicetree/bindings/w1/w1.txt    | 18 ++++++++++++++++++
- drivers/power/supply/ds2760_battery.c          |  6 +++++-
- drivers/w1/slaves/w1_ds2760.c                  |  9 +++++++++
- drivers/w1/w1.c                                |  3 +++
- include/linux/w1.h                             |  2 ++
- 7 files changed, 58 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/w1/maxim,ds2760.txt
- create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
-
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index caef0e0fd817..890c038c25f8 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -26,6 +26,7 @@
+ #include <linux/kthread.h>
+ #include <linux/freezer.h>
+ #include <linux/hwmon.h>
++#include <linux/of.h>
+ 
+ #include <linux/atomic.h>
+ 
+@@ -686,6 +687,8 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 	sl->dev.bus = &w1_bus_type;
+ 	sl->dev.release = &w1_slave_release;
+ 	sl->dev.groups = w1_slave_groups;
++	sl->dev.of_node = of_find_matching_node(sl->master->dev.of_node,
++						sl->family->of_match_table);
+ 
+ 	dev_set_name(&sl->dev, "%02x-%012llx",
+ 		 (unsigned int) sl->reg_num.family,
+diff --git a/include/linux/w1.h b/include/linux/w1.h
+index 694101f744c7..3111585c371f 100644
+--- a/include/linux/w1.h
++++ b/include/linux/w1.h
+@@ -274,6 +274,8 @@ struct w1_family {
+ 
+ 	struct w1_family_ops	*fops;
+ 
++	const struct of_device_id *of_match_table;
++
+ 	atomic_t		refcnt;
+ };
+ 
 -- 
 2.17.1
