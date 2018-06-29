@@ -1,7 +1,8 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 3/3] PM / Domains: Introduce dev_pm_domain_attach_by_name()
-Date: Fri, 29 Jun 2018 13:04:32 +0200
-Message-ID: <20180629110432.5179-4-ulf.hansson@linaro.org>
+Subject: [PATCH 2/3] PM / Domains: Introduce option to attach a device by name
+ to genpd
+Date: Fri, 29 Jun 2018 13:04:31 +0200
+Message-ID: <20180629110432.5179-3-ulf.hansson@linaro.org>
 References: <20180629110432.5179-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,72 +22,81 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <dev@lynxeye.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-For the multiple PM domain case, let's introduce a new API called
-dev_pm_domain_attach_by_name(). This allows a consumer driver to associate
-its device with one of its PM domains, by using a name based lookup.
+For the multiple PM domain case, let's introduce a new function called
+genpd_dev_pm_attach_by_name(). This allows a device to be associated with
+its PM domain through genpd, by using a name based lookup.
 
-Do note that, currently it's only genpd that supports multiple PM domains
-per device, but dev_pm_domain_attach_by_name() can easily by extended to
-cover other PM domain types, if/when needed.
+Note that, genpd_dev_pm_attach_by_name() shall only be called by the driver
+core / PM core, similar to how the existing dev_pm_domain_attach_by_id()
+makes use of genpd_dev_pm_attach_by_id(). However, this is implemented by
+following changes on top.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/common.c | 17 +++++++++++++++++
- include/linux/pm_domain.h   |  7 +++++++
- 2 files changed, 24 insertions(+)
+ drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  8 ++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index df41b4780b3b..b413951c6abc 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -152,6 +152,23 @@ struct device *dev_pm_domain_attach_by_id(struct device *dev,
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index c298de8a8308..a70e4b7a3b14 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2372,6 +2372,30 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
  }
- EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_id);
+ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach_by_id);
  
 +/**
-+ * dev_pm_domain_attach_by_name - Associate a device with one of its PM domains.
++ * genpd_dev_pm_attach_by_name - Associate a device with one of its PM domains.
 + * @dev: The device used to lookup the PM domain.
 + * @name: The name of the PM domain.
 + *
-+ * For a detailed function description, see dev_pm_domain_attach_by_id().
++ * Parse device's OF node to find a PM domain specifier using the
++ * power-domain-names DT property. For further description see
++ * genpd_dev_pm_attach_by_id().
 + */
-+struct device *dev_pm_domain_attach_by_name(struct device *dev,
-+					    char *name)
++struct device *genpd_dev_pm_attach_by_name(struct device *dev, char *name)
 +{
-+	if (dev->pm_domain)
-+		return ERR_PTR(-EEXIST);
++	int index;
 +
-+	return genpd_dev_pm_attach_by_name(dev, name);
++	if (!dev->of_node)
++		return NULL;
++
++	index = of_property_match_string(dev->of_node, "power-domain-names",
++					 name);
++	if (index < 0)
++		return NULL;
++
++	return genpd_dev_pm_attach_by_id(dev, index);
 +}
-+EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
 +
- /**
-  * dev_pm_domain_detach - Detach a device from its PM domain.
-  * @dev: Device to detach.
+ static const struct of_device_id idle_state_match[] = {
+ 	{ .compatible = "domain-idle-state", },
+ 	{ }
 diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 03e14a38462d..776c546d581a 100644
+index cb8d84090cfb..03e14a38462d 100644
 --- a/include/linux/pm_domain.h
 +++ b/include/linux/pm_domain.h
-@@ -309,6 +309,8 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
- int dev_pm_domain_attach(struct device *dev, bool power_on);
- struct device *dev_pm_domain_attach_by_id(struct device *dev,
- 					  unsigned int index);
-+struct device *dev_pm_domain_attach_by_name(struct device *dev,
-+					    char *name);
- void dev_pm_domain_detach(struct device *dev, bool power_off);
- void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
- #else
-@@ -321,6 +323,11 @@ static inline struct device *dev_pm_domain_attach_by_id(struct device *dev,
- {
+@@ -239,6 +239,8 @@ unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+ int genpd_dev_pm_attach(struct device *dev);
+ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 					 unsigned int index);
++struct device *genpd_dev_pm_attach_by_name(struct device *dev,
++					   char *name);
+ #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+ static inline int of_genpd_add_provider_simple(struct device_node *np,
+ 					struct generic_pm_domain *genpd)
+@@ -290,6 +292,12 @@ static inline struct device *genpd_dev_pm_attach_by_id(struct device *dev,
  	return NULL;
  }
-+static inline struct device *dev_pm_domain_attach_by_name(struct device *dev,
-+							  char *name)
+ 
++static inline struct device *genpd_dev_pm_attach_by_name(struct device *dev,
++							 char *name)
 +{
 +	return NULL;
 +}
- static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
- static inline void dev_pm_domain_set(struct device *dev,
- 				     struct dev_pm_domain *pd) {}
++
+ static inline
+ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+ {
 -- 
 2.17.1
