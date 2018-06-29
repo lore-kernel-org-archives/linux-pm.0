@@ -1,298 +1,197 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/10] OPP: Add dev_pm_opp_{set|put}_required_device() helper
-Date: Fri, 29 Jun 2018 11:49:36 +0530
-Message-ID: <282ac8092650c95595c84213dc87a4bf6b278da8.1530252803.git.viresh.kumar@linaro.org>
+Subject: [PATCH 08/10] OPP: Configure all required OPPs
+Date: Fri, 29 Jun 2018 11:49:38 +0530
+Message-ID: <c1da547faaa9fb4e3fe9034a643853847b106d68.1530252803.git.viresh.kumar@linaro.org>
 References: <cover.1530252803.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Multiple generic power domains for a device are supported with the help
-of virtual devices, which are created for each device-genpd pair. These
-are the device structures which are attached to the power domain and are
-required by the OPP core to set the performance state of the genpd.
+Now that all the infrastructure is in place to support multiple required
+OPPs, lets switch over to using it.
 
-The helpers added by this commit are required to be called once for each
-genpd of a device. These are required only if multiple domains are
-present for a device, otherwise the actual device structure will be used
-instead by the OPP core.
+A new internal routine _set_required_opps() takes care of updating
+performance state for all the required OPPs. With this the performance
+state updates are supported even when the end device needs to configure
+regulators as well, that wasn't the case earlier.
 
-This commit also updates the genpd core to automatically call the new
-helper to set the required devices with the OPP layer, whenever the
-virtual devices are created for multiple genpd. The prototype of
-__genpd_dev_pm_attach() is slightly updated for this.
+The pstates were earlier stored in the end device's OPP structures, that
+also changes now as those values are stored in the genpd's OPP
+structures. And so we switch over to using
+genpd_opp_to_performance_state() instead of
+of_genpd_opp_to_performance_state() to get performance state for the
+genpd OPPs.
+
+The routine _generic_set_opp_domain() is not required anymore and is
+removed.
+
+On errors we don't try to recover by reverting to old settings as things
+are really complex now and the calls here should never really fail
+unless there is a bug. There is no point increasing the complexity, for
+code which will never be executed.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 31 ++++++++++++++---
- drivers/opp/core.c          | 69 +++++++++++++++++++++++++++++++++++++
- drivers/opp/of.c            | 12 +++++++
- drivers/opp/opp.h           |  2 ++
- include/linux/pm_opp.h      |  8 +++++
- 5 files changed, 118 insertions(+), 4 deletions(-)
+ drivers/opp/core.c | 99 ++++++++++++++++++++++++----------------------
+ drivers/opp/of.c   |  5 ++-
+ 2 files changed, 54 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index c298de8a8308..e9c85c96580c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2219,8 +2219,14 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
- 	genpd_queue_power_off_work(pd);
- 
- 	/* Unregister the device if it was created by genpd. */
--	if (dev->bus == &genpd_bus_type)
-+	if (dev->bus == &genpd_bus_type) {
-+		struct opp_table *opp_table = dev_get_drvdata(dev);
-+
-+		if (opp_table)
-+			dev_pm_opp_put_required_device(opp_table, dev);
-+
- 		device_unregister(dev);
-+	}
- }
- 
- static void genpd_dev_pm_sync(struct device *dev)
-@@ -2235,7 +2241,8 @@ static void genpd_dev_pm_sync(struct device *dev)
- }
- 
- static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
--				 unsigned int index)
-+				 unsigned int index,
-+				 struct generic_pm_domain **pd_ptr)
- {
- 	struct of_phandle_args pd_args;
- 	struct generic_pm_domain *pd;
-@@ -2277,6 +2284,8 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
- 
- 	if (ret)
- 		genpd_remove_device(pd, dev);
-+	else if (pd_ptr)
-+		*pd_ptr = pd;
- 
- 	return ret ? -EPROBE_DEFER : 1;
- }
-@@ -2307,7 +2316,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 				       "#power-domain-cells") != 1)
- 		return 0;
- 
--	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
-+	return __genpd_dev_pm_attach(dev, dev->of_node, 0, NULL);
- }
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- 
-@@ -2330,6 +2339,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 					 unsigned int index)
- {
-+	struct generic_pm_domain *pd;
- 	struct device *genpd_dev;
- 	int num_domains;
- 	int ret;
-@@ -2359,12 +2369,25 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 	}
- 
- 	/* Try to attach the device to the PM domain at the specified index. */
--	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
-+	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index, &pd);
- 	if (ret < 1) {
- 		device_unregister(genpd_dev);
- 		return ret ? ERR_PTR(ret) : NULL;
- 	}
- 
-+	if (pd->set_performance_state) {
-+		struct opp_table *opp_table;
-+
-+		opp_table = dev_pm_opp_set_required_device(dev, genpd_dev,
-+							   index);
-+		if (IS_ERR(opp_table)) {
-+			genpd_dev_pm_detach(genpd_dev, true);
-+			return ERR_CAST(opp_table);
-+		}
-+
-+		dev_set_drvdata(genpd_dev, opp_table);
-+	}
-+
- 	pm_runtime_set_active(genpd_dev);
- 	pm_runtime_enable(genpd_dev);
- 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index acc34c238fd6..3a2f08c56c4e 100644
+index 3a2f08c56c4e..6b3410ded1ca 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -1532,6 +1532,75 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+@@ -543,44 +543,6 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
+ 	return ret;
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
  
-+/**
-+ * dev_pm_opp_set_required_device - Set required device for an index
-+ * @dev: Device for which the required device is getting set.
-+ * @required_dev: required device.
-+ * @index: index for which the required device is getting added.
-+ *
-+ * Multiple generic power domains for a device are supported with the help of
-+ * virtual devices, which are created for each dev-genpd pair. These are the
-+ * device structures which are attached to the power domain and are required by
-+ * the OPP core to set the performance state of the genpd.
-+ *
-+ * This helper needs to be called once for each genpd of a device, but only if
-+ * multiple domains are present for a device. Otherwise the original device
-+ * structure will be used instead by the OPP core.
-+ */
-+struct opp_table *dev_pm_opp_set_required_device(struct device *dev,
-+						 struct device *required_dev,
-+						 int index)
+-static inline int
+-_generic_set_opp_domain(struct device *dev, struct clk *clk,
+-			unsigned long old_freq, unsigned long freq,
+-			unsigned int old_pstate, unsigned int new_pstate)
+-{
+-	int ret;
+-
+-	/* Scaling up? Scale domain performance state before frequency */
+-	if (freq > old_freq) {
+-		ret = dev_pm_genpd_set_performance_state(dev, new_pstate);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+-	if (ret)
+-		goto restore_domain_state;
+-
+-	/* Scaling down? Scale domain performance state after frequency */
+-	if (freq < old_freq) {
+-		ret = dev_pm_genpd_set_performance_state(dev, new_pstate);
+-		if (ret)
+-			goto restore_freq;
+-	}
+-
+-	return 0;
+-
+-restore_freq:
+-	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
+-		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+-			__func__, old_freq);
+-restore_domain_state:
+-	if (freq > old_freq)
+-		dev_pm_genpd_set_performance_state(dev, old_pstate);
+-
+-	return ret;
+-}
+-
+ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 				      struct device *dev,
+ 				      unsigned long old_freq,
+@@ -658,6 +620,42 @@ static int _set_opp_custom(const struct opp_table *opp_table,
+ 	return opp_table->set_opp(data);
+ }
+ 
++/* This is only called for PM domain for now */
++static int _set_required_opps(struct device *dev,
++			      const struct opp_table *opp_table,
++			      struct dev_pm_opp *opp)
 +{
-+	struct opp_table *opp_table;
++	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
++	struct device **required_devices = opp_table->required_devices;
++	struct device *required_dev = dev;
++	unsigned int pstate;
++	int i, ret;
 +
-+	opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (!opp_table)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/* Make sure there are no concurrent readers while updating opp_table */
-+	WARN_ON(!list_empty(&opp_table->opp_list));
-+
-+	if (unlikely(!opp_table->required_devices ||
-+		     index >= opp_table->required_opp_count ||
-+		     opp_table->required_devices[index])) {
-+		dev_err(dev, "Invalid request to set required device\n");
-+		dev_pm_opp_put_opp_table(opp_table);
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	opp_table->required_devices[index] = required_dev;
-+
-+	return opp_table;
-+}
-+
-+/**
-+ * dev_pm_opp_put_required_device() - Releases resources blocked for required device.
-+ * @opp_table: OPP table returned by dev_pm_opp_set_required_device().
-+ * @required_dev: required device.
-+ *
-+ * This releases the resource previously acquired with a call to
-+ * dev_pm_opp_set_required_device().
-+ */
-+void dev_pm_opp_put_required_device(struct opp_table *opp_table,
-+				    struct device *required_dev)
-+{
-+	int i;
-+
-+	/* Make sure there are no concurrent readers while updating opp_table */
-+	WARN_ON(!list_empty(&opp_table->opp_list));
++	if (!required_opp_tables)
++		return 0;
 +
 +	for (i = 0; i < opp_table->required_opp_count; i++) {
-+		if (opp_table->required_devices[i] != required_dev)
-+			continue;
++		pstate = opp->required_opps[i]->pstate;
 +
-+		opp_table->required_devices[i] = NULL;
-+		dev_pm_opp_put_opp_table(opp_table);
-+		return;
++		if (required_devices) {
++			required_dev = required_devices[i];
++			if (!required_dev) {
++				dev_err(dev, "Missing OPP required device\n");
++				return -ENODEV;
++			}
++		}
++
++		ret = dev_pm_genpd_set_performance_state(required_dev, pstate);
++		if (ret) {
++			dev_err(dev, "Failed to set performance rate of %s: %d (%d)\n",
++				dev_name(required_dev), pstate, ret);
++			return ret;
++		}
 +	}
 +
-+	dev_err(required_dev, "Failed to find required device entry\n");
++	return 0;
 +}
 +
  /**
-  * dev_pm_opp_add()  - Add an OPP table from a table definitions
-  * @dev:	device for which we do this operation
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index ffefccfdbc26..20baba090c17 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -133,6 +133,7 @@ static struct opp_table *_get_required_opp_table(struct device_node *np)
- static void _opp_table_free_required_tables(struct opp_table *opp_table)
- {
- 	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
-+	struct device **required_devices = opp_table->required_devices;
- 	int i;
+  * dev_pm_opp_set_rate() - Configure new OPP based on frequency
+  * @dev:	 device for which we do this operation
+@@ -725,6 +723,13 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
+ 		old_freq, freq);
  
- 	if (!required_opp_tables)
-@@ -146,8 +147,10 @@ static void _opp_table_free_required_tables(struct opp_table *opp_table)
- 	}
- 
- 	kfree(required_opp_tables);
-+	kfree(required_devices);
- 
- 	opp_table->required_opp_count = 0;
-+	opp_table->required_devices = NULL;
- 	opp_table->required_opp_tables = NULL;
- }
- 
-@@ -159,6 +162,7 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 					     struct device *dev,
- 					     struct device_node *opp_np)
- {
-+	struct device **required_devices = NULL;
- 	struct opp_table **required_opp_tables;
- 	struct device_node *required_np, *np;
- 	int count, i;
-@@ -174,11 +178,19 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	if (!count)
- 		goto put_np;
- 
-+	if (count > 1) {
-+		required_devices = kcalloc(count, sizeof(*required_devices),
-+					   GFP_KERNEL);
-+		if (!required_devices)
-+			goto put_np;
++	/* Scaling up? Configure required OPPs before frequency */
++	if (freq > old_freq) {
++		ret = _set_required_opps(dev, opp_table, opp);
++		if (ret)
++			goto put_opp;
 +	}
 +
- 	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
- 				      GFP_KERNEL);
- 	if (!required_opp_tables)
- 		goto put_np;
+ 	if (opp_table->set_opp) {
+ 		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
+ 				      IS_ERR(old_opp) ? NULL : old_opp->supplies,
+@@ -735,19 +740,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 						 opp->supplies);
+ 	} else {
+ 		/* Only frequency scaling */
++		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
++	}
  
-+	opp_table->required_devices = required_devices;
- 	opp_table->required_opp_tables = required_opp_tables;
- 	opp_table->required_opp_count = count;
+-		/*
+-		 * We don't support devices with both regulator and
+-		 * domain performance-state for now.
+-		 */
+-		if (opp_table->genpd_performance_state)
+-			ret = _generic_set_opp_domain(dev, clk, old_freq, freq,
+-						      IS_ERR(old_opp) ? 0 : old_opp->pstate,
+-						      opp->pstate);
+-		else
+-			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
++	/* Scaling down? Configure required OPPs after frequency */
++	if (!ret && freq < old_freq) {
++		ret = _set_required_opps(dev, opp_table, opp);
++		if (ret)
++			dev_err(dev, "Failed to set required opps: %d\n", ret);
+ 	}
  
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 9efdc3e4840c..857a7f5e66d0 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -133,6 +133,7 @@ enum opp_table_access {
-  * @clock_latency_ns_max: Max clock latency in nanoseconds.
-  * @shared_opp: OPP is shared between multiple devices.
-  * @suspend_opp: Pointer to OPP to be used during device suspend.
-+ * @required_devices: List of virtual devices for multiple genpd support.
-  * @required_opp_tables: List of device OPP tables that are required by OPPs in
-  *		this table.
-  * @required_opp_count: Number of required devices.
-@@ -173,6 +174,7 @@ struct opp_table {
- 	enum opp_table_access shared_opp;
- 	struct dev_pm_opp *suspend_opp;
++put_opp:
+ 	dev_pm_opp_put(opp);
+ put_old_opp:
+ 	if (!IS_ERR(old_opp))
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 20baba090c17..e1e4a58dd748 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -584,12 +584,13 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
+ 	if (!of_property_read_u32(np, "clock-latency-ns", &val))
+ 		new_opp->clock_latency_ns = val;
  
-+	struct device **required_devices;
- 	struct opp_table **required_opp_tables;
- 	unsigned int required_opp_count;
+-	new_opp->pstate = of_genpd_opp_to_performance_state(dev, np);
+-
+ 	ret = opp_parse_supplies(new_opp, dev, opp_table);
+ 	if (ret)
+ 		goto free_required_opps;
  
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 099b31960dec..ffdb4a78edec 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -125,6 +125,8 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
- void dev_pm_opp_put_clkname(struct opp_table *opp_table);
- struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
- void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
-+struct opp_table *dev_pm_opp_set_required_device(struct device *dev, struct device *required_dev, int index);
-+void dev_pm_opp_put_required_device(struct opp_table *opp_table, struct device *required_device);
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
- int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
-@@ -266,6 +268,12 @@ static inline struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const
- 
- static inline void dev_pm_opp_put_clkname(struct opp_table *opp_table) {}
- 
-+static inline struct opp_table *dev_pm_opp_set_required_device(struct device *dev, struct device *required_dev, int index)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
++	if (opp_table->is_genpd)
++		new_opp->pstate = genpd_opp_to_performance_state(dev, new_opp);
 +
-+static inline void dev_pm_opp_put_required_device(struct opp_table *opp_table, struct device *required_device) {}
- static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- {
- 	return -ENOTSUPP;
+ 	ret = _opp_add(dev, new_opp, opp_table, rate_not_available);
+ 	if (ret) {
+ 		/* Don't return error for duplicate OPPs */
 -- 
 2.18.0.rc1.242.g61856ae69a2c
