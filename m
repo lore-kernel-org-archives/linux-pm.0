@@ -1,68 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/10] OPP: Identify and mark genpd OPP tables
-Date: Fri, 29 Jun 2018 11:49:32 +0530
-Message-ID: <c24cb556bd674933df19bff0acc596d73e510706.1530252803.git.viresh.kumar@linaro.org>
-References: <cover.1530252803.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
+Date: Fri, 29 Jun 2018 10:34:40 +0200
+Message-ID: <2518711.SfHWAsyaFM@aspire.rjw.lan>
+References: <35587465.8Nave9aG7d@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
+In-Reply-To: <35587465.8Nave9aG7d@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+To: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: n0000b.n000b@gmail.com, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
 List-Id: linux-pm@vger.kernel.org
 
-We need to handle genpd OPP tables differently, this is already the case
-at one location and will be extended going forward. Add another field to
-the OPP table to check if the table belongs to a genpd or not.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
+handling for devices with no callbacks) introduced a system suspend
+regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
+port) to stay in D3 over suspend-to-RAM, which is a side effect of
+setting power.direct_complete for the children of that bridge that
+have no PM callbacks.
+
+On the majority of systems PCI bridges are not allowed to be
+runtime-suspended (the power/control sysfs attribute is set to "on"
+for them by default), but user space can change that setting and if
+it does so and a given bridge has no children with PM callbacks, the
+direct_complete optimization will be applied to it and it will stay
+in suspend over system suspend.  Apparently, that confuses the
+platform firmware on the affected machine and that may very well
+happen elsewhere, so avoid the direct_complete optimization for
+PCI bridges with no drivers (if there is a driver, it should take
+care of the PM handling) on suspend-to-RAM altogether (that should
+not matter for suspend-to-idle as platform firmware is not involved
+in it).
+
+Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
+Reported-by: n0000b.n000b@gmail.com
+Tested-by: n0000b.n000b@gmail.com
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/opp/of.c  | 6 ++++--
- drivers/opp/opp.h | 2 ++
- 2 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 44a6b81fd228..218b8997d817 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -88,6 +88,9 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
- 	of_property_read_u32(np, "voltage-tolerance",
- 			     &opp_table->voltage_tolerance_v1);
+-> v2: Make the patch work for PCI bridges without ACPI companion objects.
+
+Since that doesn't really change the idea etc, but only makes the check
+to be made earlier, I've added the Reviewed-by and Acked-by tags given to
+the previous version.  If that's not right, please let me know.
+
+---
+ drivers/pci/pci-acpi.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -629,6 +629,15 @@ static bool acpi_pci_need_resume(struct
+ {
+ 	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
  
-+	if (of_find_property(np, "#power-domain-cells", NULL))
-+		opp_table->is_genpd = true;
++	/*
++	 * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
++	 * confuses the platform firmware, so avoid doing that, unless the
++	 * bridge has a driver that should take care of PM handling.
++	 */
++	if (pci_is_bridge(dev) && !dev->driver &&
++	    acpi_target_system_state() != ACPI_STATE_S0)
++		return true;
 +
- 	/* Get OPP table node */
- 	opp_np = _opp_of_get_opp_desc_node(np, 0);
- 	of_node_put(np);
-@@ -314,8 +317,7 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
- 	ret = of_property_read_u64(np, "opp-hz", &rate);
- 	if (ret < 0) {
- 		/* "opp-hz" is optional for devices like power domains. */
--		if (!of_find_property(dev->of_node, "#power-domain-cells",
--				      NULL)) {
-+		if (!opp_table->is_genpd) {
- 			dev_err(dev, "%s: opp-hz not found\n", __func__);
- 			goto free_opp;
- 		}
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 7c540fd063b2..3cd3b7b167b5 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -138,6 +138,7 @@ enum opp_table_access {
-  * @regulators: Supply regulators
-  * @regulator_count: Number of power supply regulators
-  * @genpd_performance_state: Device's power domain support performance state.
-+ * @is_genpd: Marks if the OPP table belongs to a genpd.
-  * @set_opp: Platform specific set_opp callback
-  * @set_opp_data: Data to be passed to set_opp callback
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-@@ -174,6 +175,7 @@ struct opp_table {
- 	struct regulator **regulators;
- 	unsigned int regulator_count;
- 	bool genpd_performance_state;
-+	bool is_genpd;
+ 	if (!adev || !acpi_device_power_manageable(adev))
+ 		return false;
  
- 	int (*set_opp)(struct dev_pm_set_opp_data *data);
- 	struct dev_pm_set_opp_data *set_opp_data;
--- 
-2.18.0.rc1.242.g61856ae69a2c
