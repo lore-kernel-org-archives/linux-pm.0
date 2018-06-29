@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 1/3] PM / Domains: dt: Add a power-domain-names property
-Date: Fri, 29 Jun 2018 13:04:30 +0200
-Message-ID: <20180629110432.5179-2-ulf.hansson@linaro.org>
+Subject: [PATCH 3/3] PM / Domains: Introduce dev_pm_domain_attach_by_name()
+Date: Fri, 29 Jun 2018 13:04:32 +0200
+Message-ID: <20180629110432.5179-4-ulf.hansson@linaro.org>
 References: <20180629110432.5179-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,45 +21,72 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <dev@lynxeye.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Let's add a power-domain-names property, to allow consumer drivers to match
-the power-domains specifiers via a list of power domain names. This follows
-the same concept as for other similar DT bindings.
+For the multiple PM domain case, let's introduce a new API called
+dev_pm_domain_attach_by_name(). This allows a consumer driver to associate
+its device with one of its PM domains, by using a name based lookup.
+
+Do note that, currently it's only genpd that supports multiple PM domains
+per device, but dev_pm_domain_attach_by_name() can easily by extended to
+cover other PM domain types, if/when needed.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- Documentation/devicetree/bindings/power/power_domain.txt | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/base/power/common.c | 17 +++++++++++++++++
+ include/linux/pm_domain.h   |  7 +++++++
+ 2 files changed, 24 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 9b387f861aed..4d6bc8829468 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -114,18 +114,26 @@ Required properties:
-  - power-domains : A list of PM domain specifiers, as defined by bindings of
- 		the power controller that is the PM domain provider.
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index df41b4780b3b..b413951c6abc 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -152,6 +152,23 @@ struct device *dev_pm_domain_attach_by_id(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_id);
  
-+Optional properties:
-+ - power-domain-names : A list of power domain name strings sorted in the same
-+		order as the power-domains property. Consumers drivers will use
-+		power-domain-names to match power domains with power-domains
-+		specifiers.
++/**
++ * dev_pm_domain_attach_by_name - Associate a device with one of its PM domains.
++ * @dev: The device used to lookup the PM domain.
++ * @name: The name of the PM domain.
++ *
++ * For a detailed function description, see dev_pm_domain_attach_by_id().
++ */
++struct device *dev_pm_domain_attach_by_name(struct device *dev,
++					    char *name)
++{
++	if (dev->pm_domain)
++		return ERR_PTR(-EEXIST);
 +
- Example:
- 
- 	leaky-device@12350000 {
- 		compatible = "foo,i-leak-current";
- 		reg = <0x12350000 0x1000>;
- 		power-domains = <&power 0>;
-+		power-domain-names = "io";
- 	};
- 
- 	leaky-device@12351000 {
- 		compatible = "foo,i-leak-current";
- 		reg = <0x12351000 0x1000>;
- 		power-domains = <&power 0>, <&power 1> ;
-+		power-domain-names = "io", "clk";
- 	};
- 
- The first example above defines a typical PM domain consumer device, which is
++	return genpd_dev_pm_attach_by_name(dev, name);
++}
++EXPORT_SYMBOL_GPL(dev_pm_domain_attach_by_name);
++
+ /**
+  * dev_pm_domain_detach - Detach a device from its PM domain.
+  * @dev: Device to detach.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 03e14a38462d..776c546d581a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -309,6 +309,8 @@ struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
+ int dev_pm_domain_attach(struct device *dev, bool power_on);
+ struct device *dev_pm_domain_attach_by_id(struct device *dev,
+ 					  unsigned int index);
++struct device *dev_pm_domain_attach_by_name(struct device *dev,
++					    char *name);
+ void dev_pm_domain_detach(struct device *dev, bool power_off);
+ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd);
+ #else
+@@ -321,6 +323,11 @@ static inline struct device *dev_pm_domain_attach_by_id(struct device *dev,
+ {
+ 	return NULL;
+ }
++static inline struct device *dev_pm_domain_attach_by_name(struct device *dev,
++							  char *name)
++{
++	return NULL;
++}
+ static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
+ static inline void dev_pm_domain_set(struct device *dev,
+ 				     struct dev_pm_domain *pd) {}
 -- 
 2.17.1
