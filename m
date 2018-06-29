@@ -1,236 +1,298 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 04/10] OPP: Populate required opp tables from "required-opps" property
-Date: Fri, 29 Jun 2018 11:49:34 +0530
-Message-ID: <e141629140b648d3fc4d2f685a3daf947447172d.1530252803.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/10] OPP: Add dev_pm_opp_{set|put}_required_device() helper
+Date: Fri, 29 Jun 2018 11:49:36 +0530
+Message-ID: <282ac8092650c95595c84213dc87a4bf6b278da8.1530252803.git.viresh.kumar@linaro.org>
 References: <cover.1530252803.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The current implementation works only for the case where a single
-phandle is present in the "required-opps" property, while DT allows
-multiple phandles to be present there.
+Multiple generic power domains for a device are supported with the help
+of virtual devices, which are created for each device-genpd pair. These
+are the device structures which are attached to the power domain and are
+required by the OPP core to set the performance state of the genpd.
 
-This patch adds new infrastructure to parse all the phandles present in
-"required-opps" property and save pointers of the required OPP's OPP
-tables. These will be used by later commits.
+The helpers added by this commit are required to be called once for each
+genpd of a device. These are required only if multiple domains are
+present for a device, otherwise the actual device structure will be used
+instead by the OPP core.
+
+This commit also updates the genpd core to automatically call the new
+helper to set the required devices with the OPP layer, whenever the
+virtual devices are created for multiple genpd. The prototype of
+__genpd_dev_pm_attach() is slightly updated for this.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c |   2 +
- drivers/opp/of.c   | 138 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/opp/opp.h  |   8 +++
- 3 files changed, 148 insertions(+)
+ drivers/base/power/domain.c | 31 ++++++++++++++---
+ drivers/opp/core.c          | 69 +++++++++++++++++++++++++++++++++++++
+ drivers/opp/of.c            | 12 +++++++
+ drivers/opp/opp.h           |  2 ++
+ include/linux/pm_opp.h      |  8 +++++
+ 5 files changed, 118 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index c0c657fdbf33..22c927c5e4ea 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -863,6 +863,8 @@ static void _opp_table_kref_release(struct kref *kref)
- 	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
- 	struct opp_device *opp_dev;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index c298de8a8308..e9c85c96580c 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2219,8 +2219,14 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ 	genpd_queue_power_off_work(pd);
  
-+	_of_clear_opp_table(opp_table);
+ 	/* Unregister the device if it was created by genpd. */
+-	if (dev->bus == &genpd_bus_type)
++	if (dev->bus == &genpd_bus_type) {
++		struct opp_table *opp_table = dev_get_drvdata(dev);
 +
- 	/* Release clk */
- 	if (!IS_ERR(opp_table->clk))
- 		clk_put(opp_table->clk);
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 218b8997d817..b639195a1e3d 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -70,6 +70,138 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 	return managed_table;
++		if (opp_table)
++			dev_pm_opp_put_required_device(opp_table, dev);
++
+ 		device_unregister(dev);
++	}
  }
  
-+static struct device_node *of_parse_required_opp(struct device_node *np,
-+						 int index)
-+{
-+	struct device_node *required_np;
+ static void genpd_dev_pm_sync(struct device *dev)
+@@ -2235,7 +2241,8 @@ static void genpd_dev_pm_sync(struct device *dev)
+ }
+ 
+ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+-				 unsigned int index)
++				 unsigned int index,
++				 struct generic_pm_domain **pd_ptr)
+ {
+ 	struct of_phandle_args pd_args;
+ 	struct generic_pm_domain *pd;
+@@ -2277,6 +2284,8 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+ 
+ 	if (ret)
+ 		genpd_remove_device(pd, dev);
++	else if (pd_ptr)
++		*pd_ptr = pd;
+ 
+ 	return ret ? -EPROBE_DEFER : 1;
+ }
+@@ -2307,7 +2316,7 @@ int genpd_dev_pm_attach(struct device *dev)
+ 				       "#power-domain-cells") != 1)
+ 		return 0;
+ 
+-	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
++	return __genpd_dev_pm_attach(dev, dev->of_node, 0, NULL);
+ }
+ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+ 
+@@ -2330,6 +2339,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 					 unsigned int index)
+ {
++	struct generic_pm_domain *pd;
+ 	struct device *genpd_dev;
+ 	int num_domains;
+ 	int ret;
+@@ -2359,12 +2369,25 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+ 	}
+ 
+ 	/* Try to attach the device to the PM domain at the specified index. */
+-	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
++	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index, &pd);
+ 	if (ret < 1) {
+ 		device_unregister(genpd_dev);
+ 		return ret ? ERR_PTR(ret) : NULL;
+ 	}
+ 
++	if (pd->set_performance_state) {
++		struct opp_table *opp_table;
 +
-+	required_np = of_parse_phandle(np, "required-opps", index);
-+	if (unlikely(!required_np)) {
-+		pr_err("%s: Unable to parse required-opps: %pOF, index: %d\n",
-+		       __func__, np, index);
-+	}
-+
-+	return required_np;
-+}
-+
-+/* The caller must call dev_pm_opp_put_opp_table() after the table is used */
-+static struct opp_table *_get_required_opp_table(struct device_node *np)
-+{
-+	struct opp_table *opp_table, *required_opp_table = NULL;
-+	struct dev_pm_opp *opp;
-+
-+	lockdep_assert_held(&opp_table_lock);
-+
-+	list_for_each_entry(opp_table, &opp_tables, node) {
-+		mutex_lock(&opp_table->lock);
-+
-+		list_for_each_entry(opp, &opp_table->opp_list, node) {
-+			if (opp->np == np) {
-+				/* Found required OPP table */
-+				if (opp_table->is_genpd) {
-+					required_opp_table = opp_table;
-+					break;
-+				}
-+
-+				/*
-+				 * We only support OPP of genpd's in the
-+				 * "required-opps" for now, as we don't know how
-+				 * to do DVFS for any other use cases. Error out
-+				 * if the required OPP doesn't belong to a
-+				 * genpd.
-+				 */
-+				pr_err("%s: required-opp doesn't belong to genpd: %pOF\n",
-+				       __func__, opp->np);
-+				break;
-+			}
++		opp_table = dev_pm_opp_set_required_device(dev, genpd_dev,
++							   index);
++		if (IS_ERR(opp_table)) {
++			genpd_dev_pm_detach(genpd_dev, true);
++			return ERR_CAST(opp_table);
 +		}
 +
-+		mutex_unlock(&opp_table->lock);
-+
-+		if (!required_opp_table)
-+			continue;
-+
-+		_get_opp_table_kref(required_opp_table);
-+
-+		return required_opp_table;
++		dev_set_drvdata(genpd_dev, opp_table);
 +	}
 +
-+	return ERR_PTR(-ENODEV);
+ 	pm_runtime_set_active(genpd_dev);
+ 	pm_runtime_enable(genpd_dev);
+ 
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index acc34c238fd6..3a2f08c56c4e 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1532,6 +1532,75 @@ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
+ 
++/**
++ * dev_pm_opp_set_required_device - Set required device for an index
++ * @dev: Device for which the required device is getting set.
++ * @required_dev: required device.
++ * @index: index for which the required device is getting added.
++ *
++ * Multiple generic power domains for a device are supported with the help of
++ * virtual devices, which are created for each dev-genpd pair. These are the
++ * device structures which are attached to the power domain and are required by
++ * the OPP core to set the performance state of the genpd.
++ *
++ * This helper needs to be called once for each genpd of a device, but only if
++ * multiple domains are present for a device. Otherwise the original device
++ * structure will be used instead by the OPP core.
++ */
++struct opp_table *dev_pm_opp_set_required_device(struct device *dev,
++						 struct device *required_dev,
++						 int index)
++{
++	struct opp_table *opp_table;
++
++	opp_table = dev_pm_opp_get_opp_table(dev);
++	if (!opp_table)
++		return ERR_PTR(-ENOMEM);
++
++	/* Make sure there are no concurrent readers while updating opp_table */
++	WARN_ON(!list_empty(&opp_table->opp_list));
++
++	if (unlikely(!opp_table->required_devices ||
++		     index >= opp_table->required_opp_count ||
++		     opp_table->required_devices[index])) {
++		dev_err(dev, "Invalid request to set required device\n");
++		dev_pm_opp_put_opp_table(opp_table);
++		return ERR_PTR(-EINVAL);
++	}
++
++	opp_table->required_devices[index] = required_dev;
++
++	return opp_table;
 +}
 +
-+/* Free resources previously acquired by _opp_table_alloc_required_tables() */
-+static void _opp_table_free_required_tables(struct opp_table *opp_table)
++/**
++ * dev_pm_opp_put_required_device() - Releases resources blocked for required device.
++ * @opp_table: OPP table returned by dev_pm_opp_set_required_device().
++ * @required_dev: required device.
++ *
++ * This releases the resource previously acquired with a call to
++ * dev_pm_opp_set_required_device().
++ */
++void dev_pm_opp_put_required_device(struct opp_table *opp_table,
++				    struct device *required_dev)
 +{
-+	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
 +	int i;
 +
-+	if (!required_opp_tables)
-+		return;
++	/* Make sure there are no concurrent readers while updating opp_table */
++	WARN_ON(!list_empty(&opp_table->opp_list));
 +
 +	for (i = 0; i < opp_table->required_opp_count; i++) {
-+		if (IS_ERR_OR_NULL(required_opp_tables[i]))
-+			break;
++		if (opp_table->required_devices[i] != required_dev)
++			continue;
 +
-+		dev_pm_opp_put_opp_table(required_opp_tables[i]);
-+	}
-+
-+	kfree(required_opp_tables);
-+
-+	opp_table->required_opp_count = 0;
-+	opp_table->required_opp_tables = NULL;
-+}
-+
-+/*
-+ * Populate all devices and opp tables which are part of "required-opps" list.
-+ * Checking only the first OPP node should be enough.
-+ */
-+static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
-+					     struct device *dev,
-+					     struct device_node *opp_np)
-+{
-+	struct opp_table **required_opp_tables;
-+	struct device_node *required_np, *np;
-+	int count, i;
-+
-+	/* Traversing the first OPP node is all we need */
-+	np = of_get_next_available_child(opp_np, NULL);
-+	if (!np) {
-+		dev_err(dev, "Empty OPP table\n");
++		opp_table->required_devices[i] = NULL;
++		dev_pm_opp_put_opp_table(opp_table);
 +		return;
 +	}
 +
-+	count = of_count_phandle_with_args(np, "required-opps", NULL);
-+	if (!count)
-+		goto put_np;
-+
-+	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
-+				      GFP_KERNEL);
-+	if (!required_opp_tables)
-+		goto put_np;
-+
-+	opp_table->required_opp_tables = required_opp_tables;
-+	opp_table->required_opp_count = count;
-+
-+	for (i = 0; i < count; i++) {
-+		required_np = of_parse_required_opp(np, i);
-+		if (!required_np)
-+			goto free_required_tables;
-+
-+		required_opp_tables[i] = _get_required_opp_table(required_np);
-+		of_node_put(required_np);
-+
-+		if (IS_ERR(required_opp_tables[i]))
-+			goto free_required_tables;
-+	}
-+
-+	goto put_np;
-+
-+free_required_tables:
-+	_opp_table_free_required_tables(opp_table);
-+put_np:
-+	of_node_put(np);
++	dev_err(required_dev, "Failed to find required device entry\n");
 +}
 +
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
+ /**
+  * dev_pm_opp_add()  - Add an OPP table from a table definitions
+  * @dev:	device for which we do this operation
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index ffefccfdbc26..20baba090c17 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -133,6 +133,7 @@ static struct opp_table *_get_required_opp_table(struct device_node *np)
+ static void _opp_table_free_required_tables(struct opp_table *opp_table)
  {
- 	struct device_node *np, *opp_np;
-@@ -103,9 +235,15 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
- 	else
- 		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
+ 	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
++	struct device **required_devices = opp_table->required_devices;
+ 	int i;
  
-+	_opp_table_alloc_required_tables(opp_table, dev, opp_np);
- 	of_node_put(opp_np);
+ 	if (!required_opp_tables)
+@@ -146,8 +147,10 @@ static void _opp_table_free_required_tables(struct opp_table *opp_table)
+ 	}
+ 
+ 	kfree(required_opp_tables);
++	kfree(required_devices);
+ 
+ 	opp_table->required_opp_count = 0;
++	opp_table->required_devices = NULL;
+ 	opp_table->required_opp_tables = NULL;
  }
  
-+void _of_clear_opp_table(struct opp_table *opp_table)
-+{
-+	_opp_table_free_required_tables(opp_table);
-+}
-+
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
- 			      struct device_node *np)
+@@ -159,6 +162,7 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+ 					     struct device *dev,
+ 					     struct device_node *opp_np)
  {
++	struct device **required_devices = NULL;
+ 	struct opp_table **required_opp_tables;
+ 	struct device_node *required_np, *np;
+ 	int count, i;
+@@ -174,11 +178,19 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+ 	if (!count)
+ 		goto put_np;
+ 
++	if (count > 1) {
++		required_devices = kcalloc(count, sizeof(*required_devices),
++					   GFP_KERNEL);
++		if (!required_devices)
++			goto put_np;
++	}
++
+ 	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
+ 				      GFP_KERNEL);
+ 	if (!required_opp_tables)
+ 		goto put_np;
+ 
++	opp_table->required_devices = required_devices;
+ 	opp_table->required_opp_tables = required_opp_tables;
+ 	opp_table->required_opp_count = count;
+ 
 diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 3cd3b7b167b5..fea70c71cc99 100644
+index 9efdc3e4840c..857a7f5e66d0 100644
 --- a/drivers/opp/opp.h
 +++ b/drivers/opp/opp.h
-@@ -131,6 +131,9 @@ enum opp_table_access {
+@@ -133,6 +133,7 @@ enum opp_table_access {
   * @clock_latency_ns_max: Max clock latency in nanoseconds.
   * @shared_opp: OPP is shared between multiple devices.
   * @suspend_opp: Pointer to OPP to be used during device suspend.
-+ * @required_opp_tables: List of device OPP tables that are required by OPPs in
-+ *		this table.
-+ * @required_opp_count: Number of required devices.
-  * @supported_hw: Array of version number to support.
-  * @supported_hw_count: Number of elements in supported_hw array.
-  * @prop_name: A name to postfix to many DT properties, while parsing them.
-@@ -168,6 +171,9 @@ struct opp_table {
++ * @required_devices: List of virtual devices for multiple genpd support.
+  * @required_opp_tables: List of device OPP tables that are required by OPPs in
+  *		this table.
+  * @required_opp_count: Number of required devices.
+@@ -173,6 +174,7 @@ struct opp_table {
  	enum opp_table_access shared_opp;
  	struct dev_pm_opp *suspend_opp;
  
-+	struct opp_table **required_opp_tables;
-+	unsigned int required_opp_count;
++	struct device **required_devices;
+ 	struct opp_table **required_opp_tables;
+ 	unsigned int required_opp_count;
+ 
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 099b31960dec..ffdb4a78edec 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -125,6 +125,8 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
+ void dev_pm_opp_put_clkname(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
+ void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
++struct opp_table *dev_pm_opp_set_required_device(struct device *dev, struct device *required_dev, int index);
++void dev_pm_opp_put_required_device(struct opp_table *opp_table, struct device *required_device);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -266,6 +268,12 @@ static inline struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const
+ 
+ static inline void dev_pm_opp_put_clkname(struct opp_table *opp_table) {}
+ 
++static inline struct opp_table *dev_pm_opp_set_required_device(struct device *dev, struct device *required_dev, int index)
++{
++	return ERR_PTR(-ENOTSUPP);
++}
 +
- 	unsigned int *supported_hw;
- 	unsigned int supported_hw_count;
- 	const char *prop_name;
-@@ -203,8 +209,10 @@ struct opp_table *_add_opp_table(struct device *dev);
- 
- #ifdef CONFIG_OF
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev);
-+void _of_clear_opp_table(struct opp_table *opp_table);
- #else
- static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev) {}
-+static inline void _of_clear_opp_table(struct opp_table *opp_table) {}
- #endif
- 
- #ifdef CONFIG_DEBUG_FS
++static inline void dev_pm_opp_put_required_device(struct opp_table *opp_table, struct device *required_device) {}
+ static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ {
+ 	return -ENOTSUPP;
 -- 
 2.18.0.rc1.242.g61856ae69a2c
