@@ -1,76 +1,23 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
-Date: Fri, 29 Jun 2018 10:34:40 +0200
-Message-ID: <2518711.SfHWAsyaFM@aspire.rjw.lan>
-References: <35587465.8Nave9aG7d@aspire.rjw.lan>
+Subject: Re: [PATCH V2 2/2] PM / Domains: Rename opp_node to np
+Date: Fri, 29 Jun 2018 10:53:15 +0200
+Message-ID: <7703952.a8MDHWhssn@aspire.rjw.lan>
+References: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org> <7511c9837569aec34c56e0a40364f2f3c16563b6.1529475153.git.viresh.kumar@linaro.org> <20180620061928.6vlvyhakzocpakth@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <35587465.8Nave9aG7d@aspire.rjw.lan>
+In-Reply-To: <20180620061928.6vlvyhakzocpakth@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: n0000b.n000b@gmail.com, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, June 20, 2018 8:19:28 AM CEST Viresh Kumar wrote:
+> On 20-06-18, 11:45, Viresh Kumar wrote:
+> 
+> The subject should be "[PATCH V2 1/2] ***" instead.
+> 
+> 
 
-It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
-handling for devices with no callbacks) introduced a system suspend
-regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
-port) to stay in D3 over suspend-to-RAM, which is a side effect of
-setting power.direct_complete for the children of that bridge that
-have no PM callbacks.
-
-On the majority of systems PCI bridges are not allowed to be
-runtime-suspended (the power/control sysfs attribute is set to "on"
-for them by default), but user space can change that setting and if
-it does so and a given bridge has no children with PM callbacks, the
-direct_complete optimization will be applied to it and it will stay
-in suspend over system suspend.  Apparently, that confuses the
-platform firmware on the affected machine and that may very well
-happen elsewhere, so avoid the direct_complete optimization for
-PCI bridges with no drivers (if there is a driver, it should take
-care of the PM handling) on suspend-to-RAM altogether (that should
-not matter for suspend-to-idle as platform firmware is not involved
-in it).
-
-Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
-Reported-by: n0000b.n000b@gmail.com
-Tested-by: n0000b.n000b@gmail.com
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
--> v2: Make the patch work for PCI bridges without ACPI companion objects.
-
-Since that doesn't really change the idea etc, but only makes the check
-to be made earlier, I've added the Reviewed-by and Acked-by tags given to
-the previous version.  If that's not right, please let me know.
-
----
- drivers/pci/pci-acpi.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
-
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -629,6 +629,15 @@ static bool acpi_pci_need_resume(struct
- {
- 	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
- 
-+	/*
-+	 * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
-+	 * confuses the platform firmware, so avoid doing that, unless the
-+	 * bridge has a driver that should take care of PM handling.
-+	 */
-+	if (pci_is_bridge(dev) && !dev->driver &&
-+	    acpi_target_system_state() != ACPI_STATE_S0)
-+		return true;
-+
- 	if (!adev || !acpi_device_power_manageable(adev))
- 		return false;
- 
+Applied along with the [1/2], thanks!
