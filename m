@@ -1,176 +1,58 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 2/3][RFC] PM / Hibernate: Encrypt the snapshot pages
- before submitted to the block device
-Date: Fri, 29 Jun 2018 20:59:43 +0800
-Message-ID: <20180629125943.GK3628@linux-l9pv.suse>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <5a1cc6bff40ff9a3e023392c69b881e91b16837a.1529486870.git.yu.c.chen@intel.com>
- <20180628130641.GG3628@linux-l9pv.suse>
- <20180628135017.GA6561@sandybridge-desktop>
- <20180628142856.GH3628@linux-l9pv.suse>
- <20180628145207.GA10891@sandybridge-desktop>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [PATCH 3/3] arm64: dts: marvell: armada-37xx: add the node
+ allowing AVS support
+Date: Fri, 29 Jun 2018 16:36:43 +0200
+Message-ID: <87602164n8.fsf@bootlin.com>
+References: <20180619124402.902-1-gregory.clement@bootlin.com>
+ <20180619124402.902-4-gregory.clement@bootlin.com>
+ <20180629095426.7aein2vmjtegyrfa@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180628145207.GA10891@sandybridge-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180629095426.7aein2vmjtegyrfa@vireshk-i7> (Viresh Kumar's
+ message of "Fri, 29 Jun 2018 15:24:26 +0530")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>, Victor Gu <xigu@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 28, 2018 at 10:52:07PM +0800, Yu Chen wrote:
-> Hi,
-> On Thu, Jun 28, 2018 at 10:28:56PM +0800, joeyli wrote:
-> > On Thu, Jun 28, 2018 at 09:50:17PM +0800, Yu Chen wrote:
-> > > Hi,
-> > > On Thu, Jun 28, 2018 at 09:07:20PM +0800, joeyli wrote:
-> > > > Hi Chen Yu,
-> > > > 
-> > > > On Wed, Jun 20, 2018 at 05:40:32PM +0800, Chen Yu wrote:
-> > > > > Use the helper functions introduced previously to encrypt
-> > > > > the page data before they are submitted to the block device.
-> > > > > Besides, for the case of hibernation compression, the data
-> > > > > are firstly compressed and then encrypted, and vice versa
-> > > > > for the resume process.
-> > > > >
-> > > > 
-> > > > I want to suggest my solution that it direct signs/encrypts the
-> > > > memory snapshot image. This solution is already shipped with
-> > > > SLE12 a couple of years:
-> > > > 
-> > > > https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-encrypted-key-v0.2-v4.17-rc3
-> > > > 
-> > > I did not see image page encryption in above link, if I understand
-> > 
-> > PM / hibernate: Generate and verify signature for snapshot image
-> > https://github.com/joeyli/linux-s4sign/commit/bae39460393ada4c0226dd07cd5e3afcef86b71f
-> >
-> > PM / hibernate: snapshot image encryption
-> > https://github.com/joeyli/linux-s4sign/commit/6a9a0113bb221c036ebd0f6321b7191283fe4929
-> >
-> > The above patches sign and encrypt the data pages in snapshot image.
-> > It puts the signature to header.
-> >
-> It looks like your signature code can be simplyly added on top of the
-> solution we proposed here, how about we collaborating on this task?
-
-OK, I will base on your user key solution to respin my signature patches.
+Hi Viresh,
  
-> just my 2 cents, 
-> 1. The cryption code should be indepent of the snapshot code, and
->    this is why we implement it as a kernel module for that in PATCH[1/3].
+ On ven., juin 29 2018, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Why the cryption code must be indepent of snapshot code?
+> On 19-06-18, 14:44, Gregory CLEMENT wrote:
+>> In order to be able to use Adaptive Voltage Scaling, we need to add a
+>> reference to these registers.
+>> 
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+>> ---
+>>  arch/arm64/boot/dts/marvell/armada-37xx.dtsi | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> 2. There's no need to traverse the snapshot image twice, if the
->    image is large(there's requirement on servers now) we can
->    simplyly do the encryption before the disk IO, and this is
->    why PATCH[2/3] looks like this.
+Thanks! Based on your acked-by, then I applied this patch on mvebu/dt
 
-If the encryption solution is only for block device, then the uswsusp
-interface must be locked-down when kernel is in locked mode:
+I let you apply the 2 other patches of the series
 
-uswsusp: Disable when the kernel is locked down
-https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs.git/commit/?h=lockdown-20180410&id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
+Gregory
 
-I still suggest to keep the solution to direct encript the snapshot
-image for uswsusp because the snapshot can be encrypted by kernel
-before user space get it.
 
-I mean that if the uswsusp be used, then kernel direct encrypts the
-snapshot image, otherwise kernel encrypts pages before block io.
 
-On the other hand, I have a question about asynchronous block io.
-Please see below...
+>
+> -- 
+> viresh
 
-> > > > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > Cc: Pavel Machek <pavel@ucw.cz>
-> > > > > Cc: Len Brown <len.brown@intel.com>
-> > > > > Cc: Borislav Petkov <bp@alien8.de>
-> > > > > Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> > > > > Cc: linux-pm@vger.kernel.org
-> > > > > Cc: linux-kernel@vger.kernel.org
-> > > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > > > ---
-> > > > >  kernel/power/power.h |   1 +
-> > > > >  kernel/power/swap.c  | 215 ++++++++++++++++++++++++++++++++++++++++++++++++---
-> > > > >  2 files changed, 205 insertions(+), 11 deletions(-)
-[...snip]
-> > > > >  /* kernel/power/hibernate.c */
-> > > > >  extern int swsusp_check(void);
-> > > > > diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> > > > > index c2bcf97..2b6b3d0 100644
-> > > > > --- a/kernel/power/swap.c
-> > > > > +++ b/kernel/power/swap.c
-[...snip]
-> > > > > @@ -1069,18 +1171,42 @@ static int load_image(struct swap_map_handle *handle,
-> > > > >  	if (!m)
-> > > > >  		m = 1;
-> > > > >  	nr_pages = 0;
-> > > > > +	crypto_page_idx = 0;
-> > > > > +	if (handle->crypto) {
-> > > > > +		crypt_buf = (void *)get_zeroed_page(GFP_KERNEL);
-> > > > > +		if (!crypt_buf)
-> > > > > +			return -ENOMEM;
-> > > > > +	}
-> > > > >  	start = ktime_get();
-> > > > >  	for ( ; ; ) {
-> > > > >  		ret = snapshot_write_next(snapshot);
-> > > > >  		if (ret <= 0)
-> > > > >  			break;
-> > > > > -		ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > > +		if (handle->crypto)
-> > > > > +			ret = swap_read_page(handle, crypt_buf, &hb);
-> > > > > +		else
-> > > > > +			ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > >  		if (ret)
-> > > > >  			break;
-> > > > >  		if (snapshot->sync_read)
-> > > > >  			ret = hib_wait_io(&hb);
-
-In snapshot_write_next(), the logic will clean the snapshot->sync_read
-when the buffer page doesn't equal to the original page. Which means
-that the page can be read by asynchronous block io. Otherwise, kernel
-calls hib_wait_io() to wait until the block io was done.
-
-> > > > >  		if (ret)
-> > > > >  			break;
-> > > > > +		if (handle->crypto) {
-> > > > > +			/*
-> > > > > +			 * Need a decryption for the
-> > > > > +			 * data read from the block
-> > > > > +			 * device.
-> > > > > +			 */
-> > > > > +			ret = crypto_data(crypt_buf, PAGE_SIZE,
-> > > > > +					  data_of(*snapshot),
-> > > > > +					  PAGE_SIZE,
-> > > > > +					  false,
-> > > > > +					  crypto_page_idx);
-> > > > > +			if (ret)
-> > > > > +				break;
-> > > > > +			crypto_page_idx++;
-> > > > > +		}
-
-The decryption is here in the for-loop. But maybe the page is still in
-the block io queue for waiting the batch read? The page content is not
-really read to memory when the crypto_data be run? 
-
-> > > > >  		if (!(nr_pages % m))
-> > > > >  			pr_info("Image loading progress: %3d%%\n",
-> > > > >  				nr_pages / m * 10);
-                nr_pages++;
-        }
-        err2 = hib_wait_io(&hb);
-        stop = ktime_get();
-
-When the for-loop is break, the above hib_wait_io(&hb) guarantees that
-all asynchronous block io are done. Then all pages are read to memory.
-
-I think that the decryption code must be moved after for-loop be break.
-Or there have any callback hook in the asynchronous block io that we
-can put the encryption code after the block io read the page.
-
-Thanks a lot!
-Joey Lee 
+-- 
+Gregory Clement, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+http://bootlin.com
