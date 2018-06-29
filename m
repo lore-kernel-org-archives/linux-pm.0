@@ -1,130 +1,55 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is
- finished
-Date: Fri, 29 Jun 2018 18:15:10 +0200
-Message-ID: <3666866.2CEay15PAX@amdc3058>
-References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
-        <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Daniel Mack <daniel@zonque.org>
+Subject: [PATCH v3 0/4] Add devicetree functionality to w1 busses and ds2760
+Date: Fri, 29 Jun 2018 19:31:33 +0200
+Message-ID: <20180629173137.12690-1-daniel@zonque.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu
+Cc: sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 10, 2018 02:41:54 PM Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> [devm]_thermal_zone_of_sensor_register() is used to register
-> thermal sensor by thermal drivers using DeviceTree. Besides
-> registering sensor this function also immediately enables it
-> (using ->set_mode method) and then checks it with a update call
-> to the thermal core (which ends up using ->get_temp method).
-> For many DT thermal drivers this causes a problem because
-> [devm]_thermal_zone_of_sensor_register() need to be called in
-> order to obtain data about thermal trips which are then used to
-> finish hardware sensor setup (only after which ->get_temp can
-> be used). The issue has been observed when using Samsung Exynos
-> thermal driver and fixed internally in the driver in commit
-> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
-> only when TMU is turned on"). However after this commit there
-> are now following warnings from the thermal core visible:
-> 
-> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
-> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
-> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
-> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
-> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
-> 
-> This patchset attempts to directly address the thermal core
-> problem with [devm]_thermal_zone_of_sensor_register() and
-> affected DT thermal drivers. In order to achieve this sensor
-> registration, enable and check operations are separated and
-> corresponding drivers are modified to use the new helpers to
-> enable and check sensor explicitly.
-> 
-> Tested on Exynos5422 based Odroid-XU3 Lite board (aforementioned
-> warnings from the thermal core are now gone).
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (17):
->   thermal: add thermal_zone_device_toggle() helper
->   thermal: separate sensor registration and enable
->   thermal: add thermal_zone_device_check() helper
->   thermal: do sensor checking explicitly in drivers
->   thermal: bcm2835: enable/check sensor after its setup is finished
->   thermal: brcmstb: enable/check sensor after its setup is finished
->   thermal: hisi_thermal: enable/check sensor after its setup is finished
->   thermal: qcom: tsens: enable/check sensor after its setup is finished
->   thermal: qoriq: enable/check sensor after its setup is finished
->   thermal: rcar_gen3_thermal: enable/check sensor after its setup is
->     finished
->   thermal: rockchip_thermal: enable/check sensor after its setup is
->     finished
->   thermal: exynos: enable/check sensor after its setup is finished
->   thermal: tegra: enable/check sensor after its setup is finished
->   thermal: ti-soc-thermal: enable/check sensor after its setup is
->     finished
->   thermal: uniphier: enable/check sensor after its setup is
->     finished
->   thermal: zx2967: enable/check sensor after its setup is finished
->   thermal: warn on attempts to read temperature on disabled sensors
-> 
->  drivers/acpi/thermal.c                             |  5 ++--
->  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
->  drivers/platform/x86/acerhdf.c                     |  6 +++-
->  drivers/regulator/max8973-regulator.c              |  3 +-
->  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
->  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
->  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
->  drivers/thermal/da9062-thermal.c                   |  7 ++---
->  drivers/thermal/db8500_thermal.c                   |  5 +++-
->  drivers/thermal/hisi_thermal.c                     | 22 ++++----------
->  drivers/thermal/imx_thermal.c                      |  3 +-
->  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
->  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
->  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
->  drivers/thermal/max77620_thermal.c                 |  6 ++--
->  drivers/thermal/mtk_thermal.c                      |  3 ++
->  drivers/thermal/of-thermal.c                       |  6 ++--
->  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 +++-
->  drivers/thermal/qcom/tsens.c                       |  6 ++++
->  drivers/thermal/qoriq_thermal.c                    |  3 ++
->  drivers/thermal/rcar_gen3_thermal.c                |  7 +++--
->  drivers/thermal/rcar_thermal.c                     |  8 +++--
->  drivers/thermal/rockchip_thermal.c                 | 34 ++++++++++------------
->  drivers/thermal/samsung/exynos_tmu.c               |  7 ++++-
->  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
->  drivers/thermal/tango_thermal.c                    |  5 ++++
->  drivers/thermal/tegra/soctherm.c                   |  3 ++
->  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
->  drivers/thermal/thermal-generic-adc.c              |  3 ++
->  drivers/thermal/thermal_core.c                     | 14 ++++-----
->  drivers/thermal/thermal_helpers.c                  | 33 +++++++++++++++++++++
->  drivers/thermal/thermal_sysfs.c                    | 17 +++++++----
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 ++++-
->  drivers/thermal/uniphier_thermal.c                 |  6 +++-
->  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
->  drivers/thermal/zx2967_thermal.c                   |  3 ++
->  include/linux/thermal.h                            |  5 ++++
->  37 files changed, 173 insertions(+), 84 deletions(-)
+This patch set contains four small patches that bring devicetree
+functionality to w1 bus masters and slaves in general. As an example,
+the DS2760 driver is made aware of devicetree nodes as an example.
+Other drivers can easily be ported later.
 
-Gentle ping.
+W1 masters scan their bus in order to discover slave devices. Once
+one is found, a driver matching the family of the device is instanciated
+which handles it.
 
-Eduardo/Rui, do you see any issues with this patchset that should
-be addressed before posting refreshed version?
+All that's needed for now is a call to of_find_matching_node() when
+a slave device is attached, so the corresponding of_node pointer is
+set.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+The series also contains a patch that merges the w1 slave driver for the
+DS2760 battery monitor into its only user, the ds2760 supply driver.
+The indirection with two drivers never had any benefit, and here is
+a good opportunity to clean this up.
+
+Patch #1 adds some DT bindings documentation
+Patch #2 adds the call to of_find_matching_node()
+Patch #3 merges the w1 slave and the supply driver for ds2760
+Patch #4 makes the ds2760 supply driver aware of DT environments
+
+This works fine on a PXA3xx based board with a battery attached to
+the w1-gpio bus master controller.
+
+Daniel Mack (4):
+  dt-bindings: w1: document sub-node bindings for DS2760
+  w1: core: match sub-nodes of bus masters in devicetree
+  w1: ds2760: add devicetree matching glue
+  power: ds2760_battery: add device tree glue
+
+ .../devicetree/bindings/w1/maxim,ds2760.txt    | 15 +++++++++++++++
+ .../devicetree/bindings/w1/w1-gpio.txt         |  6 ++++++
+ Documentation/devicetree/bindings/w1/w1.txt    | 18 ++++++++++++++++++
+ drivers/power/supply/ds2760_battery.c          |  6 +++++-
+ drivers/w1/slaves/w1_ds2760.c                  |  9 +++++++++
+ drivers/w1/w1.c                                |  3 +++
+ include/linux/w1.h                             |  2 ++
+ 7 files changed, 58 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/w1/maxim,ds2760.txt
+ create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+
+-- 
+2.17.1
