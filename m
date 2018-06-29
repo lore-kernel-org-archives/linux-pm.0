@@ -1,23 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 2/2] PM / Domains: Rename opp_node to np
-Date: Fri, 29 Jun 2018 10:53:15 +0200
-Message-ID: <7703952.a8MDHWhssn@aspire.rjw.lan>
-References: <3d3687c030535189885d84c57dbffb034c4461c2.1528953706.git.viresh.kumar@linaro.org> <7511c9837569aec34c56e0a40364f2f3c16563b6.1529475153.git.viresh.kumar@linaro.org> <20180620061928.6vlvyhakzocpakth@vireshk-i7>
+Subject: Re: [PATCH v3 6/6] PM / Domains: Stop deferring probe at the end of initcall
+Date: Fri, 29 Jun 2018 10:58:50 +0200
+Message-ID: <6638705.joTkLXoa2B@aspire.rjw.lan>
+References: <20180628204344.13973-1-robh@kernel.org> <20180628204344.13973-7-robh@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180620061928.6vlvyhakzocpakth@vireshk-i7>
+In-Reply-To: <20180628204344.13973-7-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Alexander Graf <agraf@suse.de>, Bjorn Andersson <bjorn.andersson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>, Mark Brown <broonie@kernel.org>, Frank Rowand <frowand.list@gmail.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, boot-architecture@lists.linaro.org, linux-arm-kernel@lists.infradead.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 20, 2018 8:19:28 AM CEST Viresh Kumar wrote:
-> On 20-06-18, 11:45, Viresh Kumar wrote:
+On Thursday, June 28, 2018 10:43:44 PM CEST Rob Herring wrote:
+> All PM domain drivers must be built-in (at least those using DT), so
+> there is no point deferring probe after initcalls are done. Continuing
+> to defer probe may prevent booting successfully even if managing PM
+> domains is not required. This can happen if the user failed to enable
+> the driver or if power-domains are added to a platform's DT, but there
+> is not yet a driver (e.g. a new DTB with an old kernel).
 > 
-> The subject should be "[PATCH V2 1/2] ***" instead.
+> Call the driver core function driver_deferred_probe_check_init_done()
+> instead of just returning -EPROBE_DEFER to stop deferring probe when
+> initcalls are done.
 > 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+> v3:
+>   - Update to new function name
 > 
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 4925af5c4cf0..8c12213875c6 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+>  		mutex_unlock(&gpd_list_lock);
+>  		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>  			__func__, PTR_ERR(pd));
+> -		return -EPROBE_DEFER;
+> +		return driver_deferred_probe_check_state(dev);
+>  	}
+> 
+>  	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+> --
 
-Applied along with the [1/2], thanks!
+ACK
