@@ -1,197 +1,200 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 08/10] OPP: Configure all required OPPs
-Date: Fri, 29 Jun 2018 11:49:38 +0530
-Message-ID: <c1da547faaa9fb4e3fe9034a643853847b106d68.1530252803.git.viresh.kumar@linaro.org>
+Subject: [PATCH 09/10] OPP: Rename and relocate of_genpd_opp_to_performance_state()
+Date: Fri, 29 Jun 2018 11:49:39 +0530
+Message-ID: <9dddd2b291fcdf8eee7d95ca4346d9b3e4228e43.1530252803.git.viresh.kumar@linaro.org>
 References: <cover.1530252803.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that all the infrastructure is in place to support multiple required
-OPPs, lets switch over to using it.
+The OPP core already has the performance state values for each of the
+genpd's OPPs and there is no need to call the genpd callback again to
+get the performance state for the case where the end device doesn't have
+an OPP table and has the "required-opps" property directly in its node.
 
-A new internal routine _set_required_opps() takes care of updating
-performance state for all the required OPPs. With this the performance
-state updates are supported even when the end device needs to configure
-regulators as well, that wasn't the case earlier.
-
-The pstates were earlier stored in the end device's OPP structures, that
-also changes now as those values are stored in the genpd's OPP
-structures. And so we switch over to using
-genpd_opp_to_performance_state() instead of
-of_genpd_opp_to_performance_state() to get performance state for the
-genpd OPPs.
-
-The routine _generic_set_opp_domain() is not required anymore and is
-removed.
-
-On errors we don't try to recover by reverting to old settings as things
-are really complex now and the calls here should never really fail
-unless there is a bug. There is no point increasing the complexity, for
-code which will never be executed.
+This commit renames of_get_required_opp_performance_state() as
+of_get_required_opp_performance_state() and moves it to the OPP core, as
+it is all about OPP stuff now.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 99 ++++++++++++++++++++++++----------------------
- drivers/opp/of.c   |  5 ++-
- 2 files changed, 54 insertions(+), 50 deletions(-)
+ drivers/base/power/domain.c | 48 ------------------------------------
+ drivers/opp/of.c            | 49 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  9 -------
+ include/linux/pm_opp.h      |  5 ++++
+ 4 files changed, 54 insertions(+), 57 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 3a2f08c56c4e..6b3410ded1ca 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -543,44 +543,6 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
- 	return ret;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 15ffac081b0e..4b6acaac6ab9 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2544,54 +2544,6 @@ unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
  }
+ EXPORT_SYMBOL_GPL(genpd_opp_to_performance_state);
  
--static inline int
--_generic_set_opp_domain(struct device *dev, struct clk *clk,
--			unsigned long old_freq, unsigned long freq,
--			unsigned int old_pstate, unsigned int new_pstate)
+-/**
+- * of_genpd_opp_to_performance_state- Gets performance state of device's
+- * power domain corresponding to a DT node's "required-opps" property.
+- *
+- * @dev: Device for which the performance-state needs to be found.
+- * @np: DT node where the "required-opps" property is present. This can be
+- *	the device node itself (if it doesn't have an OPP table) or a node
+- *	within the OPP table of a device (if device has an OPP table).
+- *
+- * Returns performance state corresponding to the "required-opps" property of
+- * a DT node. This calls platform specific genpd->opp_to_performance_state()
+- * callback to translate power domain OPP to performance state.
+- *
+- * Returns performance state on success and 0 on failure.
+- */
+-unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+-					       struct device_node *np)
 -{
--	int ret;
+-	struct generic_pm_domain *genpd;
+-	struct dev_pm_opp *opp;
+-	int state = 0;
 -
--	/* Scaling up? Scale domain performance state before frequency */
--	if (freq > old_freq) {
--		ret = dev_pm_genpd_set_performance_state(dev, new_pstate);
--		if (ret)
--			return ret;
+-	genpd = dev_to_genpd(dev);
+-	if (IS_ERR(genpd))
+-		return 0;
+-
+-	if (unlikely(!genpd->set_performance_state))
+-		return 0;
+-
+-	genpd_lock(genpd);
+-
+-	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
+-	if (IS_ERR(opp)) {
+-		dev_err(dev, "Failed to find required OPP: %ld\n",
+-			PTR_ERR(opp));
+-		goto unlock;
 -	}
 -
--	ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
--	if (ret)
--		goto restore_domain_state;
+-	state = genpd->opp_to_performance_state(genpd, opp);
+-	dev_pm_opp_put(opp);
 -
--	/* Scaling down? Scale domain performance state after frequency */
--	if (freq < old_freq) {
--		ret = dev_pm_genpd_set_performance_state(dev, new_pstate);
--		if (ret)
--			goto restore_freq;
--	}
+-unlock:
+-	genpd_unlock(genpd);
 -
--	return 0;
--
--restore_freq:
--	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
--		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
--			__func__, old_freq);
--restore_domain_state:
--	if (freq > old_freq)
--		dev_pm_genpd_set_performance_state(dev, old_pstate);
--
--	return ret;
+-	return state;
 -}
+-EXPORT_SYMBOL_GPL(of_genpd_opp_to_performance_state);
 -
- static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 				      struct device *dev,
- 				      unsigned long old_freq,
-@@ -658,6 +620,42 @@ static int _set_opp_custom(const struct opp_table *opp_table,
- 	return opp_table->set_opp(data);
- }
- 
-+/* This is only called for PM domain for now */
-+static int _set_required_opps(struct device *dev,
-+			      const struct opp_table *opp_table,
-+			      struct dev_pm_opp *opp)
-+{
-+	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
-+	struct device **required_devices = opp_table->required_devices;
-+	struct device *required_dev = dev;
-+	unsigned int pstate;
-+	int i, ret;
-+
-+	if (!required_opp_tables)
-+		return 0;
-+
-+	for (i = 0; i < opp_table->required_opp_count; i++) {
-+		pstate = opp->required_opps[i]->pstate;
-+
-+		if (required_devices) {
-+			required_dev = required_devices[i];
-+			if (!required_dev) {
-+				dev_err(dev, "Missing OPP required device\n");
-+				return -ENODEV;
-+			}
-+		}
-+
-+		ret = dev_pm_genpd_set_performance_state(required_dev, pstate);
-+		if (ret) {
-+			dev_err(dev, "Failed to set performance rate of %s: %d (%d)\n",
-+				dev_name(required_dev), pstate, ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * dev_pm_opp_set_rate() - Configure new OPP based on frequency
-  * @dev:	 device for which we do this operation
-@@ -725,6 +723,13 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
- 		old_freq, freq);
- 
-+	/* Scaling up? Configure required OPPs before frequency */
-+	if (freq > old_freq) {
-+		ret = _set_required_opps(dev, opp_table, opp);
-+		if (ret)
-+			goto put_opp;
-+	}
-+
- 	if (opp_table->set_opp) {
- 		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
- 				      IS_ERR(old_opp) ? NULL : old_opp->supplies,
-@@ -735,19 +740,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 						 opp->supplies);
- 	} else {
- 		/* Only frequency scaling */
-+		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+	}
- 
--		/*
--		 * We don't support devices with both regulator and
--		 * domain performance-state for now.
--		 */
--		if (opp_table->genpd_performance_state)
--			ret = _generic_set_opp_domain(dev, clk, old_freq, freq,
--						      IS_ERR(old_opp) ? 0 : old_opp->pstate,
--						      opp->pstate);
--		else
--			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+	/* Scaling down? Configure required OPPs after frequency */
-+	if (!ret && freq < old_freq) {
-+		ret = _set_required_opps(dev, opp_table, opp);
-+		if (ret)
-+			dev_err(dev, "Failed to set required opps: %d\n", ret);
- 	}
- 
-+put_opp:
- 	dev_pm_opp_put(opp);
- put_old_opp:
- 	if (!IS_ERR(old_opp))
+ static int __init genpd_bus_init(void)
+ {
+ 	return bus_register(&genpd_bus_type);
 diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 20baba090c17..e1e4a58dd748 100644
+index e1e4a58dd748..80fdeab4364a 100644
 --- a/drivers/opp/of.c
 +++ b/drivers/opp/of.c
-@@ -584,12 +584,13 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
- 	if (!of_property_read_u32(np, "clock-latency-ns", &val))
- 		new_opp->clock_latency_ns = val;
+@@ -964,6 +964,55 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
  
--	new_opp->pstate = of_genpd_opp_to_performance_state(dev, np);
--
- 	ret = opp_parse_supplies(new_opp, dev, opp_table);
- 	if (ret)
- 		goto free_required_opps;
- 
-+	if (opp_table->is_genpd)
-+		new_opp->pstate = genpd_opp_to_performance_state(dev, new_opp);
++/**
++ * of_get_required_opp_performance_state() - Search for required OPP and return its performance state.
++ * @np: Node that contains the "required-opps" property.
++ * @index: Index of the phandle to parse.
++ *
++ * Returns the performance state of the OPP pointed out by the "required-opps"
++ * property at @index in @np.
++ *
++ * Return: Positive performance state on success, otherwise 0 on errors.
++ */
++unsigned int of_get_required_opp_performance_state(struct device_node *np,
++						   int index)
++{
++	struct dev_pm_opp *opp;
++	struct device_node *required_np;
++	struct opp_table *opp_table;
++	unsigned int pstate = 0;
 +
- 	ret = _opp_add(dev, new_opp, opp_table, rate_not_available);
- 	if (ret) {
- 		/* Don't return error for duplicate OPPs */
++	required_np = of_parse_required_opp(np, index);
++	if (!required_np)
++		return -ENODEV;
++
++	opp_table = _get_required_opp_table(required_np);
++	if (IS_ERR(opp_table)) {
++		pr_err("%s: Failed to find required OPP table %pOF: %ld\n",
++		       __func__, np, PTR_ERR(opp_table));
++		goto put_required_np;
++	}
++
++	mutex_lock(&opp_table->lock);
++
++	list_for_each_entry(opp, &opp_table->opp_list, node) {
++		if (opp->np == required_np) {
++			pstate = opp->pstate;
++			break;
++		}
++	}
++
++	mutex_unlock(&opp_table->lock);
++
++	dev_pm_opp_put_opp_table(opp_table);
++
++put_required_np:
++	of_node_put(required_np);
++
++	return pstate;
++}
++EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
++
+ /**
+  * of_dev_pm_opp_find_required_opp() - Search for required OPP.
+  * @dev: The device whose OPP node is referenced by the 'np' DT node.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b3c5f1eaf16c..685f982d56e4 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -235,8 +235,6 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 			       struct genpd_power_state **states, int *n);
+ unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
+ 					    struct dev_pm_opp *opp);
+-unsigned int of_genpd_opp_to_performance_state(struct device *dev,
+-				struct device_node *np);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+@@ -280,13 +278,6 @@ genpd_opp_to_performance_state(struct device *genpd_dev, struct dev_pm_opp *opp)
+ 	return 0;
+ }
+ 
+-static inline unsigned int
+-of_genpd_opp_to_performance_state(struct device *dev,
+-				  struct device_node *np)
+-{
+-	return 0;
+-}
+-
+ static inline int genpd_dev_pm_attach(struct device *dev)
+ {
+ 	return 0;
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index ffdb4a78edec..6d6b1febe068 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -309,6 +309,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
+ struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
+ struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
++unsigned int of_get_required_opp_performance_state(struct device_node *np, int index);
+ #else
+ static inline int dev_pm_opp_of_add_table(struct device *dev)
+ {
+@@ -351,6 +352,10 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+ {
+ 	return NULL;
+ }
++static inline unsigned int of_get_required_opp_performance_state(struct device_node *np, int index)
++{
++	return 0;
++}
+ #endif
+ 
+ #endif		/* __LINUX_OPP_H__ */
 -- 
 2.18.0.rc1.242.g61856ae69a2c
