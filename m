@@ -1,90 +1,65 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2] PCI / ACPI / PM: Resume bridges w/o drivers on
- suspend-to-RAM
-Date: Fri, 29 Jun 2018 14:19:30 -0500
-Message-ID: <20180629191930.GA40928@bhelgaas-glaptop.roam.corp.google.com>
-References: <35587465.8Nave9aG7d@aspire.rjw.lan>
- <2518711.SfHWAsyaFM@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Dai <daidavid1@codeaurora.org>
+Subject: [RFC PATCH v1 0/2] Add QCOM SDM845 interconnect provider driver
+Date: Fri, 29 Jun 2018 14:08:16 -0700
+Message-ID: <1530306498-5181-1-git-send-email-daidavid1@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2518711.SfHWAsyaFM@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, n0000b.n000b@gmail.com, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, daidavid1@codeaurora.org, amit.kucheria@linaro.org, ilina@codeaurora.org, seansw@qti.qualcomm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 29, 2018 at 10:34:40AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> It is reported that commit c62ec4610c40 (PM / core: Fix direct_complete
-> handling for devices with no callbacks) introduced a system suspend
-> regression on Samsung 305V4A by allowing a PCI bridge (not a PCIe
-> port) to stay in D3 over suspend-to-RAM, which is a side effect of
-> setting power.direct_complete for the children of that bridge that
-> have no PM callbacks.
-> 
-> On the majority of systems PCI bridges are not allowed to be
-> runtime-suspended (the power/control sysfs attribute is set to "on"
-> for them by default), but user space can change that setting and if
-> it does so and a given bridge has no children with PM callbacks, the
-> direct_complete optimization will be applied to it and it will stay
-> in suspend over system suspend.  Apparently, that confuses the
-> platform firmware on the affected machine and that may very well
-> happen elsewhere, so avoid the direct_complete optimization for
-> PCI bridges with no drivers (if there is a driver, it should take
-> care of the PM handling) on suspend-to-RAM altogether (that should
-> not matter for suspend-to-idle as platform firmware is not involved
-> in it).
-> 
-> Fixes: c62ec4610c40 (PM / core: Fix direct_complete handling for devices with no callbacks)
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=199941
-> Reported-by: n0000b.n000b@gmail.com
-> Tested-by: n0000b.n000b@gmail.com
-> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2: Make the patch work for PCI bridges without ACPI companion objects.
-> 
-> Since that doesn't really change the idea etc, but only makes the check
-> to be made earlier, I've added the Reviewed-by and Acked-by tags given to
-> the previous version.  If that's not right, please let me know.
+Hi,
 
-Keeping my ack is fine, and I assume you'll apply this.
+This patch series adds a driver and DT binding using the interconnect (ICC)
+framework [1] to describe the Qualcomm SDM845 platform's topology of its
+interconnected buses and internal aggregation nodes known as
+Bus Clock Managers(BCM). The SDM845 ICC provider driver would aggregate and
+satisfy consumer requests accross the SoC by generating commands that
+communicate with the BCM through the Resource Power Manager (RPMh) driver [2]
+interface. The SDM845 ICC driver also configures QoS settings specific to each
+node to ensure clients have proper priority.
 
-It would be nice to see that ACPI spec reference (the spec version and
-section number, not necessarily all the text) in the changelog or
-maybe even a comment in the code.
+The SDM845 interconnect provider has dependencies on the RPMh driver
+and Command DB driver [3] which are under review.
 
-> ---
->  drivers/pci/pci-acpi.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux-pm/drivers/pci/pci-acpi.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-acpi.c
-> +++ linux-pm/drivers/pci/pci-acpi.c
-> @@ -629,6 +629,15 @@ static bool acpi_pci_need_resume(struct
->  {
->  	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
->  
-> +	/*
-> +	 * In some cases (eg. Samsung 305V4A) leaving a bridge in suspend
-> +	 * confuses the platform firmware, so avoid doing that, unless the
-> +	 * bridge has a driver that should take care of PM handling.
-> +	 */
-> +	if (pci_is_bridge(dev) && !dev->driver &&
-> +	    acpi_target_system_state() != ACPI_STATE_S0)
-> +		return true;
-> +
->  	if (!adev || !acpi_device_power_manageable(adev))
->  		return false;
->  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Changes since v0 [4]:
+ - Addressed review feedback from Georgi D. and Evan G.
+ - Removed proposal to modify ICC aggregate callback interface
+ - Moved BCM aggregation into provider set function
+ - Added devicetree binding documentation
+ - Fixed logic in generating TCS command list
+ - Added keepalive flags for resources that are critical to platform operation
+ - Added various comments to clarify intent
+ - Removed unused types and struct definitions
+
+[1]: https://lkml.org/lkml/2018/6/20/453
+[2]: https://lkml.org/lkml/2018/5/9/729
+[3]: https://lkml.org/lkml/2018/3/14/787
+[4]: https://patchwork.kernel.org/patch/10428167/
+
+Summary of the patches:
+Patch 1 creates the Qualcomm SDM845 Specific provider driver.
+Patch 2 Adds dt binding for SDM845 provider
+
+TODO:
+  * Expand aggregation/provider to handle clients with active only requirements.
+  * Add Network-on-Chip (NoC) objects to encapsulate logical nodes for QoS.
+  * Add QoS configuration specific to each NoC.
+
+David Dai (2):
+  interconnect: qcom: Add sdm845 interconnect provider driver
+  arm64: dts: sdm845: Add interconnect provider DT nodes
+
+ .../bindings/interconnect/qcom-sdm845.txt          |  22 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi               |   5 +
+ drivers/interconnect/qcom/Kconfig                  |   8 +
+ drivers/interconnect/qcom/Makefile                 |   1 +
+ drivers/interconnect/qcom/qcom-icc-ids.h           | 142 ++++
+ drivers/interconnect/qcom/sdm845.c                 | 826 +++++++++++++++++++++
+ 6 files changed, 1004 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-sdm845.txt
+ create mode 100644 drivers/interconnect/qcom/qcom-icc-ids.h
+ create mode 100644 drivers/interconnect/qcom/sdm845.c
+
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
