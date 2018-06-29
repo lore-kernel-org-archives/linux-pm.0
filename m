@@ -1,72 +1,36 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.18-rc3
-Date: Fri, 29 Jun 2018 11:20:20 +0200
-Message-ID: <CAJZ5v0ip3jHZTmu6U5bjeHVjYpEhvvNM0zducPu63vo7z07enw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/10] OPP: Support multiple power-domains per device
+Date: Fri, 29 Jun 2018 15:18:03 +0530
+Message-ID: <20180629094803.nsk57skh6wu72oxa@vireshk-i7>
+References: <cover.1530252803.git.viresh.kumar@linaro.org>
+ <2322281.e0L7xCS2Qb@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2322281.e0L7xCS2Qb@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On 29-06-18, 11:06, Rafael J. Wysocki wrote:
+> On Friday, June 29, 2018 8:19:30 AM CEST Viresh Kumar wrote:
+> > Hi,
+> > 
+> > This series improves the OPP core (and a bit of genpd core as well) to
+> > support multiple phandles in the "required-opps" property, which are
+> > only used for multiple power-domains per device for now.
+> > 
+> > We still don't propagate the changes to master domains for the
+> > sub-domains, but this patchset is an important stepping stone for that
+> > to happen.
+> > 
+> > Tested on Hikey960 after faking some power domains for CPUs.
+> 
+> I'm assuming that this work will go in via OPP.
 
-Please pull from the tag
+Yes.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.18-rc3
-
-with top-most commit e27b4d4a7b987ffa93a5a1249dd83dcb69f8d040
-
- Merge branch 'pm-domains'
-
-on top of commit 7daf201d7fe8334e2d2364d4e8ed3394ec9af819
-
- Linux 4.18-rc2
-
-to receive power management fixes for 4.18-rc3.
-
-These fix up recently added features (the Kryo cpufreq driver
-and performance states coverage in the generic power domains
-framework), add missing documentation for a recently added
-sysfs knob in the intel_pstate driver and fix an error in its
-documentation.
-
-Specifics:
-
- - Fix the initialization time error handling in the recently added
-   Kryo cpufreq driver (Dan Carpenter).
-
- - Fix up the recently added coverage of performance states in the
-   generic power domains (genpd) framework (Viresh Kumar).
-
- - Add missing documentation of the new hwp_dynamic_boost sysfs knob
-   in the intel_pstate driver (Rafael Wysocki).
-
- - Fix incorrect sysfs path in the intel_pstate driver documentation
-   (Rafael Wysocki).
-
-Thanks!
-
-
----------------
-
-Dan Carpenter (1):
-      cpufreq: qcom-kryo: Fix error handling in probe()
-
-Rafael J. Wysocki (2):
-      Documentation: admin-guide: intel_pstate: Fix sysfs path
-      Documentation: intel_pstate: Describe hwp_dynamic_boost sysfs knob
-
-Viresh Kumar (2):
-      PM / Domains: Fix return value of of_genpd_opp_to_performance_state()
-      PM / Domains: Rename opp_node to np
-
----------------
-
- Documentation/admin-guide/pm/intel_pstate.rst | 14 ++++++++++++--
- drivers/base/power/domain.c                   |  7 +++----
- drivers/cpufreq/qcom-cpufreq-kryo.c           |  8 ++++----
- include/linux/pm_domain.h                     |  6 +++---
- 4 files changed, 22 insertions(+), 13 deletions(-)
+-- 
+viresh
