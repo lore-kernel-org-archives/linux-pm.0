@@ -1,46 +1,127 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: remove dead code
-Date: Fri, 29 Jun 2018 18:10:26 +0200
-Message-ID: <3318201.BAqn4C3t6k@amdc3058>
-References: <10747698.EAsn0e6Ddm@amdc3058>
-        <CGME20180629161027eucas1p20846507c4f98f50d80ab58aaa1628fd1@eucas1p2.samsung.com>
+Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is
+ finished
+Date: Fri, 29 Jun 2018 18:15:10 +0200
+Message-ID: <3666866.2CEay15PAX@amdc3058>
+References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
+        <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <10747698.EAsn0e6Ddm@amdc3058>
+In-reply-to: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-Hi,
-
-On Wednesday, May 02, 2018 03:20:35 PM Bartlomiej Zolnierkiewicz wrote:
-> Majority of this code (i.e. functions from ti-bandgap.c) has been
-> introduced in May 2013 by commit eb982001dbd8 ("thermal: introduce TI
-> SoC thermal driver"). Just remove it altogether (in case it is needed
-> it can be easily resurrected from git repo).
+On Tuesday, April 10, 2018 02:41:54 PM Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> While at it fix incorrect "not used" comments.
+> [devm]_thermal_zone_of_sensor_register() is used to register
+> thermal sensor by thermal drivers using DeviceTree. Besides
+> registering sensor this function also immediately enables it
+> (using ->set_mode method) and then checks it with a update call
+> to the thermal core (which ends up using ->get_temp method).
+> For many DT thermal drivers this causes a problem because
+> [devm]_thermal_zone_of_sensor_register() need to be called in
+> order to obtain data about thermal trips which are then used to
+> finish hardware sensor setup (only after which ->get_temp can
+> be used). The issue has been observed when using Samsung Exynos
+> thermal driver and fixed internally in the driver in commit
+> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
+> only when TMU is turned on"). However after this commit there
+> are now following warnings from the thermal core visible:
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/thermal/ti-soc-thermal/dra752-bandgap.h      |   68 ---
->  drivers/thermal/ti-soc-thermal/dra752-thermal-data.c |   65 ---
->  drivers/thermal/ti-soc-thermal/omap3-thermal-data.c  |    6 
->  drivers/thermal/ti-soc-thermal/omap4-thermal-data.c  |   10 
->  drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h    |   10 
->  drivers/thermal/ti-soc-thermal/omap5-thermal-data.c  |   46 --
->  drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h    |   41 --
->  drivers/thermal/ti-soc-thermal/ti-bandgap.c          |  370 -------------------
->  drivers/thermal/ti-soc-thermal/ti-bandgap.h          |   43 --
->  9 files changed, 5 insertions(+), 654 deletions(-)
+> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
+> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
+> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
+> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
+> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
+> 
+> This patchset attempts to directly address the thermal core
+> problem with [devm]_thermal_zone_of_sensor_register() and
+> affected DT thermal drivers. In order to achieve this sensor
+> registration, enable and check operations are separated and
+> corresponding drivers are modified to use the new helpers to
+> enable and check sensor explicitly.
+> 
+> Tested on Exynos5422 based Odroid-XU3 Lite board (aforementioned
+> warnings from the thermal core are now gone).
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (17):
+>   thermal: add thermal_zone_device_toggle() helper
+>   thermal: separate sensor registration and enable
+>   thermal: add thermal_zone_device_check() helper
+>   thermal: do sensor checking explicitly in drivers
+>   thermal: bcm2835: enable/check sensor after its setup is finished
+>   thermal: brcmstb: enable/check sensor after its setup is finished
+>   thermal: hisi_thermal: enable/check sensor after its setup is finished
+>   thermal: qcom: tsens: enable/check sensor after its setup is finished
+>   thermal: qoriq: enable/check sensor after its setup is finished
+>   thermal: rcar_gen3_thermal: enable/check sensor after its setup is
+>     finished
+>   thermal: rockchip_thermal: enable/check sensor after its setup is
+>     finished
+>   thermal: exynos: enable/check sensor after its setup is finished
+>   thermal: tegra: enable/check sensor after its setup is finished
+>   thermal: ti-soc-thermal: enable/check sensor after its setup is
+>     finished
+>   thermal: uniphier: enable/check sensor after its setup is
+>     finished
+>   thermal: zx2967: enable/check sensor after its setup is finished
+>   thermal: warn on attempts to read temperature on disabled sensors
+> 
+>  drivers/acpi/thermal.c                             |  5 ++--
+>  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
+>  drivers/platform/x86/acerhdf.c                     |  6 +++-
+>  drivers/regulator/max8973-regulator.c              |  3 +-
+>  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
+>  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
+>  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
+>  drivers/thermal/da9062-thermal.c                   |  7 ++---
+>  drivers/thermal/db8500_thermal.c                   |  5 +++-
+>  drivers/thermal/hisi_thermal.c                     | 22 ++++----------
+>  drivers/thermal/imx_thermal.c                      |  3 +-
+>  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
+>  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
+>  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
+>  drivers/thermal/max77620_thermal.c                 |  6 ++--
+>  drivers/thermal/mtk_thermal.c                      |  3 ++
+>  drivers/thermal/of-thermal.c                       |  6 ++--
+>  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 +++-
+>  drivers/thermal/qcom/tsens.c                       |  6 ++++
+>  drivers/thermal/qoriq_thermal.c                    |  3 ++
+>  drivers/thermal/rcar_gen3_thermal.c                |  7 +++--
+>  drivers/thermal/rcar_thermal.c                     |  8 +++--
+>  drivers/thermal/rockchip_thermal.c                 | 34 ++++++++++------------
+>  drivers/thermal/samsung/exynos_tmu.c               |  7 ++++-
+>  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
+>  drivers/thermal/tango_thermal.c                    |  5 ++++
+>  drivers/thermal/tegra/soctherm.c                   |  3 ++
+>  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
+>  drivers/thermal/thermal-generic-adc.c              |  3 ++
+>  drivers/thermal/thermal_core.c                     | 14 ++++-----
+>  drivers/thermal/thermal_helpers.c                  | 33 +++++++++++++++++++++
+>  drivers/thermal/thermal_sysfs.c                    | 17 +++++++----
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 ++++-
+>  drivers/thermal/uniphier_thermal.c                 |  6 +++-
+>  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
+>  drivers/thermal/zx2967_thermal.c                   |  3 ++
+>  include/linux/thermal.h                            |  5 ++++
+>  37 files changed, 173 insertions(+), 84 deletions(-)
 
 Gentle ping.
 
-It would be great to see this patch in v4.19.
+Eduardo/Rui, do you see any issues with this patchset that should
+be addressed before posting refreshed version?
 
 Best regards,
 --
