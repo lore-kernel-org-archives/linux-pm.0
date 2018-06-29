@@ -1,58 +1,49 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: Re: [PATCH 3/3] arm64: dts: marvell: armada-37xx: add the node
- allowing AVS support
-Date: Fri, 29 Jun 2018 16:36:43 +0200
-Message-ID: <87602164n8.fsf@bootlin.com>
-References: <20180619124402.902-1-gregory.clement@bootlin.com>
- <20180619124402.902-4-gregory.clement@bootlin.com>
- <20180629095426.7aein2vmjtegyrfa@vireshk-i7>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: remove dead code
+Date: Fri, 29 Jun 2018 18:10:26 +0200
+Message-ID: <3318201.BAqn4C3t6k@amdc3058>
+References: <10747698.EAsn0e6Ddm@amdc3058>
+        <CGME20180629161027eucas1p20846507c4f98f50d80ab58aaa1628fd1@eucas1p2.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180629095426.7aein2vmjtegyrfa@vireshk-i7> (Viresh Kumar's
- message of "Fri, 29 Jun 2018 15:24:26 +0530")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>, Victor Gu <xigu@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@bootlin.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <10747698.EAsn0e6Ddm@amdc3058>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
- 
- On ven., juin 29 2018, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-> On 19-06-18, 14:44, Gregory CLEMENT wrote:
->> In order to be able to use Adaptive Voltage Scaling, we need to add a
->> reference to these registers.
->> 
->> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
->> ---
->>  arch/arm64/boot/dts/marvell/armada-37xx.dtsi | 6 ++++++
->>  1 file changed, 6 insertions(+)
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi,
 
-Thanks! Based on your acked-by, then I applied this patch on mvebu/dt
+On Wednesday, May 02, 2018 03:20:35 PM Bartlomiej Zolnierkiewicz wrote:
+> Majority of this code (i.e. functions from ti-bandgap.c) has been
+> introduced in May 2013 by commit eb982001dbd8 ("thermal: introduce TI
+> SoC thermal driver"). Just remove it altogether (in case it is needed
+> it can be easily resurrected from git repo).
+> 
+> While at it fix incorrect "not used" comments.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  drivers/thermal/ti-soc-thermal/dra752-bandgap.h      |   68 ---
+>  drivers/thermal/ti-soc-thermal/dra752-thermal-data.c |   65 ---
+>  drivers/thermal/ti-soc-thermal/omap3-thermal-data.c  |    6 
+>  drivers/thermal/ti-soc-thermal/omap4-thermal-data.c  |   10 
+>  drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h    |   10 
+>  drivers/thermal/ti-soc-thermal/omap5-thermal-data.c  |   46 --
+>  drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h    |   41 --
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c          |  370 -------------------
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.h          |   43 --
+>  9 files changed, 5 insertions(+), 654 deletions(-)
 
-I let you apply the 2 other patches of the series
+Gentle ping.
 
-Gregory
+It would be great to see this patch in v4.19.
 
-
-
->
-> -- 
-> viresh
-
--- 
-Gregory Clement, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
