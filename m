@@ -1,96 +1,72 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Don't power on at attach for the multi PM
- domain case
-Date: Fri, 29 Jun 2018 11:15:37 +0200
-Message-ID: <20180629091537.26864-1-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.18-rc3
+Date: Fri, 29 Jun 2018 11:20:20 +0200
+Message-ID: <CAJZ5v0ip3jHZTmu6U5bjeHVjYpEhvvNM0zducPu63vo7z07enw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-There are no legacy behavior in drivers to consider while attaching a
-device to genpd - for the multiple PM domain case.
+Hi Linus,
 
-For that reason, let's instead require the driver to runtime resume the
-device, via calling pm_runtime_get_sync() for example, when it needs to
-power on the corresponding PM domain.
+Please pull from the tag
 
-This allows us to improve the situation during attach. Instead of always
-power on the PM domain, which may be unnecessary, let's leave it in its
-current state. Additionally, to avoid the PM domain to stay powered on,
-let's schedule a power off work.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.18-rc3
 
-Fixes: 3c095f32a92b ("PM / Domains: Add support for multi PM domains...")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+with top-most commit e27b4d4a7b987ffa93a5a1249dd83dcb69f8d040
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index c298de8a8308..9e8484189034 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2235,7 +2235,7 @@ static void genpd_dev_pm_sync(struct device *dev)
- }
- 
- static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
--				 unsigned int index)
-+				 unsigned int index, bool power_on)
- {
- 	struct of_phandle_args pd_args;
- 	struct generic_pm_domain *pd;
-@@ -2271,9 +2271,11 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
- 	dev->pm_domain->detach = genpd_dev_pm_detach;
- 	dev->pm_domain->sync = genpd_dev_pm_sync;
- 
--	genpd_lock(pd);
--	ret = genpd_power_on(pd, 0);
--	genpd_unlock(pd);
-+	if (power_on) {
-+		genpd_lock(pd);
-+		ret = genpd_power_on(pd, 0);
-+		genpd_unlock(pd);
-+	}
- 
- 	if (ret)
- 		genpd_remove_device(pd, dev);
-@@ -2307,7 +2309,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 				       "#power-domain-cells") != 1)
- 		return 0;
- 
--	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
-+	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
- }
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- 
-@@ -2359,14 +2361,14 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
- 	}
- 
- 	/* Try to attach the device to the PM domain at the specified index. */
--	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
-+	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index, false);
- 	if (ret < 1) {
- 		device_unregister(genpd_dev);
- 		return ret ? ERR_PTR(ret) : NULL;
- 	}
- 
--	pm_runtime_set_active(genpd_dev);
- 	pm_runtime_enable(genpd_dev);
-+	genpd_queue_power_off_work(dev_to_genpd(genpd_dev));
- 
- 	return genpd_dev;
- }
--- 
-2.17.1
+ Merge branch 'pm-domains'
+
+on top of commit 7daf201d7fe8334e2d2364d4e8ed3394ec9af819
+
+ Linux 4.18-rc2
+
+to receive power management fixes for 4.18-rc3.
+
+These fix up recently added features (the Kryo cpufreq driver
+and performance states coverage in the generic power domains
+framework), add missing documentation for a recently added
+sysfs knob in the intel_pstate driver and fix an error in its
+documentation.
+
+Specifics:
+
+ - Fix the initialization time error handling in the recently added
+   Kryo cpufreq driver (Dan Carpenter).
+
+ - Fix up the recently added coverage of performance states in the
+   generic power domains (genpd) framework (Viresh Kumar).
+
+ - Add missing documentation of the new hwp_dynamic_boost sysfs knob
+   in the intel_pstate driver (Rafael Wysocki).
+
+ - Fix incorrect sysfs path in the intel_pstate driver documentation
+   (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Dan Carpenter (1):
+      cpufreq: qcom-kryo: Fix error handling in probe()
+
+Rafael J. Wysocki (2):
+      Documentation: admin-guide: intel_pstate: Fix sysfs path
+      Documentation: intel_pstate: Describe hwp_dynamic_boost sysfs knob
+
+Viresh Kumar (2):
+      PM / Domains: Fix return value of of_genpd_opp_to_performance_state()
+      PM / Domains: Rename opp_node to np
+
+---------------
+
+ Documentation/admin-guide/pm/intel_pstate.rst | 14 ++++++++++++--
+ drivers/base/power/domain.c                   |  7 +++----
+ drivers/cpufreq/qcom-cpufreq-kryo.c           |  8 ++++----
+ include/linux/pm_domain.h                     |  6 +++---
+ 4 files changed, 22 insertions(+), 13 deletions(-)
