@@ -1,65 +1,74 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v5 1/8] interconnect: Add generic on-chip interconnect API
-Date: Sun, 1 Jul 2018 14:09:26 +0300
-Message-ID: <730fac43-e99f-e4bd-bc40-eddeb8338e6e@linaro.org>
+Subject: Re: [PATCH v5 4/8] interconnect: qcom: Add RPM communication
+Date: Sun, 1 Jul 2018 14:16:05 +0300
+Message-ID: <0b0f1afb-b356-f922-4685-6f0a5c86e0ec@linaro.org>
 References: <20180620121141.15403-1-georgi.djakov@linaro.org>
- <20180620121141.15403-2-georgi.djakov@linaro.org>
- <CAKfTPtBApjf9rhJm3paeXdgbVG50ALeun=zMUddc-f+RnrvkqQ@mail.gmail.com>
+ <20180620121141.15403-5-georgi.djakov@linaro.org>
+ <CAE=gft7+S7MJHB2jw8SNewNcr2OvK+1a-PdJdcaonTphJX7c8A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtBApjf9rhJm3paeXdgbVG50ALeun=zMUddc-f+RnrvkqQ@mail.gmail.com>
+In-Reply-To: <CAE=gft7+S7MJHB2jw8SNewNcr2OvK+1a-PdJdcaonTphJX7c8A@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, mturquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "Sweeney, Sean" <seansw@qti.qualcomm.com>, daidavid1@codeaurora.org, Evan Green <evgreen@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, abailon@baylibre.com, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
+To: Evan Green <evgreen@chromium.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
+Hi Evan,
 
-On 27.06.18 г. 9:19, Vincent Guittot wrote:
-> Hi Georgi
+On 06/26/2018 11:47 PM, Evan Green wrote:
+> Hi Georgi,
 > 
-> On Wed, 20 Jun 2018 at 14:11, Georgi Djakov <georgi.djakov@linaro.org> wrote:
-> 
-> [snip]
-> 
->> +
->> +static struct icc_path *path_allocate(struct icc_node *dst, ssize_t num_nodes)
->> +{
->> +       struct icc_node *node = dst;
->> +       struct icc_path *path;
->> +       size_t i;
->> +
->> +       path = kzalloc(sizeof(*path) + num_nodes * sizeof(*path->reqs),
-> 
-> Should be (num_nodes -1) * sizeof(*path->reqs) as there is already 1
-> icc_req in icc_path struct
+> On Wed, Jun 20, 2018 at 5:11 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>>
+>> On some Qualcomm SoCs, there is a remote processor, which controls some of
+>> the Network-On-Chip interconnect resources. Other CPUs express their needs
+>> by communicating with this processor. Add a driver to handle comminication
+>> with this remote processor.
+>>
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> ---
 
-reqs[] is a flexible array member and it's size is not included in
-sizeof(*path)
+[..]
+
+>> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+>> new file mode 100644
+>> index 000000000000..2a0c41db91c4
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/Makefile
+>> @@ -0,0 +1,2 @@
+>> +# SPDX-License-Identifier: GPL-2.0
+>> +obj-y += smd-rpm.o
+> 
+> This new file has an unexpressed dependency on CONFIG_QCOM_SMD_RPM due
+> to qcom_rpm_smd_write. RPMh-based systems won't need this file, right?
+> Maybe this file should live behind some config?
+
+Right, I just made this a separate config, as the the kbuild bot also
+reported an issue with the modular build.
+
+[..]
+
+>> diff --git a/drivers/interconnect/qcom/smd-rpm.h b/drivers/interconnect/qcom/smd-rpm.h
+>> new file mode 100644
+>> index 000000000000..0f4a3da31cf6
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/smd-rpm.h
+>> @@ -0,0 +1,15 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Copyright (c) 2018, Linaro Ltd.
+>> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+>> + */
+>> +
+>> +#ifndef __LINUX_INTERCONNECT_QCOM_RPM_H
+>> +#define __LINUX_INTERCONNECT_QCOM_RPM_H
+> 
+> This doesn't really reflect the path, should this be something different?
+
+Will update!
 
 Thanks,
 Georgi
-
->> +                      GFP_KERNEL);
->> +       if (!path)
->> +               return ERR_PTR(-ENOMEM);
->> +
->> +       path->num_nodes = num_nodes;
->> +
->> +       for (i = 0; i < num_nodes; i++) {
->> +               hlist_add_head(&path->reqs[i].req_node, &node->req_list);
->> +
->> +               path->reqs[i].node = node;
->> +               /* reference to previous node was saved during path traversal */
->> +               node = node->reverse;
->> +       }
->> +
->> +       return path;
->> +}
->> +
-> 
-> [snip]
-> 
