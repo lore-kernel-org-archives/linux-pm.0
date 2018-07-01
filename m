@@ -1,320 +1,103 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v5 6/8] interconnect: qcom: Add msm8916 interconnect
- provider driver
-Date: Sun, 1 Jul 2018 15:12:47 +0300
-Message-ID: <8e2218b4-a193-3bb4-b732-3608a4019977@linaro.org>
-References: <20180620121141.15403-1-georgi.djakov@linaro.org>
- <20180620121141.15403-7-georgi.djakov@linaro.org>
- <CAE=gft6pbLzeLLtpWd-jHbvYuURi=SpODOVqgY7mdHhmz=ZP9A@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.4 035/105] lib/vsprintf: Remove atomic-unsafe support for
+ %pCr
+Date: Sun,  1 Jul 2018 18:01:45 +0200
+Message-ID: <20180701153151.781880637@linuxfoundation.org>
+References: <20180701153149.382300170@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft6pbLzeLLtpWd-jHbvYuURi=SpODOVqgY7mdHhmz=ZP9A@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Evan Green <evgreen@chromium.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180701153149.382300170@linuxfoundation.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>, Jonathan Corbet <corbet@lwn.net>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-doc@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, linux-renesas-soc@vger.kernel.org, stable@vger.kernel.org, linux-serial@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Evan,
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
-On 06/26/2018 11:48 PM, Evan Green wrote:
-> On Wed, Jun 20, 2018 at 5:11 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->>
->> Add driver for the Qualcomm interconnect buses found in msm8916 based
->> platforms.
->>
+------------------
 
-[..]
+From: Geert Uytterhoeven <geert+renesas@glider.be>
 
->> --- /dev/null
->> +++ b/drivers/interconnect/qcom/msm8916.c
->> @@ -0,0 +1,495 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * Copyright (C) 2018 Linaro Ltd
->> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
->> + */
->> +
->> +#include <dt-bindings/interconnect/qcom.h>
->> +#include <linux/clk.h>
->> +#include <linux/device.h>
->> +#include <linux/io.h>
->> +#include <linux/interconnect-provider.h>
-> 
-> Nit: the previous two should be swapped for alphabetization.
+commit 666902e42fd8344b923c02dc5b0f37948ff4f225 upstream.
 
-Ok.
+"%pCr" formats the current rate of a clock, and calls clk_get_rate().
+The latter obtains a mutex, hence it must not be called from atomic
+context.
 
->> +#include <linux/module.h>
->> +#include <linux/of_device.h>
->> +#include <linux/of_platform.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/slab.h>
->> +
->> +#include "smd-rpm.h"
->> +
->> +#define RPM_MASTER_FIELD_BW    0x00007762
-> 
-> This is unused, since it moved into that other file.
+Remove support for this rarely-used format, as vsprintf() (and e.g.
+printk()) must be callable from any context.
 
-Ok.
+Any remaining out-of-tree users will start seeing the clock's name
+printed instead of its rate.
 
-[..]
+Reported-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+Fixes: 900cca2944254edd ("lib/vsprintf: add %pC{,n,r} format specifiers for clocks")
+Link: http://lkml.kernel.org/r/1527845302-12159-5-git-send-email-geert+renesas@glider.be
+To: Jia-Ju Bai <baijiaju1990@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+To: Michael Turquette <mturquette@baylibre.com>
+To: Stephen Boyd <sboyd@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+To: Eric Anholt <eric@anholt.net>
+To: Stefan Wahren <stefan.wahren@i2se.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-doc@vger.kernel.org
+Cc: linux-clk@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-serial@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: stable@vger.kernel.org # 4.1+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
->> +/**
->> + * struct qcom_icc_node - Qualcomm specific interconnect nodes
->> + * @name: the node name used in debugfs
->> + * @links: an array of nodes where we can go next while traversing
->> + * @id: a unique node identifier
->> + * @num_links: the total number of @links
->> + * @port: the offset index into the masters QoS register space
->> + * @buswidth: width of the interconnect between a node and the bus (bytes)
->> + * @ap_owned: the AP CPU does the writing to QoS registers
->> + * @rpm: reference to the RPM SMD driver
->> + * @qos_mode: QoS mode for ap_owned resources
->> + * @mas_rpm_id:        RPM id for devices that are bus masters
->> + * @slv_rpm_id:        RPM id for devices that are bus slaves
->> + * @rate: current bus clock rate in Hz
->> + */
->> +struct qcom_icc_node {
->> +       unsigned char *name;
->> +       u16 links[MSM8916_MAX_LINKS];
->> +       u16 id;
->> +       u16 num_links;
->> +       u16 port;
->> +       u16 buswidth;
->> +       bool ap_owned;
->> +       struct qcom_smd_rpm *rpm;
-> 
-> This is unused.
+---
+ Documentation/printk-formats.txt |    3 +--
+ lib/vsprintf.c                   |    3 ---
+ 2 files changed, 1 insertion(+), 5 deletions(-)
 
-Ok, will remove.
-
->> +       enum qcom_qos_mode qos_mode;
->> +       int mas_rpm_id;
->> +       int slv_rpm_id;
->> +       u64 rate;
->> +};
->> +
-
-[..]
-
->> +static int qcom_icc_init(struct icc_node *node)
->> +{
->> +       struct qcom_icc_provider *qp = to_qcom_provider(node->provider);
->> +       int ret;
->> +
->> +       /* TODO: init qos and priority */
->> +
->> +       clk_set_rate(qp->bus_clk, INT_MAX);
-> 
-> Vroom! What's the rationale here? I wonder if it might be better to
-> avoid touching the clocks initially, and expect that the boot loader
-> sets up a decent initial set of bus frequencies for consumers that
-> never enable bus scaling? Otherwise, I worry that this driver becomes
-> basically an essential driver for the platform solely because of this
-> line and the one below, when really it might not be.
-
-The idea is to run the interconnects at max rate until consumers start
-sending requests, but i understand your worry and we can live without
-this for now. The better solution would be to set maximum bandwidth and
-remove it at late_init (after consumers are registered) or use this
-patchset: https://lkml.org/lkml/2018/3/21/897
-Actually I have some patches which add support for interconnects to keep
-the bandwidth constraints active until consumers are registered. The
-whole boot constraint thing adds complexity and introduces some
-overhead, but hopefully can be optimized.
-
->> +       ret = clk_prepare_enable(qp->bus_clk);
->> +       if (ret)
->> +               pr_info("%s: error enabling bus clk (%d)\n", __func__, ret);
->> +       clk_set_rate(qp->bus_a_clk, INT_MAX);
->> +       ret = clk_prepare_enable(qp->bus_a_clk);
->> +       if (ret)
->> +               pr_info("%s: error enabling bus_a clk (%d)\n", __func__, ret);
->> +
->> +       return 0;
->> +}
->> +
->> +static int qcom_icc_aggregate(struct icc_node *node, u32 avg_bw, u32 peak_bw,
->> +                             u32 *agg_avg, u32 *agg_peak)
->> +{
->> +       *agg_avg += avg_bw;
->> +       *agg_peak = max(*agg_peak, peak_bw);
->> +
->> +       return 0;
->> +}
->> +
->> +static int qcom_icc_set(struct icc_node *src, struct icc_node *dst,
->> +                       u32 avg, u32 peak)
->> +{
->> +       struct qcom_icc_provider *qp;
->> +       struct qcom_icc_node *qn;
->> +       struct icc_node *node;
->> +       struct icc_provider *provider;
->> +       u64 avg_bw = icc_units_to_bps(avg);
->> +       u64 peak_bw = icc_units_to_bps(peak);
->> +       u64 rate = 0;
->> +       int ret = 0;
->> +
->> +       if (!src)
->> +               node = dst;
->> +       else
->> +               node = src;
->> +
->> +       qn = node->data;
->> +       provider = node->provider;
->> +       qp = to_qcom_provider(node->provider);
->> +
->> +       /* set bandwidth */
->> +       if (qn->ap_owned) {
->> +               /* TODO: set QoS */
->> +       } else {
->> +               /* send message to the RPM processor */
->> +               if (qn->mas_rpm_id != -1) {
->> +                       ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
->> +                                                   RPM_BUS_MASTER_REQ,
->> +                                                   qn->mas_rpm_id,
->> +                                                   avg_bw);
-> 
-> You don't check for failure here, and potentially clobber failure with
-> success. Unless only one of mas_rpm_id and slv_rpm_id is ever set. But
-> no, I see SNOC_INT_0/1 set both. Same for below.
-
-Ok, will add error checking.
-
->> +               }
->> +
->> +               if (qn->slv_rpm_id != -1) {
->> +                       ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
->> +                                                   RPM_BUS_SLAVE_REQ,
->> +                                                   qn->slv_rpm_id,
->> +                                                   avg_bw);
->> +               }
->> +       }
->> +
->> +       rate = max(avg_bw, peak_bw);
->> +
->> +       do_div(rate, qn->buswidth);
->> +
->> +       if (qn->rate != rate) {
->> +               ret = clk_set_rate(qp->bus_clk, rate);
->> +               if (ret) {
->> +                       pr_err("set clk rate %lld error %d\n", rate, ret);
->> +                       return ret;
->> +               }
->> +
->> +               ret = clk_set_rate(qp->bus_a_clk, rate);
->> +               if (ret) {
->> +                       pr_err("set clk rate %lld error %d\n", rate, ret);
->> +                       return ret;
->> +               }
->> +
->> +               qn->rate = rate;
->> +       }
->> +
->> +       return ret;
->> +}
->> +
->> +static int qnoc_probe(struct platform_device *pdev)
->> +{
->> +       const struct qcom_icc_desc *desc;
->> +       struct qcom_icc_node **qnodes;
->> +       struct qcom_icc_provider *qp;
->> +       struct resource *res;
->> +       struct icc_provider *provider;
->> +       size_t num_nodes, i;
->> +       int ret;
->> +
->> +       /* wait for RPM */
->> +       if (!qcom_icc_rpm_smd_available())
->> +               return -EPROBE_DEFER;
->> +
->> +       desc = of_device_get_match_data(&pdev->dev);
->> +       if (!desc)
->> +               return -EINVAL;
->> +
->> +       qnodes = desc->nodes;
->> +       num_nodes = desc->num_nodes;
->> +
->> +       qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
->> +       if (!qp)
->> +               return -ENOMEM;
->> +
->> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +       qp->base = devm_ioremap_resource(&pdev->dev, res);
->> +       if (IS_ERR(qp->base))
->> +               return PTR_ERR(qp->base);
->> +
->> +       qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
->> +       if (IS_ERR(qp->bus_clk))
->> +               return PTR_ERR(qp->bus_clk);
->> +
->> +       qp->bus_a_clk = devm_clk_get(&pdev->dev, "bus_a_clk");
->> +       if (IS_ERR(qp->bus_a_clk))
->> +               return PTR_ERR(qp->bus_a_clk);
->> +
->> +       provider = &qp->provider;
->> +       provider->dev = &pdev->dev;
->> +       provider->set = &qcom_icc_set;
->> +       provider->aggregate = &qcom_icc_aggregate;
->> +       INIT_LIST_HEAD(&provider->nodes);
->> +       provider->data = qp;
->> +
->> +       ret = icc_provider_add(provider);
->> +       if (ret) {
->> +               dev_err(&pdev->dev, "error adding interconnect provider\n");
->> +               return ret;
->> +       }
->> +
->> +       for (i = 0; i < num_nodes; i++) {
->> +               struct icc_node *node;
->> +               int ret;
->> +               size_t j;
->> +
->> +               node = icc_node_create(qnodes[i]->id);
->> +               if (IS_ERR(node)) {
->> +                       ret = PTR_ERR(node);
->> +                       goto err;
->> +               }
->> +
->> +               node->name = qnodes[i]->name;
->> +               node->data = qnodes[i];
->> +               icc_node_add(node, provider);
->> +
->> +               dev_dbg(&pdev->dev, "registered node %s\n", node->name);
->> +
->> +               ret = qcom_icc_init(node);
->> +               if (ret)
->> +                       dev_err(&pdev->dev, "%s init error (%d)\n", node->name,
->> +                               ret);
->> +
->> +               /* populate links */
->> +               for (j = 0; j < qnodes[i]->num_links; j++)
->> +                       if (qnodes[i]->links[j])
->> +                               icc_link_create(node, qnodes[i]->links[j]);
->> +       }
->> +
->> +       platform_set_drvdata(pdev, provider);
->> +
->> +       return ret;
->> +err:
->> +       icc_provider_del(provider);
->> +       return ret;
->> +}
->> +
->> +static int qnoc_remove(struct platform_device *pdev)
->> +{
->> +       struct icc_provider *provider = platform_get_drvdata(pdev);
->> +
->> +       icc_provider_del(provider);
-> 
-> This function can fail, so you should probably pass the failure along.
-> 
-
-Ok! Thank you!
-
-BR,
-Georgi
+--- a/Documentation/printk-formats.txt
++++ b/Documentation/printk-formats.txt
+@@ -273,11 +273,10 @@ struct clk:
+ 
+ 	%pC	pll1
+ 	%pCn	pll1
+-	%pCr	1560000000
+ 
+ 	For printing struct clk structures. '%pC' and '%pCn' print the name
+ 	(Common Clock Framework) or address (legacy clock framework) of the
+-	structure; '%pCr' prints the current clock rate.
++	structure.
+ 
+ 	Passed by reference.
+ 
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -1345,9 +1345,6 @@ char *clock(char *buf, char *end, struct
+ 		return string(buf, end, NULL, spec);
+ 
+ 	switch (fmt[1]) {
+-	case 'r':
+-		return number(buf, end, clk_get_rate(clk), spec);
+-
+ 	case 'n':
+ 	default:
+ #ifdef CONFIG_COMMON_CLK
