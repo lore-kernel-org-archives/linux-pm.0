@@ -1,42 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] PM / Domains: Enable name based lookup at attach
-Date: Mon, 2 Jul 2018 12:38:06 +0530
-Message-ID: <20180702070806.tuzzh6mu65lrq4xq@vireshk-i7>
-References: <20180629110432.5179-1-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] kernel/power: cast PAGE_SIZE to int when comparing with
+ error code
+Date: Mon, 2 Jul 2018 09:14:03 +0200
+Message-ID: <CAJZ5v0gpBShiR5oQawfrLh_fMBK7EqfPbT4TBeNDjn6Kkou_7A@mail.gmail.com>
+References: <20180625053058.25206-1-cgxu519@gmx.com> <0a812d02-d85d-f685-6e7f-f4dfe22f9629@gmx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180629110432.5179-1-ulf.hansson@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-tegra@vger.kernel.org, Lucas Stach <dev@lynxeye.de>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <0a812d02-d85d-f685-6e7f-f4dfe22f9629@gmx.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: cgxu519 <cgxu519@gmx.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29-06-18, 13:04, Ulf Hansson wrote:
-> Recently we added support to manage multiple PM domains per device. Consumer
-> drivers were provided an API, dev_pm_domain_attach_by_id() to associate its
-> device with one of its PM domain, by using an index.
-> 
-> Let's extend this to allow the association to be done using a name based
-> lookup, which follows the similar concept as for other resource types, such as
-> clocks for example.
-> 
-> Ulf Hansson (3):
->   PM / Domains: dt: Add a power-domain-names property
->   PM / Domains: Introduce option to attach a device by name to genpd
->   PM / Domains: Introduce dev_pm_domain_attach_by_name()
+On Mon, Jul 2, 2018 at 3:10 AM, cgxu519 <cgxu519@gmx.com> wrote:
+> Hi Rafael,
+>
+> Could you have a look at this simple patch?
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+I've done that already and I'm going to apply it.
 
--- 
-viresh
+Thanks,
+Rafael
+
+
+> On 06/25/2018 01:30 PM, Chengguang Xu wrote:
+>>
+>> If PAGE_SIZE is unsigned type then negative error code will be
+>> larger than PAGE_SIZE.
+>>
+>> Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
+>> ---
+>>   kernel/power/swap.c | 4 ++--
+>>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+>> index c2bcf97d24c8..d7f6c1a288d3 100644
+>> --- a/kernel/power/swap.c
+>> +++ b/kernel/power/swap.c
+>> @@ -923,7 +923,7 @@ int swsusp_write(unsigned int flags)
+>>         }
+>>         memset(&snapshot, 0, sizeof(struct snapshot_handle));
+>>         error = snapshot_read_next(&snapshot);
+>> -       if (error < PAGE_SIZE) {
+>> +       if (error < (int)PAGE_SIZE) {
+>>                 if (error >= 0)
+>>                         error = -EFAULT;
+>>   @@ -1483,7 +1483,7 @@ int swsusp_read(unsigned int *flags_p)
+>>         memset(&snapshot, 0, sizeof(struct snapshot_handle));
+>>         error = snapshot_write_next(&snapshot);
+>> -       if (error < PAGE_SIZE)
+>> +       if (error < (int)PAGE_SIZE)
+>>                 return error < 0 ? error : -EFAULT;
+>>         header = (struct swsusp_info *)data_of(snapshot);
+>>         error = get_swap_reader(&handle, flags_p);
+>
+>
