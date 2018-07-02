@@ -1,73 +1,76 @@
-From: Evan Green <evgreen@chromium.org>
-Subject: Re: [PATCH v5 6/8] interconnect: qcom: Add msm8916 interconnect
- provider driver
-Date: Mon, 2 Jul 2018 10:08:32 -0700
-Message-ID: <CAE=gft489LjMLp6YW1C_TywGDx0BPLAc8nSac1qCGiRDpAV9Ng@mail.gmail.com>
-References: <20180620121141.15403-1-georgi.djakov@linaro.org>
- <20180620121141.15403-7-georgi.djakov@linaro.org>
- <CAE=gft6pbLzeLLtpWd-jHbvYuURi=SpODOVqgY7mdHhmz=ZP9A@mail.gmail.com>
- <8e2218b4-a193-3bb4-b732-3608a4019977@linaro.org>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH 2/2] PCI: imx: Initial imx7d pm support
+Date: Mon, 2 Jul 2018 17:18:17 +0000
+Message-ID: <02207512447db4585a4e879e2a059ba223d57dbe.camel@nxp.com>
+References: <cover.1527621510.git.leonard.crestez@nxp.com>
+         <a6176c8bcfbca08ce4e93e304bdcd48c4600f8e2.1527621510.git.leonard.crestez@nxp.com>
+         <1528468422.26356.20.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <8e2218b4-a193-3bb4-b732-3608a4019977@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: georgi.djakov@linaro.org
-Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, Bjorn Andersson <bjorn.andersson@linaro.org>, robh+dt@kernel.org, Saravana Kannan <skannan@codeaurora.org>, Alexandre Bailon <abailon@baylibre.com>, khilman@baylibre.com, linux-arm-msm@vger.kernel.org, daidavid1@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1528468422.26356.20.camel@pengutronix.de>
+Content-Language: en-US
+Content-ID: <307DAE26A944334983407BC6B86DC578@eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Richard Zhu <hongxing.zhu@nxp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Anson Huang <anson.huang@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jul 1, 2018 at 5:12 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> Hi Evan,
->
-> On 06/26/2018 11:48 PM, Evan Green wrote:
-> > On Wed, Jun 20, 2018 at 5:11 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> >> +static int qcom_icc_init(struct icc_node *node)
-> >> +{
-> >> +       struct qcom_icc_provider *qp = to_qcom_provider(node->provider);
-> >> +       int ret;
-> >> +
-> >> +       /* TODO: init qos and priority */
-> >> +
-> >> +       clk_set_rate(qp->bus_clk, INT_MAX);
-> >
-> > Vroom! What's the rationale here? I wonder if it might be better to
-> > avoid touching the clocks initially, and expect that the boot loader
-> > sets up a decent initial set of bus frequencies for consumers that
-> > never enable bus scaling? Otherwise, I worry that this driver becomes
-> > basically an essential driver for the platform solely because of this
-> > line and the one below, when really it might not be.
->
-> The idea is to run the interconnects at max rate until consumers start
-> sending requests, but i understand your worry and we can live without
-> this for now. The better solution would be to set maximum bandwidth and
-> remove it at late_init (after consumers are registered) or use this
-> patchset: https://lkml.org/lkml/2018/3/21/897
-> Actually I have some patches which add support for interconnects to keep
-> the bandwidth constraints active until consumers are registered. The
-> whole boot constraint thing adds complexity and introduces some
-> overhead, but hopefully can be optimized.
-
-Ah, that makes sense. This is a trickier issue than I was thinking
-before. On one hand, you don't want to shut off bandwidth to a device
-that was set up correctly by the boot environment and should keep
-working until the driver comes up, like LCD. But on the other hand, if
-a driver fails to come up, or fails to ask for bus bandwidth, you're
-now burning at max. And then there's the issue of whether or not this
-should be a required or optional driver for platforms that support it
-(it would be nice if the system booted even without this driver, but
-maybe for others that's a non-goal). I agree this is shouldn't hold up
-this initial set of framework patches, we can solve this in a future
-set.
-
--Evan
+T24gRnJpLCAyMDE4LTA2LTA4IGF0IDE2OjMzICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
+QW0gRGllbnN0YWcsIGRlbiAyOS4wNS4yMDE4LCAyMjozOSArMDMwMCBzY2hyaWViIExlb25hcmQg
+Q3Jlc3RlejoNCj4gPiBPbiBpbXg3ZCB0aGUgcGh5IGlzIHR1cm5lZCBvZmYgaW4gc3VzcGVuZCBh
+bmQgbXVzdCBiZSByZXNldCBvbiByZXN1bWUuDQo+ID4gUmlnaHQgbm93IGxzcGNpIC12IGZhaWxz
+IGFmdGVyIGEgc3VzcGVuZC9yZXN1bWUgY3ljbGUsIGZpeCB0aGlzIGJ5DQo+ID4gYWRkaW5nIG1p
+bmltYWwgc3VzcGVuZC9yZXN1bWUgY29kZSBmcm9tIHRoZSBueHAgdmVuZG9yIHRyZWUuDQo+ID4g
+DQo+ID4gVGhpcyBpcyBjdXJyZW50bHkgb25seSBlbmFibGVkIGZvciBpbXg3IGJ1dCB0aGUgc2Ft
+ZSBzZXF1ZW5jZSBjYW4gYmUNCj4gPiBhcHBsaWVkIHRvIG90aGVyIGlteCBwY2llIHZhcmlhbnRz
+Lg0KDQo+ID4gKyNpZmRlZiBDT05GSUdfUE1fU0xFRVANCj4gPiArc3RhdGljIGludCBpbXg2X3Bj
+aWVfc3VzcGVuZF9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4gPiArCXN0cnVj
+dCBpbXg2X3BjaWUgKmlteDZfcGNpZSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiA+ICsNCj4g
+PiArCWlmIChpbXg2X3BjaWUtPnZhcmlhbnQgPT0gSU1YN0QpIHsNCj4gDQo+IEluc3RlYWQgb2Yg
+dGhpcyBsYXJnZSBpbmRlbnRlZCBibG9jaywgcGxlYXNlIGp1c3QgaGF2ZSBhbiBlYXJseSByZXR1
+cm4NCj4gYXQgdGhlIHN0YXJ0IG9mIHRoaXMgZnVuY3Rpb24sIGxpa2U6DQo+IA0KPiBpZiAoaW14
+Nl9wY2llLT52YXJpYW50ICE9IElNWDdEKQ0KPiAJcmV0dXJuIDA7DQo+IA0KPiBTYW1lIGZvciB0
+aGUgcmVzdW1lIGZ1bmN0aW9uLg0KDQpPSy4gVGhlIHJlc3VtZSBzZXF1ZW5jZSBpcyBtb3N0bHkg
+dGhlIHNhbWUgZm9yIGFsbCBTT0NzIHdoZXJlIGl0DQphcHBsaWVzLg0KDQo+ID4gK3N0YXRpYyBp
+bnQgaW14Nl9wY2llX3Jlc3VtZV9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4g
+PiArCWludCByZXQgPSAwOw0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9wY2llID0gZGV2
+X2dldF9kcnZkYXRhKGRldik7DQo+ID4gKwlzdHJ1Y3QgcGNpZV9wb3J0ICpwcCA9ICZpbXg2X3Bj
+aWUtPnBjaS0+cHA7DQo+ID4gDQo+ID4gKw0KPiA+ICsJaWYgKGlteDZfcGNpZS0+dmFyaWFudCA9
+PSBJTVg3RCkgew0KPiA+ICsJCWlteDZfcGNpZV9sdHNzbV9kaXNhYmxlKGRldik7DQo+IA0KPiBU
+aGUgTFRTU00gZGlzYWJsZSBzZWVtcyBtaXNwbGFjZWQgaGVyZS4gSSB3b3VsZCBoYXZlIGV4cGVj
+dGVkIGl0IHRvIGJlDQo+IGluIHRoZSBzdXNwZW5kIGZ1bmN0aW9uLg0KDQpUaGlzIGlzIGEgcmVx
+dWlyZW1lbnQgZm9yIHJlaW5pdGlhbGl6aW5nIHRoZSBjb3JlOiBMVFNTTSBuZWVkcyB0byBiZQ0K
+dHVybmVkIG9mZiBkdXJpbmcgaW5pdGlhbGl6YXRpb24uDQoNCj4gPiArCQkvKg0KPiA+ICsJCSAq
+IGNvbnRyb2xsZXIgbWF5YmUgdHVybiBvZmYsIHJlLWNvbmZpZ3VyZSBhZ2Fpbg0KPiA+ICsJCSAq
+Lw0KPiA+ICsJCWR3X3BjaWVfc2V0dXBfcmMocHApOw0KPiA+ICsNCj4gPiArCQlpbXg2X3BjaWVf
+bHRzc21fZW5hYmxlKGRldik7DQo+ID4gKw0KPiA+ICsJCXJldCA9IGlteDZfcGNpZV93YWl0X2Zv
+cl9saW5rKGlteDZfcGNpZSk7DQo+ID4gKwkJaWYgKHJldCA8IDApDQo+ID4gKwkJCXByX2luZm8o
+InBjaWUgbGluayBpcyBkb3duIGFmdGVyIHJlc3VtZS5cbiIpOw0KPiANCj4gSWYgdGhlIFBIWSBo
+YXMgYmVlbiBwb3dlcmVkIGRvd24gYW5kIExUU1NNIHN0b3BwZWQgSSBndWVzcyB3ZSBuZWVkIHRv
+DQo+IGRvIHRoZSBmdWxsIGlteDZfcGNpZV9lc3RhYmxpc2hfbGluaygpIGRhbmNlIGFnYWluIGhl
+cmUgdG8gcmVsaWFibHkgcmUtDQo+IGVzdGFibGlzaCB0aGUgbGluay4gVGhlIGFib3ZlIHNlZW1z
+IHVuc2FmZS4NCg0KV2hhdCBpbXg2X3BjaWVfZXN0YWJsaXNoX2xpbmsgZG9lcyBhZGRpdGlvbmFs
+bHkgaXMgc29tZSB3b3JrYXJvdW5kIGZvcg0KbGluayBnZW4gZGV0ZWN0aW9uLiBJIGFncmVlIHRo
+YXQgaXQgc2hvdWxkIGJlIGluY2x1ZGVkLg0KDQpUaGlzIHdvdWxkIG1ha2UgcmVzdW1lIG1vc3Rs
+eSB0aGUgc2FtZSBhcyBpbXhfcGNpZV9ob3N0X2luaXQgZXhjZXB0IGZvcg0KZHdfcGNpZV9tc2lf
+aW5pdDsgdGhhdCBuZWVkcyB0byBiZSBzYXZlZC9yZXN0b3JlZCBzZXBhcmF0ZWx5Lg0KDQoNCkFu
+b3RoZXIgaXNzdWUgdGhhdCBzaG91bGQgYmUgZGlzY3Vzc2VkIGhlcmUgaXMgdGhhdCBvbiA2c3gg
+YW5kIDdkIHRoZQ0KZ3BjIFBDSUUgcG93ZXIgZG9tYWluIGlzIG5vdCBkZWZpbmVkIGNvcnJlY3Rs
+eTogdGhlIFBDSUUgYmxvY2sgaXMgaW4NCnRoZSBESVNQTUlYIGRvbWFpbiBvbiBib3RoIFNPQ3Mg
+YW5kIGl0IGlzIG9ubHkgUENJRV9QSFkgd2hpY2ggaGFzIGENCnNlcGFyYXRlIHBvd2VyIGRvbWFp
+bi4NCg0KVGhpcyBtYXR0ZXJzOiBlbmFibGluZyBwb3dlci1nYXRpbmcgZm9yIGRpc3BsYXlzIHdp
+bGwgYnJlYWsgcGNpZSBpZg0KdGhpcyByZWxhdGlvbnNoaXAgaXMgbm90IHRha2VuIGludG8gYWNj
+b3VudC4gSGVyZSBhcmUgc29tZSBvcHRpb25zOg0KDQoxKSBNYWtlICZwZF9wY2llIGEgY2hpbGQg
+b2YgJnBkX2Rpc3AgYnkgaGFja2luZyBpbnRvIGdwYyBwcm9iZQ0KZnVuY3Rpb25zIGFuZCBjYWxs
+aW5nIHBtX2dlbnBkX2FkZF9zdWJkb21haW4uIE5vdCB2ZXJ5IG5pY2UuDQoNCjIpIFN1cHBvcnQg
+bmVzdGluZyBQR0NzIGluIEdQQyBjb2RlPyBMb3RzIG9mIGNvZGUgYW5kIHN0aWxsIGFuDQppbmNv
+cnJlY3QgcmVwcmVzZW50YXRpb24gb2YgaGFyZHdhcmUuDQoNCjMpIFNldCBwb3dlci1kb21haW5z
+ID0gPCZwZF9kaXNwPiBhbmQgZW5hYmxlIHJ1bnRpbWUgUE0gb24gJnBkX3BjaWU/DQoNCjQpIEFk
+ZCBzZXBhcmF0ZSBkZXZpY2VzIGZvciB0aGUgcGNpZS1waHkuIFRoZXNlIHdvdWxkIGJlIG1vc3Rs
+eSBlbXB0eQ0KYnV0IHN0aWxsIGRpZmZlcmVudCwgZm9yIGV4YW1wbGUgb24gaW14NnN4IHRoZSBQ
+SFkgaXMgbm90IGV2ZW4NCmFjY2Vzc2libGUgb24gdGhlIGJ1cyBidXQgb25seSB0aG91Z2ggUENJ
+RSByZWdpc3RlcnMuDQoNClNvbHV0aW9ucyAxLTMgc2VlbSBsaWtlIHdvcmthcm91bmRzIHdoaWxl
+IDQgc2VlbXMgZXhjZXNzaXZlLCB3b3VsZA0KYXBwcmVjaWF0ZSBzb21lIGZlZWRiYWNrLg0KDQot
+LQ0KUmVnYXJkcywNCkxlb25hcmQ=
