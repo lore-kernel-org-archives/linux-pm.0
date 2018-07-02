@@ -1,78 +1,41 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v4 0/6] thermal: tsens: Refactoring for TSENSv2 IP
-Date: Mon, 2 Jul 2018 19:30:11 +0530
-Message-ID: <CAHLCerNj83pYHDJg2aHoqOqJ6NEg+OWHT-RW4SDbEHrwJXYEtw@mail.gmail.com>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/2] powernv/cpuidle Device-tree parsing cleanup
+Date: Mon,  2 Jul 2018 19:53:19 +0530
+Message-ID: <1530541401-19726-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1530533998.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Kees Cook <keescook@chromium.org>, Rob Herring <robh@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 2, 2018 at 6:14 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> This series is a mixed bag:
-> - Some code moves to allow code sharing between various v2.x.y versions of
->   the TSENS IP,
-> - new qcom,tsens-v2.4.0 DT property for SDM845 and a generic qcom,tsens-v2
->   property as a fallback compatible for all v2.x.y platforms,
-> - new platform support (sdm845)
-> - a cleanup patch and
-> - a DT change to have a common way to deal with the SROT and TM registers
->   despite slightly different features across the IP family and different
->   register offsets.
->
-> Rob mentioned offline that we should expose the full version string of the
-> TSENS IP (x.y.z) and have a fallback compatible. I hope patch 4 does what
-> you were looking for.
->
-> Regards,
-> Amit
+Device-tree parsed multiple time in powernv cpuidle and powernv
+hotplug code. 
 
-Forgot to append the changelog. Here it is.
+First to identify supported flags. Second time, to identify deepest_state
+and first deep state. Third time, during cpuidle init to find the available
+idle states. Any change in device-tree format will lead to make changes in
+these 3 places. Errors in device-tree can be handled in a better manner.
 
-Changes since v3:
-- Introduce qcom,tsens-v2.4.0 property and make qcom,tsens-v2 a
-  fallback, compatible property.
-- Rename ops_v2 to ops_generic_v2
+This series adds code to parse device tree once and save in global structure.
 
-Changes since v2:
-- Based on review, moved tsens-8996.c to tsens-v2.c and changed
-  corresponding function names, struct names to allow for generic tsensv2
-  platforms
-- All v2 platforms will now only need to use the qcom,tsen-v2 property
-- Added a DT patch to initialize tsens driver on sdm845, now that 4.18-rc1
-  will contain an sdm845.dtsi
+Changes from v1 :                                                          
+ - folded first 2 patches into 1                                             
+ - rename pm_ctrl_reg_* as psscr_*                                         
+ - added comment stating removal of pmicr parsing code                     
+ - removed parsing code for pmicr                                          
+ - add member valid in pnv_idle_states_t to indicate if the psscr-mask/val 
+are valid combination,                                                     
+ - Change function description of pnv_parse_cpuidle_dt                     
+ - Added error handling code.                      
 
-Changes since v1:
-- Move get_temp() from tsens-8996 to tsens-common and rename
-- Change 8996 DT entry to allow init_common() to work across sdm845 and
-  8996 due to different offsets
+Akshay Adiga (2):
+  powernv/cpuidle: Parse dt idle properties into global structure
+  powernv/cpuidle: Use parsed device tree values for cpuidle_init
 
-> Amit Kucheria (6):
->   thermal: tsens: Get rid of unused fields in structure
->   dt: qcom: 8996: thermal: Move to DT initialisation
->   thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
->   thermal: tsens: Add support for SDM845
->   thermal: tsens: Check if we have valid data before reading
->   arm64: dts: sdm845: Add tsens nodes
->
->  .../devicetree/bindings/thermal/qcom-tsens.txt     |  2 ++
->  arch/arm64/boot/dts/qcom/msm8996.dtsi              | 12 ++++++-
->  arch/arm64/boot/dts/qcom/sdm845.dtsi               | 16 +++++++++
->  drivers/thermal/qcom/Makefile                      |  2 +-
->  drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c}  | 39 ++++++++++++----------
->  drivers/thermal/qcom/tsens.c                       |  6 ++++
->  drivers/thermal/qcom/tsens.h                       |  7 ++--
->  7 files changed, 62 insertions(+), 22 deletions(-)
->  rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (66%)
->
-> --
-> 2.7.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ arch/powerpc/include/asm/cpuidle.h    |  13 ++
+ arch/powerpc/platforms/powernv/idle.c | 216 ++++++++++++++++----------
+ drivers/cpuidle/cpuidle-powernv.c     | 156 ++++---------------
+ 3 files changed, 178 insertions(+), 207 deletions(-)
+
+-- 
+2.18.0.rc2.85.g1fb9df7
