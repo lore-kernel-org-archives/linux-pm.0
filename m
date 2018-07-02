@@ -1,76 +1,91 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 2/2] PCI: imx: Initial imx7d pm support
-Date: Mon, 2 Jul 2018 17:18:17 +0000
-Message-ID: <02207512447db4585a4e879e2a059ba223d57dbe.camel@nxp.com>
-References: <cover.1527621510.git.leonard.crestez@nxp.com>
-         <a6176c8bcfbca08ce4e93e304bdcd48c4600f8e2.1527621510.git.leonard.crestez@nxp.com>
-         <1528468422.26356.20.camel@pengutronix.de>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2 06/23] thermal: armada: convert driver to syscon
+ register accesses
+Date: Mon, 2 Jul 2018 10:29:19 -0700
+Message-ID: <20180702172918.GA28262@localhost.localdomain>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+ <20180625151239.20976-7-miquel.raynal@bootlin.com>
+ <20180626033724.q7radxgjeqtsl7ae@tarshish>
+ <20180626092931.7f0f0ad4@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1528468422.26356.20.camel@pengutronix.de>
-Content-Language: en-US
-Content-ID: <307DAE26A944334983407BC6B86DC578@eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Richard Zhu <hongxing.zhu@nxp.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Anson Huang <anson.huang@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20180626092931.7f0f0ad4@xps13>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Rob Herring <robh+dt@kernel.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDE4LTA2LTA4IGF0IDE2OjMzICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
-QW0gRGllbnN0YWcsIGRlbiAyOS4wNS4yMDE4LCAyMjozOSArMDMwMCBzY2hyaWViIExlb25hcmQg
-Q3Jlc3RlejoNCj4gPiBPbiBpbXg3ZCB0aGUgcGh5IGlzIHR1cm5lZCBvZmYgaW4gc3VzcGVuZCBh
-bmQgbXVzdCBiZSByZXNldCBvbiByZXN1bWUuDQo+ID4gUmlnaHQgbm93IGxzcGNpIC12IGZhaWxz
-IGFmdGVyIGEgc3VzcGVuZC9yZXN1bWUgY3ljbGUsIGZpeCB0aGlzIGJ5DQo+ID4gYWRkaW5nIG1p
-bmltYWwgc3VzcGVuZC9yZXN1bWUgY29kZSBmcm9tIHRoZSBueHAgdmVuZG9yIHRyZWUuDQo+ID4g
-DQo+ID4gVGhpcyBpcyBjdXJyZW50bHkgb25seSBlbmFibGVkIGZvciBpbXg3IGJ1dCB0aGUgc2Ft
-ZSBzZXF1ZW5jZSBjYW4gYmUNCj4gPiBhcHBsaWVkIHRvIG90aGVyIGlteCBwY2llIHZhcmlhbnRz
-Lg0KDQo+ID4gKyNpZmRlZiBDT05GSUdfUE1fU0xFRVANCj4gPiArc3RhdGljIGludCBpbXg2X3Bj
-aWVfc3VzcGVuZF9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4gPiArCXN0cnVj
-dCBpbXg2X3BjaWUgKmlteDZfcGNpZSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiA+ICsNCj4g
-PiArCWlmIChpbXg2X3BjaWUtPnZhcmlhbnQgPT0gSU1YN0QpIHsNCj4gDQo+IEluc3RlYWQgb2Yg
-dGhpcyBsYXJnZSBpbmRlbnRlZCBibG9jaywgcGxlYXNlIGp1c3QgaGF2ZSBhbiBlYXJseSByZXR1
-cm4NCj4gYXQgdGhlIHN0YXJ0IG9mIHRoaXMgZnVuY3Rpb24sIGxpa2U6DQo+IA0KPiBpZiAoaW14
-Nl9wY2llLT52YXJpYW50ICE9IElNWDdEKQ0KPiAJcmV0dXJuIDA7DQo+IA0KPiBTYW1lIGZvciB0
-aGUgcmVzdW1lIGZ1bmN0aW9uLg0KDQpPSy4gVGhlIHJlc3VtZSBzZXF1ZW5jZSBpcyBtb3N0bHkg
-dGhlIHNhbWUgZm9yIGFsbCBTT0NzIHdoZXJlIGl0DQphcHBsaWVzLg0KDQo+ID4gK3N0YXRpYyBp
-bnQgaW14Nl9wY2llX3Jlc3VtZV9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gK3sNCj4g
-PiArCWludCByZXQgPSAwOw0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9wY2llID0gZGV2
-X2dldF9kcnZkYXRhKGRldik7DQo+ID4gKwlzdHJ1Y3QgcGNpZV9wb3J0ICpwcCA9ICZpbXg2X3Bj
-aWUtPnBjaS0+cHA7DQo+ID4gDQo+ID4gKw0KPiA+ICsJaWYgKGlteDZfcGNpZS0+dmFyaWFudCA9
-PSBJTVg3RCkgew0KPiA+ICsJCWlteDZfcGNpZV9sdHNzbV9kaXNhYmxlKGRldik7DQo+IA0KPiBU
-aGUgTFRTU00gZGlzYWJsZSBzZWVtcyBtaXNwbGFjZWQgaGVyZS4gSSB3b3VsZCBoYXZlIGV4cGVj
-dGVkIGl0IHRvIGJlDQo+IGluIHRoZSBzdXNwZW5kIGZ1bmN0aW9uLg0KDQpUaGlzIGlzIGEgcmVx
-dWlyZW1lbnQgZm9yIHJlaW5pdGlhbGl6aW5nIHRoZSBjb3JlOiBMVFNTTSBuZWVkcyB0byBiZQ0K
-dHVybmVkIG9mZiBkdXJpbmcgaW5pdGlhbGl6YXRpb24uDQoNCj4gPiArCQkvKg0KPiA+ICsJCSAq
-IGNvbnRyb2xsZXIgbWF5YmUgdHVybiBvZmYsIHJlLWNvbmZpZ3VyZSBhZ2Fpbg0KPiA+ICsJCSAq
-Lw0KPiA+ICsJCWR3X3BjaWVfc2V0dXBfcmMocHApOw0KPiA+ICsNCj4gPiArCQlpbXg2X3BjaWVf
-bHRzc21fZW5hYmxlKGRldik7DQo+ID4gKw0KPiA+ICsJCXJldCA9IGlteDZfcGNpZV93YWl0X2Zv
-cl9saW5rKGlteDZfcGNpZSk7DQo+ID4gKwkJaWYgKHJldCA8IDApDQo+ID4gKwkJCXByX2luZm8o
-InBjaWUgbGluayBpcyBkb3duIGFmdGVyIHJlc3VtZS5cbiIpOw0KPiANCj4gSWYgdGhlIFBIWSBo
-YXMgYmVlbiBwb3dlcmVkIGRvd24gYW5kIExUU1NNIHN0b3BwZWQgSSBndWVzcyB3ZSBuZWVkIHRv
-DQo+IGRvIHRoZSBmdWxsIGlteDZfcGNpZV9lc3RhYmxpc2hfbGluaygpIGRhbmNlIGFnYWluIGhl
-cmUgdG8gcmVsaWFibHkgcmUtDQo+IGVzdGFibGlzaCB0aGUgbGluay4gVGhlIGFib3ZlIHNlZW1z
-IHVuc2FmZS4NCg0KV2hhdCBpbXg2X3BjaWVfZXN0YWJsaXNoX2xpbmsgZG9lcyBhZGRpdGlvbmFs
-bHkgaXMgc29tZSB3b3JrYXJvdW5kIGZvcg0KbGluayBnZW4gZGV0ZWN0aW9uLiBJIGFncmVlIHRo
-YXQgaXQgc2hvdWxkIGJlIGluY2x1ZGVkLg0KDQpUaGlzIHdvdWxkIG1ha2UgcmVzdW1lIG1vc3Rs
-eSB0aGUgc2FtZSBhcyBpbXhfcGNpZV9ob3N0X2luaXQgZXhjZXB0IGZvcg0KZHdfcGNpZV9tc2lf
-aW5pdDsgdGhhdCBuZWVkcyB0byBiZSBzYXZlZC9yZXN0b3JlZCBzZXBhcmF0ZWx5Lg0KDQoNCkFu
-b3RoZXIgaXNzdWUgdGhhdCBzaG91bGQgYmUgZGlzY3Vzc2VkIGhlcmUgaXMgdGhhdCBvbiA2c3gg
-YW5kIDdkIHRoZQ0KZ3BjIFBDSUUgcG93ZXIgZG9tYWluIGlzIG5vdCBkZWZpbmVkIGNvcnJlY3Rs
-eTogdGhlIFBDSUUgYmxvY2sgaXMgaW4NCnRoZSBESVNQTUlYIGRvbWFpbiBvbiBib3RoIFNPQ3Mg
-YW5kIGl0IGlzIG9ubHkgUENJRV9QSFkgd2hpY2ggaGFzIGENCnNlcGFyYXRlIHBvd2VyIGRvbWFp
-bi4NCg0KVGhpcyBtYXR0ZXJzOiBlbmFibGluZyBwb3dlci1nYXRpbmcgZm9yIGRpc3BsYXlzIHdp
-bGwgYnJlYWsgcGNpZSBpZg0KdGhpcyByZWxhdGlvbnNoaXAgaXMgbm90IHRha2VuIGludG8gYWNj
-b3VudC4gSGVyZSBhcmUgc29tZSBvcHRpb25zOg0KDQoxKSBNYWtlICZwZF9wY2llIGEgY2hpbGQg
-b2YgJnBkX2Rpc3AgYnkgaGFja2luZyBpbnRvIGdwYyBwcm9iZQ0KZnVuY3Rpb25zIGFuZCBjYWxs
-aW5nIHBtX2dlbnBkX2FkZF9zdWJkb21haW4uIE5vdCB2ZXJ5IG5pY2UuDQoNCjIpIFN1cHBvcnQg
-bmVzdGluZyBQR0NzIGluIEdQQyBjb2RlPyBMb3RzIG9mIGNvZGUgYW5kIHN0aWxsIGFuDQppbmNv
-cnJlY3QgcmVwcmVzZW50YXRpb24gb2YgaGFyZHdhcmUuDQoNCjMpIFNldCBwb3dlci1kb21haW5z
-ID0gPCZwZF9kaXNwPiBhbmQgZW5hYmxlIHJ1bnRpbWUgUE0gb24gJnBkX3BjaWU/DQoNCjQpIEFk
-ZCBzZXBhcmF0ZSBkZXZpY2VzIGZvciB0aGUgcGNpZS1waHkuIFRoZXNlIHdvdWxkIGJlIG1vc3Rs
-eSBlbXB0eQ0KYnV0IHN0aWxsIGRpZmZlcmVudCwgZm9yIGV4YW1wbGUgb24gaW14NnN4IHRoZSBQ
-SFkgaXMgbm90IGV2ZW4NCmFjY2Vzc2libGUgb24gdGhlIGJ1cyBidXQgb25seSB0aG91Z2ggUENJ
-RSByZWdpc3RlcnMuDQoNClNvbHV0aW9ucyAxLTMgc2VlbSBsaWtlIHdvcmthcm91bmRzIHdoaWxl
-IDQgc2VlbXMgZXhjZXNzaXZlLCB3b3VsZA0KYXBwcmVjaWF0ZSBzb21lIGZlZWRiYWNrLg0KDQot
-LQ0KUmVnYXJkcywNCkxlb25hcmQ=
+Miquel,
+
+On Tue, Jun 26, 2018 at 09:29:31AM +0200, Miquel Raynal wrote:
+> Hi Baruch,
+> =
+
+> On Tue, 26 Jun 2018 06:37:24 +0300, Baruch Siach <baruch@tkos.co.il>
+> wrote:
+> =
+
+> > Hi Miquel,
+> > =
+
+> > On Mon, Jun 25, 2018 at 05:12:22PM +0200, Miquel Raynal wrote:
+> > > Until recently, only one register was referenced in MVEBU thermal IP
+> > > node. Recent changes added a second entry pointing to another
+> > > register right next to it. We cannot know for sure that we will not
+> > > have to access other registers. That will be actually the case when
+> > > overheat interrupt feature will come, where it will be needed to acce=
+ss
+> > > DFX registers in the same area.
+> > > =
+
+> > > This approach is not scalable so intead of adding consinuously memory
+> > > areas in the DT (and change de DT bindings, while keeping backward  =
+
+> > =
+
+> > s/de/the/
+> =
+
+> Oh and s/intead/instead/ too.
+
+Can you please fix the minor above and also refresh against linus master
+branch? Patch does not apply clean anymore.
+checking file drivers/thermal/armada_thermal.c
+Hunk #3 FAILED at 64.
+Hunk #4 succeeded at 89 (offset -1 lines).
+Hunk #5 succeeded at 112 (offset -1 lines).
+Hunk #6 succeeded at 144 (offset -1 lines).
+Hunk #7 succeeded at 165 (offset -1 lines).
+Hunk #8 succeeded at 196 (offset -1 lines).
+Hunk #9 succeeded at 209 (offset -1 lines).
+Hunk #10 succeeded at 218 (offset -1 lines).
+Hunk #11 succeeded at 258 (offset -1 lines).
+Hunk #12 succeeded at 290 (offset -1 lines).
+Hunk #13 succeeded at 303 (offset -1 lines).
+Hunk #14 succeeded at 316 (offset -1 lines).
+Hunk #15 succeeded at 331 (offset -1 lines).
+Hunk #16 succeeded at 347 (offset -1 lines).
+Hunk #17 succeeded at 362 (offset -1 lines).
+Hunk #18 FAILED at 399.
+Hunk #19 succeeded at 400 (offset -31 lines).
+Hunk #20 succeeded at 413 with fuzz 1 (offset -31 lines).
+Hunk #21 succeeded at 417 (offset -34 lines).
+2 out of 21 hunks FAILED
+
+I get the above after applying the first 5 patches of your series.
+
+> =
+
+> Thanks for pointing it,
+> Miqu=E8l
