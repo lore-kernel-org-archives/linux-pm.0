@@ -1,58 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] kernel/power: cast PAGE_SIZE to int when comparing with
- error code
-Date: Mon, 2 Jul 2018 09:14:03 +0200
-Message-ID: <CAJZ5v0gpBShiR5oQawfrLh_fMBK7EqfPbT4TBeNDjn6Kkou_7A@mail.gmail.com>
-References: <20180625053058.25206-1-cgxu519@gmx.com> <0a812d02-d85d-f685-6e7f-f4dfe22f9629@gmx.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v5 1/8] interconnect: Add generic on-chip interconnect API
+Date: Mon, 2 Jul 2018 09:23:33 +0200
+Message-ID: <CAKfTPtBFcwSGm8oxd7e-xqUvyHjRfOawFrJiKeF_E4Lj=qPZ7w@mail.gmail.com>
+References: <20180620121141.15403-1-georgi.djakov@linaro.org>
+ <20180620121141.15403-2-georgi.djakov@linaro.org> <CAKfTPtBApjf9rhJm3paeXdgbVG50ALeun=zMUddc-f+RnrvkqQ@mail.gmail.com>
+ <730fac43-e99f-e4bd-bc40-eddeb8338e6e@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0a812d02-d85d-f685-6e7f-f4dfe22f9629@gmx.com>
+In-Reply-To: <730fac43-e99f-e4bd-bc40-eddeb8338e6e@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: cgxu519 <cgxu519@gmx.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, mturquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, "Sweeney, Sean" <seansw@qti.qualcomm.com>, daidavid1@codeaurora.org, Evan Green <evgreen@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, linux-kernel <linux-kernel@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 2, 2018 at 3:10 AM, cgxu519 <cgxu519@gmx.com> wrote:
-> Hi Rafael,
+On Sun, 1 Jul 2018 at 13:09, Georgi Djakov <georgi.djakov@linaro.org> wrote=
+:
 >
-> Could you have a look at this simple patch?
-
-I've done that already and I'm going to apply it.
-
-Thanks,
-Rafael
-
-
-> On 06/25/2018 01:30 PM, Chengguang Xu wrote:
->>
->> If PAGE_SIZE is unsigned type then negative error code will be
->> larger than PAGE_SIZE.
->>
->> Signed-off-by: Chengguang Xu <cgxu519@gmx.com>
->> ---
->>   kernel/power/swap.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
->> index c2bcf97d24c8..d7f6c1a288d3 100644
->> --- a/kernel/power/swap.c
->> +++ b/kernel/power/swap.c
->> @@ -923,7 +923,7 @@ int swsusp_write(unsigned int flags)
->>         }
->>         memset(&snapshot, 0, sizeof(struct snapshot_handle));
->>         error = snapshot_read_next(&snapshot);
->> -       if (error < PAGE_SIZE) {
->> +       if (error < (int)PAGE_SIZE) {
->>                 if (error >= 0)
->>                         error = -EFAULT;
->>   @@ -1483,7 +1483,7 @@ int swsusp_read(unsigned int *flags_p)
->>         memset(&snapshot, 0, sizeof(struct snapshot_handle));
->>         error = snapshot_write_next(&snapshot);
->> -       if (error < PAGE_SIZE)
->> +       if (error < (int)PAGE_SIZE)
->>                 return error < 0 ? error : -EFAULT;
->>         header = (struct swsusp_info *)data_of(snapshot);
->>         error = get_swap_reader(&handle, flags_p);
+> Hi Vincent,
 >
+> On 27.06.18 =D0=B3. 9:19, Vincent Guittot wrote:
+> > Hi Georgi
+> >
+> > On Wed, 20 Jun 2018 at 14:11, Georgi Djakov <georgi.djakov@linaro.org> =
+wrote:
+> >
+> > [snip]
+> >
+> >> +
+> >> +static struct icc_path *path_allocate(struct icc_node *dst, ssize_t n=
+um_nodes)
+> >> +{
+> >> +       struct icc_node *node =3D dst;
+> >> +       struct icc_path *path;
+> >> +       size_t i;
+> >> +
+> >> +       path =3D kzalloc(sizeof(*path) + num_nodes * sizeof(*path->req=
+s),
+> >
+> > Should be (num_nodes -1) * sizeof(*path->reqs) as there is already 1
+> > icc_req in icc_path struct
+>
+> reqs[] is a flexible array member and it's size is not included in
+> sizeof(*path)
+
+ah yes, my eyes saw "struct icc_req reqs[0];"  but my brain was
+reading "struct icc_req reqs[1]"
+
+Sorry for the noise
+
+>
+> Thanks,
+> Georgi
+>
+> >> +                      GFP_KERNEL);
+> >> +       if (!path)
+> >> +               return ERR_PTR(-ENOMEM);
+> >> +
+> >> +       path->num_nodes =3D num_nodes;
+> >> +
+> >> +       for (i =3D 0; i < num_nodes; i++) {
+> >> +               hlist_add_head(&path->reqs[i].req_node, &node->req_lis=
+t);
+> >> +
+> >> +               path->reqs[i].node =3D node;
+> >> +               /* reference to previous node was saved during path tr=
+aversal */
+> >> +               node =3D node->reverse;
+> >> +       }
+> >> +
+> >> +       return path;
+> >> +}
+> >> +
+> >
+> > [snip]
+> >
 >
