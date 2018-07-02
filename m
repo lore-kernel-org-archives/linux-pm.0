@@ -1,59 +1,78 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 0/2] soc: imx: gpc: Power off PU domain in
- suspend/resume on 6qp
-Date: Mon, 02 Jul 2018 15:58:26 +0200
-Message-ID: <1530539906.22468.92.camel@pengutronix.de>
-References: <cover.1530530881.git.leonard.crestez@nxp.com>
-         <1530533718.22468.87.camel@pengutronix.de>
-         <8dc9a2359f65b570a8a94aad5e8113dfd642e441.camel@nxp.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v4 0/6] thermal: tsens: Refactoring for TSENSv2 IP
+Date: Mon, 2 Jul 2018 19:30:11 +0530
+Message-ID: <CAHLCerNj83pYHDJg2aHoqOqJ6NEg+OWHT-RW4SDbEHrwJXYEtw@mail.gmail.com>
+References: <cover.1530533998.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8dc9a2359f65b570a8a94aad5e8113dfd642e441.camel@nxp.com>
+In-Reply-To: <cover.1530533998.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Anson Huang <anson.huang@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Robin Gong <yibin.gong@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Kees Cook <keescook@chromium.org>, Rob Herring <robh@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, den 02.07.2018, 13:49 +0000 schrieb Leonard Crestez:
-> On Mon, 2018-07-02 at 14:15 +0200, Lucas Stach wrote:
-> > Am Montag, den 02.07.2018, 14:52 +0300 schrieb Leonard Crestez:
-> > > With current code (even without my patches) attempting to dynamically
-> > > remove/probe the GPC fils since since the per-pgc platform_device
-> > > instances are not removed. I'm trying something like this:
-> > > 
-> > > echo 130000.gpu > /sys/bus/platform/drivers/etnaviv-gpu/unbind
-> > > echo 134000.gpu > /sys/bus/platform/drivers/etnaviv-gpu/unbind
-> > > echo 20dc000.gpc  > /sys/bus/platform/drivers/imx-gpc/unbind
-> > > echo 20dc000.gpc  > /sys/bus/platform/drivers/imx-gpc/bind
-> > > 
-> > > But is there any usecase for dynamically removing the GPC? Instead of
-> > > trying to fix it I'd rather delete imx_gpc_driver.remove, just like
-> > > for gpcv2. Would anyone object to a patch doing this?
-> > 
-> > Yes, as this is taking things in wrong direction. With device-links we
-> > are able to unbind consumer devices when a provider is removed. As the
-> > GPC is a consumer of a regulator, not having the ability to unbind it
-> > would break that use case.
-> 
-> The GPC is a "consumer" of the LDO regulators which are built into the
-> SOC. Why would you want to unbind any of this stuff?
+On Mon, Jul 2, 2018 at 6:14 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> This series is a mixed bag:
+> - Some code moves to allow code sharing between various v2.x.y versions of
+>   the TSENS IP,
+> - new qcom,tsens-v2.4.0 DT property for SDM845 and a generic qcom,tsens-v2
+>   property as a fallback compatible for all v2.x.y platforms,
+> - new platform support (sdm845)
+> - a cleanup patch and
+> - a DT change to have a common way to deal with the SROT and TM registers
+>   despite slightly different features across the IP family and different
+>   register offsets.
+>
+> Rob mentioned offline that we should expose the full version string of the
+> TSENS IP (x.y.z) and have a fallback compatible. I hope patch 4 does what
+> you were looking for.
+>
+> Regards,
+> Amit
 
-Which in turn might be consumers of external regulators, which may have
-a module driver that can be reloaded by the user at will.
+Forgot to append the changelog. Here it is.
 
-> I don't understand the usecase, maybe you can elaborate?
+Changes since v3:
+- Introduce qcom,tsens-v2.4.0 property and make qcom,tsens-v2 a
+  fallback, compatible property.
+- Rename ops_v2 to ops_generic_v2
 
-You could make that argument for almost every device on a SoC, yet the
-explicit default in Linux is for device drivers to be hot-pluggable.
+Changes since v2:
+- Based on review, moved tsens-8996.c to tsens-v2.c and changed
+  corresponding function names, struct names to allow for generic tsensv2
+  platforms
+- All v2 platforms will now only need to use the qcom,tsen-v2 property
+- Added a DT patch to initialize tsens driver on sdm845, now that 4.18-rc1
+  will contain an sdm845.dtsi
 
-Anything that changes the system layout at Linux runtime, like
-devicetree overlays or dynamic system partition solutions like
-Jailhouse depend on driver/device hotplug to work. I know that there
-are quite a few bugs in this area, because it's less tested than other
-code paths, but I'm unwilling to accept that we are actively going in
-the direction of breaking this stuff.
+Changes since v1:
+- Move get_temp() from tsens-8996 to tsens-common and rename
+- Change 8996 DT entry to allow init_common() to work across sdm845 and
+  8996 due to different offsets
 
-Regards,
-Lucas
+> Amit Kucheria (6):
+>   thermal: tsens: Get rid of unused fields in structure
+>   dt: qcom: 8996: thermal: Move to DT initialisation
+>   thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
+>   thermal: tsens: Add support for SDM845
+>   thermal: tsens: Check if we have valid data before reading
+>   arm64: dts: sdm845: Add tsens nodes
+>
+>  .../devicetree/bindings/thermal/qcom-tsens.txt     |  2 ++
+>  arch/arm64/boot/dts/qcom/msm8996.dtsi              | 12 ++++++-
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi               | 16 +++++++++
+>  drivers/thermal/qcom/Makefile                      |  2 +-
+>  drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c}  | 39 ++++++++++++----------
+>  drivers/thermal/qcom/tsens.c                       |  6 ++++
+>  drivers/thermal/qcom/tsens.h                       |  7 ++--
+>  7 files changed, 62 insertions(+), 22 deletions(-)
+>  rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (66%)
+>
+> --
+> 2.7.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
