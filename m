@@ -1,134 +1,58 @@
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-Subject: Re: [PATCH v7 3/6] kernel/reboot.c: export pm_power_off_prepare
-Date: Mon, 2 Jul 2018 07:04:22 +0200
-Message-ID: <20738ca3-4289-9e44-ff74-9099b5b8c2b6@pengutronix.de>
-References: <20180517055014.6607-1-o.rempel@pengutronix.de>
- <20180517055014.6607-4-o.rempel@pengutronix.de>
- <daba73df-037c-2583-3a08-f3f27c4129d1@pengutronix.de>
- <2307533.g32PyNi9fl@aspire.rjw.lan> <20180617070527.GL16091@dragon>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH 0/3] PM / Domains: Enable name based lookup at attach
+Date: Mon, 2 Jul 2018 11:50:27 +0530
+Message-ID: <339eb0d1-7b85-4cc1-55b6-8d3f68f73182@codeaurora.org>
+References: <20180629110432.5179-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="HiPCWAM0hvhY06dQMa7Wk95ToC7Gl2hlf"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180617070527.GL16091@dragon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mark Brown <broonie@kernel.org>, kernel@pengutronix.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Liam Girdwood <lgirdwood@gmail.com>, Leonard Crestez <leonard.crestez@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Fabio Estevam <fabio.estevam@nxp.com>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180629110432.5179-1-ulf.hansson@linaro.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Lucas Stach <dev@lynxeye.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---HiPCWAM0hvhY06dQMa7Wk95ToC7Gl2hlf
-Content-Type: multipart/mixed; boundary="otFWDJEXySuV7qS8y6T1ZFssVlkaKfQop";
- protected-headers="v1"
-From: Oleksij Rempel <o.rempel@pengutronix.de>
-To: Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mark Brown <broonie@kernel.org>, kernel@pengutronix.de,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Liam Girdwood <lgirdwood@gmail.com>,
- Leonard Crestez <leonard.crestez@nxp.com>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Michael Turquette <mturquette@baylibre.com>,
- Stephen Boyd <sboyd@codeaurora.org>, Fabio Estevam <fabio.estevam@nxp.com>,
- Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org
-Message-ID: <20738ca3-4289-9e44-ff74-9099b5b8c2b6@pengutronix.de>
-Subject: Re: [PATCH v7 3/6] kernel/reboot.c: export pm_power_off_prepare
-References: <20180517055014.6607-1-o.rempel@pengutronix.de>
- <20180517055014.6607-4-o.rempel@pengutronix.de>
- <daba73df-037c-2583-3a08-f3f27c4129d1@pengutronix.de>
- <2307533.g32PyNi9fl@aspire.rjw.lan> <20180617070527.GL16091@dragon>
-In-Reply-To: <20180617070527.GL16091@dragon>
-
---otFWDJEXySuV7qS8y6T1ZFssVlkaKfQop
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
-
-Hi Rafael,
-
-it is two weeks since this email. Probably it was lost some where in the
-space time continuum.
-Can you please respond to it :)
-
-On 17.06.2018 09:05, Shawn Guo wrote:
-> On Tue, Jun 12, 2018 at 04:33:05PM +0200, Rafael J. Wysocki wrote:
->> On Tuesday, June 12, 2018 2:42:12 PM CEST Oleksij Rempel wrote:
->>>  This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
->>> --Sj2PRcQlY7eZybdA0sq9wWzJEO8fKS924
->>> Content-Type: multipart/mixed; boundary=3D"d6BZYFRi4L3iCmOh3nm6wjii3d=
-WC9QFDg";
->>>  protected-headers=3D"v1"
->>> From: Oleksij Rempel <o.rempel@pengutronix.de>
->>> To: Shawn Guo <shawnguo@kernel.org>, Mark Brown <broonie@kernel.org>,=
-
->>>  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
->>> Cc: kernel@pengutronix.de, devicetree@vger.kernel.org,
->>>  linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
->>>  linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.o=
-rg>,
->>>  Liam Girdwood <lgirdwood@gmail.com>,
->>>  Leonard Crestez <leonard.crestez@nxp.com>, Rob Herring <robh+dt@kern=
-el.org>,
->>>  Mark Rutland <mark.rutland@arm.com>,
->>>  Michael Turquette <mturquette@baylibre.com>,
->>>  Stephen Boyd <sboyd@codeaurora.org>, Fabio Estevam <fabio.estevam@nx=
-p.com>,
->>>  Russell King <linux@armlinux.org.uk>
->>> Message-ID: <daba73df-037c-2583-3a08-f3f27c4129d1@pengutronix.de>
->>> Subject: Re: [PATCH v7 3/6] kernel/reboot.c: export pm_power_off_prep=
-are
->>> References: <20180517055014.6607-1-o.rempel@pengutronix.de>
->>>  <20180517055014.6607-4-o.rempel@pengutronix.de>
->>> In-Reply-To: <20180517055014.6607-4-o.rempel@pengutronix.de>
->>>
->>> --d6BZYFRi4L3iCmOh3nm6wjii3dWC9QFDg
->>> Content-Type: text/plain; charset=3Dutf-8
->>> Content-Language: en-US
->>> Content-Transfer-Encoding: quoted-printable
->>>
->>> Hi Rafael,
->>>
->>> Last version of this patch was send at 17.05.2018. No other comment w=
-as
->>> provided and this patch is a blocker for other patches in this serie.=
-
->>> Can you please give some feedback on it.
->>
->> I would have done that had I not missed the patch.
->>
->> Which probably wouldn't have happened had you CCed it to linux-pm.
->>
->> Anyway, I have no particular problems with exporting pm_power_off_prep=
-are via
->> EXPORT_SYMBOL_GPL().
->=20
-> Rafael,
->=20
-> Can we have your explicit Acked-by tag on this patch?  Thanks.
->=20
-> Shawn
->=20
 
 
---otFWDJEXySuV7qS8y6T1ZFssVlkaKfQop--
+On 06/29/2018 04:34 PM, Ulf Hansson wrote:
+> Recently we added support to manage multiple PM domains per device. Consumer
+> drivers were provided an API, dev_pm_domain_attach_by_id() to associate its
+> device with one of its PM domain, by using an index.
+> 
+> Let's extend this to allow the association to be done using a name based
+> lookup, which follows the similar concept as for other resource types, such as
+> clocks for example.
 
---HiPCWAM0hvhY06dQMa7Wk95ToC7Gl2hlf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Updated [1] to use dev_pm_domain_attach_by_name() instead of dev_pm_domain_attach_by_id()
+Everything works as expected.
 
------BEGIN PGP SIGNATURE-----
+Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
 
-iQEzBAEBCAAdFiEEpENFL0P3hvQ7p0DDdQOiSHVI77QFAls5slYACgkQdQOiSHVI
-77R2sAf/X9mHyHBxUk8NRvP4/mSj0ZBzaD6H/acG8rx5PgaoeiCETAdfU1+PRb55
-KwMwyreI14fsuYpZch45Kteub768zhZfc3J8uhZTGECZ/be+AOid3XzgjvZ4Rma7
-rut3U7XgXHMHY41m9Q9y6H6OXvwlJjsyUUPYYN2e4d1fPNYcAc7PMK2570bPRAxh
-nv5n/TpiDorfh83c6mApCQtrMmHUPY5m71k/DtnnbdtulO3E6PHC/qiQzFywQPB6
-YpZHNW/G9DjgFgA4purXQz1ql4W/fPWAe7N9QeTpe7Dbm24+6cywJKpEs70impOo
-hs0gsMlodRhWgpLvKV3/jFVY651u1w==
-=7pZD
------END PGP SIGNATURE-----
+[1] https://patchwork.kernel.org/patch/10496107/
+ 
+> 
+> Ulf Hansson (3):
+>   PM / Domains: dt: Add a power-domain-names property
+>   PM / Domains: Introduce option to attach a device by name to genpd
+>   PM / Domains: Introduce dev_pm_domain_attach_by_name()
+> 
+>  .../bindings/power/power_domain.txt           |  8 +++++++
+>  drivers/base/power/common.c                   | 17 +++++++++++++
+>  drivers/base/power/domain.c                   | 24 +++++++++++++++++++
+>  include/linux/pm_domain.h                     | 15 ++++++++++++
+>  4 files changed, 64 insertions(+)
+> 
 
---HiPCWAM0hvhY06dQMa7Wk95ToC7Gl2hlf--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
