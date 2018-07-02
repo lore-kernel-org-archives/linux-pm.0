@@ -1,93 +1,42 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v4 3/6] thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
-Date: Mon,  2 Jul 2018 18:14:06 +0530
-Message-ID: <7e9beaa3218b1c46ea6a7399c5978c1538fce261.1530533998.git.amit.kucheria@linaro.org>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH 0/2] soc: imx: gpc: Power off PU domain in suspend/resume
+ on 6qp
+Date: Mon, 2 Jul 2018 13:49:47 +0000
+Message-ID: <8dc9a2359f65b570a8a94aad5e8113dfd642e441.camel@nxp.com>
+References: <cover.1530530881.git.leonard.crestez@nxp.com>
+         <1530533718.22468.87.camel@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1530533998.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1530533998.git.amit.kucheria@linaro.org>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
+In-Reply-To: <1530533718.22468.87.camel@pengutronix.de>
+Content-Language: en-US
+Content-ID: <1D0E96E428DA1F47A8635340D6F04BA9@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+Cc: dl-linux-imx <linux-imx@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Anson Huang <anson.huang@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Robin Gong <yibin.gong@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-The TSENS block inside the 8996 is internally classified as version 2 of
-the IP. Several other SoC families use this block and can share this code.
-
-We rename get_temp() to reflect that it can be used across the v2 family.
-
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/Makefile                     |  2 +-
- drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} | 26 ++++++++---------------
- 2 files changed, 10 insertions(+), 18 deletions(-)
- rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (66%)
-
-diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-index 2cc2193..a821929 100644
---- a/drivers/thermal/qcom/Makefile
-+++ b/drivers/thermal/qcom/Makefile
-@@ -1,2 +1,2 @@
- obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
--qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o
-+qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-v2.o
-diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-v2.c
-similarity index 66%
-rename from drivers/thermal/qcom/tsens-8996.c
-rename to drivers/thermal/qcom/tsens-v2.c
-index e1f7781..2eca7ff 100644
---- a/drivers/thermal/qcom/tsens-8996.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -1,27 +1,18 @@
-+// SPDX-License-Identifier: GPL-2.0
- /*
-  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 and
-- * only version 2 as published by the Free Software Foundation.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-+ * Copyright (c) 2018, Linaro Limited
-  */
- 
--#include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include "tsens.h"
- 
--#define STATUS_OFFSET	0x10a0
--#define LAST_TEMP_MASK	0xfff
-+#define STATUS_OFFSET		0xa0
-+#define LAST_TEMP_MASK		0xfff
- #define STATUS_VALID_BIT	BIT(21)
- #define CODE_SIGN_BIT		BIT(11)
- 
--static int get_temp_8996(struct tsens_device *tmdev, int id, int *temp)
-+static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- {
- 	struct tsens_sensor *s = &tmdev->sensor[id];
- 	u32 code;
-@@ -73,12 +64,13 @@ static int get_temp_8996(struct tsens_device *tmdev, int id, int *temp)
- 	return 0;
- }
- 
--static const struct tsens_ops ops_8996 = {
-+static const struct tsens_ops ops_generic_v2 = {
- 	.init		= init_common,
--	.get_temp	= get_temp_8996,
-+	.get_temp	= get_temp_tsens_v2,
- };
- 
- const struct tsens_data data_8996 = {
- 	.num_sensors	= 13,
--	.ops		= &ops_8996,
-+	.ops		= &ops_generic_v2,
- };
-+
--- 
-2.7.4
+T24gTW9uLCAyMDE4LTA3LTAyIGF0IDE0OjE1ICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
+QW0gTW9udGFnLCBkZW4gMDIuMDcuMjAxOCwgMTQ6NTIgKzAzMDAgc2NocmllYiBMZW9uYXJkIENy
+ZXN0ZXo6DQoNCj4gPiBXaXRoIGN1cnJlbnQgY29kZSAoZXZlbiB3aXRob3V0IG15IHBhdGNoZXMp
+IGF0dGVtcHRpbmcgdG8gZHluYW1pY2FsbHkNCj4gPiByZW1vdmUvcHJvYmUgdGhlIEdQQyBmaWxz
+IHNpbmNlIHNpbmNlIHRoZSBwZXItcGdjIHBsYXRmb3JtX2RldmljZQ0KPiA+IGluc3RhbmNlcyBh
+cmUgbm90IHJlbW92ZWQuIEknbSB0cnlpbmcgc29tZXRoaW5nIGxpa2UgdGhpczoNCj4gPiANCj4g
+PiBlY2hvIDEzMDAwMC5ncHUgPiAvc3lzL2J1cy9wbGF0Zm9ybS9kcml2ZXJzL2V0bmF2aXYtZ3B1
+L3VuYmluZA0KPiA+IGVjaG8gMTM0MDAwLmdwdSA+IC9zeXMvYnVzL3BsYXRmb3JtL2RyaXZlcnMv
+ZXRuYXZpdi1ncHUvdW5iaW5kDQo+ID4gZWNobyAyMGRjMDAwLmdwYyAgPiAvc3lzL2J1cy9wbGF0
+Zm9ybS9kcml2ZXJzL2lteC1ncGMvdW5iaW5kDQo+ID4gZWNobyAyMGRjMDAwLmdwYyAgPiAvc3lz
+L2J1cy9wbGF0Zm9ybS9kcml2ZXJzL2lteC1ncGMvYmluZA0KPiA+IA0KPiA+IEJ1dCBpcyB0aGVy
+ZSBhbnkgdXNlY2FzZSBmb3IgZHluYW1pY2FsbHkgcmVtb3ZpbmcgdGhlIEdQQz8gSW5zdGVhZCBv
+Zg0KPiA+IHRyeWluZyB0byBmaXggaXQgSSdkIHJhdGhlciBkZWxldGUgaW14X2dwY19kcml2ZXIu
+cmVtb3ZlLCBqdXN0IGxpa2UNCj4gPiBmb3IgZ3BjdjIuIFdvdWxkIGFueW9uZSBvYmplY3QgdG8g
+YSBwYXRjaCBkb2luZyB0aGlzPw0KPiANCj4gWWVzLCBhcyB0aGlzIGlzIHRha2luZyB0aGluZ3Mg
+aW4gd3JvbmcgZGlyZWN0aW9uLiBXaXRoIGRldmljZS1saW5rcyB3ZQ0KPiBhcmUgYWJsZSB0byB1
+bmJpbmQgY29uc3VtZXIgZGV2aWNlcyB3aGVuIGEgcHJvdmlkZXIgaXMgcmVtb3ZlZC4gQXMgdGhl
+DQo+IEdQQyBpcyBhIGNvbnN1bWVyIG9mIGEgcmVndWxhdG9yLCBub3QgaGF2aW5nIHRoZSBhYmls
+aXR5IHRvIHVuYmluZCBpdA0KPiB3b3VsZCBicmVhayB0aGF0IHVzZSBjYXNlLg0KDQpUaGUgR1BD
+IGlzIGEgImNvbnN1bWVyIiBvZiB0aGUgTERPIHJlZ3VsYXRvcnMgd2hpY2ggYXJlIGJ1aWx0IGlu
+dG8gdGhlDQpTT0MuIFdoeSB3b3VsZCB5b3Ugd2FudCB0byB1bmJpbmQgYW55IG9mIHRoaXMgc3R1
+ZmY/DQoNCkkgZG9uJ3QgdW5kZXJzdGFuZCB0aGUgdXNlY2FzZSwgbWF5YmUgeW91IGNhbiBlbGFi
+b3JhdGU/
