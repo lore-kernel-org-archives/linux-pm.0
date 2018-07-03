@@ -1,38 +1,117 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v8 00/26] PM / Domains: Support hierarchical CPU
- arrangement (PSCI/ARM)
-Date: Tue, 3 Jul 2018 09:54:12 +0200
-Message-ID: <CAJZ5v0hcBiYPMh8V50yq0jQud32Ey8V-ukiavJkP4PU4zAiFyg@mail.gmail.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <CAPDyKFpy8rpjRTBsHUFa_L0M_C=vH+6qjq=Kxdn+0j+T5NNSMQ@mail.gmail.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH 2/2] PCI: imx: Initial imx7d pm support
+Date: Tue, 03 Jul 2018 10:42:08 +0200
+Message-ID: <1530607328.22468.102.camel@pengutronix.de>
+References: <cover.1527621510.git.leonard.crestez@nxp.com>
+         <a6176c8bcfbca08ce4e93e304bdcd48c4600f8e2.1527621510.git.leonard.crestez@nxp.com>
+         <1528468422.26356.20.camel@pengutronix.de>
+         <02207512447db4585a4e879e2a059ba223d57dbe.camel@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpy8rpjRTBsHUFa_L0M_C=vH+6qjq=Kxdn+0j+T5NNSMQ@mail.gmail.com>
+In-Reply-To: <02207512447db4585a4e879e2a059ba223d57dbe.camel@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Richard Zhu <hongxing.zhu@nxp.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Anson Huang <anson.huang@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 3, 2018 at 7:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> Rafael,
->
-> On 20 June 2018 at 19:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> Changes in v8:
->>  - Added some tags for reviews and acks.
->>  - Cleanup timer patch (patch6) according to comments from Rafael.
->>  - Rebased series on top of v4.18rc1 - it applied cleanly, except for patch 5.
->>  - While adopting patch 5 to new genpd changes, I took the opportunity to
->>    improve the new function description a bit.
->>  - Corrected malformed SPDX-License-Identifier in patch20.
->
-> There have only been a minor comment from you at patch3 (about
-> squashing it with patch21), with that fixed and assuming there are no
-> further comments - would you like me to collect the changes and send
-> it to you as a pull request?
+Am Montag, den 02.07.2018, 17:18 +0000 schrieb Leonard Crestez:
+> On Fri, 2018-06-08 at 16:33 +0200, Lucas Stach wrote:
+> > Am Dienstag, den 29.05.2018, 22:39 +0300 schrieb Leonard Crestez:
+> > > On imx7d the phy is turned off in suspend and must be reset on resume.
+> > > Right now lspci -v fails after a suspend/resume cycle, fix this by
+> > > adding minimal suspend/resume code from the nxp vendor tree.
+> > > 
+> > > This is currently only enabled for imx7 but the same sequence can be
+> > > applied to other imx pcie variants.
+> > > +#ifdef CONFIG_PM_SLEEP
+> > > +static int imx6_pcie_suspend_noirq(struct device *dev)
+> > > +{
+> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> > > +
+> > > +	if (imx6_pcie->variant == IMX7D) {
+> > 
+> > Instead of this large indented block, please just have an early return
+> > at the start of this function, like:
+> > 
+> > if (imx6_pcie->variant != IMX7D)
+> > 	return 0;
+> > 
+> > Same for the resume function.
+> 
+> OK. The resume sequence is mostly the same for all SOCs where it
+> applies.
+> 
+> > > +static int imx6_pcie_resume_noirq(struct device *dev)
+> > > +{
+> > > > > > +	int ret = 0;
+> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> > > > > > +	struct pcie_port *pp = &imx6_pcie->pci->pp;
+> > > 
+> > > +
+> > > > > > +	if (imx6_pcie->variant == IMX7D) {
+> > > +		imx6_pcie_ltssm_disable(dev);
+> > 
+> > The LTSSM disable seems misplaced here. I would have expected it to be
+> > in the suspend function.
+> 
+> This is a requirement for reinitializing the core: LTSSM needs to be
+> turned off during initialization.
 
-I have not looked at them in detail yet, sorry.
+If you disable LTSSM during suspend, it should be off when entering
+this resume function, no?
 
-I any case, I'll apply the patches by hand.
+> > > +		/*
+> > > > > > +		 * controller maybe turn off, re-configure again
+> > > > > > +		 */
+> > > > > > +		dw_pcie_setup_rc(pp);
+> > > +
+> > > > > > +		imx6_pcie_ltssm_enable(dev);
+> > > +
+> > > > > > +		ret = imx6_pcie_wait_for_link(imx6_pcie);
+> > > > > > +		if (ret < 0)
+> > > +			pr_info("pcie link is down after resume.\n");
+> > 
+> > If the PHY has been powered down and LTSSM stopped I guess we need to
+> > do the full imx6_pcie_establish_link() dance again here to reliably re-
+> > establish the link. The above seems unsafe.
+> 
+> What imx6_pcie_establish_link does additionally is some workaround for
+> link gen detection. I agree that it should be included.
+> 
+> This would make resume mostly the same as imx_pcie_host_init except for
+> dw_pcie_msi_init; that needs to be saved/restored separately.
 
-Thanks,
-Rafael
+Right, so maybe we can even cut down on lines of code by splitting and
+reusing existing functions.
+
+> 
+> Another issue that should be discussed here is that on 6sx and 7d the
+> gpc PCIE power domain is not defined correctly: the PCIE block is in
+> the DISPMIX domain on both SOCs and it is only PCIE_PHY which has a
+> separate power domain.
+> 
+> This matters: enabling power-gating for displays will break pcie if
+> this relationship is not taken into account. Here are some options:
+> 
+> 1) Make &pd_pcie a child of &pd_disp by hacking into gpc probe
+> functions and calling pm_genpd_add_subdomain. Not very nice.
+> 
+> 2) Support nesting PGCs in GPC code? Lots of code and still an
+> incorrect representation of hardware.
+> 
+> 3) Set power-domains = <&pd_disp> and enable runtime PM on &pd_pcie?
+> 
+> 4) Add separate devices for the pcie-phy. These would be mostly empty
+> but still different, for example on imx6sx the PHY is not even
+> accessible on the bus but only though PCIE registers.
+
+5) Take a look at the linux-pm list. ;) The power domain framework has
+just gained support for multiple power domains per device. I think that
+ is the right solution for this, as like you mentioned the PHY isn't
+really a separate block on i.MX6, but part of the PCIe controller
+device.
+
+Regards,
+Lucas
