@@ -1,176 +1,112 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH v3] PM / devfreq: Fix devfreq_add_device() when drivers
- are built as modules.
-Date: Tue, 3 Jul 2018 12:15:05 +0200
-Message-ID: <CAFqH_52rh7-DaG+nagxRw=egRqkt2yJtDtkBnVD1hOyf-oVBQg@mail.gmail.com>
-References: <20180621220430.25644-1-enric.balletbo@collabora.com>
- <0383b4a703a0b619023c0654a4a7637419c72ebd.camel@collabora.com>
- <addc4280-729f-85d7-a314-35afbb7c8bb1@codeaurora.org> <1e792d3c972998f92109c127886243e32c4cde71.camel@collabora.com>
- <7c67974e40afd15abfca5907b27de097@codeaurora.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [RFC PATCH] ata: ahci: Enable DEVSLP by default on x86 modern
+ standby platform
+Date: Tue, 3 Jul 2018 12:21:50 +0200
+Message-ID: <660d4e4b-361f-e6b1-ef21-3985c321183a@redhat.com>
+References: <20180702190845.7456-1-srinivas.pandruvada@linux.intel.com>
+ <20180702202151.GK533219@devbig577.frc2.facebook.com>
+ <5493bfdb-14a9-a55d-f96e-b9c8a29f1d63@redhat.com>
+ <ca753f719e123d8e3c2306b8d55f3d4a656cbd2f.camel@linux.intel.com>
+ <fefe0ef4-e21f-72cc-18d6-a5a6693c21c6@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7c67974e40afd15abfca5907b27de097@codeaurora.org>
+In-Reply-To: <fefe0ef4-e21f-72cc-18d6-a5a6693c21c6@redhat.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: akhilpo@codeaurora.org
-Cc: ezequiel@collabora.com, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel <linux-kernel@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tejun Heo <tj@kernel.org>
+Cc: rjw@rjwysocki.net, alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+Hi,
 
-Any comments?
+On 03-07-18 10:57, Hans de Goede wrote:
+> Hi,
+> 
+> On 03-07-18 00:08, Srinivas Pandruvada wrote:
+>> Hi Hans,
+>>
+>> On Mon, 2018-07-02 at 23:27 +0200, Hans de Goede wrote:
+> 
+> <snip>
+> 
+>>>>> SATA IP block doesn't get turned off till SATA is in DEVSLP mode.
+>>>>> Here
+>>>>> user has to either use scsi-host sysfs or tools like powertop to
+>>>>> set
+>>>>> the sata-host link_power_management_policy to min_power.
+>>>>>
+>>>>> This change sets by default link power management policy to
+>>>>> min_power
+>>>>> for some platforms.  To avoid regressions, the following
+>>>>> conditions
+>>>>> are used:
+>>>>> - The kernel config is already set to use med_power_with_dipm or
+>>>>> deeper
+>>>>> - System is a modern standby system using ACPI low power idle
+>>>>> flag
+>>>>> - The platform is not blacklisted for Suspend to Idle and suspend
+>>>>> to idle is used instead of S3
+>>>>> This combination will make sure that systems are fairly recent
+>>>>> and
+>>>>> since getting shipped with modern standby standby, the DEVSLP
+>>>>> function
+>>>>> is already validated.
+>>>>>
+>>>>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.int
+>>>>> el.com>
+>>>>
+>>>> Seems sane to me.  Hans, what do you think?
+>>>
+>>> I think this is going in the right direction, but min_power enables
+>>> both DEVSLP and HIPM, AFAIK Windows at least in the past did not
+>>> enable HIPM be default.
+>>
+>> Windows and Linux will need to meet the same criteria to reach SLP_S0
+>> state. OS is not deciding whether we meet criteria or not, it is
+>> firmware deciding, and it will look for SATA IP to be in certain
+>> predefined state, before generating this SLP_S0 signal.
+>>
+>>
+>>> Srinivas can you figure out what Windows does wrt HIPM?
+>>
+>> We can see that under Windows the SATA rail voltage is dropped. I don't
+>> know if there is any other method other than DEVSLP configuration. But
+>> I will surely check around.
+> 
+> I understand that we need DEVSLP, but AFAIK DEVSLP is entered automatically
+> after being in slumber for a defined time. The question is how we get into
+> slumber. Currently with the new med_power_with_dipm policy we always use
+> DIPM to enter slumber. Your suggested switch to min_power means also
+> enabling HIPM. What I'm suggesting is that it might better to have
+> DIPM + DEVSLP rather then DIPM + HIPM + DEVSLP.
+> 
+> So basically the question is does windows use:
+> 
+> a) DIPM + DEVSLP; or
+> b) DIPM + HIPM + DEVSLP
+> 
+> If b. is the case, then I'm fine with your patch as is, but if Windows
+> does a. then we should mimic that, which requires a new power-level as
+> our min_power level is b.
 
-Just a gentle ping to make sure the parallel conversation regarding
-the mutex didn't distract you :)
+So digging a bit deeper I just realized that another important difference
+between med_power_with_dipm and min_power is that min_power by default
+set the ASP bits making the link go to the slumber state instead of to
+the partial (power-saving) state.
 
-Missatge de l'adre=C3=A7a <akhilpo@codeaurora.org> del dia dv., 22 de juny
-2018 a les 23:22:
->
-> On 2018-06-22 22:43, Ezequiel Garcia wrote:
-> > Hey Akhil,
-> >
-> > On Fri, 2018-06-22 at 12:33 +0530, Akhil P Oommen wrote:
-> >> On 6/22/2018 6:41 AM, Ezequiel Garcia wrote:
-> >> > Hey Enric,
-> >> >
-> >> > On Fri, 2018-06-22 at 00:04 +0200, Enric Balletbo i Serra wrote:
-> >> > > When the devfreq driver and the governor driver are built as
-> >> > > modules,
-> >> > > the call to devfreq_add_device() or governor_store() fails
-> >> > > because
-> >> > > the
-> >> > > governor driver is not loaded at the time the devfreq driver
-> >> > > loads.
-> >> > > The
-> >> > > devfreq driver has a build dependency on the governor but also
-> >> > > should
-> >> > > have a runtime dependency. We need to make sure that the governor
-> >> > > driver
-> >> > > is loaded before the devfreq driver.
-> >> > >
-> >> > > This patch fixes this bug by adding a try_then_request_governor()
-> >> > > function. First tries to find the governor, and then, if it is
-> >> > > not
-> >> > > found,
-> >> > > it requests the module and tries again.
-> >> > >
-> >> > > Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to
-> >> > > governor
-> >> > > using name)
-> >> > > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.c
-> >> > > om>
-> >> > > ---
-> >> > >
-> >> > > Changes in v3:
-> >> > > - Remove unneded change in dev_err message.
-> >> > > - Fix err returned value in case to not find the governor.
-> >> > >
-> >> > > Changes in v2:
-> >> > > - Add a new function to request the module and call that function
-> >> > > from
-> >> > >    devfreq_add_device and governor_store.
-> >> > >
-> >> > >   drivers/devfreq/devfreq.c | 65
-> >> > > ++++++++++++++++++++++++++++++++-----
-> >> > > --
-> >> >
-> >> > [snip snip]
-> >> > > -        governor =3D find_devfreq_governor(devfreq-
-> >> > > >governor_name);
-> >> > > +        governor =3D try_then_request_governor(devfreq-
-> >> > > > governor_name);
-> >> > >
-> >> > >          if (IS_ERR(governor)) {
-> >> > >                  dev_err(dev, "%s: Unable to find governor for
-> >> > > the
-> >> > > device\n",
-> >> > >                          __func__);
-> >> > >                  err =3D PTR_ERR(governor);
-> >> > > -                goto err_init;
-> >> > > +                goto err_unregister;
-> >> > >          }
-> >> > >
-> >> > > +        mutex_lock(&devfreq_list_lock);
-> >> > > +
-> >> >
-> >> > I know it's not something we are introducing in this patch,
-> >> > but still... calling a hook with a mutex held looks
-> >> > fishy to me.
-> >> >
-> >> > This lock should only protect the list, unless I am missing
-> >> > something.
-> >> >
-> >> > >          devfreq->governor =3D governor;
-> >> > >          err =3D devfreq->governor->event_handler(devfreq,
-> >> > > DEVFREQ_GOV_START,
-> >> > >                                                  NULL);
-> >> > > @@ -663,14 +703,16 @@ struct devfreq *devfreq_add_device(struct
-> >> > > device *dev,
-> >> > >                          __func__);
-> >> > >                  goto err_init;
-> >> > >          }
-> >> > > +
-> >> > > +        list_add(&devfreq->node, &devfreq_list);
-> >> > > +
-> >> > >          mutex_unlock(&devfreq_list_lock);
-> >> > >
-> >> > >          return devfreq;
-> >> > >
-> >> > >   err_init:
-> >> > > -        list_del(&devfreq->node);
-> >> > >          mutex_unlock(&devfreq_list_lock);
-> >> > > -
-> >> > > +err_unregister:
-> >> > >          device_unregister(&devfreq->dev);
-> >> > >   err_dev:
-> >> > >          if (devfreq)
-> >> > > @@ -988,12 +1030,13 @@ static ssize_t governor_store(struct
-> >> > > device
-> >> > > *dev, struct device_attribute *attr,
-> >> > >          if (ret !=3D 1)
-> >> > >                  return -EINVAL;
-> >> > >
-> >> > > -        mutex_lock(&devfreq_list_lock);
-> >> > > -        governor =3D find_devfreq_governor(str_governor);
-> >> > > +        governor =3D try_then_request_governor(str_governor);
-> >> > >          if (IS_ERR(governor)) {
-> >> > > -                ret =3D PTR_ERR(governor);
-> >> > > -                goto out;
-> >> > > +                return PTR_ERR(governor);
-> >> > >          }
-> >> > > +
-> >> > > +        mutex_lock(&devfreq_list_lock);
-> >> > > +
-> >> > >          if (df->governor =3D=3D governor) {
-> >> > >                  ret =3D 0;
-> >> > >                  goto out;
-> >> > > --
-> >> > > 2.17.1
-> >> > >
-> >> > >
-> >> >
-> >> > Regards,
-> >> > Eze
-> >>
-> >> Adding to Ezequiel's point, shouldn't we take more granular lock
-> >> (devfreq->lock) first and then call devfreq_list_lock at the time of
-> >> adding to the list?
-> >>
-> >
-> > Not sure why we should do that. devfreq->lock should be used to
-> > protect the struct devfreq state, while the devfreq_list_lock
-> > is apparently protecting the two lists (which seem unrelated
-> > lists).
-> >
-> > So, the two locks are not correlated.
-> >
-> > Regards,
-> > Eze
-> In governor_store(), we do 'df->governor =3D governor;' without taking
-> df->lock. So it is possible to switch governor while update_devfreq() is
-> in progress. I smell trouble there. Don't you think so?
-> I am assuming df->lock protects 'struct devfreq' and devfreq_list_lock
-> protects both device and governor lists.
->
-> -Akhil.
+According to:
+https://www.intel.com/content/dam/doc/reference-guide/sata-devices-implementation-recommendations.pdf
+
+ASP defaults to off in the iRST drivers. But that is a document from
+before DEVSLP got introduced.
+
+So we need to know if Windows and/or the iRST drivers use HIPM and
+ASP by default on these systems. If they do then using min_power
+is fine. If they don't use one or the other we are going to need
+a new policy reflecting those settings and use that.
+
+Regards,
+
+Hans
