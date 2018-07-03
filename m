@@ -1,61 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/3] dt-bindings: marvell: Add documentation for the
- Armada 3700 AVS binding
-Date: Tue, 03 Jul 2018 16:44:50 +0200
-Message-ID: <7581910.yGXAn98Nt4@aspire.rjw.lan>
-References: <20180619124402.902-1-gregory.clement@bootlin.com>
- <20180619124402.902-2-gregory.clement@bootlin.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle:powernv: Add the CPUIDLE_FLAG_POLLING for snooze
+Date: Tue, 3 Jul 2018 20:33:48 +0530
+Message-ID: <20180703150348.GA13348@in.ibm.com>
+References: <1530595456-32352-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20180703140616.GA13660@drishya.in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180619124402.902-2-gregory.clement@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <rob.herring@linaro.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>, Victor Gu <xigu@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180703140616.GA13660@drishya.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, akshay.adiga@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 19, 2018 2:44:00 PM CEST Gregory CLEMENT wrote:
-> Extend the documentation of the Armada 37xx SoC with the Adaptive Voltage
-> Scaling (AVS) registers.
+On Tue, Jul 03, 2018 at 07:36:16PM +0530, Vaidyanathan Srinivasan wrote:
+> * Gautham R Shenoy <ego@linux.vnet.ibm.com> [2018-07-03 10:54:16]:
 > 
-> Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> ---
->  .../bindings/arm/marvell/armada-37xx.txt         | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > In the situations where snooze is the only cpuidle state due to
+> > firmware not exposing any platform idle states, the idle CPUs will
+> > remain in snooze for a long time with interrupts disabled causing the
+> > Hard-lockup detector to complain.
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> index 35c3c3460d17..22438f659d1e 100644
-> --- a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> +++ b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> @@ -33,3 +33,19 @@ nb_pm: syscon@14000 {
->  	compatible = "marvell,armada-3700-nb-pm", "syscon";
->  	reg = <0x14000 0x60>;
->  }
-> +
-> +AVS
-> +---
-> +
-> +For AVS an other component is needed:
-> +
-> +Required properties:
-> +- compatible     : should contain "marvell,armada-3700-avs", "syscon";
-> +- reg            : the register start and length for the AVS
-> +
-> +Example:
-> +avs: avs@11500 {
-> +	compatible = "marvell,armada-3700-avs", "syscon";
-> +	reg = <0x11500 0x40>;
-> +}
-> +
-> 
+> snooze_loop() will spin in SMT low priority with interrupt enabled. We
+> have local_irq_enable() before we get into the snooze loop.
+> Since this is a polling state, we should wakeup without an interrupt
+> and hence we set TIF_POLLING_NRFLAG as well.
+>
 
-I can't apply this one without a Rob's ACK.
+You are right. We have a local_irq_enable() inside the snooze_loop.
+
+
+> 
+> > watchdog: CPU 51 detected hard LOCKUP on other CPUs 59
+> > watchdog: CPU 51 TB:535296107736, last SMP heartbeat TB:527472229239 (15281ms ago)
+> > watchdog: CPU 59 Hard LOCKUP
+> > watchdog: CPU 59 TB:535296252849, last heartbeat TB:526554725466 (17073ms ago)
+> 
+> hmm.. not sure why watchdog will complain, maybe something more is
+> going on.
+
+Will look into this Vaidy.
+
+> 
+> > Fix this by adding CPUIDLE_FLAG_POLLING flag to the state, so that the
+> > cpuidle governor will do the right thing, such as not stopping the
+> > tick if it is going to put the idle cpu to snooze.
+> > 
+> > Reported-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> > Cc: Nicholas Piggin <npiggin@gmail.com>
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-powernv.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> > index d29e4f0..b73041b 100644
+> > --- a/drivers/cpuidle/cpuidle-powernv.c
+> > +++ b/drivers/cpuidle/cpuidle-powernv.c
+> > @@ -156,6 +156,7 @@ static int stop_loop(struct cpuidle_device *dev,
+> >  	{ /* Snooze */
+> >  		.name = "snooze",
+> >  		.desc = "snooze",
+> > +		.flags = CPUIDLE_FLAG_POLLING,
+> >  		.exit_latency = 0,
+> >  		.target_residency = 0,
+> >  		.enter = snooze_loop },
+> 
+> Adding the CPUIDLE_FLAG_POLLING is good and enables more optimization.
+> But the reason that we spin with interrupt disabled does not seem
+> right.
+
+
+Fair point. 
+> 
+> --Vaidy
+> 
