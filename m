@@ -1,143 +1,64 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v5 02/12] PM / devfreq: Fix handling of min/max_freq == 0
-Date: Tue,  3 Jul 2018 16:46:55 -0700
-Message-ID: <20180703234705.227473-3-mka@chromium.org>
-References: <20180703234705.227473-1-mka@chromium.org>
+Subject: [PATCH v5 00/12] Add throttler driver for non-thermal throttling
+Date: Tue,  3 Jul 2018 16:46:53 -0700
+Message-ID: <20180703234705.227473-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180703234705.227473-1-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
-devfreq device") initializes df->min/max_freq with the min/max OPP when
-the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
-available min/max frequency") adds df->scaling_min/max_freq and the
-following to the frequency adjustment code:
+This series adds the throttler driver, for non-thermal throttling of
+CPUs and devfreq devices. A use case for non-thermal throttling could
+be the detection of a high battery discharge current, close to the
+over-current protection (OCP) limit of the battery.
 
-  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+To support throttling of devfreq devices the series introduces the
+concept of a devfreq policy and the DEVFREQ_ADJUST notifier (similar
+to CPUFREQ_ADJUST). Further it includes some related devfreq bugfixes
+and improvements that change some of the code that is also touched
+by the policy changes.
 
-With the current handling of min/max_freq this is incorrect:
+Matthias Kaehlcke (12):
+  PM / devfreq: Init user limits from OPP limits, not viceversa
+  PM / devfreq: Fix handling of min/max_freq == 0
+  PM / devfreq: Don't adjust to user limits in governors
+  PM / devfreq: Add struct devfreq_policy
+  PM / devfreq: Add support for policy notifiers
+  PM / devfreq: Make update_devfreq() public
+  PM / devfreq: export devfreq_class
+  cpufreq: Add stub for cpufreq_update_policy()
+  dt-bindings: misc: add bindings for throttler
+  misc: throttler: Add core support for non-thermal throttling
+  misc: throttler: Add Chrome OS EC throttler
+  mfd: cros_ec: Add throttler sub-device
 
-Even though df->max_freq is now initialized to a value != 0 user space
-can still set it to 0, in this case max_freq would be 0 instead of
-df->scaling_max_freq as intended. In consequence the frequency adjustment
-is not performed:
+ .../devicetree/bindings/misc/throttler.txt    |  13 +
+ MAINTAINERS                                   |   7 +
+ drivers/devfreq/devfreq.c                     | 222 +++---
+ drivers/devfreq/governor.h                    |   6 +-
+ drivers/devfreq/governor_passive.c            |   4 +-
+ drivers/devfreq/governor_performance.c        |   5 +-
+ drivers/devfreq/governor_powersave.c          |   2 +-
+ drivers/devfreq/governor_simpleondemand.c     |  12 +-
+ drivers/devfreq/governor_userspace.c          |  16 +-
+ drivers/mfd/cros_ec_dev.c                     |  19 +
+ drivers/misc/Kconfig                          |   1 +
+ drivers/misc/Makefile                         |   1 +
+ drivers/misc/throttler/Kconfig                |  33 +
+ drivers/misc/throttler/Makefile               |   2 +
+ drivers/misc/throttler/core.c                 | 697 ++++++++++++++++++
+ drivers/misc/throttler/cros_ec_throttler.c    | 111 +++
+ include/linux/cpufreq.h                       |   1 +
+ include/linux/devfreq.h                       | 113 ++-
+ include/linux/throttler.h                     |  21 +
+ 19 files changed, 1161 insertions(+), 125 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/misc/throttler.txt
+ create mode 100644 drivers/misc/throttler/Kconfig
+ create mode 100644 drivers/misc/throttler/Makefile
+ create mode 100644 drivers/misc/throttler/core.c
+ create mode 100644 drivers/misc/throttler/cros_ec_throttler.c
+ create mode 100644 include/linux/throttler.h
 
-  if (max_freq && freq > max_freq) {
-	freq = max_freq;
-
-To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
-when the user passes a value of 0. This also prevents df->max_freq from
-being set below the min OPP when df->min_freq is 0, and similar for
-min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
-checks for this case can be removed.
-
-Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Brian Norris <briannorris@chromium.org>
----
-Changes in v5:
-- none
-
-Changes in v4:
-- added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
-
-Changes in v3:
-- none
-
-Changes in v2:
-- handle freq tables sorted in ascending and descending order in
-  min/max_freq_store()
-- use same order for conditional statements in min/max_freq_store()
----
- drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0057ef5b0a98..6f604f8b2b81 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
- 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
- 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
- 
--	if (min_freq && freq < min_freq) {
-+	if (freq < min_freq) {
- 		freq = min_freq;
- 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
- 	}
--	if (max_freq && freq > max_freq) {
-+	if (freq > max_freq) {
- 		freq = max_freq;
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
-@@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long max;
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--	max = df->max_freq;
--	if (value && max && value > max) {
--		ret = -EINVAL;
--		goto unlock;
-+
-+	if (value) {
-+		if (value > df->max_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[0];
-+		else
-+			value = freq_table[df->profile->max_state - 1];
- 	}
- 
- 	df->min_freq = value;
-@@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq *df = to_devfreq(dev);
- 	unsigned long value;
-+	unsigned long *freq_table;
- 	int ret;
--	unsigned long min;
- 
- 	ret = sscanf(buf, "%lu", &value);
- 	if (ret != 1)
- 		return -EINVAL;
- 
- 	mutex_lock(&df->lock);
--	min = df->min_freq;
--	if (value && min && value < min) {
--		ret = -EINVAL;
--		goto unlock;
-+
-+	if (value) {
-+		if (value < df->min_freq) {
-+			ret = -EINVAL;
-+			goto unlock;
-+		}
-+	} else {
-+		freq_table = df->profile->freq_table;
-+		/* typical order is ascending, some drivers use descending */
-+		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-+			value = freq_table[df->profile->max_state - 1];
-+		else
-+			value = freq_table[0];
- 	}
- 
- 	df->max_freq = value;
 -- 
 2.18.0.203.gfac676dfb9-goog
