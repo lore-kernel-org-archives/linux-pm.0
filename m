@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v5 01/12] PM / devfreq: Init user limits from OPP limits, not viceversa
-Date: Tue,  3 Jul 2018 16:46:54 -0700
-Message-ID: <20180703234705.227473-2-mka@chromium.org>
+Subject: [PATCH v5 02/12] PM / devfreq: Fix handling of min/max_freq == 0
+Date: Tue,  3 Jul 2018 16:46:55 -0700
+Message-ID: <20180703234705.227473-3-mka@chromium.org>
 References: <20180703234705.227473-1-mka@chromium.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180703234705.227473-1-mka@chromium.org>
@@ -10,24 +10,32 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding
-the devfreq device") introduced the initialization of the user
-limits min/max_freq from the lowest/highest available OPPs. Later
-commit f1d981eaecf8 ("PM / devfreq: Use the available min/max
-frequency") added scaling_min/max_freq, which actually represent
-the frequencies of the lowest/highest available OPP. scaling_min/
-max_freq are initialized with the values from min/max_freq, which
-is totally correct in the context, but a bit awkward to read.
+Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+devfreq device") initializes df->min/max_freq with the min/max OPP when
+the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+available min/max frequency") adds df->scaling_min/max_freq and the
+following to the frequency adjustment code:
 
-Swap the initialization and assign scaling_min/max_freq with the
-OPP freqs and then the user limts min/max_freq with scaling_min/
-max_freq.
+  max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
 
-Needless to say that this change is a NOP, intended to improve
-readability.
+With the current handling of min/max_freq this is incorrect:
 
+Even though df->max_freq is now initialized to a value != 0 user space
+can still set it to 0, in this case max_freq would be 0 instead of
+df->scaling_max_freq as intended. In consequence the frequency adjustment
+is not performed:
+
+  if (max_freq && freq > max_freq) {
+	freq = max_freq;
+
+To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+when the user passes a value of 0. This also prevents df->max_freq from
+being set below the min OPP when df->min_freq is 0, and similar for
+min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+checks for this case can be removed.
+
+Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Brian Norris <briannorris@chromium.org>
 ---
 Changes in v5:
@@ -40,42 +48,96 @@ Changes in v3:
 - none
 
 Changes in v2:
-- added 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>' tag
+- handle freq tables sorted in ascending and descending order in
+  min/max_freq_store()
+- use same order for conditional statements in min/max_freq_store()
 ---
- drivers/devfreq/devfreq.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
+ 1 file changed, 30 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index fe2af6aa88fc..0057ef5b0a98 100644
+index 0057ef5b0a98..6f604f8b2b81 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -604,21 +604,21 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		mutex_lock(&devfreq->lock);
+@@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+ 	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+ 	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
+ 
+-	if (min_freq && freq < min_freq) {
++	if (freq < min_freq) {
+ 		freq = min_freq;
+ 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
+ 	}
+-	if (max_freq && freq > max_freq) {
++	if (freq > max_freq) {
+ 		freq = max_freq;
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
+@@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
++	unsigned long *freq_table;
+ 	int ret;
+-	unsigned long max;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&df->lock);
+-	max = df->max_freq;
+-	if (value && max && value > max) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (value) {
++		if (value > df->max_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
++	} else {
++		freq_table = df->profile->freq_table;
++		/* typical order is ascending, some drivers use descending */
++		if (freq_table[0] < freq_table[df->profile->max_state - 1])
++			value = freq_table[0];
++		else
++			value = freq_table[df->profile->max_state - 1];
  	}
  
--	devfreq->min_freq = find_available_min_freq(devfreq);
--	if (!devfreq->min_freq) {
-+	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
-+	if (!devfreq->scaling_min_freq) {
- 		mutex_unlock(&devfreq->lock);
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
--	devfreq->scaling_min_freq = devfreq->min_freq;
-+	devfreq->min_freq = devfreq->scaling_min_freq;
+ 	df->min_freq = value;
+@@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+ 	unsigned long value;
++	unsigned long *freq_table;
+ 	int ret;
+-	unsigned long min;
  
--	devfreq->max_freq = find_available_max_freq(devfreq);
--	if (!devfreq->max_freq) {
-+	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
-+	if (!devfreq->scaling_max_freq) {
- 		mutex_unlock(&devfreq->lock);
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
--	devfreq->scaling_max_freq = devfreq->max_freq;
-+	devfreq->max_freq = devfreq->scaling_max_freq;
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+ 		return -EINVAL;
  
- 	dev_set_name(&devfreq->dev, "devfreq%d",
- 				atomic_inc_return(&devfreq_no));
+ 	mutex_lock(&df->lock);
+-	min = df->min_freq;
+-	if (value && min && value < min) {
+-		ret = -EINVAL;
+-		goto unlock;
++
++	if (value) {
++		if (value < df->min_freq) {
++			ret = -EINVAL;
++			goto unlock;
++		}
++	} else {
++		freq_table = df->profile->freq_table;
++		/* typical order is ascending, some drivers use descending */
++		if (freq_table[0] < freq_table[df->profile->max_state - 1])
++			value = freq_table[df->profile->max_state - 1];
++		else
++			value = freq_table[0];
+ 	}
+ 
+ 	df->max_freq = value;
 -- 
 2.18.0.203.gfac676dfb9-goog
