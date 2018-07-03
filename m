@@ -1,112 +1,70 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC PATCH] ata: ahci: Enable DEVSLP by default on x86 modern
- standby platform
-Date: Tue, 3 Jul 2018 12:21:50 +0200
-Message-ID: <660d4e4b-361f-e6b1-ef21-3985c321183a@redhat.com>
-References: <20180702190845.7456-1-srinivas.pandruvada@linux.intel.com>
- <20180702202151.GK533219@devbig577.frc2.facebook.com>
- <5493bfdb-14a9-a55d-f96e-b9c8a29f1d63@redhat.com>
- <ca753f719e123d8e3c2306b8d55f3d4a656cbd2f.camel@linux.intel.com>
- <fefe0ef4-e21f-72cc-18d6-a5a6693c21c6@redhat.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH v3] PM / devfreq: Fix devfreq_add_device() when
+ drivers are built as modules.
+Date: Tue, 03 Jul 2018 19:47:49 +0900
+Message-ID: <20180703104749epcms1p473b2160f6e2bbe3c6b87827b30e8473b@epcms1p4>
+References: <7c67974e40afd15abfca5907b27de097@codeaurora.org>
+        <20180621220430.25644-1-enric.balletbo@collabora.com>
+        <0383b4a703a0b619023c0654a4a7637419c72ebd.camel@collabora.com>
+        <addc4280-729f-85d7-a314-35afbb7c8bb1@codeaurora.org>
+        <1e792d3c972998f92109c127886243e32c4cde71.camel@collabora.com>
+        <CGME20180622212233epcas2p3308116579442dc8a42a9db7445ce8ef8@epcms1p4>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fefe0ef4-e21f-72cc-18d6-a5a6693c21c6@redhat.com>
-Content-Language: en-US
+In-Reply-To: <7c67974e40afd15abfca5907b27de097@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tejun Heo <tj@kernel.org>
-Cc: rjw@rjwysocki.net, alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com
+To: "akhilpo@codeaurora.org" <akhilpo@codeaurora.org>, Ezequiel Garcia <ezequiel@collabora.com>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kernel@collabora.com" <kernel@collabora.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+> >> Adding to Ezequiel's point, shouldn't we take more granular lock
+> >> (devfreq->lock) first and then call devfreq_list_lock at the time of
+> >> adding to the list?
+> >> 
+> > 
+> > Not sure why we should do that. devfreq->lock should be used to
+> > protect the struct devfreq state, while the devfreq_list_lock
+> > is apparently protecting the two lists (which seem unrelated
+> > lists).
 
-On 03-07-18 10:57, Hans de Goede wrote:
-> Hi,
-> 
-> On 03-07-18 00:08, Srinivas Pandruvada wrote:
->> Hi Hans,
->>
->> On Mon, 2018-07-02 at 23:27 +0200, Hans de Goede wrote:
-> 
-> <snip>
-> 
->>>>> SATA IP block doesn't get turned off till SATA is in DEVSLP mode.
->>>>> Here
->>>>> user has to either use scsi-host sysfs or tools like powertop to
->>>>> set
->>>>> the sata-host link_power_management_policy to min_power.
->>>>>
->>>>> This change sets by default link power management policy to
->>>>> min_power
->>>>> for some platforms.  To avoid regressions, the following
->>>>> conditions
->>>>> are used:
->>>>> - The kernel config is already set to use med_power_with_dipm or
->>>>> deeper
->>>>> - System is a modern standby system using ACPI low power idle
->>>>> flag
->>>>> - The platform is not blacklisted for Suspend to Idle and suspend
->>>>> to idle is used instead of S3
->>>>> This combination will make sure that systems are fairly recent
->>>>> and
->>>>> since getting shipped with modern standby standby, the DEVSLP
->>>>> function
->>>>> is already validated.
->>>>>
->>>>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.int
->>>>> el.com>
->>>>
->>>> Seems sane to me.  Hans, what do you think?
->>>
->>> I think this is going in the right direction, but min_power enables
->>> both DEVSLP and HIPM, AFAIK Windows at least in the past did not
->>> enable HIPM be default.
->>
->> Windows and Linux will need to meet the same criteria to reach SLP_S0
->> state. OS is not deciding whether we meet criteria or not, it is
->> firmware deciding, and it will look for SATA IP to be in certain
->> predefined state, before generating this SLP_S0 signal.
->>
->>
->>> Srinivas can you figure out what Windows does wrt HIPM?
->>
->> We can see that under Windows the SATA rail voltage is dropped. I don't
->> know if there is any other method other than DEVSLP configuration. But
->> I will surely check around.
-> 
-> I understand that we need DEVSLP, but AFAIK DEVSLP is entered automatically
-> after being in slumber for a defined time. The question is how we get into
-> slumber. Currently with the new med_power_with_dipm policy we always use
-> DIPM to enter slumber. Your suggested switch to min_power means also
-> enabling HIPM. What I'm suggesting is that it might better to have
-> DIPM + DEVSLP rather then DIPM + HIPM + DEVSLP.
-> 
-> So basically the question is does windows use:
-> 
-> a) DIPM + DEVSLP; or
-> b) DIPM + HIPM + DEVSLP
-> 
-> If b. is the case, then I'm fine with your patch as is, but if Windows
-> does a. then we should mimic that, which requires a new power-level as
-> our min_power level is b.
+Correct.
 
-So digging a bit deeper I just realized that another important difference
-between med_power_with_dipm and min_power is that min_power by default
-set the ASP bits making the link go to the slumber state instead of to
-the partial (power-saving) state.
+devfreq->lock protects an instance of devfreq.
+devfreq_list_lock protects the global devfreq data (list of devfreq / governors)
 
-According to:
-https://www.intel.com/content/dam/doc/reference-guide/sata-devices-implementation-recommendations.pdf
+> > 
+> > So, the two locks are not correlated.
+> > 
+> > Regards,
+> > Eze
+> In governor_store(), we do 'df->governor = governor;' without taking 
+> df->lock. So it is possible to switch governor while update_devfreq() is 
+> in progress.
 
-ASP defaults to off in the iRST drivers. But that is a document from
-before DEVSLP got introduced.
+Yup. that's possible.
 
-So we need to know if Windows and/or the iRST drivers use HIPM and
-ASP by default on these systems. If they do then using min_power
-is fine. If they don't use one or the other we are going to need
-a new policy reflecting those settings and use that.
+> I smell trouble there. Don't you think so?
+> I am assuming df->lock protects 'struct devfreq' and devfreq_list_lock 
+> protects both device and governor lists.
 
-Regards,
+devfreq_list_lock is not supposed to protect a device.
 
-Hans
+Assuming a memory read of a word is atomic (I'm not aware of one that's not
+unless in a case where the address is unaligned in some archtectures),
+update_devfreq won't cause such issues because it reads "devfreq->governor"
+only one in its execution except for the null check.
+
+Thus, if there could be an error, it'd be a case where someone else is
+doing "devfreq->governor = NULL" without devfreq->lock.
+And, find_devfreq_governor() does not return NULL.
+
+
+Cheers,
+MyungJoo
+
+> 
+> -Akhil.
+> 
