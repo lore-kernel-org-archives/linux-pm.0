@@ -1,68 +1,44 @@
-From: Rob Herring <rob.herring@linaro.org>
-Subject: Re: [PATCH 1/3] dt-bindings: marvell: Add documentation for the
- Armada 3700 AVS binding
-Date: Tue, 3 Jul 2018 10:13:29 -0600
-Message-ID: <CABGGisyEO+XVQm87sVn-D0SbkRrqHfRo0R9iVc=PjbY5uyUemA@mail.gmail.com>
-References: <20180619124402.902-1-gregory.clement@bootlin.com>
- <20180619124402.902-2-gregory.clement@bootlin.com>
- <7581910.yGXAn98Nt4@aspire.rjw.lan>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 4/6] thermal: tsens: Add support for SDM845
+Date: Tue, 3 Jul 2018 10:26:20 -0600
+Message-ID: <20180703162619.GA17238@rob-hp-laptop>
+References: <cover.1530533998.git.amit.kucheria@linaro.org>
+ <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <7581910.yGXAn98Nt4@aspire.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: andrew@lunn.ch, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, antoine.tenart@bootlin.com, Viresh Kumar <viresh.kumar@linaro.org>, gregory.clement@bootlin.com, maxime.chevallier@bootlin.com, nadavh@marvell.com, make@marvell.com, xigu@marvell.com, neta@marvell.com, thomas.petazzoni@bootlin.com, miquel.raynal@bootlin.com, jinghua@marvell.com, mw@semihalf.com, dingwei@marvell.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, sebastian.hesselbarth@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 3, 2018 at 8:46 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, June 19, 2018 2:44:00 PM CEST Gregory CLEMENT wrote:
-> > Extend the documentation of the Armada 37xx SoC with the Adaptive Voltage
-> > Scaling (AVS) registers.
-> >
-> > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> > ---
-> >  .../bindings/arm/marvell/armada-37xx.txt         | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> > index 35c3c3460d17..22438f659d1e 100644
-> > --- a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> > +++ b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-> > @@ -33,3 +33,19 @@ nb_pm: syscon@14000 {
-> >       compatible = "marvell,armada-3700-nb-pm", "syscon";
-> >       reg = <0x14000 0x60>;
-> >  }
-> > +
-> > +AVS
-> > +---
-> > +
-> > +For AVS an other component is needed:
-> > +
-> > +Required properties:
-> > +- compatible     : should contain "marvell,armada-3700-avs", "syscon";
-> > +- reg            : the register start and length for the AVS
-> > +
-> > +Example:
-> > +avs: avs@11500 {
-> > +     compatible = "marvell,armada-3700-avs", "syscon";
-> > +     reg = <0x11500 0x40>;
-> > +}
-> > +
-> >
->
-> I can't apply this one without a Rob's ACK.
+On Mon, Jul 02, 2018 at 06:14:07PM +0530, Amit Kucheria wrote:
+> SDM845 uses v2.4.0 of the TSENS IP block but the get_temp() function
+> appears to be identical across v2.x.y in code seen so far. We use the
+> generic get_temp() function.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt | 2 ++
+>  drivers/thermal/qcom/tsens-v2.c                          | 6 +++++-
+>  drivers/thermal/qcom/tsens.c                             | 6 ++++++
+>  drivers/thermal/qcom/tsens.h                             | 5 ++++-
+>  4 files changed, 17 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> index 06195e8..075182e 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> @@ -5,6 +5,8 @@ Required properties:
+>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+> + - "qcom,tsens-v2.4.0"  : For SDM845 Family of SoCs
+> + - "qcom,tsens-v2"      : Generic fallback binding for any Soc using 2.x.y version of the tsens IP
 
-Which won't happen if not sent to the DT list.
+You need to show what are valid combinations of compatibles. Does v2 
+apply to 8996? One valid combination per line.
 
 Rob
