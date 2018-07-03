@@ -1,142 +1,68 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH v4] PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.
-Date: Tue,  3 Jul 2018 15:29:31 +0200
-Message-ID: <20180703132931.14389-1-enric.balletbo@collabora.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle:powernv: Add the CPUIDLE_FLAG_POLLING for snooze
+Date: Tue, 3 Jul 2018 19:36:16 +0530
+Message-ID: <20180703140616.GA13660@drishya.in.ibm.com>
+References: <1530595456-32352-1-git-send-email-ego@linux.vnet.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1530595456-32352-1-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: akshay.adiga@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When the devfreq driver and the governor driver are built as modules,
-the call to devfreq_add_device() or governor_store() fails because the
-governor driver is not loaded at the time the devfreq driver loads. The
-devfreq driver has a build dependency on the governor but also should
-have a runtime dependency. We need to make sure that the governor driver
-is loaded before the devfreq driver.
+* Gautham R Shenoy <ego@linux.vnet.ibm.com> [2018-07-03 10:54:16]:
 
-This patch fixes this bug by adding a try_then_request_governor()
-function. First tries to find the governor, and then, if it is not found,
-it requests the module and tries again.
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> In the situations where snooze is the only cpuidle state due to
+> firmware not exposing any platform idle states, the idle CPUs will
+> remain in snooze for a long time with interrupts disabled causing the
+> Hard-lockup detector to complain.
 
-Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
+snooze_loop() will spin in SMT low priority with interrupt enabled. We
+have local_irq_enable() before we get into the snooze loop.
+Since this is a polling state, we should wakeup without an interrupt
+and hence we set TIF_POLLING_NRFLAG as well.
 
-Changes in v4:
-- Kept "locked" devfreq_list from the return of find_devfreq_governor() to
-  the unlock of governor_store(). Requested by MyungJoo Ham.
+ 
+> watchdog: CPU 51 detected hard LOCKUP on other CPUs 59
+> watchdog: CPU 51 TB:535296107736, last SMP heartbeat TB:527472229239 (15281ms ago)
+> watchdog: CPU 59 Hard LOCKUP
+> watchdog: CPU 59 TB:535296252849, last heartbeat TB:526554725466 (17073ms ago)
 
-Changes in v3:
-- Remove unneded change in dev_err message.
-- Fix err returned value in case to not find the governor.
+hmm.. not sure why watchdog will complain, maybe something more is
+going on.
+ 
+> Fix this by adding CPUIDLE_FLAG_POLLING flag to the state, so that the
+> cpuidle governor will do the right thing, such as not stopping the
+> tick if it is going to put the idle cpu to snooze.
+> 
+> Reported-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> Cc: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index d29e4f0..b73041b 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -156,6 +156,7 @@ static int stop_loop(struct cpuidle_device *dev,
+>  	{ /* Snooze */
+>  		.name = "snooze",
+>  		.desc = "snooze",
+> +		.flags = CPUIDLE_FLAG_POLLING,
+>  		.exit_latency = 0,
+>  		.target_residency = 0,
+>  		.enter = snooze_loop },
 
-Changes in v2:
-- Add a new function to request the module and call that function from
-  devfreq_add_device and governor_store.
+Adding the CPUIDLE_FLAG_POLLING is good and enables more optimization.
+But the reason that we spin with interrupt disabled does not seem
+right.
 
- drivers/devfreq/devfreq.c | 53 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 47 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 0b5b3abe054e..4ea6b19879a1 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -11,6 +11,7 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/kmod.h>
- #include <linux/sched.h>
- #include <linux/errno.h>
- #include <linux/err.h>
-@@ -221,6 +222,46 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
- 	return ERR_PTR(-ENODEV);
- }
- 
-+/**
-+ * try_then_request_governor() - Try to find the governor and request the
-+ *                               module if is not found.
-+ * @name:	name of the governor
-+ *
-+ * Search the list of devfreq governors and request the module and try again
-+ * if is not found. This can happen when both drivers (the governor driver
-+ * and the driver that call devfreq_add_device) are built as modules.
-+ * devfreq_list_lock should be held by the caller.
-+ *
-+ * Return: The matched governor's pointer.
-+ */
-+static struct devfreq_governor *try_then_request_governor(const char *name)
-+{
-+	struct devfreq_governor *governor;
-+	int err = 0;
-+
-+	WARN(!mutex_is_locked(&devfreq_list_lock),
-+	     "devfreq_list_lock must be locked.");
-+
-+	governor = find_devfreq_governor(name);
-+	if (IS_ERR(governor)) {
-+		mutex_unlock(&devfreq_list_lock);
-+
-+		if (!strncmp(name, DEVFREQ_GOV_SIMPLE_ONDEMAND,
-+			     DEVFREQ_NAME_LEN))
-+			err = request_module("governor_%s", "simpleondemand");
-+		else
-+			err = request_module("governor_%s", name);
-+		if (err)
-+			return NULL;
-+
-+		mutex_lock(&devfreq_list_lock);
-+
-+		governor = find_devfreq_governor(name);
-+	}
-+
-+	return governor;
-+}
-+
- static int devfreq_notify_transition(struct devfreq *devfreq,
- 		struct devfreq_freqs *freqs, unsigned int state)
- {
-@@ -643,11 +684,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	srcu_init_notifier_head(&devfreq->transition_notifier_list);
- 
- 	mutex_unlock(&devfreq->lock);
--
- 	mutex_lock(&devfreq_list_lock);
--	list_add(&devfreq->node, &devfreq_list);
- 
--	governor = find_devfreq_governor(devfreq->governor_name);
-+	governor = try_then_request_governor(devfreq->governor_name);
- 	if (IS_ERR(governor)) {
- 		dev_err(dev, "%s: Unable to find governor for the device\n",
- 			__func__);
-@@ -663,14 +702,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 			__func__);
- 		goto err_init;
- 	}
-+
-+	list_add(&devfreq->node, &devfreq_list);
-+
- 	mutex_unlock(&devfreq_list_lock);
- 
- 	return devfreq;
- 
- err_init:
--	list_del(&devfreq->node);
- 	mutex_unlock(&devfreq_list_lock);
--
- 	device_unregister(&devfreq->dev);
- err_dev:
- 	if (devfreq)
-@@ -989,7 +1029,8 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 		return -EINVAL;
- 
- 	mutex_lock(&devfreq_list_lock);
--	governor = find_devfreq_governor(str_governor);
-+
-+	governor = try_then_request_governor(str_governor);
- 	if (IS_ERR(governor)) {
- 		ret = PTR_ERR(governor);
- 		goto out;
--- 
-2.18.0
+--Vaidy
