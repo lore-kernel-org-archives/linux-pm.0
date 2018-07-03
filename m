@@ -1,106 +1,37 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [RFC] soc: imx: gpc: Unregister pgc children on remove
-Date: Tue,  3 Jul 2018 22:39:16 +0300
-Message-ID: <652cc0c045dbd4490752ef117e98ffbcc84de822.1530646251.git.leonard.crestez@nxp.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 13/23] dt-bindings: ap806: prepare the syscon file to
+ list other syscons nodes
+Date: Tue, 3 Jul 2018 15:07:23 -0600
+Message-ID: <20180703210722.GA329@rob-hp-laptop>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+ <20180625151239.20976-14-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Andrey Smirnov <andrew.smirnov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, linux-imx@nxp.com, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20180625151239.20976-14-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-If the gpc device is removed the platform_devices for its
-imx-pgc-power-domains are still registered and trying to probe gpc again
-results in an error.
+On Mon, Jun 25, 2018 at 05:12:29PM +0200, Miquel Raynal wrote:
+> There are multiple system controllers in AP806. Because all syscon nodes
+> use the same compatible, it is pertinent to use this same file to list
+> IPs inside it. Thus, change the header to be more generic.
+> 
+> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+> ---
+>  .../bindings/arm/marvell/ap806-system-controller.txt           | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 
-Fix this by iterating children inside imx_gpc_remove and calling
-platfrom_device_unregister.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/soc/imx/gpc.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-This was prompted by the rejection of the following series:
-	https://lkml.org/lkml/2018/7/2/534
-
-Tested glxgears after rebinding gpc and etnaviv by echo to
-/sys/bus/platform/drivers/{imx-gpc,etnaviv-gpu}/{unbind,bind}
-
-When doing probe again it triggers a warning inside
-driver_links_drivers_bound:
-
-	WARN_ON(link->status != DL_STATE_CONSUMER_PROBE);
-
-This seems to be because devicelink code does not expect consumers to
-bind before suppliers but GPC code adds PGC children during its
-probe function and they register a device-link to their still-probing
-parent.
-
-The warning doesn't trigger on normal boot because the pgc driver is
-registered after gpc and probing is not nested. The warning can be made
-to reproduce in a normal boot by making imx_gpc_probe return
--EPROBE_DEFER once (no other changes required).
-
-This does not seem to be a valid scenario for device links so fix this
-by adding a check in imx_pgc_power_domain_probe to defer if parent is not
-probed.
-
-This check is not very nice, device_is_bound seems like something that
-should be internal to the driver core.
-
-diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
-index 32f0748fd067..b4acdfd3cffd 100644
---- a/drivers/soc/imx/gpc.c
-+++ b/drivers/soc/imx/gpc.c
-@@ -182,10 +182,13 @@ static int imx_pgc_power_domain_probe(struct platform_device *pdev)
- {
- 	struct imx_pm_domain *domain = pdev->dev.platform_data;
- 	struct device *dev = &pdev->dev;
- 	int ret;
- 
-+	if (!device_is_bound(dev->parent))
-+		return -EPROBE_DEFER;
-+
- 	/* if this PD is associated with a DT node try to parse it */
- 	if (dev->of_node) {
- 		ret = imx_pgc_parse_dt(dev, domain);
- 		if (ret)
- 			return ret;
-@@ -475,10 +478,19 @@ static int imx_gpc_probe(struct platform_device *pdev)
- 	}
- 
- 	return 0;
- }
- 
-+static int __imx_gpc_unregister_child(struct device *dev, void *data)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+
-+	platform_device_unregister(pdev);
-+
-+	return 0;
-+}
-+
- static int imx_gpc_remove(struct platform_device *pdev)
- {
- 	struct device_node *pgc_node;
- 	int ret;
- 
-@@ -502,10 +514,13 @@ static int imx_gpc_remove(struct platform_device *pdev)
- 		imx_pgc_put_clocks(&imx_gpc_domains[GPC_PGC_DOMAIN_PU]);
- 
- 		ret = pm_genpd_remove(&imx_gpc_domains[GPC_PGC_DOMAIN_ARM].base);
- 		if (ret)
- 			return ret;
-+	} else {
-+		device_for_each_child(&pdev->dev, NULL,
-+				__imx_gpc_unregister_child);
- 	}
- 
- 	return 0;
- }
- 
--- 
-2.17.1
+Reviewed-by: Rob Herring <robh@kernel.org>
