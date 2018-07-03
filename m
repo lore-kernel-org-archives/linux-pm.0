@@ -1,101 +1,106 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [RESEND PATCH v3 2/2] thermal: core: introduce thermal zone
- device mode control
-Date: Tue, 3 Jul 2018 10:13:25 -0700
-Message-ID: <20180703171325.GC129942@google.com>
-References: <20180226144118.24693-1-enric.balletbo@collabora.com>
- <20180226144118.24693-2-enric.balletbo@collabora.com>
- <20180629003302.GT129942@google.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [RFC] soc: imx: gpc: Unregister pgc children on remove
+Date: Tue,  3 Jul 2018 22:39:16 +0300
+Message-ID: <652cc0c045dbd4490752ef117e98ffbcc84de822.1530646251.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180629003302.GT129942@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: rui.zhang@intel.com, rjw@rjwysocki.net, groeck@chromium.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, snanda@chromium.org, lenb@kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>, Andrey Smirnov <andrew.smirnov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, linux-imx@nxp.com, kernel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 28, 2018 at 05:33:02PM -0700, Matthias Kaehlcke wrote:
-> Hi,
-> 
-> I stumbled across this patch since I'm currently poking around with
-> early thermal bringup on a platform and this patch has been integrated
-> in our development tree.
-> 
-> I'm seeing some unexpected behaviors, which could entirely due to
-> wrong expectation from my side. I only have some basic working
-> knowledge of the thermal framework, just want to double check and
-> perhaps learn a thing or two.
-> 
-> On Mon, Feb 26, 2018 at 03:41:18PM +0100, Enric Balletbo i Serra wrote:
-> > From: Zhang Rui <rui.zhang@intel.com>
-> > 
-> > Thermal "mode" sysfs attribute is introduced to enable/disable a thermal
-> > zone, and .get_mode()/.set_mode() callback is introduced for platform
-> > thermal driver to enable/disable the hardware thermal control logic. And
-> > thermal core takes no action upon thermal zone enable/disable.
-> > 
-> > Actually, this is not quite right because thermal core still pokes those
-> > disabled thermal zones occasionally, e.g. upon system resume.
-> > 
-> > To fix this, a new flag 'mode' is introduced in struct thermal_zone_device
-> > to represent the thermal zone mode, and several decisions have been made
-> > based on this flag, including
-> > 1. check the thermal zone mode right after it's registered.
-> > 2. skip updating thermal zone if the zone is disabled
-> > 3. stop the polling timer when the thermal zone is disabled
-> > 
-> > Note: basically, this patch doesn't affect the existing always-enabled
-> > thermal zones much, with just one exception -
-> > thermal zone .get_mode() must be well prepared to reflect the real thermal
-> > zone status upon the thermal zone registration.
-> 
-> From my perspective this looks like a pretty significant change. For
-> the platform I'm working on I added a thermal zone to the device tree,
-> with the expectation that it would be enabled. Judging from the code
-> without this patch this expectation seems to be naive, since
-> of-thermal.c sets tz->mode to THERMAL_DEVICE_DISABLED, so apparently
-> either userspace or some driver should call _set_mode(tz,
-> THERMAL_DEVICE_ENABLED). However even without this the thermal zone
-> appears to be active (I didn't really test end-to-end yet, but at
-> least thermal_zone_device_update() is called and calls
-> handle_thermal_trip()). Not sure why this is the case with
-> THERMAL_DEVICE_DISABLED, but before I learned about the existence of
-> the flag my expectation was that the zone would be enabled.
-> 
-> With this patch thermal_zone_device_update() is skipped if the zone
-> hasn't been explictly enabled, which may be consistent with the state
-> of 'tz->mode', but effectively changes the previous/current behavior.
-> 
-> Not sure if I'm just dumbly overlooking something obvious or if there
-> is an actual problem with of_thermal (and maybe others).
+If the gpc device is removed the platform_devices for its
+imx-pgc-power-domains are still registered and trying to probe gpc again
+results in an error.
 
-The problem is that there are now two 'mode' fields, tzd->mode and the
-other typically tzd->devdata->mode, and tzd->mode is never set to enabled.
+Fix this by iterating children inside imx_gpc_remove and calling
+platfrom_device_unregister.
 
-> thermal zone .get_mode() must be well prepared to reflect the real thermal
-> zone status upon the thermal zone registration.
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/soc/imx/gpc.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-For of_thermal tzd->mode is initialized with the result of .get_mode()
-when the zone is registered. At this time no sensor has been added
-to the zone, hence the zone is disabled. When a sensor is added later
-tzd->devdata->mode is set to enabled, however tzd->mode remains disabled:
+This was prompted by the rejection of the following series:
+	https://lkml.org/lkml/2018/7/2/534
 
-tzd->mode = DISABLED
-tzd->devdata->mode = DISABLED
+Tested glxgears after rebinding gpc and etnaviv by echo to
+/sys/bus/platform/drivers/{imx-gpc,etnaviv-gpu}/{unbind,bind}
 
-of_parse_thermal_zones
-  thermal_zone_device_register
-    tzd->mode = tzd->get_mode() // => DISABLED
+When doing probe again it triggers a warning inside
+driver_links_drivers_bound:
 
-<sensor>_probe
-  thermal_zone_of_sensor_register
-    tzd->set_mode(THERMAL_DEVICE_ENABLED)
-      tzd->devdata->mode = ENABLED
+	WARN_ON(link->status != DL_STATE_CONSUMER_PROBE);
 
-One way to fix this for of_thermal could be to setting tzd->mode in
-.set_mode() in addition to setting tzd->devdata->mode. However this
-feels like a workaround/hack. Personally I find it confusing to have
-two mode fields for a thermal zone device. Maybe tzd->mode should
-replace tzd->devdata->mode?
+This seems to be because devicelink code does not expect consumers to
+bind before suppliers but GPC code adds PGC children during its
+probe function and they register a device-link to their still-probing
+parent.
+
+The warning doesn't trigger on normal boot because the pgc driver is
+registered after gpc and probing is not nested. The warning can be made
+to reproduce in a normal boot by making imx_gpc_probe return
+-EPROBE_DEFER once (no other changes required).
+
+This does not seem to be a valid scenario for device links so fix this
+by adding a check in imx_pgc_power_domain_probe to defer if parent is not
+probed.
+
+This check is not very nice, device_is_bound seems like something that
+should be internal to the driver core.
+
+diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
+index 32f0748fd067..b4acdfd3cffd 100644
+--- a/drivers/soc/imx/gpc.c
++++ b/drivers/soc/imx/gpc.c
+@@ -182,10 +182,13 @@ static int imx_pgc_power_domain_probe(struct platform_device *pdev)
+ {
+ 	struct imx_pm_domain *domain = pdev->dev.platform_data;
+ 	struct device *dev = &pdev->dev;
+ 	int ret;
+ 
++	if (!device_is_bound(dev->parent))
++		return -EPROBE_DEFER;
++
+ 	/* if this PD is associated with a DT node try to parse it */
+ 	if (dev->of_node) {
+ 		ret = imx_pgc_parse_dt(dev, domain);
+ 		if (ret)
+ 			return ret;
+@@ -475,10 +478,19 @@ static int imx_gpc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static int __imx_gpc_unregister_child(struct device *dev, void *data)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++
++	platform_device_unregister(pdev);
++
++	return 0;
++}
++
+ static int imx_gpc_remove(struct platform_device *pdev)
+ {
+ 	struct device_node *pgc_node;
+ 	int ret;
+ 
+@@ -502,10 +514,13 @@ static int imx_gpc_remove(struct platform_device *pdev)
+ 		imx_pgc_put_clocks(&imx_gpc_domains[GPC_PGC_DOMAIN_PU]);
+ 
+ 		ret = pm_genpd_remove(&imx_gpc_domains[GPC_PGC_DOMAIN_ARM].base);
+ 		if (ret)
+ 			return ret;
++	} else {
++		device_for_each_child(&pdev->dev, NULL,
++				__imx_gpc_unregister_child);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
