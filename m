@@ -1,122 +1,57 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [RFC PATCH] ata: ahci: Enable DEVSLP by default on x86 modern
- standby platform
-Date: Mon, 2 Jul 2018 22:56:51 +0000
-Message-ID: <67e158af5f8e4fe6b3cbaa3472447335@ausx13mpc120.AMER.DELL.COM>
-References: <20180702190845.7456-1-srinivas.pandruvada@linux.intel.com>
-         <20180702202151.GK533219@devbig577.frc2.facebook.com>
-         <5493bfdb-14a9-a55d-f96e-b9c8a29f1d63@redhat.com>
- <ca753f719e123d8e3c2306b8d55f3d4a656cbd2f.camel@linux.intel.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v2 1/2] powernv/cpuidle: Parse dt idle properties into
+ global structure
+Date: Tue, 3 Jul 2018 13:30:45 +1000
+Message-ID: <20180703133045.3ec45faf@roar.ozlabs.ibm.com>
+References: <1530541401-19726-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+        <1530541401-19726-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ca753f719e123d8e3c2306b8d55f3d4a656cbd2f.camel@linux.intel.com>
-Content-Language: en-US
+In-Reply-To: <1530541401-19726-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, hdegoede@redhat.com, tj@kernel.org
-Cc: rjw@rjwysocki.net, alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, mpe@ellerman.id.au
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTcmluaXZhcyBQYW5kcnV2YWRh
-IFttYWlsdG86c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb21dDQo+IFNlbnQ6IE1v
-bmRheSwgSnVseSAyLCAyMDE4IDU6MDkgUE0NCj4gVG86IEhhbnMgZGUgR29lZGU7IFRlanVuIEhl
-bw0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IGFsYW4uY294QGludGVsLmNvbTsgbGludXgtaWRl
-QHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
-LXBtQHZnZXIua2VybmVsLm9yZzsgTGltb25jaWVsbG8sIE1hcmlvDQo+IFN1YmplY3Q6IFJlOiBb
-UkZDIFBBVENIXSBhdGE6IGFoY2k6IEVuYWJsZSBERVZTTFAgYnkgZGVmYXVsdCBvbiB4ODYgbW9k
-ZXJuDQo+IHN0YW5kYnkgcGxhdGZvcm0NCj4gDQo+IEhpIEhhbnMsDQo+IA0KPiBPbiBNb24sIDIw
-MTgtMDctMDIgYXQgMjM6MjcgKzAyMDAsIEhhbnMgZGUgR29lZGUgd3JvdGU6DQo+ID4gSGksDQo+
-ID4NCj4gPiBPbiAwMi0wNy0xOCAyMjoyMSwgVGVqdW4gSGVvIHdyb3RlOg0KPiA+ID4gT24gTW9u
-LCBKdWwgMDIsIDIwMTggYXQgMTI6MDg6NDVQTSAtMDcwMCwgU3Jpbml2YXMgUGFuZHJ1dmFkYQ0K
-PiA+ID4gd3JvdGU6DQo+ID4gPiA+IEZyb206IFNyaW5pdmFzIDxzcmluaXZhcy5wYW5kcnV2YWRh
-QGxpbnV4LmludGVsLmNvbT4NCj4gPiA+ID4NCj4gPiA+ID4gT25lIG9mIHRoZSByZXF1aXJlbWVu
-dCBmb3IgbW9kZXJuIHg4NiBzeXN0ZW0gdG8gZW50ZXIgbG93ZXN0DQo+ID4gPiA+IHBvd2VyIG1v
-ZGUNCj4gPiA+ID4gKFNMUF9TMCkgaXMgU0FUQSBJUCBibG9jayB0byBiZSBvZmYuIFRoaXMgaXMg
-dHJ1ZSBldmVuIGR1cmluZw0KPiA+ID4gPiB3aGVuDQo+ID4gPiA+IHBsYXRmb3JtIGlzIHN1c3Bl
-bmRlZCB0byBpZGxlIGFuZCBub3Qgb25seSBpbiBvcHBvcnR1bmlzdGljDQo+ID4gPiA+IChydW50
-aW1lKQ0KPiA+ID4gPiBzdXNwZW5kLg0KPiA+ID4gPg0KPiA+ID4gPiBTZXZlcmFsIG9mIHRoZXNl
-IHN5c3RlbSBkb24ndCBoYXZlIHRyYWRpdGlvbmFsIEFDUEkgUzMsIHNvIGl0IGlzDQo+ID4gPiA+
-IGltcG9ydGFudCB0aGF0IHRoZXkgZW50ZXIgU0xQX1MwIHN0YXRlLCB0byBhdm9pZCBkcmFpbmlu
-ZyBiYXR0ZXJ5DQo+ID4gPiA+IGV2ZW4NCj4gPiA+ID4gZHVyaW5nIHN1c3BlbmQgZXZlbiB3aXRo
-IG91dCBvZiB0aGUgYm94IExpbnV4IGluc3RhbGxhdGlvbi4NCj4gPg0KPiA+IFF1ZXN0aW9uIGNh
-biBzeXN0ZW1zIHdoaWNoIGRvIGhhdmUgUzMgbm90IGFsc28gZW50ZXIgU0xQX1MwIHN0YXRlDQo+
-ID4gZHVyaW5nDQo+ID4gbm9ybWFsIG9wZXJhdGlvbiB0byBzYXZlIHBvd2VyPw0KPiBTMyBzeXN0
-ZW1zIGRvbid0IGVudGVyIFNMUF9TMC4gV2hlbiBpbiBzdXNwZW5kIHZpYSBTMyBhbGwgZGV2aWNl
-cyBhcmUNCj4gc2ltcGx5IHR1cm4gb2ZmIGFsbCBleGNlcHQgc29tZSBmb3Igd2FrZXVwLg0KPiAN
-Cj4gPg0KPiA+IEkgZ3Vlc3MgdGhlIGNoYW5nZSBvZiB0aGF0IGhhcHBlbmluZyB3aXRob3V0IGJl
-aW5nIGluIGEgc3VzcGVuZCBsaWtlDQo+ID4gc3RhdGUNCj4gPiAoc2NyZWVuIHR1cm5lZCBvZmYs
-IGV0YyksIGlzIHZlcnkgc21hbGwgYmVjYXVzZSB0aGVyZSB3aWxsIGFsd2F5cyBiZQ0KPiA+IHNv
-bWV0aGluZyBibG9ja2luZyBlbnRlcmluZyBvZiBTTFBfUzAsIHNvIHRoYXQgaXQgaXMgbm90IHdv
-cnRoDQo+ID4gYm90aGVyaW5nIGxvb2tpbmcgaW50byBTTFBfUzAgb24gc3lzdGVtcyB3aGljaCB1
-c2UgUzMgZm9yIHN1c3BlbmQgPw0KPiA+DQo+IFNMUF9TMCBpcyBzdXNwZW5kIGxpa2Ugc3RhdGUg
-d2l0aG91dCBiaWcgZXhpdCBsYXRlbmN5LiBUbyBhY2hpZXZlIHRoaXMNCj4gc3RhdGUgdGhlIElQ
-IGJsb2NrcywgY2xvY2tzIGFuZCB2b2x0YWdlIHJhaWxzIG5lZWRzIHRvIGJlIGluIGNlcnRhaW4N
-Cj4gcHJlZGVmaW5lZCBzdGF0ZS4gSWYgYW55b25lIG9mIHRob3NlIGNvbnN0cmFpbnRzIG5vdCBt
-ZXQsIHRoZSBzeXN0ZW0NCj4gd2lsbCBub3QgcmVhY2ggdGhpcyBzdGF0ZS4gVW5saWtlIFMzLCB3
-ZSBuZWVkIHRvIG1ha2Ugc3VyZSB0aGF0IGRldmljZXMNCj4gcmVhY2ggcmlnaHQgc3VzcGVuZCBz
-dGF0ZS4gSW4gUzMgd2Ugd291bGRuJ3QgaGF2ZSBjYXJlZCBtdWNoLCBhcw0KPiBCSU9TL0FDUEkg
-d2lsbCB0YWtlIGFjdGlvbiBhbmQgdHVybiBvZmYgYW55d2F5Lg0KPiBJZiB5b3UgYWNoaWV2ZSBT
-TFBfUzAsIHRoZSBwb3dlciB3aWxsIGJlIGxvd2VyIG9yIGVxdWFsIHRvIFMzIGJ1dCB3aWxsDQo+
-IGJlIGltbWVkaWF0ZWx5IGFibGUgdG8gcmVzdW1lLg0KPiANCj4gDQo+ID4gPiA+IFNBVEEgSVAg
-YmxvY2sgZG9lc24ndCBnZXQgdHVybmVkIG9mZiB0aWxsIFNBVEEgaXMgaW4gREVWU0xQIG1vZGUu
-DQo+ID4gPiA+IEhlcmUNCj4gPiA+ID4gdXNlciBoYXMgdG8gZWl0aGVyIHVzZSBzY3NpLWhvc3Qg
-c3lzZnMgb3IgdG9vbHMgbGlrZSBwb3dlcnRvcCB0bw0KPiA+ID4gPiBzZXQNCj4gPiA+ID4gdGhl
-IHNhdGEtaG9zdCBsaW5rX3Bvd2VyX21hbmFnZW1lbnRfcG9saWN5IHRvIG1pbl9wb3dlci4NCj4g
-PiA+ID4NCj4gPiA+ID4gVGhpcyBjaGFuZ2Ugc2V0cyBieSBkZWZhdWx0IGxpbmsgcG93ZXIgbWFu
-YWdlbWVudCBwb2xpY3kgdG8NCj4gPiA+ID4gbWluX3Bvd2VyDQo+ID4gPiA+IGZvciBzb21lIHBs
-YXRmb3Jtcy4gIFRvIGF2b2lkIHJlZ3Jlc3Npb25zLCB0aGUgZm9sbG93aW5nDQo+ID4gPiA+IGNv
-bmRpdGlvbnMNCj4gPiA+ID4gYXJlIHVzZWQ6DQo+ID4gPiA+IC0gVGhlIGtlcm5lbCBjb25maWcg
-aXMgYWxyZWFkeSBzZXQgdG8gdXNlIG1lZF9wb3dlcl93aXRoX2RpcG0gb3INCj4gPiA+ID4gZGVl
-cGVyDQo+ID4gPiA+IC0gU3lzdGVtIGlzIGEgbW9kZXJuIHN0YW5kYnkgc3lzdGVtIHVzaW5nIEFD
-UEkgbG93IHBvd2VyIGlkbGUNCj4gPiA+ID4gZmxhZw0KPiA+ID4gPiAtIFRoZSBwbGF0Zm9ybSBp
-cyBub3QgYmxhY2tsaXN0ZWQgZm9yIFN1c3BlbmQgdG8gSWRsZSBhbmQgc3VzcGVuZA0KPiA+ID4g
-PiB0byBpZGxlIGlzIHVzZWQgaW5zdGVhZCBvZiBTMw0KPiA+ID4gPiBUaGlzIGNvbWJpbmF0aW9u
-IHdpbGwgbWFrZSBzdXJlIHRoYXQgc3lzdGVtcyBhcmUgZmFpcmx5IHJlY2VudA0KPiA+ID4gPiBh
-bmQNCj4gPiA+ID4gc2luY2UgZ2V0dGluZyBzaGlwcGVkIHdpdGggbW9kZXJuIHN0YW5kYnkgc3Rh
-bmRieSwgdGhlIERFVlNMUA0KPiA+ID4gPiBmdW5jdGlvbg0KPiA+ID4gPiBpcyBhbHJlYWR5IHZh
-bGlkYXRlZC4NCj4gPiA+ID4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogU3Jpbml2YXMgUGFuZHJ1
-dmFkYSA8c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnQNCj4gPiA+ID4gZWwuY29tPg0KPiA+
-ID4NCj4gPiA+IFNlZW1zIHNhbmUgdG8gbWUuICBIYW5zLCB3aGF0IGRvIHlvdSB0aGluaz8NCj4g
-Pg0KPiA+IEkgdGhpbmsgdGhpcyBpcyBnb2luZyBpbiB0aGUgcmlnaHQgZGlyZWN0aW9uLCBidXQg
-bWluX3Bvd2VyIGVuYWJsZXMNCj4gPiBib3RoIERFVlNMUCBhbmQgSElQTSwgQUZBSUsgV2luZG93
-cyBhdCBsZWFzdCBpbiB0aGUgcGFzdCBkaWQgbm90DQo+ID4gZW5hYmxlIEhJUE0gYmUgZGVmYXVs
-dC4NCj4gDQo+IFdpbmRvd3MgYW5kIExpbnV4IHdpbGwgbmVlZCB0byBtZWV0IHRoZSBzYW1lIGNy
-aXRlcmlhIHRvIHJlYWNoIFNMUF9TMA0KPiBzdGF0ZS4gT1MgaXMgbm90IGRlY2lkaW5nIHdoZXRo
-ZXIgd2UgbWVldCBjcml0ZXJpYSBvciBub3QsIGl0IGlzDQo+IGZpcm13YXJlIGRlY2lkaW5nLCBh
-bmQgaXQgd2lsbCBsb29rIGZvciBTQVRBIElQIHRvIGJlIGluIGNlcnRhaW4NCj4gcHJlZGVmaW5l
-ZCBzdGF0ZSwgYmVmb3JlIGdlbmVyYXRpbmcgdGhpcyBTTFBfUzAgc2lnbmFsLg0KPiANCj4gDQo+
-ID4gU3Jpbml2YXMgY2FuIHlvdSBmaWd1cmUgb3V0IHdoYXQgV2luZG93cyBkb2VzIHdydCBISVBN
-Pw0KPiANCj4gV2UgY2FuIHNlZSB0aGF0IHVuZGVyIFdpbmRvd3MgdGhlIFNBVEEgcmFpbCB2b2x0
-YWdlIGlzIGRyb3BwZWQuIEkgZG9uJ3QNCj4ga25vdyBpZiB0aGVyZSBpcyBhbnkgb3RoZXIgbWV0
-aG9kIG90aGVyIHRoYW4gREVWU0xQIGNvbmZpZ3VyYXRpb24uIEJ1dA0KPiBJIHdpbGwgc3VyZWx5
-IGNoZWNrIGFyb3VuZC4NCg0KU29tZXRoaW5nIHRvIGtlZXAgaW4gbWluZCBpcyB0aGF0IG9uIFdp
-bmRvd3MgbW9zdCBzeXN0ZW1zIGFyZSBzaGlwcGVkDQp3aXRoIFJBSUQgT04gcmF0aGVyIHRoYW4g
-QUhDSS4gIFNvIFdpbmRvd3MgZGVmYXVsdHMgZm9yIEFIQ0kgbGluayBwb3dlciBtYW5hZ2VtZW50
-DQpjYW4ndCBhcHBseSBpbiB0aGUgUkFJRCBPTiBjYXNlLiAgSXQgd291bGQgcmF0aGVyIGJlIElu
-dGVsIFJTVCBkcml2ZXIgYmVoYXZpb3JzDQpmb3IgaG93IGl0IGludGVybmFsbHkgbWFuYWdlcyBE
-SVBNICwgSElQTSwgREVWU0xFRVAuDQoNClNvIEkgY2hlY2tlZCBhIGZldyB0aGluZ3MgdG9kYXku
-DQoNCjEpIE9uIGEgc3lzdGVtIHdpdGggbW9kZXJuIHN0YW5kYnkgd2l0aCBTQVRBIFNTRCBzZXQg
-dG8gQUhDSTsgbGluayBwb3dlciBtYW5hZ2VtZW50DQppc24ndCBldmVuIGV4cG9zZWQgaW4gcG93
-ZXIgb3B0aW9ucyBHVUkuIChNYXliZSB0byBwcmV2ZW50IHByb2JsZW1zIHdpdGggU0xQUzA/KQ0K
-SSBkaWRuJ3Qgc2VlIGl0IGluIHBvd2VyY2ZnIC9xICh3aGljaCBpcyBzdXBwb3NlZCB0byBsaXN0
-IGNvbmZpZ3VyYWJsZSBvcHRpb25zIHRvbykNCg0KSSBmb3VuZCBvdXQgaG93IHRvIHVuaGlkZSBp
-dCB3aXRoIHBvd2VyY2ZnIGFuZCBhZnRlciB1bmhpZGluZyBpdCBJIGZvdW5kIHRoYXQgdGhpcyBp
-cyB0aGUNCm9wdGlvbiBleHBvc2VkOg0KaHR0cHM6Ly9kb2NzLm1pY3Jvc29mdC5jb20vZW4tdXMv
-d2luZG93cy1oYXJkd2FyZS9jdXN0b21pemUvcG93ZXItc2V0dGluZ3MvZGlzay1zZXR0aW5ncy1s
-aW5rLXBvd2VyLW1hbmFnZW1lbnQtbW9kZS0tLWhpcG0tZGlwbQ0KDQpJdCdzIGdvdCA1IGluZGV4
-ZXM6DQpBY3RpdmUsDQpISVBNDQpISVBNK0RJUE0NCkRJUE0NCkxvd2VzdA0KDQoyKSBXaXRoIHNv
-bWUgaW50ZXJuYWwgZm9sa3MgYW5kIHRoZXkgdGVsbCBtZSB0aGF0IEhJUE0gYW5kIERJUE0gYXJl
-IGRlZmF1bHRpbmcNCm9uIHdpdGggUlNUIGRyaXZlciwgaG93ZXZlciB0aGlzIGNhbiBiZSBjaGFu
-Z2VkIHdpdGggcmVnaXN0cnkga2V5IGFzIG5lY2Vzc2FyeS4NCg0KPiANCj4gDQo+ID4gV2UgbWF5
-IG5lZWQgYSBuZXcgbWVkX3Bvd2VyX3dpdGhfZGlwbV9hbmRfZGV2c2xwIGxldmVsIGlmIHdpbmRv
-d3MNCj4gPiBkb2VzDQo+ID4gbm90IGVuYWJsZSBISVBNIGJ5IGRlZmF1bHQgb24gdGhlc2Ugc3lz
-dGVtcy4gSW4gaGluZCBzaWdodCB3ZSByZWFsbHkNCj4gPiBzaG91bGQgaGF2ZSBzZXBhcmF0ZSBi
-b29scyBmb3IgZWFjaCwgcmF0aGVyIHRoZW4gY29kaW5nIHRoaXMgaW4NCj4gPiBhIHNpbmdsZSBs
-ZXZlbCwgYWggd2VsbC4NCj4gQWdyZWUuIFdlIGNhbiBjZXJ0YWlubHkgZG8gdGhpcyBmb3IgZXZl
-biBzYWZlciBpbXBsZW1lbnRhdGlvbi4NCg0KTWljcm9zb2Z0IGRvY3VtZW50YXRpb24gYWJvdmUg
-ZG9lc24ndCBzZWVtIHRvIG1lbnRpb24gREVWU0xQIGJ1dCByYW5kb20gZm9ydW1zDQooaHR0cDov
-L215d2luZG93c2h1Yi5jb20vYWRkLWFoY2ktbGluay1wb3dlci1tYW5hZ2VtZW50LWhpcG1kaXBt
-LXBvd2VyLW9wdGlvbnMtd2luZG93cy0xMC8pDQpzZWVtIHRvIGluZGljYXRlIHRoYXQgTG93ZXN0
-IGlzICJISVBNLCBESVBNIGFuZCBERVZTTFAiIChpZiBzdXBwb3J0ZWQgYnkgc3RvcmFnZSBkZXZp
-Y2UpLg0KDQo=
+On Mon,  2 Jul 2018 19:53:20 +0530
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
+
+> Device-tree parsing happens twice, once while deciding idle state to be
+> used for hotplug and once during cpuidle init. Hence, parsing the device
+> tree and caching it will reduce code duplication. Parsing code has been
+> moved to pnv_parse_cpuidle_dt() from pnv_probe_idle_states(). In addition
+> to the properties in the device tree the number of available states is
+> also required.
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/cpuidle.h    |  11 ++
+>  arch/powerpc/platforms/powernv/idle.c | 216 ++++++++++++++++----------
+>  drivers/cpuidle/cpuidle-powernv.c     |  11 +-
+>  3 files changed, 151 insertions(+), 87 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> index e210a83eb196..574b0ce1d671 100644
+> --- a/arch/powerpc/include/asm/cpuidle.h
+> +++ b/arch/powerpc/include/asm/cpuidle.h
+> @@ -79,6 +79,17 @@ struct stop_sprs {
+>  	u64 mmcra;
+>  };
+>  
+> +#define PNV_IDLE_NAME_LEN    16
+> +struct pnv_idle_states_t {
+> +	char name[PNV_IDLE_NAME_LEN];
+> +	u32 latency_ns;
+> +	u32 residency_ns;
+> +	u64 psscr_val;
+> +	u64 psscr_mask;
+> +	u32 flags;
+> +	bool valid;
+> +};
+
+
+This is a nice looking cleanup.
+
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
