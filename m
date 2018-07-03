@@ -1,59 +1,48 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCH v4 2/3] power: supply: add cros-ec USBPD charger driver.
-Date: Tue, 3 Jul 2018 11:46:39 +0200
-Message-ID: <CAFqH_53wvx+v8fLvcg3HaZ6OsAW2itHGsbhU+YPpLRyF0Upz6Q@mail.gmail.com>
-References: <20180502154418.2153-1-enric.balletbo@collabora.com>
- <20180502154418.2153-3-enric.balletbo@collabora.com> <20180524083420.nna6znszz2lp6jwo@earth.universe>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 2/2] powernv/cpuidle: Use parsed device tree values
+ for cpuidle_init
+Date: Tue, 3 Jul 2018 15:17:59 +0530
+Message-ID: <20180703094759.GB24693@in.ibm.com>
+References: <1530609656-13301-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1530609656-13301-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180524083420.nna6znszz2lp6jwo@earth.universe>
+Content-Disposition: inline
+In-Reply-To: <1530609656-13301-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Benson Leung <bleung@chromium.org>, Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>, kernel@collabora.com, Fabien Parent <fparent@baylibre.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lee, Sebastian,
+Hi Akshay,
 
-cc'ing Fabien
+On Tue, Jul 03, 2018 at 02:50:56PM +0530, Akshay Adiga wrote:
+> Export pnv_idle_states and nr_pnv_idle_states so that its accessible to
+> cpuidle driver. Use properties from pnv_idle_states structure for powernv
+> cpuidle_init.
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
 
-Missatge de Sebastian Reichel <sre@kernel.org> del dia dj., 24 de maig
-2018 a les 10:38:
->
-> Hi,
->
-> On Wed, May 02, 2018 at 05:44:17PM +0200, Enric Balletbo i Serra wrote:
-> > From: Sameer Nanda <snanda@chromium.org>
-> >
-> > This driver gets various bits of information about what is connected to
-> > USB PD ports from the EC and converts that into power_supply properties.
-> >
-> > Signed-off-by: Sameer Nanda <snanda@chromium.org>
-> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> > Acked-by: Lee Jones <lee.jones@linaro.org>
->
-> I suppose Lee's Ack was mainly for the no longer relevant MFD part
-> of this patch.
->
-> > ---
->
-> Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
->
-> I would be fine with merging this for 4.18, but it has a dependency
-> on patch 1 for MFD. Lee, can you provide a immutable branch for
-> patch 1?
->
+[..snip..]
 
-I guess I already lost the open window to see these in 4.18. Doesn't matter :)
+> 
+>  		/*
+>  		 * For nap and fastsleep, use default target_residency
+>  		 * values if f/w does not expose it.
+>  		 */
 
-These patches now are blocking [1] to land, and also I have some
-patches close to be ready to send that apply on top of these two
-patchsets. I think both patchsets are fine so would be possible queue
-all these patches for 4.19 and maybe create an immutable branch.
+This comment can also go, since we are no longer hard-coding the
+residency values in the kernel.
 
-Many thanks,
- Enric
+Otherwise looks good to me.
 
-[1] https://lkml.org/lkml/2018/5/29/1328
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-> -- Sebastian
+
+--
+Thanks and Regards
+gautham.
