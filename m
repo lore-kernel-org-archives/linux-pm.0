@@ -1,75 +1,34 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
- supplier unbind
-Date: Wed, 4 Jul 2018 23:39:49 +0530
-Message-ID: <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
-References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
- <20180627125056.12851-2-vivek.gautam@codeaurora.org>
- <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
- <2991909.NMIP74eIIJ@aspire.rjw.lan>
+From: Ladislav Michl <ladis@linux-mips.org>
+Subject: Re: droid 4: connection refused from voltage_now
+Date: Wed, 4 Jul 2018 21:45:56 +0200
+Message-ID: <20180704194556.GA9189@lenoch>
+References: <20180704171156.GA3158@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2991909.NMIP74eIIJ@aspire.rjw.lan>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180704171156.GA3158@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, sre@kernel.org, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jul 04, 2018 at 07:11:56PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> I started to use droid 4 as my primary phone... so I have battery
+> monitor running for hours... Once every few days it dies with
+> "connection refused" error reading battery's "voltage_now". I restart
+> it and it continues working...
 
+Ha! What exactly that "connection refused" means? Is it ECONNREFUSED (111)?
+I have custom at91 based board here with few custom power supply drivers
+and it sometimes ends with voltage_now of my driver being unreadable.
+(I modified userspace code and waiting what's in errno in case reading fails)
 
-On 7/4/2018 4:14 PM, Rafael J. Wysocki wrote:
-> On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
->> Adding Ulf and Marek.
->>
->> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
->>> Add a flag to autoremove the device links on supplier driver
->>> unbind. This obviates the need to explicitly delete the link
->>> in the remove path.
->>> We remove these links only when the supplier's link to its
->>> consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
->>>
->>> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
->>> Suggested-by: Lukas Wunner <lukas@wunner.de>
->>> Cc: Jonathan Corbet <corbet@lwn.net>
->>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>> Cc: Robin Murphy <robin.murphy@arm.com>
->>> Cc: linux-doc@vger.kernel.org
->>> Cc: linux-arm-kernel@lists.infradead.org
->>> Cc: linux-pm@vger.kernel.org
->>> Cc: linux-arm-msm@vger.kernel.org
->>> ---
->> Hi Rafael, et al.
->>
->> Gentle ping.
->> Do you have comments on this series. I would really like to conclude these
->> device link additions sooner, and get things moving on the long awaited
->> arm-smmu clock/runtime support series.
->>
->> Thanks again for reviewing these patches.
-> They are fine by me.
->
-> I can queue them up for 4.19 if no one has objections (Greg in
-> particular).
+> That was with v4.17; in v4.18, I'm getting "red screen" a lot.
 
-Hi Rafael,
+Tests are also done v4.17.
+Adding linux-pm@vger.kernel.org as it seems to be subsytem, specific.
 
-I will resubmit these 2 patches as part of the arm-smmu series, as one
-of the patch in the series depends on addition of 
-DL_FLAG_AUTOREMOVE_SUPPLIER.
-So these 2 patches and arm-smmu series should go together.
-Can you please consider givnig your Ack?
-
-Best regards
-Vivek
-
->
-> Thanks,
-> Rafael
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	ladis
