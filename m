@@ -1,58 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 09/12] dt-bindings: misc: add bindings for throttler
-Date: Wed, 4 Jul 2018 15:30:03 +0530
-Message-ID: <20180704100003.u4fagd2vxwwbp443@vireshk-i7>
-References: <20180703234705.227473-1-mka@chromium.org>
- <20180703234705.227473-10-mka@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCHv3 3/4] drivers/base: clean up the usage of devices_kset_move_last()
+Date: Wed, 04 Jul 2018 12:17:06 +0200
+Message-ID: <2842715.a5PfnD4e6X@aspire.rjw.lan>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com> <3375966.ydPZj5TMVj@aspire.rjw.lan> <CAFgQCTtu7jaUfWV4xq8CfWb7vuS5=+HuNpNxeMm9UawoUZ2CBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180703234705.227473-10-mka@chromium.org>
+In-Reply-To: <CAFgQCTtu7jaUfWV4xq8CfWb7vuS5=+HuNpNxeMm9UawoUZ2CBg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Pingfan Liu <kernelfans@gmail.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 03-07-18, 16:47, Matthias Kaehlcke wrote:
-> The Throttler is used for non-thermal throttling of system components
-> like CPUs or devfreq devices.
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> --
-> Changes in v5:
-> - patch added to the series (replacing "dt-bindings: PM / OPP: add
->   opp-throttlers property")
-> ---
->  .../devicetree/bindings/misc/throttler.txt          | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/misc/throttler.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/misc/throttler.txt b/Documentation/devicetree/bindings/misc/throttler.txt
-> new file mode 100644
-> index 000000000000..2ea80c62dbe1
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/misc/throttler.txt
-> @@ -0,0 +1,13 @@
-> +Throttler driver
-> +
-> +The Throttler is used for non-thermal throttling of system components like
-> +CPUs or devfreq devices.
-> +
-> +Required properties:
-> +- throttler-opps	Array of OPP-v2 phandles with the OPPs used for
-> +			throttling.
-> +
-> +Example:
-> +	throttler {
-> +		 throttler-opps = <&cpu0_opp03, &cpu1_opp02, &gpu_opp03>;
-> +	};
+On Wednesday, July 4, 2018 6:40:09 AM CEST Pingfan Liu wrote:
+> On Tue, Jul 3, 2018 at 10:28 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > On Tuesday, July 3, 2018 8:50:41 AM CEST Pingfan Liu wrote:
+> > > Clean up the referring to the code in commit 52cdbdd49853 ("driver core:
+> > > correct device's shutdown order"). So later we can revert it safely.
+> > >
+> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> > > Cc: Christoph Hellwig <hch@infradead.org>
+> > > Cc: Bjorn Helgaas <helgaas@kernel.org>
+> > > Cc: Dave Young <dyoung@redhat.com>
+> > > Cc: linux-pci@vger.kernel.org
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> > > ---
+> > >  drivers/base/core.c | 7 -------
+> > >  1 file changed, 7 deletions(-)
+> > >
+> > > diff --git a/drivers/base/core.c b/drivers/base/core.c
+> > > index 684b994..db3deb8 100644
+> > > --- a/drivers/base/core.c
+> > > +++ b/drivers/base/core.c
+> > > @@ -127,13 +127,6 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+> > >  {
+> > >       struct device_link *link;
+> > >
+> > > -     /*
+> > > -      * Devices that have not been registered yet will be put to the ends
+> > > -      * of the lists during the registration, so skip them here.
+> > > -      */
+> > > -     if (device_is_registered(dev))
+> > > -             devices_kset_move_last(dev);
+> > > -
+> > >       if (device_pm_initialized(dev))
+> > >               device_pm_move_last(dev);
+> >
+> > You can't do this.
+> >
+> > If you do it, that will break power management in some situations.
+> >
+> Could you shed light on it? I had a quick browsing of pm code, but it
+> is a big function, and I got lost in it.
+> If the above code causes failure, then does it imply that the seq in
+> devices_kset should be the same as dpm_list?
 
-All you do with these phandles for now is that you parse them and read
-"opp-hz" value. For that purpose current bindings look sufficient.
->From OPP point of view:
+Generally, yes it should.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> But in device_shutdown(), it only intersect with pm by
+> pm_runtime_get_noresume(dev) and pm_runtime_barrier(dev). How do these
+> function affect the seq in dpm_list?
 
--- 
-viresh
+They are not related to dpm_list directly.
+
+However, if you shut down a supplier device before its consumer and that
+involves power management, then the consumer shutdown may fail and lock up
+the system
+
+I asked you elsewhere to clearly describe the problem you are trying to
+address.  Please do that in the first place.
+
+Thanks,
+Rafael
