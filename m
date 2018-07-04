@@ -1,79 +1,45 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
-Date: Wed, 04 Jul 2018 14:30:32 +0900
-Message-ID: <5B3C5B78.6020401@samsung.com>
-References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
-        <20180703234705.227473-8-mka@chromium.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 1/3] mfd: cros_ec: Add USBPD charger commands and
+ struct definitions.
+Date: Wed, 4 Jul 2018 07:08:15 +0100
+Message-ID: <20180704060815.GT20176@dell>
+References: <20180502154418.2153-1-enric.balletbo@collabora.com>
+ <20180502154418.2153-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180703234705.227473-8-mka@chromium.org>
+Content-Disposition: inline
+In-Reply-To: <20180502154418.2153-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, 02 May 2018, Enric Balletbo i Serra wrote:
 
-I didn't see any framework which exporting the class instance.
-It is very dangerous. Unknown device drivers is able to reset
-the 'devfreq_class' instance. I can't agree this approach.
-
-Regards,
-Chanwoo Choi
-
-
-On 2018년 07월 04일 08:47, Matthias Kaehlcke wrote:
-> Exporting the device class allows other parts of the kernel to enumerate
-> the devfreq devices and receive notification when a devfreq device is
-> added or removed.
+> From: Sameer Nanda <snanda@chromium.org>
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Reviewed-by: Brian Norris <briannorris@chromium.org>
+> The USBPD charger driver gets information from the ChromeOS EC, this
+> patch adds the USBPD charger definitions needed by this driver.
+> 
+> Signed-off-by: Sameer Nanda <snanda@chromium.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
-> Changes in v5:
-> - none
 > 
-> Changes in v4:
-> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
-> 
+> Changes in v4: None
 > Changes in v3:
-> - none
+> - [1/3] Use the BIT macro.
 > 
-> Changes in v2:
-> - patch added to series
-> ---
->  drivers/devfreq/devfreq.c | 3 ++-
->  include/linux/devfreq.h   | 2 ++
->  2 files changed, 4 insertions(+), 1 deletion(-)
+> Changes in v2: None
 > 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 4cbaa7ad1972..38b90b64fc6e 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -31,7 +31,8 @@
->  #define MAX(a,b)	((a > b) ? a : b)
->  #define MIN(a,b)	((a < b) ? a : b)
->  
-> -static struct class *devfreq_class;
-> +struct class *devfreq_class;
-> +EXPORT_SYMBOL_GPL(devfreq_class);
->  
->  /*
->   * devfreq core provides delayed work based load monitoring helper
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index c4f84a769cb5..964e064a951f 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -206,6 +206,8 @@ struct devfreq_freqs {
->  };
->  
->  #if defined(CONFIG_PM_DEVFREQ)
-> +extern struct class *devfreq_class;
-> +
->  extern struct devfreq *devfreq_add_device(struct device *dev,
->  				  struct devfreq_dev_profile *profile,
->  				  const char *governor_name,
-> 
+>  include/linux/mfd/cros_ec_commands.h | 132 ++++++++++++++++++++++++++-
+>  1 file changed, 128 insertions(+), 4 deletions(-)
+
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
