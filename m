@@ -1,56 +1,165 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
- supplier unbind
-Date: Wed, 4 Jul 2018 13:32:14 +0200
-Message-ID: <20180704113214.GB30967@kroah.com>
-References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
- <20180627125056.12851-2-vivek.gautam@codeaurora.org>
- <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
- <2991909.NMIP74eIIJ@aspire.rjw.lan>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v4 3/6] thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
+Date: Wed, 4 Jul 2018 18:08:27 +0530
+Message-ID: <CAP245DUG=wXApk6BVmaaUyTRBDaiPc0x4EDh3KS2ZfMxPQowkg@mail.gmail.com>
+References: <cover.1530533998.git.amit.kucheria@linaro.org>
+ <7e9beaa3218b1c46ea6a7399c5978c1538fce261.1530533998.git.amit.kucheria@linaro.org>
+ <20180702185530.GD2050@tuxbook-pro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="000000000000bc395105702bb51a"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2991909.NMIP74eIIJ@aspire.rjw.lan>
+In-Reply-To: <20180702185530.GD2050@tuxbook-pro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Vivek Gautam <vivek.gautam@codeaurora.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 04, 2018 at 12:44:20PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
-> > Adding Ulf and Marek.
-> > 
-> > On 6/27/2018 6:20 PM, Vivek Gautam wrote:
-> > > Add a flag to autoremove the device links on supplier driver
-> > > unbind. This obviates the need to explicitly delete the link
-> > > in the remove path.
-> > > We remove these links only when the supplier's link to its
-> > > consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
-> > >
-> > > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> > > Suggested-by: Lukas Wunner <lukas@wunner.de>
-> > > Cc: Jonathan Corbet <corbet@lwn.net>
-> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Cc: Robin Murphy <robin.murphy@arm.com>
-> > > Cc: linux-doc@vger.kernel.org
-> > > Cc: linux-arm-kernel@lists.infradead.org
-> > > Cc: linux-pm@vger.kernel.org
-> > > Cc: linux-arm-msm@vger.kernel.org
-> > > ---
-> > 
-> > Hi Rafael, et al.
-> > 
-> > Gentle ping.
-> > Do you have comments on this series. I would really like to conclude these
-> > device link additions sooner, and get things moving on the long awaited
-> > arm-smmu clock/runtime support series.
-> > 
-> > Thanks again for reviewing these patches.
-> 
-> They are fine by me.
-> 
-> I can queue them up for 4.19 if no one has objections (Greg in
-> particular).
+--000000000000bc395105702bb51a
+Content-Type: text/plain; charset="UTF-8"
 
-No objection from me!
+On Tue, Jul 3, 2018 at 12:23 AM Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
+>
+> On Mon 02 Jul 05:44 PDT 2018, Amit Kucheria wrote:
+>
+> > The TSENS block inside the 8996 is internally classified as version 2 of
+> > the IP. Several other SoC families use this block and can share this code.
+> >
+> > We rename get_temp() to reflect that it can be used across the v2 family.
+> >
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > ---
+> >  drivers/thermal/qcom/Makefile                     |  2 +-
+> >  drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} | 26 ++++++++---------------
+> >  2 files changed, 10 insertions(+), 18 deletions(-)
+> >  rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (66%)
+> >
+> > diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+> > index 2cc2193..a821929 100644
+> > --- a/drivers/thermal/qcom/Makefile
+> > +++ b/drivers/thermal/qcom/Makefile
+> > @@ -1,2 +1,2 @@
+> >  obj-$(CONFIG_QCOM_TSENS)     += qcom_tsens.o
+> > -qcom_tsens-y                 += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o
+> > +qcom_tsens-y                 += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-v2.o
+> > diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-v2.c
+> > similarity index 66%
+> > rename from drivers/thermal/qcom/tsens-8996.c
+> > rename to drivers/thermal/qcom/tsens-v2.c
+> > index e1f7781..2eca7ff 100644
+> > --- a/drivers/thermal/qcom/tsens-8996.c
+> > +++ b/drivers/thermal/qcom/tsens-v2.c
+> > @@ -1,27 +1,18 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> >  /*
+> >   * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+> > - *
+> > - * This program is free software; you can redistribute it and/or modify
+> > - * it under the terms of the GNU General Public License version 2 and
+> > - * only version 2 as published by the Free Software Foundation.
+> > - *
+> > - * This program is distributed in the hope that it will be useful,
+> > - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > - * GNU General Public License for more details.
+> > - *
+> > + * Copyright (c) 2018, Linaro Limited
+> >   */
+> >
+> > -#include <linux/platform_device.h>
+> >  #include <linux/regmap.h>
+> >  #include "tsens.h"
+> >
+> > -#define STATUS_OFFSET        0x10a0
+> > -#define LAST_TEMP_MASK       0xfff
+> > +#define STATUS_OFFSET                0xa0
+>
+> This is not backwards compatible with present day dts files, you need to
+> keep this effectively 0x10a0 when the memory region isn't split in two.
+
+Argh!! Good catch.
+
+> Perhaps you can just offset the ioremap by 4k when there's only one
+> region?
+
+That'll cause problems when we want to access some features exposed in
+the other register bank through the common get_temp_tsens_v2 function.
+The SW reset bit is in there that I'd like to add support for, for
+example.
+
+I can see a few other ways to detect this at runtime. None of them
+look pretty but option 3 looks least ugly at least to me. Any
+preferences?
+
+1. Don't try to combine get_temp for 8996 with other v2 platforms.
+This would mean retaining a separate ops_8996, pointing to a custom
+get_temp(). We end up with two copies of the function.
+
+2. In get_temp_tsens_v2(), check for number of regions but this has an
+overhead for each temperature read.
+
+     struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
+     if (op->num_resources > 1)
+        status_offset = 0xa0;
+     else
+        status_offset = 0x10a0;
+     Read temperature(status_offset);
+
+3. Restrict to init time (ideal) by storing the status_offset to
+struct tsens_device. This is then used directly in
+get_temp_generic_v2() to determine the actual address. This should
+work for 8996, 8916 and 8974 which all have a single memory region
+iomapp'ed. The last two don't even need this value since they have
+their own get_temp functions. See diff attached.
+
+I have to ask: Are there really devices in the field that rely on the
+existing *upstream* code and DT? If not, could we consider deprecating
+the "qcom,msm8996-tsens" property immediately or at least mark it for
+future removal?
+
+Regards,
+Amit
+
+--000000000000bc395105702bb51a
+Content-Type: text/plain; charset="US-ASCII"; name="3.diff.txt"
+Content-Disposition: attachment; filename="3.diff.txt"
+Content-Transfer-Encoding: base64
+Content-ID: <f_jj73xf8o0>
+X-Attachment-Id: f_jj73xf8o0
+
+ZGlmZiAtLWdpdCBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLWNvbW1vbi5jIHcvZHJpdmVy
+cy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKaW5kZXggYjE0NDlhZC4uNzk4Mjg2NyAxMDA2
+NDQKLS0tIGkvZHJpdmVycy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKKysrIHcvZHJpdmVy
+cy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKQEAgLTE2LDYgKzE2LDcgQEAKICNpbmNsdWRl
+IDxsaW51eC9pby5oPgogI2luY2x1ZGUgPGxpbnV4L252bWVtLWNvbnN1bWVyLmg+CiAjaW5jbHVk
+ZSA8bGludXgvb2ZfYWRkcmVzcy5oPgorI2luY2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+CiAj
+aW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+CiAjaW5jbHVkZSA8bGludXgvcmVnbWFw
+Lmg+CiAjaW5jbHVkZSAidHNlbnMuaCIKQEAgLTEyNiw2ICsxMjcsMTIgQEAgc3RhdGljIGNvbnN0
+IHN0cnVjdCByZWdtYXBfY29uZmlnIHRzZW5zX2NvbmZpZyA9IHsKIGludCBfX2luaXQgaW5pdF9j
+b21tb24oc3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXYpCiB7CiAJdm9pZCBfX2lvbWVtICpiYXNl
+OworCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKm9wID0gb2ZfZmluZF9kZXZpY2VfYnlfbm9kZSh0
+bWRldi0+ZGV2LT5vZl9ub2RlKTsKKworCWlmIChvcC0+bnVtX3Jlc291cmNlcyA+IDEpCisJCXRt
+ZGV2LT5zdGF0dXNfb2Zmc2V0ID0gMHhhMDsKKwllbHNlCisJCXRtZGV2LT5zdGF0dXNfb2Zmc2V0
+ID0gMHgxMGEwOwogCiAJYmFzZSA9IG9mX2lvbWFwKHRtZGV2LT5kZXYtPm9mX25vZGUsIDApOwog
+CWlmICghYmFzZSkKZGlmZiAtLWdpdCBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLXYyLmMg
+dy9kcml2ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy12Mi5jCmluZGV4IDA0NzNmMzMuLjg0MDAyOTAg
+MTAwNjQ0Ci0tLSBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLXYyLmMKKysrIHcvZHJpdmVy
+cy90aGVybWFsL3Fjb20vdHNlbnMtdjIuYwpAQCAtMTAsNyArMTAsNiBAQAogI2RlZmluZSBUUkRZ
+X09GRlNFVCAgICAgICAgICAgIDB4ZTQKICNkZWZpbmUgVFJEWV9SRUFEWV9CSVQgICAgICAgICBC
+SVQoMCkKIAotI2RlZmluZSBTVEFUVVNfT0ZGU0VUCQkweGEwCiAjZGVmaW5lIExBU1RfVEVNUF9N
+QVNLCQkweGZmZgogI2RlZmluZSBTVEFUVVNfVkFMSURfQklUCUJJVCgyMSkKICNkZWZpbmUgQ09E
+RV9TSUdOX0JJVAkJQklUKDExKQpAQCAtMjgsNyArMjcsNyBAQCBzdGF0aWMgaW50IGdldF90ZW1w
+X3RzZW5zX3YyKHN0cnVjdCB0c2Vuc19kZXZpY2UgKnRtZGV2LCBpbnQgaWQsIGludCAqdGVtcCkK
+IAlpZiAoY29kZSAmIFRSRFlfUkVBRFlfQklUKQogCQlyZXR1cm4gLUVOT0RBVEE7CiAKLQlzZW5z
+b3JfYWRkciA9IFNUQVRVU19PRkZTRVQgKyBzLT5od19pZCAqIDQ7CisJc2Vuc29yX2FkZHIgPSB0
+bWRldi0+c3RhdHVzX29mZnNldCArIHMtPmh3X2lkICogNDsKIAlyZXQgPSByZWdtYXBfcmVhZCh0
+bWRldi0+bWFwLCBzZW5zb3JfYWRkciwgJmNvZGUpOwogCWlmIChyZXQpCiAJCXJldHVybiByZXQ7
+CmRpZmYgLS1naXQgaS9kcml2ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy5oIHcvZHJpdmVycy90aGVy
+bWFsL3Fjb20vdHNlbnMuaAppbmRleCA2OTIxMmNiLi44YTQyYTcwIDEwMDY0NAotLS0gaS9kcml2
+ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy5oCisrKyB3L2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5z
+LmgKQEAgLTc3LDYgKzc3LDcgQEAgc3RydWN0IHRzZW5zX2RldmljZSB7CiAJc3RydWN0IGRldmlj
+ZQkJCSpkZXY7CiAJdTMyCQkJCW51bV9zZW5zb3JzOwogCXN0cnVjdCByZWdtYXAJCQkqbWFwOwor
+CXUzMgkJCQlzdGF0dXNfb2Zmc2V0OwogCXN0cnVjdCB0c2Vuc19jb250ZXh0CQljdHg7CiAJY29u
+c3Qgc3RydWN0IHRzZW5zX29wcwkJKm9wczsKIAlzdHJ1Y3QgdHNlbnNfc2Vuc29yCQlzZW5zb3Jb
+MF07Cg==
+--000000000000bc395105702bb51a--
