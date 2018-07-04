@@ -1,22 +1,24 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH] thermal: ti-soc-thermal: remove dead code
-Date: Wed, 04 Jul 2018 15:54:39 +0200
-Message-ID: <11602194.yYghWmMIfl@amdc3058>
+Date: Wed, 4 Jul 2018 09:00:28 -0700
+Message-ID: <20180704160027.GA21690@localhost.localdomain>
 References: <10747698.EAsn0e6Ddm@amdc3058>
-        <20180702163010.GA2380@localhost.localdomain>
-        <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
-        <CGME20180704135439eucas1p15aa9f097aba8d1f12ccb6e31ee6ab46b@eucas1p1.samsung.com>
+ <CGME20180629161027eucas1p20846507c4f98f50d80ab58aaa1628fd1@eucas1p2.samsung.com>
+ <3318201.BAqn4C3t6k@amdc3058>
+ <20180702163010.GA2380@localhost.localdomain>
+ <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
+Content-Disposition: inline
+In-Reply-To: <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Keerthy <j-keerthy@ti.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 03, 2018 10:40:25 AM Keerthy wrote:
+On Tue, Jul 03, 2018 at 10:40:25AM +0530, Keerthy wrote:
+> 
 > 
 > On Monday 02 July 2018 10:00 PM, Eduardo Valentin wrote:
 > > Keerthy,
@@ -57,19 +59,9 @@ On Tuesday, July 03, 2018 10:40:25 AM Keerthy wrote:
 > 
 > Tested-by: Keerthy <j-keerthy@ti.com>
 > Acked-by: Keerthy <j-keerthy@ti.com>
+
+Thanks, queueing this cleanup.
+
 > 
 > Thanks for the clean up Bartalomiej!
-
-Thank you for testing & ack.
-
-Could you please also verify the driver simplification patchset:
-
-	https://lkml.org/lkml/2018/5/14/642
-
-?
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> > 
