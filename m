@@ -1,16 +1,16 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 1/3] mfd: cros_ec: Add USBPD charger commands and
- struct definitions.
-Date: Wed, 4 Jul 2018 07:08:15 +0100
-Message-ID: <20180704060815.GT20176@dell>
+Subject: Re: [PATCH v4 3/3] mfd: cros_ec_dev: Register cros_usbpd-charger
+ driver as a subdevice.
+Date: Wed, 4 Jul 2018 07:08:28 +0100
+Message-ID: <20180704060828.GU20176@dell>
 References: <20180502154418.2153-1-enric.balletbo@collabora.com>
- <20180502154418.2153-2-enric.balletbo@collabora.com>
+ <20180502154418.2153-4-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180502154418.2153-2-enric.balletbo@collabora.com>
+In-Reply-To: <20180502154418.2153-4-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Gwendal Grignou <gwendal@chromium.org>, Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, Guenter Roeck <groeck@chromium.org>, linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>, miguel.ojeda.sandonis@gmail.com, kernel@collabora.com
@@ -18,23 +18,19 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, 02 May 2018, Enric Balletbo i Serra wrote:
 
-> From: Sameer Nanda <snanda@chromium.org>
+> Check whether this EC instance has USBPD host command support and
+> instatiate the cros_usbpd-charger driver as a subdevice in such case.
 > 
-> The USBPD charger driver gets information from the ChromeOS EC, this
-> patch adds the USBPD charger definitions needed by this driver.
-> 
-> Signed-off-by: Sameer Nanda <snanda@chromium.org>
 > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
 > 
 > Changes in v4: None
-> Changes in v3:
-> - [1/3] Use the BIT macro.
+> Changes in v3: None
+> Changes in v2:
+> - [3/3] Use ARRAY_SIZE instead of hardcoded 1.
 > 
-> Changes in v2: None
-> 
->  include/linux/mfd/cros_ec_commands.h | 132 ++++++++++++++++++++++++++-
->  1 file changed, 128 insertions(+), 4 deletions(-)
+>  drivers/mfd/cros_ec_dev.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 
 Applied, thanks.
 
