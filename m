@@ -1,84 +1,75 @@
-From: Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: Re: [PATCH 1/3] dt-bindings: marvell: Add documentation for the
- Armada 3700 AVS binding
-Date: Wed, 04 Jul 2018 15:26:08 +0200
-Message-ID: <87tvpf2kun.fsf@bootlin.com>
-References: <20180619124402.902-1-gregory.clement@bootlin.com>
- <20180619124402.902-2-gregory.clement@bootlin.com>
- <7581910.yGXAn98Nt4@aspire.rjw.lan>
- <CABGGisyEO+XVQm87sVn-D0SbkRrqHfRo0R9iVc=PjbY5uyUemA@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: remove dead code
+Date: Wed, 04 Jul 2018 15:54:39 +0200
+Message-ID: <11602194.yYghWmMIfl@amdc3058>
+References: <10747698.EAsn0e6Ddm@amdc3058>
+        <20180702163010.GA2380@localhost.localdomain>
+        <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
+        <CGME20180704135439eucas1p15aa9f097aba8d1f12ccb6e31ee6ab46b@eucas1p1.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CABGGisyEO+XVQm87sVn-D0SbkRrqHfRo0R9iVc=PjbY5uyUemA@mail.gmail.com>
- (Rob Herring's message of "Tue, 3 Jul 2018 10:13:29 -0600")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <rob.herring@linaro.org>
-Cc: andrew@lunn.ch, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, antoine.tenart@bootlin.com, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, maxime.chevallier@bootlin.com, nadavh@marvell.com, make@marvell.com, xigu@marvell.com, neta@marvell.com, thomas.petazzoni@bootlin.com, miquel.raynal@bootlin.com, jinghua@marvell.com, mw@semihalf.com, dingwei@marvell.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, sebastian.hesselbarth@gmail.com
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
- 
- On mar., juil. 03 2018, Rob Herring <rob.herring@linaro.org> wrote:
+On Tuesday, July 03, 2018 10:40:25 AM Keerthy wrote:
+> 
+> On Monday 02 July 2018 10:00 PM, Eduardo Valentin wrote:
+> > Keerthy,
+> > 
+> > On Fri, Jun 29, 2018 at 06:10:26PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> >>
+> >> Hi,
+> >>
+> >> On Wednesday, May 02, 2018 03:20:35 PM Bartlomiej Zolnierkiewicz wrote:
+> >>> Majority of this code (i.e. functions from ti-bandgap.c) has been
+> >>> introduced in May 2013 by commit eb982001dbd8 ("thermal: introduce TI
+> >>> SoC thermal driver"). Just remove it altogether (in case it is needed
+> >>> it can be easily resurrected from git repo).
+> >>>
+> >>> While at it fix incorrect "not used" comments.
+> >>>
+> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> >>> ---
+> >>>  drivers/thermal/ti-soc-thermal/dra752-bandgap.h      |   68 ---
+> >>>  drivers/thermal/ti-soc-thermal/dra752-thermal-data.c |   65 ---
+> >>>  drivers/thermal/ti-soc-thermal/omap3-thermal-data.c  |    6 
+> >>>  drivers/thermal/ti-soc-thermal/omap4-thermal-data.c  |   10 
+> >>>  drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h    |   10 
+> >>>  drivers/thermal/ti-soc-thermal/omap5-thermal-data.c  |   46 --
+> >>>  drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h    |   41 --
+> >>>  drivers/thermal/ti-soc-thermal/ti-bandgap.c          |  370 -------------------
+> >>>  drivers/thermal/ti-soc-thermal/ti-bandgap.h          |   43 --
+> >>>  9 files changed, 5 insertions(+), 654 deletions(-)
+> >>
+> >> Gentle ping.
+> >>
+> >> It would be great to see this patch in v4.19.
+> > 
+> > Any objections on this removal / cleanup?
+> 
+> Tested the patch on dra72-EVM.
+> cpufreq cooling works well.
+> 
+> Tested-by: Keerthy <j-keerthy@ti.com>
+> Acked-by: Keerthy <j-keerthy@ti.com>
+> 
+> Thanks for the clean up Bartalomiej!
 
-> On Tue, Jul 3, 2018 at 8:46 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>
->> On Tuesday, June 19, 2018 2:44:00 PM CEST Gregory CLEMENT wrote:
->> > Extend the documentation of the Armada 37xx SoC with the Adaptive Voltage
->> > Scaling (AVS) registers.
->> >
->> > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
->> > ---
->> >  .../bindings/arm/marvell/armada-37xx.txt         | 16 ++++++++++++++++
->> >  1 file changed, 16 insertions(+)
->> >
->> > diff --git a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> > index 35c3c3460d17..22438f659d1e 100644
->> > --- a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> > +++ b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> > @@ -33,3 +33,19 @@ nb_pm: syscon@14000 {
->> >       compatible = "marvell,armada-3700-nb-pm", "syscon";
->> >       reg = <0x14000 0x60>;
->> >  }
->> > +
->> > +AVS
->> > +---
->> > +
->> > +For AVS an other component is needed:
->> > +
->> > +Required properties:
->> > +- compatible     : should contain "marvell,armada-3700-avs", "syscon";
->> > +- reg            : the register start and length for the AVS
->> > +
->> > +Example:
->> > +avs: avs@11500 {
->> > +     compatible = "marvell,armada-3700-avs", "syscon";
->> > +     reg = <0x11500 0x40>;
->> > +}
->> > +
->> >
->>
->> I can't apply this one without a Rob's ACK.
->
-> Which won't happen if not sent to the DT list.
+Thank you for testing & ack.
 
-Now it's done.
+Could you please also verify the driver simplification patchset:
 
-Gregory
+	https://lkml.org/lkml/2018/5/14/642
 
->
-> Rob
+?
 
--- 
-Gregory Clement, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-http://bootlin.com
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
