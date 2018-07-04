@@ -1,67 +1,59 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: remove dead code
-Date: Wed, 4 Jul 2018 09:00:28 -0700
-Message-ID: <20180704160027.GA21690@localhost.localdomain>
-References: <10747698.EAsn0e6Ddm@amdc3058>
- <CGME20180629161027eucas1p20846507c4f98f50d80ab58aaa1628fd1@eucas1p2.samsung.com>
- <3318201.BAqn4C3t6k@amdc3058>
- <20180702163010.GA2380@localhost.localdomain>
- <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 1/2] reset: imx7: Fix always writing bits as 0
+Date: Wed, 4 Jul 2018 17:35:29 +0100
+Message-ID: <20180704163517.GA13155@red-moon>
+References: <cover.1527621510.git.leonard.crestez@nxp.com>
+ <c441872d7dd355ae09e945447441389e93e3b888.1527621510.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8e1b81d0-2ae4-90aa-b079-7bc778a2f015@ti.com>
+In-Reply-To: <c441872d7dd355ae09e945447441389e93e3b888.1527621510.git.leonard.crestez@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>, Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Andrey Smirnov <andrew.smirnov@gmail.com>, Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Anson Huang <Anson.Huang@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, Joao Pinto <Joao.Pinto@synopsys.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Abel Vesa <abel.vesa@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 03, 2018 at 10:40:25AM +0530, Keerthy wrote:
+On Tue, May 29, 2018 at 10:39:16PM +0300, Leonard Crestez wrote:
+> Right now the only user of reset-imx7 is pci-imx6 and the
+> reset_control_assert and deassert calls on pciephy_reset don't toggle
+> the PCIEPHY_BTN and PCIEPHY_G_RST bits as expected. Fix this by writing
+> 1 or 0 respectively.
 > 
+> The reference manual is not very clear regarding SRC_PCIEPHY_RCR but for
+> other registers like MIPIPHY and HSICPHY the bits are explicitly
+> documented as "1 means assert, 0 means deassert".
 > 
-> On Monday 02 July 2018 10:00 PM, Eduardo Valentin wrote:
-> > Keerthy,
-> > 
-> > On Fri, Jun 29, 2018 at 06:10:26PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> >>
-> >> Hi,
-> >>
-> >> On Wednesday, May 02, 2018 03:20:35 PM Bartlomiej Zolnierkiewicz wrote:
-> >>> Majority of this code (i.e. functions from ti-bandgap.c) has been
-> >>> introduced in May 2013 by commit eb982001dbd8 ("thermal: introduce TI
-> >>> SoC thermal driver"). Just remove it altogether (in case it is needed
-> >>> it can be easily resurrected from git repo).
-> >>>
-> >>> While at it fix incorrect "not used" comments.
-> >>>
-> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >>> ---
-> >>>  drivers/thermal/ti-soc-thermal/dra752-bandgap.h      |   68 ---
-> >>>  drivers/thermal/ti-soc-thermal/dra752-thermal-data.c |   65 ---
-> >>>  drivers/thermal/ti-soc-thermal/omap3-thermal-data.c  |    6 
-> >>>  drivers/thermal/ti-soc-thermal/omap4-thermal-data.c  |   10 
-> >>>  drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h    |   10 
-> >>>  drivers/thermal/ti-soc-thermal/omap5-thermal-data.c  |   46 --
-> >>>  drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h    |   41 --
-> >>>  drivers/thermal/ti-soc-thermal/ti-bandgap.c          |  370 -------------------
-> >>>  drivers/thermal/ti-soc-thermal/ti-bandgap.h          |   43 --
-> >>>  9 files changed, 5 insertions(+), 654 deletions(-)
-> >>
-> >> Gentle ping.
-> >>
-> >> It would be great to see this patch in v4.19.
-> > 
-> > Any objections on this removal / cleanup?
+> The values are still reversed for IMX7_RESET_PCIE_CTRL_APPS_EN.
 > 
-> Tested the patch on dra72-EVM.
-> cpufreq cooling works well.
-> 
-> Tested-by: Keerthy <j-keerthy@ti.com>
-> Acked-by: Keerthy <j-keerthy@ti.com>
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> ---
+>  drivers/reset/reset-imx7.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks, queueing this cleanup.
+I think Philipp will pick it up, so I will drop it from the PCI
+patchwork, if there is a problem please let me know.
 
+Thanks,
+Lorenzo
+
+> diff --git a/drivers/reset/reset-imx7.c b/drivers/reset/reset-imx7.c
+> index 4db177bc89bc..fdeac1946429 100644
+> --- a/drivers/reset/reset-imx7.c
+> +++ b/drivers/reset/reset-imx7.c
+> @@ -78,11 +78,11 @@ static struct imx7_src *to_imx7_src(struct reset_controller_dev *rcdev)
+>  static int imx7_reset_set(struct reset_controller_dev *rcdev,
+>  			  unsigned long id, bool assert)
+>  {
+>  	struct imx7_src *imx7src = to_imx7_src(rcdev);
+>  	const struct imx7_src_signal *signal = &imx7_src_signals[id];
+> -	unsigned int value = 0;
+> +	unsigned int value = assert ? signal->bit : 0;
+>  
+>  	switch (id) {
+>  	case IMX7_RESET_PCIEPHY:
+>  		/*
+>  		 * wait for more than 10us to release phy g_rst and
+> -- 
+> 2.17.0
 > 
-> Thanks for the clean up Bartalomiej!
-> > 
