@@ -1,19 +1,20 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v5 08/12] cpufreq: Add stub for cpufreq_update_policy()
-Date: Wed, 04 Jul 2018 12:41:21 +0200
-Message-ID: <2392356.ug1cyb9g3O@aspire.rjw.lan>
-References: <20180703234705.227473-1-mka@chromium.org> <20180703234705.227473-9-mka@chromium.org>
+Date: Wed, 4 Jul 2018 16:14:34 +0530
+Message-ID: <20180704104434.subvhwvnkkiv255c@vireshk-i7>
+References: <20180703234705.227473-1-mka@chromium.org>
+ <20180703234705.227473-9-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <20180703234705.227473-9-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 4, 2018 1:47:01 AM CEST Matthias Kaehlcke wrote:
+On 03-07-18, 16:47, Matthias Kaehlcke wrote:
 > cpufreq stubs out some functions when CONFIG_CPU_FREQ=n , but
 > cpufreq_update_policy() is not among them. The throttler driver
 > (https://patchwork.kernel.org/patch/10453351/) uses cpufreq as one
@@ -48,9 +49,8 @@ On Wednesday, July 4, 2018 1:47:01 AM CEST Matthias Kaehlcke wrote:
 >  #endif
 >  
 >  #ifdef CONFIG_CPU_FREQ_STAT
-> 
 
-I can take this patch if you want me to.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks,
-Rafael
+-- 
+viresh
