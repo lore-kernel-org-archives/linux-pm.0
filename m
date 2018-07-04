@@ -1,189 +1,174 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4] PM / devfreq: Fix devfreq_add_device() when drivers
- are built as modules.
-Date: Wed, 04 Jul 2018 10:06:46 +0900
-Message-ID: <5B3C1DA6.7040507@samsung.com>
-References: <CGME20180703132943epcas1p25b68c00ca1143d5eabcc2285c2ce27a0@epcas1p2.samsung.com>
-        <20180703132931.14389-1-enric.balletbo@collabora.com>
+Subject: Re: [PATCH v5 02/12] PM / devfreq: Fix handling of min/max_freq ==
+ 0
+Date: Wed, 04 Jul 2018 11:20:31 +0900
+Message-ID: <5B3C2EEF.4080309@samsung.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+        <CGME20180703235032epcas3p3443729f2230e205f1a0a4b03e6e8f62b@epcas3p3.samsung.com>
+        <20180703234705.227473-3-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180703132931.14389-1-enric.balletbo@collabora.com>
+In-reply-to: <20180703234705.227473-3-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+Hi Matthias,
 
-On 2018년 07월 03일 22:29, Enric Balletbo i Serra wrote:
-> When the devfreq driver and the governor driver are built as modules,
-> the call to devfreq_add_device() or governor_store() fails because the
-> governor driver is not loaded at the time the devfreq driver loads. The
-> devfreq driver has a build dependency on the governor but also should
-> have a runtime dependency. We need to make sure that the governor driver
-> is loaded before the devfreq driver.
+On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
+> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
+> devfreq device") initializes df->min/max_freq with the min/max OPP when
+> the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
+> available min/max frequency") adds df->scaling_min/max_freq and the
+> following to the frequency adjustment code:
 > 
-> This patch fixes this bug by adding a try_then_request_governor()
-> function. First tries to find the governor, and then, if it is not found,
-> it requests the module and tries again.
+>   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
 > 
-> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> With the current handling of min/max_freq this is incorrect:
+> 
+> Even though df->max_freq is now initialized to a value != 0 user space
+> can still set it to 0, in this case max_freq would be 0 instead of
+> df->scaling_max_freq as intended. In consequence the frequency adjustment
+> is not performed:
+> 
+>   if (max_freq && freq > max_freq) {
+> 	freq = max_freq;
+> 
+> To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
+> when the user passes a value of 0. This also prevents df->max_freq from
+> being set below the min OPP when df->min_freq is 0, and similar for
+> min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
+> checks for this case can be removed.
+> 
+> Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Reviewed-by: Brian Norris <briannorris@chromium.org>
 > ---
+> Changes in v5:
+> - none
 > 
 > Changes in v4:
-> - Kept "locked" devfreq_list from the return of find_devfreq_governor() to
->   the unlock of governor_store(). Requested by MyungJoo Ham.
+> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
 > 
 > Changes in v3:
-> - Remove unneded change in dev_err message.
-> - Fix err returned value in case to not find the governor.
+> - none
 > 
 > Changes in v2:
-> - Add a new function to request the module and call that function from
->   devfreq_add_device and governor_store.
-> 
->  drivers/devfreq/devfreq.c | 53 ++++++++++++++++++++++++++++++++++-----
->  1 file changed, 47 insertions(+), 6 deletions(-)
+> - handle freq tables sorted in ascending and descending order in
+>   min/max_freq_store()
+> - use same order for conditional statements in min/max_freq_store()
+> ---
+>  drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
+>  1 file changed, 30 insertions(+), 12 deletions(-)
 > 
 > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 0b5b3abe054e..4ea6b19879a1 100644
+> index 0057ef5b0a98..6f604f8b2b81 100644
 > --- a/drivers/devfreq/devfreq.c
 > +++ b/drivers/devfreq/devfreq.c
-> @@ -11,6 +11,7 @@
->   */
+> @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
+>  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+>  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
 >  
->  #include <linux/kernel.h>
-> +#include <linux/kmod.h>
->  #include <linux/sched.h>
->  #include <linux/errno.h>
->  #include <linux/err.h>
-> @@ -221,6 +222,46 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
->  	return ERR_PTR(-ENODEV);
->  }
->  
-> +/**
-> + * try_then_request_governor() - Try to find the governor and request the
-> + *                               module if is not found.
-> + * @name:	name of the governor
-
-Usually, devfreq used 'governor_name' indicating the name of governor.
-you better to use 'governor_name' instead of 'name' for more readability.
-
-> + *
-> + * Search the list of devfreq governors and request the module and try again
-> + * if is not found. This can happen when both drivers (the governor driver
-> + * and the driver that call devfreq_add_device) are built as modules.
-> + * devfreq_list_lock should be held by the caller.
-> + *
-> + * Return: The matched governor's pointer.
-
-Usually, devfreq.c didn;t use the 'Return: ...'. So, you better to explain
-what is returned from this function with function description.
-
-> + */
-> +static struct devfreq_governor *try_then_request_governor(const char *name)
-
-ditto. (name -> governor_name)
-
-> +{
-> +	struct devfreq_governor *governor;
-> +	int err = 0;
-
-You have to check whether governor name is NULL or not.
-
-	if (IS_ERR_OR_NULL(name)) {                                             
-		pr_err("DEVFREQ: %s: Invalid parameters\n", __func__);          
-		return ERR_PTR(-EINVAL);
-	}
-
-> +
-> +	WARN(!mutex_is_locked(&devfreq_list_lock),
-> +	     "devfreq_list_lock must be locked.");
-> +
-> +	governor = find_devfreq_governor(name);
-> +	if (IS_ERR(governor)) {
-> +		mutex_unlock(&devfreq_list_lock);
-> +
-> +		if (!strncmp(name, DEVFREQ_GOV_SIMPLE_ONDEMAND,
-> +			     DEVFREQ_NAME_LEN))
-> +			err = request_module("governor_%s", "simpleondemand");
-> +		else
-> +			err = request_module("governor_%s", name);
-> +		if (err)
-> +			return NULL;
-
-When error happen, you unlock the mutex. If failed to request module,
-you should restore the previous state. Please mutex_lock(&devfreq_list_lock)
-before return.
-
-> +
-> +		mutex_lock(&devfreq_list_lock);
-> +
-> +		governor = find_devfreq_governor(name);
-> +	}
-> +
-> +	return governor;
-> +}
-> +
->  static int devfreq_notify_transition(struct devfreq *devfreq,
->  		struct devfreq_freqs *freqs, unsigned int state)
->  {
-> @@ -643,11 +684,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	srcu_init_notifier_head(&devfreq->transition_notifier_list);
->  
->  	mutex_unlock(&devfreq->lock);
-> -
-
-This change is not related to this patch.
-
->  	mutex_lock(&devfreq_list_lock);
-> -	list_add(&devfreq->node, &devfreq_list);
->  
-> -	governor = find_devfreq_governor(devfreq->governor_name);
-> +	governor = try_then_request_governor(devfreq->governor_name);
->  	if (IS_ERR(governor)) {
->  		dev_err(dev, "%s: Unable to find governor for the device\n",
->  			__func__);
-> @@ -663,14 +702,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  			__func__);
->  		goto err_init;
+> -	if (min_freq && freq < min_freq) {
+> +	if (freq < min_freq) {
+>  		freq = min_freq;
+>  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
 >  	}
-> +
-> +	list_add(&devfreq->node, &devfreq_list);
-> +
->  	mutex_unlock(&devfreq_list_lock);
->  
->  	return devfreq;
->  
->  err_init:
-> -	list_del(&devfreq->node);
->  	mutex_unlock(&devfreq_list_lock);
-> -
+> -	if (max_freq && freq > max_freq) {
+> +	if (freq > max_freq) {
+>  		freq = max_freq;
+>  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+>  	}
+> @@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+>  {
+>  	struct devfreq *df = to_devfreq(dev);
+>  	unsigned long value;
+> +	unsigned long *freq_table;
 
-This change is not related to this patch.
+You can move 'freq_table' under 'else' statement.
 
->  	device_unregister(&devfreq->dev);
->  err_dev:
->  	if (devfreq)
-> @@ -989,7 +1029,8 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	int ret;
+> -	unsigned long max;
+>  
+>  	ret = sscanf(buf, "%lu", &value);
+>  	if (ret != 1)
 >  		return -EINVAL;
 >  
->  	mutex_lock(&devfreq_list_lock);
-> -	governor = find_devfreq_governor(str_governor);
+>  	mutex_lock(&df->lock);
+> -	max = df->max_freq;
+> -	if (value && max && value > max) {
+> -		ret = -EINVAL;
+> -		goto unlock;
 > +
+> +	if (value) {
+> +		if (value > df->max_freq) {
+> +			ret = -EINVAL;
+> +			goto unlock;
+> +		}
+> +	} else {
+> +		freq_table = df->profile->freq_table;
+> +		/* typical order is ascending, some drivers use descending */
 
-Don't need to add the blank line. It is enough to change the function
-from find_devfreq_governor to try_then_request_governor.
+You better to explain what is doing of following code.
+How about modifying it as following?
 
-> +	governor = try_then_request_governor(str_governor);
->  	if (IS_ERR(governor)) {
->  		ret = PTR_ERR(governor);
->  		goto out;
+		/* Get minimum frequency according to sorting way */
+
+> +		if (freq_table[0] < freq_table[df->profile->max_state - 1])
+> +			value = freq_table[0];
+> +		else
+> +			value = freq_table[df->profile->max_state - 1];
+>  	}
+>  
+>  	df->min_freq = value;
+> @@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+>  {
+>  	struct devfreq *df = to_devfreq(dev);
+>  	unsigned long value;
+> +	unsigned long *freq_table;
+
+ditto. You can move 'freq_table' under 'else' statement.
+
+>  	int ret;
+> -	unsigned long min;
+>  
+>  	ret = sscanf(buf, "%lu", &value);
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+>  	mutex_lock(&df->lock);
+> -	min = df->min_freq;
+> -	if (value && min && value < min) {
+> -		ret = -EINVAL;
+> -		goto unlock;
+> +
+> +	if (value) {
+> +		if (value < df->min_freq) {
+> +			ret = -EINVAL;
+> +			goto unlock;
+> +		}
+> +	} else {
+> +		freq_table = df->profile->freq_table;
+> +		/* typical order is ascending, some drivers use descending */
+
+ditto.
+		/* Get maximum frequency according to sorting way */
+
+> +		if (freq_table[0] < freq_table[df->profile->max_state - 1])
+> +			value = freq_table[df->profile->max_state - 1];
+> +		else
+> +			value = freq_table[0];
+>  	}
+>  
+>  	df->max_freq = value;
 > 
 
+If you agree my comment and modify this patch according to my comment,
+feel free to add my review tag.
+- Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
 -- 
 Best Regards,
