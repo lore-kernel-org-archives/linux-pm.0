@@ -1,74 +1,75 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: droid 4: connection refused from voltage_now
-Date: Wed, 4 Jul 2018 21:52:38 +0200
-Message-ID: <20180704195238.GA13932@amd>
-References: <20180704171156.GA3158@amd>
- <20180704194556.GA9189@lenoch>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
+ supplier unbind
+Date: Thu, 5 Jul 2018 01:19:04 +0200
+Message-ID: <CAJZ5v0jb2075fcabZDxPpE+7Bo=NpcFm7kEY5QfO-ZbcfGkDyw@mail.gmail.com>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
+ <20180627125056.12851-2-vivek.gautam@codeaurora.org> <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
+ <2991909.NMIP74eIIJ@aspire.rjw.lan> <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="2oS5YaxWCcQjTEyO"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180704194556.GA9189@lenoch>
+In-Reply-To: <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ladislav Michl <ladis@linux-mips.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, sre@kernel.org, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
+To: Vivek Gautam <vivek.gautam@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Jul 4, 2018 at 8:09 PM, Vivek Gautam
+<vivek.gautam@codeaurora.org> wrote:
+>
+>
+> On 7/4/2018 4:14 PM, Rafael J. Wysocki wrote:
+>>
+>> On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
+>>>
+>>> Adding Ulf and Marek.
+>>>
+>>> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
+>>>>
+>>>> Add a flag to autoremove the device links on supplier driver
+>>>> unbind. This obviates the need to explicitly delete the link
+>>>> in the remove path.
+>>>> We remove these links only when the supplier's link to its
+>>>> consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
+>>>>
+>>>> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+>>>> Suggested-by: Lukas Wunner <lukas@wunner.de>
+>>>> Cc: Jonathan Corbet <corbet@lwn.net>
+>>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>>> Cc: Robin Murphy <robin.murphy@arm.com>
+>>>> Cc: linux-doc@vger.kernel.org
+>>>> Cc: linux-arm-kernel@lists.infradead.org
+>>>> Cc: linux-pm@vger.kernel.org
+>>>> Cc: linux-arm-msm@vger.kernel.org
+>>>> ---
+>>>
+>>> Hi Rafael, et al.
+>>>
+>>> Gentle ping.
+>>> Do you have comments on this series. I would really like to conclude
+>>> these
+>>> device link additions sooner, and get things moving on the long awaited
+>>> arm-smmu clock/runtime support series.
+>>>
+>>> Thanks again for reviewing these patches.
+>>
+>> They are fine by me.
+>>
+>> I can queue them up for 4.19 if no one has objections (Greg in
+>> particular).
+>
+>
+> Hi Rafael,
+>
+> I will resubmit these 2 patches as part of the arm-smmu series, as one
+> of the patch in the series depends on addition of
+> DL_FLAG_AUTOREMOVE_SUPPLIER.
+> So these 2 patches and arm-smmu series should go together.
+> Can you please consider givnig your Ack?
 
---2oS5YaxWCcQjTEyO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I would prefer to apply them myself to be honest and put them on an
+public git branch for you to pull from.
 
-On Wed 2018-07-04 21:45:56, Ladislav Michl wrote:
-> On Wed, Jul 04, 2018 at 07:11:56PM +0200, Pavel Machek wrote:
-> > Hi!
-> >=20
-> > I started to use droid 4 as my primary phone... so I have battery
-> > monitor running for hours... Once every few days it dies with
-> > "connection refused" error reading battery's "voltage_now". I restart
-> > it and it continues working...
->=20
-> Ha! What exactly that "connection refused" means? Is it ECONNREFUSED (111=
-)?
-> I have custom at91 based board here with few custom power supply drivers
-> and it sometimes ends with voltage_now of my driver being unreadable.
-> (I modified userspace code and waiting what's in errno in case
-> reading fails)
-
-It seems to be -110:
-Jul  4 11:48:29 devuan kernel: [ 2908.602600] cpcap_adc cpcap_adc.0:
-error reading ADC: -110
-Jul  4 11:48:29 devuan kernel: [ 2908.608123] cpcap_battery
-cpcap_battery.0: cpcap_battery_get_current failed: -110
-Jul  4 11:48:30 devuan kernel: [ 2908.922576] cpcap_adc cpcap_adc.0:
-error reading ADC: -110
-Jul  4 11:48:30 devuan kernel: [ 2908.928100] cpcap_battery
-cpcap_battery.0: cpcap_charger_battery_temperature failed: -110
-Jul  4 11:48:30 devuan kernel: [ 2908.936340] power_supply battery:
-driver failed to report `voltage_now' property: -110
-
-> Adding linux-pm@vger.kernel.org as it seems to be subsytem, specific.
-
-Good idea. Thanks!
-									pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---2oS5YaxWCcQjTEyO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAls9JYYACgkQMOfwapXb+vIBdwCfbj4nu3YHaW3iY6DJSonTbMSi
-eN4AoK8RudLJUGz1umI+ETLc1jelA/xn
-=6BUt
------END PGP SIGNATURE-----
-
---2oS5YaxWCcQjTEyO--
+Thanks,
+Rafael
