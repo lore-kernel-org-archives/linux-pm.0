@@ -1,165 +1,211 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v4 3/6] thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
-Date: Wed, 4 Jul 2018 18:08:27 +0530
-Message-ID: <CAP245DUG=wXApk6BVmaaUyTRBDaiPc0x4EDh3KS2ZfMxPQowkg@mail.gmail.com>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
- <7e9beaa3218b1c46ea6a7399c5978c1538fce261.1530533998.git.amit.kucheria@linaro.org>
- <20180702185530.GD2050@tuxbook-pro>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] device core: Rename flag AUTOREMOVE to AUTOREMOVE_CONSUMER
+Date: Wed, 4 Jul 2018 14:55:25 +0200
+Message-ID: <CAPDyKFru0zL4prQ9Vk1RAM-73PW8rTkseAGGwxqpZuTz+Fhczw@mail.gmail.com>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="000000000000bc395105702bb51a"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180702185530.GD2050@tuxbook-pro>
+In-Reply-To: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Vivek Gautam <vivek.gautam@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Jonathan Hunter <jonathanh@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-tegra@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---000000000000bc395105702bb51a
-Content-Type: text/plain; charset="UTF-8"
-
-On Tue, Jul 3, 2018 at 12:23 AM Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
+On 27 June 2018 at 14:50, Vivek Gautam <vivek.gautam@codeaurora.org> wrote:
+> Now that we want to add another flag to autoremove the device link
+> on supplier unbind, it's fair to rename the existing flag from
+> DL_FLAG_AUTOREMOVE to DL_FLAG_AUTOREMOVE_CONSUMER so that we can
+> add similar flag for supplier later.
+> And, while we are touching device.h, fix a doc build warning.
 >
-> On Mon 02 Jul 05:44 PDT 2018, Amit Kucheria wrote:
+> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> Cc: Lukas Wunner <lukas@wunner.de>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: Jonathan Hunter <jonathanh@nvidia.com>
+> Cc: Philipp Zabel <p.zabel@pengutronix.de>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Robin Murphy <robin.murphy@arm.com>
+> Cc: linux-doc@vger.kernel.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-tegra@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-arm-msm@vger.kernel.org
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+>  Documentation/driver-api/device_link.rst |  8 ++++----
+>  drivers/base/core.c                      | 15 ++++++++-------
+>  drivers/gpu/drm/tegra/dc.c               |  2 +-
+>  drivers/gpu/ipu-v3/ipu-pre.c             |  3 ++-
+>  drivers/gpu/ipu-v3/ipu-prg.c             |  3 ++-
+>  drivers/soc/imx/gpc.c                    |  2 +-
+>  include/linux/device.h                   | 12 ++++++------
+>  7 files changed, 24 insertions(+), 21 deletions(-)
 >
-> > The TSENS block inside the 8996 is internally classified as version 2 of
-> > the IP. Several other SoC families use this block and can share this code.
-> >
-> > We rename get_temp() to reflect that it can be used across the v2 family.
-> >
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > ---
-> >  drivers/thermal/qcom/Makefile                     |  2 +-
-> >  drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} | 26 ++++++++---------------
-> >  2 files changed, 10 insertions(+), 18 deletions(-)
-> >  rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (66%)
-> >
-> > diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-> > index 2cc2193..a821929 100644
-> > --- a/drivers/thermal/qcom/Makefile
-> > +++ b/drivers/thermal/qcom/Makefile
-> > @@ -1,2 +1,2 @@
-> >  obj-$(CONFIG_QCOM_TSENS)     += qcom_tsens.o
-> > -qcom_tsens-y                 += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-8996.o
-> > +qcom_tsens-y                 += tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o tsens-v2.o
-> > diff --git a/drivers/thermal/qcom/tsens-8996.c b/drivers/thermal/qcom/tsens-v2.c
-> > similarity index 66%
-> > rename from drivers/thermal/qcom/tsens-8996.c
-> > rename to drivers/thermal/qcom/tsens-v2.c
-> > index e1f7781..2eca7ff 100644
-> > --- a/drivers/thermal/qcom/tsens-8996.c
-> > +++ b/drivers/thermal/qcom/tsens-v2.c
-> > @@ -1,27 +1,18 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> >  /*
-> >   * Copyright (c) 2015, The Linux Foundation. All rights reserved.
-> > - *
-> > - * This program is free software; you can redistribute it and/or modify
-> > - * it under the terms of the GNU General Public License version 2 and
-> > - * only version 2 as published by the Free Software Foundation.
-> > - *
-> > - * This program is distributed in the hope that it will be useful,
-> > - * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > - * GNU General Public License for more details.
-> > - *
-> > + * Copyright (c) 2018, Linaro Limited
-> >   */
-> >
-> > -#include <linux/platform_device.h>
-> >  #include <linux/regmap.h>
-> >  #include "tsens.h"
-> >
-> > -#define STATUS_OFFSET        0x10a0
-> > -#define LAST_TEMP_MASK       0xfff
-> > +#define STATUS_OFFSET                0xa0
+> diff --git a/Documentation/driver-api/device_link.rst b/Documentation/driver-api/device_link.rst
+> index 70e328e16aad..a005b904a264 100644
+> --- a/Documentation/driver-api/device_link.rst
+> +++ b/Documentation/driver-api/device_link.rst
+> @@ -81,10 +81,10 @@ integration is desired.
+>  Two other flags are specifically targeted at use cases where the device
+>  link is added from the consumer's ``->probe`` callback:  ``DL_FLAG_RPM_ACTIVE``
+>  can be specified to runtime resume the supplier upon addition of the
+> -device link.  ``DL_FLAG_AUTOREMOVE`` causes the device link to be automatically
+> -purged when the consumer fails to probe or later unbinds.  This obviates
+> -the need to explicitly delete the link in the ``->remove`` callback or in
+> -the error path of the ``->probe`` callback.
+> +device link.  ``DL_FLAG_AUTOREMOVE_CONSUMER`` causes the device link to be
+> +automatically purged when the consumer fails to probe or later unbinds.
+> +This obviates the need to explicitly delete the link in the ``->remove``
+> +callback or in the error path of the ``->probe`` callback.
 >
-> This is not backwards compatible with present day dts files, you need to
-> keep this effectively 0x10a0 when the memory region isn't split in two.
-
-Argh!! Good catch.
-
-> Perhaps you can just offset the ioremap by 4k when there's only one
-> region?
-
-That'll cause problems when we want to access some features exposed in
-the other register bank through the common get_temp_tsens_v2 function.
-The SW reset bit is in there that I'd like to add support for, for
-example.
-
-I can see a few other ways to detect this at runtime. None of them
-look pretty but option 3 looks least ugly at least to me. Any
-preferences?
-
-1. Don't try to combine get_temp for 8996 with other v2 platforms.
-This would mean retaining a separate ops_8996, pointing to a custom
-get_temp(). We end up with two copies of the function.
-
-2. In get_temp_tsens_v2(), check for number of regions but this has an
-overhead for each temperature read.
-
-     struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
-     if (op->num_resources > 1)
-        status_offset = 0xa0;
-     else
-        status_offset = 0x10a0;
-     Read temperature(status_offset);
-
-3. Restrict to init time (ideal) by storing the status_offset to
-struct tsens_device. This is then used directly in
-get_temp_generic_v2() to determine the actual address. This should
-work for 8996, 8916 and 8974 which all have a single memory region
-iomapp'ed. The last two don't even need this value since they have
-their own get_temp functions. See diff attached.
-
-I have to ask: Are there really devices in the field that rely on the
-existing *upstream* code and DT? If not, could we consider deprecating
-the "qcom,msm8996-tsens" property immediately or at least mark it for
-future removal?
-
-Regards,
-Amit
-
---000000000000bc395105702bb51a
-Content-Type: text/plain; charset="US-ASCII"; name="3.diff.txt"
-Content-Disposition: attachment; filename="3.diff.txt"
-Content-Transfer-Encoding: base64
-Content-ID: <f_jj73xf8o0>
-X-Attachment-Id: f_jj73xf8o0
-
-ZGlmZiAtLWdpdCBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLWNvbW1vbi5jIHcvZHJpdmVy
-cy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKaW5kZXggYjE0NDlhZC4uNzk4Mjg2NyAxMDA2
-NDQKLS0tIGkvZHJpdmVycy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKKysrIHcvZHJpdmVy
-cy90aGVybWFsL3Fjb20vdHNlbnMtY29tbW9uLmMKQEAgLTE2LDYgKzE2LDcgQEAKICNpbmNsdWRl
-IDxsaW51eC9pby5oPgogI2luY2x1ZGUgPGxpbnV4L252bWVtLWNvbnN1bWVyLmg+CiAjaW5jbHVk
-ZSA8bGludXgvb2ZfYWRkcmVzcy5oPgorI2luY2x1ZGUgPGxpbnV4L29mX3BsYXRmb3JtLmg+CiAj
-aW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+CiAjaW5jbHVkZSA8bGludXgvcmVnbWFw
-Lmg+CiAjaW5jbHVkZSAidHNlbnMuaCIKQEAgLTEyNiw2ICsxMjcsMTIgQEAgc3RhdGljIGNvbnN0
-IHN0cnVjdCByZWdtYXBfY29uZmlnIHRzZW5zX2NvbmZpZyA9IHsKIGludCBfX2luaXQgaW5pdF9j
-b21tb24oc3RydWN0IHRzZW5zX2RldmljZSAqdG1kZXYpCiB7CiAJdm9pZCBfX2lvbWVtICpiYXNl
-OworCXN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKm9wID0gb2ZfZmluZF9kZXZpY2VfYnlfbm9kZSh0
-bWRldi0+ZGV2LT5vZl9ub2RlKTsKKworCWlmIChvcC0+bnVtX3Jlc291cmNlcyA+IDEpCisJCXRt
-ZGV2LT5zdGF0dXNfb2Zmc2V0ID0gMHhhMDsKKwllbHNlCisJCXRtZGV2LT5zdGF0dXNfb2Zmc2V0
-ID0gMHgxMGEwOwogCiAJYmFzZSA9IG9mX2lvbWFwKHRtZGV2LT5kZXYtPm9mX25vZGUsIDApOwog
-CWlmICghYmFzZSkKZGlmZiAtLWdpdCBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLXYyLmMg
-dy9kcml2ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy12Mi5jCmluZGV4IDA0NzNmMzMuLjg0MDAyOTAg
-MTAwNjQ0Ci0tLSBpL2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5zLXYyLmMKKysrIHcvZHJpdmVy
-cy90aGVybWFsL3Fjb20vdHNlbnMtdjIuYwpAQCAtMTAsNyArMTAsNiBAQAogI2RlZmluZSBUUkRZ
-X09GRlNFVCAgICAgICAgICAgIDB4ZTQKICNkZWZpbmUgVFJEWV9SRUFEWV9CSVQgICAgICAgICBC
-SVQoMCkKIAotI2RlZmluZSBTVEFUVVNfT0ZGU0VUCQkweGEwCiAjZGVmaW5lIExBU1RfVEVNUF9N
-QVNLCQkweGZmZgogI2RlZmluZSBTVEFUVVNfVkFMSURfQklUCUJJVCgyMSkKICNkZWZpbmUgQ09E
-RV9TSUdOX0JJVAkJQklUKDExKQpAQCAtMjgsNyArMjcsNyBAQCBzdGF0aWMgaW50IGdldF90ZW1w
-X3RzZW5zX3YyKHN0cnVjdCB0c2Vuc19kZXZpY2UgKnRtZGV2LCBpbnQgaWQsIGludCAqdGVtcCkK
-IAlpZiAoY29kZSAmIFRSRFlfUkVBRFlfQklUKQogCQlyZXR1cm4gLUVOT0RBVEE7CiAKLQlzZW5z
-b3JfYWRkciA9IFNUQVRVU19PRkZTRVQgKyBzLT5od19pZCAqIDQ7CisJc2Vuc29yX2FkZHIgPSB0
-bWRldi0+c3RhdHVzX29mZnNldCArIHMtPmh3X2lkICogNDsKIAlyZXQgPSByZWdtYXBfcmVhZCh0
-bWRldi0+bWFwLCBzZW5zb3JfYWRkciwgJmNvZGUpOwogCWlmIChyZXQpCiAJCXJldHVybiByZXQ7
-CmRpZmYgLS1naXQgaS9kcml2ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy5oIHcvZHJpdmVycy90aGVy
-bWFsL3Fjb20vdHNlbnMuaAppbmRleCA2OTIxMmNiLi44YTQyYTcwIDEwMDY0NAotLS0gaS9kcml2
-ZXJzL3RoZXJtYWwvcWNvbS90c2Vucy5oCisrKyB3L2RyaXZlcnMvdGhlcm1hbC9xY29tL3RzZW5z
-LmgKQEAgLTc3LDYgKzc3LDcgQEAgc3RydWN0IHRzZW5zX2RldmljZSB7CiAJc3RydWN0IGRldmlj
-ZQkJCSpkZXY7CiAJdTMyCQkJCW51bV9zZW5zb3JzOwogCXN0cnVjdCByZWdtYXAJCQkqbWFwOwor
-CXUzMgkJCQlzdGF0dXNfb2Zmc2V0OwogCXN0cnVjdCB0c2Vuc19jb250ZXh0CQljdHg7CiAJY29u
-c3Qgc3RydWN0IHRzZW5zX29wcwkJKm9wczsKIAlzdHJ1Y3QgdHNlbnNfc2Vuc29yCQlzZW5zb3Jb
-MF07Cg==
---000000000000bc395105702bb51a--
+>  Limitations
+>  ===========
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index df3e1a44707a..14c1e3151e08 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -178,10 +178,10 @@ void device_pm_move_to_tail(struct device *dev)
+>   * of the link.  If DL_FLAG_PM_RUNTIME is not set, DL_FLAG_RPM_ACTIVE will be
+>   * ignored.
+>   *
+> - * If the DL_FLAG_AUTOREMOVE is set, the link will be removed automatically
+> - * when the consumer device driver unbinds from it.  The combination of both
+> - * DL_FLAG_AUTOREMOVE and DL_FLAG_STATELESS set is invalid and will cause NULL
+> - * to be returned.
+> + * If the DL_FLAG_AUTOREMOVE_CONSUMER is set, the link will be removed
+> + * automatically when the consumer device driver unbinds from it.
+> + * The combination of both DL_FLAG_AUTOREMOVE_CONSUMER and DL_FLAG_STATELESS
+> + * set is invalid and will cause NULL to be returned.
+>   *
+>   * A side effect of the link creation is re-ordering of dpm_list and the
+>   * devices_kset list by moving the consumer device and all devices depending
+> @@ -198,7 +198,8 @@ struct device_link *device_link_add(struct device *consumer,
+>         struct device_link *link;
+>
+>         if (!consumer || !supplier ||
+> -           ((flags & DL_FLAG_STATELESS) && (flags & DL_FLAG_AUTOREMOVE)))
+> +           ((flags & DL_FLAG_STATELESS) &&
+> +            (flags & DL_FLAG_AUTOREMOVE_CONSUMER)))
+>                 return NULL;
+>
+>         device_links_write_lock();
+> @@ -479,7 +480,7 @@ static void __device_links_no_driver(struct device *dev)
+>                 if (link->flags & DL_FLAG_STATELESS)
+>                         continue;
+>
+> -               if (link->flags & DL_FLAG_AUTOREMOVE)
+> +               if (link->flags & DL_FLAG_AUTOREMOVE_CONSUMER)
+>                         kref_put(&link->kref, __device_link_del);
+>                 else if (link->status != DL_STATE_SUPPLIER_UNBIND)
+>                         WRITE_ONCE(link->status, DL_STATE_AVAILABLE);
+> @@ -515,7 +516,7 @@ void device_links_driver_cleanup(struct device *dev)
+>                 if (link->flags & DL_FLAG_STATELESS)
+>                         continue;
+>
+> -               WARN_ON(link->flags & DL_FLAG_AUTOREMOVE);
+> +               WARN_ON(link->flags & DL_FLAG_AUTOREMOVE_CONSUMER);
+>                 WARN_ON(link->status != DL_STATE_SUPPLIER_UNBIND);
+>                 WRITE_ONCE(link->status, DL_STATE_DORMANT);
+>         }
+> diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+> index c3afe7b2237e..965088afcfad 100644
+> --- a/drivers/gpu/drm/tegra/dc.c
+> +++ b/drivers/gpu/drm/tegra/dc.c
+> @@ -2312,7 +2312,7 @@ static int tegra_dc_couple(struct tegra_dc *dc)
+>          * POWER_CONTROL registers during CRTC enabling.
+>          */
+>         if (dc->soc->coupled_pm && dc->pipe == 1) {
+> -               u32 flags = DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE;
+> +               u32 flags = DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_CONSUMER;
+>                 struct device_link *link;
+>                 struct device *partner;
+>
+> diff --git a/drivers/gpu/ipu-v3/ipu-pre.c b/drivers/gpu/ipu-v3/ipu-pre.c
+> index 0f70e8847540..2f8db9d62551 100644
+> --- a/drivers/gpu/ipu-v3/ipu-pre.c
+> +++ b/drivers/gpu/ipu-v3/ipu-pre.c
+> @@ -128,7 +128,8 @@ ipu_pre_lookup_by_phandle(struct device *dev, const char *name, int index)
+>         list_for_each_entry(pre, &ipu_pre_list, list) {
+>                 if (pre_node == pre->dev->of_node) {
+>                         mutex_unlock(&ipu_pre_list_mutex);
+> -                       device_link_add(dev, pre->dev, DL_FLAG_AUTOREMOVE);
+> +                       device_link_add(dev, pre->dev,
+> +                                       DL_FLAG_AUTOREMOVE_CONSUMER);
+>                         of_node_put(pre_node);
+>                         return pre;
+>                 }
+> diff --git a/drivers/gpu/ipu-v3/ipu-prg.c b/drivers/gpu/ipu-v3/ipu-prg.c
+> index 83f9dd934a5d..38a3a9764e49 100644
+> --- a/drivers/gpu/ipu-v3/ipu-prg.c
+> +++ b/drivers/gpu/ipu-v3/ipu-prg.c
+> @@ -100,7 +100,8 @@ ipu_prg_lookup_by_phandle(struct device *dev, const char *name, int ipu_id)
+>         list_for_each_entry(prg, &ipu_prg_list, list) {
+>                 if (prg_node == prg->dev->of_node) {
+>                         mutex_unlock(&ipu_prg_list_mutex);
+> -                       device_link_add(dev, prg->dev, DL_FLAG_AUTOREMOVE);
+> +                       device_link_add(dev, prg->dev,
+> +                                       DL_FLAG_AUTOREMOVE_CONSUMER);
+>                         prg->id = ipu_id;
+>                         of_node_put(prg_node);
+>                         return prg;
+> diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
+> index 32f0748fd067..aa9e65bc965e 100644
+> --- a/drivers/soc/imx/gpc.c
+> +++ b/drivers/soc/imx/gpc.c
+> @@ -202,7 +202,7 @@ static int imx_pgc_power_domain_probe(struct platform_device *pdev)
+>                         goto genpd_err;
+>         }
+>
+> -       device_link_add(dev, dev->parent, DL_FLAG_AUTOREMOVE);
+> +       device_link_add(dev, dev->parent, DL_FLAG_AUTOREMOVE_CONSUMER);
+>
+>         return 0;
+>
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 055a69dbcd18..3929805cdd59 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -90,7 +90,7 @@ extern void bus_remove_file(struct bus_type *, struct bus_attribute *);
+>   * @num_vf:    Called to find out how many virtual functions a device on this
+>   *             bus supports.
+>   * @dma_configure:     Called to setup DMA configuration on a device on
+> -                       this bus.
+> + *                     this bus.
+>   * @pm:                Power management operations of this bus, callback the specific
+>   *             device driver's pm-ops.
+>   * @iommu_ops:  IOMMU specific operations for this bus, used to attach IOMMU
+> @@ -784,14 +784,14 @@ enum device_link_state {
+>   * Device link flags.
+>   *
+>   * STATELESS: The core won't track the presence of supplier/consumer drivers.
+> - * AUTOREMOVE: Remove this link automatically on consumer driver unbind.
+> + * AUTOREMOVE_CONSUMER: Remove the link automatically on consumer driver unbind.
+>   * PM_RUNTIME: If set, the runtime PM framework will use this link.
+>   * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
+>   */
+> -#define DL_FLAG_STATELESS      BIT(0)
+> -#define DL_FLAG_AUTOREMOVE     BIT(1)
+> -#define DL_FLAG_PM_RUNTIME     BIT(2)
+> -#define DL_FLAG_RPM_ACTIVE     BIT(3)
+> +#define DL_FLAG_STATELESS              BIT(0)
+> +#define DL_FLAG_AUTOREMOVE_CONSUMER    BIT(1)
+> +#define DL_FLAG_PM_RUNTIME             BIT(2)
+> +#define DL_FLAG_RPM_ACTIVE             BIT(3)
+>
+>  /**
+>   * struct device_link - Device link representation.
+> --
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> of Code Aurora Forum, hosted by The Linux Foundation
+>
