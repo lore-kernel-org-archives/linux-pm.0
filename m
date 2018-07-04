@@ -1,56 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 08/12] cpufreq: Add stub for cpufreq_update_policy()
-Date: Wed, 4 Jul 2018 16:14:34 +0530
-Message-ID: <20180704104434.subvhwvnkkiv255c@vireshk-i7>
-References: <20180703234705.227473-1-mka@chromium.org>
- <20180703234705.227473-9-mka@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on supplier unbind
+Date: Wed, 04 Jul 2018 12:44:20 +0200
+Message-ID: <2991909.NMIP74eIIJ@aspire.rjw.lan>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org> <20180627125056.12851-2-vivek.gautam@codeaurora.org> <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180703234705.227473-9-mka@chromium.org>
+In-Reply-To: <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Vivek Gautam <vivek.gautam@codeaurora.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 03-07-18, 16:47, Matthias Kaehlcke wrote:
-> cpufreq stubs out some functions when CONFIG_CPU_FREQ=n , but
-> cpufreq_update_policy() is not among them. The throttler driver
-> (https://patchwork.kernel.org/patch/10453351/) uses cpufreq as one
-> possible throttling mechanism, but it can still be useful without
-> cpufreq. Stubbing out cpufreq_update_policy() allows the throttler
-> driver to be built without ugly #ifdef'ery when cpufreq is disabled.
+On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
+> Adding Ulf and Marek.
 > 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Reviewed-by: Brian Norris <briannorris@chromium.org>
-> ---
-> Changes in v5:
-> - none
+> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
+> > Add a flag to autoremove the device links on supplier driver
+> > unbind. This obviates the need to explicitly delete the link
+> > in the remove path.
+> > We remove these links only when the supplier's link to its
+> > consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
+> >
+> > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> > Suggested-by: Lukas Wunner <lukas@wunner.de>
+> > Cc: Jonathan Corbet <corbet@lwn.net>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Robin Murphy <robin.murphy@arm.com>
+> > Cc: linux-doc@vger.kernel.org
+> > Cc: linux-arm-kernel@lists.infradead.org
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-arm-msm@vger.kernel.org
+> > ---
 > 
-> Changes in v4:
-> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+> Hi Rafael, et al.
 > 
-> Changes in v3:
-> - patch added to series
-> ---
->  include/linux/cpufreq.h | 1 +
->  1 file changed, 1 insertion(+)
+> Gentle ping.
+> Do you have comments on this series. I would really like to conclude these
+> device link additions sooner, and get things moving on the long awaited
+> arm-smmu clock/runtime support series.
 > 
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 882a9b9e34bc..dba8c4951e2e 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -210,6 +210,7 @@ static inline unsigned int cpufreq_quick_get_max(unsigned int cpu)
->  	return 0;
->  }
->  static inline void disable_cpufreq(void) { }
-> +static inline void cpufreq_update_policy(unsigned int cpu) { }
->  #endif
->  
->  #ifdef CONFIG_CPU_FREQ_STAT
+> Thanks again for reviewing these patches.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+They are fine by me.
 
--- 
-viresh
+I can queue them up for 4.19 if no one has objections (Greg in
+particular).
+
+Thanks,
+Rafael
