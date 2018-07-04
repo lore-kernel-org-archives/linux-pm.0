@@ -1,360 +1,108 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
-Date: Wed, 04 Jul 2018 15:41:46 +0900
-Message-ID: <5B3C6C2A.1070205@samsung.com>
-References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
-        <20180703234705.227473-6-mka@chromium.org>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
+ supplier unbind
+Date: Wed, 4 Jul 2018 12:46:20 +0530
+Message-ID: <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
+ <20180627125056.12851-2-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180703234705.227473-6-mka@chromium.org>
+In-Reply-To: <20180627125056.12851-2-vivek.gautam@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+Cc: Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Adding Ulf and Marek.
 
-Firstly,
-I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
-
-devfreq already used the OPP interface as default. It means that
-the outside of 'drivers/devfreq' can disable/enable the frequency
-such as drivers/thermal/devfreq_cooling.c. Also, when some device
-drivers disable/enable the specific frequency, the devfreq core
-consider them.
-
-So, devfreq doesn't need to devfreq_verify_within_limits() because
-already support some interface to change the minimum/maximum frequency
-of devfreq device. 
-
-In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
-to change the minimum/maximum frequency of cpu. some device driver cannot
-change the minimum/maximum frequency through OPP interface.
-
-But, in case of devfreq subsystem, as I explained already, devfreq support
-the OPP interface as default way. devfreq subsystem doesn't need to add
-other way to change the minimum/maximum frequency.
-
-
-Secondly,
-This patch send the 'struct devfreq_policy' instance as the data
-when sending the notification as following:
-
-	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
-			DEVFREQ_ADJUST, policy);
-
-But, I think that if devfreq core sends the 'struct devfreq_freq_limits'
-instance instead of 'struct devfreq_policy', it is enough.
-Because receiver of DEVFREQ_ADJUST just will use the min_freq/max_freq variables.
-
-So, I tried to find the cpufreq's case. The some device drivers using
-CPUFREQ_POLICY_NOTIFIER uses following variables of 'struct cpufreq_policy'.
-It means that receiver of CPUFREQ_POLICY_NOTIFIER don't need to other
-information/variables except for min/max frequency.
-
-- policy->min
-- policy->max
-- policy->cpuinfo.max_freq
-- policy->cpuinfo.min_freq
-- policy->cpu : not related to devfreq)
-- policy->related_cpus : not related to devfreq)
-
-- list of device drivers using CPUFREQ_POLICY_NOTIFIER (linux kernel is v4.18-rc1)
-$ grep -rn "CPUFREQ_POLICY_NOTIFIER" .
-./drivers/macintosh/windfarm_cpufreq_clamp.c
-./drivers/thermal/cpu_cooling.c
-./drivers/thermal/cpu_cooling.c
-./drivers/acpi/processor_thermal.c
-./drivers/acpi/processor_thermal.c
-./drivers/acpi/processor_perflib.c
-./drivers/acpi/processor_perflib.c
-./drivers/base/arch_topology.c
-./drivers/base/arch_topology.c
-./drivers/video/fbdev/sa1100fb.c
-./drivers/video/fbdev/pxafb.c
-./drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-./drivers/cpufreq/cpufreq.c
-./drivers/cpufreq/cpufreq.c
-./drivers/cpufreq/cpufreq.c
-./drivers/cpufreq/cpufreq.c
-
-
-On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
-> Policy notifiers are called before a frequency change and may narrow
-> the min/max frequency range in devfreq_policy, which is used to adjust
-> the target frequency if it is beyond this range.
-> 
-> Also add a few helpers:
->  - devfreq_verify_within_[dev_]limits()
->     - should be used by the notifiers for policy adjustments.
->  - dev_to_devfreq()
->     - lookup a devfreq strict from a device pointer
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Reviewed-by: Brian Norris <briannorris@chromium.org>
+On 6/27/2018 6:20 PM, Vivek Gautam wrote:
+> Add a flag to autoremove the device links on supplier driver
+> unbind. This obviates the need to explicitly delete the link
+> in the remove path.
+> We remove these links only when the supplier's link to its
+> consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
+>
+> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> Suggested-by: Lukas Wunner <lukas@wunner.de>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Robin Murphy <robin.murphy@arm.com>
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-arm-msm@vger.kernel.org
 > ---
-> Changes in v5:
-> - none
-> 
-> Changes in v4:
-> - Fixed typo in commit message: devfreg => devfreq
-> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
-> 
-> Changes in v3:
-> - devfreq.h: fixed misspelling of struct devfreq_policy
-> 
-> Changes in v2:
-> - performance, powersave and simpleondemand governors don't need changes
->   with "PM / devfreq: Don't adjust to user limits in governors"
-> - formatting fixes
-> ---
->  drivers/devfreq/devfreq.c | 48 ++++++++++++++++++++++-------
->  include/linux/devfreq.h   | 65 +++++++++++++++++++++++++++++++++++++++
->  2 files changed, 102 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 21604d6ae2b8..4cbaa7ad1972 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -72,6 +72,21 @@ static struct devfreq *find_device_devfreq(struct device *dev)
->  	return ERR_PTR(-ENODEV);
->  }
->  
-> +/**
-> + * dev_to_devfreq() - find devfreq struct using device pointer
-> + * @dev:	device pointer used to lookup device devfreq.
-> + */
-> +struct devfreq *dev_to_devfreq(struct device *dev)
-> +{
-> +	struct devfreq *devfreq;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	devfreq = find_device_devfreq(dev);
-> +	mutex_unlock(&devfreq_list_lock);
-> +
-> +	return devfreq;
-> +}
-> +
->  static unsigned long find_available_min_freq(struct devfreq *devfreq)
->  {
->  	struct dev_pm_opp *opp;
-> @@ -269,20 +284,21 @@ int update_devfreq(struct devfreq *devfreq)
->  	if (!policy->governor)
->  		return -EINVAL;
->  
-> +	policy->min = policy->devinfo.min_freq;
-> +	policy->max = policy->devinfo.max_freq;
 
-Why don't you consider 'policy->user.max/min_freq' as following?
-As I already commented, I think that 'struct devfreq_freq_limits' is enough
-instead of 'struct devfreq_policy'.
+Hi Rafael, et al.
 
-	->max_freq = MIN(policy->devinfo.max_freq, policy->user.max_freq);
-	->min_freq = MAX(policy->devinfo.min_freq, policy->user.min_freq);
+Gentle ping.
+Do you have comments on this series. I would really like to conclude these
+device link additions sooner, and get things moving on the long awaited
+arm-smmu clock/runtime support series.
 
+Thanks again for reviewing these patches.
 
+Best regards
+Vivek
+>   Documentation/driver-api/device_link.rst |  4 ++++
+>   drivers/base/core.c                      | 10 ++++++++++
+>   include/linux/device.h                   |  2 ++
+>   3 files changed, 16 insertions(+)
+>
+> diff --git a/Documentation/driver-api/device_link.rst b/Documentation/driver-api/device_link.rst
+> index a005b904a264..d6763272e747 100644
+> --- a/Documentation/driver-api/device_link.rst
+> +++ b/Documentation/driver-api/device_link.rst
+> @@ -86,6 +86,10 @@ automatically purged when the consumer fails to probe or later unbinds.
+>   This obviates the need to explicitly delete the link in the ``->remove``
+>   callback or in the error path of the ``->probe`` callback.
+>   
+> +Similarly, when the device link is added from supplier's ``->probe`` callback,
+> +``DL_FLAG_AUTOREMOVE_SUPPLIER`` causes the device link to be automatically
+> +purged when the supplier fails to probe or later unbinds.
 > +
-> +	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
-> +				DEVFREQ_ADJUST, policy);
+>   Limitations
+>   ===========
+>   
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 14c1e3151e08..e721218bf352 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -518,6 +518,16 @@ void device_links_driver_cleanup(struct device *dev)
+>   
+>   		WARN_ON(link->flags & DL_FLAG_AUTOREMOVE_CONSUMER);
+>   		WARN_ON(link->status != DL_STATE_SUPPLIER_UNBIND);
 > +
->  	/* Reevaluate the proper frequency */
->  	err = policy->governor->get_target_freq(devfreq, &freq);
->  	if (err)
->  		return err;
->  
-> -	/*
-> -	 * Adjust the frequency with user freq, QoS and available freq.
-> -	 *
-> -	 * List from the highest priority
-> -	 * max_freq
-> -	 * min_freq
-> -	 */
-> -	max_freq = MIN(policy->devinfo.max_freq, policy->user.max_freq);
-> -	min_freq = MAX(policy->devinfo.min_freq, policy->user.min_freq);
-> +	/* Adjust the frequency */
+> +		/*
+> +		 * autoremove the links between this @dev and its consumer
+> +		 * devices that are not active, i.e. where the link state
+> +		 * has moved to DL_STATE_SUPPLIER_UNBIND.
+> +		 */
+> +		if (link->status == DL_STATE_SUPPLIER_UNBIND &&
+> +		    link->flags & DL_FLAG_AUTOREMOVE_SUPPLIER)
+> +			kref_put(&link->kref, __device_link_del);
 > +
-> +	max_freq = MIN(policy->max, policy->user.max_freq);
-> +	min_freq = MAX(policy->min, policy->user.min_freq);
->  
->  	if (freq < min_freq) {
->  		freq = min_freq;
-> @@ -645,6 +661,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	devfreq->last_stat_updated = jiffies;
->  
->  	srcu_init_notifier_head(&devfreq->transition_notifier_list);
-> +	srcu_init_notifier_head(&devfreq->policy_notifier_list);
->  
->  	mutex_unlock(&devfreq->lock);
->  
-> @@ -1445,7 +1462,7 @@ EXPORT_SYMBOL(devm_devfreq_unregister_opp_notifier);
->   * devfreq_register_notifier() - Register a driver with devfreq
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to register.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  int devfreq_register_notifier(struct devfreq *devfreq,
->  				struct notifier_block *nb,
-> @@ -1461,6 +1478,10 @@ int devfreq_register_notifier(struct devfreq *devfreq,
->  		ret = srcu_notifier_chain_register(
->  				&devfreq->transition_notifier_list, nb);
->  		break;
-> +	case DEVFREQ_POLICY_NOTIFIER:
-> +		ret = srcu_notifier_chain_register(
-> +				&devfreq->policy_notifier_list, nb);
-> +		break;
->  	default:
->  		ret = -EINVAL;
->  	}
-> @@ -1473,7 +1494,7 @@ EXPORT_SYMBOL(devfreq_register_notifier);
->   * devfreq_unregister_notifier() - Unregister a driver with devfreq
->   * @devfreq:	The devfreq object.
->   * @nb:		The notifier block to be unregistered.
-> - * @list:	DEVFREQ_TRANSITION_NOTIFIER.
-> + * @list:	DEVFREQ_TRANSITION_NOTIFIER or DEVFREQ_POLICY_NOTIFIER.
->   */
->  int devfreq_unregister_notifier(struct devfreq *devfreq,
->  				struct notifier_block *nb,
-> @@ -1489,6 +1510,11 @@ int devfreq_unregister_notifier(struct devfreq *devfreq,
->  		ret = srcu_notifier_chain_unregister(
->  				&devfreq->transition_notifier_list, nb);
->  		break;
-> +	case DEVFREQ_POLICY_NOTIFIER:
-> +		ret = srcu_notifier_chain_unregister(
-> +				&devfreq->policy_notifier_list, nb);
-> +		break;
-> +
->  	default:
->  		ret = -EINVAL;
->  	}
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index 9bf23b976f4d..7c8dce96db73 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -33,6 +33,10 @@
->  #define	DEVFREQ_PRECHANGE		(0)
->  #define DEVFREQ_POSTCHANGE		(1)
->  
-> +#define DEVFREQ_POLICY_NOTIFIER		1
-> +
-> +#define	DEVFREQ_ADJUST			0
-> +
->  struct devfreq;
->  struct devfreq_governor;
->  
-> @@ -121,12 +125,16 @@ struct devfreq_freq_limits {
->  
->  /**
->   * struct devfreq_policy - Devfreq policy
-> + * @min:	minimum frequency (adjustable by policy notifiers)
-> + * @min:	maximum frequency (adjustable by policy notifiers)
->   * @user:	frequency limits requested by the user
->   * @devinfo:	frequency limits of the device (available OPPs)
->   * @governor:	method how to choose frequency based on the usage.
->   * @governor_name:	devfreq governor name for use with this devfreq
->   */
->  struct devfreq_policy {
-> +	unsigned long min;
-> +	unsigned long max;
->  	struct devfreq_freq_limits user;
->  	struct devfreq_freq_limits devinfo;
->  	const struct devfreq_governor *governor;
-> @@ -155,6 +163,7 @@ struct devfreq_policy {
->   * @time_in_state:	Statistics of devfreq states
->   * @last_stat_updated:	The last time stat updated
->   * @transition_notifier_list: list head of DEVFREQ_TRANSITION_NOTIFIER notifier
-> + * @policy_notifier_list: list head of DEVFREQ_POLICY_NOTIFIER notifier
->   *
->   * This structure stores the devfreq information for a give device.
->   *
-> @@ -188,6 +197,7 @@ struct devfreq {
->  	unsigned long last_stat_updated;
->  
->  	struct srcu_notifier_head transition_notifier_list;
-> +	struct srcu_notifier_head policy_notifier_list;
->  };
->  
->  struct devfreq_freqs {
-> @@ -240,6 +250,45 @@ extern void devm_devfreq_unregister_notifier(struct device *dev,
->  extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
->  						int index);
->  
-> +/**
-> + * devfreq_verify_within_limits() - Adjust a devfreq policy if needed to make
-> + *                                  sure its min/max values are within a
-> + *                                  specified range.
-> + * @policy:	the policy
-> + * @min:	the minimum frequency
-> + * @max:	the maximum frequency
-> + */
-> +static inline void devfreq_verify_within_limits(struct devfreq_policy *policy,
-> +		unsigned int min, unsigned int max)
-> +{
-> +	if (policy->min < min)
-> +		policy->min = min;
-> +	if (policy->max < min)
-> +		policy->max = min;
-> +	if (policy->min > max)
-> +		policy->min = max;
-> +	if (policy->max > max)
-> +		policy->max = max;
-> +	if (policy->min > policy->max)
-> +		policy->min = policy->max;
-> +}
-> +
-> +/**
-> + * devfreq_verify_within_dev_limits() - Adjust a devfreq policy if needed to
-> + *                                      make sure its min/max values are within
-> + *                                      the frequency range supported by the
-> + *                                      device.
-> + * @policy:	the policy
-> + */
-> +static inline void
-> +devfreq_verify_within_dev_limits(struct devfreq_policy *policy)
-> +{
-> +	devfreq_verify_within_limits(policy, policy->devinfo.min_freq,
-> +			policy->devinfo.max_freq);
-> +}
-> +
-> +struct devfreq *dev_to_devfreq(struct device *dev);
-> +
->  #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
->  /**
->   * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
-> @@ -394,10 +443,26 @@ static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
->  	return ERR_PTR(-ENODEV);
->  }
->  
-> +static inline void devfreq_verify_within_limits(struct devfreq_policy *policy,
-> +		unsigned int min, unsigned int max)
-> +{
-> +}
-> +
-> +static inline void
-> +devfreq_verify_within_dev_limits(struct devfreq_policy *policy)
-> +{
-> +}
-> +
->  static inline int devfreq_update_stats(struct devfreq *df)
->  {
->  	return -EINVAL;
->  }
-> +
-> +static inline struct devfreq *dev_to_devfreq(struct device *dev)
-> +{
-> +	return NULL;
-> +}
-> +
->  #endif /* CONFIG_PM_DEVFREQ */
->  
->  #endif /* __LINUX_DEVFREQ_H__ */
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+>   		WRITE_ONCE(link->status, DL_STATE_DORMANT);
+>   	}
+>   
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 3929805cdd59..e80920452b49 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -787,11 +787,13 @@ enum device_link_state {
+>    * AUTOREMOVE_CONSUMER: Remove the link automatically on consumer driver unbind.
+>    * PM_RUNTIME: If set, the runtime PM framework will use this link.
+>    * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
+> + * AUTOREMOVE_SUPPLIER: Remove the link automatically on supplier driver unbind.
+>    */
+>   #define DL_FLAG_STATELESS		BIT(0)
+>   #define DL_FLAG_AUTOREMOVE_CONSUMER	BIT(1)
+>   #define DL_FLAG_PM_RUNTIME		BIT(2)
+>   #define DL_FLAG_RPM_ACTIVE		BIT(3)
+> +#define DL_FLAG_AUTOREMOVE_SUPPLIER	BIT(4)
+>   
+>   /**
+>    * struct device_link - Device link representation.
