@@ -1,52 +1,107 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on supplier unbind
-Date: Wed, 04 Jul 2018 12:44:20 +0200
-Message-ID: <2991909.NMIP74eIIJ@aspire.rjw.lan>
-References: <20180627125056.12851-1-vivek.gautam@codeaurora.org> <20180627125056.12851-2-vivek.gautam@codeaurora.org> <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
+Subject: Re: [PATCH] PM / Domains: Don't power on at attach for the multi PM
+ domain case
+Date: Wed, 04 Jul 2018 12:48:01 +0200
+Message-ID: <2009003.UOWOtGbzcY@aspire.rjw.lan>
+References: <20180629091537.26864-1-ulf.hansson@linaro.org>
+ <20180629095146.gljbdw2zbhmj6gwl@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vivek Gautam <vivek.gautam@codeaurora.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180629095146.gljbdw2zbhmj6gwl@vireshk-i7>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
-> Adding Ulf and Marek.
-> 
-> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
-> > Add a flag to autoremove the device links on supplier driver
-> > unbind. This obviates the need to explicitly delete the link
-> > in the remove path.
-> > We remove these links only when the supplier's link to its
-> > consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
-> >
-> > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> > Suggested-by: Lukas Wunner <lukas@wunner.de>
-> > Cc: Jonathan Corbet <corbet@lwn.net>
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Robin Murphy <robin.murphy@arm.com>
-> > Cc: linux-doc@vger.kernel.org
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-arm-msm@vger.kernel.org
+On Friday, June 29, 2018 11:51:46 AM CEST Viresh Kumar wrote:
+> On 29-06-18, 11:15, Ulf Hansson wrote:
+> > There are no legacy behavior in drivers to consider while attaching a
+> > device to genpd - for the multiple PM domain case.
+> > 
+> > For that reason, let's instead require the driver to runtime resume the
+> > device, via calling pm_runtime_get_sync() for example, when it needs to
+> > power on the corresponding PM domain.
+> > 
+> > This allows us to improve the situation during attach. Instead of always
+> > power on the PM domain, which may be unnecessary, let's leave it in its
+> > current state. Additionally, to avoid the PM domain to stay powered on,
+> > let's schedule a power off work.
+> > 
+> > Fixes: 3c095f32a92b ("PM / Domains: Add support for multi PM domains...")
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > > ---
+> >  drivers/base/power/domain.c | 16 +++++++++-------
+> >  1 file changed, 9 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index c298de8a8308..9e8484189034 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -2235,7 +2235,7 @@ static void genpd_dev_pm_sync(struct device *dev)
+> >  }
+> >  
+> >  static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+> > -				 unsigned int index)
+> > +				 unsigned int index, bool power_on)
+> >  {
+> >  	struct of_phandle_args pd_args;
+> >  	struct generic_pm_domain *pd;
+> > @@ -2271,9 +2271,11 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+> >  	dev->pm_domain->detach = genpd_dev_pm_detach;
+> >  	dev->pm_domain->sync = genpd_dev_pm_sync;
+> >  
+> > -	genpd_lock(pd);
+> > -	ret = genpd_power_on(pd, 0);
+> > -	genpd_unlock(pd);
+> > +	if (power_on) {
+> > +		genpd_lock(pd);
+> > +		ret = genpd_power_on(pd, 0);
+> > +		genpd_unlock(pd);
+> > +	}
+> >  
+> >  	if (ret)
+> >  		genpd_remove_device(pd, dev);
+> > @@ -2307,7 +2309,7 @@ int genpd_dev_pm_attach(struct device *dev)
+> >  				       "#power-domain-cells") != 1)
+> >  		return 0;
+> >  
+> > -	return __genpd_dev_pm_attach(dev, dev->of_node, 0);
+> > +	return __genpd_dev_pm_attach(dev, dev->of_node, 0, true);
+> >  }
+> >  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+> >  
+> > @@ -2359,14 +2361,14 @@ struct device *genpd_dev_pm_attach_by_id(struct device *dev,
+> >  	}
+> >  
+> >  	/* Try to attach the device to the PM domain at the specified index. */
+> > -	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index);
+> > +	ret = __genpd_dev_pm_attach(genpd_dev, dev->of_node, index, false);
+> >  	if (ret < 1) {
+> >  		device_unregister(genpd_dev);
+> >  		return ret ? ERR_PTR(ret) : NULL;
+> >  	}
+> >  
+> > -	pm_runtime_set_active(genpd_dev);
+> >  	pm_runtime_enable(genpd_dev);
+> > +	genpd_queue_power_off_work(dev_to_genpd(genpd_dev));
+> >  
+> >  	return genpd_dev;
+> >  }
 > 
-> Hi Rafael, et al.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Gentle ping.
-> Do you have comments on this series. I would really like to conclude these
-> device link additions sooner, and get things moving on the long awaited
-> arm-smmu clock/runtime support series.
 > 
-> Thanks again for reviewing these patches.
 
-They are fine by me.
+Patch applied and queued up for 4.18-rc4.
 
-I can queue them up for 4.19 if no one has objections (Greg in
-particular).
-
-Thanks,
-Rafael
+Thanks!
