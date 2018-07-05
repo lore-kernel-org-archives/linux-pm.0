@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 18/23] dt-bindings: cp110: add the thermal node in the
- syscon file
-Date: Thu,  5 Jul 2018 18:04:32 +0200
-Message-ID: <20180705160437.12325-19-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 11/23] thermal: armada: move validity check out of the read
+ function
+Date: Thu,  5 Jul 2018 18:04:25 +0200
+Message-ID: <20180705160437.12325-12-miquel.raynal@bootlin.com>
 References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,66 +22,46 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Explain the thermal bindings now that the thermal IP is described being
-inside of a system controller. Add a reference to the thermal-zone node.
+Sensor selection when using multiple sensors already checks for the
+sensor validity. Move it to the legacy ->get_temp() hook, where it is
+still needed.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../arm/marvell/cp110-system-controller.txt        | 37 ++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ drivers/thermal/armada_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-index 54b0d64ce819..81ce742d2760 100644
---- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-@@ -11,6 +11,9 @@ For the top level node:
-  - compatible: must be: "syscon", "simple-mfd";
-  - reg: register area of the CP110 system controller
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 7eafc9400fbe..7f8185e5816e 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -328,13 +328,6 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, int *temp)
+ 	u32 reg, div;
+ 	s64 sample, b, m;
  
-+SYSTEM CONTROLLER 0
-+===================
-+
- Clocks:
- -------
+-	/* Valid check */
+-	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+-		dev_err(priv->dev,
+-			"Temperature sensor reading not valid\n");
+-		return -EIO;
+-	}
+-
+ 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+ 	if (priv->data->signed_sample)
+@@ -362,6 +355,13 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
+ 	struct armada_thermal_priv *priv = thermal->devdata;
+ 	int ret;
  
-@@ -186,3 +189,37 @@ CP110_LABEL(syscon0): system-controller@440000 {
- 	};
++	/* Valid check */
++	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
++		dev_err(priv->dev,
++			"Temperature sensor reading not valid\n");
++		return -EIO;
++	}
++
+ 	/* Do the actual reading */
+ 	ret = armada_read_sensor(priv, temp);
  
- };
-+
-+SYSTEM CONTROLLER 1
-+===================
-+
-+Thermal:
-+--------
-+
-+The thermal IP can probe the temperature all around the processor. It
-+may feature several channels, each of them wired to one sensor.
-+
-+For common binding part and usage, refer to
-+Documentation/devicetree/bindings/thermal/thermal.txt
-+
-+Required properties:
-+- compatible: must be one of:
-+  * marvell,armada-cp110-thermal
-+- reg: register range associated with the thermal functions.
-+
-+Optional properties:
-+- #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
-+  to this IP and represents the channel ID. There is one sensor per
-+  channel. O refers to the thermal IP internal channel.
-+
-+Example:
-+CP110_LABEL(syscon1): system-controller@6f8000 {
-+	compatible = "syscon", "simple-mfd";
-+	reg = <0x6f8000 0x1000>;
-+
-+	CP110_LABEL(thermal): thermal-sensor@70 {
-+		compatible = "marvell,armada-cp110-thermal";
-+		reg = <0x70 0x10>;
-+		#thermal-sensor-cells = <1>;
-+	};
-+};
 -- 
 2.14.1
