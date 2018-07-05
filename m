@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 22/23] arm64: dts: marvell: add macro to make distinction
- between node names
-Date: Thu,  5 Jul 2018 18:04:36 +0200
-Message-ID: <20180705160437.12325-23-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 18/23] dt-bindings: cp110: add the thermal node in the
+ syscon file
+Date: Thu,  5 Jul 2018 18:04:32 +0200
+Message-ID: <20180705160437.12325-19-miquel.raynal@bootlin.com>
 References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,30 +22,66 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Because the label is different between CPs, the full path of a node is
-unique. However, when referring to the end of the path only (the node
-name), this name is not unique anymore.
-
-The *thermal_zone_of_sensor_register() functions of the thermal core
-present this limitation and prevent having a thermal-zone per CP.
-
-Add a macro to make the distinction between node names to solve this
-situation.
+Explain the thermal bindings now that the thermal IP is described being
+inside of a system controller. Add a reference to the thermal-zone node.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm64/boot/dts/marvell/armada-common.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+ .../arm/marvell/cp110-system-controller.txt        | 37 ++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-common.dtsi b/arch/arm64/boot/dts/marvell/armada-common.dtsi
-index d5e8aedec188..b29c6405d214 100644
---- a/arch/arm64/boot/dts/marvell/armada-common.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-common.dtsi
-@@ -7,4 +7,5 @@
- #define PASTER(x, y) x ## y
- #define EVALUATOR(x, y) PASTER(x, y)
- #define CP110_LABEL(name) EVALUATOR(CP110_NAME, EVALUATOR(_, name))
-+#define CP110_NODE_NAME(name) EVALUATOR(CP110_NAME, EVALUATOR(-, name))
- #define ADDRESSIFY(addr) EVALUATOR(0x, addr)
+diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+index 54b0d64ce819..81ce742d2760 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+@@ -11,6 +11,9 @@ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+  - reg: register area of the CP110 system controller
+ 
++SYSTEM CONTROLLER 0
++===================
++
+ Clocks:
+ -------
+ 
+@@ -186,3 +189,37 @@ CP110_LABEL(syscon0): system-controller@440000 {
+ 	};
+ 
+ };
++
++SYSTEM CONTROLLER 1
++===================
++
++Thermal:
++--------
++
++The thermal IP can probe the temperature all around the processor. It
++may feature several channels, each of them wired to one sensor.
++
++For common binding part and usage, refer to
++Documentation/devicetree/bindings/thermal/thermal.txt
++
++Required properties:
++- compatible: must be one of:
++  * marvell,armada-cp110-thermal
++- reg: register range associated with the thermal functions.
++
++Optional properties:
++- #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
++  to this IP and represents the channel ID. There is one sensor per
++  channel. O refers to the thermal IP internal channel.
++
++Example:
++CP110_LABEL(syscon1): system-controller@6f8000 {
++	compatible = "syscon", "simple-mfd";
++	reg = <0x6f8000 0x1000>;
++
++	CP110_LABEL(thermal): thermal-sensor@70 {
++		compatible = "marvell,armada-cp110-thermal";
++		reg = <0x70 0x10>;
++		#thermal-sensor-cells = <1>;
++	};
++};
 -- 
 2.14.1
