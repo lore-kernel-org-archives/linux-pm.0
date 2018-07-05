@@ -1,75 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
- supplier unbind
-Date: Thu, 5 Jul 2018 01:19:04 +0200
-Message-ID: <CAJZ5v0jb2075fcabZDxPpE+7Bo=NpcFm7kEY5QfO-ZbcfGkDyw@mail.gmail.com>
-References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
- <20180627125056.12851-2-vivek.gautam@codeaurora.org> <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
- <2991909.NMIP74eIIJ@aspire.rjw.lan> <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH v5] PM / devfreq: Fix devfreq_add_device() when drivers
+ are built as modules.
+Date: Thu, 5 Jul 2018 09:13:02 +0900
+Message-ID: <CAGTfZH315DM0r4qxZ28rW=0SpWOJHjFoBij0=c8-OTG5BxeLAQ@mail.gmail.com>
+References: <20180704084550.7565-1-enric.balletbo@collabora.com>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vivek Gautam <vivek.gautam@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180704084550.7565-1-enric.balletbo@collabora.com>
+Sender: stable-owner@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 4, 2018 at 8:09 PM, Vivek Gautam
-<vivek.gautam@codeaurora.org> wrote:
->
->
-> On 7/4/2018 4:14 PM, Rafael J. Wysocki wrote:
->>
->> On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
->>>
->>> Adding Ulf and Marek.
->>>
->>> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
->>>>
->>>> Add a flag to autoremove the device links on supplier driver
->>>> unbind. This obviates the need to explicitly delete the link
->>>> in the remove path.
->>>> We remove these links only when the supplier's link to its
->>>> consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
->>>>
->>>> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
->>>> Suggested-by: Lukas Wunner <lukas@wunner.de>
->>>> Cc: Jonathan Corbet <corbet@lwn.net>
->>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>>> Cc: Robin Murphy <robin.murphy@arm.com>
->>>> Cc: linux-doc@vger.kernel.org
->>>> Cc: linux-arm-kernel@lists.infradead.org
->>>> Cc: linux-pm@vger.kernel.org
->>>> Cc: linux-arm-msm@vger.kernel.org
->>>> ---
->>>
->>> Hi Rafael, et al.
->>>
->>> Gentle ping.
->>> Do you have comments on this series. I would really like to conclude
->>> these
->>> device link additions sooner, and get things moving on the long awaited
->>> arm-smmu clock/runtime support series.
->>>
->>> Thanks again for reviewing these patches.
->>
->> They are fine by me.
->>
->> I can queue them up for 4.19 if no one has objections (Greg in
->> particular).
->
->
-> Hi Rafael,
->
-> I will resubmit these 2 patches as part of the arm-smmu series, as one
-> of the patch in the series depends on addition of
-> DL_FLAG_AUTOREMOVE_SUPPLIER.
-> So these 2 patches and arm-smmu series should go together.
-> Can you please consider givnig your Ack?
+Hi Enric,
 
-I would prefer to apply them myself to be honest and put them on an
-public git branch for you to pull from.
+2018-07-04 17:45 GMT+09:00 Enric Balletbo i Serra
+<enric.balletbo@collabora.com>:
+> When the devfreq driver and the governor driver are built as modules,
+> the call to devfreq_add_device() or governor_store() fails because the
+> governor driver is not loaded at the time the devfreq driver loads. The
+> devfreq driver has a build dependency on the governor but also should
+> have a runtime dependency. We need to make sure that the governor driver
+> is loaded before the devfreq driver.
+>
+> This patch fixes this bug by adding a try_then_request_governor()
+> function. First tries to find the governor, and then, if it is not found,
+> it requests the module and tries again.
+>
+> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+>
+> Changes in v5:
+> - Requested by MyungJoo and Chanwoo.
+>   - Fix returning without the lock acquired after request_module.
+> - Requested by Chanwoo.
+>   - In request governor function check if governor name is NULL or not.
+>   - Remove some unrelated changes (added/removed some blank lines).
+>
+> Changes in v4:
+> - Kept "locked" devfreq_list from the return of find_devfreq_governor() to
+>   the unlock of governor_store(). Requested by MyungJoo Ham.
+>
+> Changes in v3:
+> - Remove unneded change in dev_err message.
+> - Fix err returned value in case to not find the governor.
+>
+> Changes in v2:
+> - Add a new function to request the module and call that function from
+>   devfreq_add_device and governor_store.
+>
+>  drivers/devfreq/devfreq.c | 53 ++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 49 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 0b5b3abe054e..aa92fbf9f0dd 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
 
-Thanks,
-Rafael
+(snip)
+
+Looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Best Regards,
+Chanwoo Choi
