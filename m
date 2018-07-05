@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 20/23] arm64: dts: marvell: move AP806/CP110 thermal nodes
- into a new syscon
-Date: Thu,  5 Jul 2018 18:04:34 +0200
-Message-ID: <20180705160437.12325-21-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 16/23] dt-bindings: ap806: add the thermal node in the
+ syscon file
+Date: Thu,  5 Jul 2018 18:04:30 +0200
+Message-ID: <20180705160437.12325-17-miquel.raynal@bootlin.com>
 References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,74 +22,67 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-New bindings impose to declare the thermal IP from within a new syscon.
+Explain the thermal bindings now that the thermal IP is described being
+inside of a system controller. Add a reference to the thermal-zone node.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 14 ++++++++++----
- arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 18 ++++++++++++------
- 2 files changed, 22 insertions(+), 10 deletions(-)
+ .../arm/marvell/ap806-system-controller.txt        | 38 ++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 4f2a704615b0..45662fc09d18 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -258,10 +258,16 @@
- 				};
- 			};
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index a856eb9a4e05..3fd21bb7cb37 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -11,6 +11,9 @@ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+  - reg: register area of the AP806 system controller
  
--			ap_thermal: thermal@6f808c {
--				compatible = "marvell,armada-ap806-thermal";
--				reg = <0x6f808c 0x4>,
--				      <0x6f8084 0x8>;
-+			ap_syscon1: system-controller@6f8000 {
-+				compatible = "syscon", "simple-mfd";
-+				reg = <0x6f8000 0x1000>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
++SYSTEM CONTROLLER 0
++===================
 +
-+				ap_thermal: thermal-sensor@80 {
-+					compatible = "marvell,armada-ap806-thermal";
-+					reg = <0x80 0x10>;
-+				};
- 			};
- 		};
+ Clocks:
+ -------
+ 
+@@ -98,3 +101,38 @@ ap_syscon: system-controller@6f4000 {
+ 		gpio-ranges = <&ap_pinctrl 0 0 19>;
  	};
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-index ab31ba20aa2a..1b813a95149c 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-@@ -177,12 +177,6 @@
- 			interrupts = <77 IRQ_TYPE_LEVEL_HIGH>;
- 		};
- 
--		CP110_LABEL(thermal): thermal@400078 {
--			compatible = "marvell,armada-cp110-thermal";
--			reg = <0x400078 0x4>,
--			<0x400070 0x8>;
--		};
--
- 		CP110_LABEL(syscon0): system-controller@440000 {
- 			compatible = "syscon", "simple-mfd";
- 			reg = <0x440000 0x2000>;
-@@ -223,6 +217,18 @@
- 			};
- 		};
- 
-+		CP110_LABEL(syscon1): system-controller@400000 {
-+			compatible = "syscon", "simple-mfd";
-+			reg = <0x400000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
+ };
 +
-+			CP110_LABEL(thermal): thermal-sensor@70 {
-+				compatible = "marvell,armada-cp110-thermal";
-+				reg = <0x70 0x10>;
-+			};
-+		};
++SYSTEM CONTROLLER 1
++===================
 +
- 		CP110_LABEL(usb3_0): usb3@500000 {
- 			compatible = "marvell,armada-8k-xhci",
- 			"generic-xhci";
++Thermal:
++--------
++
++For common binding part and usage, refer to
++Documentation/devicetree/bindings/thermal/thermal.txt
++
++The thermal IP can probe the temperature all around the processor. It
++may feature several channels, each of them wired to one sensor.
++
++Required properties:
++- compatible: must be one of:
++  * marvell,armada-ap806-thermal
++- reg: register range associated with the thermal functions.
++
++Optional properties:
++- #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
++  to this IP and represents the channel ID. There is one sensor per
++  channel. O refers to the thermal IP internal channel, while positive
++  IDs refer to each CPU.
++
++Example:
++ap_syscon1: system-controller@6f8000 {
++	compatible = "syscon", "simple-mfd";
++	reg = <0x6f8000 0x1000>;
++
++	ap_thermal: thermal-sensor@80 {
++		compatible = "marvell,armada-ap806-thermal";
++		reg = <0x80 0x10>;
++		#thermal-sensor-cells = <1>;
++	};
++};
 -- 
 2.14.1
