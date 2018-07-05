@@ -1,86 +1,142 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 4/6] thermal: tsens: Add support for SDM845
-Date: Thu, 5 Jul 2018 14:37:12 -0600
-Message-ID: <20180705203712.GA29531@rob-hp-laptop>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
- <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
- <20180703162619.GA17238@rob-hp-laptop>
- <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
+Subject: Re: [PATCH v3 1/4] dt-bindings: w1: document generic onewire and
+ DS2760 bindings
+Date: Thu, 5 Jul 2018 17:32:45 -0600
+Message-ID: <20180705233245.GA16422@rob-hp-laptop>
+References: <20180704044411.2693-1-daniel@zonque.org>
+ <20180704044411.2693-2-daniel@zonque.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
+In-Reply-To: <20180704044411.2693-2-daniel@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Kees Cook <keescook@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
+To: Daniel Mack <daniel@zonque.org>
+Cc: zbr@ioremap.net, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu, sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 04, 2018 at 10:56:26PM +0530, Amit Kucheria wrote:
-> On Tue, Jul 3, 2018 at 9:56 PM, Rob Herring <robh@kernel.org> wrote:
-> > On Mon, Jul 02, 2018 at 06:14:07PM +0530, Amit Kucheria wrote:
-> >> SDM845 uses v2.4.0 of the TSENS IP block but the get_temp() function
-> >> appears to be identical across v2.x.y in code seen so far. We use the
-> >> generic get_temp() function.
-> >>
-> >> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> >> ---
-> >>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt | 2 ++
-> >>  drivers/thermal/qcom/tsens-v2.c                          | 6 +++++-
-> >>  drivers/thermal/qcom/tsens.c                             | 6 ++++++
-> >>  drivers/thermal/qcom/tsens.h                             | 5 ++++-
-> >>  4 files changed, 17 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> >> index 06195e8..075182e 100644
-> >> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> >> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> >> @@ -5,6 +5,8 @@ Required properties:
-> >>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-> >>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-> >>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-> >> + - "qcom,tsens-v2.4.0"  : For SDM845 Family of SoCs
-> >> + - "qcom,tsens-v2"      : Generic fallback binding for any Soc using 2.x.y version of the tsens IP
-> >
-> > You need to show what are valid combinations of compatibles. Does v2
-> > apply to 8996? One valid combination per line.
+On Wed, Jul 04, 2018 at 06:44:08AM +0200, Daniel Mack wrote:
+> This patch adds a generic w1 bindings document that merely describes how
+> slave deviceses are grouped under master nodes. It also adds a specific
+> binding for the ds2760 battery monitor.
 > 
-> I've restructured qcom-tsens.txt to look like this:
-> 
-> -----%<-------
-> 
-> * QCOM SoC Temperature Sensor (TSENS)
-> 
-> Required properties:
-> - compatible: must be one of the following:
->     - "qcom,msm8916-tsens" (MSM8916)
->     - "qcom,msm8974-tsens" (MSM8974)
->     - "qcom,msm8996-tsens" (MSM8996)
->     - "qcom,tsens-<ip_version>", "qcom,tsens-v2" (TSENS IP version and a
->        generic v2 property as fallback except for MSM8996)
-> 
->   Examples with ip_version are:
->     - "qcom,tsens-v2.4.0", "qcom,tsens-v2" (SDM845)
->     - "qcom,tsens-v2.2.1", "qcom,tsens-v2" (MSM8998)
-> 
-> -----%<-------
-> 
-> 8996 would end up being something like this if needed, though we're
-> stuck with "qcom,msm8996-tsens":
-> "qcom,msm8996-tsens", "qcom,tsens-v2.1.0", "qcom,tsens-v2" (MSM8996)
+> Signed-off-by: Daniel Mack <daniel@zonque.org>
+> ---
+>  .../bindings/power/supply/maxim,ds2760.txt    | 29 +++++++++++++++++++
 
-3 versions here for 3 SoCs. I'm not getting that convinced version 
-numbers really are better. I would assume that other QCom IP blocks 
-have versions too, but pretty much *every* *other* binding uses SoC names. 
-Why is this one special? The other problem with versions is the mapping 
-of versions to SoCs most likely can't be validated outside of QCom 
-unless there's a version register.
+This has grown enough now, you should probably make it a separate 
+patch.
 
-So, sorry to go in circles, but can you go back to qcom,<soc>-tsens. You 
-can keep qcom,tsens-v2 as a fallback.
+>  .../devicetree/bindings/w1/w1-gpio.txt        | 11 +++++--
+>  Documentation/devicetree/bindings/w1/w1.txt   | 25 ++++++++++++++++
+>  3 files changed, 62 insertions(+), 3 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+>  create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+> new file mode 100644
+> index 000000000000..a39d1ada48f2
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+> @@ -0,0 +1,29 @@
+> +Devicetree bindings for Maxim DS2760
+> +====================================
+> +
+> +The ds2760 is a w1 slave device and must hence have its sub-node in DT
+> +under a w1 bus master node.
+> +
+> +The device exposes a power supply, so the details described in
+> +Documentation/devicetree/bindings/power/supply/power_supply.txt apply.
+> +
+> +Required properties:
+> +- compatible: must be "maxim,ds2760"
+> +
+> +Optional properties:
+> +- power-supplies:	Refers to one or more power supplies connected to
+> +			this battery.
+> +- maxim,pmod-enabled:	This boolean property enables the DS2760 to enter
+> +			sleep mode when the DQ line goes low for greater
+> +			than 2 seconds and leave sleep Mode when the DQ
+> +			line goes high.
+> +- maxim,cache-time:	Time im milliseconds to cache the data for. When
 
-Yes, it's annoying to have to update bindings for new SoCs. But it's 
-trivial one line patches. Look at Renesas bindings. Maybe adding new 
-ones will be scriptable once we move to json-schema binding docs.
+Add unit suffix as defined in property-units.txt.
 
-Rob
+> +			this time expires, the values are read again from
+> +			the hardware. Defaults to 1000.
+> +- maxim,rated-capacity:	The rated capacity of the battery, in mAh.
+
+Seems like this should be common.
+
+> +			If not specified, the value stored in the
+> +			non-volatile chip memory is used.
+> +- maxim,current-accumulator:
+> +			The current accumulator value in mAh.
+> +			If not specified, the value stored in the
+> +			non-volatile chip memory is used.
+
+This would be updated periodically while running and then restored after 
+a power cycle or reboot to maintain the battery level across power 
+cycle? I don't think that belongs in DT as we don't really define 
+whether a DT can be updated persistently.
+ 
+> diff --git a/Documentation/devicetree/bindings/w1/w1-gpio.txt b/Documentation/devicetree/bindings/w1/w1-gpio.txt
+> index 6e09c35d9f1a..3d6554eac240 100644
+> --- a/Documentation/devicetree/bindings/w1/w1-gpio.txt
+> +++ b/Documentation/devicetree/bindings/w1/w1-gpio.txt
+> @@ -13,10 +13,15 @@ Optional properties:
+>   - linux,open-drain: if specified, the data pin is considered in
+>  		     open-drain mode.
+>  
+> +Also refer to the generic w1.txt document.
+> +
+>  Examples:
+>  
+> -	onewire@0 {
+> +	onewire {
+>  		compatible = "w1-gpio";
+> -		gpios = <&gpio 126 0>, <&gpio 105 0>;
+> -	};
+> +		gpios = <&gpio 0 GPIO_ACTIVE_HIGH>;
+>  
+> +		battery {
+> +			// ...
+> +		};
+> +	};
+> diff --git a/Documentation/devicetree/bindings/w1/w1.txt b/Documentation/devicetree/bindings/w1/w1.txt
+> new file mode 100644
+> index 000000000000..bee18f7070ec
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/w1/w1.txt
+> @@ -0,0 +1,25 @@
+> +Generic devicetree bindings for onewire (w1) busses
+> +===================================================
+> +
+> +Onewire busses are described through nodes of their master bus controller.
+> +Slave devices are listed as sub-nodes of such master devices. For now, only
+> +one slave is allowed per bus master.
+> +
+> +
+> +Example:
+> +
+> +	charger: charger {
+> +		compatible = "gpio-charger";
+> +		charger-type = "mains";
+> +		gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
+> +	};
+> +
+> +	onewire@0 {
+
+Drop the unit-address.
+
+> +		compatible = "w1-gpio";
+> +		gpios = <&gpio 100 0>, <&gpio 101 0>;
+> +
+> +		battery {
+> +			compatible = "maxim,ds2760";
+> +			power-supplies = <&charger>;
+> +		};
+> +	};
+> -- 
+> 2.17.1
+> 
