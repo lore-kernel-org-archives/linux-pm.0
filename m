@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 01/23] thermal: armada: add a function that sanitizes the
- thermal zone name
-Date: Thu,  5 Jul 2018 18:04:15 +0200
-Message-ID: <20180705160437.12325-2-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 10/23] thermal: armada: remove sensors validity from the IP
+ initialization
+Date: Thu,  5 Jul 2018 18:04:24 +0200
+Message-ID: <20180705160437.12325-11-miquel.raynal@bootlin.com>
 References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,83 +22,50 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Thermal zone names must follow certain rules imposed by the framework.
-They are limited in length and shall not have any hyphen '-'.
+When using new bindings with multiple sensors, sensor validity is
+checked twice because sensor selection also checks for the validity.
 
-This is done in a separate function for future use in another location.
+Remove the redundant call from the IP initialization helper and move it
+to the legacy probe section where it is still needed.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 36 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 35 insertions(+), 1 deletion(-)
+ drivers/thermal/armada_thermal.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 4c275ec10ac5..077e8e562306 100644
+index eef8947b9b20..7eafc9400fbe 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -70,6 +70,7 @@ struct armada_thermal_priv {
- 	void __iomem *status;
- 	void __iomem *control0;
- 	void __iomem *control1;
-+	char zone_name[THERMAL_NAME_LENGTH];
- 	struct armada_thermal_data *data;
- };
+@@ -221,9 +221,6 @@ static void armada380_init(struct platform_device *pdev,
+ 	reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
+ 	reg |= CONTROL0_TSEN_TC_TRIM_VAL;
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+-
+-	/* Wait the sensors to be valid or the core will warn the user */
+-	armada_wait_sensor_validity(priv);
+ }
  
-@@ -353,6 +354,36 @@ static const struct of_device_id armada_thermal_id_table[] = {
- };
- MODULE_DEVICE_TABLE(of, armada_thermal_id_table);
+ static void armada_ap806_init(struct platform_device *pdev,
+@@ -243,9 +240,6 @@ static void armada_ap806_init(struct platform_device *pdev,
+ 	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
  
-+static void armada_set_sane_name(struct platform_device *pdev,
-+				 struct armada_thermal_priv *priv)
-+{
-+	const char *name = dev_name(&pdev->dev);
-+	char *insane_char;
+ 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
+-
+-	/* Wait the sensors to be valid or the core will warn the user */
+-	armada_wait_sensor_validity(priv);
+ }
+ 
+ static void armada_cp110_init(struct platform_device *pdev,
+@@ -650,6 +644,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 
+ 		priv->data->init(pdev, priv);
+ 
++		/* Wait the sensors to be valid */
++		armada_wait_sensor_validity(priv);
 +
-+	if (strlen(name) > THERMAL_NAME_LENGTH) {
-+		/*
-+		 * When inside a system controller, the device name has the
-+		 * form: f06f8000.system-controller:ap-thermal so stripping
-+		 * after the ':' should give us a shorter but meaningful name.
-+		 */
-+		name = strrchr(name, ':');
-+		if (!name)
-+			name = "armada_thermal";
-+		else
-+			name++;
-+	}
-+
-+	/* Save the name locally */
-+	strncpy(priv->zone_name, name, THERMAL_NAME_LENGTH);
-+
-+	/* Then check there are no '-' or hwmon core will complain */
-+	do {
-+		insane_char = strpbrk(priv->zone_name, "-");
-+		if (insane_char)
-+			*insane_char = '_';
-+	} while (insane_char);
-+}
-+
- static int armada_thermal_probe(struct platform_device *pdev)
- {
- 	void __iomem *control = NULL;
-@@ -381,6 +412,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 
- 	priv->data = (struct armada_thermal_data *)match->data;
- 
-+	/* Ensure device name is correct for the thermal core */
-+	armada_set_sane_name(pdev, priv);
-+
- 	/*
- 	 * Legacy DT bindings only described "control1" register (also referred
- 	 * as "control MSB" on old documentation). New bindings cover
-@@ -402,7 +436,7 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 
- 	priv->data->init_sensor(pdev, priv);
- 
--	thermal = thermal_zone_device_register(dev_name(&pdev->dev), 0, 0, priv,
-+	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
- 					       &ops, NULL, 0, 0);
- 	if (IS_ERR(thermal)) {
- 		dev_err(&pdev->dev,
+ 		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+ 						  &legacy_ops, NULL, 0, 0);
+ 		if (IS_ERR(tz)) {
 -- 
 2.14.1
