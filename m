@@ -1,30 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Thu, 05 Jul 2018 12:16:13 +0200
-Message-ID: <4159650.gQjFNdt1WI@aspire.rjw.lan>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de> <275e2bd6-87aa-bd20-1f79-0830da86f6d0@cosifan.de> <s5hh8leuhms.wl-tiwai@suse.de>
+Subject: [PATCH] MAINTAINERS: Add myself as driver core changes reviewer
+Date: Thu, 05 Jul 2018 12:27:53 +0200
+Message-ID: <69592383.djb3pJg15x@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <s5hh8leuhms.wl-tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Thomas H4nig <haenig@cosifan.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 5, 2018 12:00:27 PM CEST Takashi Iwai wrote:
-> On Thu, 05 Jul 2018 11:58:15 +0200,
-> Thomas H4nig wrote:
-> > 
-> > Am 05.07.2018 um 11:50 schrieb Takashi Iwai:
-> > > Usually X desktop environment receives an input event from the ACPI
-> > > power button input device, and deals the event accordingly depending
-> > > on the setup.  The power-down behavior itself should be equivalent
-> > > with "systemctl poweroff" or such.
-> > The behaviour occurs even when booting into runlevel 3 /
-> > multi-user.target so if no X11 or graphical DE is involved
-> 
-> In that case, systemd (logind) handles the event.
+From: Rafael J. Wysocki <rafael@kernel.org>
 
-Hmm, do we confuse "poweroff" with "reboot" for some reason?
+I really need to look at driver core changes before they are applied
+due to PM dependencies and they sometimes get lost in the LKML
+traffic, so add myself as an official driver core reviewer.
+
+Signed-off-by: Rafael J. Wysocki <rafael@kernel.org>
+---
+ MAINTAINERS |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-pm/MAINTAINERS
+===================================================================
+--- linux-pm.orig/MAINTAINERS
++++ linux-pm/MAINTAINERS
+@@ -4460,6 +4460,7 @@ F:	Documentation/blockdev/drbd/
+ 
+ DRIVER CORE, KOBJECTS, DEBUGFS AND SYSFS
+ M:	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
++R:	"Rafael J. Wysocki" <rafael@kernel.org>
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git
+ S:	Supported
+ F:	Documentation/kobject.txt
