@@ -1,127 +1,86 @@
-From: =?UTF-8?Q?Thomas_H=c3=a4nig?= <haenig@cosifan.de>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Thu, 5 Jul 2018 20:18:29 +0200
-Message-ID: <69b98b03-4dbf-3a8d-6ae3-b9a6ffc92f0a@cosifan.de>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de> <s5hk1q9u3cf.wl-tiwai@suse.de>
- <CAJZ5v0jgYmxu5S8JBJdtDn3MFDAroig=ZhK=V4Ec9iELZSfP6w@mail.gmail.com>
- <3165315.C5RQ1k0pt5@aspire.rjw.lan> <s5hd0w1fwoq.wl-tiwai@suse.de>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 4/6] thermal: tsens: Add support for SDM845
+Date: Thu, 5 Jul 2018 14:37:12 -0600
+Message-ID: <20180705203712.GA29531@rob-hp-laptop>
+References: <cover.1530533998.git.amit.kucheria@linaro.org>
+ <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
+ <20180703162619.GA17238@rob-hp-laptop>
+ <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <s5hd0w1fwoq.wl-tiwai@suse.de>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Erik Schmauss <erik.schmauss@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Kees Cook <keescook@chromium.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am 05.07.2018 um 18:56 schrieb Takashi Iwai:
-> On Thu, 05 Jul 2018 18:02:11 +0200,
-> Rafael J. Wysocki wrote:
->>
->> [The Lv's address is not valid any more, so drop it from the CC]
->>
->> On Thursday, July 5, 2018 5:10:20 PM CEST Rafael J. Wysocki wrote:
->>> On Thu, Jul 5, 2018 at 5:09 PM, Takashi Iwai <tiwai@suse.de> wrote:
->>>> On Thu, 05 Jul 2018 16:00:14 +0200,
->>>> Thomas H4nig wrote:
->>>>>
->>>>> Am 05.07.2018 um 14:12 schrieb Takashi Iwai:
->>>>>> On Thu, 05 Jul 2018 12:41:03 +0200,
->>>>>> Rafael J. Wysocki wrote:
->>>>>>>
->>>>>>> On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
->>>>>>>> On Thu, 05 Jul 2018 11:34:59 +0200,
->>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>>
->>>>>>>>> Hi,
->>>>>>>>>
->>>>>>>>> On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
->>>>>>>>>> Hi,
->>>>>>>>>>
->>>>>>>>>> we've got a regression report since 4.17 about the behavior of
->>>>>>>>>> power-off with the power button.  When a machine is powered off with
->>>>>>>>>> the power button on desktop, it reboots after a few seconds instead of
->>>>>>>>>> power down.
->>>>>>>>>>
->>>>>>>>>> The manual power down via "systemctl poweroff" works fine, so it's
->>>>>>>>>> possibly some spurious wakeup by the power button action, and some
->>>>>>>>>> ACPI-related change is suspected.
->>>>>>>>>> The regression still remains in 4.18-rc3.
->>>>>>>>>
->>>>>>>>> There are only a few ACPI commits directly related to power management
->>>>>>>>> between 4.16 and 4.17 and none of them looks particularly suspicious.
->>>>>>>>
->>>>>>>> OK, interesting.
->>>>>>>>
->>>>>>>>> It looks like the power button state may not be cleared sufficiently
->>>>>>>>> after it's been pressed which is now visible for some reason.
->>>>>>>>
->>>>>>>> Hmm, where can such a state remain?  Since it happens after the
->>>>>>>> machine turned off, some (ACPI) wakeup bits?
->>>>>>>
->>>>>>> Basically, yes.
->>>>>>>
->>>>>>> It looks like a GPE may remain active which then triggers wakeup after
->>>>>>> shutdown.
->>>>>>>
->>>>>>> On a hunch, I'm wondering if reverting commit
->>>>>>>
->>>>>>> 18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
->>>>>>>
->>>>>>> (may not revert clearly, though) makes any difference.
->>>>>>
->>>>>> OK, I'm building a 4.17.x test kernel with that revert, in OBS
->>>>>> home:tiwai:bsc1099930 repo.
->>>>>>
->>>>>> Thomas, could you try later the kernel in
->>>>>>    http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930/standard/
->>>>>> ?  It'll take an hour or so until the build finishes.
->>>>>
->>>>> With your new built kernel
->>>>> 4.17.4-1.g6f23755-default
->>>>>
->>>>> the power button works again, so the revert solved the problem
->>>>
->>>> Thanks, that clarifies the cause.
->>>> Adding Erik and Lv to Cc.
->>>>
->>>> I guess it's the side-effect by removing
->>>>          acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
->>>> in acpi_hw_disable_all_gpes().
->>>>
->>>> This function is called from acpi_power_off_prepare(), and the machine
->>>> goes to power off without clearing the GPEs, hence it's woken up later
->>>> unexpectedly.
->>>
->>> That's correct.
->>>
->>> We need to fix up that commit.  I'll try to prepare something.
->>>
->>
->> Below is a patch to test that theory and maybe fix things if it is correct.
->>
->> What it does is to clear all GPEs after disabling them in
->> acpi_power_off_prepare() which should address the issue if our theory
->> about the underlying reason is correct.
->>
->> Please test.
+On Wed, Jul 04, 2018 at 10:56:26PM +0530, Amit Kucheria wrote:
+> On Tue, Jul 3, 2018 at 9:56 PM, Rob Herring <robh@kernel.org> wrote:
+> > On Mon, Jul 02, 2018 at 06:14:07PM +0530, Amit Kucheria wrote:
+> >> SDM845 uses v2.4.0 of the TSENS IP block but the get_temp() function
+> >> appears to be identical across v2.x.y in code seen so far. We use the
+> >> generic get_temp() function.
+> >>
+> >> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> >> ---
+> >>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt | 2 ++
+> >>  drivers/thermal/qcom/tsens-v2.c                          | 6 +++++-
+> >>  drivers/thermal/qcom/tsens.c                             | 6 ++++++
+> >>  drivers/thermal/qcom/tsens.h                             | 5 ++++-
+> >>  4 files changed, 17 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> >> index 06195e8..075182e 100644
+> >> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> >> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> >> @@ -5,6 +5,8 @@ Required properties:
+> >>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+> >>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+> >>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+> >> + - "qcom,tsens-v2.4.0"  : For SDM845 Family of SoCs
+> >> + - "qcom,tsens-v2"      : Generic fallback binding for any Soc using 2.x.y version of the tsens IP
+> >
+> > You need to show what are valid combinations of compatibles. Does v2
+> > apply to 8996? One valid combination per line.
 > 
-> OK, building a new test kernel package in OBS home:tiwai:bsc1099930-2
-> repo.  It'll appear at
->    http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930-2/standard/
+> I've restructured qcom-tsens.txt to look like this:
 > 
-> Thomas, please give it a try later.
+> -----%<-------
 > 
+> * QCOM SoC Temperature Sensor (TSENS)
 > 
-> thanks,
+> Required properties:
+> - compatible: must be one of the following:
+>     - "qcom,msm8916-tsens" (MSM8916)
+>     - "qcom,msm8974-tsens" (MSM8974)
+>     - "qcom,msm8996-tsens" (MSM8996)
+>     - "qcom,tsens-<ip_version>", "qcom,tsens-v2" (TSENS IP version and a
+>        generic v2 property as fallback except for MSM8996)
 > 
-> Takashi
+>   Examples with ip_version are:
+>     - "qcom,tsens-v2.4.0", "qcom,tsens-v2" (SDM845)
+>     - "qcom,tsens-v2.2.1", "qcom,tsens-v2" (MSM8998)
+> 
+> -----%<-------
+> 
+> 8996 would end up being something like this if needed, though we're
+> stuck with "qcom,msm8996-tsens":
+> "qcom,msm8996-tsens", "qcom,tsens-v2.1.0", "qcom,tsens-v2" (MSM8996)
 
-Later will have to be tomorrow morning (07:00 UTC+2) as until then I 
-have no access to the machine in question.
+3 versions here for 3 SoCs. I'm not getting that convinced version 
+numbers really are better. I would assume that other QCom IP blocks 
+have versions too, but pretty much *every* *other* binding uses SoC names. 
+Why is this one special? The other problem with versions is the mapping 
+of versions to SoCs most likely can't be validated outside of QCom 
+unless there's a version register.
 
+So, sorry to go in circles, but can you go back to qcom,<soc>-tsens. You 
+can keep qcom,tsens-v2 as a fallback.
 
-Thanks
-Thomas
+Yes, it's annoying to have to update bindings for new SoCs. But it's 
+trivial one line patches. Look at Renesas bindings. Maybe adding new 
+ones will be scriptable once we move to json-schema binding docs.
+
+Rob
