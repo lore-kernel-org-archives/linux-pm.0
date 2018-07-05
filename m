@@ -1,7 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 12/23] thermal: armada: get rid of the ->is_valid() pointer
-Date: Thu,  5 Jul 2018 18:04:26 +0200
-Message-ID: <20180705160437.12325-13-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 14/23] dt-bindings: ap806: prepare the syscon file to list
+ other syscons nodes
+Date: Thu,  5 Jul 2018 18:04:28 +0200
+Message-ID: <20180705160437.12325-15-miquel.raynal@bootlin.com>
 References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,88 +22,39 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The implementation of armada_is_valid() is very simple and is the same
-across all the versions of the IP since the ->is_valid_bit has been
-introduced. Simplify the structure by getting rid of the function
-pointer and calling directly the function.
+There are multiple system controllers in AP806. Because all syscon nodes
+use the same compatible, it is pertinent to use this same file to list
+IPs inside it. Thus, change the header to be more generic.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/thermal/armada_thermal.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+ .../bindings/arm/marvell/ap806-system-controller.txt           | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 7f8185e5816e..a05ec01d6848 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -82,9 +82,6 @@ struct armada_thermal_data {
- 	void (*init)(struct platform_device *pdev,
- 		     struct armada_thermal_priv *priv);
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index 0b887440e08a..a856eb9a4e05 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -2,14 +2,14 @@ Marvell Armada AP806 System Controller
+ ======================================
  
--	/* Test for a valid sensor value (optional) */
--	bool (*is_valid)(struct armada_thermal_priv *);
--
- 	/* Formula coeficients: temp = (b - m * reg) / div */
- 	s64 coef_b;
- 	s64 coef_m;
-@@ -266,6 +263,9 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	u32 reg;
+ The AP806 is one of the two core HW blocks of the Marvell Armada 7K/8K
+-SoCs. It contains a system controller, which provides a number
+-registers giving access to numerous features: clocks, pin-muxing and
+-many other SoC configuration items. This DT binding allows to describe
+-this system controller.
++SoCs. It contains system controllers, which provide several registers
++giving access to numerous features: clocks, pin-muxing and many other
++SoC configuration items. This DT binding allows to describe these
++system controllers.
  
-+	if (!priv->data->is_valid_bit)
-+		return true;
-+
- 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
+ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+-  - reg: register area of the AP806 system controller
++ - reg: register area of the AP806 system controller
  
- 	return reg & priv->data->is_valid_bit;
-@@ -356,7 +356,7 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
- 	int ret;
- 
- 	/* Valid check */
--	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
-+	if (armada_is_valid(priv)) {
- 		dev_err(priv->dev,
- 			"Temperature sensor reading not valid\n");
- 		return -EIO;
-@@ -410,7 +410,6 @@ static const struct armada_thermal_data armadaxp_data = {
- };
- 
- static const struct armada_thermal_data armada370_data = {
--	.is_valid = armada_is_valid,
- 	.init = armada370_init,
- 	.is_valid_bit = BIT(9),
- 	.temp_shift = 10,
-@@ -423,7 +422,6 @@ static const struct armada_thermal_data armada370_data = {
- };
- 
- static const struct armada_thermal_data armada375_data = {
--	.is_valid = armada_is_valid,
- 	.init = armada375_init,
- 	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
-@@ -437,7 +435,6 @@ static const struct armada_thermal_data armada375_data = {
- };
- 
- static const struct armada_thermal_data armada380_data = {
--	.is_valid = armada_is_valid,
- 	.init = armada380_init,
- 	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
-@@ -452,7 +449,6 @@ static const struct armada_thermal_data armada380_data = {
- };
- 
- static const struct armada_thermal_data armada_ap806_data = {
--	.is_valid = armada_is_valid,
- 	.init = armada_ap806_init,
- 	.is_valid_bit = BIT(16),
- 	.temp_shift = 0,
-@@ -469,7 +465,6 @@ static const struct armada_thermal_data armada_ap806_data = {
- };
- 
- static const struct armada_thermal_data armada_cp110_data = {
--	.is_valid = armada_is_valid,
- 	.init = armada_cp110_init,
- 	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
+ Clocks:
+ -------
 -- 
 2.14.1
