@@ -1,78 +1,65 @@
-From: =?UTF-8?Q?Thomas_H=c3=a4nig?= <haenig@cosifan.de>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Thu, 5 Jul 2018 16:00:14 +0200
-Message-ID: <da324a44-9520-db81-2106-146d98431a54@cosifan.de>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de>
- <CAJZ5v0guCPET3gM-G_NAM-BjER2D3yW2i_CwR-5sHyNzCQ6R+Q@mail.gmail.com>
- <s5hk1qaui3w.wl-tiwai@suse.de> <1999215.6UrMtQZ5Bj@aspire.rjw.lan>
- <s5ha7r5vq2r.wl-tiwai@suse.de>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
+ framework
+Date: Thu, 5 Jul 2018 16:31:51 +0200
+Message-ID: <20180705143151.GN2458@hirez.programming.kicks-ass.net>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-4-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <s5ha7r5vq2r.wl-tiwai@suse.de>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180628114043.24724-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Am 05.07.2018 um 14:12 schrieb Takashi Iwai:
-> On Thu, 05 Jul 2018 12:41:03 +0200,
-> Rafael J. Wysocki wrote:
->>
->> On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
->>> On Thu, 05 Jul 2018 11:34:59 +0200,
->>> Rafael J. Wysocki wrote:
->>>>
->>>> Hi,
->>>>
->>>> On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
->>>>> Hi,
->>>>>
->>>>> we've got a regression report since 4.17 about the behavior of
->>>>> power-off with the power button.  When a machine is powered off with
->>>>> the power button on desktop, it reboots after a few seconds instead of
->>>>> power down.
->>>>>
->>>>> The manual power down via "systemctl poweroff" works fine, so it's
->>>>> possibly some spurious wakeup by the power button action, and some
->>>>> ACPI-related change is suspected.
->>>>> The regression still remains in 4.18-rc3.
->>>>
->>>> There are only a few ACPI commits directly related to power management
->>>> between 4.16 and 4.17 and none of them looks particularly suspicious.
->>>
->>> OK, interesting.
->>>
->>>> It looks like the power button state may not be cleared sufficiently
->>>> after it's been pressed which is now visible for some reason.
->>>
->>> Hmm, where can such a state remain?  Since it happens after the
->>> machine turned off, some (ACPI) wakeup bits?
->>
->> Basically, yes.
->>
->> It looks like a GPE may remain active which then triggers wakeup after
->> shutdown.
->>
->> On a hunch, I'm wondering if reverting commit
->>
->> 18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
->>
->> (may not revert clearly, though) makes any difference.
-> 
-> OK, I'm building a 4.17.x test kernel with that revert, in OBS
-> home:tiwai:bsc1099930 repo.
-> 
-> Thomas, could you try later the kernel in
->   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930/standard/
-> ?  It'll take an hour or so until the build finishes.
+On Thu, Jun 28, 2018 at 12:40:34PM +0100, Quentin Perret wrote:
+> +/**
+> + * em_fd_energy() - Estimates the energy consumed by the CPUs of a freq. domain
+> + * @fd		: frequency domain for which energy has to be estimated
+> + * @max_util	: highest utilization among CPUs of the domain
+> + * @sum_util	: sum of the utilization of all CPUs in the domain
+> + *
+> + * em_fd_energy() dereferences the capacity state table of the frequency
+> + * domain, so it must be called under RCU read lock.
+> + *
+> + * Return: the sum of the energy consumed by the CPUs of the domain assuming
+> + * a capacity state satisfying the max utilization of the domain.
+> + */
+> +static inline unsigned long em_fd_energy(struct em_freq_domain *fd,
+> +				unsigned long max_util, unsigned long sum_util)
+> +{
+> +	struct em_cs_table *cs_table;
+> +	struct em_cap_state *cs;
+> +	unsigned long freq;
+> +	int i;
+> +
+> +	cs_table = rcu_dereference(fd->cs_table);
+> +	if (!cs_table)
+> +		return 0;
+> +
+> +	/* Map the utilization value to a frequency */
+> +	cs = &cs_table->state[cs_table->nr_cap_states - 1];
+> +	freq = map_util_freq(max_util, cs->frequency, cs->capacity);
+> +
+> +	/* Find the lowest capacity state above this frequency */
+> +	for (i = 0; i < cs_table->nr_cap_states; i++) {
+> +		cs = &cs_table->state[i];
+> +		if (cs->frequency >= freq)
+> +			break;
+> +	}
+> +
+> +	return cs->power * sum_util / cs->capacity;
+> +}
 
-With your new built kernel
-4.17.4-1.g6f23755-default
+I keep reading @max_util as the highest possible util (iow capacity) of
+the freq domain, instead of the current highest instant capacity across
+the CPUs in the domain.
 
-the power button works again, so the revert solved the problem
+At the same time I'm struggling for a better name. Maybe just @util? But
+that would then maybe confuse against @sum_util. argh..
 
-Thanks
-Thomas
+And I'm confused by what exactly this function computes; are you
+(through sum_util) effectively setting idle power at 0?
