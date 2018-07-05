@@ -1,58 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Thu, 05 Jul 2018 12:41:03 +0200
-Message-ID: <1999215.6UrMtQZ5Bj@aspire.rjw.lan>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de> <CAJZ5v0guCPET3gM-G_NAM-BjER2D3yW2i_CwR-5sHyNzCQ6R+Q@mail.gmail.com> <s5hk1qaui3w.wl-tiwai@suse.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.18-rc4
+Date: Thu, 5 Jul 2018 13:31:27 +0200
+Message-ID: <CAJZ5v0hTE4OMOQ7wJ0S5eEwK+ZzYo4HVaGHvJiDPVA4xJc2hyQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <s5hk1qaui3w.wl-tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas =?ISO-8859-1?Q?H=E4nig?= <haenig@cosifan.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
-> On Thu, 05 Jul 2018 11:34:59 +0200,
-> Rafael J. Wysocki wrote:
-> > 
-> > Hi,
-> > 
-> > On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
-> > > Hi,
-> > >
-> > > we've got a regression report since 4.17 about the behavior of
-> > > power-off with the power button.  When a machine is powered off with
-> > > the power button on desktop, it reboots after a few seconds instead of
-> > > power down.
-> > >
-> > > The manual power down via "systemctl poweroff" works fine, so it's
-> > > possibly some spurious wakeup by the power button action, and some
-> > > ACPI-related change is suspected.
-> > > The regression still remains in 4.18-rc3.
-> > 
-> > There are only a few ACPI commits directly related to power management
-> > between 4.16 and 4.17 and none of them looks particularly suspicious.
-> 
-> OK, interesting.
-> 
-> > It looks like the power button state may not be cleared sufficiently
-> > after it's been pressed which is now visible for some reason.
-> 
-> Hmm, where can such a state remain?  Since it happens after the
-> machine turned off, some (ACPI) wakeup bits?
+Hi Linus,
 
-Basically, yes.
+Please pull from the tag
 
-It looks like a GPE may remain active which then triggers wakeup after
-shutdown.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.18-rc4
 
-On a hunch, I'm wondering if reverting commit
+with top-most commit 88b96088e94ec66f6c9015eee28cb9d053be69c0
 
-18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
+ Merge branch 'pm-pci'
 
-(may not revert clearly, though) makes any difference.
+on top of commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063
 
-Thanks,
-Rafael
+ Linux 4.18-rc3
+
+to receive power management fixes for 4.18-rc4.
+
+These fix a PCI power management regression introduced during the
+4.17 cycle and fix up the recently added support for devices in
+multiple power domains.
+
+Specifics:
+
+ - Resume parallel PCI (non-PCIe) bridges on suspend-to-RAM (ACP S3)
+   to avoid confusing the platform firmware which started to happen
+   after a core power management regression fix that went in during
+   the 4.17 cycle (Rafael Wysocki).
+
+ - Fix up the recently added support for devices in multiple power
+   domains by avoiding to power up the entire domain unnecessarily
+   when attaching a device to it (Ulf Hansson).
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
+
+Ulf Hansson (1):
+      PM / Domains: Don't power on at attach for the multi PM domain case
+
+---------------
+
+ drivers/base/power/domain.c | 16 +++++++++-------
+ drivers/pci/pci-acpi.c      | 12 ++++++++++++
+ 2 files changed, 21 insertions(+), 7 deletions(-)
