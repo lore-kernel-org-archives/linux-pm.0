@@ -1,60 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.18-rc4
-Date: Thu, 5 Jul 2018 13:31:27 +0200
-Message-ID: <CAJZ5v0hTE4OMOQ7wJ0S5eEwK+ZzYo4HVaGHvJiDPVA4xJc2hyQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH v4 0/2] powernv/cpuidle Device-tree parsing cleanup
+Date: Thu,  5 Jul 2018 17:10:20 +0530
+Message-ID: <20180705114022.19285-1-akshay.adiga@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Device-tree parsed multiple time in powernv cpuidle and powernv
+hotplug code.
 
-Please pull from the tag
+First to identify supported flags. Second time, to identify deepest_state
+and first deep state. Third time, during cpuidle init to find the available
+idle states. Any change in device-tree format will lead to make changes in
+these 3 places. Errors in device-tree can be handled in a better manner.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.18-rc4
+This series adds code to parse device tree once and save in global structure.
 
-with top-most commit 88b96088e94ec66f6c9015eee28cb9d053be69c0
-
- Merge branch 'pm-pci'
-
-on top of commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063
-
- Linux 4.18-rc3
-
-to receive power management fixes for 4.18-rc4.
-
-These fix a PCI power management regression introduced during the
-4.17 cycle and fix up the recently added support for devices in
-multiple power domains.
-
-Specifics:
-
- - Resume parallel PCI (non-PCIe) bridges on suspend-to-RAM (ACP S3)
-   to avoid confusing the platform firmware which started to happen
-   after a core power management regression fix that went in during
-   the 4.17 cycle (Rafael Wysocki).
-
- - Fix up the recently added support for devices in multiple power
-   domains by avoiding to power up the entire domain unnecessarily
-   when attaching a device to it (Ulf Hansson).
-
-Thanks!
+Changes from v3 :
+ - Removed a stale comment
+Changes from v2 :
+ - Fix build error (moved a hunk from patch 1 to patch 2)
+Changes from v1 :
+ - fold first 2 patches into 1
+ - rename pm_ctrl_reg_* as psscr_*
+ - added comment stating removal of pmicr parsing code
+ - removed parsing code for pmicr
+ - add member valid in pnv_idle_states_t to indicate if the psscr-mask/val
+are valid combination,
+ - Change function description of pnv_parse_cpuidle_dt
+ - Added error handling code.
 
 
----------------
+Akshay Adiga (2):
+  powernv/cpuidle: Parse dt idle properties into global structure
+  powernv/cpuidle: Use parsed device tree values for cpuidle_init
 
-Rafael J. Wysocki (1):
-      PCI / ACPI / PM: Resume bridges w/o drivers on suspend-to-RAM
+ arch/powerpc/include/asm/cpuidle.h    |  13 ++
+ arch/powerpc/platforms/powernv/idle.c | 216 ++++++++++++++++----------
+ drivers/cpuidle/cpuidle-powernv.c     | 158 ++++---------------
+ 3 files changed, 177 insertions(+), 210 deletions(-)
 
-Ulf Hansson (1):
-      PM / Domains: Don't power on at attach for the multi PM domain case
-
----------------
-
- drivers/base/power/domain.c | 16 +++++++++-------
- drivers/pci/pci-acpi.c      | 12 ++++++++++++
- 2 files changed, 21 insertions(+), 7 deletions(-)
+-- 
+2.18.0.rc2.85.g1fb9df7
