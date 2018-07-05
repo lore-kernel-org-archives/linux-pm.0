@@ -1,31 +1,74 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 05/12] sched/topology: Reference the Energy Model
- of CPUs when available
-Date: Thu, 5 Jul 2018 18:50:22 +0100
-Message-ID: <20180705175022.GB21903@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-6-quentin.perret@arm.com>
- <20180705173321.GR2458@hirez.programming.kicks-ass.net>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 18/23] dt-bindings: thermal: armada: add reference to
+ new bindings
+Date: Thu, 5 Jul 2018 12:03:04 -0600
+Message-ID: <CAL_JsqL9h4RExZtm5cER-5kNvMpDzH-4MwcmY7VOLXB9-uEYYA@mail.gmail.com>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+ <20180625151239.20976-19-miquel.raynal@bootlin.com>
+ <20180703213011.GA13190@rob-hp-laptop>
+ <20180705120528.4b923e16@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180705173321.GR2458@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180705120528.4b923e16@xps13>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?Q?Miqu=C3=A8l_Raynal?= <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 05 Jul 2018 at 19:33:21 (+0200), Peter Zijlstra wrote:
-> On Thu, Jun 28, 2018 at 12:40:36PM +0100, Quentin Perret wrote:
-> > +			if (cpumask_equal(doms_new[i], doms_cur[j])
-> > +			    && cpu_rq(cpumask_first(doms_cur[j]))->rd->fd)
-> 
-> Please put the operator at the end of the previous line, not the begin
-> of the next line when splitting.
-
-I did that to be consistent with the to similar loops above, but n/p,
-I'll change it :-)
-
-Thanks,
-Quentin
+T24gVGh1LCBKdWwgNSwgMjAxOCBhdCA0OjA1IEFNIE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXlu
+YWxAYm9vdGxpbi5jb20+IHdyb3RlOgo+Cj4gSGkgUm9iLAo+Cj4gUm9iIEhlcnJpbmcgPHJvYmhA
+a2VybmVsLm9yZz4gd3JvdGUgb24gVHVlLCAzIEp1bCAyMDE4IDE1OjMwOjExIC0wNjAwOgo+Cj4g
+PiBPbiBNb24sIEp1biAyNSwgMjAxOCBhdCAwNToxMjozNFBNICswMjAwLCBNaXF1ZWwgUmF5bmFs
+IHdyb3RlOgo+ID4gPiBOZXcgYmluZGluZ3MgKHdpdGggdGhlIHN5c2NvbiBhbmQgdGhlIG92ZXJo
+ZWF0IGludGVycnVwdCkgYXJlIGF2YWlsYWJsZQo+ID4KPiA+IFdoYXQgaW50ZXJydXB0PyBJdCdz
+IG5vdCBpbiB5b3VyIG5ldyBiaW5kaW5nLgoKPz8/CgoKCj4gPiA+IGZvciBBUDgwNiBhbmQgQ1Ax
+MTAgY29tcGF0aWJsZXMuIEFkZCBhIHJlZmVyZW5jZSB0byB0aGVzZSBmaWxlcyBmcm9tIHRoZQo+
+ID4gPiBvcmlnaW5hbCBkb2N1bWVudGF0aW9uLgo+ID4gPgo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBN
+aXF1ZWwgUmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJvb3RsaW4uY29tPgo+ID4gPiAtLS0KPiA+ID4g
+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10aGVybWFs
+LnR4dCB8IDUgKysrKysKPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKykKPiA+
+ID4KPiA+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90
+aGVybWFsL2FybWFkYS10aGVybWFsLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4dAo+ID4gPiBpbmRleCBlMGQwMTNhMmU2NmQu
+LmYzYjQ0MTEwMDg5MCAxMDA2NDQKPiA+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3RoZXJtYWwvYXJtYWRhLXRoZXJtYWwudHh0Cj4gPiA+ICsrKyBiL0RvY3VtZW50
+YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4dAo+ID4g
+PiBAQCAtMTAsNiArMTAsMTEgQEAgUmVxdWlyZWQgcHJvcGVydGllczoKPiA+ID4gICAgICAqIG1h
+cnZlbGwsYXJtYWRhLWFwODA2LXRoZXJtYWwKPiA+ID4gICAgICAqIG1hcnZlbGwsYXJtYWRhLWNw
+MTEwLXRoZXJtYWwKPiA+Cj4gPiBSZWFsbHkgeW91IHNob3VsZCBub3QgYmUgdXNpbmcgdGhlIHNh
+bWUgY29tcGF0aWJsZSBmb3IgYm90aC4gTm93IHlvdQo+ID4gaGF2ZSAyIGRyaXZlcnMgbWF0Y2hp
+bmcgdG8gc2FtZSBjb21wYXRpYmxlcy4KPiA+Cj4gPiBDYW4ndCB5b3UgbWFrZSB0aGlzIGEgY2hp
+bGQgb2YgdGhlIHN5c2NvbiB3aXRob3V0IGJyZWFraW5nIHRoZSBiaW5kaW5nPwo+Cj4gV2UgYXJl
+IHRhbGtpbmcgYWJvdXQgb25seSAxIGRyaXZlciBoZXJlLCBzbyBJJ20gbm90IHN1cmUgaG93IEkg
+c2hvdWxkCj4gdW5kZXJzdGFuZCB5b3VyIGxhc3Qgc2VudGVuY2UuIERvIHlvdSB3YW50IG1lIHRv
+IGFkZCBhIHNlY29uZAo+IGNvbXBhdGlibGUgKGZvciB0aGUgc2FtZSBwaWVjZSBvZiBoYXJkd2Fy
+ZSkgZm9yIHRoZXJtYWwgbm9kZSBkZWNsYXJlZAo+IGFzIGEgY2hpbGQgb2YgdGhlIHN5c2Nvbj8K
+CkkgZG9uJ3Qga25vdyB3aGF0IEknbSBzdWdnZXN0aW5nLiBZb3VyIGNoYW5nZXMgbG9vayBsaWtl
+IHRoZXkgYnJlYWsKY29tcGF0aWJpbGl0eSB0byBtZS4gV2hhdCBoYXBwZW5zIGlmIHlvdSB1c2Ug
+dGhpcyBuZXcgYmluZGluZyB3aXRob3V0CmFueSBrZXJuZWwgY2hhbmdlPwoKPiBJIGNvdWxkIGhh
+bmRsZSB0aGlzIHNpdHVhdGlvbiBpbiB0aGUgZHJpdmVyIGJ5IGNyZWF0aW5nIHRoZSBtaXNzaW5n
+Cj4gcmVnbWFwIGluIGNhc2Ugd2UgYXJlIHVzaW5nIHRoZSBvbGQgY29tcGF0aWJsZS4gSWYgdGhp
+cyBpcyB0aGUgc29sdXRpb24KPiB5b3UgcHJlZmVyLCBob3cgc2hvdWxkIEkgbmFtZSB0aGUgbmV3
+IGNvbXBhdGlibGVzID8KPgo+ID4KPiA+ID4KPiA+ID4gK05vdGU6IHRoZXNlIGJpbmRpbmdzIGFy
+ZSBkZXByZWNhdGVkIGZvciBBUDgwNi9DUDExMCBhbmQgc2hvdWxkIGluc3RlYWQKPiA+ID4gK2Zv
+bGxvdyB0aGUgcnVsZXMgZGVzY3JpYmVkIGluOgo+ID4gPiArRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250cm9sbGVyLnR4dAo+ID4g
+PiArRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL2NwMTEwLXN5
+c3RlbS1jb250cm9sbGVyLnR4dAo+ID4gPiArCj4gPiA+ICAtIHJlZzogRGV2aWNlJ3MgcmVnaXN0
+ZXIgc3BhY2UuCj4gPiA+ICAgIFR3byBlbnRyaWVzIGFyZSBleHBlY3RlZCwgc2VlIHRoZSBleGFt
+cGxlcyBiZWxvdy4gVGhlIGZpcnN0IG9uZSBwb2ludHMKPiA+ID4gICAgdG8gdGhlIHN0YXR1cyBy
+ZWdpc3RlciAoNEIpLiBUaGUgc2Vjb25kIG9uZSBwb2ludHMgdG8gdGhlIGNvbnRyb2wKPiA+ID4g
+LS0KPiA+ID4gMi4xNC4xCj4gPiA+Cj4KPiBUaGFua3MsCj4gTWlxdcOobAoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
