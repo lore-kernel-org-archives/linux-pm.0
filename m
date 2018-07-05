@@ -1,85 +1,41 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Thu, 5 Jul 2018 11:18:28 +0200
-Message-ID: <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
+Date: Thu, 5 Jul 2018 11:34:59 +0200
+Message-ID: <CAJZ5v0guCPET3gM-G_NAM-BjER2D3yW2i_CwR-5sHyNzCQ6R+Q@mail.gmail.com>
+References: <s5hk1qaf9hv.wl-tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+In-Reply-To: <s5hk1qaf9hv.wl-tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, =?UTF-8?Q?Thomas_H=C3=A4nig?= <haenig@cosifan.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 5, 2018 at 4:44 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
-> On Wed, Jul 4, 2018 at 6:23 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>
->> On Wednesday, July 4, 2018 4:47:07 AM CEST Pingfan Liu wrote:
->> > On Tue, Jul 3, 2018 at 10:36 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > >
->> > > On Tuesday, July 3, 2018 8:50:38 AM CEST Pingfan Liu wrote:
->> > > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
->> > > > places an assumption of supplier<-consumer order on the process of probe.
->> > > > But it turns out to break down the parent <- child order in some scene.
->> > > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
->> > > > have been probed. Then comes the bridge's module, which enables extra
->> > > > feature(such as hotplug) on this bridge.
->> > >
->> > > So what *exactly* does happen in that case?
->> > >
->> > I saw the  shpc_probe() is called on the bridge, although the probing
->> > failed on that bare-metal. But if it success, then it will enable the
->> > hotplug feature on the bridge.
->>
->> I don't understand what you are saying here, sorry.
->>
-> On the system, I observe the following:
-> [    2.114986] devices_kset: Moving 0004:00:00.0 to end of list
-> <---pcie port drive's probe, but it failed
-> [    2.115192] devices_kset: Moving 0004:01:00.0 to end of list
-> [    2.115591] devices_kset: Moving 0004:02:02.0 to end of list
-> [    2.115923] devices_kset: Moving 0004:02:0a.0 to end of list
-> [    2.116141] devices_kset: Moving 0004:02:0b.0 to end of list
-> [    2.116358] devices_kset: Moving 0004:02:0c.0 to end of list
-> [    3.181860] devices_kset: Moving 0004:03:00.0 to end of list
-> <---the ata disk controller which sits behind the bridge
-> [   10.267081] devices_kset: Moving 0004:00:00.0 to end of list
->  <---shpc_probe() on this bridge, failed too.
+Hi,
+
+On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> Hi,
 >
-> As you can the the parent device "0004:00:00.0" is moved twice, and
-> finally, it is after the "0004:03:00.0", this will break the
-> "parent<-child" order in devices_kset. This is caused by the code
-> really_probe()->devices_kset_move_last(). Apparently, it makes
-> assumption that child device's probing comes after its parent's. But
-> it does not stand up in the case.
+> we've got a regression report since 4.17 about the behavior of
+> power-off with the power button.  When a machine is powered off with
+> the power button on desktop, it reboots after a few seconds instead of
+> power down.
 >
->> device_reorder_to_tail() walks the entire device hierarchy below the target
->> and moves all of the children in there *after* their parents.
->>
-> As described, the bug is not related with device_reorder_to_tail(), it
-> is related with really_probe()->devices_kset_move_last().
+> The manual power down via "systemctl poweroff" works fine, so it's
+> possibly some spurious wakeup by the power button action, and some
+> ACPI-related change is suspected.
+> The regression still remains in 4.18-rc3.
 
-OK, so calling devices_kset_move_last() from really_probe() clearly is
-a mistake.
+There are only a few ACPI commits directly related to power management
+between 4.16 and 4.17 and none of them looks particularly suspicious.
 
-I'm not really sure what the intention of it was as the changelog of
-commit 52cdbdd49853d doesn't really explain that (why would it be
-insufficient without that change?) and I'm quite sure that in the
-majority of cases it is unnecessary.
+It looks like the power button state may not be cleared sufficiently
+after it's been pressed which is now visible for some reason.
 
-I *think* that it attempted to cover a use case similar to the device
-links one, but it should have moved children along with the parent
-every time like device_link_add() does.
-
-> So [2/4] uses different method to achieve the "parent<-child" and
-> "supplier<-consumer" order. The [3/4] clean up some code in
-> device_reorder_to_tail(), since I need to revert the commit.
-
-OK, let me look at that one.
+How does the button poweroff work, exactly?  I guess the event is
+collected by a user space demon which then triggers power of via sysfs
+or similar?
 
 Thanks,
 Rafael
