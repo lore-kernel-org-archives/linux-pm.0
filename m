@@ -1,52 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] arm64: dts: hi6220: Add all CPUs in cooling maps
-Date: Thu,  5 Jul 2018 10:39:24 +0530
-Message-ID: <fd741a8140809406ce86c479bbf6f03319490a64.1530766981.git.viresh.kumar@linaro.org>
-References: <cover.1530766981.git.viresh.kumar@linaro.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpuidle:powernv: Add the CPUIDLE_FLAG_POLLING for snooze
+Date: Thu, 05 Jul 2018 16:00:23 +1000
+Message-ID: <87a7r6kyrs.fsf@concordia.ellerman.id.au>
+References: <1530595456-32352-1-git-send-email-ego@linux.vnet.ibm.com> <20180703140616.GA13660@drishya.in.ibm.com> <20180703150348.GA13348@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1530766981.git.viresh.kumar@linaro.org>
+In-Reply-To: <20180703150348.GA13348@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, robh@kernel.org, Wei Xu <xuwei5@hisilicon.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, olof@lixom.net, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, akshay.adiga@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Each CPU can (and does) participate in cooling down the system but the
-DT only captures the CPU0 in the cooling maps. Things work by chance as
-under normal circumstances its the CPU0 which is used by the operating
-systems to probe the cooling devices. But as soon as that ordering
-changes and any other CPU is used to bring up the cooling device, we
-will start seeing errors.
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
+> On Tue, Jul 03, 2018 at 07:36:16PM +0530, Vaidyanathan Srinivasan wrote:
+>> * Gautham R Shenoy <ego@linux.vnet.ibm.com> [2018-07-03 10:54:16]:
+>> 
+>> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> > 
+>> > In the situations where snooze is the only cpuidle state due to
+>> > firmware not exposing any platform idle states, the idle CPUs will
+>> > remain in snooze for a long time with interrupts disabled causing the
+>> > Hard-lockup detector to complain.
+>> 
+>> snooze_loop() will spin in SMT low priority with interrupt enabled. We
+>> have local_irq_enable() before we get into the snooze loop.
+>> Since this is a polling state, we should wakeup without an interrupt
+>> and hence we set TIF_POLLING_NRFLAG as well.
+>>
+>
+> You are right. We have a local_irq_enable() inside the snooze_loop.
+>> 
+>> > watchdog: CPU 51 detected hard LOCKUP on other CPUs 59
+>> > watchdog: CPU 51 TB:535296107736, last SMP heartbeat TB:527472229239 (15281ms ago)
+>> > watchdog: CPU 59 Hard LOCKUP
+>> > watchdog: CPU 59 TB:535296252849, last heartbeat TB:526554725466 (17073ms ago)
+>> 
+>> hmm.. not sure why watchdog will complain, maybe something more is
+>> going on.
+>
+> Will look into this Vaidy.
 
-On the other hand, the hardware is partially defined in DT in these
-cases and we must do a better job by capturing all devices.
+I'll wait for a v2.
 
-Add all devices (CPUs here) in the cooling maps which are also affected
-by the trip point.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index 247024df714f..919d36b91bf3 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -886,7 +886,14 @@
- 				cooling-maps {
- 					map0 {
- 						trip = <&target>;
--						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+						cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu6 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+								 <&cpu7 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
- 					};
- 				};
- 			};
--- 
-2.18.0.rc1.242.g61856ae69a2c
+cheers
