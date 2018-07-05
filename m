@@ -1,51 +1,59 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 19/23] dt-bindings: thermal: armada: add reference to new
- bindings
-Date: Thu,  5 Jul 2018 18:04:33 +0200
-Message-ID: <20180705160437.12325-20-miquel.raynal@bootlin.com>
-References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/3][RFC] Introduce the in-kernel hibernation encryption
+Date: Fri, 6 Jul 2018 00:16:37 +0800
+Message-ID: <20180705161637.GK3628@linux-l9pv.suse>
+References: <cover.1529486870.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180705160437.12325-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1529486870.git.yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-New bindings (with the syscon and the overheat interrupt) are available
-for AP806 and CP110 compatibles. Add a reference to these files from the
-original documentation.
+Hi Chen Yu, 
 
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- Documentation/devicetree/bindings/thermal/armada-thermal.txt | 5 +++++
- 1 file changed, 5 insertions(+)
+On Wed, Jun 20, 2018 at 05:39:37PM +0800, Chen Yu wrote:
+> Hi,
+> As security becomes more and more important, we add the in-kernel
+> encryption support for hibernation.
+> 
+> This prototype is a trial version to implement the hibernation
+> encryption in the kernel, so that the users do not have to rely
+> on third-party tools to encrypt the hibernation image. The only
+> dependency on user space is that, the user space should provide
+> a valid key derived from passphrase to the kernel for image encryption.
+> 
+> There was a discussion on the mailing list on whether this key should
+> be derived in kernel or in user space. And it turns out to be generating
+> the key by user space is more acceptable[1]. So this patch set is divided
+> into two parts:
+> 1. The hibernation snapshot encryption in kernel space,
+> 2. the key derivation implementation in user space.
+> 
+> Please refer to each patch for detail, and feel free to comment on
+> this, thanks.
+> 
+> [1] https://www.spinics.net/lists/linux-crypto/msg33145.html
+> 
+> Chen Yu (3):
+>   PM / Hibernate: Add helper functions for hibernation encryption
+>   PM / Hibernate: Encrypt the snapshot pages before submitted to the
+>     block device
+>   tools: create power/crypto utility
+>
 
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index e0d013a2e66d..f3b441100890 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -10,6 +10,11 @@ Required properties:
-     * marvell,armada-ap806-thermal
-     * marvell,armada-cp110-thermal
- 
-+Note: these bindings are deprecated for AP806/CP110 and should instead
-+follow the rules described in:
-+Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-+
- - reg: Device's register space.
-   Two entries are expected, see the examples below. The first one points
-   to the status register (4B). The second one points to the control
--- 
-2.14.1
+I am trying this patch set.
+
+Could you please tell me how to test the user space crypto utility with
+systemd's hibernation module? 
+
+I have a question about the salt. If the salt is saved in image header,
+does that mean that kernel needs to read the image header before user
+space crypto utility be launched? Otherwise user space can not get
+the salt to produce key? I a bit confused about the resume process.
+
+Thanks
+Joey Lee 
