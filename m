@@ -1,73 +1,80 @@
-From: Pingfan Liu <kernelfans@gmail.com>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Thu, 5 Jul 2018 10:44:57 +0800
-Message-ID: <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH 2/2] device core: Add flag to autoremove device link on
+ supplier unbind
+Date: Thu, 5 Jul 2018 09:58:16 +0530
+Message-ID: <1c0f5cb8-4805-4200-406f-0725122b524f@codeaurora.org>
+References: <20180627125056.12851-1-vivek.gautam@codeaurora.org>
+ <20180627125056.12851-2-vivek.gautam@codeaurora.org>
+ <5b2d17e8-2224-512c-e01c-212828ecf74b@codeaurora.org>
+ <2991909.NMIP74eIIJ@aspire.rjw.lan>
+ <52724c9d-4650-9095-fb68-c4dff21a48f6@codeaurora.org>
+ <CAJZ5v0jb2075fcabZDxPpE+7Bo=NpcFm7kEY5QfO-ZbcfGkDyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+In-Reply-To: <CAJZ5v0jb2075fcabZDxPpE+7Bo=NpcFm7kEY5QfO-ZbcfGkDyw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Robin Murphy <robin.murphy@arm.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 4, 2018 at 6:23 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Wednesday, July 4, 2018 4:47:07 AM CEST Pingfan Liu wrote:
-> > On Tue, Jul 3, 2018 at 10:36 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > On Tuesday, July 3, 2018 8:50:38 AM CEST Pingfan Liu wrote:
-> > > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > > > places an assumption of supplier<-consumer order on the process of probe.
-> > > > But it turns out to break down the parent <- child order in some scene.
-> > > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
-> > > > have been probed. Then comes the bridge's module, which enables extra
-> > > > feature(such as hotplug) on this bridge.
-> > >
-> > > So what *exactly* does happen in that case?
-> > >
-> > I saw the  shpc_probe() is called on the bridge, although the probing
-> > failed on that bare-metal. But if it success, then it will enable the
-> > hotplug feature on the bridge.
->
-> I don't understand what you are saying here, sorry.
->
-On the system, I observe the following:
-[    2.114986] devices_kset: Moving 0004:00:00.0 to end of list
-<---pcie port drive's probe, but it failed
-[    2.115192] devices_kset: Moving 0004:01:00.0 to end of list
-[    2.115591] devices_kset: Moving 0004:02:02.0 to end of list
-[    2.115923] devices_kset: Moving 0004:02:0a.0 to end of list
-[    2.116141] devices_kset: Moving 0004:02:0b.0 to end of list
-[    2.116358] devices_kset: Moving 0004:02:0c.0 to end of list
-[    3.181860] devices_kset: Moving 0004:03:00.0 to end of list
-<---the ata disk controller which sits behind the bridge
-[   10.267081] devices_kset: Moving 0004:00:00.0 to end of list
- <---shpc_probe() on this bridge, failed too.
 
-As you can the the parent device "0004:00:00.0" is moved twice, and
-finally, it is after the "0004:03:00.0", this will break the
-"parent<-child" order in devices_kset. This is caused by the code
-really_probe()->devices_kset_move_last(). Apparently, it makes
-assumption that child device's probing comes after its parent's. But
-it does not stand up in the case.
 
-> device_reorder_to_tail() walks the entire device hierarchy below the target
-> and moves all of the children in there *after* their parents.
+On 7/5/2018 4:49 AM, Rafael J. Wysocki wrote:
+> On Wed, Jul 4, 2018 at 8:09 PM, Vivek Gautam
+> <vivek.gautam@codeaurora.org> wrote:
+>>
+>> On 7/4/2018 4:14 PM, Rafael J. Wysocki wrote:
+>>> On Wednesday, July 4, 2018 9:16:20 AM CEST Vivek Gautam wrote:
+>>>> Adding Ulf and Marek.
+>>>>
+>>>> On 6/27/2018 6:20 PM, Vivek Gautam wrote:
+>>>>> Add a flag to autoremove the device links on supplier driver
+>>>>> unbind. This obviates the need to explicitly delete the link
+>>>>> in the remove path.
+>>>>> We remove these links only when the supplier's link to its
+>>>>> consumers has gone to DL_STATE_SUPPLIER_UNBIND state.
+>>>>>
+>>>>> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+>>>>> Suggested-by: Lukas Wunner <lukas@wunner.de>
+>>>>> Cc: Jonathan Corbet <corbet@lwn.net>
+>>>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>>>> Cc: Robin Murphy <robin.murphy@arm.com>
+>>>>> Cc: linux-doc@vger.kernel.org
+>>>>> Cc: linux-arm-kernel@lists.infradead.org
+>>>>> Cc: linux-pm@vger.kernel.org
+>>>>> Cc: linux-arm-msm@vger.kernel.org
+>>>>> ---
+>>>> Hi Rafael, et al.
+>>>>
+>>>> Gentle ping.
+>>>> Do you have comments on this series. I would really like to conclude
+>>>> these
+>>>> device link additions sooner, and get things moving on the long awaited
+>>>> arm-smmu clock/runtime support series.
+>>>>
+>>>> Thanks again for reviewing these patches.
+>>> They are fine by me.
+>>>
+>>> I can queue them up for 4.19 if no one has objections (Greg in
+>>> particular).
+>>
+>> Hi Rafael,
+>>
+>> I will resubmit these 2 patches as part of the arm-smmu series, as one
+>> of the patch in the series depends on addition of
+>> DL_FLAG_AUTOREMOVE_SUPPLIER.
+>> So these 2 patches and arm-smmu series should go together.
+>> Can you please consider givnig your Ack?
+> I would prefer to apply them myself to be honest and put them on an
+> public git branch for you to pull from.
+
+Sure. Fine with me. I will base the smmu patches on your branch.
+
+Thanks
+Vivek
 >
-As described, the bug is not related with device_reorder_to_tail(), it
-is related with really_probe()->devices_kset_move_last(). So [2/4]
-uses different method to achieve the "parent<-child" and
-"supplier<-consumer" order. The [3/4] clean up some code in
-device_reorder_to_tail(), since I need to revert the commit.
-
-> How can it break "the parent <- child order" then?
->
-As described, it does not, just not be in use any longer.
-
-Thanks and regards,
-Pingfan
+> Thanks,
+> Rafael
