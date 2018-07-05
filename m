@@ -1,54 +1,92 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
- framework
-Date: Thu, 5 Jul 2018 16:09:08 +0100
-Message-ID: <20180705150908.GF32579@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-4-quentin.perret@arm.com>
- <20180705143901.GO2458@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
+Date: Thu, 5 Jul 2018 17:10:20 +0200
+Message-ID: <CAJZ5v0jgYmxu5S8JBJdtDn3MFDAroig=ZhK=V4Ec9iELZSfP6w@mail.gmail.com>
+References: <s5hk1qaf9hv.wl-tiwai@suse.de> <CAJZ5v0guCPET3gM-G_NAM-BjER2D3yW2i_CwR-5sHyNzCQ6R+Q@mail.gmail.com>
+ <s5hk1qaui3w.wl-tiwai@suse.de> <1999215.6UrMtQZ5Bj@aspire.rjw.lan>
+ <s5ha7r5vq2r.wl-tiwai@suse.de> <da324a44-9520-db81-2106-146d98431a54@cosifan.de>
+ <s5hk1q9u3cf.wl-tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180705143901.GO2458@hirez.programming.kicks-ass.net>
+In-Reply-To: <s5hk1q9u3cf.wl-tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Thomas H4nig <haenig@cosifan.de>, Erik Schmauss <erik.schmauss@intel.com>, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 05 Jul 2018 at 16:39:01 (+0200), Peter Zijlstra wrote:
-> On Thu, Jun 28, 2018 at 12:40:34PM +0100, Quentin Perret wrote:
-> > +/**
-> > + * em_fd_nr_cap_states() - Get the number of capacity states of a freq. domain
-> > + * @fd		: frequency domain for which want to do this
-> > + *
-> > + * Return: the number of capacity state in the frequency domain table
-> > + */
-> > +static inline int em_fd_nr_cap_states(struct em_freq_domain *fd)
-> > +{
-> > +	struct em_cs_table *table;
-> > +	int nr_states;
-> > +
-> > +	rcu_read_lock();
-> > +	table = rcu_dereference(fd->cs_table);
-> > +	nr_states = table->nr_cap_states;
-> > +	rcu_read_unlock();
-> 
-> So right here, we can continue to free @table...
-> 
-> > +
-> > +	return nr_states;
-> > +}
-> 
-> and then what does the value we return mean?
+On Thu, Jul 5, 2018 at 5:09 PM, Takashi Iwai <tiwai@suse.de> wrote:
+> On Thu, 05 Jul 2018 16:00:14 +0200,
+> Thomas H4nig wrote:
+>>
+>> Am 05.07.2018 um 14:12 schrieb Takashi Iwai:
+>> > On Thu, 05 Jul 2018 12:41:03 +0200,
+>> > Rafael J. Wysocki wrote:
+>> >>
+>> >> On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
+>> >>> On Thu, 05 Jul 2018 11:34:59 +0200,
+>> >>> Rafael J. Wysocki wrote:
+>> >>>>
+>> >>>> Hi,
+>> >>>>
+>> >>>> On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
+>> >>>>> Hi,
+>> >>>>>
+>> >>>>> we've got a regression report since 4.17 about the behavior of
+>> >>>>> power-off with the power button.  When a machine is powered off with
+>> >>>>> the power button on desktop, it reboots after a few seconds instead of
+>> >>>>> power down.
+>> >>>>>
+>> >>>>> The manual power down via "systemctl poweroff" works fine, so it's
+>> >>>>> possibly some spurious wakeup by the power button action, and some
+>> >>>>> ACPI-related change is suspected.
+>> >>>>> The regression still remains in 4.18-rc3.
+>> >>>>
+>> >>>> There are only a few ACPI commits directly related to power management
+>> >>>> between 4.16 and 4.17 and none of them looks particularly suspicious.
+>> >>>
+>> >>> OK, interesting.
+>> >>>
+>> >>>> It looks like the power button state may not be cleared sufficiently
+>> >>>> after it's been pressed which is now visible for some reason.
+>> >>>
+>> >>> Hmm, where can such a state remain?  Since it happens after the
+>> >>> machine turned off, some (ACPI) wakeup bits?
+>> >>
+>> >> Basically, yes.
+>> >>
+>> >> It looks like a GPE may remain active which then triggers wakeup after
+>> >> shutdown.
+>> >>
+>> >> On a hunch, I'm wondering if reverting commit
+>> >>
+>> >> 18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
+>> >>
+>> >> (may not revert clearly, though) makes any difference.
+>> >
+>> > OK, I'm building a 4.17.x test kernel with that revert, in OBS
+>> > home:tiwai:bsc1099930 repo.
+>> >
+>> > Thomas, could you try later the kernel in
+>> >   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930/standard/
+>> > ?  It'll take an hour or so until the build finishes.
+>>
+>> With your new built kernel
+>> 4.17.4-1.g6f23755-default
+>>
+>> the power button works again, so the revert solved the problem
+>
+> Thanks, that clarifies the cause.
+> Adding Erik and Lv to Cc.
+>
+> I guess it's the side-effect by removing
+>         acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
+> in acpi_hw_disable_all_gpes().
+>
+> This function is called from acpi_power_off_prepare(), and the machine
+> goes to power off without clearing the GPEs, hence it's woken up later
+> unexpectedly.
 
-Hmm that's a good point. In practice the number of entries in the table
-never changes, so that makes no sense to keep that value in the
-RCU-protected struct. I can just move nr_cap_states in struct
-freq_domain directly and access it without RCU protection, it is simply
-not needed.
+That's correct.
 
-I'll change that for the next version.
-
-Thanks,
-Quentin
+We need to fix up that commit.  I'll try to prepare something.
