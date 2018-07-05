@@ -1,36 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] MAINTAINERS: Add myself as driver core changes reviewer
-Date: Thu, 05 Jul 2018 18:04:12 +0200
-Message-ID: <4953969.8lZNsc232p@aspire.rjw.lan>
-References: <69592383.djb3pJg15x@aspire.rjw.lan> <6788986.P6xlqFbtdJ@aspire.rjw.lan> <20180705160225.GA7430@kroah.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: [PATCH v3 03/23] thermal: armada: remove misleading comments
+Date: Thu,  5 Jul 2018 18:04:17 +0200
+Message-ID: <20180705160437.12325-4-miquel.raynal@bootlin.com>
+References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180705160225.GA7430@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180705160437.12325-1-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 5, 2018 6:02:25 PM CEST Greg Kroah-Hartman wrote:
-> On Thu, Jul 05, 2018 at 05:56:17PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, July 5, 2018 5:19:07 PM CEST Greg Kroah-Hartman wrote:
-> > > On Thu, Jul 05, 2018 at 12:27:53PM +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael@kernel.org>
-> > > > 
-> > > > I really need to look at driver core changes before they are applied
-> > > > due to PM dependencies and they sometimes get lost in the LKML
-> > > > traffic, so add myself as an official driver core reviewer.
-> > > 
-> > > YES!!!
-> > > 
-> > 
-> > So I'm assuming that you are going to apply it? ;-)
-> > 
-> 
-> Already queued up, I'm not going to let that chance go by :)
-> 
-> thanks again for doing this, much appreciated.
+On older versions of this thermal IP, TSEN referred as the internal
+sensor in the thermal IP while EXT_TSEN referred as sensors outside of
+this IP, ie in the CPUs most of the time. The bit names in the
+specifications do not follow this rule anymore, so remove these comments
+that are misleading.
 
-You're very welcome. :-)
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/thermal/armada_thermal.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 6fdb90b3c001..18155e43e67f 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -51,12 +51,10 @@
+ #define CONTROL0_TSEN_TC_TRIM_MASK	0x7
+ #define CONTROL0_TSEN_TC_TRIM_VAL	0x3
+ 
+-/* TSEN refers to the temperature sensors within the AP */
+ #define CONTROL0_TSEN_START		BIT(0)
+ #define CONTROL0_TSEN_RESET		BIT(1)
+ #define CONTROL0_TSEN_ENABLE		BIT(2)
+ 
+-/* EXT_TSEN refers to the external temperature sensors, out of the AP */
+ #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
+ #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
+ 
+-- 
+2.14.1
