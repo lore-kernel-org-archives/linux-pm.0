@@ -1,11 +1,13 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 00/23] Add multi-channel support to Armada thermal driver
-Date: Thu,  5 Jul 2018 18:04:14 +0200
-Message-ID: <20180705160437.12325-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 04/23] thermal: armada: rename the initialization routine
+Date: Thu,  5 Jul 2018 18:04:18 +0200
+Message-ID: <20180705160437.12325-5-miquel.raynal@bootlin.com>
+References: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180705160437.12325-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,68 +21,149 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIG9ubHkgY2FwYWJpbGl0eSBvZiB0aGUgQXJtYWRhIHRoZXJtYWwgZHJpdmVyIGlzIGN1cnJl
-bnRseSBqdXN0IHRvCnJlYWQgb25lIHNlbnNvciAodGhlIGRlZmF1bHQgb25lKSBwZXIgQVAgYW5k
-IG9uZSBwZXIgQ1AuIEFjdHVhbGx5LAp0aGVyZSBpcyBvbmUgc2Vuc29yIHBlciBjb3JlIGluIHRo
-ZSBBUDgwNiBwbHVzIG9uZSBzZW5zb3IgaW4gdGhlCnRoZXJtYWwgSVAgaXRzZWxmLiBUaGUgQ1Ax
-MTAganVzdCBmZWF0dXJlcyBvbmUgdGhlcm1hbCBzZW5zb3IgaW4gaXRzCm93biB0aGVybWFsIElQ
-LgoKVGhpcyBzZXJpZXMgZmlyc3QgaW1wcm92ZXMgdGhlIHJlYWRhYmlsaXR5IG9mIHRoaXMgZHJp
-dmVyLCB0aGVuIGFkZHMKc3VwcG9ydCBmb3IgbXVsdGktY2hhbm5lbCB0aGVybWFsIElQcy4gVGhl
-IGJpbmRpbmdzIGFuZCB0aGUKZGV2aWNlLXRyZWVzIGFyZSB1cGRhdGVkIGFjY29yZGluZ2x5LgoK
-VGhhbmsgeW91LApNaXF1w6hsCgoKQ2hhbmdlcyBzaW5jZSB2MjoKPT09PT09PT09PT09PT09PT0K
-KiBGaXhlZCB0eXBvcyBpbiAidGhlcm1hbDogYXJtYWRhOiBjb252ZXJ0IGRyaXZlciB0byBzeXNj
-b24gIHJlZ2lzdGVyCiAgYWNjZXNzZXMiIGNvbW1pdCBsb2cuCiogQWRkZWQgUm9iJ3MgUkIgdGFn
-cyBhZnRlciBjaGFuZ2luZyB0aGUgbm9kZSBuYW1lcyBib3RoIGluIHRoZQogIERvY3VtZW50YXRp
-b24gYW5kIGluIHRoZSBEVCBmaWxlcyB0aGlzIHdheToKICBzL3h4X3RoZXJtYWw6IHh4X3RoZXJt
-YWxAeXkveHhfdGhlcm1hbDogdGhlcm1hbC1zZW5zb3JAeXkvCiogRHJvcHBlZCB0aGUgcGF0Y2gg
-dGhhdCByZW5hbWVkIGxhYmVscyBpbiB0aGUgRG9jdW1lbnRhdGlvbiBvbiBSb2IncwogIG5vdGlj
-ZS4KKiBVbmlmb3JtaXplZCB0aGUgdHlwZSBvZiB0ZW1wZXJhdHVyZSB2YXJpYWJsZXMgdG8gJ2lu
-dCcgYXMgc3VnZ2VzdGVkIGluCiAgYSBwcmV2aW91cyBjb21taXQgZnJvbSBTYXNjaGEgSGF1ZXI6
-CiAgMTdlODM1MWE3NzM5ICgidGhlcm1hbDogY29uc2lzdGVudGx5IHVzZSBpbnQgZm9yIHRlbXBl
-cmF0dXJlcyIpCgpDaGFuZ2VzIHNpbmNlIHYxOgo9PT09PT09PT09PT09PT09PQoqIEFkZGVkIHJl
-Z2lzdGVyIHJhbmdlcyBpbiB0aGUgdGhlcm1hbCBub2Rlcy4KKiBBZGRlZCB0aGVzZSByYW5nZXMg
-aW4gdGhlIGRvY3VtZW50YXRpb24gYWxzby4KKiBJbiB0aGUgYmluZGluZ3MsIHVzZWQgdGhlICJN
-dXN0IGJlIG9uZSBvZiIgZm9ybXVsYSBiZWZvcmUgbGlzdGluZyB0aGUKICBjb21wYXRpYmxlcy4K
-KiBSZW1vdmVkIHRoZSBvdmVyaGVhdCBpbnRlcnJ1cHQgc3VwcG9ydCB0aGF0IGRlcGVuZHMgb24g
-YW5vdGhlcgogIHNlcmllcy4gVGhpcyB3b3JrIGlzIGluZGVwZW5kZW50LgoqIFJlYmFzZWQgb24g
-dG9wIG9mIHY0LjE4LXJjMS4KCgpNaXF1ZWwgUmF5bmFsICgyMyk6CiAgdGhlcm1hbDogYXJtYWRh
-OiBhZGQgYSBmdW5jdGlvbiB0aGF0IHNhbml0aXplcyB0aGUgdGhlcm1hbCB6b25lIG5hbWUKICB0
-aGVybWFsOiBhcm1hZGE6IHJlbW92ZSB1c2VsZXNzIHJlZ2lzdGVyIGFjY2Vzc2VzCiAgdGhlcm1h
-bDogYXJtYWRhOiByZW1vdmUgbWlzbGVhZGluZyBjb21tZW50cwogIHRoZXJtYWw6IGFybWFkYTog
-cmVuYW1lIHRoZSBpbml0aWFsaXphdGlvbiByb3V0aW5lCiAgdGhlcm1hbDogYXJtYWRhOiBkaXNz
-b2NpYXRlIGEzODAgYW5kIGNwMTEwIC0+aW5pdCgpIGhvb2tzCiAgdGhlcm1hbDogYXJtYWRhOiBh
-dmVyYWdlIG92ZXIgc2FtcGxlcyB0byBhdm9pZCBnbGl0Y2hlcwogIHRoZXJtYWw6IGFybWFkYTog
-Y29udmVydCBkcml2ZXIgdG8gc3lzY29uIHJlZ2lzdGVyIGFjY2Vzc2VzCiAgdGhlcm1hbDogYXJt
-YWRhOiB1c2UgdGhlIHJlc291cmNlIG1hbmFnZWQgcmVnaXN0cmF0aW9uIGhlbHBlcgogICAgYWx0
-ZXJuYXRpdmUKICB0aGVybWFsOiBhcm1hZGE6IGFkZCBtdWx0aS1jaGFubmVsIHNlbnNvcnMgc3Vw
-cG9ydAogIHRoZXJtYWw6IGFybWFkYTogcmVtb3ZlIHNlbnNvcnMgdmFsaWRpdHkgZnJvbSB0aGUg
-SVAgaW5pdGlhbGl6YXRpb24KICB0aGVybWFsOiBhcm1hZGE6IG1vdmUgdmFsaWRpdHkgY2hlY2sg
-b3V0IG9mIHRoZSByZWFkIGZ1bmN0aW9uCiAgdGhlcm1hbDogYXJtYWRhOiBnZXQgcmlkIG9mIHRo
-ZSAtPmlzX3ZhbGlkKCkgcG9pbnRlcgogIGR0LWJpbmRpbmdzOiBjcDExMDogcmVuYW1lIGNwMTEw
-IHN5c2NvbiBmaWxlCiAgZHQtYmluZGluZ3M6IGFwODA2OiBwcmVwYXJlIHRoZSBzeXNjb24gZmls
-ZSB0byBsaXN0IG90aGVyIHN5c2NvbnMKICAgIG5vZGVzCiAgZHQtYmluZGluZ3M6IGNwMTEwOiBw
-cmVwYXJlIHRoZSBzeXNjb24gZmlsZSB0byBsaXN0IG90aGVyIHN5c2NvbnMKICAgIG5vZGVzCiAg
-ZHQtYmluZGluZ3M6IGFwODA2OiBhZGQgdGhlIHRoZXJtYWwgbm9kZSBpbiB0aGUgc3lzY29uIGZp
-bGUKICBkdC1iaW5kaW5nczogY3AxMTA6IHVwZGF0ZSBkb2N1bWVudGF0aW9uIHNpbmNlIERUIGRl
-LWR1cGxpY2F0aW9uCiAgZHQtYmluZGluZ3M6IGNwMTEwOiBhZGQgdGhlIHRoZXJtYWwgbm9kZSBp
-biB0aGUgc3lzY29uIGZpbGUKICBkdC1iaW5kaW5nczogdGhlcm1hbDogYXJtYWRhOiBhZGQgcmVm
-ZXJlbmNlIHRvIG5ldyBiaW5kaW5ncwogIGFybTY0OiBkdHM6IG1hcnZlbGw6IG1vdmUgQVA4MDYv
-Q1AxMTAgdGhlcm1hbCBub2RlcyBpbnRvIGEgbmV3IHN5c2NvbgogIGFybTY0OiBkdHM6IG1hcnZl
-bGw6IGFkZCB0aGVybWFsLXpvbmUgbm9kZSBpbiBhcDgwNiBEVFNJIGZpbGUKICBhcm02NDogZHRz
-OiBtYXJ2ZWxsOiBhZGQgbWFjcm8gdG8gbWFrZSBkaXN0aW5jdGlvbiBiZXR3ZWVuIG5vZGUgbmFt
-ZXMKICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQgdGhlcm1hbC16b25lIG5vZGUgaW4gY3AxMTAg
-RFRTSSBmaWxlCgogLi4uL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250cm9sbGVyLnR4dCAg
-ICAgICAgfCAgNDggKy0KIC4uLmNvbnRyb2xsZXIwLnR4dCA9PiBjcDExMC1zeXN0ZW0tY29udHJv
-bGxlci50eHR9IHwgIDYxICsrLQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9hcm1h
-ZGEtdGhlcm1hbC50eHQgfCAgIDUgKwogYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFk
-YS1hcDgwNi5kdHNpICAgICAgfCAgNzQgKystCiBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwv
-YXJtYWRhLWNvbW1vbi5kdHNpICAgICB8ICAgMSArCiBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZl
-bGwvYXJtYWRhLWNwMTEwLmR0c2kgICAgICB8ICAzNyArLQogZHJpdmVycy90aGVybWFsL2FybWFk
-YV90aGVybWFsLmMgICAgICAgICAgICAgICAgICAgfCA1MzQgKysrKysrKysrKysrKysrKy0tLS0t
-CiA3IGZpbGVzIGNoYW5nZWQsIDYwNiBpbnNlcnRpb25zKCspLCAxNTQgZGVsZXRpb25zKC0pCiBy
-ZW5hbWUgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2FybS9tYXJ2ZWxsL3tjcDEx
-MC1zeXN0ZW0tY29udHJvbGxlcjAudHh0ID0+IGNwMTEwLXN5c3RlbS1jb250cm9sbGVyLnR4dH0g
-KDg1JSkKCi0tIAoyLjE0LjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVs
-QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Calling a hook ->init_sensor() while what is initialized is the IP
+itself and not the sensors is misleading. Rename the hook ->init() to
+avoid any confusion in later work bringing multi-sensors support.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/thermal/armada_thermal.c | 40 ++++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
+
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 18155e43e67f..3d22a6016b04 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -73,9 +73,9 @@ struct armada_thermal_priv {
+ };
+ 
+ struct armada_thermal_data {
+-	/* Initialize the sensor */
+-	void (*init_sensor)(struct platform_device *pdev,
+-			    struct armada_thermal_priv *);
++	/* Initialize the thermal IC */
++	void (*init)(struct platform_device *pdev,
++		     struct armada_thermal_priv *priv);
+ 
+ 	/* Test for a valid sensor value (optional) */
+ 	bool (*is_valid)(struct armada_thermal_priv *);
+@@ -94,8 +94,8 @@ struct armada_thermal_data {
+ 	bool needs_control0;
+ };
+ 
+-static void armadaxp_init_sensor(struct platform_device *pdev,
+-				 struct armada_thermal_priv *priv)
++static void armadaxp_init(struct platform_device *pdev,
++			  struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -117,8 +117,8 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+ 	writel(reg, priv->status);
+ }
+ 
+-static void armada370_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada370_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -136,8 +136,8 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	msleep(10);
+ }
+ 
+-static void armada375_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada375_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -164,8 +164,8 @@ static void armada_wait_sensor_validity(struct armada_thermal_priv *priv)
+ 				   STATUS_POLL_TIMEOUT_US);
+ }
+ 
+-static void armada380_init_sensor(struct platform_device *pdev,
+-				  struct armada_thermal_priv *priv)
++static void armada380_init(struct platform_device *pdev,
++			   struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->control1);
+ 
+@@ -186,8 +186,8 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	armada_wait_sensor_validity(priv);
+ }
+ 
+-static void armada_ap806_init_sensor(struct platform_device *pdev,
+-				     struct armada_thermal_priv *priv)
++static void armada_ap806_init(struct platform_device *pdev,
++			      struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
+@@ -247,7 +247,7 @@ static struct thermal_zone_device_ops ops = {
+ };
+ 
+ static const struct armada_thermal_data armadaxp_data = {
+-	.init_sensor = armadaxp_init_sensor,
++	.init = armadaxp_init,
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+ 	.coef_b = 3153000000ULL,
+@@ -257,7 +257,7 @@ static const struct armada_thermal_data armadaxp_data = {
+ 
+ static const struct armada_thermal_data armada370_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada370_init_sensor,
++	.init = armada370_init,
+ 	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+@@ -268,7 +268,7 @@ static const struct armada_thermal_data armada370_data = {
+ 
+ static const struct armada_thermal_data armada375_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada375_init_sensor,
++	.init = armada375_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x1ff,
+@@ -280,7 +280,7 @@ static const struct armada_thermal_data armada375_data = {
+ 
+ static const struct armada_thermal_data armada380_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -292,7 +292,7 @@ static const struct armada_thermal_data armada380_data = {
+ 
+ static const struct armada_thermal_data armada_ap806_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada_ap806_init_sensor,
++	.init = armada_ap806_init,
+ 	.is_valid_bit = BIT(16),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -306,7 +306,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+ 	.is_valid = armada_is_valid,
+-	.init_sensor = armada380_init_sensor,
++	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+@@ -428,7 +428,7 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 		priv->control1 = control + CONTROL1_OFFSET;
+ 	}
+ 
+-	priv->data->init_sensor(pdev, priv);
++	priv->data->init(pdev, priv);
+ 
+ 	thermal = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
+ 					       &ops, NULL, 0, 0);
+-- 
+2.14.1
