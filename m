@@ -1,42 +1,136 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 08/12] sched: Add over-utilization/tipping point
- indicator
-Date: Fri, 6 Jul 2018 14:40:03 +0100
-Message-ID: <20180706134003.GB17577@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-9-quentin.perret@arm.com>
- <20180706113208.GS2458@hirez.programming.kicks-ass.net>
- <20180706132056.GA17577@e108498-lin.cambridge.arm.com>
- <20180706132428.GY2476@hirez.programming.kicks-ass.net>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v4 5/5] power: supply: ds2760_battery: add devicetree
+ probing
+Date: Fri, 6 Jul 2018 15:43:57 +0200
+Message-ID: <20180706134357.4vjzj6775vjx5bew@earth.universe>
+References: <20180706053552.11438-1-daniel@zonque.org>
+ <20180706053552.11438-6-daniel@zonque.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="y7p4xh6cexouua6y"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180706132428.GY2476@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180706053552.11438-6-daniel@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Daniel Mack <daniel@zonque.org>
+Cc: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 06 Jul 2018 at 15:24:28 (+0200), Peter Zijlstra wrote:
-> On Fri, Jul 06, 2018 at 02:20:57PM +0100, Quentin Perret wrote:
-> > So, what we try to do here is to _not_ set the overutilized flag based
-> > on the utilization of a new task, because its utilization is 'wrong'.
-> > That should help avoiding spurious transitions above the overutilized
-> > threshold.
-> 
-> That most certainly deserves a comment,
 
-Ok, will do.
+--y7p4xh6cexouua6y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> also didn't util_est fix some of that wrong-ness?
+Hi,
 
-When a new task is enqueued, we don't have util_est samples yet, so the
-task's util_est is equal to its util_avg. So util_est won't help here,
-unfortunately.
+On Fri, Jul 06, 2018 at 07:35:52AM +0200, Daniel Mack wrote:
+> Add a matching table for devicetree probing, and optionally set the module
+> parameter variables from DT properties.
+>=20
+> Signed-off-by: Daniel Mack <daniel@zonque.org>
+> ---
 
-But it does help in the wake-up path to predict what OPP will be
-selected (see cpu_util_next() in patch 09/12).
+Acked-for-power-supply: Sebastian Reichel <sebastian.reichel@collabora.co.u=
+k>
 
-Thanks,
-Quentin
+-- Sebastian
+
+>  drivers/power/supply/ds2760_battery.c | 29 ++++++++++++++++++++++++++-
+>  1 file changed, 28 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply=
+/ds2760_battery.c
+> index aa406a7c65a1..11bed88a89fa 100644
+> --- a/drivers/power/supply/ds2760_battery.c
+> +++ b/drivers/power/supply/ds2760_battery.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/suspend.h>
+>  #include <linux/w1.h>
+> +#include <linux/of.h>
+> =20
+>  static unsigned int cache_time =3D 1000;
+>  module_param(cache_time, uint, 0644);
+> @@ -705,6 +706,24 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+> =20
+>  	psy_cfg.drv_data =3D di;
+> =20
+> +	if (dev->of_node) {
+> +		u32 tmp;
+> +
+> +		psy_cfg.of_node =3D dev->of_node;
+> +
+> +		if (!of_property_read_bool(dev->of_node, "maxim,pmod-enabled"))
+> +			pmod_enabled =3D true;
+> +
+> +		if (!of_property_read_u32(dev->of_node,
+> +					  "maxim,cache-time-ms", &tmp))
+> +			cache_time =3D tmp;
+> +
+> +		if (!of_property_read_u32(dev->of_node,
+> +					  "rated-capacity-microamp-hours",
+> +					  &tmp))
+> +			rated_capacity =3D tmp / 10; /* property is in mAh */
+> +	}
+> +
+>  	di->charge_status =3D POWER_SUPPLY_STATUS_UNKNOWN;
+> =20
+>  	sl->family_data =3D di;
+> @@ -719,7 +738,7 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+> =20
+>  	ds2760_battery_write_status(di, status);
+> =20
+> -	/* set rated capacity from module param */
+> +	/* set rated capacity from module param or device tree */
+>  	if (rated_capacity)
+>  		ds2760_battery_write_rated_capacity(di, rated_capacity);
+> =20
+> @@ -769,6 +788,13 @@ static void w1_ds2760_remove_slave(struct w1_slave *=
+sl)
+>  	power_supply_unregister(di->bat);
+>  }
+> =20
+> +#ifdef CONFIG_OF
+> +static const struct of_device_id w1_ds2760_of_ids[] =3D {
+> +	{ .compatible =3D "maxim,ds2760" },
+> +	{}
+> +};
+> +#endif
+> +
+>  static struct w1_family_ops w1_ds2760_fops =3D {
+>  	.add_slave	=3D w1_ds2760_add_slave,
+>  	.remove_slave	=3D w1_ds2760_remove_slave,
+> @@ -778,6 +804,7 @@ static struct w1_family_ops w1_ds2760_fops =3D {
+>  static struct w1_family w1_ds2760_family =3D {
+>  	.fid		=3D W1_FAMILY_DS2760,
+>  	.fops		=3D &w1_ds2760_fops,
+> +	.of_match_table	=3D of_match_ptr(w1_ds2760_of_ids),
+>  };
+>  module_w1_family(w1_ds2760_family);
+> =20
+> --=20
+> 2.17.1
+>=20
+
+--y7p4xh6cexouua6y
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/ch0ACgkQ2O7X88g7
++ppC1A//eeFh0WSQh4dt5TVvTN5pnK8QQJ+tk+zUoDzfavKuUyZWPvBGcJd2zlRK
+3F9lTA3K2868RZ5J7EEYAYh4RbE2a/aPIwxE1EHGT+vJkh4mMdNQvnRP1ceQuafA
+VattGr9cMHvOjE7M1/OT8LalFNtpJPRZ/vjKVlN6P45zJyF/KYGoVl+dw1KuuOjX
+kDz69ZBFdBQjp9usYVvUsHg+Lo/cCOF6XfqOEPOSfGePJ7dTSAsEd4Sa+sufk+TT
+ZinhIMzKaqeD4ZfsWNx4t0XRHzXfB+JkvKzkfhzzLELvzoJ9ZwdL97acgCq8EVZD
+bgCqjAlOvzffYMTUuKegYw/Im+bXLuPtV+gP0F93KVrfbe67iQrOZ1ISStVUvEXC
+fDU9nWO7pkpGKtvurUYnYzQyHVwhhEi7jmuqIOWG4CxBa5i5VZwxyqiSS6MenjjA
+mE9IWVsIA6kmwD7UbpjlskisJfdS7bMvRn4PZWEZgjy2S3m4qlsAqGLkLp3IhbCF
+npebRwB4GipOzrfWhsbctuz8G45WvXC10Ahc4hKCZ96NIvCzAdNKfI4QHi+RbKhK
+qJyO5x+r2H3vdIoH3Rh8KOUQIEoNfbxk7AOHYcxVWqU3SR8UTxjoSru3GF0592CV
+YnfKNDuS8O0RU7qL+Mf9DKoTZgQ6sydBtGl6MsEkH3eEGEuEOpU=
+=qrxO
+-----END PGP SIGNATURE-----
+
+--y7p4xh6cexouua6y--
