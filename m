@@ -1,239 +1,58 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH v3] soc: imx: gpc: Turn PU domain on/off in sleep on 6qp
-Date: Fri,  6 Jul 2018 19:46:33 +0300
-Message-ID: <ab0c7997bdb0caf6fe7e842315bb9565c2cb059d.1530895248.git.leonard.crestez@nxp.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH 0/2] power: generic-adc-battery: fix out of bounds write
+Date: Fri, 6 Jul 2018 19:00:23 +0200
+Message-ID: <20180706170023.mpz2vj2mj6vzsc2d@earth.universe>
+References: <cover.1530019688.git.hns@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="tyul24fgxwrwyztr"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1530019688.git.hns@goldelico.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Robin Gong <yibin.gong@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: anish kumar <anish198519851985@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Anton Vorontsov <cbouatmailru@gmail.com>, Jonathan Cameron <jic23@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
 List-Id: linux-pm@vger.kernel.org
 
-On imx6qp power gating on the PU domain is disabled because of errata
-ERR009619. However power gating during suspend/resume can still be
-performed.
 
-Enable this by implementing SLEEP_PM_OPS in imx_pgc_power_domain_driver.
+--tyul24fgxwrwyztr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In order to ensure correct ordering add device links from devices inside
-the PU domain to the pgc platform_device.
+Hi,
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+On Tue, Jun 26, 2018 at 03:28:28PM +0200, H. Nikolaus Schaller wrote:
+> This patch set addresses two bugs in the gab_probe() function which are
+> there since the first commit in 3.7-rc1:
+>=20
+> 1. there is an out of bounds write access by a miscalculated destination
+>    address for the memcpy()
+> 2. if iio channels are already represented by default properties, they
+>    appear as duplicates in uevent
 
----
- drivers/soc/imx/gpc.c | 88 +++++++++++++++++++++++++++++++++++--------
- 1 file changed, 73 insertions(+), 15 deletions(-)
+Thanks, both queued into power-supply-fixes.
 
-Link to v2: https://lkml.org/lkml/2018/7/5/564
+-- Sebastian
 
-Changes since v2: Add device links on attach
+--tyul24fgxwrwyztr
+Content-Type: application/pgp-signature; name="signature.asc"
 
-The NXP kernel has been turning the PU domain off in sleep on 6qp for
-many releases so this behavior went through multiple QA cycles and is
-known to work. Further small improvements in power usage could be
-obtained by also shutting off the PU LDO regulator but that's not as
-well-validated.
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
-index 32f0748fd067..b96d8dc9626d 100644
---- a/drivers/soc/imx/gpc.c
-+++ b/drivers/soc/imx/gpc.c
-@@ -54,19 +54,16 @@ static inline struct imx_pm_domain *
- to_imx_pm_domain(struct generic_pm_domain *genpd)
- {
- 	return container_of(genpd, struct imx_pm_domain, base);
- }
- 
--static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
-+static void _imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
- {
- 	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
- 	int iso, iso2sw;
- 	u32 val;
- 
--	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
--		return -EBUSY;
--
- 	/* Read ISO and ISO2SW power down delays */
- 	regmap_read(pd->regmap, pd->reg_offs + GPC_PGC_PUPSCR_OFFS, &val);
- 	iso = val & 0x3f;
- 	iso2sw = (val >> 8) & 0x3f;
- 
-@@ -78,32 +75,33 @@ static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
- 	val = BIT(pd->cntr_pdn_bit);
- 	regmap_update_bits(pd->regmap, GPC_CNTR, val, val);
- 
- 	/* Wait ISO + ISO2SW IPG clock cycles */
- 	udelay(DIV_ROUND_UP(iso + iso2sw, pd->ipg_rate_mhz));
-+}
-+
-+static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
-+{
-+	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
-+
-+	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
-+		return -EBUSY;
-+
-+	_imx6_pm_domain_power_off(genpd);
- 
- 	if (pd->supply)
- 		regulator_disable(pd->supply);
- 
- 	return 0;
- }
- 
--static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
-+static void _imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
- {
- 	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
--	int i, ret, sw, sw2iso;
-+	int i, sw, sw2iso;
- 	u32 val;
- 
--	if (pd->supply) {
--		ret = regulator_enable(pd->supply);
--		if (ret) {
--			pr_err("%s: failed to enable regulator: %d\n",
--			       __func__, ret);
--			return ret;
--		}
--	}
--
- 	/* Enable reset clocks for all devices in the domain */
- 	for (i = 0; i < pd->num_clks; i++)
- 		clk_prepare_enable(pd->clk[i]);
- 
- 	/* Gate off domain when powered down */
-@@ -123,10 +121,39 @@ static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
- 	udelay(DIV_ROUND_UP(sw + sw2iso, pd->ipg_rate_mhz));
- 
- 	/* Disable reset clocks for all devices in the domain */
- 	for (i = 0; i < pd->num_clks; i++)
- 		clk_disable_unprepare(pd->clk[i]);
-+}
-+
-+static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
-+{
-+	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
-+	int ret;
-+
-+	if (pd->supply) {
-+		ret = regulator_enable(pd->supply);
-+		if (ret) {
-+			pr_err("%s: failed to enable regulator: %d\n",
-+			       __func__, ret);
-+			return ret;
-+		}
-+	}
-+
-+	_imx6_pm_domain_power_on(genpd);
-+
-+	return 0;
-+}
-+
-+static int imx6_pm_domain_attach_dev(
-+               struct generic_pm_domain *genpd,
-+               struct device *dev)
-+{
-+	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
-+
-+	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
-+		device_link_add(dev, genpd->dev.parent, DL_FLAG_AUTOREMOVE);
- 
- 	return 0;
- }
- 
- static int imx_pgc_get_clocks(struct device *dev, struct imx_pm_domain *domain)
-@@ -198,10 +225,11 @@ static int imx_pgc_power_domain_probe(struct platform_device *pdev)
- 	if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS)) {
- 		pm_genpd_init(&domain->base, NULL, false);
- 		ret = of_genpd_add_provider_simple(dev->of_node, &domain->base);
- 		if (ret)
- 			goto genpd_err;
-+		domain->base.dev.parent = dev;
- 	}
- 
- 	device_link_add(dev, dev->parent, DL_FLAG_AUTOREMOVE);
- 
- 	return 0;
-@@ -224,18 +252,45 @@ static int imx_pgc_power_domain_remove(struct platform_device *pdev)
- 	}
- 
- 	return 0;
- }
- 
-+static int imx_pgc_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct imx_pm_domain *pd = pdev->dev.platform_data;
-+
-+	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
-+		_imx6_pm_domain_power_off(&pd->base);
-+
-+	return 0;
-+}
-+
-+static int imx_pgc_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct imx_pm_domain *pd = pdev->dev.platform_data;
-+
-+	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
-+		_imx6_pm_domain_power_on(&pd->base);
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops imx_pgc_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(imx_pgc_suspend, imx_pgc_resume)
-+};
-+
- static const struct platform_device_id imx_pgc_power_domain_id[] = {
- 	{ "imx-pgc-power-domain"},
- 	{ },
- };
- 
- static struct platform_driver imx_pgc_power_domain_driver = {
- 	.driver = {
- 		.name = "imx-pgc-pd",
-+		.pm = &imx_pgc_pm_ops,
- 	},
- 	.probe = imx_pgc_power_domain_probe,
- 	.remove = imx_pgc_power_domain_remove,
- 	.id_table = imx_pgc_power_domain_id,
- };
-@@ -259,28 +314,31 @@ static struct imx_pm_domain imx_gpc_domains[] = {
- 	}, {
- 		.base = {
- 			.name = "PU",
- 			.power_off = imx6_pm_domain_power_off,
- 			.power_on = imx6_pm_domain_power_on,
-+			.attach_dev = imx6_pm_domain_attach_dev,
- 			.states = &imx6_pm_domain_pu_state,
- 			.state_count = 1,
- 		},
- 		.reg_offs = 0x260,
- 		.cntr_pdn_bit = 0,
- 	}, {
- 		.base = {
- 			.name = "DISPLAY",
- 			.power_off = imx6_pm_domain_power_off,
- 			.power_on = imx6_pm_domain_power_on,
-+			.attach_dev = imx6_pm_domain_attach_dev,
- 		},
- 		.reg_offs = 0x240,
- 		.cntr_pdn_bit = 4,
- 	}, {
- 		.base = {
- 			.name = "PCI",
- 			.power_off = imx6_pm_domain_power_off,
- 			.power_on = imx6_pm_domain_power_on,
-+			.attach_dev = imx6_pm_domain_attach_dev,
- 		},
- 		.reg_offs = 0x200,
- 		.cntr_pdn_bit = 6,
- 	},
- };
--- 
-2.17.1
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/oCMACgkQ2O7X88g7
++ppnGg//arX6a+lPENOZlMOs7L1LWLdO/nV8d67xC3sqSU/1+GGs1b0FvRc15NP7
+aQ//Hh1b5ISiErnJ+c+G3cPDqldJZ5tl5pd0IYZVtLE4NqkyEqMgZdvovCjih5Uq
+PpM33XmjcTGl1DUhxUvZIme73iI1X4QhGblh82skmjet2ReO1y88fW7QphdzJIpy
+WZvjJ/G1a0v/Ktq3EgbOMyATEZB5TupiAF3mIk3gCEB9lXNshmC9nSuM0kfnbnl+
+UWXDxfs9WFoJlijl07ZkU4RslB0pZVg4/6df5NFH08O4GnEgPeMK2CkjCqx1x2Ts
+LTivvxuR+GZ0CrVr5S5niS96HHkE31CRc0T96xq7dvbHCSuggTnnJui80RWcs+fQ
+9oHL1B+7RYPmImFGBp7iXh1mJfChvsohotZGTZUfG5I9Ew4j8IL1GY0SEJMmCPGu
+TNjqx98/XaIeAxKshLm9ev659ku+x+vb/T6tbD16D/v8nuQ+g5urWM7vjKW1pDxk
+9Mcy2gYQyrD0mkd5bNzzwTxW5/VccxDi402AVWyE19d0hWMyv2NHhmtLs2Br5l2n
+5uFfOqMIoiSk6XdbFq0ykZ6/IIYjRfLf8xoCxw5q4AvG7a7Bf9+VJ2IV3OtokAqP
+pzhQTN7e4V0NY7vPP/LAyEWHwxEWY6xMt8Rlys4+OtYgYOjYt4k=
+=tUTR
+-----END PGP SIGNATURE-----
+
+--tyul24fgxwrwyztr--
