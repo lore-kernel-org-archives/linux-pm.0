@@ -1,196 +1,116 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 2/3][RFC] PM / Hibernate: Encrypt the snapshot pages
- before submitted to the block device
-Date: Fri, 6 Jul 2018 23:28:56 +0800
-Message-ID: <20180706152856.GB9631@sandybridge-desktop>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <5a1cc6bff40ff9a3e023392c69b881e91b16837a.1529486870.git.yu.c.chen@intel.com>
- <20180628130641.GG3628@linux-l9pv.suse>
- <20180628135017.GA6561@sandybridge-desktop>
- <20180628142856.GH3628@linux-l9pv.suse>
- <20180628145207.GA10891@sandybridge-desktop>
- <20180629125943.GK3628@linux-l9pv.suse>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
+ helper function
+Date: Fri, 6 Jul 2018 17:49:49 +0200
+Message-ID: <20180706154949.GO2494@hirez.programming.kicks-ass.net>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-10-quentin.perret@arm.com>
+ <20180706131243.GV2458@hirez.programming.kicks-ass.net>
+ <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180629125943.GK3628@linux-l9pv.suse>
+In-Reply-To: <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Joey Lee,
-On Fri, Jun 29, 2018 at 08:59:43PM +0800, joeyli wrote:
-> On Thu, Jun 28, 2018 at 10:52:07PM +0800, Yu Chen wrote:
-> > Hi,
-> > On Thu, Jun 28, 2018 at 10:28:56PM +0800, joeyli wrote:
-> > > On Thu, Jun 28, 2018 at 09:50:17PM +0800, Yu Chen wrote:
-> > > > Hi,
-> > > > On Thu, Jun 28, 2018 at 09:07:20PM +0800, joeyli wrote:
-> > > > > Hi Chen Yu,
-> > > > > 
-> > > > > On Wed, Jun 20, 2018 at 05:40:32PM +0800, Chen Yu wrote:
-> > > > > > Use the helper functions introduced previously to encrypt
-> > > > > > the page data before they are submitted to the block device.
-> > > > > > Besides, for the case of hibernation compression, the data
-> > > > > > are firstly compressed and then encrypted, and vice versa
-> > > > > > for the resume process.
-> > > > > >
-> > > > > 
-> > > > > I want to suggest my solution that it direct signs/encrypts the
-> > > > > memory snapshot image. This solution is already shipped with
-> > > > > SLE12 a couple of years:
-> > > > > 
-> > > > > https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-encrypted-key-v0.2-v4.17-rc3
-> > > > > 
-> > > > I did not see image page encryption in above link, if I understand
-> > > 
-> > > PM / hibernate: Generate and verify signature for snapshot image
-> > > https://github.com/joeyli/linux-s4sign/commit/bae39460393ada4c0226dd07cd5e3afcef86b71f
-> > >
-> > > PM / hibernate: snapshot image encryption
-> > > https://github.com/joeyli/linux-s4sign/commit/6a9a0113bb221c036ebd0f6321b7191283fe4929
-> > >
-> > > The above patches sign and encrypt the data pages in snapshot image.
-> > > It puts the signature to header.
-> > >
-> > It looks like your signature code can be simplyly added on top of the
-> > solution we proposed here, how about we collaborating on this task?
-> 
-> OK, I will base on your user key solution to respin my signature patches.
->  
-> > just my 2 cents, 
-> > 1. The cryption code should be indepent of the snapshot code, and
-> >    this is why we implement it as a kernel module for that in PATCH[1/3].
-> 
-> Why the cryption code must be indepent of snapshot code?
->
-Modules can be easier to be maintained and customized/improved in the future IMO..
-> > 2. There's no need to traverse the snapshot image twice, if the
-> >    image is large(there's requirement on servers now) we can
-> >    simplyly do the encryption before the disk IO, and this is
-> >    why PATCH[2/3] looks like this.
-> 
-> If the encryption solution is only for block device, then the uswsusp
-> interface must be locked-down when kernel is in locked mode:
-> 
-> uswsusp: Disable when the kernel is locked down
-> https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs.git/commit/?h=lockdown-20180410&id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
-> 
-> I still suggest to keep the solution to direct encript the snapshot
-> image for uswsusp because the snapshot can be encrypted by kernel
-> before user space get it.
-> 
-> I mean that if the uswsusp be used, then kernel direct encrypts the
-> snapshot image, otherwise kernel encrypts pages before block io.
-> 
-I did not quite get the point, if the kernel has been locked down,
-then the uswsusp is disabled, why the kernel encrypts the snapshot
-for uswsusp?
-> On the other hand, I have a question about asynchronous block io.
-> Please see below...
-> 
-Okay.
-> > > > > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > Cc: Pavel Machek <pavel@ucw.cz>
-> > > > > > Cc: Len Brown <len.brown@intel.com>
-> > > > > > Cc: Borislav Petkov <bp@alien8.de>
-> > > > > > Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> > > > > > Cc: linux-pm@vger.kernel.org
-> > > > > > Cc: linux-kernel@vger.kernel.org
-> > > > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > > > > ---
-> > > > > >  kernel/power/power.h |   1 +
-> > > > > >  kernel/power/swap.c  | 215 ++++++++++++++++++++++++++++++++++++++++++++++++---
-> > > > > >  2 files changed, 205 insertions(+), 11 deletions(-)
-> [...snip]
-> > > > > >  /* kernel/power/hibernate.c */
-> > > > > >  extern int swsusp_check(void);
-> > > > > > diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> > > > > > index c2bcf97..2b6b3d0 100644
-> > > > > > --- a/kernel/power/swap.c
-> > > > > > +++ b/kernel/power/swap.c
-> [...snip]
-> > > > > > @@ -1069,18 +1171,42 @@ static int load_image(struct swap_map_handle *handle,
-> > > > > >  	if (!m)
-> > > > > >  		m = 1;
-> > > > > >  	nr_pages = 0;
-> > > > > > +	crypto_page_idx = 0;
-> > > > > > +	if (handle->crypto) {
-> > > > > > +		crypt_buf = (void *)get_zeroed_page(GFP_KERNEL);
-> > > > > > +		if (!crypt_buf)
-> > > > > > +			return -ENOMEM;
-> > > > > > +	}
-> > > > > >  	start = ktime_get();
-> > > > > >  	for ( ; ; ) {
-> > > > > >  		ret = snapshot_write_next(snapshot);
-> > > > > >  		if (ret <= 0)
-> > > > > >  			break;
-> > > > > > -		ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > > > +		if (handle->crypto)
-> > > > > > +			ret = swap_read_page(handle, crypt_buf, &hb);
-> > > > > > +		else
-> > > > > > +			ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > > >  		if (ret)
-> > > > > >  			break;
-> > > > > >  		if (snapshot->sync_read)
-> > > > > >  			ret = hib_wait_io(&hb);
-> 
-> In snapshot_write_next(), the logic will clean the snapshot->sync_read
-> when the buffer page doesn't equal to the original page. Which means
-> that the page can be read by asynchronous block io. Otherwise, kernel
-> calls hib_wait_io() to wait until the block io was done.
-> 
-Yes, you are right, I missed the asynchronous block io in non-compression
-case.
-> > > > > >  		if (ret)
-> > > > > >  			break;
-> > > > > > +		if (handle->crypto) {
-> > > > > > +			/*
-> > > > > > +			 * Need a decryption for the
-> > > > > > +			 * data read from the block
-> > > > > > +			 * device.
-> > > > > > +			 */
-> > > > > > +			ret = crypto_data(crypt_buf, PAGE_SIZE,
-> > > > > > +					  data_of(*snapshot),
-> > > > > > +					  PAGE_SIZE,
-> > > > > > +					  false,
-> > > > > > +					  crypto_page_idx);
-> > > > > > +			if (ret)
-> > > > > > +				break;
-> > > > > > +			crypto_page_idx++;
-> > > > > > +		}
-> 
-> The decryption is here in the for-loop. But maybe the page is still in
-> the block io queue for waiting the batch read? The page content is not
-> really read to memory when the crypto_data be run? 
-> 
-Yes, it is possible.
-> > > > > >  		if (!(nr_pages % m))
-> > > > > >  			pr_info("Image loading progress: %3d%%\n",
-> > > > > >  				nr_pages / m * 10);
->                 nr_pages++;
->         }
->         err2 = hib_wait_io(&hb);
->         stop = ktime_get();
-> 
-> When the for-loop is break, the above hib_wait_io(&hb) guarantees that
-> all asynchronous block io are done. Then all pages are read to memory.
-> 
-> I think that the decryption code must be moved after for-loop be break.
-> Or there have any callback hook in the asynchronous block io that we
-> can put the encryption code after the block io read the page.
-> 
-Yes, we can move the decryptino code here. Another thought came to my
-mind, how about disabling the asynchronous block io in non-compression
-case if encryption hibernation is enabled(because encryption hibernation
-is not using the  asynchronous block io and it has to traverse each page
-one by one, so asynchronous block io does not bring benefit to encryption
-hibernation in non-compression case)? Or do I miss something?
+On Fri, Jul 06, 2018 at 04:12:12PM +0100, Quentin Perret wrote:
+> On Friday 06 Jul 2018 at 15:12:43 (+0200), Peter Zijlstra wrote:
 
-Best,
-Yu
-> Thanks a lot!
-> Joey Lee 
+> > Did you want to use sugov_get_util() here? There is no way we're going
+> > to duplicate all that.
+> 
+> I need to look into how we can do that ... Sugov looks at the current
+> util landscape while EAS tries to predict the _future_ util landscape.
+> Merging the two means I need to add a task and a dst_cpu as parameters
+> of sugov_get_util() and call cpu_util_next() from there, which doesn't
+> feel so clean ...
+
+Just pass in the util_cfs as computed by cpu_util_next(), then schedutil
+will pass in cpu_util_cfs(), the rest is all the same I think.
+
+See below.
+
+> Also, if we merge sugov_get_util() and sugov_aggregate_util() with
+> Vincent's patch-set I'll need to make sure to return two values with
+> sugov_get_util(): 1) the sum of the util of all classes; and 2) the util
+> that will be used to request an OPP. 1) should be used in sum_util and
+> 2) could (but I don't think it's is a good idea) be used for max_util.
+
+I am confused, the max/sum thing is composed of the same values, just a
+different operator. Both take 'util':
+
+
++	util = schedutil_get_util(cpu, cpu_util_next(cpu, p, dst_cpu))
++	max_util = max(util, max_util);
++	sum_util += util;
+
+
+unsigned long schedutil_get_util(int cpu, unsigned long util_cfs)
+{
+	struct rq *rq = cpu_rq(cpu);
+	unsigned long util, irq, max;
+
+	max = arch_scale_cpu_capacity(NULL, cpu);
+
+	if (rt_rq_is_runnable(&rq->rt))
+		return max;
+
+	/*
+	 * Early check to see if IRQ/steal time saturates the CPU, can be
+	 * because of inaccuracies in how we track these -- see
+	 * update_irq_load_avg().
+	 */
+	irq = cpu_util_irq(rq);
+	if (unlikely(irq >= max))
+		return max;
+
+	/*
+	 * Because the time spend on RT/DL tasks is visible as 'lost' time to
+	 * CFS tasks and we use the same metric to track the effective
+	 * utilization (PELT windows are synchronized) we can directly add them
+	 * to obtain the CPU's actual utilization.
+	 */
+	util = util_cfs;
+	util += cpu_util_rt(rq);
+
+	/*
+	 * We do not make cpu_util_dl() a permanent part of this sum because we
+	 * want to use cpu_bw_dl() later on, but we need to check if the
+	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
+	 * f_max when there is no idle time.
+	 *
+	 * NOTE: numerical errors or stop class might cause us to not quite hit
+	 * saturation when we should -- something for later.
+	 */
+	if ((util + cpu_util_dl(rq)) >= max)
+		return max;
+
+	/*
+	 * There is still idle time; further improve the number by using the
+	 * irq metric. Because IRQ/steal time is hidden from the task clock we
+	 * need to scale the task numbers:
+	 *
+	 *              1 - irq
+	 *   U' = irq + ------- * U
+	 *                max
+	 */
+	util *= (max - irq);
+	util /= max;
+	util += irq;
+
+	/*
+	 * Bandwidth required by DEADLINE must always be granted while, for
+	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+	 * to gracefully reduce the frequency when no tasks show up for longer
+	 * periods of time.
+	 *
+	 * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+	 * bw_dl as requested freq. However, cpufreq is not yet ready for such
+	 * an interface. So, we only do the latter for now.
+	 */
+	return min(max, util + cpu_bw_dl(rq));
+}
