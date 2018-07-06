@@ -1,59 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] driver core: Drop devices_kset_move_last() call from really_probe()
-Date: Fri, 06 Jul 2018 12:00:06 +0200
-Message-ID: <8816662.k3KXbdkA2e@aspire.rjw.lan>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com> <2108146.dv4EAOf6IP@aspire.rjw.lan> <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+Date: Fri, 6 Jul 2018 15:32:29 +0530
+Message-ID: <34c333f2-d90d-0f6b-83c8-b66c63628a1e@ti.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+ <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
+In-Reply-To: <20180706083603.GA9063@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Pingfan Liu <kernelfans@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, Lukas Wunner <lukas@wunner.de>, Linux PM <linux-pm@vger.kernel.org>
+To: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-omap@vger.kernel.org
+Cc: Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Grygorii, linux-omap
 
-The devices_kset_move_last() call in really_probe() is a mistake
-as it may cause parents to follow children in the devices_kset list
-which then causes system shutdown to fail.  Namely, if a device has
-children before really_probe() is called for it (which is not
-uncommon), that call will cause it to be reordered after the children
-in the devices_kset list and the ordering of that list will not
-reflect the correct device shutdown order.
+On Friday 06 July 2018 02:06 PM, Lukas Wunner wrote:
+> [cc += Kishon Vijay Abraham]
+> 
+> On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+>> OK, so calling devices_kset_move_last() from really_probe() clearly is
+>> a mistake.
+>>
+>> I'm not really sure what the intention of it was as the changelog of
+>> commit 52cdbdd49853d doesn't really explain that (why would it be
+>> insufficient without that change?)
+> 
+> It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+> whose reset pin needs to be driven high on shutdown, lest the MMC
+> won't be found on the next boot.
+> 
+> The boards' devicetrees use a kludge wherein the reset pin is modelled
+> as a regulator.  The regulator is enabled when the MMC probes and
+> disabled on driver unbind and shutdown.  As a result, the pin is driven
+> low on shutdown and the MMC is not found on the next boot.
+> 
+> To fix this, another kludge was invented wherein the GPIO expander
+> driving the reset pin unconditionally drives all its pins high on
+> shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+> (commit adc284755055, "gpio: pcf857x: restore the initial line state
+> of all pcf lines").
+> 
+> For this kludge to work, the GPIO expander's ->shutdown hook needs to
+> be executed after the MMC expander's ->shutdown hook.
+> 
+> Commit 52cdbdd49853d achieved that by reordering devices_kset according
+> to the probe order.  Apparently the MMC probes after the GPIO expander,
+> possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+> available yet, see mmc_regulator_get_supply().
+> 
+> Note, I'm just piecing the information together from git history,
+> I'm not responsible for these kludges.  (I'm innocent!)
+> 
+> @Pingfan Liu, if you just remove the call to devices_kset_move_last()
+> from really_probe(), does the issue go away?
+> 
+> If so, it might be best to remove that call and model the dependency
+> with a call to device_link_add() in mmc_regulator_get_supply().
 
-Also it causes the devices_kset list to be constantly reordered
-until all drivers have been probed which is totally pointless
-overhead in the majority of cases.
+hmm.. had a quick look on this and looks like struct regulator is a regulator
+frameworks internal data structure, so its members are not accessible outside.
+struct regulator's device pointer is required for device_link_add().
 
-For that reason, revert the really_probe() modifications made by
-commit 52cdbdd49853.
-
-Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
-Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
-Reported-by: Pingfan Liu <kernelfans@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/dd.c |    8 --------
- 1 file changed, 8 deletions(-)
-
-Index: linux-pm/drivers/base/dd.c
-===================================================================
---- linux-pm.orig/drivers/base/dd.c
-+++ linux-pm/drivers/base/dd.c
-@@ -434,14 +434,6 @@ re_probe:
- 			goto probe_failed;
- 	}
- 
--	/*
--	 * Ensure devices are listed in devices_kset in correct order
--	 * It's important to move Dev to the end of devices_kset before
--	 * calling .probe, because it could be recursive and parent Dev
--	 * should always go first
--	 */
--	devices_kset_move_last(dev);
--
- 	if (dev->bus->probe) {
- 		ret = dev->bus->probe(dev);
- 		if (ret)
+Thanks
+Kishon
