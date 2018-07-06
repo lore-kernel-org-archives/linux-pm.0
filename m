@@ -1,123 +1,79 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power: supply: ab8500: stop using getnstimeofday64()
-Date: Fri, 6 Jul 2018 17:05:50 +0200
-Message-ID: <20180706150550.pimear2arcldfua6@earth.universe>
-References: <20180618142352.3556062-1-arnd@arndb.de>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
+ helper function
+Date: Fri, 6 Jul 2018 16:12:12 +0100
+Message-ID: <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-10-quentin.perret@arm.com>
+ <20180706131243.GV2458@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="x2lia7tdfe3hg3oc"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180618142352.3556062-1-arnd@arndb.de>
+In-Reply-To: <20180706131243.GV2458@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 06 Jul 2018 at 15:12:43 (+0200), Peter Zijlstra wrote:
+> On Thu, Jun 28, 2018 at 12:40:40PM +0100, Quentin Perret wrote:
+> > +static long 
+>    compute_energy(struct task_struct *p, int dst_cpu, struct freq_domain *fd)
+> > +{
+> > +	long util, max_util, sum_util, energy = 0;
+> > +	int cpu;
+> > +
+> > +	while (fd) {
+> > +		max_util = sum_util = 0;
+> > +		for_each_cpu_and(cpu, freq_domain_span(fd), cpu_online_mask) {
+> 
+> I had a wee little wtf moment when I realized this crosses root_domain
+> boundaries but that that is actually desired. A comment might be in
+> order.
 
---x2lia7tdfe3hg3oc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Indeed, the selection of CPU candidates is guaranteed to be within the
+root_domain, but the boundaries for the energy calculation can be
+different. The OPP in a FD can be driven by a CPU outside of the
+root_domain we're currently looking at ... I'll add a comment about
+that.
 
-Hi,
+I guess it is also worth mentioning that in the case mentioned above the
+scheduling decisions made inside one root domain can indirectly be
+impacted by the scheduling decisions made in another root domain. Some
+CPUs inside one root domain might look expensive to use simply because
+they run at a high OPP because of other CPUs of the same FD being
+over-used in another root domain.
 
-On Mon, Jun 18, 2018 at 04:23:29PM +0200, Arnd Bergmann wrote:
-> getnstimeofday64() is deprecated in favor of the ktime_get() family.
->=20
-> The direct replacement would be ktime_get_real_ts64(), but we only need
-> the seconds value, and it seems better to use boottime than real time
-> to avoid unexpected behavior with a concurrent settimeofday().
->=20
-> ktime_get_seconds() might also work, but it seems better to use
-> boottime than monotonic time since I assume that the charging
-> process continues during suspend.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
+This is arguably not desirable, but I'm not sure if this is a problem.
+It would be wise for users not to split a frequency domain in multiple
+root domains IMO but we can't really prevent them from doing so ...
 
-Thanks, queued to power-supply-next.
+Another solution would be to ignore the CPUs outside of the root_domain
+and to accept that this can lead to sub-optimal scheduling decisions
+from an energy standpoint.
 
--- Sebastian
+> 
+> > +			util = cpu_util_next(cpu, p, dst_cpu);
+> > +			util += cpu_util_dl(cpu_rq(cpu));
+> > +			/* XXX: add RT util_avg when available. */
+> > +
+> > +			max_util = max(util, max_util);
+> > +			sum_util += util;
+> 
+> Did you want to use sugov_get_util() here? There is no way we're going
+> to duplicate all that.
 
->  drivers/power/supply/ab8500_fg.c | 14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
->=20
-> diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab85=
-00_fg.c
-> index d9c6c7bedd85..02356f9b5f22 100644
-> --- a/drivers/power/supply/ab8500_fg.c
-> +++ b/drivers/power/supply/ab8500_fg.c
-> @@ -379,15 +379,13 @@ static int ab8500_fg_is_low_curr(struct ab8500_fg *=
-di, int curr)
->   */
->  static int ab8500_fg_add_cap_sample(struct ab8500_fg *di, int sample)
->  {
-> -	struct timespec64 ts64;
-> +	time64_t now =3D ktime_get_boottime_seconds();
->  	struct ab8500_fg_avg_cap *avg =3D &di->avg_cap;
-> =20
-> -	getnstimeofday64(&ts64);
-> -
->  	do {
->  		avg->sum +=3D sample - avg->samples[avg->pos];
->  		avg->samples[avg->pos] =3D sample;
-> -		avg->time_stamps[avg->pos] =3D ts64.tv_sec;
-> +		avg->time_stamps[avg->pos] =3D now;
->  		avg->pos++;
-> =20
->  		if (avg->pos =3D=3D NBR_AVG_SAMPLES)
-> @@ -400,7 +398,7 @@ static int ab8500_fg_add_cap_sample(struct ab8500_fg =
-*di, int sample)
->  		 * Check the time stamp for each sample. If too old,
->  		 * replace with latest sample
->  		 */
-> -	} while (ts64.tv_sec - VALID_CAPACITY_SEC > avg->time_stamps[avg->pos]);
-> +	} while (now - VALID_CAPACITY_SEC > avg->time_stamps[avg->pos]);
-> =20
->  	avg->avg =3D avg->sum / avg->nbr_samples;
-> =20
-> @@ -439,14 +437,14 @@ static void ab8500_fg_clear_cap_samples(struct ab85=
-00_fg *di)
->  static void ab8500_fg_fill_cap_sample(struct ab8500_fg *di, int sample)
->  {
->  	int i;
-> -	struct timespec64 ts64;
-> +	time64_t now;
->  	struct ab8500_fg_avg_cap *avg =3D &di->avg_cap;
-> =20
-> -	getnstimeofday64(&ts64);
-> +	now =3D ktime_get_boottime_seconds();
-> =20
->  	for (i =3D 0; i < NBR_AVG_SAMPLES; i++) {
->  		avg->samples[i] =3D sample;
-> -		avg->time_stamps[i] =3D ts64.tv_sec;
-> +		avg->time_stamps[i] =3D now;
->  	}
-> =20
->  	avg->pos =3D 0;
-> --=20
-> 2.9.0
->=20
+I need to look into how we can do that ... Sugov looks at the current
+util landscape while EAS tries to predict the _future_ util landscape.
+Merging the two means I need to add a task and a dst_cpu as parameters
+of sugov_get_util() and call cpu_util_next() from there, which doesn't
+feel so clean ...
 
---x2lia7tdfe3hg3oc
-Content-Type: application/pgp-signature; name="signature.asc"
+Also, if we merge sugov_get_util() and sugov_aggregate_util() with
+Vincent's patch-set I'll need to make sure to return two values with
+sugov_get_util(): 1) the sum of the util of all classes; and 2) the util
+that will be used to request an OPP. 1) should be used in sum_util and
+2) could (but I don't think it's is a good idea) be used for max_util.
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/hUsACgkQ2O7X88g7
-+pqvkg//UIsF/KAGv1UsFobuKa+uH1YkkFzf9/j/ZkG1XzEp1tdg6piwei/zUlXG
-l4QFp5GkGXaCbwRc6TCsLqAPVAUYt8ANAjfz/Tzap1BCHYgIjWaGPRoibDPc7uaR
-7sBoZC8TB2aiowYZ7BKz4hclT1HVhnwKswxESHhv3fQWRLdks+456eOlPnegYGF1
-Zp2MA17aE/0/XkF2HpCSqFXpONngiHiggoHqKTlwccwUFwuh0KkgrWJWkVtD1PpP
-m12H2sGrOr6TZC2lquNgILPtoTbSlHDsdC00i8rmcNUmGetiwfo5eTLAZrKL/uQZ
-+7KR4Nh71IVS3kusLKEZehGCJEFo7P/sseOfcaJunD0wTGVizKASCyL5GpOqes42
-Skic4UYnBnisWBsqGCKdL9tZz2rlz1TwbmFnMzg5Ij875ZEJkieObMCTXPpq4wAM
-Xn9uIGL3D1POByM9kxXe32H4+McO4UrG1PYW2vMjr88tZze6d6+RVWmAWe6+Q/JW
-G6dHKyknEMH4xy1jNC/+WXJoXiFKhyFuLAl7oQU2ifB3lZQ9yfugJBnXyRY/eroD
-NTpvfJ84GFuAT0pxGArXHnPHQ4FxxWlTvxbF4kxuShcTLqft38Vs4SEQmMbaDAwh
-F7+w4L8Bn8BL3B1jF2M/M/w/+HdME/eAK4wQ4e/quOmd2UMA9dk=
-=a2CD
------END PGP SIGNATURE-----
-
---x2lia7tdfe3hg3oc--
+This probably won't be pretty :/
