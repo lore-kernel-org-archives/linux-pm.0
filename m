@@ -1,77 +1,240 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 12/12] OPTIONAL: cpufreq: dt: Register an Energy
- Model
-Date: Fri, 6 Jul 2018 11:18:58 +0100
-Message-ID: <20180706101858.GC11862@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-13-quentin.perret@arm.com>
- <CAKfTPtAANKzw7QTzKiU_ntiGYMxZD3etd8wMzXtngwUWHXj+Hg@mail.gmail.com>
+From: =?UTF-8?Q?Thomas_H=c3=a4nig?= <haenig@cosifan.de>
+Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
+Date: Fri, 6 Jul 2018 13:12:21 +0200
+Message-ID: <7049b672-859c-e049-a391-f66e4336d4a9@cosifan.de>
+References: <s5hk1qaf9hv.wl-tiwai@suse.de> <s5hk1q9u3cf.wl-tiwai@suse.de>
+ <CAJZ5v0jgYmxu5S8JBJdtDn3MFDAroig=ZhK=V4Ec9iELZSfP6w@mail.gmail.com>
+ <3165315.C5RQ1k0pt5@aspire.rjw.lan> <s5hd0w1fwoq.wl-tiwai@suse.de>
+ <5cce6fa6-c089-7a6b-aaef-bdd04a3761c6@cosifan.de>
+ <s5hr2kgetux.wl-tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtAANKzw7QTzKiU_ntiGYMxZD3etd8wMzXtngwUWHXj+Hg@mail.gmail.com>
+In-Reply-To: <s5hr2kgetux.wl-tiwai@suse.de>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Erik Schmauss <erik.schmauss@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 06 Jul 2018 at 12:10:02 (+0200), Vincent Guittot wrote:
-> On Thu, 28 Jun 2018 at 13:41, Quentin Perret <quentin.perret@arm.com> wrote:
-> > +static int of_est_power(unsigned long *mW, unsigned long *KHz, int cpu)
-> > +{
-> > +       unsigned long mV, Hz, MHz;
-> > +       struct device *cpu_dev;
-> > +       struct dev_pm_opp *opp;
-> > +       struct device_node *np;
-> > +       u32 cap;
-> > +       u64 tmp;
-> > +
-> > +       cpu_dev = get_cpu_device(cpu);
-> > +       if (!cpu_dev)
-> > +               return -ENODEV;
-> > +
-> > +       np = of_node_get(cpu_dev->of_node);
-> > +       if (!np)
-> > +               return -EINVAL;
-> > +
-> > +       if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-> > +               return -EINVAL;
-> > +
-> > +       Hz = *KHz * 1000;
-> > +       opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> > +       if (IS_ERR(opp))
-> > +               return -EINVAL;
-> > +
-> > +       mV = dev_pm_opp_get_voltage(opp) / 1000;
-> > +       dev_pm_opp_put(opp);
-> > +
-> > +       MHz = Hz / 1000000;
-> > +       tmp = (u64)cap * mV * mV * MHz;
-> > +       do_div(tmp, 1000000000);
+Am 06.07.2018 um 08:55 schrieb Takashi Iwai:
+> On Fri, 06 Jul 2018 07:18:36 +0200,
+> Thomas H4nig wrote:
+>>
+>>
+>>
+>> Am 05.07.2018 um 18:56 schrieb Takashi Iwai:
+>>> On Thu, 05 Jul 2018 18:02:11 +0200,
+>>> Rafael J. Wysocki wrote:
+>>>>
+>>>> [The Lv's address is not valid any more, so drop it from the CC]
+>>>>
+>>>> On Thursday, July 5, 2018 5:10:20 PM CEST Rafael J. Wysocki wrote:
+>>>>> On Thu, Jul 5, 2018 at 5:09 PM, Takashi Iwai <tiwai@suse.de> wrote:
+>>>>>> On Thu, 05 Jul 2018 16:00:14 +0200,
+>>>>>> Thomas H4nig wrote:
+>>>>>>>
+>>>>>>> Am 05.07.2018 um 14:12 schrieb Takashi Iwai:
+>>>>>>>> On Thu, 05 Jul 2018 12:41:03 +0200,
+>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>>
+>>>>>>>>> On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
+>>>>>>>>>> On Thu, 05 Jul 2018 11:34:59 +0200,
+>>>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>>>>
+>>>>>>>>>>> Hi,
+>>>>>>>>>>>
+>>>>>>>>>>> On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
+>>>>>>>>>>>> Hi,
+>>>>>>>>>>>>
+>>>>>>>>>>>> we've got a regression report since 4.17 about the behavior of
+>>>>>>>>>>>> power-off with the power button.  When a machine is powered off with
+>>>>>>>>>>>> the power button on desktop, it reboots after a few seconds instead of
+>>>>>>>>>>>> power down.
+>>>>>>>>>>>>
+>>>>>>>>>>>> The manual power down via "systemctl poweroff" works fine, so it's
+>>>>>>>>>>>> possibly some spurious wakeup by the power button action, and some
+>>>>>>>>>>>> ACPI-related change is suspected.
+>>>>>>>>>>>> The regression still remains in 4.18-rc3.
+>>>>>>>>>>>
+>>>>>>>>>>> There are only a few ACPI commits directly related to power management
+>>>>>>>>>>> between 4.16 and 4.17 and none of them looks particularly suspicious.
+>>>>>>>>>>
+>>>>>>>>>> OK, interesting.
+>>>>>>>>>>
+>>>>>>>>>>> It looks like the power button state may not be cleared sufficiently
+>>>>>>>>>>> after it's been pressed which is now visible for some reason.
+>>>>>>>>>>
+>>>>>>>>>> Hmm, where can such a state remain?  Since it happens after the
+>>>>>>>>>> machine turned off, some (ACPI) wakeup bits?
+>>>>>>>>>
+>>>>>>>>> Basically, yes.
+>>>>>>>>>
+>>>>>>>>> It looks like a GPE may remain active which then triggers wakeup after
+>>>>>>>>> shutdown.
+>>>>>>>>>
+>>>>>>>>> On a hunch, I'm wondering if reverting commit
+>>>>>>>>>
+>>>>>>>>> 18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
+>>>>>>>>>
+>>>>>>>>> (may not revert clearly, though) makes any difference.
+>>>>>>>>
+>>>>>>>> OK, I'm building a 4.17.x test kernel with that revert, in OBS
+>>>>>>>> home:tiwai:bsc1099930 repo.
+>>>>>>>>
+>>>>>>>> Thomas, could you try later the kernel in
+>>>>>>>>   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930/standard/
+>>>>>>>> ?  It'll take an hour or so until the build finishes.
+>>>>>>>
+>>>>>>> With your new built kernel
+>>>>>>> 4.17.4-1.g6f23755-default
+>>>>>>>
+>>>>>>> the power button works again, so the revert solved the problem
+>>>>>>
+>>>>>> Thanks, that clarifies the cause.
+>>>>>> Adding Erik and Lv to Cc.
+>>>>>>
+>>>>>> I guess it's the side-effect by removing
+>>>>>>         acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
+>>>>>> in acpi_hw_disable_all_gpes().
+>>>>>>
+>>>>>> This function is called from acpi_power_off_prepare(), and the machine
+>>>>>> goes to power off without clearing the GPEs, hence it's woken up later
+>>>>>> unexpectedly.
+>>>>>
+>>>>> That's correct.
+>>>>>
+>>>>> We need to fix up that commit.  I'll try to prepare something.
+>>>>>
+>>>>
+>>>> Below is a patch to test that theory and maybe fix things if it is correct.
+>>>>
+>>>> What it does is to clear all GPEs after disabling them in
+>>>> acpi_power_off_prepare() which should address the issue if our theory
+>>>> about the underlying reason is correct.
+>>>>
+>>>> Please test.
+>>>
+>>> OK, building a new test kernel package in OBS home:tiwai:bsc1099930-2
+>>> repo.  It'll appear at
+>>>   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930-2/standard/
+>>>
+>>> Thomas, please give it a try later.
+>>>
+>>>
+>>> thanks,
+>>>
+>>> Takashi
+>>
+>> I am sorry, but with your test kernel 4.17.4-1.g76c6238-default the
+>> notebook again gets not properly powered off but restarts
 > 
-> Could you explain the formula above ? and especially the 1000000000 it
-> seems related to the use of mV and mW instead of uV and uW ...
-
-That's correct, this is just a matter of units. I simply tried to
-reproduce here what is currently done for IPA:
-
-https://elixir.bootlin.com/linux/latest/source/drivers/thermal/cpu_cooling.c#L252
-
+> Interesting.  The package version shows that the tested kernel must be
+> the right one.  (Though, it'd be good to double-check -- it's often
+> confusing if you have multiple same kernel versions on the system.)
 > 
-> Can't you just optimize that into
-> tmp = (u64)cap * mV * mV * Hz;
-> do_div(tmp, 1000);
+> If Rafael's patch doesn't work, we'd need to identify which change in
+> the commit 18996f2db918 has the effect.
+> 
+> Thomas, could you try to build & modify the kernel in your side?
+> Package build on OBS and test takes too long.
+> 
+> There are three places that remove the GPE-clearing in the patch.
+> 
+> One is in acpi_ev_enable_gpe():
+> 
+> --- a/drivers/acpi/acpica/evgpe.c
+> +++ b/drivers/acpi/acpica/evgpe.c
+> @@ -115,13 +115,6 @@ acpi_status acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info)
+>  
+>  	ACPI_FUNCTION_TRACE(ev_enable_gpe);
+>  
+> -	/* Clear the GPE (of stale events) */
+> -
+> -	status = acpi_hw_clear_gpe(gpe_event_info);
+> -	if (ACPI_FAILURE(status)) {
+> -		return_ACPI_STATUS(status);
+> -	}
+> -
+>  	/* Enable the requested GPE */
+>  
+>  	status = acpi_hw_low_set_gpe(gpe_event_info, ACPI_GPE_ENABLE);
+> 
+> 
+> ... the second one is in acpi_hw_disable_all_gpes():
+> 
+> --- a/drivers/acpi/acpica/hwgpe.c
+> +++ b/drivers/acpi/acpica/hwgpe.c
+> @@ -497,7 +497,6 @@ acpi_status acpi_hw_disable_all_gpes(void)
+>  	ACPI_FUNCTION_TRACE(hw_disable_all_gpes);
+>  
+>  	status = acpi_ev_walk_gpe_list(acpi_hw_disable_gpe_block, NULL);
+> -	status = acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
+>  	return_ACPI_STATUS(status);
+>  }
+>  
+> 
+> ... and the last one is in acpi_hw_legacy_sleep():
+> 
+> --- a/drivers/acpi/acpica/hwsleep.c
+> +++ b/drivers/acpi/acpica/hwsleep.c
+> @@ -85,15 +85,8 @@ acpi_status acpi_hw_legacy_sleep(u8 sleep_state)
+>  		return_ACPI_STATUS(status);
+>  	}
+>  
+> -	/* Clear all fixed and general purpose status bits */
+> -
+> -	status = acpi_hw_clear_acpi_status();
+> -	if (ACPI_FAILURE(status)) {
+> -		return_ACPI_STATUS(status);
+> -	}
+> -
+>  	/*
+> 	 * 1) Disable/Clear all GPEs
+> 
+> 
+> The rest are only comments changes.
+> 
+> Try to revert each hunk manually one-by-one and figure out which one
+> actually causes the regression.  Maybe it'd be safer to test on the
+> 4.17.x kernel, but you can check on 4.18-rc, too.
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
 
-I don't think that'll work. If you use Hz instead of MHz you'll need to
-divide tmp by 1000000000000000 to get milli-watts, as specified by the
-EM framework.
+I am finally through and have results with patch(es) reverted for kernel
+4.17.3-1-default:
 
-FYI, I don't consider this patch to be ready to be merged. I kept it
-self-contained and simple for the example but I actually think that this
-of_est_power function should probably be factored-out somewhere else.
-scpi-cpufreq could use it as well. Anyway, I guess we can discuss that
-later once the APIs of the EM framework are agreed :-)
+1 - reboot
+2 - reboot
+3 - poweroff
 
-Thanks,
-Quentin
+being
+#1 - evgpe.c
+#2 - hwgpe.c
+#3 - hwsleep.c
+
+whereas the revert failed at #3 and I tried it manually, resulting in
+
+whereas the revert failed at #3 and I tried it manually, resulting in
+
+--- drivers/acpi/acpica/hwsleep.c       2018-07-06 12:56:07.881379862 +0200
++++ drivers/acpi/acpica/hwsleep.c.orig  2018-06-26 08:45:20.000000000 +0200
+@@ -51,13 +51,6 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
+                return_ACPI_STATUS(status);
+        }
+
+-       /* Clear all fixed and general purpose status bits */
+-
+-       status = acpi_hw_clear_acpi_status();
+-       if (ACPI_FAILURE(status)) {
+-               return_ACPI_STATUS(status);
+-       }
+-
+        /*
+         * 1) Disable all GPEs
+         * 2) Enable all wakeup GPEs
