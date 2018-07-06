@@ -1,240 +1,82 @@
-From: =?UTF-8?Q?Thomas_H=c3=a4nig?= <haenig@cosifan.de>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Fri, 6 Jul 2018 13:12:21 +0200
-Message-ID: <7049b672-859c-e049-a391-f66e4336d4a9@cosifan.de>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de> <s5hk1q9u3cf.wl-tiwai@suse.de>
- <CAJZ5v0jgYmxu5S8JBJdtDn3MFDAroig=ZhK=V4Ec9iELZSfP6w@mail.gmail.com>
- <3165315.C5RQ1k0pt5@aspire.rjw.lan> <s5hd0w1fwoq.wl-tiwai@suse.de>
- <5cce6fa6-c089-7a6b-aaef-bdd04a3761c6@cosifan.de>
- <s5hr2kgetux.wl-tiwai@suse.de>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: droid 4: connection refused from voltage_now
+Date: Fri, 6 Jul 2018 13:16:28 +0200
+Message-ID: <20180706111628.mvh46mg6ctqia3iz@earth.universe>
+References: <20180704171156.GA3158@amd>
+ <20180704194556.GA9189@lenoch>
+ <20180704195238.GA13932@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="twaias67dfwhto4x"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <s5hr2kgetux.wl-tiwai@suse.de>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180704195238.GA13932@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Erik Schmauss <erik.schmauss@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ladislav Michl <ladis@linux-mips.org>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
 List-Id: linux-pm@vger.kernel.org
 
-Am 06.07.2018 um 08:55 schrieb Takashi Iwai:
-> On Fri, 06 Jul 2018 07:18:36 +0200,
-> Thomas H4nig wrote:
->>
->>
->>
->> Am 05.07.2018 um 18:56 schrieb Takashi Iwai:
->>> On Thu, 05 Jul 2018 18:02:11 +0200,
->>> Rafael J. Wysocki wrote:
->>>>
->>>> [The Lv's address is not valid any more, so drop it from the CC]
->>>>
->>>> On Thursday, July 5, 2018 5:10:20 PM CEST Rafael J. Wysocki wrote:
->>>>> On Thu, Jul 5, 2018 at 5:09 PM, Takashi Iwai <tiwai@suse.de> wrote:
->>>>>> On Thu, 05 Jul 2018 16:00:14 +0200,
->>>>>> Thomas H4nig wrote:
->>>>>>>
->>>>>>> Am 05.07.2018 um 14:12 schrieb Takashi Iwai:
->>>>>>>> On Thu, 05 Jul 2018 12:41:03 +0200,
->>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>>
->>>>>>>>> On Thursday, July 5, 2018 11:50:11 AM CEST Takashi Iwai wrote:
->>>>>>>>>> On Thu, 05 Jul 2018 11:34:59 +0200,
->>>>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>>>>
->>>>>>>>>>> Hi,
->>>>>>>>>>>
->>>>>>>>>>> On Thu, Jul 5, 2018 at 9:05 AM, Takashi Iwai <tiwai@suse.de> wrote:
->>>>>>>>>>>> Hi,
->>>>>>>>>>>>
->>>>>>>>>>>> we've got a regression report since 4.17 about the behavior of
->>>>>>>>>>>> power-off with the power button.  When a machine is powered off with
->>>>>>>>>>>> the power button on desktop, it reboots after a few seconds instead of
->>>>>>>>>>>> power down.
->>>>>>>>>>>>
->>>>>>>>>>>> The manual power down via "systemctl poweroff" works fine, so it's
->>>>>>>>>>>> possibly some spurious wakeup by the power button action, and some
->>>>>>>>>>>> ACPI-related change is suspected.
->>>>>>>>>>>> The regression still remains in 4.18-rc3.
->>>>>>>>>>>
->>>>>>>>>>> There are only a few ACPI commits directly related to power management
->>>>>>>>>>> between 4.16 and 4.17 and none of them looks particularly suspicious.
->>>>>>>>>>
->>>>>>>>>> OK, interesting.
->>>>>>>>>>
->>>>>>>>>>> It looks like the power button state may not be cleared sufficiently
->>>>>>>>>>> after it's been pressed which is now visible for some reason.
->>>>>>>>>>
->>>>>>>>>> Hmm, where can such a state remain?  Since it happens after the
->>>>>>>>>> machine turned off, some (ACPI) wakeup bits?
->>>>>>>>>
->>>>>>>>> Basically, yes.
->>>>>>>>>
->>>>>>>>> It looks like a GPE may remain active which then triggers wakeup after
->>>>>>>>> shutdown.
->>>>>>>>>
->>>>>>>>> On a hunch, I'm wondering if reverting commit
->>>>>>>>>
->>>>>>>>> 18996f2db918 ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume
->>>>>>>>>
->>>>>>>>> (may not revert clearly, though) makes any difference.
->>>>>>>>
->>>>>>>> OK, I'm building a 4.17.x test kernel with that revert, in OBS
->>>>>>>> home:tiwai:bsc1099930 repo.
->>>>>>>>
->>>>>>>> Thomas, could you try later the kernel in
->>>>>>>>   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930/standard/
->>>>>>>> ?  It'll take an hour or so until the build finishes.
->>>>>>>
->>>>>>> With your new built kernel
->>>>>>> 4.17.4-1.g6f23755-default
->>>>>>>
->>>>>>> the power button works again, so the revert solved the problem
->>>>>>
->>>>>> Thanks, that clarifies the cause.
->>>>>> Adding Erik and Lv to Cc.
->>>>>>
->>>>>> I guess it's the side-effect by removing
->>>>>>         acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
->>>>>> in acpi_hw_disable_all_gpes().
->>>>>>
->>>>>> This function is called from acpi_power_off_prepare(), and the machine
->>>>>> goes to power off without clearing the GPEs, hence it's woken up later
->>>>>> unexpectedly.
->>>>>
->>>>> That's correct.
->>>>>
->>>>> We need to fix up that commit.  I'll try to prepare something.
->>>>>
->>>>
->>>> Below is a patch to test that theory and maybe fix things if it is correct.
->>>>
->>>> What it does is to clear all GPEs after disabling them in
->>>> acpi_power_off_prepare() which should address the issue if our theory
->>>> about the underlying reason is correct.
->>>>
->>>> Please test.
->>>
->>> OK, building a new test kernel package in OBS home:tiwai:bsc1099930-2
->>> repo.  It'll appear at
->>>   http://download.opensuse.org/repositories/home:/tiwai:/bsc1099930-2/standard/
->>>
->>> Thomas, please give it a try later.
->>>
->>>
->>> thanks,
->>>
->>> Takashi
->>
->> I am sorry, but with your test kernel 4.17.4-1.g76c6238-default the
->> notebook again gets not properly powered off but restarts
-> 
-> Interesting.  The package version shows that the tested kernel must be
-> the right one.  (Though, it'd be good to double-check -- it's often
-> confusing if you have multiple same kernel versions on the system.)
-> 
-> If Rafael's patch doesn't work, we'd need to identify which change in
-> the commit 18996f2db918 has the effect.
-> 
-> Thomas, could you try to build & modify the kernel in your side?
-> Package build on OBS and test takes too long.
-> 
-> There are three places that remove the GPE-clearing in the patch.
-> 
-> One is in acpi_ev_enable_gpe():
-> 
-> --- a/drivers/acpi/acpica/evgpe.c
-> +++ b/drivers/acpi/acpica/evgpe.c
-> @@ -115,13 +115,6 @@ acpi_status acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info)
->  
->  	ACPI_FUNCTION_TRACE(ev_enable_gpe);
->  
-> -	/* Clear the GPE (of stale events) */
-> -
-> -	status = acpi_hw_clear_gpe(gpe_event_info);
-> -	if (ACPI_FAILURE(status)) {
-> -		return_ACPI_STATUS(status);
-> -	}
-> -
->  	/* Enable the requested GPE */
->  
->  	status = acpi_hw_low_set_gpe(gpe_event_info, ACPI_GPE_ENABLE);
-> 
-> 
-> ... the second one is in acpi_hw_disable_all_gpes():
-> 
-> --- a/drivers/acpi/acpica/hwgpe.c
-> +++ b/drivers/acpi/acpica/hwgpe.c
-> @@ -497,7 +497,6 @@ acpi_status acpi_hw_disable_all_gpes(void)
->  	ACPI_FUNCTION_TRACE(hw_disable_all_gpes);
->  
->  	status = acpi_ev_walk_gpe_list(acpi_hw_disable_gpe_block, NULL);
-> -	status = acpi_ev_walk_gpe_list(acpi_hw_clear_gpe_block, NULL);
->  	return_ACPI_STATUS(status);
->  }
->  
-> 
-> ... and the last one is in acpi_hw_legacy_sleep():
-> 
-> --- a/drivers/acpi/acpica/hwsleep.c
-> +++ b/drivers/acpi/acpica/hwsleep.c
-> @@ -85,15 +85,8 @@ acpi_status acpi_hw_legacy_sleep(u8 sleep_state)
->  		return_ACPI_STATUS(status);
->  	}
->  
-> -	/* Clear all fixed and general purpose status bits */
-> -
-> -	status = acpi_hw_clear_acpi_status();
-> -	if (ACPI_FAILURE(status)) {
-> -		return_ACPI_STATUS(status);
-> -	}
-> -
->  	/*
-> 	 * 1) Disable/Clear all GPEs
-> 
-> 
-> The rest are only comments changes.
-> 
-> Try to revert each hunk manually one-by-one and figure out which one
-> actually causes the regression.  Maybe it'd be safer to test on the
-> 4.17.x kernel, but you can check on 4.18-rc, too.
-> 
-> 
-> thanks,
-> 
-> Takashi
-> 
 
-I am finally through and have results with patch(es) reverted for kernel
-4.17.3-1-default:
+--twaias67dfwhto4x
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1 - reboot
-2 - reboot
-3 - poweroff
+Hi,
 
-being
-#1 - evgpe.c
-#2 - hwgpe.c
-#3 - hwsleep.c
+On Wed, Jul 04, 2018 at 09:52:38PM +0200, Pavel Machek wrote:
+> On Wed 2018-07-04 21:45:56, Ladislav Michl wrote:
+> > On Wed, Jul 04, 2018 at 07:11:56PM +0200, Pavel Machek wrote:
+> > > Hi!
+> > >=20
+> > > I started to use droid 4 as my primary phone... so I have battery
+> > > monitor running for hours... Once every few days it dies with
+> > > "connection refused" error reading battery's "voltage_now". I restart
+> > > it and it continues working...
+> >=20
+> > Ha! What exactly that "connection refused" means? Is it ECONNREFUSED (1=
+11)?
+> > I have custom at91 based board here with few custom power supply drivers
+> > and it sometimes ends with voltage_now of my driver being unreadable.
+> > (I modified userspace code and waiting what's in errno in case
+> > reading fails)
+>=20
+> It seems to be -110:
+> Jul  4 11:48:29 devuan kernel: [ 2908.602600] cpcap_adc cpcap_adc.0: erro=
+r reading ADC: -110
+> Jul  4 11:48:29 devuan kernel: [ 2908.608123] cpcap_battery cpcap_battery=
+=2E0: cpcap_battery_get_current failed: -110
+> Jul  4 11:48:30 devuan kernel: [ 2908.922576] cpcap_adc cpcap_adc.0: erro=
+r reading ADC: -110
+> Jul  4 11:48:30 devuan kernel: [ 2908.928100] cpcap_battery cpcap_battery=
+=2E0: cpcap_charger_battery_temperature failed: -110
+> Jul  4 11:48:30 devuan kernel: [ 2908.936340] power_supply battery: drive=
+r failed to report `voltage_now' property: -110
 
-whereas the revert failed at #3 and I tried it manually, resulting in
+The error above is obviously generated by cpcap_adc and only
+propageted by cpcap_battery. Have a look for -ETIMEDOUT (-110)
+in drivers/iio/adc/cpcap-adc.c.
 
-whereas the revert failed at #3 and I tried it manually, resulting in
+-- Sebastian
 
---- drivers/acpi/acpica/hwsleep.c       2018-07-06 12:56:07.881379862 +0200
-+++ drivers/acpi/acpica/hwsleep.c.orig  2018-06-26 08:45:20.000000000 +0200
-@@ -51,13 +51,6 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
-                return_ACPI_STATUS(status);
-        }
+--twaias67dfwhto4x
+Content-Type: application/pgp-signature; name="signature.asc"
 
--       /* Clear all fixed and general purpose status bits */
--
--       status = acpi_hw_clear_acpi_status();
--       if (ACPI_FAILURE(status)) {
--               return_ACPI_STATUS(status);
--       }
--
-        /*
-         * 1) Disable all GPEs
-         * 2) Enable all wakeup GPEs
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/T4kACgkQ2O7X88g7
++pqm2BAAlvgPwUmd7FVXUfz9UxlwU+TIq2+FYiiO3zKdFJJDzntBDefAmdZn+kAU
+mEwsuQKcOC1buhWj/Qte2/QChtZHHOQOYNjEyR2SnzGZ23NDRc21Zte8uvXzH1hl
+bEiwGf0NDYYxyWPr4M+MdVQ8vmgSrwZo9YNtqU2j/xV6DMmU9fLjvFhzBKjD/dL2
+U8ZW10k9e1SzONVdytcr68aKFv1VHzt3dqVzONcgGJqttWJeckO+rul8eCuhp183
+jILyUS0m97KfCBhVI3dav7sgvYQEOCg4DzqRjNV1c6nyTpDNHS2ThRrIA/4jOfvz
+73v5DJKkmcDLwEBA3b30msgoSf9QX24r5gdbQMJ2RPgO0eGuiufabTMZl3NTZJym
+MMpNgDQv8NIEWgVIQ2sf28ye+pVAEO6C5xx57dJltiQEuK20ZYRMvHr7JPQXmTCD
+Q2UJ/y5CDGgfXM9+C2V+oiBwns58HCMgXtkiIEGpjlnh4ZvBvJ73XiIvLoMy9fPn
+CkPFKlvc0uWTz9VMeAEmUXu7XQrUbAWUntUxyibm7Mj8s8tSa0WbaAW/vWWCK7E8
+PVB18HGA1kzW4NGGuZ6dGAqvIQEg01fRtqjOsYx/QCh2oQp7VaP3YEX/gYfN8gUH
+x40BKXCF9P6ly5zTN9TB5YFItmjzG8dJPHGI523+i1yusMdMOLs=
+=olpt
+-----END PGP SIGNATURE-----
+
+--twaias67dfwhto4x--
