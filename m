@@ -1,183 +1,131 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v5 04/12] PM / devfreq: Add struct devfreq_policy
-Date: Fri, 6 Jul 2018 10:07:01 -0700
-Message-ID: <20180706170701.GF129942@google.com>
-References: <20180703234705.227473-1-mka@chromium.org>
- <CGME20180703235030epcas4p423e7bf876628913adb3e41ffdc8ba3cd@epcas4p4.samsung.com>
- <20180703234705.227473-5-mka@chromium.org>
- <5B3C3632.1010706@samsung.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 4/6] thermal: tsens: Add support for SDM845
+Date: Fri, 6 Jul 2018 11:47:41 -0600
+Message-ID: <CAL_JsqKXX6j3d1ErtXN1sTybXFx3diTusaiA8RC8reO_Lz0rSA@mail.gmail.com>
+References: <cover.1530533998.git.amit.kucheria@linaro.org>
+ <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
+ <20180703162619.GA17238@rob-hp-laptop> <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
+ <20180705203712.GA29531@rob-hp-laptop> <CAP245DVvdswALtZj0XTOsntHC4kz6a63DJ8qxeiry+9N77=CGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5B3C3632.1010706@samsung.com>
+In-Reply-To: <CAP245DVvdswALtZj0XTOsntHC4kz6a63DJ8qxeiry+9N77=CGw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Siddartha Mohanadoss <smohanad@codeaurora.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Kees Cook <keescook@chromium.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jul 5, 2018 at 11:13 PM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>
+> On Fri, Jul 6, 2018 at 2:07 AM Rob Herring <robh@kernel.org> wrote:
+> >
+> > On Wed, Jul 04, 2018 at 10:56:26PM +0530, Amit Kucheria wrote:
+> > > On Tue, Jul 3, 2018 at 9:56 PM, Rob Herring <robh@kernel.org> wrote:
+> > > > On Mon, Jul 02, 2018 at 06:14:07PM +0530, Amit Kucheria wrote:
+> > > >> SDM845 uses v2.4.0 of the TSENS IP block but the get_temp() function
+> > > >> appears to be identical across v2.x.y in code seen so far. We use the
+> > > >> generic get_temp() function.
+> > > >>
+> > > >> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > > >> ---
+> > > >>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt | 2 ++
+> > > >>  drivers/thermal/qcom/tsens-v2.c                          | 6 +++++-
+> > > >>  drivers/thermal/qcom/tsens.c                             | 6 ++++++
+> > > >>  drivers/thermal/qcom/tsens.h                             | 5 ++++-
+> > > >>  4 files changed, 17 insertions(+), 2 deletions(-)
+> > > >>
+> > > >> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> > > >> index 06195e8..075182e 100644
+> > > >> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> > > >> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> > > >> @@ -5,6 +5,8 @@ Required properties:
+> > > >>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+> > > >>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+> > > >>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+> > > >> + - "qcom,tsens-v2.4.0"  : For SDM845 Family of SoCs
+> > > >> + - "qcom,tsens-v2"      : Generic fallback binding for any Soc using 2.x.y version of the tsens IP
+> > > >
+> > > > You need to show what are valid combinations of compatibles. Does v2
+> > > > apply to 8996? One valid combination per line.
+> > >
+> > > I've restructured qcom-tsens.txt to look like this:
+> > >
+> > > -----%<-------
+> > >
+> > > * QCOM SoC Temperature Sensor (TSENS)
+> > >
+> > > Required properties:
+> > > - compatible: must be one of the following:
+> > >     - "qcom,msm8916-tsens" (MSM8916)
+> > >     - "qcom,msm8974-tsens" (MSM8974)
+> > >     - "qcom,msm8996-tsens" (MSM8996)
+> > >     - "qcom,tsens-<ip_version>", "qcom,tsens-v2" (TSENS IP version and a
+> > >        generic v2 property as fallback except for MSM8996)
+> > >
+> > >   Examples with ip_version are:
+> > >     - "qcom,tsens-v2.4.0", "qcom,tsens-v2" (SDM845)
+> > >     - "qcom,tsens-v2.2.1", "qcom,tsens-v2" (MSM8998)
+> > >
+> > > -----%<-------
+> > >
+> > > 8996 would end up being something like this if needed, though we're
+> > > stuck with "qcom,msm8996-tsens":
+> > > "qcom,msm8996-tsens", "qcom,tsens-v2.1.0", "qcom,tsens-v2" (MSM8996)
+> >
+> > 3 versions here for 3 SoCs. I'm not getting that convinced version
+> > numbers really are better. I would assume that other QCom IP blocks
+>
+> Yeah, it is a bit unfortunate that the 3-4 SoCs we're focusing on
+> getting supported upstream have different versions of the TSENS IP.
+> The other goal of this work was to make the upstream driver
+> feature-complete so we can make a case to switch to it in the
+> downstream trees, even on platforms that aren't being active
+> upstreamed. They'll still need to keep around those SoC-specific
+> one-liner patches in the downstream trees.
 
-On Wed, Jul 04, 2018 at 11:51:30AM +0900, Chanwoo Choi wrote:
-> Hi,
-> 
-> On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
-> > Move variables related with devfreq policy changes from struct devfreq
-> > to the new struct devfreq_policy and add a policy field to struct devfreq.
-> > 
-> > The following variables are moved:
-> > 
-> > df->min/max_freq           =>   p->user.min/max_freq
-> > df->scaling_min/max_freq   =>   p->devinfo.min/max_freq
-> > df->governor               =>   p->governor
-> > df->governor_name          =>   p->governor_name
-> > 
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > Reviewed-by: Brian Norris <briannorris@chromium.org>
-> > ---
-> > Changes in v5:
-> > - none
-> > 
-> > Changes in v4:
-> > - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
-> > 
-> > Changes in v3:
-> > - none
-> > 
-> > Changes in v2:
-> > - performance, powersave and simpleondemand governors don't need changes
-> >   with "PM / devfreq: Don't adjust to user limits in governors"
-> > - formatting fixes
-> > ---
-> >  drivers/devfreq/devfreq.c          | 137 ++++++++++++++++-------------
-> >  drivers/devfreq/governor_passive.c |   4 +-
-> >  include/linux/devfreq.h            |  38 +++++---
+Why? They can just use the "v2" fallback (which was sufficient for
+your original version). That's not my recommendation, but what do I
+care for downstream. Only upstream needs the specific strings to
+appease the annoying DT maintainers.
 
+Plus, if it's not upstream, it doesn't exist. :)
 
-> >  3 files changed, 103 insertions(+), 76 deletions(-)
-> > 
-> 
-> (skip)
-> 
-> >  
-> > diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-> > index 3bc29acbd54e..e0987c749ec2 100644
-> > --- a/drivers/devfreq/governor_passive.c
-> > +++ b/drivers/devfreq/governor_passive.c
-> > @@ -99,12 +99,12 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
-> >  {
-> >  	int ret;
-> >  
-> > -	if (!devfreq->governor)
-> > +	if (!devfreq->policy.governor)
-> >  		return -EINVAL;
-> >  
-> >  	mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
-> >  
-> > -	ret = devfreq->governor->get_target_freq(devfreq, &freq);
-> > +	ret = devfreq->policy.governor->get_target_freq(devfreq, &freq);
-> >  	if (ret < 0)
-> >  		goto out;
-> >  
-> > diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> > index 3aae5b3af87c..9bf23b976f4d 100644
-> > --- a/include/linux/devfreq.h
-> > +++ b/include/linux/devfreq.h
-> > @@ -109,6 +109,30 @@ struct devfreq_dev_profile {
-> >  	unsigned int max_state;
-> >  };
-> >  
-> > +/**
-> > + * struct devfreq_freq_limits - Devfreq frequency limits
-> > + * @min_freq:	minimum frequency
-> > + * @max_freq:	maximum frequency
-> > + */
-> > +struct devfreq_freq_limits {
-> > +	unsigned long min_freq;
-> > +	unsigned long max_freq;
-> > +};
-> > +
-> > +/**
-> > + * struct devfreq_policy - Devfreq policy
-> > + * @user:	frequency limits requested by the user
-> > + * @devinfo:	frequency limits of the device (available OPPs)
-> > + * @governor:	method how to choose frequency based on the usage.
-> 
-> nitpick. remove '.' on the end of line.
+> > have versions too, but pretty much *every* *other* binding uses SoC names.
+> > Why is this one special?
+>
+> I'm not an expert on all QC IPs, but this one _seems_ to be reused a
+> lot more than others.
+>
+> > The other problem with versions is the mapping
+> > of versions to SoCs most likely can't be validated outside of QCom
+> > unless there's a version register.
+>
+> There is in fact a HW version register that I was hoping to add
+> support for later.
 
-Ok
+Yes, you should rely on that as much as possible. But I have seen h/w
+designers forget to update revision registers or there can be
+integration differences even if the IP version is the same.
 
-> > + * @governor_name:	devfreq governor name for use with this devfreq
-> > + */
-> > +struct devfreq_policy {
-> > +	struct devfreq_freq_limits user;
-> > +	struct devfreq_freq_limits devinfo;
-> > +	const struct devfreq_governor *governor;
-> > +	char governor_name[DEVFREQ_NAME_LEN];
-> > +};
-> > +
-> >  /**
-> >   * struct devfreq - Device devfreq structure
-> >   * @node:	list node - contains the devices with devfreq that have been
-> > @@ -117,8 +141,6 @@ struct devfreq_dev_profile {
-> >   * @dev:	device registered by devfreq class. dev.parent is the device
-> >   *		using devfreq.
-> >   * @profile:	device-specific devfreq profile
-> > - * @governor:	method how to choose frequency based on the usage.
-> > - * @governor_name:	devfreq governor name for use with this devfreq
-> >   * @nb:		notifier block used to notify devfreq object that it should
-> >   *		reevaluate operable frequencies. Devfreq users may use
-> >   *		devfreq.nb to the corresponding register notifier call chain.
-> > @@ -126,10 +148,7 @@ struct devfreq_dev_profile {
-> >   * @previous_freq:	previously configured frequency value.
-> >   * @data:	Private data of the governor. The devfreq framework does not
-> >   *		touch this.
-> > - * @min_freq:	Limit minimum frequency requested by user (0: none)
-> > - * @max_freq:	Limit maximum frequency requested by user (0: none)
-> > - * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
-> > - * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
-> > + * @policy:		Policy for frequency adjustments
-> 
-> The devfreq_policy contains the range of frequency and governor information.
-> But, this description focus on the frequency. You need to explain the more
-> correct description of 'policy'.
-
-I wouldn't say that the focus is on 'frequency', but on 'frequency
-adjustments', and the governor is an integral part of them.
-
-I can change it to "Policy for frequency adjustments, including
-frequency limits and the governor" if you prefer. I'm open to other
-suggestions.
-
-> >   * @stop_polling:	 devfreq polling status of a device.
-> >   * @total_trans:	Number of devfreq transitions
-> >   * @trans_table:	Statistics of devfreq transitions
-> > @@ -151,8 +170,6 @@ struct devfreq {
-> >  	struct mutex lock;
-> >  	struct device dev;
-> >  	struct devfreq_dev_profile *profile;
-> > -	const struct devfreq_governor *governor;
-> > -	char governor_name[DEVFREQ_NAME_LEN];
-> >  	struct notifier_block nb;
-> >  	struct delayed_work work;
-> >  
-> > @@ -161,10 +178,7 @@ struct devfreq {
-> >  
-> >  	void *data; /* private data for governors */
-> >  
-> > -	unsigned long min_freq;
-> > -	unsigned long max_freq;
-> > -	unsigned long scaling_min_freq;
-> > -	unsigned long scaling_max_freq;
-> > +	struct devfreq_policy policy;
-> 
-> I recommend that you better to move under 'struct devfreq_dev_profile'
-> as following:
-> 	
-> 	struct devfreq_dev_profile *profile;
-> 	struct devfreq_policy policy;
-
-Will do
-
-Thanks for the review!
+> > So, sorry to go in circles, but can you go back to qcom,<soc>-tsens. You
+> > can keep qcom,tsens-v2 as a fallback.
+>
+> OK.
+>
+> > Yes, it's annoying to have to update bindings for new SoCs. But it's
+> > trivial one line patches. Look at Renesas bindings. Maybe adding new
+> > ones will be scriptable once we move to json-schema binding docs.
+>
+> I did look at the Renesas RCar bindings when restructuring the
+> documentation. They seem to have settled upon a 3-level fallback:
+> "soc-specific", "generic-no TZ", "generic-TZ". But
+> drivers/thermal/rcar_thermal.c seems to be compatible with only one
+> soc-specific property (thermal-r8a77995) and all other SoCs seem to be
+> just relying the fallbacks.
+>
+> Anyways, I'll respin.
+>
+> Thanks.
+>
+> Regards,
+> Amit
