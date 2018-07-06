@@ -1,52 +1,122 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
-Date: Fri, 6 Jul 2018 11:09:23 -0700
-Message-ID: <20180706180923.GH129942@google.com>
-References: <20180703234705.227473-1-mka@chromium.org>
- <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
- <20180703234705.227473-8-mka@chromium.org>
- <5B3C5B78.6020401@samsung.com>
+Subject: Re: [RESEND PATCH v3 2/2] thermal: core: introduce thermal zone
+ device mode control
+Date: Fri, 6 Jul 2018 11:22:11 -0700
+Message-ID: <20180706182211.GI129942@google.com>
+References: <20180226144118.24693-1-enric.balletbo@collabora.com>
+ <20180226144118.24693-2-enric.balletbo@collabora.com>
+ <20180629003302.GT129942@google.com>
+ <20180703171325.GC129942@google.com>
+ <f06cea77-f0bf-07bf-b8c6-6835cf0be999@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5B3C5B78.6020401@samsung.com>
+In-Reply-To: <f06cea77-f0bf-07bf-b8c6-6835cf0be999@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: rui.zhang@intel.com, rjw@rjwysocki.net, groeck@chromium.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, snanda@chromium.org, lenb@kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Enric,
 
-On Wed, Jul 04, 2018 at 02:30:32PM +0900, Chanwoo Choi wrote:
+On Wed, Jul 04, 2018 at 12:36:39PM +0200, Enric Balletbo i Serra wrote:
+> Hi Matthias,
+> 
+> Sorry for late reply, my memory is bad so I need to look at this again. The
+> patch was send some time ago and there are pending changes to do but then I
+> switched. I'll take a look, but did you saw why this patch was not merged [1]?
+> Maybe that could answer some of your questions.
+> 
+> Best regards,
+>  Enric
+> 
+> [1] https://lkml.org/lkml/2018/2/27/910
 
-> I didn't see any framework which exporting the class instance.
-> It is very dangerous. Unknown device drivers is able to reset
-> the 'devfreq_class' instance. I can't agree this approach.
+I missed this, thanks for the pointer!
 
-While I agree that it is potential dangerous it is actually a common
-practice to export the class:
-
-grep "extern struct class " include/linux/ -R
-include/linux/rio.h:extern struct class rio_mport_class;
-include/linux/tty.h:extern struct class *tty_class;
-include/linux/fb.h:extern struct class *fb_class;
-include/linux/ide.h:extern struct class *ide_port_class;
-include/linux/device.h:extern struct class * __must_check __class_create(struct module *owner,
-include/linux/devfreq.h:extern struct class *devfreq_class;
-include/linux/switchtec.h:extern struct class *switchtec_class;
-include/linux/input.h:extern struct class input_class;
-include/linux/genhd.h:extern struct class block_class;
-include/linux/power_supply.h:extern struct class *power_supply_class;
-include/linux/rtc.h:extern struct class *rtc_class;
-
-struct class_interface and class_interface_register() would be
-pointless without exported classes.
-
-My understanding is that the kernel is often lax on encapsulation and
-exposes private/delicate data pragmatically within the kernel when
-needed because "the kernel trusts itself".
-
-Thanks
-
-Matthias
+> On 03/07/18 19:13, Matthias Kaehlcke wrote:
+> > On Thu, Jun 28, 2018 at 05:33:02PM -0700, Matthias Kaehlcke wrote:
+> >> Hi,
+> >>
+> >> I stumbled across this patch since I'm currently poking around with
+> >> early thermal bringup on a platform and this patch has been integrated
+> >> in our development tree.
+> >>
+> >> I'm seeing some unexpected behaviors, which could entirely due to
+> >> wrong expectation from my side. I only have some basic working
+> >> knowledge of the thermal framework, just want to double check and
+> >> perhaps learn a thing or two.
+> >>
+> >> On Mon, Feb 26, 2018 at 03:41:18PM +0100, Enric Balletbo i Serra wrote:
+> >>> From: Zhang Rui <rui.zhang@intel.com>
+> >>>
+> >>> Thermal "mode" sysfs attribute is introduced to enable/disable a thermal
+> >>> zone, and .get_mode()/.set_mode() callback is introduced for platform
+> >>> thermal driver to enable/disable the hardware thermal control logic. And
+> >>> thermal core takes no action upon thermal zone enable/disable.
+> >>>
+> >>> Actually, this is not quite right because thermal core still pokes those
+> >>> disabled thermal zones occasionally, e.g. upon system resume.
+> >>>
+> >>> To fix this, a new flag 'mode' is introduced in struct thermal_zone_device
+> >>> to represent the thermal zone mode, and several decisions have been made
+> >>> based on this flag, including
+> >>> 1. check the thermal zone mode right after it's registered.
+> >>> 2. skip updating thermal zone if the zone is disabled
+> >>> 3. stop the polling timer when the thermal zone is disabled
+> >>>
+> >>> Note: basically, this patch doesn't affect the existing always-enabled
+> >>> thermal zones much, with just one exception -
+> >>> thermal zone .get_mode() must be well prepared to reflect the real thermal
+> >>> zone status upon the thermal zone registration.
+> >>
+> >> From my perspective this looks like a pretty significant change. For
+> >> the platform I'm working on I added a thermal zone to the device tree,
+> >> with the expectation that it would be enabled. Judging from the code
+> >> without this patch this expectation seems to be naive, since
+> >> of-thermal.c sets tz->mode to THERMAL_DEVICE_DISABLED, so apparently
+> >> either userspace or some driver should call _set_mode(tz,
+> >> THERMAL_DEVICE_ENABLED). However even without this the thermal zone
+> >> appears to be active (I didn't really test end-to-end yet, but at
+> >> least thermal_zone_device_update() is called and calls
+> >> handle_thermal_trip()). Not sure why this is the case with
+> >> THERMAL_DEVICE_DISABLED, but before I learned about the existence of
+> >> the flag my expectation was that the zone would be enabled.
+> >>
+> >> With this patch thermal_zone_device_update() is skipped if the zone
+> >> hasn't been explictly enabled, which may be consistent with the state
+> >> of 'tz->mode', but effectively changes the previous/current behavior.
+> >>
+> >> Not sure if I'm just dumbly overlooking something obvious or if there
+> >> is an actual problem with of_thermal (and maybe others).
+> > 
+> > The problem is that there are now two 'mode' fields, tzd->mode and the
+> > other typically tzd->devdata->mode, and tzd->mode is never set to enabled.
+> > 
+> >> thermal zone .get_mode() must be well prepared to reflect the real thermal
+> >> zone status upon the thermal zone registration.
+> > 
+> > For of_thermal tzd->mode is initialized with the result of .get_mode()
+> > when the zone is registered. At this time no sensor has been added
+> > to the zone, hence the zone is disabled. When a sensor is added later
+> > tzd->devdata->mode is set to enabled, however tzd->mode remains disabled:
+> > 
+> > tzd->mode = DISABLED
+> > tzd->devdata->mode = DISABLED
+> > 
+> > of_parse_thermal_zones
+> >   thermal_zone_device_register
+> >     tzd->mode = tzd->get_mode() // => DISABLED
+> > 
+> > <sensor>_probe
+> >   thermal_zone_of_sensor_register
+> >     tzd->set_mode(THERMAL_DEVICE_ENABLED)
+> >       tzd->devdata->mode = ENABLED
+> > 
+> > One way to fix this for of_thermal could be to setting tzd->mode in
+> > .set_mode() in addition to setting tzd->devdata->mode. However this
+> > feels like a workaround/hack. Personally I find it confusing to have
+> > two mode fields for a thermal zone device. Maybe tzd->mode should
+> > replace tzd->devdata->mode?
+> > 
