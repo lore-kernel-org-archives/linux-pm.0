@@ -1,43 +1,60 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v4 08/12] sched: Add over-utilization/tipping point
- indicator
-Date: Fri, 6 Jul 2018 13:32:08 +0200
-Message-ID: <20180706113208.GS2458@hirez.programming.kicks-ass.net>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-9-quentin.perret@arm.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH] power: reset: zx-reboot: put device node in
+ zx_reboot_probe()
+Date: Fri, 6 Jul 2018 13:33:22 +0200
+Message-ID: <20180706113322.xrei7gcd4577rbii@earth.universe>
+References: <1527978125-29850-1-git-send-email-khoroshilov@ispras.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rv4e66jnbo2gjkem"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180628114043.24724-9-quentin.perret@arm.com>
+In-Reply-To: <1527978125-29850-1-git-send-email-khoroshilov@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org, Julia Lawall <julia.lawall@lip6.fr>, sil2review@lists.osadl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 28, 2018 at 12:40:39PM +0100, Quentin Perret wrote:
-> @@ -5384,6 +5402,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->  {
->  	struct cfs_rq *cfs_rq;
->  	struct sched_entity *se = &p->se;
-> +	int task_new = !(flags & ENQUEUE_WAKEUP);
->  
->  	/*
->  	 * The code below (indirectly) updates schedutil which looks at
-> @@ -5431,8 +5450,12 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->  		update_cfs_group(se);
->  	}
->  
-> -	if (!se)
-> +	if (!se) {
->  		add_nr_running(rq, 1);
-> +		if (!task_new)
-> +			update_overutilized_status(rq);
 
-I'm confused... why only for !ENQUEUE_WAKEUP and why use a local
-variable for something that's used only once?
+--rv4e66jnbo2gjkem
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> +	}
->  
->  	hrtick_update(rq);
->  }
+Hi,
+
+On Sun, Jun 03, 2018 at 01:22:05AM +0300, Alexey Khoroshilov wrote:
+> zx_reboot_probe() increments refcnt of zx296702-pcu device node by
+> of_find_compatible_node() and leaves it undecremented on both
+> successful and error paths.
+>=20
+> Found by Linux Driver Verification project (linuxtesting.org).
+>=20
+> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+> ---
+
+Thanks, queued to power-supply-next.
+
+-- Sebastian
+
+--rv4e66jnbo2gjkem
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/U4IACgkQ2O7X88g7
++pr1Qw/9FXdw7LKy4b4MijHs2cgryF73ws0u1GcPk+TfDHxkpCZiD6YmxNJ+D+UD
+v6iwHVdQ0IAPDYfTCJuF4F7d7cEl3k/Bc9dfiKPeNnV/7V3SoeZPM7U18CVLW64n
+zJyRdqAs3xFNaoZmqcH7AsHIffeXMZvnNcQPclwGr6wPDLjwMbYxU3Og6rb7abnh
+XAWydAca2kE1NCd7imQa4Ic2IZLxjNx6brXoJ++YK5PhKhgk4qyTQ0YGbxAcrmUq
+qpVNth75k+I84UX8LzI+TrmfBBwiTqLDUzyQ1W99U4GH42noK7qrtDBdvI/bVxWU
+Nei2nBNalA8KJPKOPcCROEfocSy4OIbS0CzrsB8kJ80YdLeftj2YYeVe05xPEjKL
+HRP30bptXbmm5eE7vcjfcU0Z3NaGMzB26Zsd6HSb3ScZoIOdIzdVwNHFS77nB8en
+ydEijcVZzQ9QBebPRTiRMjAYNo/5sxWqs5CCVxcgp3lWIlM5nAFF7/bxKFz9Zmkx
+6Qph7jU1G0Van2z+0sw2gWy/GapAAqf1oRgozaOAR0Lv2wuFU0PUxjUPDcoNqgYu
+IlT+e22EBxuF+se5/gdHz507CEFOWQv1OVqmM17GEh7zqfjJ41uRvz0643uRitu/
+XhLNpN9fAr/FM5Srt6PSluSFR+PDCFGpbxXUtGJ7HhQ1hqUVOsw=
+=n80N
+-----END PGP SIGNATURE-----
+
+--rv4e66jnbo2gjkem--
