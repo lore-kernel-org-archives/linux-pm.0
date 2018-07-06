@@ -1,81 +1,79 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
- helper function
-Date: Fri, 6 Jul 2018 18:04:44 +0100
-Message-ID: <20180706170443.GE17577@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-10-quentin.perret@arm.com>
- <20180706131243.GV2458@hirez.programming.kicks-ass.net>
- <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
- <20180706154949.GO2494@hirez.programming.kicks-ass.net>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH] power: supply: ltc2941-battery-gauge: Release
+ device_node in ltc294x_i2c_probe()
+Date: Fri, 6 Jul 2018 19:04:52 +0200
+Message-ID: <20180706170452.xw3w56dgtj4j4tru@earth.universe>
+References: <1524954955-22107-1-git-send-email-khoroshilov@ispras.ru>
+ <20180501123908.z3kuokp2b6umnnda@earth.universe>
+ <8fef316f-85d0-0bd4-4bbe-2d8330dfe2ec@ispras.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="sgp437usmp7xmvlg"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180706154949.GO2494@hirez.programming.kicks-ass.net>
+In-Reply-To: <8fef316f-85d0-0bd4-4bbe-2d8330dfe2ec@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Mike Looijmans <mike.looijmans@topic.nl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org, Julia Lawall <julia.lawall@lip6.fr>, sil2review@lists.osadl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 06 Jul 2018 at 17:49:49 (+0200), Peter Zijlstra wrote:
-> On Fri, Jul 06, 2018 at 04:12:12PM +0100, Quentin Perret wrote:
-> > On Friday 06 Jul 2018 at 15:12:43 (+0200), Peter Zijlstra wrote:
-> 
-> > > Did you want to use sugov_get_util() here? There is no way we're going
-> > > to duplicate all that.
-> > 
-> > I need to look into how we can do that ... Sugov looks at the current
-> > util landscape while EAS tries to predict the _future_ util landscape.
-> > Merging the two means I need to add a task and a dst_cpu as parameters
-> > of sugov_get_util() and call cpu_util_next() from there, which doesn't
-> > feel so clean ...
-> 
-> Just pass in the util_cfs as computed by cpu_util_next(), then schedutil
-> will pass in cpu_util_cfs(), the rest is all the same I think.
-> 
-> See below.
-> 
-> > Also, if we merge sugov_get_util() and sugov_aggregate_util() with
-> > Vincent's patch-set I'll need to make sure to return two values with
-> > sugov_get_util(): 1) the sum of the util of all classes; and 2) the util
-> > that will be used to request an OPP. 1) should be used in sum_util and
-> > 2) could (but I don't think it's is a good idea) be used for max_util.
-> 
-> I am confused, the max/sum thing is composed of the same values, just a
-> different operator. Both take 'util':
-> 
-> 
-> +	util = schedutil_get_util(cpu, cpu_util_next(cpu, p, dst_cpu))
-> +	max_util = max(util, max_util);
-> +	sum_util += util;
 
-'max_util' is basically the util we use to request an OPP. 'sum_util' is
-how long the CPUs will be running. For now it's the same thing because I
-just used the util of the different classes and assumed that OPPs follow
-utilization, but if we start using sugov_get_util() things will become
-more complex, especially because of RT tasks.
+--sgp437usmp7xmvlg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In your example, schedutil_get_util() will return arch_scale_cpu_capacity()
-if a RT task is running. We're going to select an OPP with that so
-that's what you want to put in max_util. But we also need to know how
-long we are going to run at that OPP to compute the energy, and in this
-case arch_scale_cpu_capacity is probably _not_ what you want to account in
-sum_util ...
+Hi,
 
-Now, I'm not sure if accounting the RT-go-to-max thing here is really
-going to help us. This is really an ON/OFF thing, so depending on 'luck',
-the OPP landscape that you'll observe in compute_energy() can be very
-different depending on whether or not a RT task is running in a FD. And
-that will change abruptly when the RT task goes to sleep.
+On Tue, May 08, 2018 at 10:16:31PM +0300, Alexey Khoroshilov wrote:
+> On 01.05.2018 15:39, Sebastian Reichel wrote:
+> > On Sun, Apr 29, 2018 at 01:35:55AM +0300, Alexey Khoroshilov wrote:
+> >> There is of_node_get(client->dev.of_node) in ltc294x_i2c_probe(),
+> >> but these is no of_node_put() somethere in the driver.
+> >>
+> >> The patch adds one on error and normal paths.
+> >>
+> >> Found by Linux Driver Verification project (linuxtesting.org).
+> >>
+> >> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+> >=20
+> > That is ugly. Let's replace of_property_read_u32(np, ...) with
+> > device_property_read_u32(dev, ...) and get rid of np instead.
+>=20
+> Ok, I will prepare v2.
+>=20
+> What is the right way to replace
+> info->supply_desc.name =3D np->name;
+> ?
+>=20
+> If lifetime of 'client->dev.of_node' =3D 'np' cannot be less than lifetime
+> of 'client->dev', should we use just
+> info->supply_desc.name =3D client->dev.of_node->name;
+> ?
 
-What I'm proposing is to predict in compute_energy() what is the OPP at
-which CFS tasks run (cfs_util + dl_util +rt_util, to make it simple),
-and ignore the oddity of having an RT task running. But that makes it
-harder to factorize things with schedutil more than they are, that is
-true ...
+It looks like I never responsed to this, sorry for the delay.
+Your suggestion looks fine.
 
-I hope that makes sense
+-- Sebastian
 
-Thanks,
-Quentin
+--sgp437usmp7xmvlg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/oTQACgkQ2O7X88g7
++pq9xw//V+h6sEIzoTlgvBqXNPwpDULp4u31CGbC5taCrRW3sSAUxrSf2Bwixr1i
+9yhwEelcRrQkkZO3Z4gp8B3z2tEVVw8H6x8DmbI6k4ZGeZgBKiH6w92+PDsGoo3E
+NlcTRN/MjX3Z6zkilIpOV9k+EMDDZdFHT4tS6PHxVh8KFFZ85qLBkpkoXi7rjEKf
+xPJTd6yKdXGy4OkMtDFRONvqJHOA55+aMxzzLC5DBdEg1c2Vwpaa9K+cV4UZBRjb
+3mrCJsdgmP+uzbbSrWRdq1aU1Lfb6gNiXJna1RIVeJG4MwQyw7jLLBU0mNzg6lMx
+gKBk8ohWH+7AJnF3SoKJOIZJEeuZbo90Lx0IyHTsneh4F8oXYrkKXxj6ffwFm+BO
+weMeCbYvQKBtoMzhJkm76VSvP40pdihCbcpqYoFJYlbXDAjMJ4pndrxod7wfpuwT
+rYorDKS9OzWXvKjxrpFmczU9hyLW4oFr1xk4oPhhNFezGkpbWcmhqsXc4roaiAYe
+MfBhqCjm0FrulJEtwHaaLVz0O41AFQjdHwezmfwubI576PIRArQ43UCjgl79dlE6
+yAAg5I+U9Cug5c/yDTbwQ9a7dpty7KxEmTaMbV7+gstccofDTTKvtrOK41GquhbL
+394dzVfTYjbe4zh03uVA8xkREjX2RVoOTDTRmOVJxxAnIlJF2rc=
+=pGHf
+-----END PGP SIGNATURE-----
+
+--sgp437usmp7xmvlg--
