@@ -1,74 +1,56 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 2/2] dt-bindings: power: sbs-battery: re-document
- "ti,bq20z75"
-Date: Fri, 6 Jul 2018 13:31:14 +0200
-Message-ID: <20180706113114.sm5ntnoxozp3xo67@earth.universe>
-References: <20180612202042.107603-1-briannorris@chromium.org>
- <20180612202042.107603-2-briannorris@chromium.org>
+Subject: Re: [PATCH] power: supply: tps65217: Switch to SPDX identifier.
+Date: Fri, 6 Jul 2018 13:32:01 +0200
+Message-ID: <20180706113201.4p2sej3kpimrg6t3@earth.universe>
+References: <20180605100021.3789-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="fimiip3atuknqmhj"
+        protocol="application/pgp-signature"; boundary="clunkcce4e4i2qx3"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180612202042.107603-2-briannorris@chromium.org>
+In-Reply-To: <20180605100021.3789-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>, Alexandru Stan <amstan@chromium.org>, Guenter Roeck <linux@roeck-us.net>, Doug Anderson <dianders@chromium.org>, Phil Reid <preid@electromag.com.au>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel@vger.kernel.org, kernel@collabora.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---fimiip3atuknqmhj
+--clunkcce4e4i2qx3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jun 12, 2018 at 01:20:42PM -0700, Brian Norris wrote:
-> This compatible property was documented before the driver was renamed to
-> "SBS" (see commit e57f1b68c406 ("devicetree-bindings: Propagate
-> bq20z75->sbs rename to dt bindings")). The driver has continued to
-> support this property as an alternative to "sbs,sbs-battery", and
-> because we've noticed there are some lingering TI specifics (in the
-> manufacturer-specific portion of the SBS spec), we'd like to start using
-> this property again to differentiate.
+On Tue, Jun 05, 2018 at 12:00:21PM +0200, Enric Balletbo i Serra wrote:
+> Adopt the SPDX license identifier headers to ease license compliance
+> management.
 >=20
-> In typical DT fashion, the <vendor>,<part-number> specifics should be
-> used ahead of the generic "sbs,sbs-battery" string, so we can handle
-> vendor specifics -- so document this. Language borrowed mostly from
-> Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
->=20
-> Also fixup the example to use this property (it's already implying that
-> it's "bq20z75@b"); fixup the node name to be generic ("battery", not
-> "<part-number>"); and fixup some whitespace.
->=20
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> Acked-by: Rhyland Klein <rklein@nvidia.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
 
 Thanks, queued to power-supply-next.
 
 -- Sebastian
 
---fimiip3atuknqmhj
+--clunkcce4e4i2qx3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/UwEACgkQ2O7X88g7
-+popIxAAgLipLBdCr+5abWLW73hZoUSBRmAc5EfVLON3EgaX3h9FFwZq0zAWiP17
-UAaVzQTwrK2zBmNjQjuv593Fpq4SalNThcZheIt11TuMgobpmCUa1Qjd5PIlAZ0V
-iFPLRzuURaQESFDgJUyELmWT2al13A8P6BYvC1yoSG7KB3jmIqCoAZdbMvY1N+w0
-S2bnMxINjR+ViDJFl9VzG5sYqzYDTsWUYlnJMsbe36u7ed4ZFPdsAtyMQ2u7+huf
-wtDZdjLz7pdcrBkU//UbBJ9m+oP+917lkUKkISjjAA5i8vqYhvZF79+uFwI2YBSf
-3RB5FBabv3RYJr08tjtqnXtfOUn9bpPtFhZNM5B5JcK1Dh+5ZexI+vVR7BnLfnUd
-1jfLkY26bJqKcjifUEGVtZ3H4gQtd391Wpcd+C2t2sHnJxV0b1ToENTju2YR7Wwr
-UvMa0y9w4XtXgG11rvnEQSnvm76+5y+sRB+sv4HB6/7FpRG0UoOHdtRdMbe2e3JF
-xP7qPa6hodz7+3Kx8WuReCNGc7I28iIB8Hf+/krp26JjcKjSQelnpAdWiq/lllQ2
-Gynja4qIBo4zbAWCNBCWJ9PT/iUhmryZdc2MbQD1x9RquATaZWiZjJ6jTDhOnMzE
-Nw+SSo4I8iJRrwO24SG6ADjHnDlNCoYIzwITzrb+0KHtO0tS2Lo=
-=BPX4
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/UzEACgkQ2O7X88g7
++pp3kg/8D2boLqxvVX7Qthsp7VH45/GSEyk6/Bavy4baeO4J65JAEsLItzlTrgTp
+dcQymHZexZORa75HXjRCEywRh9jv646j6joRTIKpGFJhxI7RKoBe3ttcLZVV7PFd
+Mjul1WB+5Lcp2k3Omtm5nQUECIxNhlBRr3Q+/XVsIVxSTgq9InhsnlcFh+jlarUO
+9+Q/ScuQ7jBOqzBiNBVkudl1s7mS2+vxDDj6SLnRfHl7jCTX4PrwwAjBqvCWrluv
+asdVvOVq6O0j9GFoOnOtW7Ka1hye32HfbE8e+w0LStOfaYHzBWgoms8dFJmRPLVv
+uDs9qUu4KTv7RQWYLL/oQ1FB9iu+ZY/CRwpniwT0n/vysWc3ecoEOZtgBt2B9fhy
+KM04zOuyff/gOIGyGGy8E3LIv2tDTfujaYlAbsX6uIwCahBRteK6QlAZPwsFuj6H
+GucPCwn1uHkUGoTQ8SoThwjCFnKP0/EzIlplxZJ/trxza6802r7AChP+W+qHpElJ
+AVJgit6Llgwu+I60OetgCjxv/kG6YG5SqyV+Zdzu13cMqTHFB0feulk1B9A3MR+C
+4GoKWhW0HTz/Xhiht1IqFQ2vCgd17pHgzr9Nm7U9wJomfLVRNAzWNjxHEh0sUlFV
+vxcEoWzONfjNBcLZ27eXxsFj6Aq2XN7vPBwXTpW5EVnH4kz7VJU=
+=/NuL
 -----END PGP SIGNATURE-----
 
---fimiip3atuknqmhj--
+--clunkcce4e4i2qx3--
