@@ -1,142 +1,58 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/4] dt-bindings: w1: document generic onewire and
- DS2760 bindings
-Date: Thu, 5 Jul 2018 17:32:45 -0600
-Message-ID: <20180705233245.GA16422@rob-hp-laptop>
-References: <20180704044411.2693-1-daniel@zonque.org>
- <20180704044411.2693-2-daniel@zonque.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC PATCH] ata: ahci: Enable DEVSLP by default on x86 modern
+ standby platform
+Date: Thu, 05 Jul 2018 17:52:08 -0700
+Message-ID: <681dbd37f209a29be46e9c4ff102631cfa841ec0.camel@linux.intel.com>
+References: <20180702190845.7456-1-srinivas.pandruvada@linux.intel.com>
+         <20180702202151.GK533219@devbig577.frc2.facebook.com>
+         <5493bfdb-14a9-a55d-f96e-b9c8a29f1d63@redhat.com>
+         <ca753f719e123d8e3c2306b8d55f3d4a656cbd2f.camel@linux.intel.com>
+         <fefe0ef4-e21f-72cc-18d6-a5a6693c21c6@redhat.com>
+         <660d4e4b-361f-e6b1-ef21-3985c321183a@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180704044411.2693-2-daniel@zonque.org>
+In-Reply-To: <660d4e4b-361f-e6b1-ef21-3985c321183a@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Mack <daniel@zonque.org>
-Cc: zbr@ioremap.net, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu, sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr
+To: Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>
+Cc: rjw@rjwysocki.net, alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 04, 2018 at 06:44:08AM +0200, Daniel Mack wrote:
-> This patch adds a generic w1 bindings document that merely describes how
-> slave deviceses are grouped under master nodes. It also adds a specific
-> binding for the ds2760 battery monitor.
+Hi Hans,
+
+
+[...]
+
+> So digging a bit deeper I just realized that another important
+> difference
+> between med_power_with_dipm and min_power is that min_power by
+> default
+> set the ASP bits making the link go to the slumber state instead of
+> to
+> the partial (power-saving) state.
 > 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
-> ---
->  .../bindings/power/supply/maxim,ds2760.txt    | 29 +++++++++++++++++++
-
-This has grown enough now, you should probably make it a separate 
-patch.
-
->  .../devicetree/bindings/w1/w1-gpio.txt        | 11 +++++--
->  Documentation/devicetree/bindings/w1/w1.txt   | 25 ++++++++++++++++
->  3 files changed, 62 insertions(+), 3 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
->  create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+> According to:
+> https://www.intel.com/content/dam/doc/reference-guide/sata-devices-im
+> plementation-recommendations.pdf
 > 
-> diff --git a/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
-> new file mode 100644
-> index 000000000000..a39d1ada48f2
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
-> @@ -0,0 +1,29 @@
-> +Devicetree bindings for Maxim DS2760
-> +====================================
-> +
-> +The ds2760 is a w1 slave device and must hence have its sub-node in DT
-> +under a w1 bus master node.
-> +
-> +The device exposes a power supply, so the details described in
-> +Documentation/devicetree/bindings/power/supply/power_supply.txt apply.
-> +
-> +Required properties:
-> +- compatible: must be "maxim,ds2760"
-> +
-> +Optional properties:
-> +- power-supplies:	Refers to one or more power supplies connected to
-> +			this battery.
-> +- maxim,pmod-enabled:	This boolean property enables the DS2760 to enter
-> +			sleep mode when the DQ line goes low for greater
-> +			than 2 seconds and leave sleep Mode when the DQ
-> +			line goes high.
-> +- maxim,cache-time:	Time im milliseconds to cache the data for. When
+> ASP defaults to off in the iRST drivers. But that is a document from
+> before DEVSLP got introduced.
+> 
+> So we need to know if Windows and/or the iRST drivers use HIPM and
+> ASP by default on these systems. If they do then using min_power
+> is fine. If they don't use one or the other we are going to need
+> a new policy reflecting those settings and use that.
+Good point. In Windows there are various registry settings, so they can
+be tuned. It is difficult to know what they mean.
+Let me do some experiments to check impact of ASP on SLP_S0. Then I
+will resubmit this patch.
 
-Add unit suffix as defined in property-units.txt.
+Thanks,
+Srinivas
 
-> +			this time expires, the values are read again from
-> +			the hardware. Defaults to 1000.
-> +- maxim,rated-capacity:	The rated capacity of the battery, in mAh.
-
-Seems like this should be common.
-
-> +			If not specified, the value stored in the
-> +			non-volatile chip memory is used.
-> +- maxim,current-accumulator:
-> +			The current accumulator value in mAh.
-> +			If not specified, the value stored in the
-> +			non-volatile chip memory is used.
-
-This would be updated periodically while running and then restored after 
-a power cycle or reboot to maintain the battery level across power 
-cycle? I don't think that belongs in DT as we don't really define 
-whether a DT can be updated persistently.
- 
-> diff --git a/Documentation/devicetree/bindings/w1/w1-gpio.txt b/Documentation/devicetree/bindings/w1/w1-gpio.txt
-> index 6e09c35d9f1a..3d6554eac240 100644
-> --- a/Documentation/devicetree/bindings/w1/w1-gpio.txt
-> +++ b/Documentation/devicetree/bindings/w1/w1-gpio.txt
-> @@ -13,10 +13,15 @@ Optional properties:
->   - linux,open-drain: if specified, the data pin is considered in
->  		     open-drain mode.
->  
-> +Also refer to the generic w1.txt document.
-> +
->  Examples:
->  
-> -	onewire@0 {
-> +	onewire {
->  		compatible = "w1-gpio";
-> -		gpios = <&gpio 126 0>, <&gpio 105 0>;
-> -	};
-> +		gpios = <&gpio 0 GPIO_ACTIVE_HIGH>;
->  
-> +		battery {
-> +			// ...
-> +		};
-> +	};
-> diff --git a/Documentation/devicetree/bindings/w1/w1.txt b/Documentation/devicetree/bindings/w1/w1.txt
-> new file mode 100644
-> index 000000000000..bee18f7070ec
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/w1/w1.txt
-> @@ -0,0 +1,25 @@
-> +Generic devicetree bindings for onewire (w1) busses
-> +===================================================
-> +
-> +Onewire busses are described through nodes of their master bus controller.
-> +Slave devices are listed as sub-nodes of such master devices. For now, only
-> +one slave is allowed per bus master.
-> +
-> +
-> +Example:
-> +
-> +	charger: charger {
-> +		compatible = "gpio-charger";
-> +		charger-type = "mains";
-> +		gpios = <&gpio 1 GPIO_ACTIVE_LOW>;
-> +	};
-> +
-> +	onewire@0 {
-
-Drop the unit-address.
-
-> +		compatible = "w1-gpio";
-> +		gpios = <&gpio 100 0>, <&gpio 101 0>;
-> +
-> +		battery {
-> +			compatible = "maxim,ds2760";
-> +			power-supplies = <&charger>;
-> +		};
-> +	};
-> -- 
-> 2.17.1
+> 
+> Regards,
+> 
+> Hans
 > 
