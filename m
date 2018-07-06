@@ -1,8 +1,8 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
  helper function
-Date: Fri, 6 Jul 2018 17:49:49 +0200
-Message-ID: <20180706154949.GO2494@hirez.programming.kicks-ass.net>
+Date: Fri, 6 Jul 2018 17:50:56 +0200
+Message-ID: <20180706155056.GP2494@hirez.programming.kicks-ass.net>
 References: <20180628114043.24724-1-quentin.perret@arm.com>
  <20180628114043.24724-10-quentin.perret@arm.com>
  <20180706131243.GV2458@hirez.programming.kicks-ass.net>
@@ -18,99 +18,13 @@ Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, g
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, Jul 06, 2018 at 04:12:12PM +0100, Quentin Perret wrote:
-> On Friday 06 Jul 2018 at 15:12:43 (+0200), Peter Zijlstra wrote:
 
-> > Did you want to use sugov_get_util() here? There is no way we're going
-> > to duplicate all that.
-> 
-> I need to look into how we can do that ... Sugov looks at the current
-> util landscape while EAS tries to predict the _future_ util landscape.
-> Merging the two means I need to add a task and a dst_cpu as parameters
-> of sugov_get_util() and call cpu_util_next() from there, which doesn't
-> feel so clean ...
+> I guess it is also worth mentioning that in the case mentioned above the
+> scheduling decisions made inside one root domain can indirectly be
+> impacted by the scheduling decisions made in another root domain. Some
+> CPUs inside one root domain might look expensive to use simply because
+> they run at a high OPP because of other CPUs of the same FD being
+> over-used in another root domain.
 
-Just pass in the util_cfs as computed by cpu_util_next(), then schedutil
-will pass in cpu_util_cfs(), the rest is all the same I think.
-
-See below.
-
-> Also, if we merge sugov_get_util() and sugov_aggregate_util() with
-> Vincent's patch-set I'll need to make sure to return two values with
-> sugov_get_util(): 1) the sum of the util of all classes; and 2) the util
-> that will be used to request an OPP. 1) should be used in sum_util and
-> 2) could (but I don't think it's is a good idea) be used for max_util.
-
-I am confused, the max/sum thing is composed of the same values, just a
-different operator. Both take 'util':
-
-
-+	util = schedutil_get_util(cpu, cpu_util_next(cpu, p, dst_cpu))
-+	max_util = max(util, max_util);
-+	sum_util += util;
-
-
-unsigned long schedutil_get_util(int cpu, unsigned long util_cfs)
-{
-	struct rq *rq = cpu_rq(cpu);
-	unsigned long util, irq, max;
-
-	max = arch_scale_cpu_capacity(NULL, cpu);
-
-	if (rt_rq_is_runnable(&rq->rt))
-		return max;
-
-	/*
-	 * Early check to see if IRQ/steal time saturates the CPU, can be
-	 * because of inaccuracies in how we track these -- see
-	 * update_irq_load_avg().
-	 */
-	irq = cpu_util_irq(rq);
-	if (unlikely(irq >= max))
-		return max;
-
-	/*
-	 * Because the time spend on RT/DL tasks is visible as 'lost' time to
-	 * CFS tasks and we use the same metric to track the effective
-	 * utilization (PELT windows are synchronized) we can directly add them
-	 * to obtain the CPU's actual utilization.
-	 */
-	util = util_cfs;
-	util += cpu_util_rt(rq);
-
-	/*
-	 * We do not make cpu_util_dl() a permanent part of this sum because we
-	 * want to use cpu_bw_dl() later on, but we need to check if the
-	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
-	 * f_max when there is no idle time.
-	 *
-	 * NOTE: numerical errors or stop class might cause us to not quite hit
-	 * saturation when we should -- something for later.
-	 */
-	if ((util + cpu_util_dl(rq)) >= max)
-		return max;
-
-	/*
-	 * There is still idle time; further improve the number by using the
-	 * irq metric. Because IRQ/steal time is hidden from the task clock we
-	 * need to scale the task numbers:
-	 *
-	 *              1 - irq
-	 *   U' = irq + ------- * U
-	 *                max
-	 */
-	util *= (max - irq);
-	util /= max;
-	util += irq;
-
-	/*
-	 * Bandwidth required by DEADLINE must always be granted while, for
-	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
-	 * to gracefully reduce the frequency when no tasks show up for longer
-	 * periods of time.
-	 *
-	 * Ideally we would like to set bw_dl as min/guaranteed freq and util +
-	 * bw_dl as requested freq. However, cpufreq is not yet ready for such
-	 * an interface. So, we only do the latter for now.
-	 */
-	return min(max, util + cpu_bw_dl(rq));
-}
+That's simply how it is. There's nothing you can do about it, they share
+a clock, teh end.
