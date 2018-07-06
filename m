@@ -1,56 +1,43 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power: supply: tps65217: Switch to SPDX identifier.
-Date: Fri, 6 Jul 2018 13:32:01 +0200
-Message-ID: <20180706113201.4p2sej3kpimrg6t3@earth.universe>
-References: <20180605100021.3789-1-enric.balletbo@collabora.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v4 08/12] sched: Add over-utilization/tipping point
+ indicator
+Date: Fri, 6 Jul 2018 13:32:08 +0200
+Message-ID: <20180706113208.GS2458@hirez.programming.kicks-ass.net>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-9-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="clunkcce4e4i2qx3"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180605100021.3789-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180628114043.24724-9-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel@vger.kernel.org, kernel@collabora.com, linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Jun 28, 2018 at 12:40:39PM +0100, Quentin Perret wrote:
+> @@ -5384,6 +5402,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>  {
+>  	struct cfs_rq *cfs_rq;
+>  	struct sched_entity *se = &p->se;
+> +	int task_new = !(flags & ENQUEUE_WAKEUP);
+>  
+>  	/*
+>  	 * The code below (indirectly) updates schedutil which looks at
+> @@ -5431,8 +5450,12 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>  		update_cfs_group(se);
+>  	}
+>  
+> -	if (!se)
+> +	if (!se) {
+>  		add_nr_running(rq, 1);
+> +		if (!task_new)
+> +			update_overutilized_status(rq);
 
---clunkcce4e4i2qx3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm confused... why only for !ENQUEUE_WAKEUP and why use a local
+variable for something that's used only once?
 
-Hi,
-
-On Tue, Jun 05, 2018 at 12:00:21PM +0200, Enric Balletbo i Serra wrote:
-> Adopt the SPDX license identifier headers to ease license compliance
-> management.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-
-Thanks, queued to power-supply-next.
-
--- Sebastian
-
---clunkcce4e4i2qx3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/UzEACgkQ2O7X88g7
-+pp3kg/8D2boLqxvVX7Qthsp7VH45/GSEyk6/Bavy4baeO4J65JAEsLItzlTrgTp
-dcQymHZexZORa75HXjRCEywRh9jv646j6joRTIKpGFJhxI7RKoBe3ttcLZVV7PFd
-Mjul1WB+5Lcp2k3Omtm5nQUECIxNhlBRr3Q+/XVsIVxSTgq9InhsnlcFh+jlarUO
-9+Q/ScuQ7jBOqzBiNBVkudl1s7mS2+vxDDj6SLnRfHl7jCTX4PrwwAjBqvCWrluv
-asdVvOVq6O0j9GFoOnOtW7Ka1hye32HfbE8e+w0LStOfaYHzBWgoms8dFJmRPLVv
-uDs9qUu4KTv7RQWYLL/oQ1FB9iu+ZY/CRwpniwT0n/vysWc3ecoEOZtgBt2B9fhy
-KM04zOuyff/gOIGyGGy8E3LIv2tDTfujaYlAbsX6uIwCahBRteK6QlAZPwsFuj6H
-GucPCwn1uHkUGoTQ8SoThwjCFnKP0/EzIlplxZJ/trxza6802r7AChP+W+qHpElJ
-AVJgit6Llgwu+I60OetgCjxv/kG6YG5SqyV+Zdzu13cMqTHFB0feulk1B9A3MR+C
-4GoKWhW0HTz/Xhiht1IqFQ2vCgd17pHgzr9Nm7U9wJomfLVRNAzWNjxHEh0sUlFV
-vxcEoWzONfjNBcLZ27eXxsFj6Aq2XN7vPBwXTpW5EVnH4kz7VJU=
-=/NuL
------END PGP SIGNATURE-----
-
---clunkcce4e4i2qx3--
+> +	}
+>  
+>  	hrtick_update(rq);
+>  }
