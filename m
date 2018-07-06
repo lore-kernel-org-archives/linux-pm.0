@@ -1,58 +1,83 @@
 From: Daniel Mack <daniel@zonque.org>
-Subject: [PATCH v4 3/5] w1: core: match sub-nodes of bus masters in devicetree
-Date: Fri,  6 Jul 2018 07:35:50 +0200
-Message-ID: <20180706053552.11438-4-daniel@zonque.org>
-References: <20180706053552.11438-1-daniel@zonque.org>
+Subject: [PATCH v4 0/5] Add devicetree functionality to w1 busses and ds2760
+Date: Fri,  6 Jul 2018 07:35:47 +0200
+Message-ID: <20180706053552.11438-1-daniel@zonque.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180706053552.11438-1-daniel@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu
 Cc: sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-Once a new slave device is detected, match it against all sub-nodes of the
-master bus controller. If a match is found, set the slave device's of_node
-pointer.
+This patch set contains five patches that bring devicetree
+functionality to w1 bus masters and slaves in general. As an example,
+the ds2760 driver is made aware of devicetree probing. Other drivers
+can easily be ported later.
 
-Signed-off-by: Daniel Mack <daniel@zonque.org>
----
- drivers/w1/w1.c    | 3 +++
- include/linux/w1.h | 2 ++
- 2 files changed, 5 insertions(+)
+W1 masters scan their bus in order to discover slave devices. Once
+one is found, a driver matching the family of the device is instanciated
+which handles it. To add devicetree functionality, all that's needed
+for now is a call to of_find_matching_node() when a slave device is
+attached, so the corresponding of_node pointer is set.
 
-diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
-index caef0e0fd817..890c038c25f8 100644
---- a/drivers/w1/w1.c
-+++ b/drivers/w1/w1.c
-@@ -26,6 +26,7 @@
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/hwmon.h>
-+#include <linux/of.h>
- 
- #include <linux/atomic.h>
- 
-@@ -686,6 +687,8 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
- 	sl->dev.bus = &w1_bus_type;
- 	sl->dev.release = &w1_slave_release;
- 	sl->dev.groups = w1_slave_groups;
-+	sl->dev.of_node = of_find_matching_node(sl->master->dev.of_node,
-+						sl->family->of_match_table);
- 
- 	dev_set_name(&sl->dev, "%02x-%012llx",
- 		 (unsigned int) sl->reg_num.family,
-diff --git a/include/linux/w1.h b/include/linux/w1.h
-index 694101f744c7..3111585c371f 100644
---- a/include/linux/w1.h
-+++ b/include/linux/w1.h
-@@ -274,6 +274,8 @@ struct w1_family {
- 
- 	struct w1_family_ops	*fops;
- 
-+	const struct of_device_id *of_match_table;
-+
- 	atomic_t		refcnt;
- };
- 
+The series also contains a patch that merges the w1 slave driver for the
+ds2760 battery monitor into its only user, the ds2760 supply driver.
+The indirection with two drivers never had any benefit, and here is
+a good opportunity to clean this up.
+
+Patch #1 and #2 add DT bindings documentation
+Patch #3 adds the call to of_find_matching_node()
+Patch #4 merges the w1 slave and the supply driver for ds2760
+Patch #5 makes the ds2760 supply driver aware of DT environments
+
+This works fine on a PXA3xx based board with a battery attached to
+the w1-gpio bus master controller.
+
+Changelog:
+
+v3 → v4:
+* Property name cleanups
+* Dropped maxim,current-accumulator property
+* Split 1st patch of v3 in two
+
+v2 → v3:
+* Fixed a typo in the documentation and added more real-world
+  example for the bindings. Pointed out by Rob Herring.
+
+Daniel Mack (4):
+  dt-bindings: w1: document generic onewire and DS2760 bindings
+  w1: core: match sub-nodes of bus masters in devicetree
+  power: supply: ds2760_battery: merge ds2760 supply driver with its w1
+    slave companion
+  power: supply: ds2760_battery: add devicetree probing
+
+
+Daniel Mack (5):
+  dt-bindings: w1: document generic onewire bindings
+  dt-bindings: w1: document bindings for ds2760 battery monitor
+  w1: core: match sub-nodes of bus masters in devicetree
+  power: supply: ds2760_battery: merge ds2760 supply driver with its w1
+    slave companion
+  power: supply: ds2760_battery: add devicetree probing
+
+ .../bindings/power/supply/maxim,ds2760.txt    |  26 ++
+ .../devicetree/bindings/w1/w1-gpio.txt        |  11 +-
+ Documentation/devicetree/bindings/w1/w1.txt   |  25 ++
+ drivers/power/supply/Kconfig                  |   2 +-
+ drivers/power/supply/ds2760_battery.c         | 348 +++++++++++++-----
+ drivers/w1/slaves/Kconfig                     |  12 -
+ drivers/w1/slaves/Makefile                    |   1 -
+ drivers/w1/slaves/w1_ds2760.c                 | 175 ---------
+ drivers/w1/slaves/w1_ds2760.h                 |  59 ---
+ drivers/w1/w1.c                               |   3 +
+ include/linux/w1.h                            |   2 +
+ 11 files changed, 323 insertions(+), 341 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
+ create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+ delete mode 100644 drivers/w1/slaves/w1_ds2760.c
+ delete mode 100644 drivers/w1/slaves/w1_ds2760.h
+
 -- 
 2.17.1
