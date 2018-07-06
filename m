@@ -1,131 +1,58 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 4/6] thermal: tsens: Add support for SDM845
-Date: Fri, 6 Jul 2018 11:47:41 -0600
-Message-ID: <CAL_JsqKXX6j3d1ErtXN1sTybXFx3diTusaiA8RC8reO_Lz0rSA@mail.gmail.com>
-References: <cover.1530533998.git.amit.kucheria@linaro.org>
- <43e3ae530334efab3fa0151430879f03731e9daa.1530533998.git.amit.kucheria@linaro.org>
- <20180703162619.GA17238@rob-hp-laptop> <CAHLCerNpifvM9nGXiE63-DQ0okP8+1wdxq52qo-K1TWzoYzjtQ@mail.gmail.com>
- <20180705203712.GA29531@rob-hp-laptop> <CAP245DVvdswALtZj0XTOsntHC4kz6a63DJ8qxeiry+9N77=CGw@mail.gmail.com>
+Subject: Re: [PATCH v2 18/23] dt-bindings: thermal: armada: add reference to
+ new bindings
+Date: Fri, 6 Jul 2018 11:51:48 -0600
+Message-ID: <CAL_JsqL8Lc3r7d5b2tnngJksRSiDqDzXjxyK8n1htGbUa6nE6g@mail.gmail.com>
+References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
+ <20180625151239.20976-19-miquel.raynal@bootlin.com>
+ <20180703213011.GA13190@rob-hp-laptop>
+ <20180705120528.4b923e16@xps13>
+ <CAL_JsqL9h4RExZtm5cER-5kNvMpDzH-4MwcmY7VOLXB9-uEYYA@mail.gmail.com>
+ <20180706085458.6ed1a483@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAP245DVvdswALtZj0XTOsntHC4kz6a63DJ8qxeiry+9N77=CGw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Siddartha Mohanadoss <smohanad@codeaurora.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Kees Cook <keescook@chromium.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180706085458.6ed1a483@xps13>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?Q?Miqu=C3=A8l_Raynal?= <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 5, 2018 at 11:13 PM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+On Fri, Jul 6, 2018 at 12:55 AM Miquel Raynal <miquel.raynal@bootlin.com> wrote:
 >
-> On Fri, Jul 6, 2018 at 2:07 AM Rob Herring <robh@kernel.org> wrote:
-> >
-> > On Wed, Jul 04, 2018 at 10:56:26PM +0530, Amit Kucheria wrote:
-> > > On Tue, Jul 3, 2018 at 9:56 PM, Rob Herring <robh@kernel.org> wrote:
-> > > > On Mon, Jul 02, 2018 at 06:14:07PM +0530, Amit Kucheria wrote:
-> > > >> SDM845 uses v2.4.0 of the TSENS IP block but the get_temp() function
-> > > >> appears to be identical across v2.x.y in code seen so far. We use the
-> > > >> generic get_temp() function.
-> > > >>
-> > > >> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > > >> ---
-> > > >>  Documentation/devicetree/bindings/thermal/qcom-tsens.txt | 2 ++
-> > > >>  drivers/thermal/qcom/tsens-v2.c                          | 6 +++++-
-> > > >>  drivers/thermal/qcom/tsens.c                             | 6 ++++++
-> > > >>  drivers/thermal/qcom/tsens.h                             | 5 ++++-
-> > > >>  4 files changed, 17 insertions(+), 2 deletions(-)
-> > > >>
-> > > >> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > > >> index 06195e8..075182e 100644
-> > > >> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > > >> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > > >> @@ -5,6 +5,8 @@ Required properties:
-> > > >>   - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-> > > >>   - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-> > > >>   - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-> > > >> + - "qcom,tsens-v2.4.0"  : For SDM845 Family of SoCs
-> > > >> + - "qcom,tsens-v2"      : Generic fallback binding for any Soc using 2.x.y version of the tsens IP
+> Hi Rob,
+>
+> Rob Herring <robh@kernel.org> wrote on Thu, 5 Jul 2018 12:03:04 -0600:
+>
+> > On Thu, Jul 5, 2018 at 4:05 AM Miquel Raynal <miquel.raynal@bootlin.com> wrote:
+> > >
+> > > Hi Rob,
+> > >
+> > > Rob Herring <robh@kernel.org> wrote on Tue, 3 Jul 2018 15:30:11 -0600:
+> > >
+> > > > On Mon, Jun 25, 2018 at 05:12:34PM +0200, Miquel Raynal wrote:
+> > > > > New bindings (with the syscon and the overheat interrupt) are available
 > > > >
-> > > > You need to show what are valid combinations of compatibles. Does v2
-> > > > apply to 8996? One valid combination per line.
-> > >
-> > > I've restructured qcom-tsens.txt to look like this:
-> > >
-> > > -----%<-------
-> > >
-> > > * QCOM SoC Temperature Sensor (TSENS)
-> > >
-> > > Required properties:
-> > > - compatible: must be one of the following:
-> > >     - "qcom,msm8916-tsens" (MSM8916)
-> > >     - "qcom,msm8974-tsens" (MSM8974)
-> > >     - "qcom,msm8996-tsens" (MSM8996)
-> > >     - "qcom,tsens-<ip_version>", "qcom,tsens-v2" (TSENS IP version and a
-> > >        generic v2 property as fallback except for MSM8996)
-> > >
-> > >   Examples with ip_version are:
-> > >     - "qcom,tsens-v2.4.0", "qcom,tsens-v2" (SDM845)
-> > >     - "qcom,tsens-v2.2.1", "qcom,tsens-v2" (MSM8998)
-> > >
-> > > -----%<-------
-> > >
-> > > 8996 would end up being something like this if needed, though we're
-> > > stuck with "qcom,msm8996-tsens":
-> > > "qcom,msm8996-tsens", "qcom,tsens-v2.1.0", "qcom,tsens-v2" (MSM8996)
+> > > > What interrupt? It's not in your new binding.
 > >
-> > 3 versions here for 3 SoCs. I'm not getting that convinced version
-> > numbers really are better. I would assume that other QCom IP blocks
+> > ???
 >
-> Yeah, it is a bit unfortunate that the 3-4 SoCs we're focusing on
-> getting supported upstream have different versions of the TSENS IP.
-> The other goal of this work was to make the upstream driver
-> feature-complete so we can make a case to switch to it in the
-> downstream trees, even on platforms that aren't being active
-> upstreamed. They'll still need to keep around those SoC-specific
-> one-liner patches in the downstream trees.
+> I forgot that point, my bad.
+>
+> Initially this series introduced an overheat interrupt. Due to some
+> dependencies I split the original series in two: this one and another
+> one just to add support for the interrupt.
 
-Why? They can just use the "v2" fallback (which was sufficient for
-your original version). That's not my recommendation, but what do I
-care for downstream. Only upstream needs the specific strings to
-appease the annoying DT maintainers.
+You can split up the driver support, but please make the binding
+complete as possible.
 
-Plus, if it's not upstream, it doesn't exist. :)
-
-> > have versions too, but pretty much *every* *other* binding uses SoC names.
-> > Why is this one special?
->
-> I'm not an expert on all QC IPs, but this one _seems_ to be reused a
-> lot more than others.
->
-> > The other problem with versions is the mapping
-> > of versions to SoCs most likely can't be validated outside of QCom
-> > unless there's a version register.
->
-> There is in fact a HW version register that I was hoping to add
-> support for later.
-
-Yes, you should rely on that as much as possible. But I have seen h/w
-designers forget to update revision registers or there can be
-integration differences even if the IP version is the same.
-
-> > So, sorry to go in circles, but can you go back to qcom,<soc>-tsens. You
-> > can keep qcom,tsens-v2 as a fallback.
->
-> OK.
->
-> > Yes, it's annoying to have to update bindings for new SoCs. But it's
-> > trivial one line patches. Look at Renesas bindings. Maybe adding new
-> > ones will be scriptable once we move to json-schema binding docs.
->
-> I did look at the Renesas RCar bindings when restructuring the
-> documentation. They seem to have settled upon a 3-level fallback:
-> "soc-specific", "generic-no TZ", "generic-TZ". But
-> drivers/thermal/rcar_thermal.c seems to be compatible with only one
-> soc-specific property (thermal-r8a77995) and all other SoCs seem to be
-> just relying the fallbacks.
->
-> Anyways, I'll respin.
->
-> Thanks.
->
-> Regards,
-> Amit
+Rob
