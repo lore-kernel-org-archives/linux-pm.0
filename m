@@ -1,187 +1,239 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v5 02/12] PM / devfreq: Fix handling of min/max_freq == 0
-Date: Fri, 6 Jul 2018 09:36:24 -0700
-Message-ID: <20180706163624.GE129942@google.com>
-References: <20180703234705.227473-1-mka@chromium.org>
- <CGME20180703235032epcas3p3443729f2230e205f1a0a4b03e6e8f62b@epcas3p3.samsung.com>
- <20180703234705.227473-3-mka@chromium.org>
- <5B3C2EEF.4080309@samsung.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v3] soc: imx: gpc: Turn PU domain on/off in sleep on 6qp
+Date: Fri,  6 Jul 2018 19:46:33 +0300
+Message-ID: <ab0c7997bdb0caf6fe7e842315bb9565c2cb059d.1530895248.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5B3C2EEF.4080309@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Robin Gong <yibin.gong@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+On imx6qp power gating on the PU domain is disabled because of errata
+ERR009619. However power gating during suspend/resume can still be
+performed.
 
-On Wed, Jul 04, 2018 at 11:20:31AM +0900, Chanwoo Choi wrote:
-> Hi Matthias,
-> 
-> On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
-> > Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
-> > devfreq device") initializes df->min/max_freq with the min/max OPP when
-> > the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
-> > available min/max frequency") adds df->scaling_min/max_freq and the
-> > following to the frequency adjustment code:
-> > 
-> >   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-> > 
-> > With the current handling of min/max_freq this is incorrect:
-> > 
-> > Even though df->max_freq is now initialized to a value != 0 user space
-> > can still set it to 0, in this case max_freq would be 0 instead of
-> > df->scaling_max_freq as intended. In consequence the frequency adjustment
-> > is not performed:
-> > 
-> >   if (max_freq && freq > max_freq) {
-> > 	freq = max_freq;
-> > 
-> > To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
-> > when the user passes a value of 0. This also prevents df->max_freq from
-> > being set below the min OPP when df->min_freq is 0, and similar for
-> > min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
-> > checks for this case can be removed.
-> > 
-> > Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > Reviewed-by: Brian Norris <briannorris@chromium.org>
-> > ---
-> > Changes in v5:
-> > - none
-> > 
-> > Changes in v4:
-> > - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
-> > 
-> > Changes in v3:
-> > - none
-> > 
-> > Changes in v2:
-> > - handle freq tables sorted in ascending and descending order in
-> >   min/max_freq_store()
-> > - use same order for conditional statements in min/max_freq_store()
-> > ---
-> >  drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
-> >  1 file changed, 30 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index 0057ef5b0a98..6f604f8b2b81 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
-> >  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-> >  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
-> >  
-> > -	if (min_freq && freq < min_freq) {
-> > +	if (freq < min_freq) {
-> >  		freq = min_freq;
-> >  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
-> >  	}
-> > -	if (max_freq && freq > max_freq) {
-> > +	if (freq > max_freq) {
-> >  		freq = max_freq;
-> >  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
-> >  	}
-> > @@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
-> >  {
-> >  	struct devfreq *df = to_devfreq(dev);
-> >  	unsigned long value;
-> > +	unsigned long *freq_table;
-> 
-> You can move 'freq_table' under 'else' statement.
+Enable this by implementing SLEEP_PM_OPS in imx_pgc_power_domain_driver.
 
-Will do
+In order to ensure correct ordering add device links from devices inside
+the PU domain to the pgc platform_device.
 
-> >  	int ret;
-> > -	unsigned long max;
-> >  
-> >  	ret = sscanf(buf, "%lu", &value);
-> >  	if (ret != 1)
-> >  		return -EINVAL;
-> >  
-> >  	mutex_lock(&df->lock);
-> > -	max = df->max_freq;
-> > -	if (value && max && value > max) {
-> > -		ret = -EINVAL;
-> > -		goto unlock;
-> > +
-> > +	if (value) {
-> > +		if (value > df->max_freq) {
-> > +			ret = -EINVAL;
-> > +			goto unlock;
-> > +		}
-> > +	} else {
-> > +		freq_table = df->profile->freq_table;
-> > +		/* typical order is ascending, some drivers use descending */
-> 
-> You better to explain what is doing of following code.
-> How about modifying it as following?
-> 
-> 		/* Get minimum frequency according to sorting way */
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-Ok, will slightly modify it to 'sorting order' if you don't mind.
+---
+ drivers/soc/imx/gpc.c | 88 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 73 insertions(+), 15 deletions(-)
 
-> > +		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-> > +			value = freq_table[0];
-> > +		else
-> > +			value = freq_table[df->profile->max_state - 1];
-> >  	}
-> >  
-> >  	df->min_freq = value;
-> > @@ -1157,18 +1166,27 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-> >  {
-> >  	struct devfreq *df = to_devfreq(dev);
-> >  	unsigned long value;
-> > +	unsigned long *freq_table;
-> 
-> ditto. You can move 'freq_table' under 'else' statement.
+Link to v2: https://lkml.org/lkml/2018/7/5/564
 
-Will do
+Changes since v2: Add device links on attach
 
-> >  	int ret;
-> > -	unsigned long min;
-> >  
-> >  	ret = sscanf(buf, "%lu", &value);
-> >  	if (ret != 1)
-> >  		return -EINVAL;
-> >  
-> >  	mutex_lock(&df->lock);
-> > -	min = df->min_freq;
-> > -	if (value && min && value < min) {
-> > -		ret = -EINVAL;
-> > -		goto unlock;
-> > +
-> > +	if (value) {
-> > +		if (value < df->min_freq) {
-> > +			ret = -EINVAL;
-> > +			goto unlock;
-> > +		}
-> > +	} else {
-> > +		freq_table = df->profile->freq_table;
-> > +		/* typical order is ascending, some drivers use descending */
-> 
-> ditto.
-> 		/* Get maximum frequency according to sorting way */
+The NXP kernel has been turning the PU domain off in sleep on 6qp for
+many releases so this behavior went through multiple QA cycles and is
+known to work. Further small improvements in power usage could be
+obtained by also shutting off the PU LDO regulator but that's not as
+well-validated.
 
-Ok
-
-> > +		if (freq_table[0] < freq_table[df->profile->max_state - 1])
-> > +			value = freq_table[df->profile->max_state - 1];
-> > +		else
-> > +			value = freq_table[0];
-> >  	}
-> >  
-> >  	df->max_freq = value;
-> > 
-> 
-> If you agree my comment and modify this patch according to my comment,
-> feel free to add my review tag.
-> - Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-Thanks for the review!
-
-Matthias
+diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
+index 32f0748fd067..b96d8dc9626d 100644
+--- a/drivers/soc/imx/gpc.c
++++ b/drivers/soc/imx/gpc.c
+@@ -54,19 +54,16 @@ static inline struct imx_pm_domain *
+ to_imx_pm_domain(struct generic_pm_domain *genpd)
+ {
+ 	return container_of(genpd, struct imx_pm_domain, base);
+ }
+ 
+-static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
++static void _imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
+ {
+ 	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
+ 	int iso, iso2sw;
+ 	u32 val;
+ 
+-	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
+-		return -EBUSY;
+-
+ 	/* Read ISO and ISO2SW power down delays */
+ 	regmap_read(pd->regmap, pd->reg_offs + GPC_PGC_PUPSCR_OFFS, &val);
+ 	iso = val & 0x3f;
+ 	iso2sw = (val >> 8) & 0x3f;
+ 
+@@ -78,32 +75,33 @@ static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
+ 	val = BIT(pd->cntr_pdn_bit);
+ 	regmap_update_bits(pd->regmap, GPC_CNTR, val, val);
+ 
+ 	/* Wait ISO + ISO2SW IPG clock cycles */
+ 	udelay(DIV_ROUND_UP(iso + iso2sw, pd->ipg_rate_mhz));
++}
++
++static int imx6_pm_domain_power_off(struct generic_pm_domain *genpd)
++{
++	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
++
++	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
++		return -EBUSY;
++
++	_imx6_pm_domain_power_off(genpd);
+ 
+ 	if (pd->supply)
+ 		regulator_disable(pd->supply);
+ 
+ 	return 0;
+ }
+ 
+-static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
++static void _imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
+ {
+ 	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
+-	int i, ret, sw, sw2iso;
++	int i, sw, sw2iso;
+ 	u32 val;
+ 
+-	if (pd->supply) {
+-		ret = regulator_enable(pd->supply);
+-		if (ret) {
+-			pr_err("%s: failed to enable regulator: %d\n",
+-			       __func__, ret);
+-			return ret;
+-		}
+-	}
+-
+ 	/* Enable reset clocks for all devices in the domain */
+ 	for (i = 0; i < pd->num_clks; i++)
+ 		clk_prepare_enable(pd->clk[i]);
+ 
+ 	/* Gate off domain when powered down */
+@@ -123,10 +121,39 @@ static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
+ 	udelay(DIV_ROUND_UP(sw + sw2iso, pd->ipg_rate_mhz));
+ 
+ 	/* Disable reset clocks for all devices in the domain */
+ 	for (i = 0; i < pd->num_clks; i++)
+ 		clk_disable_unprepare(pd->clk[i]);
++}
++
++static int imx6_pm_domain_power_on(struct generic_pm_domain *genpd)
++{
++	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
++	int ret;
++
++	if (pd->supply) {
++		ret = regulator_enable(pd->supply);
++		if (ret) {
++			pr_err("%s: failed to enable regulator: %d\n",
++			       __func__, ret);
++			return ret;
++		}
++	}
++
++	_imx6_pm_domain_power_on(genpd);
++
++	return 0;
++}
++
++static int imx6_pm_domain_attach_dev(
++               struct generic_pm_domain *genpd,
++               struct device *dev)
++{
++	struct imx_pm_domain *pd = to_imx_pm_domain(genpd);
++
++	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
++		device_link_add(dev, genpd->dev.parent, DL_FLAG_AUTOREMOVE);
+ 
+ 	return 0;
+ }
+ 
+ static int imx_pgc_get_clocks(struct device *dev, struct imx_pm_domain *domain)
+@@ -198,10 +225,11 @@ static int imx_pgc_power_domain_probe(struct platform_device *pdev)
+ 	if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS)) {
+ 		pm_genpd_init(&domain->base, NULL, false);
+ 		ret = of_genpd_add_provider_simple(dev->of_node, &domain->base);
+ 		if (ret)
+ 			goto genpd_err;
++		domain->base.dev.parent = dev;
+ 	}
+ 
+ 	device_link_add(dev, dev->parent, DL_FLAG_AUTOREMOVE);
+ 
+ 	return 0;
+@@ -224,18 +252,45 @@ static int imx_pgc_power_domain_remove(struct platform_device *pdev)
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static int imx_pgc_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct imx_pm_domain *pd = pdev->dev.platform_data;
++
++	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
++		_imx6_pm_domain_power_off(&pd->base);
++
++	return 0;
++}
++
++static int imx_pgc_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct imx_pm_domain *pd = pdev->dev.platform_data;
++
++	if (pd->flags & PGC_DOMAIN_FLAG_NO_PD)
++		_imx6_pm_domain_power_on(&pd->base);
++
++	return 0;
++}
++
++static const struct dev_pm_ops imx_pgc_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(imx_pgc_suspend, imx_pgc_resume)
++};
++
+ static const struct platform_device_id imx_pgc_power_domain_id[] = {
+ 	{ "imx-pgc-power-domain"},
+ 	{ },
+ };
+ 
+ static struct platform_driver imx_pgc_power_domain_driver = {
+ 	.driver = {
+ 		.name = "imx-pgc-pd",
++		.pm = &imx_pgc_pm_ops,
+ 	},
+ 	.probe = imx_pgc_power_domain_probe,
+ 	.remove = imx_pgc_power_domain_remove,
+ 	.id_table = imx_pgc_power_domain_id,
+ };
+@@ -259,28 +314,31 @@ static struct imx_pm_domain imx_gpc_domains[] = {
+ 	}, {
+ 		.base = {
+ 			.name = "PU",
+ 			.power_off = imx6_pm_domain_power_off,
+ 			.power_on = imx6_pm_domain_power_on,
++			.attach_dev = imx6_pm_domain_attach_dev,
+ 			.states = &imx6_pm_domain_pu_state,
+ 			.state_count = 1,
+ 		},
+ 		.reg_offs = 0x260,
+ 		.cntr_pdn_bit = 0,
+ 	}, {
+ 		.base = {
+ 			.name = "DISPLAY",
+ 			.power_off = imx6_pm_domain_power_off,
+ 			.power_on = imx6_pm_domain_power_on,
++			.attach_dev = imx6_pm_domain_attach_dev,
+ 		},
+ 		.reg_offs = 0x240,
+ 		.cntr_pdn_bit = 4,
+ 	}, {
+ 		.base = {
+ 			.name = "PCI",
+ 			.power_off = imx6_pm_domain_power_off,
+ 			.power_on = imx6_pm_domain_power_on,
++			.attach_dev = imx6_pm_domain_attach_dev,
+ 		},
+ 		.reg_offs = 0x200,
+ 		.cntr_pdn_bit = 6,
+ 	},
+ };
+-- 
+2.17.1
