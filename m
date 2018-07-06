@@ -1,83 +1,90 @@
 From: Daniel Mack <daniel@zonque.org>
-Subject: [PATCH v4 0/5] Add devicetree functionality to w1 busses and ds2760
-Date: Fri,  6 Jul 2018 07:35:47 +0200
-Message-ID: <20180706053552.11438-1-daniel@zonque.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH v4 5/5] power: supply: ds2760_battery: add devicetree probing
+Date: Fri,  6 Jul 2018 07:35:52 +0200
+Message-ID: <20180706053552.11438-6-daniel@zonque.org>
+References: <20180706053552.11438-1-daniel@zonque.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180706053552.11438-1-daniel@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: zbr@ioremap.net, robh+dt@kernel.org, mark.rutland@arm.com, szabolcs.gyurko@tlt.hu
 Cc: sre@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch set contains five patches that bring devicetree
-functionality to w1 bus masters and slaves in general. As an example,
-the ds2760 driver is made aware of devicetree probing. Other drivers
-can easily be ported later.
+Add a matching table for devicetree probing, and optionally set the module
+parameter variables from DT properties.
 
-W1 masters scan their bus in order to discover slave devices. Once
-one is found, a driver matching the family of the device is instanciated
-which handles it. To add devicetree functionality, all that's needed
-for now is a call to of_find_matching_node() when a slave device is
-attached, so the corresponding of_node pointer is set.
+Signed-off-by: Daniel Mack <daniel@zonque.org>
+---
+ drivers/power/supply/ds2760_battery.c | 29 ++++++++++++++++++++++++++-
+ 1 file changed, 28 insertions(+), 1 deletion(-)
 
-The series also contains a patch that merges the w1 slave driver for the
-ds2760 battery monitor into its only user, the ds2760 supply driver.
-The indirection with two drivers never had any benefit, and here is
-a good opportunity to clean this up.
-
-Patch #1 and #2 add DT bindings documentation
-Patch #3 adds the call to of_find_matching_node()
-Patch #4 merges the w1 slave and the supply driver for ds2760
-Patch #5 makes the ds2760 supply driver aware of DT environments
-
-This works fine on a PXA3xx based board with a battery attached to
-the w1-gpio bus master controller.
-
-Changelog:
-
-v3 → v4:
-* Property name cleanups
-* Dropped maxim,current-accumulator property
-* Split 1st patch of v3 in two
-
-v2 → v3:
-* Fixed a typo in the documentation and added more real-world
-  example for the bindings. Pointed out by Rob Herring.
-
-Daniel Mack (4):
-  dt-bindings: w1: document generic onewire and DS2760 bindings
-  w1: core: match sub-nodes of bus masters in devicetree
-  power: supply: ds2760_battery: merge ds2760 supply driver with its w1
-    slave companion
-  power: supply: ds2760_battery: add devicetree probing
-
-
-Daniel Mack (5):
-  dt-bindings: w1: document generic onewire bindings
-  dt-bindings: w1: document bindings for ds2760 battery monitor
-  w1: core: match sub-nodes of bus masters in devicetree
-  power: supply: ds2760_battery: merge ds2760 supply driver with its w1
-    slave companion
-  power: supply: ds2760_battery: add devicetree probing
-
- .../bindings/power/supply/maxim,ds2760.txt    |  26 ++
- .../devicetree/bindings/w1/w1-gpio.txt        |  11 +-
- Documentation/devicetree/bindings/w1/w1.txt   |  25 ++
- drivers/power/supply/Kconfig                  |   2 +-
- drivers/power/supply/ds2760_battery.c         | 348 +++++++++++++-----
- drivers/w1/slaves/Kconfig                     |  12 -
- drivers/w1/slaves/Makefile                    |   1 -
- drivers/w1/slaves/w1_ds2760.c                 | 175 ---------
- drivers/w1/slaves/w1_ds2760.h                 |  59 ---
- drivers/w1/w1.c                               |   3 +
- include/linux/w1.h                            |   2 +
- 11 files changed, 323 insertions(+), 341 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/maxim,ds2760.txt
- create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
- delete mode 100644 drivers/w1/slaves/w1_ds2760.c
- delete mode 100644 drivers/w1/slaves/w1_ds2760.h
-
+diff --git a/drivers/power/supply/ds2760_battery.c b/drivers/power/supply/ds2760_battery.c
+index aa406a7c65a1..11bed88a89fa 100644
+--- a/drivers/power/supply/ds2760_battery.c
++++ b/drivers/power/supply/ds2760_battery.c
+@@ -29,6 +29,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/suspend.h>
+ #include <linux/w1.h>
++#include <linux/of.h>
+ 
+ static unsigned int cache_time = 1000;
+ module_param(cache_time, uint, 0644);
+@@ -705,6 +706,24 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 
+ 	psy_cfg.drv_data = di;
+ 
++	if (dev->of_node) {
++		u32 tmp;
++
++		psy_cfg.of_node = dev->of_node;
++
++		if (!of_property_read_bool(dev->of_node, "maxim,pmod-enabled"))
++			pmod_enabled = true;
++
++		if (!of_property_read_u32(dev->of_node,
++					  "maxim,cache-time-ms", &tmp))
++			cache_time = tmp;
++
++		if (!of_property_read_u32(dev->of_node,
++					  "rated-capacity-microamp-hours",
++					  &tmp))
++			rated_capacity = tmp / 10; /* property is in mAh */
++	}
++
+ 	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
+ 
+ 	sl->family_data = di;
+@@ -719,7 +738,7 @@ static int w1_ds2760_add_slave(struct w1_slave *sl)
+ 
+ 	ds2760_battery_write_status(di, status);
+ 
+-	/* set rated capacity from module param */
++	/* set rated capacity from module param or device tree */
+ 	if (rated_capacity)
+ 		ds2760_battery_write_rated_capacity(di, rated_capacity);
+ 
+@@ -769,6 +788,13 @@ static void w1_ds2760_remove_slave(struct w1_slave *sl)
+ 	power_supply_unregister(di->bat);
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id w1_ds2760_of_ids[] = {
++	{ .compatible = "maxim,ds2760" },
++	{}
++};
++#endif
++
+ static struct w1_family_ops w1_ds2760_fops = {
+ 	.add_slave	= w1_ds2760_add_slave,
+ 	.remove_slave	= w1_ds2760_remove_slave,
+@@ -778,6 +804,7 @@ static struct w1_family_ops w1_ds2760_fops = {
+ static struct w1_family w1_ds2760_family = {
+ 	.fid		= W1_FAMILY_DS2760,
+ 	.fops		= &w1_ds2760_fops,
++	.of_match_table	= of_match_ptr(w1_ds2760_of_ids),
+ };
+ module_w1_family(w1_ds2760_family);
+ 
 -- 
 2.17.1
