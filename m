@@ -1,69 +1,68 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH v2 18/23] dt-bindings: thermal: armada: add reference to
- new bindings
-Date: Fri, 6 Jul 2018 09:49:04 +0200
-Message-ID: <20180706094904.22275b10@xps13>
-References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
- <20180625151239.20976-19-miquel.raynal@bootlin.com>
- <20180703213011.GA13190@rob-hp-laptop>
- <20180705120528.4b923e16@xps13>
- <CAL_JsqL9h4RExZtm5cER-5kNvMpDzH-4MwcmY7VOLXB9-uEYYA@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+Date: Fri, 6 Jul 2018 10:36:03 +0200
+Message-ID: <20180706083603.GA9063@wunner.de>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+ <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL_JsqL9h4RExZtm5cER-5kNvMpDzH-4MwcmY7VOLXB9-uEYYA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM
- ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLAoKWy4uLl0KCj4gPiA+ID4gZm9yIEFQODA2IGFuZCBDUDExMCBjb21wYXRpYmxlcy4g
-QWRkIGEgcmVmZXJlbmNlIHRvIHRoZXNlIGZpbGVzIGZyb20gdGhlCj4gPiA+ID4gb3JpZ2luYWwg
-ZG9jdW1lbnRhdGlvbi4KPiA+ID4gPgo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXlu
-YWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5jb20+Cj4gPiA+ID4gLS0tCj4gPiA+ID4gIERvY3Vt
-ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4dCB8
-IDUgKysrKysKPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDUgaW5zZXJ0aW9ucygrKQo+ID4gPiA+
-Cj4gPiA+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90
-aGVybWFsL2FybWFkYS10aGVybWFsLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
-aW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4dAo+ID4gPiA+IGluZGV4IGUwZDAxM2EyZTY2
-ZC4uZjNiNDQxMTAwODkwIDEwMDY0NAo+ID4gPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNl
-dHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4dAo+ID4gPiA+ICsrKyBiL0Rv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10aGVybWFsLnR4
-dAo+ID4gPiA+IEBAIC0xMCw2ICsxMCwxMSBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ID4gPiA+
-ICAgICAgKiBtYXJ2ZWxsLGFybWFkYS1hcDgwNi10aGVybWFsCj4gPiA+ID4gICAgICAqIG1hcnZl
-bGwsYXJtYWRhLWNwMTEwLXRoZXJtYWwgIAo+ID4gPgo+ID4gPiBSZWFsbHkgeW91IHNob3VsZCBu
-b3QgYmUgdXNpbmcgdGhlIHNhbWUgY29tcGF0aWJsZSBmb3IgYm90aC4gTm93IHlvdQo+ID4gPiBo
-YXZlIDIgZHJpdmVycyBtYXRjaGluZyB0byBzYW1lIGNvbXBhdGlibGVzLgo+ID4gPgo+ID4gPiBD
-YW4ndCB5b3UgbWFrZSB0aGlzIGEgY2hpbGQgb2YgdGhlIHN5c2NvbiB3aXRob3V0IGJyZWFraW5n
-IHRoZSBiaW5kaW5nPyAgCj4gPgo+ID4gV2UgYXJlIHRhbGtpbmcgYWJvdXQgb25seSAxIGRyaXZl
-ciBoZXJlLCBzbyBJJ20gbm90IHN1cmUgaG93IEkgc2hvdWxkCj4gPiB1bmRlcnN0YW5kIHlvdXIg
-bGFzdCBzZW50ZW5jZS4gRG8geW91IHdhbnQgbWUgdG8gYWRkIGEgc2Vjb25kCj4gPiBjb21wYXRp
-YmxlIChmb3IgdGhlIHNhbWUgcGllY2Ugb2YgaGFyZHdhcmUpIGZvciB0aGVybWFsIG5vZGUgZGVj
-bGFyZWQKPiA+IGFzIGEgY2hpbGQgb2YgdGhlIHN5c2Nvbj8gIAo+IAo+IEkgZG9uJ3Qga25vdyB3
-aGF0IEknbSBzdWdnZXN0aW5nLiBZb3VyIGNoYW5nZXMgbG9vayBsaWtlIHRoZXkgYnJlYWsKPiBj
-b21wYXRpYmlsaXR5IHRvIG1lLgoKVGhlcmUgaXMgY29kZSBpbiB0aGUgZHJpdmVyIHRvIGhhbmRs
-ZSB0aGUgbGVnYWN5IG5vbi1zeXNjb24taXNoIHRoZXJtYWwKbm9kZSAoImFybWFkYV90aGVybWFs
-X3Byb2JlX2xlZ2FjeSgpIikuIEFuIG9sZCBEVCB3aXRoIGEgbmV3IGtlcm5lbAp3b3VsZCB3b3Jr
-IGZpbmUuCgo+IFdoYXQgaGFwcGVucyBpZiB5b3UgdXNlIHRoaXMgbmV3IGJpbmRpbmcgd2l0aG91
-dCBhbnkga2VybmVsIGNoYW5nZT8KCkkgc3VwcG9zZSB5b3UgbWVhbiAiZHVyaW5nIHRoZSBtZXJn
-ZSB3aW5kb3ciPyBJbiB0aGlzIGNhc2UgdGhlIGRyaXZlcgpvZiB0aGUgdGhlcm1hbCBJUCB3aWxs
-IG5vdCBwcm9iZSAoYW5kIHNwYXduIGFuIGVycm9yIGluIHRoZSBkbWVzZykgd2l0aAphcDgwNi9j
-cDExMCBJUHMuIEFzIHRoZSBzdXBwb3J0IGlzIHByZXR0eSBuZXcgZm9yIHRoZW0sIHRoaXMgaXMg
-bWF5YmUKbm90IGEgaHVnZSBpc3N1ZS4gQWxzbywgYmVmb3JlIHRoZSBEVCBjaGFuZ2VzIGFkZGlu
-ZyB0aGVybWFsIHpvbmVzLApqdXN0IHJldHJpZXZpbmcgdGhlIHRlbXBlcmF0dXJlIG1pZ2h0IGJl
-IHByZXR0eSB1c2VsZXNzLiBIb3dldmVyLCBpdAppcyBhbHdheXMgcG9zc2libGUgdG8gbWVyZ2Ug
-dGhlIGRyaXZlciBjaGFuZ2VzIGluIDQuMTkgYW5kIHRoZSBEVApjaGFuZ2VzIGluIDQuMjAuCgoK
-VGhhbmtzLApNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
-c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1hcm0ta2VybmVsCg==
+[cc += Kishon Vijay Abraham]
+
+On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+> OK, so calling devices_kset_move_last() from really_probe() clearly is
+> a mistake.
+> 
+> I'm not really sure what the intention of it was as the changelog of
+> commit 52cdbdd49853d doesn't really explain that (why would it be
+> insufficient without that change?)
+
+It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+whose reset pin needs to be driven high on shutdown, lest the MMC
+won't be found on the next boot.
+
+The boards' devicetrees use a kludge wherein the reset pin is modelled
+as a regulator.  The regulator is enabled when the MMC probes and
+disabled on driver unbind and shutdown.  As a result, the pin is driven
+low on shutdown and the MMC is not found on the next boot.
+
+To fix this, another kludge was invented wherein the GPIO expander
+driving the reset pin unconditionally drives all its pins high on
+shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+(commit adc284755055, "gpio: pcf857x: restore the initial line state
+of all pcf lines").
+
+For this kludge to work, the GPIO expander's ->shutdown hook needs to
+be executed after the MMC expander's ->shutdown hook.
+
+Commit 52cdbdd49853d achieved that by reordering devices_kset according
+to the probe order.  Apparently the MMC probes after the GPIO expander,
+possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+available yet, see mmc_regulator_get_supply().
+
+Note, I'm just piecing the information together from git history,
+I'm not responsible for these kludges.  (I'm innocent!)
+
+@Pingfan Liu, if you just remove the call to devices_kset_move_last()
+from really_probe(), does the issue go away?
+
+If so, it might be best to remove that call and model the dependency
+with a call to device_link_add() in mmc_regulator_get_supply().
+Another idea would be to automatically add a device_link in the
+driver core if -EPROBE_DEFER is returned.
+
+Thanks,
+
+Lukas
