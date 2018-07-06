@@ -1,61 +1,89 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2] power: vexpress: fix corruption in notifier
- registration
-Date: Fri, 6 Jul 2018 12:34:21 +0100
-Message-ID: <377ad2bb-b620-f6cc-6f0b-8d4d304dac55@arm.com>
-References: <1529322007-4637-1-git-send-email-sudeep.holla@arm.com>
- <1529337272-11799-1-git-send-email-sudeep.holla@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v4 08/12] sched: Add over-utilization/tipping point
+ indicator
+Date: Fri, 6 Jul 2018 13:39:21 +0200
+Message-ID: <20180706113921.GT2458@hirez.programming.kicks-ass.net>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-9-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1529337272-11799-1-git-send-email-sudeep.holla@arm.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180628114043.24724-9-quentin.perret@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Jun 28, 2018 at 12:40:39PM +0100, Quentin Perret wrote:
+>  static inline void update_sg_lb_stats(struct lb_env *env,
+>  			struct sched_group *group, int load_idx,
+>  			int local_group, struct sg_lb_stats *sgs,
+> -			bool *overload)
+> +			bool *overload, int *overutilized)
+
+> @@ -8308,7 +8336,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+>  		}
+>  
+>  		update_sg_lb_stats(env, sg, load_idx, local_group, sgs,
+> -						&overload);
+> +						&overload, &overutilized);
+>  
+>  		if (local_group)
+>  			goto next_group;
+
+I'm thinking maybe we should reduce arguments here a little.
+
+@load_idx and @local_group look to be trivially computable..
+
+and possibly we could frob overload and overutilized in a single
+variable with some flags?
 
 
-On 18/06/18 16:54, Sudeep Holla wrote:
-> Vexpress platforms provide two different restart handlers: SYS_REBOOT
-> that restart the entire system, while DB_RESET only restarts the
-> daughter board containing the CPU. DB_RESET is overridden by SYS_REBOOT
-> if it exists.
-> 
-> notifier_chain_register used in register_restart_handler by design
-> relies on notifiers to be registered once only, however vexpress restart
-> notifier can get registered twice. When this happen it corrupts list
-> of notifiers, as result some notifiers can be not called on proper
-> event, traverse on list can be cycled forever, and second unregister
-> can access already freed memory.
-> 
-> So far, since this was the only restart handler in the system, no issue
-> was observed even if the same notifier was registered twice. However
-> commit 6c5c0d48b686 ("watchdog: sp805: add restart handler") added
-> support for SP805 restart handlers and since the system under test
-> contains two vexpress restart and two SP805 watchdog instances, it was
-> observed that during the boot traversing the restart handler list looped
-> forever as there's a cycle in that list resulting in boot hang.
-> 
-> This patch fixes the issues by ensuring that the notifier is installed
-> only once.
-> 
-> Cc: Sebastian Reichel <sre@kernel.org>
-
-
-Gentle Ping ! This needs to go as fix as my platform(TC2) fails to boot
-without this.
-
--- 
-Regards,
-Sudeep
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 321cd5dcf2e8..091859069620 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -8114,10 +8114,12 @@ static bool update_nohz_stats(struct rq *rq, bool force)
+  * @overload: Indicate more than one runnable task for any CPU.
+  */
+ static inline void update_sg_lb_stats(struct lb_env *env,
+-			struct sched_group *group, int load_idx,
+-			int local_group, struct sg_lb_stats *sgs,
++			struct sched_group *group,
++			struct sg_lb_stats *sgs,
+ 			bool *overload)
+ {
++	int local_group = cpumask_test_cpu(env->dst_cpu, sched_group_span(sd));
++	int load_idx = get_sd_load_idx(env->sd, env->idle);
+ 	unsigned long load;
+ 	int i, nr_running;
+ 
+@@ -8278,7 +8280,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 	struct sched_group *sg = env->sd->groups;
+ 	struct sg_lb_stats *local = &sds->local_stat;
+ 	struct sg_lb_stats tmp_sgs;
+-	int load_idx, prefer_sibling = 0;
++	int prefer_sibling = 0;
+ 	bool overload = false;
+ 
+ 	if (child && child->flags & SD_PREFER_SIBLING)
+@@ -8289,8 +8291,6 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 		env->flags |= LBF_NOHZ_STATS;
+ #endif
+ 
+-	load_idx = get_sd_load_idx(env->sd, env->idle);
+-
+ 	do {
+ 		struct sg_lb_stats *sgs = &tmp_sgs;
+ 		int local_group;
+@@ -8305,8 +8305,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 				update_group_capacity(env->sd, env->dst_cpu);
+ 		}
+ 
+-		update_sg_lb_stats(env, sg, load_idx, local_group, sgs,
+-						&overload);
++		update_sg_lb_stats(env, sg, sgs, &overload);
+ 
+ 		if (local_group)
+ 			goto next_group;
