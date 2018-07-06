@@ -1,75 +1,147 @@
-From: Pingfan Liu <kernelfans@gmail.com>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Fri, 6 Jul 2018 21:55:57 +0800
-Message-ID: <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
- <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
- <20180706083603.GA9063@wunner.de> <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH] power: remove possible deadlock when unregistering
+ power_supply
+Date: Fri, 6 Jul 2018 16:32:34 +0200
+Message-ID: <20180706143234.dpge6enymaasx7ei@earth.universe>
+References: <20180625075148.22140-1-benjamin.tissoires@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="o5rntxnxfn4z2br2"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180625075148.22140-1-benjamin.tissoires@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: lukas@wunner.de, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, kishon@ti.com
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Richard Hughes <rhughes@redhat.com>, Aaron Skomra <Aaron.Skomra@wacom.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > [cc += Kishon Vijay Abraham]
-> >
-> > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
-> >> OK, so calling devices_kset_move_last() from really_probe() clearly is
-> >> a mistake.
-> >>
-> >> I'm not really sure what the intention of it was as the changelog of
-> >> commit 52cdbdd49853d doesn't really explain that (why would it be
-> >> insufficient without that change?)
-> >
-> > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
-> > whose reset pin needs to be driven high on shutdown, lest the MMC
-> > won't be found on the next boot.
-> >
-> > The boards' devicetrees use a kludge wherein the reset pin is modelled
-> > as a regulator.  The regulator is enabled when the MMC probes and
-> > disabled on driver unbind and shutdown.  As a result, the pin is driven
-> > low on shutdown and the MMC is not found on the next boot.
-> >
-> > To fix this, another kludge was invented wherein the GPIO expander
-> > driving the reset pin unconditionally drives all its pins high on
-> > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
-> > (commit adc284755055, "gpio: pcf857x: restore the initial line state
-> > of all pcf lines").
-> >
-> > For this kludge to work, the GPIO expander's ->shutdown hook needs to
-> > be executed after the MMC expander's ->shutdown hook.
-> >
-> > Commit 52cdbdd49853d achieved that by reordering devices_kset according
-> > to the probe order.  Apparently the MMC probes after the GPIO expander,
-> > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
-> > available yet, see mmc_regulator_get_supply().
-> >
-> > Note, I'm just piecing the information together from git history,
-> > I'm not responsible for these kludges.  (I'm innocent!)
->
-> Sure enough. :-)
->
-> In any case, calling devices_kset_move_last() in really_probe() is
-> plain broken and if its only purpose was to address a single, arguably
-> kludgy, use case, let's just get rid of it in the first place IMO.
->
-Yes, if it is only used for a single use case.
 
-> > @Pingfan Liu, if you just remove the call to devices_kset_move_last()
-> > from really_probe(), does the issue go away?
->
-> I would think so from the description of the problem (elsewhere in this thread).
->
-Yes.
+--o5rntxnxfn4z2br2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Pingfan
+Hi,
+
+On Mon, Jun 25, 2018 at 09:51:48AM +0200, Benjamin Tissoires wrote:
+> If a device gets removed right after having registered a power_supply nod=
+e,
+> we might enter in a deadlock between the remove call (that has a lock on
+> the parent device) and the deferred register work.
+>=20
+> Allow the deferred register work to exit without taking the lock when
+> we are in the remove state.
+>=20
+> Stack trace on a Ubuntu 16.04:
+>=20
+> [16072.109121] INFO: task kworker/u16:2:1180 blocked for more than 120 se=
+conds.
+> [16072.109127]       Not tainted 4.13.0-41-generic #46~16.04.1-Ubuntu
+> [16072.109129] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disable=
+s this message.
+> [16072.109132] kworker/u16:2   D    0  1180      2 0x80000000
+> [16072.109142] Workqueue: events_power_efficient power_supply_deferred_re=
+gister_work
+> [16072.109144] Call Trace:
+> [16072.109152]  __schedule+0x3d6/0x8b0
+> [16072.109155]  schedule+0x36/0x80
+> [16072.109158]  schedule_preempt_disabled+0xe/0x10
+> [16072.109161]  __mutex_lock.isra.2+0x2ab/0x4e0
+> [16072.109166]  __mutex_lock_slowpath+0x13/0x20
+> [16072.109168]  ? __mutex_lock_slowpath+0x13/0x20
+> [16072.109171]  mutex_lock+0x2f/0x40
+> [16072.109174]  power_supply_deferred_register_work+0x2b/0x50
+> [16072.109179]  process_one_work+0x15b/0x410
+> [16072.109182]  worker_thread+0x4b/0x460
+> [16072.109186]  kthread+0x10c/0x140
+> [16072.109189]  ? process_one_work+0x410/0x410
+> [16072.109191]  ? kthread_create_on_node+0x70/0x70
+> [16072.109194]  ret_from_fork+0x35/0x40
+> [16072.109199] INFO: task test:2257 blocked for more than 120 seconds.
+> [16072.109202]       Not tainted 4.13.0-41-generic #46~16.04.1-Ubuntu
+> [16072.109204] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disable=
+s this message.
+> [16072.109206] test            D    0  2257   2256 0x00000004
+> [16072.109208] Call Trace:
+> [16072.109211]  __schedule+0x3d6/0x8b0
+> [16072.109215]  schedule+0x36/0x80
+> [16072.109218]  schedule_timeout+0x1f3/0x360
+> [16072.109221]  ? check_preempt_curr+0x5a/0xa0
+> [16072.109224]  ? ttwu_do_wakeup+0x1e/0x150
+> [16072.109227]  wait_for_completion+0xb4/0x140
+> [16072.109230]  ? wait_for_completion+0xb4/0x140
+> [16072.109233]  ? wake_up_q+0x70/0x70
+> [16072.109236]  flush_work+0x129/0x1e0
+> [16072.109240]  ? worker_detach_from_pool+0xb0/0xb0
+> [16072.109243]  __cancel_work_timer+0x10f/0x190
+> [16072.109247]  ? device_del+0x264/0x310
+> [16072.109250]  ? __wake_up+0x44/0x50
+> [16072.109253]  cancel_delayed_work_sync+0x13/0x20
+> [16072.109257]  power_supply_unregister+0x37/0xb0
+> [16072.109260]  devm_power_supply_release+0x11/0x20
+> [16072.109263]  release_nodes+0x110/0x200
+> [16072.109266]  devres_release_group+0x7c/0xb0
+> [16072.109274]  wacom_remove+0xc2/0x110 [wacom]
+> [16072.109279]  hid_device_remove+0x6e/0xd0 [hid]
+> [16072.109284]  device_release_driver_internal+0x158/0x210
+> [16072.109288]  device_release_driver+0x12/0x20
+> [16072.109291]  bus_remove_device+0xec/0x160
+> [16072.109293]  device_del+0x1de/0x310
+> [16072.109298]  hid_destroy_device+0x27/0x60 [hid]
+> [16072.109303]  usbhid_disconnect+0x51/0x70 [usbhid]
+> [16072.109308]  usb_unbind_interface+0x77/0x270
+> [16072.109311]  device_release_driver_internal+0x158/0x210
+> [16072.109315]  device_release_driver+0x12/0x20
+> [16072.109318]  usb_driver_release_interface+0x77/0x80
+> [16072.109321]  proc_ioctl+0x20f/0x250
+> [16072.109325]  usbdev_do_ioctl+0x57f/0x1140
+> [16072.109327]  ? __wake_up+0x44/0x50
+> [16072.109331]  usbdev_ioctl+0xe/0x20
+> [16072.109336]  do_vfs_ioctl+0xa4/0x600
+> [16072.109339]  ? vfs_write+0x15a/0x1b0
+> [16072.109343]  SyS_ioctl+0x79/0x90
+> [16072.109347]  entry_SYSCALL_64_fastpath+0x24/0xab
+> [16072.109349] RIP: 0033:0x7f20da807f47
+> [16072.109351] RSP: 002b:00007ffc422ae398 EFLAGS: 00000246 ORIG_RAX: 0000=
+000000000010
+> [16072.109353] RAX: ffffffffffffffda RBX: 00000000010b8560 RCX: 00007f20d=
+a807f47
+> [16072.109355] RDX: 00007ffc422ae3a0 RSI: 00000000c0105512 RDI: 000000000=
+0000009
+> [16072.109356] RBP: 0000000000000000 R08: 00007ffc422ae3e0 R09: 000000000=
+0000010
+> [16072.109357] R10: 00000000000000a6 R11: 0000000000000246 R12: 000000000=
+0000000
+> [16072.109359] R13: 00000000010b8560 R14: 00007ffc422ae2e0 R15: 000000000=
+0000000
+>=20
+> Reported-and-tested-by: Richard Hughes <rhughes@redhat.com>
+> Tested-by: Aaron Skomra <Aaron.Skomra@wacom.com>
+> Signed-off-by: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+> ---
+
+Thanks, added Fixes: tag and queued to power-supply-fixes.
+
+-- Sebastian
+
+--o5rntxnxfn4z2br2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAls/fX4ACgkQ2O7X88g7
++poaPhAAl+j/TrAOMvgiZ/b9549sVzXw4MSo844NlhLkjEyJ/3YKmcWM6YKV2KAj
+r2EtvbfkDDV+YwUf0gZt3H9v6rUo16aK7h91dPugPXMdQN+yYp7lap1iprvnsjDJ
+cVXcfW5/GE8nuuHaicXgcepnqZu4uMNMuzYrMxhczL2k8UMZNQA23EU3wDi6yvU+
+UdFW7P20COsnt9oV/HwEQYD+FIKf175sXPsrkXfqbCg2IpGXcDYu/XfeopWzp3WM
+om0wz1Yr4jnuO9GM3+n1LgNVg27XhEkjBiJyZcaLx+11Juxa/LXuEMqE77S5Wy/G
+Z+jtudYOn3linvVc2g08W2f4EBqmBEjHz6oKGfXafcx/SP8RDwM+eQbzl/gJEVAA
+5czvb6dLvlItpvj5dwF6zSmH50d4AfzGDwbLKXAcbsItDNB3yvtlkfN4f0cE4czq
+6uQ16ODI7JAmf1yV/MbS46NlHOiCFQWcIJuZ8sdHedj3Te/PT7PEthlBpDTX/DV5
+xUeUegpIye7XJLigd/9j37lmpChDD2nx5TuCgsxwLAbjXeSniSSTbO7q85AdtPa5
+brs+QRKDZn6YNn3TYfpNxoZ5EgI+hEj6EI3vh+bbeLuda/07UPhpHC8trvMQAOic
+33FM2YAAr2WGrfmGANpvuv67zYKP1Fp1TdyO4QvJxXjybOqNME4=
+=KcNO
+-----END PGP SIGNATURE-----
+
+--o5rntxnxfn4z2br2--
