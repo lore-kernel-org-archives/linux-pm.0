@@ -1,122 +1,85 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [RESEND PATCH v3 2/2] thermal: core: introduce thermal zone
- device mode control
-Date: Fri, 6 Jul 2018 11:22:11 -0700
-Message-ID: <20180706182211.GI129942@google.com>
-References: <20180226144118.24693-1-enric.balletbo@collabora.com>
- <20180226144118.24693-2-enric.balletbo@collabora.com>
- <20180629003302.GT129942@google.com>
- <20180703171325.GC129942@google.com>
- <f06cea77-f0bf-07bf-b8c6-6835cf0be999@collabora.com>
+From: Pingfan Liu <kernelfans@gmail.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+Date: Sat, 7 Jul 2018 12:24:26 +0800
+Message-ID: <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de> <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+ <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <f06cea77-f0bf-07bf-b8c6-6835cf0be999@collabora.com>
+In-Reply-To: <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: rui.zhang@intel.com, rjw@rjwysocki.net, groeck@chromium.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, snanda@chromium.org, lenb@kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+To: rafael@kernel.org
+Cc: lukas@wunner.de, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, kishon@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
+On Fri, Jul 6, 2018 at 9:55 PM Pingfan Liu <kernelfans@gmail.com> wrote:
+>
+> On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > [cc += Kishon Vijay Abraham]
+> > >
+> > > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+> > >> OK, so calling devices_kset_move_last() from really_probe() clearly is
+> > >> a mistake.
+> > >>
+> > >> I'm not really sure what the intention of it was as the changelog of
+> > >> commit 52cdbdd49853d doesn't really explain that (why would it be
+> > >> insufficient without that change?)
+> > >
+> > > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+> > > whose reset pin needs to be driven high on shutdown, lest the MMC
+> > > won't be found on the next boot.
+> > >
+> > > The boards' devicetrees use a kludge wherein the reset pin is modelled
+> > > as a regulator.  The regulator is enabled when the MMC probes and
+> > > disabled on driver unbind and shutdown.  As a result, the pin is driven
+> > > low on shutdown and the MMC is not found on the next boot.
+> > >
+> > > To fix this, another kludge was invented wherein the GPIO expander
+> > > driving the reset pin unconditionally drives all its pins high on
+> > > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+> > > (commit adc284755055, "gpio: pcf857x: restore the initial line state
+> > > of all pcf lines").
+> > >
+> > > For this kludge to work, the GPIO expander's ->shutdown hook needs to
+> > > be executed after the MMC expander's ->shutdown hook.
+> > >
+> > > Commit 52cdbdd49853d achieved that by reordering devices_kset according
+> > > to the probe order.  Apparently the MMC probes after the GPIO expander,
+> > > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+> > > available yet, see mmc_regulator_get_supply().
+> > >
+> > > Note, I'm just piecing the information together from git history,
+> > > I'm not responsible for these kludges.  (I'm innocent!)
+> >
+> > Sure enough. :-)
+> >
+> > In any case, calling devices_kset_move_last() in really_probe() is
+> > plain broken and if its only purpose was to address a single, arguably
+> > kludgy, use case, let's just get rid of it in the first place IMO.
+> >
+> Yes, if it is only used for a single use case.
+>
+Think it again, I saw other potential issue with the current code.
+device_link_add->device_reorder_to_tail() can break the
+"supplier<-consumer" order. During moving children after parent's
+supplier, it ignores the order of child's consumer.  Beside this,
+essentially both devices_kset_move_after/_before() and
+device_pm_move_after/_before() expose  the shutdown order to the
+indirect caller,  and we can not expect that the caller can not handle
+it correctly. It should be a job of drivers core.  It is hard to
+extract high dimension info and pack them into one dimension
+linked-list. And in theory, it is warranted that the shutdown seq is
+correct by using device tree info. More important, it is cheap with
+the data structure in hand. So I think it is time to resolve the issue
+once for all.
 
-On Wed, Jul 04, 2018 at 12:36:39PM +0200, Enric Balletbo i Serra wrote:
-> Hi Matthias,
-> 
-> Sorry for late reply, my memory is bad so I need to look at this again. The
-> patch was send some time ago and there are pending changes to do but then I
-> switched. I'll take a look, but did you saw why this patch was not merged [1]?
-> Maybe that could answer some of your questions.
-> 
-> Best regards,
->  Enric
-> 
-> [1] https://lkml.org/lkml/2018/2/27/910
-
-I missed this, thanks for the pointer!
-
-> On 03/07/18 19:13, Matthias Kaehlcke wrote:
-> > On Thu, Jun 28, 2018 at 05:33:02PM -0700, Matthias Kaehlcke wrote:
-> >> Hi,
-> >>
-> >> I stumbled across this patch since I'm currently poking around with
-> >> early thermal bringup on a platform and this patch has been integrated
-> >> in our development tree.
-> >>
-> >> I'm seeing some unexpected behaviors, which could entirely due to
-> >> wrong expectation from my side. I only have some basic working
-> >> knowledge of the thermal framework, just want to double check and
-> >> perhaps learn a thing or two.
-> >>
-> >> On Mon, Feb 26, 2018 at 03:41:18PM +0100, Enric Balletbo i Serra wrote:
-> >>> From: Zhang Rui <rui.zhang@intel.com>
-> >>>
-> >>> Thermal "mode" sysfs attribute is introduced to enable/disable a thermal
-> >>> zone, and .get_mode()/.set_mode() callback is introduced for platform
-> >>> thermal driver to enable/disable the hardware thermal control logic. And
-> >>> thermal core takes no action upon thermal zone enable/disable.
-> >>>
-> >>> Actually, this is not quite right because thermal core still pokes those
-> >>> disabled thermal zones occasionally, e.g. upon system resume.
-> >>>
-> >>> To fix this, a new flag 'mode' is introduced in struct thermal_zone_device
-> >>> to represent the thermal zone mode, and several decisions have been made
-> >>> based on this flag, including
-> >>> 1. check the thermal zone mode right after it's registered.
-> >>> 2. skip updating thermal zone if the zone is disabled
-> >>> 3. stop the polling timer when the thermal zone is disabled
-> >>>
-> >>> Note: basically, this patch doesn't affect the existing always-enabled
-> >>> thermal zones much, with just one exception -
-> >>> thermal zone .get_mode() must be well prepared to reflect the real thermal
-> >>> zone status upon the thermal zone registration.
-> >>
-> >> From my perspective this looks like a pretty significant change. For
-> >> the platform I'm working on I added a thermal zone to the device tree,
-> >> with the expectation that it would be enabled. Judging from the code
-> >> without this patch this expectation seems to be naive, since
-> >> of-thermal.c sets tz->mode to THERMAL_DEVICE_DISABLED, so apparently
-> >> either userspace or some driver should call _set_mode(tz,
-> >> THERMAL_DEVICE_ENABLED). However even without this the thermal zone
-> >> appears to be active (I didn't really test end-to-end yet, but at
-> >> least thermal_zone_device_update() is called and calls
-> >> handle_thermal_trip()). Not sure why this is the case with
-> >> THERMAL_DEVICE_DISABLED, but before I learned about the existence of
-> >> the flag my expectation was that the zone would be enabled.
-> >>
-> >> With this patch thermal_zone_device_update() is skipped if the zone
-> >> hasn't been explictly enabled, which may be consistent with the state
-> >> of 'tz->mode', but effectively changes the previous/current behavior.
-> >>
-> >> Not sure if I'm just dumbly overlooking something obvious or if there
-> >> is an actual problem with of_thermal (and maybe others).
-> > 
-> > The problem is that there are now two 'mode' fields, tzd->mode and the
-> > other typically tzd->devdata->mode, and tzd->mode is never set to enabled.
-> > 
-> >> thermal zone .get_mode() must be well prepared to reflect the real thermal
-> >> zone status upon the thermal zone registration.
-> > 
-> > For of_thermal tzd->mode is initialized with the result of .get_mode()
-> > when the zone is registered. At this time no sensor has been added
-> > to the zone, hence the zone is disabled. When a sensor is added later
-> > tzd->devdata->mode is set to enabled, however tzd->mode remains disabled:
-> > 
-> > tzd->mode = DISABLED
-> > tzd->devdata->mode = DISABLED
-> > 
-> > of_parse_thermal_zones
-> >   thermal_zone_device_register
-> >     tzd->mode = tzd->get_mode() // => DISABLED
-> > 
-> > <sensor>_probe
-> >   thermal_zone_of_sensor_register
-> >     tzd->set_mode(THERMAL_DEVICE_ENABLED)
-> >       tzd->devdata->mode = ENABLED
-> > 
-> > One way to fix this for of_thermal could be to setting tzd->mode in
-> > .set_mode() in addition to setting tzd->devdata->mode. However this
-> > feels like a workaround/hack. Personally I find it confusing to have
-> > two mode fields for a thermal zone device. Maybe tzd->mode should
-> > replace tzd->devdata->mode?
-> > 
+Thanks and regards,
+Pingfan
