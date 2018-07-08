@@ -1,107 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Sun, 8 Jul 2018 10:25:14 +0200
-Message-ID: <CAJZ5v0gxJ9LJ328WbgPrZCV-0SEiO31trsTSYYS8L95P4kfkbA@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
- <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
- <20180706083603.GA9063@wunner.de> <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
- <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com> <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPICA: Clear status of all events when entering S5
+Date: Sun, 08 Jul 2018 11:10:13 +0200
+Message-ID: <2396867.eZQXUlvGZn@aspire.rjw.lan>
+References: <s5hk1qaf9hv.wl-tiwai@suse.de> <1704080.gFTvVrrZA1@aspire.rjw.lan> <6f01a906-b27c-0e1a-e9f6-fa27c015faa3@cosifan.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
+In-Reply-To: <6f01a906-b27c-0e1a-e9f6-fa27c015faa3@cosifan.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Thomas =?ISO-8859-1?Q?H=E4nig?= <haenig@cosifan.de>, Takashi Iwai <tiwai@suse.de>, Erik Schmauss <erik.schmauss@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 7, 2018 at 6:24 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
-> On Fri, Jul 6, 2018 at 9:55 PM Pingfan Liu <kernelfans@gmail.com> wrote:
->>
->> On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->> >
->> > On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> > > [cc += Kishon Vijay Abraham]
->> > >
->> > > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
->> > >> OK, so calling devices_kset_move_last() from really_probe() clearly is
->> > >> a mistake.
->> > >>
->> > >> I'm not really sure what the intention of it was as the changelog of
->> > >> commit 52cdbdd49853d doesn't really explain that (why would it be
->> > >> insufficient without that change?)
->> > >
->> > > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
->> > > whose reset pin needs to be driven high on shutdown, lest the MMC
->> > > won't be found on the next boot.
->> > >
->> > > The boards' devicetrees use a kludge wherein the reset pin is modelled
->> > > as a regulator.  The regulator is enabled when the MMC probes and
->> > > disabled on driver unbind and shutdown.  As a result, the pin is driven
->> > > low on shutdown and the MMC is not found on the next boot.
->> > >
->> > > To fix this, another kludge was invented wherein the GPIO expander
->> > > driving the reset pin unconditionally drives all its pins high on
->> > > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
->> > > (commit adc284755055, "gpio: pcf857x: restore the initial line state
->> > > of all pcf lines").
->> > >
->> > > For this kludge to work, the GPIO expander's ->shutdown hook needs to
->> > > be executed after the MMC expander's ->shutdown hook.
->> > >
->> > > Commit 52cdbdd49853d achieved that by reordering devices_kset according
->> > > to the probe order.  Apparently the MMC probes after the GPIO expander,
->> > > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
->> > > available yet, see mmc_regulator_get_supply().
->> > >
->> > > Note, I'm just piecing the information together from git history,
->> > > I'm not responsible for these kludges.  (I'm innocent!)
->> >
->> > Sure enough. :-)
->> >
->> > In any case, calling devices_kset_move_last() in really_probe() is
->> > plain broken and if its only purpose was to address a single, arguably
->> > kludgy, use case, let's just get rid of it in the first place IMO.
->> >
->> Yes, if it is only used for a single use case.
->>
-> Think it again, I saw other potential issue with the current code.
-> device_link_add->device_reorder_to_tail() can break the
-> "supplier<-consumer" order. During moving children after parent's
-> supplier, it ignores the order of child's consumer.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-What do you mean?
+After commit 18996f2db918 (ACPICA: Events: Stop unconditionally
+clearing ACPI IRQs during suspend/resume) the status of ACPI events
+is not cleared any more when entering the ACPI S5 system state (power
+off) which causes some systems to power up immediately after turing
+off power in certain situations.
 
-> Beside this, essentially both devices_kset_move_after/_before() and
-> device_pm_move_after/_before() expose  the shutdown order to the
-> indirect caller,  and we can not expect that the caller can not handle
-> it correctly. It should be a job of drivers core.
+That is a functional regression, so address it by making the code
+clear the status of all ACPI events again when entering S5 (for
+system-wide suspend or hibernation the clearing of the status of all
+events is not desirable, as it might cause the kernel to miss wakeup
+events sometimes).
 
-Arguably so, but that's how those functions were designed and the
-callers should be aware of the limitation.
+Fixes: 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI IRQs during suspend/resume)
+Reported-by: Takashi Iwai <tiwai@suse.de>
+Tested-by: Thomas Hänig <haenig@cosifan.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-If they aren't, there is a bug in the caller.
+Resend https://patchwork.kernel.org/patch/10511451/ with a changelig and tags.
 
-> It is hard to extract high dimension info and pack them into one dimension
-> linked-list.
+---
+ drivers/acpi/acpica/hwsleep.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-Well, yes and no.
-
-We know it for a fact that there is a linear ordering that will work.
-It is inefficient to figure it out every time during system suspend
-and resume, for one and that's why we have dpm_list.
-
-Now, if we have it for suspend and resume, it can also be used for shutdown.
-
-> And in theory, it is warranted that the shutdown seq is
-> correct by using device tree info. More important, it is cheap with
-> the data structure in hand. So I think it is time to resolve the issue
-> once for all.
-
-Not the way you want to do that, though.
-
-Thanks,
-Rafael
+Index: linux-pm/drivers/acpi/acpica/hwsleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpica/hwsleep.c
++++ linux-pm/drivers/acpi/acpica/hwsleep.c
+@@ -51,16 +51,23 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
+ 		return_ACPI_STATUS(status);
+ 	}
+ 
+-	/*
+-	 * 1) Disable all GPEs
+-	 * 2) Enable all wakeup GPEs
+-	 */
++	/* Disable all GPEs */
+ 	status = acpi_hw_disable_all_gpes();
+ 	if (ACPI_FAILURE(status)) {
+ 		return_ACPI_STATUS(status);
+ 	}
++	/*
++	 * If the target sleep state is S5, clear all GPEs and fixed events too
++	 */
++	if (sleep_state == ACPI_STATE_S5) {
++		status = acpi_hw_clear_acpi_status();
++		if (ACPI_FAILURE(status)) {
++			return_ACPI_STATUS(status);
++		}
++	}
+ 	acpi_gbl_system_awake_and_running = FALSE;
+ 
++	 /* Enable all wakeup GPEs */
+ 	status = acpi_hw_enable_all_wakeup_gpes();
+ 	if (ACPI_FAILURE(status)) {
+ 		return_ACPI_STATUS(status);
