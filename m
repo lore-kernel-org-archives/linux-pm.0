@@ -1,107 +1,107 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [REGRESSION 4.17] Spurious wakeup / reboot with power button
-Date: Sun, 8 Jul 2018 10:18:22 +0200
-Message-ID: <CAJZ5v0ipP8JP01L7E4FwL1K6woda4oBKMxgLRfOiNYujzoY37w@mail.gmail.com>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de> <7049b672-859c-e049-a391-f66e4336d4a9@cosifan.de>
- <CAJZ5v0ikijT8MRHRsTAZ=FGPbkTu4QeJENBCeaa7BDP_E964UQ@mail.gmail.com>
- <1704080.gFTvVrrZA1@aspire.rjw.lan> <s5hbmbksg6f.wl-tiwai@suse.de> <c04bb990-8921-90c5-e298-bf68e3c9cd33@cosifan.de>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+Date: Sun, 8 Jul 2018 10:25:14 +0200
+Message-ID: <CAJZ5v0gxJ9LJ328WbgPrZCV-0SEiO31trsTSYYS8L95P4kfkbA@mail.gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de> <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+ <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com> <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c04bb990-8921-90c5-e298-bf68e3c9cd33@cosifan.de>
+In-Reply-To: <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?Thomas_H=C3=A4nig?= <haenig@cosifan.de>
-Cc: Takashi Iwai <tiwai@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Erik Schmauss <erik.schmauss@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: Pingfan Liu <kernelfans@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 6, 2018 at 7:57 PM, Thomas H=C3=A4nig <haenig@cosifan.de> wrote=
-:
->
->
-> Am 06.07.2018 um 14:27 schrieb Takashi Iwai:
->> On Fri, 06 Jul 2018 14:13:04 +0200,
->> Rafael J. Wysocki wrote:
->>>
->>> On Friday, July 6, 2018 1:21:50 PM CEST Rafael J. Wysocki wrote:
->>>> On Fri, Jul 6, 2018 at 1:12 PM, Thomas H=C3=A4nig <haenig@cosifan.de> =
-wrote:
->>>
->>> [cut]
->>>
->>>> So the latest patch:
->>>>
->>>> https://patchwork.kernel.org/patch/10511211/
->>>>
->>>> should work for you (please verify) and the change in
->>>> drivers/acpi/sleep.c in it most likely is not necessary.
->>>>
->>>> If you can confirm that this one works for you, I'll send a smaller
->>>> one with the acpi_hw_legacy_sleep() part alone.
->>>
->>> Well, scratch this, sorry.
->>>
->>> The power button probably is a fixed event and it won't be effected by
->>> that patch.
->>>
->>> Instead, please test the patch below.
+On Sat, Jul 7, 2018 at 6:24 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
+> On Fri, Jul 6, 2018 at 9:55 PM Pingfan Liu <kernelfans@gmail.com> wrote:
 >>
->> FWIW, the test kernel on OBS home:tiwai:bsc1099930-3 was refreshed
->> with this one.  The release number will be *.g2351e2d.
+>> On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> >
+>> > On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
+>> > > [cc += Kishon Vijay Abraham]
+>> > >
+>> > > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+>> > >> OK, so calling devices_kset_move_last() from really_probe() clearly is
+>> > >> a mistake.
+>> > >>
+>> > >> I'm not really sure what the intention of it was as the changelog of
+>> > >> commit 52cdbdd49853d doesn't really explain that (why would it be
+>> > >> insufficient without that change?)
+>> > >
+>> > > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+>> > > whose reset pin needs to be driven high on shutdown, lest the MMC
+>> > > won't be found on the next boot.
+>> > >
+>> > > The boards' devicetrees use a kludge wherein the reset pin is modelled
+>> > > as a regulator.  The regulator is enabled when the MMC probes and
+>> > > disabled on driver unbind and shutdown.  As a result, the pin is driven
+>> > > low on shutdown and the MMC is not found on the next boot.
+>> > >
+>> > > To fix this, another kludge was invented wherein the GPIO expander
+>> > > driving the reset pin unconditionally drives all its pins high on
+>> > > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+>> > > (commit adc284755055, "gpio: pcf857x: restore the initial line state
+>> > > of all pcf lines").
+>> > >
+>> > > For this kludge to work, the GPIO expander's ->shutdown hook needs to
+>> > > be executed after the MMC expander's ->shutdown hook.
+>> > >
+>> > > Commit 52cdbdd49853d achieved that by reordering devices_kset according
+>> > > to the probe order.  Apparently the MMC probes after the GPIO expander,
+>> > > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+>> > > available yet, see mmc_regulator_get_supply().
+>> > >
+>> > > Note, I'm just piecing the information together from git history,
+>> > > I'm not responsible for these kludges.  (I'm innocent!)
+>> >
+>> > Sure enough. :-)
+>> >
+>> > In any case, calling devices_kset_move_last() in really_probe() is
+>> > plain broken and if its only purpose was to address a single, arguably
+>> > kludgy, use case, let's just get rid of it in the first place IMO.
+>> >
+>> Yes, if it is only used for a single use case.
 >>
->>
->> Takashi
->>
->>>
->>> ---
->>>  drivers/acpi/acpica/hwsleep.c |   15 +++++++++++----
->>>  1 file changed, 11 insertions(+), 4 deletions(-)
->>>
->>> Index: linux-pm/drivers/acpi/acpica/hwsleep.c
->>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->>> --- linux-pm.orig/drivers/acpi/acpica/hwsleep.c
->>> +++ linux-pm/drivers/acpi/acpica/hwsleep.c
->>> @@ -51,16 +51,23 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
->>>              return_ACPI_STATUS(status);
->>>      }
->>>
->>> -    /*
->>> -     * 1) Disable all GPEs
->>> -     * 2) Enable all wakeup GPEs
->>> -     */
->>> +    /* Disable all GPEs */
->>>      status =3D acpi_hw_disable_all_gpes();
->>>      if (ACPI_FAILURE(status)) {
->>>              return_ACPI_STATUS(status);
->>>      }
->>> +    /*
->>> +     * If the target sleep state is S5, clear all GPEs and fixed event=
-s too
->>> +     */
->>> +    if (sleep_state =3D=3D ACPI_STATE_S5) {
->>> +            status =3D acpi_hw_clear_acpi_status();
->>> +            if (ACPI_FAILURE(status)) {
->>> +                    return_ACPI_STATUS(status);
->>> +            }
->>> +    }
->>>      acpi_gbl_system_awake_and_running =3D FALSE;
->>>
->>> +     /* Enable all wakeup GPEs */
->>>      status =3D acpi_hw_enable_all_wakeup_gpes();
->>>      if (ACPI_FAILURE(status)) {
->>>              return_ACPI_STATUS(status);
->>>
-> Hello Takashi,
-> with the kernel built by you the system shuts down when pressing the
-> power button and stays off too!  :-)
->
-> So the above mentioned patch to hwsleep.c seems to do the trick.
+> Think it again, I saw other potential issue with the current code.
+> device_link_add->device_reorder_to_tail() can break the
+> "supplier<-consumer" order. During moving children after parent's
+> supplier, it ignores the order of child's consumer.
 
-OK, thanks for verifying!
+What do you mean?
 
-> Regards and thanks a lot @all!
+> Beside this, essentially both devices_kset_move_after/_before() and
+> device_pm_move_after/_before() expose  the shutdown order to the
+> indirect caller,  and we can not expect that the caller can not handle
+> it correctly. It should be a job of drivers core.
 
-Cheers,
+Arguably so, but that's how those functions were designed and the
+callers should be aware of the limitation.
+
+If they aren't, there is a bug in the caller.
+
+> It is hard to extract high dimension info and pack them into one dimension
+> linked-list.
+
+Well, yes and no.
+
+We know it for a fact that there is a linear ordering that will work.
+It is inefficient to figure it out every time during system suspend
+and resume, for one and that's why we have dpm_list.
+
+Now, if we have it for suspend and resume, it can also be used for shutdown.
+
+> And in theory, it is warranted that the shutdown seq is
+> correct by using device tree info. More important, it is cheap with
+> the data structure in hand. So I think it is time to resolve the issue
+> once for all.
+
+Not the way you want to do that, though.
+
+Thanks,
 Rafael
