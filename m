@@ -1,103 +1,72 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH v2 1/2] soc: imx: gpc: Disable 6sl display power gating for
- ERR006287
-Date: Mon,  9 Jul 2018 15:23:01 +0300
-Message-ID: <a00303c5672b332d1d363b78926903187169b8cc.1531138446.git.leonard.crestez@nxp.com>
-References: <cover.1531138446.git.leonard.crestez@nxp.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] driver core: Drop devices_kset_move_last() call from really_probe()
+Date: Mon, 9 Jul 2018 08:57:36 -0500
+Message-ID: <CAErSpo4eaaieQiZjAejXAoCv82wddPOcRQXpiqD6X=fFW5XAHQ@mail.gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <2108146.dv4EAOf6IP@aspire.rjw.lan> <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
+ <8816662.k3KXbdkA2e@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cover.1531138446.git.leonard.crestez@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de, Robin Gong <yibin.gong@nxp.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8816662.k3KXbdkA2e@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kernelfans@gmail.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, dyoung@redhat.com, linux-pci@vger.kernel.org, Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The imx6sl chip errata document describes ERR006287 like this:
+On Fri, Jul 6, 2018 at 5:01 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The devices_kset_move_last() call in really_probe() is a mistake
+> as it may cause parents to follow children in the devices_kset list
+> which then causes system shutdown to fail.  Namely, if a device has
+> children before really_probe() is called for it (which is not
+> uncommon), that call will cause it to be reordered after the children
+> in the devices_kset list and the ordering of that list will not
+> reflect the correct device shutdown order.
+>
+> Also it causes the devices_kset list to be constantly reordered
+> until all drivers have been probed which is totally pointless
+> overhead in the majority of cases.
+>
+> For that reason, revert the really_probe() modifications made by
+> commit 52cdbdd49853.
 
-"""
-Upon resuming from power gating, the modules in the display power domain
-(eLCDIF, EPDC, PXP and SPDC) might fail to perform register reads
-correctly.
+I'm sure you've considered this, but I can't figure out whether this
+patch will reintroduce the problem that was solved by 52cdbdd49853.
+That patch updated two places: (1) really_probe(), the change you're
+reverting here, and (2) device_move().
 
-When the modules listed above are used, do not use power gating on the
-display power domain.
-"""
+device_move() is only called from 4-5 places, none of which look
+related to the problem fixed by 52cdbdd49853, so it seems like that
+problem was probably resolved by the hunk you're reverting.
 
-Link: https://www.nxp.com/docs/en/errata/IMX6SLCE.pdf#page=62
-
-Handle this in linux in the same way as imx6qp ERR009619: make the DISP
-domain return -EBUSY on power_off.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/soc/imx/gpc.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
-index 526f2d02dc78..6b726dada560 100644
---- a/drivers/soc/imx/gpc.c
-+++ b/drivers/soc/imx/gpc.c
-@@ -339,30 +339,35 @@ static struct imx_pm_domain imx_gpc_domains[] = {
- };
- 
- struct imx_gpc_dt_data {
- 	int num_domains;
- 	bool err009619_present;
-+	bool err006287_present;
- };
- 
- static const struct imx_gpc_dt_data imx6q_dt_data = {
- 	.num_domains = 2,
- 	.err009619_present = false,
-+	.err006287_present = false,
- };
- 
- static const struct imx_gpc_dt_data imx6qp_dt_data = {
- 	.num_domains = 2,
- 	.err009619_present = true,
-+	.err006287_present = false,
- };
- 
- static const struct imx_gpc_dt_data imx6sl_dt_data = {
- 	.num_domains = 3,
- 	.err009619_present = false,
-+	.err006287_present = true,
- };
- 
- static const struct imx_gpc_dt_data imx6sx_dt_data = {
- 	.num_domains = 4,
- 	.err009619_present = false,
-+	.err006287_present = false,
- };
- 
- static const struct of_device_id imx_gpc_dt_ids[] = {
- 	{ .compatible = "fsl,imx6q-gpc", .data = &imx6q_dt_data },
- 	{ .compatible = "fsl,imx6qp-gpc", .data = &imx6qp_dt_data },
-@@ -467,10 +472,15 @@ static int imx_gpc_probe(struct platform_device *pdev)
- 	/* Disable PU power down in normal operation if ERR009619 is present */
- 	if (of_id_data->err009619_present)
- 		imx_gpc_domains[GPC_PGC_DOMAIN_PU].flags |=
- 				PGC_DOMAIN_FLAG_NO_PD;
- 
-+	/* Disable DISP power down in normal operation if ERR006287 is present */
-+	if (of_id_data->err006287_present)
-+		imx_gpc_domains[GPC_PGC_DOMAIN_DISPLAY].flags |=
-+				PGC_DOMAIN_FLAG_NO_PD;
-+
- 	if (!pgc_node) {
- 		ret = imx_gpc_old_dt_init(&pdev->dev, regmap,
- 					  of_id_data->num_domains);
- 		if (ret)
- 			return ret;
--- 
-2.17.1
+> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
+> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
+> Reported-by: Pingfan Liu <kernelfans@gmail.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/dd.c |    8 --------
+>  1 file changed, 8 deletions(-)
+>
+> Index: linux-pm/drivers/base/dd.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/dd.c
+> +++ linux-pm/drivers/base/dd.c
+> @@ -434,14 +434,6 @@ re_probe:
+>                         goto probe_failed;
+>         }
+>
+> -       /*
+> -        * Ensure devices are listed in devices_kset in correct order
+> -        * It's important to move Dev to the end of devices_kset before
+> -        * calling .probe, because it could be recursive and parent Dev
+> -        * should always go first
+> -        */
+> -       devices_kset_move_last(dev);
+> -
+>         if (dev->bus->probe) {
+>                 ret = dev->bus->probe(dev);
+>                 if (ret)
+>
