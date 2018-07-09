@@ -1,58 +1,44 @@
-From: Eric Engestrom <eric.engestrom@intel.com>
-Subject: Re: [PATCH 04/12] cpufreq: use for_each_if
-Date: Mon, 9 Jul 2018 10:28:27 +0100
-Message-ID: <20180709092827.GA2841@intel.com>
-References: <20180709083650.23549-1-daniel.vetter@ffwll.ch>
- <20180709083650.23549-4-daniel.vetter@ffwll.ch>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] PM / Domains: Enable name based lookup at attach
+Date: Mon, 09 Jul 2018 12:06:57 +0200
+Message-ID: <12075152.c01WRJ509Y@aspire.rjw.lan>
+References: <20180629110432.5179-1-ulf.hansson@linaro.org>
+ <20180702070806.tuzzh6mu65lrq4xq@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20180709083650.23549-4-daniel.vetter@ffwll.ch>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180702070806.tuzzh6mu65lrq4xq@vireshk-i7>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Lucas Stach <dev@lynxeye.de>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-tegra@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uZGF5LCAyMDE4LTA3LTA5IDEwOjM2OjQyICswMjAwLCBEYW5pZWwgVmV0dGVyIHdyb3Rl
-Ogo+IEF2b2lkcyB0aGUgaW52ZXJ0ZWQgY29uZGl0aW9uIGNvbXBhcmVkIHRvIHRoZSBvcGVuIGNv
-ZGVkIHZlcnNpb24uCj4gCj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZl
-dHRlckBpbnRlbC5jb20+Cj4gQ2M6ICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2ku
-bmV0Pgo+IENjOiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgo+IENjOiBs
-aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcKPiAtLS0KPiAgaW5jbHVkZS9saW51eC9jcHVmcmVxLmgg
-fCA4ICsrLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDYgZGVsZXRp
-b25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oIGIvaW5jbHVk
-ZS9saW51eC9jcHVmcmVxLmgKPiBpbmRleCA4ODJhOWI5ZTM0YmMuLmYyMDI4YzIyOWI5NiAxMDA2
-NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgv
-Y3B1ZnJlcS5oCj4gQEAgLTY0OSw5ICs2NDksNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgZGV2X3Bt
-X29wcF9mcmVlX2NwdWZyZXFfdGFibGUoc3RydWN0IGRldmljZSAqZGV2LAo+ICAKPiAgI2RlZmlu
-ZSBjcHVmcmVxX2Zvcl9lYWNoX3ZhbGlkX2VudHJ5KHBvcywgdGFibGUpCQkJXAo+ICAJZm9yIChw
-b3MgPSB0YWJsZTsgcG9zLT5mcmVxdWVuY3kgIT0gQ1BVRlJFUV9UQUJMRV9FTkQ7IHBvcysrKQlc
-Cj4gLQkJaWYgKHBvcy0+ZnJlcXVlbmN5ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkJCVwKPiAt
-CQkJY29udGludWU7CQkJCQlcCj4gLQkJZWxzZQo+ICsJCWZvcl9lYWNoX2lmIChwb3MtPmZyZXF1
-ZW5jeSAhPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQpCj4gIAo+ICAvKgo+ICAgKiBjcHVmcmVxX2Zv
-cl9lYWNoX3ZhbGlkX2VudHJ5X2lkeCAtICAgICBpdGVyYXRlIHdpdGggaW5kZXggb3ZlciBhIGNw
-dWZyZXEKPiBAQCAtNjYzLDkgKzY2MSw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBkZXZfcG1fb3Bw
-X2ZyZWVfY3B1ZnJlcV90YWJsZShzdHJ1Y3QgZGV2aWNlICpkZXYsCj4gIAo+ICAjZGVmaW5lIGNw
-dWZyZXFfZm9yX2VhY2hfdmFsaWRfZW50cnlfaWR4KHBvcywgdGFibGUsIGlkeCkJCVwKPiAgCWNw
-dWZyZXFfZm9yX2VhY2hfZW50cnlfaWR4KHBvcywgdGFibGUsIGlkeCkJCQlcCj4gLQkJaWYgKHBv
-cy0+ZnJlcXVlbmN5ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkJCVwKPiAtCQkJY29udGludWU7
-CQkJCQlcCj4gLQkJZWxzZQo+ICsJCWZvcl9lYWNoX2lmIChwb3MtPmZyZXF1ZW5jeSA9PSBDUFVG
-UkVRX0VOVFJZX0lOVkFMSUQpCgpTaG91bGQgYmUgYCE9YCB0aGVyZSBeCgo+ICAKPiAgCj4gIGlu
-dCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV9jcHVpbmZvKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
-cG9saWN5LAo+IC0tIAo+IDIuMTguMAo+IAo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCj4gZHJpLWRldmVsIG1haWxpbmcgbGlzdAo+IGRyaS1kZXZlbEBs
-aXN0cy5mcmVlZGVza3RvcC5vcmcKPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2RyaS1kZXZlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9kcmktZGV2ZWwK
+On Monday, July 2, 2018 9:08:06 AM CEST Viresh Kumar wrote:
+> On 29-06-18, 13:04, Ulf Hansson wrote:
+> > Recently we added support to manage multiple PM domains per device. Consumer
+> > drivers were provided an API, dev_pm_domain_attach_by_id() to associate its
+> > device with one of its PM domain, by using an index.
+> > 
+> > Let's extend this to allow the association to be done using a name based
+> > lookup, which follows the similar concept as for other resource types, such as
+> > clocks for example.
+> > 
+> > Ulf Hansson (3):
+> >   PM / Domains: dt: Add a power-domain-names property
+> >   PM / Domains: Introduce option to attach a device by name to genpd
+> >   PM / Domains: Introduce dev_pm_domain_attach_by_name()
+> 
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> 
+
+Do we need Rob to ACK the binding change?
