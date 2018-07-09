@@ -1,106 +1,72 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 1/2] soc: imx: gpc: Disable 6sl display power gating
- for ERR006287
-Date: Tue, 10 Jul 2018 00:33:21 +0200
-Message-ID: <CAPDyKFoELWSiZ4cfOByziPQzqW7Tx3m29qKu9uCKPHO1gXO4YA@mail.gmail.com>
-References: <cover.1531138446.git.leonard.crestez@nxp.com> <a00303c5672b332d1d363b78926903187169b8cc.1531138446.git.leonard.crestez@nxp.com>
+Subject: Re: [PATCH v4 6/6] PM / Domains: Stop deferring probe at the end of initcall
+Date: Tue, 10 Jul 2018 00:49:03 +0200
+Message-ID: <CAPDyKFoN1=16dGKmkFp6Khgs5zx+BguOs3qOcm+rAZw=b38JVg@mail.gmail.com>
+References: <20180709154153.15742-1-robh@kernel.org> <20180709154153.15742-7-robh@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a00303c5672b332d1d363b78926903187169b8cc.1531138446.git.leonard.crestez@nxp.com>
+In-Reply-To: <20180709154153.15742-7-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Robin Gong <yibin.gong@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>
+To: Rob Herring <robh@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Alexander Graf <agraf@suse.de>, Bjorn Andersson <bjorn.andersson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>, Mark Brown <broonie@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, boot-architecture@lists.linaro.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9 July 2018 at 14:23, Leonard Crestez <leonard.crestez@nxp.com> wrote:
-> The imx6sl chip errata document describes ERR006287 like this:
+On 9 July 2018 at 17:41, Rob Herring <robh@kernel.org> wrote:
+> All PM domain drivers must be built-in (at least those using DT), so
+> there is no point deferring probe after initcalls are done. Continuing
+> to defer probe may prevent booting successfully even if managing PM
+> domains is not required. This can happen if the user failed to enable
+> the driver or if power-domains are added to a platform's DT, but there
+> is not yet a driver (e.g. a new DTB with an old kernel).
 >
-> """
-> Upon resuming from power gating, the modules in the display power domain
-> (eLCDIF, EPDC, PXP and SPDC) might fail to perform register reads
-> correctly.
+> Call the driver core function driver_deferred_probe_check_init_done()
+> instead of just returning -EPROBE_DEFER to stop deferring probe when
+> initcalls are done.
 >
-> When the modules listed above are used, do not use power gating on the
-> display power domain.
-> """
->
-> Link: https://www.nxp.com/docs/en/errata/IMX6SLCE.pdf#page=62
->
-> Handle this in linux in the same way as imx6qp ERR009619: make the DISP
-> domain return -EBUSY on power_off.
->
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> Acked-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
->  drivers/soc/imx/gpc.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+> v4:
+>  - Add Rafael's ack
 >
-> diff --git a/drivers/soc/imx/gpc.c b/drivers/soc/imx/gpc.c
-> index 526f2d02dc78..6b726dada560 100644
-> --- a/drivers/soc/imx/gpc.c
-> +++ b/drivers/soc/imx/gpc.c
-> @@ -339,30 +339,35 @@ static struct imx_pm_domain imx_gpc_domains[] = {
->  };
+> v3:
+>   - Update to new function name
 >
->  struct imx_gpc_dt_data {
->         int num_domains;
->         bool err009619_present;
-> +       bool err006287_present;
->  };
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
->  static const struct imx_gpc_dt_data imx6q_dt_data = {
->         .num_domains = 2,
->         .err009619_present = false,
-> +       .err006287_present = false,
->  };
->
->  static const struct imx_gpc_dt_data imx6qp_dt_data = {
->         .num_domains = 2,
->         .err009619_present = true,
-> +       .err006287_present = false,
->  };
->
->  static const struct imx_gpc_dt_data imx6sl_dt_data = {
->         .num_domains = 3,
->         .err009619_present = false,
-> +       .err006287_present = true,
->  };
->
->  static const struct imx_gpc_dt_data imx6sx_dt_data = {
->         .num_domains = 4,
->         .err009619_present = false,
-> +       .err006287_present = false,
->  };
->
->  static const struct of_device_id imx_gpc_dt_ids[] = {
->         { .compatible = "fsl,imx6q-gpc", .data = &imx6q_dt_data },
->         { .compatible = "fsl,imx6qp-gpc", .data = &imx6qp_dt_data },
-> @@ -467,10 +472,15 @@ static int imx_gpc_probe(struct platform_device *pdev)
->         /* Disable PU power down in normal operation if ERR009619 is present */
->         if (of_id_data->err009619_present)
->                 imx_gpc_domains[GPC_PGC_DOMAIN_PU].flags |=
->                                 PGC_DOMAIN_FLAG_NO_PD;
->
-> +       /* Disable DISP power down in normal operation if ERR006287 is present */
-> +       if (of_id_data->err006287_present)
-> +               imx_gpc_domains[GPC_PGC_DOMAIN_DISPLAY].flags |=
-> +                               PGC_DOMAIN_FLAG_NO_PD;
-> +
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 4925af5c4cf0..8c12213875c6 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
+>                 mutex_unlock(&gpd_list_lock);
+>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>                         __func__, PTR_ERR(pd));
+> -               return -EPROBE_DEFER;
+> +               return driver_deferred_probe_check_state(dev);
+>         }
 
-This looks like a use-case for an always powered on PM domain?
+This isn't the only error path where -EPROBE_DEFER may be returned
+during attach in genpd.
 
-If that's the case, GENPD_FLAG_ALWAYS_ON does the trick, but more
-efficient as it enables genpd to take a few shortcuts when trying to
-power of a PM domain.
+Have a look at the callers of __genpd_dev_pm_attach() and also have a
+second look inside __genpd_dev_pm_attach() itself. And in Rafael's
+tree.
 
->         if (!pgc_node) {
->                 ret = imx_gpc_old_dt_init(&pdev->dev, regmap,
->                                           of_id_data->num_domains);
->                 if (ret)
->                         return ret;
+>
+>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
 > --
 > 2.17.1
->
+
+Besides the above, I am fine with the approach as such.
 
 Kind regards
 Uffe
