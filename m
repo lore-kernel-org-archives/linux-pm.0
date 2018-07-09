@@ -1,60 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Mon, 9 Jul 2018 10:58:13 +0200
-Message-ID: <CAJZ5v0hMjoEy6Fe1Rcc1Uq_wQnDCAYYkEv4R024h0iq5krSiMQ@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan> <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan> <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
- <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
- <20180706083603.GA9063@wunner.de> <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
- <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
- <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
- <CAJZ5v0gxJ9LJ328WbgPrZCV-0SEiO31trsTSYYS8L95P4kfkbA@mail.gmail.com>
- <CAFgQCTvYwjKtx+AQf-kQjTsJMPRz48vgJ__jqNpwZuayG21oQw@mail.gmail.com>
- <CAJZ5v0gSo-jFO0h+aLkeyGGxRL+tdsRtGi0WFhhGQbZvezJmkA@mail.gmail.com> <CAFgQCTvGJVBdGLz0R74jO3f1nY3aWprGoADUXzw4E6jxOxWHBg@mail.gmail.com>
+From: Eric Engestrom <eric.engestrom@intel.com>
+Subject: Re: [PATCH 04/12] cpufreq: use for_each_if
+Date: Mon, 9 Jul 2018 10:28:27 +0100
+Message-ID: <20180709092827.GA2841@intel.com>
+References: <20180709083650.23549-1-daniel.vetter@ffwll.ch>
+ <20180709083650.23549-4-daniel.vetter@ffwll.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAFgQCTvGJVBdGLz0R74jO3f1nY3aWprGoADUXzw4E6jxOxWHBg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: Rafael Wysocki <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Disposition: inline
+In-Reply-To: <20180709083650.23549-4-daniel.vetter@ffwll.ch>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 9, 2018 at 10:40 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
-> On Mon, Jul 9, 2018 at 3:48 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->>
->> On Mon, Jul 9, 2018 at 8:48 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
->> > On Sun, Jul 8, 2018 at 4:25 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-
-[cut]
-
->>
->> I simply think that there should be one way to iterate over devices
->> for both system-wide PM and shutdown.
->>
->> The reason why it is not like that today is because of the development
->> history, but if it doesn't work and we want to fix it, let's just
->> consolidate all of that.
->>
->> Now, system-wide suspend resume sometimes iterates the list in the
->> reverse order which would be hard without having a list, wouldn't it?
->>
-> Yes, it would be hard without having a list. I just thought to use
-> device tree info to build up a shadowed list, and rebuild the list
-> until there is new device_link_add() operation. For
-> device_add/_remove(), it can modify the shadowed list directly.
-
-Right, and that's the idea of dpm_list, generally speaking: It
-represents one of the (possibly many) orders in which devices can be
-suspended (or shut down) based on the information coming from the
-device hierarchy and device links.
-
-So it appears straightforward (even though it may be complicated
-because of the build-time dependencies) to start using dpm_list for
-shutdown too - and to ensure that it is properly maintained
-everywhere.
-
-Thanks,
-Rafael
+T24gTW9uZGF5LCAyMDE4LTA3LTA5IDEwOjM2OjQyICswMjAwLCBEYW5pZWwgVmV0dGVyIHdyb3Rl
+Ogo+IEF2b2lkcyB0aGUgaW52ZXJ0ZWQgY29uZGl0aW9uIGNvbXBhcmVkIHRvIHRoZSBvcGVuIGNv
+ZGVkIHZlcnNpb24uCj4gCj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZl
+dHRlckBpbnRlbC5jb20+Cj4gQ2M6ICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2ku
+bmV0Pgo+IENjOiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgo+IENjOiBs
+aW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcKPiAtLS0KPiAgaW5jbHVkZS9saW51eC9jcHVmcmVxLmgg
+fCA4ICsrLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDYgZGVsZXRp
+b25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oIGIvaW5jbHVk
+ZS9saW51eC9jcHVmcmVxLmgKPiBpbmRleCA4ODJhOWI5ZTM0YmMuLmYyMDI4YzIyOWI5NiAxMDA2
+NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgv
+Y3B1ZnJlcS5oCj4gQEAgLTY0OSw5ICs2NDksNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgZGV2X3Bt
+X29wcF9mcmVlX2NwdWZyZXFfdGFibGUoc3RydWN0IGRldmljZSAqZGV2LAo+ICAKPiAgI2RlZmlu
+ZSBjcHVmcmVxX2Zvcl9lYWNoX3ZhbGlkX2VudHJ5KHBvcywgdGFibGUpCQkJXAo+ICAJZm9yIChw
+b3MgPSB0YWJsZTsgcG9zLT5mcmVxdWVuY3kgIT0gQ1BVRlJFUV9UQUJMRV9FTkQ7IHBvcysrKQlc
+Cj4gLQkJaWYgKHBvcy0+ZnJlcXVlbmN5ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkJCVwKPiAt
+CQkJY29udGludWU7CQkJCQlcCj4gLQkJZWxzZQo+ICsJCWZvcl9lYWNoX2lmIChwb3MtPmZyZXF1
+ZW5jeSAhPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQpCj4gIAo+ICAvKgo+ICAgKiBjcHVmcmVxX2Zv
+cl9lYWNoX3ZhbGlkX2VudHJ5X2lkeCAtICAgICBpdGVyYXRlIHdpdGggaW5kZXggb3ZlciBhIGNw
+dWZyZXEKPiBAQCAtNjYzLDkgKzY2MSw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBkZXZfcG1fb3Bw
+X2ZyZWVfY3B1ZnJlcV90YWJsZShzdHJ1Y3QgZGV2aWNlICpkZXYsCj4gIAo+ICAjZGVmaW5lIGNw
+dWZyZXFfZm9yX2VhY2hfdmFsaWRfZW50cnlfaWR4KHBvcywgdGFibGUsIGlkeCkJCVwKPiAgCWNw
+dWZyZXFfZm9yX2VhY2hfZW50cnlfaWR4KHBvcywgdGFibGUsIGlkeCkJCQlcCj4gLQkJaWYgKHBv
+cy0+ZnJlcXVlbmN5ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkJCVwKPiAtCQkJY29udGludWU7
+CQkJCQlcCj4gLQkJZWxzZQo+ICsJCWZvcl9lYWNoX2lmIChwb3MtPmZyZXF1ZW5jeSA9PSBDUFVG
+UkVRX0VOVFJZX0lOVkFMSUQpCgpTaG91bGQgYmUgYCE9YCB0aGVyZSBeCgo+ICAKPiAgCj4gIGlu
+dCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV9jcHVpbmZvKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
+cG9saWN5LAo+IC0tIAo+IDIuMTguMAo+IAo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCj4gZHJpLWRldmVsIG1haWxpbmcgbGlzdAo+IGRyaS1kZXZlbEBs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL2RyaS1kZXZlbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9kcmktZGV2ZWwK
