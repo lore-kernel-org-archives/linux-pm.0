@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v6 8/8] interconnect: Allow endpoints translation via DT
-Date: Mon,  9 Jul 2018 18:51:04 +0300
-Message-ID: <20180709155104.25528-9-georgi.djakov@linaro.org>
+Subject: [PATCH v6 7/8] dt-bindings: Introduce interconnect consumers bindings
+Date: Mon,  9 Jul 2018 18:51:03 +0300
+Message-ID: <20180709155104.25528-8-georgi.djakov@linaro.org>
 References: <20180709155104.25528-1-georgi.djakov@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180709155104.25528-1-georgi.djakov@linaro.org>
@@ -10,121 +10,49 @@ To: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, abailon@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mka@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we support only platform data for specifying the interconnect
-endpoints. As now the endpoints are hard-coded into the consumer driver
-this may lead to complications when a single driver is used by multiple
-SoCs, which may have different interconnect topology.
-To avoid cluttering the consumer drivers, introduce a translation function
-to help us get the board specific interconnect data from device-tree.
+Add documentation for the interconnect consumer bindings, that will allow
+to link a device node (consumer) to its interconnect controller hardware.
+
+Tha aim is to enable drivers to request a framework API to configure an
+interconnect path by providing their struct device pointer and a name.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c  | 62 ++++++++++++++++++++++++++++++++++++
- include/linux/interconnect.h |  7 ++++
- 2 files changed, 69 insertions(+)
+ .../bindings/interconnect/interconnect.txt    | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index 3f5001f51bb7..5817f081f6cf 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/mutex.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- #include <linux/uaccess.h>
- 
- static DEFINE_IDR(icc_idr);
-@@ -294,6 +295,67 @@ static int apply_constraints(struct icc_path *path)
- 	return ret;
- }
- 
-+struct icc_path *of_icc_get(struct device *dev, const char *name)
-+{
-+	struct device_node *np = NULL;
-+	struct of_phandle_args src_args, dst_args;
-+	u32 src_id, dst_id;
-+	int idx = 0;
-+	int ret;
+diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+index 6e2b2971b094..0ad65dccbe8b 100644
+--- a/Documentation/devicetree/bindings/interconnect/interconnect.txt
++++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+@@ -31,3 +31,30 @@ Example:
+ 			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+ 				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
+ 		};
 +
-+	if (!dev || !dev->of_node)
-+		return ERR_PTR(-ENODEV);
 +
-+	np = dev->of_node;
++= interconnect consumers =
 +
-+	/*
-+	 * When the consumer DT node do not have "interconnects" property
-+	 * return a NULL path to skip setting constraints.
-+	 */
-+	if (!of_find_property(np, "interconnects", NULL))
-+		return NULL;
++The interconnect consumers are device nodes which consume the interconnect
++path(s) provided by the interconnect provider. There can be multiple
++interconnect providers on a SoC and the consumer may consume multiple paths
++from different providers depending on use case and the components it has to
++interact with.
 +
-+	/*
-+	 * We use a combination of phandle and specifier for endpoint. For now
-+	 * lets support only global ids and extend this is the future if needed
-+	 * without breaking DT compatibility.
-+	 */
-+	if (name) {
-+		idx = of_property_match_string(np, "interconnect-names", name);
-+		if (idx < 0)
-+			return ERR_PTR(idx);
-+	}
++Required properties:
++interconnects : Pairs of phandles and interconnect provider specifier to denote
++	        the edge source and destination ports of the interconnect path.
 +
-+	ret = of_parse_phandle_with_args(np, "interconnects",
-+					 "#interconnect-cells", idx * 2,
-+					 &src_args);
-+	if (ret)
-+		return ERR_PTR(ret);
++Optional properties:
++interconnect-names : List of interconnect path name strings sorted in the same
++		     order as the interconnects property. Consumers drivers will use
++		     interconnect-names to match interconnect paths with interconnect
++		     specifiers.
 +
-+	of_node_put(src_args.np);
++Example:
 +
-+	if (!src_args.args_count || src_args.args_count > 1)
-+		return ERR_PTR(-EINVAL);
-+
-+	src_id = src_args.args[0];
-+
-+	ret = of_parse_phandle_with_args(np, "interconnects",
-+					 "#interconnect-cells", idx * 2 + 1,
-+					 &dst_args);
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	of_node_put(dst_args.np);
-+
-+	if (!dst_args.args_count || dst_args.args_count > 1)
-+		return ERR_PTR(-EINVAL);
-+
-+	dst_id = dst_args.args[0];
-+
-+	return icc_get(dev, src_id, dst_id);
-+}
-+EXPORT_SYMBOL_GPL(of_icc_get);
-+
- /**
-  * icc_set() - set constraints on an interconnect path between two endpoints
-  * @path: reference to the path returned by icc_get()
-diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-index 593215371fd6..ae6744da9bc2 100644
---- a/include/linux/interconnect.h
-+++ b/include/linux/interconnect.h
-@@ -17,6 +17,7 @@ struct device;
- 
- struct icc_path *icc_get(struct device *dev, const int src_id,
- 			 const int dst_id);
-+struct icc_path *of_icc_get(struct device *dev, const char *name);
- void icc_put(struct icc_path *path);
- int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
- 
-@@ -28,6 +29,12 @@ static inline struct icc_path *icc_get(struct device *dev, const int src_id,
- 	return NULL;
- }
- 
-+static inline struct icc_path *of_icc_get(struct device *dev,
-+					  const char *name)
-+{
-+	return NULL;
-+}
-+
- static inline void icc_put(struct icc_path *path)
- {
- }
++	sdhci@7864000 {
++		...
++		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
++		interconnect-names = "ddr";
++	};
