@@ -1,83 +1,62 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] driver core: Drop devices_kset_move_last() call from really_probe()
-Date: Mon, 9 Jul 2018 23:35:14 +0200
-Message-ID: <CAJZ5v0hVDo-Y2gPTxd6yHVY=vr093hai1VhLzNzzhFkKe0LoKA@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <2108146.dv4EAOf6IP@aspire.rjw.lan> <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
- <8816662.k3KXbdkA2e@aspire.rjw.lan> <CAErSpo4eaaieQiZjAejXAoCv82wddPOcRQXpiqD6X=fFW5XAHQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: use for_each_if
+Date: Mon, 9 Jul 2018 23:36:47 +0200
+Message-ID: <CAJZ5v0jzc-V1GWAQbYUTbYQVm_DGZp1GpwAq158uW6Z6Sv++uA@mail.gmail.com>
+References: <20180709083650.23549-4-daniel.vetter@ffwll.ch>
+ <20180709161129.28425-1-daniel.vetter@ffwll.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo4eaaieQiZjAejXAoCv82wddPOcRQXpiqD6X=fFW5XAHQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20180709161129.28425-1-daniel.vetter@ffwll.ch>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Eric Engestrom <eric.engestrom@intel.com>, Daniel Vetter <daniel.vetter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 9, 2018 at 3:57 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> On Fri, Jul 6, 2018 at 5:01 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The devices_kset_move_last() call in really_probe() is a mistake
->> as it may cause parents to follow children in the devices_kset list
->> which then causes system shutdown to fail.  Namely, if a device has
->> children before really_probe() is called for it (which is not
->> uncommon), that call will cause it to be reordered after the children
->> in the devices_kset list and the ordering of that list will not
->> reflect the correct device shutdown order.
->>
->> Also it causes the devices_kset list to be constantly reordered
->> until all drivers have been probed which is totally pointless
->> overhead in the majority of cases.
->>
->> For that reason, revert the really_probe() modifications made by
->> commit 52cdbdd49853.
->
-> I'm sure you've considered this, but I can't figure out whether this
-> patch will reintroduce the problem that was solved by 52cdbdd49853.
-> That patch updated two places: (1) really_probe(), the change you're
-> reverting here, and (2) device_move().
->
-> device_move() is only called from 4-5 places, none of which look
-> related to the problem fixed by 52cdbdd49853, so it seems like that
-> problem was probably resolved by the hunk you're reverting.
-
-That's right, but I don't want to revert all of it.  The other parts
-of it are kind of useful as they make the handling of the devices_kset
-list be consistent with the handling of dpm_list.
-
-The hunk I'm reverting, however, is completely off.  It not only is
-incorrect (as per the above), but it also causes the devices_kset list
-and dpm_list to be handled differently.
-
-It had attempted to fix something, but it failed miserably at that.
-
->> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
->> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
->> Reported-by: Pingfan Liu <kernelfans@gmail.com>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  drivers/base/dd.c |    8 --------
->>  1 file changed, 8 deletions(-)
->>
->> Index: linux-pm/drivers/base/dd.c
->> ===================================================================
->> --- linux-pm.orig/drivers/base/dd.c
->> +++ linux-pm/drivers/base/dd.c
->> @@ -434,14 +434,6 @@ re_probe:
->>                         goto probe_failed;
->>         }
->>
->> -       /*
->> -        * Ensure devices are listed in devices_kset in correct order
->> -        * It's important to move Dev to the end of devices_kset before
->> -        * calling .probe, because it could be recursive and parent Dev
->> -        * should always go first
->> -        */
->> -       devices_kset_move_last(dev);
->> -
->>         if (dev->bus->probe) {
->>                 ret = dev->bus->probe(dev);
->>                 if (ret)
->>
+T24gTW9uLCBKdWwgOSwgMjAxOCBhdCA2OjExIFBNLCBEYW5pZWwgVmV0dGVyIDxkYW5pZWwudmV0
+dGVyQGZmd2xsLmNoPiB3cm90ZToKPiBBdm9pZHMgdGhlIGludmVydGVkIGNvbmRpdGlvbiBjb21w
+YXJlZCB0byB0aGUgb3BlbiBjb2RlZCB2ZXJzaW9uLgo+Cj4gU2lnbmVkLW9mZi1ieTogRGFuaWVs
+IFZldHRlciA8ZGFuaWVsLnZldHRlckBpbnRlbC5jb20+Cj4gQ2M6ICJSYWZhZWwgSi4gV3lzb2Nr
+aSIgPHJqd0Byand5c29ja2kubmV0Pgo+IENjOiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBs
+aW5hcm8ub3JnPgo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcKPiBDYzogRXJpYyBFbmdl
+c3Ryb20gPGVyaWMuZW5nZXN0cm9tQGludGVsLmNvbT4KPiAtLQo+IHYyOiBGaXggdGhlIGxvZ2lj
+IGZ1bWJsZSBpbiB0aGUgMm5kIGh1bmssIHNwb3R0ZWQgYnkgRXJpYy4KCkFja2VkLWJ5OiBSYWZh
+ZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+CgpPciBkbyB5b3Ugd2Fu
+dCBtZSB0byBhcHBseSBpdD8KCj4gLS0tCj4gIGluY2x1ZGUvbGludXgvY3B1ZnJlcS5oIHwgOCAr
+Ky0tLS0tLQo+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygt
+KQo+Cj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oIGIvaW5jbHVkZS9saW51
+eC9jcHVmcmVxLmgKPiBpbmRleCA4ODJhOWI5ZTM0YmMuLjNhNzc0ZjUyM2QwMCAxMDA2NDQKPiAt
+LS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgvY3B1ZnJl
+cS5oCj4gQEAgLTY0OSw5ICs2NDksNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgZGV2X3BtX29wcF9m
+cmVlX2NwdWZyZXFfdGFibGUoc3RydWN0IGRldmljZSAqZGV2LAo+Cj4gICNkZWZpbmUgY3B1ZnJl
+cV9mb3JfZWFjaF92YWxpZF9lbnRyeShwb3MsIHRhYmxlKSAgICAgICAgICAgICAgICAgICAgICAg
+XAo+ICAgICAgICAgZm9yIChwb3MgPSB0YWJsZTsgcG9zLT5mcmVxdWVuY3kgIT0gQ1BVRlJFUV9U
+QUJMRV9FTkQ7IHBvcysrKSAgIFwKPiAtICAgICAgICAgICAgICAgaWYgKHBvcy0+ZnJlcXVlbmN5
+ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkgICAgICAgICAgICBcCj4gLSAgICAgICAgICAgICAg
+ICAgICAgICAgY29udGludWU7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+XAo+IC0gICAgICAgICAgICAgICBlbHNlCj4gKyAgICAgICAgICAgICAgIGZvcl9lYWNoX2lmIChw
+b3MtPmZyZXF1ZW5jeSAhPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQpCj4KPiAgLyoKPiAgICogY3B1
+ZnJlcV9mb3JfZWFjaF92YWxpZF9lbnRyeV9pZHggLSAgICAgaXRlcmF0ZSB3aXRoIGluZGV4IG92
+ZXIgYSBjcHVmcmVxCj4gQEAgLTY2Myw5ICs2NjEsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgZGV2
+X3BtX29wcF9mcmVlX2NwdWZyZXFfdGFibGUoc3RydWN0IGRldmljZSAqZGV2LAo+Cj4gICNkZWZp
+bmUgY3B1ZnJlcV9mb3JfZWFjaF92YWxpZF9lbnRyeV9pZHgocG9zLCB0YWJsZSwgaWR4KSAgICAg
+ICAgICAgICAgXAo+ICAgICAgICAgY3B1ZnJlcV9mb3JfZWFjaF9lbnRyeV9pZHgocG9zLCB0YWJs
+ZSwgaWR4KSAgICAgICAgICAgICAgICAgICAgIFwKPiAtICAgICAgICAgICAgICAgaWYgKHBvcy0+
+ZnJlcXVlbmN5ID09IENQVUZSRVFfRU5UUllfSU5WQUxJRCkgICAgICAgICAgICBcCj4gLSAgICAg
+ICAgICAgICAgICAgICAgICAgY29udGludWU7ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgXAo+IC0gICAgICAgICAgICAgICBlbHNlCj4gKyAgICAgICAgICAgICAgIGZvcl9l
+YWNoX2lmIChwb3MtPmZyZXF1ZW5jeSAhPSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQpCj4KPgo+ICBp
+bnQgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfY3B1aW5mbyhzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
+KnBvbGljeSwKPiAtLQo+IDIuMTguMAo+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZy
+ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2ludGVsLWdmeAo=
