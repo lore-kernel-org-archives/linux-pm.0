@@ -1,93 +1,135 @@
-From: George Cherian <george.cherian@cavium.com>
-Subject: [PATCH v3] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Mon,  9 Jul 2018 03:10:48 -0700
-Message-ID: <1531131048-60762-1-git-send-email-george.cherian@cavium.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: droid 4 in v4.18-rc: grep -r adasfasd /sys/ oopses
+Date: Mon, 9 Jul 2018 12:28:52 +0200
+Message-ID: <20180709102852.GA20580@amd>
+References: <20180708174939.GA10002@amd>
+ <20180708193720.GA13262@amd>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180708193720.GA13262@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, pprakash@codeaurora.org, George Cherian <george.cherian@cavium.com>
+To: kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, sre@kernel.org, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>, andriy.shevchenko@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
-feedback via set of performance counters. To determine the actual
-performance level delivered over time, OSPM may read a set of
-performance counters from the Reference Performance Counter Register
-and the Delivered Performance Counter Register.
 
-OSPM calculates the delivered performance over a given time period by
-taking a beginning and ending snapshot of both the reference and
-delivered performance counters, and calculating:
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
+Hi!
 
-Implement the above and hook this to the cpufreq->get method.
+> > grep in /sys produces a nasty oops:
+> >=20
+> > I guess next step is trying to find out which file that is..
+>=20
+> Let me see...
+>=20
+> openat(6, "suspend",
+> O_RDONLY|O_NOCTTY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW) =3D 4
+> fstat64(4, {st_mode=3DS_IFREG|0644, st_size=3D0, ...}) =3D 0
+> read(4, 0x4d2000, 32768)                =3D -1 EINVAL (Invalid argument)
+> write(2, "grep: ", 6grep: )                   =3D 6
+> write(2, "/sys/kernel/debug/pm_debug/cefus"...,
+> 47/sys/kernel/debug/pm_debug/cefuse_pwrdm/suspend) =3D 47
+> write(2, ": Invalid argument", 18: Invalid argument)      =3D 18
+> write(2, "\n", 1
+> )                       =3D 1
+> close(4)                                =3D 0
+> close(6)                                =3D 0
+> openat(5, "time", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW)
+> =3D 4
+> fstat64(4, {st_mode=3DS_IFREG|0444, st_size=3D0, ...}) =3D 0
+> read(4, "cefuse_pwrdm (OFF),OFF:641441757"..., 32768) =3D 849
+> read(4, "", 28672)                      =3D 0
+> close(4)                                =3D 0
+> openat(5, "count",
+> O_RDONLY|O_NOCTTY|O_NONBLOCK|O_LARGEFILE|O_NOFOLLOW) =3D 4
+> Connection to usb closed by remote host.
+> Connection to usb closed.
+> pavel@half:~$
+>=20
+> Ok, so it seems to be:
+>=20
+> user@devuan:~$ cat /sys/kernel/debug/pm_debug/count
+> (oops).
+>=20
+> The file seems to be world-readable.
+>=20
+> user@devuan:~$ ls -al /sys/kernel/debug/pm_debug/count
+> -r--r--r-- 1 root root 0 Jan  1  1970 /sys/kernel/debug/pm_debug/count
+>=20
+> But on PC, that file does not exist.
 
-Signed-off-by: George Cherian <george.cherian@cavium.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+Ok, it is easier to reproduce like this:
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index a9d3eec..61132e8 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -296,10 +296,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	return ret;
+sudo mount /dev/zero -t debugfs /sys/kernel/debug/
+sudo cat /sys/kernel/debug/pm_debug/count
+
+I tried adding debugging like this:
+
+diff --git a/arch/arm/mach-omap2/pm-debug.c b/arch/arm/mach-omap2/pm-debug.c
+index cba72de..ed98da8 100644
+--- a/arch/arm/mach-omap2/pm-debug.c
++++ b/arch/arm/mach-omap2/pm-debug.c
+@@ -78,14 +78,17 @@ static int clkdm_dbg_show_counter(struct clockdomain *c=
+lkdm, void *user)
+ {
+ 	struct seq_file *s =3D (struct seq_file *)user;
+=20
++	printk("cmp...\n");
+ 	if (strcmp(clkdm->name, "emu_clkdm") =3D=3D 0 ||
+ 		strcmp(clkdm->name, "wkup_clkdm") =3D=3D 0 ||
+ 		strncmp(clkdm->name, "dpll", 4) =3D=3D 0)
+ 		return 0;
+=20
++	printk("printf...\n");=09
+ 	seq_printf(s, "%s->%s (%d)\n", clkdm->name, clkdm->pwrdm.ptr->name,
+ 		   clkdm->usecount);
+=20
++	printk("done...\n");=09
+ 	return 0;
  }
- 
-+static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
-+				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
-+				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
-+{
-+	u64 delta_reference, delta_delivered;
-+	u64 reference_perf, delivered_perf;
-+
-+	reference_perf = fb_ctrs_t0.reference_perf;
-+
-+	delta_reference = (u32)fb_ctrs_t1.reference -
-+				(u32)fb_ctrs_t0.reference;
-+	delta_delivered = (u32)fb_ctrs_t1.delivered -
-+				(u32)fb_ctrs_t0.delivered;
-+
-+	/* Check to avoid divide-by zero */
-+	if (delta_reference || delta_delivered)
-+		delivered_perf = (reference_perf * delta_delivered) /
-+					delta_reference;
-+	else
-+		delivered_perf = cpu->perf_ctrls.desired_perf;
-+
-+	return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
-+}
-+
-+static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
-+{
-+	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
-+	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
-+	int ret;
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
-+	if (ret)
-+		return ret;
-+
-+	udelay(2); /* 2usec delay between sampling */
-+
-+	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
-+	if (ret)
-+		return ret;
-+
-+	return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
-+}
-+
- static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.verify = cppc_verify_policy,
- 	.target = cppc_cpufreq_set_target,
-+	.get = cppc_cpufreq_get_rate,
- 	.init = cppc_cpufreq_cpu_init,
- 	.stop_cpu = cppc_cpufreq_stop_cpu,
- 	.name = "cppc_cpufreq",
--- 
-1.8.3.1
+=20
+But it seems to crash outside show_counter function:
+
+[  100.345062] cpcap-usb-phy cpcap-usb-phy.0: connected to USB host
+[  102.049743] cmp...
+[  102.051910] printf...
+[  102.054351] done...
+[  102.056579] cmp...
+[  102.058685] printf...
+=2E..
+[  102.319427] printf...
+[  102.323211] done...
+[  102.326843] ------------[ cut here ]------------
+[  102.333190] WARNING: CPU: 0 PID: 2360 at
+drivers/bus/omap_l3_noc.c:147 l3_int
+errupt_handler+0x23c/0x380
+[  102.344696] 44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4PER2
+(Read): Da
+ta Access in User mode during Functional access
+
+								Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAltDOOQACgkQMOfwapXb+vIxnACcCO51qnvkCTacqdhOUgNSNsNc
+mI8AoKVarTkhTDuRfXsZgztgrKgS8GjS
+=sc4Z
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
