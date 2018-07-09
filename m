@@ -1,75 +1,119 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v6 6/7] dt: thermal: tsens: Document the fallback DT property for v2 of TSENS IP
-Date: Mon,  9 Jul 2018 17:13:28 +0530
-Message-ID: <bf1147fa417314b2fbf5c0cfb682445587fe39bb.1531136000.git.amit.kucheria@linaro.org>
-References: <cover.1531135999.git.amit.kucheria@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
+ helper function
+Date: Mon, 9 Jul 2018 14:01:38 +0200
+Message-ID: <20180709120138.GQ2494@hirez.programming.kicks-ass.net>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-10-quentin.perret@arm.com>
+ <20180706131243.GV2458@hirez.programming.kicks-ass.net>
+ <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
+ <20180706154949.GO2494@hirez.programming.kicks-ass.net>
+ <20180706170443.GE17577@e108498-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1531135999.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1531135999.git.amit.kucheria@linaro.org>
-References: <cover.1531135999.git.amit.kucheria@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20180706170443.GE17577@e108498-lin.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We want to create common code for v2 of the TSENS IP block that is used in
-a large number of Qualcomm SoCs. "qcom,tsens-v2" should be able to handle
-most of the common functionality start with a common get_temp() function.
+On Fri, Jul 06, 2018 at 06:04:44PM +0100, Quentin Perret wrote:
+> 'max_util' is basically the util we use to request an OPP. 'sum_util' is
+> how long the CPUs will be running.
 
-It is also necessary to split out the memory regions for the TM and SROT
-register banks because their offsets are not constant across SoC families.
+A indeed. But yes bit of a mess, but it wants doing I think.
+Perhaps a little something like the below... The alternative is two
+separate but closely related functions, not sure which is better.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- .../devicetree/bindings/thermal/qcom-tsens.txt     | 25 +++++++++++++++++-----
- 1 file changed, 20 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-index 06195e8..8f963b1 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-@@ -1,10 +1,16 @@
- * QCOM SoC Temperature Sensor (TSENS)
- 
- Required properties:
--- compatible :
-- - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-- - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-- - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-+- compatible:
-+  Must be one of the following:
-+    - "qcom,msm8916-tsens" (MSM8916)
-+    - "qcom,msm8974-tsens" (MSM8974)
-+    - "qcom,msm8996-tsens" (MSM8996)
-+    - "qcom,msm8998-tsens", "qcom,tsens-v2" (MSM8998)
-+    - "qcom,sdm845-tsens", "qcom,tsens-v2" (SDM845)
-+  The generic "qcom,tsens-v2" property must be used as a fallback for any SoC with
-+  version 2 of the TSENS IP. MSM8996 is the only exception beacause the generic
-+  property did not exist when support was added.
- 
- - reg: Address range of the thermal registers
- - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-@@ -12,7 +18,7 @@ Required properties:
- - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
- nvmem cells
- 
--Example:
-+Example 1 (legacy support before a fallback tsens-v2 propoerty was introduced):
- tsens: thermal-sensor@900000 {
- 		compatible = "qcom,msm8916-tsens";
- 		reg = <0x4a8000 0x2000>;
-@@ -20,3 +26,12 @@ tsens: thermal-sensor@900000 {
- 		nvmem-cell-names = "caldata", "calsel";
- 		#thermal-sensor-cells = <1>;
- 	};
-+
-+Example 2 (for any platform containing v2 of the TSENS IP):
-+tsens0: tsens@c222000 {
-+		compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
-+		reg = <0xc263000 0x1ff>, /* TM */
-+			<0xc222000 0x1ff>; /* SROT */
-+		#qcom,sensors = <13>;
-+		#thermal-sensor-cells = <1>;
-+	};
--- 
-2.7.4
+enum schedutil_type {
+	frequency_util,
+	energy_util,
+};
+
+unsigned long
+schedutil_freq_util(int cpu, unsigned long util_cfs, enum schedutil_type type)
+{
+	struct rq *rq = cpu_rq(cpu);
+	unsigned long util, irq, max;
+
+	max = arch_scale_cpu_capacity(NULL, cpu);
+
+	if (type == frequency_util && rt_rq_is_runnable(&rq->rt))
+		return max;
+
+	/*
+	 * Early check to see if IRQ/steal time saturates the CPU, can be
+	 * because of inaccuracies in how we track these -- see
+	 * update_irq_load_avg().
+	 */
+	irq = cpu_util_irq(rq);
+	if (unlikely(irq >= max))
+		return max;
+
+	/*
+	 * Because the time spend on RT/DL tasks is visible as 'lost' time to
+	 * CFS tasks and we use the same metric to track the effective
+	 * utilization (PELT windows are synchronized) we can directly add them
+	 * to obtain the CPU's actual utilization.
+	 */
+	util = util_cfs;
+	util += cpu_util_rt(rq);
+
+	if (type == frequency_util) {
+		/*
+		 * For frequency selection we do not make cpu_util_dl()
+		 * a permanent part of this sum because we want to use
+		 * cpu_bw_dl() later on, but we need to check if the
+		 * CFS+RT+DL sum is saturated (ie. no idle time) such
+		 * that we select f_max when there is no idle time.
+		 *
+		 * NOTE: numerical errors or stop class might cause us
+		 * to not quite hit saturation when we should --
+		 * something for later.
+		 */
+		if ((util + cpu_util_dl(rq)) >= max)
+			return max;
+	} else {
+		/*
+		 * OTOH, for energy computation we need the estimated
+		 * running time, so include util_dl and ignore dl_bw.
+		 */
+		util += cpu_util_dl(rq);
+		if (util >= max)
+			return max;
+	}
+
+	/*
+	 * There is still idle time; further improve the number by using the
+	 * irq metric. Because IRQ/steal time is hidden from the task clock we
+	 * need to scale the task numbers:
+	 *
+	 *              1 - irq
+	 *   U' = irq + ------- * U
+	 *                max
+	 */
+	util *= (max - irq);
+	util /= max;
+	util += irq;
+
+	if (type == frequency_util) {
+		/*
+		 * Bandwidth required by DEADLINE must always be granted
+		 * while, for FAIR and RT, we use blocked utilization of
+		 * IDLE CPUs as a mechanism to gracefully reduce the
+		 * frequency when no tasks show up for longer periods of
+		 * time.
+		 *
+		 * Ideally we would like to set bw_dl as min/guaranteed
+		 * freq and util + bw_dl as requested freq. However,
+		 * cpufreq is not yet ready for such an interface. So,
+		 * we only do the latter for now.
+		 */
+		util += cpu_bw_dl(rq);
+	}
+
+	return min(max, util);
+}
