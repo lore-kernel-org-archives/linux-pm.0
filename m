@@ -1,42 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 00/26] PM / Domains: Support hierarchical CPU
- arrangement (PSCI/ARM)
-Date: Mon, 9 Jul 2018 13:42:01 +0200
-Message-ID: <CAPDyKFr2EbW=Gb5fgew81JQ4gpp8S-jcEH6eRJ+uaX=4hN27cQ@mail.gmail.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <CAPDyKFpy8rpjRTBsHUFa_L0M_C=vH+6qjq=Kxdn+0j+T5NNSMQ@mail.gmail.com> <CAJZ5v0hcBiYPMh8V50yq0jQud32Ey8V-ukiavJkP4PU4zAiFyg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v6 0/7] thermal: tsens: Refactoring for TSENSv2 IP
+Date: Mon,  9 Jul 2018 17:13:22 +0530
+Message-ID: <cover.1531135999.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hcBiYPMh8V50yq0jQud32Ey8V-ukiavJkP4PU4zAiFyg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, Kees Cook <keescook@chromium.org>, Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 3 July 2018 at 09:54, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Jul 3, 2018 at 7:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> Rafael,
->>
->> On 20 June 2018 at 19:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> Changes in v8:
->>>  - Added some tags for reviews and acks.
->>>  - Cleanup timer patch (patch6) according to comments from Rafael.
->>>  - Rebased series on top of v4.18rc1 - it applied cleanly, except for patch 5.
->>>  - While adopting patch 5 to new genpd changes, I took the opportunity to
->>>    improve the new function description a bit.
->>>  - Corrected malformed SPDX-License-Identifier in patch20.
->>
->> There have only been a minor comment from you at patch3 (about
->> squashing it with patch21), with that fixed and assuming there are no
->> further comments - would you like me to collect the changes and send
->> it to you as a pull request?
->
-> I have not looked at them in detail yet, sorry.
->
-> I any case, I'll apply the patches by hand.
+This series is a mixed bag:
+- Some code moves to allow code sharing between different SoCs with v2 of
+  the TSENS IP,
+- a generic qcom,tsens-v2 property as a fallback compatible for all v2.x.y
+  platforms,
+- new platform support (sdm845)
+- a cleanup patch and
+- a DT change to have a common way to deal with the SROT and TM registers
+  despite slightly different features across the IP family and different
+  register offsets.
 
-Okay. If there is anything I can help to make the review easier, please tell!
+Changes since v5:
+- Actually fix unit addressses for the two tsens blocks as per Stephen's comment.
 
-Kind regards
-Uffe
+Changes since v4:
+- Revert back to a single fallback bindind qcom,tsens-v2 as per Rob's
+  suggestion.
+- Rework how old (unsplit SROT and TM address space) DTs are handled by
+  needing a 0x1000 offset but still sharing common code in tsens-v2.c
+- Remove the patch to added TRDY checks while we investigate Matthias'
+  reports
+- Fix unit addressses for the two tsens blocks as per Stephen's comment.
+
+Changes since v3:
+- Introduce qcom,tsens-v2.4.0 property and make qcom,tsens-v2 a
+  fallback, compatible property.
+- Rename ops_v2 to ops_generic_v2
+
+Changes since v2:
+
+- Based on review, moved tsens-8996.c to tsens-v2.c and changed
+  corresponding function names, struct names to allow for generic tsensv2
+  platforms
+- All v2 platforms will now only need to use the qcom,tsen-v2
+  property
+- Added a DT patch to initialize tsens driver on sdm845, now that
+  4.18-rc1 will contain an sdm845.dtsi
+
+Changes since v1:
+- Move get_temp() from tsens-8996 to tsens-common and rename
+- Change 8996 DT entry to allow init_common() to work across
+  sdm845 and 8996 due to different offsets
+
+Amit Kucheria (7):
+  thermal: tsens: Get rid of unused fields in structure
+  thermal: tsens: Add support to split up register address space into
+    two
+  dt: qcom: 8996: thermal: Move to DT initialisation
+  thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
+  thermal: tsens: Add generic support for TSENS v2 IP
+  dt: thermal: tsens: Document the fallback DT property for v2 of TSENS
+    IP
+  arm64: dts: sdm845: Add tsens nodes
+
+ .../devicetree/bindings/thermal/qcom-tsens.txt     | 25 +++++++++++++----
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              | 12 +++++++-
+ arch/arm64/boot/dts/qcom/sdm845.dtsi               | 16 +++++++++++
+ drivers/thermal/qcom/Makefile                      |  2 +-
+ drivers/thermal/qcom/tsens-common.c                | 11 ++++++++
+ drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c}  | 32 ++++++++++------------
+ drivers/thermal/qcom/tsens.c                       |  3 ++
+ drivers/thermal/qcom/tsens.h                       |  8 ++++--
+ 8 files changed, 81 insertions(+), 28 deletions(-)
+ rename drivers/thermal/qcom/{tsens-8996.c => tsens-v2.c} (64%)
+
+-- 
+2.7.4
