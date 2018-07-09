@@ -1,56 +1,42 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/3] PM / Domains: Enable name based lookup at attach
-Date: Mon, 9 Jul 2018 13:38:38 +0200
-Message-ID: <CAPDyKFq=EPkvu0MjOtkjCNzrgZj0kaJTxXDt21=YR==T+H8ePQ@mail.gmail.com>
-References: <20180629110432.5179-1-ulf.hansson@linaro.org>
- <20180702070806.tuzzh6mu65lrq4xq@vireshk-i7>
- <12075152.c01WRJ509Y@aspire.rjw.lan>
+Subject: Re: [PATCH v8 00/26] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM)
+Date: Mon, 9 Jul 2018 13:42:01 +0200
+Message-ID: <CAPDyKFr2EbW=Gb5fgew81JQ4gpp8S-jcEH6eRJ+uaX=4hN27cQ@mail.gmail.com>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <CAPDyKFpy8rpjRTBsHUFa_L0M_C=vH+6qjq=Kxdn+0j+T5NNSMQ@mail.gmail.com> <CAJZ5v0hcBiYPMh8V50yq0jQud32Ey8V-ukiavJkP4PU4zAiFyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <12075152.c01WRJ509Y@aspire.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rob Herring <robh@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-tegra@vger.kernel.org, Lucas Stach <dev@lynxeye.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hcBiYPMh8V50yq0jQud32Ey8V-ukiavJkP4PU4zAiFyg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9 July 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, July 2, 2018 9:08:06 AM CEST Viresh Kumar wrote:
->> On 29-06-18, 13:04, Ulf Hansson wrote:
->> > Recently we added support to manage multiple PM domains per device. Consumer
->> > drivers were provided an API, dev_pm_domain_attach_by_id() to associate its
->> > device with one of its PM domain, by using an index.
->> >
->> > Let's extend this to allow the association to be done using a name based
->> > lookup, which follows the similar concept as for other resource types, such as
->> > clocks for example.
->> >
->> > Ulf Hansson (3):
->> >   PM / Domains: dt: Add a power-domain-names property
->> >   PM / Domains: Introduce option to attach a device by name to genpd
->> >   PM / Domains: Introduce dev_pm_domain_attach_by_name()
+On 3 July 2018 at 09:54, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Jul 3, 2018 at 7:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> Rafael,
 >>
->> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> On 20 June 2018 at 19:22, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> Changes in v8:
+>>>  - Added some tags for reviews and acks.
+>>>  - Cleanup timer patch (patch6) according to comments from Rafael.
+>>>  - Rebased series on top of v4.18rc1 - it applied cleanly, except for patch 5.
+>>>  - While adopting patch 5 to new genpd changes, I took the opportunity to
+>>>    improve the new function description a bit.
+>>>  - Corrected malformed SPDX-License-Identifier in patch20.
 >>
->>
+>> There have only been a minor comment from you at patch3 (about
+>> squashing it with patch21), with that fixed and assuming there are no
+>> further comments - would you like me to collect the changes and send
+>> it to you as a pull request?
 >
-> Do we need Rob to ACK the binding change?
+> I have not looked at them in detail yet, sorry.
 >
+> I any case, I'll apply the patches by hand.
 
-Normally, yes, however, the change to binding is trivial and the
-concept of using a names property isn't something new. I would be
-highly surprised if he would object.
-
-I say apply it.
+Okay. If there is anything I can help to make the review easier, please tell!
 
 Kind regards
 Uffe
