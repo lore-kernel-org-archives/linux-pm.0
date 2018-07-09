@@ -1,116 +1,80 @@
-From: "Prakash, Prashanth" <pprakash@codeaurora.org>
-Subject: Re: [PATCH v3] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
-Date: Mon, 9 Jul 2018 10:42:32 -0600
-Message-ID: <802dd310-a26c-3baa-696e-15393d6e1516@codeaurora.org>
-References: <1531131048-60762-1-git-send-email-george.cherian@cavium.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
+ framework
+Date: Mon, 9 Jul 2018 20:07:31 +0200
+Message-ID: <4341d199-8018-21e1-c2ce-9af8f7719297@arm.com>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-4-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1531131048-60762-1-git-send-email-george.cherian@cavium.com>
+In-Reply-To: <20180628114043.24724-4-quentin.perret@arm.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net
+To: Quentin Perret <quentin.perret@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi George,
+On 06/28/2018 01:40 PM, Quentin Perret wrote:
 
+[...]
 
-On 7/9/2018 4:10 AM, George Cherian wrote:
-> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
-> feedback via set of performance counters. To determine the actual
-> performance level delivered over time, OSPM may read a set of
-> performance counters from the Reference Performance Counter Register
-> and the Delivered Performance Counter Register.
->
-> OSPM calculates the delivered performance over a given time period by
-> taking a beginning and ending snapshot of both the reference and
-> delivered performance counters, and calculating:
->
-> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
->
-> Implement the above and hook this to the cpufreq->get method.
->
-> Signed-off-by: George Cherian <george.cherian@cavium.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
->
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index a9d3eec..61132e8 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -296,10 +296,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	return ret;
->  }
->  
-> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
-> +				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
-> +				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
+> +/**
+> + * em_rescale_cpu_capacity() - Re-scale capacity values of the Energy Model
+> + *
+> + * This re-scales the capacity values for all capacity states of all frequency
+> + * domains of the Energy Model. This should be used when the capacity values
+> + * of the CPUs are updated at run-time, after the EM was registered.
+> + */
+> +void em_rescale_cpu_capacity(void)
 > +{
-> +	u64 delta_reference, delta_delivered;
-> +	u64 reference_perf, delivered_perf;
+> +	struct em_cs_table *old_table, *new_table;
+> +	struct em_freq_domain *fd;
+> +	int nr_states, cpu;
 > +
-> +	reference_perf = fb_ctrs_t0.reference_perf;
+> +	mutex_lock(&em_fd_mutex);
+> +	rcu_read_lock();
+> +	for_each_possible_cpu(cpu) {
+> +		/* Re-scale only once per frequency domain. */
+> +		fd = READ_ONCE(per_cpu(em_data, cpu));
+> +		if (!fd || cpu != cpumask_first(to_cpumask(fd->cpus)))
+> +			continue;
 > +
-> +	delta_reference = (u32)fb_ctrs_t1.reference -
-> +				(u32)fb_ctrs_t0.reference;
-> +	delta_delivered = (u32)fb_ctrs_t1.delivered -
-> +				(u32)fb_ctrs_t0.delivered;
-Why (u32)? These registers can be 64bits and that's why cppc_perf_fb_ctrs
-have 64b fields for reference and delivered counters.
-
-Moreover, the integer math is incorrect. You can run into a scenario where
-t1.ref/del < t0.ref/del,  thus setting a negative number to u64! The likelihood
-of this is very high especially when you throw away the higher 32bits.
-
-To keep things simple, do something like below:
-
-if (t1.reference <= t0.reference || t1.delivered <= t0.delivered) {
-     /* Atleast one of them should have overflowed */
-     return desired_perf;
-}
-else {
-     compute the delivered perf using the counters.
-}
-
+> +		/* Copy the existing table. */
+> +		old_table = rcu_dereference(fd->cs_table);
+> +		nr_states = old_table->nr_cap_states;
+> +		new_table = alloc_cs_table(nr_states);
+> +		if (!new_table)
+> +			goto out;
+> +		memcpy(new_table->state, old_table->state,
+> +					nr_states * sizeof(*new_table->state));
 > +
-> +	/* Check to avoid divide-by zero */
-> +	if (delta_reference || delta_delivered)
-> +		delivered_perf = (reference_perf * delta_delivered) /
-> +					delta_reference;
-> +	else
-> +		delivered_perf = cpu->perf_ctrls.desired_perf;
+> +		/* Re-scale the capacity values of the copy. */
+> +		fd_update_cs_table(new_table,
+> +					cpumask_first(to_cpumask(fd->cpus)));
 > +
-> +	return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
+> +		/* Replace the fd table with the re-scaled version. */
+> +		rcu_assign_pointer(fd->cs_table, new_table);
+> +		call_rcu(&old_table->rcu, rcu_free_cs_table);
+> +	}
+> +out:
+> +	rcu_read_unlock();
+> +	mutex_unlock(&em_fd_mutex);
 > +}
-> +
-> +static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
-> +{
-> +	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
-> +	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
-> +	int ret;
-> +
-> +	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
-> +	if (ret)
-> +		return ret;
-> +
-> +	udelay(2); /* 2usec delay between sampling */
-> +
-> +	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
-> +}
-> +
->  static struct cpufreq_driver cppc_cpufreq_driver = {
->  	.flags = CPUFREQ_CONST_LOOPS,
->  	.verify = cppc_verify_policy,
->  	.target = cppc_cpufreq_set_target,
-> +	.get = cppc_cpufreq_get_rate,
->  	.init = cppc_cpufreq_cpu_init,
->  	.stop_cpu = cppc_cpufreq_stop_cpu,
->  	.name = "cppc_cpufreq",
+> +EXPORT_SYMBOL_GPL(em_rescale_cpu_capacity);
+
+This em_rescale_cpu_capacity() function is still very much specific to 
+systems with asymmetric cpu capacity (Arm big.Little/DynamIQ). Only 
+after cpufreq is up we can determine the capacity of a CPU, hence we 
+need this one to set the CPU capacity values for the individual 
+performance states.
+
+Can you not calculate capacity 'on the fly' just using freq and max freq 
+as well as arch_scale_cpu_capacity() which gives you max capacity?
+
+capacity = arch_scale_cpu_capacity() * freq / max_freq
+
+In this case we could get rid of the 'ugly' EM rescaling infrastructure.
+
+[...]
