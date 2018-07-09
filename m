@@ -1,108 +1,49 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] driver core: Drop devices_kset_move_last() call from really_probe()
-Date: Mon, 9 Jul 2018 17:06:39 -0500
-Message-ID: <CAErSpo4TOiBtdG0iwgeFpv76Lhs4s7PXAWv5_DG-VRyEoP5bOQ@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <2108146.dv4EAOf6IP@aspire.rjw.lan> <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
- <8816662.k3KXbdkA2e@aspire.rjw.lan> <CAErSpo4eaaieQiZjAejXAoCv82wddPOcRQXpiqD6X=fFW5XAHQ@mail.gmail.com>
- <CAJZ5v0hVDo-Y2gPTxd6yHVY=vr093hai1VhLzNzzhFkKe0LoKA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3] soc: imx: gpc: Turn PU domain on/off in sleep on 6qp
+Date: Tue, 10 Jul 2018 00:27:49 +0200
+Message-ID: <CAPDyKFqb6eZ2SYG612yqiNisv7UV1q3UHYfZfemmvv9Q4w=Png@mail.gmail.com>
+References: <ab0c7997bdb0caf6fe7e842315bb9565c2cb059d.1530895248.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hVDo-Y2gPTxd6yHVY=vr093hai1VhLzNzzhFkKe0LoKA@mail.gmail.com>
+In-Reply-To: <ab0c7997bdb0caf6fe7e842315bb9565c2cb059d.1530895248.git.leonard.crestez@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kernelfans@gmail.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, dyoung@redhat.com, linux-pci@vger.kernel.org, Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Robin Gong <yibin.gong@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-[+cc Kishon]
+On 6 July 2018 at 18:46, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> On imx6qp power gating on the PU domain is disabled because of errata
+> ERR009619. However power gating during suspend/resume can still be
+> performed.
 
-On Mon, Jul 9, 2018 at 4:35 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+Sounds a bit hand wavy. Exactly why can it be done during system suspend/resume?
+
 >
-> On Mon, Jul 9, 2018 at 3:57 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> > On Fri, Jul 6, 2018 at 5:01 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>
-> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>
-> >> The devices_kset_move_last() call in really_probe() is a mistake
-> >> as it may cause parents to follow children in the devices_kset list
-> >> which then causes system shutdown to fail.  Namely, if a device has
-> >> children before really_probe() is called for it (which is not
-> >> uncommon), that call will cause it to be reordered after the children
-> >> in the devices_kset list and the ordering of that list will not
-> >> reflect the correct device shutdown order.
-> >>
-> >> Also it causes the devices_kset list to be constantly reordered
-> >> until all drivers have been probed which is totally pointless
-> >> overhead in the majority of cases.
-> >>
-> >> For that reason, revert the really_probe() modifications made by
-> >> commit 52cdbdd49853.
-> >
-> > I'm sure you've considered this, but I can't figure out whether this
-> > patch will reintroduce the problem that was solved by 52cdbdd49853.
-> > That patch updated two places: (1) really_probe(), the change you're
-> > reverting here, and (2) device_move().
-> >
-> > device_move() is only called from 4-5 places, none of which look
-> > related to the problem fixed by 52cdbdd49853, so it seems like that
-> > problem was probably resolved by the hunk you're reverting.
+> Enable this by implementing SLEEP_PM_OPS in imx_pgc_power_domain_driver.
 >
-> That's right, but I don't want to revert all of it.  The other parts
-> of it are kind of useful as they make the handling of the devices_kset
-> list be consistent with the handling of dpm_list.
->
-> The hunk I'm reverting, however, is completely off.  It not only is
-> incorrect (as per the above), but it also causes the devices_kset list
-> and dpm_list to be handled differently.
+> In order to ensure correct ordering add device links from devices inside
+> the PU domain to the pgc platform_device.
 
-If I understand correctly, you are saying:
+In genpd, the PM domain gets powered off after all device's
+corresponding ->suspend_noirq() callback has been invoked - and it
+also considers if there are some wakeup settings enabled, possibly
+avoiding to do the power off.
 
-  - the 52cdbdd49853 really_probe() hunk fixed a problem, but
-  - that hunk was the wrong fix for it, and
-  - this patch removes the wrong fix (and probably reintroduces the problem)
+It sound like the imx's power domain driver ->power_off|on() callback
+should deal with this, to make get a consistent behavior. I understand
+that you currently can't tell under what circumstances the
+->power_off|on() callbacks are being invoked, that may need some
+changes in genpd.
 
-If devices_kset is supposed to be ordered so children follow parents,
-I agree the really_probe() hunk doesn't make much sense because the
-parent/child relation is determined by the circuit design, not by the
-probe order.
+Currently we have a flag, GENPD_FLAG_ALWAYS_ON which makes genpd to
+always prevent power off. Perhaps we should add a new flag
+"GENPD_FLAG_RUNTIME_ON", which makes genpd to call the
+->power_on|off() callbacks, but only during system wide PM.
 
-It just seems like it's worth being clear that we're reintroducing the
-problem fixed by 52cdbdd49853, so it needs to be solved a different
-way.  Ideally that would be done before this patch so there's not a
-regression, and this changelog could mention what's happening.
+Thoughts?
 
-> It had attempted to fix something, but it failed miserably at that.
+[...]
 
-If you're saying that 52cdbdd49853 *tried* to fix a DRA7XX_evm reboot
-problem, but in fact, it did not fix that problem, then I guess there
-should be no issue with reverting that hunk.
-
-> >> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
-> >> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
-> >> Reported-by: Pingfan Liu <kernelfans@gmail.com>
-> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> ---
-> >>  drivers/base/dd.c |    8 --------
-> >>  1 file changed, 8 deletions(-)
-> >>
-> >> Index: linux-pm/drivers/base/dd.c
-> >> ===================================================================
-> >> --- linux-pm.orig/drivers/base/dd.c
-> >> +++ linux-pm/drivers/base/dd.c
-> >> @@ -434,14 +434,6 @@ re_probe:
-> >>                         goto probe_failed;
-> >>         }
-> >>
-> >> -       /*
-> >> -        * Ensure devices are listed in devices_kset in correct order
-> >> -        * It's important to move Dev to the end of devices_kset before
-> >> -        * calling .probe, because it could be recursive and parent Dev
-> >> -        * should always go first
-> >> -        */
-> >> -       devices_kset_move_last(dev);
-> >> -
-> >>         if (dev->bus->probe) {
-> >>                 ret = dev->bus->probe(dev);
-> >>                 if (ret)
-> >>
+Kind regards
+Uffe
