@@ -1,44 +1,52 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 09/12] sched/fair: Introduce an energy estimation
- helper function
-Date: Mon, 9 Jul 2018 17:07:52 +0100
-Message-ID: <20180709160752.GB17598@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-10-quentin.perret@arm.com>
- <20180706131243.GV2458@hirez.programming.kicks-ass.net>
- <20180706151212.GD17577@e108498-lin.cambridge.arm.com>
- <20180706154949.GO2494@hirez.programming.kicks-ass.net>
- <20180706170443.GE17577@e108498-lin.cambridge.arm.com>
- <20180709120138.GQ2494@hirez.programming.kicks-ass.net>
- <20180709152825.GA17598@e108498-lin.cambridge.arm.com>
- <20180709154226.GZ2476@hirez.programming.kicks-ass.net>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Subject: [PATCH] cpufreq: use for_each_if
+Date: Mon,  9 Jul 2018 18:11:29 +0200
+Message-ID: <20180709161129.28425-1-daniel.vetter@ffwll.ch>
+References: <20180709083650.23549-4-daniel.vetter@ffwll.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180709154226.GZ2476@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <20180709083650.23549-4-daniel.vetter@ffwll.ch>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, DRI Development <dri-devel@lists.freedesktop.org>, Eric Engestrom <eric.engestrom@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Vetter <daniel.vetter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 Jul 2018 at 17:42:26 (+0200), Peter Zijlstra wrote:
-> On Mon, Jul 09, 2018 at 04:28:26PM +0100, Quentin Perret wrote:
-> > What about moving schedutil_freq_util() to sched.h and give it a more
-> > generic name (total_cpu_util() ?) with no dependencies on
-> > CONFIG_CPU_FREQ_GOV_SCHEDUTIL ? Also, 'energy_util' would have to be
-> > renamed I guess (busy_time_util ?).
-> 
-> Bit big for an inline,
-
-True, but that will be used in the wake-up path ...
-
-> and I don't think there's much point using all
-> this without schedutil.
-
-For that total_cpu_util() function I was suggesting, the main point
-would be to avoid code duplication with scale_rt_capacity(). Not sure
-if that matters ?
-
-Thanks,
-Quentin
+QXZvaWRzIHRoZSBpbnZlcnRlZCBjb25kaXRpb24gY29tcGFyZWQgdG8gdGhlIG9wZW4gY29kZWQg
+dmVyc2lvbi4KClNpZ25lZC1vZmYtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAaW50
+ZWwuY29tPgpDYzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+CkNjOiBW
+aXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgpDYzogbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnCkNjOiBFcmljIEVuZ2VzdHJvbSA8ZXJpYy5lbmdlc3Ryb21AaW50ZWwuY29tPgot
+LQp2MjogRml4IHRoZSBsb2dpYyBmdW1ibGUgaW4gdGhlIDJuZCBodW5rLCBzcG90dGVkIGJ5IEVy
+aWMuCi0tLQogaW5jbHVkZS9saW51eC9jcHVmcmVxLmggfCA4ICsrLS0tLS0tCiAxIGZpbGUgY2hh
+bmdlZCwgMiBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luY2x1
+ZGUvbGludXgvY3B1ZnJlcS5oIGIvaW5jbHVkZS9saW51eC9jcHVmcmVxLmgKaW5kZXggODgyYTli
+OWUzNGJjLi4zYTc3NGY1MjNkMDAgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5o
+CisrKyBiL2luY2x1ZGUvbGludXgvY3B1ZnJlcS5oCkBAIC02NDksOSArNjQ5LDcgQEAgc3RhdGlj
+IGlubGluZSB2b2lkIGRldl9wbV9vcHBfZnJlZV9jcHVmcmVxX3RhYmxlKHN0cnVjdCBkZXZpY2Ug
+KmRldiwKIAogI2RlZmluZSBjcHVmcmVxX2Zvcl9lYWNoX3ZhbGlkX2VudHJ5KHBvcywgdGFibGUp
+CQkJXAogCWZvciAocG9zID0gdGFibGU7IHBvcy0+ZnJlcXVlbmN5ICE9IENQVUZSRVFfVEFCTEVf
+RU5EOyBwb3MrKykJXAotCQlpZiAocG9zLT5mcmVxdWVuY3kgPT0gQ1BVRlJFUV9FTlRSWV9JTlZB
+TElEKQkJXAotCQkJY29udGludWU7CQkJCQlcCi0JCWVsc2UKKwkJZm9yX2VhY2hfaWYgKHBvcy0+
+ZnJlcXVlbmN5ICE9IENQVUZSRVFfRU5UUllfSU5WQUxJRCkKIAogLyoKICAqIGNwdWZyZXFfZm9y
+X2VhY2hfdmFsaWRfZW50cnlfaWR4IC0gICAgIGl0ZXJhdGUgd2l0aCBpbmRleCBvdmVyIGEgY3B1
+ZnJlcQpAQCAtNjYzLDkgKzY2MSw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBkZXZfcG1fb3BwX2Zy
+ZWVfY3B1ZnJlcV90YWJsZShzdHJ1Y3QgZGV2aWNlICpkZXYsCiAKICNkZWZpbmUgY3B1ZnJlcV9m
+b3JfZWFjaF92YWxpZF9lbnRyeV9pZHgocG9zLCB0YWJsZSwgaWR4KQkJXAogCWNwdWZyZXFfZm9y
+X2VhY2hfZW50cnlfaWR4KHBvcywgdGFibGUsIGlkeCkJCQlcCi0JCWlmIChwb3MtPmZyZXF1ZW5j
+eSA9PSBDUFVGUkVRX0VOVFJZX0lOVkFMSUQpCQlcCi0JCQljb250aW51ZTsJCQkJCVwKLQkJZWxz
+ZQorCQlmb3JfZWFjaF9pZiAocG9zLT5mcmVxdWVuY3kgIT0gQ1BVRlJFUV9FTlRSWV9JTlZBTElE
+KQogCiAKIGludCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV9jcHVpbmZvKHN0cnVjdCBjcHVmcmVx
+X3BvbGljeSAqcG9saWN5LAotLSAKMi4xOC4wCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0
+cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9pbnRlbC1nZngK
