@@ -1,73 +1,90 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2] driver core: Partially revert "driver core: correct
- device's shutdown order"
-Date: Tue, 10 Jul 2018 14:59:56 +0200
-Message-ID: <20180710125956.GA25343@kroah.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <8816662.k3KXbdkA2e@aspire.rjw.lan>
- <2927655.Y1qg3UnIrE@aspire.rjw.lan>
- <5284251.Resgjlja2Q@aspire.rjw.lan>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 1/2] soc: imx: gpc: Disable 6sl display power gating
+ for ERR006287
+Date: Tue, 10 Jul 2018 13:18:00 +0000
+Message-ID: <8aba202031bb222d9d78f8ac272757c930aff0c5.camel@nxp.com>
+References: <cover.1531138446.git.leonard.crestez@nxp.com>
+         <a00303c5672b332d1d363b78926903187169b8cc.1531138446.git.leonard.crestez@nxp.com>
+         <CAPDyKFoELWSiZ4cfOByziPQzqW7Tx3m29qKu9uCKPHO1gXO4YA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5284251.Resgjlja2Q@aspire.rjw.lan>
+In-Reply-To: <CAPDyKFoELWSiZ4cfOByziPQzqW7Tx3m29qKu9uCKPHO1gXO4YA@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <4745B48E10433C4BB79923384F93F493@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pingfan Liu <kernelfans@gmail.com>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org, Lukas Wunner <lukas@wunner.de>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+To: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Anson Huang <anson.huang@nxp.com>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Robin Gong <yibin.gong@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 10, 2018 at 02:51:33PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit 52cdbdd49853 (driver core: correct device's shutdown order)
-> introduced a regression by breaking device shutdown on some systems.
-> 
-> Namely, the devices_kset_move_last() call in really_probe() added by
-> that commit is a mistake as it may cause parents to follow children
-> in the devices_kset list which then causes shutdown to fail.  For
-> example, if a device has children before really_probe() is called
-> for it (which is not uncommon), that call will cause it to be
-> reordered after the children in the devices_kset list and the
-> ordering of that list will not reflect the correct device shutdown
-> order any more.
-> 
-> Also it causes the devices_kset list to be constantly reordered
-> until all drivers have been probed which is totally pointless
-> overhead in the majority of cases and it only covered an issue
-> with system shutdown, while system-wide suspend/resume potentially
-> had the same issue on the affected platforms (which was not covered).
-> 
-> Moreover, the shutdown issue originally addressed by the change in
-> really_probe() made by commit 52cdbdd49853 is not present in 4.18-rc
-> any more, since dra7 started to use the sdhci-omap driver which
-> doesn't disable any regulators during shutdown, so the really_probe()
-> part of commit 52cdbdd49853 can be safely reverted.  [The original
-> issue was related to the omap_hsmmc driver used by dra7 previously.]
-> 
-> For the above reasons, revert the really_probe() modifications made
-> by commit 52cdbdd49853.
-> 
-> The other code changes made by commit 52cdbdd49853 are useful and
-> they need not be reverted.
-> 
-> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
-> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
-> Reported-by: Pingfan Liu <kernelfans@gmail.com>
-> Tested-by: Pingfan Liu <kernelfans@gmail.com>
-> Reviewed-by: Kishon Vijay Abraham I <kishon@ti.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2: Added information from Kishon on the fact that it should be safe
->        to revert the really_probe() modifications added by the
->        problematic commit.  Also added the Reviewed-by tag from Kishon.
-
-Looks good to me, want me to queue it up in my tree, or are you going to
-send it on to Linus?
-
-And shouldn't this have a stable tag as well?
-
-thanks,
-
-greg k-h
+T24gVHVlLCAyMDE4LTA3LTEwIGF0IDAwOjMzICswMjAwLCBVbGYgSGFuc3NvbiB3cm90ZToNCj4g
+T24gOSBKdWx5IDIwMTggYXQgMTQ6MjMsIExlb25hcmQgQ3Jlc3RleiA8bGVvbmFyZC5jcmVzdGV6
+QG54cC5jb20+DQo+IHdyb3RlOg0KPiA+IFRoZSBpbXg2c2wgY2hpcCBlcnJhdGEgZG9jdW1lbnQg
+ZGVzY3JpYmVzIEVSUjAwNjI4NyBsaWtlIHRoaXM6DQo+ID4gDQo+ID4gIiIiDQo+ID4gVXBvbiBy
+ZXN1bWluZyBmcm9tIHBvd2VyIGdhdGluZywgdGhlIG1vZHVsZXMgaW4gdGhlIGRpc3BsYXkgcG93
+ZXINCj4gPiBkb21haW4NCj4gPiAoZUxDRElGLCBFUERDLCBQWFAgYW5kIFNQREMpIG1pZ2h0IGZh
+aWwgdG8gcGVyZm9ybSByZWdpc3RlciByZWFkcw0KPiA+IGNvcnJlY3RseS4NCj4gPiANCj4gPiBX
+aGVuIHRoZSBtb2R1bGVzIGxpc3RlZCBhYm92ZSBhcmUgdXNlZCwgZG8gbm90IHVzZSBwb3dlciBn
+YXRpbmcgb24NCj4gPiB0aGUNCj4gPiBkaXNwbGF5IHBvd2VyIGRvbWFpbi4NCj4gPiAiIiINCj4g
+PiANCj4gPiBMaW5rOiBodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29r
+LmNvbS8/dXJsPWh0dHBzJTNBDQo+ID4gJTJGJTJGd3d3Lm54cC5jb20lMkZkb2NzJTJGZW4lMkZl
+cnJhdGElMkZJTVg2U0xDRS5wZGYlMjNwYWdlJTNENjImYQ0KPiA+IG1wO2RhdGE9MDIlN0MwMSU3
+Q2xlb25hcmQuY3Jlc3RleiU0MG54cC5jb20lN0NkYmM1YjAwYTk3YzU0OGM0NzAzMjANCj4gPiA4
+ZDVlNWViZmIyNCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzElN0M2
+MzY2Njc3MjQwDQo+ID4gNTA4MzMyNTYmYW1wO3NkYXRhPVZnWUlHR1RZUTBDaFIlMkZDRUJTWkox
+RDFKeWZKUkRpOTZZSGElMkJ5dDRRcjVzJQ0KPiA+IDNEJmFtcDtyZXNlcnZlZD0wDQo+ID4gDQo+
+ID4gSGFuZGxlIHRoaXMgaW4gbGludXggaW4gdGhlIHNhbWUgd2F5IGFzIGlteDZxcCBFUlIwMDk2
+MTk6IG1ha2UgdGhlDQo+ID4gRElTUA0KPiA+IGRvbWFpbiByZXR1cm4gLUVCVVNZIG9uIHBvd2Vy
+X29mZi4NCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBMZW9uYXJkIENyZXN0ZXogPGxlb25hcmQu
+Y3Jlc3RlekBueHAuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9pbXgvZ3BjLmMgfCAx
+MCArKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspDQo+ID4g
+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2lteC9ncGMuYyBiL2RyaXZlcnMvc29jL2lt
+eC9ncGMuYw0KPiA+IGluZGV4IDUyNmYyZDAyZGM3OC4uNmI3MjZkYWRhNTYwIDEwMDY0NA0KPiA+
+IC0tLSBhL2RyaXZlcnMvc29jL2lteC9ncGMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2lteC9n
+cGMuYw0KPiA+IEBAIC0zMzksMzAgKzMzOSwzNSBAQCBzdGF0aWMgc3RydWN0IGlteF9wbV9kb21h
+aW4gaW14X2dwY19kb21haW5zW10NCj4gPiA9IHsNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RydWN0
+IGlteF9ncGNfZHRfZGF0YSB7DQo+ID4gICAgICAgICBpbnQgbnVtX2RvbWFpbnM7DQo+ID4gICAg
+ICAgICBib29sIGVycjAwOTYxOV9wcmVzZW50Ow0KPiA+ICsgICAgICAgYm9vbCBlcnIwMDYyODdf
+cHJlc2VudDsNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0cnVjdCBpbXhfZ3Bj
+X2R0X2RhdGEgaW14NnFfZHRfZGF0YSA9IHsNCj4gPiAgICAgICAgIC5udW1fZG9tYWlucyA9IDIs
+DQo+ID4gICAgICAgICAuZXJyMDA5NjE5X3ByZXNlbnQgPSBmYWxzZSwNCj4gPiArICAgICAgIC5l
+cnIwMDYyODdfcHJlc2VudCA9IGZhbHNlLA0KPiA+ICB9Ow0KPiA+IA0KPiA+ICBzdGF0aWMgY29u
+c3Qgc3RydWN0IGlteF9ncGNfZHRfZGF0YSBpbXg2cXBfZHRfZGF0YSA9IHsNCj4gPiAgICAgICAg
+IC5udW1fZG9tYWlucyA9IDIsDQo+ID4gICAgICAgICAuZXJyMDA5NjE5X3ByZXNlbnQgPSB0cnVl
+LA0KPiA+ICsgICAgICAgLmVycjAwNjI4N19wcmVzZW50ID0gZmFsc2UsDQo+ID4gIH07DQo+ID4g
+DQo+ID4gIHN0YXRpYyBjb25zdCBzdHJ1Y3QgaW14X2dwY19kdF9kYXRhIGlteDZzbF9kdF9kYXRh
+ID0gew0KPiA+ICAgICAgICAgLm51bV9kb21haW5zID0gMywNCj4gPiAgICAgICAgIC5lcnIwMDk2
+MTlfcHJlc2VudCA9IGZhbHNlLA0KPiA+ICsgICAgICAgLmVycjAwNjI4N19wcmVzZW50ID0gdHJ1
+ZSwNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0cnVjdCBpbXhfZ3BjX2R0X2Rh
+dGEgaW14NnN4X2R0X2RhdGEgPSB7DQo+ID4gICAgICAgICAubnVtX2RvbWFpbnMgPSA0LA0KPiA+
+ICAgICAgICAgLmVycjAwOTYxOV9wcmVzZW50ID0gZmFsc2UsDQo+ID4gKyAgICAgICAuZXJyMDA2
+Mjg3X3ByZXNlbnQgPSBmYWxzZSwNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0
+cnVjdCBvZl9kZXZpY2VfaWQgaW14X2dwY19kdF9pZHNbXSA9IHsNCj4gPiAgICAgICAgIHsgLmNv
+bXBhdGlibGUgPSAiZnNsLGlteDZxLWdwYyIsIC5kYXRhID0gJmlteDZxX2R0X2RhdGEgfSwNCj4g
+PiAgICAgICAgIHsgLmNvbXBhdGlibGUgPSAiZnNsLGlteDZxcC1ncGMiLCAuZGF0YSA9ICZpbXg2
+cXBfZHRfZGF0YQ0KPiA+IH0sDQo+ID4gQEAgLTQ2NywxMCArNDcyLDE1IEBAIHN0YXRpYyBpbnQg
+aW14X2dwY19wcm9iZShzdHJ1Y3QNCj4gPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICAg
+ICAgICAvKiBEaXNhYmxlIFBVIHBvd2VyIGRvd24gaW4gbm9ybWFsIG9wZXJhdGlvbiBpZiBFUlIw
+MDk2MTkNCj4gPiBpcyBwcmVzZW50ICovDQo+ID4gICAgICAgICBpZiAob2ZfaWRfZGF0YS0+ZXJy
+MDA5NjE5X3ByZXNlbnQpDQo+ID4gICAgICAgICAgICAgICAgIGlteF9ncGNfZG9tYWluc1tHUENf
+UEdDX0RPTUFJTl9QVV0uZmxhZ3MgfD0NCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgIFBHQ19ET01BSU5fRkxBR19OT19QRDsNCj4gPiANCj4gPiArICAgICAgIC8qIERpc2FibGUg
+RElTUCBwb3dlciBkb3duIGluIG5vcm1hbCBvcGVyYXRpb24gaWYgRVJSMDA2Mjg3DQo+ID4gaXMg
+cHJlc2VudCAqLw0KPiA+ICsgICAgICAgaWYgKG9mX2lkX2RhdGEtPmVycjAwNjI4N19wcmVzZW50
+KQ0KPiA+ICsgICAgICAgICAgICAgICBpbXhfZ3BjX2RvbWFpbnNbR1BDX1BHQ19ET01BSU5fRElT
+UExBWV0uZmxhZ3MgfD0NCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFBHQ19E
+T01BSU5fRkxBR19OT19QRDsNCj4gPiArDQo+IA0KPiBUaGlzIGxvb2tzIGxpa2UgYSB1c2UtY2Fz
+ZSBmb3IgYW4gYWx3YXlzIHBvd2VyZWQgb24gUE0gZG9tYWluPw0KPiANCj4gSWYgdGhhdCdzIHRo
+ZSBjYXNlLCBHRU5QRF9GTEFHX0FMV0FZU19PTiBkb2VzIHRoZSB0cmljaywgYnV0IG1vcmUNCj4g
+ZWZmaWNpZW50IGFzIGl0IGVuYWJsZXMgZ2VucGQgdG8gdGFrZSBhIGZldyBzaG9ydGN1dHMgd2hl
+biB0cnlpbmcgdG8NCj4gcG93ZXIgb2YgYSBQTSBkb21haW4uDQoNCkdFTlBEX0ZMQUdfQUxXQVlT
+X09OIHdvdWxkIGJlIGEgcmVhc29uYWJsZSBoZXJlLg0KDQpJIHNlYXJjaGVkIGJ1dCBJJ3ZlIGJl
+ZW4gdW5hYmxlIHRvIGZpbmQgYSBnb29kIHJlZmVyZW5jZSBmb3Igc2NlbmFyaW9zDQp3aGVyZSBw
+b3dlciBnYXRpbmcgRElTUCBvbiA2c2wgaXMgc3RpbGwgc3VwcG9ydGVkLiBJIHRoaW5rIGl0IHNo
+b3VsZCBiZQ0Kc2FmZSB0byB0dXJuIG9mZiBpbiBzdXNwZW5kIGJ1dCB0aGlzIGlzIG9ubHkgYmFz
+ZWQgYmFzZWQgb24gb2xkIGNvbW1pdHMNCmZyb20gdGhlIGlteCBpbnRlcm5hbCB0cmVlLg0KDQpS
+aWdodCBub3cgZGlzcGxheXMgb24gaW14NnNsIGRvbid0IHdvcmsgYXQgYWxsIGJlY2F1c2Ugbm90
+aGluZyBpcw0KaW5zaWRlIHRoZSBESVNQIGFuZCBpdCBnZXRzIHBvd2VyZWQgb2ZmLiBGaXhpbmcg
+dGhpcyBpbiB0aGUgc2FmZXN0IGFuZA0KbW9zdCB1bmNvbnRyb3ZlcnNpYWwgd2F5IHdvdWxkIGJl
+IHdvcnRod2hpbGUsIHllcz8=
