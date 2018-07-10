@@ -1,90 +1,73 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH v2 1/2] soc: imx: gpc: Disable 6sl display power gating
- for ERR006287
-Date: Tue, 10 Jul 2018 13:18:00 +0000
-Message-ID: <8aba202031bb222d9d78f8ac272757c930aff0c5.camel@nxp.com>
-References: <cover.1531138446.git.leonard.crestez@nxp.com>
-         <a00303c5672b332d1d363b78926903187169b8cc.1531138446.git.leonard.crestez@nxp.com>
-         <CAPDyKFoELWSiZ4cfOByziPQzqW7Tx3m29qKu9uCKPHO1gXO4YA@mail.gmail.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH v4.9] PM / OPP: Update voltage in case freq == old_freq
+Date: Tue, 10 Jul 2018 15:59:12 +0200
+Message-ID: <20180710135912.GI1123@kroah.com>
+References: <3717ee50c1f1f48cffcb1a2e41c04e28881776d1.1530521347.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoELWSiZ4cfOByziPQzqW7Tx3m29qKu9uCKPHO1gXO4YA@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <4745B48E10433C4BB79923384F93F493@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <3717ee50c1f1f48cffcb1a2e41c04e28881776d1.1530521347.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Anson Huang <anson.huang@nxp.com>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Robin Gong <yibin.gong@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>, "4 . 6+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA3LTEwIGF0IDAwOjMzICswMjAwLCBVbGYgSGFuc3NvbiB3cm90ZToNCj4g
-T24gOSBKdWx5IDIwMTggYXQgMTQ6MjMsIExlb25hcmQgQ3Jlc3RleiA8bGVvbmFyZC5jcmVzdGV6
-QG54cC5jb20+DQo+IHdyb3RlOg0KPiA+IFRoZSBpbXg2c2wgY2hpcCBlcnJhdGEgZG9jdW1lbnQg
-ZGVzY3JpYmVzIEVSUjAwNjI4NyBsaWtlIHRoaXM6DQo+ID4gDQo+ID4gIiIiDQo+ID4gVXBvbiBy
-ZXN1bWluZyBmcm9tIHBvd2VyIGdhdGluZywgdGhlIG1vZHVsZXMgaW4gdGhlIGRpc3BsYXkgcG93
-ZXINCj4gPiBkb21haW4NCj4gPiAoZUxDRElGLCBFUERDLCBQWFAgYW5kIFNQREMpIG1pZ2h0IGZh
-aWwgdG8gcGVyZm9ybSByZWdpc3RlciByZWFkcw0KPiA+IGNvcnJlY3RseS4NCj4gPiANCj4gPiBX
-aGVuIHRoZSBtb2R1bGVzIGxpc3RlZCBhYm92ZSBhcmUgdXNlZCwgZG8gbm90IHVzZSBwb3dlciBn
-YXRpbmcgb24NCj4gPiB0aGUNCj4gPiBkaXNwbGF5IHBvd2VyIGRvbWFpbi4NCj4gPiAiIiINCj4g
-PiANCj4gPiBMaW5rOiBodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29r
-LmNvbS8/dXJsPWh0dHBzJTNBDQo+ID4gJTJGJTJGd3d3Lm54cC5jb20lMkZkb2NzJTJGZW4lMkZl
-cnJhdGElMkZJTVg2U0xDRS5wZGYlMjNwYWdlJTNENjImYQ0KPiA+IG1wO2RhdGE9MDIlN0MwMSU3
-Q2xlb25hcmQuY3Jlc3RleiU0MG54cC5jb20lN0NkYmM1YjAwYTk3YzU0OGM0NzAzMjANCj4gPiA4
-ZDVlNWViZmIyNCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzElN0M2
-MzY2Njc3MjQwDQo+ID4gNTA4MzMyNTYmYW1wO3NkYXRhPVZnWUlHR1RZUTBDaFIlMkZDRUJTWkox
-RDFKeWZKUkRpOTZZSGElMkJ5dDRRcjVzJQ0KPiA+IDNEJmFtcDtyZXNlcnZlZD0wDQo+ID4gDQo+
-ID4gSGFuZGxlIHRoaXMgaW4gbGludXggaW4gdGhlIHNhbWUgd2F5IGFzIGlteDZxcCBFUlIwMDk2
-MTk6IG1ha2UgdGhlDQo+ID4gRElTUA0KPiA+IGRvbWFpbiByZXR1cm4gLUVCVVNZIG9uIHBvd2Vy
-X29mZi4NCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBMZW9uYXJkIENyZXN0ZXogPGxlb25hcmQu
-Y3Jlc3RlekBueHAuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9pbXgvZ3BjLmMgfCAx
-MCArKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspDQo+ID4g
-DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2lteC9ncGMuYyBiL2RyaXZlcnMvc29jL2lt
-eC9ncGMuYw0KPiA+IGluZGV4IDUyNmYyZDAyZGM3OC4uNmI3MjZkYWRhNTYwIDEwMDY0NA0KPiA+
-IC0tLSBhL2RyaXZlcnMvc29jL2lteC9ncGMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvc29jL2lteC9n
-cGMuYw0KPiA+IEBAIC0zMzksMzAgKzMzOSwzNSBAQCBzdGF0aWMgc3RydWN0IGlteF9wbV9kb21h
-aW4gaW14X2dwY19kb21haW5zW10NCj4gPiA9IHsNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RydWN0
-IGlteF9ncGNfZHRfZGF0YSB7DQo+ID4gICAgICAgICBpbnQgbnVtX2RvbWFpbnM7DQo+ID4gICAg
-ICAgICBib29sIGVycjAwOTYxOV9wcmVzZW50Ow0KPiA+ICsgICAgICAgYm9vbCBlcnIwMDYyODdf
-cHJlc2VudDsNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0cnVjdCBpbXhfZ3Bj
-X2R0X2RhdGEgaW14NnFfZHRfZGF0YSA9IHsNCj4gPiAgICAgICAgIC5udW1fZG9tYWlucyA9IDIs
-DQo+ID4gICAgICAgICAuZXJyMDA5NjE5X3ByZXNlbnQgPSBmYWxzZSwNCj4gPiArICAgICAgIC5l
-cnIwMDYyODdfcHJlc2VudCA9IGZhbHNlLA0KPiA+ICB9Ow0KPiA+IA0KPiA+ICBzdGF0aWMgY29u
-c3Qgc3RydWN0IGlteF9ncGNfZHRfZGF0YSBpbXg2cXBfZHRfZGF0YSA9IHsNCj4gPiAgICAgICAg
-IC5udW1fZG9tYWlucyA9IDIsDQo+ID4gICAgICAgICAuZXJyMDA5NjE5X3ByZXNlbnQgPSB0cnVl
-LA0KPiA+ICsgICAgICAgLmVycjAwNjI4N19wcmVzZW50ID0gZmFsc2UsDQo+ID4gIH07DQo+ID4g
-DQo+ID4gIHN0YXRpYyBjb25zdCBzdHJ1Y3QgaW14X2dwY19kdF9kYXRhIGlteDZzbF9kdF9kYXRh
-ID0gew0KPiA+ICAgICAgICAgLm51bV9kb21haW5zID0gMywNCj4gPiAgICAgICAgIC5lcnIwMDk2
-MTlfcHJlc2VudCA9IGZhbHNlLA0KPiA+ICsgICAgICAgLmVycjAwNjI4N19wcmVzZW50ID0gdHJ1
-ZSwNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0cnVjdCBpbXhfZ3BjX2R0X2Rh
-dGEgaW14NnN4X2R0X2RhdGEgPSB7DQo+ID4gICAgICAgICAubnVtX2RvbWFpbnMgPSA0LA0KPiA+
-ICAgICAgICAgLmVycjAwOTYxOV9wcmVzZW50ID0gZmFsc2UsDQo+ID4gKyAgICAgICAuZXJyMDA2
-Mjg3X3ByZXNlbnQgPSBmYWxzZSwNCj4gPiAgfTsNCj4gPiANCj4gPiAgc3RhdGljIGNvbnN0IHN0
-cnVjdCBvZl9kZXZpY2VfaWQgaW14X2dwY19kdF9pZHNbXSA9IHsNCj4gPiAgICAgICAgIHsgLmNv
-bXBhdGlibGUgPSAiZnNsLGlteDZxLWdwYyIsIC5kYXRhID0gJmlteDZxX2R0X2RhdGEgfSwNCj4g
-PiAgICAgICAgIHsgLmNvbXBhdGlibGUgPSAiZnNsLGlteDZxcC1ncGMiLCAuZGF0YSA9ICZpbXg2
-cXBfZHRfZGF0YQ0KPiA+IH0sDQo+ID4gQEAgLTQ2NywxMCArNDcyLDE1IEBAIHN0YXRpYyBpbnQg
-aW14X2dwY19wcm9iZShzdHJ1Y3QNCj4gPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICAg
-ICAgICAvKiBEaXNhYmxlIFBVIHBvd2VyIGRvd24gaW4gbm9ybWFsIG9wZXJhdGlvbiBpZiBFUlIw
-MDk2MTkNCj4gPiBpcyBwcmVzZW50ICovDQo+ID4gICAgICAgICBpZiAob2ZfaWRfZGF0YS0+ZXJy
-MDA5NjE5X3ByZXNlbnQpDQo+ID4gICAgICAgICAgICAgICAgIGlteF9ncGNfZG9tYWluc1tHUENf
-UEdDX0RPTUFJTl9QVV0uZmxhZ3MgfD0NCj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIFBHQ19ET01BSU5fRkxBR19OT19QRDsNCj4gPiANCj4gPiArICAgICAgIC8qIERpc2FibGUg
-RElTUCBwb3dlciBkb3duIGluIG5vcm1hbCBvcGVyYXRpb24gaWYgRVJSMDA2Mjg3DQo+ID4gaXMg
-cHJlc2VudCAqLw0KPiA+ICsgICAgICAgaWYgKG9mX2lkX2RhdGEtPmVycjAwNjI4N19wcmVzZW50
-KQ0KPiA+ICsgICAgICAgICAgICAgICBpbXhfZ3BjX2RvbWFpbnNbR1BDX1BHQ19ET01BSU5fRElT
-UExBWV0uZmxhZ3MgfD0NCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFBHQ19E
-T01BSU5fRkxBR19OT19QRDsNCj4gPiArDQo+IA0KPiBUaGlzIGxvb2tzIGxpa2UgYSB1c2UtY2Fz
-ZSBmb3IgYW4gYWx3YXlzIHBvd2VyZWQgb24gUE0gZG9tYWluPw0KPiANCj4gSWYgdGhhdCdzIHRo
-ZSBjYXNlLCBHRU5QRF9GTEFHX0FMV0FZU19PTiBkb2VzIHRoZSB0cmljaywgYnV0IG1vcmUNCj4g
-ZWZmaWNpZW50IGFzIGl0IGVuYWJsZXMgZ2VucGQgdG8gdGFrZSBhIGZldyBzaG9ydGN1dHMgd2hl
-biB0cnlpbmcgdG8NCj4gcG93ZXIgb2YgYSBQTSBkb21haW4uDQoNCkdFTlBEX0ZMQUdfQUxXQVlT
-X09OIHdvdWxkIGJlIGEgcmVhc29uYWJsZSBoZXJlLg0KDQpJIHNlYXJjaGVkIGJ1dCBJJ3ZlIGJl
-ZW4gdW5hYmxlIHRvIGZpbmQgYSBnb29kIHJlZmVyZW5jZSBmb3Igc2NlbmFyaW9zDQp3aGVyZSBw
-b3dlciBnYXRpbmcgRElTUCBvbiA2c2wgaXMgc3RpbGwgc3VwcG9ydGVkLiBJIHRoaW5rIGl0IHNo
-b3VsZCBiZQ0Kc2FmZSB0byB0dXJuIG9mZiBpbiBzdXNwZW5kIGJ1dCB0aGlzIGlzIG9ubHkgYmFz
-ZWQgYmFzZWQgb24gb2xkIGNvbW1pdHMNCmZyb20gdGhlIGlteCBpbnRlcm5hbCB0cmVlLg0KDQpS
-aWdodCBub3cgZGlzcGxheXMgb24gaW14NnNsIGRvbid0IHdvcmsgYXQgYWxsIGJlY2F1c2Ugbm90
-aGluZyBpcw0KaW5zaWRlIHRoZSBESVNQIGFuZCBpdCBnZXRzIHBvd2VyZWQgb2ZmLiBGaXhpbmcg
-dGhpcyBpbiB0aGUgc2FmZXN0IGFuZA0KbW9zdCB1bmNvbnRyb3ZlcnNpYWwgd2F5IHdvdWxkIGJl
-IHdvcnRod2hpbGUsIHllcz8=
+On Mon, Jul 02, 2018 at 02:19:47PM +0530, Viresh Kumar wrote:
+> From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+> 
+> Original commit c5c2a97b3ac7 ("PM / OPP: Update voltage in case freq ==
+> old_freq").
+> 
+> This commit fixes a rare but possible case when the clk rate is updated
+> without update of the regulator voltage.
+> 
+> At boot up, CPUfreq checks if the system is running at the right freq. This
+> is a sanity check in case a bootloader set clk rate that is outside of freq
+> table present with cpufreq core. In such cases system can be unstable so
+> better to change it to a freq that is preset in freq-table.
+> 
+> The CPUfreq takes next freq that is >= policy->cur and this is our
+> target_freq that needs to be set now.
+> 
+> dev_pm_opp_set_rate(dev, target_freq) checks the target_freq and the
+> old_freq (a current rate). If these are equal it returns early. If not,
+> it searches for OPP (old_opp) that fits best to old_freq (not listed in
+> the table) and updates old_freq (!).
+> 
+> Here, we can end up with old_freq = old_opp.rate = target_freq, which
+> is not handled in _generic_set_opp_regulator(). It's supposed to update
+> voltage only when freq > old_freq  || freq > old_freq.
+> 
+> if (freq > old_freq) {
+> 		ret = _set_opp_voltage(dev, reg, new_supply);
+> [...]
+> if (freq < old_freq) {
+> 		ret = _set_opp_voltage(dev, reg, new_supply);
+> 		if (ret)
+> 
+> It results in, no voltage update while clk rate is updated.
+> 
+> Example:
+> freq-table = {
+> 	1000MHz   1.15V
+> 	 666MHZ   1.10V
+> 	 333MHz   1.05V
+> }
+> boot-up-freq        = 800MHz   # not listed in freq-table
+> freq = target_freq  = 1GHz
+> old_freq            = 800Mhz
+> old_opp = _find_freq_ceil(opp_table, &old_freq);  #(old_freq is modified!)
+> old_freq            = 1GHz
+> 
+> Fixes: 6a0712f6f199 ("PM / OPP: Add dev_pm_opp_set_rate()")
+> Cc: 4.6+ <stable@vger.kernel.org> # v4.6+
+> Signed-off-by: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Sending it for stable kernels from 4.6 until 4.9.
+
+Always give me a hint as to what the original commit is, otherwise I
+have to go dig for it :(
+
+greg k-h
