@@ -1,132 +1,98 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] driver core: Drop devices_kset_move_last() call from really_probe()
-Date: Tue, 10 Jul 2018 12:29:11 +0200
-Message-ID: <CAJZ5v0jz4wfrACU6WwUfuyzoxXqQsWVhvFf1B3K5z7FjngjOYQ@mail.gmail.com>
+Date: Tue, 10 Jul 2018 12:32:28 +0200
+Message-ID: <CAJZ5v0j3Ss5Sa++ZjudMN0Jo2mu5YY6qJ4yEA5TG-zn=qYw2jg@mail.gmail.com>
 References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
  <2108146.dv4EAOf6IP@aspire.rjw.lan> <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
  <8816662.k3KXbdkA2e@aspire.rjw.lan> <CAErSpo4eaaieQiZjAejXAoCv82wddPOcRQXpiqD6X=fFW5XAHQ@mail.gmail.com>
- <CAJZ5v0hVDo-Y2gPTxd6yHVY=vr093hai1VhLzNzzhFkKe0LoKA@mail.gmail.com> <CAErSpo4TOiBtdG0iwgeFpv76Lhs4s7PXAWv5_DG-VRyEoP5bOQ@mail.gmail.com>
+ <CAJZ5v0hVDo-Y2gPTxd6yHVY=vr093hai1VhLzNzzhFkKe0LoKA@mail.gmail.com>
+ <CAErSpo4TOiBtdG0iwgeFpv76Lhs4s7PXAWv5_DG-VRyEoP5bOQ@mail.gmail.com> <5b134ed3-b473-90f3-acc7-5943e1669bb5@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo4TOiBtdG0iwgeFpv76Lhs4s7PXAWv5_DG-VRyEoP5bOQ@mail.gmail.com>
+In-Reply-To: <5b134ed3-b473-90f3-acc7-5943e1669bb5@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 10, 2018 at 12:06 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> [+cc Kishon]
+On Tue, Jul 10, 2018 at 8:19 AM, Kishon Vijay Abraham I <kishon@ti.com> wrote:
+> +Mark, Liam
 >
-> On Mon, Jul 9, 2018 at 4:35 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> Hi,
+>
+> On Tuesday 10 July 2018 03:36 AM, Bjorn Helgaas wrote:
+>> [+cc Kishon]
 >>
->> On Mon, Jul 9, 2018 at 3:57 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
->> > On Fri, Jul 6, 2018 at 5:01 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >>
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> The devices_kset_move_last() call in really_probe() is a mistake
->> >> as it may cause parents to follow children in the devices_kset list
->> >> which then causes system shutdown to fail.  Namely, if a device has
->> >> children before really_probe() is called for it (which is not
->> >> uncommon), that call will cause it to be reordered after the children
->> >> in the devices_kset list and the ordering of that list will not
->> >> reflect the correct device shutdown order.
->> >>
->> >> Also it causes the devices_kset list to be constantly reordered
->> >> until all drivers have been probed which is totally pointless
->> >> overhead in the majority of cases.
->> >>
->> >> For that reason, revert the really_probe() modifications made by
->> >> commit 52cdbdd49853.
->> >
->> > I'm sure you've considered this, but I can't figure out whether this
->> > patch will reintroduce the problem that was solved by 52cdbdd49853.
->> > That patch updated two places: (1) really_probe(), the change you're
->> > reverting here, and (2) device_move().
->> >
->> > device_move() is only called from 4-5 places, none of which look
->> > related to the problem fixed by 52cdbdd49853, so it seems like that
->> > problem was probably resolved by the hunk you're reverting.
+>> On Mon, Jul 9, 2018 at 4:35 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>
+>>> On Mon, Jul 9, 2018 at 3:57 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+>>>> On Fri, Jul 6, 2018 at 5:01 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>>>
+>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>
+>>>>> The devices_kset_move_last() call in really_probe() is a mistake
+>>>>> as it may cause parents to follow children in the devices_kset list
+>>>>> which then causes system shutdown to fail.  Namely, if a device has
+>>>>> children before really_probe() is called for it (which is not
+>>>>> uncommon), that call will cause it to be reordered after the children
+>>>>> in the devices_kset list and the ordering of that list will not
+>>>>> reflect the correct device shutdown order.
+>>>>>
+>>>>> Also it causes the devices_kset list to be constantly reordered
+>>>>> until all drivers have been probed which is totally pointless
+>>>>> overhead in the majority of cases.
+>>>>>
+>>>>> For that reason, revert the really_probe() modifications made by
+>>>>> commit 52cdbdd49853.
+>>>>
+>>>> I'm sure you've considered this, but I can't figure out whether this
+>>>> patch will reintroduce the problem that was solved by 52cdbdd49853.
+>>>> That patch updated two places: (1) really_probe(), the change you're
+>>>> reverting here, and (2) device_move().
+>>>>
+>>>> device_move() is only called from 4-5 places, none of which look
+>>>> related to the problem fixed by 52cdbdd49853, so it seems like that
+>>>> problem was probably resolved by the hunk you're reverting.
+>>>
+>>> That's right, but I don't want to revert all of it.  The other parts
+>>> of it are kind of useful as they make the handling of the devices_kset
+>>> list be consistent with the handling of dpm_list.
+>>>
+>>> The hunk I'm reverting, however, is completely off.  It not only is
+>>> incorrect (as per the above), but it also causes the devices_kset list
+>>> and dpm_list to be handled differently.
 >>
->> That's right, but I don't want to revert all of it.  The other parts
->> of it are kind of useful as they make the handling of the devices_kset
->> list be consistent with the handling of dpm_list.
+>> If I understand correctly, you are saying:
 >>
->> The hunk I'm reverting, however, is completely off.  It not only is
->> incorrect (as per the above), but it also causes the devices_kset list
->> and dpm_list to be handled differently.
+>>   - the 52cdbdd49853 really_probe() hunk fixed a problem, but
+>>   - that hunk was the wrong fix for it, and
+>>   - this patch removes the wrong fix (and probably reintroduces the problem)
+>>
+>> If devices_kset is supposed to be ordered so children follow parents,
+>> I agree the really_probe() hunk doesn't make much sense because the
+>> parent/child relation is determined by the circuit design, not by the
+>> probe order.
+>>
+>> It just seems like it's worth being clear that we're reintroducing the
+>> problem fixed by 52cdbdd49853, so it needs to be solved a different
+>> way.  Ideally that would be done before this patch so there's not a
+>> regression, and this changelog could mention what's happening.
+>>
+>>> It had attempted to fix something, but it failed miserably at that.
+>>
+>> If you're saying that 52cdbdd49853 *tried* to fix a DRA7XX_evm reboot
+>> problem, but in fact, it did not fix that problem, then I guess there
+>> should be no issue with reverting that hunk.
 >
-> If I understand correctly, you are saying:
->
->   - the 52cdbdd49853 really_probe() hunk fixed a problem, but
+> It did fix a problem making sure the regulator's shutdown is invoked after the
+> mmc shutdown. And reverting 52cdbdd49853 reintroduces the problem.
 
-It papered over a shutdown failure.  Calling it a "fix" is an overstatement IMO.
+But, of course, it didn't prevent regulator suspend from being run
+before mmc suspend, so it really addressed part of the problem only
+and while doing that it introduced a regression.
 
->   - that hunk was the wrong fix for it, and
->   - this patch removes the wrong fix (and probably reintroduces the problem)
->
-> If devices_kset is supposed to be ordered so children follow parents,
-> I agree the really_probe() hunk doesn't make much sense because the
-> parent/child relation is determined by the circuit design, not by the
-> probe order.
+This piece of really_probe() is incorrect and it has to go away.
 
-Exactly.
-
-> It just seems like it's worth being clear that we're reintroducing the
-> problem fixed by 52cdbdd49853, so it needs to be solved a different
-> way.
-
-OK
-
-> Ideally that would be done before this patch so there's not a
-> regression, and this changelog could mention what's happening.
-
-Well, commit 52cdbdd49853 introduced a regression by itself, but that
-regression has only been reported recently.
-
-I don't really want to go into a discussion on which of the two
-regressions is more painful, but then IMO going back to the state from
-before commit 52cdbdd49853 is fair enough.  Hence the patch.
-
->> It had attempted to fix something, but it failed miserably at that.
->
-> If you're saying that 52cdbdd49853 *tried* to fix a DRA7XX_evm reboot
-> problem, but in fact, it did not fix that problem, then I guess there
-> should be no issue with reverting that hunk.
-
-Again, it hid the reboot problem by changing the core in a way that
-led to a shutdown regression elsewhere.
-
-Also it looks like the platform(s) having that reboot issue do(es)n't
-really do system-wide suspend/resume, because that "fix" obviously
-doesn't help there.
-
->> >> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
->> >> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
->> >> Reported-by: Pingfan Liu <kernelfans@gmail.com>
->> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> ---
->> >>  drivers/base/dd.c |    8 --------
->> >>  1 file changed, 8 deletions(-)
->> >>
->> >> Index: linux-pm/drivers/base/dd.c
->> >> ===================================================================
->> >> --- linux-pm.orig/drivers/base/dd.c
->> >> +++ linux-pm/drivers/base/dd.c
->> >> @@ -434,14 +434,6 @@ re_probe:
->> >>                         goto probe_failed;
->> >>         }
->> >>
->> >> -       /*
->> >> -        * Ensure devices are listed in devices_kset in correct order
->> >> -        * It's important to move Dev to the end of devices_kset before
->> >> -        * calling .probe, because it could be recursive and parent Dev
->> >> -        * should always go first
->> >> -        */
->> >> -       devices_kset_move_last(dev);
->> >> -
->> >>         if (dev->bus->probe) {
->> >>                 ret = dev->bus->probe(dev);
->> >>                 if (ret)
->> >>
+Thanks,
+Rafael
