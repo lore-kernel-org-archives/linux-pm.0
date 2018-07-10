@@ -1,42 +1,88 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: [PATCH 1/2] thermal_hwmon: Sanitize attribute name passed to hwmon
-Date: Tue, 10 Jul 2018 16:40:34 +0100
-Message-ID: <20180710154035.26828-2-marc.zyngier@arm.com>
-References: <20180710154035.26828-1-marc.zyngier@arm.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] driver core: Partially revert "driver core: correct
+ device's shutdown order"
+Date: Tue, 10 Jul 2018 17:47:15 +0200
+Message-ID: <20180710154715.GA20793@kroah.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <8816662.k3KXbdkA2e@aspire.rjw.lan>
+ <2927655.Y1qg3UnIrE@aspire.rjw.lan>
+ <5284251.Resgjlja2Q@aspire.rjw.lan>
+ <20180710125956.GA25343@kroah.com>
+ <CAJZ5v0iV0ZaCbhoVOrGx08f6Y7Ei2q+qazxEMQRYD4LAq9LUbA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180710154035.26828-1-marc.zyngier@arm.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iV0ZaCbhoVOrGx08f6Y7Ei2q+qazxEMQRYD4LAq9LUbA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pingfan Liu <kernelfans@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-My Chromebook Plus (kevin) is spitting the following at boot time:
+On Tue, Jul 10, 2018 at 05:40:21PM +0200, Rafael J. Wysocki wrote:
+> On Tue, Jul 10, 2018 at 2:59 PM, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> > On Tue, Jul 10, 2018 at 02:51:33PM +0200, Rafael J. Wysocki wrote:
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> Commit 52cdbdd49853 (driver core: correct device's shutdown order)
+> >> introduced a regression by breaking device shutdown on some systems.
+> >>
+> >> Namely, the devices_kset_move_last() call in really_probe() added by
+> >> that commit is a mistake as it may cause parents to follow children
+> >> in the devices_kset list which then causes shutdown to fail.  For
+> >> example, if a device has children before really_probe() is called
+> >> for it (which is not uncommon), that call will cause it to be
+> >> reordered after the children in the devices_kset list and the
+> >> ordering of that list will not reflect the correct device shutdown
+> >> order any more.
+> >>
+> >> Also it causes the devices_kset list to be constantly reordered
+> >> until all drivers have been probed which is totally pointless
+> >> overhead in the majority of cases and it only covered an issue
+> >> with system shutdown, while system-wide suspend/resume potentially
+> >> had the same issue on the affected platforms (which was not covered).
+> >>
+> >> Moreover, the shutdown issue originally addressed by the change in
+> >> really_probe() made by commit 52cdbdd49853 is not present in 4.18-rc
+> >> any more, since dra7 started to use the sdhci-omap driver which
+> >> doesn't disable any regulators during shutdown, so the really_probe()
+> >> part of commit 52cdbdd49853 can be safely reverted.  [The original
+> >> issue was related to the omap_hsmmc driver used by dra7 previously.]
+> >>
+> >> For the above reasons, revert the really_probe() modifications made
+> >> by commit 52cdbdd49853.
+> >>
+> >> The other code changes made by commit 52cdbdd49853 are useful and
+> >> they need not be reverted.
+> >>
+> >> Fixes: 52cdbdd49853 (driver core: correct device's shutdown order)
+> >> Link: https://lore.kernel.org/lkml/CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com/
+> >> Reported-by: Pingfan Liu <kernelfans@gmail.com>
+> >> Tested-by: Pingfan Liu <kernelfans@gmail.com>
+> >> Reviewed-by: Kishon Vijay Abraham I <kishon@ti.com>
+> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> ---
+> >>
+> >> -> v2: Added information from Kishon on the fact that it should be safe
+> >>        to revert the really_probe() modifications added by the
+> >>        problematic commit.  Also added the Reviewed-by tag from Kishon.
+> >
+> > Looks good to me, want me to queue it up in my tree, or are you going to
+> > send it on to Linus?
+> 
+> Please queue it up.
+> 
+> > And shouldn't this have a stable tag as well?
+> 
+> That is sort of a gray area, because I think it may expose the
+> shutdown issue on dra7 in -stable, but technically it still fixes a
+> regression in the driver core.  So your call I suppose. :-)
 
-(NULL device *): hwmon: 'sbs-9-000b' is not a valid name attribute, please fix
+Being bug compatible is key :)
 
-Clearly, __hwmon_device_register is unhappy about the property name.
-Some investigation reveals that thermal_add_hwmon_sysfs doesn't
-sanitize the name of the attribute.
+I'll add a stable tag.
 
-In order to keep it quiet, let's replace '-' with '_' in hwmon->type
-This is consistent with what iio-hwmon does since b92fe9e3379c8.
+thanks,
 
-Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
----
- drivers/thermal/thermal_hwmon.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 11278836ed12..0bd47007c57f 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -142,6 +142,7 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 
- 	INIT_LIST_HEAD(&hwmon->tz_list);
- 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
-+	strreplace(hwmon->type, '-', '_');
- 	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
- 							hwmon, NULL, NULL);
- 	if (IS_ERR(hwmon->device)) {
--- 
-2.18.0
+greg k-h
