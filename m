@@ -1,597 +1,143 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v6 6/8] interconnect: qcom: Add msm8916 interconnect
- provider driver
-Date: Mon, 9 Jul 2018 16:56:10 -0700
-Message-ID: <20180709235610.GO129942@google.com>
-References: <20180709155104.25528-1-georgi.djakov@linaro.org>
- <20180709155104.25528-7-georgi.djakov@linaro.org>
+From: George Cherian <gcherian@caviumnetworks.com>
+Subject: Re: [PATCH v3] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
+Date: Tue, 10 Jul 2018 11:12:08 +0530
+Message-ID: <3bfc37e1-e82b-c09d-462f-bf4f79aec91f@caviumnetworks.com>
+References: <1531131048-60762-1-git-send-email-george.cherian@cavium.com>
+ <802dd310-a26c-3baa-696e-15393d6e1516@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180709155104.25528-7-georgi.djakov@linaro.org>
+In-Reply-To: <802dd310-a26c-3baa-696e-15393d6e1516@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, abailon@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Prakash,
 
-On Mon, Jul 09, 2018 at 06:51:02PM +0300, Georgi Djakov wrote:
-> Add driver for the Qualcomm interconnect buses found in msm8916 based
-> platforms.
+
+On 07/09/2018 10:12 PM, Prakash, Prashanth wrote:
 > 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  drivers/interconnect/Kconfig        |   5 +
->  drivers/interconnect/Makefile       |   1 +
->  drivers/interconnect/qcom/Kconfig   |  10 +
->  drivers/interconnect/qcom/Makefile  |   2 +
->  drivers/interconnect/qcom/msm8916.c | 499 ++++++++++++++++++++++++++++
->  5 files changed, 517 insertions(+)
->  create mode 100644 drivers/interconnect/qcom/msm8916.c
+> Hi George,
 > 
-> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-> index a261c7d41deb..07a8276fa35a 100644
-> --- a/drivers/interconnect/Kconfig
-> +++ b/drivers/interconnect/Kconfig
-> @@ -8,3 +8,8 @@ menuconfig INTERCONNECT
->  
->  	  If unsure, say no.
->  
-> +if INTERCONNECT
-> +
-> +source "drivers/interconnect/qcom/Kconfig"
-> +
-> +endif
-> diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
-> index 97fca2e09d24..7944cbca0527 100644
-> --- a/drivers/interconnect/Makefile
-> +++ b/drivers/interconnect/Makefile
-> @@ -1,2 +1,3 @@
->  # SPDX-License-Identifier: GPL-2.0
->  obj-$(CONFIG_INTERCONNECT)		+= core.o
-> +obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
-> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
-> index b0c2ff928d88..a87afdef1bf7 100644
-> --- a/drivers/interconnect/qcom/Kconfig
-> +++ b/drivers/interconnect/qcom/Kconfig
-> @@ -2,6 +2,8 @@ config INTERCONNECT_QCOM
->  	bool "Qualcomm Network-on-Chip interconnect drivers"
->  	depends on INTERCONNECT
->  	depends on ARCH_QCOM || COMPILE_TEST
-> +	help
-> +	  Support for Qualcomm's Network-on-Chip interconnect hardware.
->  
->  config INTERCONNECT_QCOM_SMD_RPM
->  	tristate "Qualcomm SMD RPM interconnect driver"
-> @@ -9,3 +11,11 @@ config INTERCONNECT_QCOM_SMD_RPM
->  	help
->  	  This is a driver for communicating interconnect related configuration
->  	  details with a remote processor (RPM) on Qualcomm platforms.
-> +
-> +config INTERCONNECT_QCOM_MSM8916
-> +	tristate "Qualcomm MSM8916 interconnect driver"
-> +	depends on INTERCONNECT_QCOM
-> +	select INTERCONNECT_QCOM_SMD_RPM
-> +	help
-> +	  This is a driver for the Qualcomm Network-on-Chip on msm8916-based
-> +	  platforms.
-> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
-> index 5b65e4011b59..53f3380277f6 100644
-> --- a/drivers/interconnect/qcom/Makefile
-> +++ b/drivers/interconnect/qcom/Makefile
-> @@ -1,2 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0
->  obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) += smd-rpm.o
-> +
-> +obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) += msm8916.o
-> diff --git a/drivers/interconnect/qcom/msm8916.c b/drivers/interconnect/qcom/msm8916.c
-> new file mode 100644
-> index 000000000000..f1d96f43e634
-> --- /dev/null
-> +++ b/drivers/interconnect/qcom/msm8916.c
-> @@ -0,0 +1,499 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (C) 2018 Linaro Ltd
-> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
-> + */
-> +
-> +#include <dt-bindings/interconnect/qcom.h>
-> +#include <linux/clk.h>
-> +#include <linux/device.h>
-> +#include <linux/interconnect-provider.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of_device.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +
-> +#include "smd-rpm.h"
-> +
-> +#define RPM_BUS_MASTER_REQ      0x73616d62
-> +#define RPM_BUS_SLAVE_REQ       0x766c7362
-> +
-> +#define to_qcom_provider(_provider) \
-> +	container_of(_provider, struct qcom_icc_provider, provider)
-> +
-> +enum qcom_qos_mode {
-> +	QCOM_QOS_MODE_BYPASS = 0,
-> +	QCOM_QOS_MODE_FIXED,
-> +	QCOM_QOS_MODE_MAX,
-> +};
-> +
-> +struct qcom_icc_provider {
-> +	struct icc_provider	provider;
-> +	void __iomem		*base;
-> +	struct clk		*bus_clk;
-> +	struct clk		*bus_a_clk;
-> +};
-> +
-> +#define MSM8916_MAX_LINKS	8
-> +
-> +/**
-> + * struct qcom_icc_node - Qualcomm specific interconnect nodes
-> + * @name: the node name used in debugfs
-> + * @links: an array of nodes where we can go next while traversing
-> + * @id: a unique node identifier
+> 
+> On 7/9/2018 4:10 AM, George Cherian wrote:
+>> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
+>> feedback via set of performance counters. To determine the actual
+>> performance level delivered over time, OSPM may read a set of
+>> performance counters from the Reference Performance Counter Register
+>> and the Delivered Performance Counter Register.
+>>
+>> OSPM calculates the delivered performance over a given time period by
+>> taking a beginning and ending snapshot of both the reference and
+>> delivered performance counters, and calculating:
+>>
+>> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
+>>
+>> Implement the above and hook this to the cpufreq->get method.
+>>
+>> Signed-off-by: George Cherian <george.cherian@cavium.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>   drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 44 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>> index a9d3eec..61132e8 100644
+>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>> @@ -296,10 +296,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>        return ret;
+>>   }
+>>
+>> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
+>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t0,
+>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t1)
+>> +{
+>> +     u64 delta_reference, delta_delivered;
+>> +     u64 reference_perf, delivered_perf;
+>> +
+>> +     reference_perf = fb_ctrs_t0.reference_perf;
+>> +
+>> +     delta_reference = (u32)fb_ctrs_t1.reference -
+>> +                             (u32)fb_ctrs_t0.reference;
+>> +     delta_delivered = (u32)fb_ctrs_t1.delivered -
+>> +                             (u32)fb_ctrs_t0.delivered;
+> Why (u32)? These registers can be 64bits and that's why cppc_perf_fb_ctrs
+> have 64b fields for reference and delivered counters.
+> 
+> Moreover, the integer math is incorrect. You can run into a scenario where
+> t1.ref/del < t0.ref/del,  thus setting a negative number to u64! The likelihood
+> of this is very high especially when you throw away the higher 32bits.
+> 
+Because of binary representation, unsigned subtraction will work even if
+t1.ref/del < t0.ref/del. So essentially, the code should look like
+this,
 
-nit: move up to keep 'links' and 'num_links' together? Also 'name' and
-'id' are similar fields, so keeping them together makes sense.
+static inline u64 get_delta(u64 t1, u64 t0)
+{
+         if (t1 > t0 || t0 > ~(u32)0)
+                 return t1 - t0;
 
-> + * @num_links: the total number of @links
-> + * @port: the offset index into the masters QoS register space
-> + * @buswidth: width of the interconnect between a node and the bus (bytes)
-> + * @ap_owned: the AP CPU does the writing to QoS registers
-> + * @qos_mode: QoS mode for ap_owned resources
-> + * @mas_rpm_id:	RPM id for devices that are bus masters
-> + * @slv_rpm_id:	RPM id for devices that are bus slaves
-> + * @rate: current bus clock rate in Hz
-> + */
-> +struct qcom_icc_node {
-> +	unsigned char *name;
-> +	u16 links[MSM8916_MAX_LINKS];
-> +	u16 id;
-> +	u16 num_links;
-> +	u16 port;
-> +	u16 buswidth;
-> +	bool ap_owned;
-> +	enum qcom_qos_mode qos_mode;
-> +	int mas_rpm_id;
-> +	int slv_rpm_id;
-> +	u64 rate;
-> +};
-> +
-> +struct qcom_icc_desc {
-> +	struct qcom_icc_node **nodes;
-> +	size_t num_nodes;
-> +};
-> +
-> +#define DEFINE_QNODE(_name, _id, _port, _buswidth, _ap_owned,		\
-> +			_mas_rpm_id, _slv_rpm_id, _qos_mode,		\
-> +			_numlinks, ...)					\
-> +		static struct qcom_icc_node _name = {			\
-> +		.id = _id,						\
-> +		.name = #_name,						\
+         return (u32)t1 - (u32)t0;
+}
 
-nit: init fields in same order as parameters.
+As a further optimization, I used (u32) since that also works,
+as long as the momentary delta at any point is not greater than 2 ^ 32.
+I don't foresee any reason for any platform to increment the counters at
+an interval greater than 2 ^ 32.
 
-> +		.port = _port,						\
-> +		.buswidth = _buswidth,					\
-> +		.qos_mode = _qos_mode,					\
-> +		.ap_owned = _ap_owned,					\
-> +		.mas_rpm_id = _mas_rpm_id,				\
-> +		.slv_rpm_id = _slv_rpm_id,				\
-> +		.num_links = _numlinks,					\
-> +		.links = { __VA_ARGS__ },				\
-> +	}
-> +
-> +DEFINE_QNODE(mas_video, MASTER_VIDEO_P0, 8, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
-> +DEFINE_QNODE(mas_jpeg, MASTER_JPEG, 6, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
-> +DEFINE_QNODE(mas_vfe, MASTER_VFE, 9, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_1, SNOC_MM_INT_2);
-> +DEFINE_QNODE(mas_mdp, MASTER_MDP_PORT0, 7, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
-> +DEFINE_QNODE(mas_qdss_bam, MASTER_QDSS_BAM, 11, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_QDSS_INT);
-> +DEFINE_QNODE(mas_snoc_cfg, MASTER_SNOC_CFG, 0, 16, 0, 20, -1, QCOM_QOS_MODE_BYPASS, 1, SNOC_QDSS_INT);
-> +DEFINE_QNODE(mas_qdss_etr, MASTER_QDSS_ETR, 10, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_QDSS_INT);
-> +DEFINE_QNODE(mm_int_0, SNOC_MM_INT_0, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_MM_INT_BIMC);
-> +DEFINE_QNODE(mm_int_1, SNOC_MM_INT_1, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_MM_INT_BIMC);
-> +DEFINE_QNODE(mm_int_2, SNOC_MM_INT_2, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_INT_0);
-> +DEFINE_QNODE(mm_int_bimc, SNOC_MM_INT_BIMC, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_1_MAS);
-> +DEFINE_QNODE(snoc_int_0, SNOC_INT_0, 0, 8, 0, 99, 130, QCOM_QOS_MODE_FIXED, 3, SLAVE_QDSS_STM, SLAVE_SYSTEM_IMEM, MNOC_BIMC_MAS);
-> +DEFINE_QNODE(snoc_int_1, SNOC_INT_1, 0, 8, 0, 100, 131, QCOM_QOS_MODE_FIXED, 3, SYSTEM_SLAVE_FAB_APPS, SLAVE_CATS_128, SLAVE_OCMEM_64);
-> +DEFINE_QNODE(snoc_int_bimc, SNOC_INT_BIMC, 0, 8, 0, 101, 132, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_0_MAS);
-> +DEFINE_QNODE(snoc_bimc_0_mas, SNOC_BIMC_0_MAS, 0, 8, 0, 3, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_0_SLV);
-> +DEFINE_QNODE(snoc_bimc_1_mas, SNOC_BIMC_1_MAS, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_1_SLV);
-> +DEFINE_QNODE(qdss_int, SNOC_QDSS_INT, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, SNOC_INT_0, SNOC_INT_BIMC);
-> +DEFINE_QNODE(bimc_snoc_slv, BIMC_SNOC_SLV, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, SNOC_INT_0, SNOC_INT_1);
-> +DEFINE_QNODE(snoc_pnoc_mas, MNOC_BIMC_MAS, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, MNOC_BIMC_SLV);
+> To keep things simple, do something like below:
+> 
+> if (t1.reference <= t0.reference || t1.delivered <= t0.delivered) {
+>       /* Atleast one of them should have overflowed */
+>       return desired_perf;
+> }
+> else {
+>       compute the delivered perf using the counters.
+> }
 
-Shouldn't this be SNOC_PNOC_MAS?
-
-> +DEFINE_QNODE(pnoc_snoc_slv, PNOC_SNOC_SLV, 0, 8, 0, -1, 45, QCOM_QOS_MODE_FIXED, 3, SNOC_INT_0, SNOC_INT_BIMC, SNOC_INT_1);
-> +DEFINE_QNODE(slv_srvc_snoc, SLAVE_SERVICE_SNOC, 0, 8, 0, -1, 29, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_qdss_stm, SLAVE_QDSS_STM, 0, 4, 0, -1, 30, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_imem, SLAVE_SYSTEM_IMEM, 0, 8, 0, -1, 26, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_apss, SYSTEM_SLAVE_FAB_APPS, 0, 4, 0, -1, 20, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_cats_0, SLAVE_CATS_128, 0, 16, 0, -1, 106, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_cats_1, SLAVE_OCMEM_64, 0, 8, 0, -1, 107, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(mas_apss, MASTER_AMPSS_M0, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
-> +DEFINE_QNODE(mas_tcu0, MASTER_TCU_0, 5, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
-> +DEFINE_QNODE(mas_tcu1, MASTER_TCU_1, 6, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
-> +DEFINE_QNODE(mas_gfx, MASTER_GRAPHICS_3D, 2, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
-> +DEFINE_QNODE(bimc_snoc_mas, BIMC_SNOC_MAS, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, BIMC_SNOC_SLV);
-> +DEFINE_QNODE(snoc_bimc_0_slv, SNOC_BIMC_0_SLV, 0, 8, 0, -1, 24, QCOM_QOS_MODE_FIXED, 1, SLAVE_EBI_CH0);
-> +DEFINE_QNODE(snoc_bimc_1_slv, SNOC_BIMC_1_SLV, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SLAVE_EBI_CH0);
-> +DEFINE_QNODE(slv_ebi_ch0, SLAVE_EBI_CH0, 0, 8, 0, -1, 0, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_apps_l2, SLAVE_AMPSS_L2, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(snoc_pnoc_slv, MNOC_BIMC_SLV, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_0);
-
-Shouldn't this be SNOC_PNOC_SLV?
-
-> +DEFINE_QNODE(pnoc_int_0, PNOC_INT_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 8, PNOC_SNOC_MAS, PNOC_SLV_0, PNOC_SLV_1, PNOC_SLV_2, PNOC_SLV_3, PNOC_SLV_4, PNOC_SLV_8, PNOC_SLV_9);
-> +DEFINE_QNODE(pnoc_int_1, PNOC_INT_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_MAS);
-> +DEFINE_QNODE(pnoc_m_0, PNOC_M_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_0);
-> +DEFINE_QNODE(pnoc_m_1, PNOC_M_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_MAS);
-> +DEFINE_QNODE(pnoc_s_0, PNOC_SLV_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_CLK_CTL, SLAVE_TLMM, SLAVE_MSM_TCSR, SLAVE_SECURITY, SLAVE_MSS);
-> +DEFINE_QNODE(pnoc_s_1, PNOC_SLV_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_IMEM_CFG, SLAVE_CRYPTO_0_CFG, SLAVE_RPM_MSG_RAM, SLAVE_MSM_PDM, SLAVE_PRNG);
-> +DEFINE_QNODE(pnoc_s_2, PNOC_SLV_2, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_SPDM, SLAVE_BOOT_ROM, SLAVE_BIMC_CFG, SLAVE_PNOC_CFG, SLAVE_PMIC_ARB);
-> +DEFINE_QNODE(pnoc_s_3, PNOC_SLV_3, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_MPM, SLAVE_IPS_CFG, SLAVE_RBCPR_CFG, SLAVE_QDSS_CFG, SLAVE_DEHR_CFG);
-> +DEFINE_QNODE(pnoc_s_4, PNOC_SLV_4, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_VENUS_CFG, SLAVE_CAMERA_CFG, SLAVE_DISPLAY_CFG);
-> +DEFINE_QNODE(pnoc_s_8, PNOC_SLV_8, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_USB_HS, SLAVE_SDCC_1, SLAVE_BLSP_1);
-> +DEFINE_QNODE(pnoc_s_9, PNOC_SLV_9, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_SDCC_4, SLAVE_LPASS, SLAVE_GRAPHICS_3D_CFG);
-> +DEFINE_QNODE(slv_imem_cfg, SLAVE_IMEM_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_crypto_0_cfg, SLAVE_CRYPTO_0_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_msg_ram, SLAVE_RPM_MSG_RAM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_pdm, SLAVE_MSM_PDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_prng, SLAVE_PRNG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_clk_ctl, SLAVE_CLK_CTL, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_mss, SLAVE_MSS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_tlmm, SLAVE_TLMM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_tcsr, SLAVE_MSM_TCSR, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_security, SLAVE_SECURITY, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_spdm, SLAVE_SPDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_pnoc_cfg, SLAVE_PNOC_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_pmic_arb, SLAVE_PMIC_ARB, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_bimc_cfg, SLAVE_BIMC_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_boot_rom, SLAVE_BOOT_ROM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_mpm, SLAVE_MPM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_qdss_cfg, SLAVE_QDSS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_rbcpr_cfg, SLAVE_RBCPR_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_snoc_cfg, SLAVE_IPS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-
-Shouldn't this be SLAVE_SNOC_CFG ?
-
-> +DEFINE_QNODE(slv_dehr_cfg, SLAVE_DEHR_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_venus_cfg, SLAVE_VENUS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_display_cfg, SLAVE_DISPLAY_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_camera_cfg, SLAVE_CAMERA_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_usb_hs, SLAVE_USB_HS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_sdcc_1, SLAVE_SDCC_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_blsp_1, SLAVE_BLSP_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_sdcc_2, SLAVE_SDCC_4, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_gfx_cfg, SLAVE_GRAPHICS_3D_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(slv_audio, SLAVE_LPASS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
-> +DEFINE_QNODE(mas_blsp_1, MASTER_BLSP_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_1);
-> +DEFINE_QNODE(mas_spdm, MASTER_SPDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
-> +DEFINE_QNODE(mas_dehr, MASTER_DEHR, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
-> +DEFINE_QNODE(mas_audio, MASTER_LPASS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
-> +DEFINE_QNODE(mas_usb_hs, MASTER_USB_HS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_1);
-> +DEFINE_QNODE(mas_pnoc_crypto_0, MASTER_CRYPTO_CORE0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
-> +DEFINE_QNODE(mas_pnoc_sdcc_1, MASTER_SDCC_1, 7, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
-> +DEFINE_QNODE(mas_pnoc_sdcc_2, MASTER_SDCC_2, 8, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
-> +DEFINE_QNODE(pnoc_snoc_mas, PNOC_SNOC_MAS, 0, 8, 0, 29, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_SLV);
-
-nit: you could consider to group these by NoC and use alphabetical
-order within each block, and also sort msm8916_*_nodes below. Purely
-optional though :)
-
-> +static struct qcom_icc_node *msm8916_snoc_nodes[] = {
-> +	&mas_video,
-> +	&mas_jpeg,
-> +	&mas_vfe,
-> +	&mas_mdp,
-> +	&mas_qdss_bam,
-> +	&mas_snoc_cfg,
-> +	&mas_qdss_etr,
-> +	&mm_int_0,
-> +	&mm_int_1,
-> +	&mm_int_2,
-> +	&mm_int_bimc,
-> +	&snoc_int_0,
-> +	&snoc_int_1,
-> +	&snoc_int_bimc,
-> +	&snoc_bimc_0_mas,
-> +	&snoc_bimc_1_mas,
-> +	&qdss_int,
-> +	&bimc_snoc_slv,
-> +	&snoc_pnoc_mas,
-> +	&pnoc_snoc_slv,
-> +	&slv_srvc_snoc,
-> +	&slv_qdss_stm,
-> +	&slv_imem,
-> +	&slv_apss,
-> +	&slv_cats_0,
-> +	&slv_cats_1,
-> +};
-> +
-> +static struct qcom_icc_desc msm8916_snoc = {
-> +	.nodes = msm8916_snoc_nodes,
-> +	.num_nodes = ARRAY_SIZE(msm8916_snoc_nodes),
-> +};
-> +
-> +static struct qcom_icc_node *msm8916_bimc_nodes[] = {
-> +	&mas_apss,
-> +	&mas_tcu0,
-> +	&mas_tcu1,
-> +	&mas_gfx,
-> +	&bimc_snoc_mas,
-> +	&snoc_bimc_0_slv,
-> +	&snoc_bimc_1_slv,
-> +	&slv_ebi_ch0,
-> +	&slv_apps_l2,
-> +};
-> +
-> +static struct qcom_icc_desc msm8916_bimc = {
-> +	.nodes = msm8916_bimc_nodes,
-> +	.num_nodes = ARRAY_SIZE(msm8916_bimc_nodes),
-> +};
-> +
-> +static struct qcom_icc_node *msm8916_pnoc_nodes[] = {
-> +	&snoc_pnoc_slv,
-> +	&pnoc_int_0,
-> +	&pnoc_int_1,
-> +	&pnoc_m_0,
-> +	&pnoc_m_1,
-> +	&pnoc_s_0,
-> +	&pnoc_s_1,
-> +	&pnoc_s_2,
-> +	&pnoc_s_3,
-> +	&pnoc_s_4,
-> +	&pnoc_s_8,
-> +	&pnoc_s_9,
-> +	&slv_imem_cfg,
-> +	&slv_crypto_0_cfg,
-> +	&slv_msg_ram,
-> +	&slv_pdm,
-> +	&slv_prng,
-> +	&slv_clk_ctl,
-> +	&slv_mss,
-> +	&slv_tlmm,
-> +	&slv_tcsr,
-> +	&slv_security,
-> +	&slv_spdm,
-> +	&slv_pnoc_cfg,
-> +	&slv_pmic_arb,
-> +	&slv_bimc_cfg,
-> +	&slv_boot_rom,
-> +	&slv_mpm,
-> +	&slv_qdss_cfg,
-> +	&slv_rbcpr_cfg,
-> +	&slv_snoc_cfg,
-> +	&slv_dehr_cfg,
-> +	&slv_venus_cfg,
-> +	&slv_display_cfg,
-> +	&slv_camera_cfg,
-> +	&slv_usb_hs,
-> +	&slv_sdcc_1,
-> +	&slv_blsp_1,
-> +	&slv_sdcc_2,
-> +	&slv_gfx_cfg,
-> +	&slv_audio,
-> +	&mas_blsp_1,
-> +	&mas_spdm,
-> +	&mas_dehr,
-> +	&mas_audio,
-> +	&mas_usb_hs,
-> +	&mas_pnoc_crypto_0,
-> +	&mas_pnoc_sdcc_1,
-> +	&mas_pnoc_sdcc_2,
-> +	&pnoc_snoc_mas,
-> +};
-> +
-> +static struct qcom_icc_desc msm8916_pnoc = {
-> +	.nodes = msm8916_pnoc_nodes,
-> +	.num_nodes = ARRAY_SIZE(msm8916_pnoc_nodes),
-> +};
-> +
-> +static int qcom_icc_aggregate(struct icc_node *node, u32 avg_bw, u32 peak_bw,
-> +			      u32 *agg_avg, u32 *agg_peak)
-> +{
-> +	*agg_avg += avg_bw;
-> +	*agg_peak = max(*agg_peak, peak_bw);
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_icc_set(struct icc_node *src, struct icc_node *dst,
-> +			u32 avg, u32 peak)
-> +{
-> +	struct qcom_icc_provider *qp;
-> +	struct qcom_icc_node *qn;
-> +	struct icc_node *node;
-> +	struct icc_provider *provider;
-> +	u64 avg_bw = icc_units_to_bps(avg);
-> +	u64 peak_bw = icc_units_to_bps(peak);
-> +	u64 rate = 0;
-
-Initialization is unnecessary.
-
-> +	int ret = 0;
-> +
-> +	if (!src)
-> +		node = dst;
-> +	else
-> +		node = src;
-> +
-> +	qn = node->data;
-> +	provider = node->provider;
-> +	qp = to_qcom_provider(node->provider);
-
-nit: you could pass provider instead of node->provider.
-
-> +
-> +	/* set bandwidth */
-> +	if (qn->ap_owned) {
-> +		/* TODO: set QoS */
-> +	} else {
-> +		/* send message to the RPM processor */
-> +		if (qn->mas_rpm_id != -1) {
-> +			ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-> +						    RPM_BUS_MASTER_REQ,
-> +						    qn->mas_rpm_id,
-> +						    avg_bw);
-> +			if (ret) {
-> +				pr_err("qcom_icc_rpm_smd_send mas error %d\n",
-> +				       ret);
-> +				return ret;
-> +			}
-> +		}
-> +
-> +		if (qn->slv_rpm_id != -1) {
-> +			ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
-> +						    RPM_BUS_SLAVE_REQ,
-> +						    qn->slv_rpm_id,
-> +						    avg_bw);
-> +			if (ret) {
-> +				pr_err("qcom_icc_rpm_smd_send slv error %d\n",
-> +				       ret);
-> +				return ret;
-> +			}
-> +		}
-> +	}
-> +
-> +	rate = max(avg_bw, peak_bw);
-
-This looks trivial, however avg_bw is a sum of average bandwidths and
-peak_bw is the max peak bandwidth of all nodes, which is not evident
-in this context. I guess it makes sense since a node that uses it's
-peak bandwdith frequently would have a average bandwidth close to that
-value, which would be reflected in avg_bw.
-
-> +static int qnoc_probe(struct platform_device *pdev)
-> +{
-> +	const struct qcom_icc_desc *desc;
-> +	struct qcom_icc_node **qnodes;
-> +	struct icc_node *node;
-> +	struct qcom_icc_provider *qp;
-> +	struct resource *res;
-> +	struct icc_provider *provider;
-> +	size_t num_nodes, i;
-> +	int ret;
-> +
-> +	/* wait for RPM */
-> +	if (!qcom_icc_rpm_smd_available())
-> +		return -EPROBE_DEFER;
-> +
-> +	desc = of_device_get_match_data(&pdev->dev);
-> +	if (!desc)
-> +		return -EINVAL;
-> +
-> +	qnodes = desc->nodes;
-> +	num_nodes = desc->num_nodes;
-> +
-> +	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
-> +	if (!qp)
-> +		return -ENOMEM;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	qp->base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(qp->base))
-> +		return PTR_ERR(qp->base);
-> +
-> +	qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
-> +	if (IS_ERR(qp->bus_clk))
-> +		return PTR_ERR(qp->bus_clk);
-> +
-> +	ret = clk_prepare_enable(qp->bus_clk);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error enabling bus_clk: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	qp->bus_a_clk = devm_clk_get(&pdev->dev, "bus_a_clk");
-> +	if (IS_ERR(qp->bus_a_clk))
-
-		clk_disable_unprepare(qp->bus_clk);
-
-Same for other error paths.
-
-> +		return PTR_ERR(qp->bus_a_clk);
-> +
-> +	ret = clk_prepare_enable(qp->bus_a_clk);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error enabling bus_a_clk: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	provider = &qp->provider;
-> +	provider->dev = &pdev->dev;
-> +	provider->set = &qcom_icc_set;
-> +	provider->aggregate = &qcom_icc_aggregate;
-> +	INIT_LIST_HEAD(&provider->nodes);
-> +	provider->data = qp;
-> +
-> +	ret = icc_provider_add(provider);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "error adding interconnect provider\n");
-
-		clk_disable_unprepare(qp->bus_a_clk);
-
-Same for other error paths.
-
-> +		return ret;
-> +	}
-> +
-> +	for (i = 0; i < num_nodes; i++) {
-> +		int ret;
-> +		size_t j;
-> +
-> +		node = icc_node_create(qnodes[i]->id);
-> +		if (IS_ERR(node)) {
-> +			ret = PTR_ERR(node);
-> +			goto err;
-> +		}
-> +
-> +		node->name = qnodes[i]->name;
-> +		node->data = qnodes[i];
-> +		icc_node_add(node, provider);
-> +
-> +		dev_dbg(&pdev->dev, "registered node %s\n", node->name);
-> +
-> +		/* populate links */
-> +		for (j = 0; j < qnodes[i]->num_links; j++)
-> +			if (qnodes[i]->links[j])
-> +				icc_link_create(node, qnodes[i]->links[j]);
-> +	}
-> +
-> +	platform_set_drvdata(pdev, provider);
-> +
-> +	return ret;
-> +err:
-> +	list_for_each_entry(node, &provider->nodes, node_list) {
-> +		icc_node_del(node);
-> +		icc_node_destroy(node->id);
-> +	}
-> +	icc_provider_del(provider);
-> +
-> +	return ret;
-> +}
-> +
-> +static int qnoc_remove(struct platform_device *pdev)
-> +{
-> +	struct icc_provider *provider = platform_get_drvdata(pdev);
-> +	struct icc_node *n;
-> +
-> +	list_for_each_entry(n, &provider->nodes, node_list) {
-> +		icc_node_del(n);
-> +		icc_node_destroy(n->id);
-> +	}
-
-	clk_disable_unprepare(qp->bus_a_clk);
-	clk_disable_unprepare(qp->bus_clk);
-
-Cheers
-
-Matthias
+No need to do like this as this is tested and found working across 
+counter overruns in our platform.
+> 
+>> +
+>> +     /* Check to avoid divide-by zero */
+>> +     if (delta_reference || delta_delivered)
+>> +             delivered_perf = (reference_perf * delta_delivered) /
+>> +                                     delta_reference;
+>> +     else
+>> +             delivered_perf = cpu->perf_ctrls.desired_perf;
+>> +
+>> +     return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
+>> +}
+>> +
+>> +static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
+>> +{
+>> +     struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
+>> +     struct cppc_cpudata *cpu = all_cpu_data[cpunum];
+>> +     int ret;
+>> +
+>> +     ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     udelay(2); /* 2usec delay between sampling */
+>> +
+>> +     ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
+>> +}
+>> +
+>>   static struct cpufreq_driver cppc_cpufreq_driver = {
+>>        .flags = CPUFREQ_CONST_LOOPS,
+>>        .verify = cppc_verify_policy,
+>>        .target = cppc_cpufreq_set_target,
+>> +     .get = cppc_cpufreq_get_rate,
+>>        .init = cppc_cpufreq_cpu_init,
+>>        .stop_cpu = cppc_cpufreq_stop_cpu,
+>>        .name = "cppc_cpufreq",
+> 
