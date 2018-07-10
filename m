@@ -1,66 +1,104 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3] soc: imx: gpc: Turn PU domain on/off in sleep on 6qp
-Date: Tue, 10 Jul 2018 11:34:09 +0200
-Message-ID: <CAPDyKFrd=jvYfCgtUD6ocEYLHhm1r73SpKB-c7syT3FmwWtaHw@mail.gmail.com>
-References: <ab0c7997bdb0caf6fe7e842315bb9565c2cb059d.1530895248.git.leonard.crestez@nxp.com>
- <CAPDyKFqb6eZ2SYG612yqiNisv7UV1q3UHYfZfemmvv9Q4w=Png@mail.gmail.com> <1531209943.3163.31.camel@pengutronix.de>
+Subject: Re: [PATCH 2/2] PCI: imx: Initial imx7d pm support
+Date: Tue, 10 Jul 2018 12:26:12 +0200
+Message-ID: <CAPDyKFqdJ72ad4Ljz95TFxuNs_T1npSzBU7VCqFLExpC+2DW6Q@mail.gmail.com>
+References: <cover.1527621510.git.leonard.crestez@nxp.com> <a6176c8bcfbca08ce4e93e304bdcd48c4600f8e2.1527621510.git.leonard.crestez@nxp.com>
+ <1528468422.26356.20.camel@pengutronix.de> <02207512447db4585a4e879e2a059ba223d57dbe.camel@nxp.com>
+ <1530607328.22468.102.camel@pengutronix.de> <e36fac6f4907288c58a7dfa112541e73de957d46.camel@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1531209943.3163.31.camel@pengutronix.de>
+In-Reply-To: <e36fac6f4907288c58a7dfa112541e73de957d46.camel@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Robin Gong <yibin.gong@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Richard Zhu <hongxing.zhu@nxp.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "p.zabel@pengutronix.de" <p.zabel@pengutronix.de>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, Abel Vesa <abel.vesa@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Anson Huang <anson.huang@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>, linux-pci@vger
 List-Id: linux-pm@vger.kernel.org
 
-On 10 July 2018 at 10:05, Lucas Stach <l.stach@pengutronix.de> wrote:
-> Am Dienstag, den 10.07.2018, 00:27 +0200 schrieb Ulf Hansson:
->> > On 6 July 2018 at 18:46, Leonard Crestez <leonard.crestez@nxp.com> wrote:
->> > On imx6qp power gating on the PU domain is disabled because of errata
->> > ERR009619. However power gating during suspend/resume can still be
->> > performed.
->>
->> Sounds a bit hand wavy. Exactly why can it be done during system suspend/resume?
->
-> Power gating this domain in normal operation may introduce a glitch in
-> unrelated modules, potentially disturbing a running display scanout.
-> This is not a concern when the whole system enters suspend state, so
-> it's safe to do in this case.
-
-Makes sense. Could we please fold this information into the commit
-message to make this clear!?
-
->
-> Regards,
-> Lucas
->
+On 9 July 2018 at 16:59, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> On Tue, 2018-07-03 at 10:42 +0200, Lucas Stach wrote:
+>> Am Montag, den 02.07.2018, 17:18 +0000 schrieb Leonard Crestez:
+>> > On Fri, 2018-06-08 at 16:33 +0200, Lucas Stach wrote:
+>> > > Am Dienstag, den 29.05.2018, 22:39 +0300 schrieb Leonard Crestez:
+>> > > > On imx7d the phy is turned off in suspend and must be reset on resume.
+>> > > > Right now lspci -v fails after a suspend/resume cycle, fix this by
+>> > > > adding minimal suspend/resume code from the nxp vendor tree.
+>> > > >
+>> > > > This is currently only enabled for imx7 but the same sequence can be
+>> > > > applied to other imx pcie variants.
+>> > > > +#ifdef CONFIG_PM_SLEEP
 >> >
->> > Enable this by implementing SLEEP_PM_OPS in imx_pgc_power_domain_driver.
+>> > Another issue that should be discussed here is that on 6sx and 7d the
+>> > gpc PCIE power domain is not defined correctly: the PCIE block is in
+>> > the DISPMIX domain on both SOCs and it is only PCIE_PHY which has a
+>> > separate power domain.
 >> >
->> > In order to ensure correct ordering add device links from devices inside
->> > the PU domain to the pgc platform_device.
+>> > This matters: enabling power-gating for displays will break pcie if
+>> > this relationship is not taken into account. Here are some options:
+>> >
+>> > 1) Make &pd_pcie a child of &pd_disp by hacking into gpc probe
+>> > functions and calling pm_genpd_add_subdomain. Not very nice.
+>> >
+>> > 2) Support nesting PGCs in GPC code? Lots of code and still an
+>> > incorrect representation of hardware.
+>> >
+>> > 3) Set power-domains = <&pd_disp> and enable runtime PM on &pd_pcie?
+>> >
+>> > 4) Add separate devices for the pcie-phy. These would be mostly empty
+>> > but still different, for example on imx6sx the PHY is not even
+>> > accessible on the bus but only though PCIE registers.
 >>
->> In genpd, the PM domain gets powered off after all device's
->> corresponding ->suspend_noirq() callback has been invoked - and it
->> also considers if there are some wakeup settings enabled, possibly
->> avoiding to do the power off.
->>
->> It sound like the imx's power domain driver ->power_off|on() callback
->> should deal with this, to make get a consistent behavior. I understand
->> that you currently can't tell under what circumstances the
->> ->power_off|on() callbacks are being invoked, that may need some
->> changes in genpd.
->>
->> Currently we have a flag, GENPD_FLAG_ALWAYS_ON which makes genpd to
->> always prevent power off. Perhaps we should add a new flag
->> "GENPD_FLAG_RUNTIME_ON", which makes genpd to call the
->> ->power_on|off() callbacks, but only during system wide PM.
->>
->> Thoughts?
->
-> Yes, this might work for this case.
+>> 5) Take a look at the linux-pm list. ;) The power domain framework has
+>> just gained support for multiple power domains per device. I think that
+>>  is the right solution for this, as like you mentioned the PHY isn't
+>> really a separate block on i.MX6, but part of the PCIe controller
+>> device.
 
-Alright. I can help to implement, if you want. Just tell.
+Yep, it sounds like the PCIe controller device is partitioned across
+multiple PM domains.
+
+>
+> Yes, I noticed that earlier but not that it was merged recently. It is
+> a better solution.
+>
+> Unfortunately the multiple power-domain code seems to require devices
+> to explicitly fetch references to the power domains and manipulate
+> them.
+
+Actually, it's the other way around.
+
+You need only one device to attach the PM domains. However, in genpd,
+one device will be created per PM domain and its that device you get
+back to operate upon.
+
+Typically the returned device(s) should be linked with the "master"
+device, device_link_add().
+
+> As far as I can tell this means that every device using multiple
+> power domains has to be modified to do so. In this particular case it
+> would be useful to just have all power domains turned on before probe,
+> just like when a single power-domain is specified:
+
+I you need them to be powered on, just use the corresponding device
+links flags when you create the link during probe.
+
+Something along the lines of this:
+
+device_link_add(dev, genpd_dev0, DL_FLAG_STATELESS |
+DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
+
+>
+>     power-domains = <&pd_pci>, <&pd_disp>;
+>
+> But this issue is not strictly related to imx7d pci hanging on
+> suspend/resume, it can be dealt with later.
+
+Maybe not, I don't have the complete picture.
+
+However, you do get the opportunity to use the genpd infrastructure,
+which calls the ->power_on|off() callbacks of the PM domain during
+suspend/resume. And by using the dev_link_add(), you can make sure
+that the PM domain gets powered on/off in the order as the
+corresponding supplier device.
 
 Kind regards
 Uffe
