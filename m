@@ -1,986 +1,595 @@
 From: Alexandre Bailon <abailon@baylibre.com>
-Subject: Re: [PATCH v6 1/8] interconnect: Add generic on-chip interconnect API
-Date: Wed, 11 Jul 2018 17:05:22 +0200
-Message-ID: <cb91f4ee-d43e-d367-3445-a475517a3225@baylibre.com>
+Subject: Re: [PATCH v6 6/8] interconnect: qcom: Add msm8916 interconnect
+ provider driver
+Date: Wed, 11 Jul 2018 17:42:07 +0200
+Message-ID: <8d2fd280-9cd7-f612-b663-ec4bcdd129cb@baylibre.com>
 References: <20180709155104.25528-1-georgi.djakov@linaro.org>
- <20180709155104.25528-2-georgi.djakov@linaro.org>
+ <20180709155104.25528-7-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180709155104.25528-2-georgi.djakov@linaro.org>
+In-Reply-To: <20180709155104.25528-7-georgi.djakov@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mka@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Georgi,
-
-On 07/09/2018 05:50 PM, Georgi Djakov wrote:
-> This patch introduces a new API to get requirements and configure the
-> interconnect buses across the entire chipset to fit with the current
-> demand.
-> 
-> The API is using a consumer/provider-based model, where the providers are
-> the interconnect buses and the consumers could be various drivers.
-> The consumers request interconnect resources (path) between endpoints and
-> set the desired constraints on this data flow path. The providers receive
-> requests from consumers and aggregate these requests for all master-slave
-> pairs on that path. Then the providers configure each participating in the
-> topology node according to the requested data flow path, physical links and
-> constraints. The topology could be complicated and multi-tiered and is SoC
-> specific.
+On 07/09/2018 05:51 PM, Georgi Djakov wrote:
+> Add driver for the Qualcomm interconnect buses found in msm8916 based
+> platforms.
 > 
 > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 > ---
->  Documentation/interconnect/interconnect.rst |  96 ++++
->  drivers/Kconfig                             |   2 +
->  drivers/Makefile                            |   1 +
->  drivers/interconnect/Kconfig                |  10 +
->  drivers/interconnect/Makefile               |   2 +
->  drivers/interconnect/core.c                 | 597 ++++++++++++++++++++
->  include/linux/interconnect-provider.h       | 130 +++++
->  include/linux/interconnect.h                |  42 ++
->  8 files changed, 880 insertions(+)
->  create mode 100644 Documentation/interconnect/interconnect.rst
->  create mode 100644 drivers/interconnect/Kconfig
->  create mode 100644 drivers/interconnect/Makefile
->  create mode 100644 drivers/interconnect/core.c
->  create mode 100644 include/linux/interconnect-provider.h
->  create mode 100644 include/linux/interconnect.h
+>  drivers/interconnect/Kconfig        |   5 +
+>  drivers/interconnect/Makefile       |   1 +
+>  drivers/interconnect/qcom/Kconfig   |  10 +
+>  drivers/interconnect/qcom/Makefile  |   2 +
+>  drivers/interconnect/qcom/msm8916.c | 499 ++++++++++++++++++++++++++++
+>  5 files changed, 517 insertions(+)
+>  create mode 100644 drivers/interconnect/qcom/msm8916.c
 > 
-> diff --git a/Documentation/interconnect/interconnect.rst b/Documentation/interconnect/interconnect.rst
-> new file mode 100644
-> index 000000000000..a1ebd83ad0a1
-> --- /dev/null
-> +++ b/Documentation/interconnect/interconnect.rst
-> @@ -0,0 +1,96 @@
-> +.. SPDX-License-Identifier: GPL-2.0
-> +
-> +=====================================
-> +GENERIC SYSTEM INTERCONNECT SUBSYSTEM
-> +=====================================
-> +
-> +Introduction
-> +------------
-> +
-> +This framework is designed to provide a standard kernel interface to control
-> +the settings of the interconnects on a SoC. These settings can be throughput,
-> +latency and priority between multiple interconnected devices or functional
-> +blocks. This can be controlled dynamically in order to save power or provide
-> +maximum performance.
-> +
-> +The interconnect bus is a hardware with configurable parameters, which can be
-> +set on a data path according to the requests received from various drivers.
-> +An example of interconnect buses are the interconnects between various
-> +components or functional blocks in chipsets. There can be multiple interconnects
-> +on a SoC that can be multi-tiered.
-> +
-> +Below is a simplified diagram of a real-world SoC interconnect bus topology.
-> +
-> +::
-> +
-> + +----------------+    +----------------+
-> + | HW Accelerator |--->|      M NoC     |<---------------+
-> + +----------------+    +----------------+                |
-> +                         |      |                    +------------+
-> +  +-----+  +-------------+      V       +------+     |            |
-> +  | DDR |  |                +--------+  | PCIe |     |            |
-> +  +-----+  |                | Slaves |  +------+     |            |
-> +    ^ ^    |                +--------+     |         |   C NoC    |
-> +    | |    V                               V         |            |
-> + +------------------+   +------------------------+   |            |   +-----+
-> + |                  |-->|                        |-->|            |-->| CPU |
-> + |                  |-->|                        |<--|            |   +-----+
-> + |     Mem NoC      |   |         S NoC          |   +------------+
-> + |                  |<--|                        |---------+    |
-> + |                  |<--|                        |<------+ |    |   +--------+
-> + +------------------+   +------------------------+       | |    +-->| Slaves |
-> +   ^  ^    ^    ^          ^                             | |        +--------+
-> +   |  |    |    |          |                             | V
-> + +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
-> + | CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
-> + +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
-> +           |
-> +       +-------+
-> +       | Modem |
-> +       +-------+
-> +
-> +Terminology
-> +-----------
-> +
-> +Interconnect provider is the software definition of the interconnect hardware.
-> +The interconnect providers on the above diagram are M NoC, S NoC, C NoC, P NoC
-> +and Mem NoC.
-> +
-> +Interconnect node is the software definition of the interconnect hardware
-> +port. Each interconnect provider consists of multiple interconnect nodes,
-> +which are connected to other SoC components including other interconnect
-> +providers. The point on the diagram where the CPUs connects to the memory is
-> +called an interconnect node, which belongs to the Mem NoC interconnect provider.
-> +
-> +Interconnect endpoints are the first or the last element of the path. Every
-> +endpoint is a node, but not every node is an endpoint.
-> +
-> +Interconnect path is everything between two endpoints including all the nodes
-> +that have to be traversed to reach from a source to destination node. It may
-> +include multiple master-slave pairs across several interconnect providers.
-> +
-> +Interconnect consumers are the entities which make use of the data paths exposed
-> +by the providers. The consumers send requests to providers requesting various
-> +throughput, latency and priority. Usually the consumers are device drivers, that
-> +send request based on their needs. An example for a consumer is a video decoder
-> +that supports various formats and image sizes.
-> +
-> +Interconnect providers
-> +----------------------
-> +
-> +Interconnect provider is an entity that implements methods to initialize and
-> +configure a interconnect bus hardware. The interconnect provider drivers should
-> +be registered with the interconnect provider core.
-> +
-> +The interconnect framework provider API functions are documented in
-> +.. kernel-doc:: include/linux/interconnect-provider.h
-> +
-> +Interconnect consumers
-> +----------------------
-> +
-> +Interconnect consumers are the clients which use the interconnect APIs to
-> +get paths between endpoints and set their bandwidth/latency/QoS requirements
-> +for these interconnect paths.
-> +
-> +The interconnect framework consumer API functions are documented in
-> +.. kernel-doc:: include/linux/interconnect.h
-> diff --git a/drivers/Kconfig b/drivers/Kconfig
-> index 95b9ccc08165..3ed6ede9d021 100644
-> --- a/drivers/Kconfig
-> +++ b/drivers/Kconfig
-> @@ -217,4 +217,6 @@ source "drivers/siox/Kconfig"
->  
->  source "drivers/slimbus/Kconfig"
->  
-> +source "drivers/interconnect/Kconfig"
-> +
->  endmenu
-> diff --git a/drivers/Makefile b/drivers/Makefile
-> index 24cd47014657..0cca95740d9b 100644
-> --- a/drivers/Makefile
-> +++ b/drivers/Makefile
-> @@ -185,3 +185,4 @@ obj-$(CONFIG_TEE)		+= tee/
->  obj-$(CONFIG_MULTIPLEXER)	+= mux/
->  obj-$(CONFIG_UNISYS_VISORBUS)	+= visorbus/
->  obj-$(CONFIG_SIOX)		+= siox/
-> +obj-$(CONFIG_INTERCONNECT)	+= interconnect/
 > diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-> new file mode 100644
-> index 000000000000..a261c7d41deb
-> --- /dev/null
+> index a261c7d41deb..07a8276fa35a 100644
+> --- a/drivers/interconnect/Kconfig
 > +++ b/drivers/interconnect/Kconfig
-> @@ -0,0 +1,10 @@
-> +menuconfig INTERCONNECT
-> +	tristate "On-Chip Interconnect management support"
-> +	help
-> +	  Support for management of the on-chip interconnects.
+> @@ -8,3 +8,8 @@ menuconfig INTERCONNECT
+>  
+>  	  If unsure, say no.
+>  
+> +if INTERCONNECT
 > +
-> +	  This framework is designed to provide a generic interface for
-> +	  managing the interconnects in a SoC.
+> +source "drivers/interconnect/qcom/Kconfig"
 > +
-> +	  If unsure, say no.
-> +
+> +endif
 > diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
-> new file mode 100644
-> index 000000000000..97fca2e09d24
-> --- /dev/null
+> index 97fca2e09d24..7944cbca0527 100644
+> --- a/drivers/interconnect/Makefile
 > +++ b/drivers/interconnect/Makefile
-> @@ -0,0 +1,2 @@
-> +# SPDX-License-Identifier: GPL-2.0
-> +obj-$(CONFIG_INTERCONNECT)		+= core.o
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+> @@ -1,2 +1,3 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  obj-$(CONFIG_INTERCONNECT)		+= core.o
+> +obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
+> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+> index b0c2ff928d88..a87afdef1bf7 100644
+> --- a/drivers/interconnect/qcom/Kconfig
+> +++ b/drivers/interconnect/qcom/Kconfig
+> @@ -2,6 +2,8 @@ config INTERCONNECT_QCOM
+>  	bool "Qualcomm Network-on-Chip interconnect drivers"
+>  	depends on INTERCONNECT
+>  	depends on ARCH_QCOM || COMPILE_TEST
+> +	help
+> +	  Support for Qualcomm's Network-on-Chip interconnect hardware.
+>  
+>  config INTERCONNECT_QCOM_SMD_RPM
+>  	tristate "Qualcomm SMD RPM interconnect driver"
+> @@ -9,3 +11,11 @@ config INTERCONNECT_QCOM_SMD_RPM
+>  	help
+>  	  This is a driver for communicating interconnect related configuration
+>  	  details with a remote processor (RPM) on Qualcomm platforms.
+> +
+> +config INTERCONNECT_QCOM_MSM8916
+> +	tristate "Qualcomm MSM8916 interconnect driver"
+> +	depends on INTERCONNECT_QCOM
+> +	select INTERCONNECT_QCOM_SMD_RPM
+> +	help
+> +	  This is a driver for the Qualcomm Network-on-Chip on msm8916-based
+> +	  platforms.
+> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+> index 5b65e4011b59..53f3380277f6 100644
+> --- a/drivers/interconnect/qcom/Makefile
+> +++ b/drivers/interconnect/qcom/Makefile
+> @@ -1,2 +1,4 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>  obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) += smd-rpm.o
+> +
+> +obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) += msm8916.o
+> diff --git a/drivers/interconnect/qcom/msm8916.c b/drivers/interconnect/qcom/msm8916.c
 > new file mode 100644
-> index 000000000000..63707c3c3d48
+> index 000000000000..f1d96f43e634
 > --- /dev/null
-> +++ b/drivers/interconnect/core.c
-> @@ -0,0 +1,597 @@
+> +++ b/drivers/interconnect/qcom/msm8916.c
+> @@ -0,0 +1,499 @@
 > +// SPDX-License-Identifier: GPL-2.0
 > +/*
-> + * Interconnect framework core driver
-> + *
-> + * Copyright (c) 2018, Linaro Ltd.
+> + * Copyright (C) 2018 Linaro Ltd
 > + * Author: Georgi Djakov <georgi.djakov@linaro.org>
 > + */
 > +
+> +#include <dt-bindings/interconnect/qcom.h>
+> +#include <linux/clk.h>
 > +#include <linux/device.h>
-> +#include <linux/idr.h>
-> +#include <linux/init.h>
-> +#include <linux/interconnect.h>
 > +#include <linux/interconnect-provider.h>
-> +#include <linux/list.h>
+> +#include <linux/io.h>
 > +#include <linux/module.h>
-> +#include <linux/mutex.h>
+> +#include <linux/of_device.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
 > +#include <linux/slab.h>
 > +
-> +static DEFINE_IDR(icc_idr);
-> +static LIST_HEAD(icc_provider_list);
-> +static DEFINE_MUTEX(icc_lock);
+> +#include "smd-rpm.h"
 > +
-> +/**
-> + * struct icc_req - constraints that are attached to each node
-> + *
-> + * @req_node: entry in list of requests for the particular @node
-> + * @node: the interconnect node to which this constraint applies
-> + * @dev: reference to the device that sets the constraints
-> + * @avg_bw: an integer describing the average bandwidth in kbps
-> + * @peak_bw: an integer describing the peak bandwidth in kbps
-> + */
-> +struct icc_req {
-> +	struct hlist_node req_node;
-> +	struct icc_node *node;
-> +	struct device *dev;
-> +	u32 avg_bw;
-> +	u32 peak_bw;
+> +#define RPM_BUS_MASTER_REQ      0x73616d62
+> +#define RPM_BUS_SLAVE_REQ       0x766c7362
+> +
+> +#define to_qcom_provider(_provider) \
+> +	container_of(_provider, struct qcom_icc_provider, provider)
+> +
+> +enum qcom_qos_mode {
+> +	QCOM_QOS_MODE_BYPASS = 0,
+> +	QCOM_QOS_MODE_FIXED,
+> +	QCOM_QOS_MODE_MAX,
 > +};
 > +
+> +struct qcom_icc_provider {
+> +	struct icc_provider	provider;
+> +	void __iomem		*base;
+> +	struct clk		*bus_clk;
+> +	struct clk		*bus_a_clk;
+> +};
+> +
+> +#define MSM8916_MAX_LINKS	8
+> +
 > +/**
-> + * struct icc_path - interconnect path structure
-> + * @num_nodes: number of hops (nodes)
-> + * @reqs: array of the requests applicable to this path of nodes
+> + * struct qcom_icc_node - Qualcomm specific interconnect nodes
+> + * @name: the node name used in debugfs
+> + * @links: an array of nodes where we can go next while traversing
+> + * @id: a unique node identifier
+> + * @num_links: the total number of @links
+> + * @port: the offset index into the masters QoS register space
+> + * @buswidth: width of the interconnect between a node and the bus (bytes)
+> + * @ap_owned: the AP CPU does the writing to QoS registers
+> + * @qos_mode: QoS mode for ap_owned resources
+> + * @mas_rpm_id:	RPM id for devices that are bus masters
+> + * @slv_rpm_id:	RPM id for devices that are bus slaves
+> + * @rate: current bus clock rate in Hz
 > + */
-> +struct icc_path {
+> +struct qcom_icc_node {
+> +	unsigned char *name;
+> +	u16 links[MSM8916_MAX_LINKS];
+> +	u16 id;
+> +	u16 num_links;
+> +	u16 port;
+> +	u16 buswidth;
+> +	bool ap_owned;
+> +	enum qcom_qos_mode qos_mode;
+> +	int mas_rpm_id;
+> +	int slv_rpm_id;
+> +	u64 rate;
+> +};
+> +
+> +struct qcom_icc_desc {
+> +	struct qcom_icc_node **nodes;
 > +	size_t num_nodes;
-> +	struct icc_req reqs[];
 > +};
 > +
-> +static struct icc_node *node_find(const int id)
+> +#define DEFINE_QNODE(_name, _id, _port, _buswidth, _ap_owned,		\
+> +			_mas_rpm_id, _slv_rpm_id, _qos_mode,		\
+> +			_numlinks, ...)					\
+> +		static struct qcom_icc_node _name = {			\
+> +		.id = _id,						\
+> +		.name = #_name,						\
+> +		.port = _port,						\
+> +		.buswidth = _buswidth,					\
+> +		.qos_mode = _qos_mode,					\
+> +		.ap_owned = _ap_owned,					\
+> +		.mas_rpm_id = _mas_rpm_id,				\
+> +		.slv_rpm_id = _slv_rpm_id,				\
+> +		.num_links = _numlinks,					\
+> +		.links = { __VA_ARGS__ },				\
+> +	}
+> +
+> +DEFINE_QNODE(mas_video, MASTER_VIDEO_P0, 8, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
+> +DEFINE_QNODE(mas_jpeg, MASTER_JPEG, 6, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
+> +DEFINE_QNODE(mas_vfe, MASTER_VFE, 9, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_1, SNOC_MM_INT_2);
+> +DEFINE_QNODE(mas_mdp, MASTER_MDP_PORT0, 7, 16, 1, -1, -1, QCOM_QOS_MODE_BYPASS, 2, SNOC_MM_INT_0, SNOC_MM_INT_2);
+> +DEFINE_QNODE(mas_qdss_bam, MASTER_QDSS_BAM, 11, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_QDSS_INT);
+> +DEFINE_QNODE(mas_snoc_cfg, MASTER_SNOC_CFG, 0, 16, 0, 20, -1, QCOM_QOS_MODE_BYPASS, 1, SNOC_QDSS_INT);
+> +DEFINE_QNODE(mas_qdss_etr, MASTER_QDSS_ETR, 10, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_QDSS_INT);
+> +DEFINE_QNODE(mm_int_0, SNOC_MM_INT_0, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_MM_INT_BIMC);
+> +DEFINE_QNODE(mm_int_1, SNOC_MM_INT_1, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_MM_INT_BIMC);
+> +DEFINE_QNODE(mm_int_2, SNOC_MM_INT_2, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_INT_0);
+> +DEFINE_QNODE(mm_int_bimc, SNOC_MM_INT_BIMC, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_1_MAS);
+> +DEFINE_QNODE(snoc_int_0, SNOC_INT_0, 0, 8, 0, 99, 130, QCOM_QOS_MODE_FIXED, 3, SLAVE_QDSS_STM, SLAVE_SYSTEM_IMEM, MNOC_BIMC_MAS);
+> +DEFINE_QNODE(snoc_int_1, SNOC_INT_1, 0, 8, 0, 100, 131, QCOM_QOS_MODE_FIXED, 3, SYSTEM_SLAVE_FAB_APPS, SLAVE_CATS_128, SLAVE_OCMEM_64);
+> +DEFINE_QNODE(snoc_int_bimc, SNOC_INT_BIMC, 0, 8, 0, 101, 132, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_0_MAS);
+> +DEFINE_QNODE(snoc_bimc_0_mas, SNOC_BIMC_0_MAS, 0, 8, 0, 3, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_0_SLV);
+> +DEFINE_QNODE(snoc_bimc_1_mas, SNOC_BIMC_1_MAS, 0, 16, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SNOC_BIMC_1_SLV);
+> +DEFINE_QNODE(qdss_int, SNOC_QDSS_INT, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, SNOC_INT_0, SNOC_INT_BIMC);
+> +DEFINE_QNODE(bimc_snoc_slv, BIMC_SNOC_SLV, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 2, SNOC_INT_0, SNOC_INT_1);
+> +DEFINE_QNODE(snoc_pnoc_mas, MNOC_BIMC_MAS, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, MNOC_BIMC_SLV);
+> +DEFINE_QNODE(pnoc_snoc_slv, PNOC_SNOC_SLV, 0, 8, 0, -1, 45, QCOM_QOS_MODE_FIXED, 3, SNOC_INT_0, SNOC_INT_BIMC, SNOC_INT_1);
+> +DEFINE_QNODE(slv_srvc_snoc, SLAVE_SERVICE_SNOC, 0, 8, 0, -1, 29, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_qdss_stm, SLAVE_QDSS_STM, 0, 4, 0, -1, 30, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_imem, SLAVE_SYSTEM_IMEM, 0, 8, 0, -1, 26, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_apss, SYSTEM_SLAVE_FAB_APPS, 0, 4, 0, -1, 20, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_cats_0, SLAVE_CATS_128, 0, 16, 0, -1, 106, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_cats_1, SLAVE_OCMEM_64, 0, 8, 0, -1, 107, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(mas_apss, MASTER_AMPSS_M0, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
+> +DEFINE_QNODE(mas_tcu0, MASTER_TCU_0, 5, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
+> +DEFINE_QNODE(mas_tcu1, MASTER_TCU_1, 6, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
+> +DEFINE_QNODE(mas_gfx, MASTER_GRAPHICS_3D, 2, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_EBI_CH0, BIMC_SNOC_MAS, SLAVE_AMPSS_L2);
+> +DEFINE_QNODE(bimc_snoc_mas, BIMC_SNOC_MAS, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, BIMC_SNOC_SLV);
+> +DEFINE_QNODE(snoc_bimc_0_slv, SNOC_BIMC_0_SLV, 0, 8, 0, -1, 24, QCOM_QOS_MODE_FIXED, 1, SLAVE_EBI_CH0);
+> +DEFINE_QNODE(snoc_bimc_1_slv, SNOC_BIMC_1_SLV, 0, 8, 1, -1, -1, QCOM_QOS_MODE_FIXED, 1, SLAVE_EBI_CH0);
+> +DEFINE_QNODE(slv_ebi_ch0, SLAVE_EBI_CH0, 0, 8, 0, -1, 0, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_apps_l2, SLAVE_AMPSS_L2, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(snoc_pnoc_slv, MNOC_BIMC_SLV, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_0);
+> +DEFINE_QNODE(pnoc_int_0, PNOC_INT_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 8, PNOC_SNOC_MAS, PNOC_SLV_0, PNOC_SLV_1, PNOC_SLV_2, PNOC_SLV_3, PNOC_SLV_4, PNOC_SLV_8, PNOC_SLV_9);
+> +DEFINE_QNODE(pnoc_int_1, PNOC_INT_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_MAS);
+> +DEFINE_QNODE(pnoc_m_0, PNOC_M_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_0);
+> +DEFINE_QNODE(pnoc_m_1, PNOC_M_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_MAS);
+> +DEFINE_QNODE(pnoc_s_0, PNOC_SLV_0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_CLK_CTL, SLAVE_TLMM, SLAVE_MSM_TCSR, SLAVE_SECURITY, SLAVE_MSS);
+> +DEFINE_QNODE(pnoc_s_1, PNOC_SLV_1, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_IMEM_CFG, SLAVE_CRYPTO_0_CFG, SLAVE_RPM_MSG_RAM, SLAVE_MSM_PDM, SLAVE_PRNG);
+> +DEFINE_QNODE(pnoc_s_2, PNOC_SLV_2, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_SPDM, SLAVE_BOOT_ROM, SLAVE_BIMC_CFG, SLAVE_PNOC_CFG, SLAVE_PMIC_ARB);
+> +DEFINE_QNODE(pnoc_s_3, PNOC_SLV_3, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 5, SLAVE_MPM, SLAVE_IPS_CFG, SLAVE_RBCPR_CFG, SLAVE_QDSS_CFG, SLAVE_DEHR_CFG);
+> +DEFINE_QNODE(pnoc_s_4, PNOC_SLV_4, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_VENUS_CFG, SLAVE_CAMERA_CFG, SLAVE_DISPLAY_CFG);
+> +DEFINE_QNODE(pnoc_s_8, PNOC_SLV_8, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_USB_HS, SLAVE_SDCC_1, SLAVE_BLSP_1);
+> +DEFINE_QNODE(pnoc_s_9, PNOC_SLV_9, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 3, SLAVE_SDCC_4, SLAVE_LPASS, SLAVE_GRAPHICS_3D_CFG);
+> +DEFINE_QNODE(slv_imem_cfg, SLAVE_IMEM_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_crypto_0_cfg, SLAVE_CRYPTO_0_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_msg_ram, SLAVE_RPM_MSG_RAM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_pdm, SLAVE_MSM_PDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_prng, SLAVE_PRNG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_clk_ctl, SLAVE_CLK_CTL, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_mss, SLAVE_MSS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_tlmm, SLAVE_TLMM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_tcsr, SLAVE_MSM_TCSR, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_security, SLAVE_SECURITY, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_spdm, SLAVE_SPDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_pnoc_cfg, SLAVE_PNOC_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_pmic_arb, SLAVE_PMIC_ARB, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_bimc_cfg, SLAVE_BIMC_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_boot_rom, SLAVE_BOOT_ROM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_mpm, SLAVE_MPM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_qdss_cfg, SLAVE_QDSS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_rbcpr_cfg, SLAVE_RBCPR_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_snoc_cfg, SLAVE_IPS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_dehr_cfg, SLAVE_DEHR_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_venus_cfg, SLAVE_VENUS_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_display_cfg, SLAVE_DISPLAY_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_camera_cfg, SLAVE_CAMERA_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_usb_hs, SLAVE_USB_HS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_sdcc_1, SLAVE_SDCC_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_blsp_1, SLAVE_BLSP_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_sdcc_2, SLAVE_SDCC_4, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_gfx_cfg, SLAVE_GRAPHICS_3D_CFG, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(slv_audio, SLAVE_LPASS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 0, 0);
+> +DEFINE_QNODE(mas_blsp_1, MASTER_BLSP_1, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_1);
+> +DEFINE_QNODE(mas_spdm, MASTER_SPDM, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
+> +DEFINE_QNODE(mas_dehr, MASTER_DEHR, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
+> +DEFINE_QNODE(mas_audio, MASTER_LPASS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_0);
+> +DEFINE_QNODE(mas_usb_hs, MASTER_USB_HS, 0, 4, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_M_1);
+> +DEFINE_QNODE(mas_pnoc_crypto_0, MASTER_CRYPTO_CORE0, 0, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
+> +DEFINE_QNODE(mas_pnoc_sdcc_1, MASTER_SDCC_1, 7, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
+> +DEFINE_QNODE(mas_pnoc_sdcc_2, MASTER_SDCC_2, 8, 8, 0, -1, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_INT_1);
+> +DEFINE_QNODE(pnoc_snoc_mas, PNOC_SNOC_MAS, 0, 8, 0, 29, -1, QCOM_QOS_MODE_FIXED, 1, PNOC_SNOC_SLV);
+> +
+> +static struct qcom_icc_node *msm8916_snoc_nodes[] = {
+> +	&mas_video,
+> +	&mas_jpeg,
+> +	&mas_vfe,
+> +	&mas_mdp,
+> +	&mas_qdss_bam,
+> +	&mas_snoc_cfg,
+> +	&mas_qdss_etr,
+> +	&mm_int_0,
+> +	&mm_int_1,
+> +	&mm_int_2,
+> +	&mm_int_bimc,
+> +	&snoc_int_0,
+> +	&snoc_int_1,
+> +	&snoc_int_bimc,
+> +	&snoc_bimc_0_mas,
+> +	&snoc_bimc_1_mas,
+> +	&qdss_int,
+> +	&bimc_snoc_slv,
+> +	&snoc_pnoc_mas,
+> +	&pnoc_snoc_slv,
+> +	&slv_srvc_snoc,
+> +	&slv_qdss_stm,
+> +	&slv_imem,
+> +	&slv_apss,
+> +	&slv_cats_0,
+> +	&slv_cats_1,
+> +};
+> +
+> +static struct qcom_icc_desc msm8916_snoc = {
+> +	.nodes = msm8916_snoc_nodes,
+> +	.num_nodes = ARRAY_SIZE(msm8916_snoc_nodes),
+> +};
+> +
+> +static struct qcom_icc_node *msm8916_bimc_nodes[] = {
+> +	&mas_apss,
+> +	&mas_tcu0,
+> +	&mas_tcu1,
+> +	&mas_gfx,
+> +	&bimc_snoc_mas,
+> +	&snoc_bimc_0_slv,
+> +	&snoc_bimc_1_slv,
+> +	&slv_ebi_ch0,
+> +	&slv_apps_l2,
+> +};
+> +
+> +static struct qcom_icc_desc msm8916_bimc = {
+> +	.nodes = msm8916_bimc_nodes,
+> +	.num_nodes = ARRAY_SIZE(msm8916_bimc_nodes),
+> +};
+> +
+> +static struct qcom_icc_node *msm8916_pnoc_nodes[] = {
+> +	&snoc_pnoc_slv,
+> +	&pnoc_int_0,
+> +	&pnoc_int_1,
+> +	&pnoc_m_0,
+> +	&pnoc_m_1,
+> +	&pnoc_s_0,
+> +	&pnoc_s_1,
+> +	&pnoc_s_2,
+> +	&pnoc_s_3,
+> +	&pnoc_s_4,
+> +	&pnoc_s_8,
+> +	&pnoc_s_9,
+> +	&slv_imem_cfg,
+> +	&slv_crypto_0_cfg,
+> +	&slv_msg_ram,
+> +	&slv_pdm,
+> +	&slv_prng,
+> +	&slv_clk_ctl,
+> +	&slv_mss,
+> +	&slv_tlmm,
+> +	&slv_tcsr,
+> +	&slv_security,
+> +	&slv_spdm,
+> +	&slv_pnoc_cfg,
+> +	&slv_pmic_arb,
+> +	&slv_bimc_cfg,
+> +	&slv_boot_rom,
+> +	&slv_mpm,
+> +	&slv_qdss_cfg,
+> +	&slv_rbcpr_cfg,
+> +	&slv_snoc_cfg,
+> +	&slv_dehr_cfg,
+> +	&slv_venus_cfg,
+> +	&slv_display_cfg,
+> +	&slv_camera_cfg,
+> +	&slv_usb_hs,
+> +	&slv_sdcc_1,
+> +	&slv_blsp_1,
+> +	&slv_sdcc_2,
+> +	&slv_gfx_cfg,
+> +	&slv_audio,
+> +	&mas_blsp_1,
+> +	&mas_spdm,
+> +	&mas_dehr,
+> +	&mas_audio,
+> +	&mas_usb_hs,
+> +	&mas_pnoc_crypto_0,
+> +	&mas_pnoc_sdcc_1,
+> +	&mas_pnoc_sdcc_2,
+> +	&pnoc_snoc_mas,
+> +};
+> +
+> +static struct qcom_icc_desc msm8916_pnoc = {
+> +	.nodes = msm8916_pnoc_nodes,
+> +	.num_nodes = ARRAY_SIZE(msm8916_pnoc_nodes),
+> +};
+> +
+> +static int qcom_icc_aggregate(struct icc_node *node, u32 avg_bw, u32 peak_bw,
+> +			      u32 *agg_avg, u32 *agg_peak)
 > +{
-> +	return idr_find(&icc_idr, id);
+> +	*agg_avg += avg_bw;
+> +	*agg_peak = max(*agg_peak, peak_bw);
+> +
+> +	return 0;
 > +}
 > +
-> +static struct icc_path *path_init(struct device *dev, struct icc_node *dst,
-> +				  ssize_t num_nodes)
+> +static int qcom_icc_set(struct icc_node *src, struct icc_node *dst,
+> +			u32 avg, u32 peak)
 > +{
-> +	struct icc_node *node = dst;
-> +	struct icc_path *path;
-> +	size_t i;
+> +	struct qcom_icc_provider *qp;
+> +	struct qcom_icc_node *qn;
+> +	struct icc_node *node;
+> +	struct icc_provider *provider;
+> +	u64 avg_bw = icc_units_to_bps(avg);
+> +	u64 peak_bw = icc_units_to_bps(peak);
+> +	u64 rate = 0;
+> +	int ret = 0;
 > +
-> +	path = kzalloc(struct_size(path, reqs, num_nodes), GFP_KERNEL);
-> +	if (!path)
-> +		return ERR_PTR(-ENOMEM);
+> +	if (!src)
+NIT: I think that src can't be NULL (there is a if statement to avoid it
+in apply_constraints()).
+> +		node = dst;
+> +	else
+> +		node = src;
 > +
-> +	path->num_nodes = num_nodes;
+> +	qn = node->data;
+> +	provider = node->provider;
+> +	qp = to_qcom_provider(node->provider);
+> +
+> +	/* set bandwidth */
+> +	if (qn->ap_owned) {
+> +		/* TODO: set QoS */
+> +	} else {
+> +		/* send message to the RPM processor */
+> +		if (qn->mas_rpm_id != -1) {
+> +			ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
+> +						    RPM_BUS_MASTER_REQ,
+> +						    qn->mas_rpm_id,
+> +						    avg_bw);
+> +			if (ret) {
+> +				pr_err("qcom_icc_rpm_smd_send mas error %d\n",
+> +				       ret);
+> +				return ret;
+> +			}
+> +		}
+> +
+> +		if (qn->slv_rpm_id != -1) {
+> +			ret = qcom_icc_rpm_smd_send(QCOM_SMD_RPM_ACTIVE_STATE,
+> +						    RPM_BUS_SLAVE_REQ,
+> +						    qn->slv_rpm_id,
+> +						    avg_bw);
+> +			if (ret) {
+> +				pr_err("qcom_icc_rpm_smd_send slv error %d\n",
+> +				       ret);
+> +				return ret;
+> +			}
+> +		}
+> +	}
+> +
+> +	rate = max(avg_bw, peak_bw);
+> +
+> +	do_div(rate, qn->buswidth);
+> +
+> +	if (qn->rate != rate) {
+> +		ret = clk_set_rate(qp->bus_clk, rate);
+> +		if (ret) {
+> +			pr_err("set clk rate %lld error %d\n", rate, ret);
+> +			return ret;
+> +		}
+> +
+> +		ret = clk_set_rate(qp->bus_a_clk, rate);
+> +		if (ret) {
+> +			pr_err("set clk rate %lld error %d\n", rate, ret);
+> +			return ret;
+> +		}
+> +
+> +		qn->rate = rate;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int qnoc_probe(struct platform_device *pdev)
+> +{
+> +	const struct qcom_icc_desc *desc;
+> +	struct qcom_icc_node **qnodes;
+> +	struct icc_node *node;
+> +	struct qcom_icc_provider *qp;
+> +	struct resource *res;
+> +	struct icc_provider *provider;
+> +	size_t num_nodes, i;
+> +	int ret;
+> +
+> +	/* wait for RPM */
+> +	if (!qcom_icc_rpm_smd_available())
+> +		return -EPROBE_DEFER;
+> +
+> +	desc = of_device_get_match_data(&pdev->dev);
+> +	if (!desc)
+> +		return -EINVAL;
+> +
+> +	qnodes = desc->nodes;
+> +	num_nodes = desc->num_nodes;
+> +
+> +	qp = devm_kzalloc(&pdev->dev, sizeof(*qp), GFP_KERNEL);
+> +	if (!qp)
+> +		return -ENOMEM;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	qp->base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(qp->base))
+> +		return PTR_ERR(qp->base);
+> +
+> +	qp->bus_clk = devm_clk_get(&pdev->dev, "bus_clk");
+> +	if (IS_ERR(qp->bus_clk))
+> +		return PTR_ERR(qp->bus_clk);
+> +
+> +	ret = clk_prepare_enable(qp->bus_clk);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "error enabling bus_clk: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	qp->bus_a_clk = devm_clk_get(&pdev->dev, "bus_a_clk");
+> +	if (IS_ERR(qp->bus_a_clk))
+> +		return PTR_ERR(qp->bus_a_clk);
+> +
+> +	ret = clk_prepare_enable(qp->bus_a_clk);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "error enabling bus_a_clk: %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	provider = &qp->provider;
+> +	provider->dev = &pdev->dev;
+> +	provider->set = &qcom_icc_set;
+> +	provider->aggregate = &qcom_icc_aggregate;
+> +	INIT_LIST_HEAD(&provider->nodes);
+> +	provider->data = qp;
+> +
+> +	ret = icc_provider_add(provider);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "error adding interconnect provider\n");
+> +		return ret;
+> +	}
 > +
 > +	for (i = 0; i < num_nodes; i++) {
-> +		hlist_add_head(&path->reqs[i].req_node, &node->req_list);
+> +		int ret;
+> +		size_t j;
 > +
-> +		path->reqs[i].node = node;
-> +		path->reqs[i].dev = dev;
-> +		/* reference to previous node was saved during path traversal */
-> +		node = node->reverse;
+> +		node = icc_node_create(qnodes[i]->id);
+> +		if (IS_ERR(node)) {
+> +			ret = PTR_ERR(node);
+> +			goto err;
+> +		}
+> +
+> +		node->name = qnodes[i]->name;
+> +		node->data = qnodes[i];
+> +		icc_node_add(node, provider);
+> +
+> +		dev_dbg(&pdev->dev, "registered node %s\n", node->name);
+> +
+> +		/* populate links */
+> +		for (j = 0; j < qnodes[i]->num_links; j++)
+> +			if (qnodes[i]->links[j])
+> +				icc_link_create(node, qnodes[i]->links[j]);
 > +	}
 > +
-> +	return path;
-> +}
+> +	platform_set_drvdata(pdev, provider);
 > +
-> +static struct icc_path *path_find(struct device *dev, struct icc_node *src,
-> +				  struct icc_node *dst)
-> +{
-> +	struct icc_node *n, *node = NULL;
-> +	struct icc_provider *provider;
-> +	struct list_head traverse_list;
-> +	struct list_head edge_list;
-> +	struct list_head visited_list;
-> +	size_t i, depth = 1;
-> +	bool found = false;
-> +	int ret = -EPROBE_DEFER;
-> +
-> +	INIT_LIST_HEAD(&traverse_list);
-> +	INIT_LIST_HEAD(&edge_list);
-> +	INIT_LIST_HEAD(&visited_list);
-> +
-> +	list_add_tail(&src->search_list, &traverse_list);
-> +	src->reverse = NULL;
-> +
-> +	do {
-> +		list_for_each_entry_safe(node, n, &traverse_list, search_list) {
-> +			if (node == dst) {
-> +				found = true;
-> +				list_add(&node->search_list, &visited_list);
-> +				break;
-> +			}
-> +			for (i = 0; i < node->num_links; i++) {
-> +				struct icc_node *tmp = node->links[i];
-> +
-> +				if (!tmp) {
-> +					ret = -ENOENT;
-> +					goto out;
-> +				}
-> +
-> +				if (tmp->is_traversed)
-> +					continue;
-> +
-> +				tmp->is_traversed = true;
-> +				tmp->reverse = node;
-> +				list_add(&tmp->search_list, &edge_list);
-> +			}
-> +		}
-> +		if (found)
-> +			break;
-> +
-> +		list_splice_init(&traverse_list, &visited_list);
-> +		list_splice_init(&edge_list, &traverse_list);
-> +
-> +		/* count the hops including the source */
-> +		depth++;
-> +
-> +	} while (!list_empty(&traverse_list));
-> +
-> +out:
-> +	/* reset the traversed state */
-> +	list_for_each_entry(provider, &icc_provider_list, provider_list)
-> +		list_for_each_entry(n, &provider->nodes, node_list)
-> +			n->is_traversed = false;
-> +
-> +	if (found) {
-> +		struct icc_path *path = path_init(dev, dst, depth);
-> +
-> +		if (IS_ERR(path))
-> +			return path;
-> +
-> +		for (i = 0; i < path->num_nodes; i++) {
-> +			node = path->reqs[i].node;
-> +			node->provider->users++;
-> +		}
-> +		return path;
+> +	return ret;
+> +err:
+> +	list_for_each_entry(node, &provider->nodes, node_list) {
+> +		icc_node_del(node);
+> +		icc_node_destroy(node->id);
 > +	}
+> +	icc_provider_del(provider);
 > +
-> +	return ERR_PTR(ret);
+> +	return ret;
 > +}
 > +
-> +/*
-> + * We want the path to honor all bandwidth requests, so the average
-> + * bandwidth requirements from each consumer are aggregated at each node
-> + * and provider level. By default the average bandwidth is the sum of all
-> + * averages and the peak will be the highest of all peak bandwidth requests.
-> + */
-> +
-> +static int aggregate_requests(struct icc_node *node)
+> +static int qnoc_remove(struct platform_device *pdev)
 > +{
-> +	struct icc_provider *p = node->provider;
-> +	struct icc_req *r;
-> +
-> +	node->avg_bw = 0;
-> +	node->peak_bw = 0;
-> +
-> +	hlist_for_each_entry(r, &node->req_list, req_node)
-> +		p->aggregate(node, r->avg_bw, r->peak_bw,
-> +			     &node->avg_bw, &node->peak_bw);
-> +
-> +	return 0;
-> +}
-> +
-> +static void aggregate_provider(struct icc_provider *p)
-> +{
+> +	struct icc_provider *provider = platform_get_drvdata(pdev);
 > +	struct icc_node *n;
 > +
-> +	p->avg_bw = 0;
-> +	p->peak_bw = 0;
-> +
-> +	list_for_each_entry(n, &p->nodes, node_list)
-> +		p->aggregate(n, n->avg_bw, n->peak_bw,
-> +			     &p->avg_bw, &p->peak_bw);
-> +}
-> +
-> +static int apply_constraints(struct icc_path *path)
-> +{
-> +	struct icc_node *next, *prev = NULL;
-> +	int ret;
-> +	int i;
-> +
-> +	for (i = 0; i < path->num_nodes; i++, prev = next) {
-> +		struct icc_provider *p;
-> +
-> +		next = path->reqs[i].node;
-> +		/*
-> +		 * Both endpoints should be valid master-slave pairs of the
-> +		 * same interconnect provider that will be configured.
-> +		 */
-> +		if (!prev || next->provider != prev->provider)
-> +			continue;
-> +
-> +		p = next->provider;
-> +
-> +		aggregate_provider(p);
-> +
-> +		/* set the constraints */
-> +		ret = p->set(prev, next, p->avg_bw, p->peak_bw);
-> +		if (ret)
-> +			goto out;
-> +	}
-> +out:
-> +	return ret;
-> +}
-> +
-> +/**
-> + * icc_set() - set constraints on an interconnect path between two endpoints
-> + * @path: reference to the path returned by icc_get()
-> + * @avg_bw: average bandwidth in kbps
-> + * @peak_bw: peak bandwidth in kbps
-> + *
-> + * This function is used by an interconnect consumer to express its own needs
-> + * in terms of bandwidth for a previously requested path between two endpoints.
-> + * The requests are aggregated and each node is updated accordingly. The entire
-> + * path is locked by a mutex to ensure that the set() is completed.
-> + * The @path can be NULL when the "interconnects" DT properties is missing,
-> + * which will mean that no constraints will be set.
-> + *
-> + * Returns 0 on success, or an appropriate error code otherwise.
-> + */
-> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
-> +{
-> +	struct icc_node *node;
-> +	struct icc_provider *p;
-> +	size_t i;
-> +	int ret;
-> +
-> +	if (!path)
-> +		return 0;
-> +
-> +	mutex_lock(&icc_lock);
-> +
-> +	for (i = 0; i < path->num_nodes; i++) {
-> +		node = path->reqs[i].node;
-> +		p = node->provider;
-> +
-> +		/* update the consumer request for this path */
-> +		path->reqs[i].avg_bw = avg_bw;
-> +		path->reqs[i].peak_bw = peak_bw;
-> +
-> +		/* aggregate requests for this node */
-> +		aggregate_requests(node);
+> +	list_for_each_entry(n, &provider->nodes, node_list) {
+> +		icc_node_del(n);
+> +		icc_node_destroy(n->id);
 > +	}
 > +
-> +	ret = apply_constraints(path);
-> +	if (ret)
-> +		pr_err("interconnect: error applying constraints (%d)", ret);
-> +
-> +	mutex_unlock(&icc_lock);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_set);
-> +
-> +/**
-> + * icc_get() - return a handle for path between two endpoints
-> + * @dev: the device requesting the path
-> + * @src_id: source device port id
-> + * @dst_id: destination device port id
-> + *
-> + * This function will search for a path between two endpoints and return an
-> + * icc_path handle on success. Use icc_put() to release
-> + * constraints when the they are not needed anymore.
-> + *
-> + * Return: icc_path pointer on success, or ERR_PTR() on error
-> + */
-> +struct icc_path *icc_get(struct device *dev, const int src_id, const int dst_id)
-> +{
-> +	struct icc_node *src, *dst;
-> +	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
-> +
-> +	mutex_lock(&icc_lock);
-> +
-> +	src = node_find(src_id);
-> +	if (!src)
-> +		goto out;
-> +
-> +	dst = node_find(dst_id);
-> +	if (!dst)
-> +		goto out;
-> +
-> +	path = path_find(dev, src, dst);
-> +	if (IS_ERR(path))
-> +		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
-> +
-> +out:
-> +	mutex_unlock(&icc_lock);
-> +	return path;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_get);
-> +
-> +/**
-> + * icc_put() - release the reference to the icc_path
-> + * @path: interconnect path
-> + *
-> + * Use this function to release the constraints on a path when the path is
-> + * no longer needed. The constraints will be re-aggregated.
-> + */
-> +void icc_put(struct icc_path *path)
-> +{
-> +	struct icc_node *node;
-> +	size_t i;
-> +	int ret;
-> +
-> +	if (!path || WARN_ON(IS_ERR(path)))
-> +		return;
-> +
-> +	ret = icc_set(path, 0, 0);
-> +	if (ret)
-> +		pr_err("%s: error (%d)\n", __func__, ret);
-> +
-> +	mutex_lock(&icc_lock);
-> +	for (i = 0; i < path->num_nodes; i++) {
-> +		node = path->reqs[i].node;
-> +		hlist_del(&path->reqs[i].req_node);
-> +
-> +		node->provider->users--;
-> +	}
-> +	mutex_unlock(&icc_lock);
-> +
-> +	kfree(path);
-> +}
-> +EXPORT_SYMBOL_GPL(icc_put);
-> +
-> +static struct icc_node *icc_node_create_nolock(int id)
-> +{
-> +	struct icc_node *node;
-> +
-> +	/* check if node already exists */
-> +	node = node_find(id);
-> +	if (node)
-> +		goto out;
-> +
-> +	node = kzalloc(sizeof(*node), GFP_KERNEL);
-> +	if (!node) {
-> +		node = ERR_PTR(-ENOMEM);
-> +		goto out;
-> +	}
-> +
-> +	id = idr_alloc(&icc_idr, node, id, id + 1, GFP_KERNEL);
-> +	if (WARN(id < 0, "couldn't get idr")) {
-> +		kfree(node);
-> +		node = ERR_PTR(id);
-> +		goto out;
-> +	}
-> +
-> +	node->id = id;
-> +
-> +out:
-> +	return node;
+> +	return icc_provider_del(provider);
 > +}
 > +
-> +/**
-> + * icc_node_create() - create a node
-> + * @id: node id
-> + *
-> + * Return: icc_node pointer on success, or ERR_PTR() on error
-> + */
-> +struct icc_node *icc_node_create(int id)
-> +{
-> +	struct icc_node *node;
+> +static const struct of_device_id qnoc_of_match[] = {
+> +	{ .compatible = "qcom,msm8916-pnoc", .data = &msm8916_pnoc },
+> +	{ .compatible = "qcom,msm8916-snoc", .data = &msm8916_snoc },
+> +	{ .compatible = "qcom,msm8916-bimc", .data = &msm8916_bimc },
+> +	{ },
+> +};
+> +MODULE_DEVICE_TABLE(of, qnoc_of_match);
 > +
-> +	mutex_lock(&icc_lock);
-> +
-> +	node = icc_node_create_nolock(id);
-> +
-> +	mutex_unlock(&icc_lock);
-> +
-> +	return node;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_node_create);
-> +
-> +/**
-> + * icc_node_destroy() - destroy a node
-> + * @id: node id
-> + *
-> + */
-> +void icc_node_destroy(int id)
-> +{
-> +	struct icc_node *node;
-> +
-> +	node = node_find(id);
-> +	if (node) {
-> +		mutex_lock(&icc_lock);
-> +		idr_remove(&icc_idr, node->id);
-> +		WARN_ON(!hlist_empty(&node->req_list));
-> +		mutex_unlock(&icc_lock);
-> +	}
-> +
-> +	kfree(node);
-> +}
-> +EXPORT_SYMBOL_GPL(icc_node_destroy);
-> +
-> +/**
-> + * icc_link_create() - create a link between two nodes
-> + * @src_id: source node id
-> + * @dst_id: destination node id
-> + *
-> + * Create a link between two nodes. The nodes might belong to different
-> + * interconnect providers and the @dst_id node might not exist (if the
-> + * provider driver has not probed yet). So just create the @dst_id node
-> + * and when the actual provider driver is probed, the rest of the node
-> + * data is filled.
-> + *
-> + * Return: 0 on success, or an error code otherwise
-> + */
-> +int icc_link_create(struct icc_node *node, const int dst_id)
-> +{
-> +	struct icc_node *dst;
-> +	struct icc_node **new;
-> +	int ret = 0;
-> +
-> +	if (!node->provider)
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&icc_lock);
-> +
-> +	dst = node_find(dst_id);
-> +	if (!dst) {
-> +		dst = icc_node_create_nolock(dst_id);
-> +
-> +		if (IS_ERR(dst)) {
-> +			ret = PTR_ERR(dst);
-> +			goto out;
-> +		}
-> +	}
-> +
-> +	new = krealloc(node->links,
-> +		       (node->num_links + 1) * sizeof(*node->links),
-> +		       GFP_KERNEL);
-> +	if (!new) {
-> +		ret = -ENOMEM;
-> +		goto out;
-> +	}
-> +
-> +	node->links = new;
-> +	node->links[node->num_links++] = dst;
-> +
-> +out:
-> +	mutex_unlock(&icc_lock);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_link_create);
-> +
-> +/**
-> + * icc_link_destroy() - destroy a link between two nodes
-> + * @src: pointer to source node
-> + * @dst: pointer to destination node
-> + *
-> + * Return: 0 on success, or an error code otherwise
-> + */
-> +int icc_link_destroy(struct icc_node *src, struct icc_node *dst)
-> +{
-> +	struct icc_node **new;
-> +	struct icc_node *last;
-> +	int ret = 0;
-> +	size_t slot;
-> +
-> +	if (IS_ERR_OR_NULL(src))
-> +		return -EINVAL;
-> +
-> +	if (IS_ERR_OR_NULL(dst))
-> +		return -EINVAL;
-> +
-> +	mutex_lock(&icc_lock);
-> +
-> +	for (slot = 0; slot < src->num_links; slot++)
-> +		if (src->links[slot] == dst)
-> +			break;
-> +
-> +	last = src->links[src->num_links];
-> +
-> +	new = krealloc(src->links,
-> +		       (src->num_links - 1) * sizeof(*src->links),
-> +		       GFP_KERNEL);
-> +	if (!new) {
-> +		ret = -ENOMEM;
-> +		goto out;
-> +	}
-> +
-> +	src->links = new;
-> +
-> +	if (slot < src->num_links - 1)
-> +		/* move the last element to the slot that was freed */
-> +		src->links[slot] = last;
-> +
-> +	src->num_links--;
-> +
-> +out:
-> +	mutex_unlock(&icc_lock);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_link_destroy);
-> +
-> +/**
-> + * icc_node_add() - add interconnect node to interconnect provider
-> + * @node: pointer to the interconnect node
-> + * @provider: pointer to the interconnect provider
-> + *
-> + */
-> +void icc_node_add(struct icc_node *node, struct icc_provider *provider)
-> +{
-> +	mutex_lock(&icc_lock);
-> +
-> +	node->provider = provider;
-> +	list_add(&node->node_list, &provider->nodes);
-> +
-> +	mutex_unlock(&icc_lock);
-> +}
-> +EXPORT_SYMBOL_GPL(icc_node_add);
-> +
-> +/**
-> + * icc_node_del() - delete interconnect node from interconnect provider
-> + * @node: pointer to the interconnect node
-> + *
-> + */
-> +void icc_node_del(struct icc_node *node)
-> +{
-> +	mutex_lock(&icc_lock);
-> +
-> +	list_del(&node->node_list);
-> +
-> +	mutex_unlock(&icc_lock);
-> +}
-> +EXPORT_SYMBOL_GPL(icc_node_del);
-> +
-> +/**
-> + * icc_provider_add() - add a new interconnect provider
-> + * @icc_provider: the interconnect provider that will be added into topology
-> + *
-> + * Return: 0 on success, or an error code otherwise
-> + */
-> +int icc_provider_add(struct icc_provider *provider)
-> +{
-> +	if (WARN_ON(!provider->set))
-> +		return -EINVAL;I think you should also check provider->aggregate here.
-> +
-> +	mutex_lock(&icc_lock);
-> +
-> +	INIT_LIST_HEAD(&provider->nodes);
-> +	list_add(&provider->provider_list, &icc_provider_list);
-> +
-> +	mutex_unlock(&icc_lock);
-> +
-> +	dev_dbg(provider->dev, "interconnect provider added to topology\n");
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_provider_add);
-> +
-> +/**
-> + * icc_provider_del() - delete previously added interconnect provider
-> + * @icc_provider: the interconnect provider that will be removed from topology
-> + *
-> + * Return: 0 on success, or an error code otherwise
-> + */
-> +int icc_provider_del(struct icc_provider *provider)
-> +{
-> +	mutex_lock(&icc_lock);
-> +	if (provider->users) {
-> +		pr_warn("interconnect provider still has %d users\n",
-> +			provider->users);
-> +		mutex_unlock(&icc_lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	if (!list_empty(&provider->nodes)) {
-> +		pr_warn("interconnect provider still has nodes\n");
-> +		mutex_unlock(&icc_lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	list_del(&provider->provider_list);
-> +	mutex_unlock(&icc_lock);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(icc_provider_del);
-> +
-> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org");
-> +MODULE_DESCRIPTION("Interconnect Driver Core");
+> +static struct platform_driver qnoc_driver = {
+> +	.probe = qnoc_probe,
+> +	.remove = qnoc_remove,
+> +	.driver = {
+> +		.name = "qnoc-msm8916",
+> +		.of_match_table = qnoc_of_match,
+> +	},
+> +};
+> +module_platform_driver(qnoc_driver);
+> +MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org>");
+> +MODULE_DESCRIPTION("Qualcomm msm8916 NoC driver");
 > +MODULE_LICENSE("GPL v2");
-> diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-> new file mode 100644
-> index 000000000000..c78aa930bcab
-> --- /dev/null
-> +++ b/include/linux/interconnect-provider.h
-> @@ -0,0 +1,130 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Copyright (c) 2018, Linaro Ltd.
-> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
-> + */
-> +
-> +#ifndef _LINUX_INTERCONNECT_PROVIDER_H
-> +#define _LINUX_INTERCONNECT_PROVIDER_H
-> +
-> +#include <linux/interconnect.h>
-> +
-> +#define icc_units_to_bps(bw)  ((bw) * 1000ULL)
-> +
-> +struct icc_node;
-> +
-> +/**
-> + * struct icc_provider - interconnect provider (controller) entity that might
-> + * provide multiple interconnect controls
-> + *
-> + * @provider_list: list of the registered interconnect providers
-> + * @nodes: internal list of the interconnect provider nodes
-> + * @set: pointer to device specific set operation function
-> + * @aggregate: pointer to device specific aggregate operation function
-> + * @dev: the device this interconnect provider belongs to
-> + * @users: count of active users
-> + * @avg_bw: aggregated value of average bandwidth requests from all nodes
-> + * @peak_bw: aggregated value of peak bandwidth requests from all nodes
-> + * @data: pointer to private data
-> + */
-> +struct icc_provider {
-> +	struct list_head	provider_list;
-> +	struct list_head	nodes;
-> +	int (*set)(struct icc_node *src, struct icc_node *dst,
-> +		   u32 avg_bw, u32 peak_bw);
-> +	int (*aggregate)(struct icc_node *node, u32 avg_bw, u32 peak_bw,
-> +			 u32 *agg_avg, u32 *agg_peak);
-> +	struct device		*dev;
-> +	int			users;
-> +	u32			avg_bw;
-> +	u32			peak_bw;
-> +	void			*data;
-> +};
-> +
-> +/**
-> + * struct icc_node - entity that is part of the interconnect topology
-> + *
-> + * @id: platform specific node id
-> + * @name: node name used in debugfs
-> + * @links: a list of targets pointing to where we can go next when traversing
-> + * @num_links: number of links to other interconnect nodes
-> + * @provider: points to the interconnect provider of this node
-> + * @node_list: the list entry in the parent provider's "nodes" list
-> + * @search_list: list used when walking the nodes graph
-> + * @reverse: pointer to previous node when walking the nodes graph
-> + * @is_traversed: flag that is used when walking the nodes graph
-> + * @req_list: a list of QoS constraint requests associated with this node
-> + * @avg_bw: aggregated value of average bandwidth requests from all consumers
-> + * @peak_bw: aggregated value of peak bandwidth requests from all consumers
-> + * @data: pointer to private data
-> + */
-> +struct icc_node {
-> +	int			id;
-> +	const char              *name;
-> +	struct icc_node		**links;
-> +	size_t			num_links;
-> +
-> +	struct icc_provider	*provider;
-> +	struct list_head	node_list;
-> +	struct list_head	search_list;
-> +	struct icc_node		*reverse;
-> +	bool			is_traversed;
-> +	struct hlist_head	req_list;
-> +	u32			avg_bw;
-> +	u32			peak_bw;
-> +	void			*data;
-> +};
-> +
-> +#if IS_ENABLED(CONFIG_INTERCONNECT)
-> +
-> +struct icc_node *icc_node_create(int id);
-> +void icc_node_destroy(int id);
-> +int icc_link_create(struct icc_node *node, const int dst_id);
-> +int icc_link_destroy(struct icc_node *src, struct icc_node *dst);
-> +void icc_node_add(struct icc_node *node, struct icc_provider *provider);
-> +void icc_node_del(struct icc_node *node);
-> +int icc_provider_add(struct icc_provider *provider);
-> +int icc_provider_del(struct icc_provider *provider);
-> +
-> +#else
-> +
-> +static inline struct icc_node *icc_node_create(int id)
-> +{
-> +	return ERR_PTR(-ENOTSUPP);
-> +}
-> +
-> +void icc_node_destroy(int id)
-> +{
-> +}
-> +
-> +static inline int icc_link_create(struct icc_node *node, const int dst_id)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +
-> +int icc_link_destroy(struct icc_node *src, struct icc_node *dst)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +
-> +void icc_node_add(struct icc_node *node, struct icc_provider *provider)
-> +{
-> +}
-> +
-> +void icc_node_del(struct icc_node *node)
-> +{
-> +}
-> +
-> +static inline int icc_provider_add(struct icc_provider *provider)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +
-> +static inline int icc_provider_del(struct icc_provider *provider)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +
-> +#endif /* CONFIG_INTERCONNECT */
-> +
-> +#endif /* _LINUX_INTERCONNECT_PROVIDER_H */
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-> new file mode 100644
-> index 000000000000..593215371fd6
-> --- /dev/null
-> +++ b/include/linux/interconnect.h
-> @@ -0,0 +1,42 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Copyright (c) 2018, Linaro Ltd.
-> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
-> + */
-> +
-> +#ifndef _LINUX_INTERCONNECT_H
-> +#define _LINUX_INTERCONNECT_H
-> +
-> +#include <linux/mutex.h>
-> +#include <linux/types.h>
-> +
-> +struct icc_path;
-> +struct device;
-> +
-> +#if IS_ENABLED(CONFIG_INTERCONNECT)
-> +
-> +struct icc_path *icc_get(struct device *dev, const int src_id,
-> +			 const int dst_id);
-> +void icc_put(struct icc_path *path);
-> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
-> +
-> +#else
-> +
-> +static inline struct icc_path *icc_get(struct device *dev, const int src_id,
-> +				       const int dst_id)
-> +{
-> +	return NULL;
-> +}
-> +
-> +static inline void icc_put(struct icc_path *path)
-> +{
-> +}
-> +
-> +static inline int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
-> +{
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_INTERCONNECT */
-> +
-> +#endif /* _LINUX_INTERCONNECT_H */
 > 
