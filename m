@@ -1,76 +1,41 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 2/4] iommu/arm-smmu: Invoke pm_runtime
- during probe, add/remove device
-Date: Wed, 11 Jul 2018 17:00:14 +0530
-Message-ID: <1bc641d5-a5d0-e459-57cf-07b6b7e055f4@codeaurora.org>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-3-vivek.gautam@codeaurora.org>
- <1694664.FhRBrgajmF@aspire.rjw.lan>
- <CAAFQd5COVfXRBuq2ofHoOvNb+cMVmAFDaekh5KM4DBB1ZEf5pA@mail.gmail.com>
- <CAJZ5v0hMQJQ0Z-H2OLaeCdT+-MW_eSWmg7saVzkpDqJ-=i3DnQ@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH v3 0/2] Fix imx6sl display power domain
+Date: Wed, 11 Jul 2018 15:11:15 +0300
+Message-ID: <cover.1531310547.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAJZ5v0hMQJQ0Z-H2OLaeCdT+-MW_eSWmg7saVzkpDqJ-=i3DnQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-CgpPbiA3LzExLzIwMTggNDoyOSBQTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24gV2Vk
-LCBKdWwgMTEsIDIwMTggYXQgMTI6MDUgUE0sIFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5v
-cmc+IHdyb3RlOgo+PiBIaSBSYWZhZWwsCj4+Cj4+IFRoYW5rcyBmb3IgcmV2aWV3Lgo+Pgo+PiBP
-biBXZWQsIEp1bCAxMSwgMjAxOCBhdCA2OjUzIFBNIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3
-eXNvY2tpLm5ldD4gd3JvdGU6Cj4+PiBPbiBTdW5kYXksIEp1bHkgOCwgMjAxOCA3OjM0OjExIFBN
-IENFU1QgVml2ZWsgR2F1dGFtIHdyb3RlOgo+Pj4+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFy
-YW5AY29kZWF1cm9yYS5vcmc+Cj4+Pj4KPj4+PiBUaGUgc21tdSBkZXZpY2UgcHJvYmUvcmVtb3Zl
-IGFuZCBhZGQvcmVtb3ZlIG1hc3RlciBkZXZpY2UgY2FsbGJhY2tzCj4+Pj4gZ2V0cyBjYWxsZWQg
-d2hlbiB0aGUgc21tdSBpcyBub3QgbGlua2VkIHRvIGl0cyBtYXN0ZXIsIHRoYXQgaXMgd2l0aG91
-dAo+Pj4+IHRoZSBjb250ZXh0IG9mIHRoZSBtYXN0ZXIgZGV2aWNlLiBTbyBjYWxsaW5nIHJ1bnRp
-bWUgYXBpcyBpbiB0aG9zZSBwbGFjZXMKPj4+PiBzZXBhcmF0ZWx5Lgo+Pj4+Cj4+Pj4gU2lnbmVk
-LW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4+PiBbdml2
-ZWs6IENsZWFudXAgcG0gcnVudGltZSBjYWxsc10KPj4+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBH
-YXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4+PiBSZXZpZXdlZC1ieTogVG9t
-YXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPj4+PiAtLS0KPj4+Pgo+Pj4+ICAgLSBDaGFu
-Z2Ugc2luY2UgdjExCj4+Pj4gICAgICogUmVwbGFjZWQgcG1fcnVudGltZV9kaXNhYmxlKCkgd2l0
-aCBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKQo+Pj4+ICAgICAgIHRvIGF2b2lkIHdhcm5pbmcg
-YWJvdXQgIiBVbnByZXBhcmluZyBlbmFibGVkIGNsb2NrIi4KPj4+PiAgICAgICBGdWxsIHdhcm5p
-bmcgdGV4dCBtZW50aW9uZWQgaW4gY292ZXIgcGF0Y2guCj4+Pj4KPj4+PiAgIGRyaXZlcnMvaW9t
-bXUvYXJtLXNtbXUuYyB8IDkyICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKystLS0tLQo+Pj4+ICAgMSBmaWxlIGNoYW5nZWQsIDg0IGluc2VydGlvbnMoKyksIDggZGVs
-ZXRpb25zKC0pCj4+Pj4KPj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-IGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+Pj4gaW5kZXggYTAxZDBkZGUyMWRkLi4wOTI2
-NWUyMDZlMmQgMTAwNjQ0Cj4+Pj4gLS0tIGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+Pj4g
-KysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+Pj4gQEAgLTI2OCw2ICsyNjgsMjAgQEAg
-c3RhdGljIHN0cnVjdCBhcm1fc21tdV9vcHRpb25fcHJvcCBhcm1fc21tdV9vcHRpb25zW10gPSB7
-Cj4+Pj4gICAgICAgIHsgMCwgTlVMTH0sCj4+Pj4gICB9Owo+Pj4+Cj4+Pj4gK3N0YXRpYyBpbmxp
-bmUgaW50IGFybV9zbW11X3JwbV9nZXQoc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSkKPj4+
-PiArewo+Pj4+ICsgICAgIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSkKPj4+IFdo
-eSBkbyB5b3UgbmVlZCB0aGUgcG1fcnVudGltZV9lbmFibGVkKCkgY2hlY2tzIGhlcmUgYW5kIGJl
-bG93Pwo+Pj4KPj4+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBhbmQgcG1fcnVudGltZV9wdXQoKSBz
-aG91bGQgd29yayBqdXN0IGZpbmUgaWYKPj4+IHJ1bnRpbWUgUE0gaXMgbm90IGVuYWJsZWQuCj4+
-IEJlY2F1c2UgcG1fcnVudGltZV9nZXRfc3luYygpIGFjcXVpcmVzIGEgc3BpbiBsb2NrLCBldmVu
-IGlmIG9ubHkgZm9yCj4+IHRoZSBzaG9ydCB0aW1lIG9mIGNoZWNraW5nIGlmIHJ1bnRpbWUgUE0g
-aXMgZW5hYmxlZCBhbmQgU01NVSBkcml2ZXIKPj4gbWFpbnRhaW5lcnMgZGlkbid0IHdhbnQgYW55
-IHNwaW4gbG9ja3MgaW4gY2VydGFpbiBJT01NVSBBUEkgY29kZSBwYXRocwo+PiBvbiBoYXJkd2Fy
-ZSBpbXBsZW1lbnRhdGlvbnMgdGhhdCBkb24ndCBuZWVkIHJ1bnRpbWUgUE0sIHdoaWxlIHdlIHN0
-aWxsCj4+IG5lZWQgdG8gYmUgYWJsZSB0byBjb250cm9sIHJ1bnRpbWUgUE0gdGhlcmUgb24gaGFy
-ZHdhcmUKPj4gaW1wbGVtZW50YXRpb25zIHRoYXQgbmVlZCBzby4KPiBPSywgc28gaXQgaXMgYW4g
-b3B0aW1pemF0aW9uLiAgSXQgd291bGQgYmUgZ29vZCB0byBwdXQgYSBjb21tZW50IGluCj4gdGhl
-cmUgdG8gdGhhdCBlZmZlY3QuCgpZZWEsIGFjdHVhbGx5IHRoZXJlJ3MgYSBjb21tZW50IHBsYWNl
-ZCBpbiBhcm1fc21tdV9kZXZpY2VfcHJvYmUoKQogwqB3aGVyZSB0aGUgcnVudGltZSBQTSBpcyBj
-b25kaXRpb25hbGx5IGVuYWJsZWQuCkkgY2FuIGFkZCBjb21tZW50cyBmb3IgdGhlc2Ugd3JhcHBl
-cnMgdG9vIGlmIHlvdSB3b3VsZCBsaWtlLgoKVGhhbmtzICYgUmVnYXJkcwpWaXZlawpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGlu
-ZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
-ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+Changes since v2:
+ * Don't mistakenly include IMX6SL_CLK_IPG in pd_disp
+ * Use GENPD_FLAG_ALWAYS_ON, as suggested by Ulf
+
+Errata workaround could be refined later, however the power savings are
+small and it would require a lot of testing. So push the safest fix
+first to get basic hardware support.
+
+Link to v2: https://lkml.org/lkml/2018/7/9/447
+
+Leonard Crestez (2):
+  soc: imx: gpc: Disable 6sl display power gating for ERR006287
+  ARM: dts: imx6sl: Convert gpc to new bindings
+
+ arch/arm/boot/dts/imx6sl.dtsi | 35 +++++++++++++++++++++++++++++++----
+ drivers/soc/imx/gpc.c         | 10 ++++++++++
+ 2 files changed, 41 insertions(+), 4 deletions(-)
+
+-- 
+2.17.1
