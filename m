@@ -1,87 +1,171 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH 04/14] thermal: ti-soc-thermal: cleanup COUNTER feature
- handling for OMAP5
-Date: Wed, 11 Jul 2018 09:08:29 +0530
-Message-ID: <51799355-1a39-7f2f-6a20-a1718b9e0a64@ti.com>
-References: <1526298141-14045-1-git-send-email-b.zolnierkie@samsung.com>
- <CGME20180514114319epcas1p1921a83c1baaaf1e6f94283f462022dc5@epcas1p1.samsung.com>
- <1526298141-14045-5-git-send-email-b.zolnierkie@samsung.com>
+From: George Cherian <gcherian@caviumnetworks.com>
+Subject: Re: [PATCH v3] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
+Date: Wed, 11 Jul 2018 11:23:54 +0530
+Message-ID: <7558209e-71c5-e4fc-541f-fac585abe9e1@caviumnetworks.com>
+References: <1531131048-60762-1-git-send-email-george.cherian@cavium.com>
+ <802dd310-a26c-3baa-696e-15393d6e1516@codeaurora.org>
+ <3bfc37e1-e82b-c09d-462f-bf4f79aec91f@caviumnetworks.com>
+ <687232fa-d355-1a91-be3d-7cde3c62fc5b@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1526298141-14045-5-git-send-email-b.zolnierkie@samsung.com>
+In-Reply-To: <687232fa-d355-1a91-be3d-7cde3c62fc5b@codeaurora.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
+Hi Prakash,
 
 
-On 5/14/2018 5:12 PM, Bartlomiej Zolnierkiewicz wrote:
-> OMAP5 sensors don't claim COUNTER feature support (they use
-> COUNTER_DELAY feature instead) so there is no need to set fields
-> of struct temp_sensor_registers which are only used for COUNTER
-> feature.
+On 07/10/2018 09:19 PM, Prakash, Prashanth wrote:
 > 
-> There should be no functional changes caused by this patch.
-
-Acked-by: Keerthy <j-keerthy@ti.com>
-
+> On 7/9/2018 11:42 PM, George Cherian wrote:
+>> Hi Prakash,
+>>
+>>
+>> On 07/09/2018 10:12 PM, Prakash, Prashanth wrote:
+>>>
+>>> Hi George,
+>>>
+>>>
+>>> On 7/9/2018 4:10 AM, George Cherian wrote:
+>>>> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
+>>>> feedback via set of performance counters. To determine the actual
+>>>> performance level delivered over time, OSPM may read a set of
+>>>> performance counters from the Reference Performance Counter Register
+>>>> and the Delivered Performance Counter Register.
+>>>>
+>>>> OSPM calculates the delivered performance over a given time period by
+>>>> taking a beginning and ending snapshot of both the reference and
+>>>> delivered performance counters, and calculating:
+>>>>
+>>>> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
+>>>>
+>>>> Implement the above and hook this to the cpufreq->get method.
+>>>>
+>>>> Signed-off-by: George Cherian <george.cherian@cavium.com>
+>>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> ---
+>>>>    drivers/cpufreq/cppc_cpufreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++
+>>>>    1 file changed, 44 insertions(+)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>>> index a9d3eec..61132e8 100644
+>>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>>> @@ -296,10 +296,54 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>>         return ret;
+>>>>    }
+>>>>
+>>>> +static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
+>>>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t0,
+>>>> +                                  struct cppc_perf_fb_ctrs fb_ctrs_t1)
+>>>> +{
+>>>> +     u64 delta_reference, delta_delivered;
+>>>> +     u64 reference_perf, delivered_perf;
+>>>> +
+>>>> +     reference_perf = fb_ctrs_t0.reference_perf;
+>>>> +
+>>>> +     delta_reference = (u32)fb_ctrs_t1.reference -
+>>>> +                             (u32)fb_ctrs_t0.reference;
+>>>> +     delta_delivered = (u32)fb_ctrs_t1.delivered -
+>>>> +                             (u32)fb_ctrs_t0.delivered;
+>>> Why (u32)? These registers can be 64bits and that's why cppc_perf_fb_ctrs
+>>> have 64b fields for reference and delivered counters.
+>>>
+>>> Moreover, the integer math is incorrect. You can run into a scenario where
+>>> t1.ref/del < t0.ref/del,  thus setting a negative number to u64! The likelihood
+>>> of this is very high especially when you throw away the higher 32bits.
+>>>
+>> Because of binary representation, unsigned subtraction will work even if
+>> t1.ref/del < t0.ref/del. So essentially, the code should look like
+>> this,
+>>
+>> static inline u64 get_delta(u64 t1, u64 t0)
+>> {
+>>          if (t1 > t0 || t0 > ~(u32)0)
+>>                  return t1 - t0;
+>>
+>>          return (u32)t1 - (u32)t0;
+>> }
+>>
+>> As a further optimization, I used (u32) since that also works,
+>> as long as the momentary delta at any point is not greater than 2 ^ 32.
+>> I don't foresee any reason for any platform to increment the counters at
+>> an interval greater than 2 ^ 32.
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->   drivers/thermal/ti-soc-thermal/omap5-thermal-data.c | 9 ---------
->   drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h   | 3 ---
->   2 files changed, 12 deletions(-)
+> We are NOT running within any critical section to make sure that there will be
+> no context switch between feedback counter reads. Thus the assumptions that
+> the delta always represent a very short momentary window of time and that
+> it is always less than 2^32 is not accurate.
 > 
-> diff --git a/drivers/thermal/ti-soc-thermal/omap5-thermal-data.c b/drivers/thermal/ti-soc-thermal/omap5-thermal-data.c
-> index 8191bae..e384be1 100644
-> --- a/drivers/thermal/ti-soc-thermal/omap5-thermal-data.c
-> +++ b/drivers/thermal/ti-soc-thermal/omap5-thermal-data.c
-> @@ -41,9 +41,6 @@
->   	.mask_counter_delay_mask = OMAP5430_MASK_COUNTER_DELAY_MASK,
->   	.mask_freeze_mask = OMAP5430_MASK_FREEZE_MPU_MASK,
->   
-> -	.bgap_counter = OMAP5430_BGAP_CTRL_OFFSET,
-> -	.counter_mask = OMAP5430_COUNTER_MASK,
-> -
->   	.bgap_threshold = OMAP5430_BGAP_THRESHOLD_MPU_OFFSET,
->   	.threshold_thot_mask = OMAP5430_T_HOT_MASK,
->   	.threshold_tcold_mask = OMAP5430_T_COLD_MASK,
-> @@ -77,9 +74,6 @@
->   	.mask_counter_delay_mask = OMAP5430_MASK_COUNTER_DELAY_MASK,
->   	.mask_freeze_mask = OMAP5430_MASK_FREEZE_GPU_MASK,
->   
-> -	.bgap_counter = OMAP5430_BGAP_CTRL_OFFSET,
-> -	.counter_mask = OMAP5430_COUNTER_MASK,
-> -
->   	.bgap_threshold = OMAP5430_BGAP_THRESHOLD_GPU_OFFSET,
->   	.threshold_thot_mask = OMAP5430_T_HOT_MASK,
->   	.threshold_tcold_mask = OMAP5430_T_COLD_MASK,
-> @@ -114,9 +108,6 @@
->   	.mask_counter_delay_mask = OMAP5430_MASK_COUNTER_DELAY_MASK,
->   	.mask_freeze_mask = OMAP5430_MASK_FREEZE_CORE_MASK,
->   
-> -	.bgap_counter = OMAP5430_BGAP_CTRL_OFFSET,
-> -	.counter_mask = OMAP5430_COUNTER_MASK,
-> -
->   	.bgap_threshold = OMAP5430_BGAP_THRESHOLD_CORE_OFFSET,
->   	.threshold_thot_mask = OMAP5430_T_HOT_MASK,
->   	.threshold_tcold_mask = OMAP5430_T_COLD_MASK,
-> diff --git a/drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h b/drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h
-> index dcbf903..223c7a8 100644
-> --- a/drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h
-> +++ b/drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h
-> @@ -93,9 +93,6 @@
->   #define OMAP5430_MASK_HOT_MPU_MASK			BIT(1)
->   #define OMAP5430_MASK_COLD_MPU_MASK			BIT(0)
->   
-> -/* OMAP5430.BANDGAP_COUNTER */
-> -#define OMAP5430_COUNTER_MASK				(0xffffff << 0)
-> -
->   /* OMAP5430.BANDGAP_THRESHOLD */
->   #define OMAP5430_T_HOT_MASK				(0x3ff << 16)
->   #define OMAP5430_T_COLD_MASK				(0x3ff << 0)
+> The single overflow assumption about when the above interger math will
+> work is also not acceptable - especially when we throw away the higher order bits.
+> There are hardware out there that uses 64b counters and can overflow lower 32b
+> in quite short order of time. Since the spec (and some hardware) provides 64bits,
+> we should use it make our implementation more robust instead of throwing away
+>   the higher order bits.
+> 
+> I think it's ok to use the above integer math, but please add a comment about
+> single overflow assumption and don't throw away the higher 32bits.
+> 
+Okay,
+I will spin a v4 with the get_delta changes.
+Also note that the get_delta function doesn't throw away the higher 32
+bits.
+>>
+>>> To keep things simple, do something like below:
+>>>
+>>> if (t1.reference <= t0.reference || t1.delivered <= t0.delivered) {
+>>>        /* Atleast one of them should have overflowed */
+>>>        return desired_perf;
+>>> }
+>>> else {
+>>>        compute the delivered perf using the counters.
+>>> }
+>>
+>> No need to do like this as this is tested and found working across counter overruns in our platform.
+>>>
+>>>> +
+>>>> +     /* Check to avoid divide-by zero */
+>>>> +     if (delta_reference || delta_delivered)
+>>>> +             delivered_perf = (reference_perf * delta_delivered) /
+>>>> +                                     delta_reference;
+>>>> +     else
+>>>> +             delivered_perf = cpu->perf_ctrls.desired_perf;
+>>>> +
+>>>> +     return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
+>>>> +}
+>>>> +
+>>>> +static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
+>>>> +{
+>>>> +     struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
+>>>> +     struct cppc_cpudata *cpu = all_cpu_data[cpunum];
+>>>> +     int ret;
+>>>> +
+>>>> +     ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
+>>>> +     if (ret)
+>>>> +             return ret;
+>>>> +
+>>>> +     udelay(2); /* 2usec delay between sampling */
+>>>> +
+>>>> +     ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
+>>>> +     if (ret)
+>>>> +             return ret;
+>>>> +
+>>>> +     return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
+>>>> +}
+>>>> +
+>>>>    static struct cpufreq_driver cppc_cpufreq_driver = {
+>>>>         .flags = CPUFREQ_CONST_LOOPS,
+>>>>         .verify = cppc_verify_policy,
+>>>>         .target = cppc_cpufreq_set_target,
+>>>> +     .get = cppc_cpufreq_get_rate,
+>>>>         .init = cppc_cpufreq_cpu_init,
+>>>>         .stop_cpu = cppc_cpufreq_stop_cpu,
+>>>>         .name = "cppc_cpufreq",
+>>>
 > 
