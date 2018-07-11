@@ -1,74 +1,207 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Wed, 11 Jul 2018 16:06:14 +0530
-Message-ID: <741cc78b-59a7-5289-e42f-1511ebedb15d@codeaurora.org>
+Subject: Re: [PATCH v12 1/4] iommu/arm-smmu: Add pm_runtime/sleep ops
+Date: Wed, 11 Jul 2018 16:25:26 +0530
+Message-ID: <CAFp+6iHxJucfzJJeEvSToG4p2zADjDb9F0L8h053x-JKAy55mg@mail.gmail.com>
 References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-4-vivek.gautam@codeaurora.org>
- <5179668.PHK6S3sxLu@aspire.rjw.lan>
+	<20180708173413.1965-2-vivek.gautam@codeaurora.org>
+	<17407514.unFVTGoGrn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <5179668.PHK6S3sxLu-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <17407514.unFVTGoGrn-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
 To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUmFmYWVsLAoKCk9uIDcvMTEvMjAxOCAzOjIzIFBNLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBTdW5kYXksIEp1bHkgOCwgMjAxOCA3OjM0OjEyIFBNIENFU1QgVml2ZWsgR2F1dGFt
-IHdyb3RlOgo+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+
-Pgo+PiBGaW5hbGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsgYmV0d2VlbiB0aGUgbWFzdGVyIGRldmlj
-ZSBhbmQKPj4gc21tdSwgc28gdGhhdCB0aGUgc21tdSBnZXRzIHJ1bnRpbWUgZW5hYmxlZC9kaXNh
-YmxlZCBvbmx5IHdoZW4gdGhlCj4+IG1hc3RlciBuZWVkcyBpdC4gVGhpcyBpcyBkb25lIGZyb20g
-YWRkX2RldmljZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+IGNhbGxlZCBvbmNlIHdoZW4gdGhlIG1h
-c3RlciBpcyBhZGRlZCB0byB0aGUgc21tdS4KPj4KPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFu
-IFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1
-dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+IFJldmlld2VkLWJ5OiBUb21hc3og
-RmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPgo+PiBDYzogUmFmYWVsIEouIFd5c29ja2kgPHJqd0By
-and5c29ja2kubmV0Pgo+PiBDYzogTHVrYXMgV3VubmVyIDxsdWthc0B3dW5uZXIuZGU+Cj4+IC0t
-LQo+Pgo+PiAgIC0gQ2hhbmdlIHNpbmNlIHYxMQo+PiAgICAgKiBSZXBsYWNlZCBETF9GTEFHX0FV
-VE9SRU1PVkUgZmxhZyB3aXRoIERMX0ZMQUdfQVVUT1JFTU9WRV9TVVBQTElFUi4KPj4KPj4gICBk
-cml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCAxMiArKysrKysrKysrKysKPj4gICAxIGZpbGUgY2hh
-bmdlZCwgMTIgaW5zZXJ0aW9ucygrKQo+Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9h
-cm0tc21tdS5jIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+IGluZGV4IDA5MjY1ZTIwNmUy
-ZC4uOTE2Y2RlNDk1NGQyIDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMK
-Pj4gKysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+IEBAIC0xNDYxLDggKzE0NjEsMjAg
-QEAgc3RhdGljIGludCBhcm1fc21tdV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikKPj4g
-ICAKPj4gICAJaW9tbXVfZGV2aWNlX2xpbmsoJnNtbXUtPmlvbW11LCBkZXYpOwo+PiAgIAo+PiAr
-CWlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSAmJgo+IFdoeSBkb2VzIHRoZSBjcmVh
-dGlvbiBvZiB0aGUgbGluayBkZXBlbmQgb24gd2hldGhlciBvciBub3QgcnVudGltZSBQTQo+IGlz
-IGVuYWJsZWQgZm9yIHRoZSBNTVUgZGV2aWNlPwoKVGhlIG1haW4gcHVycG9zZSBvZiB0aGlzIGRl
-dmljZSBsaW5rIGlzIHRvIGhhbmRsZSB0aGUgcnVudGltZSBQTSAKc3luY2hyb25pemF0aW9uCmJl
-dHdlZW4gdGhlIHN1cHBsaWVyIChpb21tdSkgYW5kIGNvbnN1bWVyIChjbGllbnQgZGV2aWNlcywg
-c3VjaCBhcyAKR1BVL2Rpc3BsYXkpLgpNb3Jlb3ZlciwgdGhlIHJ1bnRpbWUgcG0gaXMgY29uZGl0
-aW9uYWxseSBlbmFibGVkIGZvciBzbW11IGRldmljZXMgdGhhdCAKc3VwcG9ydApzdWNoIFsxXS4K
-Pgo+IFdoYXQgYWJvdXQgc3lzdGVtLXdpZGUgUE0gYW5kIHN5c3RlbSBzaHV0ZG93bj8gIEFyZSB0
-aGV5IGFsd2F5cyBndWFyYW50ZWVkCj4gdG8gaGFwcGVuIGluIHRoZSByaWdodCBvcmRlciB3aXRo
-b3V0IHRoZSBsaW5rPwoKV2hlbiB0aGVyZSdzIG5vIHJ1bnRpbWUgUE0sIHRoZXJlJ3Mgbm8gY2xv
-Y2tzLCBhbmQgb3RoZXIgcmVzb3VyY2VzIHRvIGJlIApoYW5kbGVkLgpTbywgd2UgZG9uJ3QgbmVl
-ZCBkZXZpY2UgbGluayBmb3Igc3lzdGVtLXdpZGUgUE0gYW5kIHN5c3RlbSBzaHV0ZG93biB0byAK
-d29yayBjb3JyZWN0bHkuClRoYXQncyB0aGUgY2FzZSB3aXRoIGN1cnJlbnQgYXJtLXNtbXUgZHJp
-dmVyLgpJcyBpdCBzb21ldGhpbmcgdGhhdCBpIGFtIG1pc3NpbmcgaGVyZT8KClsxXSBodHRwczov
-L2xrbWwub3JnL2xrbWwvMjAxOC8zLzgvNzc1CgpUaGFua3MKVml2ZWsKPj4gKwkgICAgIWRldmlj
-ZV9saW5rX2FkZChkZXYsIHNtbXUtPmRldiwKPj4gKwkJCURMX0ZMQUdfUE1fUlVOVElNRSB8IERM
-X0ZMQUdfQVVUT1JFTU9WRV9TVVBQTElFUikpIHsKPj4gKwkJZGV2X2VycihzbW11LT5kZXYsICJV
-bmFibGUgdG8gYWRkIGxpbmsgdG8gdGhlIGNvbnN1bWVyICVzXG4iLAo+PiArCQkJZGV2X25hbWUo
-ZGV2KSk7Cj4+ICsJCXJldCA9IC1FTk9ERVY7Cj4+ICsJCWdvdG8gb3V0X3VubGluazsKPj4gKwl9
-Cj4+ICsKPj4gICAJcmV0dXJuIDA7Cj4+ICAgCj4+ICtvdXRfdW5saW5rOgo+PiArCWlvbW11X2Rl
-dmljZV91bmxpbmsoJnNtbXUtPmlvbW11LCBkZXYpOwo+PiArCWFybV9zbW11X21hc3Rlcl9mcmVl
-X3NtZXMoZndzcGVjKTsKPj4gICBvdXRfY2ZnX2ZyZWU6Cj4+ICAgCWtmcmVlKGNmZyk7Cj4+ICAg
-b3V0X2ZyZWU6Cj4+Cj4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9w
-Lm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVk
-cmVubwo=
+Hi Rafael,
+
+
+On Wed, Jul 11, 2018 at 3:20 PM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+> On Sunday, July 8, 2018 7:34:10 PM CEST Vivek Gautam wrote:
+>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>
+>> The smmu needs to be functional only when the respective
+>> master's using it are active. The device_link feature
+>> helps to track such functional dependencies, so that the
+>> iommu gets powered when the master device enables itself
+>> using pm_runtime. So by adapting the smmu driver for
+>> runtime pm, above said dependency can be addressed.
+>>
+>> This patch adds the pm runtime/sleep callbacks to the
+>> driver and also the functions to parse the smmu clocks
+>> from DT and enable them in resume/suspend.
+>>
+>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> [vivek: Clock rework to request bulk of clocks]
+>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>> ---
+>>
+>>  - No change since v11.
+>>
+>>  drivers/iommu/arm-smmu.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++--
+>>  1 file changed, 58 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+>> index f7a96bcf94a6..a01d0dde21dd 100644
+>> --- a/drivers/iommu/arm-smmu.c
+>> +++ b/drivers/iommu/arm-smmu.c
+>> @@ -48,6 +48,7 @@
+>>  #include <linux/of_iommu.h>
+>>  #include <linux/pci.h>
+>>  #include <linux/platform_device.h>
+>> +#include <linux/pm_runtime.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/spinlock.h>
+>>
+>> @@ -205,6 +206,8 @@ struct arm_smmu_device {
+>>       u32                             num_global_irqs;
+>>       u32                             num_context_irqs;
+>>       unsigned int                    *irqs;
+>> +     struct clk_bulk_data            *clks;
+>> +     int                             num_clks;
+>>
+>>       u32                             cavium_id_base; /* Specific to Cavium */
+>>
+>> @@ -1897,10 +1900,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
+>>  struct arm_smmu_match_data {
+>>       enum arm_smmu_arch_version version;
+>>       enum arm_smmu_implementation model;
+>> +     const char * const *clks;
+>> +     int num_clks;
+>>  };
+>>
+>>  #define ARM_SMMU_MATCH_DATA(name, ver, imp)  \
+>> -static struct arm_smmu_match_data name = { .version = ver, .model = imp }
+>> +static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
+>>
+>>  ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
+>>  ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
+>> @@ -1919,6 +1924,23 @@ static const struct of_device_id arm_smmu_of_match[] = {
+>>  };
+>>  MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+>>
+>> +static void arm_smmu_fill_clk_data(struct arm_smmu_device *smmu,
+>> +                                const char * const *clks)
+>> +{
+>> +     int i;
+>> +
+>> +     if (smmu->num_clks < 1)
+>> +             return;
+>> +
+>> +     smmu->clks = devm_kcalloc(smmu->dev, smmu->num_clks,
+>> +                               sizeof(*smmu->clks), GFP_KERNEL);
+>> +     if (!smmu->clks)
+>> +             return;
+>> +
+>> +     for (i = 0; i < smmu->num_clks; i++)
+>> +             smmu->clks[i].id = clks[i];
+>> +}
+>> +
+>>  #ifdef CONFIG_ACPI
+>>  static int acpi_smmu_get_data(u32 model, struct arm_smmu_device *smmu)
+>>  {
+>> @@ -2001,6 +2023,9 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
+>>       data = of_device_get_match_data(dev);
+>>       smmu->version = data->version;
+>>       smmu->model = data->model;
+>> +     smmu->num_clks = data->num_clks;
+>> +
+>> +     arm_smmu_fill_clk_data(smmu, data->clks);
+>>
+>>       parse_driver_options(smmu);
+>>
+>> @@ -2099,6 +2124,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+>>               smmu->irqs[i] = irq;
+>>       }
+>>
+>> +     err = devm_clk_bulk_get(smmu->dev, smmu->num_clks, smmu->clks);
+>> +     if (err)
+>> +             return err;
+>> +
+>> +     err = clk_bulk_prepare(smmu->num_clks, smmu->clks);
+>> +     if (err)
+>> +             return err;
+>> +
+>>       err = arm_smmu_device_cfg_probe(smmu);
+>>       if (err)
+>>               return err;
+>> @@ -2181,6 +2214,9 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+>>
+>>       /* Turn the thing off */
+>>       writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
+>> +
+>> +     clk_bulk_unprepare(smmu->num_clks, smmu->clks);
+>> +
+>>       return 0;
+>>  }
+>>
+>> @@ -2197,7 +2233,27 @@ static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
+>>       return 0;
+>>  }
+>>
+>> -static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
+>> +static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
+>> +{
+>> +     struct arm_smmu_device *smmu = dev_get_drvdata(dev);
+>> +
+>> +     return clk_bulk_enable(smmu->num_clks, smmu->clks);
+>> +}
+>> +
+>> +static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
+>> +{
+>> +     struct arm_smmu_device *smmu = dev_get_drvdata(dev);
+>> +
+>> +     clk_bulk_disable(smmu->num_clks, smmu->clks);
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static const struct dev_pm_ops arm_smmu_pm_ops = {
+>> +     SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
+>
+> This is suspicious.
+>
+> If you need a runtime suspend method, why do you think that it is not necessary
+> to suspend the device during system-wide transitions?
+
+Okay, so you suggest to put clock disabling in say arm_smmu_pm_suspend()?
+In that case the clocks have to be enabled in the resume path too.
+
+I remember Tomasz pointed to that we shouldn't need clock enable in resume
+path [1].
+
+[1] https://lkml.org/lkml/2018/3/15/60
+
+
+Best regards
+Vivek
+
+>
+>> +     SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
+>> +                        arm_smmu_runtime_resume, NULL)
+>> +};
+>>
+>>  static struct platform_driver arm_smmu_driver = {
+>>       .driver = {
+>>
+>
+>
+
+
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
