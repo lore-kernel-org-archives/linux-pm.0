@@ -1,61 +1,66 @@
-From: noman pouigt <variksla@gmail.com>
-Subject: Re: Re: devfreq relation with pm qos
-Date: Wed, 11 Jul 2018 10:02:30 -0700
-Message-ID: <CAES_P+-=iictJKgHFGN2Mypp_+GMyTOVmZVQw=bSfHbyZMY4QA@mail.gmail.com>
-References: <CAES_P+_k=fz3yMnVZni2hEnfSujctnT33zoN9-KsBLBeQaG_sA@mail.gmail.com>
- <CGME20180709213456epcas4p17e5753d1b59856a0df3790d7faef8d73@epcms1p2>
- <CAES_P+_GTRcFya=N20+b+U=HOpv9gcpYkfJW_gU_i_2pH2hmMA@mail.gmail.com> <20180710055847epcms1p2eed3f89ae0220a06051faa83cc8b21ed@epcms1p2>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v6 2/7] thermal: tsens: Add support to split up register
+ address space into two
+Date: Wed, 11 Jul 2018 11:37:07 -0700
+Message-ID: <CAD=FV=UGjf+qSfzYbQ1OEydEWJH2e8vhNiOPAytPH_rnkabq3Q@mail.gmail.com>
+References: <cover.1531135999.git.amit.kucheria@linaro.org> <e7c5c74bd5ad1820f0f015d8e9b3d7c7b24854a4.1531135999.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180710055847epcms1p2eed3f89ae0220a06051faa83cc8b21ed@epcms1p2>
+In-Reply-To: <e7c5c74bd5ad1820f0f015d8e9b3d7c7b24854a4.1531135999.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 9, 2018 at 10:58 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
-ote:
->> + dev freq maintainters.
->>
->> On Mon, Jul 9, 2018 at 3:37 AM, noman pouigt <variksla@gmail.com> wrote:
->> > folks,
->> >
->> > I am trying to figure out the relationship between PM QOS
->> > with devfreq framework. I see this thread[1] where MyungJoo
->> > talks about QOS and devfreq but that control is through
->> > sysfs but I don't see any relation of pm qos (kernel/power/qos.c)
->> > with devfreq directly as devfreq is not calling any of the QOS
->> > api's. Is this intended?
->> >
->> > Isn't QOS value update using pm_qos_update_request has a
->> > direct relation with devfreq drivers i.e. setting the value to
->> > high or low selects the corresponding voltage and frequency
->> > setting in devfreq framework? I went through the devfreq
->> > drivers and couldn't find that relationship. Is this by design or
->> > I am missing something very obvious?
->> >
->> > [1] https://lwn.net/Articles/484161/
+Hi,
+
+On Mon, Jul 9, 2018 at 4:43 AM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> There are two banks of registers for v2 TSENS IPs: SROT and TM. On older
+> SoCs these were contiguous, leading to DTs mapping them as one register
+> address space of size 0x2000. In newer SoCs, these two banks are not
+> contiguous anymore.
 >
-> Hello,
+> Fixing old DTs to split the address space into allows us to have cleaner
+> common code e.g. get_temp() that is shared across new and old platforms.
+
+This makes it sound like old DTs won't be supported anymore.  ...but
+the code says otherwise.  I'd just remove the above paragraph.
+
+
+> @@ -126,11 +127,21 @@ static const struct regmap_config tsens_config = {
+>  int __init init_common(struct tsens_device *tmdev)
+>  {
+>         void __iomem *base;
+> +       struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
 >
-> Unfortunately, the suggested concept in the referred article was not ever
-> accepted in the mainline.
-
-MyungJo, I am trying to understand the relationship of PM QOS with
-devfreq drivers. I don't see any relation of PM QOS api's with devfreq driv=
-ers
-directly as there are no QOS apis used in the devfreq framework.
-
-The only explanation I have is that PM QOS has direct relationship
-with CPUFREQ driver and as CPUFREQ driver works with CPU
-frequency and that CPU frequency directly affects DEVFREQ drivers
-as devfreq driver maps CPU frequency to device frequency and
-that is why PM QOS doesn=E2=80=99t have direct relation with PM QOS.
-
-Is my understanding right?
-
+> +       if (!op)
+> +               return -EINVAL;
+>         base = of_iomap(tmdev->dev->of_node, 0);
+>         if (!base)
+>                 return -EINVAL;
 >
-> Cheers,
-> MyungJo
+> +       if (op->num_resources > 1) {
+
+Maybe add a comment here that says that we don't actually map the SROT
+yet because you don't read anything from there?  I kept getting
+confused about how this patch could possibly work with no code to map
+SROT...
+
+> +               tmdev->tm_offset = 0;
+> +       } else {
+> +               /* old DTs where SROT and TM were in a contiguous 2K block */
+> +               tmdev->tm_offset = 0x1000;
+
+This patch without patch #4 will break compatibility.  You should
+squash part of patch #4 into this one, specifically:
+
+-#define STATUS_OFFSET 0x10a0
+-#define LAST_TEMP_MASK 0xfff
++#define STATUS_OFFSET 0xa0
++#define LAST_TEMP_MASK 0xfff
+
+Without that you break bisect-ability and also confuse anyone trying
+to look at this patch.
+
+-Doug
