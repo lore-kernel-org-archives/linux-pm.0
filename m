@@ -1,87 +1,67 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: adp5061: Fix a couple off by ones
-Date: Wed, 11 Jul 2018 12:04:18 +0200
-Message-ID: <20180711100418.p2t4mfvgyjbzrxwy@earth.universe>
-References: <20180711075808.gpa3362vbins7crx@kili.mountain>
+From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v12 2/4] iommu/arm-smmu: Invoke pm_runtime
+ during probe, add/remove device
+Date: Wed, 11 Jul 2018 19:05:06 +0900
+Message-ID: <CAAFQd5COVfXRBuq2ofHoOvNb+cMVmAFDaekh5KM4DBB1ZEf5pA@mail.gmail.com>
+References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
+ <20180708173413.1965-3-vivek.gautam@codeaurora.org>
+ <1694664.FhRBrgajmF@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2y7tqp2z4gc4cr77"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180711075808.gpa3362vbins7crx@kili.mountain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Stefan Popa <stefan.popa@analog.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <1694664.FhRBrgajmF-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Marek Szyprowski <m.szyprow>
 List-Id: linux-pm@vger.kernel.org
 
-
---2y7tqp2z4gc4cr77
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Wed, Jul 11, 2018 at 10:58:13AM +0300, Dan Carpenter wrote:
-> We end up reading one element beyond the end of the adp5061_vmax[] array
-> here.
->=20
-> Fixes: fe8e81b7e899 ("adp5061: New driver for ADP5061 I2C battery charger=
-")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-Thanks, queued.
-
--- Sebastian
-
-> diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp506=
-1.c
-> index c00a02ef7424..939fd3d8fb1a 100644
-> --- a/drivers/power/supply/adp5061.c
-> +++ b/drivers/power/supply/adp5061.c
-> @@ -266,8 +266,8 @@ static int adp5061_get_max_voltage(struct adp5061_sta=
-te *st,
->  		return ret;
-> =20
->  	regval =3D ((regval & ADP5061_TERM_SET_VTRM_MSK) >> 2) - 0x0F;
-> -	if (regval > ARRAY_SIZE(adp5061_vmax))
-> -		regval =3D ARRAY_SIZE(adp5061_vmax);
-> +	if (regval >=3D ARRAY_SIZE(adp5061_vmax))
-> +		regval =3D ARRAY_SIZE(adp5061_vmax) - 1;
-> =20
->  	val->intval =3D adp5061_vmax[regval] * 1000;
-> =20
-> @@ -344,8 +344,8 @@ static int adp5061_get_const_chg_current(struct adp50=
-61_state *st,
->  		return ret;
-> =20
->  	regval =3D ((regval & ADP5061_CHG_CURR_ICHG_MSK) >> 2);
-> -	if (regval > ARRAY_SIZE(adp5061_const_ichg))
-> -		regval =3D ARRAY_SIZE(adp5061_const_ichg);
-> +	if (regval >=3D ARRAY_SIZE(adp5061_const_ichg))
-> +		regval =3D ARRAY_SIZE(adp5061_const_ichg) - 1;
-> =20
->  	val->intval =3D adp5061_const_ichg[regval] * 1000;
-> =20
-
---2y7tqp2z4gc4cr77
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAltF1h8ACgkQ2O7X88g7
-+pr4dBAAg7979N/X+zW3Pki8PNMR9SSiBEjTVg1Ul27hbS5O326rMBRARiWdabPv
-LnofakYcx0CMDBRhJAAe0HIpzG6gFu+8MN4mY17IwD8GVk3eiHb83DQB0gKhp78+
-jFKMF7DeJwQbRmKkk73nXyw7eliVhwJXD3T4dNTispJhgyYHOHYiQy0bDHX6ZdO/
-Czk9F7vcdZt55glN3O+8wLofNMYpgg/vJTM8u9Lr58jCGnTyeLaQWk6jhKqeAuPe
-95r62972SpdRFiaukBWJ5WV6zvVUmvS9YV3Avia3gcGeNgI90A0EEPYAoPouzNMz
-hK+2eT0480As347XSotFbC9AtBRoIjvPD0XJDnbbVLCc5Xxz3fgX9fB4PLxcSRXt
-hJAp0T8+NEEu6P/JdyCjpUpp+yOoaURWhGkBexFHTxTddcjFASSzYeEXXpiWm5KD
-Dbv/MP+TDFDMx6CP5SoGfjHUnJV7k0CPOOCdG4edYfAEFZM04VnxH8RWhyEd3xWi
-nV8AAb96ReH2l1zNI0VDxzgoMiTZ+MVYtzPd6egdE5WG6Cin3SIZahJ8BaKLLE6O
-bV7whatfzPo4b54S3VP8JVye/aaoMvDD2SwoyNaQVuLx4iTIaxoQm5MR8AS4F20s
-bkYH8Q69zuPAk9FhOb8zxiM2QaoLlBXWfh4SxTyTQaKvZZ/O8xk=
-=xmKy
------END PGP SIGNATURE-----
-
---2y7tqp2z4gc4cr77--
+SGkgUmFmYWVsLAoKVGhhbmtzIGZvciByZXZpZXcuCgpPbiBXZWQsIEp1bCAxMSwgMjAxOCBhdCA2
+OjUzIFBNIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4gd3JvdGU6Cj4KPiBP
+biBTdW5kYXksIEp1bHkgOCwgMjAxOCA3OjM0OjExIFBNIENFU1QgVml2ZWsgR2F1dGFtIHdyb3Rl
+Ogo+ID4gRnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiA+Cj4g
+PiBUaGUgc21tdSBkZXZpY2UgcHJvYmUvcmVtb3ZlIGFuZCBhZGQvcmVtb3ZlIG1hc3RlciBkZXZp
+Y2UgY2FsbGJhY2tzCj4gPiBnZXRzIGNhbGxlZCB3aGVuIHRoZSBzbW11IGlzIG5vdCBsaW5rZWQg
+dG8gaXRzIG1hc3RlciwgdGhhdCBpcyB3aXRob3V0Cj4gPiB0aGUgY29udGV4dCBvZiB0aGUgbWFz
+dGVyIGRldmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4gPiBz
+ZXBhcmF0ZWx5Lgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5A
+Y29kZWF1cm9yYS5vcmc+Cj4gPiBbdml2ZWs6IENsZWFudXAgcG0gcnVudGltZSBjYWxsc10KPiA+
+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3Jn
+Pgo+ID4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4gPiAt
+LS0KPiA+Cj4gPiAgLSBDaGFuZ2Ugc2luY2UgdjExCj4gPiAgICAqIFJlcGxhY2VkIHBtX3J1bnRp
+bWVfZGlzYWJsZSgpIHdpdGggcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKCkKPiA+ICAgICAgdG8g
+YXZvaWQgd2FybmluZyBhYm91dCAiIFVucHJlcGFyaW5nIGVuYWJsZWQgY2xvY2siLgo+ID4gICAg
+ICBGdWxsIHdhcm5pbmcgdGV4dCBtZW50aW9uZWQgaW4gY292ZXIgcGF0Y2guCj4gPgo+ID4gIGRy
+aXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDkyICsrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKystLS0tLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4NCBpbnNlcnRpb25zKCsp
+LCA4IGRlbGV0aW9ucygtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1z
+bW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiA+IGluZGV4IGEwMWQwZGRlMjFkZC4u
+MDkyNjVlMjA2ZTJkIDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4g
+PiArKysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiA+IEBAIC0yNjgsNiArMjY4LDIwIEBA
+IHN0YXRpYyBzdHJ1Y3QgYXJtX3NtbXVfb3B0aW9uX3Byb3AgYXJtX3NtbXVfb3B0aW9uc1tdID0g
+ewo+ID4gICAgICAgeyAwLCBOVUxMfSwKPiA+ICB9Owo+ID4KPiA+ICtzdGF0aWMgaW5saW5lIGlu
+dCBhcm1fc21tdV9ycG1fZ2V0KHN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUpCj4gPiArewo+
+ID4gKyAgICAgaWYgKHBtX3J1bnRpbWVfZW5hYmxlZChzbW11LT5kZXYpKQo+Cj4gV2h5IGRvIHlv
+dSBuZWVkIHRoZSBwbV9ydW50aW1lX2VuYWJsZWQoKSBjaGVja3MgaGVyZSBhbmQgYmVsb3c/Cj4K
+PiBwbV9ydW50aW1lX2dldF9zeW5jKCkgYW5kIHBtX3J1bnRpbWVfcHV0KCkgc2hvdWxkIHdvcmsg
+anVzdCBmaW5lIGlmCj4gcnVudGltZSBQTSBpcyBub3QgZW5hYmxlZC4KCkJlY2F1c2UgcG1fcnVu
+dGltZV9nZXRfc3luYygpIGFjcXVpcmVzIGEgc3BpbiBsb2NrLCBldmVuIGlmIG9ubHkgZm9yCnRo
+ZSBzaG9ydCB0aW1lIG9mIGNoZWNraW5nIGlmIHJ1bnRpbWUgUE0gaXMgZW5hYmxlZCBhbmQgU01N
+VSBkcml2ZXIKbWFpbnRhaW5lcnMgZGlkbid0IHdhbnQgYW55IHNwaW4gbG9ja3MgaW4gY2VydGFp
+biBJT01NVSBBUEkgY29kZSBwYXRocwpvbiBoYXJkd2FyZSBpbXBsZW1lbnRhdGlvbnMgdGhhdCBk
+b24ndCBuZWVkIHJ1bnRpbWUgUE0sIHdoaWxlIHdlIHN0aWxsCm5lZWQgdG8gYmUgYWJsZSB0byBj
+b250cm9sIHJ1bnRpbWUgUE0gdGhlcmUgb24gaGFyZHdhcmUKaW1wbGVtZW50YXRpb25zIHRoYXQg
+bmVlZCBzby4KCkJlc3QgcmVnYXJkcywKVG9tYXN6Cl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxp
+c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2ZyZWVkcmVubwo=
