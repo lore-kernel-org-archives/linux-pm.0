@@ -1,69 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link between masters and smmu
-Date: Wed, 11 Jul 2018 11:53:48 +0200
-Message-ID: <5179668.PHK6S3sxLu@aspire.rjw.lan>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org> <20180708173413.1965-4-vivek.gautam@codeaurora.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: adp5061: Fix a couple off by ones
+Date: Wed, 11 Jul 2018 12:04:18 +0200
+Message-ID: <20180711100418.p2t4mfvgyjbzrxwy@earth.universe>
+References: <20180711075808.gpa3362vbins7crx@kili.mountain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="2y7tqp2z4gc4cr77"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180708173413.1965-4-vivek.gautam@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20180711075808.gpa3362vbins7crx@kili.mountain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vivek Gautam <vivek.gautam@codeaurora.org>
-Cc: joro@8bytes.org, robh+dt@kernel.org, mark.rutland@arm.com, robin.murphy@arm.com, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alex.williamson@redhat.com, robdclark@gmail.com, linux-pm@vger.kernel.org, freedreno@lists.freedesktop.org, sboyd@kernel.org, tfiga@chromium.org, sricharan@codeaurora.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org, jcrouse@codeaurora.org, Lukas Wunner <lukas@wunner.de>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Stefan Popa <stefan.popa@analog.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, July 8, 2018 7:34:12 PM CEST Vivek Gautam wrote:
-> From: Sricharan R <sricharan@codeaurora.org>
-> 
-> Finally add the device link between the master device and
-> smmu, so that the smmu gets runtime enabled/disabled only when the
-> master needs it. This is done from add_device callback which gets
-> called once when the master is added to the smmu.
-> 
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
-> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> Reviewed-by: Tomasz Figa <tfiga@chromium.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Lukas Wunner <lukas@wunner.de>
-> ---
-> 
->  - Change since v11
->    * Replaced DL_FLAG_AUTOREMOVE flag with DL_FLAG_AUTOREMOVE_SUPPLIER.
-> 
->  drivers/iommu/arm-smmu.c | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index 09265e206e2d..916cde4954d2 100644
-> --- a/drivers/iommu/arm-smmu.c
-> +++ b/drivers/iommu/arm-smmu.c
-> @@ -1461,8 +1461,20 @@ static int arm_smmu_add_device(struct device *dev)
->  
->  	iommu_device_link(&smmu->iommu, dev);
->  
-> +	if (pm_runtime_enabled(smmu->dev) &&
 
-Why does the creation of the link depend on whether or not runtime PM
-is enabled for the MMU device?
+--2y7tqp2z4gc4cr77
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What about system-wide PM and system shutdown?  Are they always guaranteed
-to happen in the right order without the link?
+Hi,
 
-> +	    !device_link_add(dev, smmu->dev,
-> +			DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_SUPPLIER)) {
-> +		dev_err(smmu->dev, "Unable to add link to the consumer %s\n",
-> +			dev_name(dev));
-> +		ret = -ENODEV;
-> +		goto out_unlink;
-> +	}
-> +
->  	return 0;
->  
-> +out_unlink:
-> +	iommu_device_unlink(&smmu->iommu, dev);
-> +	arm_smmu_master_free_smes(fwspec);
->  out_cfg_free:
->  	kfree(cfg);
->  out_free:
-> 
+On Wed, Jul 11, 2018 at 10:58:13AM +0300, Dan Carpenter wrote:
+> We end up reading one element beyond the end of the adp5061_vmax[] array
+> here.
+>=20
+> Fixes: fe8e81b7e899 ("adp5061: New driver for ADP5061 I2C battery charger=
+")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+Thanks, queued.
+
+-- Sebastian
+
+> diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp506=
+1.c
+> index c00a02ef7424..939fd3d8fb1a 100644
+> --- a/drivers/power/supply/adp5061.c
+> +++ b/drivers/power/supply/adp5061.c
+> @@ -266,8 +266,8 @@ static int adp5061_get_max_voltage(struct adp5061_sta=
+te *st,
+>  		return ret;
+> =20
+>  	regval =3D ((regval & ADP5061_TERM_SET_VTRM_MSK) >> 2) - 0x0F;
+> -	if (regval > ARRAY_SIZE(adp5061_vmax))
+> -		regval =3D ARRAY_SIZE(adp5061_vmax);
+> +	if (regval >=3D ARRAY_SIZE(adp5061_vmax))
+> +		regval =3D ARRAY_SIZE(adp5061_vmax) - 1;
+> =20
+>  	val->intval =3D adp5061_vmax[regval] * 1000;
+> =20
+> @@ -344,8 +344,8 @@ static int adp5061_get_const_chg_current(struct adp50=
+61_state *st,
+>  		return ret;
+> =20
+>  	regval =3D ((regval & ADP5061_CHG_CURR_ICHG_MSK) >> 2);
+> -	if (regval > ARRAY_SIZE(adp5061_const_ichg))
+> -		regval =3D ARRAY_SIZE(adp5061_const_ichg);
+> +	if (regval >=3D ARRAY_SIZE(adp5061_const_ichg))
+> +		regval =3D ARRAY_SIZE(adp5061_const_ichg) - 1;
+> =20
+>  	val->intval =3D adp5061_const_ichg[regval] * 1000;
+> =20
+
+--2y7tqp2z4gc4cr77
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAltF1h8ACgkQ2O7X88g7
++pr4dBAAg7979N/X+zW3Pki8PNMR9SSiBEjTVg1Ul27hbS5O326rMBRARiWdabPv
+LnofakYcx0CMDBRhJAAe0HIpzG6gFu+8MN4mY17IwD8GVk3eiHb83DQB0gKhp78+
+jFKMF7DeJwQbRmKkk73nXyw7eliVhwJXD3T4dNTispJhgyYHOHYiQy0bDHX6ZdO/
+Czk9F7vcdZt55glN3O+8wLofNMYpgg/vJTM8u9Lr58jCGnTyeLaQWk6jhKqeAuPe
+95r62972SpdRFiaukBWJ5WV6zvVUmvS9YV3Avia3gcGeNgI90A0EEPYAoPouzNMz
+hK+2eT0480As347XSotFbC9AtBRoIjvPD0XJDnbbVLCc5Xxz3fgX9fB4PLxcSRXt
+hJAp0T8+NEEu6P/JdyCjpUpp+yOoaURWhGkBexFHTxTddcjFASSzYeEXXpiWm5KD
+Dbv/MP+TDFDMx6CP5SoGfjHUnJV7k0CPOOCdG4edYfAEFZM04VnxH8RWhyEd3xWi
+nV8AAb96ReH2l1zNI0VDxzgoMiTZ+MVYtzPd6egdE5WG6Cin3SIZahJ8BaKLLE6O
+bV7whatfzPo4b54S3VP8JVye/aaoMvDD2SwoyNaQVuLx4iTIaxoQm5MR8AS4F20s
+bkYH8Q69zuPAk9FhOb8zxiM2QaoLlBXWfh4SxTyTQaKvZZ/O8xk=
+=xmKy
+-----END PGP SIGNATURE-----
+
+--2y7tqp2z4gc4cr77--
