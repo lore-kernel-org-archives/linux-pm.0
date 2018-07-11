@@ -1,45 +1,46 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [PATCH] power: supply: adp5061: Fix a couple off by ones
-Date: Wed, 11 Jul 2018 10:58:13 +0300
-Message-ID: <20180711075808.gpa3362vbins7crx@kili.mountain>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI fix for v4.18-rc5
+Date: Wed, 11 Jul 2018 11:37:58 +0200
+Message-ID: <CAJZ5v0g6TncQk+GZJ1UTYHkyvOphdn=_B5kwL1nbMU6GaE6nCw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stefan Popa <stefan.popa@analog.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-We end up reading one element beyond the end of the adp5061_vmax[] array
-here.
+Hi Linus,
 
-Fixes: fe8e81b7e899 ("adp5061: New driver for ADP5061 I2C battery charger")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Please pull from the tag
 
-diff --git a/drivers/power/supply/adp5061.c b/drivers/power/supply/adp5061.c
-index c00a02ef7424..939fd3d8fb1a 100644
---- a/drivers/power/supply/adp5061.c
-+++ b/drivers/power/supply/adp5061.c
-@@ -266,8 +266,8 @@ static int adp5061_get_max_voltage(struct adp5061_state *st,
- 		return ret;
- 
- 	regval = ((regval & ADP5061_TERM_SET_VTRM_MSK) >> 2) - 0x0F;
--	if (regval > ARRAY_SIZE(adp5061_vmax))
--		regval = ARRAY_SIZE(adp5061_vmax);
-+	if (regval >= ARRAY_SIZE(adp5061_vmax))
-+		regval = ARRAY_SIZE(adp5061_vmax) - 1;
- 
- 	val->intval = adp5061_vmax[regval] * 1000;
- 
-@@ -344,8 +344,8 @@ static int adp5061_get_const_chg_current(struct adp5061_state *st,
- 		return ret;
- 
- 	regval = ((regval & ADP5061_CHG_CURR_ICHG_MSK) >> 2);
--	if (regval > ARRAY_SIZE(adp5061_const_ichg))
--		regval = ARRAY_SIZE(adp5061_const_ichg);
-+	if (regval >= ARRAY_SIZE(adp5061_const_ichg))
-+		regval = ARRAY_SIZE(adp5061_const_ichg) - 1;
- 
- 	val->intval = adp5061_const_ichg[regval] * 1000;
- 
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.18-rc5
+
+with top-most commit fa85015c0d95884c8dc42f38e2f2d6137d436b67
+
+ ACPICA: Clear status of all events when entering S5
+
+on top of commit 1e4b044d22517cae7047c99038abb444423243ca
+
+ Linux 4.18-rc4
+
+to receive an ACPI regression fix for 4.18-rc5.
+
+This addresses a regression in ACPICA that ceased to clear the
+status of GPEs and fixed events before entering the ACPI S5 (off)
+system state during the 4.17 cycle which caused some systems to
+power up immediately after they had been turned off.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      ACPICA: Clear status of all events when entering S5
+
+---------------
+
+ drivers/acpi/acpica/hwsleep.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
