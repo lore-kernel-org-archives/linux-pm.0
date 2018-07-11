@@ -1,80 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 6/6] PM / Domains: Stop deferring probe at the end of initcall
-Date: Wed, 11 Jul 2018 11:41:04 +0200
-Message-ID: <CAPDyKFp7qNe6Yp62GyRcfc2TBxqqexMxqQkZ-Hc3YFoy-_7ZLw@mail.gmail.com>
-References: <20180709154153.15742-1-robh@kernel.org> <20180709154153.15742-7-robh@kernel.org>
- <CAPDyKFoN1=16dGKmkFp6Khgs5zx+BguOs3qOcm+rAZw=b38JVg@mail.gmail.com> <CAL_Jsq+dcwZHKFGy+BGOyV+Yyz0qgmeq8zoT=DkB+c+DsXdApQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] PM / Domains: Enable name based lookup at attach
+Date: Wed, 11 Jul 2018 11:43:52 +0200
+Message-ID: <34035286.gLvmaz061p@aspire.rjw.lan>
+References: <20180629110432.5179-1-ulf.hansson@linaro.org>
+ <12075152.c01WRJ509Y@aspire.rjw.lan>
+ <CAPDyKFq=EPkvu0MjOtkjCNzrgZj0kaJTxXDt21=YR==T+H8ePQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_Jsq+dcwZHKFGy+BGOyV+Yyz0qgmeq8zoT=DkB+c+DsXdApQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Alexander Graf <agraf@suse.de>, Bjorn Andersson <bjorn.andersson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Joerg Roedel <joro@8bytes.org>, Robin Murphy <robin.murphy@arm.com>, Mark Brown <broonie@kernel.org>, Frank Rowand <frowand.list@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, Architecture Mailman List <boot-architecture@lists.linaro.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAPDyKFq=EPkvu0MjOtkjCNzrgZj0kaJTxXDt21=YR==T+H8ePQ@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Kevin Hilman <khilman@kernel.org>, Jon Hunter <jonathanh@nvidia.com>, Todor Tomov <todor.tomov@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-tegra@vger.kernel.org, Lucas Stach <dev@lynxeye.de>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10 July 2018 at 16:25, Rob Herring <robh@kernel.org> wrote:
-> On Mon, Jul 9, 2018 at 4:49 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>
->> On 9 July 2018 at 17:41, Rob Herring <robh@kernel.org> wrote:
->> > All PM domain drivers must be built-in (at least those using DT), so
->> > there is no point deferring probe after initcalls are done. Continuing
->> > to defer probe may prevent booting successfully even if managing PM
->> > domains is not required. This can happen if the user failed to enable
->> > the driver or if power-domains are added to a platform's DT, but there
->> > is not yet a driver (e.g. a new DTB with an old kernel).
->> >
->> > Call the driver core function driver_deferred_probe_check_init_done()
->> > instead of just returning -EPROBE_DEFER to stop deferring probe when
->> > initcalls are done.
->> >
->> > Acked-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> > Cc: Kevin Hilman <khilman@kernel.org>
->> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> > Cc: Pavel Machek <pavel@ucw.cz>
->> > Cc: Len Brown <len.brown@intel.com>
->> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> > Cc: linux-pm@vger.kernel.org
->> > Signed-off-by: Rob Herring <robh@kernel.org>
->> > ---
->> > v4:
->> >  - Add Rafael's ack
->> >
->> > v3:
->> >   - Update to new function name
->> >
->> >  drivers/base/power/domain.c | 2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> > index 4925af5c4cf0..8c12213875c6 100644
->> > --- a/drivers/base/power/domain.c
->> > +++ b/drivers/base/power/domain.c
->> > @@ -2253,7 +2253,7 @@ static int __genpd_dev_pm_attach(struct device *dev, struct device_node *np,
->> >                 mutex_unlock(&gpd_list_lock);
->> >                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
->> >                         __func__, PTR_ERR(pd));
->> > -               return -EPROBE_DEFER;
->> > +               return driver_deferred_probe_check_state(dev);
->> >         }
->>
->> This isn't the only error path where -EPROBE_DEFER may be returned
->> during attach in genpd.
->
-> Yes, but I think this is the only place you can fail to get the PD
-> device from DT. The case we care about is properties exist in the DT,
-> but no driver exists.
+On Monday, July 9, 2018 1:38:38 PM CEST Ulf Hansson wrote:
+> On 9 July 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, July 2, 2018 9:08:06 AM CEST Viresh Kumar wrote:
+> >> On 29-06-18, 13:04, Ulf Hansson wrote:
+> >> > Recently we added support to manage multiple PM domains per device. Consumer
+> >> > drivers were provided an API, dev_pm_domain_attach_by_id() to associate its
+> >> > device with one of its PM domain, by using an index.
+> >> >
+> >> > Let's extend this to allow the association to be done using a name based
+> >> > lookup, which follows the similar concept as for other resource types, such as
+> >> > clocks for example.
+> >> >
+> >> > Ulf Hansson (3):
+> >> >   PM / Domains: dt: Add a power-domain-names property
+> >> >   PM / Domains: Introduce option to attach a device by name to genpd
+> >> >   PM / Domains: Introduce dev_pm_domain_attach_by_name()
+> >>
+> >> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >>
+> >>
+> >
+> > Do we need Rob to ACK the binding change?
+> >
+> 
+> Normally, yes, however, the change to binding is trivial and the
+> concept of using a names property isn't something new. I would be
+> highly surprised if he would object.
+> 
+> I say apply it.
 
-That's correct. Thanks for clarifying!
+OK, applied along with the other two.
 
->
-> What would cause deferring in the latter cases?
-
-To power on the PM domain for example, which often is required to be
-able to probe the device.
-
->
-> Rob
-
-Kind regards
-Uffe
+Thanks!
