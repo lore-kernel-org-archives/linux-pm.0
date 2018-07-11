@@ -1,87 +1,61 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v6 6/7] dt: thermal: tsens: Document the fallback DT
- property for v2 of TSENS IP
-Date: Wed, 11 Jul 2018 09:42:09 -0700
-Message-ID: <20180711164209.GF545@tuxbook-pro>
-References: <cover.1531135999.git.amit.kucheria@linaro.org>
- <bf1147fa417314b2fbf5c0cfb682445587fe39bb.1531136000.git.amit.kucheria@linaro.org>
+From: noman pouigt <variksla@gmail.com>
+Subject: Re: Re: devfreq relation with pm qos
+Date: Wed, 11 Jul 2018 10:02:30 -0700
+Message-ID: <CAES_P+-=iictJKgHFGN2Mypp_+GMyTOVmZVQw=bSfHbyZMY4QA@mail.gmail.com>
+References: <CAES_P+_k=fz3yMnVZni2hEnfSujctnT33zoN9-KsBLBeQaG_sA@mail.gmail.com>
+ <CGME20180709213456epcas4p17e5753d1b59856a0df3790d7faef8d73@epcms1p2>
+ <CAES_P+_GTRcFya=N20+b+U=HOpv9gcpYkfJW_gU_i_2pH2hmMA@mail.gmail.com> <20180710055847epcms1p2eed3f89ae0220a06051faa83cc8b21ed@epcms1p2>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <bf1147fa417314b2fbf5c0cfb682445587fe39bb.1531136000.git.amit.kucheria@linaro.org>
+In-Reply-To: <20180710055847epcms1p2eed3f89ae0220a06051faa83cc8b21ed@epcms1p2>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 09 Jul 04:43 PDT 2018, Amit Kucheria wrote:
+On Mon, Jul 9, 2018 at 10:58 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wr=
+ote:
+>> + dev freq maintainters.
+>>
+>> On Mon, Jul 9, 2018 at 3:37 AM, noman pouigt <variksla@gmail.com> wrote:
+>> > folks,
+>> >
+>> > I am trying to figure out the relationship between PM QOS
+>> > with devfreq framework. I see this thread[1] where MyungJoo
+>> > talks about QOS and devfreq but that control is through
+>> > sysfs but I don't see any relation of pm qos (kernel/power/qos.c)
+>> > with devfreq directly as devfreq is not calling any of the QOS
+>> > api's. Is this intended?
+>> >
+>> > Isn't QOS value update using pm_qos_update_request has a
+>> > direct relation with devfreq drivers i.e. setting the value to
+>> > high or low selects the corresponding voltage and frequency
+>> > setting in devfreq framework? I went through the devfreq
+>> > drivers and couldn't find that relationship. Is this by design or
+>> > I am missing something very obvious?
+>> >
+>> > [1] https://lwn.net/Articles/484161/
+>
+> Hello,
+>
+> Unfortunately, the suggested concept in the referred article was not ever
+> accepted in the mainline.
 
-> We want to create common code for v2 of the TSENS IP block that is used in
-> a large number of Qualcomm SoCs. "qcom,tsens-v2" should be able to handle
-> most of the common functionality start with a common get_temp() function.
-> 
-> It is also necessary to split out the memory regions for the TM and SROT
-> register banks because their offsets are not constant across SoC families.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+MyungJo, I am trying to understand the relationship of PM QOS with
+devfreq drivers. I don't see any relation of PM QOS api's with devfreq driv=
+ers
+directly as there are no QOS apis used in the devfreq framework.
 
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+The only explanation I have is that PM QOS has direct relationship
+with CPUFREQ driver and as CPUFREQ driver works with CPU
+frequency and that CPU frequency directly affects DEVFREQ drivers
+as devfreq driver maps CPU frequency to device frequency and
+that is why PM QOS doesn=E2=80=99t have direct relation with PM QOS.
 
-Regards,
-Bjorn
+Is my understanding right?
 
-> ---
->  .../devicetree/bindings/thermal/qcom-tsens.txt     | 25 +++++++++++++++++-----
->  1 file changed, 20 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> index 06195e8..8f963b1 100644
-> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> @@ -1,10 +1,16 @@
->  * QCOM SoC Temperature Sensor (TSENS)
->  
->  Required properties:
-> -- compatible :
-> - - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-> - - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-> - - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-> +- compatible:
-> +  Must be one of the following:
-> +    - "qcom,msm8916-tsens" (MSM8916)
-> +    - "qcom,msm8974-tsens" (MSM8974)
-> +    - "qcom,msm8996-tsens" (MSM8996)
-> +    - "qcom,msm8998-tsens", "qcom,tsens-v2" (MSM8998)
-> +    - "qcom,sdm845-tsens", "qcom,tsens-v2" (SDM845)
-> +  The generic "qcom,tsens-v2" property must be used as a fallback for any SoC with
-> +  version 2 of the TSENS IP. MSM8996 is the only exception beacause the generic
-> +  property did not exist when support was added.
->  
->  - reg: Address range of the thermal registers
->  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> @@ -12,7 +18,7 @@ Required properties:
->  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
->  nvmem cells
->  
-> -Example:
-> +Example 1 (legacy support before a fallback tsens-v2 propoerty was introduced):
->  tsens: thermal-sensor@900000 {
->  		compatible = "qcom,msm8916-tsens";
->  		reg = <0x4a8000 0x2000>;
-> @@ -20,3 +26,12 @@ tsens: thermal-sensor@900000 {
->  		nvmem-cell-names = "caldata", "calsel";
->  		#thermal-sensor-cells = <1>;
->  	};
-> +
-> +Example 2 (for any platform containing v2 of the TSENS IP):
-> +tsens0: tsens@c222000 {
-> +		compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
-> +		reg = <0xc263000 0x1ff>, /* TM */
-> +			<0xc222000 0x1ff>; /* SROT */
-> +		#qcom,sensors = <13>;
-> +		#thermal-sensor-cells = <1>;
-> +	};
-> -- 
-> 2.7.4
-> 
+>
+> Cheers,
+> MyungJo
