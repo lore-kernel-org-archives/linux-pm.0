@@ -1,222 +1,182 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 2/3][RFC] PM / Hibernate: Encrypt the snapshot pages
- before submitted to the block device
-Date: Thu, 12 Jul 2018 18:10:37 +0800
-Message-ID: <20180712101037.GI7985@linux-l9pv.suse>
-References: <cover.1529486870.git.yu.c.chen@intel.com>
- <5a1cc6bff40ff9a3e023392c69b881e91b16837a.1529486870.git.yu.c.chen@intel.com>
- <20180628130641.GG3628@linux-l9pv.suse>
- <20180628135017.GA6561@sandybridge-desktop>
- <20180628142856.GH3628@linux-l9pv.suse>
- <20180628145207.GA10891@sandybridge-desktop>
- <20180629125943.GK3628@linux-l9pv.suse>
- <20180706152856.GB9631@sandybridge-desktop>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v12 1/4] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Thu, 12 Jul 2018 16:27:25 +0530
+Message-ID: <CAFp+6iFxiM0DDnRqUameH6XOYjgdAF8ysuXXAjkc8zsod-dVcQ@mail.gmail.com>
+References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
+ <20180708173413.1965-2-vivek.gautam@codeaurora.org>
+ <17407514.unFVTGoGrn@aspire.rjw.lan>
+ <CAFp+6iHxJucfzJJeEvSToG4p2zADjDb9F0L8h053x-JKAy55mg@mail.gmail.com>
+ <CAJZ5v0gbkdkx_+oHYiPz=SFdFCLm38hsi1TmJ2Jdc7j73TNtzg@mail.gmail.com>
+ <CAAFQd5Cqd=J+_nqRc_sx=sq2ayxwSRMgygvffuHH9nC5R_LjdA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180706152856.GB9631@sandybridge-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAAFQd5Cqd=J+_nqRc_sx=sq2ayxwSRMgygvffuHH9nC5R_LjdA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Yu Chen, 
-
-Sorry for my delay...
-
-On Fri, Jul 06, 2018 at 11:28:56PM +0800, Yu Chen wrote:
-> Hi Joey Lee,
-> On Fri, Jun 29, 2018 at 08:59:43PM +0800, joeyli wrote:
-> > On Thu, Jun 28, 2018 at 10:52:07PM +0800, Yu Chen wrote:
-> > > Hi,
-> > > On Thu, Jun 28, 2018 at 10:28:56PM +0800, joeyli wrote:
-> > > > On Thu, Jun 28, 2018 at 09:50:17PM +0800, Yu Chen wrote:
-> > > > > Hi,
-> > > > > On Thu, Jun 28, 2018 at 09:07:20PM +0800, joeyli wrote:
-> > > > > > Hi Chen Yu,
-> > > > > > 
-> > > > > > On Wed, Jun 20, 2018 at 05:40:32PM +0800, Chen Yu wrote:
-> > > > > > > Use the helper functions introduced previously to encrypt
-> > > > > > > the page data before they are submitted to the block device.
-> > > > > > > Besides, for the case of hibernation compression, the data
-> > > > > > > are firstly compressed and then encrypted, and vice versa
-> > > > > > > for the resume process.
-> > > > > > >
-> > > > > > 
-> > > > > > I want to suggest my solution that it direct signs/encrypts the
-> > > > > > memory snapshot image. This solution is already shipped with
-> > > > > > SLE12 a couple of years:
-> > > > > > 
-> > > > > > https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-encrypted-key-v0.2-v4.17-rc3
-> > > > > > 
-> > > > > I did not see image page encryption in above link, if I understand
-> > > > 
-> > > > PM / hibernate: Generate and verify signature for snapshot image
-> > > > https://github.com/joeyli/linux-s4sign/commit/bae39460393ada4c0226dd07cd5e3afcef86b71f
-> > > >
-> > > > PM / hibernate: snapshot image encryption
-> > > > https://github.com/joeyli/linux-s4sign/commit/6a9a0113bb221c036ebd0f6321b7191283fe4929
-> > > >
-> > > > The above patches sign and encrypt the data pages in snapshot image.
-> > > > It puts the signature to header.
-> > > >
-> > > It looks like your signature code can be simplyly added on top of the
-> > > solution we proposed here, how about we collaborating on this task?
-> > 
-> > OK, I will base on your user key solution to respin my signature patches.
-> >  
-> > > just my 2 cents, 
-> > > 1. The cryption code should be indepent of the snapshot code, and
-> > >    this is why we implement it as a kernel module for that in PATCH[1/3].
-> > 
-> > Why the cryption code must be indepent of snapshot code?
-> >
-> Modules can be easier to be maintained and customized/improved in the future IMO..
-
-hm... currently I didn't see apparent benefit on this...
-
-About modularization, is it possible to separate the key handler code
-from crypto_hibernation.c? Otherwise the snapshot signature needs
-to depend on encrypt function.
-
-> > > 2. There's no need to traverse the snapshot image twice, if the
-> > >    image is large(there's requirement on servers now) we can
-> > >    simplyly do the encryption before the disk IO, and this is
-> > >    why PATCH[2/3] looks like this.
-> > 
-> > If the encryption solution is only for block device, then the uswsusp
-> > interface must be locked-down when kernel is in locked mode:
-> > 
-> > uswsusp: Disable when the kernel is locked down
-> > https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs.git/commit/?h=lockdown-20180410&id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
-> > 
-> > I still suggest to keep the solution to direct encript the snapshot
-> > image for uswsusp because the snapshot can be encrypted by kernel
-> > before user space get it.
-> > 
-> > I mean that if the uswsusp be used, then kernel direct encrypts the
-> > snapshot image, otherwise kernel encrypts pages before block io.
-> > 
-> I did not quite get the point, if the kernel has been locked down,
-> then the uswsusp is disabled, why the kernel encrypts the snapshot
-> for uswsusp?
-
-There have some functions be locked-down because there have no
-appropriate mechanisms to check the integrity of writing data. If
-the snapshot image can be encrypted and authentication, then the
-uswsusp interface is avaiable for userspace. We do not need to lock
-it down.
-
-> > On the other hand, I have a question about asynchronous block io.
-> > Please see below...
-> > 
-> Okay.
-> > > > > > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > > Cc: Pavel Machek <pavel@ucw.cz>
-> > > > > > > Cc: Len Brown <len.brown@intel.com>
-> > > > > > > Cc: Borislav Petkov <bp@alien8.de>
-> > > > > > > Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> > > > > > > Cc: linux-pm@vger.kernel.org
-> > > > > > > Cc: linux-kernel@vger.kernel.org
-> > > > > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > > > > > ---
-> > > > > > >  kernel/power/power.h |   1 +
-> > > > > > >  kernel/power/swap.c  | 215 ++++++++++++++++++++++++++++++++++++++++++++++++---
-> > > > > > >  2 files changed, 205 insertions(+), 11 deletions(-)
-> > [...snip]
-> > > > > > >  /* kernel/power/hibernate.c */
-> > > > > > >  extern int swsusp_check(void);
-> > > > > > > diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-> > > > > > > index c2bcf97..2b6b3d0 100644
-> > > > > > > --- a/kernel/power/swap.c
-> > > > > > > +++ b/kernel/power/swap.c
-> > [...snip]
-> > > > > > > @@ -1069,18 +1171,42 @@ static int load_image(struct swap_map_handle *handle,
-> > > > > > >  	if (!m)
-> > > > > > >  		m = 1;
-> > > > > > >  	nr_pages = 0;
-> > > > > > > +	crypto_page_idx = 0;
-> > > > > > > +	if (handle->crypto) {
-> > > > > > > +		crypt_buf = (void *)get_zeroed_page(GFP_KERNEL);
-> > > > > > > +		if (!crypt_buf)
-> > > > > > > +			return -ENOMEM;
-> > > > > > > +	}
-> > > > > > >  	start = ktime_get();
-> > > > > > >  	for ( ; ; ) {
-> > > > > > >  		ret = snapshot_write_next(snapshot);
-> > > > > > >  		if (ret <= 0)
-> > > > > > >  			break;
-> > > > > > > -		ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > > > > +		if (handle->crypto)
-> > > > > > > +			ret = swap_read_page(handle, crypt_buf, &hb);
-> > > > > > > +		else
-> > > > > > > +			ret = swap_read_page(handle, data_of(*snapshot), &hb);
-> > > > > > >  		if (ret)
-> > > > > > >  			break;
-> > > > > > >  		if (snapshot->sync_read)
-> > > > > > >  			ret = hib_wait_io(&hb);
-> > 
-> > In snapshot_write_next(), the logic will clean the snapshot->sync_read
-> > when the buffer page doesn't equal to the original page. Which means
-> > that the page can be read by asynchronous block io. Otherwise, kernel
-> > calls hib_wait_io() to wait until the block io was done.
-> > 
-> Yes, you are right, I missed the asynchronous block io in non-compression
-> case.
-> > > > > > >  		if (ret)
-> > > > > > >  			break;
-> > > > > > > +		if (handle->crypto) {
-> > > > > > > +			/*
-> > > > > > > +			 * Need a decryption for the
-> > > > > > > +			 * data read from the block
-> > > > > > > +			 * device.
-> > > > > > > +			 */
-> > > > > > > +			ret = crypto_data(crypt_buf, PAGE_SIZE,
-> > > > > > > +					  data_of(*snapshot),
-> > > > > > > +					  PAGE_SIZE,
-> > > > > > > +					  false,
-> > > > > > > +					  crypto_page_idx);
-> > > > > > > +			if (ret)
-> > > > > > > +				break;
-> > > > > > > +			crypto_page_idx++;
-> > > > > > > +		}
-> > 
-> > The decryption is here in the for-loop. But maybe the page is still in
-> > the block io queue for waiting the batch read? The page content is not
-> > really read to memory when the crypto_data be run? 
-> > 
-> Yes, it is possible.
-> > > > > > >  		if (!(nr_pages % m))
-> > > > > > >  			pr_info("Image loading progress: %3d%%\n",
-> > > > > > >  				nr_pages / m * 10);
-> >                 nr_pages++;
-> >         }
-> >         err2 = hib_wait_io(&hb);
-> >         stop = ktime_get();
-> > 
-> > When the for-loop is break, the above hib_wait_io(&hb) guarantees that
-> > all asynchronous block io are done. Then all pages are read to memory.
-> > 
-> > I think that the decryption code must be moved after for-loop be break.
-> > Or there have any callback hook in the asynchronous block io that we
-> > can put the encryption code after the block io read the page.
-> > 
-> Yes, we can move the decryptino code here. Another thought came to my
-> mind, how about disabling the asynchronous block io in non-compression
-> case if encryption hibernation is enabled(because encryption hibernation
-> is not using the  asynchronous block io and it has to traverse each page
-> one by one, so asynchronous block io does not bring benefit to encryption
-> hibernation in non-compression case)? Or do I miss something?
->
-
-Disabling asynchronous block will cause IO performance drops. As I remeber
-that it's a lot of drops. You can try it. I am not sure how many people
-are still using non-compression mode.
-
-I do not know too much on block layer API. Is it possible to encrypt each page
-before writing to device from kernel?
-
-Thanks
-Joey Lee
+SGksCgoKT24gV2VkLCBKdWwgMTEsIDIwMTggYXQgNjoyMSBQTSwgVG9tYXN6IEZpZ2EgPHRmaWdh
+QGNocm9taXVtLm9yZz4gd3JvdGU6Cj4gT24gV2VkLCBKdWwgMTEsIDIwMTggYXQgODoxMSBQTSBS
+YWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+IHdyb3RlOgo+Pgo+PiBPbiBXZWQs
+IEp1bCAxMSwgMjAxOCBhdCAxMjo1NSBQTSwgVml2ZWsgR2F1dGFtCj4+IDx2aXZlay5nYXV0YW1A
+Y29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+PiA+IEhpIFJhZmFlbCwKPj4gPgo+PiA+Cj4+ID4gT24g
+V2VkLCBKdWwgMTEsIDIwMTggYXQgMzoyMCBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5
+c29ja2kubmV0PiB3cm90ZToKPj4gPj4gT24gU3VuZGF5LCBKdWx5IDgsIDIwMTggNzozNDoxMCBQ
+TSBDRVNUIFZpdmVrIEdhdXRhbSB3cm90ZToKPj4gPj4+IEZyb206IFNyaWNoYXJhbiBSIDxzcmlj
+aGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+ID4+Pgo+PiA+Pj4gVGhlIHNtbXUgbmVlZHMgdG8gYmUg
+ZnVuY3Rpb25hbCBvbmx5IHdoZW4gdGhlIHJlc3BlY3RpdmUKPj4gPj4+IG1hc3RlcidzIHVzaW5n
+IGl0IGFyZSBhY3RpdmUuIFRoZSBkZXZpY2VfbGluayBmZWF0dXJlCj4+ID4+PiBoZWxwcyB0byB0
+cmFjayBzdWNoIGZ1bmN0aW9uYWwgZGVwZW5kZW5jaWVzLCBzbyB0aGF0IHRoZQo+PiA+Pj4gaW9t
+bXUgZ2V0cyBwb3dlcmVkIHdoZW4gdGhlIG1hc3RlciBkZXZpY2UgZW5hYmxlcyBpdHNlbGYKPj4g
+Pj4+IHVzaW5nIHBtX3J1bnRpbWUuIFNvIGJ5IGFkYXB0aW5nIHRoZSBzbW11IGRyaXZlciBmb3IK
+Pj4gPj4+IHJ1bnRpbWUgcG0sIGFib3ZlIHNhaWQgZGVwZW5kZW5jeSBjYW4gYmUgYWRkcmVzc2Vk
+Lgo+PiA+Pj4KPj4gPj4+IFRoaXMgcGF0Y2ggYWRkcyB0aGUgcG0gcnVudGltZS9zbGVlcCBjYWxs
+YmFja3MgdG8gdGhlCj4+ID4+PiBkcml2ZXIgYW5kIGFsc28gdGhlIGZ1bmN0aW9ucyB0byBwYXJz
+ZSB0aGUgc21tdSBjbG9ja3MKPj4gPj4+IGZyb20gRFQgYW5kIGVuYWJsZSB0aGVtIGluIHJlc3Vt
+ZS9zdXNwZW5kLgo+PiA+Pj4KPj4gPj4+IFNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmlj
+aGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+ID4+PiBTaWduZWQtb2ZmLWJ5OiBBcmNoaXQgVGFuZWph
+IDxhcmNoaXR0QGNvZGVhdXJvcmEub3JnPgo+PiA+Pj4gW3ZpdmVrOiBDbG9jayByZXdvcmsgdG8g
+cmVxdWVzdCBidWxrIG9mIGNsb2Nrc10KPj4gPj4+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRh
+bSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgo+PiA+Pj4gUmV2aWV3ZWQtYnk6IFRvbWFz
+eiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4+ID4+PiAtLS0KPj4gPj4+Cj4+ID4+PiAgLSBO
+byBjaGFuZ2Ugc2luY2UgdjExLgo+PiA+Pj4KPj4gPj4+ICBkcml2ZXJzL2lvbW11L2FybS1zbW11
+LmMgfCA2MCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0K
+Pj4gPj4+ICAxIGZpbGUgY2hhbmdlZCwgNTggaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkK
+Pj4gPj4+Cj4+ID4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJp
+dmVycy9pb21tdS9hcm0tc21tdS5jCj4+ID4+PiBpbmRleCBmN2E5NmJjZjk0YTYuLmEwMWQwZGRl
+MjFkZCAxMDA2NDQKPj4gPj4+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+PiA+Pj4g
+KysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+ID4+PiBAQCAtNDgsNiArNDgsNyBAQAo+
+PiA+Pj4gICNpbmNsdWRlIDxsaW51eC9vZl9pb21tdS5oPgo+PiA+Pj4gICNpbmNsdWRlIDxsaW51
+eC9wY2kuaD4KPj4gPj4+ICAjaW5jbHVkZSA8bGludXgvcGxhdGZvcm1fZGV2aWNlLmg+Cj4+ID4+
+PiArI2luY2x1ZGUgPGxpbnV4L3BtX3J1bnRpbWUuaD4KPj4gPj4+ICAjaW5jbHVkZSA8bGludXgv
+c2xhYi5oPgo+PiA+Pj4gICNpbmNsdWRlIDxsaW51eC9zcGlubG9jay5oPgo+PiA+Pj4KPj4gPj4+
+IEBAIC0yMDUsNiArMjA2LDggQEAgc3RydWN0IGFybV9zbW11X2RldmljZSB7Cj4+ID4+PiAgICAg
+ICB1MzIgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG51bV9nbG9iYWxfaXJxczsKPj4gPj4+
+ICAgICAgIHUzMiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbnVtX2NvbnRleHRfaXJxczsK
+Pj4gPj4+ICAgICAgIHVuc2lnbmVkIGludCAgICAgICAgICAgICAgICAgICAgKmlycXM7Cj4+ID4+
+PiArICAgICBzdHJ1Y3QgY2xrX2J1bGtfZGF0YSAgICAgICAgICAgICpjbGtzOwo+PiA+Pj4gKyAg
+ICAgaW50ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBudW1fY2xrczsKPj4gPj4+Cj4+ID4+
+PiAgICAgICB1MzIgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNhdml1bV9pZF9iYXNlOyAv
+KiBTcGVjaWZpYyB0byBDYXZpdW0gKi8KPj4gPj4+Cj4+ID4+PiBAQCAtMTg5NywxMCArMTkwMCwx
+MiBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9jZmdfcHJvYmUoc3RydWN0IGFybV9zbW11
+X2RldmljZSAqc21tdSkKPj4gPj4+ICBzdHJ1Y3QgYXJtX3NtbXVfbWF0Y2hfZGF0YSB7Cj4+ID4+
+PiAgICAgICBlbnVtIGFybV9zbW11X2FyY2hfdmVyc2lvbiB2ZXJzaW9uOwo+PiA+Pj4gICAgICAg
+ZW51bSBhcm1fc21tdV9pbXBsZW1lbnRhdGlvbiBtb2RlbDsKPj4gPj4+ICsgICAgIGNvbnN0IGNo
+YXIgKiBjb25zdCAqY2xrczsKPj4gPj4+ICsgICAgIGludCBudW1fY2xrczsKPj4gPj4+ICB9Owo+
+PiA+Pj4KPj4gPj4+ICAjZGVmaW5lIEFSTV9TTU1VX01BVENIX0RBVEEobmFtZSwgdmVyLCBpbXAp
+ICBcCj4+ID4+PiAtc3RhdGljIHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIG5hbWUgPSB7IC52
+ZXJzaW9uID0gdmVyLCAubW9kZWwgPSBpbXAgfQo+PiA+Pj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3Qg
+YXJtX3NtbXVfbWF0Y2hfZGF0YSBuYW1lID0geyAudmVyc2lvbiA9IHZlciwgLm1vZGVsID0gaW1w
+IH0KPj4gPj4+Cj4+ID4+PiAgQVJNX1NNTVVfTUFUQ0hfREFUQShzbW11X2dlbmVyaWNfdjEsIEFS
+TV9TTU1VX1YxLCBHRU5FUklDX1NNTVUpOwo+PiA+Pj4gIEFSTV9TTU1VX01BVENIX0RBVEEoc21t
+dV9nZW5lcmljX3YyLCBBUk1fU01NVV9WMiwgR0VORVJJQ19TTU1VKTsKPj4gPj4+IEBAIC0xOTE5
+LDYgKzE5MjQsMjMgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQgYXJtX3NtbXVf
+b2ZfbWF0Y2hbXSA9IHsKPj4gPj4+ICB9Owo+PiA+Pj4gIE1PRFVMRV9ERVZJQ0VfVEFCTEUob2Ys
+IGFybV9zbW11X29mX21hdGNoKTsKPj4gPj4+Cj4+ID4+PiArc3RhdGljIHZvaWQgYXJtX3NtbXVf
+ZmlsbF9jbGtfZGF0YShzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11LAo+PiA+Pj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgY29uc3QgY2hhciAqIGNvbnN0ICpjbGtzKQo+PiA+
+Pj4gK3sKPj4gPj4+ICsgICAgIGludCBpOwo+PiA+Pj4gKwo+PiA+Pj4gKyAgICAgaWYgKHNtbXUt
+Pm51bV9jbGtzIDwgMSkKPj4gPj4+ICsgICAgICAgICAgICAgcmV0dXJuOwo+PiA+Pj4gKwo+PiA+
+Pj4gKyAgICAgc21tdS0+Y2xrcyA9IGRldm1fa2NhbGxvYyhzbW11LT5kZXYsIHNtbXUtPm51bV9j
+bGtzLAo+PiA+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzaXplb2YoKnNtbXUt
+PmNsa3MpLCBHRlBfS0VSTkVMKTsKPj4gPj4+ICsgICAgIGlmICghc21tdS0+Y2xrcykKPj4gPj4+
+ICsgICAgICAgICAgICAgcmV0dXJuOwo+PiA+Pj4gKwo+PiA+Pj4gKyAgICAgZm9yIChpID0gMDsg
+aSA8IHNtbXUtPm51bV9jbGtzOyBpKyspCj4+ID4+PiArICAgICAgICAgICAgIHNtbXUtPmNsa3Nb
+aV0uaWQgPSBjbGtzW2ldOwo+PiA+Pj4gK30KPj4gPj4+ICsKPj4gPj4+ICAjaWZkZWYgQ09ORklH
+X0FDUEkKPj4gPj4+ICBzdGF0aWMgaW50IGFjcGlfc21tdV9nZXRfZGF0YSh1MzIgbW9kZWwsIHN0
+cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUpCj4+ID4+PiAgewo+PiA+Pj4gQEAgLTIwMDEsNiAr
+MjAyMyw5IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNlX2R0X3Byb2JlKHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYsCj4+ID4+PiAgICAgICBkYXRhID0gb2ZfZGV2aWNlX2dldF9tYXRj
+aF9kYXRhKGRldik7Cj4+ID4+PiAgICAgICBzbW11LT52ZXJzaW9uID0gZGF0YS0+dmVyc2lvbjsK
+Pj4gPj4+ICAgICAgIHNtbXUtPm1vZGVsID0gZGF0YS0+bW9kZWw7Cj4+ID4+PiArICAgICBzbW11
+LT5udW1fY2xrcyA9IGRhdGEtPm51bV9jbGtzOwo+PiA+Pj4gKwo+PiA+Pj4gKyAgICAgYXJtX3Nt
+bXVfZmlsbF9jbGtfZGF0YShzbW11LCBkYXRhLT5jbGtzKTsKPj4gPj4+Cj4+ID4+PiAgICAgICBw
+YXJzZV9kcml2ZXJfb3B0aW9ucyhzbW11KTsKPj4gPj4+Cj4+ID4+PiBAQCAtMjA5OSw2ICsyMTI0
+LDE0IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9k
+ZXZpY2UgKnBkZXYpCj4+ID4+PiAgICAgICAgICAgICAgIHNtbXUtPmlycXNbaV0gPSBpcnE7Cj4+
+ID4+PiAgICAgICB9Cj4+ID4+Pgo+PiA+Pj4gKyAgICAgZXJyID0gZGV2bV9jbGtfYnVsa19nZXQo
+c21tdS0+ZGV2LCBzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4+ID4+PiArICAgICBpZiAo
+ZXJyKQo+PiA+Pj4gKyAgICAgICAgICAgICByZXR1cm4gZXJyOwo+PiA+Pj4gKwo+PiA+Pj4gKyAg
+ICAgZXJyID0gY2xrX2J1bGtfcHJlcGFyZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4+
+ID4+PiArICAgICBpZiAoZXJyKQo+PiA+Pj4gKyAgICAgICAgICAgICByZXR1cm4gZXJyOwo+PiA+
+Pj4gKwo+PiA+Pj4gICAgICAgZXJyID0gYXJtX3NtbXVfZGV2aWNlX2NmZ19wcm9iZShzbW11KTsK
+Pj4gPj4+ICAgICAgIGlmIChlcnIpCj4+ID4+PiAgICAgICAgICAgICAgIHJldHVybiBlcnI7Cj4+
+ID4+PiBAQCAtMjE4MSw2ICsyMjE0LDkgQEAgc3RhdGljIGludCBhcm1fc21tdV9kZXZpY2VfcmVt
+b3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4+ID4+Pgo+PiA+Pj4gICAgICAgLyog
+VHVybiB0aGUgdGhpbmcgb2ZmICovCj4+ID4+PiAgICAgICB3cml0ZWwoc0NSMF9DTElFTlRQRCwg
+QVJNX1NNTVVfR1IwX05TKHNtbXUpICsgQVJNX1NNTVVfR1IwX3NDUjApOwo+PiA+Pj4gKwo+PiA+
+Pj4gKyAgICAgY2xrX2J1bGtfdW5wcmVwYXJlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsK
+Pj4gPj4+ICsKPj4gPj4+ICAgICAgIHJldHVybiAwOwo+PiA+Pj4gIH0KPj4gPj4+Cj4+ID4+PiBA
+QCAtMjE5Nyw3ICsyMjMzLDI3IEBAIHN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVf
+cG1fcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPj4gPj4+ICAgICAgIHJldHVybiAwOwo+PiA+
+Pj4gIH0KPj4gPj4+Cj4+ID4+PiAtc3RhdGljIFNJTVBMRV9ERVZfUE1fT1BTKGFybV9zbW11X3Bt
+X29wcywgTlVMTCwgYXJtX3NtbXVfcG1fcmVzdW1lKTsKPj4gPj4+ICtzdGF0aWMgaW50IF9fbWF5
+YmVfdW51c2VkIGFybV9zbW11X3J1bnRpbWVfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPj4g
+Pj4+ICt7Cj4+ID4+PiArICAgICBzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11ID0gZGV2X2dl
+dF9kcnZkYXRhKGRldik7Cj4+ID4+PiArCj4+ID4+PiArICAgICByZXR1cm4gY2xrX2J1bGtfZW5h
+YmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPj4gPj4+ICt9Cj4+ID4+PiArCj4+ID4+
+PiArc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50aW1lX3N1c3BlbmQoc3Ry
+dWN0IGRldmljZSAqZGV2KQo+PiA+Pj4gK3sKPj4gPj4+ICsgICAgIHN0cnVjdCBhcm1fc21tdV9k
+ZXZpY2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKPj4gPj4+ICsKPj4gPj4+ICsgICAg
+IGNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+PiA+Pj4gKwo+
+PiA+Pj4gKyAgICAgcmV0dXJuIDA7Cj4+ID4+PiArfQo+PiA+Pj4gKwo+PiA+Pj4gK3N0YXRpYyBj
+b25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBhcm1fc21tdV9wbV9vcHMgPSB7Cj4+ID4+PiArICAgICBT
+RVRfU1lTVEVNX1NMRUVQX1BNX09QUyhOVUxMLCBhcm1fc21tdV9wbV9yZXN1bWUpCj4+ID4+Cj4+
+ID4+IFRoaXMgaXMgc3VzcGljaW91cy4KPj4gPj4KPj4gPj4gSWYgeW91IG5lZWQgYSBydW50aW1l
+IHN1c3BlbmQgbWV0aG9kLCB3aHkgZG8geW91IHRoaW5rIHRoYXQgaXQgaXMgbm90IG5lY2Vzc2Fy
+eQo+PiA+PiB0byBzdXNwZW5kIHRoZSBkZXZpY2UgZHVyaW5nIHN5c3RlbS13aWRlIHRyYW5zaXRp
+b25zPwo+PiA+Cj4+ID4gT2theSwgc28geW91IHN1Z2dlc3QgdG8gcHV0IGNsb2NrIGRpc2FibGlu
+ZyBpbiBzYXkgYXJtX3NtbXVfcG1fc3VzcGVuZCgpPwo+PiA+IEluIHRoYXQgY2FzZSB0aGUgY2xv
+Y2tzIGhhdmUgdG8gYmUgZW5hYmxlZCBpbiB0aGUgcmVzdW1lIHBhdGggdG9vLgo+PiA+Cj4+ID4g
+SSByZW1lbWJlciBUb21hc3ogcG9pbnRlZCB0byB0aGF0IHdlIHNob3VsZG4ndCBuZWVkIGNsb2Nr
+IGVuYWJsZSBpbiByZXN1bWUKPj4gPiBwYXRoIFsxXS4KPj4gPgo+PiA+IFsxXSBodHRwczovL2xr
+bWwub3JnL2xrbWwvMjAxOC8zLzE1LzYwCj4KPiBUaGF0IHdhcyBhbiBhbnN3ZXIgZm9yIGEgZGlm
+ZmVyZW50IHF1ZXN0aW9uLiBJIGRvbid0IHJlbWVtYmVyCj4gc3VnZ2VzdGluZyBoYXZpbmcgbm8g
+c3VzcGVuZCBmdW5jdGlvbi4KCk15IGJhZCwgYXBvbG9naWVzLiBZb3UgYXJlIHJpZ2h0LCB3ZSB3
+ZXJlIGRpc2N1c3NpbmcgaWYgd2UgbmVlZCBhbnkgYWRkaXRpb25hbApoYW5kbGluZyBvZiBwb3dl
+ciBmb3IgYXJtX3NtbXVfZGV2aWNlX3Jlc2V0KCkgaW4gYXJtX3NtbXVfcG1fcmVzdW1lKCkuCgo+
+IEFsdGhvdWdoLCBnaXZlbiB0aGUgUE0KPiBzdWJzeXN0ZW0gaW50ZXJuYWxzLCB0aGUgc3VzcGVu
+ZCBmdW5jdGlvbiB3b3VsZG4ndCBiZSBjYWxsZWQgb24gU01NVQo+IGltcGxlbWVudGF0aW9uIG5l
+ZWRlZCBwb3dlciBjb250cm9sIChzaW5jZSB0aGV5IHdvdWxkIGhhdmUgcnVudGltZSBQTQo+IGVu
+YWJsZWQpIGFuZCBvbiBvdGhlcnMsIGl0IHdvdWxkIGJlIGNhbGxlZCBidXQgZG8gbm90aGluZyAo
+c2luY2Ugbm8KPiBjbG9ja3MpLgo+Cj4+Cj4+IEhvbmVzdGx5LCBJIGp1c3QgZG9uJ3Qga25vdy4g
+Oi0pCj4+Cj4+IEl0IGp1c3QgbG9va3Mgb2RkIHRoZSB3YXkgaXQgaXMgZG9uZS4gIEkgdGhpbmsg
+dGhlIGNsb2NrIHNob3VsZCBiZQo+PiBnYXRlZCBkdXJpbmcgc3lzdGVtLXdpZGUgc3VzcGVuZCB0
+b28sIGJlY2F1c2UgdGhlIHN5c3RlbSBjYW4gc3BlbmQKPj4gbXVjaCBtb3JlIHRpbWUgaW4gYSBz
+bGVlcCBzdGF0ZSB0aGFuIGluIHRoZSB3b3JraW5nIHN0YXRlLCBvbiBhdmVyYWdlLgo+Pgo+PiBB
+bmQgbm90ZSB0aGF0IHlvdSBjYW5ub3QgcmVseSBvbiBydW50aW1lIFBNIHRvIGFsd2F5cyBkbyBp
+dCBmb3IgeW91LAo+PiBiZWNhdXNlIGl0IG1heSBiZSBkaXNhYmxlZCBhdCBhIGNsaWVudCBkZXZp
+Y2Ugb3IgZXZlbiBibG9ja2VkIGJ5IHVzZXIKPj4gc3BhY2UgdmlhIHBvd2VyL2NvbnRyb2wgaW4g
+c3lzZnMgYW5kIHRoYXQgc2hvdWxkbid0IG1hdHRlciBmb3IKPj4gc3lzdGVtLXdpZGUgUE0uCj4K
+PiBVc2VyIHNwYWNlIGJsb2NraW5nIHJ1bnRpbWUgUE0gdGhyb3VnaCBzeXNmcyBpcyBhIGdvb2Qg
+cG9pbnQuIEknbSBub3QKPiAxMDAlIHN1cmUgaG93IHRoZSBQTSBzdWJzeXN0ZW0gZGVhbHMgd2l0
+aCB0aGF0IGluIGNhc2Ugb2Ygc3lzdGVtLXdpZGUKPiBzdXNwZW5kLiBJIGd1ZXNzIGZvciBjb25z
+aXN0ZW5jeSBhbmQgc2FmZXR5LCB3ZSBzaG91bGQgaGF2ZSB0aGUKPiBzdXNwZW5kIGNhbGxiYWNr
+LgoKV2lsbCBhZGQgdGhlIGZvbGxvd2luZyBzdXNwZW5kIGNhbGxiYWNrIChzYW1lIGFzIGFybV9z
+bW11X3J1bnRpbWVfc3VzcGVuZCk6Cgogc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21t
+dV9wbV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKIHsKICAgICAgICAgc3RydWN0IGFybV9z
+bW11X2RldmljZSAqc21tdSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOwoKICAgICAgICAgY2xrX2J1
+bGtfZGlzYWJsZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7CgogICAgICAgICByZXR1cm4g
+MDsKIH0KCgpCZXN0IHJlZ2FyZHMKVml2ZWsKCj4KPiBCZXN0IHJlZ2FyZHMsCj4gVG9tYXN6Cj4g
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBpb21tdSBt
+YWlsaW5nIGxpc3QKPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwo+IGh0dHBzOi8v
+bGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lvbW11CgoKCi0tIApR
+VUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJ
+bmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQgYnkgVGhlIExpbnV4
+IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5v
+Cg==
