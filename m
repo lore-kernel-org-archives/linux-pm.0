@@ -1,7 +1,7 @@
 From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH v5 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
-Date: Thu, 12 Jul 2018 23:35:44 +0530
-Message-ID: <1531418745-19742-2-git-send-email-tdas@codeaurora.org>
+Subject: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Thu, 12 Jul 2018 23:35:45 +0530
+Message-ID: <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
 References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
@@ -10,180 +10,399 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-SoCs. This is required for managing the cpu frequency transitions which are
-controlled by the hardware engine.
+The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+for changing the frequency of CPUs. The driver implements the cpufreq
+driver interface for this hardware engine.
 
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 Signed-off-by: Taniya Das <tdas@codeaurora.org>
 ---
- .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 158 +++++++++++++++++++++
- 1 file changed, 158 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+ drivers/cpufreq/Kconfig.arm       |  10 ++
+ drivers/cpufreq/Makefile          |   1 +
+ drivers/cpufreq/qcom-cpufreq-hw.c | 344 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 355 insertions(+)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 52f5f1a..141ec3e 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -312,3 +312,13 @@ config ARM_PXA2xx_CPUFREQ
+ 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+
+ 	  If in doubt, say N.
++
++config ARM_QCOM_CPUFREQ_HW
++	bool "QCOM CPUFreq HW driver"
++	help
++	 Support for the CPUFreq HW driver.
++	 Some QCOM chipsets have a HW engine to offload the steps
++	 necessary for changing the frequency of the CPUs. Firmware loaded
++	 in this engine exposes a programming interafce to the High-level OS.
++	 The driver implements the cpufreq driver interface for this HW engine.
++	 Say Y if you want to support CPUFreq HW.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index fb4a2ec..1226a3e 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -86,6 +86,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+ obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
+
+
+ ##################################################################################
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
 new file mode 100644
-index 0000000..52a53e1
+index 0000000..fa25a95
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-@@ -0,0 +1,158 @@
-+Qualcomm Technologies, Inc. CPUFREQ Bindings
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -0,0 +1,344 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
++ */
 +
-+CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
-+SoCs to manage frequency in hardware. It is capable of controlling frequency
-+for multiple clusters.
++#include <linux/cpufreq.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/of_platform.h>
 +
-+Properties:
-+- compatible
-+	Usage:		required
-+	Value type:	<string>
-+	Definition:	must be "qcom,cpufreq-hw".
++#define INIT_RATE			300000000UL
++#define XO_RATE				19200000UL
++#define LUT_MAX_ENTRIES			40U
++#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
++#define LUT_ROW_SIZE			32
 +
-+* Property qcom,freq-domain
-+Devices supporting freq-domain must set their "qcom,freq-domain" property with
-+phandle to a freq_domain_table in their DT node.
++enum {
++	REG_ENABLE,
++	REG_LUT_TABLE,
++	REG_PERF_STATE,
 +
-+* Frequency Domain Table Node
-+
-+This describes the frequency domain belonging to a device.
-+This node can have following properties:
-+
-+- reg
-+	Usage:		required
-+	Value type:	<prop-encoded-array>
-+	Definition:	Addresses and sizes for the memory of the HW bases.
-+
-+Example:
-+
-+Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
-+DCVS state together.
-+
-+/ {
-+	cpus {
-+		#address-cells = <2>;
-+		#size-cells = <0>;
-+
-+		CPU0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x0>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_0>;
-+			qcom,freq-domain = <&freq_domain_table0>;
-+			L2_0: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+				L3_0: l3-cache {
-+				      compatible = "cache";
-+				};
-+			};
-+		};
-+
-+		CPU1: cpu@100 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x100>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_100>;
-+			qcom,freq-domain = <&freq_domain_table0>;
-+			L2_100: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU2: cpu@200 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x200>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_200>;
-+			qcom,freq-domain = <&freq_domain_table0>;
-+			L2_200: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU3: cpu@300 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x300>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_300>;
-+			qcom,freq-domain = <&freq_domain_table0>;
-+			L2_300: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU4: cpu@400 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x400>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_400>;
-+			qcom,freq-domain = <&freq_domain_table1>;
-+			L2_400: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU5: cpu@500 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x500>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_500>;
-+			qcom,freq-domain = <&freq_domain_table1>;
-+			L2_500: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU6: cpu@600 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x600>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_600>;
-+			qcom,freq-domain = <&freq_domain_table1>;
-+			L2_600: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+
-+		CPU7: cpu@700 {
-+			device_type = "cpu";
-+			compatible = "qcom,kryo385";
-+			reg = <0x0 0x700>;
-+			enable-method = "psci";
-+			next-level-cache = <&L2_700>;
-+			qcom,freq-domain = <&freq_domain_table1>;
-+			L2_700: l2-cache {
-+				compatible = "cache";
-+				next-level-cache = <&L3_0>;
-+			};
-+		};
-+	};
-+
-+	qcom,cpufreq-hw {
-+		compatible = "qcom,cpufreq-hw";
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		ranges;
-+		freq_domain_table0: freq_table0 {
-+			reg = <0 0x17d43000 0 0x1400>;
-+		};
-+
-+		freq_domain_table1: freq_table1 {
-+			reg = <0 0x17d45800 0 0x1400>;
-+		};
-+	};
++	REG_ARRAY_SIZE,
 +};
++
++struct cpufreq_qcom {
++	struct cpufreq_frequency_table *table;
++	struct device *dev;
++	const u16 *reg_offset;
++	void __iomem *base;
++	cpumask_t related_cpus;
++	unsigned int max_cores;
++};
++
++static u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
++	[REG_ENABLE]		= 0x0,
++	[REG_LUT_TABLE]		= 0x110,
++	[REG_PERF_STATE]	= 0x920,
++};
++
++static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
++
++static int
++qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
++			     unsigned int index)
++{
++	struct cpufreq_qcom *c = policy->driver_data;
++	unsigned int offset = c->reg_offset[REG_PERF_STATE];
++
++	writel_relaxed(index, c->base + offset);
++
++	return 0;
++}
++
++static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
++{
++	struct cpufreq_qcom *c;
++	struct cpufreq_policy *policy;
++	unsigned int index, offset;
++
++	policy = cpufreq_cpu_get_raw(cpu);
++	if (!policy)
++		return 0;
++
++	c = policy->driver_data;
++	offset = c->reg_offset[REG_PERF_STATE];
++
++	index = readl_relaxed(c->base + offset);
++	index = min(index, LUT_MAX_ENTRIES - 1);
++
++	return policy->freq_table[index].frequency;
++}
++
++static unsigned int
++qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
++			    unsigned int target_freq)
++{
++	struct cpufreq_qcom *c = policy->driver_data;
++	unsigned int offset;
++	int index;
++
++	index = cpufreq_table_find_index_l(policy, target_freq);
++	if (index < 0)
++		return 0;
++
++	offset = c->reg_offset[REG_PERF_STATE];
++
++	writel_relaxed(index, c->base + offset);
++
++	return policy->freq_table[index].frequency;
++}
++
++static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
++{
++	struct cpufreq_qcom *c;
++
++	c = qcom_freq_domain_map[policy->cpu];
++	if (!c) {
++		pr_err("No scaling support for CPU%d\n", policy->cpu);
++		return -ENODEV;
++	}
++
++	cpumask_copy(policy->cpus, &c->related_cpus);
++
++	policy->fast_switch_possible = true;
++	policy->freq_table = c->table;
++	policy->driver_data = c;
++
++	return 0;
++}
++
++static struct freq_attr *qcom_cpufreq_hw_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	&cpufreq_freq_attr_scaling_boost_freqs,
++	NULL
++};
++
++static struct cpufreq_driver cpufreq_qcom_hw_driver = {
++	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
++			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= qcom_cpufreq_hw_target_index,
++	.get		= qcom_cpufreq_hw_get,
++	.init		= qcom_cpufreq_hw_cpu_init,
++	.fast_switch    = qcom_cpufreq_hw_fast_switch,
++	.name		= "qcom-cpufreq-hw",
++	.attr		= qcom_cpufreq_hw_attr,
++	.boost_enabled	= true,
++};
++
++static int qcom_read_lut(struct platform_device *pdev,
++			 struct cpufreq_qcom *c)
++{
++	struct device *dev = &pdev->dev;
++	unsigned int offset;
++	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
++
++	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
++				sizeof(*c->table), GFP_KERNEL);
++	if (!c->table)
++		return -ENOMEM;
++
++	offset = c->reg_offset[REG_LUT_TABLE];
++
++	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
++		data = readl_relaxed(c->base + offset + i * LUT_ROW_SIZE);
++		src = ((data & GENMASK(31, 30)) >> 30);
++		lval = (data & GENMASK(7, 0));
++		core_count = CORE_COUNT_VAL(data);
++
++		if (src == 0)
++			c->table[i].frequency = INIT_RATE / 1000;
++		else
++			c->table[i].frequency = XO_RATE * lval / 1000;
++
++		cur_freq = c->table[i].frequency;
++
++		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
++			i, c->table[i].frequency, core_count);
++
++		if (core_count != c->max_cores)
++			cur_freq = CPUFREQ_ENTRY_INVALID;
++
++		/*
++		 * Two of the same frequencies with the same core counts means
++		 * end of table.
++		 */
++		if (i > 0 && c->table[i - 1].frequency ==
++		   c->table[i].frequency && prev_cc == core_count) {
++			struct cpufreq_frequency_table *prev = &c->table[i - 1];
++
++			if (prev_freq == CPUFREQ_ENTRY_INVALID)
++				prev->flags = CPUFREQ_BOOST_FREQ;
++			break;
++		}
++		prev_cc = core_count;
++		prev_freq = cur_freq;
++	}
++
++	c->table[i].frequency = CPUFREQ_TABLE_END;
++
++	return 0;
++}
++
++static int qcom_get_related_cpus(struct device_node *np, struct cpumask *m)
++{
++	struct device_node *cpu_np, *freq_np;
++	int cpu;
++
++	for_each_possible_cpu(cpu) {
++		cpu_np = of_cpu_device_node_get(cpu);
++		if (!cpu_np)
++			continue;
++		freq_np = of_parse_phandle(cpu_np, "qcom,freq-domain", 0);
++		if (!freq_np) {
++			of_node_put(cpu_np);
++			continue;
++		}
++		if (freq_np == np)
++			cpumask_set_cpu(cpu, m);
++
++		of_node_put(cpu_np);
++	}
++
++	return 0;
++}
++
++static int qcom_cpu_resources_init(struct platform_device *pdev,
++				   struct device_node *np, unsigned int cpu)
++{
++	struct cpufreq_qcom *c;
++	struct resource res;
++	struct device *dev = &pdev->dev;
++	unsigned int offset, cpu_r;
++	int ret;
++
++	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
++	if (!c)
++		return -ENOMEM;
++
++	c->reg_offset = of_device_get_match_data(&pdev->dev);
++	if (!c->reg_offset)
++		return -EINVAL;
++
++	if (of_address_to_resource(np, 0, &res))
++		return -ENOMEM;
++
++	c->base = devm_ioremap(dev, res.start, resource_size(&res));
++	if (!c->base) {
++		dev_err(dev, "Unable to map %s base\n", np->name);
++		return -ENOMEM;
++	}
++
++	offset = c->reg_offset[REG_ENABLE];
++
++	/* HW should be in enabled state to proceed */
++	if (!(readl_relaxed(c->base + offset) & 0x1)) {
++		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
++		return -ENODEV;
++	}
++
++	ret = qcom_get_related_cpus(np, &c->related_cpus);
++	if (ret) {
++		dev_err(dev, "%s failed to get related CPUs\n", np->name);
++		return ret;
++	}
++
++	c->max_cores = cpumask_weight(&c->related_cpus);
++	if (!c->max_cores)
++		return -ENOENT;
++
++	ret = qcom_read_lut(pdev, c);
++	if (ret) {
++		dev_err(dev, "%s failed to read LUT\n", np->name);
++		return ret;
++	}
++
++	qcom_freq_domain_map[cpu] = c;
++
++	/* Related CPUs to keep a single copy */
++	cpu_r = cpumask_first(&c->related_cpus);
++	if (cpu != cpu_r) {
++		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
++		devm_kfree(dev, c);
++	}
++
++	return 0;
++}
++
++static int qcom_resources_init(struct platform_device *pdev)
++{
++	struct device_node *np, *cpu_np;
++	unsigned int cpu;
++	int ret;
++
++	for_each_possible_cpu(cpu) {
++		cpu_np = of_cpu_device_node_get(cpu);
++		if (!cpu_np) {
++			dev_err(&pdev->dev, "Failed to get cpu %d device\n",
++				cpu);
++			continue;
++		}
++
++		np = of_parse_phandle(cpu_np, "qcom,freq-domain", 0);
++		if (!np) {
++			dev_err(&pdev->dev, "Failed to get freq-domain device\n");
++			return -EINVAL;
++		}
++
++		of_node_put(cpu_np);
++
++		ret = qcom_cpu_resources_init(pdev, np, cpu);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
++{
++	int rc;
++
++	/* Get the bases of cpufreq for domains */
++	rc = qcom_resources_init(pdev);
++	if (rc) {
++		dev_err(&pdev->dev, "CPUFreq resource init failed\n");
++		return rc;
++	}
++
++	rc = cpufreq_register_driver(&cpufreq_qcom_hw_driver);
++	if (rc) {
++		dev_err(&pdev->dev, "CPUFreq HW driver failed to register\n");
++		return rc;
++	}
++
++	dev_info(&pdev->dev, "QCOM CPUFreq HW driver initialized\n");
++
++	return 0;
++}
++
++static const struct of_device_id match_table[] = {
++	{ .compatible = "qcom,cpufreq-hw", .data = &cpufreq_qcom_std_offsets },
++	{}
++};
++
++static struct platform_driver qcom_cpufreq_hw_driver = {
++	.probe = qcom_cpufreq_hw_driver_probe,
++	.driver = {
++		.name = "qcom-cpufreq-hw",
++		.of_match_table = match_table,
++		.owner = THIS_MODULE,
++	},
++};
++
++static int __init qcom_cpufreq_hw_init(void)
++{
++	return platform_driver_register(&qcom_cpufreq_hw_driver);
++}
++subsys_initcall(qcom_cpufreq_hw_init);
++
++MODULE_DESCRIPTION("QCOM firmware-based CPU Frequency driver");
++MODULE_LICENSE("GPL v2");
 --
 Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
 of the Code Aurora Forum, hosted by the  Linux Foundation.
