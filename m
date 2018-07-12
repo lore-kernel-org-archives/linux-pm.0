@@ -1,116 +1,101 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v6 6/7] dt: thermal: tsens: Document the fallback DT
- property for v2 of TSENS IP
-Date: Thu, 12 Jul 2018 11:26:25 +0530
-Message-ID: <CAP245DVpOPhuCZ4OJ0t=izquND2mUrQ8ekkU8M+sMeyUJ_fjYw@mail.gmail.com>
-References: <cover.1531135999.git.amit.kucheria@linaro.org>
- <bf1147fa417314b2fbf5c0cfb682445587fe39bb.1531136000.git.amit.kucheria@linaro.org>
- <CAD=FV=W-snhM9L9Ez-ypAJwn2NhNJ1X=s5wDvu-gbQvmLZY9Qg@mail.gmail.com>
+From: George Cherian <george.cherian@cavium.com>
+Subject: [PATCH v4] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
+Date: Wed, 11 Jul 2018 23:07:55 -0700
+Message-ID: <1531375675-52623-1-git-send-email-george.cherian@cavium.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=W-snhM9L9Ez-ypAJwn2NhNJ1X=s5wDvu-gbQvmLZY9Qg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, pprakash@codeaurora.org, George Cherian <george.cherian@cavium.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 12, 2018 at 12:12 AM Doug Anderson <dianders@chromium.org> wrote:
->
-> Hi,
->
-> On Mon, Jul 9, 2018 at 4:43 AM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> > We want to create common code for v2 of the TSENS IP block that is used in
-> > a large number of Qualcomm SoCs. "qcom,tsens-v2" should be able to handle
-> > most of the common functionality start with a common get_temp() function.
-> >
-> > It is also necessary to split out the memory regions for the TM and SROT
-> > register banks because their offsets are not constant across SoC families.
->
-> nit that bindings should be earlier in the patch series than the code
-> implementing the bindings.
+Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
+feedback via set of performance counters. To determine the actual
+performance level delivered over time, OSPM may read a set of
+performance counters from the Reference Performance Counter Register
+and the Delivered Performance Counter Register.
 
-Will reorder.
+OSPM calculates the delivered performance over a given time period by
+taking a beginning and ending snapshot of both the reference and
+delivered performance counters, and calculating:
 
->
-> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> > ---
-> >  .../devicetree/bindings/thermal/qcom-tsens.txt     | 25 +++++++++++++++++-----
-> >  1 file changed, 20 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > index 06195e8..8f963b1 100644
-> > --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> > @@ -1,10 +1,16 @@
-> >  * QCOM SoC Temperature Sensor (TSENS)
-> >
-> >  Required properties:
-> > -- compatible :
-> > - - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-> > - - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-> > - - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-> > +- compatible:
-> > +  Must be one of the following:
-> > +    - "qcom,msm8916-tsens" (MSM8916)
-> > +    - "qcom,msm8974-tsens" (MSM8974)
-> > +    - "qcom,msm8996-tsens" (MSM8996)
-> > +    - "qcom,msm8998-tsens", "qcom,tsens-v2" (MSM8998)
-> > +    - "qcom,sdm845-tsens", "qcom,tsens-v2" (SDM845)
-> > +  The generic "qcom,tsens-v2" property must be used as a fallback for any SoC with
-> > +  version 2 of the TSENS IP. MSM8996 is the only exception beacause the generic
-> > +  property did not exist when support was added.
-> >
-> >  - reg: Address range of the thermal registers
->
-> You need to document that for old SoCs where TM / SROT were 0x1000
-> apart (SROT first) that one "reg" field was OK.  ...and that for new
-> SoCs you specify two reg ranges: the first for TM and the second for
-> SROT.
+delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
 
-OK.
+Implement the above and hook this to the cpufreq->get method.
 
-> >  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
-> > @@ -12,7 +18,7 @@ Required properties:
-> >  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
-> >  nvmem cells
-> >
-> > -Example:
-> > +Example 1 (legacy support before a fallback tsens-v2 propoerty was introduced):
-> >  tsens: thermal-sensor@900000 {
-> >                 compatible = "qcom,msm8916-tsens";
-> >                 reg = <0x4a8000 0x2000>;
-> > @@ -20,3 +26,12 @@ tsens: thermal-sensor@900000 {
-> >                 nvmem-cell-names = "caldata", "calsel";
-> >                 #thermal-sensor-cells = <1>;
-> >         };
-> > +
-> > +Example 2 (for any platform containing v2 of the TSENS IP):
-> > +tsens0: tsens@c222000 {
->
-> A) Use a generic name for the node, not a specific one.  Thus the node
-> should be "thermal-sensor", not "tsens".
->
-> B) This unit address needs to match the _first_ reg address listed.
-> Give your reg below, this should be @c263000
->
-> Thus your node name should be:
->
-> tsens0: thermal-sensor@c263000 {
+Signed-off-by: George Cherian <george.cherian@cavium.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 52 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
 
-Fixed
-
-> > +               compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
-> > +               reg = <0xc263000 0x1ff>, /* TM */
-> > +                       <0xc222000 0x1ff>; /* SROT */
-> > +               #qcom,sensors = <13>;
->
-> The "#qcom,sensors" property seems wrong in a few ways:
->
-> A) I wouldn't have expected it to start with a "#".  I only expect to
-> see that on things specifying sizes / lengths.  Rob can feel free to
-> override me, though.
->
-> B) It's not documented above.  Just putting something in an example
-> doesn't document it--it needs to be listed in the "Optional
-> properties".
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index a9d3eec..30f3021 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -296,10 +296,62 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	return ret;
+ }
+ 
++static inline u64 get_delta(u64 t1, u64 t0)
++{
++	if (t1 > t0 || t0 > ~(u32)0)
++		return t1 - t0;
++
++	return (u32)t1 - (u32)t0;
++}
++
++static int cppc_get_rate_from_fbctrs(struct cppc_cpudata *cpu,
++				     struct cppc_perf_fb_ctrs fb_ctrs_t0,
++				     struct cppc_perf_fb_ctrs fb_ctrs_t1)
++{
++	u64 delta_reference, delta_delivered;
++	u64 reference_perf, delivered_perf;
++
++	reference_perf = fb_ctrs_t0.reference_perf;
++
++	delta_reference = get_delta(fb_ctrs_t1.reference,
++				    fb_ctrs_t0.reference);
++	delta_delivered = get_delta(fb_ctrs_t1.delivered,
++				    fb_ctrs_t0.delivered);
++
++	/* Check to avoid divide-by zero */
++	if (delta_reference || delta_delivered)
++		delivered_perf = (reference_perf * delta_delivered) /
++					delta_reference;
++	else
++		delivered_perf = cpu->perf_ctrls.desired_perf;
++
++	return cppc_cpufreq_perf_to_khz(cpu, delivered_perf);
++}
++
++static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
++{
++	struct cppc_perf_fb_ctrs fb_ctrs_t0 = {0}, fb_ctrs_t1 = {0};
++	struct cppc_cpudata *cpu = all_cpu_data[cpunum];
++	int ret;
++
++	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t0);
++	if (ret)
++		return ret;
++
++	udelay(2); /* 2usec delay between sampling */
++
++	ret = cppc_get_perf_ctrs(cpunum, &fb_ctrs_t1);
++	if (ret)
++		return ret;
++
++	return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
++}
++
+ static struct cpufreq_driver cppc_cpufreq_driver = {
+ 	.flags = CPUFREQ_CONST_LOOPS,
+ 	.verify = cppc_verify_policy,
+ 	.target = cppc_cpufreq_set_target,
++	.get = cppc_cpufreq_get_rate,
+ 	.init = cppc_cpufreq_cpu_init,
+ 	.stop_cpu = cppc_cpufreq_stop_cpu,
+ 	.name = "cppc_cpufreq",
+-- 
+1.8.3.1
