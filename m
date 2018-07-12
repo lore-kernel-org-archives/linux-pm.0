@@ -1,17 +1,16 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 02/12] PM / devfreq: Fix handling of min/max_freq ==
- 0
-Date: Thu, 12 Jul 2018 17:34:20 +0900
-Message-ID: <fd7e9774-bf19-e6eb-c095-c453d534e479@samsung.com>
+Subject: Re: [PATCH v5 04/12] PM / devfreq: Add struct devfreq_policy
+Date: Thu, 12 Jul 2018 17:38:09 +0900
+Message-ID: <4863cf97-37d9-7d81-f44b-10de3dc8267e@samsung.com>
 References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703235032epcas3p3443729f2230e205f1a0a4b03e6e8f62b@epcas3p3.samsung.com>
-        <20180703234705.227473-3-mka@chromium.org> <5B3C2EEF.4080309@samsung.com>
-        <20180706163624.GE129942@google.com>
+        <CGME20180703235030epcas4p423e7bf876628913adb3e41ffdc8ba3cd@epcas4p4.samsung.com>
+        <20180703234705.227473-5-mka@chromium.org> <5B3C3632.1010706@samsung.com>
+        <20180706170701.GF129942@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180706163624.GE129942@google.com>
+In-reply-to: <20180706170701.GF129942@google.com>
 Content-language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>
@@ -20,38 +19,23 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Matthias,
 
-On 2018년 07월 07일 01:36, Matthias Kaehlcke wrote:
-> Hi Chanwoo,
+On 2018년 07월 07일 02:07, Matthias Kaehlcke wrote:
+> Hi,
 > 
-> On Wed, Jul 04, 2018 at 11:20:31AM +0900, Chanwoo Choi wrote:
->> Hi Matthias,
+> On Wed, Jul 04, 2018 at 11:51:30AM +0900, Chanwoo Choi wrote:
+>> Hi,
 >>
 >> On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
->>> Commit ab8f58ad72c4 ("PM / devfreq: Set min/max_freq when adding the
->>> devfreq device") initializes df->min/max_freq with the min/max OPP when
->>> the device is added. Later commit f1d981eaecf8 ("PM / devfreq: Use the
->>> available min/max frequency") adds df->scaling_min/max_freq and the
->>> following to the frequency adjustment code:
+>>> Move variables related with devfreq policy changes from struct devfreq
+>>> to the new struct devfreq_policy and add a policy field to struct devfreq.
 >>>
->>>   max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
+>>> The following variables are moved:
 >>>
->>> With the current handling of min/max_freq this is incorrect:
+>>> df->min/max_freq           =>   p->user.min/max_freq
+>>> df->scaling_min/max_freq   =>   p->devinfo.min/max_freq
+>>> df->governor               =>   p->governor
+>>> df->governor_name          =>   p->governor_name
 >>>
->>> Even though df->max_freq is now initialized to a value != 0 user space
->>> can still set it to 0, in this case max_freq would be 0 instead of
->>> df->scaling_max_freq as intended. In consequence the frequency adjustment
->>> is not performed:
->>>
->>>   if (max_freq && freq > max_freq) {
->>> 	freq = max_freq;
->>>
->>> To fix this set df->min/max freq to the min/max OPP in max/max_freq_store,
->>> when the user passes a value of 0. This also prevents df->max_freq from
->>> being set below the min OPP when df->min_freq is 0, and similar for
->>> min_freq. Since it is now guaranteed that df->min/max_freq can't be 0 the
->>> checks for this case can be removed.
->>>
->>> Fixes: f1d981eaecf8 ("PM / devfreq: Use the available min/max frequency")
 >>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 >>> Reviewed-by: Brian Norris <briannorris@chromium.org>
 >>> ---
@@ -65,71 +49,112 @@ On 2018년 07월 07일 01:36, Matthias Kaehlcke wrote:
 >>> - none
 >>>
 >>> Changes in v2:
->>> - handle freq tables sorted in ascending and descending order in
->>>   min/max_freq_store()
->>> - use same order for conditional statements in min/max_freq_store()
+>>> - performance, powersave and simpleondemand governors don't need changes
+>>>   with "PM / devfreq: Don't adjust to user limits in governors"
+>>> - formatting fixes
 >>> ---
->>>  drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++-----------
->>>  1 file changed, 30 insertions(+), 12 deletions(-)
+>>>  drivers/devfreq/devfreq.c          | 137 ++++++++++++++++-------------
+>>>  drivers/devfreq/governor_passive.c |   4 +-
+>>>  include/linux/devfreq.h            |  38 +++++---
+> 
+> 
+>>>  3 files changed, 103 insertions(+), 76 deletions(-)
 >>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 0057ef5b0a98..6f604f8b2b81 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -283,11 +283,11 @@ int update_devfreq(struct devfreq *devfreq)
->>>  	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
->>>  	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
->>>  
->>> -	if (min_freq && freq < min_freq) {
->>> +	if (freq < min_freq) {
->>>  		freq = min_freq;
->>>  		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
->>>  	}
->>> -	if (max_freq && freq > max_freq) {
->>> +	if (freq > max_freq) {
->>>  		freq = max_freq;
->>>  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
->>>  	}
->>> @@ -1122,18 +1122,27 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
->>>  {
->>>  	struct devfreq *df = to_devfreq(dev);
->>>  	unsigned long value;
->>> +	unsigned long *freq_table;
 >>
->> You can move 'freq_table' under 'else' statement.
-> 
-> Will do
-> 
->>>  	int ret;
->>> -	unsigned long max;
+>> (skip)
+>>
 >>>  
->>>  	ret = sscanf(buf, "%lu", &value);
->>>  	if (ret != 1)
+>>> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+>>> index 3bc29acbd54e..e0987c749ec2 100644
+>>> --- a/drivers/devfreq/governor_passive.c
+>>> +++ b/drivers/devfreq/governor_passive.c
+>>> @@ -99,12 +99,12 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
+>>>  {
+>>>  	int ret;
+>>>  
+>>> -	if (!devfreq->governor)
+>>> +	if (!devfreq->policy.governor)
 >>>  		return -EINVAL;
 >>>  
->>>  	mutex_lock(&df->lock);
->>> -	max = df->max_freq;
->>> -	if (value && max && value > max) {
->>> -		ret = -EINVAL;
->>> -		goto unlock;
+>>>  	mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
+>>>  
+>>> -	ret = devfreq->governor->get_target_freq(devfreq, &freq);
+>>> +	ret = devfreq->policy.governor->get_target_freq(devfreq, &freq);
+>>>  	if (ret < 0)
+>>>  		goto out;
+>>>  
+>>> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+>>> index 3aae5b3af87c..9bf23b976f4d 100644
+>>> --- a/include/linux/devfreq.h
+>>> +++ b/include/linux/devfreq.h
+>>> @@ -109,6 +109,30 @@ struct devfreq_dev_profile {
+>>>  	unsigned int max_state;
+>>>  };
+>>>  
+>>> +/**
+>>> + * struct devfreq_freq_limits - Devfreq frequency limits
+>>> + * @min_freq:	minimum frequency
+>>> + * @max_freq:	maximum frequency
+>>> + */
+>>> +struct devfreq_freq_limits {
+>>> +	unsigned long min_freq;
+>>> +	unsigned long max_freq;
+>>> +};
 >>> +
->>> +	if (value) {
->>> +		if (value > df->max_freq) {
->>> +			ret = -EINVAL;
->>> +			goto unlock;
->>> +		}
->>> +	} else {
->>> +		freq_table = df->profile->freq_table;
->>> +		/* typical order is ascending, some drivers use descending */
+>>> +/**
+>>> + * struct devfreq_policy - Devfreq policy
+>>> + * @user:	frequency limits requested by the user
+>>> + * @devinfo:	frequency limits of the device (available OPPs)
+>>> + * @governor:	method how to choose frequency based on the usage.
 >>
->> You better to explain what is doing of following code.
->> How about modifying it as following?
->>
->> 		/* Get minimum frequency according to sorting way */
+>> nitpick. remove '.' on the end of line.
 > 
-> Ok, will slightly modify it to 'sorting order' if you don't mind.
+> Ok
+> 
+>>> + * @governor_name:	devfreq governor name for use with this devfreq
+>>> + */
+>>> +struct devfreq_policy {
+>>> +	struct devfreq_freq_limits user;
+>>> +	struct devfreq_freq_limits devinfo;
+>>> +	const struct devfreq_governor *governor;
+>>> +	char governor_name[DEVFREQ_NAME_LEN];
+>>> +};
+>>> +
+>>>  /**
+>>>   * struct devfreq - Device devfreq structure
+>>>   * @node:	list node - contains the devices with devfreq that have been
+>>> @@ -117,8 +141,6 @@ struct devfreq_dev_profile {
+>>>   * @dev:	device registered by devfreq class. dev.parent is the device
+>>>   *		using devfreq.
+>>>   * @profile:	device-specific devfreq profile
+>>> - * @governor:	method how to choose frequency based on the usage.
+>>> - * @governor_name:	devfreq governor name for use with this devfreq
+>>>   * @nb:		notifier block used to notify devfreq object that it should
+>>>   *		reevaluate operable frequencies. Devfreq users may use
+>>>   *		devfreq.nb to the corresponding register notifier call chain.
+>>> @@ -126,10 +148,7 @@ struct devfreq_dev_profile {
+>>>   * @previous_freq:	previously configured frequency value.
+>>>   * @data:	Private data of the governor. The devfreq framework does not
+>>>   *		touch this.
+>>> - * @min_freq:	Limit minimum frequency requested by user (0: none)
+>>> - * @max_freq:	Limit maximum frequency requested by user (0: none)
+>>> - * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
+>>> - * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
+>>> + * @policy:		Policy for frequency adjustments
+>>
+>> The devfreq_policy contains the range of frequency and governor information.
+>> But, this description focus on the frequency. You need to explain the more
+>> correct description of 'policy'.
+> 
+> I wouldn't say that the focus is on 'frequency', but on 'frequency
+> adjustments', and the governor is an integral part of them.
 
-I don't mind of 'soring order'. Thanks.
+OK. I agree your original description.
+
+> 
+> I can change it to "Policy for frequency adjustments, including
+> frequency limits and the governor" if you prefer. I'm open to other
+> suggestions.
 
 (snip)
 
