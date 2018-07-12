@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v7 5/7] dt: thermal: tsens: Document the fallback DT property for v2 of TSENS IP
-Date: Thu, 12 Jul 2018 14:09:06 +0530
-Message-ID: <a385dfac661b04befd221f3012b2ca56576aada9.1531384019.git.amit.kucheria@linaro.org>
+Subject: [PATCH v7 6/7] thermal: tsens: Add generic support for TSENS v2 IP
+Date: Thu, 12 Jul 2018 14:09:07 +0530
+Message-ID: <34de426540a878bf77a77dd2c42a16678d6545a7.1531384019.git.amit.kucheria@linaro.org>
 References: <cover.1531384019.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1531384019.git.amit.kucheria@linaro.org>
@@ -9,75 +9,66 @@ In-Reply-To: <cover.1531384019.git.amit.kucheria@linaro.org>
 References: <cover.1531384019.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh@kernel.org>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We want to create common code for v2 of the TSENS IP block that is used in
-a large number of Qualcomm SoCs. "qcom,tsens-v2" should be able to handle
-most of the common functionality start with a common get_temp() function.
-
-It is also necessary to split out the memory regions for the TM and SROT
-register banks because their offsets are not constant across SoC families.
+SDM845 uses v2 of the TSENS IP block but the get_temp() function appears to
+be identical across v2.x.y in code seen so far. We use the generic
+get_temp() function defined as part of ops_generic_v2.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Tested-by: Matthias Kaehlcke <mka@chromium.org>
 ---
- .../devicetree/bindings/thermal/qcom-tsens.txt     | 31 +++++++++++++++++-----
- 1 file changed, 25 insertions(+), 6 deletions(-)
+ drivers/thermal/qcom/tsens-v2.c | 5 +++++
+ drivers/thermal/qcom/tsens.c    | 3 +++
+ drivers/thermal/qcom/tsens.h    | 5 ++++-
+ 3 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-index 06195e8..b5312a8 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-@@ -1,18 +1,28 @@
- * QCOM SoC Temperature Sensor (TSENS)
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 44d3736..f40150f 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -69,6 +69,11 @@ static const struct tsens_ops ops_generic_v2 = {
+ 	.get_temp	= get_temp_tsens_v2,
+ };
  
- Required properties:
--- compatible :
-- - "qcom,msm8916-tsens" : For 8916 Family of SoCs
-- - "qcom,msm8974-tsens" : For 8974 Family of SoCs
-- - "qcom,msm8996-tsens" : For 8996 Family of SoCs
-+- compatible:
-+  Must be one of the following:
-+    - "qcom,msm8916-tsens" (MSM8916)
-+    - "qcom,msm8974-tsens" (MSM8974)
-+    - "qcom,msm8996-tsens" (MSM8996)
-+    - "qcom,msm8998-tsens", "qcom,tsens-v2" (MSM8998)
-+    - "qcom,sdm845-tsens", "qcom,tsens-v2" (SDM845)
-+  The generic "qcom,tsens-v2" property must be used as a fallback for any SoC
-+  with version 2 of the TSENS IP. MSM8996 is the only exception beacause the
-+  generic property did not exist when support was added.
++const struct tsens_data data_tsens_v2 = {
++	.ops            = &ops_generic_v2,
++};
 +
-+- reg: Address range of the thermal registers.
-+  New platforms containing v2.x.y of the TSENS IP must specify the SROT and TM
-+  register spaces separately, with order being TM before SROT.
-+  See Example 2, below.
++/* Kept around for backward compatibility with old msm8996.dtsi */
+ const struct tsens_data data_8996 = {
+ 	.num_sensors	= 13,
+ 	.ops		= &ops_generic_v2,
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 3440166c..a2c9bfa 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -72,6 +72,9 @@ static const struct of_device_id tsens_table[] = {
+ 	}, {
+ 		.compatible = "qcom,msm8996-tsens",
+ 		.data = &data_8996,
++	}, {
++		.compatible = "qcom,tsens-v2",
++		.data = &data_tsens_v2,
+ 	},
+ 	{}
+ };
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index d785b37..14331eb 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -88,6 +88,9 @@ void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
+ int init_common(struct tsens_device *);
+ int get_temp_common(struct tsens_device *, int, int *);
  
--- reg: Address range of the thermal registers
- - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
- - #qcom,sensors: Number of sensors in tsens block
- - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
- nvmem cells
+-extern const struct tsens_data data_8916, data_8974, data_8960, data_8996;
++/* TSENS v1 targets */
++extern const struct tsens_data data_8916, data_8974, data_8960;
++/* TSENS v2 targets */
++extern const struct tsens_data data_8996, data_tsens_v2;
  
--Example:
-+Example 1 (legacy support before a fallback tsens-v2 propoerty was introduced):
- tsens: thermal-sensor@900000 {
- 		compatible = "qcom,msm8916-tsens";
- 		reg = <0x4a8000 0x2000>;
-@@ -20,3 +30,12 @@ tsens: thermal-sensor@900000 {
- 		nvmem-cell-names = "caldata", "calsel";
- 		#thermal-sensor-cells = <1>;
- 	};
-+
-+Example 2 (for any platform containing v2 of the TSENS IP):
-+tsens0: thermal-sensor@c263000 {
-+		compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
-+		reg = <0xc263000 0x1ff>, /* TM */
-+			<0xc222000 0x1ff>; /* SROT */
-+		#qcom,sensors = <13>;
-+		#thermal-sensor-cells = <1>;
-+	};
+ #endif /* __QCOM_TSENS_H__ */
 -- 
 2.7.4
