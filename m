@@ -1,83 +1,189 @@
 From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH v5 0/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Thu, 12 Jul 2018 23:35:43 +0530
-Message-ID: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
+Subject: [PATCH v5 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
+Date: Thu, 12 Jul 2018 23:35:44 +0530
+Message-ID: <1531418745-19742-2-git-send-email-tdas@codeaurora.org>
+References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
 Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-[v5]
-  * Remove mapping different register regions of perf/lut/enable,
-    instead map the entire HW region.
-  * Add reg_offset/cpufreq_qcom_std_offsets to be supplied as device data.
-  * Check of src == 0 during lut read.
-  * Add of_node_put(cpu_np) in qcom_get_related_cpus
-  * Update the qcom_cpu_resources_init for register offset data,
-    and cleanup the related cpus to keep a single copy of CPUfreq.
-  * Replace FW with HW, update Kconfig, rename filename qcom-cpufreq-hw.c
-  * Update the documentation binding to reflect the changes of mapping the
-  * entire HW region.
+Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+SoCs. This is required for managing the cpu frequency transitions which are
+controlled by the hardware engine.
 
-[v4]
-  * Fixed console messages as per comments.
-  * Return error from qcom_resources_init()
-    in the cases where failed to get frequency domain.
-  * Rename cpu_dev to cpu_np in qcom_resources_init,
-    qcom_get_related_cpus(). Also use temp variable freq_np in
-    qcom_get_related_cpus().
-  * Update qcom_cpufreq_fw_get() to use the policy data to incoporate
-    the hotplug use case.
-  * Update code to use of fast_switching.
-  * Check for !c->max_cores instead of cpumask_empty in
-    qcom_get_related_cpus().
-  * Update the logic of assigning 'c' to qcom_freq_domain_map[cpu].
-
- [v3]
-  * Remove index check from 'qcom_cpufreq_fw_target_index'.
-  * Update the Documentation binding to add the platform specific properties in
-    the CPU nodes, node name "qcom,freq-domain".
-  * Update return value to '0' from -ENODEV from 'qcom_cpufreq_fw_get'.
-  * Update the logic for boost frequency to use local variables instead of
-    cpufreq driver data in 'qcom_read_lut'.
-  * Update the logic in 'qcom_get_related_cpus' to find the related cpus.
-  * Update the reg-names to remove "_base" and also update the binding with the
-    description of these registers.
-  * Update the logic in 'qcom_resources_init' to address the new device tree
-    notation of handling the frequency domain phandles.
-
- [v2]
- * Fixed the alignment issues in "qcom_cpufreq_fw_target_index" for dev_err and
-   also for "qcom_cpu_resources_init".
- * Removed ret = 0 from qcom_get_related_cpus and added to check for
-   cpu_mask_empty to return -ENOENT.
- * Fixes qcom_cpu_resources_init function
-   * Remove initialization of 'index'
-   * Check for valid 'c'
- * Removed initialization of 'prev_cc' from 'qcom_read_lut'.
- * Remove initialization of 'ret' from function qcom_resources_init and add
-   return -ENODEV based on 'of_get_available_child_count'.
- * Removed initialization of 'rc' from qcom_cpufreq_fw_driver_probe
- * Removed module_exit as this driver would not be used as module, also updated
-   the Kconfig to bool from tristate.
- * Updated the subsystem in device tree bindings.
-
- [v1]
-   * Fixed compilation reported by Amit K.
-
-Taniya Das (2):
-  dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
-  cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-
- .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 158 ++++++++++
- drivers/cpufreq/Kconfig.arm                        |  10 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/qcom-cpufreq-hw.c                  | 344 +++++++++++++++++++++
- 4 files changed, 513 insertions(+)
+Signed-off-by: Taniya Das <tdas@codeaurora.org>
+---
+ .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 158 +++++++++++++++++++++
+ 1 file changed, 158 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
- create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+new file mode 100644
+index 0000000..52a53e1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+@@ -0,0 +1,158 @@
++Qualcomm Technologies, Inc. CPUFREQ Bindings
++
++CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
++SoCs to manage frequency in hardware. It is capable of controlling frequency
++for multiple clusters.
++
++Properties:
++- compatible
++	Usage:		required
++	Value type:	<string>
++	Definition:	must be "qcom,cpufreq-hw".
++
++* Property qcom,freq-domain
++Devices supporting freq-domain must set their "qcom,freq-domain" property with
++phandle to a freq_domain_table in their DT node.
++
++* Frequency Domain Table Node
++
++This describes the frequency domain belonging to a device.
++This node can have following properties:
++
++- reg
++	Usage:		required
++	Value type:	<prop-encoded-array>
++	Definition:	Addresses and sizes for the memory of the HW bases.
++
++Example:
++
++Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
++DCVS state together.
++
++/ {
++	cpus {
++		#address-cells = <2>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x0>;
++			enable-method = "psci";
++			next-level-cache = <&L2_0>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_0: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++				L3_0: l3-cache {
++				      compatible = "cache";
++				};
++			};
++		};
++
++		CPU1: cpu@100 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x100>;
++			enable-method = "psci";
++			next-level-cache = <&L2_100>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_100: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU2: cpu@200 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x200>;
++			enable-method = "psci";
++			next-level-cache = <&L2_200>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_200: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU3: cpu@300 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x300>;
++			enable-method = "psci";
++			next-level-cache = <&L2_300>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_300: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU4: cpu@400 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x400>;
++			enable-method = "psci";
++			next-level-cache = <&L2_400>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_400: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU5: cpu@500 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x500>;
++			enable-method = "psci";
++			next-level-cache = <&L2_500>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_500: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU6: cpu@600 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x600>;
++			enable-method = "psci";
++			next-level-cache = <&L2_600>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_600: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU7: cpu@700 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x700>;
++			enable-method = "psci";
++			next-level-cache = <&L2_700>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_700: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++	};
++
++	qcom,cpufreq-hw {
++		compatible = "qcom,cpufreq-hw";
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		freq_domain_table0: freq_table0 {
++			reg = <0 0x17d43000 0 0x1400>;
++		};
++
++		freq_domain_table1: freq_table1 {
++			reg = <0 0x17d45800 0 0x1400>;
++		};
++	};
++};
 --
 Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
 of the Code Aurora Forum, hosted by the  Linux Foundation.
