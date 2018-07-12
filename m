@@ -1,38 +1,74 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: Re: devfreq relation with pm qos
-Date: Thu, 12 Jul 2018 11:34:44 +0900
-Message-ID: <20180712023444epcms1p8cb202bb977fcb2b365bc334f87244d04@epcms1p8>
-References: <CAES_P+-=iictJKgHFGN2Mypp_+GMyTOVmZVQw=bSfHbyZMY4QA@mail.gmail.com>
-        <CAES_P+_k=fz3yMnVZni2hEnfSujctnT33zoN9-KsBLBeQaG_sA@mail.gmail.com>
-        <CAES_P+_GTRcFya=N20+b+U=HOpv9gcpYkfJW_gU_i_2pH2hmMA@mail.gmail.com>
-        <20180710055847epcms1p2eed3f89ae0220a06051faa83cc8b21ed@epcms1p2>
-        <CGME20180709213456epcas4p17e5753d1b59856a0df3790d7faef8d73@epcms1p8>
-Reply-To: myungjoo.ham@samsung.com
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v6 2/7] thermal: tsens: Add support to split up register
+ address space into two
+Date: Thu, 12 Jul 2018 10:10:34 +0530
+Message-ID: <CAHLCerNcoXuDi0MF5q8fzmegMZfGwAxSkv4czndVa0a-ov6ZVg@mail.gmail.com>
+References: <cover.1531135999.git.amit.kucheria@linaro.org>
+ <e7c5c74bd5ad1820f0f015d8e9b3d7c7b24854a4.1531135999.git.amit.kucheria@linaro.org>
+ <CAD=FV=UGjf+qSfzYbQ1OEydEWJH2e8vhNiOPAytPH_rnkabq3Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAES_P+-=iictJKgHFGN2Mypp_+GMyTOVmZVQw=bSfHbyZMY4QA@mail.gmail.com>
+In-Reply-To: <CAD=FV=UGjf+qSfzYbQ1OEydEWJH2e8vhNiOPAytPH_rnkabq3Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: noman pouigt <variksla@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
->MyungJo, I am trying to understand the relationship of PM QOS with
->devfreq drivers. I don't see any relation of PM QOS api's with devfreq dri=
-vers
->directly as there are no QOS apis used in the devfreq framework.
+On Thu, Jul 12, 2018 at 12:07 AM, Doug Anderson <dianders@chromium.org> wrote:
+> Hi,
 >
->The only explanation I have is that PM QOS has direct relationship
->with CPUFREQ driver and as CPUFREQ driver works with CPU
->frequency and that CPU frequency directly affects DEVFREQ drivers
->as devfreq driver maps CPU frequency to device frequency and
->that is why PM QOS doesn=E2=80=99t=20have=20direct=20relation=20with=20PM=
-=20QOS.=0D=0A>=0D=0A>Is=20my=20understanding=20right?=0D=0A=0D=0AYour=20und=
-erstanding=20on=20the=20fact=20that=20there=20is=20no=20relation=20between=
-=0D=0APM=20QOS=20and=20Devfreq=20framework=20of=20today's=20code=20is=20cor=
-rect.=0D=0A=0D=0AThe=20reason=20on=20why=20so=20is=20not.=0D=0AIn=20general=
-,=20you=20don't=20make=20a=20peripheral=20device=20be=20directly=20throttle=
-d=0D=0Aby=20CPUFreq=20values.=20There=20exist=20such=20cases,=20but=20they=
-=20are=20not=0D=0A=22general=22=20or=20inherit=20characteristics=20of=20per=
-ipheral=20devices.=0D=0A=0D=0ACheers,=0D=0AMyungJoo.=0D=0A
+> On Mon, Jul 9, 2018 at 4:43 AM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>> There are two banks of registers for v2 TSENS IPs: SROT and TM. On older
+>> SoCs these were contiguous, leading to DTs mapping them as one register
+>> address space of size 0x2000. In newer SoCs, these two banks are not
+>> contiguous anymore.
+>>
+>> Fixing old DTs to split the address space into allows us to have cleaner
+>> common code e.g. get_temp() that is shared across new and old platforms.
+>
+> This makes it sound like old DTs won't be supported anymore.  ...but
+> the code says otherwise.  I'd just remove the above paragraph.
+
+OK.
+
+>
+>> @@ -126,11 +127,21 @@ static const struct regmap_config tsens_config = {
+>>  int __init init_common(struct tsens_device *tmdev)
+>>  {
+>>         void __iomem *base;
+>> +       struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
+>>
+>> +       if (!op)
+>> +               return -EINVAL;
+>>         base = of_iomap(tmdev->dev->of_node, 0);
+>>         if (!base)
+>>                 return -EINVAL;
+>>
+>> +       if (op->num_resources > 1) {
+>
+> Maybe add a comment here that says that we don't actually map the SROT
+> yet because you don't read anything from there?  I kept getting
+> confused about how this patch could possibly work with no code to map
+> SROT...
+
+OK. The SROT comment got separated (patch 3) during patch refactoring.
+Will add a comment.
+
+>> +               tmdev->tm_offset = 0;
+>> +       } else {
+>> +               /* old DTs where SROT and TM were in a contiguous 2K block */
+>> +               tmdev->tm_offset = 0x1000;
+>
+> This patch without patch #4 will break compatibility.  You should
+> squash part of patch #4 into this one, specifically:
+>
+> -#define STATUS_OFFSET 0x10a0
+> -#define LAST_TEMP_MASK 0xfff
+> +#define STATUS_OFFSET 0xa0
+> +#define LAST_TEMP_MASK 0xfff
+>
+> Without that you break bisect-ability and also confuse anyone trying
+> to look at this patch.
+
+Thanks. Will fix.
