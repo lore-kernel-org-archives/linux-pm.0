@@ -1,16 +1,16 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
-Date: Thu, 12 Jul 2018 17:44:33 +0900
-Message-ID: <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
+Date: Thu, 12 Jul 2018 18:08:36 +0900
+Message-ID: <41164a91-b271-5f3b-b461-21ff5997cc84@samsung.com>
 References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
-        <20180703234705.227473-6-mka@chromium.org> <5B3C6C2A.1070205@samsung.com>
-        <20180706175301.GG129942@google.com>
+        <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
+        <20180703234705.227473-8-mka@chromium.org> <5B3C5B78.6020401@samsung.com>
+        <20180706180923.GH129942@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180706175301.GG129942@google.com>
+In-reply-to: <20180706180923.GH129942@google.com>
 Content-language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matthias Kaehlcke <mka@chromium.org>
@@ -19,175 +19,92 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Matthias,
 
-On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
-> Hi Chanwoo,
+On 2018년 07월 07일 03:09, Matthias Kaehlcke wrote:
+> Hi,
 > 
-> On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
+> On Wed, Jul 04, 2018 at 02:30:32PM +0900, Chanwoo Choi wrote:
 > 
->> Firstly,
->> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
->>
->> devfreq already used the OPP interface as default. It means that
->> the outside of 'drivers/devfreq' can disable/enable the frequency
->> such as drivers/thermal/devfreq_cooling.c. Also, when some device
->> drivers disable/enable the specific frequency, the devfreq core
->> consider them.
->>
->> So, devfreq doesn't need to devfreq_verify_within_limits() because
->> already support some interface to change the minimum/maximum frequency
->> of devfreq device. 
->>
->> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
->> to change the minimum/maximum frequency of cpu. some device driver cannot
->> change the minimum/maximum frequency through OPP interface.
->>
->> But, in case of devfreq subsystem, as I explained already, devfreq support
->> the OPP interface as default way. devfreq subsystem doesn't need to add
->> other way to change the minimum/maximum frequency.
+>> I didn't see any framework which exporting the class instance.
+>> It is very dangerous. Unknown device drivers is able to reset
+>> the 'devfreq_class' instance. I can't agree this approach.
 > 
-> Using the OPP interface exclusively works as long as a
-> enabling/disabling of OPPs is limited to a single driver
-> (drivers/thermal/devfreq_cooling.c). When multiple drivers are
-> involved you need a way to resolve conflicts, that's the purpose of
-> devfreq_verify_within_limits(). Please let me know if there are
-> existing mechanisms for conflict resolution that I overlooked.
+> While I agree that it is potential dangerous it is actually a common
+> practice to export the class:
 > 
-> Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
-> devfreq_verify_within_limits() instead of the OPP interface if
-> desired, however this seems beyond the scope of this series.
 
-Actually, if we uses this approach, it doesn't support the multiple drivers too.
-If non throttler drivers uses devfreq_verify_within_limits(), the conflict
-happen.
+I tried to find the real usage of exported class instance
+and I add the comment for each class instance. Almost exported class
+instance are used in the their own director or some exported class
+like rio_mport_class/switchtec_class are created from specific device driver
+instead of subsystem.
 
-To resolve the conflict for multiple device driver, maybe OPP interface
-have to support 'usage_count' such as clk_enable/disable().
+Only following two cases are used on outside of subsystem directory.
+devtmpfs.c and alarmtimer.c are core feature of linux kernel.
+
+	drivers/base/devtmpfs.c uses 'block_class'.
+	kernel/time/alarmtimer.c uses 'rtc_class'.
+
+I cannot yet agree this approach due to only block_class and rtc_class.
+
+You added the following comment why devfreq_class instance is necessary.
+Actullay, I don't know the best solution right now. But, all device drivers
+can be added or removed if driver uses the module type. It is not a problem
+for only devfreq instance. 
+
+/*
++	 * devfreq devices can be added and removed at runtime, hence they
++	 * must also be handled dynamically. The class_interface notifies us
++	 * whenever a device is added or removed. When the interface is
++	 * registered ci->add_dev() is called for all existing devfreq
++	 * devices.
+*/
+
+
+> grep "extern struct class " include/linux/ -R
+> include/linux/rio.h:extern struct class rio_mport_class;
+rio_mport_class is created on drivers/rapidio/rio-drivers.c.
+It means that just device driver create the 'rio_mport_class' class
+instead of any linux kernel subsystem.
+
+> include/linux/tty.h:extern struct class *tty_class;
+tty_class is not used on outside of drivers/tty
+
+> include/linux/fb.h:extern struct class *fb_class;
+fb_class is not used on outside of drivers/video/fbdev
+
+> include/linux/ide.h:extern struct class *ide_port_class;
+ide_port_class is not used on outside of drivers/ide.
+
+> include/linux/device.h:extern struct class * __must_check __class_create(struct module *owner,
+
+> include/linux/devfreq.h:extern struct class *devfreq_class;
+not yet
+
+> include/linux/switchtec.h:extern struct class *switchtec_class;
+switchtec_class is created on drivers/pci/switch/switchtec.c
+and then switchtec_class is only used on drivers/ntb/hw/mscc/ntb_hw_switchtec.c.
+It is not subsystem. Just switchtec.c device driver makes the their own class.
+
+> include/linux/input.h:extern struct class input_class;
+	input_class is not used on outside of drivers/input.
+
+> include/linux/power_supply.h:extern struct class *power_supply_class;
+	power_supply_class is not used on outside of drivers/power/supply.
+
+
+> include/linux/genhd.h:extern struct class block_class;
+	drivers/base/devtmpfs.c uses 'block_class'.
+
+> include/linux/rtc.h:extern struct class *rtc_class;
+	kernel/time/alarmtimer.c uses 'rtc_class'.
 
 > 
->> Secondly,
->> This patch send the 'struct devfreq_policy' instance as the data
->> when sending the notification as following:
->>
->> 	srcu_notifier_call_chain(&devfreq->policy_notifier_list,
->> 			DEVFREQ_ADJUST, policy);
->>
->> But, I think that if devfreq core sends the 'struct devfreq_freq_limits'
->> instance instead of 'struct devfreq_policy', it is enough.
->> Because receiver of DEVFREQ_ADJUST just will use the min_freq/max_freq variables.
->>
->> So, I tried to find the cpufreq's case. The some device drivers using
->> CPUFREQ_POLICY_NOTIFIER uses following variables of 'struct cpufreq_policy'.
->> It means that receiver of CPUFREQ_POLICY_NOTIFIER don't need to other
->> information/variables except for min/max frequency.
->>
->> - policy->min
->> - policy->max
->> - policy->cpuinfo.max_freq
->> - policy->cpuinfo.min_freq
->> - policy->cpu : not related to devfreq)
->> - policy->related_cpus : not related to devfreq)
->>
->> - list of device drivers using CPUFREQ_POLICY_NOTIFIER (linux kernel is v4.18-rc1)
->> $ grep -rn "CPUFREQ_POLICY_NOTIFIER" .
->> ./drivers/macintosh/windfarm_cpufreq_clamp.c
->> ./drivers/thermal/cpu_cooling.c
->> ./drivers/thermal/cpu_cooling.c
->> ./drivers/acpi/processor_thermal.c
->> ./drivers/acpi/processor_thermal.c
->> ./drivers/acpi/processor_perflib.c
->> ./drivers/acpi/processor_perflib.c
->> ./drivers/base/arch_topology.c
->> ./drivers/base/arch_topology.c
->> ./drivers/video/fbdev/sa1100fb.c
->> ./drivers/video/fbdev/pxafb.c
->> ./drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
->> ./drivers/cpufreq/cpufreq.c
->> ./drivers/cpufreq/cpufreq.c
->> ./drivers/cpufreq/cpufreq.c
->> ./drivers/cpufreq/cpufreq.c
+> struct class_interface and class_interface_register() would be
+> pointless without exported classes.
 > 
-> Thanks for your investigation.
-> 
-> I decided to mirror the cpufreq interface for consistency, but I agree
-> that 'struct devfreq_freq_limits' could be passed instead of the
-> policy object. I'm fine with changing that.
-> 
->> On 2018년 07월 04일 08:46, Matthias Kaehlcke wrote:
->>> Policy notifiers are called before a frequency change and may narrow
->>> the min/max frequency range in devfreq_policy, which is used to adjust
->>> the target frequency if it is beyond this range.
->>>
->>> Also add a few helpers:
->>>  - devfreq_verify_within_[dev_]limits()
->>>     - should be used by the notifiers for policy adjustments.
->>>  - dev_to_devfreq()
->>>     - lookup a devfreq strict from a device pointer
->>>
->>> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
->>> Reviewed-by: Brian Norris <briannorris@chromium.org>
->>> ---
->>> Changes in v5:
->>> - none
->>>
->>> Changes in v4:
->>> - Fixed typo in commit message: devfreg => devfreq
->>> - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
->>>
->>> Changes in v3:
->>> - devfreq.h: fixed misspelling of struct devfreq_policy
->>>
->>> Changes in v2:
->>> - performance, powersave and simpleondemand governors don't need changes
->>>   with "PM / devfreq: Don't adjust to user limits in governors"
->>> - formatting fixes
->>> ---
->>>  drivers/devfreq/devfreq.c | 48 ++++++++++++++++++++++-------
->>>  include/linux/devfreq.h   | 65 +++++++++++++++++++++++++++++++++++++++
->>>  2 files changed, 102 insertions(+), 11 deletions(-)
->>>
->>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 21604d6ae2b8..4cbaa7ad1972 100644
->>> --- a/drivers/devfreq/devfreq.c
->>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -72,6 +72,21 @@ static struct devfreq *find_device_devfreq(struct device *dev)
->>>  	return ERR_PTR(-ENODEV);
->>>  }
->>>  
->>> +/**
->>> + * dev_to_devfreq() - find devfreq struct using device pointer
->>> + * @dev:	device pointer used to lookup device devfreq.
->>> + */
->>> +struct devfreq *dev_to_devfreq(struct device *dev)
->>> +{
->>> +	struct devfreq *devfreq;
->>> +
->>> +	mutex_lock(&devfreq_list_lock);
->>> +	devfreq = find_device_devfreq(dev);
->>> +	mutex_unlock(&devfreq_list_lock);
->>> +
->>> +	return devfreq;
->>> +}
->>> +
->>>  static unsigned long find_available_min_freq(struct devfreq *devfreq)
->>>  {
->>>  	struct dev_pm_opp *opp;
->>> @@ -269,20 +284,21 @@ int update_devfreq(struct devfreq *devfreq)
->>>  	if (!policy->governor)
->>>  		return -EINVAL;
->>>  
->>> +	policy->min = policy->devinfo.min_freq;
->>> +	policy->max = policy->devinfo.max_freq;
->>
->> Why don't you consider 'policy->user.max/min_freq' as following?
->> As I already commented, I think that 'struct devfreq_freq_limits' is enough
->> instead of 'struct devfreq_policy'.
->>
->> 	->max_freq = MIN(policy->devinfo.max_freq, policy->user.max_freq);
->> 	->min_freq = MAX(policy->devinfo.min_freq, policy->user.min_freq);
-> 
-> You mean limiting the frequency range with user.min/max before
-> DEVFREQ_ADJUST instead of adjusting it afterwards? That's fine with
-> me.
+> My understanding is that the kernel is often lax on encapsulation and
+> exposes private/delicate data pragmatically within the kernel when
+> needed because "the kernel trusts itself".
 > 
 > Thanks
 > 
