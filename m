@@ -1,120 +1,222 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
-Date: Thu, 12 Jul 2018 18:08:36 +0900
-Message-ID: <41164a91-b271-5f3b-b461-21ff5997cc84@samsung.com>
-References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
-        <20180703234705.227473-8-mka@chromium.org> <5B3C5B78.6020401@samsung.com>
-        <20180706180923.GH129942@google.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 2/3][RFC] PM / Hibernate: Encrypt the snapshot pages
+ before submitted to the block device
+Date: Thu, 12 Jul 2018 18:10:37 +0800
+Message-ID: <20180712101037.GI7985@linux-l9pv.suse>
+References: <cover.1529486870.git.yu.c.chen@intel.com>
+ <5a1cc6bff40ff9a3e023392c69b881e91b16837a.1529486870.git.yu.c.chen@intel.com>
+ <20180628130641.GG3628@linux-l9pv.suse>
+ <20180628135017.GA6561@sandybridge-desktop>
+ <20180628142856.GH3628@linux-l9pv.suse>
+ <20180628145207.GA10891@sandybridge-desktop>
+ <20180629125943.GK3628@linux-l9pv.suse>
+ <20180706152856.GB9631@sandybridge-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180706180923.GH129942@google.com>
-Content-language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180706152856.GB9631@sandybridge-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Hi Yu Chen, 
 
-On 2018년 07월 07일 03:09, Matthias Kaehlcke wrote:
-> Hi,
-> 
-> On Wed, Jul 04, 2018 at 02:30:32PM +0900, Chanwoo Choi wrote:
-> 
->> I didn't see any framework which exporting the class instance.
->> It is very dangerous. Unknown device drivers is able to reset
->> the 'devfreq_class' instance. I can't agree this approach.
-> 
-> While I agree that it is potential dangerous it is actually a common
-> practice to export the class:
-> 
+Sorry for my delay...
 
-I tried to find the real usage of exported class instance
-and I add the comment for each class instance. Almost exported class
-instance are used in the their own director or some exported class
-like rio_mport_class/switchtec_class are created from specific device driver
-instead of subsystem.
+On Fri, Jul 06, 2018 at 11:28:56PM +0800, Yu Chen wrote:
+> Hi Joey Lee,
+> On Fri, Jun 29, 2018 at 08:59:43PM +0800, joeyli wrote:
+> > On Thu, Jun 28, 2018 at 10:52:07PM +0800, Yu Chen wrote:
+> > > Hi,
+> > > On Thu, Jun 28, 2018 at 10:28:56PM +0800, joeyli wrote:
+> > > > On Thu, Jun 28, 2018 at 09:50:17PM +0800, Yu Chen wrote:
+> > > > > Hi,
+> > > > > On Thu, Jun 28, 2018 at 09:07:20PM +0800, joeyli wrote:
+> > > > > > Hi Chen Yu,
+> > > > > > 
+> > > > > > On Wed, Jun 20, 2018 at 05:40:32PM +0800, Chen Yu wrote:
+> > > > > > > Use the helper functions introduced previously to encrypt
+> > > > > > > the page data before they are submitted to the block device.
+> > > > > > > Besides, for the case of hibernation compression, the data
+> > > > > > > are firstly compressed and then encrypted, and vice versa
+> > > > > > > for the resume process.
+> > > > > > >
+> > > > > > 
+> > > > > > I want to suggest my solution that it direct signs/encrypts the
+> > > > > > memory snapshot image. This solution is already shipped with
+> > > > > > SLE12 a couple of years:
+> > > > > > 
+> > > > > > https://github.com/joeyli/linux-s4sign/commits/s4sign-hmac-encrypted-key-v0.2-v4.17-rc3
+> > > > > > 
+> > > > > I did not see image page encryption in above link, if I understand
+> > > > 
+> > > > PM / hibernate: Generate and verify signature for snapshot image
+> > > > https://github.com/joeyli/linux-s4sign/commit/bae39460393ada4c0226dd07cd5e3afcef86b71f
+> > > >
+> > > > PM / hibernate: snapshot image encryption
+> > > > https://github.com/joeyli/linux-s4sign/commit/6a9a0113bb221c036ebd0f6321b7191283fe4929
+> > > >
+> > > > The above patches sign and encrypt the data pages in snapshot image.
+> > > > It puts the signature to header.
+> > > >
+> > > It looks like your signature code can be simplyly added on top of the
+> > > solution we proposed here, how about we collaborating on this task?
+> > 
+> > OK, I will base on your user key solution to respin my signature patches.
+> >  
+> > > just my 2 cents, 
+> > > 1. The cryption code should be indepent of the snapshot code, and
+> > >    this is why we implement it as a kernel module for that in PATCH[1/3].
+> > 
+> > Why the cryption code must be indepent of snapshot code?
+> >
+> Modules can be easier to be maintained and customized/improved in the future IMO..
 
-Only following two cases are used on outside of subsystem directory.
-devtmpfs.c and alarmtimer.c are core feature of linux kernel.
+hm... currently I didn't see apparent benefit on this...
 
-	drivers/base/devtmpfs.c uses 'block_class'.
-	kernel/time/alarmtimer.c uses 'rtc_class'.
+About modularization, is it possible to separate the key handler code
+from crypto_hibernation.c? Otherwise the snapshot signature needs
+to depend on encrypt function.
 
-I cannot yet agree this approach due to only block_class and rtc_class.
+> > > 2. There's no need to traverse the snapshot image twice, if the
+> > >    image is large(there's requirement on servers now) we can
+> > >    simplyly do the encryption before the disk IO, and this is
+> > >    why PATCH[2/3] looks like this.
+> > 
+> > If the encryption solution is only for block device, then the uswsusp
+> > interface must be locked-down when kernel is in locked mode:
+> > 
+> > uswsusp: Disable when the kernel is locked down
+> > https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs.git/commit/?h=lockdown-20180410&id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
+> > 
+> > I still suggest to keep the solution to direct encript the snapshot
+> > image for uswsusp because the snapshot can be encrypted by kernel
+> > before user space get it.
+> > 
+> > I mean that if the uswsusp be used, then kernel direct encrypts the
+> > snapshot image, otherwise kernel encrypts pages before block io.
+> > 
+> I did not quite get the point, if the kernel has been locked down,
+> then the uswsusp is disabled, why the kernel encrypts the snapshot
+> for uswsusp?
 
-You added the following comment why devfreq_class instance is necessary.
-Actullay, I don't know the best solution right now. But, all device drivers
-can be added or removed if driver uses the module type. It is not a problem
-for only devfreq instance. 
+There have some functions be locked-down because there have no
+appropriate mechanisms to check the integrity of writing data. If
+the snapshot image can be encrypted and authentication, then the
+uswsusp interface is avaiable for userspace. We do not need to lock
+it down.
 
-/*
-+	 * devfreq devices can be added and removed at runtime, hence they
-+	 * must also be handled dynamically. The class_interface notifies us
-+	 * whenever a device is added or removed. When the interface is
-+	 * registered ci->add_dev() is called for all existing devfreq
-+	 * devices.
-*/
+> > On the other hand, I have a question about asynchronous block io.
+> > Please see below...
+> > 
+> Okay.
+> > > > > > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > > Cc: Pavel Machek <pavel@ucw.cz>
+> > > > > > > Cc: Len Brown <len.brown@intel.com>
+> > > > > > > Cc: Borislav Petkov <bp@alien8.de>
+> > > > > > > Cc: "Lee, Chun-Yi" <jlee@suse.com>
+> > > > > > > Cc: linux-pm@vger.kernel.org
+> > > > > > > Cc: linux-kernel@vger.kernel.org
+> > > > > > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > > > > > ---
+> > > > > > >  kernel/power/power.h |   1 +
+> > > > > > >  kernel/power/swap.c  | 215 ++++++++++++++++++++++++++++++++++++++++++++++++---
+> > > > > > >  2 files changed, 205 insertions(+), 11 deletions(-)
+> > [...snip]
+> > > > > > >  /* kernel/power/hibernate.c */
+> > > > > > >  extern int swsusp_check(void);
+> > > > > > > diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> > > > > > > index c2bcf97..2b6b3d0 100644
+> > > > > > > --- a/kernel/power/swap.c
+> > > > > > > +++ b/kernel/power/swap.c
+> > [...snip]
+> > > > > > > @@ -1069,18 +1171,42 @@ static int load_image(struct swap_map_handle *handle,
+> > > > > > >  	if (!m)
+> > > > > > >  		m = 1;
+> > > > > > >  	nr_pages = 0;
+> > > > > > > +	crypto_page_idx = 0;
+> > > > > > > +	if (handle->crypto) {
+> > > > > > > +		crypt_buf = (void *)get_zeroed_page(GFP_KERNEL);
+> > > > > > > +		if (!crypt_buf)
+> > > > > > > +			return -ENOMEM;
+> > > > > > > +	}
+> > > > > > >  	start = ktime_get();
+> > > > > > >  	for ( ; ; ) {
+> > > > > > >  		ret = snapshot_write_next(snapshot);
+> > > > > > >  		if (ret <= 0)
+> > > > > > >  			break;
+> > > > > > > -		ret = swap_read_page(handle, data_of(*snapshot), &hb);
+> > > > > > > +		if (handle->crypto)
+> > > > > > > +			ret = swap_read_page(handle, crypt_buf, &hb);
+> > > > > > > +		else
+> > > > > > > +			ret = swap_read_page(handle, data_of(*snapshot), &hb);
+> > > > > > >  		if (ret)
+> > > > > > >  			break;
+> > > > > > >  		if (snapshot->sync_read)
+> > > > > > >  			ret = hib_wait_io(&hb);
+> > 
+> > In snapshot_write_next(), the logic will clean the snapshot->sync_read
+> > when the buffer page doesn't equal to the original page. Which means
+> > that the page can be read by asynchronous block io. Otherwise, kernel
+> > calls hib_wait_io() to wait until the block io was done.
+> > 
+> Yes, you are right, I missed the asynchronous block io in non-compression
+> case.
+> > > > > > >  		if (ret)
+> > > > > > >  			break;
+> > > > > > > +		if (handle->crypto) {
+> > > > > > > +			/*
+> > > > > > > +			 * Need a decryption for the
+> > > > > > > +			 * data read from the block
+> > > > > > > +			 * device.
+> > > > > > > +			 */
+> > > > > > > +			ret = crypto_data(crypt_buf, PAGE_SIZE,
+> > > > > > > +					  data_of(*snapshot),
+> > > > > > > +					  PAGE_SIZE,
+> > > > > > > +					  false,
+> > > > > > > +					  crypto_page_idx);
+> > > > > > > +			if (ret)
+> > > > > > > +				break;
+> > > > > > > +			crypto_page_idx++;
+> > > > > > > +		}
+> > 
+> > The decryption is here in the for-loop. But maybe the page is still in
+> > the block io queue for waiting the batch read? The page content is not
+> > really read to memory when the crypto_data be run? 
+> > 
+> Yes, it is possible.
+> > > > > > >  		if (!(nr_pages % m))
+> > > > > > >  			pr_info("Image loading progress: %3d%%\n",
+> > > > > > >  				nr_pages / m * 10);
+> >                 nr_pages++;
+> >         }
+> >         err2 = hib_wait_io(&hb);
+> >         stop = ktime_get();
+> > 
+> > When the for-loop is break, the above hib_wait_io(&hb) guarantees that
+> > all asynchronous block io are done. Then all pages are read to memory.
+> > 
+> > I think that the decryption code must be moved after for-loop be break.
+> > Or there have any callback hook in the asynchronous block io that we
+> > can put the encryption code after the block io read the page.
+> > 
+> Yes, we can move the decryptino code here. Another thought came to my
+> mind, how about disabling the asynchronous block io in non-compression
+> case if encryption hibernation is enabled(because encryption hibernation
+> is not using the  asynchronous block io and it has to traverse each page
+> one by one, so asynchronous block io does not bring benefit to encryption
+> hibernation in non-compression case)? Or do I miss something?
+>
 
+Disabling asynchronous block will cause IO performance drops. As I remeber
+that it's a lot of drops. You can try it. I am not sure how many people
+are still using non-compression mode.
 
-> grep "extern struct class " include/linux/ -R
-> include/linux/rio.h:extern struct class rio_mport_class;
-rio_mport_class is created on drivers/rapidio/rio-drivers.c.
-It means that just device driver create the 'rio_mport_class' class
-instead of any linux kernel subsystem.
+I do not know too much on block layer API. Is it possible to encrypt each page
+before writing to device from kernel?
 
-> include/linux/tty.h:extern struct class *tty_class;
-tty_class is not used on outside of drivers/tty
-
-> include/linux/fb.h:extern struct class *fb_class;
-fb_class is not used on outside of drivers/video/fbdev
-
-> include/linux/ide.h:extern struct class *ide_port_class;
-ide_port_class is not used on outside of drivers/ide.
-
-> include/linux/device.h:extern struct class * __must_check __class_create(struct module *owner,
-
-> include/linux/devfreq.h:extern struct class *devfreq_class;
-not yet
-
-> include/linux/switchtec.h:extern struct class *switchtec_class;
-switchtec_class is created on drivers/pci/switch/switchtec.c
-and then switchtec_class is only used on drivers/ntb/hw/mscc/ntb_hw_switchtec.c.
-It is not subsystem. Just switchtec.c device driver makes the their own class.
-
-> include/linux/input.h:extern struct class input_class;
-	input_class is not used on outside of drivers/input.
-
-> include/linux/power_supply.h:extern struct class *power_supply_class;
-	power_supply_class is not used on outside of drivers/power/supply.
-
-
-> include/linux/genhd.h:extern struct class block_class;
-	drivers/base/devtmpfs.c uses 'block_class'.
-
-> include/linux/rtc.h:extern struct class *rtc_class;
-	kernel/time/alarmtimer.c uses 'rtc_class'.
-
-> 
-> struct class_interface and class_interface_register() would be
-> pointless without exported classes.
-> 
-> My understanding is that the kernel is often lax on encapsulation and
-> exposes private/delicate data pragmatically within the kernel when
-> needed because "the kernel trusts itself".
-> 
-> Thanks
-> 
-> Matthias
-> 
-> 
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Thanks
+Joey Lee
