@@ -1,90 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 1/3] regulator: bd9571mwv: Use "backup_mode" sysfs file
- instead of "wake_up"
-Date: Fri, 13 Jul 2018 22:08:28 +0200
-Message-ID: <CAMuHMdVdd1o51X-DwntSjxcMBjA30Unnorv4_A=5TXYFh6_n1w@mail.gmail.com>
-References: <20180713154720.18316-1-geert+renesas@glider.be> <20180713154720.18316-2-geert+renesas@glider.be>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH v4] cpufreq / CPPC: Add cpuinfo_cur_freq support for CPPC
+Date: Fri, 13 Jul 2018 16:20:43 -0600
+Message-ID: <41a6e3c7-db85-9ff1-daf4-07569c11fc8c@codeaurora.org>
+References: <1531375675-52623-1-git-send-email-george.cherian@cavium.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180713154720.18316-2-geert+renesas@glider.be>
+In-Reply-To: <1531375675-52623-1-git-send-email-george.cherian@cavium.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: George Cherian <george.cherian@cavium.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 13, 2018 at 6:31 PM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> Currently the BD9571MWV PMIC driver uses the standard "wake_up" sysfs
-> file to control enablement of DDR Backup Mode.
+Hi George,
+
+This version looks good. Thanks!
+
+On 7/12/2018 12:07 AM, George Cherian wrote:
+> Per Section 8.4.7.1.3 of ACPI 6.2, The platform provides performance
+> feedback via set of performance counters. To determine the actual
+> performance level delivered over time, OSPM may read a set of
+> performance counters from the Reference Performance Counter Register
+> and the Delivered Performance Counter Register.
 >
-> However, configuring DDR Backup Mode is not really equivalent to
-> configuring the PMIC as a wake-up source.  To avoid confusion, use a
-> custom "backup_mode" attribute file in sysfs instead.
+> OSPM calculates the delivered performance over a given time period by
+> taking a beginning and ending snapshot of both the reference and
+> delivered performance counters, and calculating:
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> v3:
->   - New.
-> ---
->  drivers/regulator/bd9571mwv-regulator.c | 52 ++++++++++++++++++++++---
->  1 file changed, 46 insertions(+), 6 deletions(-)
+> delivered_perf = reference_perf X (delta of delivered_perf counter / delta of reference_perf counter).
 >
-> diff --git a/drivers/regulator/bd9571mwv-regulator.c b/drivers/regulator/bd9571mwv-regulator.c
-> index be574eb444ebda97..7432b605db4dc879 100644
-> --- a/drivers/regulator/bd9571mwv-regulator.c
-> +++ b/drivers/regulator/bd9571mwv-regulator.c
-
-> @@ -270,15 +298,26 @@ static int bd9571mwv_regulator_probe(struct platform_device *pdev)
->                 return -EINVAL;
->         }
+> Implement the above and hook this to the cpufreq->get method.
 >
-> +#ifdef CONFIG_PM_SLEEP
->         if (bdreg->bkup_mode_cnt_keepon) {
-> -               device_set_wakeup_capable(&pdev->dev, true);
->                 /*
-> -                * Wakeup is enabled by default in pulse mode, but needs
-> +                * Backup mode is enabled by default in pulse mode, but needs
->                  * explicit user setup in level mode.
->                  */
-> -               device_set_wakeup_enable(&pdev->dev, bdreg->rstbmode_pulse);
-> +               bdreg->bkup_mode_enabled = bdreg->rstbmode_pulse;
-> +
-> +               ret = device_create_file(&pdev->dev, &dev_attr_backup_mode);
-> +               if (ret)
-> +                       return ret;
->         }
-> +#endif /* CONFIG_PM_SLEEP */
-> +
-> +       return 0;
-> +}
->
-> +static int bd9571mwv_regulator_remove(struct platform_device *pdev)
-> +{
-> +       device_remove_file(&pdev->dev, &dev_attr_backup_mode);
-
-Woops, this line needs to be protected by CONFIG_PM_SLEEP.
-Thank you, 0-day!
-
->         return 0;
->  }
->
-> @@ -294,6 +333,7 @@ static struct platform_driver bd9571mwv_regulator_driver = {
->                 .pm = DEV_PM_OPS,
->         },
->         .probe = bd9571mwv_regulator_probe,
-> +       .remove = bd9571mwv_regulator_remove,
->         .id_table = bd9571mwv_regulator_id_table,
->  };
->  module_platform_driver(bd9571mwv_regulator_driver);
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> Signed-off-by: George Cherian <george.cherian@cavium.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Prashanth Prakash <pprakash@codeaurora.org>
