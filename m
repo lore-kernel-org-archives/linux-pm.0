@@ -1,94 +1,80 @@
-From: "Schmauss, Erik" <erik.schmauss@intel.com>
-Subject: RE: [PATCH] ACPICA: Clear status of all events when entering S5
-Date: Mon, 16 Jul 2018 17:59:27 +0000
-Message-ID: <CF6A88132359CE47947DB4C6E1709ED53BB4D759@ORSMSX110.amr.corp.intel.com>
-References: <s5hk1qaf9hv.wl-tiwai@suse.de>
- <1704080.gFTvVrrZA1@aspire.rjw.lan>
- <6f01a906-b27c-0e1a-e9f6-fa27c015faa3@cosifan.de>
- <2396867.eZQXUlvGZn@aspire.rjw.lan>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 3/3] dt-bindings: mfd: max8998: Add charger subnode
+ binding
+Date: Mon, 16 Jul 2018 12:00:03 -0600
+Message-ID: <20180716180003.GA16037@rob-hp-laptop>
+References: <1531571213-30593-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+ <1531571213-30593-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2396867.eZQXUlvGZn@aspire.rjw.lan>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1531571213-30593-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: =?iso-8859-1?Q?Thomas_H=E4nig?= <haenig@cosifan.de>, Takashi Iwai <tiwai@suse.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
+Cc: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-> -----Original Message-----
-> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> Sent: Sunday, July 8, 2018 2:10 AM
-> To: Linux ACPI <linux-acpi@vger.kernel.org>
-> Cc: Thomas H‰nig <haenig@cosifan.de>; Takashi Iwai <tiwai@suse.de>;
-> Schmauss, Erik <erik.schmauss@intel.com>; Linux PM <linux-
-> pm@vger.kernel.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Subject: [PATCH] ACPICA: Clear status of all events when entering S5
+On Sat, Jul 14, 2018 at 02:26:53PM +0200, Pawe≈Ç Chmiel wrote:
+> This patch adds devicetree bindings documentation for
+> battery charging controller as the subnode of MAX8998 PMIC.
 > 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> After commit 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI
-> IRQs during suspend/resume) the status of ACPI events is not cleared any more
-> when entering the ACPI S5 system state (power
-> off) which causes some systems to power up immediately after turing off power
-> in certain situations.
-> 
-> That is a functional regression, so address it by making the code clear the status
-> of all ACPI events again when entering S5 (for system-wide suspend or
-> hibernation the clearing of the status of all events is not desirable, as it might
-> cause the kernel to miss wakeup events sometimes).
-> 
-> Fixes: 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI IRQs
-> during suspend/resume)
-> Reported-by: Takashi Iwai <tiwai@suse.de>
-> Tested-by: Thomas H‰nig <haenig@cosifan.de>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Pawe≈Ç Chmiel <pawel.mikolaj.chmiel@gmail.com>
 > ---
-> 
-> Resend https://patchwork.kernel.org/patch/10511451/ with a changelig and
-> tags.
-> 
+> Changes from v1:
+>   - Removed unneeded Fixes tag
+>   - Correct description of all charger values
+>   - Added missing property unit
 > ---
->  drivers/acpi/acpica/hwsleep.c |   15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
+>  Documentation/devicetree/bindings/mfd/max8998.txt | 24 +++++++++++++++++++++++
+>  1 file changed, 24 insertions(+)
 > 
-> Index: linux-pm/drivers/acpi/acpica/hwsleep.c
-> =================================================================
-> ==
-> --- linux-pm.orig/drivers/acpi/acpica/hwsleep.c
-> +++ linux-pm/drivers/acpi/acpica/hwsleep.c
-> @@ -51,16 +51,23 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
->  		return_ACPI_STATUS(status);
->  	}
-> 
-> -	/*
-> -	 * 1) Disable all GPEs
-> -	 * 2) Enable all wakeup GPEs
-> -	 */
-> +	/* Disable all GPEs */
->  	status = acpi_hw_disable_all_gpes();
->  	if (ACPI_FAILURE(status)) {
->  		return_ACPI_STATUS(status);
->  	}
-> +	/*
-> +	 * If the target sleep state is S5, clear all GPEs and fixed events too
-> +	 */
-> +	if (sleep_state == ACPI_STATE_S5) {
-> +		status = acpi_hw_clear_acpi_status();
-> +		if (ACPI_FAILURE(status)) {
-> +			return_ACPI_STATUS(status);
-> +		}
-> +	}
->  	acpi_gbl_system_awake_and_running = FALSE;
-> 
-> +	 /* Enable all wakeup GPEs */
->  	status = acpi_hw_enable_all_wakeup_gpes();
->  	if (ACPI_FAILURE(status)) {
->  		return_ACPI_STATUS(status);
+> diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Documentation/devicetree/bindings/mfd/max8998.txt
+> index 23a3650ff2a2..196e50097a36 100644
+> --- a/Documentation/devicetree/bindings/mfd/max8998.txt
+> +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
+> @@ -50,6 +50,23 @@ Additional properties required if max8998,pmic-buck2-dvs-gpio is defined:
+>  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microvolts
+>    for buck2 regulator that can be selected using dvs gpio.
+>  
+> +Charger: Configuration for battery charging controller should be added
+> +inside a child node named 'charger'.
+> +  Required properties:
+> +  - max8998,charge-eoc-percent: Setup End of Charge Level.
+> +    If value equals 0, leave it unchanged.
+> +    Otherwise it should be value from 10 to 45 by 5 step.
+> +
+> +  - max8998,charge-restart-level-microvolt: Setup Charge Restart Level.
+> +    If value equals 0, leave it unchanged.
+> +    If value equals -1, it will be disabled.
 
-Rafael, I've created an ACPICA pull request containing this patch.
+-1 is a bit strange. Why not 'not present' is disabled?
 
-Thanks,
-Erik
+> +    Otherwise it should be one of following values: 100, 150, 200.
+> +
+> +  - max8998,charge-timeout-hours: Setup Charge Full Timeout.
+> +    If value equals 0, leave it unchanged.
+> +    If value equals -1, it will be disabled.
+> +    Otherwise it should be one of following values: 5, 6, 7.
+> +
+>  Regulators: All the regulators of MAX8998 to be instantiated shall be
+>  listed in a child node named 'regulators'. Each regulator is represented
+>  by a child node of the 'regulators' node.
+> @@ -99,6 +116,13 @@ Example:
+>  		max8998,pmic-buck2-dvs-gpio = <&gpx0 0 3 0 0>; /* SET3 */
+>  		max8998,pmic-buck2-dvs-voltage = <1350000>, <1300000>;
+>  
+> +		/* Charger configuration */
+> +		charger {
+> +			max8998,charge-eoc-percent = <0>;
+> +			max8998,charge-restart-level-microvolt = <(-1)>;
+> +			max8998,charge-timeout-hours = <7>;
+> +		};
+> +
+>  		/* Regulators to instantiate */
+>  		regulators {
+>  			ldo2_reg: LDO2 {
+> -- 
+> 2.7.4
+> 
