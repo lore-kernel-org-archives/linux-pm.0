@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 06/23] thermal: armada: average over samples to avoid
- glitches
-Date: Mon, 16 Jul 2018 16:41:49 +0200
-Message-ID: <20180716144206.30985-7-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 05/23] thermal: armada: dissociate a380 and cp110 ->init()
+ hooks
+Date: Mon, 16 Jul 2018 16:41:48 +0200
+Message-ID: <20180716144206.30985-6-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,70 +22,43 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Configure the sample frequency and number of averaged samples.
+Until now, Armada 380 and CP110 could share the same ->init() function
+because their use was identical.
 
-This is needed for two reasons:
-1/ To be bootloader independent.
-2/ To prepare the introduction of multi-sensors support by preventing
-   inconsistencies when reading temperatures that could be a mean of
-   samples took from different sensors.
+Prepare the support of multi-sensors support and overheat interrupt
+feature by separating the initialization paths before they actually
+diverge.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/thermal/armada_thermal.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 9291ea3ad2f7..1f9706d96a0d 100644
+index 3d22a6016b04..9291ea3ad2f7 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -54,7 +54,12 @@
- #define CONTROL0_TSEN_START		BIT(0)
- #define CONTROL0_TSEN_RESET		BIT(1)
- #define CONTROL0_TSEN_ENABLE		BIT(2)
-+#define CONTROL0_TSEN_AVG_BYPASS	BIT(6)
-+#define CONTROL0_TSEN_OSR_SHIFT		24
-+#define CONTROL0_TSEN_OSR_MAX		0x3
- 
-+#define CONTROL1_TSEN_AVG_SHIFT		0
-+#define CONTROL1_TSEN_AVG_MASK		0x7
- #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
- #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
- 
-@@ -194,6 +199,13 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	reg = readl_relaxed(priv->control0);
- 	reg &= ~CONTROL0_TSEN_RESET;
- 	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
-+
-+	/* Sample every ~2ms */
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+
-+	/* Enable average (2 samples by default) */
-+	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
-+
- 	writel(reg, priv->control0);
- 
- 	/* Wait the sensors to be valid or the core will warn the user */
-@@ -203,7 +215,20 @@ static void armada_ap806_init(struct platform_device *pdev,
- static void armada_cp110_init(struct platform_device *pdev,
- 			      struct armada_thermal_priv *priv)
- {
-+	u32 reg;
-+
- 	armada380_init(pdev, priv);
-+
-+	/* Sample every ~2ms */
-+	reg = readl_relaxed(priv->control0);
-+	reg |= CONTROL0_TSEN_OSR_MAX << CONTROL0_TSEN_OSR_SHIFT;
-+	writel(reg, priv->control0);
-+
-+	/* Average the output value over 2^1 = 2 samples */
-+	reg = readl_relaxed(priv->control1);
-+	reg &= ~CONTROL1_TSEN_AVG_MASK << CONTROL1_TSEN_AVG_SHIFT;
-+	reg |= 1 << CONTROL1_TSEN_AVG_SHIFT;
-+	writel(reg, priv->control1);
+@@ -200,6 +200,12 @@ static void armada_ap806_init(struct platform_device *pdev,
+ 	armada_wait_sensor_validity(priv);
  }
  
++static void armada_cp110_init(struct platform_device *pdev,
++			      struct armada_thermal_priv *priv)
++{
++	armada380_init(pdev, priv);
++}
++
  static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->status);
+@@ -306,7 +312,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+ 	.is_valid = armada_is_valid,
+-	.init = armada380_init,
++	.init = armada_cp110_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
 -- 
 2.14.1
