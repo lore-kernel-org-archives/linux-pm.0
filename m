@@ -1,11 +1,14 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 00/23] Add multi-channel support to Armada thermal driver
-Date: Mon, 16 Jul 2018 16:41:43 +0200
-Message-ID: <20180716144206.30985-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 20/23] arm64: dts: marvell: move AP806/CP110 thermal nodes
+ into a new syscon
+Date: Mon, 16 Jul 2018 16:42:03 +0200
+Message-ID: <20180716144206.30985-21-miquel.raynal@bootlin.com>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,72 +22,74 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIG9ubHkgY2FwYWJpbGl0eSBvZiB0aGUgQXJtYWRhIHRoZXJtYWwgZHJpdmVyIGlzIGN1cnJl
-bnRseSBqdXN0IHRvCnJlYWQgb25lIHNlbnNvciAodGhlIGRlZmF1bHQgb25lKSBwZXIgQVAgYW5k
-IG9uZSBwZXIgQ1AuIEFjdHVhbGx5LAp0aGVyZSBpcyBvbmUgc2Vuc29yIHBlciBjb3JlIGluIHRo
-ZSBBUDgwNiBwbHVzIG9uZSBzZW5zb3IgaW4gdGhlCnRoZXJtYWwgSVAgaXRzZWxmLiBUaGUgQ1Ax
-MTAganVzdCBmZWF0dXJlcyBvbmUgdGhlcm1hbCBzZW5zb3IgaW4gaXRzCm93biB0aGVybWFsIElQ
-LgoKVGhpcyBzZXJpZXMgZmlyc3QgaW1wcm92ZXMgdGhlIHJlYWRhYmlsaXR5IG9mIHRoaXMgZHJp
-dmVyLCB0aGVuIGFkZHMKc3VwcG9ydCBmb3IgbXVsdGktY2hhbm5lbCB0aGVybWFsIElQcy4gVGhl
-IGJpbmRpbmdzIGFuZCB0aGUKZGV2aWNlLXRyZWVzIGFyZSB1cGRhdGVkIGFjY29yZGluZ2x5LgoK
-VGhhbmsgeW91LApNaXF1w6hsCgoKQ2hhbmdlcyBzaW5jZSB2MzoKPT09PT09PT09PT09PT09PT0K
-LSBSZW1vdmVkIHRoZSBtZW50aW9uIGFib3V0IHRoZSBvdmVyaGVhdCBpbnRlcnJ1cHQgaW4gdGhl
-IGNvbW1pdCBsb2cgb2YKICAiZHQtYmluZGluZ3M6IHRoZXJtYWw6IGFybWFkYTogYWRkIHJlZmVy
-ZW5jZSB0byBuZXcgYmluZGluZ3MiLiBUaGlzCiAgaW50ZXJydXB0IHdpbGwgYmUgYWRkZWQgaW4g
-YW5vdGhlciBzZXJpZXMuCgpDaGFuZ2VzIHNpbmNlIHYyOgo9PT09PT09PT09PT09PT09PQoqIEZp
-eGVkIHR5cG9zIGluICJ0aGVybWFsOiBhcm1hZGE6IGNvbnZlcnQgZHJpdmVyIHRvIHN5c2NvbiAg
-cmVnaXN0ZXIKICBhY2Nlc3NlcyIgY29tbWl0IGxvZy4KKiBBZGRlZCBSb2IncyBSQiB0YWdzIGFm
-dGVyIGNoYW5naW5nIHRoZSBub2RlIG5hbWVzIGJvdGggaW4gdGhlCiAgRG9jdW1lbnRhdGlvbiBh
-bmQgaW4gdGhlIERUIGZpbGVzIHRoaXMgd2F5OgogIHMveHhfdGhlcm1hbDogeHhfdGhlcm1hbEB5
-eS94eF90aGVybWFsOiB0aGVybWFsLXNlbnNvckB5eS8KKiBEcm9wcGVkIHRoZSBwYXRjaCB0aGF0
-IHJlbmFtZWQgbGFiZWxzIGluIHRoZSBEb2N1bWVudGF0aW9uIG9uIFJvYidzCiAgbm90aWNlLgoq
-IFVuaWZvcm1pemVkIHRoZSB0eXBlIG9mIHRlbXBlcmF0dXJlIHZhcmlhYmxlcyB0byAnaW50JyBh
-cyBzdWdnZXN0ZWQgaW4KICBhIHByZXZpb3VzIGNvbW1pdCBmcm9tIFNhc2NoYSBIYXVlcjoKICAx
-N2U4MzUxYTc3MzkgKCJ0aGVybWFsOiBjb25zaXN0ZW50bHkgdXNlIGludCBmb3IgdGVtcGVyYXR1
-cmVzIikKCkNoYW5nZXMgc2luY2UgdjE6Cj09PT09PT09PT09PT09PT09CiogQWRkZWQgcmVnaXN0
-ZXIgcmFuZ2VzIGluIHRoZSB0aGVybWFsIG5vZGVzLgoqIEFkZGVkIHRoZXNlIHJhbmdlcyBpbiB0
-aGUgZG9jdW1lbnRhdGlvbiBhbHNvLgoqIEluIHRoZSBiaW5kaW5ncywgdXNlZCB0aGUgIk11c3Qg
-YmUgb25lIG9mIiBmb3JtdWxhIGJlZm9yZSBsaXN0aW5nIHRoZQogIGNvbXBhdGlibGVzLgoqIFJl
-bW92ZWQgdGhlIG92ZXJoZWF0IGludGVycnVwdCBzdXBwb3J0IHRoYXQgZGVwZW5kcyBvbiBhbm90
-aGVyCiAgc2VyaWVzLiBUaGlzIHdvcmsgaXMgaW5kZXBlbmRlbnQuCiogUmViYXNlZCBvbiB0b3Ag
-b2YgdjQuMTgtcmMxLgoKCk1pcXVlbCBSYXluYWwgKDIzKToKICB0aGVybWFsOiBhcm1hZGE6IGFk
-ZCBhIGZ1bmN0aW9uIHRoYXQgc2FuaXRpemVzIHRoZSB0aGVybWFsIHpvbmUgbmFtZQogIHRoZXJt
-YWw6IGFybWFkYTogcmVtb3ZlIHVzZWxlc3MgcmVnaXN0ZXIgYWNjZXNzZXMKICB0aGVybWFsOiBh
-cm1hZGE6IHJlbW92ZSBtaXNsZWFkaW5nIGNvbW1lbnRzCiAgdGhlcm1hbDogYXJtYWRhOiByZW5h
-bWUgdGhlIGluaXRpYWxpemF0aW9uIHJvdXRpbmUKICB0aGVybWFsOiBhcm1hZGE6IGRpc3NvY2lh
-dGUgYTM4MCBhbmQgY3AxMTAgLT5pbml0KCkgaG9va3MKICB0aGVybWFsOiBhcm1hZGE6IGF2ZXJh
-Z2Ugb3ZlciBzYW1wbGVzIHRvIGF2b2lkIGdsaXRjaGVzCiAgdGhlcm1hbDogYXJtYWRhOiBjb252
-ZXJ0IGRyaXZlciB0byBzeXNjb24gcmVnaXN0ZXIgYWNjZXNzZXMKICB0aGVybWFsOiBhcm1hZGE6
-IHVzZSB0aGUgcmVzb3VyY2UgbWFuYWdlZCByZWdpc3RyYXRpb24gaGVscGVyCiAgICBhbHRlcm5h
-dGl2ZQogIHRoZXJtYWw6IGFybWFkYTogYWRkIG11bHRpLWNoYW5uZWwgc2Vuc29ycyBzdXBwb3J0
-CiAgdGhlcm1hbDogYXJtYWRhOiByZW1vdmUgc2Vuc29ycyB2YWxpZGl0eSBmcm9tIHRoZSBJUCBp
-bml0aWFsaXphdGlvbgogIHRoZXJtYWw6IGFybWFkYTogbW92ZSB2YWxpZGl0eSBjaGVjayBvdXQg
-b2YgdGhlIHJlYWQgZnVuY3Rpb24KICB0aGVybWFsOiBhcm1hZGE6IGdldCByaWQgb2YgdGhlIC0+
-aXNfdmFsaWQoKSBwb2ludGVyCiAgZHQtYmluZGluZ3M6IGNwMTEwOiByZW5hbWUgY3AxMTAgc3lz
-Y29uIGZpbGUKICBkdC1iaW5kaW5nczogYXA4MDY6IHByZXBhcmUgdGhlIHN5c2NvbiBmaWxlIHRv
-IGxpc3Qgb3RoZXIgc3lzY29ucwogICAgbm9kZXMKICBkdC1iaW5kaW5nczogY3AxMTA6IHByZXBh
-cmUgdGhlIHN5c2NvbiBmaWxlIHRvIGxpc3Qgb3RoZXIgc3lzY29ucwogICAgbm9kZXMKICBkdC1i
-aW5kaW5nczogYXA4MDY6IGFkZCB0aGUgdGhlcm1hbCBub2RlIGluIHRoZSBzeXNjb24gZmlsZQog
-IGR0LWJpbmRpbmdzOiBjcDExMDogdXBkYXRlIGRvY3VtZW50YXRpb24gc2luY2UgRFQgZGUtZHVw
-bGljYXRpb24KICBkdC1iaW5kaW5nczogY3AxMTA6IGFkZCB0aGUgdGhlcm1hbCBub2RlIGluIHRo
-ZSBzeXNjb24gZmlsZQogIGR0LWJpbmRpbmdzOiB0aGVybWFsOiBhcm1hZGE6IGFkZCByZWZlcmVu
-Y2UgdG8gbmV3IGJpbmRpbmdzCiAgYXJtNjQ6IGR0czogbWFydmVsbDogbW92ZSBBUDgwNi9DUDEx
-MCB0aGVybWFsIG5vZGVzIGludG8gYSBuZXcgc3lzY29uCiAgYXJtNjQ6IGR0czogbWFydmVsbDog
-YWRkIHRoZXJtYWwtem9uZSBub2RlIGluIGFwODA2IERUU0kgZmlsZQogIGFybTY0OiBkdHM6IG1h
-cnZlbGw6IGFkZCBtYWNybyB0byBtYWtlIGRpc3RpbmN0aW9uIGJldHdlZW4gbm9kZSBuYW1lcwog
-IGFybTY0OiBkdHM6IG1hcnZlbGw6IGFkZCB0aGVybWFsLXpvbmUgbm9kZSBpbiBjcDExMCBEVFNJ
-IGZpbGUKCiAuLi4vYXJtL21hcnZlbGwvYXA4MDYtc3lzdGVtLWNvbnRyb2xsZXIudHh0ICAgICAg
-ICB8ICA0OCArLQogLi4uY29udHJvbGxlcjAudHh0ID0+IGNwMTEwLXN5c3RlbS1jb250cm9sbGVy
-LnR4dH0gfCAgNjEgKystCiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL2FybWFkYS10
-aGVybWFsLnR4dCB8ICAgNSArCiBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWFw
-ODA2LmR0c2kgICAgICB8ICA3NCArKy0KIGFyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1h
-ZGEtY29tbW9uLmR0c2kgICAgIHwgICAxICsKIGFyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9h
-cm1hZGEtY3AxMTAuZHRzaSAgICAgIHwgIDM3ICstCiBkcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3Ro
-ZXJtYWwuYyAgICAgICAgICAgICAgICAgICB8IDUzNCArKysrKysrKysrKysrKysrLS0tLS0KIDcg
-ZmlsZXMgY2hhbmdlZCwgNjA2IGluc2VydGlvbnMoKyksIDE1NCBkZWxldGlvbnMoLSkKIHJlbmFt
-ZSBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL21hcnZlbGwve2NwMTEwLXN5
-c3RlbS1jb250cm9sbGVyMC50eHQgPT4gY3AxMTAtc3lzdGVtLWNvbnRyb2xsZXIudHh0fSAoODUl
-KQoKLS0gCjIuMTQuMQoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlz
-dHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2xpbnV4LWFybS1rZXJuZWwK
+New bindings impose to declare the thermal IP from within a new syscon.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 14 ++++++++++----
+ arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 18 ++++++++++++------
+ 2 files changed, 22 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+index 4f2a704615b0..45662fc09d18 100644
+--- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
+@@ -258,10 +258,16 @@
+ 				};
+ 			};
+ 
+-			ap_thermal: thermal@6f808c {
+-				compatible = "marvell,armada-ap806-thermal";
+-				reg = <0x6f808c 0x4>,
+-				      <0x6f8084 0x8>;
++			ap_syscon1: system-controller@6f8000 {
++				compatible = "syscon", "simple-mfd";
++				reg = <0x6f8000 0x1000>;
++				#address-cells = <1>;
++				#size-cells = <1>;
++
++				ap_thermal: thermal-sensor@80 {
++					compatible = "marvell,armada-ap806-thermal";
++					reg = <0x80 0x10>;
++				};
+ 			};
+ 		};
+ 	};
+diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
+index ab31ba20aa2a..1b813a95149c 100644
+--- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
+@@ -177,12 +177,6 @@
+ 			interrupts = <77 IRQ_TYPE_LEVEL_HIGH>;
+ 		};
+ 
+-		CP110_LABEL(thermal): thermal@400078 {
+-			compatible = "marvell,armada-cp110-thermal";
+-			reg = <0x400078 0x4>,
+-			<0x400070 0x8>;
+-		};
+-
+ 		CP110_LABEL(syscon0): system-controller@440000 {
+ 			compatible = "syscon", "simple-mfd";
+ 			reg = <0x440000 0x2000>;
+@@ -223,6 +217,18 @@
+ 			};
+ 		};
+ 
++		CP110_LABEL(syscon1): system-controller@400000 {
++			compatible = "syscon", "simple-mfd";
++			reg = <0x400000 0x1000>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++
++			CP110_LABEL(thermal): thermal-sensor@70 {
++				compatible = "marvell,armada-cp110-thermal";
++				reg = <0x70 0x10>;
++			};
++		};
++
+ 		CP110_LABEL(usb3_0): usb3@500000 {
+ 			compatible = "marvell,armada-8k-xhci",
+ 			"generic-xhci";
+-- 
+2.14.1
