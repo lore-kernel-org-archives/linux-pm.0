@@ -1,8 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 11/23] thermal: armada: move validity check out of the read
- function
-Date: Mon, 16 Jul 2018 16:41:54 +0200
-Message-ID: <20180716144206.30985-12-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 12/23] thermal: armada: get rid of the ->is_valid() pointer
+Date: Mon, 16 Jul 2018 16:41:55 +0200
+Message-ID: <20180716144206.30985-13-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,46 +21,88 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Sensor selection when using multiple sensors already checks for the
-sensor validity. Move it to the legacy ->get_temp() hook, where it is
-still needed.
+The implementation of armada_is_valid() is very simple and is the same
+across all the versions of the IP since the ->is_valid_bit has been
+introduced. Simplify the structure by getting rid of the function
+pointer and calling directly the function.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/thermal/armada_thermal.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 7eafc9400fbe..7f8185e5816e 100644
+index 7f8185e5816e..a05ec01d6848 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -328,13 +328,6 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, int *temp)
- 	u32 reg, div;
- 	s64 sample, b, m;
+@@ -82,9 +82,6 @@ struct armada_thermal_data {
+ 	void (*init)(struct platform_device *pdev,
+ 		     struct armada_thermal_priv *priv);
  
--	/* Valid check */
--	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
--		dev_err(priv->dev,
--			"Temperature sensor reading not valid\n");
--		return -EIO;
--	}
+-	/* Test for a valid sensor value (optional) */
+-	bool (*is_valid)(struct armada_thermal_priv *);
 -
+ 	/* Formula coeficients: temp = (b - m * reg) / div */
+ 	s64 coef_b;
+ 	s64 coef_m;
+@@ -266,6 +263,9 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+ 	u32 reg;
+ 
++	if (!priv->data->is_valid_bit)
++		return true;
++
  	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
- 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
- 	if (priv->data->signed_sample)
-@@ -362,6 +355,13 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
- 	struct armada_thermal_priv *priv = thermal->devdata;
+ 
+ 	return reg & priv->data->is_valid_bit;
+@@ -356,7 +356,7 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
  	int ret;
  
-+	/* Valid check */
-+	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
-+		dev_err(priv->dev,
-+			"Temperature sensor reading not valid\n");
-+		return -EIO;
-+	}
-+
- 	/* Do the actual reading */
- 	ret = armada_read_sensor(priv, temp);
+ 	/* Valid check */
+-	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
++	if (armada_is_valid(priv)) {
+ 		dev_err(priv->dev,
+ 			"Temperature sensor reading not valid\n");
+ 		return -EIO;
+@@ -410,7 +410,6 @@ static const struct armada_thermal_data armadaxp_data = {
+ };
  
+ static const struct armada_thermal_data armada370_data = {
+-	.is_valid = armada_is_valid,
+ 	.init = armada370_init,
+ 	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+@@ -423,7 +422,6 @@ static const struct armada_thermal_data armada370_data = {
+ };
+ 
+ static const struct armada_thermal_data armada375_data = {
+-	.is_valid = armada_is_valid,
+ 	.init = armada375_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+@@ -437,7 +435,6 @@ static const struct armada_thermal_data armada375_data = {
+ };
+ 
+ static const struct armada_thermal_data armada380_data = {
+-	.is_valid = armada_is_valid,
+ 	.init = armada380_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+@@ -452,7 +449,6 @@ static const struct armada_thermal_data armada380_data = {
+ };
+ 
+ static const struct armada_thermal_data armada_ap806_data = {
+-	.is_valid = armada_is_valid,
+ 	.init = armada_ap806_init,
+ 	.is_valid_bit = BIT(16),
+ 	.temp_shift = 0,
+@@ -469,7 +465,6 @@ static const struct armada_thermal_data armada_ap806_data = {
+ };
+ 
+ static const struct armada_thermal_data armada_cp110_data = {
+-	.is_valid = armada_is_valid,
+ 	.init = armada_cp110_init,
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
 -- 
 2.14.1
