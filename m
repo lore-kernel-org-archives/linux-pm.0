@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 05/23] thermal: armada: dissociate a380 and cp110 ->init()
- hooks
-Date: Mon, 16 Jul 2018 16:41:48 +0200
-Message-ID: <20180716144206.30985-6-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 17/23] dt-bindings: cp110: update documentation since DT
+ de-duplication
+Date: Mon, 16 Jul 2018 16:42:00 +0200
+Message-ID: <20180716144206.30985-18-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,43 +22,51 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Until now, Armada 380 and CP110 could share the same ->init() function
-because their use was identical.
-
-Prepare the support of multi-sensors support and overheat interrupt
-feature by separating the initialization paths before they actually
-diverge.
+CP110 master/slave DT files have been merged in a DT de-duplication work
+merged in v4.16. Update the syscon documentation accordingly to match
+the current state of the DT nodes.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/thermal/armada_thermal.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ .../bindings/arm/marvell/cp110-system-controller.txt           | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 3d22a6016b04..9291ea3ad2f7 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -200,6 +200,12 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	armada_wait_sensor_validity(priv);
- }
+diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+index 56e7fb1153e7..54b0d64ce819 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+@@ -163,26 +163,26 @@ Required properties:
  
-+static void armada_cp110_init(struct platform_device *pdev,
-+			      struct armada_thermal_priv *priv)
-+{
-+	armada380_init(pdev, priv);
-+}
-+
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	u32 reg = readl_relaxed(priv->status);
-@@ -306,7 +312,7 @@ static const struct armada_thermal_data armada_ap806_data = {
+ Example:
  
- static const struct armada_thermal_data armada_cp110_data = {
- 	.is_valid = armada_is_valid,
--	.init = armada380_init,
-+	.init = armada_cp110_init,
- 	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x3ff,
+-cpm_syscon0: system-controller@440000 {
++CP110_LABEL(syscon0): system-controller@440000 {
+ 	compatible = "syscon", "simple-mfd";
+ 	reg = <0x440000 0x1000>;
+ 
+-	cpm_clk: clock {
++	CP110_LABEL(clk): clock {
+ 		compatible = "marvell,cp110-clock";
+ 		#clock-cells = <2>;
+ 	};
+ 
+-	cpm_pinctrl: pinctrl {
++	CP110_LABEL(pinctrl): pinctrl {
+ 		compatible = "marvell,armada-8k-cpm-pinctrl";
+ 	};
+ 
+-	cpm_gpio1: gpio@100 {
++	CP110_LABEL(gpio1): gpio@100 {
+ 		compatible = "marvell,armada-8k-gpio";
+ 		offset = <0x100>;
+ 		ngpios = <32>;
+ 		gpio-controller;
+ 		#gpio-cells = <2>;
+-		gpio-ranges = <&cpm_pinctrl 0 0 32>;
++		gpio-ranges = <&CP110_LABEL(pinctrl) 0 0 32>;
+ 	};
+ 
+ };
 -- 
 2.14.1
