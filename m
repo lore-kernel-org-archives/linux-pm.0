@@ -1,95 +1,94 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
-Date: Mon, 16 Jul 2018 10:50:50 -0700
-Message-ID: <20180716175050.GZ129942@google.com>
-References: <20180703234705.227473-1-mka@chromium.org>
- <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
- <20180703234705.227473-6-mka@chromium.org>
- <5B3C6C2A.1070205@samsung.com>
- <20180706175301.GG129942@google.com>
- <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+From: "Schmauss, Erik" <erik.schmauss@intel.com>
+Subject: RE: [PATCH] ACPICA: Clear status of all events when entering S5
+Date: Mon, 16 Jul 2018 17:59:27 +0000
+Message-ID: <CF6A88132359CE47947DB4C6E1709ED53BB4D759@ORSMSX110.amr.corp.intel.com>
+References: <s5hk1qaf9hv.wl-tiwai@suse.de>
+ <1704080.gFTvVrrZA1@aspire.rjw.lan>
+ <6f01a906-b27c-0e1a-e9f6-fa27c015faa3@cosifan.de>
+ <2396867.eZQXUlvGZn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+In-Reply-To: <2396867.eZQXUlvGZn@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: =?iso-8859-1?Q?Thomas_H=E4nig?= <haenig@cosifan.de>, Takashi Iwai <tiwai@suse.de>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
-> Hi Matthias,
+
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> Sent: Sunday, July 8, 2018 2:10 AM
+> To: Linux ACPI <linux-acpi@vger.kernel.org>
+> Cc: Thomas Hänig <haenig@cosifan.de>; Takashi Iwai <tiwai@suse.de>;
+> Schmauss, Erik <erik.schmauss@intel.com>; Linux PM <linux-
+> pm@vger.kernel.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Subject: [PATCH] ACPICA: Clear status of all events when entering S5
 > 
-> On 2018ë…„ 07ì›” 07ì¼ 02:53, Matthias Kaehlcke wrote:
-> > Hi Chanwoo,
-> > 
-> > On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
-> > 
-> >> Firstly,
-> >> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
-> >>
-> >> devfreq already used the OPP interface as default. It means that
-> >> the outside of 'drivers/devfreq' can disable/enable the frequency
-> >> such as drivers/thermal/devfreq_cooling.c. Also, when some device
-> >> drivers disable/enable the specific frequency, the devfreq core
-> >> consider them.
-> >>
-> >> So, devfreq doesn't need to devfreq_verify_within_limits() because
-> >> already support some interface to change the minimum/maximum frequency
-> >> of devfreq device. 
-> >>
-> >> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
-> >> to change the minimum/maximum frequency of cpu. some device driver cannot
-> >> change the minimum/maximum frequency through OPP interface.
-> >>
-> >> But, in case of devfreq subsystem, as I explained already, devfreq support
-> >> the OPP interface as default way. devfreq subsystem doesn't need to add
-> >> other way to change the minimum/maximum frequency.
-> > 
-> > Using the OPP interface exclusively works as long as a
-> > enabling/disabling of OPPs is limited to a single driver
-> > (drivers/thermal/devfreq_cooling.c). When multiple drivers are
-> > involved you need a way to resolve conflicts, that's the purpose of
-> > devfreq_verify_within_limits(). Please let me know if there are
-> > existing mechanisms for conflict resolution that I overlooked.
-> > 
-> > Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
-> > devfreq_verify_within_limits() instead of the OPP interface if
-> > desired, however this seems beyond the scope of this series.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Actually, if we uses this approach, it doesn't support the multiple drivers too.
-> If non throttler drivers uses devfreq_verify_within_limits(), the conflict
-> happen.
+> After commit 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI
+> IRQs during suspend/resume) the status of ACPI events is not cleared any more
+> when entering the ACPI S5 system state (power
+> off) which causes some systems to power up immediately after turing off power
+> in certain situations.
+> 
+> That is a functional regression, so address it by making the code clear the status
+> of all ACPI events again when entering S5 (for system-wide suspend or
+> hibernation the clearing of the status of all events is not desirable, as it might
+> cause the kernel to miss wakeup events sometimes).
+> 
+> Fixes: 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI IRQs
+> during suspend/resume)
+> Reported-by: Takashi Iwai <tiwai@suse.de>
+> Tested-by: Thomas Hänig <haenig@cosifan.de>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> Resend https://patchwork.kernel.org/patch/10511451/ with a changelig and
+> tags.
+> 
+> ---
+>  drivers/acpi/acpica/hwsleep.c |   15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/acpica/hwsleep.c
+> =================================================================
+> ==
+> --- linux-pm.orig/drivers/acpi/acpica/hwsleep.c
+> +++ linux-pm/drivers/acpi/acpica/hwsleep.c
+> @@ -51,16 +51,23 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
+>  		return_ACPI_STATUS(status);
+>  	}
+> 
+> -	/*
+> -	 * 1) Disable all GPEs
+> -	 * 2) Enable all wakeup GPEs
+> -	 */
+> +	/* Disable all GPEs */
+>  	status = acpi_hw_disable_all_gpes();
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
+>  	}
+> +	/*
+> +	 * If the target sleep state is S5, clear all GPEs and fixed events too
+> +	 */
+> +	if (sleep_state == ACPI_STATE_S5) {
+> +		status = acpi_hw_clear_acpi_status();
+> +		if (ACPI_FAILURE(status)) {
+> +			return_ACPI_STATUS(status);
+> +		}
+> +	}
+>  	acpi_gbl_system_awake_and_running = FALSE;
+> 
+> +	 /* Enable all wakeup GPEs */
+>  	status = acpi_hw_enable_all_wakeup_gpes();
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
 
-As long as drivers limit the max freq there is no conflict, the lowest
-max freq wins. I expect this to be the usual case, apparently it
-worked for cpufreq for 10+ years.
+Rafael, I've created an ACPICA pull request containing this patch.
 
-However it is correct that there would be a conflict if a driver
-requests a min freq that is higher than the max freq requested by
-another. In this case devfreq_verify_within_limits() resolves the
-conflict by raising p->max to the min freq. Not sure if this is
-something that would ever occur in practice though.
-
-If we are really concerned about this case it would also be an option
-to limit the adjustment to the max frequency.
-
-> To resolve the conflict for multiple device driver, maybe OPP interface
-> have to support 'usage_count' such as clk_enable/disable().
-
-This would require supporting negative usage count values, since a OPP
-should not be enabled if e.g. thermal enables it but the throttler
-disabled it or viceversa.
-
-Theoretically there could also be conflicts, like one driver disabling
-the higher OPPs and another the lower ones, with the outcome of all
-OPPs being disabled, which would be a more drastic conflict resolution
-than that of devfreq_verify_within_limits().
-
-Viresh, what do you think about an OPP usage count?
-
-Thanks
-
-Matthias
+Thanks,
+Erik
