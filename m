@@ -1,90 +1,95 @@
-From: Eric Biggers <ebiggers@google.com>
-Subject: Re: [PATCH] x86/power/64: Remove VLA usage
-Date: Mon, 16 Jul 2018 10:22:05 -0700
-Message-ID: <20180716172205.GB77258@google.com>
-References: <20180716035657.GA32180@beast>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
+Date: Mon, 16 Jul 2018 10:50:50 -0700
+Message-ID: <20180716175050.GZ129942@google.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+ <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
+ <20180703234705.227473-6-mka@chromium.org>
+ <5B3C6C2A.1070205@samsung.com>
+ <20180706175301.GG129942@google.com>
+ <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180716035657.GA32180@beast>
+In-Reply-To: <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jul 15, 2018 at 08:56:57PM -0700, Kees Cook wrote:
-> In the quest to remove all stack VLA usage from the kernel[1], this
-> removes the discouraged use of AHASH_REQUEST_ON_STACK by switching to
-> shash directly and allocating the descriptor in heap memory (which should
-> be fine: the tfm has already been allocated there too).
+On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
+> Hi Matthias,
 > 
-> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+> On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
+> > Hi Chanwoo,
+> > 
+> > On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
+> > 
+> >> Firstly,
+> >> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
+> >>
+> >> devfreq already used the OPP interface as default. It means that
+> >> the outside of 'drivers/devfreq' can disable/enable the frequency
+> >> such as drivers/thermal/devfreq_cooling.c. Also, when some device
+> >> drivers disable/enable the specific frequency, the devfreq core
+> >> consider them.
+> >>
+> >> So, devfreq doesn't need to devfreq_verify_within_limits() because
+> >> already support some interface to change the minimum/maximum frequency
+> >> of devfreq device. 
+> >>
+> >> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
+> >> to change the minimum/maximum frequency of cpu. some device driver cannot
+> >> change the minimum/maximum frequency through OPP interface.
+> >>
+> >> But, in case of devfreq subsystem, as I explained already, devfreq support
+> >> the OPP interface as default way. devfreq subsystem doesn't need to add
+> >> other way to change the minimum/maximum frequency.
+> > 
+> > Using the OPP interface exclusively works as long as a
+> > enabling/disabling of OPPs is limited to a single driver
+> > (drivers/thermal/devfreq_cooling.c). When multiple drivers are
+> > involved you need a way to resolve conflicts, that's the purpose of
+> > devfreq_verify_within_limits(). Please let me know if there are
+> > existing mechanisms for conflict resolution that I overlooked.
+> > 
+> > Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
+> > devfreq_verify_within_limits() instead of the OPP interface if
+> > desired, however this seems beyond the scope of this series.
 > 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  arch/x86/power/hibernate_64.c | 35 +++++++++++++++++++----------------
->  1 file changed, 19 insertions(+), 16 deletions(-)
-> 
-> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> index 67ccf64c8bd8..0ed01bb935a6 100644
-> --- a/arch/x86/power/hibernate_64.c
-> +++ b/arch/x86/power/hibernate_64.c
-> @@ -233,28 +233,31 @@ struct restore_data_record {
->   */
->  static int get_e820_md5(struct e820_table *table, void *buf)
->  {
-> -	struct scatterlist sg;
-> -	struct crypto_ahash *tfm;
-> +	struct crypto_shash *tfm;
-> +	struct shash_desc *desc;
->  	int size;
->  	int ret = 0;
->  
-> -	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
-> +	tfm = crypto_alloc_shash("md5", 0, 0);
->  	if (IS_ERR(tfm))
->  		return -ENOMEM;
->  
-> -	{
-> -		AHASH_REQUEST_ON_STACK(req, tfm);
-> -		size = offsetof(struct e820_table, entries) + sizeof(struct e820_entry) * table->nr_entries;
-> -		ahash_request_set_tfm(req, tfm);
-> -		sg_init_one(&sg, (u8 *)table, size);
-> -		ahash_request_set_callback(req, 0, NULL, NULL);
-> -		ahash_request_set_crypt(req, &sg, buf, size);
-> -
-> -		if (crypto_ahash_digest(req))
-> -			ret = -EINVAL;
-> -		ahash_request_zero(req);
-> -	}
-> -	crypto_free_ahash(tfm);
-> +	desc = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(tfm),
-> +		       GFP_KERNEL);
-> +	if (!desc)
-> +		return -ENOMEM;
+> Actually, if we uses this approach, it doesn't support the multiple drivers too.
+> If non throttler drivers uses devfreq_verify_within_limits(), the conflict
+> happen.
 
-Need crypto_free_shash(tfm) if the kmalloc() here fails.
+As long as drivers limit the max freq there is no conflict, the lowest
+max freq wins. I expect this to be the usual case, apparently it
+worked for cpufreq for 10+ years.
 
-> +
-> +	desc->tfm = tfm;
-> +	desc->flags = 0;
-> +
-> +	size = offsetof(struct e820_table, entries) +
-> +		sizeof(struct e820_entry) * table->nr_entries;
-> +
-> +	if (crypto_shash_digest(desc, (u8 *)table, size, buf))
-> +		ret = -EINVAL;
-> +
-> +	kzfree(desc);
-> +	crypto_free_shash(tfm);
->  
->  	return ret;
->  }
-> -- 
-> 2.17.1
-> 
-> 
-> -- 
-> Kees Cook
-> Pixel Security
+However it is correct that there would be a conflict if a driver
+requests a min freq that is higher than the max freq requested by
+another. In this case devfreq_verify_within_limits() resolves the
+conflict by raising p->max to the min freq. Not sure if this is
+something that would ever occur in practice though.
+
+If we are really concerned about this case it would also be an option
+to limit the adjustment to the max frequency.
+
+> To resolve the conflict for multiple device driver, maybe OPP interface
+> have to support 'usage_count' such as clk_enable/disable().
+
+This would require supporting negative usage count values, since a OPP
+should not be enabled if e.g. thermal enables it but the throttler
+disabled it or viceversa.
+
+Theoretically there could also be conflicts, like one driver disabling
+the higher OPPs and another the lower ones, with the outcome of all
+OPPs being disabled, which would be a more drastic conflict resolution
+than that of devfreq_verify_within_limits().
+
+Viresh, what do you think about an OPP usage count?
+
+Thanks
+
+Matthias
