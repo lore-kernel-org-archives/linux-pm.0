@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 17/23] dt-bindings: cp110: update documentation since DT
- de-duplication
-Date: Mon, 16 Jul 2018 16:42:00 +0200
-Message-ID: <20180716144206.30985-18-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 15/23] dt-bindings: cp110: prepare the syscon file to list
+ other syscons nodes
+Date: Mon, 16 Jul 2018 16:41:58 +0200
+Message-ID: <20180716144206.30985-16-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,51 +22,43 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-CP110 master/slave DT files have been merged in a DT de-duplication work
-merged in v4.16. Update the syscon documentation accordingly to match
-the current state of the DT nodes.
+There are multiple system controllers in CP110. Because all syscon nodes
+use the same compatible, it is pertinent to use this same file to list
+IPs inside it. Thus, change the header to be more generic, and align
+with AP806 file.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- .../bindings/arm/marvell/cp110-system-controller.txt           | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ .../bindings/arm/marvell/cp110-system-controller.txt       | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-index 56e7fb1153e7..54b0d64ce819 100644
+index 29cdbae6c5ac..56e7fb1153e7 100644
 --- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
 +++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-@@ -163,26 +163,26 @@ Required properties:
+@@ -1,15 +1,15 @@
+-Marvell Armada CP110 System Controller 0
+-========================================
++Marvell Armada CP110 System Controller
++======================================
  
- Example:
+ The CP110 is one of the two core HW blocks of the Marvell Armada 7K/8K
+-SoCs. It contains two sets of system control registers, System
+-Controller 0 and System Controller 1. This Device Tree binding allows
+-to describe the first system controller, which provides registers to
+-configure various aspects of the SoC.
++SoCs. It contains system controllers, which provide several registers
++giving access to numerous features: clocks, pin-muxing and many other
++SoC configuration items. This DT binding allows to describe these
++system controllers.
  
--cpm_syscon0: system-controller@440000 {
-+CP110_LABEL(syscon0): system-controller@440000 {
- 	compatible = "syscon", "simple-mfd";
- 	reg = <0x440000 0x1000>;
+ For the top level node:
+  - compatible: must be: "syscon", "simple-mfd";
+- - reg: register area of the CP110 system controller 0
++ - reg: register area of the CP110 system controller
  
--	cpm_clk: clock {
-+	CP110_LABEL(clk): clock {
- 		compatible = "marvell,cp110-clock";
- 		#clock-cells = <2>;
- 	};
- 
--	cpm_pinctrl: pinctrl {
-+	CP110_LABEL(pinctrl): pinctrl {
- 		compatible = "marvell,armada-8k-cpm-pinctrl";
- 	};
- 
--	cpm_gpio1: gpio@100 {
-+	CP110_LABEL(gpio1): gpio@100 {
- 		compatible = "marvell,armada-8k-gpio";
- 		offset = <0x100>;
- 		ngpios = <32>;
- 		gpio-controller;
- 		#gpio-cells = <2>;
--		gpio-ranges = <&cpm_pinctrl 0 0 32>;
-+		gpio-ranges = <&CP110_LABEL(pinctrl) 0 0 32>;
- 	};
- 
- };
+ Clocks:
+ -------
 -- 
 2.14.1
