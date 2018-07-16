@@ -1,76 +1,65 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v12 1/4] iommu/arm-smmu: Add
- pm_runtime/sleep ops
-Date: Mon, 16 Jul 2018 12:23:12 +0200
-Message-ID: <CAJZ5v0irayU5cWBHtE=YVVqK_4gnue9bGopLkPY9P7-bEsixCA@mail.gmail.com>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-2-vivek.gautam@codeaurora.org>
- <17407514.unFVTGoGrn@aspire.rjw.lan>
- <CAFp+6iHxJucfzJJeEvSToG4p2zADjDb9F0L8h053x-JKAy55mg@mail.gmail.com>
- <CAJZ5v0gbkdkx_+oHYiPz=SFdFCLm38hsi1TmJ2Jdc7j73TNtzg@mail.gmail.com>
- <CAAFQd5Cqd=J+_nqRc_sx=sq2ayxwSRMgygvffuHH9nC5R_LjdA@mail.gmail.com>
- <CAFp+6iFxiM0DDnRqUameH6XOYjgdAF8ysuXXAjkc8zsod-dVcQ@mail.gmail.com>
- <CAJZ5v0hq3bLUbXNsr_ig7D72td_wqRP063x1AseP85F5UWs8VA@mail.gmail.com>
- <010cb56a-36e8-e729-1fe7-738048eb551d@codeaurora.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
+ framework
+Date: Mon, 16 Jul 2018 11:29:17 +0100
+Message-ID: <20180716102917.GA19311@e108498-lin.cambridge.arm.com>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-4-quentin.perret@arm.com>
+ <4341d199-8018-21e1-c2ce-9af8f7719297@arm.com>
+ <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <010cb56a-36e8-e729-1fe7-738048eb551d-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBNb24sIEp1bCAxNiwgMjAxOCBhdCAxMjoxMSBQTSwgVml2ZWsgR2F1dGFtCjx2aXZl
-ay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+IEhJIFJhZmFlbCwKPgo+Cj4KPiBPbiA3
-LzE2LzIwMTggMjoyMSBQTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+Cj4+IE9uIFRodSwg
-SnVsIDEyLCAyMDE4IGF0IDEyOjU3IFBNLCBWaXZlayBHYXV0YW0KPj4gPHZpdmVrLmdhdXRhbUBj
-b2RlYXVyb3JhLm9yZz4gd3JvdGU6CgpbY3V0XQoKPj4+PiBBbHRob3VnaCwgZ2l2ZW4gdGhlIFBN
-Cj4+Pj4gc3Vic3lzdGVtIGludGVybmFscywgdGhlIHN1c3BlbmQgZnVuY3Rpb24gd291bGRuJ3Qg
-YmUgY2FsbGVkIG9uIFNNTVUKPj4+PiBpbXBsZW1lbnRhdGlvbiBuZWVkZWQgcG93ZXIgY29udHJv
-bCAoc2luY2UgdGhleSB3b3VsZCBoYXZlIHJ1bnRpbWUgUE0KPj4+PiBlbmFibGVkKSBhbmQgb24g
-b3RoZXJzLCBpdCB3b3VsZCBiZSBjYWxsZWQgYnV0IGRvIG5vdGhpbmcgKHNpbmNlIG5vCj4+Pj4g
-Y2xvY2tzKS4KPj4+Pgo+Pj4+PiBIb25lc3RseSwgSSBqdXN0IGRvbid0IGtub3cuIDotKQo+Pj4+
-Pgo+Pj4+PiBJdCBqdXN0IGxvb2tzIG9kZCB0aGUgd2F5IGl0IGlzIGRvbmUuICBJIHRoaW5rIHRo
-ZSBjbG9jayBzaG91bGQgYmUKPj4+Pj4gZ2F0ZWQgZHVyaW5nIHN5c3RlbS13aWRlIHN1c3BlbmQg
-dG9vLCBiZWNhdXNlIHRoZSBzeXN0ZW0gY2FuIHNwZW5kCj4+Pj4+IG11Y2ggbW9yZSB0aW1lIGlu
-IGEgc2xlZXAgc3RhdGUgdGhhbiBpbiB0aGUgd29ya2luZyBzdGF0ZSwgb24gYXZlcmFnZS4KPj4+
-Pj4KPj4+Pj4gQW5kIG5vdGUgdGhhdCB5b3UgY2Fubm90IHJlbHkgb24gcnVudGltZSBQTSB0byBh
-bHdheXMgZG8gaXQgZm9yIHlvdSwKPj4+Pj4gYmVjYXVzZSBpdCBtYXkgYmUgZGlzYWJsZWQgYXQg
-YSBjbGllbnQgZGV2aWNlIG9yIGV2ZW4gYmxvY2tlZCBieSB1c2VyCj4+Pj4+IHNwYWNlIHZpYSBw
-b3dlci9jb250cm9sIGluIHN5c2ZzIGFuZCB0aGF0IHNob3VsZG4ndCBtYXR0ZXIgZm9yCj4+Pj4+
-IHN5c3RlbS13aWRlIFBNLgo+Pj4+Cj4+Pj4gVXNlciBzcGFjZSBibG9ja2luZyBydW50aW1lIFBN
-IHRocm91Z2ggc3lzZnMgaXMgYSBnb29kIHBvaW50LiBJJ20gbm90Cj4+Pj4gMTAwJSBzdXJlIGhv
-dyB0aGUgUE0gc3Vic3lzdGVtIGRlYWxzIHdpdGggdGhhdCBpbiBjYXNlIG9mIHN5c3RlbS13aWRl
-Cj4+Pj4gc3VzcGVuZC4gSSBndWVzcyBmb3IgY29uc2lzdGVuY3kgYW5kIHNhZmV0eSwgd2Ugc2hv
-dWxkIGhhdmUgdGhlCj4+Pj4gc3VzcGVuZCBjYWxsYmFjay4KPj4+Cj4+PiBXaWxsIGFkZCB0aGUg
-Zm9sbG93aW5nIHN1c3BlbmQgY2FsbGJhY2sgKHNhbWUgYXMKPj4+IGFybV9zbW11X3J1bnRpbWVf
-c3VzcGVuZCk6Cj4+Pgo+Pj4gICBzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3Bt
-X3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQo+Pj4gICB7Cj4+PiAgICAgICAgICAgc3RydWN0
-IGFybV9zbW11X2RldmljZSAqc21tdSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOwo+Pj4KPj4+ICAg
-ICAgICAgICBjbGtfYnVsa19kaXNhYmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPj4+
-Cj4+PiAgICAgICAgICAgcmV0dXJuIDA7Cj4+PiAgIH0KPj4KPj4gSSB0aGluayB5b3UgYWxzbyBu
-ZWVkIHRvIGNoZWNrIGlmIHRoZSBjbG9jayBoYXMgYWxyZWFkeSBiZWVuIGRpc2FibGVkCj4+IGJ5
-IHJ1bnRpbWUgUE0uICBPdGhlcndpc2UgeW91IG1heSBlbmQgdXAgZGlzYWJsaW5nIGl0IHR3aWNl
-IGluIGEgcm93Lgo+Cj4KPiBTaG91bGQgSSByYXRoZXIgY2FsbCBhIHBtX3J1bnRpbWVfcHV0KCkg
-aW4gc3VzcGVuZCBjYWxsYmFjaz8KClRoYXQgd291bGRuJ3Qgd29yayBhcyBydW50aW1lIFBNIG1h
-eSBiZSBlZmZlY3RpdmVseSBkaXNhYmxlZCBieSB1c2VyCnNwYWNlIHZpYSBzeXNmcy4gIFRoYXQn
-cyBvbmUgb2YgdGhlIHJlYXNvbnMgd2h5IHlvdSBuZWVkIHRoZSBleHRyYQpzeXN0ZW0td2lkZSBz
-dXNwZW5kIGNhbGxiYWNrIGluIHRoZSBmaXJzdCBwbGFjZS4gOi0pCgo+IE9yIGFuIGV4cGFuZGVk
-IGZvcm0gc29tZXRoaW5nIHNpbWlsYXIgdG86Cj4gaHR0cHM6Ly9lbGl4aXIuYm9vdGxpbi5jb20v
-bGludXgvdjQuMTgtcmM1L3NvdXJjZS9kcml2ZXJzL3NsaW1idXMvcWNvbS1jdHJsLmMjTDY5NQoK
-WWVzLCB5b3UgY2FuIGRvIHNvbWV0aGluZyBsaWtlIHRoYXQsIGJ1dCBiZSBjYXJlZnVsIHRvIG1h
-a2Ugc3VyZSB0aGF0CnRoZSBzdGF0ZSBvZiB0aGUgZGV2aWNlIGFmdGVyIHN5c3RlbS13aWRlIHJl
-c3VtZSBpcyBjb25zaXN0ZW50IHdpdGgKaXRzIHJ1bnRpbWUgUE0gc3RhdHVzIGluIGFsbCBjYXNl
-cy4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRy
-ZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8v
-bGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+On Tuesday 10 Jul 2018 at 09:32:02 (+0100), Quentin Perret wrote:
+> Indeed, having 'capacity' values in the EM framework is just an
+> optimization for the scheduler, so that it doesn't need to compute them
+> in the wake-up path. I could get rid of the whole
+> em_rescale_cpu_capacity() mess (and by the same occasion the RCU
+> protection of the tables ...) if I removed the 'capacity' values from
+> the EM.
+
+Another thing to take into consideration here is basically that the
+thermal subsystem (IPA) will be impacted by the RCU protection on the
+cs_table. However, since the 'frequency' and 'power' fields do not change
+at run-time, and since IPA doesn't need the 'capacity' value, there is no
+good reason to have IPA do rcu_read_lock() all over the place, so
+arguably something needs to be fixed here.
+
+One possibility is to remove entirely the following struct:
+	struct em_cap_state {
+		unsigned long capacity;
+		unsigned long frequency; /* Kilo-hertz */
+		unsigned long power; /* Milli-watts */
+	};
+
+and to have three independent vectors (of the same size) for frequency,
+power and capacity. That way only the 'capacity' vector would be RCU
+protected, and IPA could use 'frequency' and 'power' directly, without
+further protections.
+
+A second possibility is to remove the capacity values from the EM
+altogether (as I suggested in my previous message) and to get rid of the
+need for RCU protection at the same occasion.
+
+The second option simplifies the code of the EM framework significantly
+(no more em_rescale_cpu_capacity()) and shouldn't introduce massive
+overheads on the scheduler side (the energy calculation already
+requires one multiplication and one division, so nothing new on that
+side). At the same time, that would make it a whole lot easier to
+interface the EM framework with IPA without having to deal with RCU all
+over the place.
+
+So, if there are no objections, I'll try to explore that possibility for
+v5.
+
+I hope that makes sense
+
+Thanks,
+Quentin
