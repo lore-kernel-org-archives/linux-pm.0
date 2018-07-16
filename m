@@ -1,205 +1,184 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 12/12] sched/core: uclamp: use percentage clamp values
-Date: Mon, 16 Jul 2018 09:29:06 +0100
-Message-ID: <20180716082906.6061-13-patrick.bellasi@arm.com>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180716082906.6061-1-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v12 1/4] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Mon, 16 Jul 2018 10:51:13 +0200
+Message-ID: <CAJZ5v0hq3bLUbXNsr_ig7D72td_wqRP063x1AseP85F5UWs8VA@mail.gmail.com>
+References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
+ <20180708173413.1965-2-vivek.gautam@codeaurora.org>
+ <17407514.unFVTGoGrn@aspire.rjw.lan>
+ <CAFp+6iHxJucfzJJeEvSToG4p2zADjDb9F0L8h053x-JKAy55mg@mail.gmail.com>
+ <CAJZ5v0gbkdkx_+oHYiPz=SFdFCLm38hsi1TmJ2Jdc7j73TNtzg@mail.gmail.com>
+ <CAAFQd5Cqd=J+_nqRc_sx=sq2ayxwSRMgygvffuHH9nC5R_LjdA@mail.gmail.com>
+ <CAFp+6iFxiM0DDnRqUameH6XOYjgdAF8ysuXXAjkc8zsod-dVcQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iFxiM0DDnRqUameH6XOYjgdAF8ysuXXAjkc8zsod-dVcQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The utilization is a well defined property of tasks and CPUs with an
-in-kernel representation based on power-of-two values.
-The current representation, in the [0..SCHED_CAPACITY_SCALE] range,
-allows efficient computations in hot-paths and a sufficient fixed point
-arithmetic precision.
-However, the utilization values range is still an implementation detail
-which is also possibly subject to changes in the future.
-
-Since we don't want to commit new user-space APIs to any in-kernel
-implementation detail, let's add an abstraction layer on top of the APIs
-used by util_clamp, i.e. sched_{set,get}attr syscalls and the cgroup's
-cpu.util_{min,max} attributes.
-
-We do that by adding a couple of conversion function which can be used
-to conveniently transform utilization/capacity values from/to the internal
-SCHED_FIXEDPOINT_SCALE representation to/from a more generic percentage
-in the standard [0..100] range.
-
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Paul Turner <pjt@google.com>
-Cc: Todd Kjos <tkjos@google.com>
-Cc: Joel Fernandes <joelaf@google.com>
-Cc: Steve Muckle <smuckle@google.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- Documentation/admin-guide/cgroup-v2.rst |  6 +++---
- include/linux/sched.h                   | 20 ++++++++++++++++++++
- include/uapi/linux/sched/types.h        | 14 ++++++++------
- kernel/sched/core.c                     | 18 ++++++++++++------
- 4 files changed, 43 insertions(+), 15 deletions(-)
-
-diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
-index 328c011cc105..08b8062e55cd 100644
---- a/Documentation/admin-guide/cgroup-v2.rst
-+++ b/Documentation/admin-guide/cgroup-v2.rst
-@@ -973,7 +973,7 @@ All time durations are in microseconds.
-         A read-write single value file which exists on non-root cgroups.
-         The default is "0", i.e. no bandwidth boosting.
- 
--        The minimum utilization in the range [0, 1023].
-+        The minimum percentage of utilization in the range [0, 100].
- 
-         This interface allows reading and setting minimum utilization clamp
-         values similar to the sched_setattr(2). This minimum utilization
-@@ -981,9 +981,9 @@ All time durations are in microseconds.
- 
-   cpu.util_max
-         A read-write single value file which exists on non-root cgroups.
--        The default is "1023". i.e. no bandwidth clamping
-+        The default is "100". i.e. no bandwidth clamping
- 
--        The maximum utilization in the range [0, 1023].
-+        The maximum percentage of utilization in the range [0, 100].
- 
-         This interface allows reading and setting maximum utilization clamp
-         values similar to the sched_setattr(2). This maximum utilization
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5dd76a27ec17..f5970903c187 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -321,6 +321,26 @@ struct sched_info {
- # define SCHED_FIXEDPOINT_SHIFT		10
- # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
- 
-+static inline unsigned int scale_from_percent(unsigned int pct)
-+{
-+	WARN_ON(pct > 100);
-+
-+	return ((SCHED_FIXEDPOINT_SCALE * pct) / 100);
-+}
-+
-+static inline unsigned int scale_to_percent(unsigned int value)
-+{
-+	unsigned int rounding = 0;
-+
-+	WARN_ON(value > SCHED_FIXEDPOINT_SCALE);
-+
-+	/* Compensate rounding errors for: 0, 256, 512, 768, 1024 */
-+	if (likely((value & 0xFF) && ~(value & 0x700)))
-+		rounding = 1;
-+
-+	return (rounding + ((100 * value) / SCHED_FIXEDPOINT_SCALE));
-+}
-+
- struct load_weight {
- 	unsigned long			weight;
- 	u32				inv_weight;
-diff --git a/include/uapi/linux/sched/types.h b/include/uapi/linux/sched/types.h
-index 7421cd25354d..e2c2acb1c6af 100644
---- a/include/uapi/linux/sched/types.h
-+++ b/include/uapi/linux/sched/types.h
-@@ -84,15 +84,17 @@ struct sched_param {
-  *
-  *  @sched_util_min	represents the minimum utilization
-  *  @sched_util_max	represents the maximum utilization
-+ *  @sched_util_min	represents the minimum utilization percentage
-+ *  @sched_util_max	represents the maximum utilization percentage
-  *
-- * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE] which
-- * represents the percentage of CPU time used by a task when running at the
-- * maximum frequency on the highest capacity CPU of the system. Thus, for
-- * example, a 20% utilization task is a task running for 2ms every 10ms.
-+ * Utilization is a value in the range [0..100] which represents the
-+ * percentage of CPU time used by a task when running at the maximum frequency
-+ * on the highest capacity CPU of the system. Thus, for example, a 20%
-+ * utilization task is a task running for 2ms every 10ms.
-  *
-- * A task with a min utilization value bigger then 0 is more likely to be
-+ * A task with a min utilization value bigger then 0% is more likely to be
-  * scheduled on a CPU which can provide that bandwidth.
-- * A task with a max utilization value smaller then 1024 is more likely to be
-+ * A task with a max utilization value smaller then 100% is more likely to be
-  * scheduled on a CPU which do not provide more then the required bandwidth.
-  */
- struct sched_attr {
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 42cff5ffddae..da7b8630cc8d 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -1381,7 +1381,7 @@ static inline int __setscheduler_uclamp(struct task_struct *p,
- 
- 	if (attr->sched_util_min > attr->sched_util_max)
- 		return -EINVAL;
--	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
-+	if (attr->sched_util_max > 100)
- 		return -EINVAL;
- 
- 	mutex_lock(&uclamp_mutex);
-@@ -1389,12 +1389,12 @@ static inline int __setscheduler_uclamp(struct task_struct *p,
- 	/* Update min utilization clamp */
- 	uc_se = &p->uclamp[UCLAMP_MIN];
- 	retval |= uclamp_group_get(p, NULL, UCLAMP_MIN, uc_se,
--				   attr->sched_util_min);
-+				   scale_from_percent(attr->sched_util_min));
- 
- 	/* Update max utilization clamp */
- 	uc_se = &p->uclamp[UCLAMP_MAX];
- 	retval |= uclamp_group_get(p, NULL, UCLAMP_MAX, uc_se,
--				   attr->sched_util_max);
-+				   scale_from_percent(attr->sched_util_max));
- 
- 	mutex_unlock(&uclamp_mutex);
- 
-@@ -5493,6 +5493,8 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
- 	if (task_group(p)->uclamp[UCLAMP_MAX].value < attr.sched_util_max)
- 		attr.sched_util_max = task_group(p)->uclamp[UCLAMP_MAX].value;
- #endif
-+	attr.sched_util_min = scale_to_percent(attr.sched_util_min);
-+	attr.sched_util_max = scale_to_percent(attr.sched_util_max);
- #endif
- 
- 	rcu_read_unlock();
-@@ -7284,8 +7286,10 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
- 	struct task_group *tg;
- 	int ret = -EINVAL;
- 
--	if (min_value > SCHED_CAPACITY_SCALE)
-+	/* Check range and scale to internal representation */
-+	if (min_value > 100)
- 		return -ERANGE;
-+	min_value = scale_from_percent(min_value);
- 
- 	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
-@@ -7316,8 +7320,10 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
- 	struct task_group *tg;
- 	int ret = -EINVAL;
- 
--	if (max_value > SCHED_CAPACITY_SCALE)
-+	/* Check range and scale to internal representation */
-+	if (max_value > 100)
- 		return -ERANGE;
-+	max_value = scale_from_percent(max_value);
- 
- 	mutex_lock(&uclamp_mutex);
- 	rcu_read_lock();
-@@ -7352,7 +7358,7 @@ static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
- 	util_clamp = tg->uclamp[clamp_id].value;
- 	rcu_read_unlock();
- 
--	return util_clamp;
-+	return scale_to_percent(util_clamp);
- }
- 
- static u64 cpu_util_min_read_u64(struct cgroup_subsys_state *css,
--- 
-2.17.1
+T24gVGh1LCBKdWwgMTIsIDIwMTggYXQgMTI6NTcgUE0sIFZpdmVrIEdhdXRhbQo8dml2ZWsuZ2F1
+dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiBIaSwKPgo+Cj4gT24gV2VkLCBKdWwgMTEsIDIw
+MTggYXQgNjoyMSBQTSwgVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4+
+IE9uIFdlZCwgSnVsIDExLCAyMDE4IGF0IDg6MTEgUE0gUmFmYWVsIEouIFd5c29ja2kgPHJhZmFl
+bEBrZXJuZWwub3JnPiB3cm90ZToKPj4+Cj4+PiBPbiBXZWQsIEp1bCAxMSwgMjAxOCBhdCAxMjo1
+NSBQTSwgVml2ZWsgR2F1dGFtCj4+PiA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90
+ZToKPj4+ID4gSGkgUmFmYWVsLAo+Pj4gPgo+Pj4gPgo+Pj4gPiBPbiBXZWQsIEp1bCAxMSwgMjAx
+OCBhdCAzOjIwIFBNLCBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHJqd3lzb2NraS5uZXQ+IHdyb3Rl
+Ogo+Pj4gPj4gT24gU3VuZGF5LCBKdWx5IDgsIDIwMTggNzozNDoxMCBQTSBDRVNUIFZpdmVrIEdh
+dXRhbSB3cm90ZToKPj4+ID4+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJv
+cmEub3JnPgo+Pj4gPj4+Cj4+PiA+Pj4gVGhlIHNtbXUgbmVlZHMgdG8gYmUgZnVuY3Rpb25hbCBv
+bmx5IHdoZW4gdGhlIHJlc3BlY3RpdmUKPj4+ID4+PiBtYXN0ZXIncyB1c2luZyBpdCBhcmUgYWN0
+aXZlLiBUaGUgZGV2aWNlX2xpbmsgZmVhdHVyZQo+Pj4gPj4+IGhlbHBzIHRvIHRyYWNrIHN1Y2gg
+ZnVuY3Rpb25hbCBkZXBlbmRlbmNpZXMsIHNvIHRoYXQgdGhlCj4+PiA+Pj4gaW9tbXUgZ2V0cyBw
+b3dlcmVkIHdoZW4gdGhlIG1hc3RlciBkZXZpY2UgZW5hYmxlcyBpdHNlbGYKPj4+ID4+PiB1c2lu
+ZyBwbV9ydW50aW1lLiBTbyBieSBhZGFwdGluZyB0aGUgc21tdSBkcml2ZXIgZm9yCj4+PiA+Pj4g
+cnVudGltZSBwbSwgYWJvdmUgc2FpZCBkZXBlbmRlbmN5IGNhbiBiZSBhZGRyZXNzZWQuCj4+PiA+
+Pj4KPj4+ID4+PiBUaGlzIHBhdGNoIGFkZHMgdGhlIHBtIHJ1bnRpbWUvc2xlZXAgY2FsbGJhY2tz
+IHRvIHRoZQo+Pj4gPj4+IGRyaXZlciBhbmQgYWxzbyB0aGUgZnVuY3Rpb25zIHRvIHBhcnNlIHRo
+ZSBzbW11IGNsb2Nrcwo+Pj4gPj4+IGZyb20gRFQgYW5kIGVuYWJsZSB0aGVtIGluIHJlc3VtZS9z
+dXNwZW5kLgo+Pj4gPj4+Cj4+PiA+Pj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNo
+YXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4+ID4+PiBTaWduZWQtb2ZmLWJ5OiBBcmNoaXQgVGFuZWph
+IDxhcmNoaXR0QGNvZGVhdXJvcmEub3JnPgo+Pj4gPj4+IFt2aXZlazogQ2xvY2sgcmV3b3JrIHRv
+IHJlcXVlc3QgYnVsayBvZiBjbG9ja3NdCj4+PiA+Pj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1
+dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+PiA+Pj4gUmV2aWV3ZWQtYnk6IFRv
+bWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4+PiA+Pj4gLS0tCj4+PiA+Pj4KPj4+ID4+
+PiAgLSBObyBjaGFuZ2Ugc2luY2UgdjExLgo+Pj4gPj4+Cj4+PiA+Pj4gIGRyaXZlcnMvaW9tbXUv
+YXJtLXNtbXUuYyB8IDYwICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKystLQo+Pj4gPj4+ICAxIGZpbGUgY2hhbmdlZCwgNTggaW5zZXJ0aW9ucygrKSwgMiBkZWxl
+dGlvbnMoLSkKPj4+ID4+Pgo+Pj4gPj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1z
+bW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4+ID4+PiBpbmRleCBmN2E5NmJjZjk0
+YTYuLmEwMWQwZGRlMjFkZCAxMDA2NDQKPj4+ID4+PiAtLS0gYS9kcml2ZXJzL2lvbW11L2FybS1z
+bW11LmMKPj4+ID4+PiArKysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4+ID4+PiBAQCAt
+NDgsNiArNDgsNyBAQAo+Pj4gPj4+ICAjaW5jbHVkZSA8bGludXgvb2ZfaW9tbXUuaD4KPj4+ID4+
+PiAgI2luY2x1ZGUgPGxpbnV4L3BjaS5oPgo+Pj4gPj4+ICAjaW5jbHVkZSA8bGludXgvcGxhdGZv
+cm1fZGV2aWNlLmg+Cj4+PiA+Pj4gKyNpbmNsdWRlIDxsaW51eC9wbV9ydW50aW1lLmg+Cj4+PiA+
+Pj4gICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+Cj4+PiA+Pj4gICNpbmNsdWRlIDxsaW51eC9zcGlu
+bG9jay5oPgo+Pj4gPj4+Cj4+PiA+Pj4gQEAgLTIwNSw2ICsyMDYsOCBAQCBzdHJ1Y3QgYXJtX3Nt
+bXVfZGV2aWNlIHsKPj4+ID4+PiAgICAgICB1MzIgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IG51bV9nbG9iYWxfaXJxczsKPj4+ID4+PiAgICAgICB1MzIgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIG51bV9jb250ZXh0X2lycXM7Cj4+PiA+Pj4gICAgICAgdW5zaWduZWQgaW50ICAgICAg
+ICAgICAgICAgICAgICAqaXJxczsKPj4+ID4+PiArICAgICBzdHJ1Y3QgY2xrX2J1bGtfZGF0YSAg
+ICAgICAgICAgICpjbGtzOwo+Pj4gPj4+ICsgICAgIGludCAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgbnVtX2Nsa3M7Cj4+PiA+Pj4KPj4+ID4+PiAgICAgICB1MzIgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIGNhdml1bV9pZF9iYXNlOyAvKiBTcGVjaWZpYyB0byBDYXZpdW0gKi8KPj4+
+ID4+Pgo+Pj4gPj4+IEBAIC0xODk3LDEwICsxOTAwLDEyIEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVf
+ZGV2aWNlX2NmZ19wcm9iZShzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11KQo+Pj4gPj4+ICBz
+dHJ1Y3QgYXJtX3NtbXVfbWF0Y2hfZGF0YSB7Cj4+PiA+Pj4gICAgICAgZW51bSBhcm1fc21tdV9h
+cmNoX3ZlcnNpb24gdmVyc2lvbjsKPj4+ID4+PiAgICAgICBlbnVtIGFybV9zbW11X2ltcGxlbWVu
+dGF0aW9uIG1vZGVsOwo+Pj4gPj4+ICsgICAgIGNvbnN0IGNoYXIgKiBjb25zdCAqY2xrczsKPj4+
+ID4+PiArICAgICBpbnQgbnVtX2Nsa3M7Cj4+PiA+Pj4gIH07Cj4+PiA+Pj4KPj4+ID4+PiAgI2Rl
+ZmluZSBBUk1fU01NVV9NQVRDSF9EQVRBKG5hbWUsIHZlciwgaW1wKSAgXAo+Pj4gPj4+IC1zdGF0
+aWMgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEgbmFtZSA9IHsgLnZlcnNpb24gPSB2ZXIsIC5t
+b2RlbCA9IGltcCB9Cj4+PiA+Pj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgYXJtX3NtbXVfbWF0Y2hf
+ZGF0YSBuYW1lID0geyAudmVyc2lvbiA9IHZlciwgLm1vZGVsID0gaW1wIH0KPj4+ID4+Pgo+Pj4g
+Pj4+ICBBUk1fU01NVV9NQVRDSF9EQVRBKHNtbXVfZ2VuZXJpY192MSwgQVJNX1NNTVVfVjEsIEdF
+TkVSSUNfU01NVSk7Cj4+PiA+Pj4gIEFSTV9TTU1VX01BVENIX0RBVEEoc21tdV9nZW5lcmljX3Yy
+LCBBUk1fU01NVV9WMiwgR0VORVJJQ19TTU1VKTsKPj4+ID4+PiBAQCAtMTkxOSw2ICsxOTI0LDIz
+IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGFybV9zbW11X29mX21hdGNoW10g
+PSB7Cj4+PiA+Pj4gIH07Cj4+PiA+Pj4gIE1PRFVMRV9ERVZJQ0VfVEFCTEUob2YsIGFybV9zbW11
+X29mX21hdGNoKTsKPj4+ID4+Pgo+Pj4gPj4+ICtzdGF0aWMgdm9pZCBhcm1fc21tdV9maWxsX2Ns
+a19kYXRhKHN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUsCj4+PiA+Pj4gKyAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgY29uc3QgY2hhciAqIGNvbnN0ICpjbGtzKQo+Pj4gPj4+ICt7
+Cj4+PiA+Pj4gKyAgICAgaW50IGk7Cj4+PiA+Pj4gKwo+Pj4gPj4+ICsgICAgIGlmIChzbW11LT5u
+dW1fY2xrcyA8IDEpCj4+PiA+Pj4gKyAgICAgICAgICAgICByZXR1cm47Cj4+PiA+Pj4gKwo+Pj4g
+Pj4+ICsgICAgIHNtbXUtPmNsa3MgPSBkZXZtX2tjYWxsb2Moc21tdS0+ZGV2LCBzbW11LT5udW1f
+Y2xrcywKPj4+ID4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHNpemVvZigqc21t
+dS0+Y2xrcyksIEdGUF9LRVJORUwpOwo+Pj4gPj4+ICsgICAgIGlmICghc21tdS0+Y2xrcykKPj4+
+ID4+PiArICAgICAgICAgICAgIHJldHVybjsKPj4+ID4+PiArCj4+PiA+Pj4gKyAgICAgZm9yIChp
+ID0gMDsgaSA8IHNtbXUtPm51bV9jbGtzOyBpKyspCj4+PiA+Pj4gKyAgICAgICAgICAgICBzbW11
+LT5jbGtzW2ldLmlkID0gY2xrc1tpXTsKPj4+ID4+PiArfQo+Pj4gPj4+ICsKPj4+ID4+PiAgI2lm
+ZGVmIENPTkZJR19BQ1BJCj4+PiA+Pj4gIHN0YXRpYyBpbnQgYWNwaV9zbW11X2dldF9kYXRhKHUz
+MiBtb2RlbCwgc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSkKPj4+ID4+PiAgewo+Pj4gPj4+
+IEBAIC0yMDAxLDYgKzIwMjMsOSBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9kdF9wcm9i
+ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+Pj4gPj4+ICAgICAgIGRhdGEgPSBvZl9k
+ZXZpY2VfZ2V0X21hdGNoX2RhdGEoZGV2KTsKPj4+ID4+PiAgICAgICBzbW11LT52ZXJzaW9uID0g
+ZGF0YS0+dmVyc2lvbjsKPj4+ID4+PiAgICAgICBzbW11LT5tb2RlbCA9IGRhdGEtPm1vZGVsOwo+
+Pj4gPj4+ICsgICAgIHNtbXUtPm51bV9jbGtzID0gZGF0YS0+bnVtX2Nsa3M7Cj4+PiA+Pj4gKwo+
+Pj4gPj4+ICsgICAgIGFybV9zbW11X2ZpbGxfY2xrX2RhdGEoc21tdSwgZGF0YS0+Y2xrcyk7Cj4+
+PiA+Pj4KPj4+ID4+PiAgICAgICBwYXJzZV9kcml2ZXJfb3B0aW9ucyhzbW11KTsKPj4+ID4+Pgo+
+Pj4gPj4+IEBAIC0yMDk5LDYgKzIxMjQsMTQgQEAgc3RhdGljIGludCBhcm1fc21tdV9kZXZpY2Vf
+cHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPj4+ID4+PiAgICAgICAgICAgICAg
+IHNtbXUtPmlycXNbaV0gPSBpcnE7Cj4+PiA+Pj4gICAgICAgfQo+Pj4gPj4+Cj4+PiA+Pj4gKyAg
+ICAgZXJyID0gZGV2bV9jbGtfYnVsa19nZXQoc21tdS0+ZGV2LCBzbW11LT5udW1fY2xrcywgc21t
+dS0+Y2xrcyk7Cj4+PiA+Pj4gKyAgICAgaWYgKGVycikKPj4+ID4+PiArICAgICAgICAgICAgIHJl
+dHVybiBlcnI7Cj4+PiA+Pj4gKwo+Pj4gPj4+ICsgICAgIGVyciA9IGNsa19idWxrX3ByZXBhcmUo
+c21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+Pj4gPj4+ICsgICAgIGlmIChlcnIpCj4+PiA+
+Pj4gKyAgICAgICAgICAgICByZXR1cm4gZXJyOwo+Pj4gPj4+ICsKPj4+ID4+PiAgICAgICBlcnIg
+PSBhcm1fc21tdV9kZXZpY2VfY2ZnX3Byb2JlKHNtbXUpOwo+Pj4gPj4+ICAgICAgIGlmIChlcnIp
+Cj4+PiA+Pj4gICAgICAgICAgICAgICByZXR1cm4gZXJyOwo+Pj4gPj4+IEBAIC0yMTgxLDYgKzIy
+MTQsOSBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9yZW1vdmUoc3RydWN0IHBsYXRmb3Jt
+X2RldmljZSAqcGRldikKPj4+ID4+Pgo+Pj4gPj4+ICAgICAgIC8qIFR1cm4gdGhlIHRoaW5nIG9m
+ZiAqLwo+Pj4gPj4+ICAgICAgIHdyaXRlbChzQ1IwX0NMSUVOVFBELCBBUk1fU01NVV9HUjBfTlMo
+c21tdSkgKyBBUk1fU01NVV9HUjBfc0NSMCk7Cj4+PiA+Pj4gKwo+Pj4gPj4+ICsgICAgIGNsa19i
+dWxrX3VucHJlcGFyZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4+PiA+Pj4gKwo+Pj4g
+Pj4+ICAgICAgIHJldHVybiAwOwo+Pj4gPj4+ICB9Cj4+PiA+Pj4KPj4+ID4+PiBAQCAtMjE5Nyw3
+ICsyMjMzLDI3IEBAIHN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcG1fcmVzdW1l
+KHN0cnVjdCBkZXZpY2UgKmRldikKPj4+ID4+PiAgICAgICByZXR1cm4gMDsKPj4+ID4+PiAgfQo+
+Pj4gPj4+Cj4+PiA+Pj4gLXN0YXRpYyBTSU1QTEVfREVWX1BNX09QUyhhcm1fc21tdV9wbV9vcHMs
+IE5VTEwsIGFybV9zbW11X3BtX3Jlc3VtZSk7Cj4+PiA+Pj4gK3N0YXRpYyBpbnQgX19tYXliZV91
+bnVzZWQgYXJtX3NtbXVfcnVudGltZV9yZXN1bWUoc3RydWN0IGRldmljZSAqZGV2KQo+Pj4gPj4+
+ICt7Cj4+PiA+Pj4gKyAgICAgc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IGRldl9nZXRf
+ZHJ2ZGF0YShkZXYpOwo+Pj4gPj4+ICsKPj4+ID4+PiArICAgICByZXR1cm4gY2xrX2J1bGtfZW5h
+YmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPj4+ID4+PiArfQo+Pj4gPj4+ICsKPj4+
+ID4+PiArc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50aW1lX3N1c3BlbmQo
+c3RydWN0IGRldmljZSAqZGV2KQo+Pj4gPj4+ICt7Cj4+PiA+Pj4gKyAgICAgc3RydWN0IGFybV9z
+bW11X2RldmljZSAqc21tdSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOwo+Pj4gPj4+ICsKPj4+ID4+
+PiArICAgICBjbGtfYnVsa19kaXNhYmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPj4+
+ID4+PiArCj4+PiA+Pj4gKyAgICAgcmV0dXJuIDA7Cj4+PiA+Pj4gK30KPj4+ID4+PiArCj4+PiA+
+Pj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBhcm1fc21tdV9wbV9vcHMgPSB7Cj4+
+PiA+Pj4gKyAgICAgU0VUX1NZU1RFTV9TTEVFUF9QTV9PUFMoTlVMTCwgYXJtX3NtbXVfcG1fcmVz
+dW1lKQo+Pj4gPj4KPj4+ID4+IFRoaXMgaXMgc3VzcGljaW91cy4KPj4+ID4+Cj4+PiA+PiBJZiB5
+b3UgbmVlZCBhIHJ1bnRpbWUgc3VzcGVuZCBtZXRob2QsIHdoeSBkbyB5b3UgdGhpbmsgdGhhdCBp
+dCBpcyBub3QgbmVjZXNzYXJ5Cj4+PiA+PiB0byBzdXNwZW5kIHRoZSBkZXZpY2UgZHVyaW5nIHN5
+c3RlbS13aWRlIHRyYW5zaXRpb25zPwo+Pj4gPgo+Pj4gPiBPa2F5LCBzbyB5b3Ugc3VnZ2VzdCB0
+byBwdXQgY2xvY2sgZGlzYWJsaW5nIGluIHNheSBhcm1fc21tdV9wbV9zdXNwZW5kKCk/Cj4+PiA+
+IEluIHRoYXQgY2FzZSB0aGUgY2xvY2tzIGhhdmUgdG8gYmUgZW5hYmxlZCBpbiB0aGUgcmVzdW1l
+IHBhdGggdG9vLgo+Pj4gPgo+Pj4gPiBJIHJlbWVtYmVyIFRvbWFzeiBwb2ludGVkIHRvIHRoYXQg
+d2Ugc2hvdWxkbid0IG5lZWQgY2xvY2sgZW5hYmxlIGluIHJlc3VtZQo+Pj4gPiBwYXRoIFsxXS4K
+Pj4+ID4KPj4+ID4gWzFdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE4LzMvMTUvNjAKPj4KPj4g
+VGhhdCB3YXMgYW4gYW5zd2VyIGZvciBhIGRpZmZlcmVudCBxdWVzdGlvbi4gSSBkb24ndCByZW1l
+bWJlcgo+PiBzdWdnZXN0aW5nIGhhdmluZyBubyBzdXNwZW5kIGZ1bmN0aW9uLgo+Cj4gTXkgYmFk
+LCBhcG9sb2dpZXMuIFlvdSBhcmUgcmlnaHQsIHdlIHdlcmUgZGlzY3Vzc2luZyBpZiB3ZSBuZWVk
+IGFueSBhZGRpdGlvbmFsCj4gaGFuZGxpbmcgb2YgcG93ZXIgZm9yIGFybV9zbW11X2RldmljZV9y
+ZXNldCgpIGluIGFybV9zbW11X3BtX3Jlc3VtZSgpLgo+Cj4+IEFsdGhvdWdoLCBnaXZlbiB0aGUg
+UE0KPj4gc3Vic3lzdGVtIGludGVybmFscywgdGhlIHN1c3BlbmQgZnVuY3Rpb24gd291bGRuJ3Qg
+YmUgY2FsbGVkIG9uIFNNTVUKPj4gaW1wbGVtZW50YXRpb24gbmVlZGVkIHBvd2VyIGNvbnRyb2wg
+KHNpbmNlIHRoZXkgd291bGQgaGF2ZSBydW50aW1lIFBNCj4+IGVuYWJsZWQpIGFuZCBvbiBvdGhl
+cnMsIGl0IHdvdWxkIGJlIGNhbGxlZCBidXQgZG8gbm90aGluZyAoc2luY2Ugbm8KPj4gY2xvY2tz
+KS4KPj4KPj4+Cj4+PiBIb25lc3RseSwgSSBqdXN0IGRvbid0IGtub3cuIDotKQo+Pj4KPj4+IEl0
+IGp1c3QgbG9va3Mgb2RkIHRoZSB3YXkgaXQgaXMgZG9uZS4gIEkgdGhpbmsgdGhlIGNsb2NrIHNo
+b3VsZCBiZQo+Pj4gZ2F0ZWQgZHVyaW5nIHN5c3RlbS13aWRlIHN1c3BlbmQgdG9vLCBiZWNhdXNl
+IHRoZSBzeXN0ZW0gY2FuIHNwZW5kCj4+PiBtdWNoIG1vcmUgdGltZSBpbiBhIHNsZWVwIHN0YXRl
+IHRoYW4gaW4gdGhlIHdvcmtpbmcgc3RhdGUsIG9uIGF2ZXJhZ2UuCj4+Pgo+Pj4gQW5kIG5vdGUg
+dGhhdCB5b3UgY2Fubm90IHJlbHkgb24gcnVudGltZSBQTSB0byBhbHdheXMgZG8gaXQgZm9yIHlv
+dSwKPj4+IGJlY2F1c2UgaXQgbWF5IGJlIGRpc2FibGVkIGF0IGEgY2xpZW50IGRldmljZSBvciBl
+dmVuIGJsb2NrZWQgYnkgdXNlcgo+Pj4gc3BhY2UgdmlhIHBvd2VyL2NvbnRyb2wgaW4gc3lzZnMg
+YW5kIHRoYXQgc2hvdWxkbid0IG1hdHRlciBmb3IKPj4+IHN5c3RlbS13aWRlIFBNLgo+Pgo+PiBV
+c2VyIHNwYWNlIGJsb2NraW5nIHJ1bnRpbWUgUE0gdGhyb3VnaCBzeXNmcyBpcyBhIGdvb2QgcG9p
+bnQuIEknbSBub3QKPj4gMTAwJSBzdXJlIGhvdyB0aGUgUE0gc3Vic3lzdGVtIGRlYWxzIHdpdGgg
+dGhhdCBpbiBjYXNlIG9mIHN5c3RlbS13aWRlCj4+IHN1c3BlbmQuIEkgZ3Vlc3MgZm9yIGNvbnNp
+c3RlbmN5IGFuZCBzYWZldHksIHdlIHNob3VsZCBoYXZlIHRoZQo+PiBzdXNwZW5kIGNhbGxiYWNr
+Lgo+Cj4gV2lsbCBhZGQgdGhlIGZvbGxvd2luZyBzdXNwZW5kIGNhbGxiYWNrIChzYW1lIGFzIGFy
+bV9zbW11X3J1bnRpbWVfc3VzcGVuZCk6Cj4KPiAgc3RhdGljIGludCBfX21heWJlX3VudXNlZCBh
+cm1fc21tdV9wbV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKPiAgewo+ICAgICAgICAgIHN0
+cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKPgo+ICAg
+ICAgICAgIGNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+Cj4g
+ICAgICAgICAgcmV0dXJuIDA7Cj4gIH0KCkkgdGhpbmsgeW91IGFsc28gbmVlZCB0byBjaGVjayBp
+ZiB0aGUgY2xvY2sgaGFzIGFscmVhZHkgYmVlbiBkaXNhYmxlZApieSBydW50aW1lIFBNLiAgT3Ro
+ZXJ3aXNlIHlvdSBtYXkgZW5kIHVwIGRpc2FibGluZyBpdCB0d2ljZSBpbiBhIHJvdy4KX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxp
+bmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
