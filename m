@@ -1,65 +1,103 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
- framework
-Date: Mon, 16 Jul 2018 11:29:17 +0100
-Message-ID: <20180716102917.GA19311@e108498-lin.cambridge.arm.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-4-quentin.perret@arm.com>
- <4341d199-8018-21e1-c2ce-9af8f7719297@arm.com>
- <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link between
+	masters and smmu
+Date: Mon, 16 Jul 2018 17:16:31 +0530
+Message-ID: <93d16301-4bef-203f-24de-4d010de84b22@codeaurora.org>
+References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
+	<20180708173413.1965-4-vivek.gautam@codeaurora.org>
+	<5179668.PHK6S3sxLu@aspire.rjw.lan>
+	<741cc78b-59a7-5289-e42f-1511ebedb15d@codeaurora.org>
+	<CAFp+6iFTgEhPLYQEyBX_Fb0k3n0OzGhKuSoBNV5XzpD01+V8qw@mail.gmail.com>
+	<CAJZ5v0iQ2wxsXvuaLK2M9a_Jwe_fnwR2Afrq_Oa8h0--Ch7-5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAJZ5v0iQ2wxsXvuaLK2M9a_Jwe_fnwR2Afrq_Oa8h0--Ch7-5g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 10 Jul 2018 at 09:32:02 (+0100), Quentin Perret wrote:
-> Indeed, having 'capacity' values in the EM framework is just an
-> optimization for the scheduler, so that it doesn't need to compute them
-> in the wake-up path. I could get rid of the whole
-> em_rescale_cpu_capacity() mess (and by the same occasion the RCU
-> protection of the tables ...) if I removed the 'capacity' values from
-> the EM.
 
-Another thing to take into consideration here is basically that the
-thermal subsystem (IPA) will be impacted by the RCU protection on the
-cs_table. However, since the 'frequency' and 'power' fields do not change
-at run-time, and since IPA doesn't need the 'capacity' value, there is no
-good reason to have IPA do rcu_read_lock() all over the place, so
-arguably something needs to be fixed here.
 
-One possibility is to remove entirely the following struct:
-	struct em_cap_state {
-		unsigned long capacity;
-		unsigned long frequency; /* Kilo-hertz */
-		unsigned long power; /* Milli-watts */
-	};
+On 7/16/2018 2:25 PM, Rafael J. Wysocki wrote:
+> On Thu, Jul 12, 2018 at 2:41 PM, Vivek Gautam
+> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>> Hi Rafael,
+>>
+>>
+>> On Wed, Jul 11, 2018 at 4:06 PM, Vivek Gautam
+>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>> Hi Rafael,
+>>>
+>>>
+>>>
+>>> On 7/11/2018 3:23 PM, Rafael J. Wysocki wrote:
+>>>> On Sunday, July 8, 2018 7:34:12 PM CEST Vivek Gautam wrote:
+>>>>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>
+>>>>> Finally add the device link between the master device and
+>>>>> smmu, so that the smmu gets runtime enabled/disabled only when the
+>>>>> master needs it. This is done from add_device callback which gets
+>>>>> called once when the master is added to the smmu.
+>>>>>
+>>>>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>>>>> Cc: Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+>>>>> Cc: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+>>>>> ---
+>>>>>
+>>>>>    - Change since v11
+>>>>>      * Replaced DL_FLAG_AUTOREMOVE flag with DL_FLAG_AUTOREMOVE_SUPPLIER.
+>>>>>
+>>>>>    drivers/iommu/arm-smmu.c | 12 ++++++++++++
+>>>>>    1 file changed, 12 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+>>>>> index 09265e206e2d..916cde4954d2 100644
+>>>>> --- a/drivers/iommu/arm-smmu.c
+>>>>> +++ b/drivers/iommu/arm-smmu.c
+>>>>> @@ -1461,8 +1461,20 @@ static int arm_smmu_add_device(struct device *dev)
+>>>>>          iommu_device_link(&smmu->iommu, dev);
+>>>>>    +     if (pm_runtime_enabled(smmu->dev) &&
+>>>> Why does the creation of the link depend on whether or not runtime PM
+>>>> is enabled for the MMU device?
+>>>
+>>> The main purpose of this device link is to handle the runtime PM
+>>> synchronization
+>>> between the supplier (iommu) and consumer (client devices, such as
+>>> GPU/display).
+>>> Moreover, the runtime pm is conditionally enabled for smmu devices that
+>>> support
+>>> such [1].
+>> Is there something you would like me to modify in this patch?
+> Not really, as long as you are sure that it is correct. :-)
+>
+> You need to remember, however, that if you add system-wide PM
+> callbacks to the driver, the ordering between them and the client
+> device callbacks during system-wide suspend matters as well.  Don't
+> you need the link the ensure the correct system-wide suspend ordering
+> too?
 
-and to have three independent vectors (of the same size) for frequency,
-power and capacity. That way only the 'capacity' vector would be RCU
-protected, and IPA could use 'frequency' and 'power' directly, without
-further protections.
+The fact that currently we handle clocks only through runtime pm callbacks,
+would it be better to call runtime pm put/get in system-wide PM callbacks.
+This would be same as i mentioned in the other thread.
 
-A second possibility is to remove the capacity values from the EM
-altogether (as I suggested in my previous message) and to get rid of the
-need for RCU protection at the same occasion.
+Best regards
+Vivek
 
-The second option simplifies the code of the EM framework significantly
-(no more em_rescale_cpu_capacity()) and shouldn't introduce massive
-overheads on the scheduler side (the energy calculation already
-requires one multiplication and one division, so nothing new on that
-side). At the same time, that would make it a whole lot easier to
-interface the EM framework with IPA without having to deal with RCU all
-over the place.
-
-So, if there are no objections, I'll try to explore that possibility for
-v5.
-
-I hope that makes sense
-
-Thanks,
-Quentin
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
