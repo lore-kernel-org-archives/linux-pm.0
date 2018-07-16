@@ -1,8 +1,8 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
  driver
-Date: Mon, 16 Jul 2018 10:39:57 +0530
-Message-ID: <20180716050957.bujhcfxrfbnnvn4v@vireshk-i7>
+Date: Mon, 16 Jul 2018 10:42:19 +0530
+Message-ID: <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
 References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
  <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
@@ -16,21 +16,71 @@ Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux
 List-Id: linux-pm@vger.kernel.org
 
 On 12-07-18, 23:35, Taniya Das wrote:
-> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
-> for changing the frequency of CPUs. The driver implements the cpufreq
-> driver interface for this hardware engine.
-> 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  drivers/cpufreq/Kconfig.arm       |  10 ++
->  drivers/cpufreq/Makefile          |   1 +
->  drivers/cpufreq/qcom-cpufreq-hw.c | 344 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 355 insertions(+)
->  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+> +				   struct device_node *np, unsigned int cpu)
+> +{
+> +	struct cpufreq_qcom *c;
+> +	struct resource res;
+> +	struct device *dev = &pdev->dev;
+> +	unsigned int offset, cpu_r;
+> +	int ret;
+> +
+> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+> +	if (!c)
+> +		return -ENOMEM;
+> +
+> +	c->reg_offset = of_device_get_match_data(&pdev->dev);
+> +	if (!c->reg_offset)
+> +		return -EINVAL;
+> +
+> +	if (of_address_to_resource(np, 0, &res))
+> +		return -ENOMEM;
+> +
+> +	c->base = devm_ioremap(dev, res.start, resource_size(&res));
+> +	if (!c->base) {
+> +		dev_err(dev, "Unable to map %s base\n", np->name);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	offset = c->reg_offset[REG_ENABLE];
+> +
+> +	/* HW should be in enabled state to proceed */
+> +	if (!(readl_relaxed(c->base + offset) & 0x1)) {
+> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = qcom_get_related_cpus(np, &c->related_cpus);
+> +	if (ret) {
+> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
+> +		return ret;
+> +	}
+> +
+> +	c->max_cores = cpumask_weight(&c->related_cpus);
+> +	if (!c->max_cores)
+> +		return -ENOENT;
+> +
+> +	ret = qcom_read_lut(pdev, c);
+> +	if (ret) {
+> +		dev_err(dev, "%s failed to read LUT\n", np->name);
+> +		return ret;
+> +	}
+> +
+> +	qcom_freq_domain_map[cpu] = c;
+> +
+> +	/* Related CPUs to keep a single copy */
+> +	cpu_r = cpumask_first(&c->related_cpus);
+> +	if (cpu != cpu_r) {
+> +		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
+> +		devm_kfree(dev, c);
+> +	}
 
-Have you addressed my concerns that I raised for this patch in the
-previous version ? You never replied to me as well.
+Sorry about missing this, you have actually worked on my comments.
+
+But I think this isn't the clever way of doing it. You allocate the
+structures, fill everything and then finally free them because we were
+related. Why can't we have similar check at the top of this routine
+and skip everything then ?
 
 -- 
 viresh
