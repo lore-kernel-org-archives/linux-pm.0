@@ -1,28 +1,64 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/2] dt-bindings: thermal: Allow multiple devices to
- share cooling map
-Date: Mon, 16 Jul 2018 16:02:45 -0600
-Message-ID: <20180716220245.GA20750@rob-hp-laptop>
-References: <cover.1530766981.git.viresh.kumar@linaro.org>
- <bdd735da9a3c8159756b084ca96b555437057fa4.1530766981.git.viresh.kumar@linaro.org>
+From: Evan Green <evgreen@google.com>
+Subject: Re: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Mon, 16 Jul 2018 16:02:33 -0700
+Message-ID: <CAE=gft7pVnhbEtOyR7Q8n_WuL_RsttrxN+sp=_EPyR=D3NPv9g@mail.gmail.com>
+References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org> <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <bdd735da9a3c8159756b084ca96b555437057fa4.1530766981.git.viresh.kumar@linaro.org>
+In-Reply-To: <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, olof@lixom.net, linux-kernel@vger.kernel.org
+To: tdas@codeaurora.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, Saravana Kannan <skannan@codeaurora.org>, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 05, 2018 at 10:39:23AM +0530, Viresh Kumar wrote:
-> Allow cooling devices sharing same trip point with same contribution
-> value to share the cooling map as well. Otherwise the same information
-> will be duplicated for each device sharing the trip point.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Taniya,
+On Thu, Jul 12, 2018 at 11:06 AM Taniya Das <tdas@codeaurora.org> wrote:
+>
+> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+> for changing the frequency of CPUs. The driver implements the cpufreq
+> driver interface for this hardware engine.
+>
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
 > ---
->  Documentation/devicetree/bindings/thermal/thermal.txt | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
+>  drivers/cpufreq/Kconfig.arm       |  10 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 344 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 355 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+>
+...
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> new file mode 100644
+> index 0000000..fa25a95
+> --- /dev/null
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+...
+> +static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +       struct cpufreq_qcom *c;
+> +
+> +       c = qcom_freq_domain_map[policy->cpu];
+> +       if (!c) {
+> +               pr_err("No scaling support for CPU%d\n", policy->cpu);
+> +               return -ENODEV;
+> +       }
+> +
+> +       cpumask_copy(policy->cpus, &c->related_cpus);
+> +
+> +       policy->fast_switch_possible = true;
+> +       policy->freq_table = c->table;
+> +       policy->driver_data = c;
+> +
+> +       return 0;
+I haven't looked at this driver in detail, but I have tested it.
+Instead of the line above, I needed:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+return cpufreq_table_validate_and_show(policy, c->table);
+
+Without this the framework thinks that the min and max frequencies are
+zero, and then you get a warning about an invalid table. I also
+removed "policy->freq_table = c->table", since validate_and_show does
+this.
+-Evan
