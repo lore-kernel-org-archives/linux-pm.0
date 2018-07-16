@@ -1,30 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4.9] PM / OPP: Update voltage in case freq == old_freq
-Date: Mon, 16 Jul 2018 09:33:01 +0530
-Message-ID: <20180716040301.ck5mssh25u7rnlvt@vireshk-i7>
-References: <3717ee50c1f1f48cffcb1a2e41c04e28881776d1.1530521347.git.viresh.kumar@linaro.org>
- <20180710135912.GI1123@kroah.com>
+Subject: Re: [PATCH 00/10] OPP: Support multiple power-domains per device
+Date: Mon, 16 Jul 2018 10:02:03 +0530
+Message-ID: <20180716043203.gyedmithp4xa7p3u@vireshk-i7>
+References: <cover.1530252803.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180710135912.GI1123@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>, "4 . 6+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <cover.1530252803.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10-07-18, 15:59, Greg KH wrote:
-> On Mon, Jul 02, 2018 at 02:19:47PM +0530, Viresh Kumar wrote:
-> > From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-> > 
-> > Original commit c5c2a97b3ac7 ("PM / OPP: Update voltage in case freq ==
-> > old_freq").
+On 29-06-18, 11:49, Viresh Kumar wrote:
+> Hi,
+> 
+> This series improves the OPP core (and a bit of genpd core as well) to
+> support multiple phandles in the "required-opps" property, which are
+> only used for multiple power-domains per device for now.
+> 
+> We still don't propagate the changes to master domains for the
+> sub-domains, but this patchset is an important stepping stone for that
+> to happen.
+> 
+> Tested on Hikey960 after faking some power domains for CPUs.
 
-Looking for this ^^ information ?
- 
-> Always give me a hint as to what the original commit is, otherwise I
-> have to go dig for it :(
+Ulf, can you please help review this stuff ? 
 
 -- 
 viresh
