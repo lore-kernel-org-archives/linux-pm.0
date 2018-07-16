@@ -1,8 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 10/23] thermal: armada: remove sensors validity from the IP
- initialization
-Date: Mon, 16 Jul 2018 16:41:53 +0200
-Message-ID: <20180716144206.30985-11-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 03/23] thermal: armada: remove misleading comments
+Date: Mon, 16 Jul 2018 16:41:46 +0200
+Message-ID: <20180716144206.30985-4-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,50 +21,33 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-When using new bindings with multiple sensors, sensor validity is
-checked twice because sensor selection also checks for the validity.
-
-Remove the redundant call from the IP initialization helper and move it
-to the legacy probe section where it is still needed.
+On older versions of this thermal IP, TSEN referred as the internal
+sensor in the thermal IP while EXT_TSEN referred as sensors outside of
+this IP, ie in the CPUs most of the time. The bit names in the
+specifications do not follow this rule anymore, so remove these comments
+that are misleading.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/thermal/armada_thermal.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/thermal/armada_thermal.c | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index eef8947b9b20..7eafc9400fbe 100644
+index 6fdb90b3c001..18155e43e67f 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -221,9 +221,6 @@ static void armada380_init(struct platform_device *pdev,
- 	reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
- 	reg |= CONTROL0_TSEN_TC_TRIM_VAL;
- 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
--
--	/* Wait the sensors to be valid or the core will warn the user */
--	armada_wait_sensor_validity(priv);
- }
+@@ -51,12 +51,10 @@
+ #define CONTROL0_TSEN_TC_TRIM_MASK	0x7
+ #define CONTROL0_TSEN_TC_TRIM_VAL	0x3
  
- static void armada_ap806_init(struct platform_device *pdev,
-@@ -243,9 +240,6 @@ static void armada_ap806_init(struct platform_device *pdev,
- 	reg &= ~CONTROL0_TSEN_AVG_BYPASS;
+-/* TSEN refers to the temperature sensors within the AP */
+ #define CONTROL0_TSEN_START		BIT(0)
+ #define CONTROL0_TSEN_RESET		BIT(1)
+ #define CONTROL0_TSEN_ENABLE		BIT(2)
  
- 	regmap_write(priv->syscon, data->syscon_control0_off, reg);
--
--	/* Wait the sensors to be valid or the core will warn the user */
--	armada_wait_sensor_validity(priv);
- }
+-/* EXT_TSEN refers to the external temperature sensors, out of the AP */
+ #define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
+ #define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
  
- static void armada_cp110_init(struct platform_device *pdev,
-@@ -650,6 +644,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 
- 		priv->data->init(pdev, priv);
- 
-+		/* Wait the sensors to be valid */
-+		armada_wait_sensor_validity(priv);
-+
- 		tz = thermal_zone_device_register(priv->zone_name, 0, 0, priv,
- 						  &legacy_ops, NULL, 0, 0);
- 		if (IS_ERR(tz)) {
 -- 
 2.14.1
