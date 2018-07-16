@@ -1,78 +1,84 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 0/3] regulator: bd9571mwv: Add support for toggle
- power switches
-Date: Sun, 15 Jul 2018 18:57:49 +0200
-Message-ID: <20180715165749.GA10023@amd>
-References: <20180713154720.18316-1-geert+renesas@glider.be>
+From: Kees Cook <keescook@chromium.org>
+Subject: [PATCH] x86/power/64: Remove VLA usage
+Date: Sun, 15 Jul 2018 20:56:57 -0700
+Message-ID: <20180716035657.GA32180@beast>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180713154720.18316-1-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@google.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+In the quest to remove all stack VLA usage from the kernel[1], this
+removes the discouraged use of AHASH_REQUEST_ON_STACK by switching to
+shash directly and allocating the descriptor in heap memory (which should
+be fine: the tfm has already been allocated there too).
 
---wRRV7LY7NUeQGEoC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
 
-Hi!
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/x86/power/hibernate_64.c | 35 +++++++++++++++++++----------------
+ 1 file changed, 19 insertions(+), 16 deletions(-)
 
-> The ROHM BD9571MWV PMIC on the Renesas Salvator-X(S) and ULCB
-> development boards supports DDR Backup Power, which means that the DDR
-> power rails can be kept powered while the main SoC is powered down.
->=20
-> This patch series extends the support for DDR backup mode (see commit
-> 6eb0bfae6973eb6a ("regulator: bd9571mwv: Add support for backup mode"))
-> to systems with toggle instead of momentary power switches.
->=20
-> With a toggle power switch (or level signal), the following steps must
-> be followed exactly:
->    1. Configure PMIC for backup mode, which changes the role of the
->       power switch to a wake-up switch,=20
->    2. Switch accessory power switch off, to prepare for system suspend,
->       which is a manual step not controlled by software,
->    3. Suspend system,
->    4. Switch accessory power switch on, to resume.
->=20
-> Unlike on systems with a momentary toggle switch, an additional step 2
-> must be performed in between step 1 and step 3.  Hence step 1 can no
-> longer be handled in the PMIC's suspend callback.
->=20
-> This patch series allows performing step 1 when the user writes
-> "on" to the PMIC's "backup_mode" virtual file in sysfs, e.g.
->=20
->     echo on > /sys/bus/i2c/drivers/bd9571mwv/*/bd9571mwv-regulator*/backu=
-p_mode
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index 67ccf64c8bd8..0ed01bb935a6 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -233,28 +233,31 @@ struct restore_data_record {
+  */
+ static int get_e820_md5(struct e820_table *table, void *buf)
+ {
+-	struct scatterlist sg;
+-	struct crypto_ahash *tfm;
++	struct crypto_shash *tfm;
++	struct shash_desc *desc;
+ 	int size;
+ 	int ret = 0;
+ 
+-	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
++	tfm = crypto_alloc_shash("md5", 0, 0);
+ 	if (IS_ERR(tfm))
+ 		return -ENOMEM;
+ 
+-	{
+-		AHASH_REQUEST_ON_STACK(req, tfm);
+-		size = offsetof(struct e820_table, entries) + sizeof(struct e820_entry) * table->nr_entries;
+-		ahash_request_set_tfm(req, tfm);
+-		sg_init_one(&sg, (u8 *)table, size);
+-		ahash_request_set_callback(req, 0, NULL, NULL);
+-		ahash_request_set_crypt(req, &sg, buf, size);
+-
+-		if (crypto_ahash_digest(req))
+-			ret = -EINVAL;
+-		ahash_request_zero(req);
+-	}
+-	crypto_free_ahash(tfm);
++	desc = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(tfm),
++		       GFP_KERNEL);
++	if (!desc)
++		return -ENOMEM;
++
++	desc->tfm = tfm;
++	desc->flags = 0;
++
++	size = offsetof(struct e820_table, entries) +
++		sizeof(struct e820_entry) * table->nr_entries;
++
++	if (crypto_shash_digest(desc, (u8 *)table, size, buf))
++		ret = -EINVAL;
++
++	kzfree(desc);
++	crypto_free_shash(tfm);
+ 
+ 	return ret;
+ }
+-- 
+2.17.1
 
-Do you expect more boards to have similar design?
 
-If so, we may want to have standard place in /sys/ not depending on
-i2c paths and driver names, but I believe such design is so... awkward
-that it is not going to appear anywhere else...?
-
-								Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---wRRV7LY7NUeQGEoC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAltLfQ0ACgkQMOfwapXb+vILOgCbBFGjbwH2cufstj+Q+5TXiYPW
-+OcAn27r+67d8CbVJRQrRJLTuI0tcHyA
-=OScm
------END PGP SIGNATURE-----
-
---wRRV7LY7NUeQGEoC--
+-- 
+Kees Cook
+Pixel Security
