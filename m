@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 21/23] arm64: dts: marvell: add thermal-zone node in ap806
- DTSI file
-Date: Mon, 16 Jul 2018 16:42:04 +0200
-Message-ID: <20180716144206.30985-22-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 19/23] dt-bindings: thermal: armada: add reference to new
+ bindings
+Date: Mon, 16 Jul 2018 16:42:02 +0200
+Message-ID: <20180716144206.30985-20-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,93 +22,30 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a thermal-zone node and fill in all the sensors available in an
-ap806 (one in the IC plus one per CPU).
+New bindings (using a syscon) are available for AP806 and CP110
+compatibles. Add a reference to these files from the original
+documentation.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 60 +++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ Documentation/devicetree/bindings/thermal/armada-thermal.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 45662fc09d18..fe56c044c8f0 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -6,6 +6,7 @@
-  */
+diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+index e0d013a2e66d..f3b441100890 100644
+--- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+@@ -10,6 +10,11 @@ Required properties:
+     * marvell,armada-ap806-thermal
+     * marvell,armada-cp110-thermal
  
- #include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- /dts-v1/;
- 
-@@ -267,8 +268,67 @@
- 				ap_thermal: thermal-sensor@80 {
- 					compatible = "marvell,armada-ap806-thermal";
- 					reg = <0x80 0x10>;
-+					#thermal-sensor-cells = <1>;
- 				};
- 			};
- 		};
- 	};
++Note: these bindings are deprecated for AP806/CP110 and should instead
++follow the rules described in:
++Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
 +
-+	/*
-+	 * The thermal IP features one internal sensor plus, if applicable, one
-+	 * remote channel wired to one sensor per CPU.
-+	 *
-+	 * The cooling maps are always empty as there are no cooling devices.
-+	 */
-+	thermal-zones {
-+		ap_thermal_ic: ap-thermal-ic {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 0>;
-+
-+			trips {	};
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu1: ap-thermal-cpu1 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 1>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu2: ap-thermal-cpu2 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 2>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu3: ap-thermal-cpu3 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 3>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+
-+		ap_thermal_cpu4: ap-thermal-cpu4 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&ap_thermal 4>;
-+
-+			trips { };
-+			cooling-maps { };
-+		};
-+	};
- };
+ - reg: Device's register space.
+   Two entries are expected, see the examples below. The first one points
+   to the status register (4B). The second one points to the control
 -- 
 2.14.1
