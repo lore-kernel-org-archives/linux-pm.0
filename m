@@ -1,20 +1,13 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH v2 18/23] dt-bindings: thermal: armada: add reference to
- new bindings
-Date: Mon, 16 Jul 2018 16:32:26 +0200
-Message-ID: <20180716163226.6f532579@xps13>
-References: <20180625151239.20976-1-miquel.raynal@bootlin.com>
- <20180625151239.20976-19-miquel.raynal@bootlin.com>
- <20180703213011.GA13190@rob-hp-laptop>
- <20180705120528.4b923e16@xps13>
- <CAL_JsqL9h4RExZtm5cER-5kNvMpDzH-4MwcmY7VOLXB9-uEYYA@mail.gmail.com>
- <20180706094904.22275b10@xps13>
- <CAL_JsqLG6vDmyH3X7aHUUMRC+BN3orC5T8iHYUHHZVsQ6rM0Tg@mail.gmail.com>
+Subject: [PATCH v3 02/23] thermal: armada: remove useless register accesses
+Date: Mon, 16 Jul 2018 16:41:45 +0200
+Message-ID: <20180716144206.30985-3-miquel.raynal@bootlin.com>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL_JsqLG6vDmyH3X7aHUUMRC+BN3orC5T8iHYUHHZVsQ6rM0Tg@mail.gmail.com>
+In-Reply-To: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,57 +17,56 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM
- ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLAoKPiA+ID4gPiA+ID4gZm9yIEFQODA2IGFuZCBDUDExMCBjb21wYXRpYmxlcy4gQWRk
-IGEgcmVmZXJlbmNlIHRvIHRoZXNlIGZpbGVzIGZyb20gdGhlCj4gPiA+ID4gPiA+IG9yaWdpbmFs
-IGRvY3VtZW50YXRpb24uCj4gPiA+ID4gPiA+Cj4gPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IE1p
-cXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5jb20+Cj4gPiA+ID4gPiA+IC0tLQo+
-ID4gPiA+ID4gPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvYXJt
-YWRhLXRoZXJtYWwudHh0IHwgNSArKysrKwo+ID4gPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDUg
-aW5zZXJ0aW9ucygrKQo+ID4gPiA+ID4gPgo+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1l
-bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvYXJtYWRhLXRoZXJtYWwudHh0IGIv
-RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvYXJtYWRhLXRoZXJtYWwu
-dHh0Cj4gPiA+ID4gPiA+IGluZGV4IGUwZDAxM2EyZTY2ZC4uZjNiNDQxMTAwODkwIDEwMDY0NAo+
-ID4gPiA+ID4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1h
-bC9hcm1hZGEtdGhlcm1hbC50eHQKPiA+ID4gPiA+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvYXJtYWRhLXRoZXJtYWwudHh0Cj4gPiA+ID4gPiA+IEBA
-IC0xMCw2ICsxMCwxMSBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ID4gPiA+ID4gPiAgICAgICog
-bWFydmVsbCxhcm1hZGEtYXA4MDYtdGhlcm1hbAo+ID4gPiA+ID4gPiAgICAgICogbWFydmVsbCxh
-cm1hZGEtY3AxMTAtdGhlcm1hbCAgCj4gPiA+ID4gPgo+ID4gPiA+ID4gUmVhbGx5IHlvdSBzaG91
-bGQgbm90IGJlIHVzaW5nIHRoZSBzYW1lIGNvbXBhdGlibGUgZm9yIGJvdGguIE5vdyB5b3UKPiA+
-ID4gPiA+IGhhdmUgMiBkcml2ZXJzIG1hdGNoaW5nIHRvIHNhbWUgY29tcGF0aWJsZXMuCj4gPiA+
-ID4gPgo+ID4gPiA+ID4gQ2FuJ3QgeW91IG1ha2UgdGhpcyBhIGNoaWxkIG9mIHRoZSBzeXNjb24g
-d2l0aG91dCBicmVha2luZyB0aGUgYmluZGluZz8gIAo+ID4gPiA+Cj4gPiA+ID4gV2UgYXJlIHRh
-bGtpbmcgYWJvdXQgb25seSAxIGRyaXZlciBoZXJlLCBzbyBJJ20gbm90IHN1cmUgaG93IEkgc2hv
-dWxkCj4gPiA+ID4gdW5kZXJzdGFuZCB5b3VyIGxhc3Qgc2VudGVuY2UuIERvIHlvdSB3YW50IG1l
-IHRvIGFkZCBhIHNlY29uZAo+ID4gPiA+IGNvbXBhdGlibGUgKGZvciB0aGUgc2FtZSBwaWVjZSBv
-ZiBoYXJkd2FyZSkgZm9yIHRoZXJtYWwgbm9kZSBkZWNsYXJlZAo+ID4gPiA+IGFzIGEgY2hpbGQg
-b2YgdGhlIHN5c2Nvbj8gIAo+ID4gPgo+ID4gPiBJIGRvbid0IGtub3cgd2hhdCBJJ20gc3VnZ2Vz
-dGluZy4gWW91ciBjaGFuZ2VzIGxvb2sgbGlrZSB0aGV5IGJyZWFrCj4gPiA+IGNvbXBhdGliaWxp
-dHkgdG8gbWUuICAKPiA+Cj4gPiBUaGVyZSBpcyBjb2RlIGluIHRoZSBkcml2ZXIgdG8gaGFuZGxl
-IHRoZSBsZWdhY3kgbm9uLXN5c2Nvbi1pc2ggdGhlcm1hbAo+ID4gbm9kZSAoImFybWFkYV90aGVy
-bWFsX3Byb2JlX2xlZ2FjeSgpIikuIEFuIG9sZCBEVCB3aXRoIGEgbmV3IGtlcm5lbAo+ID4gd291
-bGQgd29yayBmaW5lLiAgCj4gCj4gT2theSwgdGhhdCdzIGdvb2QuCj4gCj4gPiA+IFdoYXQgaGFw
-cGVucyBpZiB5b3UgdXNlIHRoaXMgbmV3IGJpbmRpbmcgd2l0aG91dCBhbnkga2VybmVsIGNoYW5n
-ZT8gIAo+ID4KPiA+IEkgc3VwcG9zZSB5b3UgbWVhbiAiZHVyaW5nIHRoZSBtZXJnZSB3aW5kb3ci
-PyBJbiB0aGlzIGNhc2UgdGhlIGRyaXZlcgo+ID4gb2YgdGhlIHRoZXJtYWwgSVAgd2lsbCBub3Qg
-cHJvYmUgKGFuZCBzcGF3biBhbiBlcnJvciBpbiB0aGUgZG1lc2cpIHdpdGgKPiA+IGFwODA2L2Nw
-MTEwIElQcy4gQXMgdGhlIHN1cHBvcnQgaXMgcHJldHR5IG5ldyBmb3IgdGhlbSwgdGhpcyBpcyBt
-YXliZQo+ID4gbm90IGEgaHVnZSBpc3N1ZS4gQWxzbywgYmVmb3JlIHRoZSBEVCBjaGFuZ2VzIGFk
-ZGluZyB0aGVybWFsIHpvbmVzLAo+ID4ganVzdCByZXRyaWV2aW5nIHRoZSB0ZW1wZXJhdHVyZSBt
-aWdodCBiZSBwcmV0dHkgdXNlbGVzcy4gSG93ZXZlciwgaXQKPiA+IGlzIGFsd2F5cyBwb3NzaWJs
-ZSB0byBtZXJnZSB0aGUgZHJpdmVyIGNoYW5nZXMgaW4gNC4xOSBhbmQgdGhlIERUCj4gPiBjaGFu
-Z2VzIGluIDQuMjAuICAKPiAKPiBOb3QgdGhlIG1lcmdlIHdpbmRvdywgYnV0IGRpc3Ryb3MgKFNV
-U0UgYXQgbGVhc3QpIHdhbnQgdG8gYmUgYWJsZSB0bwo+IGJvb3Qgd2l0aCBjdXJyZW50IERUcyBh
-bmQgdGhlaXIgZGlzdHJvIChvbGQpIGtlcm5lbC4gTWF5YmUgZm9yIHRoaXMKPiBwbGF0Zm9ybSB5
-b3UgZG9uJ3QgY2FyZS4KCkluZGVlZCwgSSB0aGluayB3ZSBkb24ndCBjYXJlIHRoYXQgbXVjaCBm
-b3IgdGhpcyBwbGF0Zm9ybS4KCkxldCBtZSByZXNlbmQgdGhlIHNlcmllcyB3aXRoIHRoZSAnaW50
-ZXJydXB0JyByZWZlcmVuY2UgcmVtb3ZlZCBhcyBJCnRoaW5rIGl0IHdhcyB0aGUgbGFzdCB0aGlu
-ZyB0byBhZGRyZXNzLgoKVGhhbmtzLApNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Prepare the migration to use regmaps by first simplifying the
+initialization functions: avoid unnecessary write/read cycles on
+configuration registers.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/thermal/armada_thermal.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 077e8e562306..6fdb90b3c001 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -103,16 +103,13 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+ 
+ 	reg = readl_relaxed(priv->control1);
+ 	reg |= PMU_TDC0_OTF_CAL_MASK;
+-	writel(reg, priv->control1);
+ 
+ 	/* Reference calibration value */
+ 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+ 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+-	writel(reg, priv->control1);
+ 
+ 	/* Reset the sensor */
+-	reg = readl_relaxed(priv->control1);
+-	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control1);
++	reg |= PMU_TDC0_SW_RST_MASK;
+ 
+ 	writel(reg, priv->control1);
+ 
+@@ -129,14 +126,13 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 
+ 	reg = readl_relaxed(priv->control1);
+ 	reg |= PMU_TDC0_OTF_CAL_MASK;
+-	writel(reg, priv->control1);
+ 
+ 	/* Reference calibration value */
+ 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+ 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+-	writel(reg, priv->control1);
+ 
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
++
+ 	writel(reg, priv->control1);
+ 
+ 	msleep(10);
+-- 
+2.14.1
