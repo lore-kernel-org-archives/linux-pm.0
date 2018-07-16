@@ -1,51 +1,60 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 19/23] dt-bindings: thermal: armada: add reference to new
- bindings
-Date: Mon, 16 Jul 2018 16:42:02 +0200
-Message-ID: <20180716144206.30985-20-miquel.raynal@bootlin.com>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180716144206.30985-1-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v4 3/3] regulator: bd9571mwv: Document "backup_mode" sysfs file
+Date: Mon, 16 Jul 2018 17:30:52 +0200
+Message-ID: <20180716153052.1830-4-geert+renesas@glider.be>
+References: <20180716153052.1830-1-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180716153052.1830-1-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-New bindings (using a syscon) are available for AP806 and CP110
-compatibles. Add a reference to these files from the original
-documentation.
-
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- Documentation/devicetree/bindings/thermal/armada-thermal.txt | 5 +++++
- 1 file changed, 5 insertions(+)
+v4:
+  - Add Acked-by,
 
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index e0d013a2e66d..f3b441100890 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -10,6 +10,11 @@ Required properties:
-     * marvell,armada-ap806-thermal
-     * marvell,armada-cp110-thermal
- 
-+Note: these bindings are deprecated for AP806/CP110 and should instead
-+follow the rules described in:
-+Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
-+
- - reg: Device's register space.
-   Two entries are expected, see the examples below. The first one points
-   to the status register (4B). The second one points to the control
+v3:
+  - New.
+---
+ .../testing/sysfs-driver-bd9571mwv-regulator  | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+
+diff --git a/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+new file mode 100644
+index 0000000000000000..4d63a7904b94a993
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+@@ -0,0 +1,27 @@
++What:		/sys/bus/i2c/devices/.../bd9571mwv-regulator.*.auto/backup_mode
++Date:		Jul 2018
++KernelVersion:	4.19
++Contact:	Geert Uytterhoeven <geert+renesas@glider.be>
++Description:	Read/write the current state of DDR Backup Mode, which controls
++		if DDR power rails will be kept powered during system suspend.
++		("on"/"1" = enabled, "off"/"0" = disabled).
++		Two types of power switches (or control signals) can be used:
++		  A. With a momentary power switch (or pulse signal), DDR
++		     Backup Mode is enabled by default when available, as the
++		     PMIC will be configured only during system suspend.
++		  B. With a toggle power switch (or level signal), the
++		     following steps must be followed exactly:
++		       1. Configure PMIC for backup mode, to change the role of
++			  the accessory power switch from a power switch to a
++			  wake-up switch,
++		       2. Switch accessory power switch off, to prepare for
++			  system suspend, which is a manual step not controlled
++			  by software,
++		       3. Suspend system,
++		       4. Switch accessory power switch on, to resume the
++			  system.
++		     DDR Backup Mode must be explicitly enabled by the user,
++		     to invoke step 1.
++		See also Documentation/devicetree/bindings/mfd/bd9571mwv.txt.
++Users:		User space applications for embedded boards equipped with a
++		BD9571MWV PMIC.
 -- 
-2.14.1
+2.17.1
