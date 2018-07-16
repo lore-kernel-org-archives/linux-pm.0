@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 20/23] arm64: dts: marvell: move AP806/CP110 thermal nodes
- into a new syscon
-Date: Mon, 16 Jul 2018 16:42:03 +0200
-Message-ID: <20180716144206.30985-21-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 11/23] thermal: armada: move validity check out of the read
+ function
+Date: Mon, 16 Jul 2018 16:41:54 +0200
+Message-ID: <20180716144206.30985-12-miquel.raynal@bootlin.com>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,74 +22,46 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-New bindings impose to declare the thermal IP from within a new syscon.
+Sensor selection when using multiple sensors already checks for the
+sensor validity. Move it to the legacy ->get_temp() hook, where it is
+still needed.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 14 ++++++++++----
- arch/arm64/boot/dts/marvell/armada-cp110.dtsi | 18 ++++++++++++------
- 2 files changed, 22 insertions(+), 10 deletions(-)
+ drivers/thermal/armada_thermal.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 4f2a704615b0..45662fc09d18 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -258,10 +258,16 @@
- 				};
- 			};
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 7eafc9400fbe..7f8185e5816e 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -328,13 +328,6 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, int *temp)
+ 	u32 reg, div;
+ 	s64 sample, b, m;
  
--			ap_thermal: thermal@6f808c {
--				compatible = "marvell,armada-ap806-thermal";
--				reg = <0x6f808c 0x4>,
--				      <0x6f8084 0x8>;
-+			ap_syscon1: system-controller@6f8000 {
-+				compatible = "syscon", "simple-mfd";
-+				reg = <0x6f8000 0x1000>;
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+
-+				ap_thermal: thermal-sensor@80 {
-+					compatible = "marvell,armada-ap806-thermal";
-+					reg = <0x80 0x10>;
-+				};
- 			};
- 		};
- 	};
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-index ab31ba20aa2a..1b813a95149c 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110.dtsi
-@@ -177,12 +177,6 @@
- 			interrupts = <77 IRQ_TYPE_LEVEL_HIGH>;
- 		};
- 
--		CP110_LABEL(thermal): thermal@400078 {
--			compatible = "marvell,armada-cp110-thermal";
--			reg = <0x400078 0x4>,
--			<0x400070 0x8>;
--		};
+-	/* Valid check */
+-	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+-		dev_err(priv->dev,
+-			"Temperature sensor reading not valid\n");
+-		return -EIO;
+-	}
 -
- 		CP110_LABEL(syscon0): system-controller@440000 {
- 			compatible = "syscon", "simple-mfd";
- 			reg = <0x440000 0x2000>;
-@@ -223,6 +217,18 @@
- 			};
- 		};
+ 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+ 	if (priv->data->signed_sample)
+@@ -362,6 +355,13 @@ static int armada_get_temp_legacy(struct thermal_zone_device *thermal,
+ 	struct armada_thermal_priv *priv = thermal->devdata;
+ 	int ret;
  
-+		CP110_LABEL(syscon1): system-controller@400000 {
-+			compatible = "syscon", "simple-mfd";
-+			reg = <0x400000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
++	/* Valid check */
++	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
++		dev_err(priv->dev,
++			"Temperature sensor reading not valid\n");
++		return -EIO;
++	}
 +
-+			CP110_LABEL(thermal): thermal-sensor@70 {
-+				compatible = "marvell,armada-cp110-thermal";
-+				reg = <0x70 0x10>;
-+			};
-+		};
-+
- 		CP110_LABEL(usb3_0): usb3@500000 {
- 			compatible = "marvell,armada-8k-xhci",
- 			"generic-xhci";
+ 	/* Do the actual reading */
+ 	ret = armada_read_sensor(priv, temp);
+ 
 -- 
 2.14.1
