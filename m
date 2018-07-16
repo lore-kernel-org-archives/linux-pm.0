@@ -1,86 +1,243 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Mon, 16 Jul 2018 10:42:19 +0530
-Message-ID: <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
-References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
- <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v2 00/12] Add utilization clamping support
+Date: Mon, 16 Jul 2018 09:28:54 +0100
+Message-ID: <20180716082906.6061-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-07-18, 23:35, Taniya Das wrote:
-> +static int qcom_cpu_resources_init(struct platform_device *pdev,
-> +				   struct device_node *np, unsigned int cpu)
-> +{
-> +	struct cpufreq_qcom *c;
-> +	struct resource res;
-> +	struct device *dev = &pdev->dev;
-> +	unsigned int offset, cpu_r;
-> +	int ret;
-> +
-> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
-> +	if (!c)
-> +		return -ENOMEM;
-> +
-> +	c->reg_offset = of_device_get_match_data(&pdev->dev);
-> +	if (!c->reg_offset)
-> +		return -EINVAL;
-> +
-> +	if (of_address_to_resource(np, 0, &res))
-> +		return -ENOMEM;
-> +
-> +	c->base = devm_ioremap(dev, res.start, resource_size(&res));
-> +	if (!c->base) {
-> +		dev_err(dev, "Unable to map %s base\n", np->name);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	offset = c->reg_offset[REG_ENABLE];
-> +
-> +	/* HW should be in enabled state to proceed */
-> +	if (!(readl_relaxed(c->base + offset) & 0x1)) {
-> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
-> +		return -ENODEV;
-> +	}
-> +
-> +	ret = qcom_get_related_cpus(np, &c->related_cpus);
-> +	if (ret) {
-> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
-> +		return ret;
-> +	}
-> +
-> +	c->max_cores = cpumask_weight(&c->related_cpus);
-> +	if (!c->max_cores)
-> +		return -ENOENT;
-> +
-> +	ret = qcom_read_lut(pdev, c);
-> +	if (ret) {
-> +		dev_err(dev, "%s failed to read LUT\n", np->name);
-> +		return ret;
-> +	}
-> +
-> +	qcom_freq_domain_map[cpu] = c;
-> +
-> +	/* Related CPUs to keep a single copy */
-> +	cpu_r = cpumask_first(&c->related_cpus);
-> +	if (cpu != cpu_r) {
-> +		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
-> +		devm_kfree(dev, c);
-> +	}
+This is a respin of:
 
-Sorry about missing this, you have actually worked on my comments.
+   https://lore.kernel.org/lkml/20180409165615.2326-1-patrick.bellasi@arm.com
 
-But I think this isn't the clever way of doing it. You allocate the
-structures, fill everything and then finally free them because we were
-related. Why can't we have similar check at the top of this routine
-and skip everything then ?
+which addresses all the feedbacks collected from the LKML discussion as well
+as during the presentation at last OSPM Summit:
+
+   https://www.youtube.com/watch?v=0Yv9smm9i78
+
+Further comments and feedbacks are more than welcome!
+
+Cheers Patrick
+
+
+Main changes
+============
+
+The main change of this version is an overall restructuring and polishing of
+the entire series. The ultimate goals was to further optimize some data
+structures as well as to (hopefully) make it more easy the review by both
+reordering the patches and splitting some of them into smaller ones.
+
+The series is now composed by the following described main sections.
+
+.:: Per task (primary) API
+
+  [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to support
+  [PATCH v2 02/12] sched/core: uclamp: map TASK's clamp values into
+  [PATCH v2 03/12] sched/core: uclamp: add CPU's clamp groups
+  [PATCH v2 04/12] sched/core: uclamp: update CPU's refcount on clamp
+
+ This first subset adds all the main required data structures and mechanism to
+ support clamping in a per-task basis.
+
+ These bits are added in a top-down way:
+
+    01. adds the sched_setattr(2) syscall based API
+    02. adds the mapping from clamp values to clamp groups
+    03. adds the clamp group refcouting at {en,de}queue time
+    04. sync syscall changes with CPU's clamp group refcounts
+
+
+.:: Schedutil integration
+
+  [PATCH v2 05/12] sched/cpufreq: uclamp: add utilization clamping for FAIR tasks
+  [PATCH v2 06/12] sched/cpufreq: uclamp: add utilization clamping for RT tasks
+
+ These couple of additional patches provides a first fully working solution of
+ utilization clamping by using the clamp values to bias frequency selection.
+
+ It's worth to notice that frequencies selection is just one of the possible
+ utilization clamping clients. We do not introduce other possible scheduler
+ integration to keep this series small enough and focused on the core bits.
+
+
+.:: Per task group (secondary) API
+
+  [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup controller
+  [PATCH v2 09/12] sched/core: uclamp: map TG's clamp values into CPU's clamp groups
+  [PATCH v2 10/12] sched/core: uclamp: use TG's clamps to restrict
+  [PATCH v2 11/12] sched/core: uclamp: update CPU's refcount on TG's
+
+ These additional patches introduce the cgroup support, using the same top-down
+ approach of the first ones:
+
+    08. adds the cpu.util_{min,max} attributes
+    09. adds the mapping from clamp values to clamp groups
+    10. uses TG clamp value to restrict the task-specific API
+    11. sync TG's clamp value changes with CPU's clamp group refcounts
+
+
+.:: Additional improvements
+
+  [PATCH v2 07/12] sched/core: uclamp: enforce last task UCLAMP_MAX
+  [PATCH v2 12/12] sched/core: uclamp: use percentage clamp values
+
+ A couple of functional improvements are provided by these few additional
+patches. Although these bits are not strictly required for a fully functional
+solution, they are still considered improvements worth to have.
+
+
+Newcomer's Short Abstract (Updated)
+===================================
+
+The Linux scheduler is able to drive frequency selection, when the schedutil
+cpufreq's governor is in use, based on task utilization aggregated at CPU
+level. The CPU utilization is then used to select the frequency which better
+fits the task's generated workload.  The current translation of utilization
+values into a frequency selection is pretty simple: we just go to max for RT
+tasks or to the minimum frequency which can accommodate the utilization of
+DL+FAIR tasks.
+
+While this simple mechanism is good enough for DL tasks, for RT and FAIR tasks
+we can aim at some better frequency driving which can take into consideration
+hints coming from user-space.
+
+Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
+utilization generated by RT and FAIR tasks within a range defined from
+user-space. The clamped utilization value can then be used to enforce a minimum
+and/or maximum frequency depending on which tasks are currently active on a
+CPU.
+
+The main use-cases for utilization clamping are:
+
+ - boosting: better interactive response for small tasks which
+   are affecting the user experience. Consider for example the case of a
+   small control thread for an external accelerator (e.g. GPU, DSP, other
+   devices). In this case the scheduler does not have a complete view of
+   what are the task bandwidth requirements and, if it's a small task,
+   schedutil will keep selecting a lower frequency thus affecting the
+   overall time required to complete the task activations.
+
+ - clamping: increase energy efficiency for background tasks not directly
+   affecting the user experience. Since running at a lower frequency is in
+   general more energy efficient, when the completion time is not a main
+   goal then clamping the maximum frequency to use for certain (maybe big)
+   tasks can have positive effects, both on energy consumption and thermal
+   stress.
+   Moreover, this last support allows also to make RT tasks more energy
+   friendly on mobile systems, where running them at the maximum
+   frequency is not strictly required.
+
+Frequency selection biasing, introduced by patches 5 and 6 of this series,
+is just one possible usage of utilization clamping. Another compelling use
+case this support is interesting for is in helping the scheduler on tasks
+tasks placement decisions.
+
+Indeed, utilization is a task specific property which is used by the scheduler
+to know how much CPU bandwidth a task requires (under certain conditions).
+Thus, the utilization clamp values defined either per-task or via the CPU
+controller, can be used to represent tasks to the scheduler as being bigger (or
+smaller) then what they really are.
+
+Utilization clamping thus ultimately enable interesting additional
+optimizations, especially on asymmetric capacity systems like Arm
+big.LITTLE and DynamIQ CPUs, where:
+
+ - boosting: small tasks are preferably scheduled on higher-capacity CPUs
+   where, despite being less energy efficient, they can complete faster
+
+ - clamping: big/background tasks are preferably scheduler on low-capacity CPUs
+   where, being more energy efficient, they can still run but save power and
+   thermal headroom for more important tasks.
+
+This additional usage of the utilization clamping is not presented in this
+series but it's an integral part of the Energy Aware Scheduler (EAS) feature
+set. A similar solution (SchedTune) is already used on Android kernels, which
+targets both frequency selection and task placement biasing.
+This series provides the foundation bits to add similar features in mainline
+and its first simple client with the schedutil integration.
+
+
+Detailed Changelog
+==================
+
+Changes in v2:
+
+ Message-ID: <20180413093822.GM4129@hirez.programming.kicks-ass.net>
+ - refactored struct rq::uclamp_cpu to be more cache efficient
+   no more holes, re-arranged vectors to match cache lines with expected
+   data locality
+
+ Message-ID: <20180413094615.GT4043@hirez.programming.kicks-ass.net>
+ - use *rq as parameter whenever already available
+ - add scheduling class's uclamp_enabled marker
+ - get rid of the "confusing" single callback uclamp_task_update()
+   and use uclamp_cpu_{get,put}() directly from {en,de}queue_task()
+ - fix/remove "bad" comments
+
+ Message-ID: <20180413113337.GU14248@e110439-lin>
+ - remove inline from init_uclamp, flag it __init
+
+ Message-ID: <20180413111900.GF4082@hirez.programming.kicks-ass.net>
+ - get rid of the group_id back annotation
+   which is not requires at this stage where we have only per-task
+   clamping support. It will be introduce later when cgroup support is
+   added.
+
+ Message-ID: <20180409222417.GK3126663@devbig577.frc2.facebook.com>
+ - make attributes available only on non-root nodes
+   a system wide API seems of not immediate interest and thus it's not
+   supported anymore
+ - remove implicit parent-child constraints and dependencies
+
+ Message-ID: <20180410200514.GA793541@devbig577.frc2.facebook.com>
+ - add some cgroup-v2 documentation for the new attributes
+ - (hopefully) better explain intended use-cases
+   the changelog above has been extended to better justify the naming
+   proposed by the new attributes
+
+ Other changes:
+ - improved documentation to make more explicit some concepts
+ - set UCLAMP_GROUPS_COUNT=2 by default
+   which allows to fit all the hot-path CPU clamps data into a single cache
+   line while still supporting up to 2 different {min,max}_utiql clamps.
+ - use -ERANGE as range violation error
+ - add attributes to the default hierarchy as well as the legacy one
+ - implement a "nice" semantics where cgroup clamp values are always
+   used to restrict task specific clamp values,
+   i.e. tasks running on a TG are only allowed to demote themself.
+ - patches re-ordering in top-down way
+ - rebased on v4.18-rc4
+
+
+Patrick Bellasi (12):
+  sched/core: uclamp: extend sched_setattr to support utilization
+    clamping
+  sched/core: uclamp: map TASK's clamp values into CPU's clamp groups
+  sched/core: uclamp: add CPU's clamp groups accounting
+  sched/core: uclamp: update CPU's refcount on clamp changes
+  sched/cpufreq: uclamp: add utilization clamping for FAIR tasks
+  sched/cpufreq: uclamp: add utilization clamping for RT tasks
+  sched/core: uclamp: enforce last task UCLAMP_MAX
+  sched/core: uclamp: extend cpu's cgroup controller
+  sched/core: uclamp: map TG's clamp values into CPU's clamp groups
+  sched/core: uclamp: use TG's clamps to restrict Task's clamps
+  sched/core: uclamp: update CPU's refcount on TG's clamp changes
+  sched/core: uclamp: use percentage clamp values
+
+ Documentation/admin-guide/cgroup-v2.rst |  25 +
+ include/linux/sched.h                   |  53 ++
+ include/uapi/linux/sched.h              |   4 +-
+ include/uapi/linux/sched/types.h        |  66 +-
+ init/Kconfig                            |  63 ++
+ kernel/sched/core.c                     | 876 ++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c        |  51 +-
+ kernel/sched/fair.c                     |   4 +
+ kernel/sched/rt.c                       |   4 +
+ kernel/sched/sched.h                    | 194 ++++++
+ 10 files changed, 1316 insertions(+), 24 deletions(-)
 
 -- 
-viresh
+2.17.1
