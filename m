@@ -1,68 +1,80 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 3/3] thermal: tsens: Fix negative temperature reporting
-Date: Wed, 18 Jul 2018 12:55:03 +0530
-Message-ID: <42d6f2a6f9babd6351bd2fcde4000d5ca9c351ce.1531898088.git.amit.kucheria@linaro.org>
-References: <cover.1531898088.git.amit.kucheria@linaro.org>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: [PATCH v2] cpufreq: pcc-cpufreq: Disable dynamic scaling on
+ many-CPU systems
+Date: Tue, 17 Jul 2018 22:13:23 +0200
+Message-ID: <20180717201323.6rwb4yklq46cmtom@suselix>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+ <306375154.NhdH6AhdAd@aspire.rjw.lan>
+ <5423012.ZZnfdYddaT@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1531898088.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1531898088.git.amit.kucheria@linaro.org>
-References: <cover.1531898088.git.amit.kucheria@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <5423012.ZZnfdYddaT@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The current code will always return 0xffffffff in case of negative
-temperatures due to a bug in how the binary sign extension is being done.
+On Tue, Jul 17, 2018 at 06:14:58PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The firmware interface used by the pcc-cpufreq driver is
+> fundamentally not scalable and using it for dynamic CPU performance
+> scaling on systems with many CPUs leads to degraded performance.
+> 
+> For this reason, disable dynamic CPU performance scaling on systems
+> with pcc-cpufreq where the number of CPUs present at the driver init
+> time is greater than 4.  Also make the driver print corresponding
+> complaints to the kernel log.
+> 
+> Reported-by: Andreas Herrmann <aherrmann@suse.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> -> v2: Rework the messages printed in the problematic case.
 
-Use sign_extend32() instead.
+I've tested this patch. Effect is as expected: driver loads but use of
+ondemand governor is not allowed. Sample output:
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens-v2.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+[   40.757519] pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+[   40.831705] pcc_cpufreq_init: Too many CPUs, dynamic performance scaling disabled
+[   40.898353] pcc_cpufreq_init: Try to enable a different scaling driver through BIOS settings
+[   40.972327] pcc_cpufreq_init: and complain to the system vendor
+[   41.025620] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
+...
+[   41.187928] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
 
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 908e3dc..46abc21 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -5,19 +5,20 @@
-  */
- 
- #include <linux/regmap.h>
-+#include <linux/bitops.h>
- #include "tsens.h"
- 
- #define STATUS_OFFSET		0xa0
- #define LAST_TEMP_MASK		0xfff
- #define STATUS_VALID_BIT	BIT(21)
--#define CODE_SIGN_BIT		BIT(11)
- 
- static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- {
- 	struct tsens_sensor *s = &tmdev->sensor[id];
- 	u32 code;
- 	unsigned int status_reg;
--	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
-+	u32 last_temp = 0, last_temp2 = 0, last_temp3 = 0;
-+	int ret;
- 
- 	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
- 	ret = regmap_read(tmdev->map, status_reg, &code);
-@@ -54,12 +55,8 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- 	else if (last_temp2 == last_temp3)
- 		last_temp = last_temp3;
- done:
--	/* Code sign bit is the sign extension for a negative value */
--	if (last_temp & CODE_SIGN_BIT)
--		last_temp |= ~CODE_SIGN_BIT;
--
--	/* Temperatures are in deciCelicius */
--	*temp = last_temp * 100;
-+	/* Convert temperatures to milliCelicius */
-+	*temp = sign_extend32(last_temp, fls(LAST_TEMP_MASK) - 1) * 100;
- 
- 	return 0;
- }
--- 
-2.7.4
+Last message is shown for each online CPU in the system  (ie. 120x).
+
+Looks good to me.
+
+
+Andreas
+
+> ---
+>  drivers/cpufreq/pcc-cpufreq.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> Index: linux-pm/drivers/cpufreq/pcc-cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/pcc-cpufreq.c
+> +++ linux-pm/drivers/cpufreq/pcc-cpufreq.c
+> @@ -589,6 +589,15 @@ static int __init pcc_cpufreq_init(void)
+>  		return ret;
+>  	}
+>  
+> +	if (num_present_cpus() > 4) {
+> +		pcc_cpufreq_driver.flags |= CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING;
+> +		pr_err("%s: Too many CPUs, dynamic performance scaling disabled\n",
+> +		       __func__);
+> +		pr_err("%s: Try to enable a different scaling driver through BIOS settings\n",
+> +		       __func__);
+> +		pr_err("%s: and complain to the system vendor\n", __func__);
+> +	}
+> +
+>  	ret = cpufreq_register_driver(&pcc_cpufreq_driver);
+>  
+>  	return ret;
+> 
+> 
