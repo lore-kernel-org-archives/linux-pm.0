@@ -1,98 +1,241 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Load when ACPI PCCH is present
-Date: Tue, 17 Jul 2018 19:28:41 +0200
-Message-ID: <CAJZ5v0hFAWr7ozVb9OfVTUPCyjZAtsQsDSm=Le_oMwOxAgTJbA@mail.gmail.com>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717102136.snayvzmv2h3dcwiq@suselix>
- <20180717140336.ayovaz4ksdlak6bb@suselix> <8115130.Fhkpr82c7G@aspire.rjw.lan> <d4419603cb727bb28fe9ab7abfc9595b78cb7554.camel@linux.intel.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Tue, 17 Jul 2018 10:50:25 -0700
+Message-ID: <20180717175025.GA150378@joelaf.mtv.corp.google.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d4419603cb727bb28fe9ab7abfc9595b78cb7554.camel@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <20180716082906.6061-2-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andreas Herrmann <aherrmann@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 7:23 PM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Tue, 2018-07-17 at 18:13 +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Currently, intel_pstate doesn't load if _PSS is not present on
->> HP Proliant systems, because it expects the firmware to take over
->> CPU performance scaling in that case.  However, if ACPI PCCH is
->> present, the firmware expects the kernel to use it for CPU
->> performance scaling and the pcc-cpufreq driver is loaded for that.
->>
->> Unfortunately, the firmware interface used by that driver is not
->> scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
->> on systems with more than just a few CPUs.  In fact, it is better to
->> avoid using it at all.
->>
->> For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
->> is not present and load if it is there.
->>
->> Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power
->> mgmt option)
->> Reported-by: Andreas Herrmann <aherrmann@suse.com>
->> Tested-by: Andreas Herrmann <aherrmann@suse.com>
->> Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
->> Cc: 4.17+ <stable@vger.kernel.org> # 4.17+
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->
-> But do we need a change as done by the following commit in in pcc-
-> cpufreq.c?
->
-> "
-> commit 8a61e12e84597b5f8155ac91b44dea866ccfaac2
-> Author: Yinghai Lu <yinghai@kernel.org>
-> Date:   Fri Sep 20 10:43:56 2013 -0700
->
->     acpi-cpufreq: skip loading acpi_cpufreq after intel_pstate
->
-> "
+On Mon, Jul 16, 2018 at 09:28:55AM +0100, Patrick Bellasi wrote:
+> The SCHED_DEADLINE scheduling class provides an advanced and formal
+> model to define tasks requirements which can be translated into proper
+> decisions for both task placements and frequencies selections.
+> Other classes have a more simplified model which is essentially based on
+> the relatively simple concept of POSIX priorities.
+> 
+> Such a simple priority based model however does not allow to exploit
+> some of the most advanced features of the Linux scheduler like, for
+> example, driving frequencies selection via the schedutil cpufreq
+> governor. However, also for non SCHED_DEADLINE tasks, it's still
+> interesting to define tasks properties which can be used to better
+> support certain scheduler decisions.
+> 
+> Utilization clamping aims at exposing to user-space a new set of
+> per-task attributes which can be used to provide the scheduler with some
+> hints about the expected/required utilization for a task.
+> This will allow to implement a more advanced per-task frequency control
+> mechanism which is not based just on a "passive" measured task
+> utilization but on a more "active" approach. For example, it could be
+> possible to boost interactive tasks, thus getting better performance, or
+> cap background tasks, thus being more energy efficient.
+> Ultimately, such a mechanism can be considered similar to the cpufreq's
+> powersave, performance and userspace governor but with a much fine
+> grained and per-task control.
+> 
+> Let's introduce a new API to set utilization clamping values for a
+> specified task by extending sched_setattr, a syscall which already
+> allows to define task specific properties for different scheduling
+> classes.
+> Specifically, a new pair of attributes allows to specify a minimum and
+> maximum utilization which the scheduler should consider for a task.
+> 
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Paul Turner <pjt@google.com>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Steve Muckle <smuckle@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  include/linux/sched.h            | 16 ++++++++
+>  include/uapi/linux/sched.h       |  4 +-
+>  include/uapi/linux/sched/types.h | 64 +++++++++++++++++++++++++++-----
+>  init/Kconfig                     | 19 ++++++++++
+>  kernel/sched/core.c              | 39 +++++++++++++++++++
+>  5 files changed, 132 insertions(+), 10 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 43731fe51c97..fd8495723088 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -279,6 +279,17 @@ struct vtime {
+>  	u64			gtime;
+>  };
+>  
+> +enum uclamp_id {
+> +	/* No utilization clamp group assigned */
+> +	UCLAMP_NONE = -1,
+> +
+> +	UCLAMP_MIN = 0, /* Minimum utilization */
+> +	UCLAMP_MAX,     /* Maximum utilization */
+> +
+> +	/* Utilization clamping constraints count */
+> +	UCLAMP_CNT
+> +};
+> +
+>  struct sched_info {
+>  #ifdef CONFIG_SCHED_INFO
+>  	/* Cumulative counters: */
+> @@ -649,6 +660,11 @@ struct task_struct {
+>  #endif
+>  	struct sched_dl_entity		dl;
+>  
+> +#ifdef CONFIG_UCLAMP_TASK
+> +	/* Utlization clamp values for this task */
+> +	int				uclamp[UCLAMP_CNT];
+> +#endif
+> +
+>  #ifdef CONFIG_PREEMPT_NOTIFIERS
+>  	/* List of struct preempt_notifier: */
+>  	struct hlist_head		preempt_notifiers;
+> diff --git a/include/uapi/linux/sched.h b/include/uapi/linux/sched.h
+> index 22627f80063e..c27d6e81517b 100644
+> --- a/include/uapi/linux/sched.h
+> +++ b/include/uapi/linux/sched.h
+> @@ -50,9 +50,11 @@
+>  #define SCHED_FLAG_RESET_ON_FORK	0x01
+>  #define SCHED_FLAG_RECLAIM		0x02
+>  #define SCHED_FLAG_DL_OVERRUN		0x04
+> +#define SCHED_FLAG_UTIL_CLAMP		0x08
+>  #define SCHED_FLAG_ALL	(SCHED_FLAG_RESET_ON_FORK	| \
+>  			 SCHED_FLAG_RECLAIM		| \
+> -			 SCHED_FLAG_DL_OVERRUN)
+> +			 SCHED_FLAG_DL_OVERRUN		| \
+> +			 SCHED_FLAG_UTIL_CLAMP)
+>  
+>  #endif /* _UAPI_LINUX_SCHED_H */
+> diff --git a/include/uapi/linux/sched/types.h b/include/uapi/linux/sched/types.h
+> index 10fbb8031930..7421cd25354d 100644
+> --- a/include/uapi/linux/sched/types.h
+> +++ b/include/uapi/linux/sched/types.h
+> @@ -21,8 +21,33 @@ struct sched_param {
+>   * the tasks may be useful for a wide variety of application fields, e.g.,
+>   * multimedia, streaming, automation and control, and many others.
+>   *
+> - * This variant (sched_attr) is meant at describing a so-called
+> - * sporadic time-constrained task. In such model a task is specified by:
+> + * This variant (sched_attr) allows to define additional attributes to
+> + * improve the scheduler knowledge about task requirements.
+> + *
+> + * Scheduling Class Attributes
+> + * ===========================
+> + *
+> + * A subset of sched_attr attributes specifies the
+> + * scheduling policy and relative POSIX attributes:
+> + *
+> + *  @size		size of the structure, for fwd/bwd compat.
+> + *
+> + *  @sched_policy	task's scheduling policy
+> + *  @sched_nice		task's nice value      (SCHED_NORMAL/BATCH)
+> + *  @sched_priority	task's static priority (SCHED_FIFO/RR)
+> + *
+> + * Certain more advanced scheduling features can be controlled by a
+> + * predefined set of flags via the attribute:
+> + *
+> + *  @sched_flags	for customizing the scheduler behaviour
+> + *
+> + * Sporadic Time-Constrained Tasks Attributes
+> + * ==========================================
+> + *
+> + * A subset of sched_attr attributes allows to describe a so-called
+> + * sporadic time-constrained task.
+> + *
+> + * In such model a task is specified by:
+>   *  - the activation period or minimum instance inter-arrival time;
+>   *  - the maximum (or average, depending on the actual scheduling
+>   *    discipline) computation time of all instances, a.k.a. runtime;
+> @@ -34,14 +59,8 @@ struct sched_param {
+>   * than the runtime and must be completed by time instant t equal to
+>   * the instance activation time + the deadline.
+>   *
+> - * This is reflected by the actual fields of the sched_attr structure:
+> + * This is reflected by the following fields of the sched_attr structure:
+>   *
+> - *  @size		size of the structure, for fwd/bwd compat.
+> - *
+> - *  @sched_policy	task's scheduling policy
+> - *  @sched_flags	for customizing the scheduler behaviour
+> - *  @sched_nice		task's nice value      (SCHED_NORMAL/BATCH)
+> - *  @sched_priority	task's static priority (SCHED_FIFO/RR)
+>   *  @sched_deadline	representative of the task's deadline
+>   *  @sched_runtime	representative of the task's runtime
+>   *  @sched_period	representative of the task's period
+> @@ -53,6 +72,28 @@ struct sched_param {
+>   * As of now, the SCHED_DEADLINE policy (sched_dl scheduling class) is the
+>   * only user of this new interface. More information about the algorithm
+>   * available in the scheduling class file or in Documentation/.
+> + *
+> + * Task Utilization Attributes
+> + * ===========================
+> + *
+> + * A subset of sched_attr attributes allows to specify the utilization which
+> + * should be expected by a task. These attributes allows to inform the
+> + * scheduler about the utilization boundaries within which is safe to schedule
+> + * the task. These utilization boundaries are valuable information to support
+> + * scheduler decisions on both task placement and frequencies selection.
+> + *
+> + *  @sched_util_min	represents the minimum utilization
+> + *  @sched_util_max	represents the maximum utilization
+> + *
+> + * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE] which
+> + * represents the percentage of CPU time used by a task when running at the
+> + * maximum frequency on the highest capacity CPU of the system. Thus, for
+> + * example, a 20% utilization task is a task running for 2ms every 10ms.
+> + *
+> + * A task with a min utilization value bigger then 0 is more likely to be
+> + * scheduled on a CPU which can provide that bandwidth.
+> + * A task with a max utilization value smaller then 1024 is more likely to be
+> + * scheduled on a CPU which do not provide more then the required bandwidth.
+>   */
+>  struct sched_attr {
+>  	__u32 size;
+> @@ -70,6 +111,11 @@ struct sched_attr {
+>  	__u64 sched_runtime;
+>  	__u64 sched_deadline;
+>  	__u64 sched_period;
+> +
+> +	/* Utilization hints */
+> +	__u32 sched_util_min;
+> +	__u32 sched_util_max;
+> +
+>  };
+>  
+>  #endif /* _UAPI_LINUX_SCHED_TYPES_H */
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 041f3a022122..1d45a6877d6f 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
+>  config GENERIC_SCHED_CLOCK
+>  	bool
+>  
+> +menu "Scheduler features"
+> +
+> +config UCLAMP_TASK
+> +	bool "Enable utilization clamping for RT/FAIR tasks"
+> +	depends on CPU_FREQ_GOV_SCHEDUTIL
 
-Quite likely yes, good point!
+Does it make sense to depend on this? One could turn off schedutil and then
+uclamp can't be used for any other purpose (big.LITTLE task placement etc)?
 
+thanks,
 
->> ---
->>  drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
->>  1 file changed, 16 insertions(+), 1 deletion(-)
->>
->> Index: linux-pm/drivers/cpufreq/intel_pstate.c
->> ===================================================================
->> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
->> +++ linux-pm/drivers/cpufreq/intel_pstate.c
->> @@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
->>       return true;
->>  }
->>
->> +static bool __init intel_pstate_no_acpi_pcch(void)
->> +{
->> +     acpi_status status;
->> +     acpi_handle handle;
->> +
->> +     status = acpi_get_handle(NULL, "\\_SB", &handle);
->> +     if (ACPI_FAILURE(status))
->> +             return true;
->> +
->> +     return !acpi_has_method(handle, "PCCH");
->> +}
->> +
->>  static bool __init intel_pstate_has_acpi_ppc(void)
->>  {
->>       int i;
->> @@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
->>
->>       switch (plat_info[idx].data) {
->>       case PSS:
->> -             return intel_pstate_no_acpi_pss();
->> +             if (!intel_pstate_no_acpi_pss())
->> +                     return false;
->> +
->> +             return intel_pstate_no_acpi_pcch();
->>       case PPC:
->>               return intel_pstate_has_acpi_ppc() && !force_load;
->>       }
->>
+- Joel
