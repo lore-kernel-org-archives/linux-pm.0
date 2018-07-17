@@ -1,103 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Commit 554c8aa8ecad causing severe performance degression with pcc-cpufreq
-Date: Tue, 17 Jul 2018 12:09:21 +0200
-Message-ID: <3724084.DyflrVPzDS@aspire.rjw.lan>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717092721.onkaf3qsu7te6syi@suselix> <20180717093620.ym6phfmr3rfvsxyo@suselix>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: [PATCH 1/5] thermal: exynos: enable core tmu clk on exynos platform
+Date: Tue, 17 Jul 2018 10:12:18 +0000
+Message-ID: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180717093620.ym6phfmr3rfvsxyo@suselix>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Anand Moon <linux.amoon@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 17, 2018 11:36:20 AM CEST Andreas Herrmann wrote:
-> On Tue, Jul 17, 2018 at 11:27:21AM +0200, Andreas Herrmann wrote:
-> > On Tue, Jul 17, 2018 at 11:23:25AM +0200, Rafael J. Wysocki wrote:
-> > > On Tue, Jul 17, 2018 at 11:11 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> > > > On Tue, Jul 17, 2018 at 11:06:29AM +0200, Rafael J. Wysocki wrote:
-> > > >> On Tue, Jul 17, 2018 at 10:50 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> > > >>
-> > > >> [cut]
-> > > >>
-> > > >> >
-> > > >> > On balance before this commit users could use pcc-cpufreq but had
-> > > >> > already suboptimal performance (compared to say intel_pstate driver
-> > > >> > which can be used changing BIOS options).
-> > > >>
-> > > >> BTW, I wonder why you need to change the BIOS options for intel_pstate to load.
-> > > >
-> > > > I think this is because of (in intel_pstate_init()):
-> > > >
-> > > >         /*
-> > > >          * The Intel pstate driver will be ignored if the platform
-> > > >          * firmware has its own power management modes.
-> > > >          */
-> > > >         if (intel_pstate_platform_pwr_mgmt_exists())
-> > > >                 return -ENODEV;
-> > > >
-> > > 
-> > > OK, because of the "Proliant" entry, right?
-> > > 
-> > > So it looks like we have an issue there.  We find the entry and we
-> > > look for _PSS.  It is not there, so we assume that the firmware is
-> > > expected to control performance, which is not the case.
-> 
-> FYI, there is another BIOS setting on those systems. It's called
-> "Collaborative Power Control" (AFAIK enabled by default).
-> 
-> Only if this is disabled, firmware is (alone) in control of
-> performance. (And of course in this case neither pcc-cpufreq nor
-> intel_pstate will be loaded).
+clk_summary do not show tmu_apbif clk enable, so replace
+the clk_prepare with clk_prepare_enables to enable tmu clk.
+simplify the enable of tmu_triminfo_apbif clk, also fixed
+the order of goto error for failed cases.
 
-OK, the patch is below.
-
-First, I hope that if "Collaborative Power Control" is disabled, it will
-simply hide the PCCH object and so intel_pstate will still not load then.
-
-The main question basically is what the OS is expected to do if "Dynamic
-Power Savings Mode" is set.  If we are *expected* to use the PCC interface
-then, intel_pstate may not work in that case, but I suspect that the PCC
-interface allows extra energy to be saved over what is possible without it.
-
+CC: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Anand Moon <linux.amoon@gmail.com>
 ---
- drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+before:
+cat /sys/kernel/debug/clk/clk_summary | grep tmu
+                         tmu_gpu           0            2    66600000          0 0
+                         tmu              0            6    66600000          0 0
+after:
+cat /sys/kernel/debug/clk/clk_summary | grep tmu
+                         tmu_gpu       2        2        0    66600000          0 0
+                         tmu          6        6        0    66600000          0 0
+---
+ drivers/thermal/samsung/exynos_tmu.c | 45 ++++++++++++++++++------------------
+ 1 file changed, 22 insertions(+), 23 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
- 	return true;
- }
- 
-+static bool __init intel_pstate_no_acpi_pcch(void)
-+{
-+	acpi_status status;
-+	acpi_handle handle;
-+
-+	status = acpi_get_handle(NULL, "\\_SB", &handle);
-+	if (ACPI_FAILURE(status))
-+		return true;
-+
-+	return !acpi_has_method(handle, "PCCH");
-+}
-+
- static bool __init intel_pstate_has_acpi_ppc(void)
- {
- 	int i;
-@@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
- 
- 	switch (plat_info[idx].data) {
- 	case PSS:
--		return intel_pstate_no_acpi_pss();
-+		if (!intel_pstate_no_acpi_pss())
-+			return false;
-+
-+		return intel_pstate_no_acpi_pcch();
- 	case PPC:
- 		return intel_pstate_has_acpi_ppc() && !force_load;
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index a992e51..0164c9e 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -1060,41 +1060,40 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to get clock\n");
+ 		ret = PTR_ERR(data->clk);
+ 		goto err_sensor;
+-	}
+-
+-	data->clk_sec = devm_clk_get(&pdev->dev, "tmu_triminfo_apbif");
+-	if (IS_ERR(data->clk_sec)) {
+-		if (data->soc == SOC_ARCH_EXYNOS5420_TRIMINFO) {
+-			dev_err(&pdev->dev, "Failed to get triminfo clock\n");
+-			ret = PTR_ERR(data->clk_sec);
+-			goto err_sensor;
+-		}
+ 	} else {
+-		ret = clk_prepare(data->clk_sec);
++		ret = clk_prepare_enable(data->clk);
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "Failed to get clock\n");
+ 			goto err_sensor;
+ 		}
  	}
+ 
+-	ret = clk_prepare(data->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to get clock\n");
+-		goto err_clk_sec;
+-	}
+-
+ 	switch (data->soc) {
++	case SOC_ARCH_EXYNOS5420_TRIMINFO:
++		data->clk_sec = devm_clk_get(&pdev->dev, "tmu_triminfo_apbif");
++		if (IS_ERR(data->clk_sec)) {
++			dev_err(&pdev->dev, "Failed to get triminfo clock\n");
++			ret = PTR_ERR(data->clk_sec);
++			goto err_clk;
++		} else {
++			ret = clk_prepare_enable(data->clk_sec);
++			if (ret) {
++				dev_err(&pdev->dev, "Failed to get clock\n");
++				goto err_clk;
++			}
++		}
++		break;
+ 	case SOC_ARCH_EXYNOS5433:
+ 	case SOC_ARCH_EXYNOS7:
+ 		data->sclk = devm_clk_get(&pdev->dev, "tmu_sclk");
+ 		if (IS_ERR(data->sclk)) {
+ 			dev_err(&pdev->dev, "Failed to get sclk\n");
+-			goto err_clk;
++			goto err_clk_sec;
+ 		} else {
+ 			ret = clk_prepare_enable(data->sclk);
+ 			if (ret) {
+ 				dev_err(&pdev->dev, "Failed to enable sclk\n");
+-				goto err_clk;
++				goto err_clk_sec;
+ 			}
+ 		}
+ 		break;
+@@ -1134,11 +1133,11 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+ err_sclk:
+ 	clk_disable_unprepare(data->sclk);
+-err_clk:
+-	clk_unprepare(data->clk);
+ err_clk_sec:
+ 	if (!IS_ERR(data->clk_sec))
+-		clk_unprepare(data->clk_sec);
++		clk_disable_unprepare(data->clk_sec);
++err_clk:
++	clk_disable_unprepare(data->clk);
+ err_sensor:
+ 	if (!IS_ERR(data->regulator))
+ 		regulator_disable(data->regulator);
+@@ -1155,9 +1154,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 	exynos_tmu_control(pdev, false);
+ 
+ 	clk_disable_unprepare(data->sclk);
+-	clk_unprepare(data->clk);
++	clk_disable_unprepare(data->clk);
+ 	if (!IS_ERR(data->clk_sec))
+-		clk_unprepare(data->clk_sec);
++		clk_disable_unprepare(data->clk_sec);
+ 
+ 	if (!IS_ERR(data->regulator))
+ 		regulator_disable(data->regulator);
+-- 
+2.7.4
