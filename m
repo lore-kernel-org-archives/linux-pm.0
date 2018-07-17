@@ -1,77 +1,76 @@
-From: =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
-Subject: [PATCH v3 3/3] dt-bindings: mfd: max8998: Add charger subnode binding
-Date: Tue, 17 Jul 2018 18:05:09 +0200
-Message-ID: <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
-References: <1531843509-3533-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: intel_pstate: Load when ACPI PCCH is present
+Date: Tue, 17 Jul 2018 18:13:19 +0200
+Message-ID: <8115130.Fhkpr82c7G@aspire.rjw.lan>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717102136.snayvzmv2h3dcwiq@suselix> <20180717140336.ayovaz4ksdlak6bb@suselix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1531843509-3533-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+In-Reply-To: <20180717140336.ayovaz4ksdlak6bb@suselix>
 Sender: linux-kernel-owner@vger.kernel.org
-To: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, =?UTF-8?q?Pawe=C5=82=20Chmiel?= <pawel.mikolaj.chmiel@gmail.com>
+To: Andreas Herrmann <aherrmann@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds devicetree bindings documentation for
-battery charging controller as the subnode of MAX8998 PMIC.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
+Currently, intel_pstate doesn't load if _PSS is not present on
+HP Proliant systems, because it expects the firmware to take over
+CPU performance scaling in that case.  However, if ACPI PCCH is
+present, the firmware expects the kernel to use it for CPU
+performance scaling and the pcc-cpufreq driver is loaded for that.
+
+Unfortunately, the firmware interface used by that driver is not
+scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
+on systems with more than just a few CPUs.  In fact, it is better to
+avoid using it at all.
+
+For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
+is not present and load if it is there.
+
+Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power mgmt option)
+Reported-by: Andreas Herrmann <aherrmann@suse.com>
+Tested-by: Andreas Herrmann <aherrmann@suse.com>
+Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
+Cc: 4.17+ <stable@vger.kernel.org> # 4.17+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-Changes from v2:
-  - Make charge-restart-level-microvolt optional.
-  - Make charge-timeout-hours optional.
+ drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-Changes from v1:
-  - Removed unneeded Fixes tag
-  - Correct description of all charger values
-  - Added missing property unit
----
- Documentation/devicetree/bindings/mfd/max8998.txt | 25 +++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Documentation/devicetree/bindings/mfd/max8998.txt
-index 23a3650ff2a2..264040f4ad15 100644
---- a/Documentation/devicetree/bindings/mfd/max8998.txt
-+++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-@@ -50,6 +50,24 @@ Additional properties required if max8998,pmic-buck2-dvs-gpio is defined:
- - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microvolts
-   for buck2 regulator that can be selected using dvs gpio.
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
+ 	return true;
+ }
  
-+Charger: Configuration for battery charging controller should be added
-+inside a child node named 'charger'.
-+  Required properties:
-+  - max8998,charge-eoc-percent: Setup End of Charge Level.
-+    If value equals 0, leave it unchanged.
-+    Otherwise it should be value from 10 to 45 by 5 step.
++static bool __init intel_pstate_no_acpi_pcch(void)
++{
++	acpi_status status;
++	acpi_handle handle;
 +
-+  Optional properties:
-+  - max8998,charge-restart-level-microvolt: Setup Charge Restart Level.
-+    If property is not present, this will be disabled.
-+    If value equals 0, leave it unchanged.
-+    Otherwise it should be one of following values: 100, 150, 200.
++	status = acpi_get_handle(NULL, "\\_SB", &handle);
++	if (ACPI_FAILURE(status))
++		return true;
 +
-+  - max8998,charge-timeout-hours: Setup Charge Full Timeout.
-+    If property is not present, this will be disabled.
-+    If value equals 0, leave it unchanged.
-+    Otherwise it should be one of following values: 5, 6, 7.
++	return !acpi_has_method(handle, "PCCH");
++}
 +
- Regulators: All the regulators of MAX8998 to be instantiated shall be
- listed in a child node named 'regulators'. Each regulator is represented
- by a child node of the 'regulators' node.
-@@ -99,6 +117,13 @@ Example:
- 		max8998,pmic-buck2-dvs-gpio = <&gpx0 0 3 0 0>; /* SET3 */
- 		max8998,pmic-buck2-dvs-voltage = <1350000>, <1300000>;
+ static bool __init intel_pstate_has_acpi_ppc(void)
+ {
+ 	int i;
+@@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
  
-+		/* Charger configuration */
-+		charger {
-+			max8998,charge-eoc-percent = <0>;
-+			max8998,charge-restart-level-microvolt = <100>;
-+			max8998,charge-timeout-hours = <7>;
-+		};
+ 	switch (plat_info[idx].data) {
+ 	case PSS:
+-		return intel_pstate_no_acpi_pss();
++		if (!intel_pstate_no_acpi_pss())
++			return false;
 +
- 		/* Regulators to instantiate */
- 		regulators {
- 			ldo2_reg: LDO2 {
--- 
-2.7.4
++		return intel_pstate_no_acpi_pcch();
+ 	case PPC:
+ 		return intel_pstate_has_acpi_ppc() && !force_load;
+ 	}
