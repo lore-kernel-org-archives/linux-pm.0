@@ -1,79 +1,125 @@
 From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Tue, 17 Jul 2018 09:39:34 +0200
-Message-ID: <CAJZ5v0gq3mt=CcYQLkNLzqZub26QxSM8cajAgUzNWsO-z3PW9g@mail.gmail.com>
-References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com>
- <20180717071641.GA5411@wunner.de>
+Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link between
+	masters and smmu
+Date: Tue, 17 Jul 2018 09:46:10 +0200
+Message-ID: <CAJZ5v0ijB6ZX9q0i+YrkWg1-nQBx+FuTjbGq1xRoJS113uoA-g@mail.gmail.com>
+References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
+	<20180708173413.1965-4-vivek.gautam@codeaurora.org>
+	<5179668.PHK6S3sxLu@aspire.rjw.lan>
+	<741cc78b-59a7-5289-e42f-1511ebedb15d@codeaurora.org>
+	<CAFp+6iFTgEhPLYQEyBX_Fb0k3n0OzGhKuSoBNV5XzpD01+V8qw@mail.gmail.com>
+	<CAJZ5v0iQ2wxsXvuaLK2M9a_Jwe_fnwR2Afrq_Oa8h0--Ch7-5g@mail.gmail.com>
+	<93d16301-4bef-203f-24de-4d010de84b22@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180717071641.GA5411-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, Lyude Paul <lyude-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <93d16301-4bef-203f-24de-4d010de84b22-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgOToxNiBBTSwgTHVrYXMgV3VubmVyIDxsdWthc0B3dW5u
-ZXIuZGU+IHdyb3RlOgo+IFtjYyArPSBsaW51eC1wbV0KPgo+IEhpIEx5dWRlLAo+Cj4gRmlyc3Qg
-b2YgYWxsLCB0aGFua3MgYSBsb3QgZm9yIGxvb2tpbmcgaW50byB0aGlzLgo+Cj4gT24gTW9uLCBK
-dWwgMTYsIDIwMTggYXQgMDc6NTk6MjVQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90ZToKPj4gSW4g
-b3JkZXIgdG8gZml4IGFsbCBvZiB0aGUgc3BvdHMgdGhhdCBuZWVkIHRvIGhhdmUgcnVudGltZSBQ
-TSBnZXQvcHV0cygpCj4+IGFkZGVkLCB3ZSBuZWVkIHRvIGVuc3VyZSB0aGF0IGl0J3MgcG9zc2li
-bGUgZm9yIHVzIHRvIGNhbGwKPj4gcG1fcnVudGltZV9nZXQvcHV0KCkgaW4gYW55IGNvbnRleHQs
-IHJlZ2FyZGxlc3Mgb2YgaG93IGRlZXAsIHNpbmNlCj4+IGFsbW9zdCBhbGwgb2YgdGhlIHNwb3Rz
-IHRoYXQgYXJlIGN1cnJlbnRseSBtaXNzaW5nIHJlZnMgY2FuIHBvdGVudGlhbGx5Cj4+IGdldCBj
-YWxsZWQgaW4gdGhlIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgcGF0aC4gT3RoZXJ3aXNlLCB3ZSds
-bCB0cnkgdG8KPj4gcmVzdW1lIHRoZSBHUFUgYXMgd2UncmUgdHJ5aW5nIHRvIHJlc3VtZSB0aGUg
-R1BVIChhbmQgdmljZS12ZXJzYSkgYW5kCj4+IGNhdXNlIHRoZSBrZXJuZWwgdG8gZGVhZGxvY2su
-Cj4+Cj4+IFdpdGggdGhpcywgaXQgc2hvdWxkIGJlIHNhZmUgdG8gY2FsbCB0aGUgcG0gcnVudGlt
-ZSBmdW5jdGlvbnMgaW4gYW55Cj4+IGNvbnRleHQgaW4gbm91dmVhdSB3aXRoIG9uZSBjb25kaXRp
-b246IGFueSBwb2ludCBpbiB0aGUgZHJpdmVyIHRoYXQKPj4gY2FsbHMgcG1fcnVudGltZV9nZXQq
-KCkgY2Fubm90IGhvbGQgYW55IGxvY2tzIG93bmVkIGJ5IG5vdXZlYXUgdGhhdAo+PiB3b3VsZCBi
-ZSBhY3F1aXJlZCBhbnl3aGVyZSBpbnNpZGUgbm91dmVhdV9wbW9wc19ydW50aW1lX3Jlc3VtZSgp
-Lgo+PiBUaGlzIGluY2x1ZGVzIG1vZGVzZXR0aW5nIGxvY2tzLCBpMmMgYnVzIGxvY2tzLCBldGMu
-Cj4gW3NuaXBdCj4+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfZHJtLmMK
-Pj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcm0uYwo+PiBAQCAtODM1
-LDYgKzgzNSw4IEBAIG5vdXZlYXVfcG1vcHNfcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2Ug
-KmRldikKPj4gICAgICAgICAgICAgICByZXR1cm4gLUVCVVNZOwo+PiAgICAgICB9Cj4+Cj4+ICsg
-ICAgIGRldi0+cG93ZXIuZGlzYWJsZV9kZXB0aCsrOwoKVGhpcyBpcyBlZmZlY3RpdmVseSBlcXVp
-dmFsZW50IHRvIF9fcG1fcnVudGltZV9kaXNhYmxlKGRldiwgZmFsc2UpCmV4Y2VwdCBmb3IgdGhl
-IGxvY2tpbmcgKHdoaWNoIGlzIG5lY2Vzc2FyeSkuCgo+PiArCj4KPiBJJ20gbm90IHN1cmUgaWYg
-dGhhdCB2YXJpYWJsZSBpcyBhY3R1YWxseSBwcml2YXRlIHRvIHRoZSBQTSBjb3JlLgo+IEdyZXBw
-aW5nIHRocm91Z2ggdGhlIHRyZWUgSSBvbmx5IGZpbmQgYSBzaW5nbGUgb2NjdXJyZW5jZSB3aGVy
-ZSBpdCdzCj4gYWNjZXNzZWQgb3V0c2lkZSB0aGUgUE0gY29yZSBhbmQgdGhhdCdzIGluIGFtZGdw
-dS4gIFNvIHRoaXMgbG9va3MKPiBhIGxpdHRsZSBmaXNoeSBUQkguICBJdCBtYXkgbWFrZSBzZW5z
-ZSB0byBjYyBzdWNoIHBhdGNoZXMgdG8gbGludXgtcG0KPiB0byBnZXQgUmFmYWVsICYgb3RoZXIg
-Zm9sa3MgaW52b2x2ZWQgd2l0aCB0aGUgUE0gY29yZSB0byBjb21tZW50LgoKWW91IGFyZSByaWdo
-dCwgcG93ZXIuZGlzYWJsZV9kZXB0aCBpcyBpbnRlcm5hbCB0byB0aGUgUE0gY29yZS4KQWNjZXNz
-aW5nIGl0IChhbmQgdXBkYXRpbmcgaXQgaW4gcGFydGljdWxhcikgZGlyZWN0bHkgZnJvbSBkcml2
-ZXJzIGlzCm5vdCBhIGdvb2QgaWRlYS4KCj4gQWxzbywgdGhlIGRpc2FibGVfZGVwdGggdmFyaWFi
-bGUgb25seSBleGlzdHMgaWYgdGhlIGtlcm5lbCB3YXMKPiBjb21waWxlZCB3aXRoIENPTkZJR19Q
-TSBlbmFibGVkLCBidXQgSSBjYW4ndCBmaW5kIGEgImRlcGVuZHMgb24gUE0iCj4gb3Igc29tZXRo
-aW5nIGxpa2UgdGhhdCBpbiBub3V2ZWF1J3MgS2NvbmZpZy4gIEFjdHVhbGx5LCBpZiBQTSBpcwo+
-IG5vdCBzZWxlY3RlZCwgYWxsIHRoZSBub3V2ZWF1X3Btb3BzXyooKSBmdW5jdGlvbnMgc2hvdWxk
-IGJlICNpZmRlZidlZAo+IGF3YXksIGJ1dCBvZGRseSB0aGVyZSdzIG5vICNpZmRlZiBDT05GSUdf
-UE0gYW55d2hlcmUgaW4gbm91dmVhdV9kcm0uYy4KPgo+IEFueXdheW4sIGlmIEkgdW5kZXJzdGFu
-ZCB0aGUgY29tbWl0IG1lc3NhZ2UgY29ycmVjdGx5LCB5b3UncmUgaGl0dGluZyBhCj4gcG1fcnVu
-dGltZV9nZXRfc3luYygpIGluIGEgY29kZSBwYXRoIHRoYXQgaXRzZWxmIGlzIGNhbGxlZCBkdXJp
-bmcgYQo+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS4gIENvdWxkIHlvdSBpbmNsdWRlIHN0YWNrIHRy
-YWNlcyBpbiB0aGUgY29tbWl0Cj4gbWVzc2FnZT8gIE15IGd1dCBmZWVsaW5nIGlzIHRoYXQgdGhp
-cyBwYXRjaCBtYXNrcyBhIGRlZXBlciBpc3N1ZSwKPiBlLmcuIGlmIHRoZSBydW50aW1lX3Jlc3Vt
-ZSBjb2RlIHBhdGggZG9lcyBpbiBmYWN0IGRpcmVjdGx5IHBvbGwgb3V0cHV0cywKPiB0aGF0IHdv
-dWxkIHNlZW0gd3JvbmcuICBSdW50aW1lIHJlc3VtZSBzaG91bGQgbWVyZWx5IG1ha2UgdGhlIGNh
-cmQKPiBhY2Nlc3NpYmxlLCBpLmUuIHJlaW5zdGF0ZSBwb3dlciBpZiBuZWNlc3NhcnksIHB1dCBp
-bnRvIFBDSV9EMCwKPiByZXN0b3JlIHJlZ2lzdGVycywgZXRjLiAgT3V0cHV0IHBvbGxpbmcgc2hv
-dWxkIGJlIHNjaGVkdWxlZAo+IGFzeW5jaHJvbm91c2x5LgoKUmlnaHQuCgpUaGFua3MsClJhZmFl
-bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1
-IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+On Mon, Jul 16, 2018 at 1:46 PM, Vivek Gautam
+<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>
+>
+> On 7/16/2018 2:25 PM, Rafael J. Wysocki wrote:
+>>
+>> On Thu, Jul 12, 2018 at 2:41 PM, Vivek Gautam
+>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>>
+>>> Hi Rafael,
+>>>
+>>>
+>>> On Wed, Jul 11, 2018 at 4:06 PM, Vivek Gautam
+>>> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>>>>
+>>>> Hi Rafael,
+>>>>
+>>>>
+>>>>
+>>>> On 7/11/2018 3:23 PM, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> On Sunday, July 8, 2018 7:34:12 PM CEST Vivek Gautam wrote:
+>>>>>>
+>>>>>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>>
+>>>>>> Finally add the device link between the master device and
+>>>>>> smmu, so that the smmu gets runtime enabled/disabled only when the
+>>>>>> master needs it. This is done from add_device callback which gets
+>>>>>> called once when the master is added to the smmu.
+>>>>>>
+>>>>>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>>>>>> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+>>>>>> Cc: Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+>>>>>> Cc: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+>>>>>> ---
+>>>>>>
+>>>>>>    - Change since v11
+>>>>>>      * Replaced DL_FLAG_AUTOREMOVE flag with
+>>>>>> DL_FLAG_AUTOREMOVE_SUPPLIER.
+>>>>>>
+>>>>>>    drivers/iommu/arm-smmu.c | 12 ++++++++++++
+>>>>>>    1 file changed, 12 insertions(+)
+>>>>>>
+>>>>>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+>>>>>> index 09265e206e2d..916cde4954d2 100644
+>>>>>> --- a/drivers/iommu/arm-smmu.c
+>>>>>> +++ b/drivers/iommu/arm-smmu.c
+>>>>>> @@ -1461,8 +1461,20 @@ static int arm_smmu_add_device(struct device
+>>>>>> *dev)
+>>>>>>          iommu_device_link(&smmu->iommu, dev);
+>>>>>>    +     if (pm_runtime_enabled(smmu->dev) &&
+>>>>>
+>>>>> Why does the creation of the link depend on whether or not runtime PM
+>>>>> is enabled for the MMU device?
+>>>>
+>>>>
+>>>> The main purpose of this device link is to handle the runtime PM
+>>>> synchronization
+>>>> between the supplier (iommu) and consumer (client devices, such as
+>>>> GPU/display).
+>>>> Moreover, the runtime pm is conditionally enabled for smmu devices that
+>>>> support
+>>>> such [1].
+>>>
+>>> Is there something you would like me to modify in this patch?
+>>
+>> Not really, as long as you are sure that it is correct. :-)
+>>
+>> You need to remember, however, that if you add system-wide PM
+>> callbacks to the driver, the ordering between them and the client
+>> device callbacks during system-wide suspend matters as well.  Don't
+>> you need the link the ensure the correct system-wide suspend ordering
+>> too?
+>
+>
+> The fact that currently we handle clocks only through runtime pm callbacks,
+> would it be better to call runtime pm put/get in system-wide PM callbacks.
+> This would be same as i mentioned in the other thread.
+
+Well, my point is that there's no reason for system-wide suspend to
+depend directly on runtime PM (which can be effectively disabled by
+user space as mentioned for multiple times in this thread).
+
+It simply is not efficient to let the clock run while the system as a
+whole is sleeping (even if power/control has been set to "on" for this
+particular device) and it should not be too hard to prevent that from
+happening.  You may need an additional flag in the driver for that or
+similar, but it definitely should be doable.
+
+Now, that's my advice and I'm not the maintainer of that code, so it
+is your call (as long as the maintainer agrees with it).
+
+Thanks,
+Rafael
