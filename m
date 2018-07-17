@@ -1,100 +1,103 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Tue, 17 Jul 2018 14:00:29 +0530
-Message-ID: <ca9bd8e0-e435-3665-6acd-c66bb9471076@codeaurora.org>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-4-vivek.gautam@codeaurora.org>
- <5179668.PHK6S3sxLu@aspire.rjw.lan>
- <741cc78b-59a7-5289-e42f-1511ebedb15d@codeaurora.org>
- <CAFp+6iFTgEhPLYQEyBX_Fb0k3n0OzGhKuSoBNV5XzpD01+V8qw@mail.gmail.com>
- <CAJZ5v0iQ2wxsXvuaLK2M9a_Jwe_fnwR2Afrq_Oa8h0--Ch7-5g@mail.gmail.com>
- <93d16301-4bef-203f-24de-4d010de84b22@codeaurora.org>
- <CAJZ5v0ijB6ZX9q0i+YrkWg1-nQBx+FuTjbGq1xRoJS113uoA-g@mail.gmail.com>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: Commit 554c8aa8ecad causing severe performance degression with
+ pcc-cpufreq
+Date: Tue, 17 Jul 2018 10:36:26 +0200
+Message-ID: <20180717083626.ait7lqvxk2e4b2hz@suselix>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+ <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAJZ5v0ijB6ZX9q0i+YrkWg1-nQBx+FuTjbGq1xRoJS113uoA-g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-CgpPbiA3LzE3LzIwMTggMToxNiBQTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24gTW9u
-LCBKdWwgMTYsIDIwMTggYXQgMTo0NiBQTSwgVml2ZWsgR2F1dGFtCj4gPHZpdmVrLmdhdXRhbUBj
-b2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4+Cj4+IE9uIDcvMTYvMjAxOCAyOjI1IFBNLCBSYWZhZWwg
-Si4gV3lzb2NraSB3cm90ZToKPj4+IE9uIFRodSwgSnVsIDEyLCAyMDE4IGF0IDI6NDEgUE0sIFZp
-dmVrIEdhdXRhbQo+Pj4gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4+Pj4g
-SGkgUmFmYWVsLAo+Pj4+Cj4+Pj4KPj4+PiBPbiBXZWQsIEp1bCAxMSwgMjAxOCBhdCA0OjA2IFBN
-LCBWaXZlayBHYXV0YW0KPj4+PiA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToK
-Pj4+Pj4gSGkgUmFmYWVsLAo+Pj4+Pgo+Pj4+Pgo+Pj4+Pgo+Pj4+PiBPbiA3LzExLzIwMTggMzoy
-MyBQTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+Pj4+PiBPbiBTdW5kYXksIEp1bHkgOCwg
-MjAxOCA3OjM0OjEyIFBNIENFU1QgVml2ZWsgR2F1dGFtIHdyb3RlOgo+Pj4+Pj4+IEZyb206IFNy
-aWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+Pj4+Pj4KPj4+Pj4+PiBGaW5h
-bGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsgYmV0d2VlbiB0aGUgbWFzdGVyIGRldmljZSBhbmQKPj4+
-Pj4+PiBzbW11LCBzbyB0aGF0IHRoZSBzbW11IGdldHMgcnVudGltZSBlbmFibGVkL2Rpc2FibGVk
-IG9ubHkgd2hlbiB0aGUKPj4+Pj4+PiBtYXN0ZXIgbmVlZHMgaXQuIFRoaXMgaXMgZG9uZSBmcm9t
-IGFkZF9kZXZpY2UgY2FsbGJhY2sgd2hpY2ggZ2V0cwo+Pj4+Pj4+IGNhbGxlZCBvbmNlIHdoZW4g
-dGhlIG1hc3RlciBpcyBhZGRlZCB0byB0aGUgc21tdS4KPj4+Pj4+Pgo+Pj4+Pj4+IFNpZ25lZC1v
-ZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+Pj4+Pj4gU2ln
-bmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+
-Pj4+Pj4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4+Pj4+
-Pj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4KPj4+Pj4+PiBDYzog
-THVrYXMgV3VubmVyIDxsdWthc0B3dW5uZXIuZGU+Cj4+Pj4+Pj4gLS0tCj4+Pj4+Pj4KPj4+Pj4+
-PiAgICAgLSBDaGFuZ2Ugc2luY2UgdjExCj4+Pj4+Pj4gICAgICAgKiBSZXBsYWNlZCBETF9GTEFH
-X0FVVE9SRU1PVkUgZmxhZyB3aXRoCj4+Pj4+Pj4gRExfRkxBR19BVVRPUkVNT1ZFX1NVUFBMSUVS
-Lgo+Pj4+Pj4+Cj4+Pj4+Pj4gICAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEyICsrKysr
-KysrKysrKwo+Pj4+Pj4+ICAgICAxIGZpbGUgY2hhbmdlZCwgMTIgaW5zZXJ0aW9ucygrKQo+Pj4+
-Pj4+Cj4+Pj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZl
-cnMvaW9tbXUvYXJtLXNtbXUuYwo+Pj4+Pj4+IGluZGV4IDA5MjY1ZTIwNmUyZC4uOTE2Y2RlNDk1
-NGQyIDEwMDY0NAo+Pj4+Pj4+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+Pj4+Pj4+
-ICsrKyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+Pj4+Pj4+IEBAIC0xNDYxLDggKzE0NjEs
-MjAgQEAgc3RhdGljIGludCBhcm1fc21tdV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UKPj4+Pj4+
-PiAqZGV2KQo+Pj4+Pj4+ICAgICAgICAgICBpb21tdV9kZXZpY2VfbGluaygmc21tdS0+aW9tbXUs
-IGRldik7Cj4+Pj4+Pj4gICAgICsgICAgIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2
-KSAmJgo+Pj4+Pj4gV2h5IGRvZXMgdGhlIGNyZWF0aW9uIG9mIHRoZSBsaW5rIGRlcGVuZCBvbiB3
-aGV0aGVyIG9yIG5vdCBydW50aW1lIFBNCj4+Pj4+PiBpcyBlbmFibGVkIGZvciB0aGUgTU1VIGRl
-dmljZT8KPj4+Pj4KPj4+Pj4gVGhlIG1haW4gcHVycG9zZSBvZiB0aGlzIGRldmljZSBsaW5rIGlz
-IHRvIGhhbmRsZSB0aGUgcnVudGltZSBQTQo+Pj4+PiBzeW5jaHJvbml6YXRpb24KPj4+Pj4gYmV0
-d2VlbiB0aGUgc3VwcGxpZXIgKGlvbW11KSBhbmQgY29uc3VtZXIgKGNsaWVudCBkZXZpY2VzLCBz
-dWNoIGFzCj4+Pj4+IEdQVS9kaXNwbGF5KS4KPj4+Pj4gTW9yZW92ZXIsIHRoZSBydW50aW1lIHBt
-IGlzIGNvbmRpdGlvbmFsbHkgZW5hYmxlZCBmb3Igc21tdSBkZXZpY2VzIHRoYXQKPj4+Pj4gc3Vw
-cG9ydAo+Pj4+PiBzdWNoIFsxXS4KPj4+PiBJcyB0aGVyZSBzb21ldGhpbmcgeW91IHdvdWxkIGxp
-a2UgbWUgdG8gbW9kaWZ5IGluIHRoaXMgcGF0Y2g/Cj4+PiBOb3QgcmVhbGx5LCBhcyBsb25nIGFz
-IHlvdSBhcmUgc3VyZSB0aGF0IGl0IGlzIGNvcnJlY3QuIDotKQo+Pj4KPj4+IFlvdSBuZWVkIHRv
-IHJlbWVtYmVyLCBob3dldmVyLCB0aGF0IGlmIHlvdSBhZGQgc3lzdGVtLXdpZGUgUE0KPj4+IGNh
-bGxiYWNrcyB0byB0aGUgZHJpdmVyLCB0aGUgb3JkZXJpbmcgYmV0d2VlbiB0aGVtIGFuZCB0aGUg
-Y2xpZW50Cj4+PiBkZXZpY2UgY2FsbGJhY2tzIGR1cmluZyBzeXN0ZW0td2lkZSBzdXNwZW5kIG1h
-dHRlcnMgYXMgd2VsbC4gIERvbid0Cj4+PiB5b3UgbmVlZCB0aGUgbGluayB0aGUgZW5zdXJlIHRo
-ZSBjb3JyZWN0IHN5c3RlbS13aWRlIHN1c3BlbmQgb3JkZXJpbmcKPj4+IHRvbz8KPj4KPj4gVGhl
-IGZhY3QgdGhhdCBjdXJyZW50bHkgd2UgaGFuZGxlIGNsb2NrcyBvbmx5IHRocm91Z2ggcnVudGlt
-ZSBwbSBjYWxsYmFja3MsCj4+IHdvdWxkIGl0IGJlIGJldHRlciB0byBjYWxsIHJ1bnRpbWUgcG0g
-cHV0L2dldCBpbiBzeXN0ZW0td2lkZSBQTSBjYWxsYmFja3MuCj4+IFRoaXMgd291bGQgYmUgc2Ft
-ZSBhcyBpIG1lbnRpb25lZCBpbiB0aGUgb3RoZXIgdGhyZWFkLgo+IFdlbGwsIG15IHBvaW50IGlz
-IHRoYXQgdGhlcmUncyBubyByZWFzb24gZm9yIHN5c3RlbS13aWRlIHN1c3BlbmQgdG8KPiBkZXBl
-bmQgZGlyZWN0bHkgb24gcnVudGltZSBQTSAod2hpY2ggY2FuIGJlIGVmZmVjdGl2ZWx5IGRpc2Fi
-bGVkIGJ5Cj4gdXNlciBzcGFjZSBhcyBtZW50aW9uZWQgZm9yIG11bHRpcGxlIHRpbWVzIGluIHRo
-aXMgdGhyZWFkKS4KPgo+IEl0IHNpbXBseSBpcyBub3QgZWZmaWNpZW50IHRvIGxldCB0aGUgY2xv
-Y2sgcnVuIHdoaWxlIHRoZSBzeXN0ZW0gYXMgYQo+IHdob2xlIGlzIHNsZWVwaW5nIChldmVuIGlm
-IHBvd2VyL2NvbnRyb2wgaGFzIGJlZW4gc2V0IHRvICJvbiIgZm9yIHRoaXMKPiBwYXJ0aWN1bGFy
-IGRldmljZSkgYW5kIGl0IHNob3VsZCBub3QgYmUgdG9vIGhhcmQgdG8gcHJldmVudCB0aGF0IGZy
-b20KPiBoYXBwZW5pbmcuICBZb3UgbWF5IG5lZWQgYW4gYWRkaXRpb25hbCBmbGFnIGluIHRoZSBk
-cml2ZXIgZm9yIHRoYXQgb3IKPiBzaW1pbGFyLCBidXQgaXQgZGVmaW5pdGVseSBzaG91bGQgYmUg
-ZG9hYmxlLgoKUmlnaHQsIEkgd2lsbCBtb2RpZnkgdGhlIHRoaW5ncyBhcmUgcmVxdWlyZWQuIFRo
-YW5rcyBhZ2FpbiBmb3IgcG9pbnRpbmcgCnRoaXMgb3V0LgoKQmVzdCByZWdhcmRzClZpdmVrCgo+
-Cj4gTm93LCB0aGF0J3MgbXkgYWR2aWNlIGFuZCBJJ20gbm90IHRoZSBtYWludGFpbmVyIG9mIHRo
-YXQgY29kZSwgc28gaXQKPiBpcyB5b3VyIGNhbGwgKGFzIGxvbmcgYXMgdGhlIG1haW50YWluZXIg
-YWdyZWVzIHdpdGggaXQpLgo+Cj4gVGhhbmtzLAo+IFJhZmFlbAoKX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVl
-ZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-L21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+On Tue, Jul 17, 2018 at 09:33:53AM +0200, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> Thanks for your report!
+> 
+> On Tue, Jul 17, 2018 at 8:50 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
+> > Hello,
+> >
+> > I've recently noticed that commit 554c8aa8ecad ("sched: idle: Select
+> > idle state before stopping the tick") causes severe performance drop
+> > for systems using pcc-cpufreq driver. Depending on the number of CPUs
+> > the system might be almost unusable. The OS jitter for 4.17.y and
+> > 4.18.-rcx kernels is off the charts, you can even spot it with top
+> > command (issued when the system is supposedly idle), e.g.
+> >
+> >  top - 14:44:24 up 2 min,  1 user,  load average: 90.11, 38.20, 14.38
+> >  Tasks: 1199 total, 109 running, 541 sleeping,   0 stopped,   0 zombie
+> >  %Cpu(s):  1.2 us, 58.7 sy,  0.0 ni, 39.3 id,  0.6 wa,  0.0 hi,  0.3 si,  0.0 st
+> >  KiB Mem:  13137064+total,  1192168 used, 13017848+free,     2340 buffers
+> >  KiB Swap:  2104316 total,        0 used,  2104316 free.   522296 cached Mem
+> >
+> >    PID USER      PR  NI    VIRT    RES    SHR S    %CPU  %MEM     TIME+ COMMAND
+> >   3373 root      20   0  982024  49916  36120 R  96.691 0.038   0:19.54 kubelet
+> >     67 root      20   0       0      0      0 R  78.676 0.000   0:49.36 kworker/9:0
+> >     25 root      20   0       0      0      0 R  78.125 0.000   0:49.67 kworker/2:0
+> >    182 root      20   0       0      0      0 R  75.735 0.000   1:18.17 kworker/28:0
+> >     43 root      20   0       0      0      0 R  75.000 0.000   0:11.56 kworker/5:0
+> >    103 root      20   0       0      0      0 R  74.449 0.000   0:46.83 kworker/15:0
+> >    334 root      20   0       0      0      0 R  72.978 0.000   1:06.88 kworker/53:0
+> >    789 root      20   0       0      0      0 R  69.853 0.000   1:29.50 kworker/38:1
+> >    418 root      20   0       0      0      0 R  69.301 0.000   0:41.33 kworker/67:0
+> >    779 root      20   0       0      0      0 R  68.934 0.000   1:33.60 kworker/27:1
+> >    773 root      20   0       0      0      0 R  68.566 0.000   1:37.91 kworker/22:1
+> >    762 root      20   0       0      0      0 R  68.015 0.000   1:41.01 kworker/11:1
+> >    769 root      20   0       0      0      0 R  67.647 0.000   1:37.65 kworker/18:1
+> >    805 root      20   0       0      0      0 R  67.096 0.000   1:30.96 kworker/54:1
+> >    840 root      20   0       0      0      0 R  66.912 0.000   1:23.82 kworker/89:1
+> >    812 root      20   0       0      0      0 R  66.728 0.000   1:31.89 kworker/59:1
+> >    847 root      20   0       0      0      0 R  66.360 0.000   1:28.40 kworker/96:1
+> >    763 root      20   0       0      0      0 R  66.176 0.000   1:42.57 kworker/12:1
+> >    772 root      20   0       0      0      0 R  66.176 0.000   1:12.58 kworker/21:1
+> >    821 root      20   0       0      0      0 R  66.176 0.000   1:29.62 kworker/69:1
+> >    923 root      20   0       0      0      0 R  65.809 0.000   1:44.32 kworker/3:18
+> >   1284 root      20   0       0      0      0 R  65.809 0.000   1:23.50 kworker/101:2
+> >     61 root      20   0       0      0      0 R  65.625 0.000   1:29.37 kworker/8:0
+> >   3531 root      20   0   24384   3768   2356 R  65.625 0.003   0:08.91 top
+> >    771 root      20   0       0      0      0 R  65.074 0.000   1:37.90 kworker/20:1
+> >    767 root      20   0       0      0      0 R  64.706 0.000   1:38.01 kworker/16:1
+> >    764 root      20   0       0      0      0 R  64.522 0.000   1:40.28 kworker/13:1
+> >    765 root      20   0       0      0      0 R  64.154 0.000   1:40.13 kworker/14:1
+> >
+> > When I apply below patch (trying to revert essential parts of commit
+> > 554c8aa8ecad) behaviour seems back to normal.
+> 
+> Well, that basically defeats the purpose of the change in commit
+> 554c8aa8ecad, so it's not what I'd like to do to fix this problem.
+> 
+> Also it would be good to understand what actually happens.
+> 
+> > I know that pcc-cpufreq driver is not "state-of-the-art" when it comes
+> > to cpufreq drivers and you better not use it.
+> 
+> That's exactly right.
+> 
+> > But I wonder whether commit 554c8aa8ecad ("sched: idle: Select idle state before
+> > stopping the tick") introduced bad behaviour for other cases as well.
+> 
+> It has been tested quite extensively in that respect, although
+> admittedly not with the pcc-cpufreq driver.
+> 
+> Nothing bad related to it has been has been reported so far, FWIW.
+> 
+> > I'll send some performance results to illustrate the issue asap. I've
+> > also tried to modify pcc-cpufreq to reduce the amount of frequency
+> > changes triggered by this driver but this does not help for kernels
+> > where commit 554c8aa8ecad is applied.
+> 
+> Can you replace pcc-cpufreq with a different cpufreq driver on the
+> affected systems?  If so, do performance numbers look bad after that
+> too?
+
+I have no performance numbers yet for other cpufreq drivers on this
+system (checking this commit).  But I'll look it at next.
+
+
+Andreas
