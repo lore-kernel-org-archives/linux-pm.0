@@ -1,22 +1,26 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Commit 554c8aa8ecad causing severe performance degression with pcc-cpufreq
-Date: Tue, 17 Jul 2018 10:03:41 +0200
-Message-ID: <CAJZ5v0gG5XNmpR_0U+6EOFHPeVz+EhunLoQ0-sXDCBg8QL3mQw@mail.gmail.com>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: Commit 554c8aa8ecad causing severe performance degression with
+ pcc-cpufreq
+Date: Tue, 17 Jul 2018 10:08:08 +0200
+Message-ID: <49b95a4b-0eef-1068-6cbd-5fc19a7d4252@linaro.org>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+ <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Andreas Herrmann <aherrmann@suse.com>
 Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 9:33 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On 17/07/2018 09:33, Rafael J. Wysocki wrote:
 > Hi,
->
+> 
 > Thanks for your report!
->
+> 
 > On Tue, Jul 17, 2018 at 8:50 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
 >> Hello,
 >>
@@ -65,33 +69,46 @@ On Tue, Jul 17, 2018 at 9:33 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >>
 >> When I apply below patch (trying to revert essential parts of commit
 >> 554c8aa8ecad) behaviour seems back to normal.
->
+> 
 > Well, that basically defeats the purpose of the change in commit
 > 554c8aa8ecad, so it's not what I'd like to do to fix this problem.
->
+> 
 > Also it would be good to understand what actually happens.
->
+> 
 >> I know that pcc-cpufreq driver is not "state-of-the-art" when it comes
 >> to cpufreq drivers and you better not use it.
->
+> 
 > That's exactly right.
->
+> 
 >> But I wonder whether commit 554c8aa8ecad ("sched: idle: Select idle state before
 >> stopping the tick") introduced bad behaviour for other cases as well.
->
+> 
 > It has been tested quite extensively in that respect, although
 > admittedly not with the pcc-cpufreq driver.
->
+> 
 > Nothing bad related to it has been has been reported so far, FWIW.
->
+
+I confirm we benchmarked on ARM64 and we did not notice a big
+performance drop expect a few percent due to more cluster idle states
+which is logical and compensated by a big energy improvement.
+
 >> I'll send some performance results to illustrate the issue asap. I've
 >> also tried to modify pcc-cpufreq to reduce the amount of frequency
 >> changes triggered by this driver but this does not help for kernels
 >> where commit 554c8aa8ecad is applied.
->
+> 
 > Can you replace pcc-cpufreq with a different cpufreq driver on the
 > affected systems?  If so, do performance numbers look bad after that
 > too?
+> 
+> Thanks,
+> Rafael
+> 
 
-Also, what cpufreq governor do you use with pcc-cpufreq?  Does
-changing it to something like "performance" improve things?
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
