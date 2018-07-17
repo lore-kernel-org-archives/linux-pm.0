@@ -1,63 +1,36 @@
-From: Anand Moon <linux.amoon@gmail.com>
-Subject: Re: [PATCH 1/5] thermal: exynos: enable core tmu clk on exynos platform
-Date: Wed, 18 Jul 2018 01:53:59 +0530
-Message-ID: <CANAwSgS=08fVsqn95WHzSF71WTTyD2-=K2C6-BEz0tY0t6A1-g@mail.gmail.com>
-References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com> <CAJKOXPdP78VFQgSQ9z9WsgYY_YhEKPUt=0MOra6Pz6smQeiNGg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: [PATCH] cpufreq: qcom-kryo: Silently error out on EPROBE_DEFER
+Date: Tue, 17 Jul 2018 22:48:21 +0200
+Message-ID: <20180717204821.15987-1-niklas.cassel@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPdP78VFQgSQ9z9WsgYY_YhEKPUt=0MOra6Pz6smQeiNGg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
+To: Ilia Lin <ilia.lin@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, Niklas Cassel <niklas.cassel@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof
+If of_nvmem_cell_get() fails due to probe deferal, we shouldn't print an
+error message. Just be silent in this case.
 
-On 17 July 2018 at 17:50, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> Hi Anand,
->
-> Thanks for patch.
->
-> On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
->> clk_summary do not show tmu_apbif clk enable, so replace
->> the clk_prepare with clk_prepare_enables to enable tmu clk.
->
-> This is not valid reason to do a change. What is clk_summary does not
-> really matter. Your change has negative impact on power consumption as
-> the clock stays enabled all the time. This is not what we want... so
-> please explain it more - why you need the clock to be enabled all the
-> time? What is broken (clk_summary is not broken in this case)?
->
+Signed-off-by: Niklas Cassel <niklas.cassel@linaro.org>
+---
+ drivers/cpufreq/qcom-cpufreq-kryo.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Opps I could not explain some more in my commit message.
-
-Actually TMU sensor for Exynos process are controlled by so external clk
-
-Exynos4412 have VDD18_TS sensor which controls the CLK_SENSE tmu.
-Exynos5422 have VDD18_TS01 / VDD18_TS23 / VDD18_TS4 sensor which
-control the CLK_SENSE tmu.
-
-So as per my understanding tmu is clk driver which control the flow  PMIC.
-
-clk_prepare_enable combine clk_prepare and clk_enable
-and clk_disable_unprepare combine clk_disable and clk_unprepare.
-
-most of the driver prefer clk_prepare_enable and clk_disable_unprepare.
-
-clk_summary is just a reference looking point where we could check the
-clk is enable/disable.
-
-what is broken ?
-I still few more parameter need to tuned to configure the tmu driver.
-
->> simplify the enable of tmu_triminfo_apbif clk, also fixed
->> the order of goto error for failed cases.
->
-> This has to be split into separate change.
->
-> Best regards,
-> Krzysztof
-
-Best Regards
--Anand
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+index 29389accf3e9..b8d1e6875f16 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -109,8 +109,9 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 	speedbin_nvmem = of_nvmem_cell_get(np, NULL);
+ 	of_node_put(np);
+ 	if (IS_ERR(speedbin_nvmem)) {
+-		dev_err(cpu_dev, "Could not get nvmem cell: %ld\n",
+-			PTR_ERR(speedbin_nvmem));
++		if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
++			dev_err(cpu_dev, "Could not get nvmem cell: %ld\n",
++				PTR_ERR(speedbin_nvmem));
+ 		return PTR_ERR(speedbin_nvmem);
+ 	}
+ 
+-- 
+2.17.1
