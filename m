@@ -1,17 +1,17 @@
 From: Niklas =?iso-8859-1?Q?S=F6derlund?=
         <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH v4 1/3] regulator: bd9571mwv: Use "backup_mode" sysfs
- file instead of "wake_up"
-Date: Tue, 17 Jul 2018 13:36:30 +0200
-Message-ID: <20180717113630.GF10087@bigcity.dyn.berto.se>
+Subject: Re: [PATCH v4 2/3] regulator: bd9571mwv: Add support for toggle
+ power switches
+Date: Tue, 17 Jul 2018 13:49:16 +0200
+Message-ID: <20180717114916.GG10087@bigcity.dyn.berto.se>
 References: <20180716153052.1830-1-geert+renesas@glider.be>
- <20180716153052.1830-2-geert+renesas@glider.be>
+ <20180716153052.1830-3-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180716153052.1830-2-geert+renesas@glider.be>
+In-Reply-To: <20180716153052.1830-3-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -19,15 +19,27 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Geert,
 
-Thanks for your patch.
+Thanks for your work.
 
-On 2018-07-16 17:30:50 +0200, Geert Uytterhoeven wrote:
-> Currently the BD9571MWV PMIC driver uses the standard "wake_up" sysfs
-> file to control enablement of DDR Backup Mode.
+On 2018-07-16 17:30:51 +0200, Geert Uytterhoeven wrote:
+> Extend the existing support for backup mode to toggle power switches.
+> With a toggle power switch (or level signal), the following steps must
+> be followed exactly:
+>    1. Configure PMIC for backup mode, to change the role of the
+>       accessory power switch from a power switch to a wake-up switch,
+>    2. Switch accessory power switch off, to prepare for system suspend,
+>       which is a manual step not controlled by software,
+>    3. Suspend system,
+>    4. Switch accessory power switch on, to resume the system.
 > 
-> However, configuring DDR Backup Mode is not really equivalent to
-> configuring the PMIC as a wake-up source.  To avoid confusion, use a
-> custom "backup_mode" attribute file in sysfs instead.
+> Hence the PMIC is configured for backup mode when "on" or "1" is written
+> to the PMIC's "backup_mode" virtual file in sysfs.  Conversely, writing
+> "off" or "0" reverts the role of the accessory switch to a power
+> switch.
+> 
+> Unlike with momentary switches, backup mode is not enabled by default,
+> as enabling it prevents the board from being powered off using the power
+> switch, which may confuse the user.
 > 
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
@@ -35,126 +47,57 @@ Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
 > ---
 > v4:
->   - Fix build error and warning if !CONFIG_PM_SLEEP,
+>   - Improve patch description and comment,
 > 
 > v3:
->   - New.
+>   - Replace use of "wake_up" sysfs file and extra callback for wake-up
+>     change notification by custom "backup_mode" sysfs file,
+> 
+> v2:
+>   - Improve patch description,
+>   - Drop "return;" at end of function.
 > ---
->  drivers/regulator/bd9571mwv-regulator.c | 52 ++++++++++++++++++++++---
->  1 file changed, 47 insertions(+), 5 deletions(-)
+>  drivers/regulator/bd9571mwv-regulator.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
 > 
 > diff --git a/drivers/regulator/bd9571mwv-regulator.c b/drivers/regulator/bd9571mwv-regulator.c
-> index be574eb444ebda97..1da36a6590c84ba4 100644
+> index 1da36a6590c84ba4..c44613b9423baf07 100644
 > --- a/drivers/regulator/bd9571mwv-regulator.c
 > +++ b/drivers/regulator/bd9571mwv-regulator.c
-> @@ -30,6 +30,7 @@ struct bd9571mwv_reg {
->  	/* DDR Backup Power */
->  	u8 bkup_mode_cnt_keepon;	/* from "rohm,ddr-backup-power" */
->  	u8 bkup_mode_cnt_saved;
-> +	bool bkup_mode_enabled;
+> @@ -185,6 +185,7 @@ static ssize_t backup_mode_store(struct device *dev,
+>  				 const char *buf, size_t count)
+>  {
+>  	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
+> +	unsigned int mode;
+>  	int ret;
 >  
->  	/* Power switch type */
->  	bool rstbmode_level;
-> @@ -171,13 +172,40 @@ static int bd9571mwv_bkup_mode_write(struct bd9571mwv *bd, unsigned int mode)
->  	return 0;
->  }
+>  	if (!count)
+> @@ -194,6 +195,25 @@ static ssize_t backup_mode_store(struct device *dev,
+>  	if (ret)
+>  		return ret;
 >  
-> +static ssize_t backup_mode_show(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
-> +{
-> +	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
+> +	if (!bdreg->rstbmode_level)
+> +		return count;
 > +
-> +	return sprintf(buf, "%s\n", bdreg->bkup_mode_enabled ? "on" : "off");
-> +}
-> +
-> +static ssize_t backup_mode_store(struct device *dev,
-> +				 struct device_attribute *attr,
-> +				 const char *buf, size_t count)
-> +{
-> +	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
-> +	int ret;
-> +
-> +	if (!count)
-> +		return 0;
-> +
-> +	ret = kstrtobool(buf, &bdreg->bkup_mode_enabled);
+> +	/*
+> +	 * Configure DDR Backup Mode, to change the role of the accessory power
+> +	 * switch from a power switch to a wake-up switch, or vice versa
+> +	 */
+> +	ret = bd9571mwv_bkup_mode_read(bdreg->bd, &mode);
 > +	if (ret)
 > +		return ret;
 > +
-> +	return count;
-> +}
+> +	mode &= ~BD9571MWV_BKUP_MODE_CNT_KEEPON_MASK;
+> +	if (bdreg->bkup_mode_enabled)
+> +		mode |= bdreg->bkup_mode_cnt_keepon;
 > +
-> +DEVICE_ATTR_RW(backup_mode);
+> +	ret = bd9571mwv_bkup_mode_write(bdreg->bd, mode);
+> +	if (ret)
+> +		return ret;
 > +
->  static int bd9571mwv_suspend(struct device *dev)
->  {
->  	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
->  	unsigned int mode;
->  	int ret;
->  
-> -	if (!device_may_wakeup(dev))
-> +	if (!bdreg->bkup_mode_enabled)
->  		return 0;
->  
->  	/* Save DDR Backup Mode */
-> @@ -204,7 +232,7 @@ static int bd9571mwv_resume(struct device *dev)
->  {
->  	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
->  
-> -	if (!device_may_wakeup(dev))
-> +	if (!bdreg->bkup_mode_enabled)
->  		return 0;
->  
->  	/* Restore DDR Backup Mode */
-> @@ -215,9 +243,15 @@ static const struct dev_pm_ops bd9571mwv_pm  = {
->  	SET_SYSTEM_SLEEP_PM_OPS(bd9571mwv_suspend, bd9571mwv_resume)
->  };
->  
-> +static int bd9571mwv_regulator_remove(struct platform_device *pdev)
-> +{
-> +	device_remove_file(&pdev->dev, &dev_attr_backup_mode);
-> +	return 0;
-> +}
->  #define DEV_PM_OPS	&bd9571mwv_pm
->  #else
->  #define DEV_PM_OPS	NULL
-> +#define bd9571mwv_regulator_remove	NULL
->  #endif /* CONFIG_PM_SLEEP */
->  
->  static int bd9571mwv_regulator_probe(struct platform_device *pdev)
-> @@ -270,14 +304,21 @@ static int bd9571mwv_regulator_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
->  
-> +#ifdef CONFIG_PM_SLEEP
->  	if (bdreg->bkup_mode_cnt_keepon) {
-> -		device_set_wakeup_capable(&pdev->dev, true);
-> +		int ret;
-> +
->  		/*
-> -		 * Wakeup is enabled by default in pulse mode, but needs
-> +		 * Backup mode is enabled by default in pulse mode, but needs
->  		 * explicit user setup in level mode.
->  		 */
-> -		device_set_wakeup_enable(&pdev->dev, bdreg->rstbmode_pulse);
-> +		bdreg->bkup_mode_enabled = bdreg->rstbmode_pulse;
-> +
-> +		ret = device_create_file(&pdev->dev, &dev_attr_backup_mode);
-> +		if (ret)
-> +			return ret;
->  	}
-> +#endif /* CONFIG_PM_SLEEP */
->  
->  	return 0;
+>  	return count;
 >  }
-> @@ -294,6 +335,7 @@ static struct platform_driver bd9571mwv_regulator_driver = {
->  		.pm = DEV_PM_OPS,
->  	},
->  	.probe = bd9571mwv_regulator_probe,
-> +	.remove = bd9571mwv_regulator_remove,
->  	.id_table = bd9571mwv_regulator_id_table,
->  };
->  module_platform_driver(bd9571mwv_regulator_driver);
+>  
 > -- 
 > 2.17.1
 > 
