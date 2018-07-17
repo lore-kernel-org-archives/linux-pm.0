@@ -1,177 +1,99 @@
-From: Lyude Paul <lyude@redhat.com>
-Subject: Re: [Nouveau] [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Tue, 17 Jul 2018 12:53:11 -0400
-Message-ID: <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
-References: <20180716235936.11268-1-lyude@redhat.com>
-         <20180716235936.11268-2-lyude@redhat.com> <20180717071641.GA5411@wunner.de>
-Reply-To: lyude@redhat.com
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Load when ACPI PCCH is present
+Date: Tue, 17 Jul 2018 10:23:00 -0700
+Message-ID: <d4419603cb727bb28fe9ab7abfc9595b78cb7554.camel@linux.intel.com>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+         <20180717102136.snayvzmv2h3dcwiq@suselix>
+         <20180717140336.ayovaz4ksdlak6bb@suselix>
+         <8115130.Fhkpr82c7G@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180717071641.GA5411@wunner.de>
+In-Reply-To: <8115130.Fhkpr82c7G@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: nouveau@lists.freedesktop.org, David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andreas Herrmann <aherrmann@suse.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-07-17 at 09:16 +0200, Lukas Wunner wrote:
-> [cc += linux-pm]
+On Tue, 2018-07-17 at 18:13 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Hi Lyude,
+> Currently, intel_pstate doesn't load if _PSS is not present on
+> HP Proliant systems, because it expects the firmware to take over
+> CPU performance scaling in that case.  However, if ACPI PCCH is
+> present, the firmware expects the kernel to use it for CPU
+> performance scaling and the pcc-cpufreq driver is loaded for that.
 > 
-> First of all, thanks a lot for looking into this. 
+> Unfortunately, the firmware interface used by that driver is not
+> scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
+> on systems with more than just a few CPUs.  In fact, it is better to
+> avoid using it at all.
 > 
-> On Mon, Jul 16, 2018 at 07:59:25PM -0400, Lyude Paul wrote:
-> > In order to fix all of the spots that need to have runtime PM get/puts()
-> > added, we need to ensure that it's possible for us to call
-> > pm_runtime_get/put() in any context, regardless of how deep, since
-> > almost all of the spots that are currently missing refs can potentially
-> > get called in the runtime suspend/resume path. Otherwise, we'll try to
-> > resume the GPU as we're trying to resume the GPU (and vice-versa) and
-> > cause the kernel to deadlock.
-> > 
-> > With this, it should be safe to call the pm runtime functions in any
-> > context in nouveau with one condition: any point in the driver that
-> > calls pm_runtime_get*() cannot hold any locks owned by nouveau that
-> > would be acquired anywhere inside nouveau_pmops_runtime_resume().
-> > This includes modesetting locks, i2c bus locks, etc.
+> For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
+> is not present and load if it is there.
 > 
-> [snip]
-> > --- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-> > +++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-> > @@ -835,6 +835,8 @@ nouveau_pmops_runtime_suspend(struct device *dev)
-> >  		return -EBUSY;
-> >  	}
-> >  
-> > +	dev->power.disable_depth++;
-> > +
-> 
-> I'm not sure if that variable is actually private to the PM core.
-> Grepping through the tree I only find a single occurrence where it's
-> accessed outside the PM core and that's in amdgpu.  So this looks
-> a little fishy TBH.  It may make sense to cc such patches to linux-pm
-> to get Rafael & other folks involved with the PM core to comment.
-> 
-> Also, the disable_depth variable only exists if the kernel was
-> compiled with CONFIG_PM enabled, but I can't find a "depends on PM"
-> or something like that in nouveau's Kconfig.  Actually, if PM is
-> not selected, all the nouveau_pmops_*() functions should be #ifdef'ed
-> away, but oddly there's no #ifdef CONFIG_PM anywhere in nouveau_drm.c.
-> 
-> Anywayn, if I understand the commit message correctly, you're hitting a
-> pm_runtime_get_sync() in a code path that itself is called during a
-> pm_runtime_get_sync().  Could you include stack traces in the commit
-> message?  My gut feeling is that this patch masks a deeper issue,
-> e.g. if the runtime_resume code path does in fact directly poll outputs,
-> that would seem wrong.  Runtime resume should merely make the card
-> accessible, i.e. reinstate power if necessary, put into PCI_D0,
-> restore registers, etc.  Output polling should be scheduled
-> asynchronously.
+> Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power
+> mgmt option)
+> Reported-by: Andreas Herrmann <aherrmann@suse.com>
+> Tested-by: Andreas Herrmann <aherrmann@suse.com>
+> Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
+> Cc: 4.17+ <stable@vger.kernel.org> # 4.17+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Since it is apparently internal to the RPM core (I should go fix the references
-to that which I added in amdgpu as well then, whoops...) I will have to figure
-out another way to do this.
+But do we need a change as done by the following commit in in pcc-
+cpufreq.c?
 
-So: the reason that patch was added was mainly for the patches later in the
-series that add guards around the i2c bus and aux bus, since both of those
-require that the device be awake for it to work. Currently, the spot where it
-would recurse is:
+"
+commit 8a61e12e84597b5f8155ac91b44dea866ccfaac2
+Author: Yinghai Lu <yinghai@kernel.org>
+Date:   Fri Sep 20 10:43:56 2013 -0700
 
-[   72.126859] nouveau 0000:01:00.0: DRM: suspending console...
-[   72.127161] nouveau 0000:01:00.0: DRM: suspending display...
-[  246.718589] INFO: task kworker/0:1:60 blocked for more than 120 seconds.
-[  246.719254]       Tainted: G           O      4.18.0-rc5Lyude-Test+ #3
-[  246.719411] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
-message.
-[  246.719527] kworker/0:1     D    0    60      2 0x80000000
-[  246.719636] Workqueue: pm pm_runtime_work
-[  246.719772] Call Trace:
-[  246.719874]  __schedule+0x322/0xaf0
-[  246.722800]  schedule+0x33/0x90
-[  246.724269]  rpm_resume+0x19c/0x850
-[  246.725128]  ? finish_wait+0x90/0x90
-[  246.725990]  __pm_runtime_resume+0x4e/0x90
-[  246.726876]  nvkm_i2c_aux_acquire+0x39/0xc0 [nouveau]
-[  246.727713]  nouveau_connector_aux_xfer+0x5c/0xd0 [nouveau]
-[  246.728546]  drm_dp_dpcd_access+0x77/0x110 [drm_kms_helper]
-[  246.729349]  drm_dp_dpcd_write+0x2b/0xb0 [drm_kms_helper]
-[  246.730085]  drm_dp_mst_topology_mgr_suspend+0x4e/0x90 [drm_kms_helper]
-[  246.730828]  nv50_display_fini+0xa5/0xc0 [nouveau]
-[  246.731606]  nouveau_display_fini+0xc8/0x100 [nouveau]
-[  246.732375]  nouveau_display_suspend+0x62/0x110 [nouveau]
-[  246.733106]  nouveau_do_suspend+0x5e/0x2d0 [nouveau]
-[  246.733839]  nouveau_pmops_runtime_suspend+0x4f/0xb0 [nouveau]
-[  246.734585]  pci_pm_runtime_suspend+0x6b/0x190
-[  246.735297]  ? pci_has_legacy_pm_support+0x70/0x70
-[  246.736044]  __rpm_callback+0x7a/0x1d0
-[  246.736742]  ? pci_has_legacy_pm_support+0x70/0x70
-[  246.737467]  rpm_callback+0x24/0x80
-[  246.738165]  ? pci_has_legacy_pm_support+0x70/0x70
-[  246.738864]  rpm_suspend+0x142/0x6b0
-[  246.739593]  pm_runtime_work+0x97/0xc0
-[  246.740312]  process_one_work+0x231/0x620
-[  246.741028]  worker_thread+0x44/0x3a0
-[  246.741731]  kthread+0x12b/0x150
-[  246.742439]  ? wq_pool_ids_show+0x140/0x140
-[  246.743149]  ? kthread_create_worker_on_cpu+0x70/0x70
-[  246.743846]  ret_from_fork+0x3a/0x50
-[  246.744601] 
-               Showing all locks held in the system:
-[  246.746010] 4 locks held by kworker/0:1/60:
-[  246.746757]  #0: 000000003bb334a6 ((wq_completion)"pm"){+.+.}, at:
-process_one_work+0x1b3/0x620
-[  246.747541]  #1: 000000002c55902b ((work_completion)(&dev-
->power.work)){+.+.}, at: process_one_work+0x1b3/0x620
-[  246.748338]  #2: 000000002a39c817 (&mgr->lock){+.+.}, at:
-drm_dp_mst_topology_mgr_suspend+0x33/0x90 [drm_kms_helper]
-[  246.749120]  #3: 00000000b7d2f3c0 (&aux->hw_mutex){+.+.}, at:
-drm_dp_dpcd_access+0x64/0x110 [drm_kms_helper]
-[  246.749928] 1 lock held by khungtaskd/65:
-[  246.750715]  #0: 00000000407da5ec (rcu_read_lock){....}, at:
-debug_show_all_locks+0x23/0x185
-[  246.751535] 1 lock held by dmesg/1122:
-[  246.752328] 2 locks held by zsh/1149:
-[  246.753100]  #0: 000000000a27c37b (&tty->ldisc_sem){++++}, at:
-ldsem_down_read+0x37/0x40
-[  246.753901]  #1: 000000006cb043f7 (&ldata->atomic_read_lock){+.+.}, at:
-n_tty_read+0xc1/0x870
+    acpi-cpufreq: skip loading acpi_cpufreq after intel_pstate
+    
+"
 
-[  246.755503] =============================================
+Thanks,
+Srinivas
 
-[  246.757068] NMI backtrace for cpu 1
-[  246.757858] CPU: 1 PID: 65 Comm: khungtaskd Tainted:
-G           O      4.18.0-rc5Lyude-Test+ #3
-[  246.758653] Hardware name: LENOVO 20EQS64N0B/20EQS64N0B, BIOS N1EET78W (1.51
-) 05/18/2018
-[  246.759427] Call Trace:
-[  246.760203]  dump_stack+0x8e/0xd3
-[  246.760977]  nmi_cpu_backtrace.cold.3+0x14/0x5a
-[  246.761729]  ? lapic_can_unplug_cpu.cold.27+0x42/0x42
-[  246.762462]  nmi_trigger_cpumask_backtrace+0xa1/0xae
-[  246.763183]  arch_trigger_cpumask_backtrace+0x19/0x20
-[  246.763908]  watchdog+0x316/0x580
-[  246.764644]  kthread+0x12b/0x150
-[  246.765350]  ? reset_hung_task_detector+0x20/0x20
-[  246.766052]  ? kthread_create_worker_on_cpu+0x70/0x70
-[  246.766777]  ret_from_fork+0x3a/0x50
-[  246.767488] Sending NMI from CPU 1 to CPUs 0,2-7:
-[  246.768624] NMI backtrace for cpu 5 skipped: idling at intel_idle+0x7f/0x120
-[  246.768648] NMI backtrace for cpu 4 skipped: idling at intel_idle+0x7f/0x120
-[  246.768671] NMI backtrace for cpu 0 skipped: idling at intel_idle+0x7f/0x120
-[  246.768676] NMI backtrace for cpu 7 skipped: idling at intel_idle+0x7f/0x120
-[  246.768678] NMI backtrace for cpu 3 skipped: idling at intel_idle+0x7f/0x120
-[  246.768681] NMI backtrace for cpu 6 skipped: idling at intel_idle+0x7f/0x120
-[  246.768684] NMI backtrace for cpu 2 skipped: idling at intel_idle+0x7f/0x120
-[  246.769623] Kernel panic - not syncing: hung_task: blocked tasks
-
-Suspending the MST topology at that point should be the right thing to do though
-(and afaict, I don't -think- we reprobe connectors on resume by default), so I
-definitely think we need some sort of way to have a RPM barrier here that
-doesn't take effect in the suspend/resume path
-
+> ---
+>  drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
 > 
-> Thanks,
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
+>  	return true;
+>  }
+>  
+> +static bool __init intel_pstate_no_acpi_pcch(void)
+> +{
+> +	acpi_status status;
+> +	acpi_handle handle;
+> +
+> +	status = acpi_get_handle(NULL, "\\_SB", &handle);
+> +	if (ACPI_FAILURE(status))
+> +		return true;
+> +
+> +	return !acpi_has_method(handle, "PCCH");
+> +}
+> +
+>  static bool __init intel_pstate_has_acpi_ppc(void)
+>  {
+>  	int i;
+> @@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
+>  
+>  	switch (plat_info[idx].data) {
+>  	case PSS:
+> -		return intel_pstate_no_acpi_pss();
+> +		if (!intel_pstate_no_acpi_pss())
+> +			return false;
+> +
+> +		return intel_pstate_no_acpi_pcch();
+>  	case PPC:
+>  		return intel_pstate_has_acpi_ppc() && !force_load;
+>  	}
 > 
-> Lukas
