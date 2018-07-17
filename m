@@ -1,111 +1,106 @@
-From: Joel Fernandes <joel@joelfernandes.org>
-Subject: Re: [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Tue, 17 Jul 2018 11:04:34 -0700
-Message-ID: <20180717180434.GB150378@joelaf.mtv.corp.google.com>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-2-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: intel_pstate: Register when ACPI PCCH is present
+Date: Tue, 17 Jul 2018 20:06:54 +0200
+Message-ID: <2386802.jRaeHeNqoJ@aspire.rjw.lan>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717140336.ayovaz4ksdlak6bb@suselix> <8115130.Fhkpr82c7G@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180716082906.6061-2-patrick.bellasi@arm.com>
+In-Reply-To: <8115130.Fhkpr82c7G@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Andreas Herrmann <aherrmann@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 16, 2018 at 09:28:55AM +0100, Patrick Bellasi wrote:
-> The SCHED_DEADLINE scheduling class provides an advanced and formal
-> model to define tasks requirements which can be translated into proper
-> decisions for both task placements and frequencies selections.
-> Other classes have a more simplified model which is essentially based on
-> the relatively simple concept of POSIX priorities.
-> 
-> Such a simple priority based model however does not allow to exploit
-> some of the most advanced features of the Linux scheduler like, for
-> example, driving frequencies selection via the schedutil cpufreq
-> governor. However, also for non SCHED_DEADLINE tasks, it's still
-> interesting to define tasks properties which can be used to better
-> support certain scheduler decisions.
-> 
-> Utilization clamping aims at exposing to user-space a new set of
-> per-task attributes which can be used to provide the scheduler with some
-> hints about the expected/required utilization for a task.
-> This will allow to implement a more advanced per-task frequency control
-> mechanism which is not based just on a "passive" measured task
-> utilization but on a more "active" approach. For example, it could be
-> possible to boost interactive tasks, thus getting better performance, or
-> cap background tasks, thus being more energy efficient.
-> Ultimately, such a mechanism can be considered similar to the cpufreq's
-> powersave, performance and userspace governor but with a much fine
-> grained and per-task control.
-> 
-> Let's introduce a new API to set utilization clamping values for a
-> specified task by extending sched_setattr, a syscall which already
-> allows to define task specific properties for different scheduling
-> classes.
-> Specifically, a new pair of attributes allows to specify a minimum and
-> maximum utilization which the scheduler should consider for a task.
-> 
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Paul Turner <pjt@google.com>
-> Cc: Todd Kjos <tkjos@google.com>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Steve Muckle <smuckle@google.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> ---
->  include/linux/sched.h            | 16 ++++++++
->  include/uapi/linux/sched.h       |  4 +-
->  include/uapi/linux/sched/types.h | 64 +++++++++++++++++++++++++++-----
->  init/Kconfig                     | 19 ++++++++++
->  kernel/sched/core.c              | 39 +++++++++++++++++++
->  5 files changed, 132 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 43731fe51c97..fd8495723088 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -279,6 +279,17 @@ struct vtime {
->  	u64			gtime;
->  };
->  
-> +enum uclamp_id {
-> +	/* No utilization clamp group assigned */
-> +	UCLAMP_NONE = -1,
-> +
-> +	UCLAMP_MIN = 0, /* Minimum utilization */
-> +	UCLAMP_MAX,     /* Maximum utilization */
-> +
-> +	/* Utilization clamping constraints count */
-> +	UCLAMP_CNT
-> +};
-> +
->  struct sched_info {
->  #ifdef CONFIG_SCHED_INFO
->  	/* Cumulative counters: */
-> @@ -649,6 +660,11 @@ struct task_struct {
->  #endif
->  	struct sched_dl_entity		dl;
->  
-> +#ifdef CONFIG_UCLAMP_TASK
-> +	/* Utlization clamp values for this task */
-> +	int				uclamp[UCLAMP_CNT];
-> +#endif
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Seems a bit wasteful to me. Seems you need 2 values that are in the range
-0..1024.  Can we not do better with task_struct space usage?
+Currently, intel_pstate doesn't load if _PSS is not present on
+HP Proliant systems, because it expects the firmware to take over
+CPU performance scaling in that case.  However, if ACPI PCCH is
+present, the firmware expects the kernel to use it for CPU
+performance scaling and the pcc-cpufreq driver is loaded for that.
 
-thanks!
+Unfortunately, the firmware interface used by that driver is not
+scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
+on systems with more than just a few CPUs.  In fact, it is better to
+avoid using it at all.
 
- - Joel
+For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
+is not present and register if it is there.  Also prevent the
+pcc-cpufreq driver from trying to initialize if intel_pstate has
+been registered already.
+
+Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power mgmt option)
+Reported-by: Andreas Herrmann <aherrmann@suse.com>
+Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+This is a replacement for https://patchwork.kernel.org/patch/10530091/
+
+In addition to the intel_pstate changes in the above, it also
+prevents pcc-cpufreq from trying to initialize (which will fail
+ultimately, but may confuse the firmware in the meantime).
+
+Andreas, please test this one and let me know if it still works for you.
+
+Thanks,
+Rafael
+
+---
+ drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
+ drivers/cpufreq/pcc-cpufreq.c  |    4 ++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
+ 	return true;
+ }
+ 
++static bool __init intel_pstate_no_acpi_pcch(void)
++{
++	acpi_status status;
++	acpi_handle handle;
++
++	status = acpi_get_handle(NULL, "\\_SB", &handle);
++	if (ACPI_FAILURE(status))
++		return true;
++
++	return !acpi_has_method(handle, "PCCH");
++}
++
+ static bool __init intel_pstate_has_acpi_ppc(void)
+ {
+ 	int i;
+@@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
+ 
+ 	switch (plat_info[idx].data) {
+ 	case PSS:
+-		return intel_pstate_no_acpi_pss();
++		if (!intel_pstate_no_acpi_pss())
++			return false;
++
++		return intel_pstate_no_acpi_pcch();
+ 	case PPC:
+ 		return intel_pstate_has_acpi_ppc() && !force_load;
+ 	}
+Index: linux-pm/drivers/cpufreq/pcc-cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/pcc-cpufreq.c
++++ linux-pm/drivers/cpufreq/pcc-cpufreq.c
+@@ -580,6 +580,10 @@ static int __init pcc_cpufreq_init(void)
+ {
+ 	int ret;
+ 
++	/* Skip initialization if another cpufreq driver is there. */
++	if (cpufreq_get_current_driver())
++		return 0;
++
+ 	if (acpi_disabled)
+ 		return 0;
+ 
