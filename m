@@ -1,96 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Commit 554c8aa8ecad causing severe performance degression with pcc-cpufreq
-Date: Tue, 17 Jul 2018 09:33:53 +0200
-Message-ID: <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
+ recursion in suspend/resume paths
+Date: Tue, 17 Jul 2018 09:39:34 +0200
+Message-ID: <CAJZ5v0gq3mt=CcYQLkNLzqZub26QxSM8cajAgUzNWsO-z3PW9g@mail.gmail.com>
+References: <20180716235936.11268-1-lyude@redhat.com>
+ <20180716235936.11268-2-lyude@redhat.com>
+ <20180717071641.GA5411@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180717065048.74mmgk4t5utjaa6a@suselix>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180717071641.GA5411-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, Lyude Paul <lyude-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-Thanks for your report!
-
-On Tue, Jul 17, 2018 at 8:50 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> Hello,
->
-> I've recently noticed that commit 554c8aa8ecad ("sched: idle: Select
-> idle state before stopping the tick") causes severe performance drop
-> for systems using pcc-cpufreq driver. Depending on the number of CPUs
-> the system might be almost unusable. The OS jitter for 4.17.y and
-> 4.18.-rcx kernels is off the charts, you can even spot it with top
-> command (issued when the system is supposedly idle), e.g.
->
->  top - 14:44:24 up 2 min,  1 user,  load average: 90.11, 38.20, 14.38
->  Tasks: 1199 total, 109 running, 541 sleeping,   0 stopped,   0 zombie
->  %Cpu(s):  1.2 us, 58.7 sy,  0.0 ni, 39.3 id,  0.6 wa,  0.0 hi,  0.3 si,  0.0 st
->  KiB Mem:  13137064+total,  1192168 used, 13017848+free,     2340 buffers
->  KiB Swap:  2104316 total,        0 used,  2104316 free.   522296 cached Mem
->
->    PID USER      PR  NI    VIRT    RES    SHR S    %CPU  %MEM     TIME+ COMMAND
->   3373 root      20   0  982024  49916  36120 R  96.691 0.038   0:19.54 kubelet
->     67 root      20   0       0      0      0 R  78.676 0.000   0:49.36 kworker/9:0
->     25 root      20   0       0      0      0 R  78.125 0.000   0:49.67 kworker/2:0
->    182 root      20   0       0      0      0 R  75.735 0.000   1:18.17 kworker/28:0
->     43 root      20   0       0      0      0 R  75.000 0.000   0:11.56 kworker/5:0
->    103 root      20   0       0      0      0 R  74.449 0.000   0:46.83 kworker/15:0
->    334 root      20   0       0      0      0 R  72.978 0.000   1:06.88 kworker/53:0
->    789 root      20   0       0      0      0 R  69.853 0.000   1:29.50 kworker/38:1
->    418 root      20   0       0      0      0 R  69.301 0.000   0:41.33 kworker/67:0
->    779 root      20   0       0      0      0 R  68.934 0.000   1:33.60 kworker/27:1
->    773 root      20   0       0      0      0 R  68.566 0.000   1:37.91 kworker/22:1
->    762 root      20   0       0      0      0 R  68.015 0.000   1:41.01 kworker/11:1
->    769 root      20   0       0      0      0 R  67.647 0.000   1:37.65 kworker/18:1
->    805 root      20   0       0      0      0 R  67.096 0.000   1:30.96 kworker/54:1
->    840 root      20   0       0      0      0 R  66.912 0.000   1:23.82 kworker/89:1
->    812 root      20   0       0      0      0 R  66.728 0.000   1:31.89 kworker/59:1
->    847 root      20   0       0      0      0 R  66.360 0.000   1:28.40 kworker/96:1
->    763 root      20   0       0      0      0 R  66.176 0.000   1:42.57 kworker/12:1
->    772 root      20   0       0      0      0 R  66.176 0.000   1:12.58 kworker/21:1
->    821 root      20   0       0      0      0 R  66.176 0.000   1:29.62 kworker/69:1
->    923 root      20   0       0      0      0 R  65.809 0.000   1:44.32 kworker/3:18
->   1284 root      20   0       0      0      0 R  65.809 0.000   1:23.50 kworker/101:2
->     61 root      20   0       0      0      0 R  65.625 0.000   1:29.37 kworker/8:0
->   3531 root      20   0   24384   3768   2356 R  65.625 0.003   0:08.91 top
->    771 root      20   0       0      0      0 R  65.074 0.000   1:37.90 kworker/20:1
->    767 root      20   0       0      0      0 R  64.706 0.000   1:38.01 kworker/16:1
->    764 root      20   0       0      0      0 R  64.522 0.000   1:40.28 kworker/13:1
->    765 root      20   0       0      0      0 R  64.154 0.000   1:40.13 kworker/14:1
->
-> When I apply below patch (trying to revert essential parts of commit
-> 554c8aa8ecad) behaviour seems back to normal.
-
-Well, that basically defeats the purpose of the change in commit
-554c8aa8ecad, so it's not what I'd like to do to fix this problem.
-
-Also it would be good to understand what actually happens.
-
-> I know that pcc-cpufreq driver is not "state-of-the-art" when it comes
-> to cpufreq drivers and you better not use it.
-
-That's exactly right.
-
-> But I wonder whether commit 554c8aa8ecad ("sched: idle: Select idle state before
-> stopping the tick") introduced bad behaviour for other cases as well.
-
-It has been tested quite extensively in that respect, although
-admittedly not with the pcc-cpufreq driver.
-
-Nothing bad related to it has been has been reported so far, FWIW.
-
-> I'll send some performance results to illustrate the issue asap. I've
-> also tried to modify pcc-cpufreq to reduce the amount of frequency
-> changes triggered by this driver but this does not help for kernels
-> where commit 554c8aa8ecad is applied.
-
-Can you replace pcc-cpufreq with a different cpufreq driver on the
-affected systems?  If so, do performance numbers look bad after that
-too?
-
-Thanks,
-Rafael
+T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgOToxNiBBTSwgTHVrYXMgV3VubmVyIDxsdWthc0B3dW5u
+ZXIuZGU+IHdyb3RlOgo+IFtjYyArPSBsaW51eC1wbV0KPgo+IEhpIEx5dWRlLAo+Cj4gRmlyc3Qg
+b2YgYWxsLCB0aGFua3MgYSBsb3QgZm9yIGxvb2tpbmcgaW50byB0aGlzLgo+Cj4gT24gTW9uLCBK
+dWwgMTYsIDIwMTggYXQgMDc6NTk6MjVQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90ZToKPj4gSW4g
+b3JkZXIgdG8gZml4IGFsbCBvZiB0aGUgc3BvdHMgdGhhdCBuZWVkIHRvIGhhdmUgcnVudGltZSBQ
+TSBnZXQvcHV0cygpCj4+IGFkZGVkLCB3ZSBuZWVkIHRvIGVuc3VyZSB0aGF0IGl0J3MgcG9zc2li
+bGUgZm9yIHVzIHRvIGNhbGwKPj4gcG1fcnVudGltZV9nZXQvcHV0KCkgaW4gYW55IGNvbnRleHQs
+IHJlZ2FyZGxlc3Mgb2YgaG93IGRlZXAsIHNpbmNlCj4+IGFsbW9zdCBhbGwgb2YgdGhlIHNwb3Rz
+IHRoYXQgYXJlIGN1cnJlbnRseSBtaXNzaW5nIHJlZnMgY2FuIHBvdGVudGlhbGx5Cj4+IGdldCBj
+YWxsZWQgaW4gdGhlIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgcGF0aC4gT3RoZXJ3aXNlLCB3ZSds
+bCB0cnkgdG8KPj4gcmVzdW1lIHRoZSBHUFUgYXMgd2UncmUgdHJ5aW5nIHRvIHJlc3VtZSB0aGUg
+R1BVIChhbmQgdmljZS12ZXJzYSkgYW5kCj4+IGNhdXNlIHRoZSBrZXJuZWwgdG8gZGVhZGxvY2su
+Cj4+Cj4+IFdpdGggdGhpcywgaXQgc2hvdWxkIGJlIHNhZmUgdG8gY2FsbCB0aGUgcG0gcnVudGlt
+ZSBmdW5jdGlvbnMgaW4gYW55Cj4+IGNvbnRleHQgaW4gbm91dmVhdSB3aXRoIG9uZSBjb25kaXRp
+b246IGFueSBwb2ludCBpbiB0aGUgZHJpdmVyIHRoYXQKPj4gY2FsbHMgcG1fcnVudGltZV9nZXQq
+KCkgY2Fubm90IGhvbGQgYW55IGxvY2tzIG93bmVkIGJ5IG5vdXZlYXUgdGhhdAo+PiB3b3VsZCBi
+ZSBhY3F1aXJlZCBhbnl3aGVyZSBpbnNpZGUgbm91dmVhdV9wbW9wc19ydW50aW1lX3Jlc3VtZSgp
+Lgo+PiBUaGlzIGluY2x1ZGVzIG1vZGVzZXR0aW5nIGxvY2tzLCBpMmMgYnVzIGxvY2tzLCBldGMu
+Cj4gW3NuaXBdCj4+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfZHJtLmMK
+Pj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcm0uYwo+PiBAQCAtODM1
+LDYgKzgzNSw4IEBAIG5vdXZlYXVfcG1vcHNfcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2Ug
+KmRldikKPj4gICAgICAgICAgICAgICByZXR1cm4gLUVCVVNZOwo+PiAgICAgICB9Cj4+Cj4+ICsg
+ICAgIGRldi0+cG93ZXIuZGlzYWJsZV9kZXB0aCsrOwoKVGhpcyBpcyBlZmZlY3RpdmVseSBlcXVp
+dmFsZW50IHRvIF9fcG1fcnVudGltZV9kaXNhYmxlKGRldiwgZmFsc2UpCmV4Y2VwdCBmb3IgdGhl
+IGxvY2tpbmcgKHdoaWNoIGlzIG5lY2Vzc2FyeSkuCgo+PiArCj4KPiBJJ20gbm90IHN1cmUgaWYg
+dGhhdCB2YXJpYWJsZSBpcyBhY3R1YWxseSBwcml2YXRlIHRvIHRoZSBQTSBjb3JlLgo+IEdyZXBw
+aW5nIHRocm91Z2ggdGhlIHRyZWUgSSBvbmx5IGZpbmQgYSBzaW5nbGUgb2NjdXJyZW5jZSB3aGVy
+ZSBpdCdzCj4gYWNjZXNzZWQgb3V0c2lkZSB0aGUgUE0gY29yZSBhbmQgdGhhdCdzIGluIGFtZGdw
+dS4gIFNvIHRoaXMgbG9va3MKPiBhIGxpdHRsZSBmaXNoeSBUQkguICBJdCBtYXkgbWFrZSBzZW5z
+ZSB0byBjYyBzdWNoIHBhdGNoZXMgdG8gbGludXgtcG0KPiB0byBnZXQgUmFmYWVsICYgb3RoZXIg
+Zm9sa3MgaW52b2x2ZWQgd2l0aCB0aGUgUE0gY29yZSB0byBjb21tZW50LgoKWW91IGFyZSByaWdo
+dCwgcG93ZXIuZGlzYWJsZV9kZXB0aCBpcyBpbnRlcm5hbCB0byB0aGUgUE0gY29yZS4KQWNjZXNz
+aW5nIGl0IChhbmQgdXBkYXRpbmcgaXQgaW4gcGFydGljdWxhcikgZGlyZWN0bHkgZnJvbSBkcml2
+ZXJzIGlzCm5vdCBhIGdvb2QgaWRlYS4KCj4gQWxzbywgdGhlIGRpc2FibGVfZGVwdGggdmFyaWFi
+bGUgb25seSBleGlzdHMgaWYgdGhlIGtlcm5lbCB3YXMKPiBjb21waWxlZCB3aXRoIENPTkZJR19Q
+TSBlbmFibGVkLCBidXQgSSBjYW4ndCBmaW5kIGEgImRlcGVuZHMgb24gUE0iCj4gb3Igc29tZXRo
+aW5nIGxpa2UgdGhhdCBpbiBub3V2ZWF1J3MgS2NvbmZpZy4gIEFjdHVhbGx5LCBpZiBQTSBpcwo+
+IG5vdCBzZWxlY3RlZCwgYWxsIHRoZSBub3V2ZWF1X3Btb3BzXyooKSBmdW5jdGlvbnMgc2hvdWxk
+IGJlICNpZmRlZidlZAo+IGF3YXksIGJ1dCBvZGRseSB0aGVyZSdzIG5vICNpZmRlZiBDT05GSUdf
+UE0gYW55d2hlcmUgaW4gbm91dmVhdV9kcm0uYy4KPgo+IEFueXdheW4sIGlmIEkgdW5kZXJzdGFu
+ZCB0aGUgY29tbWl0IG1lc3NhZ2UgY29ycmVjdGx5LCB5b3UncmUgaGl0dGluZyBhCj4gcG1fcnVu
+dGltZV9nZXRfc3luYygpIGluIGEgY29kZSBwYXRoIHRoYXQgaXRzZWxmIGlzIGNhbGxlZCBkdXJp
+bmcgYQo+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS4gIENvdWxkIHlvdSBpbmNsdWRlIHN0YWNrIHRy
+YWNlcyBpbiB0aGUgY29tbWl0Cj4gbWVzc2FnZT8gIE15IGd1dCBmZWVsaW5nIGlzIHRoYXQgdGhp
+cyBwYXRjaCBtYXNrcyBhIGRlZXBlciBpc3N1ZSwKPiBlLmcuIGlmIHRoZSBydW50aW1lX3Jlc3Vt
+ZSBjb2RlIHBhdGggZG9lcyBpbiBmYWN0IGRpcmVjdGx5IHBvbGwgb3V0cHV0cywKPiB0aGF0IHdv
+dWxkIHNlZW0gd3JvbmcuICBSdW50aW1lIHJlc3VtZSBzaG91bGQgbWVyZWx5IG1ha2UgdGhlIGNh
+cmQKPiBhY2Nlc3NpYmxlLCBpLmUuIHJlaW5zdGF0ZSBwb3dlciBpZiBuZWNlc3NhcnksIHB1dCBp
+bnRvIFBDSV9EMCwKPiByZXN0b3JlIHJlZ2lzdGVycywgZXRjLiAgT3V0cHV0IHBvbGxpbmcgc2hv
+dWxkIGJlIHNjaGVkdWxlZAo+IGFzeW5jaHJvbm91c2x5LgoKUmlnaHQuCgpUaGFua3MsClJhZmFl
+bApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1
+IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
+LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
