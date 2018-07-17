@@ -1,80 +1,87 @@
-From: Lukas Wunner <lukas@wunner.de>
+From: Lyude Paul <lyude@redhat.com>
 Subject: Re: [Nouveau] [PATCH 1/5] drm/nouveau: Prevent RPM callback
  recursion in suspend/resume paths
-Date: Tue, 17 Jul 2018 20:32:11 +0200
-Message-ID: <20180717183211.GB18363@wunner.de>
+Date: Tue, 17 Jul 2018 14:34:47 -0400
+Message-ID: <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel@redhat.com>
 References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com>
- <20180717071641.GA5411@wunner.de>
+ <20180716235936.11268-2-lyude@redhat.com> <20180717071641.GA5411@wunner.de>
  <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
  <20180717182041.GA18363@wunner.de>
  <cb5af1611622a080fdcbcf3bb794d8ebc39cae2a.camel@redhat.com>
+ <20180717183211.GB18363@wunner.de>
+Reply-To: lyude@redhat.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cb5af1611622a080fdcbcf3bb794d8ebc39cae2a.camel@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lyude Paul <lyude@redhat.com>
-Cc: nouveau@lists.freedesktop.org, David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20180717183211.GB18363@wunner.de>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, nouveau@lists.freedesktop.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 02:24:31PM -0400, Lyude Paul wrote:
-> On Tue, 2018-07-17 at 20:20 +0200, Lukas Wunner wrote:
-> > Okay, the PCI device is suspending and the nvkm_i2c_aux_acquire()
-> > wants it in resumed state, so is waiting forever for the device to
-> > runtime suspend in order to resume it again immediately afterwards.
-> > 
-> > The deadlock in the stack trace you've posted could be resolved using
-> > the technique I used in d61a5c106351 by adding the following to
-> > include/linux/pm_runtime.h:
-> > 
-> > static inline bool pm_runtime_status_suspending(struct device *dev)
-> > {
-> > 	return dev->power.runtime_status == RPM_SUSPENDING;
-> > }
-> > 
-> > static inline bool is_pm_work(struct device *dev)
-> > {
-> > 	struct work_struct *work = current_work();
-> > 
-> > 	return work && work->func == dev->power.work;
-> > }
-> > 
-> > Then adding this to nvkm_i2c_aux_acquire():
-> > 
-> > 	struct device *dev = pad->i2c->subdev.device->dev;
-> > 
-> > 	if (!(is_pm_work(dev) && pm_runtime_status_suspending(dev))) {
-> > 		ret = pm_runtime_get_sync(dev);
-> > 		if (ret < 0 && ret != -EACCES)
-> > 			return ret;
-> > 	}
-> > 
-> > But here's the catch:  This only works for an *async* runtime suspend.
-> > It doesn't work for pm_runtime_put_sync(), pm_runtime_suspend() etc,
-> > because then the runtime suspend is executed in the context of the caller,
-> > not in the context of dev->power.work.
-> > 
-> > So it's not a full solution, but hopefully something that gets you
-> > going.  I'm not really familiar with the code paths leading to
-> > nvkm_i2c_aux_acquire() to come up with a full solution off the top
-> > of my head I'm afraid.
-> 
-> OK-I was considering doing something similar to that commit beforehand but I
-> wasn't sure if I was going to just be hacking around an actual issue. That
-> doesn't seem to be the case. This is very helpful and hopefully I should be able
-> to figure something out from this, thanks!
-
-In some cases, the function acquiring the runtime PM ref is only called
-from a couple of places and then it would be feasible and appropriate
-to add a bool parameter to the function telling it to acquire the ref
-or not.  So the function is told using a parameter which context it's
-running in:  In the runtime_suspend code path or some other code path.
-
-The technique to use current_work() is an alternative approach to figure
-out the context if passing in an additional parameter is not feasible
-for some reason.  That was the case with d61a5c106351.  That approach
-only works for work items though.
-
-Lukas
+T24gVHVlLCAyMDE4LTA3LTE3IGF0IDIwOjMyICswMjAwLCBMdWthcyBXdW5uZXIgd3JvdGU6Cj4g
+T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgMDI6MjQ6MzFQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90
+ZToKPiA+IE9uIFR1ZSwgMjAxOC0wNy0xNyBhdCAyMDoyMCArMDIwMCwgTHVrYXMgV3VubmVyIHdy
+b3RlOgo+ID4gPiBPa2F5LCB0aGUgUENJIGRldmljZSBpcyBzdXNwZW5kaW5nIGFuZCB0aGUgbnZr
+bV9pMmNfYXV4X2FjcXVpcmUoKQo+ID4gPiB3YW50cyBpdCBpbiByZXN1bWVkIHN0YXRlLCBzbyBp
+cyB3YWl0aW5nIGZvcmV2ZXIgZm9yIHRoZSBkZXZpY2UgdG8KPiA+ID4gcnVudGltZSBzdXNwZW5k
+IGluIG9yZGVyIHRvIHJlc3VtZSBpdCBhZ2FpbiBpbW1lZGlhdGVseSBhZnRlcndhcmRzLgo+ID4g
+PiAKPiA+ID4gVGhlIGRlYWRsb2NrIGluIHRoZSBzdGFjayB0cmFjZSB5b3UndmUgcG9zdGVkIGNv
+dWxkIGJlIHJlc29sdmVkIHVzaW5nCj4gPiA+IHRoZSB0ZWNobmlxdWUgSSB1c2VkIGluIGQ2MWE1
+YzEwNjM1MSBieSBhZGRpbmcgdGhlIGZvbGxvd2luZyB0bwo+ID4gPiBpbmNsdWRlL2xpbnV4L3Bt
+X3J1bnRpbWUuaDoKPiA+ID4gCj4gPiA+IHN0YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50aW1lX3N0
+YXR1c19zdXNwZW5kaW5nKHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ID4gewo+ID4gPiAJcmV0dXJu
+IGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRJTkc7Cj4gPiA+IH0KPiA+
+ID4gCj4gPiA+IHN0YXRpYyBpbmxpbmUgYm9vbCBpc19wbV93b3JrKHN0cnVjdCBkZXZpY2UgKmRl
+dikKPiA+ID4gewo+ID4gPiAJc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrID0gY3VycmVudF93b3Jr
+KCk7Cj4gPiA+IAo+ID4gPiAJcmV0dXJuIHdvcmsgJiYgd29yay0+ZnVuYyA9PSBkZXYtPnBvd2Vy
+Lndvcms7Cj4gPiA+IH0KPiA+ID4gCj4gPiA+IFRoZW4gYWRkaW5nIHRoaXMgdG8gbnZrbV9pMmNf
+YXV4X2FjcXVpcmUoKToKPiA+ID4gCj4gPiA+IAlzdHJ1Y3QgZGV2aWNlICpkZXYgPSBwYWQtPmky
+Yy0+c3ViZGV2LmRldmljZS0+ZGV2Owo+ID4gPiAKPiA+ID4gCWlmICghKGlzX3BtX3dvcmsoZGV2
+KSAmJiBwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kaW5nKGRldikpKSB7Cj4gPiA+IAkJcmV0ID0g
+cG1fcnVudGltZV9nZXRfc3luYyhkZXYpOwo+ID4gPiAJCWlmIChyZXQgPCAwICYmIHJldCAhPSAt
+RUFDQ0VTKQo+ID4gPiAJCQlyZXR1cm4gcmV0Owo+ID4gPiAJfQo+ID4gPiAKPiA+ID4gQnV0IGhl
+cmUncyB0aGUgY2F0Y2g6ICBUaGlzIG9ubHkgd29ya3MgZm9yIGFuICphc3luYyogcnVudGltZSBz
+dXNwZW5kLgo+ID4gPiBJdCBkb2Vzbid0IHdvcmsgZm9yIHBtX3J1bnRpbWVfcHV0X3N5bmMoKSwg
+cG1fcnVudGltZV9zdXNwZW5kKCkgZXRjLAo+ID4gPiBiZWNhdXNlIHRoZW4gdGhlIHJ1bnRpbWUg
+c3VzcGVuZCBpcyBleGVjdXRlZCBpbiB0aGUgY29udGV4dCBvZiB0aGUgY2FsbGVyLAo+ID4gPiBu
+b3QgaW4gdGhlIGNvbnRleHQgb2YgZGV2LT5wb3dlci53b3JrLgo+ID4gPiAKPiA+ID4gU28gaXQn
+cyBub3QgYSBmdWxsIHNvbHV0aW9uLCBidXQgaG9wZWZ1bGx5IHNvbWV0aGluZyB0aGF0IGdldHMg
+eW91Cj4gPiA+IGdvaW5nLiAgSSdtIG5vdCByZWFsbHkgZmFtaWxpYXIgd2l0aCB0aGUgY29kZSBw
+YXRocyBsZWFkaW5nIHRvCj4gPiA+IG52a21faTJjX2F1eF9hY3F1aXJlKCkgdG8gY29tZSB1cCB3
+aXRoIGEgZnVsbCBzb2x1dGlvbiBvZmYgdGhlIHRvcAo+ID4gPiBvZiBteSBoZWFkIEknbSBhZnJh
+aWQuCj4gPiAKPiA+IE9LLUkgd2FzIGNvbnNpZGVyaW5nIGRvaW5nIHNvbWV0aGluZyBzaW1pbGFy
+IHRvIHRoYXQgY29tbWl0IGJlZm9yZWhhbmQgYnV0IEkKPiA+IHdhc24ndCBzdXJlIGlmIEkgd2Fz
+IGdvaW5nIHRvIGp1c3QgYmUgaGFja2luZyBhcm91bmQgYW4gYWN0dWFsIGlzc3VlLiBUaGF0Cj4g
+PiBkb2Vzbid0IHNlZW0gdG8gYmUgdGhlIGNhc2UuIFRoaXMgaXMgdmVyeSBoZWxwZnVsIGFuZCBo
+b3BlZnVsbHkgSSBzaG91bGQgYmUKPiA+IGFibGUKPiA+IHRvIGZpZ3VyZSBzb21ldGhpbmcgb3V0
+IGZyb20gdGhpcywgdGhhbmtzIQo+IAo+IEluIHNvbWUgY2FzZXMsIHRoZSBmdW5jdGlvbiBhY3F1
+aXJpbmcgdGhlIHJ1bnRpbWUgUE0gcmVmIGlzIG9ubHkgY2FsbGVkCj4gZnJvbSBhIGNvdXBsZSBv
+ZiBwbGFjZXMgYW5kIHRoZW4gaXQgd291bGQgYmUgZmVhc2libGUgYW5kIGFwcHJvcHJpYXRlCj4g
+dG8gYWRkIGEgYm9vbCBwYXJhbWV0ZXIgdG8gdGhlIGZ1bmN0aW9uIHRlbGxpbmcgaXQgdG8gYWNx
+dWlyZSB0aGUgcmVmCj4gb3Igbm90LiAgU28gdGhlIGZ1bmN0aW9uIGlzIHRvbGQgdXNpbmcgYSBw
+YXJhbWV0ZXIgd2hpY2ggY29udGV4dCBpdCdzCj4gcnVubmluZyBpbjogIEluIHRoZSBydW50aW1l
+X3N1c3BlbmQgY29kZSBwYXRoIG9yIHNvbWUgb3RoZXIgY29kZSBwYXRoLgo+IAo+IFRoZSB0ZWNo
+bmlxdWUgdG8gdXNlIGN1cnJlbnRfd29yaygpIGlzIGFuIGFsdGVybmF0aXZlIGFwcHJvYWNoIHRv
+IGZpZ3VyZQo+IG91dCB0aGUgY29udGV4dCBpZiBwYXNzaW5nIGluIGFuIGFkZGl0aW9uYWwgcGFy
+YW1ldGVyIGlzIG5vdCBmZWFzaWJsZQo+IGZvciBzb21lIHJlYXNvbi4gIFRoYXQgd2FzIHRoZSBj
+YXNlIHdpdGggZDYxYTVjMTA2MzUxLiAgVGhhdCBhcHByb2FjaAo+IG9ubHkgd29ya3MgZm9yIHdv
+cmsgaXRlbXMgdGhvdWdoLgoKU29tZXRoaW5nIEknbSBjdXJpb3VzIGFib3V0LiBUaGlzIGlzbid0
+IHRoZSBmaXJzdCB0aW1lIEkndmUgaGl0IGEgc2l0dWF0aW9uIGxpa2UKdGhpcyAoc2VlOiB0aGUg
+aW1wcm9wZXIgZGlzYWJsZV9kZXB0aCBmaXggSSBhZGRlZCBpbnRvIGFtZGdwdSBJIG5vdyBuZWVk
+IHRvIGdvCmFuZCBmaXgpLCB3aGljaCBtYWtlcyBtZSB3b25kZXI6IGlzIHRoZXJlIGFjdHVhbGx5
+IGFueSByZWFzb24gTGludXgncyBydW50aW1lIFBNCmNvcmUgZG9lc24ndCBqdXN0IHR1cm4gZ2V0
+L3B1dHMoKSBpbiB0aGUgY29udGV4dCBvZiBzL3IgY2FsbGJhY2tzIGludG8gbm8tb3BzIGJ5CmRl
+ZmF1bHQ/IAoKPiAKPiBMdWthcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
+cmktZGV2ZWwK
