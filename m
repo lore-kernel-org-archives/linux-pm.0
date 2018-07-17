@@ -1,87 +1,60 @@
-From: Lyude Paul <lyude@redhat.com>
-Subject: Re: [Nouveau] [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Tue, 17 Jul 2018 14:34:47 -0400
-Message-ID: <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel@redhat.com>
-References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com> <20180717071641.GA5411@wunner.de>
- <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
- <20180717182041.GA18363@wunner.de>
- <cb5af1611622a080fdcbcf3bb794d8ebc39cae2a.camel@redhat.com>
- <20180717183211.GB18363@wunner.de>
-Reply-To: lyude@redhat.com
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [PATCH 5/5] ARM: dts: exynos: add tmu aliases nodes
+Date: Wed, 18 Jul 2018 01:26:10 +0530
+Message-ID: <CANAwSgSUv9aY6bhMxdnj9yGS8Ds7Bevy09+k=74CwVqiOX2+gA@mail.gmail.com>
+References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com>
+ <1531822342-4293-5-git-send-email-linux.amoon@gmail.com> <CAJKOXPc256dCWWWaoJBOB9NUc=CUYtqgfeKh=LBOoFAfh_T8Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20180717183211.GB18363@wunner.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, nouveau@lists.freedesktop.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJKOXPc256dCWWWaoJBOB9NUc=CUYtqgfeKh=LBOoFAfh_T8Ng@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA3LTE3IGF0IDIwOjMyICswMjAwLCBMdWthcyBXdW5uZXIgd3JvdGU6Cj4g
-T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgMDI6MjQ6MzFQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90
-ZToKPiA+IE9uIFR1ZSwgMjAxOC0wNy0xNyBhdCAyMDoyMCArMDIwMCwgTHVrYXMgV3VubmVyIHdy
-b3RlOgo+ID4gPiBPa2F5LCB0aGUgUENJIGRldmljZSBpcyBzdXNwZW5kaW5nIGFuZCB0aGUgbnZr
-bV9pMmNfYXV4X2FjcXVpcmUoKQo+ID4gPiB3YW50cyBpdCBpbiByZXN1bWVkIHN0YXRlLCBzbyBp
-cyB3YWl0aW5nIGZvcmV2ZXIgZm9yIHRoZSBkZXZpY2UgdG8KPiA+ID4gcnVudGltZSBzdXNwZW5k
-IGluIG9yZGVyIHRvIHJlc3VtZSBpdCBhZ2FpbiBpbW1lZGlhdGVseSBhZnRlcndhcmRzLgo+ID4g
-PiAKPiA+ID4gVGhlIGRlYWRsb2NrIGluIHRoZSBzdGFjayB0cmFjZSB5b3UndmUgcG9zdGVkIGNv
-dWxkIGJlIHJlc29sdmVkIHVzaW5nCj4gPiA+IHRoZSB0ZWNobmlxdWUgSSB1c2VkIGluIGQ2MWE1
-YzEwNjM1MSBieSBhZGRpbmcgdGhlIGZvbGxvd2luZyB0bwo+ID4gPiBpbmNsdWRlL2xpbnV4L3Bt
-X3J1bnRpbWUuaDoKPiA+ID4gCj4gPiA+IHN0YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50aW1lX3N0
-YXR1c19zdXNwZW5kaW5nKHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ID4gewo+ID4gPiAJcmV0dXJu
-IGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRJTkc7Cj4gPiA+IH0KPiA+
-ID4gCj4gPiA+IHN0YXRpYyBpbmxpbmUgYm9vbCBpc19wbV93b3JrKHN0cnVjdCBkZXZpY2UgKmRl
-dikKPiA+ID4gewo+ID4gPiAJc3RydWN0IHdvcmtfc3RydWN0ICp3b3JrID0gY3VycmVudF93b3Jr
-KCk7Cj4gPiA+IAo+ID4gPiAJcmV0dXJuIHdvcmsgJiYgd29yay0+ZnVuYyA9PSBkZXYtPnBvd2Vy
-Lndvcms7Cj4gPiA+IH0KPiA+ID4gCj4gPiA+IFRoZW4gYWRkaW5nIHRoaXMgdG8gbnZrbV9pMmNf
-YXV4X2FjcXVpcmUoKToKPiA+ID4gCj4gPiA+IAlzdHJ1Y3QgZGV2aWNlICpkZXYgPSBwYWQtPmky
-Yy0+c3ViZGV2LmRldmljZS0+ZGV2Owo+ID4gPiAKPiA+ID4gCWlmICghKGlzX3BtX3dvcmsoZGV2
-KSAmJiBwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kaW5nKGRldikpKSB7Cj4gPiA+IAkJcmV0ID0g
-cG1fcnVudGltZV9nZXRfc3luYyhkZXYpOwo+ID4gPiAJCWlmIChyZXQgPCAwICYmIHJldCAhPSAt
-RUFDQ0VTKQo+ID4gPiAJCQlyZXR1cm4gcmV0Owo+ID4gPiAJfQo+ID4gPiAKPiA+ID4gQnV0IGhl
-cmUncyB0aGUgY2F0Y2g6ICBUaGlzIG9ubHkgd29ya3MgZm9yIGFuICphc3luYyogcnVudGltZSBz
-dXNwZW5kLgo+ID4gPiBJdCBkb2Vzbid0IHdvcmsgZm9yIHBtX3J1bnRpbWVfcHV0X3N5bmMoKSwg
-cG1fcnVudGltZV9zdXNwZW5kKCkgZXRjLAo+ID4gPiBiZWNhdXNlIHRoZW4gdGhlIHJ1bnRpbWUg
-c3VzcGVuZCBpcyBleGVjdXRlZCBpbiB0aGUgY29udGV4dCBvZiB0aGUgY2FsbGVyLAo+ID4gPiBu
-b3QgaW4gdGhlIGNvbnRleHQgb2YgZGV2LT5wb3dlci53b3JrLgo+ID4gPiAKPiA+ID4gU28gaXQn
-cyBub3QgYSBmdWxsIHNvbHV0aW9uLCBidXQgaG9wZWZ1bGx5IHNvbWV0aGluZyB0aGF0IGdldHMg
-eW91Cj4gPiA+IGdvaW5nLiAgSSdtIG5vdCByZWFsbHkgZmFtaWxpYXIgd2l0aCB0aGUgY29kZSBw
-YXRocyBsZWFkaW5nIHRvCj4gPiA+IG52a21faTJjX2F1eF9hY3F1aXJlKCkgdG8gY29tZSB1cCB3
-aXRoIGEgZnVsbCBzb2x1dGlvbiBvZmYgdGhlIHRvcAo+ID4gPiBvZiBteSBoZWFkIEknbSBhZnJh
-aWQuCj4gPiAKPiA+IE9LLUkgd2FzIGNvbnNpZGVyaW5nIGRvaW5nIHNvbWV0aGluZyBzaW1pbGFy
-IHRvIHRoYXQgY29tbWl0IGJlZm9yZWhhbmQgYnV0IEkKPiA+IHdhc24ndCBzdXJlIGlmIEkgd2Fz
-IGdvaW5nIHRvIGp1c3QgYmUgaGFja2luZyBhcm91bmQgYW4gYWN0dWFsIGlzc3VlLiBUaGF0Cj4g
-PiBkb2Vzbid0IHNlZW0gdG8gYmUgdGhlIGNhc2UuIFRoaXMgaXMgdmVyeSBoZWxwZnVsIGFuZCBo
-b3BlZnVsbHkgSSBzaG91bGQgYmUKPiA+IGFibGUKPiA+IHRvIGZpZ3VyZSBzb21ldGhpbmcgb3V0
-IGZyb20gdGhpcywgdGhhbmtzIQo+IAo+IEluIHNvbWUgY2FzZXMsIHRoZSBmdW5jdGlvbiBhY3F1
-aXJpbmcgdGhlIHJ1bnRpbWUgUE0gcmVmIGlzIG9ubHkgY2FsbGVkCj4gZnJvbSBhIGNvdXBsZSBv
-ZiBwbGFjZXMgYW5kIHRoZW4gaXQgd291bGQgYmUgZmVhc2libGUgYW5kIGFwcHJvcHJpYXRlCj4g
-dG8gYWRkIGEgYm9vbCBwYXJhbWV0ZXIgdG8gdGhlIGZ1bmN0aW9uIHRlbGxpbmcgaXQgdG8gYWNx
-dWlyZSB0aGUgcmVmCj4gb3Igbm90LiAgU28gdGhlIGZ1bmN0aW9uIGlzIHRvbGQgdXNpbmcgYSBw
-YXJhbWV0ZXIgd2hpY2ggY29udGV4dCBpdCdzCj4gcnVubmluZyBpbjogIEluIHRoZSBydW50aW1l
-X3N1c3BlbmQgY29kZSBwYXRoIG9yIHNvbWUgb3RoZXIgY29kZSBwYXRoLgo+IAo+IFRoZSB0ZWNo
-bmlxdWUgdG8gdXNlIGN1cnJlbnRfd29yaygpIGlzIGFuIGFsdGVybmF0aXZlIGFwcHJvYWNoIHRv
-IGZpZ3VyZQo+IG91dCB0aGUgY29udGV4dCBpZiBwYXNzaW5nIGluIGFuIGFkZGl0aW9uYWwgcGFy
-YW1ldGVyIGlzIG5vdCBmZWFzaWJsZQo+IGZvciBzb21lIHJlYXNvbi4gIFRoYXQgd2FzIHRoZSBj
-YXNlIHdpdGggZDYxYTVjMTA2MzUxLiAgVGhhdCBhcHByb2FjaAo+IG9ubHkgd29ya3MgZm9yIHdv
-cmsgaXRlbXMgdGhvdWdoLgoKU29tZXRoaW5nIEknbSBjdXJpb3VzIGFib3V0LiBUaGlzIGlzbid0
-IHRoZSBmaXJzdCB0aW1lIEkndmUgaGl0IGEgc2l0dWF0aW9uIGxpa2UKdGhpcyAoc2VlOiB0aGUg
-aW1wcm9wZXIgZGlzYWJsZV9kZXB0aCBmaXggSSBhZGRlZCBpbnRvIGFtZGdwdSBJIG5vdyBuZWVk
-IHRvIGdvCmFuZCBmaXgpLCB3aGljaCBtYWtlcyBtZSB3b25kZXI6IGlzIHRoZXJlIGFjdHVhbGx5
-IGFueSByZWFzb24gTGludXgncyBydW50aW1lIFBNCmNvcmUgZG9lc24ndCBqdXN0IHR1cm4gZ2V0
-L3B1dHMoKSBpbiB0aGUgY29udGV4dCBvZiBzL3IgY2FsbGJhY2tzIGludG8gbm8tb3BzIGJ5CmRl
-ZmF1bHQ/IAoKPiAKPiBMdWthcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVz
-a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
-cmktZGV2ZWwK
+Hi
+
+On 17 July 2018 at 17:59, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
+>> add tmuctrl aliases node for exynos542x
+>
+> Please use full sentence, starting with capital letter and ending with
+> a dot. Also please explain why you need tmuctrl aliases.
+>
+
+As per the [0] Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+
+For multi-instance tmu each instance should have an alias correctly
+numbered in "aliases" node.
+
+>>
+>> CC: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> Signed-off-by: Anand Moon <linux.amoon@gmail.com>
+>> ---
+>>  arch/arm/boot/dts/exynos5420-peach-pit.dts         |  8 ++++----
+>>  arch/arm/boot/dts/exynos5420.dtsi                  | 20 ++++++++++++--------
+>>  arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |  8 ++++----
+>>  arch/arm/boot/dts/exynos5422-odroidhc1.dts         |  8 ++++----
+>>  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  8 ++++----
+>>  arch/arm/boot/dts/exynos5800-peach-pi.dts          |  8 ++++----
+>>  6 files changed, 32 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/arch/arm/boot/dts/exynos5420-peach-pit.dts b/arch/arm/boot/dts/exynos5420-peach-pit.dts
+>> index 57c2332..ff79f0b 100644
+>> --- a/arch/arm/boot/dts/exynos5420-peach-pit.dts
+>> +++ b/arch/arm/boot/dts/exynos5420-peach-pit.dts
+>> @@ -1061,19 +1061,19 @@
+>>         status = "okay";
+>>  };
+>>
+>> -&tmu_cpu0 {
+>> +&tmu_cpu_0 {
+>
+> This looks irrelevant to the topic of adding aliases.
+>
+
+correct, I gone through the binding documentation and hence update this patch.
+
+Best Regards
+-Anand
