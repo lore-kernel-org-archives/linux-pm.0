@@ -1,26 +1,166 @@
 From: Taniya Das <tdas@codeaurora.org>
 Subject: Re: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
  driver
-Date: Tue, 17 Jul 2018 08:29:06 +0530
-Message-ID: <3163a20a-31ca-15a0-56e2-38e977b21ae2@codeaurora.org>
+Date: Tue, 17 Jul 2018 11:27:22 +0530
+Message-ID: <a88dfc5b-49b4-a2ea-d451-368157337ed5@codeaurora.org>
 References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
  <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
- <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
+ <20180713001959.GV129942@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
+In-Reply-To: <20180713001959.GV129942@google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
+Hello Matthias,
 
+Thanks for your review comments.
 
-On 7/16/2018 10:42 AM, Viresh Kumar wrote:
-> On 12-07-18, 23:35, Taniya Das wrote:
+On 7/13/2018 5:49 AM, Matthias Kaehlcke wrote:
+> Hi,
+> 
+> On Thu, Jul 12, 2018 at 11:35:45PM +0530, Taniya Das wrote:
+>> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+>> for changing the frequency of CPUs. The driver implements the cpufreq
+>> driver interface for this hardware engine.
+>>
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+>> ---
+>>   drivers/cpufreq/Kconfig.arm       |  10 ++
+>>   drivers/cpufreq/Makefile          |   1 +
+>>   drivers/cpufreq/qcom-cpufreq-hw.c | 344 ++++++++++++++++++++++++++++++++++++++
+>>   3 files changed, 355 insertions(+)
+>>   create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+>>
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 52f5f1a..141ec3e 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -312,3 +312,13 @@ config ARM_PXA2xx_CPUFREQ
+>>   	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+>>
+>>   	  If in doubt, say N.
+>> +
+>> +config ARM_QCOM_CPUFREQ_HW
+>> +	bool "QCOM CPUFreq HW driver"
+>> +	help
+>> +	 Support for the CPUFreq HW driver.
+>> +	 Some QCOM chipsets have a HW engine to offload the steps
+>> +	 necessary for changing the frequency of the CPUs. Firmware loaded
+>> +	 in this engine exposes a programming interafce to the High-level OS.
+>> +	 The driver implements the cpufreq driver interface for this HW engine.
+>> +	 Say Y if you want to support CPUFreq HW.
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index fb4a2ec..1226a3e 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -86,6 +86,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>>   obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+>>   obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+>>   obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+>> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
+>>
+>>
+>>   ##################################################################################
+>> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+>> new file mode 100644
+>> index 0000000..fa25a95
+>> --- /dev/null
+>> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+>> @@ -0,0 +1,344 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+>> + */
+>> +
+>> +#include <linux/cpufreq.h>
+>> +#include <linux/init.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/of_platform.h>
+>> +
+>> +#define INIT_RATE			300000000UL
+>> +#define XO_RATE				19200000UL
+>> +#define LUT_MAX_ENTRIES			40U
+>> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
+>> +#define LUT_ROW_SIZE			32
+>> +
+>> +enum {
+>> +	REG_ENABLE,
+>> +	REG_LUT_TABLE,
+>> +	REG_PERF_STATE,
+>> +
+>> +	REG_ARRAY_SIZE,
+>> +};
+>> +
+>> +struct cpufreq_qcom {
+>> +	struct cpufreq_frequency_table *table;
+>> +	struct device *dev;
+>> +	const u16 *reg_offset;
+>> +	void __iomem *base;
+>> +	cpumask_t related_cpus;
+>> +	unsigned int max_cores;
+> 
+> Same comment as on v4:
+> 
+> Why *max*_cores? This seems to be the number of CPUs in a cluster and
+> qcom_read_lut() expects the core count read from the LUT to match
+> exactly. Maybe it's the name from the datasheet? Should it still be
+> 'num_cores' or similer?
+>
+
+Your understanding is correct. I would prefer to leave the naming as 
+'max_cores'.
+
+>> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
+> 
+> It would be an option to limit this to the number of CPU clusters and
+> allocate it dynamically when the driver is initialized (key = first
+> core in the cluster). Probably not worth the hassle with the limited
+> number of cores though.
+> 
+>> +static int qcom_read_lut(struct platform_device *pdev,
+>> +			 struct cpufreq_qcom *c)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	unsigned int offset;
+>> +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
+>> +
+>> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+>> +				sizeof(*c->table), GFP_KERNEL);
+>> +	if (!c->table)
+>> +		return -ENOMEM;
+>> +
+>> +	offset = c->reg_offset[REG_LUT_TABLE];
+>> +
+>> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+>> +		data = readl_relaxed(c->base + offset + i * LUT_ROW_SIZE);
+>> +		src = ((data & GENMASK(31, 30)) >> 30);
+>> +		lval = (data & GENMASK(7, 0));
+>> +		core_count = CORE_COUNT_VAL(data);
+>> +
+>> +		if (src == 0)
+>> +			c->table[i].frequency = INIT_RATE / 1000;
+>> +		else
+>> +			c->table[i].frequency = XO_RATE * lval / 1000;
+> 
+> You changed the condition from '!src' to 'src == 0'. My suggestion on
+> v4 was in part about a negative condition, but also about the
+> order. If it doesn't obstruct the code otherwise I think for an if-else
+> branch it is good practice to handle the more common case first and
+> then the 'exception'. I would expect most entries to have an actual
+> rate. Just a nit in any case, feel free to ignore if you prefer as is.
+> 
+
+Thanks, Sure, I would take care of it in the next series.
+
 >> +static int qcom_cpu_resources_init(struct platform_device *pdev,
 >> +				   struct device_node *np, unsigned int cpu)
 >> +{
@@ -72,6 +212,11 @@ On 7/16/2018 10:42 AM, Viresh Kumar wrote:
 >> +	}
 >> +
 >> +	qcom_freq_domain_map[cpu] = c;
+> 
+> If the general code structure remains as is (see my comment below)
+> the assignment could be done in a 'if (cpu == cpu_r)' branch instead
+> of first assigning and then overwriting it for 'cpu != cpu_r'.
+> 
 >> +
 >> +	/* Related CPUs to keep a single copy */
 >> +	cpu_r = cpumask_first(&c->related_cpus);
@@ -80,29 +225,57 @@ On 7/16/2018 10:42 AM, Viresh Kumar wrote:
 >> +		devm_kfree(dev, c);
 >> +	}
 > 
-> Sorry about missing this, you have actually worked on my comments.
+> Couldn't we do this at the beginning of the function instead of going
+> through allocation, ioremap, read_lut for every core only to throw the
+> information away later for the 'related' CPUs?
 > 
-> But I think this isn't the clever way of doing it. You allocate the
-> structures, fill everything and then finally free them because we were
-> related. Why can't we have similar check at the top of this routine
-> and skip everything then ?
+> qcom_cpu_resources_init() is called with increasing 'cpu' values, hence the
+> 'first' CPU of the cluster is already initialized when the 'related'
+> ones are processed.
 > 
 
-Thanks Viresh, I actually replied to all the reviewers with the changes 
-I have made in v5 series, sorry for not replying individually to all 
-reviewers. Yes, I agree I should have put this check at the beginning of 
-the function.
+I would be moving the code to the beginning of the function.
 
-Please help review of the new series[v5] which takes care of the below.
-
-- Remove mapping different register regions of perf/lut/enable,
-   instead map the entire HW region.
-- Add reg_offset/cpufreq_qcom_std_offsets to be supplied as device data.
-- Check of src == 0 during lut read.
-- Add of_node_put(cpu_np) in qcom_get_related_cpus
-- Update the qcom_cpu_resources_init for register offset data,
-   and cleanup the related cpus to keep a single copy of CPUfreq.
-- Replace FW with HW, update Kconfig, rename filename qcom-cpufreq-hw.c
+>> +	return 0;
+>> +}
+>> +
+>> +static int qcom_resources_init(struct platform_device *pdev)
+>> +{
+>> +	struct device_node *np, *cpu_np;
+>> +	unsigned int cpu;
+>> +	int ret;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		cpu_np = of_cpu_device_node_get(cpu);
+>> +		if (!cpu_np) {
+>> +			dev_err(&pdev->dev, "Failed to get cpu %d device\n",
+>> +				cpu);
+>> +			continue;
+>> +		}
+>> +
+>> +		np = of_parse_phandle(cpu_np, "qcom,freq-domain", 0);
+>> +		if (!np) {
+>> +			dev_err(&pdev->dev, "Failed to get freq-domain device\n");
+> 
+> 			of_node_put(cpu_np);
+> 
+>> +			return -EINVAL;
+>> +		}
+>> +
+>> +		of_node_put(cpu_np);
+>> +
+>> +		ret = qcom_cpu_resources_init(pdev, np, cpu);
+>> +		if (ret)
+>> +			return ret;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+> 
+> Thanks
+> 
+> Matthias
+> 
 
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
