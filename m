@@ -1,87 +1,108 @@
 From: Taniya Das <tdas@codeaurora.org>
 Subject: Re: [PATCH v5 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
  driver
-Date: Tue, 17 Jul 2018 08:20:14 +0530
-Message-ID: <6a75b366-8290-e820-571c-675c060e573e@codeaurora.org>
+Date: Tue, 17 Jul 2018 08:29:06 +0530
+Message-ID: <3163a20a-31ca-15a0-56e2-38e977b21ae2@codeaurora.org>
 References: <1531418745-19742-1-git-send-email-tdas@codeaurora.org>
  <1531418745-19742-3-git-send-email-tdas@codeaurora.org>
- <CAE=gft7pVnhbEtOyR7Q8n_WuL_RsttrxN+sp=_EPyR=D3NPv9g@mail.gmail.com>
+ <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft7pVnhbEtOyR7Q8n_WuL_RsttrxN+sp=_EPyR=D3NPv9g@mail.gmail.com>
+In-Reply-To: <20180716051219.36rdvxux3lz3rjed@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Evan Green <evgreen@google.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, Saravana Kannan <skannan@codeaurora.org>, amit.kucheria@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello Evan,
 
-Thank you for testing the patch.
 
-On 7/17/2018 4:32 AM, Evan Green wrote:
-> Hi Taniya,
-> On Thu, Jul 12, 2018 at 11:06 AM Taniya Das <tdas@codeaurora.org> wrote:
->>
->> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
->> for changing the frequency of CPUs. The driver implements the cpufreq
->> driver interface for this hardware engine.
->>
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   drivers/cpufreq/Kconfig.arm       |  10 ++
->>   drivers/cpufreq/Makefile          |   1 +
->>   drivers/cpufreq/qcom-cpufreq-hw.c | 344 ++++++++++++++++++++++++++++++++++++++
->>   3 files changed, 355 insertions(+)
->>   create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
->>
-> ...
->> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
->> new file mode 100644
->> index 0000000..fa25a95
->> --- /dev/null
->> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> ...
->> +static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+On 7/16/2018 10:42 AM, Viresh Kumar wrote:
+> On 12-07-18, 23:35, Taniya Das wrote:
+>> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+>> +				   struct device_node *np, unsigned int cpu)
 >> +{
->> +       struct cpufreq_qcom *c;
+>> +	struct cpufreq_qcom *c;
+>> +	struct resource res;
+>> +	struct device *dev = &pdev->dev;
+>> +	unsigned int offset, cpu_r;
+>> +	int ret;
 >> +
->> +       c = qcom_freq_domain_map[policy->cpu];
->> +       if (!c) {
->> +               pr_err("No scaling support for CPU%d\n", policy->cpu);
->> +               return -ENODEV;
->> +       }
+>> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+>> +	if (!c)
+>> +		return -ENOMEM;
 >> +
->> +       cpumask_copy(policy->cpus, &c->related_cpus);
+>> +	c->reg_offset = of_device_get_match_data(&pdev->dev);
+>> +	if (!c->reg_offset)
+>> +		return -EINVAL;
 >> +
->> +       policy->fast_switch_possible = true;
->> +       policy->freq_table = c->table;
->> +       policy->driver_data = c;
+>> +	if (of_address_to_resource(np, 0, &res))
+>> +		return -ENOMEM;
 >> +
->> +       return 0;
-> I haven't looked at this driver in detail, but I have tested it.
-> Instead of the line above, I needed:
+>> +	c->base = devm_ioremap(dev, res.start, resource_size(&res));
+>> +	if (!c->base) {
+>> +		dev_err(dev, "Unable to map %s base\n", np->name);
+>> +		return -ENOMEM;
+>> +	}
+>> +
+>> +	offset = c->reg_offset[REG_ENABLE];
+>> +
+>> +	/* HW should be in enabled state to proceed */
+>> +	if (!(readl_relaxed(c->base + offset) & 0x1)) {
+>> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	ret = qcom_get_related_cpus(np, &c->related_cpus);
+>> +	if (ret) {
+>> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
+>> +		return ret;
+>> +	}
+>> +
+>> +	c->max_cores = cpumask_weight(&c->related_cpus);
+>> +	if (!c->max_cores)
+>> +		return -ENOENT;
+>> +
+>> +	ret = qcom_read_lut(pdev, c);
+>> +	if (ret) {
+>> +		dev_err(dev, "%s failed to read LUT\n", np->name);
+>> +		return ret;
+>> +	}
+>> +
+>> +	qcom_freq_domain_map[cpu] = c;
+>> +
+>> +	/* Related CPUs to keep a single copy */
+>> +	cpu_r = cpumask_first(&c->related_cpus);
+>> +	if (cpu != cpu_r) {
+>> +		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
+>> +		devm_kfree(dev, c);
+>> +	}
 > 
-> return cpufreq_table_validate_and_show(policy, c->table);
+> Sorry about missing this, you have actually worked on my comments.
 > 
-> Without this the framework thinks that the min and max frequencies are
-> zero, and then you get a warning about an invalid table. I also
-> removed "policy->freq_table = c->table", since validate_and_show does
-> this.
-> -Evan
+> But I think this isn't the clever way of doing it. You allocate the
+> structures, fill everything and then finally free them because we were
+> related. Why can't we have similar check at the top of this routine
+> and skip everything then ?
 > 
 
-The API is no longer supported,
+Thanks Viresh, I actually replied to all the reviewers with the changes 
+I have made in v5 series, sorry for not replying individually to all 
+reviewers. Yes, I agree I should have put this check at the beginning of 
+the function.
 
-https://patchwork.kernel.org/patch/10320897/
+Please help review of the new series[v5] which takes care of the below.
 
-If you are using the 4.14 kernel, you do need to replace
-
--policy->freq_table = c->table;
-+cpufreq_table_validate_and_show(policy, c->table);
+- Remove mapping different register regions of perf/lut/enable,
+   instead map the entire HW region.
+- Add reg_offset/cpufreq_qcom_std_offsets to be supplied as device data.
+- Check of src == 0 during lut read.
+- Add of_node_put(cpu_np) in qcom_get_related_cpus
+- Update the qcom_cpu_resources_init for register offset data,
+   and cleanup the related cpus to keep a single copy of CPUfreq.
+- Replace FW with HW, update Kconfig, rename filename qcom-cpufreq-hw.c
 
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
