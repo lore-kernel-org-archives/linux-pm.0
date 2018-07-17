@@ -1,47 +1,59 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 5/5] ARM: dts: exynos: add tmu aliases nodes
-Date: Tue, 17 Jul 2018 14:29:45 +0200
-Message-ID: <CAJKOXPc256dCWWWaoJBOB9NUc=CUYtqgfeKh=LBOoFAfh_T8Ng@mail.gmail.com>
-References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com> <1531822342-4293-5-git-send-email-linux.amoon@gmail.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2 00/12] Add utilization clamping support
+Date: Tue, 17 Jul 2018 06:03:57 -0700
+Message-ID: <20180717130357.GA17824@joelaf.mtv.corp.google.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1531822342-4293-5-git-send-email-linux.amoon@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180716082906.6061-1-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
-> add tmuctrl aliases node for exynos542x
+On Mon, Jul 16, 2018 at 09:28:54AM +0100, Patrick Bellasi wrote:
+> This is a respin of:
+> 
+>    https://lore.kernel.org/lkml/20180409165615.2326-1-patrick.bellasi@arm.com
+> 
+> which addresses all the feedbacks collected from the LKML discussion as well
+> as during the presentation at last OSPM Summit:
+> 
+>    https://www.youtube.com/watch?v=0Yv9smm9i78
+> 
+> Further comments and feedbacks are more than welcome!
+> 
+[...] 
+> 
+> Patrick Bellasi (12):
+>   sched/core: uclamp: extend sched_setattr to support utilization
+>     clamping
+>   sched/core: uclamp: map TASK's clamp values into CPU's clamp groups
+>   sched/core: uclamp: add CPU's clamp groups accounting
+>   sched/core: uclamp: update CPU's refcount on clamp changes
+>   sched/cpufreq: uclamp: add utilization clamping for FAIR tasks
+>   sched/cpufreq: uclamp: add utilization clamping for RT tasks
+>   sched/core: uclamp: enforce last task UCLAMP_MAX
+>   sched/core: uclamp: extend cpu's cgroup controller
+>   sched/core: uclamp: map TG's clamp values into CPU's clamp groups
+>   sched/core: uclamp: use TG's clamps to restrict Task's clamps
+>   sched/core: uclamp: update CPU's refcount on TG's clamp changes
+>   sched/core: uclamp: use percentage clamp values
+> 
+>  Documentation/admin-guide/cgroup-v2.rst |  25 +
+>  include/linux/sched.h                   |  53 ++
+>  include/uapi/linux/sched.h              |   4 +-
+>  include/uapi/linux/sched/types.h        |  66 +-
+>  init/Kconfig                            |  63 ++
+>  kernel/sched/core.c                     | 876 ++++++++++++++++++++++++
 
-Please use full sentence, starting with capital letter and ending with
-a dot. Also please explain why you need tmuctrl aliases.
+While I'm reviewing these patches, I had a quick thought. core.c is already
+7k+ lines. Based on this diffstat, does it make sense for uclamp to be in its
+own kernel/sched/uclamp.c file?
 
->
-> CC: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Anand Moon <linux.amoon@gmail.com>
-> ---
->  arch/arm/boot/dts/exynos5420-peach-pit.dts         |  8 ++++----
->  arch/arm/boot/dts/exynos5420.dtsi                  | 20 ++++++++++++--------
->  arch/arm/boot/dts/exynos5422-odroid-core.dtsi      |  8 ++++----
->  arch/arm/boot/dts/exynos5422-odroidhc1.dts         |  8 ++++----
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  8 ++++----
->  arch/arm/boot/dts/exynos5800-peach-pi.dts          |  8 ++++----
->  6 files changed, 32 insertions(+), 28 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/exynos5420-peach-pit.dts b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-> index 57c2332..ff79f0b 100644
-> --- a/arch/arm/boot/dts/exynos5420-peach-pit.dts
-> +++ b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-> @@ -1061,19 +1061,19 @@
->         status = "okay";
->  };
->
-> -&tmu_cpu0 {
-> +&tmu_cpu_0 {
+thanks,
 
-This looks irrelevant to the topic of adding aliases.
-
-Best regards,
-Krzysztof
+- Joel
+ 
