@@ -1,106 +1,102 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Commit 554c8aa8ecad causing severe performance degression with pcc-cpufreq
-Date: Tue, 17 Jul 2018 10:52:02 +0200
-Message-ID: <CAJZ5v0iSHz4o4eF_u_WajmbkGfcsnJ5rAsme0OhzNjUTwLC_5Q@mail.gmail.com>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <CAJZ5v0ihkNKPrtzKynt8jgQi1JjwCm+SdoUnu4XqoPSkOroHvA@mail.gmail.com>
- <20180717083626.ait7lqvxk2e4b2hz@suselix>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 17 Jul 2018 10:57:13 +0200
+Message-ID: <fe73f66d-7bed-f413-eb77-34f3d385dbc7@arm.com>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-4-quentin.perret@arm.com>
+ <4341d199-8018-21e1-c2ce-9af8f7719297@arm.com>
+ <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
+ <20180716102917.GA19311@e108498-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180717083626.ait7lqvxk2e4b2hz@suselix>
+In-Reply-To: <20180716102917.GA19311@e108498-lin.cambridge.arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 10:36 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> On Tue, Jul 17, 2018 at 09:33:53AM +0200, Rafael J. Wysocki wrote:
->> Hi,
->>
->> Thanks for your report!
->>
->> On Tue, Jul 17, 2018 at 8:50 AM, Andreas Herrmann <aherrmann@suse.com> wrote:
->> > Hello,
->> >
->> > I've recently noticed that commit 554c8aa8ecad ("sched: idle: Select
->> > idle state before stopping the tick") causes severe performance drop
->> > for systems using pcc-cpufreq driver. Depending on the number of CPUs
->> > the system might be almost unusable. The OS jitter for 4.17.y and
->> > 4.18.-rcx kernels is off the charts, you can even spot it with top
->> > command (issued when the system is supposedly idle), e.g.
->> >
->> >  top - 14:44:24 up 2 min,  1 user,  load average: 90.11, 38.20, 14.38
->> >  Tasks: 1199 total, 109 running, 541 sleeping,   0 stopped,   0 zombie
->> >  %Cpu(s):  1.2 us, 58.7 sy,  0.0 ni, 39.3 id,  0.6 wa,  0.0 hi,  0.3 si,  0.0 st
->> >  KiB Mem:  13137064+total,  1192168 used, 13017848+free,     2340 buffers
->> >  KiB Swap:  2104316 total,        0 used,  2104316 free.   522296 cached Mem
->> >
->> >    PID USER      PR  NI    VIRT    RES    SHR S    %CPU  %MEM     TIME+ COMMAND
->> >   3373 root      20   0  982024  49916  36120 R  96.691 0.038   0:19.54 kubelet
->> >     67 root      20   0       0      0      0 R  78.676 0.000   0:49.36 kworker/9:0
->> >     25 root      20   0       0      0      0 R  78.125 0.000   0:49.67 kworker/2:0
->> >    182 root      20   0       0      0      0 R  75.735 0.000   1:18.17 kworker/28:0
->> >     43 root      20   0       0      0      0 R  75.000 0.000   0:11.56 kworker/5:0
->> >    103 root      20   0       0      0      0 R  74.449 0.000   0:46.83 kworker/15:0
->> >    334 root      20   0       0      0      0 R  72.978 0.000   1:06.88 kworker/53:0
->> >    789 root      20   0       0      0      0 R  69.853 0.000   1:29.50 kworker/38:1
->> >    418 root      20   0       0      0      0 R  69.301 0.000   0:41.33 kworker/67:0
->> >    779 root      20   0       0      0      0 R  68.934 0.000   1:33.60 kworker/27:1
->> >    773 root      20   0       0      0      0 R  68.566 0.000   1:37.91 kworker/22:1
->> >    762 root      20   0       0      0      0 R  68.015 0.000   1:41.01 kworker/11:1
->> >    769 root      20   0       0      0      0 R  67.647 0.000   1:37.65 kworker/18:1
->> >    805 root      20   0       0      0      0 R  67.096 0.000   1:30.96 kworker/54:1
->> >    840 root      20   0       0      0      0 R  66.912 0.000   1:23.82 kworker/89:1
->> >    812 root      20   0       0      0      0 R  66.728 0.000   1:31.89 kworker/59:1
->> >    847 root      20   0       0      0      0 R  66.360 0.000   1:28.40 kworker/96:1
->> >    763 root      20   0       0      0      0 R  66.176 0.000   1:42.57 kworker/12:1
->> >    772 root      20   0       0      0      0 R  66.176 0.000   1:12.58 kworker/21:1
->> >    821 root      20   0       0      0      0 R  66.176 0.000   1:29.62 kworker/69:1
->> >    923 root      20   0       0      0      0 R  65.809 0.000   1:44.32 kworker/3:18
->> >   1284 root      20   0       0      0      0 R  65.809 0.000   1:23.50 kworker/101:2
->> >     61 root      20   0       0      0      0 R  65.625 0.000   1:29.37 kworker/8:0
->> >   3531 root      20   0   24384   3768   2356 R  65.625 0.003   0:08.91 top
->> >    771 root      20   0       0      0      0 R  65.074 0.000   1:37.90 kworker/20:1
->> >    767 root      20   0       0      0      0 R  64.706 0.000   1:38.01 kworker/16:1
->> >    764 root      20   0       0      0      0 R  64.522 0.000   1:40.28 kworker/13:1
->> >    765 root      20   0       0      0      0 R  64.154 0.000   1:40.13 kworker/14:1
->> >
->> > When I apply below patch (trying to revert essential parts of commit
->> > 554c8aa8ecad) behaviour seems back to normal.
->>
->> Well, that basically defeats the purpose of the change in commit
->> 554c8aa8ecad, so it's not what I'd like to do to fix this problem.
->>
->> Also it would be good to understand what actually happens.
->>
->> > I know that pcc-cpufreq driver is not "state-of-the-art" when it comes
->> > to cpufreq drivers and you better not use it.
->>
->> That's exactly right.
->>
->> > But I wonder whether commit 554c8aa8ecad ("sched: idle: Select idle state before
->> > stopping the tick") introduced bad behaviour for other cases as well.
->>
->> It has been tested quite extensively in that respect, although
->> admittedly not with the pcc-cpufreq driver.
->>
->> Nothing bad related to it has been has been reported so far, FWIW.
->>
->> > I'll send some performance results to illustrate the issue asap. I've
->> > also tried to modify pcc-cpufreq to reduce the amount of frequency
->> > changes triggered by this driver but this does not help for kernels
->> > where commit 554c8aa8ecad is applied.
->>
->> Can you replace pcc-cpufreq with a different cpufreq driver on the
->> affected systems?  If so, do performance numbers look bad after that
->> too?
->
-> I have no performance numbers yet for other cpufreq drivers on this
-> system (checking this commit).  But I'll look it at next.
+On 07/16/2018 12:29 PM, Quentin Perret wrote:
+> On Tuesday 10 Jul 2018 at 09:32:02 (+0100), Quentin Perret wrote:
 
-Thanks!
+[...]
 
-Generally speaking, pcc-cpufreq is fundamentally not scalable, so the
-additional concurrency brought in by the commit in question may have
-exposed that weakness if that driver is run on a system with multiple
-logical CPUs.
+> Another thing to take into consideration here is basically that the
+> thermal subsystem (IPA) will be impacted by the RCU protection on the
+> cs_table. However, since the 'frequency' and 'power' fields do not change
+> at run-time, and since IPA doesn't need the 'capacity' value, there is no
+> good reason to have IPA do rcu_read_lock() all over the place, so
+> arguably something needs to be fixed here.
+> 
+> One possibility is to remove entirely the following struct:
+> 	struct em_cap_state {
+> 		unsigned long capacity;
+> 		unsigned long frequency; /* Kilo-hertz */
+> 		unsigned long power; /* Milli-watts */
+> 	};
+> 
+> and to have three independent vectors (of the same size) for frequency,
+> power and capacity. That way only the 'capacity' vector would be RCU
+> protected, and IPA could use 'frequency' and 'power' directly, without
+> further protections.
+> 
+> A second possibility is to remove the capacity values from the EM
+> altogether (as I suggested in my previous message) and to get rid of the
+> need for RCU protection at the same occasion.
+
+I see an impact of 'calculating capacity on the fly' in 
+compute_energy()->em_fd_energy(). Running the first energy test case (# 
+task equal 10) on the Juno r0 board with function profiling gives me:
+
+v4:
+
+   Function              Hit    Time            Avg             s^2
+A53 - cpu [0,3-5]
+   compute_energy      14620    30790.86 us     2.106 us        8.421 us
+   compute_energy        682    1512.960 us     2.218 us        0.154 us
+   compute_energy       1207    2627.820 us     2.177 us        0.172 us
+   compute_energy         93    206.720 us      2.222 us        0.151 us
+A57 - cpu [1-2]
+   compute_energy        153    160.100 us      1.046 us        0.190 us
+   compute_energy        136    130.760 us      0.961 us        0.077 us
+
+
+v4 + 'calculating capacity on the fly':
+
+   Function              Hit    Time            Avg             s^2
+A53 - cpu [0,3-5]
+   compute_energy      11623    26941.12 us     2.317 us        12.203 us
+   compute_energy       5062    11771.48 us     2.325 us        0.819 us
+   compute_energy       4391    10396.78 us     2.367 us        1.753 us
+   compute_energy       2234    5265.640 us     2.357 us        0.955 us
+A57 - cpu [1-2]
+   compute_energy         59    66.020 us       1.118 us        0.112 us
+   compute_energy        229    234.880 us      1.025 us        0.135 us
+
+The code is not optimized, I just replaced cs->capacity with 
+arch_scale_cpu_capacity(NULL, cpu) (max_cap) and 'max_cap * 
+cs->frequency / max_freq' respectively.
+There are 3 compute_energy() calls per wake-up on a system with 2 
+frequency domains.
+
+> The second option simplifies the code of the EM framework significantly
+> (no more em_rescale_cpu_capacity()) and shouldn't introduce massive
+> overheads on the scheduler side (the energy calculation already
+> requires one multiplication and one division, so nothing new on that
+> side). At the same time, that would make it a whole lot easier to
+> interface the EM framework with IPA without having to deal with RCU all
+> over the place.
+
+IMO, em_rescale_cpu_capacity() is just the capacity related example what 
+the EM needs if its values can be changed at runtime. There might be 
+other use cases in the future like changing power values depending on 
+temperature.
+So maybe it's a good idea to not have this 'EM values can change at 
+runtime' feature in the first version of the EM and emphasize on 
+simplicity of the code instead (if we can eliminate the extra runtime 
+overhead).
+
+[...]
