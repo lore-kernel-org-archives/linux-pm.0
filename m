@@ -1,17 +1,17 @@
 From: Niklas =?iso-8859-1?Q?S=F6derlund?=
         <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH v4 2/3] regulator: bd9571mwv: Add support for toggle
- power switches
-Date: Tue, 17 Jul 2018 13:49:16 +0200
-Message-ID: <20180717114916.GG10087@bigcity.dyn.berto.se>
+Subject: Re: [PATCH v4 3/3] regulator: bd9571mwv: Document "backup_mode"
+ sysfs file
+Date: Tue, 17 Jul 2018 13:53:06 +0200
+Message-ID: <20180717115306.GH10087@bigcity.dyn.berto.se>
 References: <20180716153052.1830-1-geert+renesas@glider.be>
- <20180716153052.1830-3-geert+renesas@glider.be>
+ <20180716153052.1830-4-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180716153052.1830-3-geert+renesas@glider.be>
+In-Reply-To: <20180716153052.1830-4-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -21,83 +21,56 @@ Hi Geert,
 
 Thanks for your work.
 
-On 2018-07-16 17:30:51 +0200, Geert Uytterhoeven wrote:
-> Extend the existing support for backup mode to toggle power switches.
-> With a toggle power switch (or level signal), the following steps must
-> be followed exactly:
->    1. Configure PMIC for backup mode, to change the role of the
->       accessory power switch from a power switch to a wake-up switch,
->    2. Switch accessory power switch off, to prepare for system suspend,
->       which is a manual step not controlled by software,
->    3. Suspend system,
->    4. Switch accessory power switch on, to resume the system.
-> 
-> Hence the PMIC is configured for backup mode when "on" or "1" is written
-> to the PMIC's "backup_mode" virtual file in sysfs.  Conversely, writing
-> "off" or "0" reverts the role of the accessory switch to a power
-> switch.
-> 
-> Unlike with momentary switches, backup mode is not enabled by default,
-> as enabling it prevents the board from being powered off using the power
-> switch, which may confuse the user.
-> 
+On 2018-07-16 17:30:52 +0200, Geert Uytterhoeven wrote:
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
 Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
 > ---
 > v4:
->   - Improve patch description and comment,
+>   - Add Acked-by,
 > 
 > v3:
->   - Replace use of "wake_up" sysfs file and extra callback for wake-up
->     change notification by custom "backup_mode" sysfs file,
-> 
-> v2:
->   - Improve patch description,
->   - Drop "return;" at end of function.
+>   - New.
 > ---
->  drivers/regulator/bd9571mwv-regulator.c | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
+>  .../testing/sysfs-driver-bd9571mwv-regulator  | 27 +++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
 > 
-> diff --git a/drivers/regulator/bd9571mwv-regulator.c b/drivers/regulator/bd9571mwv-regulator.c
-> index 1da36a6590c84ba4..c44613b9423baf07 100644
-> --- a/drivers/regulator/bd9571mwv-regulator.c
-> +++ b/drivers/regulator/bd9571mwv-regulator.c
-> @@ -185,6 +185,7 @@ static ssize_t backup_mode_store(struct device *dev,
->  				 const char *buf, size_t count)
->  {
->  	struct bd9571mwv_reg *bdreg = dev_get_drvdata(dev);
-> +	unsigned int mode;
->  	int ret;
->  
->  	if (!count)
-> @@ -194,6 +195,25 @@ static ssize_t backup_mode_store(struct device *dev,
->  	if (ret)
->  		return ret;
->  
-> +	if (!bdreg->rstbmode_level)
-> +		return count;
-> +
-> +	/*
-> +	 * Configure DDR Backup Mode, to change the role of the accessory power
-> +	 * switch from a power switch to a wake-up switch, or vice versa
-> +	 */
-> +	ret = bd9571mwv_bkup_mode_read(bdreg->bd, &mode);
-> +	if (ret)
-> +		return ret;
-> +
-> +	mode &= ~BD9571MWV_BKUP_MODE_CNT_KEEPON_MASK;
-> +	if (bdreg->bkup_mode_enabled)
-> +		mode |= bdreg->bkup_mode_cnt_keepon;
-> +
-> +	ret = bd9571mwv_bkup_mode_write(bdreg->bd, mode);
-> +	if (ret)
-> +		return ret;
-> +
->  	return count;
->  }
->  
+> diff --git a/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+> new file mode 100644
+> index 0000000000000000..4d63a7904b94a993
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+> @@ -0,0 +1,27 @@
+> +What:		/sys/bus/i2c/devices/.../bd9571mwv-regulator.*.auto/backup_mode
+> +Date:		Jul 2018
+> +KernelVersion:	4.19
+> +Contact:	Geert Uytterhoeven <geert+renesas@glider.be>
+> +Description:	Read/write the current state of DDR Backup Mode, which controls
+> +		if DDR power rails will be kept powered during system suspend.
+> +		("on"/"1" = enabled, "off"/"0" = disabled).
+> +		Two types of power switches (or control signals) can be used:
+> +		  A. With a momentary power switch (or pulse signal), DDR
+> +		     Backup Mode is enabled by default when available, as the
+> +		     PMIC will be configured only during system suspend.
+> +		  B. With a toggle power switch (or level signal), the
+> +		     following steps must be followed exactly:
+> +		       1. Configure PMIC for backup mode, to change the role of
+> +			  the accessory power switch from a power switch to a
+> +			  wake-up switch,
+> +		       2. Switch accessory power switch off, to prepare for
+> +			  system suspend, which is a manual step not controlled
+> +			  by software,
+> +		       3. Suspend system,
+> +		       4. Switch accessory power switch on, to resume the
+> +			  system.
+> +		     DDR Backup Mode must be explicitly enabled by the user,
+> +		     to invoke step 1.
+> +		See also Documentation/devicetree/bindings/mfd/bd9571mwv.txt.
+> +Users:		User space applications for embedded boards equipped with a
+> +		BD9571MWV PMIC.
 > -- 
 > 2.17.1
 > 
