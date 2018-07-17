@@ -1,8 +1,8 @@
 From: Joel Fernandes <joel@joelfernandes.org>
 Subject: Re: [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to
  support utilization clamping
-Date: Tue, 17 Jul 2018 10:50:25 -0700
-Message-ID: <20180717175025.GA150378@joelaf.mtv.corp.google.com>
+Date: Tue, 17 Jul 2018 11:04:34 -0700
+Message-ID: <20180717180434.GB150378@joelaf.mtv.corp.google.com>
 References: <20180716082906.6061-1-patrick.bellasi@arm.com>
  <20180716082906.6061-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
@@ -102,140 +102,10 @@ On Mon, Jul 16, 2018 at 09:28:55AM +0100, Patrick Bellasi wrote:
 > +	/* Utlization clamp values for this task */
 > +	int				uclamp[UCLAMP_CNT];
 > +#endif
-> +
->  #ifdef CONFIG_PREEMPT_NOTIFIERS
->  	/* List of struct preempt_notifier: */
->  	struct hlist_head		preempt_notifiers;
-> diff --git a/include/uapi/linux/sched.h b/include/uapi/linux/sched.h
-> index 22627f80063e..c27d6e81517b 100644
-> --- a/include/uapi/linux/sched.h
-> +++ b/include/uapi/linux/sched.h
-> @@ -50,9 +50,11 @@
->  #define SCHED_FLAG_RESET_ON_FORK	0x01
->  #define SCHED_FLAG_RECLAIM		0x02
->  #define SCHED_FLAG_DL_OVERRUN		0x04
-> +#define SCHED_FLAG_UTIL_CLAMP		0x08
->  #define SCHED_FLAG_ALL	(SCHED_FLAG_RESET_ON_FORK	| \
->  			 SCHED_FLAG_RECLAIM		| \
-> -			 SCHED_FLAG_DL_OVERRUN)
-> +			 SCHED_FLAG_DL_OVERRUN		| \
-> +			 SCHED_FLAG_UTIL_CLAMP)
->  
->  #endif /* _UAPI_LINUX_SCHED_H */
-> diff --git a/include/uapi/linux/sched/types.h b/include/uapi/linux/sched/types.h
-> index 10fbb8031930..7421cd25354d 100644
-> --- a/include/uapi/linux/sched/types.h
-> +++ b/include/uapi/linux/sched/types.h
-> @@ -21,8 +21,33 @@ struct sched_param {
->   * the tasks may be useful for a wide variety of application fields, e.g.,
->   * multimedia, streaming, automation and control, and many others.
->   *
-> - * This variant (sched_attr) is meant at describing a so-called
-> - * sporadic time-constrained task. In such model a task is specified by:
-> + * This variant (sched_attr) allows to define additional attributes to
-> + * improve the scheduler knowledge about task requirements.
-> + *
-> + * Scheduling Class Attributes
-> + * ===========================
-> + *
-> + * A subset of sched_attr attributes specifies the
-> + * scheduling policy and relative POSIX attributes:
-> + *
-> + *  @size		size of the structure, for fwd/bwd compat.
-> + *
-> + *  @sched_policy	task's scheduling policy
-> + *  @sched_nice		task's nice value      (SCHED_NORMAL/BATCH)
-> + *  @sched_priority	task's static priority (SCHED_FIFO/RR)
-> + *
-> + * Certain more advanced scheduling features can be controlled by a
-> + * predefined set of flags via the attribute:
-> + *
-> + *  @sched_flags	for customizing the scheduler behaviour
-> + *
-> + * Sporadic Time-Constrained Tasks Attributes
-> + * ==========================================
-> + *
-> + * A subset of sched_attr attributes allows to describe a so-called
-> + * sporadic time-constrained task.
-> + *
-> + * In such model a task is specified by:
->   *  - the activation period or minimum instance inter-arrival time;
->   *  - the maximum (or average, depending on the actual scheduling
->   *    discipline) computation time of all instances, a.k.a. runtime;
-> @@ -34,14 +59,8 @@ struct sched_param {
->   * than the runtime and must be completed by time instant t equal to
->   * the instance activation time + the deadline.
->   *
-> - * This is reflected by the actual fields of the sched_attr structure:
-> + * This is reflected by the following fields of the sched_attr structure:
->   *
-> - *  @size		size of the structure, for fwd/bwd compat.
-> - *
-> - *  @sched_policy	task's scheduling policy
-> - *  @sched_flags	for customizing the scheduler behaviour
-> - *  @sched_nice		task's nice value      (SCHED_NORMAL/BATCH)
-> - *  @sched_priority	task's static priority (SCHED_FIFO/RR)
->   *  @sched_deadline	representative of the task's deadline
->   *  @sched_runtime	representative of the task's runtime
->   *  @sched_period	representative of the task's period
-> @@ -53,6 +72,28 @@ struct sched_param {
->   * As of now, the SCHED_DEADLINE policy (sched_dl scheduling class) is the
->   * only user of this new interface. More information about the algorithm
->   * available in the scheduling class file or in Documentation/.
-> + *
-> + * Task Utilization Attributes
-> + * ===========================
-> + *
-> + * A subset of sched_attr attributes allows to specify the utilization which
-> + * should be expected by a task. These attributes allows to inform the
-> + * scheduler about the utilization boundaries within which is safe to schedule
-> + * the task. These utilization boundaries are valuable information to support
-> + * scheduler decisions on both task placement and frequencies selection.
-> + *
-> + *  @sched_util_min	represents the minimum utilization
-> + *  @sched_util_max	represents the maximum utilization
-> + *
-> + * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE] which
-> + * represents the percentage of CPU time used by a task when running at the
-> + * maximum frequency on the highest capacity CPU of the system. Thus, for
-> + * example, a 20% utilization task is a task running for 2ms every 10ms.
-> + *
-> + * A task with a min utilization value bigger then 0 is more likely to be
-> + * scheduled on a CPU which can provide that bandwidth.
-> + * A task with a max utilization value smaller then 1024 is more likely to be
-> + * scheduled on a CPU which do not provide more then the required bandwidth.
->   */
->  struct sched_attr {
->  	__u32 size;
-> @@ -70,6 +111,11 @@ struct sched_attr {
->  	__u64 sched_runtime;
->  	__u64 sched_deadline;
->  	__u64 sched_period;
-> +
-> +	/* Utilization hints */
-> +	__u32 sched_util_min;
-> +	__u32 sched_util_max;
-> +
->  };
->  
->  #endif /* _UAPI_LINUX_SCHED_TYPES_H */
-> diff --git a/init/Kconfig b/init/Kconfig
-> index 041f3a022122..1d45a6877d6f 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
->  config GENERIC_SCHED_CLOCK
->  	bool
->  
-> +menu "Scheduler features"
-> +
-> +config UCLAMP_TASK
-> +	bool "Enable utilization clamping for RT/FAIR tasks"
-> +	depends on CPU_FREQ_GOV_SCHEDUTIL
 
-Does it make sense to depend on this? One could turn off schedutil and then
-uclamp can't be used for any other purpose (big.LITTLE task placement etc)?
+Seems a bit wasteful to me. Seems you need 2 values that are in the range
+0..1024.  Can we not do better with task_struct space usage?
 
-thanks,
+thanks!
 
-- Joel
+ - Joel
