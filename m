@@ -1,106 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Register when ACPI PCCH is present
-Date: Tue, 17 Jul 2018 20:06:54 +0200
-Message-ID: <2386802.jRaeHeNqoJ@aspire.rjw.lan>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717140336.ayovaz4ksdlak6bb@suselix> <8115130.Fhkpr82c7G@aspire.rjw.lan>
+From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
+ recursion in suspend/resume paths
+Date: Tue, 17 Jul 2018 20:20:41 +0200
+Message-ID: <20180717182041.GA18363@wunner.de>
+References: <20180716235936.11268-1-lyude@redhat.com>
+ <20180716235936.11268-2-lyude@redhat.com>
+ <20180717071641.GA5411@wunner.de>
+ <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8115130.Fhkpr82c7G@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lyude Paul <lyude-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Currently, intel_pstate doesn't load if _PSS is not present on
-HP Proliant systems, because it expects the firmware to take over
-CPU performance scaling in that case.  However, if ACPI PCCH is
-present, the firmware expects the kernel to use it for CPU
-performance scaling and the pcc-cpufreq driver is loaded for that.
-
-Unfortunately, the firmware interface used by that driver is not
-scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
-on systems with more than just a few CPUs.  In fact, it is better to
-avoid using it at all.
-
-For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
-is not present and register if it is there.  Also prevent the
-pcc-cpufreq driver from trying to initialize if intel_pstate has
-been registered already.
-
-Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power mgmt option)
-Reported-by: Andreas Herrmann <aherrmann@suse.com>
-Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-This is a replacement for https://patchwork.kernel.org/patch/10530091/
-
-In addition to the intel_pstate changes in the above, it also
-prevents pcc-cpufreq from trying to initialize (which will fail
-ultimately, but may confuse the firmware in the meantime).
-
-Andreas, please test this one and let me know if it still works for you.
-
-Thanks,
-Rafael
-
----
- drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
- drivers/cpufreq/pcc-cpufreq.c  |    4 ++++
- 2 files changed, 20 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
- 	return true;
- }
- 
-+static bool __init intel_pstate_no_acpi_pcch(void)
-+{
-+	acpi_status status;
-+	acpi_handle handle;
-+
-+	status = acpi_get_handle(NULL, "\\_SB", &handle);
-+	if (ACPI_FAILURE(status))
-+		return true;
-+
-+	return !acpi_has_method(handle, "PCCH");
-+}
-+
- static bool __init intel_pstate_has_acpi_ppc(void)
- {
- 	int i;
-@@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
- 
- 	switch (plat_info[idx].data) {
- 	case PSS:
--		return intel_pstate_no_acpi_pss();
-+		if (!intel_pstate_no_acpi_pss())
-+			return false;
-+
-+		return intel_pstate_no_acpi_pcch();
- 	case PPC:
- 		return intel_pstate_has_acpi_ppc() && !force_load;
- 	}
-Index: linux-pm/drivers/cpufreq/pcc-cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/pcc-cpufreq.c
-+++ linux-pm/drivers/cpufreq/pcc-cpufreq.c
-@@ -580,6 +580,10 @@ static int __init pcc_cpufreq_init(void)
- {
- 	int ret;
- 
-+	/* Skip initialization if another cpufreq driver is there. */
-+	if (cpufreq_get_current_driver())
-+		return 0;
-+
- 	if (acpi_disabled)
- 		return 0;
- 
+T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgMTI6NTM6MTFQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90
+ZToKPiBPbiBUdWUsIDIwMTgtMDctMTcgYXQgMDk6MTYgKzAyMDAsIEx1a2FzIFd1bm5lciB3cm90
+ZToKPiA+IE9uIE1vbiwgSnVsIDE2LCAyMDE4IGF0IDA3OjU5OjI1UE0gLTA0MDAsIEx5dWRlIFBh
+dWwgd3JvdGU6Cj4gPiA+IEluIG9yZGVyIHRvIGZpeCBhbGwgb2YgdGhlIHNwb3RzIHRoYXQgbmVl
+ZCB0byBoYXZlIHJ1bnRpbWUgUE0gZ2V0L3B1dHMoKQo+ID4gPiBhZGRlZCwgd2UgbmVlZCB0byBl
+bnN1cmUgdGhhdCBpdCdzIHBvc3NpYmxlIGZvciB1cyB0byBjYWxsCj4gPiA+IHBtX3J1bnRpbWVf
+Z2V0L3B1dCgpIGluIGFueSBjb250ZXh0LCByZWdhcmRsZXNzIG9mIGhvdyBkZWVwLCBzaW5jZQo+
+ID4gPiBhbG1vc3QgYWxsIG9mIHRoZSBzcG90cyB0aGF0IGFyZSBjdXJyZW50bHkgbWlzc2luZyBy
+ZWZzIGNhbiBwb3RlbnRpYWxseQo+ID4gPiBnZXQgY2FsbGVkIGluIHRoZSBydW50aW1lIHN1c3Bl
+bmQvcmVzdW1lIHBhdGguIE90aGVyd2lzZSwgd2UnbGwgdHJ5IHRvCj4gPiA+IHJlc3VtZSB0aGUg
+R1BVIGFzIHdlJ3JlIHRyeWluZyB0byByZXN1bWUgdGhlIEdQVSAoYW5kIHZpY2UtdmVyc2EpIGFu
+ZAo+ID4gPiBjYXVzZSB0aGUga2VybmVsIHRvIGRlYWRsb2NrLgo+ID4gPiAKPiA+ID4gV2l0aCB0
+aGlzLCBpdCBzaG91bGQgYmUgc2FmZSB0byBjYWxsIHRoZSBwbSBydW50aW1lIGZ1bmN0aW9ucyBp
+biBhbnkKPiA+ID4gY29udGV4dCBpbiBub3V2ZWF1IHdpdGggb25lIGNvbmRpdGlvbjogYW55IHBv
+aW50IGluIHRoZSBkcml2ZXIgdGhhdAo+ID4gPiBjYWxscyBwbV9ydW50aW1lX2dldCooKSBjYW5u
+b3QgaG9sZCBhbnkgbG9ja3Mgb3duZWQgYnkgbm91dmVhdSB0aGF0Cj4gPiA+IHdvdWxkIGJlIGFj
+cXVpcmVkIGFueXdoZXJlIGluc2lkZSBub3V2ZWF1X3Btb3BzX3J1bnRpbWVfcmVzdW1lKCkuCj4g
+PiA+IFRoaXMgaW5jbHVkZXMgbW9kZXNldHRpbmcgbG9ja3MsIGkyYyBidXMgbG9ja3MsIGV0Yy4K
+PiA+IAo+ID4gW3NuaXBdCj4gPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZl
+YXVfZHJtLmMKPiA+ID4gKysrIGIvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcm0u
+Ywo+ID4gPiBAQCAtODM1LDYgKzgzNSw4IEBAIG5vdXZlYXVfcG1vcHNfcnVudGltZV9zdXNwZW5k
+KHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ID4gIAkJcmV0dXJuIC1FQlVTWTsKPiA+ID4gIAl9Cj4g
+PiA+ICAKPiA+ID4gKwlkZXYtPnBvd2VyLmRpc2FibGVfZGVwdGgrKzsKPiA+ID4gKwo+ID4gCj4g
+PiBBbnl3YXksIGlmIEkgdW5kZXJzdGFuZCB0aGUgY29tbWl0IG1lc3NhZ2UgY29ycmVjdGx5LCB5
+b3UncmUgaGl0dGluZyBhCj4gPiBwbV9ydW50aW1lX2dldF9zeW5jKCkgaW4gYSBjb2RlIHBhdGgg
+dGhhdCBpdHNlbGYgaXMgY2FsbGVkIGR1cmluZyBhCj4gPiBwbV9ydW50aW1lX2dldF9zeW5jKCku
+ICBDb3VsZCB5b3UgaW5jbHVkZSBzdGFjayB0cmFjZXMgaW4gdGhlIGNvbW1pdAo+ID4gbWVzc2Fn
+ZT8gIE15IGd1dCBmZWVsaW5nIGlzIHRoYXQgdGhpcyBwYXRjaCBtYXNrcyBhIGRlZXBlciBpc3N1
+ZSwKPiA+IGUuZy4gaWYgdGhlIHJ1bnRpbWVfcmVzdW1lIGNvZGUgcGF0aCBkb2VzIGluIGZhY3Qg
+ZGlyZWN0bHkgcG9sbCBvdXRwdXRzLAo+ID4gdGhhdCB3b3VsZCBzZWVtIHdyb25nLiAgUnVudGlt
+ZSByZXN1bWUgc2hvdWxkIG1lcmVseSBtYWtlIHRoZSBjYXJkCj4gPiBhY2Nlc3NpYmxlLCBpLmUu
+IHJlaW5zdGF0ZSBwb3dlciBpZiBuZWNlc3NhcnksIHB1dCBpbnRvIFBDSV9EMCwKPiA+IHJlc3Rv
+cmUgcmVnaXN0ZXJzLCBldGMuICBPdXRwdXQgcG9sbGluZyBzaG91bGQgYmUgc2NoZWR1bGVkCj4g
+PiBhc3luY2hyb25vdXNseS4KPiAKPiBTbzogdGhlIHJlYXNvbiB0aGF0IHBhdGNoIHdhcyBhZGRl
+ZCB3YXMgbWFpbmx5IGZvciB0aGUgcGF0Y2hlcyBsYXRlciBpbiB0aGUKPiBzZXJpZXMgdGhhdCBh
+ZGQgZ3VhcmRzIGFyb3VuZCB0aGUgaTJjIGJ1cyBhbmQgYXV4IGJ1cywgc2luY2UgYm90aCBvZiB0
+aG9zZQo+IHJlcXVpcmUgdGhhdCB0aGUgZGV2aWNlIGJlIGF3YWtlIGZvciBpdCB0byB3b3JrLiBD
+dXJyZW50bHksIHRoZSBzcG90IHdoZXJlIGl0Cj4gd291bGQgcmVjdXJzZSBpczoKCk9rYXksIHRo
+ZSBQQ0kgZGV2aWNlIGlzIHN1c3BlbmRpbmcgYW5kIHRoZSBudmttX2kyY19hdXhfYWNxdWlyZSgp
+CndhbnRzIGl0IGluIHJlc3VtZWQgc3RhdGUsIHNvIGlzIHdhaXRpbmcgZm9yZXZlciBmb3IgdGhl
+IGRldmljZSB0bwpydW50aW1lIHN1c3BlbmQgaW4gb3JkZXIgdG8gcmVzdW1lIGl0IGFnYWluIGlt
+bWVkaWF0ZWx5IGFmdGVyd2FyZHMuCgpUaGUgZGVhZGxvY2sgaW4gdGhlIHN0YWNrIHRyYWNlIHlv
+dSd2ZSBwb3N0ZWQgY291bGQgYmUgcmVzb2x2ZWQgdXNpbmcKdGhlIHRlY2huaXF1ZSBJIHVzZWQg
+aW4gZDYxYTVjMTA2MzUxIGJ5IGFkZGluZyB0aGUgZm9sbG93aW5nIHRvCmluY2x1ZGUvbGludXgv
+cG1fcnVudGltZS5oOgoKc3RhdGljIGlubGluZSBib29sIHBtX3J1bnRpbWVfc3RhdHVzX3N1c3Bl
+bmRpbmcoc3RydWN0IGRldmljZSAqZGV2KQp7CglyZXR1cm4gZGV2LT5wb3dlci5ydW50aW1lX3N0
+YXR1cyA9PSBSUE1fU1VTUEVORElORzsKfQoKc3RhdGljIGlubGluZSBib29sIGlzX3BtX3dvcmso
+c3RydWN0IGRldmljZSAqZGV2KQp7CglzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmsgPSBjdXJyZW50
+X3dvcmsoKTsKCglyZXR1cm4gd29yayAmJiB3b3JrLT5mdW5jID09IGRldi0+cG93ZXIud29yazsK
+fQoKVGhlbiBhZGRpbmcgdGhpcyB0byBudmttX2kyY19hdXhfYWNxdWlyZSgpOgoKCXN0cnVjdCBk
+ZXZpY2UgKmRldiA9IHBhZC0+aTJjLT5zdWJkZXYuZGV2aWNlLT5kZXY7CgoJaWYgKCEoaXNfcG1f
+d29yayhkZXYpICYmIHBtX3J1bnRpbWVfc3RhdHVzX3N1c3BlbmRpbmcoZGV2KSkpIHsKCQlyZXQg
+PSBwbV9ydW50aW1lX2dldF9zeW5jKGRldik7CgkJaWYgKHJldCA8IDAgJiYgcmV0ICE9IC1FQUND
+RVMpCgkJCXJldHVybiByZXQ7Cgl9CgpCdXQgaGVyZSdzIHRoZSBjYXRjaDogIFRoaXMgb25seSB3
+b3JrcyBmb3IgYW4gKmFzeW5jKiBydW50aW1lIHN1c3BlbmQuCkl0IGRvZXNuJ3Qgd29yayBmb3Ig
+cG1fcnVudGltZV9wdXRfc3luYygpLCBwbV9ydW50aW1lX3N1c3BlbmQoKSBldGMsCmJlY2F1c2Ug
+dGhlbiB0aGUgcnVudGltZSBzdXNwZW5kIGlzIGV4ZWN1dGVkIGluIHRoZSBjb250ZXh0IG9mIHRo
+ZSBjYWxsZXIsCm5vdCBpbiB0aGUgY29udGV4dCBvZiBkZXYtPnBvd2VyLndvcmsuCgpTbyBpdCdz
+IG5vdCBhIGZ1bGwgc29sdXRpb24sIGJ1dCBob3BlZnVsbHkgc29tZXRoaW5nIHRoYXQgZ2V0cyB5
+b3UKZ29pbmcuICBJJ20gbm90IHJlYWxseSBmYW1pbGlhciB3aXRoIHRoZSBjb2RlIHBhdGhzIGxl
+YWRpbmcgdG8KbnZrbV9pMmNfYXV4X2FjcXVpcmUoKSB0byBjb21lIHVwIHdpdGggYSBmdWxsIHNv
+bHV0aW9uIG9mZiB0aGUgdG9wCm9mIG15IGhlYWQgSSdtIGFmcmFpZC4KCk5vdGUsIGl0J3Mgbm90
+IHN1ZmZpY2llbnQgdG8ganVzdCBjaGVjayBwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kaW5nKGRl
+dikKYmVjYXVzZSBpZiB0aGUgcnVudGltZV9zdXNwZW5kIGlzIGNhcnJpZWQgb3V0IGNvbmN1cnJl
+bnRseSBieSBzb21ldGhpbmcKZWxzZSwgdGhpcyB3aWxsIHJldHVybiB0cnVlIGJ1dCBpdCdzIG5v
+dCBndWFyYW50ZWVkIHRoYXQgdGhlIGRldmljZSBpcwphY3R1YWxseSBrZXB0IGF3YWtlIHVudGls
+IHRoZSBpMmMgY29tbXVuaWNhdGlvbiBoYXMgYmVlbiBmdWxseSBwZXJmb3JtZWQuCgpIVEgsCgpM
+dWthcwpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2
+ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xp
+c3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
