@@ -1,101 +1,193 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: Re: Commit 554c8aa8ecad causing severe performance degression with
- pcc-cpufreq
-Date: Tue, 17 Jul 2018 16:03:36 +0200
-Message-ID: <20180717140336.ayovaz4ksdlak6bb@suselix>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix>
- <20180717092721.onkaf3qsu7te6syi@suselix>
- <20180717093620.ym6phfmr3rfvsxyo@suselix>
- <3724084.DyflrVPzDS@aspire.rjw.lan>
- <20180717102136.snayvzmv2h3dcwiq@suselix>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH v4 03/12] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 17 Jul 2018 15:19:56 +0100
+Message-ID: <20180717141955.GA4496@e108498-lin.cambridge.arm.com>
+References: <20180628114043.24724-1-quentin.perret@arm.com>
+ <20180628114043.24724-4-quentin.perret@arm.com>
+ <4341d199-8018-21e1-c2ce-9af8f7719297@arm.com>
+ <20180710083202.GD17598@e108498-lin.cambridge.arm.com>
+ <20180716102917.GA19311@e108498-lin.cambridge.arm.com>
+ <fe73f66d-7bed-f413-eb77-34f3d385dbc7@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180717102136.snayvzmv2h3dcwiq@suselix>
+In-Reply-To: <fe73f66d-7bed-f413-eb77-34f3d385dbc7@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 12:21:36PM +0200, Andreas Herrmann wrote:
-> On Tue, Jul 17, 2018 at 12:09:21PM +0200, Rafael J. Wysocki wrote:
+Hi Dietmar,
 
-  ---8<---
-
-> > OK, the patch is below.
-> > 
-> > First, I hope that if "Collaborative Power Control" is disabled, it will
-> > simply hide the PCCH object and so intel_pstate will still not load then.
+On Tuesday 17 Jul 2018 at 10:57:13 (+0200), Dietmar Eggemann wrote:
+> On 07/16/2018 12:29 PM, Quentin Perret wrote:
+> I see an impact of 'calculating capacity on the fly' in
+> compute_energy()->em_fd_energy(). Running the first energy test case (# task
+> equal 10) on the Juno r0 board with function profiling gives me:
 > 
-> PCCH is hidden in that case.
+> v4:
 > 
-> > The main question basically is what the OS is expected to do if
-> > "Dynamic Power Savings Mode" is set.  If we are *expected* to use
-> > the PCC interface then, intel_pstate may not work in that case, but
-> > I suspect that the PCC interface allows extra energy to be saved
-> > over what is possible without it.
+>   Function              Hit    Time            Avg             s^2
+> A53 - cpu [0,3-5]
+>   compute_energy      14620    30790.86 us     2.106 us        8.421 us
+>   compute_energy        682    1512.960 us     2.218 us        0.154 us
+>   compute_energy       1207    2627.820 us     2.177 us        0.172 us
+>   compute_energy         93    206.720 us      2.222 us        0.151 us
+> A57 - cpu [1-2]
+>   compute_energy        153    160.100 us      1.046 us        0.190 us
+>   compute_energy        136    130.760 us      0.961 us        0.077 us
 > 
-> I'll test it and see what happens.
+> 
+> v4 + 'calculating capacity on the fly':
+> 
+>   Function              Hit    Time            Avg             s^2
+> A53 - cpu [0,3-5]
+>   compute_energy      11623    26941.12 us     2.317 us        12.203 us
+>   compute_energy       5062    11771.48 us     2.325 us        0.819 us
+>   compute_energy       4391    10396.78 us     2.367 us        1.753 us
+>   compute_energy       2234    5265.640 us     2.357 us        0.955 us
+> A57 - cpu [1-2]
+>   compute_energy         59    66.020 us       1.118 us        0.112 us
+>   compute_energy        229    234.880 us      1.025 us        0.135 us
+> 
+> The code is not optimized, I just replaced cs->capacity with
+> arch_scale_cpu_capacity(NULL, cpu) (max_cap) and 'max_cap * cs->frequency /
+> max_freq' respectively.
+> There are 3 compute_energy() calls per wake-up on a system with 2 frequency
+> domains.
 
-I've tested it on top of v4.18-rc5-36-g30b06abfb92b. intel_pstate now
-loads instead of pcc-cpufreq and system looks stable.
+First, thank you very much for looking into this :-)
 
-When disabling "Collaborative Power Control" no cpufreq driver is loaded
-(as expected).
+So, I guess you see this overhead because of the extra division involved
+by computing 'cap = max_cap * cs->frequency / max_freq'. However, I
+think there is an opportunity to optimize things a bit and avoid that
+overhead entirely. My suggestion is to remove the 'capacity' field from
+the em_cap_state struct and to add a 'cost' parameter instead:
 
-Performance (with kernbench) is as expected (always better than any
-brew of pcc-cpufreq + misc modifications to this driver + partial
-rollback of commit 554c8aa8ecad).
+struct em_cap_state {
+	unsigned long frequency;
+	unsigned long power;
+	unsigned long cost;
+};
 
-If you like you can add either Tested-by or
-Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
+I define the 'cost' of a capacity state as:
 
-I think this patch should be tagged for 4.17-stable.
+	cost = power * max_freq / freq;
 
+Since 'power', 'max_freq' and 'freq' do not change at run-time (as opposed
+to 'capacity'), this coefficient is static and computed when the table is
+first created. Then, based on this, you can implement em_fd_energy() as
+follows:
+
+static inline unsigned long em_fd_energy(struct em_freq_domain *fd,
+				unsigned long max_util, unsigned long sum_util)
+{
+	unsigned long freq, scale_cpu;
+	struct em_cap_state *cs;
+	int i, cpu;
+
+	/* Map the utilization value to a frequency */
+	cpu = cpumask_first(to_cpumask(fd->cpus));
+	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+	cs = &fd->table[fd->nr_cap_states - 1];
+	freq = map_util_freq(max_util, cs->frequency, scale_cpu);
+
+	/* Find the lowest capacity state above this frequency */
+	for (i = 0; i < fd->nr_cap_states; i++) {
+		cs = &fd->table[i];
+		if (cs->frequency >= freq)
+			break;
+	}
+
+	/*
+	 * The capacity of a CPU at a specific performance state is defined as:
+	 *
+	 *     cap = freq * scale_cpu / max_freq
+	 *
+	 * The energy consumed by this CPU can be estimated as:
+	 *
+	 *     nrg = power * util / cap
+	 *
+	 * because (util / cap) represents the percentage of busy time of the
+	 * CPU. Based on those definitions, we have:
+	 *
+	 *     nrg = power * util * max_freq / (scale_cpu * freq)
+	 *
+	 * which can be re-arranged as a product of two terms:
+	 *
+	 *     nrg = (power * max_freq / freq) * (util / scale_cpu)
+	 *
+	 * The first term is static, and is stored in the em_cap_state struct
+	 * as 'cost'. The parameters of the second term change at run-time.
+	 */
+	return cs->cost * sum_util / scale_cpu;
+}
+
+With the above implementation, there is no additional division in
+em_fd_energy() compared to v4, so I would expect to see no significant
+difference in computation time.
+
+I tried to reproduce your test case and I get the following numbers on
+my Juno r0 (using the performance governor):
+
+v4:
+***
+  Function           Hit    Time            Avg             s^2
+A53 - cpu [0,3-5]
+  compute_energy    1796    12685.66 us     7.063 us        0.039 us
+  compute_energy    4214    28060.02 us     6.658 us        0.919 us
+  compute_energy    2743    20167.86 us     7.352 us        0.067 us
+  compute_energy   13958    97122.68 us     6.958 us        9.255 us
+A57 - cpu [1-2]
+  compute_energy      86    448.800 us      5.218 us        0.106 us
+  compute_energy     163    847.600 us      5.200 us        0.128 us
+
+
+'v5' (with 'cost'):
+*******************
+  Function           Hit    Time            Avg             s^2
+A53 - cpu [0,3-5]
+  compute_energy    1695    11153.54 us     6.580 us        0.022 us
+  compute_energy   16823    113709.5 us     6.759 us        27.109 us
+  compute_energy     677    4490.060 us     6.632 us        0.028 us
+  compute_energy    1959    13595.66 us     6.940 us        0.029 us
+A57 - cpu [1-2]
+  compute_energy     211    1089.860 us     5.165 us        0.122 us
+  compute_energy      83    420.860 us      5.070 us        0.075 us
+
+
+So I don't observe any obvious regression with my optimization applied.
+The v4 branch I used is the one mentioned in the cover letter:
+http://www.linux-arm.org/git?p=linux-qp.git;a=shortlog;h=refs/heads/upstream/eas_v4
+
+And I just pushed the WiP branch I used to compare against:
+http://www.linux-arm.org/git?p=linux-qp.git;a=shortlog;h=refs/heads/upstream/eas_v5-WiP-compute_energy_profiling
+
+Is this also fixing the regression on your side ?
+
+> 
+> > The second option simplifies the code of the EM framework significantly
+> > (no more em_rescale_cpu_capacity()) and shouldn't introduce massive
+> > overheads on the scheduler side (the energy calculation already
+> > requires one multiplication and one division, so nothing new on that
+> > side). At the same time, that would make it a whole lot easier to
+> > interface the EM framework with IPA without having to deal with RCU all
+> > over the place.
+> 
+> IMO, em_rescale_cpu_capacity() is just the capacity related example what the
+> EM needs if its values can be changed at runtime. There might be other use
+> cases in the future like changing power values depending on temperature.
+> So maybe it's a good idea to not have this 'EM values can change at runtime'
+> feature in the first version of the EM and emphasize on simplicity of the
+> code instead (if we can eliminate the extra runtime overhead).
+
+I agree that it would be nice to keep it simple in the beginning. If
+there is strong and demonstrated use-case for updating the EM at
+run-time later, then we can re-introduce the RCU protection. But until
+then, we can avoid the complex implementation at no obvious cost (given
+my results above) so that sounds like a good trade-off to me :-)
 
 Thanks,
-
-Andreas
-
-> > ---
-> >  drivers/cpufreq/intel_pstate.c |   17 ++++++++++++++++-
-> >  1 file changed, 16 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> > @@ -2391,6 +2391,18 @@ static bool __init intel_pstate_no_acpi_
-> >  	return true;
-> >  }
-> >  
-> > +static bool __init intel_pstate_no_acpi_pcch(void)
-> > +{
-> > +	acpi_status status;
-> > +	acpi_handle handle;
-> > +
-> > +	status = acpi_get_handle(NULL, "\\_SB", &handle);
-> > +	if (ACPI_FAILURE(status))
-> > +		return true;
-> > +
-> > +	return !acpi_has_method(handle, "PCCH");
-> > +}
-> > +
-> >  static bool __init intel_pstate_has_acpi_ppc(void)
-> >  {
-> >  	int i;
-> > @@ -2450,7 +2462,10 @@ static bool __init intel_pstate_platform
-> >  
-> >  	switch (plat_info[idx].data) {
-> >  	case PSS:
-> > -		return intel_pstate_no_acpi_pss();
-> > +		if (!intel_pstate_no_acpi_pss())
-> > +			return false;
-> > +
-> > +		return intel_pstate_no_acpi_pcch();
-> >  	case PPC:
-> >  		return intel_pstate_has_acpi_ppc() && !force_load;
-> >  	}
-> > 
-> > 
+Quentin
