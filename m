@@ -1,80 +1,59 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Wed, 18 Jul 2018 15:00:39 +0530
-Message-ID: <CAFp+6iGcwdK=wyPf++u3B+ORghuB1YhYmnJLSwvt1efG9H4YeA@mail.gmail.com>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-4-vivek.gautam@codeaurora.org>
- <5179668.PHK6S3sxLu@aspire.rjw.lan>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Subject: Re: [PATCH 1/2] thermal_hwmon: Sanitize attribute name passed to hwmon
+Date: Wed, 18 Jul 2018 11:42:28 +0200
+Message-ID: <CAFqH_50Ky=yNmUXFjzwdWG0NiEHjBF3Mm0w1gAoSq2zL_E+HbQ@mail.gmail.com>
+References: <20180710154035.26828-1-marc.zyngier@arm.com> <20180710154035.26828-2-marc.zyngier@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <5179668.PHK6S3sxLu-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Clark <robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>M
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180710154035.26828-2-marc.zyngier@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: marc.zyngier@arm.com
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKdWwgMTEsIDIwMTggYXQgMzoyMyBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0By
-and5c29ja2kubmV0PiB3cm90ZToKPiBPbiBTdW5kYXksIEp1bHkgOCwgMjAxOCA3OjM0OjEyIFBN
-IENFU1QgVml2ZWsgR2F1dGFtIHdyb3RlOgo+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFu
-QGNvZGVhdXJvcmEub3JnPgo+Pgo+PiBGaW5hbGx5IGFkZCB0aGUgZGV2aWNlIGxpbmsgYmV0d2Vl
-biB0aGUgbWFzdGVyIGRldmljZSBhbmQKPj4gc21tdSwgc28gdGhhdCB0aGUgc21tdSBnZXRzIHJ1
-bnRpbWUgZW5hYmxlZC9kaXNhYmxlZCBvbmx5IHdoZW4gdGhlCj4+IG1hc3RlciBuZWVkcyBpdC4g
-VGhpcyBpcyBkb25lIGZyb20gYWRkX2RldmljZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+IGNhbGxl
-ZCBvbmNlIHdoZW4gdGhlIG1hc3RlciBpcyBhZGRlZCB0byB0aGUgc21tdS4KPj4KPj4gU2lnbmVk
-LW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4gU2lnbmVk
-LW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+IFJl
-dmlld2VkLWJ5OiBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPgo+PiBDYzogUmFmYWVs
-IEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0Pgo+PiBDYzogTHVrYXMgV3VubmVyIDxsdWth
-c0B3dW5uZXIuZGU+Cj4+IC0tLQo+Pgo+PiAgLSBDaGFuZ2Ugc2luY2UgdjExCj4+ICAgICogUmVw
-bGFjZWQgRExfRkxBR19BVVRPUkVNT1ZFIGZsYWcgd2l0aCBETF9GTEFHX0FVVE9SRU1PVkVfU1VQ
-UExJRVIuCj4+Cj4+ICBkcml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCAxMiArKysrKysrKysrKysK
-Pj4gIDEgZmlsZSBjaGFuZ2VkLCAxMiBpbnNlcnRpb25zKCspCj4+Cj4+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4gaW5k
-ZXggMDkyNjVlMjA2ZTJkLi45MTZjZGU0OTU0ZDIgMTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvaW9t
-bXUvYXJtLXNtbXUuYwo+PiArKysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4gQEAgLTE0
-NjEsOCArMTQ2MSwyMCBAQCBzdGF0aWMgaW50IGFybV9zbW11X2FkZF9kZXZpY2Uoc3RydWN0IGRl
-dmljZSAqZGV2KQo+Pgo+PiAgICAgICBpb21tdV9kZXZpY2VfbGluaygmc21tdS0+aW9tbXUsIGRl
-dik7Cj4+Cj4+ICsgICAgIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSAmJgo+Cj4g
-V2h5IGRvZXMgdGhlIGNyZWF0aW9uIG9mIHRoZSBsaW5rIGRlcGVuZCBvbiB3aGV0aGVyIG9yIG5v
-dCBydW50aW1lIFBNCj4gaXMgZW5hYmxlZCBmb3IgdGhlIE1NVSBkZXZpY2U/Cj4KPiBXaGF0IGFi
-b3V0IHN5c3RlbS13aWRlIFBNIGFuZCBzeXN0ZW0gc2h1dGRvd24/ICBBcmUgdGhleSBhbHdheXMg
-Z3VhcmFudGVlZAo+IHRvIGhhcHBlbiBpbiB0aGUgcmlnaHQgb3JkZXIgd2l0aG91dCB0aGUgbGlu
-az8KCkhpIFJvYmluLAoKQXMgUmFmYWVsIHBvaW50ZWQsIHdlIHNob3VsZCB0aGUgZGV2aWNlIGxp
-bmsgY3JlYXRpb24gc2hvdWxkIG5vdCBkZXBlbmQgb24KcnVudGltZSBQTSBiZWluZyBlbmFibGVk
-IG9yIG5vdCwgYXMgd2Ugd291bGQgYWxzbyB3YW50IHRvIGd1YXJhbnRlZQp0aGF0IHN5c3RlbSB3
-aWRlIFBNIGNhbGxiYWNrcyBhcmUgY2FsbGVkIGluIHRoZSByaWdodCBvcmRlciBmb3Igc21tdQph
-bmQgY2xpZW50cy4KCkRvZXMgdGhpcyBjaGFuZ2Ugb2YgcmVtb3ZpbmcgdGhlIGNoZWNrIGZvciBw
-bV9ydW50aW1lX2VuYWJsZWQoKSBmcm9tIGhlcmUKbG9va3Mgb2theSB0byB5b3U/CgpGWUksIGFz
-IGRpc2N1c3NlZCBpbiB0aGUgZmlyc3QgcGF0Y2ggWzFdIG9mIHRoaXMgc2VyaWVzLCBJIHdpbGwg
-YWRkIGEKc3lzdGVtIHdpZGUKc3VzcGVuZCBjYWxsYmFjayAtIGFybV9zbW11X3BtX3N1c3BlbmQs
-IHRoYXQgd291bGQgZG8gY2xvY2sgZGlzYWJsZSwgYW5kIHdpbGwKYWRkIGNvcnJlc3BvbmRpbmcg
-Y2xvY2sgZW5hYmxlIGNhbGxzIGluIGFybV9zbW11X3BtX3Jlc3VtZSgpLgoKWzFdIGh0dHBzOi8v
-bG9yZS5rZXJuZWwub3JnL3BhdGNod29yay9wYXRjaC85NjA0NjAvCgoKQmVzdCByZWdhcmRzClZp
-dmVrCgo+Cj4+ICsgICAgICAgICAhZGV2aWNlX2xpbmtfYWRkKGRldiwgc21tdS0+ZGV2LAo+PiAr
-ICAgICAgICAgICAgICAgICAgICAgRExfRkxBR19QTV9SVU5USU1FIHwgRExfRkxBR19BVVRPUkVN
-T1ZFX1NVUFBMSUVSKSkgewo+PiArICAgICAgICAgICAgIGRldl9lcnIoc21tdS0+ZGV2LCAiVW5h
-YmxlIHRvIGFkZCBsaW5rIHRvIHRoZSBjb25zdW1lciAlc1xuIiwKPj4gKyAgICAgICAgICAgICAg
-ICAgICAgIGRldl9uYW1lKGRldikpOwo+PiArICAgICAgICAgICAgIHJldCA9IC1FTk9ERVY7Cj4+
-ICsgICAgICAgICAgICAgZ290byBvdXRfdW5saW5rOwo+PiArICAgICB9Cj4+ICsKPj4gICAgICAg
-cmV0dXJuIDA7Cj4+Cj4+ICtvdXRfdW5saW5rOgo+PiArICAgICBpb21tdV9kZXZpY2VfdW5saW5r
-KCZzbW11LT5pb21tdSwgZGV2KTsKPj4gKyAgICAgYXJtX3NtbXVfbWFzdGVyX2ZyZWVfc21lcyhm
-d3NwZWMpOwo+PiAgb3V0X2NmZ19mcmVlOgo+PiAgICAgICBrZnJlZShjZmcpOwo+PiAgb3V0X2Zy
-ZWU6Cj4+Cj4KPgoKCgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJ
-bm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwg
-aG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxp
-c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL2ZyZWVkcmVubwo=
+Hi Marc,
+Missatge de Marc Zyngier <marc.zyngier@arm.com> del dia dt., 10 de
+jul. 2018 a les 17:42:
+>
+> My Chromebook Plus (kevin) is spitting the following at boot time:
+>
+> (NULL device *): hwmon: 'sbs-9-000b' is not a valid name attribute, please fix
+>
+> Clearly, __hwmon_device_register is unhappy about the property name.
+> Some investigation reveals that thermal_add_hwmon_sysfs doesn't
+> sanitize the name of the attribute.
+>
+> In order to keep it quiet, let's replace '-' with '_' in hwmon->type
+> This is consistent with what iio-hwmon does since b92fe9e3379c8.
+>
+> Signed-off-by: Marc Zyngier <marc.zyngier@arm.com>
+> ---
+>  drivers/thermal/thermal_hwmon.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+> index 11278836ed12..0bd47007c57f 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -142,6 +142,7 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+>
+>         INIT_LIST_HEAD(&hwmon->tz_list);
+>         strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+> +       strreplace(hwmon->type, '-', '_');
+>         hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
+>                                                         hwmon, NULL, NULL);
+>         if (IS_ERR(hwmon->device)) {
+> --
+> 2.18.0
+>
+
+That's one of the annoying messages you saw for a long time during
+boot but you had never time to look at. I am happy that when I found a
+slot to look at I found already it was fixed.
+Thanks!
+
+Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+
+Best regards,
+ Enric
