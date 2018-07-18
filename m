@@ -1,118 +1,114 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 1/5] thermal: exynos: enable core tmu clk on exynos platform
-Date: Wed, 18 Jul 2018 12:06:55 +0200
-Message-ID: <CAJKOXPfRBPgmGc17XEzW5+MK80JcudCbhBfLeMFTQYjWLJ3JeA@mail.gmail.com>
-References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com>
- <CAJKOXPdP78VFQgSQ9z9WsgYY_YhEKPUt=0MOra6Pz6smQeiNGg@mail.gmail.com>
- <CANAwSgS=08fVsqn95WHzSF71WTTyD2-=K2C6-BEz0tY0t6A1-g@mail.gmail.com>
- <CAJKOXPdXYz77Bqyjr3HK+EA0HpEABPqmPOD0f5ew-yq2SFVpVQ@mail.gmail.com> <CANAwSgRFehdmYZvPL3yD1=Ng_w1Yhtij=nvZEOqkof7zj8fcwA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
+Date: Wed, 18 Jul 2018 12:11:06 +0200
+Message-ID: <2056372.NMt4aPaF4h@aspire.rjw.lan>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-10-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANAwSgRFehdmYZvPL3yD1=Ng_w1Yhtij=nvZEOqkof7zj8fcwA@mail.gmail.com>
+In-Reply-To: <20180620172226.15012-10-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18 July 2018 at 11:24, Anand Moon <linux.amoon@gmail.com> wrote:
-> Hi Krzysztof
->
-> On 18 July 2018 at 11:47, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->> On 17 July 2018 at 22:23, Anand Moon <linux.amoon@gmail.com> wrote:
->>> Hi Krzysztof
->>>
->>> On 17 July 2018 at 17:50, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->>>> Hi Anand,
->>>>
->>>> Thanks for patch.
->>>>
->>>> On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
->>>>> clk_summary do not show tmu_apbif clk enable, so replace
->>>>> the clk_prepare with clk_prepare_enables to enable tmu clk.
->>>>
->>>> This is not valid reason to do a change. What is clk_summary does not
->>>> really matter. Your change has negative impact on power consumption as
->>>> the clock stays enabled all the time. This is not what we want... so
->>>> please explain it more - why you need the clock to be enabled all the
->>>> time? What is broken (clk_summary is not broken in this case)?
->>>>
->>>
->>> Opps I could not explain some more in my commit message.
->>>
->>> Actually TMU sensor for Exynos process are controlled by so external clk
->>>
->>> Exynos4412 have VDD18_TS sensor which controls the CLK_SENSE tmu.
->>> Exynos5422 have VDD18_TS01 / VDD18_TS23 / VDD18_TS4 sensor which
->>> control the CLK_SENSE tmu.
->>>
->>> So as per my understanding tmu is clk driver which control the flow  PMIC.
->>>
->>> clk_prepare_enable combine clk_prepare and clk_enable
->>> and clk_disable_unprepare combine clk_disable and clk_unprepare.
->>>
->>> most of the driver prefer clk_prepare_enable and clk_disable_unprepare.
->>>
->>> clk_summary is just a reference looking point where we could check the
->>> clk is enable/disable.
->>>
->>> what is broken ?
->>> I still few more parameter need to tuned to configure the tmu driver.
->>
->> I am sorry but I am still unable to see what is broken and what are
->> you trying to fix. I asked what is broken and you replied that there
->> is a sensor, there is a clock, drivers use clk_prepare_enable and some
->> more parameter need to be tuned... None of these are answers to
->> question - what is broken. How can I reproduce the problem?
->>
->> Best regards,
->> Krzysztof
->
-> Basically I use thermal testing.
->
-> # git clone https://git.linaro.org/power/pm-qa.git
-> # cd pm-qa
-> # make -C thermal check
->
-> most of the testcase failed on Exynos5422 but some pass on Exynos4412.
->
-> Attach is the software overview from Exynos5422 user manual.
->
-> I am not able to explain in deep technically, but I have studied other thermal
-> driver to draw into conclusion that tmu clk's need to be enabled.
+On Wednesday, June 20, 2018 7:22:09 PM CEST Ulf Hansson wrote:
+> To allow CPUs being power managed by PM domains, let's deploy support for
+> runtime PM for the CPU's corresponding struct device.
+> 
+> More precisely, at the point when the CPU is about to enter an idle state,
+> decrease the runtime PM usage count for its corresponding struct device,
+> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
+> resumes from idle, let's increase the runtime PM usage count, via calling
+> pm_runtime_get_sync().
+> 
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-That is true in general - the clk has to be enabled in certain cases.
-However you did not say at all when you want this clock to be
-enabled... and the your patch enables it for entire lifetime of
-device.
+I finally got to this one, sorry for the huge delay.
 
-> If you feel the we should not enable these clk, them I will drop the
-> clk_prepare_enable check
-> and resubmit the changes with better commit message.
+Let me confirm that I understand the code flow correctly.
 
-I don't know. This was fifth email in this thread and it is the first
-time some real problem is mentioned. Still the issue is not described
-entirely so I really do not have a clue whether this patch fixes
-something or not.
-What is more, you mentioned falling pm-qa tests here (not in commit
-msg) but did not say whether this patch fixes anything or not.
+> ---
+>  kernel/cpu_pm.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+> index 67b02e138a47..492d4a83dca0 100644
+> --- a/kernel/cpu_pm.c
+> +++ b/kernel/cpu_pm.c
+> @@ -16,9 +16,11 @@
+>   */
+>  
+>  #include <linux/kernel.h>
+> +#include <linux/cpu.h>
+>  #include <linux/cpu_pm.h>
+>  #include <linux/module.h>
+>  #include <linux/notifier.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/syscore_ops.h>
+>  
+> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
 
-So let me summarize it:
-1. You did not describe the problem you want to fix.
-2. The patch looks incorrect because it enables the clock for entire
-lifetime of device which we do not want.
-3. The patch might or not might fix some problem. We even do not know what...
-4. The clock not being enabled when not needed... is obviously not a problem.
+This is called from a cpuidle driver's ->enter callback for the target state
+selected by the idle governor ->
 
-Please start from beginning. Find the problem, tell us how it can be
-reproduced and deliver a single patch which fixes the problem.
+>  {
+>  	int nr_calls;
+>  	int ret = 0;
+> +	struct device *dev = get_cpu_device(smp_processor_id());
+>  
+>  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+>  	if (ret)
+> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
+>  		 */
+>  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+>  
+> +	if (!ret && dev && dev->pm_domain)
+> +		pm_runtime_put_sync_suspend(dev);
 
-This pattern of your code - fixing something without describing the
-problem - happened many time before. I repeated this some times before
-as well. I would prefer not to repeat to many times. Therefore I would
-be happy if you follow the path mentioned in paragraph before always:
-find the problem, tell how it can be reproduced, deliver single patch
-which fixes the problem.
+-> so this is going to invoke genpd_runtime_suspend() if the usage
+counter of dev is 0.
 
-Best regards,
-Krzysztof
+That will cause cpu_power_down_ok() to be called (because this is
+a CPU domain) and that will walk the domain cpumask and compute the
+estimated idle duration as the minimum of tick_nohz_get_next_wakeup()
+values over the CPUs in that cpumask.  [Note that the weight of the
+cpumask must be seriously limited for that to actually work, as this
+happens in the idle path.]  Next, it will return "true" if it can
+find a domain state with residency within the estimated idle
+duration.  [Note that this sort of overlaps with the idle governor's
+job.]
+
+Next, __genpd_runtime_suspend() will be invoked to run the device-specific
+callback if any [Note that this has to be suitable for the idle path if
+present.] and genpd_stop_dev() runs (which, again, may invoke a callback)
+and genpd_power_off() runs under the domain lock (which must be a spinlock
+then).
+
+> +
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(cpu_pm_enter);
+> @@ -118,6 +124,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+>   */
+>  int cpu_pm_exit(void)
+>  {
+> +	struct device *dev = get_cpu_device(smp_processor_id());
+> +
+> +	if (dev && dev->pm_domain)
+> +		pm_runtime_get_sync(dev);
+> +
+>  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(cpu_pm_exit);
+> 
+
+And this is called on wakeup when the cpuidle driver's ->enter callback
+is about to return and it reverses the suspend flow (except that the
+governor doesn't need to be called now).
+
+Have I got that right?
