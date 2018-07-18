@@ -1,96 +1,56 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Wed, 18 Jul 2018 09:40:44 +0200
-Message-ID: <CAJZ5v0jQXwxXCzxiLcVnBQPvrAX=GRUr2O=TknmhAS3U_ZTAtg@mail.gmail.com>
-References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com>
- <20180717071641.GA5411@wunner.de>
- <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
- <20180717182041.GA18363@wunner.de>
- <cb5af1611622a080fdcbcf3bb794d8ebc39cae2a.camel@redhat.com>
- <20180717183211.GB18363@wunner.de>
- <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpufreq: pcc-cpufreq: Disable dynamic scaling on
+ many-CPU systems
+Date: Wed, 18 Jul 2018 09:44:14 +0200
+Message-ID: <CAJZ5v0i-zrKEVh+KsNOgTpCCBaC7jqibyuz1QhiKWPCV-H4srA@mail.gmail.com>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix> <306375154.NhdH6AhdAd@aspire.rjw.lan>
+ <5423012.ZZnfdYddaT@aspire.rjw.lan> <20180717201323.6rwb4yklq46cmtom@suselix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lyude Paul <lyude-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180717201323.6rwb4yklq46cmtom@suselix>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andreas Herrmann <aherrmann@suse.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgODozNCBQTSwgTHl1ZGUgUGF1bCA8bHl1ZGVAcmVkaGF0
-LmNvbT4gd3JvdGU6Cj4gT24gVHVlLCAyMDE4LTA3LTE3IGF0IDIwOjMyICswMjAwLCBMdWthcyBX
-dW5uZXIgd3JvdGU6Cj4+IE9uIFR1ZSwgSnVsIDE3LCAyMDE4IGF0IDAyOjI0OjMxUE0gLTA0MDAs
-IEx5dWRlIFBhdWwgd3JvdGU6Cj4+ID4gT24gVHVlLCAyMDE4LTA3LTE3IGF0IDIwOjIwICswMjAw
-LCBMdWthcyBXdW5uZXIgd3JvdGU6Cj4+ID4gPiBPa2F5LCB0aGUgUENJIGRldmljZSBpcyBzdXNw
-ZW5kaW5nIGFuZCB0aGUgbnZrbV9pMmNfYXV4X2FjcXVpcmUoKQo+PiA+ID4gd2FudHMgaXQgaW4g
-cmVzdW1lZCBzdGF0ZSwgc28gaXMgd2FpdGluZyBmb3JldmVyIGZvciB0aGUgZGV2aWNlIHRvCj4+
-ID4gPiBydW50aW1lIHN1c3BlbmQgaW4gb3JkZXIgdG8gcmVzdW1lIGl0IGFnYWluIGltbWVkaWF0
-ZWx5IGFmdGVyd2FyZHMuCj4+ID4gPgo+PiA+ID4gVGhlIGRlYWRsb2NrIGluIHRoZSBzdGFjayB0
-cmFjZSB5b3UndmUgcG9zdGVkIGNvdWxkIGJlIHJlc29sdmVkIHVzaW5nCj4+ID4gPiB0aGUgdGVj
-aG5pcXVlIEkgdXNlZCBpbiBkNjFhNWMxMDYzNTEgYnkgYWRkaW5nIHRoZSBmb2xsb3dpbmcgdG8K
-Pj4gPiA+IGluY2x1ZGUvbGludXgvcG1fcnVudGltZS5oOgo+PiA+ID4KPj4gPiA+IHN0YXRpYyBp
-bmxpbmUgYm9vbCBwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kaW5nKHN0cnVjdCBkZXZpY2UgKmRl
-dikKPj4gPiA+IHsKPj4gPiA+ICAgcmV0dXJuIGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0g
-UlBNX1NVU1BFTkRJTkc7Cj4+ID4gPiB9Cj4+ID4gPgo+PiA+ID4gc3RhdGljIGlubGluZSBib29s
-IGlzX3BtX3dvcmsoc3RydWN0IGRldmljZSAqZGV2KQo+PiA+ID4gewo+PiA+ID4gICBzdHJ1Y3Qg
-d29ya19zdHJ1Y3QgKndvcmsgPSBjdXJyZW50X3dvcmsoKTsKPj4gPiA+Cj4+ID4gPiAgIHJldHVy
-biB3b3JrICYmIHdvcmstPmZ1bmMgPT0gZGV2LT5wb3dlci53b3JrOwo+PiA+ID4gfQo+PiA+ID4K
-Pj4gPiA+IFRoZW4gYWRkaW5nIHRoaXMgdG8gbnZrbV9pMmNfYXV4X2FjcXVpcmUoKToKPj4gPiA+
-Cj4+ID4gPiAgIHN0cnVjdCBkZXZpY2UgKmRldiA9IHBhZC0+aTJjLT5zdWJkZXYuZGV2aWNlLT5k
-ZXY7Cj4+ID4gPgo+PiA+ID4gICBpZiAoIShpc19wbV93b3JrKGRldikgJiYgcG1fcnVudGltZV9z
-dGF0dXNfc3VzcGVuZGluZyhkZXYpKSkgewo+PiA+ID4gICAgICAgICAgIHJldCA9IHBtX3J1bnRp
-bWVfZ2V0X3N5bmMoZGV2KTsKPj4gPiA+ICAgICAgICAgICBpZiAocmV0IDwgMCAmJiByZXQgIT0g
-LUVBQ0NFUykKPj4gPiA+ICAgICAgICAgICAgICAgICAgIHJldHVybiByZXQ7Cj4+ID4gPiAgIH0K
-Pj4gPiA+Cj4+ID4gPiBCdXQgaGVyZSdzIHRoZSBjYXRjaDogIFRoaXMgb25seSB3b3JrcyBmb3Ig
-YW4gKmFzeW5jKiBydW50aW1lIHN1c3BlbmQuCj4+ID4gPiBJdCBkb2Vzbid0IHdvcmsgZm9yIHBt
-X3J1bnRpbWVfcHV0X3N5bmMoKSwgcG1fcnVudGltZV9zdXNwZW5kKCkgZXRjLAo+PiA+ID4gYmVj
-YXVzZSB0aGVuIHRoZSBydW50aW1lIHN1c3BlbmQgaXMgZXhlY3V0ZWQgaW4gdGhlIGNvbnRleHQg
-b2YgdGhlIGNhbGxlciwKPj4gPiA+IG5vdCBpbiB0aGUgY29udGV4dCBvZiBkZXYtPnBvd2VyLndv
-cmsuCj4+ID4gPgo+PiA+ID4gU28gaXQncyBub3QgYSBmdWxsIHNvbHV0aW9uLCBidXQgaG9wZWZ1
-bGx5IHNvbWV0aGluZyB0aGF0IGdldHMgeW91Cj4+ID4gPiBnb2luZy4gIEknbSBub3QgcmVhbGx5
-IGZhbWlsaWFyIHdpdGggdGhlIGNvZGUgcGF0aHMgbGVhZGluZyB0bwo+PiA+ID4gbnZrbV9pMmNf
-YXV4X2FjcXVpcmUoKSB0byBjb21lIHVwIHdpdGggYSBmdWxsIHNvbHV0aW9uIG9mZiB0aGUgdG9w
-Cj4+ID4gPiBvZiBteSBoZWFkIEknbSBhZnJhaWQuCj4+ID4KPj4gPiBPSy1JIHdhcyBjb25zaWRl
-cmluZyBkb2luZyBzb21ldGhpbmcgc2ltaWxhciB0byB0aGF0IGNvbW1pdCBiZWZvcmVoYW5kIGJ1
-dCBJCj4+ID4gd2Fzbid0IHN1cmUgaWYgSSB3YXMgZ29pbmcgdG8ganVzdCBiZSBoYWNraW5nIGFy
-b3VuZCBhbiBhY3R1YWwgaXNzdWUuIFRoYXQKPj4gPiBkb2Vzbid0IHNlZW0gdG8gYmUgdGhlIGNh
-c2UuIFRoaXMgaXMgdmVyeSBoZWxwZnVsIGFuZCBob3BlZnVsbHkgSSBzaG91bGQgYmUKPj4gPiBh
-YmxlCj4+ID4gdG8gZmlndXJlIHNvbWV0aGluZyBvdXQgZnJvbSB0aGlzLCB0aGFua3MhCj4+Cj4+
-IEluIHNvbWUgY2FzZXMsIHRoZSBmdW5jdGlvbiBhY3F1aXJpbmcgdGhlIHJ1bnRpbWUgUE0gcmVm
-IGlzIG9ubHkgY2FsbGVkCj4+IGZyb20gYSBjb3VwbGUgb2YgcGxhY2VzIGFuZCB0aGVuIGl0IHdv
-dWxkIGJlIGZlYXNpYmxlIGFuZCBhcHByb3ByaWF0ZQo+PiB0byBhZGQgYSBib29sIHBhcmFtZXRl
-ciB0byB0aGUgZnVuY3Rpb24gdGVsbGluZyBpdCB0byBhY3F1aXJlIHRoZSByZWYKPj4gb3Igbm90
-LiAgU28gdGhlIGZ1bmN0aW9uIGlzIHRvbGQgdXNpbmcgYSBwYXJhbWV0ZXIgd2hpY2ggY29udGV4
-dCBpdCdzCj4+IHJ1bm5pbmcgaW46ICBJbiB0aGUgcnVudGltZV9zdXNwZW5kIGNvZGUgcGF0aCBv
-ciBzb21lIG90aGVyIGNvZGUgcGF0aC4KPj4KPj4gVGhlIHRlY2huaXF1ZSB0byB1c2UgY3VycmVu
-dF93b3JrKCkgaXMgYW4gYWx0ZXJuYXRpdmUgYXBwcm9hY2ggdG8gZmlndXJlCj4+IG91dCB0aGUg
-Y29udGV4dCBpZiBwYXNzaW5nIGluIGFuIGFkZGl0aW9uYWwgcGFyYW1ldGVyIGlzIG5vdCBmZWFz
-aWJsZQo+PiBmb3Igc29tZSByZWFzb24uICBUaGF0IHdhcyB0aGUgY2FzZSB3aXRoIGQ2MWE1YzEw
-NjM1MS4gIFRoYXQgYXBwcm9hY2gKPj4gb25seSB3b3JrcyBmb3Igd29yayBpdGVtcyB0aG91Z2gu
-Cj4KPiBTb21ldGhpbmcgSSdtIGN1cmlvdXMgYWJvdXQuIFRoaXMgaXNuJ3QgdGhlIGZpcnN0IHRp
-bWUgSSd2ZSBoaXQgYSBzaXR1YXRpb24gbGlrZQo+IHRoaXMgKHNlZTogdGhlIGltcHJvcGVyIGRp
-c2FibGVfZGVwdGggZml4IEkgYWRkZWQgaW50byBhbWRncHUgSSBub3cgbmVlZCB0byBnbwo+IGFu
-ZCBmaXgpLCB3aGljaCBtYWtlcyBtZSB3b25kZXI6IGlzIHRoZXJlIGFjdHVhbGx5IGFueSByZWFz
-b24gTGludXgncyBydW50aW1lIFBNCj4gY29yZSBkb2Vzbid0IGp1c3QgdHVybiBnZXQvcHV0cygp
-IGluIHRoZSBjb250ZXh0IG9mIHMvciBjYWxsYmFja3MgaW50byBuby1vcHMgYnkKPiBkZWZhdWx0
-PwoKQmVjYXVzZSBpdCdzIGhhcmQgdG8gZGV0ZWN0IHJlbGlhYmx5IGVub3VnaCBhbmQgYmVjYXVz
-ZSBoaWRpbmcgaXNzdWVzCmlzIGEgYmFkIGlkZWEgaW4gZ2VuZXJhbC4KCkFzIEkndmUganVzdCBz
-YWlkIGluIHRoZSBtZXNzYWdlIHRvIEx1a2FzLCB0aGUgZmFjdCB0aGF0IHlvdSBuZWVkIHRvCnJl
-c3VtZSBhbm90aGVyIGRldmljZSBmcm9tIHdpdGhpbiB5b3VyIHJlc3VtZSBjYWxsYmFjayBpbmRp
-Y2F0ZXMgdGhhdAp5b3UncmUgaGlkaW5nIHlvdXIgZGVwZW5kZW5jeSBncmFwaCBmcm9tIHRoZSBj
-b3JlLgoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3Rv
-cC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2
-ZWF1Cg==
+On Tue, Jul 17, 2018 at 10:13 PM, Andreas Herrmann <aherrmann@suse.com> wrote:
+> On Tue, Jul 17, 2018 at 06:14:58PM +0200, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> The firmware interface used by the pcc-cpufreq driver is
+>> fundamentally not scalable and using it for dynamic CPU performance
+>> scaling on systems with many CPUs leads to degraded performance.
+>>
+>> For this reason, disable dynamic CPU performance scaling on systems
+>> with pcc-cpufreq where the number of CPUs present at the driver init
+>> time is greater than 4.  Also make the driver print corresponding
+>> complaints to the kernel log.
+>>
+>> Reported-by: Andreas Herrmann <aherrmann@suse.com>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>> -> v2: Rework the messages printed in the problematic case.
+>
+> I've tested this patch. Effect is as expected: driver loads but use of
+> ondemand governor is not allowed. Sample output:
+>
+> [   40.757519] pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+> [   40.831705] pcc_cpufreq_init: Too many CPUs, dynamic performance scaling disabled
+> [   40.898353] pcc_cpufreq_init: Try to enable a different scaling driver through BIOS settings
+> [   40.972327] pcc_cpufreq_init: and complain to the system vendor
+> [   41.025620] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
+> ...
+> [   41.187928] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
+>
+> Last message is shown for each online CPU in the system  (ie. 120x).
+>
+> Looks good to me.
+
+Thanks a lot!
+
+Please also try https://patchwork.kernel.org/patch/10530321/
+
+Cheers,
+Rafael
