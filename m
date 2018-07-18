@@ -1,75 +1,108 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v8 6/7] thermal: tsens: Add generic support for TSENS v2 IP
-Date: Wed, 18 Jul 2018 12:13:12 +0530
-Message-ID: <d528d52da925462561a061da5bf8a337dffa5157.1531895128.git.amit.kucheria@linaro.org>
-References: <cover.1531895128.git.amit.kucheria@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH V3 11/16] cpufreq: dt: Pass regulator name to the OPP core
+Date: Wed, 18 Jul 2018 09:09:53 +0200
+Message-ID: <CAMuHMdU=FNhWh_oroBZb8NkUr_fsvUvYxBHH6=KErqU9_Xi4ZQ@mail.gmail.com>
+References: <cover.1454992186.git.viresh.kumar@linaro.org> <ad55cd1a03e712e2c0c49701e87a37199cb8376e.1454992187.git.viresh.kumar@linaro.org>
+ <CAMuHMdXgE3oOVdYFy3kzmOv4FXvjU4rC39gUDUtMNJCdB__2AA@mail.gmail.com> <20180718055029.rdo427kozpwqm2bc@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1531895128.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1531895128.git.amit.kucheria@linaro.org>
-References: <cover.1531895128.git.amit.kucheria@linaro.org>
+In-Reply-To: <20180718055029.rdo427kozpwqm2bc@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, vivek.gautam@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-SDM845 uses v2 of the TSENS IP block but the get_temp() function appears to
-be identical across v2.x.y in code seen so far. We use the generic
-get_temp() function defined as part of ops_generic_v2.
+Hi Viresh,
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
----
- drivers/thermal/qcom/tsens-v2.c | 5 +++++
- drivers/thermal/qcom/tsens.c    | 3 +++
- drivers/thermal/qcom/tsens.h    | 5 ++++-
- 3 files changed, 12 insertions(+), 1 deletion(-)
+On Wed, Jul 18, 2018 at 7:50 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17-07-18, 09:46, Geert Uytterhoeven wrote:
+> > CC device-tree folks
+> >
+> > Replying to an old email, because that's the most accurate reference I
+> > could find.
+> >
+> > On Tue, Feb 9, 2016 at 6:06 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > OPP core can handle the regulators by itself, and but it needs to know
+> > > the name of the regulator to fetch. Add support for that.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > >  drivers/cpufreq/cpufreq-dt.c | 46 ++++++++++++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 46 insertions(+)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> > > index 4c9f8a828f6f..2af75f8088bb 100644
+> > > --- a/drivers/cpufreq/cpufreq-dt.c
+> > > +++ b/drivers/cpufreq/cpufreq-dt.c
+> >
+> > > @@ -119,6 +120,30 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+> > >         return ret;
+> > >  }
+> > >
+> > > +/*
+> > > + * An earlier version of opp-v1 bindings used to name the regulator
+> > > + * "cpu0-supply", we still need to handle that for backwards compatibility.
+> > > + */
+> > > +static const char *find_supply_name(struct device *dev, struct device_node *np)
+> > > +{
+> > > +       struct property *pp;
+> > > +       int cpu = dev->id;
+> > > +
+> > > +       /* Try "cpu0" for older DTs */
+> > > +       if (!cpu) {
+> > > +               pp = of_find_property(np, "cpu0-supply", NULL);
+> > > +               if (pp)
+> > > +                       return "cpu0";
+> > > +       }
+> > > +
+> > > +       pp = of_find_property(np, "cpu-supply", NULL);
+> > > +       if (pp)
+> > > +               return "cpu";
+> >
+> > Despite the existence of lots of users of these properties, I couldn't find
+> > both the "earlier version" and the "current version" of the opp-v1 bindings
+> > documenting the "cpu0-supply" and "cpu-supply" properties?
+>
+> They are part of the device nodes and don't fall under the
+> jurisdiction of OPP tables and so aren't defined there. We rely on the
+> "<name>-supply" property from the regulator bindings for the devices.
+>
+> > Even for opp-v2, they are not documented in
+> > Documentation/devicetree/bindings/opp/opp.txt, but cpu-supply is used in
+> > the examples?
+>
+> Same reasoning here as well.
 
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 44d3736..f40150f 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -69,6 +69,11 @@ static const struct tsens_ops ops_generic_v2 = {
- 	.get_temp	= get_temp_tsens_v2,
- };
- 
-+const struct tsens_data data_tsens_v2 = {
-+	.ops            = &ops_generic_v2,
-+};
-+
-+/* Kept around for backward compatibility with old msm8996.dtsi */
- const struct tsens_data data_8996 = {
- 	.num_sensors	= 13,
- 	.ops		= &ops_generic_v2,
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 3440166c..a2c9bfa 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -72,6 +72,9 @@ static const struct of_device_id tsens_table[] = {
- 	}, {
- 		.compatible = "qcom,msm8996-tsens",
- 		.data = &data_8996,
-+	}, {
-+		.compatible = "qcom,tsens-v2",
-+		.data = &data_tsens_v2,
- 	},
- 	{}
- };
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index d785b37..14331eb 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -88,6 +88,9 @@ void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
- int init_common(struct tsens_device *);
- int get_temp_common(struct tsens_device *, int, int *);
- 
--extern const struct tsens_data data_8916, data_8974, data_8960, data_8996;
-+/* TSENS v1 targets */
-+extern const struct tsens_data data_8916, data_8974, data_8960;
-+/* TSENS v2 targets */
-+extern const struct tsens_data data_8996, data_tsens_v2;
- 
- #endif /* __QCOM_TSENS_H__ */
+Right, they are part of the cpu nodes, not of the operating-points properties
+(which are part of the cpu nodes) or the opp_table nodes (for v2).
+
+> > Can you please document these properties?
+>
+> I don't think we need to, do we ?
+
+IMHO they should be documented somewhere, with a link to
+Documentation/devicetree/bindings/regulator/regulator.txt.
+How else can a DTS writer know he/she needs them?
+Without cpu-supply (and clock!) properties, cpufreq can't work.
+
+Candidates:
+  - Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt
+    This has operating points without clocks nor cpu-supply, but with
+    clock-latency (for which clock? ;-)
+  - Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+    Again, operating points without clocks nor cpu-supply, but with
+    clock-latency.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.7.4
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
