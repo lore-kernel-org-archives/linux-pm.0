@@ -1,63 +1,101 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 1/5] thermal: exynos: enable core tmu clk on exynos platform
-Date: Wed, 18 Jul 2018 08:17:50 +0200
-Message-ID: <CAJKOXPdXYz77Bqyjr3HK+EA0HpEABPqmPOD0f5ew-yq2SFVpVQ@mail.gmail.com>
-References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com>
- <CAJKOXPdP78VFQgSQ9z9WsgYY_YhEKPUt=0MOra6Pz6smQeiNGg@mail.gmail.com> <CANAwSgS=08fVsqn95WHzSF71WTTyD2-=K2C6-BEz0tY0t6A1-g@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v7 5/7] dt: thermal: tsens: Document the fallback DT
+ property for v2 of TSENS IP
+Date: Wed, 18 Jul 2018 12:12:59 +0530
+Message-ID: <CAHLCerOWYzx0BJDrLZnXwcxWUbYnX=D_bwtUApmZrAKHW8L42A@mail.gmail.com>
+References: <cover.1531384019.git.amit.kucheria@linaro.org>
+ <a385dfac661b04befd221f3012b2ca56576aada9.1531384019.git.amit.kucheria@linaro.org>
+ <20180718000918.GG129942@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANAwSgS=08fVsqn95WHzSF71WTTyD2-=K2C6-BEz0tY0t6A1-g@mail.gmail.com>
+In-Reply-To: <20180718000918.GG129942@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Vivek Gautam <vivek.gautam@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17 July 2018 at 22:23, Anand Moon <linux.amoon@gmail.com> wrote:
-> Hi Krzysztof
->
-> On 17 July 2018 at 17:50, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->> Hi Anand,
+On Wed, Jul 18, 2018 at 5:39 AM, Matthias Kaehlcke <mka@chromium.org> wrote:
+> On Thu, Jul 12, 2018 at 02:09:06PM +0530, Amit Kucheria wrote:
+>> We want to create common code for v2 of the TSENS IP block that is used in
+>> a large number of Qualcomm SoCs. "qcom,tsens-v2" should be able to handle
+>> most of the common functionality start with a common get_temp() function.
 >>
->> Thanks for patch.
+>> It is also necessary to split out the memory regions for the TM and SROT
+>> register banks because their offsets are not constant across SoC families.
 >>
->> On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
->>> clk_summary do not show tmu_apbif clk enable, so replace
->>> the clk_prepare with clk_prepare_enables to enable tmu clk.
+>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>> Reviewed-by: Rob Herring <robh@kernel.org>
+>> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+>> Tested-by: Matthias Kaehlcke <mka@chromium.org>
+>> ---
+>>  .../devicetree/bindings/thermal/qcom-tsens.txt     | 31 +++++++++++++++++-----
+>>  1 file changed, 25 insertions(+), 6 deletions(-)
 >>
->> This is not valid reason to do a change. What is clk_summary does not
->> really matter. Your change has negative impact on power consumption as
->> the clock stays enabled all the time. This is not what we want... so
->> please explain it more - why you need the clock to be enabled all the
->> time? What is broken (clk_summary is not broken in this case)?
+>> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>> index 06195e8..b5312a8 100644
+>> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>> @@ -1,18 +1,28 @@
+>>  * QCOM SoC Temperature Sensor (TSENS)
 >>
+>>  Required properties:
+>> -- compatible :
+>> - - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+>> - - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+>> - - "qcom,msm8996-tsens" : For 8996 Family of SoCs
+>> +- compatible:
+>> +  Must be one of the following:
+>> +    - "qcom,msm8916-tsens" (MSM8916)
+>> +    - "qcom,msm8974-tsens" (MSM8974)
+>> +    - "qcom,msm8996-tsens" (MSM8996)
+>> +    - "qcom,msm8998-tsens", "qcom,tsens-v2" (MSM8998)
+>> +    - "qcom,sdm845-tsens", "qcom,tsens-v2" (SDM845)
+>> +  The generic "qcom,tsens-v2" property must be used as a fallback for any SoC
+>> +  with version 2 of the TSENS IP. MSM8996 is the only exception beacause the
 >
-> Opps I could not explain some more in my commit message.
+> s/beacause/because/
 >
-> Actually TMU sensor for Exynos process are controlled by so external clk
+>> +  generic property did not exist when support was added.
+>> +
+>> +- reg: Address range of the thermal registers.
+>> +  New platforms containing v2.x.y of the TSENS IP must specify the SROT and TM
+>> +  register spaces separately, with order being TM before SROT.
+>> +  See Example 2, below.
+>>
+>> -- reg: Address range of the thermal registers
+>>  - #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+>>  - #qcom,sensors: Number of sensors in tsens block
+>>  - Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+>>  nvmem cells
+>>
+>> -Example:
+>> +Example 1 (legacy support before a fallback tsens-v2 propoerty was introduced):
 >
-> Exynos4412 have VDD18_TS sensor which controls the CLK_SENSE tmu.
-> Exynos5422 have VDD18_TS01 / VDD18_TS23 / VDD18_TS4 sensor which
-> control the CLK_SENSE tmu.
+> s/propoerty/property/
 >
-> So as per my understanding tmu is clk driver which control the flow  PMIC.
+>>  tsens: thermal-sensor@900000 {
+>>               compatible = "qcom,msm8916-tsens";
+>>               reg = <0x4a8000 0x2000>;
+>> @@ -20,3 +30,12 @@ tsens: thermal-sensor@900000 {
+>>               nvmem-cell-names = "caldata", "calsel";
+>>               #thermal-sensor-cells = <1>;
+>>       };
+>> +
+>> +Example 2 (for any platform containing v2 of the TSENS IP):
+>> +tsens0: thermal-sensor@c263000 {
+>> +             compatible = "qcom,sdm845-tsens", "qcom,tsens-v2";
+>> +             reg = <0xc263000 0x1ff>, /* TM */
+>> +                     <0xc222000 0x1ff>; /* SROT */
+>> +             #qcom,sensors = <13>;
+>> +             #thermal-sensor-cells = <1>;
+>> +     };
 >
-> clk_prepare_enable combine clk_prepare and clk_enable
-> and clk_disable_unprepare combine clk_disable and clk_unprepare.
+> Besides the typos:
 >
-> most of the driver prefer clk_prepare_enable and clk_disable_unprepare.
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 >
-> clk_summary is just a reference looking point where we could check the
-> clk is enable/disable.
->
-> what is broken ?
-> I still few more parameter need to tuned to configure the tmu driver.
+> Oh, and you also might want to reorder the patches as suggested by
+> Doug on v6 to put the changes in the binding before the code changes.
 
-I am sorry but I am still unable to see what is broken and what are
-you trying to fix. I asked what is broken and you replied that there
-is a sensor, there is a clock, drivers use clk_prepare_enable and some
-more parameter need to be tuned... None of these are answers to
-question - what is broken. How can I reproduce the problem?
-
-Best regards,
-Krzysztof
+Ahh, sorry I missed that reordering.
