@@ -1,108 +1,34 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 3/4] iommu/arm-smmu: Add the device_link
- between masters and smmu
-Date: Wed, 18 Jul 2018 19:01:28 +0530
-Message-ID: <CAFp+6iF3vihGYLVkALmGa4USLcUaUOtpKD0EDC8CALv6Ch6VrQ@mail.gmail.com>
-References: <20180708173413.1965-1-vivek.gautam@codeaurora.org>
- <20180708173413.1965-4-vivek.gautam@codeaurora.org>
- <5179668.PHK6S3sxLu@aspire.rjw.lan>
- <CAFp+6iGcwdK=wyPf++u3B+ORghuB1YhYmnJLSwvt1efG9H4YeA@mail.gmail.com>
- <48139f68-5a79-8531-00fa-fbdd787f50f5@arm.com>
+From: elicec <elicec@foxmail.com>
+Subject: [PATCH] power:ds2782:Fix description error
+Date: Wed, 18 Jul 2018 15:20:33 +0000
+Message-ID: <20180718152033.5880-1-elicec@foxmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <48139f68-5a79-8531-00fa-fbdd787f50f5-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: elicec <elicec@foxmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKdWwgMTgsIDIwMTggYXQgNjoxMyBQTSwgUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJw
-aHlAYXJtLmNvbT4gd3JvdGU6Cj4gT24gMTgvMDcvMTggMTA6MzAsIFZpdmVrIEdhdXRhbSB3cm90
-ZToKPj4KPj4gT24gV2VkLCBKdWwgMTEsIDIwMTggYXQgMzoyMyBQTSwgUmFmYWVsIEouIFd5c29j
-a2kgPHJqd0Byand5c29ja2kubmV0Pgo+PiB3cm90ZToKPj4+Cj4+PiBPbiBTdW5kYXksIEp1bHkg
-OCwgMjAxOCA3OjM0OjEyIFBNIENFU1QgVml2ZWsgR2F1dGFtIHdyb3RlOgo+Pj4+Cj4+Pj4gRnJv
-bTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4+Pgo+Pj4+IEZpbmFs
-bHkgYWRkIHRoZSBkZXZpY2UgbGluayBiZXR3ZWVuIHRoZSBtYXN0ZXIgZGV2aWNlIGFuZAo+Pj4+
-IHNtbXUsIHNvIHRoYXQgdGhlIHNtbXUgZ2V0cyBydW50aW1lIGVuYWJsZWQvZGlzYWJsZWQgb25s
-eSB3aGVuIHRoZQo+Pj4+IG1hc3RlciBuZWVkcyBpdC4gVGhpcyBpcyBkb25lIGZyb20gYWRkX2Rl
-dmljZSBjYWxsYmFjayB3aGljaCBnZXRzCj4+Pj4gY2FsbGVkIG9uY2Ugd2hlbiB0aGUgbWFzdGVy
-IGlzIGFkZGVkIHRvIHRoZSBzbW11Lgo+Pj4+Cj4+Pj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFu
-IFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBH
-YXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4+PiBSZXZpZXdlZC1ieTogVG9t
-YXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPj4+PiBDYzogUmFmYWVsIEouIFd5c29ja2kg
-PHJqd0Byand5c29ja2kubmV0Pgo+Pj4+IENjOiBMdWthcyBXdW5uZXIgPGx1a2FzQHd1bm5lci5k
-ZT4KPj4+PiAtLS0KPj4+Pgo+Pj4+ICAgLSBDaGFuZ2Ugc2luY2UgdjExCj4+Pj4gICAgICogUmVw
-bGFjZWQgRExfRkxBR19BVVRPUkVNT1ZFIGZsYWcgd2l0aCBETF9GTEFHX0FVVE9SRU1PVkVfU1VQ
-UExJRVIuCj4+Pj4KPj4+PiAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEyICsrKysrKysr
-KysrKwo+Pj4+ICAgMSBmaWxlIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKykKPj4+Pgo+Pj4+IGRp
-ZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1z
-bW11LmMKPj4+PiBpbmRleCAwOTI2NWUyMDZlMmQuLjkxNmNkZTQ5NTRkMiAxMDA2NDQKPj4+PiAt
-LS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4+PiArKysgYi9kcml2ZXJzL2lvbW11L2Fy
-bS1zbW11LmMKPj4+PiBAQCAtMTQ2MSw4ICsxNDYxLDIwIEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVf
-YWRkX2RldmljZShzdHJ1Y3QgZGV2aWNlCj4+Pj4gKmRldikKPj4+Pgo+Pj4+ICAgICAgICBpb21t
-dV9kZXZpY2VfbGluaygmc21tdS0+aW9tbXUsIGRldik7Cj4+Pj4KPj4+PiArICAgICBpZiAocG1f
-cnVudGltZV9lbmFibGVkKHNtbXUtPmRldikgJiYKPj4+Cj4+Pgo+Pj4gV2h5IGRvZXMgdGhlIGNy
-ZWF0aW9uIG9mIHRoZSBsaW5rIGRlcGVuZCBvbiB3aGV0aGVyIG9yIG5vdCBydW50aW1lIFBNCj4+
-PiBpcyBlbmFibGVkIGZvciB0aGUgTU1VIGRldmljZT8KPj4+Cj4+PiBXaGF0IGFib3V0IHN5c3Rl
-bS13aWRlIFBNIGFuZCBzeXN0ZW0gc2h1dGRvd24/ICBBcmUgdGhleSBhbHdheXMKPj4+IGd1YXJh
-bnRlZWQKPj4+IHRvIGhhcHBlbiBpbiB0aGUgcmlnaHQgb3JkZXIgd2l0aG91dCB0aGUgbGluaz8K
-Pj4KPj4KPj4gSGkgUm9iaW4sCj4+Cj4+IEFzIFJhZmFlbCBwb2ludGVkLCB3ZSBzaG91bGQgdGhl
-IGRldmljZSBsaW5rIGNyZWF0aW9uIHNob3VsZCBub3QgZGVwZW5kIG9uCj4+IHJ1bnRpbWUgUE0g
-YmVpbmcgZW5hYmxlZCBvciBub3QsIGFzIHdlIHdvdWxkIGFsc28gd2FudCB0byBndWFyYW50ZWUK
-Pj4gdGhhdCBzeXN0ZW0gd2lkZSBQTSBjYWxsYmFja3MgYXJlIGNhbGxlZCBpbiB0aGUgcmlnaHQg
-b3JkZXIgZm9yIHNtbXUKPj4gYW5kIGNsaWVudHMuCj4+Cj4+IERvZXMgdGhpcyBjaGFuZ2Ugb2Yg
-cmVtb3ZpbmcgdGhlIGNoZWNrIGZvciBwbV9ydW50aW1lX2VuYWJsZWQoKSBmcm9tIGhlcmUKPj4g
-bG9va3Mgb2theSB0byB5b3U/Cj4KPgo+IEZXSVcgdGhlIGV4aXN0aW5nIHN5c3RlbSBQTSBvcHMg
-bWFrZSBubyBjbGFpbSB0byBiZSBwZXJmZWN0LCBhbmQgSSB3b3VsZG4ndAo+IGJlIGF0IGFsbCBz
-dXJwcmlzZWQgaWYgaXQgd2FzIG9ubHkgYnkgY29pbmNpZGVuY2UgdGhhdCBteSBkZXZpY2VzIGhh
-cHBlbmVkCj4gdG8gcHV0IG9uIHRoZSByZWxldmFudCBsaXN0cyBpbiB0aGUgcmlnaHQgb3JkZXIg
-dG8gc3RhcnQgd2l0aC4gSWYgd2Ugbm8KPiBsb25nZXIgbmVlZCB0byB3b3JyeSBhYm91dCBleHBs
-aWNpdCBkZXZpY2VfbGluayBob3VzZWtlZXBpbmcgaW4gdGhlIFNNTVUKPiBkcml2ZXIsIHRoZW4g
-Y3JlYXRpbmcgdGhlbSB1bmNvbmRpdGlvbmFsbHkgc291bmRzIGxpa2UgdGhlIHNlbnNpYmxlIHRo
-aW5nIHRvCj4gZG8uIEknZCBiZSBpbmNsaW5lZCB0byB0cmVhdCBmYWlsdXJlIGFzIG5vbi1mYXRh
-bCBsaWtlIHdlIGRvIGZvciB0aGUgc3lzZnMKPiBsaW5rLCB0aG91Z2gsIHNpbmNlIGl0J3MgYW5v
-dGhlciB0aGluZyB0aGF0IGNvcnJlY3QgU01NVSBvcGVyYXRpb24gZG9lc24ndAo+IGFjdHVhbGx5
-IGRlcGVuZCBvbiAoYXQgdGhpcyBwb2ludCB3ZSBkb24ndCBuZWNlc3NhcmlseSBrbm93IGlmIHRo
-aXMgY29uc3VtZXIKPiBldmVuIGhhcyBhIGRyaXZlciBhdCBhbGwpLgoKVGhhbmtzLiBJIHdpbGwg
-dGhlbiByZXNwaW4gdGhlIHBhdGNoIHRha2luZyBjYXJlIG9mIHRyZWF0aW5nIGZhaWx1cmUKYXMg
-bm9uLWZhdGFsLgoKPj4gRllJLCBhcyBkaXNjdXNzZWQgaW4gdGhlIGZpcnN0IHBhdGNoIFsxXSBv
-ZiB0aGlzIHNlcmllcywgSSB3aWxsIGFkZCBhCj4+IHN5c3RlbSB3aWRlCj4+IHN1c3BlbmQgY2Fs
-bGJhY2sgLSBhcm1fc21tdV9wbV9zdXNwZW5kLCB0aGF0IHdvdWxkIGRvIGNsb2NrIGRpc2FibGUs
-IGFuZAo+PiB3aWxsCj4+IGFkZCBjb3JyZXNwb25kaW5nIGNsb2NrIGVuYWJsZSBjYWxscyBpbiBh
-cm1fc21tdV9wbV9yZXN1bWUoKS4KPgo+Cj4gT0ssIEkgc3RpbGwgZG9uJ3QgcmVhbGx5IHVuZGVy
-c3RhbmQgdGhlIGZpbmVyIHBvaW50cyBvZiBob3cgc3lzdGVtIFBNIGFuZAo+IHJ1bnRpbWUgUE0g
-aW50ZXJhY3QsIGJ1dCBpZiBtYWtpbmcgaXQgcm9idXN0IGlzIGp1c3QgYSBjYXNlIG9mIGNhbGxp
-bmcgdGhlCj4gcnVudGltZSBzdXNwZW5kL3Jlc3VtZSBob29rcyBhcyBhcHByb3ByaWF0ZSBmcm9t
-IHRoZSBzeXN0ZW0gb25lcywgdGhhdAo+IHNvdW5kcyByZWFzb25hYmxlLgoKU3VyZS4gVGhhbmtz
-LgoKQmVzdCByZWdhcmRzClZpdmVrCgo+Cj4gUm9iaW4uCj4KPj4KPj4gWzFdIGh0dHBzOi8vbG9y
-ZS5rZXJuZWwub3JnL3BhdGNod29yay9wYXRjaC85NjA0NjAvCj4+Cj4+Cj4+IEJlc3QgcmVnYXJk
-cwo+PiBWaXZlawo+Pgo+Pj4KPj4+PiArICAgICAgICAgIWRldmljZV9saW5rX2FkZChkZXYsIHNt
-bXUtPmRldiwKPj4+PiArICAgICAgICAgICAgICAgICAgICAgRExfRkxBR19QTV9SVU5USU1FIHwg
-RExfRkxBR19BVVRPUkVNT1ZFX1NVUFBMSUVSKSkKPj4+PiB7Cj4+Pj4gKyAgICAgICAgICAgICBk
-ZXZfZXJyKHNtbXUtPmRldiwgIlVuYWJsZSB0byBhZGQgbGluayB0byB0aGUgY29uc3VtZXIKPj4+
-PiAlc1xuIiwKPj4+PiArICAgICAgICAgICAgICAgICAgICAgZGV2X25hbWUoZGV2KSk7Cj4+Pj4g
-KyAgICAgICAgICAgICByZXQgPSAtRU5PREVWOwo+Pj4+ICsgICAgICAgICAgICAgZ290byBvdXRf
-dW5saW5rOwo+Pj4+ICsgICAgIH0KPj4+PiArCj4+Pj4gICAgICAgIHJldHVybiAwOwo+Pj4+Cj4+
-Pj4gK291dF91bmxpbms6Cj4+Pj4gKyAgICAgaW9tbXVfZGV2aWNlX3VubGluaygmc21tdS0+aW9t
-bXUsIGRldik7Cj4+Pj4gKyAgICAgYXJtX3NtbXVfbWFzdGVyX2ZyZWVfc21lcyhmd3NwZWMpOwo+
-Pj4+ICAgb3V0X2NmZ19mcmVlOgo+Pj4+ICAgICAgICBrZnJlZShjZmcpOwo+Pj4+ICAgb3V0X2Zy
-ZWU6Cj4+Pj4KPj4+Cj4+Pgo+Pgo+Pgo+Pgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCj4gaW9tbXUgbWFpbGluZyBsaXN0Cj4gaW9tbXVAbGlzdHMubGlu
-dXgtZm91bmRhdGlvbi5vcmcKPiBodHRwczovL2xpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmcvbWFp
-bG1hbi9saXN0aW5mby9pb21tdQoKCgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBR
-dWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9y
-YSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJl
-ZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+After add support for ds2786 battery gas gauge，the description
+didn't update. fix it.
+
+Signed-off-by: elicec <elicec@foxmail.com>
+---
+ drivers/power/supply/ds2782_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply/ds2782_battery.c
+index a1b7e0592245..924e99d1e69e 100644
+--- a/drivers/power/supply/ds2782_battery.c
++++ b/drivers/power/supply/ds2782_battery.c
+@@ -471,5 +471,5 @@ static struct i2c_driver ds278x_battery_driver = {
+ module_i2c_driver(ds278x_battery_driver);
+ 
+ MODULE_AUTHOR("Ryan Mallon");
+-MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC driver");
++MODULE_DESCRIPTION("Maxim/Dallas DS2782/DS2786 Stand-Alone Fuel Gauage IC driver");
+ MODULE_LICENSE("GPL");
+-- 
+2.17.1
