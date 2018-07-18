@@ -1,114 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
-Date: Wed, 18 Jul 2018 12:11:06 +0200
-Message-ID: <2056372.NMt4aPaF4h@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-10-ulf.hansson@linaro.org>
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+Subject: Re: [PATCH] cpufreq: qcom-kryo: Silently error out on EPROBE_DEFER
+Date: Wed, 18 Jul 2018 15:51:25 +0530
+Message-ID: <CAHLCerMfcjjjEmHZthA23V1WfrS6x05h2a-LZRpQjCKLyZVSzQ@mail.gmail.com>
+References: <20180717204821.15987-1-niklas.cassel@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180620172226.15012-10-ulf.hansson@linaro.org>
+In-Reply-To: <20180717204821.15987-1-niklas.cassel@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Niklas Cassel <niklas.cassel@linaro.org>
+Cc: Ilia Lin <ilia.lin@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 20, 2018 7:22:09 PM CEST Ulf Hansson wrote:
-> To allow CPUs being power managed by PM domains, let's deploy support for
-> runtime PM for the CPU's corresponding struct device.
-> 
-> More precisely, at the point when the CPU is about to enter an idle state,
-> decrease the runtime PM usage count for its corresponding struct device,
-> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
-> resumes from idle, let's increase the runtime PM usage count, via calling
-> pm_runtime_get_sync().
-> 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Wed, Jul 18, 2018 at 2:18 AM, Niklas Cassel <niklas.cassel@linaro.org> wrote:
+> If of_nvmem_cell_get() fails due to probe deferal, we shouldn't print an
+> error message. Just be silent in this case.
+>
+> Signed-off-by: Niklas Cassel <niklas.cassel@linaro.org>
 
-I finally got to this one, sorry for the huge delay.
-
-Let me confirm that I understand the code flow correctly.
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
 > ---
->  kernel/cpu_pm.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
-> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-> index 67b02e138a47..492d4a83dca0 100644
-> --- a/kernel/cpu_pm.c
-> +++ b/kernel/cpu_pm.c
-> @@ -16,9 +16,11 @@
->   */
->  
->  #include <linux/kernel.h>
-> +#include <linux/cpu.h>
->  #include <linux/cpu_pm.h>
->  #include <linux/module.h>
->  #include <linux/notifier.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/spinlock.h>
->  #include <linux/syscore_ops.h>
->  
-> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
-
-This is called from a cpuidle driver's ->enter callback for the target state
-selected by the idle governor ->
-
->  {
->  	int nr_calls;
->  	int ret = 0;
-> +	struct device *dev = get_cpu_device(smp_processor_id());
->  
->  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
->  	if (ret)
-> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
->  		 */
->  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
->  
-> +	if (!ret && dev && dev->pm_domain)
-> +		pm_runtime_put_sync_suspend(dev);
-
--> so this is going to invoke genpd_runtime_suspend() if the usage
-counter of dev is 0.
-
-That will cause cpu_power_down_ok() to be called (because this is
-a CPU domain) and that will walk the domain cpumask and compute the
-estimated idle duration as the minimum of tick_nohz_get_next_wakeup()
-values over the CPUs in that cpumask.  [Note that the weight of the
-cpumask must be seriously limited for that to actually work, as this
-happens in the idle path.]  Next, it will return "true" if it can
-find a domain state with residency within the estimated idle
-duration.  [Note that this sort of overlaps with the idle governor's
-job.]
-
-Next, __genpd_runtime_suspend() will be invoked to run the device-specific
-callback if any [Note that this has to be suitable for the idle path if
-present.] and genpd_stop_dev() runs (which, again, may invoke a callback)
-and genpd_power_off() runs under the domain lock (which must be a spinlock
-then).
-
-> +
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(cpu_pm_enter);
-> @@ -118,6 +124,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
->   */
->  int cpu_pm_exit(void)
->  {
-> +	struct device *dev = get_cpu_device(smp_processor_id());
-> +
-> +	if (dev && dev->pm_domain)
-> +		pm_runtime_get_sync(dev);
-> +
->  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
->  }
->  EXPORT_SYMBOL_GPL(cpu_pm_exit);
-> 
-
-And this is called on wakeup when the cpuidle driver's ->enter callback
-is about to return and it reverses the suspend flow (except that the
-governor doesn't need to be called now).
-
-Have I got that right?
+>  drivers/cpufreq/qcom-cpufreq-kryo.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> index 29389accf3e9..b8d1e6875f16 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> @@ -109,8 +109,9 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>         speedbin_nvmem = of_nvmem_cell_get(np, NULL);
+>         of_node_put(np);
+>         if (IS_ERR(speedbin_nvmem)) {
+> -               dev_err(cpu_dev, "Could not get nvmem cell: %ld\n",
+> -                       PTR_ERR(speedbin_nvmem));
+> +               if (PTR_ERR(speedbin_nvmem) != -EPROBE_DEFER)
+> +                       dev_err(cpu_dev, "Could not get nvmem cell: %ld\n",
+> +                               PTR_ERR(speedbin_nvmem));
+>                 return PTR_ERR(speedbin_nvmem);
+>         }
+>
+> --
+> 2.17.1
+>
