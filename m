@@ -1,62 +1,59 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Nouveau] [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Wed, 18 Jul 2018 10:36:01 +0200
-Message-ID: <20180718083601.GC16072@wunner.de>
-References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com>
- <20180717071641.GA5411@wunner.de>
- <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
- <20180717182041.GA18363@wunner.de>
- <CAJZ5v0g8O8J0U8V-gLMe+NnTd3xgZ5_pjr9p2oci7yAfW54B-A@mail.gmail.com>
- <20180718082505.GB16072@wunner.de>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Wed, 18 Jul 2018 09:42:18 +0100
+Message-ID: <20180718084218.GI32302@e110439-lin>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-2-patrick.bellasi@arm.com>
+ <20180717175025.GA150378@joelaf.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180718082505.GB16072@wunner.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, nouveau@lists.freedesktop.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Ben Skeggs <bskeggs@redhat.com>
+In-Reply-To: <20180717175025.GA150378@joelaf.mtv.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKdWwgMTgsIDIwMTggYXQgMTA6MjU6MDVBTSArMDIwMCwgTHVrYXMgV3VubmVyIHdy
-b3RlOgo+IFRoZSBHUFUgY29udGFpbnMgYW4gaTJjIHN1YmRldmljZSBmb3IgZWFjaCBjb25uZWN0
-b3Igd2l0aCBEREMgbGluZXMuCj4gSSBiZWxpZXZlIHRob3NlIGFyZSBtb2RlbGxlZCBhcyBjaGls
-ZHJlbiBvZiB0aGUgR1BVJ3MgUENJIGRldmljZSBhcwo+IHRoZXkncmUgYWNjZXNzZWQgdmlhIG1t
-aW8gb2YgdGhlIFBDSSBkZXZpY2UuCj4gCj4gVGhlIHByb2JsZW0gaGVyZSBpcyB0aGF0IHdoZW4g
-dGhlIEdQVSdzIFBDSSBkZXZpY2UgcnVudGltZSBzdXNwZW5kcywKPiBpdHMgaTJjIGNoaWxkIGRl
-dmljZSBuZWVkcyB0byBiZSBydW50aW1lIGFjdGl2ZSB0byBzdXNwZW5kIHRoZSBNU1QKPiB0b3Bv
-bG9neS4gIENhdGNoLTIyLgo+IAo+IEkgZG9uJ3Qga25vdyB3aGV0aGVyIG9yIG5vdCBpdCdzIG5l
-Y2Vzc2FyeSB0byBzdXNwZW5kIHRoZSBNU1QgdG9wb2xvZ3kuCj4gSSdtIG5vdCBhbiBleHBlcnQg
-b24gRGlzcGxheVBvcnQgTXVsdGlTdHJlYW0gdHJhbnNwb3J0Lgo+IAo+IEJUVyBMeXVkZSwgaW4g
-cGF0Y2ggNCBhbmQgNSBvZiB0aGlzIHNlcmllcywgeW91J3JlIHJ1bnRpbWUgcmVzdW1pbmcKPiBw
-YWQtPmkyYy0+c3ViZGV2LmRldmljZS0+ZGV2LiAgSXMgdGhpcyB0aGUgUENJIGRldmljZSBvciBp
-cyBpdCB0aGUgaTJjCj4gZGV2aWNlPyAgSSdtIGFsd2F5cyBjb25mdXNlZCBieSBub3V2ZWF1J3Mg
-c3RydWN0cy4gIEluIG52a21faTJjX2J1c19jdG9yKCkKPiBJIGNhbiBzZWUgdGhhdCB0aGUgZGV2
-aWNlIHlvdSdyZSBydW50aW1lIHJlc3VtaW5nIGlzIHRoZSBwYXJlbnQgb2YgdGhlCj4gaTJjX2Fk
-YXB0ZXI6Cj4gCj4gCXN0cnVjdCBudmttX2RldmljZSAqZGV2aWNlID0gcGFkLT5pMmMtPnN1YmRl
-di5kZXZpY2U7Cj4gCVsuLi5dCj4gCWJ1cy0+aTJjLmRldi5wYXJlbnQgPSBkZXZpY2UtPmRldjsK
-PiAKPiBJZiB0aGUgaTJjX2FkYXB0ZXIgaXMgYSBjaGlsZCBvZiB0aGUgUENJIGRldmljZSwgaXQn
-cyBzdWZmaWNpZW50Cj4gdG8gcnVudGltZSByZXN1bWUgdGhlIGkyY19hZGFwdGVyLCBpLmUuIGJ1
-cy0+aTJjLmRldiwgYW5kIHRoaXMgd2lsbAo+IGltcGxpY2l0bHkgcnVudGltZSByZXN1bWUgaXRz
-IHBhcmVudC4KCkFjdHVhbGx5LCBoYXZpbmcgd3JpdHRlbiBhbGwgdGhpcyBJIGp1c3QgcmVtZW1i
-ZXJlZCB0aGF0IHdlIGhhdmUgdGhpcwppbiB0aGUgZG9jdW1lbnRhdGlvbjoKCiAgICA4LiAiTm8t
-Q2FsbGJhY2siIERldmljZXMKCiAgICBTb21lICJkZXZpY2VzIiBhcmUgb25seSBsb2dpY2FsIHN1
-Yi1kZXZpY2VzIG9mIHRoZWlyIHBhcmVudCBhbmQgY2Fubm90IGJlCiAgICBwb3dlci1tYW5hZ2Vk
-IG9uIHRoZWlyIG93bi4gWy4uLl0KCiAgICBTdWJzeXN0ZW1zIGNhbiB0ZWxsIHRoZSBQTSBjb3Jl
-IGFib3V0IHRoZXNlIGRldmljZXMgYnkgY2FsbGluZwogICAgcG1fcnVudGltZV9ub19jYWxsYmFj
-a3MoKS4KClNvIGl0IG1pZ2h0IGFjdHVhbGx5IGJlIHN1ZmZpY2llbnQgdG8ganVzdCBjYWxsIHBt
-X3J1bnRpbWVfbm9fY2FsbGJhY2tzKCkKZm9yIHRoZSBpMmMgZGV2aWNlcy4uLgoKTHVrYXMKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1h
-aWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On 17-Jul 10:50, Joel Fernandes wrote:
+> On Mon, Jul 16, 2018 at 09:28:55AM +0100, Patrick Bellasi wrote:
+
+[...]
+
+> > diff --git a/init/Kconfig b/init/Kconfig
+> > index 041f3a022122..1d45a6877d6f 100644
+> > --- a/init/Kconfig
+> > +++ b/init/Kconfig
+> > @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
+> >  config GENERIC_SCHED_CLOCK
+> >  	bool
+> >  
+> > +menu "Scheduler features"
+> > +
+> > +config UCLAMP_TASK
+> > +	bool "Enable utilization clamping for RT/FAIR tasks"
+> > +	depends on CPU_FREQ_GOV_SCHEDUTIL
+> 
+> Does it make sense to depend on this? One could turn off schedutil and then
+> uclamp can't be used for any other purpose (big.LITTLE task placement etc)?
+
+You right, utilization clamping is _going_ to target tasks placement.
+But, the support currently posted in this series is just for OPP
+biasing. Thus, it would not make sense to enabled it when schedutil
+is not available.
+
+My idea was to keep this dependency while we finalize these bits.
+Once we move on to the tasks placement biasing, we will remove this
+dependency too.
+
+Does that makes sense?
+
+> thanks,
+> 
+> - Joel
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
