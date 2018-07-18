@@ -1,68 +1,91 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Register when ACPI PCCH is present
-Date: Wed, 18 Jul 2018 12:51:34 +0200
-Message-ID: <CAJZ5v0jqM+CRckgyyP63bin+30HhO+je+fWeS1+J1dz=p3ty1A@mail.gmail.com>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix> <20180717140336.ayovaz4ksdlak6bb@suselix>
- <8115130.Fhkpr82c7G@aspire.rjw.lan> <2386802.jRaeHeNqoJ@aspire.rjw.lan> <20180718104300.dwgbqbnllvhwzrea@suselix>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Mark Brown <broonie@kernel.org>
+Subject: Applied "regulator: bd9571mwv: Document "backup_mode" sysfs file" to the regulator tree
+Date: Wed, 18 Jul 2018 13:29:38 +0100
+Message-ID: <E1fflaM-0007Sj-2K@debutante>
+References: <20180716153052.1830-4-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180718104300.dwgbqbnllvhwzrea@suselix>
+In-Reply-To: <20180716153052.1830-4-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Herrmann <aherrmann@suse.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Pavel Machek <pavel@ucw.cz>, Mark Brown <broonie@kernel.org>, Marek Vasut <marek.vasut+renesas@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>Mark Brown <broonie@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.orglinux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 18, 2018 at 12:43 PM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> On Tue, Jul 17, 2018 at 08:06:54PM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Currently, intel_pstate doesn't load if _PSS is not present on
->> HP Proliant systems, because it expects the firmware to take over
->> CPU performance scaling in that case.  However, if ACPI PCCH is
->> present, the firmware expects the kernel to use it for CPU
->> performance scaling and the pcc-cpufreq driver is loaded for that.
->>
->> Unfortunately, the firmware interface used by that driver is not
->> scalable for fundamental reasons, so pcc-cpufreq is way suboptimal
->> on systems with more than just a few CPUs.  In fact, it is better to
->> avoid using it at all.
->>
->> For this reason, modify intel_pstate to look for ACPI PCCH if _PSS
->> is not present and register if it is there.  Also prevent the
->> pcc-cpufreq driver from trying to initialize if intel_pstate has
->> been registered already.
->>
->> Fixes: fbbcdc0744da (intel_pstate: skip the driver if ACPI has power mgmt option)
->> Reported-by: Andreas Herrmann <aherrmann@suse.com>
->> Reviewed-by: Andreas Herrmann <aherrmann@suse.com>
->> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>
->> This is a replacement for https://patchwork.kernel.org/patch/10530091/
->>
->> In addition to the intel_pstate changes in the above, it also
->> prevents pcc-cpufreq from trying to initialize (which will fail
->> ultimately, but may confuse the firmware in the meantime).
->>
->> Andreas, please test this one and let me know if it still works for you.
->
-> Done that (with system in "Dynamic Power Savings Mode"). It still
-> works and system was stable.
+The patch
 
-Thanks!
+   regulator: bd9571mwv: Document "backup_mode" sysfs file
 
-> FYI, as a sniff test I've run a kernbench test. I now repeat the test
-> with system switched to "OS control mode". Just in case -- if there
-> was interference with platform code while system was in "Dynamic Power
-> Savings Mode" (significantly affecting performance) I might spot it
-> this way.
+has been applied to the regulator tree at
 
-I'd rather not expect performance to be affected by this, but power
-very well may be affected.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git 
 
-Anyway, good idea!
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
 
-Cheers,
-Rafael
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+>From cf18fd01466d59263c615165341684a055206dd5 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Mon, 16 Jul 2018 17:30:52 +0200
+Subject: [PATCH] regulator: bd9571mwv: Document "backup_mode" sysfs file
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ .../testing/sysfs-driver-bd9571mwv-regulator  | 27 +++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+
+diff --git a/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+new file mode 100644
+index 000000000000..4d63a7904b94
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-driver-bd9571mwv-regulator
+@@ -0,0 +1,27 @@
++What:		/sys/bus/i2c/devices/.../bd9571mwv-regulator.*.auto/backup_mode
++Date:		Jul 2018
++KernelVersion:	4.19
++Contact:	Geert Uytterhoeven <geert+renesas@glider.be>
++Description:	Read/write the current state of DDR Backup Mode, which controls
++		if DDR power rails will be kept powered during system suspend.
++		("on"/"1" = enabled, "off"/"0" = disabled).
++		Two types of power switches (or control signals) can be used:
++		  A. With a momentary power switch (or pulse signal), DDR
++		     Backup Mode is enabled by default when available, as the
++		     PMIC will be configured only during system suspend.
++		  B. With a toggle power switch (or level signal), the
++		     following steps must be followed exactly:
++		       1. Configure PMIC for backup mode, to change the role of
++			  the accessory power switch from a power switch to a
++			  wake-up switch,
++		       2. Switch accessory power switch off, to prepare for
++			  system suspend, which is a manual step not controlled
++			  by software,
++		       3. Suspend system,
++		       4. Switch accessory power switch on, to resume the
++			  system.
++		     DDR Backup Mode must be explicitly enabled by the user,
++		     to invoke step 1.
++		See also Documentation/devicetree/bindings/mfd/bd9571mwv.txt.
++Users:		User space applications for embedded boards equipped with a
++		BD9571MWV PMIC.
+-- 
+2.18.0
