@@ -1,59 +1,83 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 01/12] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Wed, 18 Jul 2018 09:42:18 +0100
-Message-ID: <20180718084218.GI32302@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-2-patrick.bellasi@arm.com>
- <20180717175025.GA150378@joelaf.mtv.corp.google.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v5] PM / devfreq: Fix devfreq_add_device() when drivers
+ are built as modules.
+Date: Wed, 18 Jul 2018 11:04:36 +0200
+Message-ID: <91722bc1-6174-4a79-4bf6-4f2e91240676@collabora.com>
+References: <20180704084550.7565-1-enric.balletbo@collabora.com>
+ <CAGTfZH315DM0r4qxZ28rW=0SpWOJHjFoBij0=c8-OTG5BxeLAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180717175025.GA150378@joelaf.mtv.corp.google.com>
+In-Reply-To: <CAGTfZH315DM0r4qxZ28rW=0SpWOJHjFoBij0=c8-OTG5BxeLAQ@mail.gmail.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: cwchoi00@gmail.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, stable <stable@vger.kernel.org>, kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17-Jul 10:50, Joel Fernandes wrote:
-> On Mon, Jul 16, 2018 at 09:28:55AM +0100, Patrick Bellasi wrote:
+Hi MyungJoo,
 
-[...]
-
-> > diff --git a/init/Kconfig b/init/Kconfig
-> > index 041f3a022122..1d45a6877d6f 100644
-> > --- a/init/Kconfig
-> > +++ b/init/Kconfig
-> > @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
-> >  config GENERIC_SCHED_CLOCK
-> >  	bool
-> >  
-> > +menu "Scheduler features"
-> > +
-> > +config UCLAMP_TASK
-> > +	bool "Enable utilization clamping for RT/FAIR tasks"
-> > +	depends on CPU_FREQ_GOV_SCHEDUTIL
+On 05/07/18 02:13, Chanwoo Choi wrote:
+> Hi Enric,
 > 
-> Does it make sense to depend on this? One could turn off schedutil and then
-> uclamp can't be used for any other purpose (big.LITTLE task placement etc)?
-
-You right, utilization clamping is _going_ to target tasks placement.
-But, the support currently posted in this series is just for OPP
-biasing. Thus, it would not make sense to enabled it when schedutil
-is not available.
-
-My idea was to keep this dependency while we finalize these bits.
-Once we move on to the tasks placement biasing, we will remove this
-dependency too.
-
-Does that makes sense?
-
-> thanks,
+> 2018-07-04 17:45 GMT+09:00 Enric Balletbo i Serra
+> <enric.balletbo@collabora.com>:
+>> When the devfreq driver and the governor driver are built as modules,
+>> the call to devfreq_add_device() or governor_store() fails because the
+>> governor driver is not loaded at the time the devfreq driver loads. The
+>> devfreq driver has a build dependency on the governor but also should
+>> have a runtime dependency. We need to make sure that the governor driver
+>> is loaded before the devfreq driver.
+>>
+>> This patch fixes this bug by adding a try_then_request_governor()
+>> function. First tries to find the governor, and then, if it is not found,
+>> it requests the module and tries again.
+>>
+>> Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>> ---
+>>
+>> Changes in v5:
+>> - Requested by MyungJoo and Chanwoo.
+>>   - Fix returning without the lock acquired after request_module.
+>> - Requested by Chanwoo.
+>>   - In request governor function check if governor name is NULL or not.
+>>   - Remove some unrelated changes (added/removed some blank lines).
+>>
+>> Changes in v4:
+>> - Kept "locked" devfreq_list from the return of find_devfreq_governor() to
+>>   the unlock of governor_store(). Requested by MyungJoo Ham.
+>>
+>> Changes in v3:
+>> - Remove unneded change in dev_err message.
+>> - Fix err returned value in case to not find the governor.
+>>
+>> Changes in v2:
+>> - Add a new function to request the module and call that function from
+>>   devfreq_add_device and governor_store.
+>>
+>>  drivers/devfreq/devfreq.c | 53 ++++++++++++++++++++++++++++++++++++---
+>>  1 file changed, 49 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 0b5b3abe054e..aa92fbf9f0dd 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
 > 
-> - Joel
+> (snip)
+> 
+> Looks good to me.
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> 
 
--- 
-#include <best/regards.h>
+I was expecting see also this patch in the pull request you did but I didn't
+see. Is because of will be merged as a fix in current cycle? or has been forgotten?
 
-Patrick Bellasi
+Best regards,
+ Enric
+
+
+> Best Regards,
+> Chanwoo Choi
+> 
