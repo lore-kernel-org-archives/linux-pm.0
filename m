@@ -1,88 +1,49 @@
-From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
- recursion in suspend/resume paths
-Date: Wed, 18 Jul 2018 09:47:10 +0200
-Message-ID: <20180718074710.GA16072@wunner.de>
-References: <20180716235936.11268-1-lyude@redhat.com>
- <20180716235936.11268-2-lyude@redhat.com>
- <20180717071641.GA5411@wunner.de>
- <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
- <20180717182041.GA18363@wunner.de>
- <cb5af1611622a080fdcbcf3bb794d8ebc39cae2a.camel@redhat.com>
- <20180717183211.GB18363@wunner.de>
- <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel@redhat.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2] cpufreq: pcc-cpufreq: Disable dynamic scaling on
+ many-CPU systems
+Date: Wed, 18 Jul 2018 10:23:52 +0200
+Message-ID: <20180718082352.GQ2494@hirez.programming.kicks-ass.net>
+References: <20180717065048.74mmgk4t5utjaa6a@suselix>
+ <306375154.NhdH6AhdAd@aspire.rjw.lan>
+ <5423012.ZZnfdYddaT@aspire.rjw.lan>
+ <20180717201323.6rwb4yklq46cmtom@suselix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2dbe75b1a83c025b9cddc229dbca9af6fb30111e.camel-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Lyude Paul <lyude-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <20180717201323.6rwb4yklq46cmtom@suselix>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andreas Herrmann <aherrmann@suse.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgMDI6MzQ6NDdQTSAtMDQwMCwgTHl1ZGUgUGF1bCB3cm90
-ZToKPiBPbiBUdWUsIDIwMTgtMDctMTcgYXQgMjA6MzIgKzAyMDAsIEx1a2FzIFd1bm5lciB3cm90
-ZToKPiA+IE9uIFR1ZSwgSnVsIDE3LCAyMDE4IGF0IDAyOjI0OjMxUE0gLTA0MDAsIEx5dWRlIFBh
-dWwgd3JvdGU6Cj4gPiA+IE9uIFR1ZSwgMjAxOC0wNy0xNyBhdCAyMDoyMCArMDIwMCwgTHVrYXMg
-V3VubmVyIHdyb3RlOgo+ID4gPiA+IE9rYXksIHRoZSBQQ0kgZGV2aWNlIGlzIHN1c3BlbmRpbmcg
-YW5kIHRoZSBudmttX2kyY19hdXhfYWNxdWlyZSgpCj4gPiA+ID4gd2FudHMgaXQgaW4gcmVzdW1l
-ZCBzdGF0ZSwgc28gaXMgd2FpdGluZyBmb3JldmVyIGZvciB0aGUgZGV2aWNlIHRvCj4gPiA+ID4g
-cnVudGltZSBzdXNwZW5kIGluIG9yZGVyIHRvIHJlc3VtZSBpdCBhZ2FpbiBpbW1lZGlhdGVseSBh
-ZnRlcndhcmRzLgo+ID4gPiA+IAo+ID4gPiA+IFRoZSBkZWFkbG9jayBpbiB0aGUgc3RhY2sgdHJh
-Y2UgeW91J3ZlIHBvc3RlZCBjb3VsZCBiZSByZXNvbHZlZCB1c2luZwo+ID4gPiA+IHRoZSB0ZWNo
-bmlxdWUgSSB1c2VkIGluIGQ2MWE1YzEwNjM1MSBieSBhZGRpbmcgdGhlIGZvbGxvd2luZyB0bwo+
-ID4gPiA+IGluY2x1ZGUvbGludXgvcG1fcnVudGltZS5oOgo+ID4gPiA+IAo+ID4gPiA+IHN0YXRp
-YyBpbmxpbmUgYm9vbCBwbV9ydW50aW1lX3N0YXR1c19zdXNwZW5kaW5nKHN0cnVjdCBkZXZpY2Ug
-KmRldikKPiA+ID4gPiB7Cj4gPiA+ID4gCXJldHVybiBkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVz
-ID09IFJQTV9TVVNQRU5ESU5HOwo+ID4gPiA+IH0KPiA+ID4gPiAKPiA+ID4gPiBzdGF0aWMgaW5s
-aW5lIGJvb2wgaXNfcG1fd29yayhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiA+ID4gewo+ID4gPiA+
-IAlzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmsgPSBjdXJyZW50X3dvcmsoKTsKPiA+ID4gPiAKPiA+
-ID4gPiAJcmV0dXJuIHdvcmsgJiYgd29yay0+ZnVuYyA9PSBkZXYtPnBvd2VyLndvcms7Cj4gPiA+
-ID4gfQo+ID4gPiA+IAo+ID4gPiA+IFRoZW4gYWRkaW5nIHRoaXMgdG8gbnZrbV9pMmNfYXV4X2Fj
-cXVpcmUoKToKPiA+ID4gPiAKPiA+ID4gPiAJc3RydWN0IGRldmljZSAqZGV2ID0gcGFkLT5pMmMt
-PnN1YmRldi5kZXZpY2UtPmRldjsKPiA+ID4gPiAKPiA+ID4gPiAJaWYgKCEoaXNfcG1fd29yayhk
-ZXYpICYmIHBtX3J1bnRpbWVfc3RhdHVzX3N1c3BlbmRpbmcoZGV2KSkpIHsKPiA+ID4gPiAJCXJl
-dCA9IHBtX3J1bnRpbWVfZ2V0X3N5bmMoZGV2KTsKPiA+ID4gPiAJCWlmIChyZXQgPCAwICYmIHJl
-dCAhPSAtRUFDQ0VTKQo+ID4gPiA+IAkJCXJldHVybiByZXQ7Cj4gPiA+ID4gCX0KPiA+ID4gPiAK
-PiA+ID4gPiBCdXQgaGVyZSdzIHRoZSBjYXRjaDogIFRoaXMgb25seSB3b3JrcyBmb3IgYW4gKmFz
-eW5jKiBydW50aW1lIHN1c3BlbmQuCj4gPiA+ID4gSXQgZG9lc24ndCB3b3JrIGZvciBwbV9ydW50
-aW1lX3B1dF9zeW5jKCksIHBtX3J1bnRpbWVfc3VzcGVuZCgpIGV0YywKPiA+ID4gPiBiZWNhdXNl
-IHRoZW4gdGhlIHJ1bnRpbWUgc3VzcGVuZCBpcyBleGVjdXRlZCBpbiB0aGUgY29udGV4dCBvZiB0
-aGUgY2FsbGVyLAo+ID4gPiA+IG5vdCBpbiB0aGUgY29udGV4dCBvZiBkZXYtPnBvd2VyLndvcmsu
-CltzbmlwXQo+IAo+IFNvbWV0aGluZyBJJ20gY3VyaW91cyBhYm91dC4gVGhpcyBpc24ndCB0aGUg
-Zmlyc3QgdGltZSBJJ3ZlIGhpdCBhCj4gc2l0dWF0aW9uIGxpa2UgdGhpcyAoc2VlOiB0aGUgaW1w
-cm9wZXIgZGlzYWJsZV9kZXB0aCBmaXggSSBhZGRlZCBpbnRvCj4gYW1kZ3B1IEkgbm93IG5lZWQg
-dG8gZ28gYW5kIGZpeCksIHdoaWNoIG1ha2VzIG1lIHdvbmRlcjogaXMgdGhlcmUKPiBhY3R1YWxs
-eSBhbnkgcmVhc29uIExpbnV4J3MgcnVudGltZSBQTSBjb3JlIGRvZXNuJ3QganVzdCB0dXJuIGdl
-dC9wdXRzKCkKPiBpbiB0aGUgY29udGV4dCBvZiBzL3IgY2FsbGJhY2tzIGludG8gbm8tb3BzIGJ5
-IGRlZmF1bHQ/IAoKU28gdGhlIFBNIGNvcmUgY291bGQgc2F2ZSBhIHBvaW50ZXIgdG8gdGhlICJj
-dXJyZW50IiB0YXNrX3N0cnVjdAppbiBzdHJ1Y3QgZGV2aWNlIGJlZm9yZSBpbnZva2luZyB0aGUg
-LT5ydW50aW1lX3N1c3BlbmQgb3IKLT5ydW50aW1lX3Jlc3VtZSBjYWxsYmFjaywgYW5kIGFsbCBz
-dWJzZXF1ZW50IHJwbV9yZXN1bWUoKSBhbmQKcnBtX3N1c3BlbmQoKSBjYWxscyBjb3VsZCB0aGVu
-IGJlY29tZSBuby1vcHMgaWYgImN1cnJlbnQiIGlzCmVxdWl2YWxlbnQgdG8gdGhlIHNhdmVkIHBv
-aW50ZXIuICAoVGhpcyBpcyBhbHNvIGhvdyB5b3UgY291bGQKc29sdmUgdGhlIGRlYWRsb2NrIHlv
-dSdyZSBkZWFsaW5nIHdpdGggZm9yIHN5bmMgc3VzcGVuZC4pCgpGb3IgYSByZWN1cnNpdmUgcmVz
-dW1lIGR1cmluZyBhIHJlc3VtZSBvciBhIHJlY3Vyc2l2ZSBzdXNwZW5kCmR1cmluZyBhIHN1c3Bl
-bmQsIHRoaXMgbWlnaHQgYWN0dWFsbHkgYmUgZmluZS4KCkZvciBhIHJlY3Vyc2l2ZSBzdXNwZW5k
-IGR1cmluZyBhIHJlc3VtZSBvciBhIHJlY3Vyc2l2ZSByZXN1bWUKZHVyaW5nIGEgc3VzcGVuZCwg
-dGhpbmdzIGJlY29tZSBtdXJraWVyOiAgSG93IHNob3VsZCB0aGUgUE0gY29yZQprbm93IGlmIHRo
-ZSBwYXJ0aWN1bGFyIHBhcnQgb2YgdGhlIGRldmljZSBpcyBzdGlsbCBhY2Nlc3NpYmxlCndoZW4g
-aGl0dGluZyBhIHJlY3Vyc2l2ZSByZXN1bWUgZHVyaW5nIGEgc3VzcGVuZD8gIExldCdzIHNheSBh
-CmNsb2NrIGlzIG5lZWRlZCBmb3IgaTJjLiAgVGhlbiB0aGUgcmVjdXJzaXZlIHJlc3VtZSBkdXJp
-bmcgYQpzdXNwZW5kIG1heSBvbmx5IGJlY29tZSBhIG5vLW9wIGJlZm9yZSB0aGF0IGNsb2NrIGhh
-cyBiZWVuCnR1cm5lZCBvZmYuICBUaGF0J3Mgc29tZXRoaW5nIG9ubHkgdGhlIGRldmljZSBkcml2
-ZXIgaXRzZWxmCmhhcyBrbm93bGVkZ2UgYWJvdXQsIGJlY2F1c2UgaXQgaW1wbGVtZW50cyB0aGUg
-b3JkZXIgaW4gd2hpY2gKc3ViZGV2aWNlcyBvZiB0aGUgR1BVIGFyZSB0dXJuZWQgb2ZmLgoKTHVr
-YXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVh
-dSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+On Tue, Jul 17, 2018 at 10:13:23PM +0200, Andreas Herrmann wrote:
+> On Tue, Jul 17, 2018 at 06:14:58PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > The firmware interface used by the pcc-cpufreq driver is
+> > fundamentally not scalable and using it for dynamic CPU performance
+> > scaling on systems with many CPUs leads to degraded performance.
+> > 
+> > For this reason, disable dynamic CPU performance scaling on systems
+> > with pcc-cpufreq where the number of CPUs present at the driver init
+> > time is greater than 4.  Also make the driver print corresponding
+> > complaints to the kernel log.
+> > 
+> > Reported-by: Andreas Herrmann <aherrmann@suse.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > -> v2: Rework the messages printed in the problematic case.
+> 
+> I've tested this patch. Effect is as expected: driver loads but use of
+> ondemand governor is not allowed. Sample output:
+> 
+> [   40.757519] pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+> [   40.831705] pcc_cpufreq_init: Too many CPUs, dynamic performance scaling disabled
+> [   40.898353] pcc_cpufreq_init: Try to enable a different scaling driver through BIOS settings
+
+BTW, Andreas, is that BIOS option available through the normal BIOS
+settings, or it is in the "secret" BIOS menu that HP has? If it is in
+the "secret" one (^A IIRC) then we might want to explicitly mention
+that.
