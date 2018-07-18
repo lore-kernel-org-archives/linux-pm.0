@@ -1,80 +1,110 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: Re: [PATCH v2] cpufreq: pcc-cpufreq: Disable dynamic scaling on
- many-CPU systems
-Date: Tue, 17 Jul 2018 22:13:23 +0200
-Message-ID: <20180717201323.6rwb4yklq46cmtom@suselix>
-References: <20180717065048.74mmgk4t5utjaa6a@suselix>
- <306375154.NhdH6AhdAd@aspire.rjw.lan>
- <5423012.ZZnfdYddaT@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/5] drm/nouveau: Prevent RPM callback
+ recursion in suspend/resume paths
+Date: Wed, 18 Jul 2018 09:38:41 +0200
+Message-ID: <CAJZ5v0g8O8J0U8V-gLMe+NnTd3xgZ5_pjr9p2oci7yAfW54B-A@mail.gmail.com>
+References: <20180716235936.11268-1-lyude@redhat.com>
+ <20180716235936.11268-2-lyude@redhat.com>
+ <20180717071641.GA5411@wunner.de>
+ <d7c25a7f41df70685c0c4726315592d1d9b561ff.camel@redhat.com>
+ <20180717182041.GA18363@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5423012.ZZnfdYddaT@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180717182041.GA18363-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Ben Skeggs <bskeggs-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 06:14:58PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The firmware interface used by the pcc-cpufreq driver is
-> fundamentally not scalable and using it for dynamic CPU performance
-> scaling on systems with many CPUs leads to degraded performance.
-> 
-> For this reason, disable dynamic CPU performance scaling on systems
-> with pcc-cpufreq where the number of CPUs present at the driver init
-> time is greater than 4.  Also make the driver print corresponding
-> complaints to the kernel log.
-> 
-> Reported-by: Andreas Herrmann <aherrmann@suse.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2: Rework the messages printed in the problematic case.
-
-I've tested this patch. Effect is as expected: driver loads but use of
-ondemand governor is not allowed. Sample output:
-
-[   40.757519] pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
-[   40.831705] pcc_cpufreq_init: Too many CPUs, dynamic performance scaling disabled
-[   40.898353] pcc_cpufreq_init: Try to enable a different scaling driver through BIOS settings
-[   40.972327] pcc_cpufreq_init: and complain to the system vendor
-[   41.025620] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
-...
-[   41.187928] cpufreq: Can't use ondemand governor as dynamic switching is disallowed. Fallback to performance governor
-
-Last message is shown for each online CPU in the system  (ie. 120x).
-
-Looks good to me.
-
-
-Andreas
-
-> ---
->  drivers/cpufreq/pcc-cpufreq.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> Index: linux-pm/drivers/cpufreq/pcc-cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/pcc-cpufreq.c
-> +++ linux-pm/drivers/cpufreq/pcc-cpufreq.c
-> @@ -589,6 +589,15 @@ static int __init pcc_cpufreq_init(void)
->  		return ret;
->  	}
->  
-> +	if (num_present_cpus() > 4) {
-> +		pcc_cpufreq_driver.flags |= CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING;
-> +		pr_err("%s: Too many CPUs, dynamic performance scaling disabled\n",
-> +		       __func__);
-> +		pr_err("%s: Try to enable a different scaling driver through BIOS settings\n",
-> +		       __func__);
-> +		pr_err("%s: and complain to the system vendor\n", __func__);
-> +	}
-> +
->  	ret = cpufreq_register_driver(&pcc_cpufreq_driver);
->  
->  	return ret;
-> 
-> 
+T24gVHVlLCBKdWwgMTcsIDIwMTggYXQgODoyMCBQTSwgTHVrYXMgV3VubmVyIDxsdWthc0B3dW5u
+ZXIuZGU+IHdyb3RlOgo+IE9uIFR1ZSwgSnVsIDE3LCAyMDE4IGF0IDEyOjUzOjExUE0gLTA0MDAs
+IEx5dWRlIFBhdWwgd3JvdGU6Cj4+IE9uIFR1ZSwgMjAxOC0wNy0xNyBhdCAwOToxNiArMDIwMCwg
+THVrYXMgV3VubmVyIHdyb3RlOgo+PiA+IE9uIE1vbiwgSnVsIDE2LCAyMDE4IGF0IDA3OjU5OjI1
+UE0gLTA0MDAsIEx5dWRlIFBhdWwgd3JvdGU6Cj4+ID4gPiBJbiBvcmRlciB0byBmaXggYWxsIG9m
+IHRoZSBzcG90cyB0aGF0IG5lZWQgdG8gaGF2ZSBydW50aW1lIFBNIGdldC9wdXRzKCkKPj4gPiA+
+IGFkZGVkLCB3ZSBuZWVkIHRvIGVuc3VyZSB0aGF0IGl0J3MgcG9zc2libGUgZm9yIHVzIHRvIGNh
+bGwKPj4gPiA+IHBtX3J1bnRpbWVfZ2V0L3B1dCgpIGluIGFueSBjb250ZXh0LCByZWdhcmRsZXNz
+IG9mIGhvdyBkZWVwLCBzaW5jZQo+PiA+ID4gYWxtb3N0IGFsbCBvZiB0aGUgc3BvdHMgdGhhdCBh
+cmUgY3VycmVudGx5IG1pc3NpbmcgcmVmcyBjYW4gcG90ZW50aWFsbHkKPj4gPiA+IGdldCBjYWxs
+ZWQgaW4gdGhlIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgcGF0aC4gT3RoZXJ3aXNlLCB3ZSdsbCB0
+cnkgdG8KPj4gPiA+IHJlc3VtZSB0aGUgR1BVIGFzIHdlJ3JlIHRyeWluZyB0byByZXN1bWUgdGhl
+IEdQVSAoYW5kIHZpY2UtdmVyc2EpIGFuZAo+PiA+ID4gY2F1c2UgdGhlIGtlcm5lbCB0byBkZWFk
+bG9jay4KPj4gPiA+Cj4+ID4gPiBXaXRoIHRoaXMsIGl0IHNob3VsZCBiZSBzYWZlIHRvIGNhbGwg
+dGhlIHBtIHJ1bnRpbWUgZnVuY3Rpb25zIGluIGFueQo+PiA+ID4gY29udGV4dCBpbiBub3V2ZWF1
+IHdpdGggb25lIGNvbmRpdGlvbjogYW55IHBvaW50IGluIHRoZSBkcml2ZXIgdGhhdAo+PiA+ID4g
+Y2FsbHMgcG1fcnVudGltZV9nZXQqKCkgY2Fubm90IGhvbGQgYW55IGxvY2tzIG93bmVkIGJ5IG5v
+dXZlYXUgdGhhdAo+PiA+ID4gd291bGQgYmUgYWNxdWlyZWQgYW55d2hlcmUgaW5zaWRlIG5vdXZl
+YXVfcG1vcHNfcnVudGltZV9yZXN1bWUoKS4KPj4gPiA+IFRoaXMgaW5jbHVkZXMgbW9kZXNldHRp
+bmcgbG9ja3MsIGkyYyBidXMgbG9ja3MsIGV0Yy4KPj4gPgo+PiA+IFtzbmlwXQo+PiA+ID4gLS0t
+IGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcm0uYwo+PiA+ID4gKysrIGIvZHJp
+dmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9kcm0uYwo+PiA+ID4gQEAgLTgzNSw2ICs4MzUs
+OCBAQCBub3V2ZWF1X3Btb3BzX3J1bnRpbWVfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+
+ID4gPiAgICAgICAgICAgcmV0dXJuIC1FQlVTWTsKPj4gPiA+ICAgfQo+PiA+ID4KPj4gPiA+ICsg
+ZGV2LT5wb3dlci5kaXNhYmxlX2RlcHRoKys7Cj4+ID4gPiArCj4+ID4KPj4gPiBBbnl3YXksIGlm
+IEkgdW5kZXJzdGFuZCB0aGUgY29tbWl0IG1lc3NhZ2UgY29ycmVjdGx5LCB5b3UncmUgaGl0dGlu
+ZyBhCj4+ID4gcG1fcnVudGltZV9nZXRfc3luYygpIGluIGEgY29kZSBwYXRoIHRoYXQgaXRzZWxm
+IGlzIGNhbGxlZCBkdXJpbmcgYQo+PiA+IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS4gIENvdWxkIHlv
+dSBpbmNsdWRlIHN0YWNrIHRyYWNlcyBpbiB0aGUgY29tbWl0Cj4+ID4gbWVzc2FnZT8gIE15IGd1
+dCBmZWVsaW5nIGlzIHRoYXQgdGhpcyBwYXRjaCBtYXNrcyBhIGRlZXBlciBpc3N1ZSwKPj4gPiBl
+LmcuIGlmIHRoZSBydW50aW1lX3Jlc3VtZSBjb2RlIHBhdGggZG9lcyBpbiBmYWN0IGRpcmVjdGx5
+IHBvbGwgb3V0cHV0cywKPj4gPiB0aGF0IHdvdWxkIHNlZW0gd3JvbmcuICBSdW50aW1lIHJlc3Vt
+ZSBzaG91bGQgbWVyZWx5IG1ha2UgdGhlIGNhcmQKPj4gPiBhY2Nlc3NpYmxlLCBpLmUuIHJlaW5z
+dGF0ZSBwb3dlciBpZiBuZWNlc3NhcnksIHB1dCBpbnRvIFBDSV9EMCwKPj4gPiByZXN0b3JlIHJl
+Z2lzdGVycywgZXRjLiAgT3V0cHV0IHBvbGxpbmcgc2hvdWxkIGJlIHNjaGVkdWxlZAo+PiA+IGFz
+eW5jaHJvbm91c2x5Lgo+Pgo+PiBTbzogdGhlIHJlYXNvbiB0aGF0IHBhdGNoIHdhcyBhZGRlZCB3
+YXMgbWFpbmx5IGZvciB0aGUgcGF0Y2hlcyBsYXRlciBpbiB0aGUKPj4gc2VyaWVzIHRoYXQgYWRk
+IGd1YXJkcyBhcm91bmQgdGhlIGkyYyBidXMgYW5kIGF1eCBidXMsIHNpbmNlIGJvdGggb2YgdGhv
+c2UKPj4gcmVxdWlyZSB0aGF0IHRoZSBkZXZpY2UgYmUgYXdha2UgZm9yIGl0IHRvIHdvcmsuIEN1
+cnJlbnRseSwgdGhlIHNwb3Qgd2hlcmUgaXQKPj4gd291bGQgcmVjdXJzZSBpczoKPgo+IE9rYXks
+IHRoZSBQQ0kgZGV2aWNlIGlzIHN1c3BlbmRpbmcgYW5kIHRoZSBudmttX2kyY19hdXhfYWNxdWly
+ZSgpCj4gd2FudHMgaXQgaW4gcmVzdW1lZCBzdGF0ZSwgc28gaXMgd2FpdGluZyBmb3JldmVyIGZv
+ciB0aGUgZGV2aWNlIHRvCj4gcnVudGltZSBzdXNwZW5kIGluIG9yZGVyIHRvIHJlc3VtZSBpdCBh
+Z2FpbiBpbW1lZGlhdGVseSBhZnRlcndhcmRzLgo+Cj4gVGhlIGRlYWRsb2NrIGluIHRoZSBzdGFj
+ayB0cmFjZSB5b3UndmUgcG9zdGVkIGNvdWxkIGJlIHJlc29sdmVkIHVzaW5nCj4gdGhlIHRlY2hu
+aXF1ZSBJIHVzZWQgaW4gZDYxYTVjMTA2MzUxIGJ5IGFkZGluZyB0aGUgZm9sbG93aW5nIHRvCj4g
+aW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmg6Cj4KPiBzdGF0aWMgaW5saW5lIGJvb2wgcG1fcnVu
+dGltZV9zdGF0dXNfc3VzcGVuZGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gewo+ICAgICAgICAg
+cmV0dXJuIGRldi0+cG93ZXIucnVudGltZV9zdGF0dXMgPT0gUlBNX1NVU1BFTkRJTkc7Cj4gfQo+
+Cj4gc3RhdGljIGlubGluZSBib29sIGlzX3BtX3dvcmsoc3RydWN0IGRldmljZSAqZGV2KQo+IHsK
+PiAgICAgICAgIHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yayA9IGN1cnJlbnRfd29yaygpOwo+Cj4g
+ICAgICAgICByZXR1cm4gd29yayAmJiB3b3JrLT5mdW5jID09IGRldi0+cG93ZXIud29yazsKPiB9
+Cj4KPiBUaGVuIGFkZGluZyB0aGlzIHRvIG52a21faTJjX2F1eF9hY3F1aXJlKCk6Cj4KPiAgICAg
+ICAgIHN0cnVjdCBkZXZpY2UgKmRldiA9IHBhZC0+aTJjLT5zdWJkZXYuZGV2aWNlLT5kZXY7Cj4K
+PiAgICAgICAgIGlmICghKGlzX3BtX3dvcmsoZGV2KSAmJiBwbV9ydW50aW1lX3N0YXR1c19zdXNw
+ZW5kaW5nKGRldikpKSB7Cj4gICAgICAgICAgICAgICAgIHJldCA9IHBtX3J1bnRpbWVfZ2V0X3N5
+bmMoZGV2KTsKPiAgICAgICAgICAgICAgICAgaWYgKHJldCA8IDAgJiYgcmV0ICE9IC1FQUNDRVMp
+Cj4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIHJldDsKPiAgICAgICAgIH0KPgo+IEJ1
+dCBoZXJlJ3MgdGhlIGNhdGNoOiAgVGhpcyBvbmx5IHdvcmtzIGZvciBhbiAqYXN5bmMqIHJ1bnRp
+bWUgc3VzcGVuZC4KPiBJdCBkb2Vzbid0IHdvcmsgZm9yIHBtX3J1bnRpbWVfcHV0X3N5bmMoKSwg
+cG1fcnVudGltZV9zdXNwZW5kKCkgZXRjLAo+IGJlY2F1c2UgdGhlbiB0aGUgcnVudGltZSBzdXNw
+ZW5kIGlzIGV4ZWN1dGVkIGluIHRoZSBjb250ZXh0IG9mIHRoZSBjYWxsZXIsCj4gbm90IGluIHRo
+ZSBjb250ZXh0IG9mIGRldi0+cG93ZXIud29yay4KPgo+IFNvIGl0J3Mgbm90IGEgZnVsbCBzb2x1
+dGlvbiwgYnV0IGhvcGVmdWxseSBzb21ldGhpbmcgdGhhdCBnZXRzIHlvdQo+IGdvaW5nLiAgSSdt
+IG5vdCByZWFsbHkgZmFtaWxpYXIgd2l0aCB0aGUgY29kZSBwYXRocyBsZWFkaW5nIHRvCj4gbnZr
+bV9pMmNfYXV4X2FjcXVpcmUoKSB0byBjb21lIHVwIHdpdGggYSBmdWxsIHNvbHV0aW9uIG9mZiB0
+aGUgdG9wCj4gb2YgbXkgaGVhZCBJJ20gYWZyYWlkLgo+Cj4gTm90ZSwgaXQncyBub3Qgc3VmZmlj
+aWVudCB0byBqdXN0IGNoZWNrIHBtX3J1bnRpbWVfc3RhdHVzX3N1c3BlbmRpbmcoZGV2KQo+IGJl
+Y2F1c2UgaWYgdGhlIHJ1bnRpbWVfc3VzcGVuZCBpcyBjYXJyaWVkIG91dCBjb25jdXJyZW50bHkg
+Ynkgc29tZXRoaW5nCj4gZWxzZSwgdGhpcyB3aWxsIHJldHVybiB0cnVlIGJ1dCBpdCdzIG5vdCBn
+dWFyYW50ZWVkIHRoYXQgdGhlIGRldmljZSBpcwo+IGFjdHVhbGx5IGtlcHQgYXdha2UgdW50aWwg
+dGhlIGkyYyBjb21tdW5pY2F0aW9uIGhhcyBiZWVuIGZ1bGx5IHBlcmZvcm1lZC4KCkZvciB0aGUg
+cmVjb3JkLCBJIGRvbid0IHF1aXRlIGxpa2UgdGhpcyBhcHByb2FjaCBhcyBpdCBzZWVtcyB0byBi
+ZQp3b3JraW5nIGFyb3VuZCBhIGJyb2tlbiBkZXBlbmRlbmN5IGdyYXBoLgoKSWYgeW91IG5lZWQg
+dG8gcmVzdW1lIGRldmljZSBBIGZyb20gd2l0aGluIHRoZSBydW50aW1lIHJlc3VtZSBjYWxsYmFj
+awpvZiBkZXZpY2UgQiwgdGhlbiBjbGVhcmx5IEIgZGVwZW5kcyBvbiBBIGFuZCB0aGVyZSBzaG91
+bGQgYmUgYSBsaW5rCmJldHdlZW4gdGhlbS4KClRoYXQgc2FpZCwgSSBkbyByZWFsaXplIHRoYXQg
+aXQgbWF5IGJlIHRoZSBwYXRoIG9mIGxlYXN0IHJlc2lzdGFuY2UsCmJ1dCB0aGVuIEkgd29uZGVy
+IGlmIHdlIGNhbiBkbyBiZXR0ZXIgdGhhbiB0aGlzLgoKVGhhbmtzLApSYWZhZWwKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxp
+c3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
+cC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
