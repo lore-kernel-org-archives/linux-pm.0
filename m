@@ -1,126 +1,157 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 2/3][RFC] PM / Hibernate: Encrypt the snapshot pages
- before submitted to the block device
-Date: Thu, 19 Jul 2018 17:16:01 +0800
-Message-ID: <20180719091601.GA28314@sandybridge-desktop>
-References: <5a1cc6bff40ff9a3e023392c69b881e91b16837a.1529486870.git.yu.c.chen@intel.com>
- <20180628130641.GG3628@linux-l9pv.suse>
- <20180628135017.GA6561@sandybridge-desktop>
- <20180628142856.GH3628@linux-l9pv.suse>
- <20180628145207.GA10891@sandybridge-desktop>
- <20180629125943.GK3628@linux-l9pv.suse>
- <20180706152856.GB9631@sandybridge-desktop>
- <20180712101037.GI7985@linux-l9pv.suse>
- <20180713073425.GA29266@sandybridge-desktop>
- <20180718154819.GH18419@linux-l9pv.suse>
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [PATCH 1/5] thermal: exynos: enable core tmu clk on exynos platform
+Date: Thu, 19 Jul 2018 15:22:21 +0530
+Message-ID: <CANAwSgSmUFYjE1VyqFM87M-6JZH140P9VpnXP2sG6Mw=_1J3Tg@mail.gmail.com>
+References: <1531822342-4293-1-git-send-email-linux.amoon@gmail.com>
+ <CAJKOXPdP78VFQgSQ9z9WsgYY_YhEKPUt=0MOra6Pz6smQeiNGg@mail.gmail.com>
+ <CANAwSgS=08fVsqn95WHzSF71WTTyD2-=K2C6-BEz0tY0t6A1-g@mail.gmail.com>
+ <CAJKOXPdXYz77Bqyjr3HK+EA0HpEABPqmPOD0f5ew-yq2SFVpVQ@mail.gmail.com>
+ <CANAwSgRFehdmYZvPL3yD1=Ng_w1Yhtij=nvZEOqkof7zj8fcwA@mail.gmail.com> <CAJKOXPfRBPgmGc17XEzW5+MK80JcudCbhBfLeMFTQYjWLJ3JeA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180718154819.GH18419@linux-l9pv.suse>
+In-Reply-To: <CAJKOXPfRBPgmGc17XEzW5+MK80JcudCbhBfLeMFTQYjWLJ3JeA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "Gu, Kookoo" <kookoo.gu@intel.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 18, 2018 at 11:48:19PM +0800, joeyli wrote:
-> On Fri, Jul 13, 2018 at 03:34:25PM +0800, Yu Chen wrote:
-> > Hi,
-> > On Thu, Jul 12, 2018 at 06:10:37PM +0800, joeyli wrote:
-> > > Hi Yu Chen, 
-> > > 
-> > > Sorry for my delay...
-> > > 
-> > > On Fri, Jul 06, 2018 at 11:28:56PM +0800, Yu Chen wrote:
-> [...snip]
-> > > > > Why the cryption code must be indepent of snapshot code?
-> > > > >
-> > > > Modules can be easier to be maintained and customized/improved in the future IMO..
-> > > 
-> > > hm... currently I didn't see apparent benefit on this...
-> > > 
-> > > About modularization, is it possible to separate the key handler code
-> > > from crypto_hibernation.c? Otherwise the snapshot signature needs
-> > > to depend on encrypt function.
-> > > 
-> > I understand.
-> > It seems that we can reuse crypto_data() for the signature logic.
-> > For example, add one parameter for crypto_data(..., crypto_mode)
-> > the crypto_mode is a combination of ENCRYPT/DECRYPT/SIGNATURE_START/SIGNATURE_END,
-> > and can be controled by sysfs. If SIGNATURE_START is enabled, the crypto_data()
-> > invokes crypto_shash_update() to get "hmac(sha512)" hash, and if SIGNATURE_END
-> > is enabled, crypto_shash_final() stores the final result in global buffer
-> 
-> I agree that the swsusp_prepare and hmac-hash codes can be extract to
-> crypto_hibernation.  
-> 
-> > struct hibernation_crypto.keys.digest[SNAPSHOT_DIGEST_SIZE] which can be
-> > passed to the restore kernel, the same as the salt. Besides,
-> 
-> The salt is stored in the swsusp_header and put in swap. What I want
-> is that the signature of snapshot should be keep in the snapshot header
-> as my original design in patch. The benefit is that the snapshot with
-> signature can be stored to any place but not just swap. The user space
-> can take snapshot image with signature to anywhere.
->
-Okay, got it.
-> > the swsusp_prepare_hash() in your code could be moved into
-> > init_crypto_helper(), thus the signature key could also reuse
-> > the same key passed from user space or via get_efi_secret_key().
-> > In this way, the change in snapshot.c is minimal and the crypto
-> > facilities could be maintained in one file.
-> 
-> I agree. But as I mentioned in that mail, the key handler codes
-> in hibernation_crypto() should be extract to another C file to avoid
-> the logic is mixed with the crypto code. The benefit is that we can
-> add more key sources like encrypted key or EFI key in the future. 
-> 
-Ok, will extract the key handler code from this file.
-> > > > > > 2. There's no need to traverse the snapshot image twice, if the
-> > > > > >    image is large(there's requirement on servers now) we can
-> > > > > >    simplyly do the encryption before the disk IO, and this is
-> > > > > >    why PATCH[2/3] looks like this.
-> > > > > 
-> > > > > If the encryption solution is only for block device, then the uswsusp
-> > > > > interface must be locked-down when kernel is in locked mode:
-> > > > > 
-> > > > > uswsusp: Disable when the kernel is locked down
-> > > > > https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs.git/commit/?h=lockdown-20180410&id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
-> > > > > 
-> > > > > I still suggest to keep the solution to direct encript the snapshot
-> > > > > image for uswsusp because the snapshot can be encrypted by kernel
-> > > > > before user space get it.
-> > > > > 
-> > > > > I mean that if the uswsusp be used, then kernel direct encrypts the
-> > > > > snapshot image, otherwise kernel encrypts pages before block io.
-> > > > > 
-> > > > I did not quite get the point, if the kernel has been locked down,
-> > > > then the uswsusp is disabled, why the kernel encrypts the snapshot
-> > > > for uswsusp?
-> > > 
-> > > There have some functions be locked-down because there have no
-> > > appropriate mechanisms to check the integrity of writing data. If
-> > > the snapshot image can be encrypted and authentication, then the
-> > > uswsusp interface is avaiable for userspace. We do not need to lock
-> > > it down.
-> > Ok, I got your point. To be honest, I like your implementation to treat
-> > the snapshot data seperately except that it might cause small overhead
-> > when traversing large number of snapshot and make snapshot logic a little
-> > coupling with crypto logic. Let me send our v2 using the crypto-before-blockio
-> > for review and maybe change to your solution using the encapsulated APIs in
-> > crypto_hibernate.c.
-> 
-> Because sometimes I stick on other topics...
-> 
-> If you are urgent for pushing your encryption solution. Please do not
-> consider too much on signature check. Just complete your patches and push
-> to kernel mainline. I will follow your result to respin my signature work.
-> 
-Thanks, I've just sent out another version before I noticed your
-comment yesterday, let me address your concern in v3,
-but please feel free to comment on v2.
-Thanks,
-Yu
+Hi Krzysztof,
 
-> Thanks
-> Joey Lee 
+On 18 July 2018 at 15:36, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On 18 July 2018 at 11:24, Anand Moon <linux.amoon@gmail.com> wrote:
+>> Hi Krzysztof
+>>
+>> On 18 July 2018 at 11:47, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>>> On 17 July 2018 at 22:23, Anand Moon <linux.amoon@gmail.com> wrote:
+>>>> Hi Krzysztof
+>>>>
+>>>> On 17 July 2018 at 17:50, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>>>>> Hi Anand,
+>>>>>
+>>>>> Thanks for patch.
+>>>>>
+>>>>> On 17 July 2018 at 12:12, Anand Moon <linux.amoon@gmail.com> wrote:
+>>>>>> clk_summary do not show tmu_apbif clk enable, so replace
+>>>>>> the clk_prepare with clk_prepare_enables to enable tmu clk.
+>>>>>
+>>>>> This is not valid reason to do a change. What is clk_summary does not
+>>>>> really matter. Your change has negative impact on power consumption as
+>>>>> the clock stays enabled all the time. This is not what we want... so
+>>>>> please explain it more - why you need the clock to be enabled all the
+>>>>> time? What is broken (clk_summary is not broken in this case)?
+>>>>>
+>>>>
+>>>> Opps I could not explain some more in my commit message.
+>>>>
+>>>> Actually TMU sensor for Exynos process are controlled by so external clk
+>>>>
+>>>> Exynos4412 have VDD18_TS sensor which controls the CLK_SENSE tmu.
+>>>> Exynos5422 have VDD18_TS01 / VDD18_TS23 / VDD18_TS4 sensor which
+>>>> control the CLK_SENSE tmu.
+>>>>
+>>>> So as per my understanding tmu is clk driver which control the flow  PMIC.
+>>>>
+>>>> clk_prepare_enable combine clk_prepare and clk_enable
+>>>> and clk_disable_unprepare combine clk_disable and clk_unprepare.
+>>>>
+>>>> most of the driver prefer clk_prepare_enable and clk_disable_unprepare.
+>>>>
+>>>> clk_summary is just a reference looking point where we could check the
+>>>> clk is enable/disable.
+>>>>
+>>>> what is broken ?
+>>>> I still few more parameter need to tuned to configure the tmu driver.
+>>>
+>>> I am sorry but I am still unable to see what is broken and what are
+>>> you trying to fix. I asked what is broken and you replied that there
+>>> is a sensor, there is a clock, drivers use clk_prepare_enable and some
+>>> more parameter need to be tuned... None of these are answers to
+>>> question - what is broken. How can I reproduce the problem?
+>>>
+>>> Best regards,
+>>> Krzysztof
+>>
+>> Basically I use thermal testing.
+>>
+>> # git clone https://git.linaro.org/power/pm-qa.git
+>> # cd pm-qa
+>> # make -C thermal check
+>>
+>> most of the testcase failed on Exynos5422 but some pass on Exynos4412.
+>>
+>> Attach is the software overview from Exynos5422 user manual.
+>>
+>> I am not able to explain in deep technically, but I have studied other thermal
+>> driver to draw into conclusion that tmu clk's need to be enabled.
+>
+> That is true in general - the clk has to be enabled in certain cases.
+> However you did not say at all when you want this clock to be
+> enabled... and the your patch enables it for entire lifetime of
+> device.
+>
+>> If you feel the we should not enable these clk, them I will drop the
+>> clk_prepare_enable check
+>> and resubmit the changes with better commit message.
+>
+> I don't know. This was fifth email in this thread and it is the first
+> time some real problem is mentioned. Still the issue is not described
+> entirely so I really do not have a clue whether this patch fixes
+> something or not.
+> What is more, you mentioned falling pm-qa tests here (not in commit
+> msg) but did not say whether this patch fixes anything or not.
+>
+> So let me summarize it:
+> 1. You did not describe the problem you want to fix.
+> 2. The patch looks incorrect because it enables the clock for entire
+> lifetime of device which we do not want.
+> 3. The patch might or not might fix some problem. We even do not know what...
+> 4. The clock not being enabled when not needed... is obviously not a problem.
+>
+> Please start from beginning. Find the problem, tell us how it can be
+> reproduced and deliver a single patch which fixes the problem.
+>
+> This pattern of your code - fixing something without describing the
+> problem - happened many time before. I repeated this some times before
+> as well. I would prefer not to repeat to many times. Therefore I would
+> be happy if you follow the path mentioned in paragraph before always:
+> find the problem, tell how it can be reproduced, deliver single patch
+> which fixes the problem.
+>
+> Best regards,
+> Krzysztof
+
+Yes I will try to improve my self to the point commit message
+and code as per the documentation.
+
+Let me clear my thoughts on clk's turned on for by driver.
+Please correct me If I am wrong.
+
+Exynos support Power domain to control the dynamic power consumption via clk.
+Operating voltage
+Operating frequency
+Toggling ratios of the logic gate
+
+PMU generates power control signal to regulator or PMIC.
+
+To reduce the dynamic power consumption, Exynos SCP uses clock gating
+and frequency scaling.
+
+Exynos process support tmu power domain
+Power Domain         Power Source         Internal Power Gating Method
+           Included Modules
+
+TEMP                     VDD18_TEMP        None
+                       TEMP SENSOR
+
+Exynos TMU is directly co-related to CPU frequency scaling module.
+as their is increase in CPU clk speed with increase in temperature
+TMU will control the flow of cpu speed via clk freq scaling.
+
+It might be a good option to implement pm_runtime for tmu driver.
+
+If you are not satisfied with this series of change lets drop them.
+I will just re-submit err-clean up and e-Fuse changes.
+
+Best Regards
+-Anand
