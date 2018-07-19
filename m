@@ -1,46 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] dt-bindings: marvell: Add documentation for the Armada
- 3700 AVS binding
-Date: Thu, 19 Jul 2018 12:47:10 +0200
-Message-ID: <2240650.k8NjxS09G1@aspire.rjw.lan>
-References: <20180704132524.23640-1-gregory.clement@bootlin.com>
- <20180711155153.GA13702@rob-hp-laptop>
+Subject: Re: [PATCH] cpufreq: armada-37xx: Fix clock leak
+Date: Thu, 19 Jul 2018 12:47:48 +0200
+Message-ID: <1928207.9cCKXrpt8K@aspire.rjw.lan>
+References: <20180404144444.4142-1-gregory.clement@bootlin.com> <20180405045153.GL3572@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180711155153.GA13702@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>, Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Viresh Kumar <viresh.kumar@linaro.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Ken Ma <make@marvell.com>, Victor Gu <xigu@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Neta Zur Hershkovits <neta@marvell.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Transfer-Encoding: 7Bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180405045153.GL3572@vireshk-i7>
+Sender: stable-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Gregory CLEMENT <gregory.clement@bootlin.com>
+Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 11, 2018 5:51:53 PM CEST Rob Herring wrote:
-> On Wed, Jul 04, 2018 at 03:25:24PM +0200, Gregory CLEMENT wrote:
-> > Extend the documentation of the Armada 37xx SoC with the Adaptive Voltage
-> > Scaling (AVS) registers.
+On Thursday, April 5, 2018 6:51:53 AM CEST Viresh Kumar wrote:
+> On 04-04-18, 16:44, Gregory CLEMENT wrote:
+> > There was no clk_put() balancing the clk_get(). This commit fixes it.
 > > 
+> > Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
+> > Cc: <stable@vger.kernel.org>
+> > Reported-by: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
 > > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > ---
-> > Changelog:
-> > v1 -> v2:
-> >  - Add Acked-by: from Viresh Kumar
-> >  - Add the dt mailing list in copy
+> >  drivers/cpufreq/armada-37xx-cpufreq.c | 2 ++
+> >  1 file changed, 2 insertions(+)
 > > 
-> >  .../bindings/arm/marvell/armada-37xx.txt         | 16 ++++++++++++++++
-> >  1 file changed, 16 insertions(+)
+> > diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
+> > index c6ebc88a7d8d..72a2975499db 100644
+> > --- a/drivers/cpufreq/armada-37xx-cpufreq.c
+> > +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
+> > @@ -202,6 +202,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+> >  	cur_frequency = clk_get_rate(clk);
+> >  	if (!cur_frequency) {
+> >  		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
+> > +		clk_put(clk);
+> >  		return -EINVAL;
+> >  	}
+> >  
+> > @@ -210,6 +211,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
+> >  		return -EINVAL;
+> >  
+> >  	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
+> > +	clk_put(clk);
+> >  
+> >  	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
+> >  	     load_lvl++) {
 > 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
 > 
 
-Patch applied, thanks!
+Applied, thanks!
