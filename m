@@ -1,105 +1,137 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 08/26] PM / Domains: Extend genpd CPU governor to cope with QoS constraints
-Date: Thu, 19 Jul 2018 12:35:59 +0200
-Message-ID: <1683770.JmsJDzJTZp@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-9-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
+Date: Thu, 19 Jul 2018 12:39:49 +0200
+Message-ID: <1726374.375PCQfjLZ@aspire.rjw.lan>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org> <2056372.NMt4aPaF4h@aspire.rjw.lan> <2205807.cU2puvubpP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180620172226.15012-9-ulf.hansson@linaro.org>
+In-Reply-To: <2205807.cU2puvubpP@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 20, 2018 7:22:08 PM CEST Ulf Hansson wrote:
-> CPU devices and other regular devices may share the same PM domain and may
-> also be hierarchically related via subdomains. In either case, all devices
-> including CPUs, may be attached to a PM domain managed by genpd, that has
-> an idle state with an enter/exit latency.
+On Thursday, July 19, 2018 12:12:55 PM CEST Rafael J. Wysocki wrote:
+> On Wednesday, July 18, 2018 12:11:06 PM CEST Rafael J. Wysocki wrote:
+> > On Wednesday, June 20, 2018 7:22:09 PM CEST Ulf Hansson wrote:
+> > > To allow CPUs being power managed by PM domains, let's deploy support for
+> > > runtime PM for the CPU's corresponding struct device.
+> > > 
+> > > More precisely, at the point when the CPU is about to enter an idle state,
+> > > decrease the runtime PM usage count for its corresponding struct device,
+> > > via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
+> > > resumes from idle, let's increase the runtime PM usage count, via calling
+> > > pm_runtime_get_sync().
+> > > 
+> > > Cc: Lina Iyer <ilina@codeaurora.org>
+> > > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> > > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > 
+> > I finally got to this one, sorry for the huge delay.
+> > 
+> > Let me confirm that I understand the code flow correctly.
+> > 
+> > > ---
+> > >  kernel/cpu_pm.c | 11 +++++++++++
+> > >  1 file changed, 11 insertions(+)
+> > > 
+> > > diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+> > > index 67b02e138a47..492d4a83dca0 100644
+> > > --- a/kernel/cpu_pm.c
+> > > +++ b/kernel/cpu_pm.c
+> > > @@ -16,9 +16,11 @@
+> > >   */
+> > >  
+> > >  #include <linux/kernel.h>
+> > > +#include <linux/cpu.h>
+> > >  #include <linux/cpu_pm.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/notifier.h>
+> > > +#include <linux/pm_runtime.h>
+> > >  #include <linux/spinlock.h>
+> > >  #include <linux/syscore_ops.h>
+> > >  
+> > > @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
+> > 
+> > This is called from a cpuidle driver's ->enter callback for the target state
+> > selected by the idle governor ->
+> > 
+> > >  {
+> > >  	int nr_calls;
+> > >  	int ret = 0;
+> > > +	struct device *dev = get_cpu_device(smp_processor_id());
+> > >  
+> > >  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+> > >  	if (ret)
+> > > @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
+> > >  		 */
+> > >  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+> > >  
+> > > +	if (!ret && dev && dev->pm_domain)
+> > > +		pm_runtime_put_sync_suspend(dev);
+> > 
+> > -> so this is going to invoke genpd_runtime_suspend() if the usage
+> > counter of dev is 0.
+> > 
+> > That will cause cpu_power_down_ok() to be called (because this is
+> > a CPU domain) and that will walk the domain cpumask and compute the
+> > estimated idle duration as the minimum of tick_nohz_get_next_wakeup()
+> > values over the CPUs in that cpumask.  [Note that the weight of the
+> > cpumask must be seriously limited for that to actually work, as this
+> > happens in the idle path.]  Next, it will return "true" if it can
+> > find a domain state with residency within the estimated idle
+> > duration.  [Note that this sort of overlaps with the idle governor's
+> > job.]
+> > 
+> > Next, __genpd_runtime_suspend() will be invoked to run the device-specific
+> > callback if any [Note that this has to be suitable for the idle path if
+> > present.] and genpd_stop_dev() runs (which, again, may invoke a callback)
+> > and genpd_power_off() runs under the domain lock (which must be a spinlock
+> > then).
+> > 
+> > > +
+> > >  	return ret;
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(cpu_pm_enter);
+> > > @@ -118,6 +124,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+> > >   */
+> > >  int cpu_pm_exit(void)
+> > >  {
+> > > +	struct device *dev = get_cpu_device(smp_processor_id());
+> > > +
+> > > +	if (dev && dev->pm_domain)
+> > > +		pm_runtime_get_sync(dev);
+> > > +
+> > >  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(cpu_pm_exit);
+> > > 
+> > 
+> > And this is called on wakeup when the cpuidle driver's ->enter callback
+> > is about to return and it reverses the suspend flow (except that the
+> > governor doesn't need to be called now).
+> > 
+> > Have I got that right?
 > 
-> Let's take these latencies into account in the state selection process by
-> genpd's governor for CPUs. This means the governor, pm_domain_cpu_gov,
-> becomes extended to satisfy both a state's residency and a potential dev PM
-> QoS constraint.
-> 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/base/power/domain_governor.c | 15 +++++++++++----
->  include/linux/pm_domain.h            |  1 +
->  2 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> index 1aad55719537..03d4e9454ce9 100644
-> --- a/drivers/base/power/domain_governor.c
-> +++ b/drivers/base/power/domain_governor.c
-> @@ -214,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->  	struct generic_pm_domain *genpd = pd_to_genpd(pd);
->  	struct gpd_link *link;
->  
-> -	if (!genpd->max_off_time_changed)
-> +	if (!genpd->max_off_time_changed) {
-> +		genpd->state_idx = genpd->cached_power_down_state_idx;
->  		return genpd->cached_power_down_ok;
-> +	}
->  
->  	/*
->  	 * We have to invalidate the cached results for the masters, so
-> @@ -240,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->  		genpd->state_idx--;
->  	}
->  
-> +	genpd->cached_power_down_state_idx = genpd->state_idx;
->  	return genpd->cached_power_down_ok;
->  }
->  
-> @@ -255,6 +258,10 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->  	s64 idle_duration_ns;
->  	int cpu, i;
->  
-> +	/* Validate dev PM QoS constraints. */
-> +	if (!default_power_down_ok(pd))
-> +		return false;
-> +
->  	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
->  		return true;
->  
-> @@ -276,9 +283,9 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->  	/*
->  	 * Find the deepest idle state that has its residency value satisfied
->  	 * and by also taking into account the power off latency for the state.
-> -	 * Start at the deepest supported state.
-> +	 * Start at the state picked by the dev PM QoS constraint validation.
->  	 */
-> -	i = genpd->state_count - 1;
-> +	i = genpd->state_idx;
->  	do {
->  		if (!genpd->states[i].residency_ns)
->  			break;
-> @@ -312,6 +319,6 @@ struct dev_power_governor pm_domain_always_on_gov = {
->  };
->  
->  struct dev_power_governor pm_domain_cpu_gov = {
-> -	.suspend_ok = NULL,
-> +	.suspend_ok = default_suspend_ok,
->  	.power_down_ok = cpu_power_down_ok,
->  };
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 97901c833108..dbc69721cad8 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -81,6 +81,7 @@ struct generic_pm_domain {
->  	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
->  	bool max_off_time_changed;
->  	bool cached_power_down_ok;
-> +	bool cached_power_down_state_idx;
->  	int (*attach_dev)(struct generic_pm_domain *domain,
->  			  struct device *dev);
->  	void (*detach_dev)(struct generic_pm_domain *domain,
-> 
+> Assuming that I have got that right, there are concerns, mostly regarding
+> patch [07/26], but I will reply to that directly.
 
-I don't see much value in splitting this patch off [07/26] and it actually
-confused me, so it may as well confuse someone else.
+Well, I haven't got that right, so never mind.
+
+There are a few minor things to address, but apart from that the general
+genpd patches look ready.
+
+> The $subject patch is fine by me by itself, but it obviously depends on the
+> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
+> particularly useful without the rest of the series.
+> 
+> As far as patches [10-26/26] go, I'd like to see some review comments and/or
+> tags from the people with vested interest in there, in particular from Daniel
+> on patch [12/26] and from Sudeep on the PSCI ones.
+
+But this still holds.
+
+Thanks,
+Rafael
