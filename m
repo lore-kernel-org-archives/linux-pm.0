@@ -1,129 +1,161 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle path for CPUs
-Date: Thu, 19 Jul 2018 12:12:55 +0200
-Message-ID: <2205807.cU2puvubpP@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-10-ulf.hansson@linaro.org> <2056372.NMt4aPaF4h@aspire.rjw.lan>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v13 0/4] iommu/arm-smmu: Add runtime pm/sleep
+ support
+Date: Thu, 19 Jul 2018 15:45:35 +0530
+Message-ID: <20180719101539.6104-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2056372.NMt4aPaF4h@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 18, 2018 12:11:06 PM CEST Rafael J. Wysocki wrote:
-> On Wednesday, June 20, 2018 7:22:09 PM CEST Ulf Hansson wrote:
-> > To allow CPUs being power managed by PM domains, let's deploy support for
-> > runtime PM for the CPU's corresponding struct device.
-> > 
-> > More precisely, at the point when the CPU is about to enter an idle state,
-> > decrease the runtime PM usage count for its corresponding struct device,
-> > via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
-> > resumes from idle, let's increase the runtime PM usage count, via calling
-> > pm_runtime_get_sync().
-> > 
-> > Cc: Lina Iyer <ilina@codeaurora.org>
-> > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> I finally got to this one, sorry for the huge delay.
-> 
-> Let me confirm that I understand the code flow correctly.
-> 
-> > ---
-> >  kernel/cpu_pm.c | 11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> > 
-> > diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-> > index 67b02e138a47..492d4a83dca0 100644
-> > --- a/kernel/cpu_pm.c
-> > +++ b/kernel/cpu_pm.c
-> > @@ -16,9 +16,11 @@
-> >   */
-> >  
-> >  #include <linux/kernel.h>
-> > +#include <linux/cpu.h>
-> >  #include <linux/cpu_pm.h>
-> >  #include <linux/module.h>
-> >  #include <linux/notifier.h>
-> > +#include <linux/pm_runtime.h>
-> >  #include <linux/spinlock.h>
-> >  #include <linux/syscore_ops.h>
-> >  
-> > @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
-> 
-> This is called from a cpuidle driver's ->enter callback for the target state
-> selected by the idle governor ->
-> 
-> >  {
-> >  	int nr_calls;
-> >  	int ret = 0;
-> > +	struct device *dev = get_cpu_device(smp_processor_id());
-> >  
-> >  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
-> >  	if (ret)
-> > @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
-> >  		 */
-> >  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
-> >  
-> > +	if (!ret && dev && dev->pm_domain)
-> > +		pm_runtime_put_sync_suspend(dev);
-> 
-> -> so this is going to invoke genpd_runtime_suspend() if the usage
-> counter of dev is 0.
-> 
-> That will cause cpu_power_down_ok() to be called (because this is
-> a CPU domain) and that will walk the domain cpumask and compute the
-> estimated idle duration as the minimum of tick_nohz_get_next_wakeup()
-> values over the CPUs in that cpumask.  [Note that the weight of the
-> cpumask must be seriously limited for that to actually work, as this
-> happens in the idle path.]  Next, it will return "true" if it can
-> find a domain state with residency within the estimated idle
-> duration.  [Note that this sort of overlaps with the idle governor's
-> job.]
-> 
-> Next, __genpd_runtime_suspend() will be invoked to run the device-specific
-> callback if any [Note that this has to be suitable for the idle path if
-> present.] and genpd_stop_dev() runs (which, again, may invoke a callback)
-> and genpd_power_off() runs under the domain lock (which must be a spinlock
-> then).
-> 
-> > +
-> >  	return ret;
-> >  }
-> >  EXPORT_SYMBOL_GPL(cpu_pm_enter);
-> > @@ -118,6 +124,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
-> >   */
-> >  int cpu_pm_exit(void)
-> >  {
-> > +	struct device *dev = get_cpu_device(smp_processor_id());
-> > +
-> > +	if (dev && dev->pm_domain)
-> > +		pm_runtime_get_sync(dev);
-> > +
-> >  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
-> >  }
-> >  EXPORT_SYMBOL_GPL(cpu_pm_exit);
-> > 
-> 
-> And this is called on wakeup when the cpuidle driver's ->enter callback
-> is about to return and it reverses the suspend flow (except that the
-> governor doesn't need to be called now).
-> 
-> Have I got that right?
-
-Assuming that I have got that right, there are concerns, mostly regarding
-patch [07/26], but I will reply to that directly.
-
-The $subject patch is fine by me by itself, but it obviously depends on the
-previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
-particularly useful without the rest of the series.
-
-As far as patches [10-26/26] go, I'd like to see some review comments and/or
-tags from the people with vested interest in there, in particular from Daniel
-on patch [12/26] and from Sudeep on the PSCI ones.
-
-Thanks,
-Rafael
+VGhpcyBzZXJpZXMgcHJvdmlkZXMgdGhlIHN1cHBvcnQgZm9yIHR1cm5pbmcgb24gdGhlIGFybS1z
+bW11J3MKY2xvY2tzL3Bvd2VyIGRvbWFpbnMgdXNpbmcgcnVudGltZSBwbS4gVGhpcyBpcyBkb25l
+IHVzaW5nCmRldmljZSBsaW5rcyBiZXR3ZWVuIHNtbXUgYW5kIGNsaWVudCBkZXZpY2VzLiBUaGUg
+ZGV2aWNlIGxpbmsKZnJhbWV3b3JrIGtlZXBzIHRoZSB0d28gZGV2aWNlcyBpbiBjb3JyZWN0IG9y
+ZGVyIGZvciBwb3dlci1jeWNsaW5nCmFjcm9zcyBydW50aW1lIFBNIG9yIGFjcm9zcyBzeXN0ZW0t
+d2lkZSBQTS4KCldpdGggYWRkaXRpb24gb2YgYSBuZXcgZGV2aWNlIGxpbmsgZmxhZyBETF9GTEFH
+X0FVVE9SRU1PVkVfU1VQUExJRVIgWzhdCihhdmFpbGFibGUgaW4gbGludXgtbmV4dCBvZiBSYWZh
+ZWwncyBsaW51eC1wbSB0cmVlIFs5XSksIHRoZSBkZXZpY2UgbGlua3MKY3JlYXRlZCBiZXR3ZWVu
+IGFybS1zbW11IGFuZCBpdHMgY2xpZW50cyB3aWxsIGJlIGF1dG9tYXRpY2FsbHkgcHVyZ2VkCndo
+ZW4gYXJtLXNtbXUgZHJpdmVyIHVuYmluZHMgZnJvbSBpdHMgZGV2aWNlLgoKQXMgbm90IGFsbCBp
+bXBsZW1lbnRhdGlvbnMgc3VwcG9ydCBjbG9jay9wb3dlciBnYXRpbmcsIHdlIGFyZSBjaGVja2lu
+Zwpmb3IgYSB2YWxpZCAnc21tdS0+ZGV2J3MgcG1fZG9tYWluJyB0byBjb25kaXRpb25hbGx5IGVu
+YWJsZSB0aGUgcnVudGltZQpwb3dlciBtYW5hZ2VtZW50IGZvciBzdWNoIHNtbXUgaW1wbGVtZW50
+YXRpb25zIHRoYXQgY2FuIHN1cHBvcnQgaXQuCk90aGVyd2lzZSwgdGhlIGNsb2NrcyBhcmUgdHVy
+bmVkIHRvIGJlIGFsd2F5cyBvbiBpbiAucHJvYmUgdW50aWwgLnJlbW92ZS4KV2l0aCBjb25kaXRp
+b25hbCBydW50aW1lIHBtIG5vdywgd2UgYXZvaWQgdG91Y2hpbmcgZGV2LT5wb3dlci5sb2NrCmlu
+IGZhc3RwYXRocyBmb3Igc21tdSBpbXBsZW1lbnRhdGlvbnMgdGhhdCBkb24ndCBuZWVkIHRvIGRv
+IGFueXRoaW5nCnVzZWZ1bCB3aXRoIHBtX3J1bnRpbWUuClRoaXMgbGV0cyB1cyB0byB1c2UgdGhl
+IG11Y2gtYXJndWVkIHBtX3J1bnRpbWVfZ2V0X3N5bmMvcHV0X3N5bmMoKQpjYWxscyBpbiBtYXAv
+dW5tYXAgY2FsbGJhY2tzIHNvIHRoYXQgdGhlIGNsaWVudHMgZG8gbm90IGhhdmUgdG8Kd29ycnkg
+YWJvdXQgaGFuZGxpbmcgYW55IG9mIHRoZSBhcm0tc21tdSdzIHBvd2VyLgoKVGhpcyBzZXJpZXMg
+YWxzbyBhZGRzIHN1cHBvcnQgZm9yIFFjb20ncyBhcm0tc21tdS12MiB2YXJpYW50IHRoYXQKaGFz
+IGRpZmZlcmVudCBjbG9ja3MgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4KClByZXZpb3VzIHZlcnNp
+b24gb2YgdGhpcyBwYXRjaCBzZXJpZXMgaXMgQCBbMl0uCgpUZXN0ZWQgdGhpcyBzZXJpZXMgb24g
+bXNtODk5NiwgYW5kIHNkbTg0NSBhZnRlciBwdWxsaW5nIGluIFJhZmFlbCdzIGxpbnV4LXBtCmxp
+bnV4LW5leHRbOV0gYW5kIEpvZXJnJ3MgaW9tbXUgbmV4dFsxMF0gYnJhbmNoZXMuCgpbdjEzXQog
+ICBBZGRyZXNzaW5nIFJhZmFlbCdzIGNvbW1lbnRzOgogICAqIEFkZGVkIC5zdXNwZW5kIHBtIGNh
+bGxiYWNrIHRvIGRpc2FibGUgdGhlIGNsb2NrcyBpbiBzeXN0ZW0gd2lkZSBzdXNwZW5kLgogICAq
+IEFkZGVkIGNvcnJlc3BvbmRpbmcgY2xvY2sgZW5hYmxlIGluIC5yZXN1bWUgcG0gY2FsbGJhY2su
+CiAgICogRXhwbGljaXRseSBlbmFibGluZy9kaXNhYmxpbmcgdGhlIGNsb2NrcyBub3cgd2hlbiBy
+dW50aW1lIFBNIGlzIGRpc2FibGVkLgogICAqIGRldmljZV9saW5rX2FkZCgpIGRvZXNuJ3QgZGVw
+ZW5kIG9uIHBtX3J1bnRpbWVfZW5hYmxlZCgpIGFzIHdlIGNhbgogICAgIHVzZSBkZXZpY2UgbGlu
+a3MgYWNyb3NzIHN5c3RlbSBzdXNwZW5kL3Jlc3VtZSB0b28uCgogICBBZGRyZXNzaW5nIFJvYmlu
+J3MgY29tbWVudHM6CiAgICogTWFraW5nIGRldmljZV9saW5rX2FkZCBmYWlsdXJlcyBhcyBub24t
+ZmF0YWwuCgogICAqIFJlbW92ZWQgSU9NTVVfT0ZfREVDTEFSRSgpIGRlY2xhcmF0aW9uIGFzIHdl
+IGRvbid0IG5lZWQgdGhpcyBhZnRlciBSb2IncwogICAgIHBhdGNoIHRoYXQgcmVtb3ZlZCBhbGwg
+b2YgdGhlc2UgZGVjbGFyYXRpb25zLgoKW3YxMl0KICAgKiBVc2UgbmV3IGRldmljZSBsaW5rJ3Mg
+ZmxhZyBpbnRyb2R1Y2VkIGluIFs4XSAtCiAgICAgRExfRkxBR19BVVRPUkVNT1ZFX1NVUFBMSUVS
+LiBXaXRoIHRoaXMgZGV2aWNlcyBsaW5rcyBhcmUgYXV0b21hdGljYWxseQogICAgIHB1cmdlZCB3
+aGVuIGFybS1zbW11IGRyaXZlciB1bmJpbmRzLgogICAqIFVzaW5nIHBtX3J1bnRpbWVfZm9yY2Vf
+c3VzcGVuZCgpIGluc3RlYWQgb2YgcG1fcnVudGltZV9kaXNhYmxlKCkgdG8KICAgICBhdm9pZCBm
+b2xsb3dpbmcgd2FybmluZyBmcm9tIGFybV9zbW11X2RldmljZV9yZW1vdmUoKQoKICAgICBbMjk1
+NzExLjUzNzUwN10gLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tCiAgICAgWzI5
+NTcxMS41NDQyMjZdIFVucHJlcGFyaW5nIGVuYWJsZWQgc21tdV9tZHBfYWhiX2NsawogICAgIFsy
+OTU3MTEuNTQ5MDk5XSBXQVJOSU5HOiBDUFU6IDAgUElEOiAxIGF0IC4uL2RyaXZlcnMvY2xrL2Ns
+ay5jOjY5NwogICAgICAgICAgICAgICAgICAgICBjbGtfY29yZV91bnByZXBhcmUrMHhkOC8weGUw
+CiAgICAgLi4uCiAgICAgWzI5NTcxMS42NzQwNzNdIENhbGwgdHJhY2U6CiAgICAgWzI5NTcxMS42
+Nzk0NTRdICBjbGtfY29yZV91bnByZXBhcmUrMHhkOC8weGUwCiAgICAgWzI5NTcxMS42ODIwNTld
+ICBjbGtfdW5wcmVwYXJlKzB4MjgvMHg0MAogICAgIFsyOTU3MTEuNjg1OTY0XSAgY2xrX2J1bGtf
+dW5wcmVwYXJlKzB4MjgvMHg0MAogICAgIFsyOTU3MTEuNjg5NzAxXSAgYXJtX3NtbXVfZGV2aWNl
+X3JlbW92ZSsweDg4LzB4ZDgKICAgICBbMjk1NzExLjY5MzY5Ml0gIGFybV9zbW11X2RldmljZV9z
+aHV0ZG93bisweGMvMHgxOAogICAgIFsyOTU3MTEuNjk4MTIwXSAgcGxhdGZvcm1fZHJ2X3NodXRk
+b3duKzB4MjAvMHgzMAoKW3YxMV0KICAgKiBTb21lIG1vcmUgY2xlYW51cHMgZm9yIGRldmljZSBs
+aW5rLiBXZSBkb24ndCBuZWVkIGFuIGV4cGxpY2l0CiAgICAgZGVsZXRlIGZvciBkZXZpY2UgbGlu
+ayBmcm9tIHRoZSBkcml2ZXIsIGJ1dCBqdXN0IHNldCB0aGUgZmxhZwogICAgIERMX0ZMQUdfQVVU
+T1JFTU9WRS4KICAgICBkZXZpY2VfbGlua19hZGQoKSBBUEkgZGVzY3JpcHRpb24gc2F5cyAtCiAg
+ICAgIklmIHRoZSBETF9GTEFHX0FVVE9SRU1PVkUgaXMgc2V0LCB0aGUgbGluayB3aWxsIGJlIHJl
+bW92ZWQKICAgICBhdXRvbWF0aWNhbGx5IHdoZW4gdGhlIGNvbnN1bWVyIGRldmljZSBkcml2ZXIg
+dW5iaW5kcy4iCiAgICogQWRkcmVzc2VkIHRoZSBjb21tZW50cyBmb3IgJ3NtbXUnIGluIGFybV9z
+bW11X21hcC91bm1hcCgpLgogICAqIERyb3BwZWQgdGhlIHBhdGNoIFs3XSB0aGF0IGludHJvZHVj
+ZWQgZGV2aWNlX2xpbmtfZGVsX2RldigpIEFQSS4gCgpbdjEwXQogICAqIEludHJvZHVjZSBkZXZp
+Y2VfbGlua19kZWxfZGV2KCkgQVBJIHRvIGRlbGV0ZSB0aGUgbGluayBiZXR3ZWVuCiAgICAgZ2l2
+ZW4gY29uc3VtZXIgYW5kIHN1cHBsaWVyIGRldmljZXMuIFRoZSB1c2VycyBvZiBkZXZpY2UgbGlu
+awogICAgIGRvIG5vdCBuZWVkIHRvIHN0b3JlIGxpbmsgcG9pbnRlciB0byBkZWxldGUgdGhlIGxp
+bmsgbGF0ZXIuCiAgICAgVGhleSBjYW4gc3RyYWlnaHRhd2F5IHVzZSB0aGlzIEFQSSBieSBwYXNz
+aW5nIGNvbnN1bWVyIGFuZAogICAgIHN1cHBsaWVyIGRldmljZXMuCiAgICogTWFkZSBjb3JyZXNw
+b25kaW5nIGNoYW5nZXMgdG8gYXJtLXNtbXUgZHJpdmVyIHBhdGNoIGhhbmRsaW5nIHRoZQogICAg
+IGRldmljZSBsaW5rcy4KICAgKiBEcm9wcGVkIHRoZSBwYXRjaCBbNl0gdGhhdCB3YXMgYWRkaW5n
+IGRldmljZV9saW5rX2ZpbmQoKSBBUEkgdG8KICAgICBkZXZpY2UgY29yZSBsYXllci4gZGV2aWNl
+X2xpbmtfZGVsX2RldigpIHNlcnZlcyB0aGUgcHVycG9zZSB0bwogICAgIGRpcmVjdGx5IGRlbGV0
+ZSB0aGUgbGluayBiZXR3ZWVuIHR3byBnaXZlbiBkZXZpY2VzLgoKW3Y5XQogICAqIFJlbW92ZWQg
+J3JwbV9zdXBwb3J0ZWQnIGZsYWcsIGluc3RlYWQgY2hlY2tpbmcgb24gcG1fZG9tYWluCiAgICAg
+dG8gZW5hYmxlIHJ1bnRpbWUgcG0uCiAgICogQ3JlYXRpbmcgZGV2aWNlIGxpbmsgb25seSB3aGVu
+IHRoZSBydW50aW1lIHBtIGlzIGVuYWJsZWQsIGFzIHdlCiAgICAgZG9uJ3QgbmVlZCBhIGRldmlj
+ZSBsaW5rIGJlc2lkZXMgbWFuYWdpbmcgdGhlIHBvd2VyIGRlcGVuZGVuY3kKICAgICBiZXR3ZWVu
+IHN1cHBsaWVyIGFuZCBjb25zdW1lciBkZXZpY2VzLgogICAqIEludHJvZHVjaW5nIGEgcGF0Y2gg
+dG8gYWRkIGRldmljZV9saW5rX2ZpbmQoKSBBUEkgdGhhdCBmaW5kcwogICAgIGFuZCBleGlzdGlu
+ZyBsaW5rIGJldHdlZW4gc3VwcGxpZXIgYW5kIGNvbnN1bWVyIGRldmljZXMuCiAgICAgQWxzbywg
+bWFkZSBuZWNlc3NhcnkgY2hhbmdlIHRvIGRldmljZV9saW5rX2FkZCgpIHRvIHVzZSB0aGlzIEFQ
+SS4KICAgKiBhcm1fc21tdV9yZW1vdmVfZGV2aWNlKCkgbm93IHVzZXMgdGhpcyBkZXZpY2VfbGlu
+a19maW5kKCkgdG8gZmluZAogICAgIHRoZSBkZXZpY2UgbGluayBiZXR3ZWVuIHNtbXUgZGV2aWNl
+IGFuZCB0aGUgbWFzdGVyIGRldmljZSwgYW5kIHRoZW4KICAgICBkZWxldGUgdGhpcyBsaW5rLgog
+ICAqIERyb3BwZWQgdGhlIGRlc3Ryb3lfZG9tYWluX2NvbnRleHQoKSBmaXggWzVdIGFzIGl0IHdh
+cyByYXRoZXIsCiAgICAgaW50cm9kdWNpbmcgY2F0YXN0cm9waGljYWxseSBiYWQgcHJvYmxlbSBi
+eSBkZXN0cm95aW5nCiAgICAgJ2dvb2QgZGV2J3MgZG9tYWluIGNvbnRleHQuCiAgICogQWRkZWQg
+J1Jldml3ZWQtYnknIHRhZyBmb3IgVG9tYXN6J3MgcmV2aWV3LgoKW3Y4XQogICAqIE1ham9yIGNo
+YW5nZSAtCiAgICAgLSBBZGRlZCBhIGZsYWcgJ3JwbV9zdXBwb3J0ZWQnIHdoaWNoIGVhY2ggcGxh
+dGZvcm0gdGhhdCBzdXBwb3J0cwogICAgICAgcnVudGltZSBwbSwgY2FuIGVuYWJsZSwgYW5kIHdl
+IGVuYWJsZSBydW50aW1lX3BtIG92ZXIgYXJtLXNtbXUKICAgICAgIG9ubHkgd2hlbiB0aGlzIGZs
+YWcgaXMgc2V0LgogICAgIC0gQWRkaW5nIHRoZSBjb25kaXRpb25hbCBwbV9ydW50aW1lX2dldC9w
+dXQoKSBjYWxscyB0byAubWFwLCAudW5tYXAKICAgICAgIGFuZCAuYXR0YWNoX2RldiBvcHMuCiAg
+ICAgLSBEcm9wcGVkIHRoZSBwYXRjaCBbM10gdGhhdCBleHBvcnRlZCBwbV9ydW50aW1fZ2V0L3B1
+dF9zdXVwbGllcnMoKSwKICAgICAgIGFuZCBhbHNvIGRyb3BwZWQgdGhlIHVzZXIgZHJpdmVyIHBh
+dGNoIFs0XSBmb3IgdGhlc2UgQVBJcy4KCiAgICogQ2xvY2sgY29kZSBmdXJ0aGVyIGNsZWFudXAK
+ICAgICAtIGRvaW5nIG9ubHkgY2xrX2J1bGtfZW5hYmxlKCkgYW5kIGNsa19idWxrX2Rpc2FibGUo
+KSBpbiBydW50aW1lIHBtCiAgICAgICBjYWxsYmFja3MuIFdlIHNob3VsZG4ndCBiZSB0YWtpbmcg
+YSBzbG93IHBhdGggKGNsa19wcmVwYXJlL3VucHJlcGFyZSgpKQogICAgICAgZnJvbSB0aGVzZSBy
+dW50aW1lIHBtIGNhbGxiYWNrcy4gVGhlcmVieSwgbW92ZWQgY2xrX2J1bGtfcHJlcGFyZSgpIHRv
+CiAgICAgICBhcm1fc21tdV9kZXZpY2VfcHJvYmUoKSwgYW5kIGNsa19idWxrX3VucHJlcGFyZSgp
+IHRvCiAgICAgICBhcm1fc21tdV9kZXZpY2VfcmVtb3ZlKCkuCiAgICAgLSBjbGsgZGF0YSBmaWxs
+aW5nIHRvIGEgY29tbW9uIG1ldGhvZCBhcm1fc21tdV9maWxsX2Nsa19kYXRhKCkgdGhhdAogICAg
+ICAgZmlsbHMgdGhlIGNsb2NrIGlkcyBhbmQgbnVtYmVyIG9mIGNsb2Nrcy4KCiAgICogQWRkcmVz
+c2VkIG90aGVyIG5pdHMgYW5kIGNvbW1lbnRzCiAgICAgLSBkZXZpY2VfbGlua19hZGQoKSBlcnJv
+ciBwYXRoIGZpeGVkLgogICAgIC0gRml4IGZvciBjaGVja2luZyBuZWdhdGl2ZSBlcnJvciB2YWx1
+ZSBmcm9tIHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS4KICAgICAtIERvY3VtZW50YXRpb24gcmVkby4K
+CiAgICogQWRkZWQgYW5vdGhlciBwYXRjaCBmaXhpbmcgdGhlIGVycm9yIHBhdGggaW4gYXJtX3Nt
+bXVfYXR0YWNoX2RldigpCiAgICAgdG8gZGVzdHJveSBhbGxvY2F0ZWQgZG9tYWluIGNvbnRleHQu
+CgpbdjddCiAgICogQWRkcmVzc2VkIHJldmlldyBjb21tZW50cyBnaXZlbiBieSBSb2JpbiBNdXJw
+aHkgLQogICAgIC0gQWRkZWQgZGV2aWNlX2xpbmtfZGVsKCkgaW4gLnJlbW92ZV9kZXZpY2UgcGF0
+aC4KICAgICAtIEVycm9yIHBhdGggY2xlYW51cCBpbiBhcm1fc21tdV9hZGRfZGV2aWNlKCkuCiAg
+ICAgLSBBZGRlZCBwbV9ydW50aW1lX2dldC9wdXRfc3luYygpIGluIC5yZW1vdmUgcGF0aCwgYW5k
+IHJlcGxhY2VkCiAgICAgICAgcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKCkgd2l0aCBwbV9ydW50
+aW1lX2Rpc2FibGUoKS4KICAgICAtIGNsa19uYW1lcyBjbGVhbnVwIGluIGFybV9zbW11X2luaXRf
+Y2xrcygpCiAgICogQWRkZWQgJ1Jldmlld2VkLWJ5JyBnaXZlbiBieSBSb2IgSC4KCioqIENoYW5n
+ZSBsb2dzIGZvciBwcmV2aW91cyB2ZXJzaW9ucyBpcyBhdmFpbGFibGUgaW4gbGFzdCBzZXJpZXMg
+WzRdLgoKClsxXSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwMjA0OTI1Lwpb
+Ml0gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTgvNy84LzEyNApbM10gaHR0cHM6Ly9wYXRjaHdv
+cmsua2VybmVsLm9yZy9wYXRjaC8xMDIwNDk0NS8KWzRdIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5l
+bC5vcmcvcGF0Y2gvMTAyMDQ5MjUvCls1XSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3Bh
+dGNoLzEwMjU0MTA1LwpbNl0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDI3
+Nzk3NS8KWzddIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTAyODE2MTMvCls4
+XSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNDkxNDgxLwpbOV0gaHR0cHM6
+Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvcmFmYWVsL2xpbnV4LXBt
+LmdpdC9sb2cvP2g9bGludXgtbmV4dApbMTBdIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3Nj
+bS9saW51eC9rZXJuZWwvZ2l0L2pvcm8vaW9tbXUuZ2l0L2xvZy8/aD1uZXh0CgpTcmljaGFyYW4g
+UiAoMyk6CiAgaW9tbXUvYXJtLXNtbXU6IEFkZCBwbV9ydW50aW1lL3NsZWVwIG9wcwogIGlvbW11
+L2FybS1zbW11OiBJbnZva2UgcG1fcnVudGltZSBkdXJpbmcgcHJvYmUsIGFkZC9yZW1vdmUgZGV2
+aWNlCiAgaW9tbXUvYXJtLXNtbXU6IEFkZCB0aGUgZGV2aWNlX2xpbmsgYmV0d2VlbiBtYXN0ZXJz
+IGFuZCBzbW11CgpWaXZlayBHYXV0YW0gKDEpOgogIGlvbW11L2FybS1zbW11OiBBZGQgc3VwcG9y
+dCBmb3IgcWNvbSxzbW11LXYyIHZhcmlhbnQKCiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21t
+dS9hcm0sc21tdS50eHQgICAgICAgICB8ICA0MiArKysrKwogZHJpdmVycy9pb21tdS9hcm0tc21t
+dS5jICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAxOTIgKysrKysrKysrKysrKysrKysrKy0t
+CiAyIGZpbGVzIGNoYW5nZWQsIDIyNCBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMoLSkKCi0t
+IApRVUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVy
+LCBJbmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQgYnkgVGhlIExp
+bnV4IEZvdW5kYXRpb24KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9w
+Lm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVk
+cmVubwo=
