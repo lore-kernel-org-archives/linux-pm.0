@@ -1,209 +1,164 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 04/26] PM / Domains: Add support for CPU devices to genpd
-Date: Thu, 19 Jul 2018 12:25:54 +0200
-Message-ID: <1678369.6pMUSOvdlV@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-5-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
+Date: Thu, 19 Jul 2018 12:32:52 +0200
+Message-ID: <3574880.GjmnMm1lMq@aspire.rjw.lan>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-8-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180620172226.15012-5-ulf.hansson@linaro.org>
+In-Reply-To: <20180620172226.15012-8-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 20, 2018 7:22:04 PM CEST Ulf Hansson wrote:
-> To enable a device belonging to a CPU to be attached to a PM domain managed
-> by genpd, let's do a few changes to genpd as to make it convenient to
-> manage the specifics around CPUs.
+On Wednesday, June 20, 2018 7:22:07 PM CEST Ulf Hansson wrote:
+> As it's now perfectly possible that a PM domain managed by genpd contains
+> devices belonging to CPUs, we should start to take into account the
+> residency values for the idle states during the state selection process.
+> The residency value specifies the minimum duration of time, the CPU or a
+> group of CPUs, needs to spend in an idle state to not waste energy entering
+> it.
 > 
-> First, as to be able to quickly find out what CPUs that are attached to a
-> genpd, which typically becomes useful from a genpd governor as following
-> changes is about to show, let's add a cpumask 'cpus' to the struct
-> generic_pm_domain.
+> To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
+> may be used for a PM domain that have CPU devices attached or if the CPUs
+> are attached through subdomains.
 > 
-> At the point when a device that belongs to a CPU, is attached/detached to
-> its corresponding PM domain via genpd_add_device(), let's update the
-> cpumask in genpd->cpus. Moreover, propagate the update of the cpumask to
-> the master domains, which makes the genpd->cpus to contain a cpumask that
-> hierarchically reflect all CPUs for a genpd, including CPUs attached to
-> subdomains.
+> The new governor computes the minimum expected idle duration time for the
+> online CPUs being attached to the PM domain and its subdomains. Then in the
+> state selection process, trying the deepest state first, it verifies that
+> the idle duration time satisfies the state's residency value.
 > 
-> Second, to unconditionally manage CPUs and the cpumask in genpd->cpus, is
-> unnecessary for cases when only non-CPU devices are parts of a genpd.
-> Let's avoid this by adding a new configuration bit, GENPD_FLAG_CPU_DOMAIN.
-> Clients must set the bit before they call pm_genpd_init(), as to instruct
-> genpd that it shall deal with CPUs and thus manage the cpumask in
-> genpd->cpus.
+> It should be noted that, when computing the minimum expected idle duration
+> time, we use the information from tick_nohz_get_next_wakeup(), to find the
+> next wakeup for the related CPUs. Future wise, this may deserve to be
+> improved, as there are more reasons to why a CPU may be woken up from idle.
 > 
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 > Cc: Lina Iyer <ilina@codeaurora.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
 > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
->  drivers/base/power/domain.c | 69 ++++++++++++++++++++++++++++++++++++-
->  include/linux/pm_domain.h   |  3 ++
->  2 files changed, 71 insertions(+), 1 deletion(-)
+>  drivers/base/power/domain_governor.c | 58 ++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h            |  2 +
+>  2 files changed, 60 insertions(+)
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 21d298e1820b..6149ce0bfa7b 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -20,6 +20,7 @@
->  #include <linux/sched.h>
->  #include <linux/suspend.h>
->  #include <linux/export.h>
-> +#include <linux/cpu.h>
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index 99896fbf18e4..1aad55719537 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -10,6 +10,9 @@
+>  #include <linux/pm_domain.h>
+>  #include <linux/pm_qos.h>
+>  #include <linux/hrtimer.h>
+> +#include <linux/cpumask.h>
+> +#include <linux/ktime.h>
+> +#include <linux/tick.h>
 >  
->  #include "power.h"
->  
-> @@ -126,6 +127,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
->  #define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
->  #define genpd_is_always_on(genpd)	(genpd->flags & GENPD_FLAG_ALWAYS_ON)
->  #define genpd_is_active_wakeup(genpd)	(genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
-> +#define genpd_is_cpu_domain(genpd)	(genpd->flags & GENPD_FLAG_CPU_DOMAIN)
->  
->  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
->  		const struct generic_pm_domain *genpd)
-> @@ -1377,6 +1379,62 @@ static void genpd_free_dev_data(struct device *dev,
->  	dev_pm_put_subsys_data(dev);
+>  static int dev_update_qos_constraint(struct device *dev, void *data)
+>  {
+> @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+>  	return false;
 >  }
 >  
-> +static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
-> +				   int cpu, bool set, unsigned int depth)
+> +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
 > +{
-> +	struct gpd_link *link;
+> +	struct generic_pm_domain *genpd = pd_to_genpd(pd);
+> +	ktime_t domain_wakeup, cpu_wakeup;
+> +	s64 idle_duration_ns;
+> +	int cpu, i;
 > +
-> +	if (!genpd_is_cpu_domain(genpd))
-> +		return;
+> +	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
+> +		return true;
 > +
-> +	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-> +		struct generic_pm_domain *master = link->master;
-> +
-> +		genpd_lock_nested(master, depth + 1);
-> +		__genpd_update_cpumask(master, cpu, set, depth + 1);
-> +		genpd_unlock(master);
+> +	/*
+> +	 * Find the next wakeup for any of the online CPUs within the PM domain
+> +	 * and its subdomains. Note, we only need the genpd->cpus, as it already
+> +	 * contains a mask of all CPUs from subdomains.
+> +	 */
+> +	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+> +	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+> +		cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
+> +		if (ktime_before(cpu_wakeup, domain_wakeup))
+> +			domain_wakeup = cpu_wakeup;
 > +	}
 > +
-> +	if (set)
-> +		cpumask_set_cpu(cpu, genpd->cpus);
-> +	else
-> +		cpumask_clear_cpu(cpu, genpd->cpus);
-> +}
-
-As noted elsewhere, there is a concern about the possible weight of this
-cpumask and I think that it would be good to explicitly put a limit on it.
-
+> +	/* The minimum idle duration is from now - until the next wakeup. */
+> +	idle_duration_ns = ktime_to_ns(ktime_sub(domain_wakeup, ktime_get()));
 > +
-> +static void genpd_update_cpumask(struct generic_pm_domain *genpd,
-> +				 struct device *dev, bool set)
-> +{
-> +	bool is_cpu = false;
-> +	int cpu;
-> +
-> +	if (!genpd_is_cpu_domain(genpd))
-> +		return;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		if (get_cpu_device(cpu) == dev) {
-> +			is_cpu = true;
 
-You may call __genpd_update_cpumask() right here and then you won't
-need the extra is_cpu variable.
+If idle_duration_ns is negative at this point, you can return false right
+away and then you won't need to bother with this case below.
+
+> +	/*
+> +	 * Find the deepest idle state that has its residency value satisfied
+> +	 * and by also taking into account the power off latency for the state.
+> +	 * Start at the deepest supported state.
+> +	 */
+> +	i = genpd->state_count - 1;
+> +	do {
+> +		if (!genpd->states[i].residency_ns)
+> +			break;
+> +
+> +		/* Check idle_duration_ns >= 0 to compare signed/unsigned. */
+> +		if (idle_duration_ns >= 0 && idle_duration_ns >=
+> +		    (genpd->states[i].residency_ns +
+> +		     genpd->states[i].power_off_latency_ns))
+
+Why don't you set state_idx and return true right here?
+
+Then you'll only need to return false if you haven't found a matching state.
 
 > +			break;
-> +		}
-> +	}
+> +		i--;
+> +	} while (i >= 0);
 > +
-> +	if (!is_cpu)
-> +		return;
+> +	if (i < 0)
+> +		return false;
 > +
-> +	__genpd_update_cpumask(genpd, cpu, set, 0);
+> +	genpd->state_idx = i;
+> +	return true;
 > +}
 > +
-> +static void genpd_set_cpumask(struct generic_pm_domain *genpd,
-> +			      struct device *dev)
-> +{
-> +	genpd_update_cpumask(genpd, dev, true);
-> +}
+>  struct dev_power_governor simple_qos_governor = {
+>  	.suspend_ok = default_suspend_ok,
+>  	.power_down_ok = default_power_down_ok,
+> @@ -257,3 +310,8 @@ struct dev_power_governor pm_domain_always_on_gov = {
+>  	.power_down_ok = always_on_power_down_ok,
+>  	.suspend_ok = default_suspend_ok,
+>  };
 > +
-> +static void genpd_clear_cpumask(struct generic_pm_domain *genpd,
-> +				struct device *dev)
-> +{
-> +	genpd_update_cpumask(genpd, dev, false);
-> +}
-> +
->  static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  			    struct gpd_timing_data *td)
->  {
-> @@ -1398,6 +1456,8 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  	if (ret)
->  		goto out;
->  
-> +	genpd_set_cpumask(genpd, dev);
-> +
->  	dev_pm_domain_set(dev, &genpd->domain);
->  
->  	genpd->device_count++;
-> @@ -1459,6 +1519,7 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
->  	if (genpd->detach_dev)
->  		genpd->detach_dev(genpd, dev);
->  
-> +	genpd_clear_cpumask(genpd, dev);
->  	dev_pm_domain_set(dev, NULL);
->  
->  	list_del_init(&pdd->list_node);
-> @@ -1686,11 +1747,16 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->  	if (genpd_is_always_on(genpd) && !genpd_status_on(genpd))
->  		return -EINVAL;
->  
-> +	if (!zalloc_cpumask_var(&genpd->cpus, GFP_KERNEL))
-> +		return -ENOMEM;
-> +
->  	/* Use only one "off" state if there were no states declared */
->  	if (genpd->state_count == 0) {
->  		ret = genpd_set_default_power_state(genpd);
-> -		if (ret)
-> +		if (ret) {
-> +			free_cpumask_var(genpd->cpus);
->  			return ret;
-> +		}
->  	} else if (!gov) {
->  		pr_warn("%s : no governor for states\n", genpd->name);
->  	}
-> @@ -1736,6 +1802,7 @@ static int genpd_remove(struct generic_pm_domain *genpd)
->  	list_del(&genpd->gpd_list_node);
->  	genpd_unlock(genpd);
->  	cancel_work_sync(&genpd->power_off_work);
-> +	free_cpumask_var(genpd->cpus);
->  	kfree(genpd->free);
->  	pr_debug("%s: removed %s\n", __func__, genpd->name);
->  
+> +struct dev_power_governor pm_domain_cpu_gov = {
+> +	.suspend_ok = NULL,
+> +	.power_down_ok = cpu_power_down_ok,
+
+I see that I haven't got your code flow right after all. :-)
+
+And which means that this should work AFAICS.
+
+> +};
 > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 27fca748344a..3f67ff0c1c69 100644
+> index 2c09cf80b285..97901c833108 100644
 > --- a/include/linux/pm_domain.h
 > +++ b/include/linux/pm_domain.h
-> @@ -16,12 +16,14 @@
->  #include <linux/of.h>
->  #include <linux/notifier.h>
->  #include <linux/spinlock.h>
-> +#include <linux/cpumask.h>
+> @@ -160,6 +160,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
 >  
->  /* Defines used for the flags field in the struct generic_pm_domain */
->  #define GENPD_FLAG_PM_CLK	 (1U << 0) /* PM domain uses PM clk */
->  #define GENPD_FLAG_IRQ_SAFE	 (1U << 1) /* PM domain operates in atomic */
->  #define GENPD_FLAG_ALWAYS_ON	 (1U << 2) /* PM domain is always powered on */
->  #define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3) /* Keep devices active if wakeup */
-> +#define GENPD_FLAG_CPU_DOMAIN	 (1U << 4) /* PM domain manages CPUs */
+>  extern struct dev_power_governor simple_qos_governor;
+>  extern struct dev_power_governor pm_domain_always_on_gov;
+> +extern struct dev_power_governor pm_domain_cpu_gov;
+>  #else
 >  
->  enum gpd_status {
->  	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
-> @@ -68,6 +70,7 @@ struct generic_pm_domain {
->  	unsigned int suspended_count;	/* System suspend device counter */
->  	unsigned int prepared_count;	/* Suspend counter of prepared devices */
->  	unsigned int performance_state;	/* Aggregated max performance state */
-> +	cpumask_var_t cpus;		/* A cpumask of the attached CPUs */
->  	int (*power_off)(struct generic_pm_domain *domain);
->  	int (*power_on)(struct generic_pm_domain *domain);
->  	unsigned int (*opp_to_performance_state)(struct generic_pm_domain *genpd,
+>  static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+> @@ -203,6 +204,7 @@ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
+>  
+>  #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+>  #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
+> +#define pm_domain_cpu_gov		(*(struct dev_power_governor *)(NULL))
+>  #endif
+>  
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
 > 
