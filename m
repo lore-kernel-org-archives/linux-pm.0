@@ -1,40 +1,39 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Thu, 19 Jul 2018 07:58:51 +0800
-Message-ID: <20180718235851.GA22170@sandybridge-desktop>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Dai <daidavid1@codeaurora.org>
+Subject: [RFC PATCH v2 2/2] arm64: dts: sdm845: Add interconnect provider DT nodes
+Date: Wed, 18 Jul 2018 19:37:00 -0700
+Message-ID: <1531967820-27483-3-git-send-email-daidavid1@codeaurora.org>
+References: <1531967820-27483-1-git-send-email-daidavid1@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180718202235.GA4132@amd>
+In-Reply-To: <1531967820-27483-1-git-send-email-daidavid1@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, daidavid1@codeaurora.org, amit.kucheria@linaro.org, ilina@codeaurora.org, seansw@qti.qualcomm.com, grahamr@qti.qualcomm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Wed, Jul 18, 2018 at 10:22:35PM +0200, Pavel Machek wrote:
-> On Thu 2018-07-19 00:38:06, Chen Yu wrote:
-> > As security becomes more and more important, we add the in-kernel
-> > encryption support for hibernation.
-> 
-> Sorry, this does not really explain what security benefit it is
-> supposed have to against what attack scenarios.
-> 
-> Which unfortunately means it can not reviewed.
-> 
-> Note that uswsusp already provides encryption. If this is supposed to
-> have advantages over it, please say so.
-> 
-The advantages are described in detail in 
-[PATCH 1/4]'s log, please refer to that.
-Thanks,
-Yu
-> 								Pavel
-> 
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Add RSC(Resource State Coordinator) provider
+dictating network-on-chip interconnect bus performance
+found on SDM845-based platforms.
+
+Signed-off-by: David Dai <daidavid1@codeaurora.org>
+---
+ arch/arm64/boot/dts/qcom/sdm845.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+index 228d502..caffa67 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+@@ -1091,6 +1091,11 @@
+ 
+ 				pmi8998_bob: bob {};
+ 			};
++
++			qnoc: qnoc{
++				compatible = "qcom,sdm845-rsc-hlos";
++				#interconnect-cells = <1>;
++			};
+ 		};
+ 
+ 		intc: interrupt-controller@17a00000 {
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
