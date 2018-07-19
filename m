@@ -1,53 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: armada-37xx: Fix clock leak
-Date: Thu, 19 Jul 2018 12:47:48 +0200
-Message-ID: <1928207.9cCKXrpt8K@aspire.rjw.lan>
-References: <20180404144444.4142-1-gregory.clement@bootlin.com> <20180405045153.GL3572@vireshk-i7>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Thu, 19 Jul 2018 13:01:49 +0200
+Message-ID: <20180719110149.GA4679@amd>
+References: <cover.1531924968.git.yu.c.chen@intel.com>
+ <20180718202235.GA4132@amd>
+ <20180718235851.GA22170@sandybridge-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20180405045153.GL3572@vireshk-i7>
-Sender: stable-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@bootlin.com>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, stable@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180718235851.GA22170@sandybridge-desktop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, April 5, 2018 6:51:53 AM CEST Viresh Kumar wrote:
-> On 04-04-18, 16:44, Gregory CLEMENT wrote:
-> > There was no clk_put() balancing the clk_get(). This commit fixes it.
-> > 
-> > Fixes: 92ce45fb875d ("cpufreq: Add DVFS support for Armada 37xx")
-> > Cc: <stable@vger.kernel.org>
-> > Reported-by: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
-> > Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> > ---
-> >  drivers/cpufreq/armada-37xx-cpufreq.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-> > index c6ebc88a7d8d..72a2975499db 100644
-> > --- a/drivers/cpufreq/armada-37xx-cpufreq.c
-> > +++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-> > @@ -202,6 +202,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
-> >  	cur_frequency = clk_get_rate(clk);
-> >  	if (!cur_frequency) {
-> >  		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
-> > +		clk_put(clk);
-> >  		return -EINVAL;
-> >  	}
-> >  
-> > @@ -210,6 +211,7 @@ static int __init armada37xx_cpufreq_driver_init(void)
-> >  		return -EINVAL;
-> >  
-> >  	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
-> > +	clk_put(clk);
-> >  
-> >  	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
-> >  	     load_lvl++) {
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> 
 
-Applied, thanks!
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu 2018-07-19 07:58:51, Yu Chen wrote:
+> Hi,
+> On Wed, Jul 18, 2018 at 10:22:35PM +0200, Pavel Machek wrote:
+> > On Thu 2018-07-19 00:38:06, Chen Yu wrote:
+> > > As security becomes more and more important, we add the in-kernel
+> > > encryption support for hibernation.
+> >=20
+> > Sorry, this does not really explain what security benefit it is
+> > supposed have to against what attack scenarios.
+> >=20
+> > Which unfortunately means it can not reviewed.
+> >=20
+> > Note that uswsusp already provides encryption. If this is supposed to
+> > have advantages over it, please say so.
+> >=20
+> The advantages are described in detail in=20
+> [PATCH 1/4]'s log, please refer to that.
+
+Are you refering to this?
+
+# Generally the advantage is: Users do not have to
+# encrypt the whole swap partition as other tools.
+# After all, ideally kernel memory should be encrypted
+# by the kernel itself.
+
+Sorry, this does not really explain what security benefit it is
+supposed have to against what attack scenarios.
+
+Note that uswsusp already provides encryption. If this is supposed to
+have advantages over it, please say so.
+
+Also note that joeyli <jlee@suse.com> has patch series which encrypts
+both in-kernel and uswsusp hibernation methods. His motivation is
+secure boot. How does this compare to his work?
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--wRRV7LY7NUeQGEoC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAltQb50ACgkQMOfwapXb+vJRegCfdloEMqo/8OjQ8iUXht7vmf1J
+/jwAn1qMR2BSC4CNsYN7BUmawMByRuzR
+=wdh8
+-----END PGP SIGNATURE-----
+
+--wRRV7LY7NUeQGEoC--
