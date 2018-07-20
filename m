@@ -1,50 +1,126 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v6 3/8] interconnect: Add debugfs support
-Date: Fri, 20 Jul 2018 17:36:00 +0300
-Message-ID: <3a0d35bb-f55a-28c0-f2a6-0f2b49422896@linaro.org>
+Subject: Re: [PATCH v6 4/8] interconnect: qcom: Add RPM communication
+Date: Fri, 20 Jul 2018 17:39:20 +0300
+Message-ID: <cbcee243-0039-ae88-a306-f88fe27dd82c@linaro.org>
 References: <20180709155104.25528-1-georgi.djakov@linaro.org>
- <20180709155104.25528-4-georgi.djakov@linaro.org>
- <20180715121507.GA17794@kroah.com>
+ <20180709155104.25528-5-georgi.djakov@linaro.org>
+ <CAE=gft6pPcxfYqEcb-yQpf7S6CDTZNavhqYaKi37962U78qO3Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180715121507.GA17794@kroah.com>
+In-Reply-To: <CAE=gft6pPcxfYqEcb-yQpf7S6CDTZNavhqYaKi37962U78qO3Q@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, abailon@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mka@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Evan Green <evgreen@chromium.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Alexandre Bailon <abailon@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mka@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, tfiga@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Greg,
+Hi Evan,
 
-On 15.07.18 г. 15:15, Greg KH wrote:
-> On Mon, Jul 09, 2018 at 06:50:59PM +0300, Georgi Djakov wrote:
->> +static int __init icc_debugfs_init(void)
->> +{
->> +	struct dentry *file;
+On 07/11/2018 01:34 AM, Evan Green wrote:
+> On Mon, Jul 9, 2018 at 8:51 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>>
+>> On some Qualcomm SoCs, there is a remote processor, which controls some of
+>> the Network-On-Chip interconnect resources. Other CPUs express their needs
+>> by communicating with this processor. Add a driver to handle communication
+>> with this remote processor.
+>>
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> ---
+>>  .../bindings/interconnect/qcom-smd.txt        | 32 +++++++
+>>  drivers/interconnect/qcom/Kconfig             | 11 +++
+>>  drivers/interconnect/qcom/Makefile            |  2 +
+>>  drivers/interconnect/qcom/smd-rpm.c           | 91 +++++++++++++++++++
+>>  drivers/interconnect/qcom/smd-rpm.h           | 15 +++
+>>  5 files changed, 151 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+>>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>>  create mode 100644 drivers/interconnect/qcom/Makefile
+>>  create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+>>  create mode 100644 drivers/interconnect/qcom/smd-rpm.h
+>>
+>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom-smd.txt b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+>> new file mode 100644
+>> index 000000000000..88a5aeb50935
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+>> @@ -0,0 +1,32 @@
+>> +Qualcomm SMD-RPM interconnect driver binding
+>> +------------------------------------------------
+>> +The RPM (Resource Power Manager) is a dedicated hardware engine
+>> +for managing the shared SoC resources in order to keep the lowest
+>> +power profile. It communicates with other hardware subsystems via
+>> +the shared memory driver (SMD) back-end and accepts requests for
+>> +various resources.
 >> +
->> +	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
->> +	if (!icc_debugfs_dir) {
->> +		pr_err("interconnect: error creating debugfs directory\n");
->> +		return -ENODEV;
->> +	}
+>> +Required properties :
+>> +- compatible : shall contain only one of the following:
+>> +                       "qcom,interconnect-smd-rpm"
+>> +
+>> +Example:
+>> +       smd {
+>> +               compatible = "qcom,smd";
+>> +
+>> +               rpm {
+>> +                       interrupts = <0 168 1>;
+>> +                       qcom,ipc = <&apcs 8 0>;
+>> +                       qcom,smd-edge = <15>;
+>> +
+>> +                       rpm_requests {
+>> +                               compatible = "qcom,rpm-msm8916";
+>> +                               qcom,smd-channels = "rpm_requests";
+>> +
+>> +                               interconnect-smd-rpm {
+>> +                                       compatible = "qcom,interconnect-smd-rpm";
+>> +                               };
+>> +
+>> +                       };
+>> +               };
+>> +       };
+>> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+>> new file mode 100644
+>> index 000000000000..b0c2ff928d88
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/Kconfig
+>> @@ -0,0 +1,11 @@
+>> +config INTERCONNECT_QCOM
+>> +       bool "Qualcomm Network-on-Chip interconnect drivers"
+>> +       depends on INTERCONNECT
+>> +       depends on ARCH_QCOM || COMPILE_TEST
+>> +
+>> +config INTERCONNECT_QCOM_SMD_RPM
+>> +       tristate "Qualcomm SMD RPM interconnect driver"
+>> +       depends on INTERCONNECT_QCOM
 > 
-> You should never care about the return value of a debugfs call.  Just
-> ignore it and move on.
+> Should this also depend on CONFIG_QCOM_SMD_RPM, since it uses
+> qcom_rpm_smd_write?
 
-Ok!
+Yes, you are right.
 
->> +	file = debugfs_create_file("interconnect_summary", 0444,
->> +				   icc_debugfs_dir, NULL, &icc_summary_fops);
->> +	if (!file)
->> +		return -ENODEV;
+>> +       help
+>> +         This is a driver for communicating interconnect related configuration
+>> +         details with a remote processor (RPM) on Qualcomm platforms.
+> ...
+>> diff --git a/drivers/interconnect/qcom/smd-rpm.h b/drivers/interconnect/qcom/smd-rpm.h
+>> new file mode 100644
+>> index 000000000000..c33b91a3dd51
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/smd-rpm.h
+>> @@ -0,0 +1,15 @@
+>> +/* SPDX-License-Identifier: GPL-2.0 */
+>> +/*
+>> + * Copyright (c) 2018, Linaro Ltd.
+>> + * Author: Georgi Djakov <georgi.djakov@linaro.org>
+>> + */
+>> +
+>> +#ifndef __DRIVERS_INTERCONNECT_QCOM_RPM_H
+>> +#define __DRIVERS_INTERCONNECT_QCOM_RPM_H
 > 
-> Again, do not check this.
+> Nit: this still doesn't quite match, it would need an _SMD like:
+> __DRIVERS_INTERCONNECT_QCOM_SMD_RPM_H
 > 
-> Where do you remove this directory and file from the system when the
-> code shuts down?
 
-Will take care of this! Thanks for the feedback!
+Ok, thanks!
 
 Georgi
