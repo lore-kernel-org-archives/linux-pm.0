@@ -1,62 +1,42 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v6 7/8] dt-bindings: Introduce interconnect consumers
- bindings
-Date: Fri, 20 Jul 2018 17:57:02 +0300
-Message-ID: <5081de57-e6f2-1201-a1f3-15e05ea3800b@linaro.org>
-References: <20180709155104.25528-1-georgi.djakov@linaro.org>
- <20180709155104.25528-8-georgi.djakov@linaro.org>
- <CAE=gft7tDYB172LTMuS4JPPaTFasT22zLBx4XjpYne2PNNz+kQ@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 1/5] dt-bindings: w1: document generic onewire bindings
+Date: Fri, 20 Jul 2018 09:10:36 -0600
+Message-ID: <CAL_JsqL10WT5AK37_8o3M_=UiLx_thcm1W3UNz2qBaB5dRo8XA@mail.gmail.com>
+References: <20180706053552.11438-1-daniel@zonque.org> <20180706053552.11438-2-daniel@zonque.org>
+ <20180711150157.GA18150@rob-hp-laptop> <5070717c-4c9f-c580-8f50-2369dcd74aef@zonque.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft7tDYB172LTMuS4JPPaTFasT22zLBx4XjpYne2PNNz+kQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <5070717c-4c9f-c580-8f50-2369dcd74aef@zonque.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Evan Green <evgreen@chromium.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Alexandre Bailon <abailon@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mka@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, tfiga@chromium.org
+To: Daniel Mack <daniel@zonque.org>
+Cc: zbr@ioremap.net, Mark Rutland <mark.rutland@arm.com>, szabolcs.gyurko@tlt.hu, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, Jul 18, 2018 at 6:40 AM Daniel Mack <daniel@zonque.org> wrote:
+>
+> On Wednesday, July 11, 2018 05:01 PM, Rob Herring wrote:
+> > On Fri, Jul 06, 2018 at 07:35:48AM +0200, Daniel Mack wrote:
+> >> This patch adds a generic w1 bindings document that describes how w1
+> >> slave deviceses are grouped under master nodes. It also augments the
+> >> existing w1-gpio.txt document a bit.
+> >>
+> >> Signed-off-by: Daniel Mack <daniel@zonque.org>
+> >> ---
+> >>   .../devicetree/bindings/w1/w1-gpio.txt        | 11 +++++---
+> >>   Documentation/devicetree/bindings/w1/w1.txt   | 25 +++++++++++++++++++
+> >>   2 files changed, 33 insertions(+), 3 deletions(-)
+> >>   create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+> >
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+> >
+> > Note that this will conflict with a unit-address fix that I have queued
+> > up for 4.18 (will send this week).
+>
+> How would we best handle this? Sebastian, are you going to apply this
+> series, and add a note to the PR for 4.19 on how to resolve the conflict?
 
-On 07/11/2018 01:34 AM, Evan Green wrote:
-> On Mon, Jul 9, 2018 at 8:51 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->>
->> Add documentation for the interconnect consumer bindings, that will allow
->> to link a device node (consumer) to its interconnect controller hardware.
->>
->> Tha aim is to enable drivers to request a framework API to configure an
->> interconnect path by providing their struct device pointer and a name.
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  .../bindings/interconnect/interconnect.txt    | 27 +++++++++++++++++++
->>  1 file changed, 27 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
->> index 6e2b2971b094..0ad65dccbe8b 100644
->> --- a/Documentation/devicetree/bindings/interconnect/interconnect.txt
->> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
->> @@ -31,3 +31,30 @@ Example:
->>                         clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
->>                                  <&rpmcc RPM_SMD_SNOC_A_CLK>;
->>                 };
->> +
->> +
->> += interconnect consumers =
->> +
->> +The interconnect consumers are device nodes which consume the interconnect
->> +path(s) provided by the interconnect provider. There can be multiple
-> 
-> I wonder if this sentence could be more descriptive. Maybe something like:
-> 
-> The interconnect consumers are device nodes which dynamically express
-> their bandwidth requirements along interconnect paths they are
-> connected to.
-> 
-> ...or choose a better one if this one's a mouthful.
-> 
+Either 4.18-rc6 or my devicetree-fixes-for-4.18 tag (based on rc1) can
+be pulled in. Or just note the conflict. It is trivial enough.
 
-This sounds much better. Thank you!
-
-Georgi
+Rob
