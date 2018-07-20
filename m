@@ -1,23 +1,45 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3] Optimize C3 entry on Centaur CPUs
-Date: Fri, 20 Jul 2018 08:38:19 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1807200837380.1693@nanos.tec.linutronix.de>
-References: <1527588757-19229-1-git-send-email-davidwang@zhaoxin.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI fix for v4.18-rc6
+Date: Fri, 20 Jul 2018 10:01:51 +0200
+Message-ID: <CAJZ5v0hBVRAQCbD33RYRCBL-Qmx2OW1x4tqiLo5C_r5Qjvbp5A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1527588757-19229-1-git-send-email-davidwang@zhaoxin.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Wang <davidwang@zhaoxin.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, len.brown@intel.com, pavel@ucw.cz, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@kernel.org, LKML <linux-kernel@vger.kernel.org>, brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, lukelin@viacpu.com, timguo@zhaoxin.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 29 May 2018, David Wang wrote:
+Hi Linus,
 
-> For new Centaur CPUs the ucode will take care of the preservation of cache coherence
-> between CPU cores in C-states regardless of how deep the C-states are. So, it is not
-> necessary to flush the caches in software befor entering C3.
-> 
-> Signed-off-by: David Wang <davidwang@zhaoxin.com>
+Please pull from the tag
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.18-rc6
+
+with top-most commit 2c4d6baf1bc4f7729773ffcee9ba2a9781578633
+
+ ACPI / EC: Use ec_no_wakeup on more Thinkpad X1 Carbon 6th systems
+
+on top of commit 9d3cce1e8b8561fed5f383d22a4d6949db4eadbe
+
+ Linux 4.18-rc5
+
+to receive an ACPI fix for 4.18-rc6.
+
+This extends the recently added suspend-to-idle quirk for Thinkpad
+X1 Carbon 6th to other systems from that family which turned out to
+need it too (Robin Johnson).
+
+Thanks!
+
+
+---------------
+
+Robin H. Johnson (1):
+      ACPI / EC: Use ec_no_wakeup on more Thinkpad X1 Carbon 6th systems
+
+---------------
+
+ drivers/acpi/ec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
