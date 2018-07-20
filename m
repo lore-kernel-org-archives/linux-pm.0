@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI fix for v4.18-rc6
-Date: Fri, 20 Jul 2018 10:01:51 +0200
-Message-ID: <CAJZ5v0hBVRAQCbD33RYRCBL-Qmx2OW1x4tqiLo5C_r5Qjvbp5A@mail.gmail.com>
+Subject: [GIT PULL] Power management fix for v4.18-rc6
+Date: Fri, 20 Jul 2018 10:03:28 +0200
+Message-ID: <CAJZ5v0ipKgfRfCmkRshrm9726=5rj5dUrKSLAK2GNEcdvnBMtw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
@@ -15,31 +15,35 @@ Hi Linus,
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.18-rc6
+ pm-4.18-rc6
 
-with top-most commit 2c4d6baf1bc4f7729773ffcee9ba2a9781578633
+with top-most commit 95d6c0857e54b788982746071130d822a795026b
 
- ACPI / EC: Use ec_no_wakeup on more Thinkpad X1 Carbon 6th systems
+ cpufreq: intel_pstate: Register when ACPI PCCH is present
 
 on top of commit 9d3cce1e8b8561fed5f383d22a4d6949db4eadbe
 
  Linux 4.18-rc5
 
-to receive an ACPI fix for 4.18-rc6.
+to receive a power management fix for 4.18-rc6.
 
-This extends the recently added suspend-to-idle quirk for Thinkpad
-X1 Carbon 6th to other systems from that family which turned out to
-need it too (Robin Johnson).
+This fixes a relatively old initialization issue in intel_pstate
+causing the pcc-cpufreq driver to be used instead of it on some HP
+Proliant systems, which turned into a functional regression during
+the 4.17 cycle, because pcc-cpufreq is a scalability disaster and
+that was amplified by the idle loop rework done at that time (Rafael
+Wysocki).
 
 Thanks!
 
 
 ---------------
 
-Robin H. Johnson (1):
-      ACPI / EC: Use ec_no_wakeup on more Thinkpad X1 Carbon 6th systems
+Rafael J. Wysocki (1):
+      cpufreq: intel_pstate: Register when ACPI PCCH is present
 
 ---------------
 
- drivers/acpi/ec.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/intel_pstate.c | 17 ++++++++++++++++-
+ drivers/cpufreq/pcc-cpufreq.c  |  4 ++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
