@@ -1,15 +1,12 @@
 From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v2 02/12] sched/core: uclamp: map TASK's clamp values into
- CPU's clamp groups
-Date: Fri, 20 Jul 2018 17:25:31 -0700
-Message-ID: <CAJuCfpGvpX5U9rED+vX=wW624GLZo8f=-2kOLGrY1UJSEXRh6g@mail.gmail.com>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-3-patrick.bellasi@arm.com> <CAJuCfpF6=L=0LrmNnJrTNPazT4dWKqNv+thhN0dwpKCgUzs9sg@mail.gmail.com>
- <20180720151156.GA31421@e110439-lin>
+Subject: Re: [PATCH v2 07/12] sched/core: uclamp: enforce last task UCLAMP_MAX
+Date: Fri, 20 Jul 2018 18:23:57 -0700
+Message-ID: <CAJuCfpH6CsDVG35Z3NV87mUgJW9TmoCuOs8GeW2TEqkP0K0f9g@mail.gmail.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com> <20180716082906.6061-8-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180720151156.GA31421@e110439-lin>
+In-Reply-To: <20180716082906.6061-8-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
@@ -17,320 +14,143 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Patrick,
 
-On Fri, Jul 20, 2018 at 8:11 AM, Patrick Bellasi
+On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
 <patrick.bellasi@arm.com> wrote:
-> Hi Suren,
-> thanks for the review, all good point... some more comments follow
-> inline.
+> When a util_max clamped task sleeps, its clamp constraints are removed
+> from the CPU. However, the blocked utilization on that CPU can still be
+> higher than the max clamp value enforced while that task was running.
+> This max clamp removal when a CPU is going to be idle could thus allow
+> unwanted CPU frequency increases, right while the task is not running.
 >
-> On 19-Jul 16:51, Suren Baghdasaryan wrote:
->> On Mon, Jul 16, 2018 at 1:28 AM, Patrick Bellasi
->> <patrick.bellasi@arm.com> wrote:
->
-> [...]
->
->> > +/**
->> > + * uclamp_group_available: checks if a clamp group is available
->> > + * @clamp_id: the utilization clamp index (i.e. min or max clamp)
->> > + * @group_id: the group index in the given clamp_id
->> > + *
->> > + * A clamp group is not free if there is at least one SE which is sing a clamp
->>
->> Did you mean to say "single clamp"?
->
-> No, it's "...at least one SE which is USING a clamp value..."
->
->> > + * value mapped on the specified clamp_id. These SEs are reference counted by
->> > + * the se_count of a uclamp_map entry.
->> > + *
->> > + * Return: true if there are no SE's mapped on the specified clamp
->> > + *         index and group
->> > + */
->> > +static inline bool uclamp_group_available(int clamp_id, int group_id)
->> > +{
->> > +       struct uclamp_map *uc_map = &uclamp_maps[clamp_id][0];
->> > +
->> > +       return (uc_map[group_id].value == UCLAMP_NONE);
->>
->> The usage of UCLAMP_NONE is very confusing to me. It was not used at
->> all in the patch where it was introduced [1/12], here it's used as a
->> clamp value and in uclamp_group_find() it's used as group_id. Please
->> clarify the usage.
->
-> Yes, it's meant to represent a "clamp not valid" condition, whatever
-> it's a "clamp group" or a "clamp value"... perhaps the name can be
-> improved.
->
->> I also feel UCLAMP_NONE does not really belong to
->> the uclamp_id enum because other elements there are indexes in
->> uclamp_maps and this one is a special value.
->
-> Right, it looks a bit misplaced, I agree. I think I tried to set it
-> using a #define but there was some issues I don't remember now...
-> Anyway, I'll give it another go...
->
->
->> IMHO if both *group_id*
->> and *value* need a special value (-1) to represent
->> unused/uninitialized entry it would be better to use different
->> constants. Maybe UCLAMP_VAL_NONE and UCLAMP_GROUP_NONE?
->
-> Yes, maybe we can use a
->
->    #define UCLAMP_NOT_VALID -1
->
-> and get rid the confusing enum entry.
->
-> Will update it on v3.
->
+> This can happen, for example, where there is another (smaller) task
+> running on a different CPU of the same frequency domain.
+> In this case, when we aggregates the utilization of all the CPUs in a
 
-Sounds good to me.
+typo: we aggregate
 
->> > +}
+> shared frequency domain, schedutil can still see the full non clamped
+> blocked utilization of all the CPUs and thus eventually increase the
+> frequency.
 >
-> [...]
+> Let's fix this by using:
 >
->> > +/**
->> > + * uclamp_group_find: finds the group index of a utilization clamp group
->> > + * @clamp_id: the utilization clamp index (i.e. min or max clamping)
->> > + * @clamp_value: the utilization clamping value lookup for
->> > + *
->> > + * Verify if a group has been assigned to a certain clamp value and return
->> > + * its index to be used for accounting.
->> > + *
->> > + * Since only a limited number of utilization clamp groups are allowed, if no
->> > + * groups have been assigned for the specified value, a new group is assigned
->> > + * if possible. Otherwise an error is returned, meaning that an additional clamp
->> > + * value is not (currently) supported.
->> > + */
->> > +static int
->> > +uclamp_group_find(int clamp_id, unsigned int clamp_value)
->> > +{
->> > +       struct uclamp_map *uc_map = &uclamp_maps[clamp_id][0];
->> > +       int free_group_id = UCLAMP_NONE;
->> > +       unsigned int group_id = 0;
->> > +
->> > +       for ( ; group_id <= CONFIG_UCLAMP_GROUPS_COUNT; ++group_id) {
->> > +               /* Keep track of first free clamp group */
->> > +               if (uclamp_group_available(clamp_id, group_id)) {
->> > +                       if (free_group_id == UCLAMP_NONE)
->> > +                               free_group_id = group_id;
->> > +                       continue;
->> > +               }
->> > +               /* Return index of first group with same clamp value */
->> > +               if (uc_map[group_id].value == clamp_value)
->> > +                       return group_id;
->> > +       }
->> > +       /* Default to first free clamp group */
->> > +       if (group_id > CONFIG_UCLAMP_GROUPS_COUNT)
->>
->> Is the condition above needed? I think it's always true if you got here.
->> Also AFAIKT after the for loop you can just do:
->>
->> return (free_group_id != UCLAMP_NONE) ? free_group_id : -ENOSPC;
+>    uclamp_cpu_put_id(UCLAMP_MAX)
+>       uclamp_cpu_update(last_clamp_value)
 >
-> Yes, you right... the code above can be simplified!
+> to detect when a CPU has no more RUNNABLE clamped tasks and to flag this
+> condition. Thus, while a CPU is idle, we can still enforce the last used
+> clamp value for it.
 >
->>
->> > +               group_id = free_group_id;
->> > +       /* All clamp group already track different clamp values */
->> > +       if (group_id == UCLAMP_NONE)
->> > +               return -ENOSPC;
->> > +       return group_id;
->> > +}
+> To the contrary, we do not track any UCLAMP_MIN since, while a CPU is
+> idle, we don't want to enforce any minimum frequency
+> Indeed, we relay just on blocked load decay to smoothly reduce the
+
+typo: We rely
+
+> frequency.
 >
-> [...]
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  kernel/sched/core.c  | 30 ++++++++++++++++++++++++++----
+>  kernel/sched/sched.h |  2 ++
+>  2 files changed, 28 insertions(+), 4 deletions(-)
 >
->> > +static inline void uclamp_group_put(int clamp_id, int group_id)
->> > +{
->> > +       struct uclamp_map *uc_map = &uclamp_maps[clamp_id][0];
->> > +       unsigned long flags;
->> > +
->> > +       /* Ignore SE's not yet attached */
->> > +       if (group_id == UCLAMP_NONE)
->> > +               return;
->> > +
->> > +       /* Remove SE from this clamp group */
->> > +       raw_spin_lock_irqsave(&uc_map[group_id].se_lock, flags);
->> > +       uc_map[group_id].se_count -= 1;
->>
->> If uc_map[group_id].se_count was 0 before decrement you end up with
->> se_count == -1 and no reset for the element.
->
-> Well... this should never happen, otherwise the refcounting is not
-> working as expected.
->
-> Maybe we can add (at least) a debug check and warning, something like:
->
-> #ifdef SCHED_DEBUG
->         if (unlikely(uc_map[group_id].se_count == 0)) {
->                 WARN(1, "invalid clamp group [%d:%d] refcount\n",
->                                 clamp_id, group_id);
->                 uc_map[group_id].se_count = 1;
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index b2424eea7990..0cb6e0aa4faa 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -930,7 +930,8 @@ uclamp_group_find(int clamp_id, unsigned int clamp_value)
+>   * For the specified clamp index, this method computes the new CPU utilization
+>   * clamp to use until the next change on the set of RUNNABLE tasks on that CPU.
+>   */
+> -static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
+> +static inline void uclamp_cpu_update(struct rq *rq, int clamp_id,
+> +                                    unsigned int last_clamp_value)
+>  {
+>         struct uclamp_group *uc_grp = &rq->uclamp.group[clamp_id][0];
+>         int max_value = UCLAMP_NONE;
+> @@ -948,6 +949,19 @@ static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
+>                 if (max_value >= SCHED_CAPACITY_SCALE)
+>                         break;
 >         }
-> #endif
+> +
+> +       /*
+> +        * Just for the UCLAMP_MAX value, in case there are no RUNNABLE
+> +        * task, we keep the CPU clamped to the last task's clamp value.
+> +        * This avoids frequency spikes to MAX when one CPU, with an high
+> +        * blocked utilization, sleeps and another CPU, in the same frequency
+> +        * domain, do not see anymore the clamp on the first CPU.
+> +        */
+> +       if (clamp_id == UCLAMP_MAX && max_value == UCLAMP_NONE) {
+> +               rq->uclamp.flags |= UCLAMP_FLAG_IDLE;
+> +               max_value = last_clamp_value;
+> +       }
+> +
+>         rq->uclamp.value[clamp_id] = max_value;
+>  }
 >
->> > +       if (uc_map[group_id].se_count == 0)
->> > +               uclamp_group_reset(clamp_id, group_id);
->> > +       raw_spin_unlock_irqrestore(&uc_map[group_id].se_lock, flags);
->> > +}
->> > +
+> @@ -977,13 +991,21 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
+>         uc_grp = &rq->uclamp.group[clamp_id][0];
+>         uc_grp[group_id].tasks += 1;
 >
-> [...]
->
->> >  static inline int __setscheduler_uclamp(struct task_struct *p,
->> >                                         const struct sched_attr *attr)
->> >  {
->> > +       struct uclamp_se *uc_se;
->> > +       int retval = 0;
->> > +
->> >         if (attr->sched_util_min > attr->sched_util_max)
->> >                 return -EINVAL;
->> >         if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
->> >                 return -EINVAL;
->> >
->> > -       p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
->> > -       p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
->> > +       mutex_lock(&uclamp_mutex);
->> > +
->> > +       /* Update min utilization clamp */
->> > +       uc_se = &p->uclamp[UCLAMP_MIN];
->> > +       retval |= uclamp_group_get(p, UCLAMP_MIN, uc_se,
->> > +                                  attr->sched_util_min);
->> > +
->> > +       /* Update max utilization clamp */
->> > +       uc_se = &p->uclamp[UCLAMP_MAX];
->> > +       retval |= uclamp_group_get(p, UCLAMP_MAX, uc_se,
->> > +                                  attr->sched_util_max);
->> > +
->> > +       mutex_unlock(&uclamp_mutex);
->> > +
->> > +       /*
->> > +        * If one of the two clamp values should fail,
->> > +        * let the userspace know.
->> > +        */
->> > +       if (retval)
->> > +               return -ENOSPC;
->>
->> Maybe a minor issue but this failure is ambiguous. It might mean:
->> 1. no clamp value was updated
->> 2. UCLAMP_MIN was updated but UCLAMP_MAX was not
->> 3. UCLAMP_MAX was updated but UCLAMP_MIN was not
->
-> That's right, I put a bit of thought on that me too but at the end
-> I've been convinced that the possibility to use a single syscall to
-> set both clamps at the same time has some benefits for user-space.
->
-> Maybe the current solution can be improved by supporting an (optional)
-> strict semantic with an in-kernel roll-back in case one of the two
-> uclamp_group_get should fail.
->
-> The strict semantic with roll-back could be controller via an
-> additional flag, e.g. SCHED_FLAG_UTIL_CLAMP_STRICT.
->
-> When the flag is set, either we are able to set both the attributes or
-> we roll-back. Otherwise, when the flag is not set, we keep the current
-> behavior. i.e. we set what we can and report an error to notify
-> userspace that one constraints was not enforced.
->
-> The following snippet should implement this semantics:
->
-> ---8<---
->
-> /* Uclamp flags */
-> #define SCHED_FLAG_UTIL_CLAMP_STRICT    0x11 /* Roll-back on failure */
-> #define SCHED_FLAG_UTIL_CLAMP_MIN       0x12 /* Update util_min */
-> #define SCHED_FLAG_UTIL_CLAMP_MAX       0x14 /* Update util_max */
-> #define SCHED_FLAG_UTIL_CLAMP           ( \
->                 SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX)
->
+> +       /* Force clamp update on idle exit */
+> +       uc_cpu = &rq->uclamp;
+> +       clamp_value = p->uclamp[clamp_id].value;
+> +       if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
 
-Having ability to update only min or only max this way might be indeed
-very useful.
-Instead of rolling back on failure I would suggest to check both
-inputs first to make sure there won't be any error before updating.
-This would remove the need for SCHED_FLAG_UTIL_CLAMP_STRICT (which I
-think any user would want to set to 1 anyway).
-Looks like uclamp_group_get() can fail only if uclamp_group_find()
-fails to find a slot for uclamp_value or a free slot. So one way to do
-this search before update is to call uclamp_group_find() for both
-UCLAMP_MIN and UCLAMP_MAX beforehand and if they succeed then pass
-obtained next_group_ids into uclamp_group_get() to avoid doing the
-same search twice. This requires some refactoring of
-uclamp_group_get() but I think the end result would be a cleaner and
-more predictable solution.
+The condition below is not needed because UCLAMP_FLAG_IDLE is set only
+for UCLAMP_MAX clamp_id, therefore the above condition already covers
+the one below.
 
-> static inline int __setscheduler_uclamp(struct task_struct *p,
->                                         const struct sched_attr *attr)
-> {
->         unsigned int uclamp_value_old = 0;
->         unsigned int uclamp_value;
->         struct uclamp_se *uc_se;
->         int retval = 0;
+> +               if (clamp_id == UCLAMP_MAX)
+> +                       uc_cpu->flags &= ~UCLAMP_FLAG_IDLE;
+> +               uc_cpu->value[clamp_id] = clamp_value;
+> +               return;
+> +       }
+> +
+>         /*
+>          * If this is the new max utilization clamp value, then we can update
+>          * straight away the CPU clamp value. Otherwise, the current CPU clamp
+>          * value is still valid and we are done.
+>          */
+> -       uc_cpu = &rq->uclamp;
+> -       clamp_value = p->uclamp[clamp_id].value;
+>         if (uc_cpu->value[clamp_id] < clamp_value)
+>                 uc_cpu->value[clamp_id] = clamp_value;
+>  }
+> @@ -1028,7 +1050,7 @@ static inline void uclamp_cpu_put_id(struct task_struct *p,
+>         uc_cpu = &rq->uclamp;
+>         clamp_value = uc_grp[group_id].value;
+>         if (clamp_value >= uc_cpu->value[clamp_id])
+> -               uclamp_cpu_update(rq, clamp_id);
+> +               uclamp_cpu_update(rq, clamp_id, clamp_value);
+>  }
 >
->         if (attr->sched_util_min > attr->sched_util_max)
->                 return -EINVAL;
->         if (attr->sched_util_max > 100)
->                 return -EINVAL;
->
->         mutex_lock(&uclamp_mutex);
->
->         if (!(attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN))
->                 goto set_util_max;
->
->         uc_se = &p->uclamp[UCLAMP_MIN];
->         uclamp_value = scale_from_percent(attr->sched_util_min);
->         if (uc_se->value == uclamp_value)
->                 goto set_util_max;
->
->         /* Update min utilization clamp */
->         uclamp_value_old = uc_se->value;
->         retval |= uclamp_group_get(p, NULL, UCLAMP_MIN, uc_se, uclamp_value);
->         if (retval &&
->             attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_STRICT)
->                 goto exit_failure;
->
-> set_util_max:
->
->         if (!(attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX))
->                 goto exit_done;
->
->         uc_se = &p->uclamp[UCLAMP_MAX];
->         uclamp_value = scale_from_percent(attr->sched_util_max);
->         if (uc_se->value == uclamp_value)
->                 goto exit_done;
->
->         /* Update max utilization clamp */
->         if (uclamp_group_get(p, NULL, UCLAMP_MAX,
->                              uc_se, uclamp_value))
->                 goto exit_rollback;
->
-> exit_done:
->         mutex_unlock(&uclamp_mutex);
->         return retval;
->
-> exit_rollback:
->         if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN &&
->             attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_STRICT) {
->                 uclamp_group_get(p, NULL, UCLAMP_MIN,
->                                  uc_se, uclamp_value_old);
->         }
-> exit_failure:
->         mutex_unlock(&uclamp_mutex);
->
->         return -ENOSPC;
-> }
->
-> ---8<---
->
->
-> Could that work better?
->
-> The code is maybe a bit more convoluted... but perhaps it can be
-> improved by encoding it in a loop.
->
->
+>  /**
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 1207add36478..7e4f10c507b7 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -783,6 +783,8 @@ struct uclamp_group {
+>   * values, i.e. no min/max clamping at all.
+>   */
+>  struct uclamp_cpu {
+> +#define UCLAMP_FLAG_IDLE 0x01
+> +       int flags;
+>         int value[UCLAMP_CNT];
+>         struct uclamp_group group[UCLAMP_CNT][CONFIG_UCLAMP_GROUPS_COUNT + 1];
+>  };
 > --
-> #include <best/regards.h>
+> 2.17.1
 >
-> Patrick Bellasi
