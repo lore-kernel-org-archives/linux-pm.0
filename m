@@ -1,107 +1,89 @@
-From: Liu Xiang <liu.xiang6@zte.com.cn>
-Subject: [PATCH] power: supply: bq27xxx: Add support for BQ27411
-Date: Sun, 22 Jul 2018 21:33:56 +0800
-Message-ID: <1532266436-20182-1-git-send-email-liu.xiang6@zte.com.cn>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v4 1/5] dt-bindings: w1: document generic onewire bindings
+Date: Mon, 23 Jul 2018 00:01:05 +0200
+Message-ID: <20180722220105.hl6lwfyueyojfxmt@earth.universe>
+References: <20180706053552.11438-1-daniel@zonque.org>
+ <20180706053552.11438-2-daniel@zonque.org>
+ <20180711150157.GA18150@rob-hp-laptop>
+ <5070717c-4c9f-c580-8f50-2369dcd74aef@zonque.org>
+ <CAL_JsqL10WT5AK37_8o3M_=UiLx_thcm1W3UNz2qBaB5dRo8XA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="44vn7kto76qqzxm3"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqL10WT5AK37_8o3M_=UiLx_thcm1W3UNz2qBaB5dRo8XA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: pali.rohar@gmail.com, afd@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, liuxiang_1999@126.com, Liu Xiang <liu.xiang6@zte.com.cn>
+To: Rob Herring <robh@kernel.org>
+Cc: Daniel Mack <daniel@zonque.org>, zbr@ioremap.net, Mark Rutland <mark.rutland@arm.com>, szabolcs.gyurko@tlt.hu, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>
 List-Id: linux-pm@vger.kernel.org
 
-According to the datasheet, bq27411 is similar to bq27421.
 
-Signed-off-by: Liu Xiang <liu.xiang6@zte.com.cn>
----
- Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 1 +
- drivers/power/supply/bq27xxx_battery.c                     | 9 +++++++++
- drivers/power/supply/bq27xxx_battery_i2c.c                 | 2 ++
- include/linux/power/bq27xxx_battery.h                      | 1 +
- 4 files changed, 13 insertions(+)
+--44vn7kto76qqzxm3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index 37994fd..4fa8e08 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -23,6 +23,7 @@ Required properties:
-  * "ti,bq27546" - BQ27546
-  * "ti,bq27742" - BQ27742
-  * "ti,bq27545" - BQ27545
-+ * "ti,bq27411" - BQ27411
-  * "ti,bq27421" - BQ27421
-  * "ti,bq27425" - BQ27425
-  * "ti,bq27426" - BQ27426
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index f022e1b..6dbbe95 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -432,6 +432,7 @@ enum bq27xxx_reg_index {
- 		[BQ27XXX_REG_AP] = 0x18,
- 		BQ27XXX_DM_REG_ROWS,
- 	};
-+#define bq27411_regs bq27421_regs
- #define bq27425_regs bq27421_regs
- #define bq27426_regs bq27421_regs
- #define bq27441_regs bq27421_regs
-@@ -665,6 +666,7 @@ enum bq27xxx_reg_index {
- 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- };
-+#define bq27411_props bq27421_props
- #define bq27425_props bq27421_props
- #define bq27426_props bq27421_props
- #define bq27441_props bq27421_props
-@@ -725,6 +727,12 @@ enum bq27xxx_dm_reg_id {
- #define bq27545_dm_regs 0
- #endif
- 
-+static struct bq27xxx_dm_reg bq27411_dm_regs[] = {
-+	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0, 32767 },
-+	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
-+	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2800,  3700 },
-+};
-+
- static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
- 	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
- 	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
-@@ -802,6 +810,7 @@ enum bq27xxx_dm_reg_id {
- 	[BQ27546]   = BQ27XXX_DATA(bq27546,   0         , BQ27XXX_O_OTDC),
- 	[BQ27742]   = BQ27XXX_DATA(bq27742,   0         , BQ27XXX_O_OTDC),
- 	[BQ27545]   = BQ27XXX_DATA(bq27545,   0x04143672, BQ27XXX_O_OTDC),
-+	[BQ27411]   = BQ27XXX_DATA(bq27411,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27421]   = BQ27XXX_DATA(bq27421,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27425]   = BQ27XXX_DATA(bq27425,   0x04143672, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP),
- 	[BQ27426]   = BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 4006912..2677c38 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -247,6 +247,7 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
- 	{ "bq27546", BQ27546 },
- 	{ "bq27742", BQ27742 },
- 	{ "bq27545", BQ27545 },
-+	{ "bq27411", BQ27411 },
- 	{ "bq27421", BQ27421 },
- 	{ "bq27425", BQ27425 },
- 	{ "bq27426", BQ27426 },
-@@ -279,6 +280,7 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
- 	{ .compatible = "ti,bq27546" },
- 	{ .compatible = "ti,bq27742" },
- 	{ .compatible = "ti,bq27545" },
-+	{ .compatible = "ti,bq27411" },
- 	{ .compatible = "ti,bq27421" },
- 	{ .compatible = "ti,bq27425" },
- 	{ .compatible = "ti,bq27426" },
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index d6355f4..507c5e2 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -24,6 +24,7 @@ enum bq27xxx_chip {
- 	BQ27546,
- 	BQ27742,
- 	BQ27545, /* bq27545 */
-+	BQ27411,
- 	BQ27421, /* bq27421, bq27441, bq27621 */
- 	BQ27425,
- 	BQ27426,
--- 
-1.9.1
+Hi,
+
+On Fri, Jul 20, 2018 at 09:10:36AM -0600, Rob Herring wrote:
+> On Wed, Jul 18, 2018 at 6:40 AM Daniel Mack <daniel@zonque.org> wrote:
+> >
+> > On Wednesday, July 11, 2018 05:01 PM, Rob Herring wrote:
+> > > On Fri, Jul 06, 2018 at 07:35:48AM +0200, Daniel Mack wrote:
+> > >> This patch adds a generic w1 bindings document that describes how w1
+> > >> slave deviceses are grouped under master nodes. It also augments the
+> > >> existing w1-gpio.txt document a bit.
+> > >>
+> > >> Signed-off-by: Daniel Mack <daniel@zonque.org>
+> > >> ---
+> > >>   .../devicetree/bindings/w1/w1-gpio.txt        | 11 +++++---
+> > >>   Documentation/devicetree/bindings/w1/w1.txt   | 25 +++++++++++++++=
+++++
+> > >>   2 files changed, 33 insertions(+), 3 deletions(-)
+> > >>   create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
+> > >
+> > > Reviewed-by: Rob Herring <robh@kernel.org>
+> > >
+> > > Note that this will conflict with a unit-address fix that I have queu=
+ed
+> > > up for 4.18 (will send this week).
+> >
+> > How would we best handle this? Sebastian, are you going to apply this
+> > series, and add a note to the PR for 4.19 on how to resolve the conflic=
+t?
+>=20
+> Either 4.18-rc6 or my devicetree-fixes-for-4.18 tag (based on rc1) can
+> be pulled in. Or just note the conflict. It is trivial enough.
+
+This looks simple enough to just add a note to my pull request. I
+prepared a immutable branch based on 4.18-rc1, which contains this
+series and merged it into the power supply subsystem. You can get
+it here:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/=
+tag/?h=3Dds2760-for-v4.19-signed
+
+-- Sebastian
+
+--44vn7kto76qqzxm3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAltU/p8ACgkQ2O7X88g7
++pokHw//doIU3Uznm8L8X4Z1wKHojcwlgpmTrzd9xNyZDG38xhfERI2HNwyQ6XJv
+xnro4DcD7hhln3nYyXFuEAQln9E8qcbzEd9NvqFgX2WFZ9QPTmdaFdCN8wDjh8eW
+HKwkZU5iVv6mpGxAcgK5NSvhtq1iBMSfFjFOF9PQ6XpjkQ9KLtTIvEW/jgKdJafh
+GDQJKBXLUKruBTLoXHVWi7YPqgixEUAVYOHMjQBT7V9mIbyww+BRBHN3EMSAfgQe
+SAdalRQ9ShKWscO6LtHeuIV2AdfKdjASZl85xE+YaIZrD6mq3kIzO/YibTXQU/7l
+1NUTrzVnxw6cxgt//27ps2D+Cnx9zIhwZsuw2zoxWhRFCO+W8cggwIB5+7PtIM5H
+LXhy+f3cH8xYueyCEgwT6a49gzPt+tYOv7pSF58qCevaBqTA96+ncYGH326Am4Eh
+xT1kTyeqkOOYZJB7as7P+NNFsG680Tgf9YXPuqBkyWFvSrPZz0u38wYaUM7dF218
+uBSAhO0arV/6KLZCd15/S+Dy3rKMtkr84fleBunryW8odkx8903ZJ30BtdAyodJO
+yOp7yvccsfSINijrdqBpIU4tjlA82ABHRCN413Whrv4s8pMdSgeXZE3qiq8LltKD
+7ZruogJ3cF4z0MGZihKYUm4J/Fumg5Bi6+qOYltIbprUgL/2y4k=
+=Fyiq
+-----END PGP SIGNATURE-----
+
+--44vn7kto76qqzxm3--
