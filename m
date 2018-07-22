@@ -1,89 +1,115 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v4 1/5] dt-bindings: w1: document generic onewire bindings
-Date: Mon, 23 Jul 2018 00:01:05 +0200
-Message-ID: <20180722220105.hl6lwfyueyojfxmt@earth.universe>
-References: <20180706053552.11438-1-daniel@zonque.org>
- <20180706053552.11438-2-daniel@zonque.org>
- <20180711150157.GA18150@rob-hp-laptop>
- <5070717c-4c9f-c580-8f50-2369dcd74aef@zonque.org>
- <CAL_JsqL10WT5AK37_8o3M_=UiLx_thcm1W3UNz2qBaB5dRo8XA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] power: supply: lego_ev3_battery: Don't ignore
+ iio_read_channel_processed() return value
+Date: Mon, 23 Jul 2018 00:02:11 +0200
+Message-ID: <20180722220211.qzlxawn63itxbjmc@earth.universe>
+References: <20180720201944.20503-1-david@lechnology.com>
+ <20180720201944.20503-2-david@lechnology.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="44vn7kto76qqzxm3"
+        protocol="application/pgp-signature"; boundary="unnuhg22akc6mbck"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqL10WT5AK37_8o3M_=UiLx_thcm1W3UNz2qBaB5dRo8XA@mail.gmail.com>
+In-Reply-To: <20180720201944.20503-2-david@lechnology.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Daniel Mack <daniel@zonque.org>, zbr@ioremap.net, Mark Rutland <mark.rutland@arm.com>, szabolcs.gyurko@tlt.hu, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>
+To: David Lechner <david@lechnology.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---44vn7kto76qqzxm3
+--unnuhg22akc6mbck
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jul 20, 2018 at 09:10:36AM -0600, Rob Herring wrote:
-> On Wed, Jul 18, 2018 at 6:40 AM Daniel Mack <daniel@zonque.org> wrote:
-> >
-> > On Wednesday, July 11, 2018 05:01 PM, Rob Herring wrote:
-> > > On Fri, Jul 06, 2018 at 07:35:48AM +0200, Daniel Mack wrote:
-> > >> This patch adds a generic w1 bindings document that describes how w1
-> > >> slave deviceses are grouped under master nodes. It also augments the
-> > >> existing w1-gpio.txt document a bit.
-> > >>
-> > >> Signed-off-by: Daniel Mack <daniel@zonque.org>
-> > >> ---
-> > >>   .../devicetree/bindings/w1/w1-gpio.txt        | 11 +++++---
-> > >>   Documentation/devicetree/bindings/w1/w1.txt   | 25 +++++++++++++++=
-++++
-> > >>   2 files changed, 33 insertions(+), 3 deletions(-)
-> > >>   create mode 100644 Documentation/devicetree/bindings/w1/w1.txt
-> > >
-> > > Reviewed-by: Rob Herring <robh@kernel.org>
-> > >
-> > > Note that this will conflict with a unit-address fix that I have queu=
-ed
-> > > up for 4.18 (will send this week).
-> >
-> > How would we best handle this? Sebastian, are you going to apply this
-> > series, and add a note to the PR for 4.19 on how to resolve the conflic=
-t?
+On Fri, Jul 20, 2018 at 03:19:43PM -0500, David Lechner wrote:
+> This changes the LEGO MINDSTORMS EV3 power supply driver to return an
+> error if iio_read_channel_processed() fails.
 >=20
-> Either 4.18-rc6 or my devicetree-fixes-for-4.18 tag (based on rc1) can
-> be pulled in. Or just note the conflict. It is trivial enough.
+> Signed-off-by: David Lechner <david@lechnology.com>
+> ---
 
-This looks simple enough to just add a note to my pull request. I
-prepared a immutable branch based on 4.18-rc1, which contains this
-series and merged it into the power supply subsystem. You can get
-it here:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/=
-tag/?h=3Dds2760-for-v4.19-signed
+Thanks, queued to power-supply's for-next branch.
 
 -- Sebastian
 
---44vn7kto76qqzxm3
+>  drivers/power/supply/lego_ev3_battery.c | 18 ++++++++++++++----
+>  1 file changed, 14 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/lego_ev3_battery.c b/drivers/power/supp=
+ly/lego_ev3_battery.c
+> index 7b993d669f7f..6e3b3e384172 100644
+> --- a/drivers/power/supply/lego_ev3_battery.c
+> +++ b/drivers/power/supply/lego_ev3_battery.c
+> @@ -39,7 +39,7 @@ static int lego_ev3_battery_get_property(struct power_s=
+upply *psy,
+>  					 union power_supply_propval *val)
+>  {
+>  	struct lego_ev3_battery *batt =3D power_supply_get_drvdata(psy);
+> -	int val2;
+> +	int ret, val2;
+> =20
+>  	switch (psp) {
+>  	case POWER_SUPPLY_PROP_TECHNOLOGY:
+> @@ -47,11 +47,18 @@ static int lego_ev3_battery_get_property(struct power=
+_supply *psy,
+>  		break;
+>  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+>  		/* battery voltage is iio channel * 2 + Vce of transistor */
+> -		iio_read_channel_processed(batt->iio_v, &val->intval);
+> +		ret =3D iio_read_channel_processed(batt->iio_v, &val->intval);
+> +		if (ret)
+> +			return ret;
+> +
+>  		val->intval *=3D 2000;
+>  		val->intval +=3D 200000;
+> +
+>  		/* plus adjust for shunt resistor drop */
+> -		iio_read_channel_processed(batt->iio_i, &val2);
+> +		ret =3D iio_read_channel_processed(batt->iio_i, &val2);
+> +		if (ret)
+> +			return ret;
+> +
+>  		val2 *=3D 1000;
+>  		val2 /=3D 15;
+>  		val->intval +=3D val2;
+> @@ -64,7 +71,10 @@ static int lego_ev3_battery_get_property(struct power_=
+supply *psy,
+>  		break;
+>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>  		/* battery current is iio channel / 15 / 0.05 ohms */
+> -		iio_read_channel_processed(batt->iio_i, &val->intval);
+> +		ret =3D iio_read_channel_processed(batt->iio_i, &val->intval);
+> +		if (ret)
+> +			return ret;
+> +
+>  		val->intval *=3D 20000;
+>  		val->intval /=3D 15;
+>  		break;
+> --=20
+> 2.17.1
+>=20
+
+--unnuhg22akc6mbck
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAltU/p8ACgkQ2O7X88g7
-+pokHw//doIU3Uznm8L8X4Z1wKHojcwlgpmTrzd9xNyZDG38xhfERI2HNwyQ6XJv
-xnro4DcD7hhln3nYyXFuEAQln9E8qcbzEd9NvqFgX2WFZ9QPTmdaFdCN8wDjh8eW
-HKwkZU5iVv6mpGxAcgK5NSvhtq1iBMSfFjFOF9PQ6XpjkQ9KLtTIvEW/jgKdJafh
-GDQJKBXLUKruBTLoXHVWi7YPqgixEUAVYOHMjQBT7V9mIbyww+BRBHN3EMSAfgQe
-SAdalRQ9ShKWscO6LtHeuIV2AdfKdjASZl85xE+YaIZrD6mq3kIzO/YibTXQU/7l
-1NUTrzVnxw6cxgt//27ps2D+Cnx9zIhwZsuw2zoxWhRFCO+W8cggwIB5+7PtIM5H
-LXhy+f3cH8xYueyCEgwT6a49gzPt+tYOv7pSF58qCevaBqTA96+ncYGH326Am4Eh
-xT1kTyeqkOOYZJB7as7P+NNFsG680Tgf9YXPuqBkyWFvSrPZz0u38wYaUM7dF218
-uBSAhO0arV/6KLZCd15/S+Dy3rKMtkr84fleBunryW8odkx8903ZJ30BtdAyodJO
-yOp7yvccsfSINijrdqBpIU4tjlA82ABHRCN413Whrv4s8pMdSgeXZE3qiq8LltKD
-7ZruogJ3cF4z0MGZihKYUm4J/Fumg5Bi6+qOYltIbprUgL/2y4k=
-=Fyiq
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAltU/uIACgkQ2O7X88g7
++poxBw/+PFhihh/m2VdPZQaT+eUdZ63d/njrXEZCdTHB0OJV16Kn8t8/NmfoS4nX
+aBe1eZrpZaHEFC8swR01t67cPUGbRZ/lLvOT7hArhN+ovP0CiGomKBcScCDxnpaB
+mhmBzqcBLMTFJabnjCwvFPfmBGbyzq/g+tQU0EwwC7SA2uwf8fGu7DMJO4gEFRgk
+8TpM/zwmLtHC+bcXzpB89E9cbnNd3d9XGnxHXRXTuD0POpvclZ0ynVYnNthSmszo
+nx2DbxgDaJqHbKt+f8GQBApuvYHT23KgQB9vCbEADgEaWZIbPSV49zIfrcQZb1ca
+TU21+I1F+0YnXoYvUIzSQhjoB8fUaPJxA8arLnHYfb+BRXkKGSym+IiHWq4DwN0V
+bS4TkeuPnhGDSH37PY0xV2RKewEJ586WsrbO+0rYYlu8JKht3E0W4Rn006Z1qkMX
+C9sXjMFFqAIg0sBy1LCaSfqrQpHDkNaKthO9FZrPutonn6eEI9hP2H0ihdXTkp0X
+5fgMAlubBNmqWJXm1z/bN2ugHl4FfyfLJNrHHyqL87corTt2KFnStyNOWGF8vv6J
+9NGphZr3CQBnPCVqQV/r/Dq/WZ/1L1SVJk3lWYKmFqNbsP+zW3o6PnrgGzHECL6/
+4YoOw+bcpUGKj1Vo92kVuIGNfSZgTk8nFS1mSMYForshRH2t0M4=
+=XyMI
 -----END PGP SIGNATURE-----
 
---44vn7kto76qqzxm3--
+--unnuhg22akc6mbck--
