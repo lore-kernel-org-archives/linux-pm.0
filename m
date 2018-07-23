@@ -1,128 +1,99 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
- controller
-Date: Mon, 23 Jul 2018 18:22:15 +0100
-Message-ID: <20180723172215.GG2683@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-9-patrick.bellasi@arm.com>
- <20180723153040.GG1934745@devbig577.frc2.facebook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Waiman Long <longman@redhat.com>
+Subject: [PATCH 2/2] cpufreq: Fix a circular lock dependency problem
+Date: Mon, 23 Jul 2018 13:49:39 -0400
+Message-ID: <1532368179-15263-3-git-send-email-longman@redhat.com>
+References: <1532368179-15263-1-git-send-email-longman@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180723153040.GG1934745@devbig577.frc2.facebook.com>
+In-Reply-To: <1532368179-15263-1-git-send-email-longman@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Waiman Long <longman@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-Jul 08:30, Tejun Heo wrote:
-> Hello,
+With lockdep turned on, the following circular lock dependency problem
+was reported:
 
-Hi Tejun!
+[   57.470040] ======================================================
+[   57.502900] WARNING: possible circular locking dependency detected
+[   57.535208] 4.18.0-0.rc3.1.el8+7.x86_64+debug #1 Tainted: G
+[   57.577761] ------------------------------------------------------
+[   57.609714] tuned/1505 is trying to acquire lock:
+[   57.633808] 00000000559deec5 (cpu_hotplug_lock.rw_sem){++++}, at: store+0x27/0x120
+[   57.672880]
+[   57.672880] but task is already holding lock:
+[   57.702184] 000000002136ca64 (kn->count#118){++++}, at: kernfs_fop_write+0x1d0/0x410
+[   57.742176]
+[   57.742176] which lock already depends on the new lock.
+[   57.742176]
+[   57.785220]
+[   57.785220] the existing dependency chain (in reverse order) is:
+    :
+[   58.932512] other info that might help us debug this:
+[   58.932512]
+[   58.973344] Chain exists of:
+[   58.973344]   cpu_hotplug_lock.rw_sem --> subsys mutex#5 --> kn->count#118
+[   58.973344]
+[   59.030795]  Possible unsafe locking scenario:
+[   59.030795]
+[   59.061248]        CPU0                    CPU1
+[   59.085377]        ----                    ----
+[   59.108160]   lock(kn->count#118);
+[   59.124935]                                lock(subsys mutex#5);
+[   59.156330]                                lock(kn->count#118);
+[   59.186088]   lock(cpu_hotplug_lock.rw_sem);
+[   59.208541]
+[   59.208541]  *** DEADLOCK ***
+
+In the cpufreq_register_driver() function, the lock sequence is:
+
+  cpus_read_lock --> kn->count
+
+For the cpufreq sysfs store method, the lock sequence is:
+
+  kn->count --> cpus_read_lock
+
+These sequences are actually safe as they are taking a share lock on
+cpu_hotplug_lock. However, the current lockdep code doesn't check for
+share locking when detecting circular lock dependency.  Fixing that
+could be a substantial effort.
+
+Instead, we can work around this problem by using cpus_read_trylock()
+in the store method which is much simpler. The chance of not getting
+the read lock is extremely small. If that happens, the userspace
+application that writes the sysfs file will get an error.
+
+Signed-off-by: Waiman Long <longman@redhat.com>
+---
+ drivers/cpufreq/cpufreq.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b0dfd32..9cf02d7 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -922,8 +922,22 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+ 	struct cpufreq_policy *policy = to_policy(kobj);
+ 	struct freq_attr *fattr = to_attr(attr);
+ 	ssize_t ret = -EINVAL;
++	int retries = 3;
  
-> On Mon, Jul 16, 2018 at 09:29:02AM +0100, Patrick Bellasi wrote:
-> > The cgroup's CPU controller allows to assign a specified (maximum)
-> > bandwidth to the tasks of a group. However this bandwidth is defined and
-> > enforced only on a temporal base, without considering the actual
-> > frequency a CPU is running on. Thus, the amount of computation completed
-> > by a task within an allocated bandwidth can be very different depending
-> > on the actual frequency the CPU is running that task.
-> > The amount of computation can be affected also by the specific CPU a
-> > task is running on, especially when running on asymmetric capacity
-> > systems like Arm's big.LITTLE.
-> 
-> One basic problem I have with this patchset is that what's being
-> described is way more generic than what actually got implemented.
-> What's described is computation bandwidth control but what's
-> implemented is just frequency clamping.
-
-What I meant to describe is that we already have a computation
-bandwidth control mechanism which is working quite fine for the
-scheduling classes it applies to, i.e. CFS and RT.
-
-For these classes we are usually happy with just a _best effort_
-allocation of the bandwidth: nothing enforced in strict terms. Indeed,
-there is not (at least not in kernel space) a tracking of the actual
-available and allocated bandwidth. If we need strict enforcement, we
-already have DL with its CBS servers.
-
-However, the "best effort" bandwidth control we have for CFS and RT
-can be further improved if, instead of just looking at time spent on
-CPUs, we provide some more hints to the scheduler to know at which
-min/max "MIPS" we want to consume the (best effort) time we have been
-allocated on a CPU.
-
-Such a simple extension is still quite useful to satisfy many use-case
-we have, mainly on mobile systems, like the ones I've described in the
-   "Newcomer's Short Abstract (Updated)"
-section of the cover letter:
-   https://lore.kernel.org/lkml/20180716082906.6061-1-patrick.bellasi@arm.com/T/#u
-
-> So, there are fundamental discrepancies between
-> description+interface vs. what it actually does.
-
-Perhaps then I should just change the description to make it less
-generic...
-
-> I really don't think that's something we can fix up later.
-
-... since, really, I don't think we can get to the point to extend
-later this interface to provide the strict bandwidth enforcement you
-are thinking about.
-
-This would not be a fixup, but something really close to
-re-implementing what we already have with the DL class.
-
-> > These attributes:
-> > 
-> > a) are available only for non-root nodes, both on default and legacy
-> >    hierarchies
-> > b) do not enforce any constraints and/or dependency between the parent
-> >    and its child nodes, thus relying on the delegation model and
-> >    permission settings defined by the system management software
-> 
-> cgroup does host attributes which only concern the cgroup itself and
-> thus don't need any hierarchical behaviors on their own, but what's
-> being implemented does control resource allocation,
-
-I'm not completely sure to get your point here.
-
-Maybe it all depends on what we mean by "control resource allocation".
-
-AFAIU, currently both the CFS and RT bandwidth controllers allow you
-to define how much CPU time a group of tasks can use. It does that by
-looking just within the group: there is no enforced/required relation
-between the bandwidth assigned to a group and the bandwidth assigned
-to its parent, siblings and/or children.
-
-The resource control allocation is eventually enforced "indirectly" by
-means of the fact that, based on tasks priorities and cgroup shares,
-the scheduler will prefer to pick and run "more frequently" and
-"longer" certain tasks instead of others.
-
-Thus I would say that the resource allocation control is already
-performed by the combined action of:
-A) priorities / shares to favor certain tasks over others
-B) period & bandwidth to further bias the scheduler in _not_ selecting
-  tasks which already executed for the configured amount of time.
-
-> and what you're describing inherently breaks the delegation model.
-
-What I describe here is just an additional hint to the scheduler which
-enrich the above described model. Provided A and B are already
-satisfied, when a task gets a chance to run it will be executed at a
-min/max configured frequency. That's really all... there is not
-additional impact on "resources allocation".
-
-I don't see why you say that this breaks the delegation model?
-
-Maybe an example can help to better explain what you mean?
-
-Best,
-Patrick
-
+-	cpus_read_lock();
++	/*
++	 * cpus_read_trylock() is used here to work around a circular lock
++	 * dependency problem with respect to the cpufreq_register_driver().
++	 * With a simple retry loop, the chance of not able to get the
++	 * read lock is extremely small.
++	 */
++	while (!cpus_read_trylock()) {
++		if (retries-- <= 0)
++			return -EBUSY;
++		/*
++		 * Sleep for about 50ms and retry again.
++		 */
++		msleep(50);
++	}
+ 
+ 	if (cpu_online(policy->cpu)) {
+ 		down_write(&policy->rwsem);
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+1.8.3.1
