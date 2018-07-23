@@ -1,74 +1,58 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
+From: Tejun Heo <tj@kernel.org>
 Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
  controller
-Date: Mon, 23 Jul 2018 16:17:24 +0100
-Message-ID: <20180723151724.GE2683@e110439-lin>
+Date: Mon, 23 Jul 2018 08:30:40 -0700
+Message-ID: <20180723153040.GG1934745@devbig577.frc2.facebook.com>
 References: <20180716082906.6061-1-patrick.bellasi@arm.com>
  <20180716082906.6061-9-patrick.bellasi@arm.com>
- <CAJuCfpE4FbtrwbXNCjj=pXAvTiTLw7z1aLS4+-28X=y4V+SJ-Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJuCfpE4FbtrwbXNCjj=pXAvTiTLw7z1aLS4+-28X=y4V+SJ-Q@mail.gmail.com>
+In-Reply-To: <20180716082906.6061-9-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-Jul 19:37, Suren Baghdasaryan wrote:
-> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
+Hello,
 
-[...]
+On Mon, Jul 16, 2018 at 09:29:02AM +0100, Patrick Bellasi wrote:
+> The cgroup's CPU controller allows to assign a specified (maximum)
+> bandwidth to the tasks of a group. However this bandwidth is defined and
+> enforced only on a temporal base, without considering the actual
+> frequency a CPU is running on. Thus, the amount of computation completed
+> by a task within an allocated bandwidth can be very different depending
+> on the actual frequency the CPU is running that task.
+> The amount of computation can be affected also by the specific CPU a
+> task is running on, especially when running on asymmetric capacity
+> systems like Arm's big.LITTLE.
 
-> > +#ifdef CONFIG_UCLAMP_TASK_GROUP
-> > +static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
-> > +                                 struct cftype *cftype, u64 min_value)
-> > +{
-> > +       struct task_group *tg;
-> > +       int ret = -EINVAL;
-> > +
-> > +       if (min_value > SCHED_CAPACITY_SCALE)
-> > +               return -ERANGE;
-> > +
-> > +       mutex_lock(&uclamp_mutex);
-> > +       rcu_read_lock();
-> > +
-> > +       tg = css_tg(css);
-> > +       if (tg->uclamp[UCLAMP_MIN].value == min_value) {
-> > +               ret = 0;
-> > +               goto out;
-> > +       }
-> > +       if (tg->uclamp[UCLAMP_MAX].value < min_value)
-> > +               goto out;
-> > +
+One basic problem I have with this patchset is that what's being
+described is way more generic than what actually got implemented.
+What's described is computation bandwidth control but what's
+implemented is just frequency clamping.  So, there are fundamental
+discrepancies between description+interface vs. what it actually does.
+
+I really don't think that's something we can fix up later.
+
+> These attributes:
 > 
-> + tg->uclamp[UCLAMP_MIN].value = min_value;
-> + ret = 0;
-> 
-> Are these assignments missing or am I missing something? Same for
-> cpu_util_max_write_u64().
+> a) are available only for non-root nodes, both on default and legacy
+>    hierarchies
+> b) do not enforce any constraints and/or dependency between the parent
+>    and its child nodes, thus relying on the delegation model and
+>    permission settings defined by the system management software
 
-They are introduced in the following patch, to keep this one focus
-just on CGroups integration.
+cgroup does host attributes which only concern the cgroup itself and
+thus don't need any hierarchical behaviors on their own, but what's
+being implemented does control resource allocation, and what you're
+describing inherently breaks the delegation model.
 
-I'm also returning -EINVAL at this stage since, with just this patch
-in, we are not really providing any good service to user-space, i.e.
-it's like clamp groups not being available...
+> c) allow to (eventually) further restrict task-specific clamps defined
+>    via sched_setattr(2)
 
-Maybe I can call this out better in the change log ;)
-
-> > +out:
-> > +       rcu_read_unlock();
-> > +       mutex_unlock(&uclamp_mutex);
-> > +
-> > +       return ret;
-> > +}
-
-[...]
+Thanks.
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+tejun
