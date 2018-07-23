@@ -1,96 +1,74 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Tue, 24 Jul 2018 00:38:48 +0800
-Message-ID: <20180723163848.GB4503@sandybridge-desktop>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
- <20180723122227.GA30092@amd>
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v2 07/12] sched/core: uclamp: enforce last task UCLAMP_MAX
+Date: Mon, 23 Jul 2018 09:40:08 -0700
+Message-ID: <CAJuCfpG7vmOJZOuZBqy7G3b-ovXeLmPVB9pBaj=XKviOZ7PWzA@mail.gmail.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-8-patrick.bellasi@arm.com> <CAJuCfpH6CsDVG35Z3NV87mUgJW9TmoCuOs8GeW2TEqkP0K0f9g@mail.gmail.com>
+ <20180723150249.GD2683@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180723122227.GA30092@amd>
+In-Reply-To: <20180723150249.GD2683@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Oliver Neukum <oneukum@suse.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
-On Mon, Jul 23, 2018 at 02:22:27PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > 2. Ideally kernel memory should be encrypted by the
-> > > >    kernel itself. We have uswsusp to support user
-> > > >    space hibernation, however doing the encryption
-> > > >    in kernel space has more advantages:
-> > > >    2.1 Not having to transfer plain text kernel memory to
-> > > >        user space. Per Lee, Chun-Yi, uswsusp is disabled
-> > > >        when the kernel is locked down:
-> > > >        https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/
-> > > >        linux-fs.git/commit/?h=lockdown-20180410&
-> > > >        id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
-> > > >        due to:
-> > > >        "There have some functions be locked-down because
-> > > >        there have no appropriate mechanisms to check the
-> > > >        integrity of writing data."
-> > > >        https://patchwork.kernel.org/patch/10476751/
-> > > 
-> > > So your goal is to make hibernation compatible with kernel
-> > > lockdown? Do your patches provide sufficient security that hibernation
-> > > can be enabled with kernel lockdown?
-> > 
-> > OK, maybe I am dense, but if the key comes from user space, will that
-> > be enough?
-> 
-> Yes, that seems to be one of problems of Yu Chen's patchset.
-> 
-It is a trade off to derive the key in user space, we once
-tried to derive the key in user space, and people suggested
-a better way is to do it in user space. And there is a similar
-user case of kernel using key from user space is derived from ecryptfs
-for ext4.
-> > > > Joey Lee and I had a discussion on his previous work at
-> > > > https://patchwork.kernel.org/patch/10476751
-> > > > We collaborate on this task and his snapshot signature
-> > > > feature can be based on this patch set.
-> > > 
-> > > Well, his work can also work without your patchset, right?
-> > 
-> > Yes. But you are objecting to encryption in kernel space at all,
-> > aren't you?
-> 
-> I don't particulary love the idea of doing hibernation encryption in
-> the kernel, correct.
-> 
-> But we have this weird thing called secure boot, some people seem to
-> want. So we may need some crypto in the kernel -- but I'd like
-> something that works with uswsusp, too. Plus, it is mandatory that
-> patch explains what security guarantees they want to provide against
-> what kinds of attacks...
-> 
-> Lee, Chun-Yi's patch seemed more promising.				Pavel
-> 
-The only difference between Chun-Yi's hibernation encrytion solution
-and our solution is that his strategy encrypts the snapshot from sratch, 
-and ours encryts each page before them going to block device. The benefit
-of his solution is that the snapshot can be encrypt in kernel first
-thus the uswsusp is allowed  to read it to user space even kernel
-is lock down. And I had a discussion with Chun-Yi that we can use
-his snapshot solution to make uswsusp happy, and we share the crypto
-help code and he can also use our user provided key for his signature.
->From this point of view, our code are actually the same, except that
-we can help clean up the code and also enhance some encrytion process
-for his solution. I don't know why you don't like encryption in kernel, 
-because from my point of view, without encryption hibernation in kernel,
-uswsusp could not be enabled if kernel is lock down : -) Or do I miss something?
-Best,
-Yu
-> -- 
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Mon, Jul 23, 2018 at 8:02 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> On 20-Jul 18:23, Suren Baghdasaryan wrote:
+>> Hi Patrick,
+>
+> Hi Sure,
+> thank!
+>
+>> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
+>> <patrick.bellasi@arm.com> wrote:
+>
+> [...]
+>
+>> > @@ -977,13 +991,21 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
+>> >         uc_grp = &rq->uclamp.group[clamp_id][0];
+>> >         uc_grp[group_id].tasks += 1;
+>> >
+>> > +       /* Force clamp update on idle exit */
+>> > +       uc_cpu = &rq->uclamp;
+>> > +       clamp_value = p->uclamp[clamp_id].value;
+>> > +       if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
+>>
+>> The condition below is not needed because UCLAMP_FLAG_IDLE is set only
+>> for UCLAMP_MAX clamp_id, therefore the above condition already covers
+>> the one below.
+>
+> Not really, this function is called two times, the first time to
+> update UCLAMP_MIN and a second time to update UCLAMP_MAX.
+>
+> For both clamp_id we want to force update uc_cpu->value[clamp_id],
+> thus the UCLAMP_FLAG_IDLE flag has to be cleared only the second time.
+>
+> Maybe I can had the following comment to better explain the reason of
+> the check:
+>
+>                 /*
+>                  * This function is called for both UCLAMP_MIN (before) and
+>                  * UCLAMP_MAX (after). Let's reset the flag only the when
+>                  * we know that UCLAMP_MIN has been already updated.
+>                  */
+>
+
+Ah, my bad. I missed the fact that uc_cpu->flags is shared for both
+UCLAMP_MIN and UCLAMP_MAX. It's fine the way it originally was. Thanks
+for explanation!
+
+>> > +               if (clamp_id == UCLAMP_MAX)
+>> > +                       uc_cpu->flags &= ~UCLAMP_FLAG_IDLE;
+>> > +               uc_cpu->value[clamp_id] = clamp_value;
+>> > +               return;
+>> > +       }
+>
+> [...]
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
