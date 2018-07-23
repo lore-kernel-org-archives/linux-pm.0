@@ -1,74 +1,34 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
-Date: Mon, 23 Jul 2018 12:37:31 +0000
-Message-ID: <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
-References: <cover.1532090446.git.leonard.crestez@nxp.com>
-         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
-         <1532338685.3163.93.camel@pengutronix.de>
+From: YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH] cpufreq: qcom-kryo: add NULL entry to the end of_device_id array
+Date: Mon, 23 Jul 2018 20:34:29 +0800
+Message-ID: <20180723123429.20040-1-yuehaibing@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532338685.3163.93.camel@pengutronix.de>
-Content-Language: en-US
-Content-ID: <6323682A8C467347BF1574F1AA7FF72E@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: ilia.lin@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAyMDE4LTA3LTIzIGF0IDExOjM4ICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
-SGkgTGVvbmFyZCwNCj4gDQo+IEFtIEZyZWl0YWcsIGRlbiAyMC4wNy4yMDE4LCAxNTo0NyArMDMw
-MCBzY2hyaWViIExlb25hcmQgQ3Jlc3RlejoNCj4gPiBPbiBpbXg3ZCB0aGUgcGNpZS1waHkgcG93
-ZXIgZG9tYWluIGlzIHR1cm5lZCBvZmYgaW4gc3VzcGVuZCBhbmQgdGhpcyBjYW4NCj4gPiBtYWtl
-IHRoZSBzeXN0ZW0gaGFuZyBhZnRlciByZXN1bWUgd2hlbiBhdHRlbXB0aW5nIGFueSByZWFkIGZy
-b20gUENJLg0KPiA+IA0KPiA+IEZpeCB0aGlzIGJ5IGFkZGluZyBtaW5pbWFsIHN1c3BlbmQvcmVz
-dW1lIGNvZGUgZnJvbSB0aGUgbnhwIGludGVybmFsDQo+ID4gdHJlZS4gVGhpcyB3aWxsIHByZXBh
-cmUgZm9yIHBvd2VyaW5nIGRvd24gb24gc3VzcGVuZCBhbmQgcmVzZXQgdGhlIGJsb2NrDQo+ID4g
-b24gcmVzdW1lLg0KPiA+IA0KPiA+IENvZGUgaXMgb25seSBmb3IgaW14N2QgYnV0IGEgdmVyeSBz
-aW1pbGFyIHNlcXVlbmNlIGNhbiBiZSB1c2VkIGZvcg0KPiA+IG90aGVyIHNvY3MuDQo+ID4gDQo+
-ID4gK3N0YXRpYyB2b2lkIGlteDZfcGNpZV9sdHNzbV9kaXNhYmxlKHN0cnVjdCBkZXZpY2UgKmRl
-dikNCj4gPiArew0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9wY2llID0gZGV2X2dldF9k
-cnZkYXRhKGRldik7DQo+ID4gKw0KPiA+ICsJc3dpdGNoIChpbXg2X3BjaWUtPnZhcmlhbnQpIHsN
-Cj4gPiArCWNhc2UgSU1YNlE6DQo+ID4gKwljYXNlIElNWDZTWDoNCj4gPiArCWNhc2UgSU1YNlFQ
-Og0KPiA+ICsJCXJlZ21hcF91cGRhdGVfYml0cyhpbXg2X3BjaWUtPmlvbXV4Y19ncHIsIElPTVVY
-Q19HUFIxMiwNCj4gPiArCQkJCSAgIElNWDZRX0dQUjEyX1BDSUVfQ1RMXzIsIDApOw0KPiANCj4g
-SGFzIHRoaXMgYmVlbiB0ZXN0ZWQgb24gaS5NWDY/IExUU1NNIGRpc2FibGUgcmVxdWlyZXMgYSBt
-b3JlIGNvbXBsZXgNCj4gc2VxdWVuY2Ugb24gdGhpcyBTb0MgdG8gYXZvaWQgaGFuZ2luZyB0aGUg
-c3lzdGVtLiBTZWUgY29tbWl0DQo+IDNlM2U0MDZlMzgwNyAiUENJOiBpbXg2OiBQdXQgTFRTU00g
-aW4gIkRldGVjdCIgc3RhdGUgYmVmb3JlIGRpc2FibGluZw0KPiBpdCIuDQoNClRoaXMgcGF0Y2gg
-b25seSBlbmFibGVzIHN1c3BlbmQvcmVzdW1lIGZvciBpbXg3ZCB3aXRoIG90aGVyIFNPQ3MgdG8N
-CmZvbGxvdyBsYXRlci4gVGhlIGx0c3NtX2Rpc2FibGUgZnVuY3Rpb24gaXMganVzdCBzeW1tZXRy
-aWMgd2l0aA0KbHRzc21fZW5hYmxlLg0KDQpUaGUgNlEgcGFydHMgYXJlIGFmZmVjdGVkIGJ5IGVy
-cmF0YSAiRVJSMDA1NzIzIFBDSWU6IFBDSWUgZG9lcyBub3QNCnN1cHBvcnQgTDIgcG93ZXIgZG93
-biBbaS5NWCA2RHVhbC82UXVhZCBPbmx5XSIuDQoNClRoaXMgZGVzaWduIGVycm9yIHNlZW1zIHRv
-IGhhdmUgdGhlIHNhbWUgcm9vdCBjYXVzZSBhcyB5b3VyIHByb2JsZW0gKG5vDQpkZWRpY2F0ZWQg
-cmVzZXQgY29udHJvbCkgc28gdGhpcyB3b3JrcyBvdXQgcXVpdGUgbmljZWx5OiB0aGUgc29sdXRp
-b24NCmlzIHRvIG5ldmVyIHBvd2VyIGRvd24gcGNpIG9uIGFmZmVjdGVkIGNoaXBzLg0KDQo+ID4g
-K3N0YXRpYyBpbnQgaW14Nl9wY2llX3Jlc3VtZV9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+
-ID4gK3sNCj4gPiArCWludCByZXQgPSAwOw0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9w
-Y2llID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+ID4gKwlzdHJ1Y3QgcGNpZV9wb3J0ICpwcCA9
-ICZpbXg2X3BjaWUtPnBjaS0+cHA7DQo+ID4gKw0KPiA+ICsJaWYgKGlteDZfcGNpZS0+dmFyaWFu
-dCAhPSBJTVg3RCkNCj4gPiArCQlyZXR1cm4gMDsNCj4gPiArDQo+ID4gKwlpbXg2X3BjaWVfYXNz
-ZXJ0X2NvcmVfcmVzZXQoaW14Nl9wY2llKTsNCj4gPiArCWlteDZfcGNpZV9pbml0X3BoeShpbXg2
-X3BjaWUpOw0KPiA+ICsJaW14Nl9wY2llX2RlYXNzZXJ0X2NvcmVfcmVzZXQoaW14Nl9wY2llKTsN
-Cj4gPiArCWR3X3BjaWVfc2V0dXBfcmMocHApOw0KPiA+ICsNCj4gPiArCXJldCA9IGlteDZfcGNp
-ZV9lc3RhYmxpc2hfbGluayhpbXg2X3BjaWUpOw0KPiA+ICsJaWYgKHJldCA8IDApDQo+ID4gKwkJ
-cHJfZXJyKCJwY2llIGxpbmsgaXMgZG93biBhZnRlciByZXN1bWUuXG4iKTsNCj4gDQo+IGRldl9l
-cnIoKSwgcGxlYXNlLg0KDQpUaGUgaW14Nl9wY2llX2VzdGFibGlzaF9saW5rIGZ1bmN0aW9uIGFs
-cmVhZHkgc2VlbXMgdG8gbGluayBlcnJvcg0KaW5mb3JtYXRpb24gc28gdGhlIG1lc3NhZ2UgY291
-bGQgYmUgZHJvcHBlZC4gSG93ZXZlciBpdCdzIHN0aWxsIGhlbHBmdWwNCnRvIGtub3cgdGhhdCB0
-aG9zZSBwY2kgbGluayBlcnJvcnMgYXJlIHNwZWNpZmljYWxseSByZWxhdGVkIHRvIHJlc3VtZS4N
-Cg0KRmFiaW8gc3VnZ2VzdGVkIEkgcHJvcGFnYXRlIHRoZSByZXR1cm4gY29kZSBidXQgSSdtIG5v
-dCBzdXJlIHRoYXQncw0KaGVscGZ1bCBzaW5jZSAibGluayBkb3duIiBpcyB3aGF0IGhhcHBlbnMg
-d2hlbiB0aGUgc2xvdCBpcyBlbXB0eSBhbmQNCnRoaXMgaXMgY2xlYXJseSBub3QgYSAiZXJyb3Ii
-IG9yICJmYWlsdXJlIi4gSXQncyBub3QgY2xlYXIgaWYgInNsb3QNCmVtcHR5IiBjYW4gYmUgZGlz
-dGluZ3Vpc2hlZCBpbiBzb21lIHdheS4NCg0KSSdsbCBzd2l0Y2ggdG8gZGV2X2luZm8gYW5kIGRy
-b3AgdGhlIGVycm9yIGNvZGUsIGlzIHRoaXMgT0s/DQoNCg0KT25lIGFzcGVjdCB0aGF0IEkgc2tp
-cHBlZCBpcyBQTUVfVHVybl9PZmYgc3VwcG9ydDogVGhlIFBDSSBzdGFuZGFyZA0KbWFuZGF0ZXMg
-dGhhdCB0aGlzIGlzIHNlbnQgYmVmb3JlIGVudGVyaW5nIEwyL0wzIGFuZCB0aGUgZGVzaWdud2Fy
-ZQ0KY29yZSBzdXBwb3J0cyB0aGlzIGJ1dCBpdCdzIG5vdCBwYXJ0IG9mIHRoaXMgcGF0Y2guDQoN
-CklzIGl0IGZpbmUgaWYgSSBwb3N0IHRoaXMgc2VwYXJhdGVseSBvciBzaG91bGQgaXQgYmUgcGFy
-dCBvZiB0aGUgc2FtZQ0Kc2VyaWVzPyBUaGUgdHVybm9mZiBiaXQgaXMgaW4gSU9NVVggZ3ByIGZv
-ciBpbXg2IGJ1dCBTUkMgZm9yIGlteDcgc28gaXQNCndvdWxkIHJlcXVpcmUgYWRkaXRpb25hbCBw
-YXRjaGVzIGluIHJlc2V0LCBkdHMgYW5kIHRoZW4gcGNpLg==
+Make sure of_device_id tables are NULL terminated
+Found by coccinelle spatch "misc/of_table.cocci"
+
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/cpufreq/qcom-cpufreq-kryo.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+index 29389ac..efc9a7a 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+@@ -183,6 +183,7 @@ static struct platform_driver qcom_cpufreq_kryo_driver = {
+ static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
+ 	{ .compatible = "qcom,apq8096", },
+ 	{ .compatible = "qcom,msm8996", },
++	{}
+ };
+ 
+ /*
+-- 
+2.7.0
