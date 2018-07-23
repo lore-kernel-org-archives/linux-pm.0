@@ -1,95 +1,74 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Mon, 23 Jul 2018 14:22:27 +0200
-Message-ID: <20180723122227.GA30092@amd>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
+Date: Mon, 23 Jul 2018 12:37:31 +0000
+Message-ID: <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
+References: <cover.1532090446.git.leonard.crestez@nxp.com>
+         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
+         <1532338685.3163.93.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1532346156.3057.11.camel@suse.com>
+In-Reply-To: <1532338685.3163.93.camel@pengutronix.de>
+Content-Language: en-US
+Content-ID: <6323682A8C467347BF1574F1AA7FF72E@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Yu Chen <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-> > > 2. Ideally kernel memory should be encrypted by the
-> > >    kernel itself. We have uswsusp to support user
-> > >    space hibernation, however doing the encryption
-> > >    in kernel space has more advantages:
-> > >    2.1 Not having to transfer plain text kernel memory to
-> > >        user space. Per Lee, Chun-Yi, uswsusp is disabled
-> > >        when the kernel is locked down:
-> > >        https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/
-> > >        linux-fs.git/commit/?h=3Dlockdown-20180410&
-> > >        id=3D8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
-> > >        due to:
-> > >        "There have some functions be locked-down because
-> > >        there have no appropriate mechanisms to check the
-> > >        integrity of writing data."
-> > >        https://patchwork.kernel.org/patch/10476751/
-> >=20
-> > So your goal is to make hibernation compatible with kernel
-> > lockdown? Do your patches provide sufficient security that hibernation
-> > can be enabled with kernel lockdown?
->=20
-> OK, maybe I am dense, but if the key comes from user space, will that
-> be enough?
-
-Yes, that seems to be one of problems of Yu Chen's patchset.
-
-> > > Joey Lee and I had a discussion on his previous work at
-> > > https://patchwork.kernel.org/patch/10476751
-> > > We collaborate on this task and his snapshot signature
-> > > feature can be based on this patch set.
-> >=20
-> > Well, his work can also work without your patchset, right?
->=20
-> Yes. But you are objecting to encryption in kernel space at all,
-> aren't you?
-
-I don't particulary love the idea of doing hibernation encryption in
-the kernel, correct.
-
-But we have this weird thing called secure boot, some people seem to
-want. So we may need some crypto in the kernel -- but I'd like
-something that works with uswsusp, too. Plus, it is mandatory that
-patch explains what security guarantees they want to provide against
-what kinds of attacks...
-
-Lee, Chun-Yi's patch seemed more promising.				Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAltVyIMACgkQMOfwapXb+vIOHwCfWnqIbC9JuKoYO//G3dJDkF4H
-cqYAnReOwwOusvgY1EgOrXWVBygOU3+J
-=lsnx
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--
+T24gTW9uLCAyMDE4LTA3LTIzIGF0IDExOjM4ICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
+SGkgTGVvbmFyZCwNCj4gDQo+IEFtIEZyZWl0YWcsIGRlbiAyMC4wNy4yMDE4LCAxNTo0NyArMDMw
+MCBzY2hyaWViIExlb25hcmQgQ3Jlc3RlejoNCj4gPiBPbiBpbXg3ZCB0aGUgcGNpZS1waHkgcG93
+ZXIgZG9tYWluIGlzIHR1cm5lZCBvZmYgaW4gc3VzcGVuZCBhbmQgdGhpcyBjYW4NCj4gPiBtYWtl
+IHRoZSBzeXN0ZW0gaGFuZyBhZnRlciByZXN1bWUgd2hlbiBhdHRlbXB0aW5nIGFueSByZWFkIGZy
+b20gUENJLg0KPiA+IA0KPiA+IEZpeCB0aGlzIGJ5IGFkZGluZyBtaW5pbWFsIHN1c3BlbmQvcmVz
+dW1lIGNvZGUgZnJvbSB0aGUgbnhwIGludGVybmFsDQo+ID4gdHJlZS4gVGhpcyB3aWxsIHByZXBh
+cmUgZm9yIHBvd2VyaW5nIGRvd24gb24gc3VzcGVuZCBhbmQgcmVzZXQgdGhlIGJsb2NrDQo+ID4g
+b24gcmVzdW1lLg0KPiA+IA0KPiA+IENvZGUgaXMgb25seSBmb3IgaW14N2QgYnV0IGEgdmVyeSBz
+aW1pbGFyIHNlcXVlbmNlIGNhbiBiZSB1c2VkIGZvcg0KPiA+IG90aGVyIHNvY3MuDQo+ID4gDQo+
+ID4gK3N0YXRpYyB2b2lkIGlteDZfcGNpZV9sdHNzbV9kaXNhYmxlKHN0cnVjdCBkZXZpY2UgKmRl
+dikNCj4gPiArew0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9wY2llID0gZGV2X2dldF9k
+cnZkYXRhKGRldik7DQo+ID4gKw0KPiA+ICsJc3dpdGNoIChpbXg2X3BjaWUtPnZhcmlhbnQpIHsN
+Cj4gPiArCWNhc2UgSU1YNlE6DQo+ID4gKwljYXNlIElNWDZTWDoNCj4gPiArCWNhc2UgSU1YNlFQ
+Og0KPiA+ICsJCXJlZ21hcF91cGRhdGVfYml0cyhpbXg2X3BjaWUtPmlvbXV4Y19ncHIsIElPTVVY
+Q19HUFIxMiwNCj4gPiArCQkJCSAgIElNWDZRX0dQUjEyX1BDSUVfQ1RMXzIsIDApOw0KPiANCj4g
+SGFzIHRoaXMgYmVlbiB0ZXN0ZWQgb24gaS5NWDY/IExUU1NNIGRpc2FibGUgcmVxdWlyZXMgYSBt
+b3JlIGNvbXBsZXgNCj4gc2VxdWVuY2Ugb24gdGhpcyBTb0MgdG8gYXZvaWQgaGFuZ2luZyB0aGUg
+c3lzdGVtLiBTZWUgY29tbWl0DQo+IDNlM2U0MDZlMzgwNyAiUENJOiBpbXg2OiBQdXQgTFRTU00g
+aW4gIkRldGVjdCIgc3RhdGUgYmVmb3JlIGRpc2FibGluZw0KPiBpdCIuDQoNClRoaXMgcGF0Y2gg
+b25seSBlbmFibGVzIHN1c3BlbmQvcmVzdW1lIGZvciBpbXg3ZCB3aXRoIG90aGVyIFNPQ3MgdG8N
+CmZvbGxvdyBsYXRlci4gVGhlIGx0c3NtX2Rpc2FibGUgZnVuY3Rpb24gaXMganVzdCBzeW1tZXRy
+aWMgd2l0aA0KbHRzc21fZW5hYmxlLg0KDQpUaGUgNlEgcGFydHMgYXJlIGFmZmVjdGVkIGJ5IGVy
+cmF0YSAiRVJSMDA1NzIzIFBDSWU6IFBDSWUgZG9lcyBub3QNCnN1cHBvcnQgTDIgcG93ZXIgZG93
+biBbaS5NWCA2RHVhbC82UXVhZCBPbmx5XSIuDQoNClRoaXMgZGVzaWduIGVycm9yIHNlZW1zIHRv
+IGhhdmUgdGhlIHNhbWUgcm9vdCBjYXVzZSBhcyB5b3VyIHByb2JsZW0gKG5vDQpkZWRpY2F0ZWQg
+cmVzZXQgY29udHJvbCkgc28gdGhpcyB3b3JrcyBvdXQgcXVpdGUgbmljZWx5OiB0aGUgc29sdXRp
+b24NCmlzIHRvIG5ldmVyIHBvd2VyIGRvd24gcGNpIG9uIGFmZmVjdGVkIGNoaXBzLg0KDQo+ID4g
+K3N0YXRpYyBpbnQgaW14Nl9wY2llX3Jlc3VtZV9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+
+ID4gK3sNCj4gPiArCWludCByZXQgPSAwOw0KPiA+ICsJc3RydWN0IGlteDZfcGNpZSAqaW14Nl9w
+Y2llID0gZGV2X2dldF9kcnZkYXRhKGRldik7DQo+ID4gKwlzdHJ1Y3QgcGNpZV9wb3J0ICpwcCA9
+ICZpbXg2X3BjaWUtPnBjaS0+cHA7DQo+ID4gKw0KPiA+ICsJaWYgKGlteDZfcGNpZS0+dmFyaWFu
+dCAhPSBJTVg3RCkNCj4gPiArCQlyZXR1cm4gMDsNCj4gPiArDQo+ID4gKwlpbXg2X3BjaWVfYXNz
+ZXJ0X2NvcmVfcmVzZXQoaW14Nl9wY2llKTsNCj4gPiArCWlteDZfcGNpZV9pbml0X3BoeShpbXg2
+X3BjaWUpOw0KPiA+ICsJaW14Nl9wY2llX2RlYXNzZXJ0X2NvcmVfcmVzZXQoaW14Nl9wY2llKTsN
+Cj4gPiArCWR3X3BjaWVfc2V0dXBfcmMocHApOw0KPiA+ICsNCj4gPiArCXJldCA9IGlteDZfcGNp
+ZV9lc3RhYmxpc2hfbGluayhpbXg2X3BjaWUpOw0KPiA+ICsJaWYgKHJldCA8IDApDQo+ID4gKwkJ
+cHJfZXJyKCJwY2llIGxpbmsgaXMgZG93biBhZnRlciByZXN1bWUuXG4iKTsNCj4gDQo+IGRldl9l
+cnIoKSwgcGxlYXNlLg0KDQpUaGUgaW14Nl9wY2llX2VzdGFibGlzaF9saW5rIGZ1bmN0aW9uIGFs
+cmVhZHkgc2VlbXMgdG8gbGluayBlcnJvcg0KaW5mb3JtYXRpb24gc28gdGhlIG1lc3NhZ2UgY291
+bGQgYmUgZHJvcHBlZC4gSG93ZXZlciBpdCdzIHN0aWxsIGhlbHBmdWwNCnRvIGtub3cgdGhhdCB0
+aG9zZSBwY2kgbGluayBlcnJvcnMgYXJlIHNwZWNpZmljYWxseSByZWxhdGVkIHRvIHJlc3VtZS4N
+Cg0KRmFiaW8gc3VnZ2VzdGVkIEkgcHJvcGFnYXRlIHRoZSByZXR1cm4gY29kZSBidXQgSSdtIG5v
+dCBzdXJlIHRoYXQncw0KaGVscGZ1bCBzaW5jZSAibGluayBkb3duIiBpcyB3aGF0IGhhcHBlbnMg
+d2hlbiB0aGUgc2xvdCBpcyBlbXB0eSBhbmQNCnRoaXMgaXMgY2xlYXJseSBub3QgYSAiZXJyb3Ii
+IG9yICJmYWlsdXJlIi4gSXQncyBub3QgY2xlYXIgaWYgInNsb3QNCmVtcHR5IiBjYW4gYmUgZGlz
+dGluZ3Vpc2hlZCBpbiBzb21lIHdheS4NCg0KSSdsbCBzd2l0Y2ggdG8gZGV2X2luZm8gYW5kIGRy
+b3AgdGhlIGVycm9yIGNvZGUsIGlzIHRoaXMgT0s/DQoNCg0KT25lIGFzcGVjdCB0aGF0IEkgc2tp
+cHBlZCBpcyBQTUVfVHVybl9PZmYgc3VwcG9ydDogVGhlIFBDSSBzdGFuZGFyZA0KbWFuZGF0ZXMg
+dGhhdCB0aGlzIGlzIHNlbnQgYmVmb3JlIGVudGVyaW5nIEwyL0wzIGFuZCB0aGUgZGVzaWdud2Fy
+ZQ0KY29yZSBzdXBwb3J0cyB0aGlzIGJ1dCBpdCdzIG5vdCBwYXJ0IG9mIHRoaXMgcGF0Y2guDQoN
+CklzIGl0IGZpbmUgaWYgSSBwb3N0IHRoaXMgc2VwYXJhdGVseSBvciBzaG91bGQgaXQgYmUgcGFy
+dCBvZiB0aGUgc2FtZQ0Kc2VyaWVzPyBUaGUgdHVybm9mZiBiaXQgaXMgaW4gSU9NVVggZ3ByIGZv
+ciBpbXg2IGJ1dCBTUkMgZm9yIGlteDcgc28gaXQNCndvdWxkIHJlcXVpcmUgYWRkaXRpb25hbCBw
+YXRjaGVzIGluIHJlc2V0LCBkdHMgYW5kIHRoZW4gcGNpLg==
