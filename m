@@ -1,118 +1,156 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 10/12] sched/core: uclamp: use TG's clamps to restrict
- Task's clamps
-Date: Mon, 23 Jul 2018 16:40:25 +0100
-Message-ID: <20180723154025.GF2683@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-11-patrick.bellasi@arm.com>
- <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v4 1/3] thermal: qcom-spmi: Allow to disable stage 2
+ shutdown
+Date: Mon, 23 Jul 2018 08:49:53 -0700
+Message-ID: <20180723154953.GJ129942@google.com>
+References: <20180717210815.245639-1-mka@chromium.org>
+ <CAD=FV=V1=P-Vq-VFXDfZGPMTVFvZK5cwaK_-Kxf8MwATJNwQSg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
+In-Reply-To: <CAD=FV=V1=P-Vq-VFXDfZGPMTVFvZK5cwaK_-Kxf8MwATJNwQSg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Doug Anderson <dianders@chromium.org>
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Jul 20:05, Suren Baghdasaryan wrote:
-> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > When a task's util_clamp value is configured via sched_setattr(2), this
-> > value has to be properly accounted in the corresponding clamp group
-> > every time the task is enqueued and dequeued. When cgroups are also in
-> > use, per-task clamp values have to be aggregated to those of the CPU's
-> > controller's Task Group (TG) in which the task is currently living.
-> >
-> > Let's update uclamp_cpu_get() to provide aggregation between the task
-> > and the TG clamp values. Every time a task is enqueued, it will be
-> > accounted in the clamp_group which defines the smaller clamp between the
-> > task specific value and its TG value.
+On Fri, Jul 20, 2018 at 11:42:40AM -0700, Doug Anderson wrote:
+> Hi,
 > 
-> So choosing smallest for both UCLAMP_MIN and UCLAMP_MAX means the
-> least boosted value and the most clamped value between syscall and TG
-> will be used.
-
-Right
-
-> My understanding is that boost means "at least this much" and clamp
-> means "at most this much".
-
-Right
-
-> So to satisfy both TG and syscall requirements I think you would
-> need to choose the largest value for UCLAMP_MIN and the smallest one
-> for UCLAMP_MAX, meaning the most boosted and most clamped range.
-> Current implementation choses the least boosted value, so
-> effectively one of the UCLAMP_MIN requirements (either from TG or
-> from syscall) are being ignored...  Could you please clarify why
-> this choice is made?
-
-The TG values are always used to specify a _restriction_ on
-task-specific values.
-
-Thus, if you look or example at the CPU mask for a task, you can have
-a task with affinity to CPUs 0-1, currently running on a cgroup with
-cpuset.cpus=0... then the task can run only on CPU 0 (althought its
-affinity includes CPU1 too).
-
-Same we do here: if a task has util_min=10, but it's running in a
-cgroup with cpu.util_min=0, then it will not be boosted.
-
-IOW, this allows to implement a "nice" policy at task level, where a
-task (via syscall) can decide to be less boosted with respect to its
-group but never more boosted. The same task can also decide to be more
-clamped, but not less clamped then its current group.
-
-[...]
-
-> > @@ -982,18 +989,30 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
-> >         int clamp_value;
-> >         int group_id;
+> On Tue, Jul 17, 2018 at 2:08 PM, Matthias Kaehlcke <mka@chromium.org> wrote:
+> > When the temperature reaches stage 2 the PMIC performs by default a
+> > 'partial shutdown', unless software override is enabled. It is not well
+> > defined which peripherals are affected by a 'partial shutdown'. Drivers
+> > might be unhappy when their devices suddenly disappear and prevent an
+> > orderly shutdown.
 > >
-> > -       /* No task specific clamp values: nothing to do */
-> >         group_id = p->uclamp[clamp_id].group_id;
-> > +       clamp_value = p->uclamp[clamp_id].value;
-> > +#ifdef CONFIG_UCLAMP_TASK_GROUP
-> > +       /* Use TG's clamp value to limit task specific values */
-> > +       if (group_id == UCLAMP_NONE ||
-> > +           clamp_value >= task_group(p)->uclamp[clamp_id].value) {
+> > Add an optional device tree property that allows to disable stage 2
+> > shutdown.
+> >
+> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> > Changes in v4:
+> > - patch added to the series
+> > ---
+> >  .../bindings/thermal/qcom-spmi-temp-alarm.txt |  3 ++
+> >  drivers/thermal/qcom-spmi-temp-alarm.c        | 28 +++++++++++++------
+> >  2 files changed, 23 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+> > index 290ec06fa33a..377c94fa1821 100644
+> > --- a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+> > +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+> > @@ -15,6 +15,8 @@ Optional properties:
+> >  - io-channels:     Should contain IIO channel specifier for the ADC channel,
+> >                     which report chip die temperature.
+> >  - io-channel-names: Should contain "thermal".
+> > +- stage2-shutdown-disabled: boolean to disable a partial shutdown of the PMIC
+> > +                            when the temperature reaches stage 2
 > 
-> Not a big deal but do you need to override if (clamp_value ==
-> task_group(p)->uclamp[clamp_id].value)? Maybe:
-> -           clamp_value >= task_group(p)->uclamp[clamp_id].value) {
-> +          clamp_value > task_group(p)->uclamp[clamp_id].value) {
+> With my understanding of device tree I believe that this should be
+> "qcom,stage2-shutdown-disabled".  If something isn't a generic
+> property affecting a whole group of bindings I believe it's supposed
+> to have a company prefix.
+> 
+> From the device tree specification (wow, this exists now?  ...and is public?)
+> 
+> https://github.com/devicetree-org/devicetree-specification/releases/tag/v0.2
+> 
+> I find:
+> 
+> > Nonstandard property names should specify a unique string prefix, such
+> > as a stock ticker symbol, identifying the name of the company or
+> > organization that defined the property. Examples:
+>   fsl,channel-fifo-len
+>   ibm,ppc-interrupt-server#s
+>   linux,network-index
 
-Good point, yes... the override is not really changing anything here.
-Will fix this!
+Ok, I'll update the property name in case we keep using one.
 
-> > +               clamp_value = task_group(p)->uclamp[clamp_id].value;
-> > +               group_id = task_group(p)->uclamp[clamp_id].group_id;
-> > +       }
-> > +#else
-> > +       /* No task specific clamp values: nothing to do */
-> >         if (group_id == UCLAMP_NONE)
-> >                 return;
-> > +#endif
+> =====
+> 
+> I would also perhaps add a bit more verbose justification to your
+> description of this property.  Specifically there should be some
+> indication in the bindings doc of when you'd want this property.  From
+> what David Collins said, I'd maybe write something like:
+> 
+> ---
+> 
+> You want to disable the partial "stage 2" shutdown any time you've
+> properly defined thermal zones in such a way that the OS will try to
+> shut down at that stage anyway.  Said another way, there are three
+> thermal stages defined in the PMIC:
+> 
+> stage 1: warning
+> stage 2: system should shut down
+> stage 3: emergency shut down
+> 
+> By default the PMIC assumes that the OS isn't doing anything and thus
+> at stage 2 it does the partial PMIC shutdown and at stage 3 it kills
+> all power.  If we have thermal zones defined such that the OS will
+> initiate the shutdown at stage 2 then we want to disable the PMIC's
+> automatic mode for stage 2.  That still leaves us with the emergency
+> at stage 3.
+
+Thanks, I'll add something along these lines (or bluntly copy them ;-)
+
+> ===
+> 
+> Actually, after writing all the above I wonder if perhaps there's a
+> way to do this all automatically.  AKA: if someone has specified a
+> "critical" level can we automatically disable the partial PMIC
+> shutdown and we don't need the extra property?  Bonus points if we can
+> check to see if the thermal zones defined actually match reality and
+> even more bonus points if you can automatically adjust the settings in
+> the PMIC based on the thermal zones...
+> 
+> I did find that in "struct thermal_zone_of_device_ops" there appears
+> to be a "set_trip_temp" function you can fill in.  When I tried that
+> quickly I saw that I got called when I echoed into
+> "/sys/class/thermal/thermal_zone0/trip_point_1_temp" but not at
+> bootup, but I didn't debug more than that...
+> 
+> 
+> >  Example:
 > >
-> >         /* Reference count the task into its current group_id */
-> >         uc_grp = &rq->uclamp.group[clamp_id][0];
-> >         uc_grp[group_id].tasks += 1;
+> > @@ -23,6 +25,7 @@ Example:
+> >                 reg = <0x2400 0x100>;
+> >                 interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
+> >                 #thermal-sensor-cells = <0>;
+> > +               stage2-shutdown-disabled;
 > >
-> > +       /* Track the effective clamp group */
-> > +       p->uclamp_group_id[clamp_id] = group_id;
-> > +
-> >         /* Force clamp update on idle exit */
-> >         uc_cpu = &rq->uclamp;
-> > -       clamp_value = p->uclamp[clamp_id].value;
-> >         if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
-> >                 if (clamp_id == UCLAMP_MAX)
-> >                         uc_cpu->flags &= ~UCLAMP_FLAG_IDLE;
+> >                 io-channels = <&pm8941_vadc VADC_DIE_TEMP>;
+> >                 io-channel-names = "thermal";
+> 
+> BTW: can you update the "example" in this file?  Based on the PMIC
+> docs I saw it's likely that it should be:
+> 
+> stage1 {
+>   temperature = <1050000>;
+>   hysteresis = <2000>;
+>   type = "passive";
+> };
+> stage2 {
+>   temperature = <125000>;
+>   hysteresis = <2000>;
+>   type = "critical";
+> };
+> 
+> ...and I guess we don't specify the final one because by that time
+> Linux is kaput.
+> 
+> 
+> > diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+> > index ad4f3a8d6560..acbb0dbec79e 100644
+> > --- a/drivers/thermal/qcom-spmi-temp-alarm.c
+> > +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+> 
+> Sometimes people like bindings and code change to be separate patches.
+> Maintainer can specify what's desired in this case, but I find it
+> generally pleases more people to make them separate.
+> 
+> ...though I guess if we can figure out how to do this automatically we
+> will have no bindings change...
 
-[...]
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Thanks for the suggestions, I'll look into them for the next version!
