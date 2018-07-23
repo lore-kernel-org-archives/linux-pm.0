@@ -1,61 +1,60 @@
-From: Waiman Long <longman@redhat.com>
-Subject: [PATCH 1/2] cpu/hotplug: Add a cpus_read_trylock() function
-Date: Mon, 23 Jul 2018 13:49:38 -0400
-Message-ID: <1532368179-15263-2-git-send-email-longman@redhat.com>
-References: <1532368179-15263-1-git-send-email-longman@redhat.com>
+From: Andrey Smirnov <andrew.smirnov@gmail.com>
+Subject: Re: [PATCH v2 1/3] Revert "ARM: dts: imx7d: Invert legacy PCI irq mapping"
+Date: Mon, 23 Jul 2018 11:38:26 -0700
+Message-ID: <CAHQ1cqF7u2gjwYt1-16u-uimXHZ2SWsquabZSDftQn_yRurhSQ@mail.gmail.com>
+References: <cover.1532090446.git.leonard.crestez@nxp.com> <221deb47d7d38ecd6e0c7636f9a87ab693a3c539.1532090446.git.leonard.crestez@nxp.com>
+ <CAHQ1cqF6TphuN8Ls54YA6bjty-bJF8twYboaG-RM=jox8CeQPA@mail.gmail.com> <42ff53eeea3067b19e3e16bed8392706502c8f23.camel@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532368179-15263-1-git-send-email-longman@redhat.com>
+In-Reply-To: <42ff53eeea3067b19e3e16bed8392706502c8f23.camel@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Waiman Long <longman@redhat.com>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Richard Zhu <hongxing.zhu@nxp.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>, Jingoo Han <jingoohan1@gmail.com>, linux-imx@nxp.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>, Joao.Pinto@synopsys.com, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Bjorn Helgaas <bhelgaas@google.com>, Lucas Stach <l.stach@pengutronix.de>, Sascha Hauer <kernel@pengutronix.de>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There are use cases where it can be useful to have a cpus_read_trylock()
-function to work around circular lock dependency problem involving
-the cpu_hotplug_lock.
+On Mon, Jul 23, 2018 at 5:41 AM Leonard Crestez <leonard.crestez@nxp.com> wrote:
+>
+> On Fri, 2018-07-20 at 08:33 -0700, Andrey Smirnov wrote:
+> > On Fri, Jul 20, 2018 at 5:48 AM Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> > >
+> > > This reverts commit 1c86c9dd82f859b474474a7fee0d5195da2c9c1d.
+> > >
+> > > That commit followed the reference manual but unfortunately the imx7d
+> > > manual is incorrect.
+> >
+> > I'd also add similar comment to DT file to prevent people from trying
+> > to "fix" this in the future.
+>
+> I'll try to see if I can follow up internally with docs team to get
+> this updated in the next revision of the reference manual.
+>
 
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- include/linux/cpu.h | 2 ++
- kernel/cpu.c        | 6 ++++++
- 2 files changed, 8 insertions(+)
+Not sure if we are on the same page here, but what I meant is adding
+the same explanation that is in your commit message to Device Tree
+file as well so that if anyone looks at DT code and goes "Huh?" in the
+future, they wouldn't have to research commit history to see the
+reason why things the way they are.
 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index a97a63e..e850bfe 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -103,6 +103,7 @@ static inline void cpu_maps_update_done(void)
- extern void cpus_write_unlock(void);
- extern void cpus_read_lock(void);
- extern void cpus_read_unlock(void);
-+extern int  cpus_read_trylock(void);
- extern void lockdep_assert_cpus_held(void);
- extern void cpu_hotplug_disable(void);
- extern void cpu_hotplug_enable(void);
-@@ -115,6 +116,7 @@ static inline void cpus_write_lock(void) { }
- static inline void cpus_write_unlock(void) { }
- static inline void cpus_read_lock(void) { }
- static inline void cpus_read_unlock(void) { }
-+static inline int  cpus_read_trylock(void) { return true; }
- static inline void lockdep_assert_cpus_held(void) { }
- static inline void cpu_hotplug_disable(void) { }
- static inline void cpu_hotplug_enable(void) { }
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 0db8938..307486b 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -290,6 +290,12 @@ void cpus_read_lock(void)
- }
- EXPORT_SYMBOL_GPL(cpus_read_lock);
- 
-+int cpus_read_trylock(void)
-+{
-+	return percpu_down_read_trylock(&cpu_hotplug_lock);
-+}
-+EXPORT_SYMBOL_GPL(cpus_read_trylock);
-+
- void cpus_read_unlock(void)
- {
- 	percpu_up_read(&cpu_hotplug_lock);
--- 
-1.8.3.1
+> > Also, this change is going to break QEMU's mapping found here:
+>
+> I had no idea that existed, I guess somebody needs to fix that as well.
+>
+
+I take it it's a no to my "any chance you can fix that as well?" ;-).
+I'll see if I can find time to do that this week.
+
+> Do you have an imx7d board using pci or did you just test in emulation?
+>
+
+I used real i.MX7D Sabre board with i210 network card, when I was
+porting i.MX7 PCIe patches. However, as per note I made in the
+original submission:
+
+https://lkml.org/lkml/2017/10/9/913
+
+this IRQ swap patch came up as a result of "connecting" emulated ICH4
+in QEMU which was using legacy interrupts.
+
+Thanks,
+Andrey Smirnov
