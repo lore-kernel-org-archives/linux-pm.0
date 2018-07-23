@@ -1,38 +1,61 @@
 From: Waiman Long <longman@redhat.com>
-Subject: [PATCH 0/2] cpufreq: Fix a circular lock dependency problem
-Date: Mon, 23 Jul 2018 13:49:37 -0400
-Message-ID: <1532368179-15263-1-git-send-email-longman@redhat.com>
+Subject: [PATCH 1/2] cpu/hotplug: Add a cpus_read_trylock() function
+Date: Mon, 23 Jul 2018 13:49:38 -0400
+Message-ID: <1532368179-15263-2-git-send-email-longman@redhat.com>
+References: <1532368179-15263-1-git-send-email-longman@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1532368179-15263-1-git-send-email-longman@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Waiman Long <longman@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patchset works around a circular lock dependency issue in the
-cpufreq driver reported by lockdep. The two locks involved are the
-cpu_hotplup_lock and the reference count of a sysfs file.
+There are use cases where it can be useful to have a cpus_read_trylock()
+function to work around circular lock dependency problem involving
+the cpu_hotplug_lock.
 
-The cpufreq_register_driver() function uses the lock sequence:
+Signed-off-by: Waiman Long <longman@redhat.com>
+---
+ include/linux/cpu.h | 2 ++
+ kernel/cpu.c        | 6 ++++++
+ 2 files changed, 8 insertions(+)
 
-  cpus_read_lock --> kn->count
-
-Whereas the cpufreq sysfs store method uses the sequence:
-
-  kn->count --> cpus_read_lock
-
-This is not really an issue as a shared lock is used on the
-cpu_hotplup_lock. However, the lockdep code isn't able to handle
-shared locking. So one way to work around this is to define a
-cpus_read_trylock() function and uses it in the store method instead.
-
-Waiman Long (2):
-  cpu/hotplug: Add a cpus_read_trylock() function
-  cpufreq: Fix a circular lock dependency problem
-
- drivers/cpufreq/cpufreq.c | 16 +++++++++++++++-
- include/linux/cpu.h       |  2 ++
- kernel/cpu.c              |  6 ++++++
- 3 files changed, 23 insertions(+), 1 deletion(-)
-
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index a97a63e..e850bfe 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -103,6 +103,7 @@ static inline void cpu_maps_update_done(void)
+ extern void cpus_write_unlock(void);
+ extern void cpus_read_lock(void);
+ extern void cpus_read_unlock(void);
++extern int  cpus_read_trylock(void);
+ extern void lockdep_assert_cpus_held(void);
+ extern void cpu_hotplug_disable(void);
+ extern void cpu_hotplug_enable(void);
+@@ -115,6 +116,7 @@ static inline void cpus_write_lock(void) { }
+ static inline void cpus_write_unlock(void) { }
+ static inline void cpus_read_lock(void) { }
+ static inline void cpus_read_unlock(void) { }
++static inline int  cpus_read_trylock(void) { return true; }
+ static inline void lockdep_assert_cpus_held(void) { }
+ static inline void cpu_hotplug_disable(void) { }
+ static inline void cpu_hotplug_enable(void) { }
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 0db8938..307486b 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -290,6 +290,12 @@ void cpus_read_lock(void)
+ }
+ EXPORT_SYMBOL_GPL(cpus_read_lock);
+ 
++int cpus_read_trylock(void)
++{
++	return percpu_down_read_trylock(&cpu_hotplug_lock);
++}
++EXPORT_SYMBOL_GPL(cpus_read_trylock);
++
+ void cpus_read_unlock(void)
+ {
+ 	percpu_up_read(&cpu_hotplug_lock);
 -- 
 1.8.3.1
