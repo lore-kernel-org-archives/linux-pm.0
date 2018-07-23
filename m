@@ -1,156 +1,116 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v4 1/3] thermal: qcom-spmi: Allow to disable stage 2
- shutdown
-Date: Mon, 23 Jul 2018 08:49:53 -0700
-Message-ID: <20180723154953.GJ129942@google.com>
-References: <20180717210815.245639-1-mka@chromium.org>
- <CAD=FV=V1=P-Vq-VFXDfZGPMTVFvZK5cwaK_-Kxf8MwATJNwQSg@mail.gmail.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 24 Jul 2018 00:23:02 +0800
+Message-ID: <20180723162302.GA4503@sandybridge-desktop>
+References: <cover.1531924968.git.yu.c.chen@intel.com>
+ <20180718202235.GA4132@amd>
+ <20180718235851.GA22170@sandybridge-desktop>
+ <20180719110149.GA4679@amd>
+ <20180719132003.GA30981@sandybridge-desktop>
+ <20180720102532.GA20284@amd>
+ <1532346156.3057.11.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAD=FV=V1=P-Vq-VFXDfZGPMTVFvZK5cwaK_-Kxf8MwATJNwQSg@mail.gmail.com>
+In-Reply-To: <1532346156.3057.11.camel@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 20, 2018 at 11:42:40AM -0700, Doug Anderson wrote:
-> Hi,
+Hi,
+On Mon, Jul 23, 2018 at 01:42:36PM +0200, Oliver Neukum wrote:
+> On Fr, 2018-07-20 at 12:25 +0200, Pavel Machek wrote:
+> > Hi!
 > 
-> On Tue, Jul 17, 2018 at 2:08 PM, Matthias Kaehlcke <mka@chromium.org> wrote:
-> > When the temperature reaches stage 2 the PMIC performs by default a
-> > 'partial shutdown', unless software override is enabled. It is not well
-> > defined which peripherals are affected by a 'partial shutdown'. Drivers
-> > might be unhappy when their devices suddenly disappear and prevent an
-> > orderly shutdown.
-> >
-> > Add an optional device tree property that allows to disable stage 2
-> > shutdown.
-> >
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> > Changes in v4:
-> > - patch added to the series
-> > ---
-> >  .../bindings/thermal/qcom-spmi-temp-alarm.txt |  3 ++
-> >  drivers/thermal/qcom-spmi-temp-alarm.c        | 28 +++++++++++++------
-> >  2 files changed, 23 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
-> > index 290ec06fa33a..377c94fa1821 100644
-> > --- a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
-> > @@ -15,6 +15,8 @@ Optional properties:
-> >  - io-channels:     Should contain IIO channel specifier for the ADC channel,
-> >                     which report chip die temperature.
-> >  - io-channel-names: Should contain "thermal".
-> > +- stage2-shutdown-disabled: boolean to disable a partial shutdown of the PMIC
-> > +                            when the temperature reaches stage 2
+> Hello,
 > 
-> With my understanding of device tree I believe that this should be
-> "qcom,stage2-shutdown-disabled".  If something isn't a generic
-> property affecting a whole group of bindings I believe it's supposed
-> to have a company prefix.
+> > > Let me paste the log here:
+> > > 
+> > > 1. (This is not to compare with uswsusp but other
+> > >     tools) One advantage is: Users do not have to
+> > >     encrypt the whole swap partition as other tools.
+> > 
+> > Well.. encrypting the partition seems like good idea anyway.
 > 
-> From the device tree specification (wow, this exists now?  ...and is public?)
+> Yes, but it is a policy decision the kernel should not force.
+> STD needs to work anyway.
+>
+If the swap partition is too large, and there's low usage
+of memory, then it might a little time costly to encrypt
+the whole partition. You are right, people has choice to
+choose which mode they like.
+> > > 2. Ideally kernel memory should be encrypted by the
+> > >    kernel itself. We have uswsusp to support user
+> > >    space hibernation, however doing the encryption
+> > >    in kernel space has more advantages:
+> > >    2.1 Not having to transfer plain text kernel memory to
+> > >        user space. Per Lee, Chun-Yi, uswsusp is disabled
+> > >        when the kernel is locked down:
+> > >        https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/
+> > >        linux-fs.git/commit/?h=lockdown-20180410&
+> > >        id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
+> > >        due to:
+> > >        "There have some functions be locked-down because
+> > >        there have no appropriate mechanisms to check the
+> > >        integrity of writing data."
+> > >        https://patchwork.kernel.org/patch/10476751/
+> > 
+> > So your goal is to make hibernation compatible with kernel
+> > lockdown? Do your patches provide sufficient security that hibernation
+> > can be enabled with kernel lockdown?
 > 
-> https://github.com/devicetree-org/devicetree-specification/releases/tag/v0.2
+> OK, maybe I am dense, but if the key comes from user space, will that
+> be enough?
 > 
-> I find:
+Good point, we once tried to generate key in kernel, but people
+suggest to generate key in userspace and provide it to the
+kernel, which is what ecryptfs do currently, so it seems this
+should also be safe for encryption in kernel.
+https://www.spinics.net/lists/linux-crypto/msg33145.html
+Thus Chun-Yi's signature can use EFI key and both the key from
+user space.
+Best,
+Yu
+> > >    2.2 Not having to copy each page to user space
+> > >        one by one not in parallel, which might introduce
+> > >        significant amount of copy_to_user() and it might
+> > >        not be efficient on servers having large amount of DRAM.
+> > 
+> > So how big speedup can be attributed by not doing copy_to_user?
 > 
-> > Nonstandard property names should specify a unique string prefix, such
-> > as a stock ticker symbol, identifying the name of the company or
-> > organization that defined the property. Examples:
->   fsl,channel-fifo-len
->   ibm,ppc-interrupt-server#s
->   linux,network-index
-
-Ok, I'll update the property name in case we keep using one.
-
-> =====
+> That would be an argument for compression in kernel space.
+> Not encrpting would always be faster.
 > 
-> I would also perhaps add a bit more verbose justification to your
-> description of this property.  Specifically there should be some
-> indication in the bindings doc of when you'd want this property.  From
-> what David Collins said, I'd maybe write something like:
+> > >    2.3 Distribution has requirement to do snapshot
+> > >        signature for verification, which can be built
+> > >        by leveraging this patch set.
+> > 
+> > Signatures can be done by uswsusp, too, right?
 > 
-> ---
+> Not if you want to keep the chain of trust intact. User space
+> is not signed.
 > 
-> You want to disable the partial "stage 2" shutdown any time you've
-> properly defined thermal zones in such a way that the OS will try to
-> shut down at that stage anyway.  Said another way, there are three
-> thermal stages defined in the PMIC:
+> > >    2.4 The encryption is in the kernel, so it doesn't
+> > >        have to worry too much about bugs in user space
+> > >        utilities and similar, for example.
+> > 
+> > Answer to bugs in userspace is _not_ to move code from userspace to kernel.
 > 
-> stage 1: warning
-> stage 2: system should shut down
-> stage 3: emergency shut down
+> Indeed.
 > 
-> By default the PMIC assumes that the OS isn't doing anything and thus
-> at stage 2 it does the partial PMIC shutdown and at stage 3 it kills
-> all power.  If we have thermal zones defined such that the OS will
-> initiate the shutdown at stage 2 then we want to disable the PMIC's
-> automatic mode for stage 2.  That still leaves us with the emergency
-> at stage 3.
-
-Thanks, I'll add something along these lines (or bluntly copy them ;-)
-
-> ===
+> > > Joey Lee and I had a discussion on his previous work at
+> > > https://patchwork.kernel.org/patch/10476751
+> > > We collaborate on this task and his snapshot signature
+> > > feature can be based on this patch set.
+> > 
+> > Well, his work can also work without your patchset, right?
 > 
-> Actually, after writing all the above I wonder if perhaps there's a
-> way to do this all automatically.  AKA: if someone has specified a
-> "critical" level can we automatically disable the partial PMIC
-> shutdown and we don't need the extra property?  Bonus points if we can
-> check to see if the thermal zones defined actually match reality and
-> even more bonus points if you can automatically adjust the settings in
-> the PMIC based on the thermal zones...
+> Yes. But you are objecting to encryption in kernel space at all,
+> aren't you?
 > 
-> I did find that in "struct thermal_zone_of_device_ops" there appears
-> to be a "set_trip_temp" function you can fill in.  When I tried that
-> quickly I saw that I got called when I echoed into
-> "/sys/class/thermal/thermal_zone0/trip_point_1_temp" but not at
-> bootup, but I didn't debug more than that...
+> 	Regards
+> 		Oliver
 > 
-> 
-> >  Example:
-> >
-> > @@ -23,6 +25,7 @@ Example:
-> >                 reg = <0x2400 0x100>;
-> >                 interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
-> >                 #thermal-sensor-cells = <0>;
-> > +               stage2-shutdown-disabled;
-> >
-> >                 io-channels = <&pm8941_vadc VADC_DIE_TEMP>;
-> >                 io-channel-names = "thermal";
-> 
-> BTW: can you update the "example" in this file?  Based on the PMIC
-> docs I saw it's likely that it should be:
-> 
-> stage1 {
->   temperature = <1050000>;
->   hysteresis = <2000>;
->   type = "passive";
-> };
-> stage2 {
->   temperature = <125000>;
->   hysteresis = <2000>;
->   type = "critical";
-> };
-> 
-> ...and I guess we don't specify the final one because by that time
-> Linux is kaput.
-> 
-> 
-> > diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-> > index ad4f3a8d6560..acbb0dbec79e 100644
-> > --- a/drivers/thermal/qcom-spmi-temp-alarm.c
-> > +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-> 
-> Sometimes people like bindings and code change to be separate patches.
-> Maintainer can specify what's desired in this case, but I find it
-> generally pleases more people to make them separate.
-> 
-> ...though I guess if we can figure out how to do this automatically we
-> will have no bindings change...
-
-Thanks for the suggestions, I'll look into them for the next version!
