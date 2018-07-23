@@ -1,52 +1,68 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: supply: bq27xxx: Update comments
-Date: Mon, 23 Jul 2018 09:18:27 -0500
-Message-ID: <22d140c9-6947-9b7a-68dd-7d859620fa99@ti.com>
-References: <1532253504-17563-1-git-send-email-liu.xiang6@zte.com.cn>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v2 07/12] sched/core: uclamp: enforce last task UCLAMP_MAX
+Date: Mon, 23 Jul 2018 16:02:49 +0100
+Message-ID: <20180723150249.GD2683@e110439-lin>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-8-patrick.bellasi@arm.com>
+ <CAJuCfpH6CsDVG35Z3NV87mUgJW9TmoCuOs8GeW2TEqkP0K0f9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532253504-17563-1-git-send-email-liu.xiang6@zte.com.cn>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJuCfpH6CsDVG35Z3NV87mUgJW9TmoCuOs8GeW2TEqkP0K0f9g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Liu Xiang <liu.xiang6@zte.com.cn>
-Cc: pali.rohar@gmail.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, liuxiang_1999@126.com
+To: Suren Baghdasaryan <surenb@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/22/2018 04:58 AM, Liu Xiang wrote:
-> The URL of bq27441-g1 and bq27426 are missing and bq27520-g4 is duplicated.
+On 20-Jul 18:23, Suren Baghdasaryan wrote:
+> Hi Patrick,
+
+Hi Sure,
+thank!
+
+> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
+
+[...]
+
+> > @@ -977,13 +991,21 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
+> >         uc_grp = &rq->uclamp.group[clamp_id][0];
+> >         uc_grp[group_id].tasks += 1;
+> >
+> > +       /* Force clamp update on idle exit */
+> > +       uc_cpu = &rq->uclamp;
+> > +       clamp_value = p->uclamp[clamp_id].value;
+> > +       if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
 > 
-> Signed-off-by: Liu Xiang <liu.xiang6@zte.com.cn>
-> ---
+> The condition below is not needed because UCLAMP_FLAG_IDLE is set only
+> for UCLAMP_MAX clamp_id, therefore the above condition already covers
+> the one below.
 
+Not really, this function is called two times, the first time to
+update UCLAMP_MIN and a second time to update UCLAMP_MAX.
 
-Acked-by: Andrew F. Davis <afd@ti.com>
+For both clamp_id we want to force update uc_cpu->value[clamp_id],
+thus the UCLAMP_FLAG_IDLE flag has to be cleared only the second time.
 
+Maybe I can had the following comment to better explain the reason of
+the check:
 
->  drivers/power/supply/bq27xxx_battery.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index d44ed8e..f022e1b 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -26,7 +26,6 @@
->   * http://www.ti.com/product/bq27510-g1
->   * http://www.ti.com/product/bq27510-g2
->   * http://www.ti.com/product/bq27510-g3
-> - * http://www.ti.com/product/bq27520-g4
->   * http://www.ti.com/product/bq27520-g1
->   * http://www.ti.com/product/bq27520-g2
->   * http://www.ti.com/product/bq27520-g3
-> @@ -40,7 +39,9 @@
->   * http://www.ti.com/product/bq27545-g1
->   * http://www.ti.com/product/bq27421-g1
->   * http://www.ti.com/product/bq27425-g1
-> + * http://www.ti.com/product/bq27426
->   * http://www.ti.com/product/bq27411-g1
-> + * http://www.ti.com/product/bq27441-g1
->   * http://www.ti.com/product/bq27621-g1
->   */
->  
-> 
+		/*
+		 * This function is called for both UCLAMP_MIN (before) and
+		 * UCLAMP_MAX (after). Let's reset the flag only the when
+		 * we know that UCLAMP_MIN has been already updated.
+		 */
+
+> > +               if (clamp_id == UCLAMP_MAX)
+> > +                       uc_cpu->flags &= ~UCLAMP_FLAG_IDLE;
+> > +               uc_cpu->value[clamp_id] = clamp_value;
+> > +               return;
+> > +       }
+
+[...]
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
