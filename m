@@ -1,88 +1,306 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Tue, 24 Jul 2018 14:05:41 +0200
-Message-ID: <20180724120541.GE26036@amd>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
- <20180723122227.GA30092@amd>
- <20180723163848.GB4503@sandybridge-desktop>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v5 00/14] Energy Aware Scheduling
+Date: Tue, 24 Jul 2018 13:25:07 +0100
+Message-ID: <20180724122521.22109-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="PPYy/fEw/8QCHSq3"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180723163848.GB4503@sandybridge-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: Oliver Neukum <oneukum@suse.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
+The Energy Aware Scheduler (EAS) based on Morten Rasmussen's posting on
+LKML [1] is currently part of the AOSP Common Kernel and runs on today's
+smartphones with Arm's big.LITTLE CPUs. This series implements a new and
+largely simplified version of EAS based on an Energy Model (EM) of the
+platform with only costs information for the active states of the CPUs.
 
---PPYy/fEw/8QCHSq3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The patch-set is organized in three main parts.
+1. Patches 01-04/14 introduce a centralized and independent EM
+   management framework
+2. Patches 05-12/14 make use of the EM in the scheduler to bias task
+   placement decisions
+3. Patches 13-14/14 give an Arm64 example on how to register an Energy
+   Model in the new framework
 
-Hi!
 
-> > > Yes. But you are objecting to encryption in kernel space at all,
-> > > aren't you?
-> >=20
-> > I don't particulary love the idea of doing hibernation encryption in
-> > the kernel, correct.
-> >=20
-> > But we have this weird thing called secure boot, some people seem to
-> > want. So we may need some crypto in the kernel -- but I'd like
-> > something that works with uswsusp, too. Plus, it is mandatory that
-> > patch explains what security guarantees they want to provide against
-> > what kinds of attacks...
-> >=20
-> > Lee, Chun-Yi's patch seemed more promising.				Pavel
-> >=20
-> The only difference between Chun-Yi's hibernation encrytion solution
-> and our solution is that his strategy encrypts the snapshot from sratch,=
-=20
-> and ours encryts each page before them going to block device. The benefit
-> of his solution is that the snapshot can be encrypt in kernel first
-> thus the uswsusp is allowed  to read it to user space even kernel
-> is lock down. And I had a discussion with Chun-Yi that we can use
-> his snapshot solution to make uswsusp happy, and we share the crypto
-> help code and he can also use our user provided key for his signature.
-> >From this point of view, our code are actually the same, except that
-> we can help clean up the code and also enhance some encrytion process
-> for his solution. I don't know why you don't like encryption in kernel,=
-=20
-> because from my point of view, without encryption hibernation in kernel,
-> uswsusp could not be enabled if kernel is lock down : -) Or do I miss som=
-ething?
+1. The Energy Model Framework
 
-We can do encryption in kernel if really needed, but I don't have to
-like it, do I? :-).
+The energy consumed by the CPUs can be provided to the OS in different
+ways depending on the source of information (firmware or device tree for
+example). The EM framework introduced in patch 03/14 addresses this
+issue by aggregating the data coming from the drivers in a standard way
+and making it available to interested clients (thermal or the task
+scheduler, for example).
 
-I understand what Chun-Yi's code is trying to do. I can't say the same
-about yours.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Although this series comprises patches for the task scheduler as a user
+of the EM, the framework itself as introduced in patch 03/14 is meant to
+be _independent_ from any other subsystem.
 
---PPYy/fEw/8QCHSq3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+The overall design of the EM framework is depicted on the diagram below
+(focused on Arm drivers for the example, but applicable to any
+architecture).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+      +---------------+  +-----------------+  +-------------+
+      | Thermal (IPA) |  | Scheduler (EAS) |  |    Other    |
+      +---------------+  +-----------------+  +-------------+
+              |                   | em_fd_energy()   |
+              |                   | em_cpu_get()     |
+              +-----------+       |       +----------+
+                          |       |       |
+                          v       v       v
+                       +---------------------+
+                       |                     |
+                       |    Energy Model     |
+                       |                     |
+                       |     Framework       |
+                       |                     |
+                       +---------------------+
+                          ^       ^       ^
+                          |       |       | em_register_freq_domain()
+               +----------+       |       +---------+
+               |                  |                 |
+       +---------------+  +---------------+  +--------------+
+       |  cpufreq-dt   |  |   arm_scmi    |  |    Other     |
+       +---------------+  +---------------+  +--------------+
+               ^                  ^                 ^
+               |                  |                 |
+       +--------------+   +---------------+  +--------------+
+       | Device Tree  |   |   Firmware    |  |      ?       |
+       +--------------+   +---------------+  +--------------+
 
-iEYEARECAAYFAltXFhUACgkQMOfwapXb+vLnWwCeJAvOynLyjmdkzUL2tSyyomge
-OtoAn1Q7/LfOdO5IWHWO83ULyQXgfb4p
-=bAyw
------END PGP SIGNATURE-----
+Drivers can register data in the EM framework using the
+em_register_freq_domain() API. They are expected to provide a callback
+function that the EM framework can use to build energy cost tables and
+store them in shared data structures. Then, clients such as the task
+scheduler are allowed to read those shared structures using the
+em_fd_energy() and em_cpu_get() APIs. More details about the different
+APIs of the framework can be found in patch 03/14.
 
---PPYy/fEw/8QCHSq3--
+
+2. Energy-aware task placement in the task scheduler
+
+Patches 05-12/14 make use of the newly introduced EM in the scheduler to
+bias task placement decisions. When the system is detected as
+non-”overutilized”, an EM is available, and the platform has an
+asymmetric CPU capacity topology (e.g. big.LITTLE), the consequences on
+energy of placing a waking task on a CPU are taken into account to avoid
+energy-inefficient CPUs if possible. Patches 05-07/14 modify the
+scheduler topology code in order to: 1) check if all conditions for EAS
+are met when the scheduling domains are built; and 2) create data
+structures holding references on the EM tables that can be accessed in
+latency sensitive code paths (e.g. wake-up path).
+
+An “overutilized” flag (patches 08-09/14) is attached to the root domain,
+and is set whenever a CPU is utilized at more than 80% of its capacity.
+Patches 10-12/14 introduce the new energy-aware wake-up path which makes
+use of the data structures introduced in patches 05-07/14 whenever the
+system isn’t overutilized.
+
+
+3. Arm example of driver modifications to register an EM
+
+Patches 13-14/14 show an example of how drivers should be modified to
+register an EM in the new framework. The patches target Arm drivers,
+as an example, but the same ideas should be applicable for others
+architectures. Patch 13/14 rebuilds the scheduling domains once CPUFreq
+is up and running, and after the asymmetry of the system has been
+discovered. Patch 14/14 changes the cpufreq-dt driver (used for testing
+on Hikey960, see Section 4.) to provide estimated power values to the
+EM framework using coefficients read from DT. This patch has been made
+simple and self-contained intentionally in order to show an example of
+usage of the EM framework.
+
+
+4. Test results
+
+Two fundamentally different tests were executed. Firstly the energy test
+case shows the impact on energy consumption this patch-set has using a
+synthetic set of tasks. Secondly the performance test case provides the
+conventional hackbench metric numbers.
+
+The tests run on two arm64 big.LITTLE platforms: Hikey960 (4xA73 +
+4xA53) and Juno r0 (2xA57 + 4xA53).
+
+Base kernel is tip/sched/core (4.18-rc5), with some Hikey960 and Juno
+specific patches, the SD_ASYM_CPUCAPACITY flag set at DIE sched domain
+level for arm64 and schedutil as cpufreq governor [2].
+
+4.1 Energy test case
+
+10 iterations of between 10 and 50 periodic rt-app tasks (16ms period,
+5% duty-cycle) for 30 seconds with energy measurement. Unit is Joules.
+The goal is to save energy, so lower is better.
+
+4.1.1 Hikey960
+
+Energy is measured with an ACME Cape on an instrumented board. Numbers
+include consumption of big and little CPUs, LPDDR memory, GPU and most
+of the other small components on the board. They do not include
+consumption of the radio chip (turned-off anyway) and external
+connectors.
+
++----------+-----------------+-------------------------+
+|          | Without patches | With patches            |
++----------+--------+--------+------------------+------+
+| Tasks nb |  Mean  | RSD*   | Mean             | RSD* |
++----------+--------+--------+------------------+------+
+
+|       10 |  32.16 |   1.3% |  30.36  (-5.60%) | 1.2% |
+|       20 |  50.28 |   1.3% |  44.79 (-10.92%) | 0.6% |
+|       30 |  67.59 |   6.1% |  59.32 (-12.24%) | 1.4% |
+|       40 |  91.47 |   2.8% |  85.96  (-6.02%) | 3.7% |
+|       50 | 131.39 |   6.6% | 111.42 (-15.20%) | 4.8% |
++----------+--------+--------+------------------+------+
+
+4.1.2 Juno r0
+
+Energy is measured with the onboard energy meter. Numbers include
+consumption of big and little CPUs.
+
++----------+-----------------+------------------------+
+|          | Without patches | With patches           |
++----------+--------+--------+-----------------+------+
+| Tasks nb |  Mean  | RSD*   | Mean            | RSD* |
++----------+--------+--------+-----------------+------+
+|       10 |  11.07 |   3.2% |  8.04 (-27.37%) | 2.2% |
+|       20 |  20.14 |   4.2% | 14.20 (-29.49%) | 1.4% |
+|       30 |  32.67 |   3.5% | 24.06 (-26.35%) | 3.0% |
+|       40 |  46.23 |   1.0% | 36.87 (-20.24%) | 7.3% |
+|       50 |  57.36 |   0.5% | 54.69 ( -4.65%) | 0.7% |
++----------+--------+--------+-----------------+------+
+
+4.2 Performance test case
+
+30 iterations of perf bench sched messaging --pipe --thread --group G
+--loop L with G=[1 2 4 8] and L=50000 (Hikey960)/16000 (Juno r0).
+
+4.2.1 Hikey960
+
+The impact of thermal capping was mitigated thanks to a heatsink, a
+fan, and a 10 sec delay between two successive executions.
+
++----------------+-----------------+------------------------+
+|                | Without patches | With patches           |
++--------+-------+---------+-------+----------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
++--------+-------+---------+-------+----------------+-------+
+|      1 |    40 |    8.01 | 1.13% |  8.01 (+0.00%) | 1.40% |
+|      2 |    80 |   14.57 | 0.53% | 14.57 (+0.00%) | 0.63% |
+|      4 |   160 |   29.92 | 0.60% | 30.79 (+2.91%) | 0.49% |
+|      8 |   320 |   63.42 | 0.68% | 65.27 (+2.92%) | 0.43% |
++--------+-------+---------+-------+----------------+-------+
+
+4.2.2 Juno r0
+
++----------------+-----------------+-----------------------+
+|                | Without patches | With patches          |
++--------+-------+---------+-------+---------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean          | RSD*  |
++--------+-------+---------+-------+---------------+-------+
+|      1 |    40 |    7.76 | 0.11% |  7.83 (0.01%) | 0.11% |
+|      2 |    80 |   14.22 | 0.14% | 14.41 (0.01%) | 0.15% |
+|      4 |   160 |   26.95 | 0.34% | 27.08 (0.01%) | 0.24% |
+|      8 |   320 |   54.38 | 1.65% | 55.94 (0.03%) | 3.70% |
++--------+-------+---------+-------+---------------+-------+
+
+*RSD: Relative Standard Deviation (std dev / mean)
+
+
+5. Version history:
+
+Changes v4[3]->v5:
+- Removed the RCU protection of the EM tables and the associated
+  need for em_rescale_cpu_capacity().
+- Factorized schedutil’s PELT aggregation function with EAS
+- Improved comments/doc in the EM framework
+- Added check on the uarch of CPUs in one fd in the EM framework
+- Reduced CONFIG_ENERGY_MODEL ifdefery in kernel/sched/topology.c
+- Cleaned-up update_sg_lb_stats parameters
+- Improved comments in compute_energy() to explain the multi-rd
+  scenarios
+
+Changes v3[4]->v4:
+- Replaced spinlock in EM framework by smp_store_release/READ_ONCE
+- Fixed missing locks to protect rcu_assign_pointer in EM framework
+- Fixed capacity calculation in EM framework on 32 bits system
+- Fixed compilation issue for CONFIG_ENERGY_MODEL=n
+- Removed cpumask from struct em_freq_domain, now dynamically allocated
+- Power costs of the EM are specified in milliwatts
+- Added example of CPUFreq driver modification
+- Added doc/comments in the EM framework and better commit header
+- Fixed integration issue with util_est in cpu_util_next()
+- Changed scheduler topology code to have one freq. dom. list per rd
+- Split sched topology patch in smaller patches
+- Added doc/comments explaining the heuristic in the wake-up path
+- Changed energy threshold for migration to from 1.5% to 6%
+
+Changes v2[5]->v3:
+- Removed the PM_OPP dependency by implementing a new EM framework
+- Modified the scheduler topology code to take references on the EM data
+  structures
+- Simplified the overutilization mechanism into a system-wide flag
+- Reworked the integration in the wake-up path using the sd_ea shortcut
+- Rebased on tip/sched/core (247f2f6f3c70 "sched/core: Don't schedule
+  threads on pre-empted vCPUs")
+
+Changes v1[6]->v2:
+- Reworked interface between fair.c and energy.[ch] (Remove #ifdef
+  CONFIG_PM_OPP from energy.c) (Greg KH)
+- Fixed licence & header issue in energy.[ch] (Greg KH)
+- Reordered EAS path in select_task_rq_fair() (Joel)
+- Avoid prev_cpu if not allowed in select_task_rq_fair() (Morten/Joel)
+- Refactored compute_energy() (Patrick)
+- Account for RT/IRQ pressure in task_fits() (Patrick)
+- Use UTIL_EST and DL utilization during OPP estimation (Patrick/Juri)
+- Optimize selection of CPU candidates in the energy-aware wake-up path
+- Rebased on top of tip/sched/core (commit b720342849fe “sched/core:
+  Update Preempt_notifier_key to modern API”)
+
+[1] https://lkml.org/lkml/2015/7/7/754
+[2] http://www.linux-arm.org/git?p=linux-qp.git;a=shortlog;h=refs/heads/upstream/eas_v5
+[3] https://marc.info/?l=linux-kernel&m=153018606728533&w=2
+[4] https://marc.info/?l=linux-kernel&m=152691273111941&w=2
+[5] https://marc.info/?l=linux-kernel&m=152302902427143&w=2
+[6] https://marc.info/?l=linux-kernel&m=152153905805048&w=2
+
+
+Morten Rasmussen (1):
+  sched: Add over-utilization/tipping point indicator
+
+Quentin Perret (13):
+  sched: Relocate arch_scale_cpu_capacity
+  sched/cpufreq: Factor out utilization to frequency mapping
+  PM: Introduce an Energy Model management framework
+  PM / EM: Expose the Energy Model in sysfs
+  sched/topology: Reference the Energy Model of CPUs when available
+  sched/topology: Lowest energy aware balancing sched_domain level
+    pointer
+  sched/topology: Introduce sched_energy_present static key
+  sched/fair: Clean-up update_sg_lb_stats parameters
+  sched/cpufreq: Refactor the utilization aggregation method
+  sched/fair: Introduce an energy estimation helper function
+  sched/fair: Select an energy-efficient CPU on task wake-up
+  OPTIONAL: arch_topology: Start Energy Aware Scheduling
+  OPTIONAL: cpufreq: dt: Register an Energy Model
+
+ drivers/base/arch_topology.c     |   2 +
+ drivers/cpufreq/cpufreq-dt.c     |  45 ++++-
+ include/linux/energy_model.h     | 162 +++++++++++++++++
+ include/linux/sched/cpufreq.h    |   6 +
+ include/linux/sched/topology.h   |  19 ++
+ kernel/power/Kconfig             |  15 ++
+ kernel/power/Makefile            |   2 +
+ kernel/power/energy_model.c      | 289 +++++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c |  89 ++++++----
+ kernel/sched/fair.c              | 273 ++++++++++++++++++++++++++---
+ kernel/sched/sched.h             |  85 ++++++---
+ kernel/sched/topology.c          | 214 ++++++++++++++++++++++-
+ 12 files changed, 1125 insertions(+), 76 deletions(-)
+ create mode 100644 include/linux/energy_model.h
+ create mode 100644 kernel/power/energy_model.c
+
+-- 
+2.18.0
