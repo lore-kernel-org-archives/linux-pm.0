@@ -1,207 +1,33 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
- controller
-Date: Tue, 24 Jul 2018 16:39:16 +0100
-Message-ID: <20180724153916.GA3275@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-9-patrick.bellasi@arm.com>
- <20180723153040.GG1934745@devbig577.frc2.facebook.com>
- <20180723172215.GG2683@e110439-lin>
- <20180724132902.GI1934745@devbig577.frc2.facebook.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] thermal: samsung: Remove Exynos5440 clock handling
+ left-overs
+Date: Tue, 24 Jul 2018 17:46:59 +0200
+Message-ID: <3064664.tE3uuFXtKN@amdc3058>
+References: <CGME20180717154647epcas2p4285b46d932fbfd04eab2bdf05de8a5b1@epcas2p4.samsung.com>
+        <20180717154617.29913-1-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180724132902.GI1934745@devbig577.frc2.facebook.com>
+In-reply-to: <20180717154617.29913-1-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tejun,
-
-I apologize in advance for the (yet another) long reply, however I did
-my best hereafter to try to resume all the controversial points
-discussed so far.
-
-If you will have (one more time) the patience to go through the
-following text you'll find a set of precise clarifications and
-questions I have for you.
-
-Thank you again for your time.
-
-On 24-Jul 06:29, Tejun Heo wrote:
-
-[...]
-
-> > What I describe here is just an additional hint to the scheduler which
-> > enrich the above described model. Provided A and B are already
-> > satisfied, when a task gets a chance to run it will be executed at a
-> > min/max configured frequency. That's really all... there is not
-> > additional impact on "resources allocation".
+On Tuesday, July 17, 2018 05:46:17 PM Krzysztof Kozlowski wrote:
+> Commit 8014220d48e7 ("thermal: samsung: Remove support for Exynos5440")
+> removed the Exynos5440 specific part of code for accessing TMU interrupt
+> registers but the surrounding clock handling was left.
 > 
-> So, if it's a cpufreq range controller.  It'd have sth like
-> cpu.freq.min and cpu.freq.max, where min defines the maximum minimum
-> cpufreq its descendants can get and max defines the maximum cpufreq
-> allowed in the subtree.  For an example, please refer to how
-> memory.min and memory.max are defined.
+> Clean it up.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-I think you are still looking at just one usage of this interface,
-which is likely mainly my fault also because of the long time between
-posting. Sorry for that...
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Let me re-propose here an abstract of the cover letter with some
-additional notes inline.
-
---- Cover Letter Abstract START ---
-
-> > [...] utilization is a task specific property which is used by the scheduler
-> > to know how much CPU bandwidth a task requires (under certain conditions).
-> > Thus, the utilization clamp values defined either per-task or via the
-> > CPU controller, can be used to represent tasks to the scheduler as
-> > being bigger (or smaller) then what they really are.
-          ^^^^^^^^^^^^^^^^^^^
-
-This is a fundamental feature added by utilization clamping: this is a
-task property which can be useful in many different ways to the
-scheduler and not "just" to bias frequency selection.
-
-> > Utilization clamping thus ultimately enable interesting additional
-> > optimizations, especially on asymmetric capacity systems like Arm
-> > big.LITTLE and DynamIQ CPUs, where:
-> > 
-> >  - boosting: small tasks are preferably scheduled on higher-capacity CPUs
-> >    where, despite being less energy efficient, they can complete faster
-> > 
-> >  - clamping: big/background tasks are preferably scheduler on low-capacity CPUs
-> >    where, being more energy efficient, they can still run but save power and
-> >    thermal headroom for more important tasks.
-
-These two point above are two examples of how we can use utilization
-clamping which is not frequency selection.
-
-> > This additional usage of the utilization clamping is not presented in this
-                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
-
-Is it acceptable to add a generic interface by properly and completely
-describing, both in the cover letter and in the relative changelogs,
-what will be the future bits we can add ?
-
-> > series but it's an integral part of the Energy Aware Scheduler (EAS) feature
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The EAS scheduler, without the utilization clamping bits, does a great
-job in scheduling tasks while saving energy. However, on every system,
-we are interested also in other metrics, like for example: completion
-time and power dissipation.
-
-Whether certain tasks should be scheduled to optimize energy
-efficiency, completion time and/or power dissipation is something we
-can achieve only by:
-
-1. adopting a proper tasks classification schema
-   => that's why CGroups are of interest
-
-2. using a generic enough mechanism to describe certain tasks
-   properties which affect all the metrics above,
-   i.e. energy, speed and power
-   => that's why utilization and its clamping is of interest
-
-> > set. A similar solution (SchedTune) is already used on Android kernels, which
-                                           ^^^^^^^^^^^^^^^^^^^^^^^
-
-This _complete support_ is already actively and successfully used on
-many Android devices...
-
-> > targets both frequency selection and task placement biasing.
-            ^^^^                     ^^^^^^^^^^^^^^^^^^
-
-... to support _not only_ frequency selections.
-
-> > This series provides the foundation bits to add similar features in mainline
-                             ^^^^^^^^^^^^^^^
-> > and its first simple client with the schedutil integration.
-            ^^^^^^^^^^^^^^^^^^^
-
-The solution presented here shows only the integration with
-cpufreq/schedutil. However, since we are adding a user-space
-interface, we have to add this new interface in a generic way since
-the beginning to support also the complete implementation we will have
-at the end.
-
---- Cover Letter Abstract END ---
-
-
->From my comments above I hope it's now more clear that "utilization
-clamping" is not just a "cpufreq range controller" and, since we
-will extend the internal usage of such interface, we cannot add now a
-user-space interface which targets just frequency control.
-
-To resume, here we are at proposing a generic interface which:
-
-a) do not strictly enforce and/or grant any bandwidth to tasks and
-   do not directly define how the CPU resource has to be partitioned
-   among tasks
-
-b) improves the way we can constraint bandwidth consumed by TGs, by
-   specifying a min/max "MIPS range" (in scheduler terms: utilization)
-   the bandwidth can be consumed at
-
-c) it's based on a fundamental task scheduler metric: utilization
-   since the "MIPS range" can be affected by the "type of CPUs" and
-   not only by the "operating frequency"
-
-d) can be used by the scheduler to bias "tasks placement" as well as
-   "frequency selection"
-
-e) do not provide the full implementation here not only to keep the
-   initial patchset limited in size but also because of some
-   dependencies on other EAS bits which are currently under discussion
-   on LKML.
-   These different EAS features can still be progressed independently.
-
-f) at our best, it aims at providing a complete use-case description
-   both in the cover-letter as well as in the relative changelogs
-
-Going back to one of your previous comments, when you says:
-
-> What's described is computation bandwidth control but what's
-> implemented is just frequency clamping.
-
-Do we agree now that:
-
-1. what we propose is not a "computational bandwidth control"
-   mechanism and/or interface
-
-2. what we implement is freq clamping but that's just one use case to
-   keep the series small enough
-
-3. despite 2) we need to add an interface which is generic enough to
-   accommodate the other use-cases
-
-4. the basic metric exposed (i.e. utilization) is used now for
-   frequency clamping but the same one will be used for task placement
-   biasing
-
-?
-
-And again, when you say:
-
-> So, there are fundamental discrepancies between
-> description+interface vs. what it actually does.
-
-Is it acceptable to have a new interface which fits a wider
-description?
-
-With such a description, our aim is also to demonstrate that we are
-_not_ adding a special case new user-space interface but a generic
-enough interface which can be properly extended in the future without
-breaking existing functionalities but just by keep improving them.
-
-Best,
-Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
