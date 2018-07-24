@@ -1,63 +1,88 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
-Date: Tue, 24 Jul 2018 12:04:15 +0000
-Message-ID: <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
-References: <cover.1532090446.git.leonard.crestez@nxp.com>
-         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
-         <1532338685.3163.93.camel@pengutronix.de>
-         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
-         <1532426953.32306.5.camel@pengutronix.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 24 Jul 2018 14:05:41 +0200
+Message-ID: <20180724120541.GE26036@amd>
+References: <cover.1531924968.git.yu.c.chen@intel.com>
+ <20180718202235.GA4132@amd>
+ <20180718235851.GA22170@sandybridge-desktop>
+ <20180719110149.GA4679@amd>
+ <20180719132003.GA30981@sandybridge-desktop>
+ <20180720102532.GA20284@amd>
+ <1532346156.3057.11.camel@suse.com>
+ <20180723122227.GA30092@amd>
+ <20180723163848.GB4503@sandybridge-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="PPYy/fEw/8QCHSq3"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532426953.32306.5.camel@pengutronix.de>
-Content-Language: en-US
-Content-ID: <B58E1A02811C6547A9D6F61DEAE10E21@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <20180723163848.GB4503@sandybridge-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "A.s. Dong" <aisheng.dong@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: Oliver Neukum <oneukum@suse.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA3LTI0IGF0IDEyOjA5ICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
-QW0gTW9udGFnLCBkZW4gMjMuMDcuMjAxOCwgMTI6MzcgKzAwMDAgc2NocmllYiBMZW9uYXJkIENy
-ZXN0ZXo6DQo+ID4gT24gTW9uLCAyMDE4LTA3LTIzIGF0IDExOjM4ICswMjAwLCBMdWNhcyBTdGFj
-aCB3cm90ZToNCj4gPiA+IEFtIEZyZWl0YWcsIGRlbiAyMC4wNy4yMDE4LCAxNTo0NyArMDMwMCBz
-Y2hyaWViIExlb25hcmQgQ3Jlc3RlejoNCj4gPiA+ID4gT24gaW14N2QgdGhlIHBjaWUtcGh5IHBv
-d2VyIGRvbWFpbiBpcyB0dXJuZWQgb2ZmIGluIHN1c3BlbmQgYW5kIHRoaXMgY2FuDQo+ID4gPiA+
-IG1ha2UgdGhlIHN5c3RlbSBoYW5nIGFmdGVyIHJlc3VtZSB3aGVuIGF0dGVtcHRpbmcgYW55IHJl
-YWQgZnJvbSBQQ0kuDQo+ID4gPiA+IA0KPiA+ID4gPiBGaXggdGhpcyBieSBhZGRpbmcgbWluaW1h
-bCBzdXNwZW5kL3Jlc3VtZSBjb2RlIGZyb20gdGhlIG54cCBpbnRlcm5hbA0KPiA+ID4gPiB0cmVl
-LiBUaGlzIHdpbGwgcHJlcGFyZSBmb3IgcG93ZXJpbmcgZG93biBvbiBzdXNwZW5kIGFuZCByZXNl
-dCB0aGUgYmxvY2sNCj4gPiA+ID4gb24gcmVzdW1lLg0KPiA+ID4gPiANCj4gPiA+ID4gQ29kZSBp
-cyBvbmx5IGZvciBpbXg3ZCBidXQgYSB2ZXJ5IHNpbWlsYXIgc2VxdWVuY2UgY2FuIGJlIHVzZWQg
-Zm9yDQo+ID4gPiA+IG90aGVyIHNvY3MuDQo+ID4gPiA+IA0KPiA+ID4gPiArc3RhdGljIHZvaWQg
-aW14Nl9wY2llX2x0c3NtX2Rpc2FibGUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiA+ID4gPiArew0K
-PiA+ID4gPiArCXN0cnVjdCBpbXg2X3BjaWUgKmlteDZfcGNpZSA9IGRldl9nZXRfZHJ2ZGF0YShk
-ZXYpOw0KPiA+ID4gPiArDQo+ID4gPiA+ICsJc3dpdGNoIChpbXg2X3BjaWUtPnZhcmlhbnQpIHsN
-Cj4gPiA+ID4gKwljYXNlIElNWDZROg0KPiA+ID4gPiArCWNhc2UgSU1YNlNYOg0KPiA+ID4gPiAr
-CWNhc2UgSU1YNlFQOg0KPiA+ID4gPiArCQlyZWdtYXBfdXBkYXRlX2JpdHMoaW14Nl9wY2llLT5p
-b211eGNfZ3ByLCBJT01VWENfR1BSMTIsDQo+ID4gPiA+ICsJCQkJICAgSU1YNlFfR1BSMTJfUENJ
-RV9DVExfMiwgMCk7DQo+ID4gPiANCj4gPiA+IEhhcyB0aGlzIGJlZW4gdGVzdGVkIG9uIGkuTVg2
-PyBMVFNTTSBkaXNhYmxlIHJlcXVpcmVzIGEgbW9yZSBjb21wbGV4DQo+ID4gPiBzZXF1ZW5jZSBv
-biB0aGlzIFNvQyB0byBhdm9pZCBoYW5naW5nIHRoZSBzeXN0ZW0uIFNlZSBjb21taXQNCj4gPiA+
-IDNlM2U0MDZlMzgwNyAiUENJOiBpbXg2OiBQdXQgTFRTU00gaW4gIkRldGVjdCIgc3RhdGUgYmVm
-b3JlIGRpc2FibGluZw0KPiA+ID4gaXQiLg0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggb25seSBlbmFi
-bGVzIHN1c3BlbmQvcmVzdW1lIGZvciBpbXg3ZCB3aXRoIG90aGVyIFNPQ3MgdG8NCj4gPiBmb2xs
-b3cgbGF0ZXIuIFRoZSBsdHNzbV9kaXNhYmxlIGZ1bmN0aW9uIGlzIGp1c3Qgc3ltbWV0cmljIHdp
-dGgNCj4gPiBsdHNzbV9lbmFibGUuDQo+ID4gDQo+ID4gVGhlIDZRIHBhcnRzIGFyZSBhZmZlY3Rl
-ZCBieSBlcnJhdGEgIkVSUjAwNTcyMyBQQ0llOiBQQ0llIGRvZXMgbm90DQo+ID4gc3VwcG9ydCBM
-MiBwb3dlciBkb3duIFtpLk1YIDZEdWFsLzZRdWFkIE9ubHldIi4NCj4gPiANCj4gPiBUaGlzIGRl
-c2lnbiBlcnJvciBzZWVtcyB0byBoYXZlIHRoZSBzYW1lIHJvb3QgY2F1c2UgYXMgeW91ciBwcm9i
-bGVtIChubw0KPiA+IGRlZGljYXRlZCByZXNldCBjb250cm9sKSBzbyB0aGlzIHdvcmtzIG91dCBx
-dWl0ZSBuaWNlbHk6IHRoZSBzb2x1dGlvbg0KPiA+IGlzIHRvIG5ldmVyIHBvd2VyIGRvd24gcGNp
-IG9uIGFmZmVjdGVkIGNoaXBzLg0KPiANCj4gSSBkb24ndCBxdWl0ZSBsaWtlIGNvZGUgdGhhdCBs
-b29rcyBsaWtlIGl0IGlzIGRvaW5nIHRoZSByaWdodCB0aGluZywNCj4gYnV0IHRoZW4gZG9lc24n
-dC4gQ2FuIHdlIGF0IGxlYXN0IGVtaXQgYSB3YXJuaW5nIHRoYXQgdGhlcmUgbWlnaHQgYmUNCj4g
-ZHJhZ29ucyBpZiBhbnlvbmUgdHJpZXMgdG8gY2FsbCB0aGlzIG9uIGkuTVg2Pw0KDQpCdXQgdGhl
-IGZ1bmN0aW9uIHdpbGwgaW5kZWVkIHRvZ2dsZSB0aGUgcmlnaHQgYml0cyB0byBpbml0aWF0ZSBs
-dHNzbQ0KZGlzYWJsaW5nLiBJZiB0aGlzIGlzIG5vdCB1c2VmdWwgb3IgY2FuJ3QgYmUgdXNlZCBy
-aWdodCB0aGVuIGl0J3MgdGhlDQpjYWxsZXIncyBwcm9ibGVtIDopDQoNCkkgY2FuIGFkZCBhIGRl
-ZmF1bHQ6IGNsYXVzZSB0byB0aGUgc3dpdGNoIHdoaWNoIHJldHVybnMgLUVOT1NZUyBhbmQgbGV0
-DQpJTVg2USBmYWxsIHRoYXQgd2F5LCB3b3VsZCB0aGF0IGJlIE9LPyBUaGlzIHdvdWxkIGFsc28g
-aGVscCB3aGVuIGFkZGluZw0KbmV3IHZhcmlhbnRzLg==
+
+--PPYy/fEw/8QCHSq3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi!
+
+> > > Yes. But you are objecting to encryption in kernel space at all,
+> > > aren't you?
+> >=20
+> > I don't particulary love the idea of doing hibernation encryption in
+> > the kernel, correct.
+> >=20
+> > But we have this weird thing called secure boot, some people seem to
+> > want. So we may need some crypto in the kernel -- but I'd like
+> > something that works with uswsusp, too. Plus, it is mandatory that
+> > patch explains what security guarantees they want to provide against
+> > what kinds of attacks...
+> >=20
+> > Lee, Chun-Yi's patch seemed more promising.				Pavel
+> >=20
+> The only difference between Chun-Yi's hibernation encrytion solution
+> and our solution is that his strategy encrypts the snapshot from sratch,=
+=20
+> and ours encryts each page before them going to block device. The benefit
+> of his solution is that the snapshot can be encrypt in kernel first
+> thus the uswsusp is allowed  to read it to user space even kernel
+> is lock down. And I had a discussion with Chun-Yi that we can use
+> his snapshot solution to make uswsusp happy, and we share the crypto
+> help code and he can also use our user provided key for his signature.
+> >From this point of view, our code are actually the same, except that
+> we can help clean up the code and also enhance some encrytion process
+> for his solution. I don't know why you don't like encryption in kernel,=
+=20
+> because from my point of view, without encryption hibernation in kernel,
+> uswsusp could not be enabled if kernel is lock down : -) Or do I miss som=
+ething?
+
+We can do encryption in kernel if really needed, but I don't have to
+like it, do I? :-).
+
+I understand what Chun-Yi's code is trying to do. I can't say the same
+about yours.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--PPYy/fEw/8QCHSq3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAltXFhUACgkQMOfwapXb+vLnWwCeJAvOynLyjmdkzUL2tSyyomge
+OtoAn1Q7/LfOdO5IWHWO83ULyQXgfb4p
+=bAyw
+-----END PGP SIGNATURE-----
+
+--PPYy/fEw/8QCHSq3--
