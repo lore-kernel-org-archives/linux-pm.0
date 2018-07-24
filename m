@@ -1,121 +1,86 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v5 14/14] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Tue, 24 Jul 2018 13:25:21 +0100
-Message-ID: <20180724122521.22109-15-quentin.perret@arm.com>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
+Date: Tue, 24 Jul 2018 14:28:34 +0200
+Message-ID: <1532435314.32306.7.camel@pengutronix.de>
+References: <cover.1532090446.git.leonard.crestez@nxp.com>
+         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
+         <1532338685.3163.93.camel@pengutronix.de>
+         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
+         <1532426953.32306.5.camel@pengutronix.de>
+         <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724122521.22109-1-quentin.perret@arm.com>
+In-Reply-To: <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
+To: Leonard Crestez <leonard.crestez@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "A.s. Dong" <aisheng.dong@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-*******************************************************************
-* This patch illustrates the usage of the newly introduced Energy *
-* Model framework and isn't supposed to be merged as-is.          *
-*******************************************************************
+Am Dienstag, den 24.07.2018, 12:04 +0000 schrieb Leonard Crestez:
+> On Tue, 2018-07-24 at 12:09 +0200, Lucas Stach wrote:
+> > Am Montag, den 23.07.2018, 12:37 +0000 schrieb Leonard Crestez:
+> > > On Mon, 2018-07-23 at 11:38 +0200, Lucas Stach wrote:
+> > > > Am Freitag, den 20.07.2018, 15:47 +0300 schrieb Leonard Crestez:
+> > > > > On imx7d the pcie-phy power domain is turned off in suspend and this can
+> > > > > make the system hang after resume when attempting any read from PCI.
+> > > > > 
+> > > > > Fix this by adding minimal suspend/resume code from the nxp internal
+> > > > > tree. This will prepare for powering down on suspend and reset the block
+> > > > > on resume.
+> > > > > 
+> > > > > Code is only for imx7d but a very similar sequence can be used for
+> > > > > other socs.
+> > > > > 
+> > > > > +static void imx6_pcie_ltssm_disable(struct device *dev)
+> > > > > +{
+> > > > > > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> > > > > +
+> > > > > > > > > > +	switch (imx6_pcie->variant) {
+> > > > > > > > > > +	case IMX6Q:
+> > > > > > > > > > +	case IMX6SX:
+> > > > > > > > > > +	case IMX6QP:
+> > > > > > > > > > +		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
+> > > > > +				   IMX6Q_GPR12_PCIE_CTL_2, 0);
+> > > > 
+> > > > Has this been tested on i.MX6? LTSSM disable requires a more complex
+> > > > sequence on this SoC to avoid hanging the system. See commit
+> > > > 3e3e406e3807 "PCI: imx6: Put LTSSM in "Detect" state before disabling
+> > > > it".
+> > > 
+> > > This patch only enables suspend/resume for imx7d with other SOCs to
+> > > follow later. The ltssm_disable function is just symmetric with
+> > > ltssm_enable.
+> > > 
+> > > The 6Q parts are affected by errata "ERR005723 PCIe: PCIe does not
+> > > support L2 power down [i.MX 6Dual/6Quad Only]".
+> > > 
+> > > This design error seems to have the same root cause as your problem (no
+> > > dedicated reset control) so this works out quite nicely: the solution
+> > > is to never power down pci on affected chips.
+> > 
+> > I don't quite like code that looks like it is doing the right thing,
+> > but then doesn't. Can we at least emit a warning that there might be
+> > dragons if anyone tries to call this on i.MX6?
+> 
+> But the function will indeed toggle the right bits to initiate ltssm
+> disabling. If this is not useful or can't be used right then it's the
+> caller's problem :)
 
-The Energy Model framework provides an API to register the active power
-of CPUs. Call this API from the cpufreq-dt driver with an estimation
-of the power as P = C * V^2 * f with C, V, and f respectively the
-capacitance of the CPU and the voltage and frequency of the OPP.
+I don't agree with that. I would expect a function that is called
+ltssm_disable to do so in a way that is safe on the hardware that it
+claims to handle, which in case of i.MX6 means bashing the LTSSM into
+detect state before toggling the GPR bit.
 
-The CPU capacitance is read from the "dynamic-power-coefficient" DT
-binding (originally introduced for thermal/IPA), and the voltage and
-frequency values from PM_OPP.
+> I can add a default: clause to the switch which returns -ENOSYS and let
+> IMX6Q fall that way, would that be OK? This would also help when adding
+> new variants.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/cpufreq/cpufreq-dt.c | 45 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+Yes, given that there is currently no way to test this on i.MX6,
+returning -ENOSYS sound much better. This at least tells anyone who
+intends to use this function that there is indeed missing functionality
+there.
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 0a9ebf00be46..399f54d0abf2 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -16,6 +16,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/energy_model.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -149,8 +150,47 @@ static int resources_available(void)
- 	return 0;
- }
- 
-+static int of_est_power(unsigned long *mW, unsigned long *KHz, int cpu)
-+{
-+	unsigned long mV, Hz, MHz;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	struct device_node *np;
-+	u32 cap;
-+	u64 tmp;
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -EINVAL;
-+
-+	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-+		return -EINVAL;
-+
-+	Hz = *KHz * 1000;
-+	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-+	if (IS_ERR(opp))
-+		return -EINVAL;
-+
-+	mV = dev_pm_opp_get_voltage(opp) / 1000;
-+	dev_pm_opp_put(opp);
-+
-+	MHz = Hz / 1000000;
-+	tmp = (u64)cap * mV * mV * MHz;
-+	do_div(tmp, 1000000000);
-+
-+	*mW = (unsigned long)tmp;
-+	*KHz = Hz / 1000;
-+
-+	return 0;
-+}
-+
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
-+	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
- 	struct cpufreq_frequency_table *freq_table;
- 	struct opp_table *opp_table = NULL;
- 	struct private_data *priv;
-@@ -159,7 +199,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	unsigned int transition_latency;
- 	bool fallback = false;
- 	const char *name;
--	int ret;
-+	int ret, nr_opp;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -226,6 +266,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		ret = -EPROBE_DEFER;
- 		goto out_free_opp;
- 	}
-+	nr_opp = ret;
- 
- 	if (fallback) {
- 		cpumask_setall(policy->cpus);
-@@ -278,6 +319,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	em_register_freq_domain(policy->cpus, nr_opp, &em_cb);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
--- 
-2.18.0
+Regards,
+Lucas
