@@ -1,42 +1,155 @@
-From: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v6 18/18] crypto: Remove AHASH_REQUEST_ON_STACK
-Date: Tue, 24 Jul 2018 10:53:26 -0700
-Message-ID: <CAGXu5j+gTpZFkXE8XSNgYPEpBT4+hCb1kzv8s8KrSTerHyKp6w@mail.gmail.com>
-References: <20180724164936.37477-1-keescook@chromium.org> <20180724164936.37477-19-keescook@chromium.org>
- <1bdc706ae86039c4ffcff39698251424d54af116.camel@perches.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [RFC] PCI: imx: Add multi-pd support
+Date: Tue, 24 Jul 2018 21:17:38 +0300
+Message-ID: <8018069bc772376caef29e76280e4d0facffdb68.1532455922.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1bdc706ae86039c4ffcff39698251424d54af116.camel-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Cc: Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Eric Biggers <ebiggers-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, "Gustavo A. R. Silva" <gustavo-L1vi/lXTdts+Va1GwOuvDg@public.gmane.org>, Alasdair Kergon <agk-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Rabin Vincent <rabinv-VrBV9hrLPhE@public.gmane.org>, Tim Chen <tim.c.chen-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, X86 ML <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Philipp Reisner <philipp.reisner-63ez5xqkn6DQT0dZR+AlfA@public.gmane.org>, Lars Ellenberg <lars.ellenberg-63ez5xqkn6DQT0dZR+AlfA@public.gmane.org>, Jens Axboe <axboe-tSWWG44O7X1aa/9Udqfwiw@public.gmane.org>, Giovanni Cabiddu <giovanni.cabiddu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mike Snitzer <snitzer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jon Hunter <jonathanh@nvidia.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Anson Huang <Anson.Huang@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 24, 2018 at 10:31 AM, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org> wrote:
-> On Tue, 2018-07-24 at 09:49 -0700, Kees Cook wrote:
->> All users of AHASH_REQUEST_ON_STACK have been removed from the kernel, so
->> drop it entirely so no VLAs get reintroduced by future users.
->
-> checkpatch has a test for that.
-> It could now be removed as well.
-> ---
-> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index 34e4683de7a3..a3517334d661 100755
-> --- a/scripts/checkpatch.pl
-> +++ b/scripts/checkpatch.pl
-> @@ -796,7 +796,7 @@ our $declaration_macros = qr{(?x:
->         (?:$Storage\s+)?(?:[A-Z_][A-Z0-9]*_){0,2}(?:DEFINE|DECLARE)(?:_[A-Z0-9]+){1,6}\s*\(|
->         (?:$Storage\s+)?[HLP]?LIST_HEAD\s*\(|
->         (?:$Storage\s+)?${Type}\s+uninitialized_var\s*\(|
-> -       (?:SKCIPHER_REQUEST|SHASH_DESC|AHASH_REQUEST)_ON_STACK\s*\(
-> +       (?:SKCIPHER_REQUEST|SHASH_DESC)_ON_STACK\s*\(
->  )};
+On some chips the PCIE and PCIE_PHY blocks are in separate power domains
+which can be power-gated independently. The driver needs to handle this
+by keeping both domain active.
 
-Ah! Cool. I've added this now.
+This is intended for imx6sx where PCIE is in DISPMIX and PCIE_PHY in
+it's own domain. Defining the DISPMIX domain requires a way for pcie to
+keep it active or it will break when displays are off.
 
--Kees
+The power-domains on imx6sx are meant to look like this:
+	power-domains = <&pd_disp>, <&pd_pci>;
+	power-domain-names = "pcie", "pcie_phy";
 
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+
+Right now if a device has a single power domain it will be activated
+before probe but if it has multiple domains they need to be explicitly
+"attached" to and controlled. Supporting both is a bit awkward, this
+patch makes the distinction based on (dev->pm_domain != NULL).
+
+Maybe the PM core should make this distinction based on a flag in struct
+device_driver instead of number of power-domains? So by default when a
+device has multiple power domains they would would be activated
+together and this patch would be unnecessary.
+
+This is marked as "RFC" mostly because I believe it should be handled
+inside PM core, without driver code. Does this make sense to anyone else?
+
+This is independent of recent patches adding suspend/resume support to
+imx pci, but supporting suspend with multi-pd requires adding device
+links, not just activating pds at probe time.
+
+The device_link is marked as "STATELESS" because otherwise a warning is
+triggered in device_links_driver_bound. This seems to happen because the
+pd devices are always marked as "DL_DEV_NO_DRIVER". Maybe they should be
+instead always be marked as DL_DEV_DRIVER_BOUND?
+
+The imx pci driver doesn't support unbind or removal anyway so this is
+not handled for multi-pd either.
+
+Previously: https://lkml.org/lkml/2018/7/10/230
+---
+ drivers/pci/controller/dwc/pci-imx6.c | 48 +++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
+index fc9529619469..7403918010e9 100644
+--- a/drivers/pci/controller/dwc/pci-imx6.c
++++ b/drivers/pci/controller/dwc/pci-imx6.c
+@@ -25,10 +25,12 @@
+ #include <linux/resource.h>
+ #include <linux/signal.h>
+ #include <linux/types.h>
+ #include <linux/interrupt.h>
+ #include <linux/reset.h>
++#include <linux/pm_domain.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "pcie-designware.h"
+ 
+ #define to_imx6_pcie(x)	dev_get_drvdata((x)->dev)
+ 
+@@ -57,10 +59,15 @@ struct imx6_pcie {
+ 	u32			tx_deemph_gen2_6db;
+ 	u32			tx_swing_full;
+ 	u32			tx_swing_low;
+ 	int			link_gen;
+ 	struct regulator	*vpcie;
++
++	/* power domain for pcie itself (dispmix) */
++	struct device		*pd_pcie;
++	/* power domain for pcie phy */
++	struct device		*pd_pcie_phy;
+ };
+ 
+ /* Parameters for the waiting for PCIe PHY PLL to lock on i.MX7 */
+ #define PHY_PLL_LOCK_WAIT_MAX_RETRIES	2000
+ #define PHY_PLL_LOCK_WAIT_USLEEP_MIN	50
+@@ -805,10 +812,47 @@ static int imx6_pcie_resume_noirq(struct device *dev)
+ static const struct dev_pm_ops imx6_pcie_pm_ops = {
+ 	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(imx6_pcie_suspend_noirq,
+ 				      imx6_pcie_resume_noirq)
+ };
+ 
++static int imx6_pcie_attach_pd(struct device *dev)
++{
++	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
++	struct device_link *link;
++
++	/* Do nothing when in a single power domain */
++	if (dev->pm_domain)
++		return 0;
++
++	imx6_pcie->pd_pcie = dev_pm_domain_attach_by_name(dev, "pcie");
++	if (IS_ERR(imx6_pcie->pd_pcie))
++		return PTR_ERR(imx6_pcie->pd_pcie);
++	link = device_link_add(dev, imx6_pcie->pd_pcie,
++			DL_FLAG_STATELESS |
++			DL_FLAG_PM_RUNTIME |
++			DL_FLAG_RPM_ACTIVE);
++	if (IS_ERR(link)) {
++		dev_err(dev, "Failed to add device_link to pcie pd: %ld\n", PTR_ERR(link));
++		return PTR_ERR(link);
++	}
++
++	imx6_pcie->pd_pcie_phy = dev_pm_domain_attach_by_name(dev, "pcie_phy");
++	if (IS_ERR(imx6_pcie->pd_pcie_phy))
++		return PTR_ERR(imx6_pcie->pd_pcie_phy);
++
++	device_link_add(dev, imx6_pcie->pd_pcie_phy,
++			DL_FLAG_STATELESS |
++			DL_FLAG_PM_RUNTIME |
++			DL_FLAG_RPM_ACTIVE);
++	if (IS_ERR(link)) {
++		dev_err(dev, "Failed to add device_link to pcie_phy pd: %ld\n", PTR_ERR(link));
++		return PTR_ERR(link);
++	}
++
++	return 0;
++}
++
+ static int imx6_pcie_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct dw_pcie *pci;
+ 	struct imx6_pcie *imx6_pcie;
+@@ -945,10 +989,14 @@ static int imx6_pcie_probe(struct platform_device *pdev)
+ 		imx6_pcie->vpcie = NULL;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, imx6_pcie);
+ 
++	ret = imx6_pcie_attach_pd(dev);
++	if (ret)
++		return ret;
++
+ 	ret = imx6_add_pcie_port(imx6_pcie, pdev);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	return 0;
 -- 
-Kees Cook
-Pixel Security
+2.17.1
