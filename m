@@ -1,7 +1,7 @@
 From: Waiman Long <longman@redhat.com>
-Subject: [PATCH v2 2/2] cpufreq: Fix a circular lock dependency problem
-Date: Tue, 24 Jul 2018 14:26:05 -0400
-Message-ID: <1532456765-17576-3-git-send-email-longman@redhat.com>
+Subject: [PATCH v2 1/2] cpu/hotplug: Add a cpus_read_trylock() function
+Date: Tue, 24 Jul 2018 14:26:04 -0400
+Message-ID: <1532456765-17576-2-git-send-email-longman@redhat.com>
 References: <1532456765-17576-1-git-send-email-longman@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1532456765-17576-1-git-send-email-longman@redhat.com>
@@ -10,80 +10,52 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Waiman Long <longman@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-With lockdep turned on, the following circular lock dependency problem
-was reported:
-
-[   57.470040] ======================================================
-[   57.502900] WARNING: possible circular locking dependency detected
-[   57.535208] 4.18.0-0.rc3.1.el8+7.x86_64+debug #1 Tainted: G
-[   57.577761] ------------------------------------------------------
-[   57.609714] tuned/1505 is trying to acquire lock:
-[   57.633808] 00000000559deec5 (cpu_hotplug_lock.rw_sem){++++}, at: store+0x27/0x120
-[   57.672880]
-[   57.672880] but task is already holding lock:
-[   57.702184] 000000002136ca64 (kn->count#118){++++}, at: kernfs_fop_write+0x1d0/0x410
-[   57.742176]
-[   57.742176] which lock already depends on the new lock.
-[   57.742176]
-[   57.785220]
-[   57.785220] the existing dependency chain (in reverse order) is:
-    :
-[   58.932512] other info that might help us debug this:
-[   58.932512]
-[   58.973344] Chain exists of:
-[   58.973344]   cpu_hotplug_lock.rw_sem --> subsys mutex#5 --> kn->count#118
-[   58.973344]
-[   59.030795]  Possible unsafe locking scenario:
-[   59.030795]
-[   59.061248]        CPU0                    CPU1
-[   59.085377]        ----                    ----
-[   59.108160]   lock(kn->count#118);
-[   59.124935]                                lock(subsys mutex#5);
-[   59.156330]                                lock(kn->count#118);
-[   59.186088]   lock(cpu_hotplug_lock.rw_sem);
-[   59.208541]
-[   59.208541]  *** DEADLOCK ***
-
-In the cpufreq_register_driver() function, the lock sequence is:
-
-  cpus_read_lock --> kn->count
-
-For the cpufreq sysfs store method, the lock sequence is:
-
-  kn->count --> cpus_read_lock
-
-These sequences are actually safe as they are taking a share lock on
-cpu_hotplug_lock. However, the current lockdep code doesn't check for
-share locking when detecting circular lock dependency.  Fixing that
-could be a substantial effort.
-
-Instead, we can work around this problem by using cpus_read_trylock()
-in the store method which is much simpler. The chance of not getting
-the read lock is very small. If that happens, the userspace application
-that writes the sysfs file will get an error.
+There are use cases where it can be useful to have a cpus_read_trylock()
+function to work around circular lock dependency problem involving
+the cpu_hotplug_lock.
 
 Signed-off-by: Waiman Long <longman@redhat.com>
 ---
- drivers/cpufreq/cpufreq.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ include/linux/cpu.h | 2 ++
+ kernel/cpu.c        | 6 ++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b0dfd32..1ddb5ce 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -923,7 +923,12 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- 	struct freq_attr *fattr = to_attr(attr);
- 	ssize_t ret = -EINVAL;
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index a97a63e..e850bfe 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -103,6 +103,7 @@ static inline void cpu_maps_update_done(void)
+ extern void cpus_write_unlock(void);
+ extern void cpus_read_lock(void);
+ extern void cpus_read_unlock(void);
++extern int  cpus_read_trylock(void);
+ extern void lockdep_assert_cpus_held(void);
+ extern void cpu_hotplug_disable(void);
+ extern void cpu_hotplug_enable(void);
+@@ -115,6 +116,7 @@ static inline void cpus_write_lock(void) { }
+ static inline void cpus_write_unlock(void) { }
+ static inline void cpus_read_lock(void) { }
+ static inline void cpus_read_unlock(void) { }
++static inline int  cpus_read_trylock(void) { return true; }
+ static inline void lockdep_assert_cpus_held(void) { }
+ static inline void cpu_hotplug_disable(void) { }
+ static inline void cpu_hotplug_enable(void) { }
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 0db8938..307486b 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -290,6 +290,12 @@ void cpus_read_lock(void)
+ }
+ EXPORT_SYMBOL_GPL(cpus_read_lock);
  
--	cpus_read_lock();
-+	/*
-+	 * cpus_read_trylock() is used here to work around a circular lock
-+	 * dependency problem with respect to the cpufreq_register_driver().
-+	 */
-+	if (!cpus_read_trylock())
-+		return -EBUSY;
- 
- 	if (cpu_online(policy->cpu)) {
- 		down_write(&policy->rwsem);
++int cpus_read_trylock(void)
++{
++	return percpu_down_read_trylock(&cpu_hotplug_lock);
++}
++EXPORT_SYMBOL_GPL(cpus_read_trylock);
++
+ void cpus_read_unlock(void)
+ {
+ 	percpu_up_read(&cpu_hotplug_lock);
 -- 
 1.8.3.1
