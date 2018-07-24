@@ -1,74 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Tue, 24 Jul 2018 14:01:33 +0200
-Message-ID: <20180724120133.GD26036@amd>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
- <20180723162302.GA4503@sandybridge-desktop>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
+Date: Tue, 24 Jul 2018 12:04:15 +0000
+Message-ID: <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
+References: <cover.1532090446.git.leonard.crestez@nxp.com>
+         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
+         <1532338685.3163.93.camel@pengutronix.de>
+         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
+         <1532426953.32306.5.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="gE7i1rD7pdK0Ng3j"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180723162302.GA4503@sandybridge-desktop>
+In-Reply-To: <1532426953.32306.5.camel@pengutronix.de>
+Content-Language: en-US
+Content-ID: <B58E1A02811C6547A9D6F61DEAE10E21@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: Oliver Neukum <oneukum@suse.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: "l.stach@pengutronix.de" <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "A.s. Dong" <aisheng.dong@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-
---gE7i1rD7pdK0Ng3j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-> > > >        "There have some functions be locked-down because
-> > > >        there have no appropriate mechanisms to check the
-> > > >        integrity of writing data."
-> > > >        https://patchwork.kernel.org/patch/10476751/
-> > >=20
-> > > So your goal is to make hibernation compatible with kernel
-> > > lockdown? Do your patches provide sufficient security that hibernation
-> > > can be enabled with kernel lockdown?
-> >=20
-> > OK, maybe I am dense, but if the key comes from user space, will that
-> > be enough?
-> >=20
-> Good point, we once tried to generate key in kernel, but people
-> suggest to generate key in userspace and provide it to the
-> kernel, which is what ecryptfs do currently, so it seems this
-> should also be safe for encryption in kernel.
-
-Safe against what kind of attack? Please describe what kind of
-security you are trying to provide.
-
-I don't think generating key in userspace is good enough for providing
-guarantees for secure-boot.
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---gE7i1rD7pdK0Ng3j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAltXFR0ACgkQMOfwapXb+vIR8gCfc62TqugayS53rcVP2MnxmUwN
-Y90AoJNYo4QqdyjaJNvfaQ4OiWXLKyF9
-=X7DD
------END PGP SIGNATURE-----
-
---gE7i1rD7pdK0Ng3j--
+T24gVHVlLCAyMDE4LTA3LTI0IGF0IDEyOjA5ICswMjAwLCBMdWNhcyBTdGFjaCB3cm90ZToNCj4g
+QW0gTW9udGFnLCBkZW4gMjMuMDcuMjAxOCwgMTI6MzcgKzAwMDAgc2NocmllYiBMZW9uYXJkIENy
+ZXN0ZXo6DQo+ID4gT24gTW9uLCAyMDE4LTA3LTIzIGF0IDExOjM4ICswMjAwLCBMdWNhcyBTdGFj
+aCB3cm90ZToNCj4gPiA+IEFtIEZyZWl0YWcsIGRlbiAyMC4wNy4yMDE4LCAxNTo0NyArMDMwMCBz
+Y2hyaWViIExlb25hcmQgQ3Jlc3RlejoNCj4gPiA+ID4gT24gaW14N2QgdGhlIHBjaWUtcGh5IHBv
+d2VyIGRvbWFpbiBpcyB0dXJuZWQgb2ZmIGluIHN1c3BlbmQgYW5kIHRoaXMgY2FuDQo+ID4gPiA+
+IG1ha2UgdGhlIHN5c3RlbSBoYW5nIGFmdGVyIHJlc3VtZSB3aGVuIGF0dGVtcHRpbmcgYW55IHJl
+YWQgZnJvbSBQQ0kuDQo+ID4gPiA+IA0KPiA+ID4gPiBGaXggdGhpcyBieSBhZGRpbmcgbWluaW1h
+bCBzdXNwZW5kL3Jlc3VtZSBjb2RlIGZyb20gdGhlIG54cCBpbnRlcm5hbA0KPiA+ID4gPiB0cmVl
+LiBUaGlzIHdpbGwgcHJlcGFyZSBmb3IgcG93ZXJpbmcgZG93biBvbiBzdXNwZW5kIGFuZCByZXNl
+dCB0aGUgYmxvY2sNCj4gPiA+ID4gb24gcmVzdW1lLg0KPiA+ID4gPiANCj4gPiA+ID4gQ29kZSBp
+cyBvbmx5IGZvciBpbXg3ZCBidXQgYSB2ZXJ5IHNpbWlsYXIgc2VxdWVuY2UgY2FuIGJlIHVzZWQg
+Zm9yDQo+ID4gPiA+IG90aGVyIHNvY3MuDQo+ID4gPiA+IA0KPiA+ID4gPiArc3RhdGljIHZvaWQg
+aW14Nl9wY2llX2x0c3NtX2Rpc2FibGUoc3RydWN0IGRldmljZSAqZGV2KQ0KPiA+ID4gPiArew0K
+PiA+ID4gPiArCXN0cnVjdCBpbXg2X3BjaWUgKmlteDZfcGNpZSA9IGRldl9nZXRfZHJ2ZGF0YShk
+ZXYpOw0KPiA+ID4gPiArDQo+ID4gPiA+ICsJc3dpdGNoIChpbXg2X3BjaWUtPnZhcmlhbnQpIHsN
+Cj4gPiA+ID4gKwljYXNlIElNWDZROg0KPiA+ID4gPiArCWNhc2UgSU1YNlNYOg0KPiA+ID4gPiAr
+CWNhc2UgSU1YNlFQOg0KPiA+ID4gPiArCQlyZWdtYXBfdXBkYXRlX2JpdHMoaW14Nl9wY2llLT5p
+b211eGNfZ3ByLCBJT01VWENfR1BSMTIsDQo+ID4gPiA+ICsJCQkJICAgSU1YNlFfR1BSMTJfUENJ
+RV9DVExfMiwgMCk7DQo+ID4gPiANCj4gPiA+IEhhcyB0aGlzIGJlZW4gdGVzdGVkIG9uIGkuTVg2
+PyBMVFNTTSBkaXNhYmxlIHJlcXVpcmVzIGEgbW9yZSBjb21wbGV4DQo+ID4gPiBzZXF1ZW5jZSBv
+biB0aGlzIFNvQyB0byBhdm9pZCBoYW5naW5nIHRoZSBzeXN0ZW0uIFNlZSBjb21taXQNCj4gPiA+
+IDNlM2U0MDZlMzgwNyAiUENJOiBpbXg2OiBQdXQgTFRTU00gaW4gIkRldGVjdCIgc3RhdGUgYmVm
+b3JlIGRpc2FibGluZw0KPiA+ID4gaXQiLg0KPiA+IA0KPiA+IFRoaXMgcGF0Y2ggb25seSBlbmFi
+bGVzIHN1c3BlbmQvcmVzdW1lIGZvciBpbXg3ZCB3aXRoIG90aGVyIFNPQ3MgdG8NCj4gPiBmb2xs
+b3cgbGF0ZXIuIFRoZSBsdHNzbV9kaXNhYmxlIGZ1bmN0aW9uIGlzIGp1c3Qgc3ltbWV0cmljIHdp
+dGgNCj4gPiBsdHNzbV9lbmFibGUuDQo+ID4gDQo+ID4gVGhlIDZRIHBhcnRzIGFyZSBhZmZlY3Rl
+ZCBieSBlcnJhdGEgIkVSUjAwNTcyMyBQQ0llOiBQQ0llIGRvZXMgbm90DQo+ID4gc3VwcG9ydCBM
+MiBwb3dlciBkb3duIFtpLk1YIDZEdWFsLzZRdWFkIE9ubHldIi4NCj4gPiANCj4gPiBUaGlzIGRl
+c2lnbiBlcnJvciBzZWVtcyB0byBoYXZlIHRoZSBzYW1lIHJvb3QgY2F1c2UgYXMgeW91ciBwcm9i
+bGVtIChubw0KPiA+IGRlZGljYXRlZCByZXNldCBjb250cm9sKSBzbyB0aGlzIHdvcmtzIG91dCBx
+dWl0ZSBuaWNlbHk6IHRoZSBzb2x1dGlvbg0KPiA+IGlzIHRvIG5ldmVyIHBvd2VyIGRvd24gcGNp
+IG9uIGFmZmVjdGVkIGNoaXBzLg0KPiANCj4gSSBkb24ndCBxdWl0ZSBsaWtlIGNvZGUgdGhhdCBs
+b29rcyBsaWtlIGl0IGlzIGRvaW5nIHRoZSByaWdodCB0aGluZywNCj4gYnV0IHRoZW4gZG9lc24n
+dC4gQ2FuIHdlIGF0IGxlYXN0IGVtaXQgYSB3YXJuaW5nIHRoYXQgdGhlcmUgbWlnaHQgYmUNCj4g
+ZHJhZ29ucyBpZiBhbnlvbmUgdHJpZXMgdG8gY2FsbCB0aGlzIG9uIGkuTVg2Pw0KDQpCdXQgdGhl
+IGZ1bmN0aW9uIHdpbGwgaW5kZWVkIHRvZ2dsZSB0aGUgcmlnaHQgYml0cyB0byBpbml0aWF0ZSBs
+dHNzbQ0KZGlzYWJsaW5nLiBJZiB0aGlzIGlzIG5vdCB1c2VmdWwgb3IgY2FuJ3QgYmUgdXNlZCBy
+aWdodCB0aGVuIGl0J3MgdGhlDQpjYWxsZXIncyBwcm9ibGVtIDopDQoNCkkgY2FuIGFkZCBhIGRl
+ZmF1bHQ6IGNsYXVzZSB0byB0aGUgc3dpdGNoIHdoaWNoIHJldHVybnMgLUVOT1NZUyBhbmQgbGV0
+DQpJTVg2USBmYWxsIHRoYXQgd2F5LCB3b3VsZCB0aGF0IGJlIE9LPyBUaGlzIHdvdWxkIGFsc28g
+aGVscCB3aGVuIGFkZGluZw0KbmV3IHZhcmlhbnRzLg==
