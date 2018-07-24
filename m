@@ -1,48 +1,27 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] dt-bindings: thermal: samsung: Add SPDX license
- identifier
-Date: Tue, 24 Jul 2018 22:03:12 +0200
-Message-ID: <20180724200312.xs6u4nvhjckukkig@kozik-lap>
-References: <CGME20180718200318epcas3p16aed6c1725d6c1e63ea6b1ad209c5756@epcas3p1.samsung.com>
- <20180718200250.6478-1-krzk@kernel.org>
- <2442216.oppRSGRAaL@amdc3058>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
+Date: Tue, 24 Jul 2018 14:00:10 -0700
+Message-ID: <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
+References: <20180724111600.4158975-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2442216.oppRSGRAaL@amdc3058>
+In-Reply-To: <20180724111600.4158975-1-arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Joe Perches <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 24, 2018 at 06:46:35PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Wednesday, July 18, 2018 10:02:50 PM Krzysztof Kozlowski wrote:
-> > Replace GPL license statement with SPDX license identifier (GPL-2.0+).
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > ---
-> >  include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
-> >  1 file changed, 1 insertion(+), 11 deletions(-)
-> > 
-> > diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
-> > index 0646500bca69..642e4e7f4084 100644
-> > --- a/include/dt-bindings/thermal/thermal_exynos.h
-> > +++ b/include/dt-bindings/thermal/thermal_exynos.h
-> > @@ -1,19 +1,9 @@
-> > +/* SPDX-License-Identifier: GPL-2.0+ */
-> 
-> This code should be GPL-2.0 only, original license statement is most
-> likely result of using wrong file as the source of copy-paste. So I
-> would like to have the license fixed first before doing conversion to
-> SPDX.
+On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
 
-If you think that's the case, then it makes sense and please go ahead.
-As fair as I remember this required signed-off from all contributors...
-so probably just Lukasz and Eduardo?
+> Almost all files in the kernel are either plain text or UTF-8
+> encoded. A couple however are ISO_8859-1, usually just a few
+> characters in a C comments, for historic reasons.
+> 
+> This converts them all to UTF-8 for consistency.
 
-Best regards,
-Krzysztof
+Was "consistency" the only rationale?  The discussion is now outside my
+memory horizon but I thought there were other reasons.
+
+Will we be getting a checkpatch rule to keep things this way?
