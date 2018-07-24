@@ -1,61 +1,48 @@
-From: Waiman Long <longman@redhat.com>
-Subject: [PATCH v2 1/2] cpu/hotplug: Add a cpus_read_trylock() function
-Date: Tue, 24 Jul 2018 14:26:04 -0400
-Message-ID: <1532456765-17576-2-git-send-email-longman@redhat.com>
-References: <1532456765-17576-1-git-send-email-longman@redhat.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] dt-bindings: thermal: samsung: Add SPDX license
+ identifier
+Date: Tue, 24 Jul 2018 22:03:12 +0200
+Message-ID: <20180724200312.xs6u4nvhjckukkig@kozik-lap>
+References: <CGME20180718200318epcas3p16aed6c1725d6c1e63ea6b1ad209c5756@epcas3p1.samsung.com>
+ <20180718200250.6478-1-krzk@kernel.org>
+ <2442216.oppRSGRAaL@amdc3058>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532456765-17576-1-git-send-email-longman@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <2442216.oppRSGRAaL@amdc3058>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Waiman Long <longman@redhat.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-There are use cases where it can be useful to have a cpus_read_trylock()
-function to work around circular lock dependency problem involving
-the cpu_hotplug_lock.
+On Tue, Jul 24, 2018 at 06:46:35PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+> On Wednesday, July 18, 2018 10:02:50 PM Krzysztof Kozlowski wrote:
+> > Replace GPL license statement with SPDX license identifier (GPL-2.0+).
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > ---
+> >  include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
+> >  1 file changed, 1 insertion(+), 11 deletions(-)
+> > 
+> > diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
+> > index 0646500bca69..642e4e7f4084 100644
+> > --- a/include/dt-bindings/thermal/thermal_exynos.h
+> > +++ b/include/dt-bindings/thermal/thermal_exynos.h
+> > @@ -1,19 +1,9 @@
+> > +/* SPDX-License-Identifier: GPL-2.0+ */
+> 
+> This code should be GPL-2.0 only, original license statement is most
+> likely result of using wrong file as the source of copy-paste. So I
+> would like to have the license fixed first before doing conversion to
+> SPDX.
 
-Signed-off-by: Waiman Long <longman@redhat.com>
----
- include/linux/cpu.h | 2 ++
- kernel/cpu.c        | 6 ++++++
- 2 files changed, 8 insertions(+)
+If you think that's the case, then it makes sense and please go ahead.
+As fair as I remember this required signed-off from all contributors...
+so probably just Lukasz and Eduardo?
 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index a97a63e..e850bfe 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -103,6 +103,7 @@ static inline void cpu_maps_update_done(void)
- extern void cpus_write_unlock(void);
- extern void cpus_read_lock(void);
- extern void cpus_read_unlock(void);
-+extern int  cpus_read_trylock(void);
- extern void lockdep_assert_cpus_held(void);
- extern void cpu_hotplug_disable(void);
- extern void cpu_hotplug_enable(void);
-@@ -115,6 +116,7 @@ static inline void cpus_write_lock(void) { }
- static inline void cpus_write_unlock(void) { }
- static inline void cpus_read_lock(void) { }
- static inline void cpus_read_unlock(void) { }
-+static inline int  cpus_read_trylock(void) { return true; }
- static inline void lockdep_assert_cpus_held(void) { }
- static inline void cpu_hotplug_disable(void) { }
- static inline void cpu_hotplug_enable(void) { }
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 0db8938..307486b 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -290,6 +290,12 @@ void cpus_read_lock(void)
- }
- EXPORT_SYMBOL_GPL(cpus_read_lock);
- 
-+int cpus_read_trylock(void)
-+{
-+	return percpu_down_read_trylock(&cpu_hotplug_lock);
-+}
-+EXPORT_SYMBOL_GPL(cpus_read_trylock);
-+
- void cpus_read_unlock(void)
- {
- 	percpu_up_read(&cpu_hotplug_lock);
--- 
-1.8.3.1
+Best regards,
+Krzysztof
