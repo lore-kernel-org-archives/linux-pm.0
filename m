@@ -1,86 +1,61 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
-Date: Tue, 24 Jul 2018 14:28:34 +0200
-Message-ID: <1532435314.32306.7.camel@pengutronix.de>
-References: <cover.1532090446.git.leonard.crestez@nxp.com>
-         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
-         <1532338685.3163.93.camel@pengutronix.de>
-         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
-         <1532426953.32306.5.camel@pengutronix.de>
-         <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 24 Jul 2018 14:47:54 +0200
+Message-ID: <1532436474.17797.20.camel@suse.com>
+References: <cover.1531924968.git.yu.c.chen@intel.com>
+         <20180718202235.GA4132@amd> <20180718235851.GA22170@sandybridge-desktop>
+         <20180719110149.GA4679@amd> <20180719132003.GA30981@sandybridge-desktop>
+         <20180720102532.GA20284@amd> <1532346156.3057.11.camel@suse.com>
+         <20180723162302.GA4503@sandybridge-desktop> <20180724120133.GD26036@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <24ba42f6028a90836c73317af1f9e9be2d27ba03.camel@nxp.com>
+In-Reply-To: <20180724120133.GD26036@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "A.s. Dong" <aisheng.dong@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Pavel Machek <pavel@ucw.cz>, Yu Chen <yu.c.chen@intel.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, den 24.07.2018, 12:04 +0000 schrieb Leonard Crestez:
-> On Tue, 2018-07-24 at 12:09 +0200, Lucas Stach wrote:
-> > Am Montag, den 23.07.2018, 12:37 +0000 schrieb Leonard Crestez:
-> > > On Mon, 2018-07-23 at 11:38 +0200, Lucas Stach wrote:
-> > > > Am Freitag, den 20.07.2018, 15:47 +0300 schrieb Leonard Crestez:
-> > > > > On imx7d the pcie-phy power domain is turned off in suspend and this can
-> > > > > make the system hang after resume when attempting any read from PCI.
-> > > > > 
-> > > > > Fix this by adding minimal suspend/resume code from the nxp internal
-> > > > > tree. This will prepare for powering down on suspend and reset the block
-> > > > > on resume.
-> > > > > 
-> > > > > Code is only for imx7d but a very similar sequence can be used for
-> > > > > other socs.
-> > > > > 
-> > > > > +static void imx6_pcie_ltssm_disable(struct device *dev)
-> > > > > +{
-> > > > > > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
-> > > > > +
-> > > > > > > > > > +	switch (imx6_pcie->variant) {
-> > > > > > > > > > +	case IMX6Q:
-> > > > > > > > > > +	case IMX6SX:
-> > > > > > > > > > +	case IMX6QP:
-> > > > > > > > > > +		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
-> > > > > +				   IMX6Q_GPR12_PCIE_CTL_2, 0);
-> > > > 
-> > > > Has this been tested on i.MX6? LTSSM disable requires a more complex
-> > > > sequence on this SoC to avoid hanging the system. See commit
-> > > > 3e3e406e3807 "PCI: imx6: Put LTSSM in "Detect" state before disabling
-> > > > it".
-> > > 
-> > > This patch only enables suspend/resume for imx7d with other SOCs to
-> > > follow later. The ltssm_disable function is just symmetric with
-> > > ltssm_enable.
-> > > 
-> > > The 6Q parts are affected by errata "ERR005723 PCIe: PCIe does not
-> > > support L2 power down [i.MX 6Dual/6Quad Only]".
-> > > 
-> > > This design error seems to have the same root cause as your problem (no
-> > > dedicated reset control) so this works out quite nicely: the solution
-> > > is to never power down pci on affected chips.
-> > 
-> > I don't quite like code that looks like it is doing the right thing,
-> > but then doesn't. Can we at least emit a warning that there might be
-> > dragons if anyone tries to call this on i.MX6?
+On Di, 2018-07-24 at 14:01 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> But the function will indeed toggle the right bits to initiate ltssm
-> disabling. If this is not useful or can't be used right then it's the
-> caller's problem :)
+> > > > >        "There have some functions be locked-down because
+> > > > >        there have no appropriate mechanisms to check the
+> > > > >        integrity of writing data."
+> > > > >        https://patchwork.kernel.org/patch/10476751/
+> > > > 
+> > > > So your goal is to make hibernation compatible with kernel
+> > > > lockdown? Do your patches provide sufficient security that hibernation
+> > > > can be enabled with kernel lockdown?
+> > > 
+> > > OK, maybe I am dense, but if the key comes from user space, will that
+> > > be enough?
+> > > 
+> > 
+> > Good point, we once tried to generate key in kernel, but people
+> > suggest to generate key in userspace and provide it to the
+> > kernel, which is what ecryptfs do currently, so it seems this
+> > should also be safe for encryption in kernel.
+> 
+> Safe against what kind of attack? Please describe what kind of
+> security you are trying to provide.
 
-I don't agree with that. I would expect a function that is called
-ltssm_disable to do so in a way that is safe on the hardware that it
-claims to handle, which in case of i.MX6 means bashing the LTSSM into
-detect state before toggling the GPR bit.
+Unsigned code must not take over the priviledge level of signed code.
+Hence:
 
-> I can add a default: clause to the switch which returns -ENOSYS and let
-> IMX6Q fall that way, would that be OK? This would also help when adding
-> new variants.
+1. Unsigned code must not allowed to read sensitive parts of signed
+code's memory space
 
-Yes, given that there is currently no way to test this on i.MX6,
-returning -ENOSYS sound much better. This at least tells anyone who
-intends to use this function that there is indeed missing functionality
-there.
+2. Unsigned code must not be able to alter the memory space of
+signed code -> snapshots that are changed must not be able to be
+resumed
 
-Regards,
-Lucas
+> I don't think generating key in userspace is good enough for providing
+> guarantees for secure-boot.
+
+Why?
+
+	Regards
+		Oliver
