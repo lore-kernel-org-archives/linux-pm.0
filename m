@@ -1,55 +1,74 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Tue, 24 Jul 2018 15:01:01 +0200
-Message-ID: <1532437261.17797.22.camel@suse.com>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
-         <20180718202235.GA4132@amd> <20180718235851.GA22170@sandybridge-desktop>
-         <20180719110149.GA4679@amd> <20180719132003.GA30981@sandybridge-desktop>
-         <20180720102532.GA20284@amd> <1532346156.3057.11.camel@suse.com>
-         <20180723162302.GA4503@sandybridge-desktop> <20180724120133.GD26036@amd>
-         <1532436474.17797.20.camel@suse.com> <20180724130110.GA29006@amd>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Tue, 24 Jul 2018 06:29:02 -0700
+Message-ID: <20180724132902.GI1934745@devbig577.frc2.facebook.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-9-patrick.bellasi@arm.com>
+ <20180723153040.GG1934745@devbig577.frc2.facebook.com>
+ <20180723172215.GG2683@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724130110.GA29006@amd>
+Content-Disposition: inline
+In-Reply-To: <20180723172215.GG2683@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Yu Chen <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Di, 2018-07-24 at 15:03 +0200, Pavel Machek wrote:
-> On Tue 2018-07-24 14:47:54, Oliver Neukum wrote:
-> > On Di, 2018-07-24 at 14:01 +0200, Pavel Machek wrote:
+Hello, Patrick.
 
-Hi,
-
-> > > Safe against what kind of attack? Please describe what kind of
-> > > security you are trying to provide.
-> > 
-> > Unsigned code must not take over the priviledge level of signed code.
-> > Hence:
-> > 
-> > 1. Unsigned code must not allowed to read sensitive parts of signed
-> > code's memory space
-> > 
-> > 2. Unsigned code must not be able to alter the memory space of
-> > signed code -> snapshots that are changed must not be able to be
-> > resumed
+On Mon, Jul 23, 2018 at 06:22:15PM +0100, Patrick Bellasi wrote:
+> However, the "best effort" bandwidth control we have for CFS and RT
+> can be further improved if, instead of just looking at time spent on
+> CPUs, we provide some more hints to the scheduler to know at which
+> min/max "MIPS" we want to consume the (best effort) time we have been
+> allocated on a CPU.
 > 
-> Ok.
-> 
-> > > I don't think generating key in userspace is good enough for providing
-> > > guarantees for secure-boot.
-> > 
-> > Why?
-> 
-> Because then, userpace has both key (now) and encrypted image (after
-> reboot), so it can decrypt, modify, re-encrypt...?
+> Such a simple extension is still quite useful to satisfy many use-case
+> we have, mainly on mobile systems, like the ones I've described in the
+>    "Newcomer's Short Abstract (Updated)"
+> section of the cover letter:
+>    https://lore.kernel.org/lkml/20180716082906.6061-1-patrick.bellasi@arm.com/T/#u
 
-Right. I was dense. But if the key is generated in kernel space,
-the method works, doesn't it?
+So, that's all completely fine but then let's please not give it a
+name which doesn't quite match what it does.  We can just call it
+e.g. cpufreq range control.
 
-	Regards
-		Oliver
+> > So, there are fundamental discrepancies between
+> > description+interface vs. what it actually does.
+> 
+> Perhaps then I should just change the description to make it less
+> generic...
+
+I think so, along with the interface itself.
+
+> > I really don't think that's something we can fix up later.
+> 
+> ... since, really, I don't think we can get to the point to extend
+> later this interface to provide the strict bandwidth enforcement you
+> are thinking about.
+
+That's completley fine.  The interface just has to match what's
+implemented.
+
+...
+> > and what you're describing inherently breaks the delegation model.
+> 
+> What I describe here is just an additional hint to the scheduler which
+> enrich the above described model. Provided A and B are already
+> satisfied, when a task gets a chance to run it will be executed at a
+> min/max configured frequency. That's really all... there is not
+> additional impact on "resources allocation".
+
+So, if it's a cpufreq range controller.  It'd have sth like
+cpu.freq.min and cpu.freq.max, where min defines the maximum minimum
+cpufreq its descendants can get and max defines the maximum cpufreq
+allowed in the subtree.  For an example, please refer to how
+memory.min and memory.max are defined.
+
+Thanks.
+
+-- 
+tejun
