@@ -1,80 +1,65 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 12/12] sched/core: uclamp: use percentage clamp values
-Date: Tue, 24 Jul 2018 17:43:03 +0100
-Message-ID: <20180724164303.GB3162@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-13-patrick.bellasi@arm.com>
- <CAJuCfpEwRtXoa_tnWTFP8CuyPMHsLAXky14K_jyphEeo2d32qg@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] dt-bindings: thermal: samsung: Add SPDX license
+ identifier
+Date: Tue, 24 Jul 2018 18:46:35 +0200
+Message-ID: <2442216.oppRSGRAaL@amdc3058>
+References: <CGME20180718200318epcas3p16aed6c1725d6c1e63ea6b1ad209c5756@epcas3p1.samsung.com>
+        <20180718200250.6478-1-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpEwRtXoa_tnWTFP8CuyPMHsLAXky14K_jyphEeo2d32qg@mail.gmail.com>
+In-reply-to: <20180718200250.6478-1-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21-Jul 21:04, Suren Baghdasaryan wrote:
-> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
 
-[...]
+Hi,
 
-> > +static inline unsigned int scale_from_percent(unsigned int pct)
-> > +{
-> > +       WARN_ON(pct > 100);
-> > +
-> > +       return ((SCHED_FIXEDPOINT_SCALE * pct) / 100);
-> > +}
-> > +
-> > +static inline unsigned int scale_to_percent(unsigned int value)
-> > +{
-> > +       unsigned int rounding = 0;
-> > +
-> > +       WARN_ON(value > SCHED_FIXEDPOINT_SCALE);
-> > +
-> > +       /* Compensate rounding errors for: 0, 256, 512, 768, 1024 */
-> > +       if (likely((value & 0xFF) && ~(value & 0x700)))
-> > +               rounding = 1;
+On Wednesday, July 18, 2018 10:02:50 PM Krzysztof Kozlowski wrote:
+> Replace GPL license statement with SPDX license identifier (GPL-2.0+).
 > 
-> Hmm. I don't think ~(value & 0x700) will ever yield FALSE... What am I missing?
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
+>  include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
+>  1 file changed, 1 insertion(+), 11 deletions(-)
+> 
+> diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
+> index 0646500bca69..642e4e7f4084 100644
+> --- a/include/dt-bindings/thermal/thermal_exynos.h
+> +++ b/include/dt-bindings/thermal/thermal_exynos.h
+> @@ -1,19 +1,9 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
 
-So, 0x700 is the topmost 3 bits sets (111 0000 0000) which different
-configuration corresponds to:
+This code should be GPL-2.0 only, original license statement is most
+likely result of using wrong file as the source of copy-paste. So I
+would like to have the license fixed first before doing conversion to
+SPDX.
 
- 001 0000 0000 =>  256
- 010 0000 0000 =>  512
- 011 0000 0000 =>  768
- 100 0000 0000 => 1024
+>  /*
+>   * thermal_exynos.h - Samsung EXYNOS TMU device tree definitions
+>   *
+>   *  Copyright (C) 2014 Samsung Electronics
+>   *  Lukasz Majewski <l.majewski@samsung.com>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - *
+>   */
+>  
+>  #ifndef _EXYNOS_THERMAL_TMU_DT_H
 
-Thus, if 0x700 matches then we have one of these values in input and
-for these cases we have to add a unit to the percentage value.
-
-For the case (value == 0) we translate it into 0% thanks to the check
-on (value & 0xFF) to ensure rounding = 0.
-
-Here is a small python snippet I've used to check the conversion of
-all the possible percentage values:
-
----8<---
-values = range(0, 101)
-for pct in xrange(0, 101):
-	util = int((1024 * pct) / 100)
-        rounding = 1
-        if not ((util & 0xFF) and ~(util & 0x700)):
-            print "Fixing util_to_perc({:3d} => {:4d})".format(pct, util)
-            rounding = 0
-	pct2 = (rounding + ((100 * util) / 1024))
-	if pct2 in values:
-		values.remove(pct2)
-        if pct != pct2:
-            print "Convertion failed for: {:3d} => {:4d} => {:3d}".format(pct, util, pct2)
-if values:
-    print "ERROR: not all percentage values converted"
----8<---
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
