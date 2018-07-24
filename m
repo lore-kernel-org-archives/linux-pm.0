@@ -1,113 +1,152 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
-Date: Tue, 24 Jul 2018 12:09:13 +0200
-Message-ID: <1532426953.32306.5.camel@pengutronix.de>
-References: <cover.1532090446.git.leonard.crestez@nxp.com>
-         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
-         <1532338685.3163.93.camel@pengutronix.de>
-         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from S3
+Date: Tue, 24 Jul 2018 12:36:47 +0200
+Message-ID: <1855125.Q8EGVqeZWv@aspire.rjw.lan>
+References: <DEA1AE84-B0FD-481E-8E0D-788CD4EF59AE@canonical.com> <ABABA247-9C33-4311-ADA5-D0D00B810C6C@canonical.com> <4689933.j1ecWYeVj2@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
+In-Reply-To: <4689933.j1ecWYeVj2@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Kai Heng Feng <kai.heng.feng@canonical.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Am Montag, den 23.07.2018, 12:37 +0000 schrieb Leonard Crestez:
-> On Mon, 2018-07-23 at 11:38 +0200, Lucas Stach wrote:
-> > Hi Leonard,
+On Tuesday, July 24, 2018 11:13:42 AM CEST Rafael J. Wysocki wrote:
+> On Tuesday, July 24, 2018 10:46:09 AM CEST Kai Heng Feng wrote:
+> > Hi Rafael,
 > > 
-> > Am Freitag, den 20.07.2018, 15:47 +0300 schrieb Leonard Crestez:
-> > > On imx7d the pcie-phy power domain is turned off in suspend and this can
-> > > make the system hang after resume when attempting any read from PCI.
-> > > 
-> > > Fix this by adding minimal suspend/resume code from the nxp internal
-> > > tree. This will prepare for powering down on suspend and reset the block
-> > > on resume.
-> > > 
-> > > Code is only for imx7d but a very similar sequence can be used for
-> > > other socs.
-> > > 
-> > > +static void imx6_pcie_ltssm_disable(struct device *dev)
-> > > +{
-> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
-> > > +
-> > > > > > +	switch (imx6_pcie->variant) {
-> > > > > > +	case IMX6Q:
-> > > > > > +	case IMX6SX:
-> > > > > > +	case IMX6QP:
-> > > > > > +		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
-> > > +				   IMX6Q_GPR12_PCIE_CTL_2, 0);
+> > > On Jun 13, 2018, at 7:17 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > >
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > >
+> > > It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
+> > > runtime PM and system sleep handling) introduced a system suspend
+> > > regression on some machines, but the only functional change made by
+> > > it was to cause the PM quirks in the LPSS to also be used during
+> > > system suspend and resume.  While that should always work for
+> > > suspend-to-idle, it turns out to be problematic for S3
+> > > (suspend-to-RAM).
+> > >
+> > > To address that issue restore the previous S3 suspend and resume
+> > > behavior of the LPSS to avoid applying PM quirks then.
 > > 
-> > Has this been tested on i.MX6? LTSSM disable requires a more complex
-> > sequence on this SoC to avoid hanging the system. See commit
-> > 3e3e406e3807 "PCI: imx6: Put LTSSM in "Detect" state before disabling
-> > it".
-> 
-> This patch only enables suspend/resume for imx7d with other SOCs to
-> follow later. The ltssm_disable function is just symmetric with
-> ltssm_enable.
-> 
-> The 6Q parts are affected by errata "ERR005723 PCIe: PCIe does not
-> support L2 power down [i.MX 6Dual/6Quad Only]".
-> 
-> This design error seems to have the same root cause as your problem (no
-> dedicated reset control) so this works out quite nicely: the solution
-> is to never power down pci on affected chips.
-
-I don't quite like code that looks like it is doing the right thing,
-but then doesn't. Can we at least emit a warning that there might be
-dragons if anyone tries to call this on i.MX6?
-
-> > > +static int imx6_pcie_resume_noirq(struct device *dev)
-> > > +{
-> > > > > > +	int ret = 0;
-> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
-> > > > > > +	struct pcie_port *pp = &imx6_pcie->pci->pp;
-> > > +
-> > > > > > +	if (imx6_pcie->variant != IMX7D)
-> > > > > > +		return 0;
-> > > +
-> > > > > > +	imx6_pcie_assert_core_reset(imx6_pcie);
-> > > > > > +	imx6_pcie_init_phy(imx6_pcie);
-> > > > > > +	imx6_pcie_deassert_core_reset(imx6_pcie);
-> > > > > > +	dw_pcie_setup_rc(pp);
-> > > +
-> > > > > > +	ret = imx6_pcie_establish_link(imx6_pcie);
-> > > > > > +	if (ret < 0)
-> > > +		pr_err("pcie link is down after resume.\n");
+> > The users reported that this patch does fix the S3 issue, but the S4 still  
+> > fails.
 > > 
-> > dev_err(), please.
+> > Please refer to [1] for more for user's testing result.
+> > 
+> > [1] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1774950/comments/60
 > 
-> The imx6_pcie_establish_link function already seems to link error
-> information so the message could be dropped. However it's still helpful
-> to know that those pci link errors are specifically related to resume.
-> 
-> Fabio suggested I propagate the return code but I'm not sure that's
-> helpful since "link down" is what happens when the slot is empty and
-> this is clearly not a "error" or "failure". It's not clear if "slot
-> empty" can be distinguished in some way.
+> Please ask the users to test the patch below, then, on top of the $subject one.
 
-I don't think we have a generic way to distinguish between the two
-cases.
+There was a mistake in the previous patch I posted, sorry about that.
 
-> I'll switch to dev_info and drop the error code, is this OK?
+Please test this one instead:
 
-Yes, that's fine with me.
+---
+ drivers/acpi/acpi_lpss.c |   26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
 
-> 
-> One aspect that I skipped is PME_Turn_Off support: The PCI standard
-> mandates that this is sent before entering L2/L3 and the designware
-> core supports this but it's not part of this patch.
-> 
-> Is it fine if I post this separately or should it be part of the same
-> series? The turnoff bit is in IOMUX gpr for imx6 but SRC for imx7 so it
-> would require additional patches in reset, dts and then pci.
-
-IMO it is fine to have this as a follow on patchset.
-
-Regards,
-Lucas
+Index: linux-pm/drivers/acpi/acpi_lpss.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -879,6 +879,7 @@ static void acpi_lpss_dismiss(struct dev
+ #define LPSS_GPIODEF0_DMA_LLP		BIT(13)
+ 
+ static DEFINE_MUTEX(lpss_iosf_mutex);
++static bool lpss_iosf_d3_entered;
+ 
+ static void lpss_iosf_enter_d3_state(void)
+ {
+@@ -921,6 +922,9 @@ static void lpss_iosf_enter_d3_state(voi
+ 
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+ 			LPSS_IOSF_GPIODEF0, value1, mask1);
++
++	lpss_iosf_d3_entered = true;
++
+ exit:
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+@@ -935,6 +939,11 @@ static void lpss_iosf_exit_d3_state(void
+ 
+ 	mutex_lock(&lpss_iosf_mutex);
+ 
++	if (!lpss_iosf_d3_entered)
++		goto exit;
++
++	lpss_iosf_d3_entered = false;
++
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+ 			LPSS_IOSF_GPIODEF0, value1, mask1);
+ 
+@@ -944,13 +953,13 @@ static void lpss_iosf_exit_d3_state(void
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIO1, MBI_CFG_WRITE,
+ 			LPSS_IOSF_PMCSR, value2, mask2);
+ 
++exit:
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+ 
+-static int acpi_lpss_suspend(struct device *dev, bool runtime)
++static int acpi_lpss_suspend(struct device *dev, bool wakeup)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	bool wakeup = runtime || device_may_wakeup(dev);
+ 	int ret;
+ 
+ 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+@@ -963,14 +972,14 @@ static int acpi_lpss_suspend(struct devi
+ 	 * wrong status for devices being about to be powered off. See
+ 	 * lpss_iosf_enter_d3_state() for further information.
+ 	 */
+-	if ((runtime || !pm_suspend_via_firmware()) &&
++	if (acpi_target_system_state() == ACPI_STATE_S0 &&
+ 	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+ 		lpss_iosf_enter_d3_state();
+ 
+ 	return ret;
+ }
+ 
+-static int acpi_lpss_resume(struct device *dev, bool runtime)
++static int acpi_lpss_resume(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+ 	int ret;
+@@ -979,8 +988,7 @@ static int acpi_lpss_resume(struct devic
+ 	 * This call is kept first to be in symmetry with
+ 	 * acpi_lpss_runtime_suspend() one.
+ 	 */
+-	if ((runtime || !pm_resume_via_firmware()) &&
+-	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
++	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+ 		lpss_iosf_exit_d3_state();
+ 
+ 	ret = acpi_dev_resume(dev);
+@@ -1004,12 +1012,12 @@ static int acpi_lpss_suspend_late(struct
+ 		return 0;
+ 
+ 	ret = pm_generic_suspend_late(dev);
+-	return ret ? ret : acpi_lpss_suspend(dev, false);
++	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
+ }
+ 
+ static int acpi_lpss_resume_early(struct device *dev)
+ {
+-	int ret = acpi_lpss_resume(dev, false);
++	int ret = acpi_lpss_resume(dev);
+ 
+ 	return ret ? ret : pm_generic_resume_early(dev);
+ }
+@@ -1024,7 +1032,7 @@ static int acpi_lpss_runtime_suspend(str
+ 
+ static int acpi_lpss_runtime_resume(struct device *dev)
+ {
+-	int ret = acpi_lpss_resume(dev, true);
++	int ret = acpi_lpss_resume(dev);
+ 
+ 	return ret ? ret : pm_generic_runtime_resume(dev);
+ }
