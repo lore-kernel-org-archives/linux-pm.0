@@ -1,69 +1,87 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: Re: [PATCH v6 17/18] crypto: ccm: Remove VLA usage
-Date: Tue, 24 Jul 2018 18:57:44 +0200
-Message-ID: <CAKv+Gu-D9FrOrFU0EmkPA52vrywCGZkFP9vUsyEovdby9dLj0g@mail.gmail.com>
-References: <20180724164936.37477-1-keescook@chromium.org> <20180724164936.37477-18-keescook@chromium.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v2 12/12] sched/core: uclamp: use percentage clamp values
+Date: Tue, 24 Jul 2018 10:11:54 -0700
+Message-ID: <CAJuCfpHddNKXNVBs21sCADcHjW7zxxue8jg1B4KbPh-QLNe46g@mail.gmail.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-13-patrick.bellasi@arm.com> <CAJuCfpEwRtXoa_tnWTFP8CuyPMHsLAXky14K_jyphEeo2d32qg@mail.gmail.com>
+ <20180724164303.GB3162@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724164936.37477-18-keescook@chromium.org>
+In-Reply-To: <20180724164303.GB3162@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@google.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Alasdair Kergon <agk@redhat.com>, Rabin Vincent <rabinv@axis.com>, Tim Chen <tim.c.chen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregk>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 July 2018 at 18:49, Kees Cook <keescook@chromium.org> wrote:
-> From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+On Tue, Jul 24, 2018 at 9:43 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> On 21-Jul 21:04, Suren Baghdasaryan wrote:
+>> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
+>> <patrick.bellasi@arm.com> wrote:
 >
-> In the quest to remove all stack VLA usage from the kernel[1], this
-> drops AHASH_REQUEST_ON_STACK by preallocated the ahash request area
-> with the skcipher area (which are not used at the same time).
+> [...]
+>
+>> > +static inline unsigned int scale_from_percent(unsigned int pct)
+>> > +{
+>> > +       WARN_ON(pct > 100);
+>> > +
+>> > +       return ((SCHED_FIXEDPOINT_SCALE * pct) / 100);
+>> > +}
+>> > +
+>> > +static inline unsigned int scale_to_percent(unsigned int value)
+>> > +{
+>> > +       unsigned int rounding = 0;
+>> > +
+>> > +       WARN_ON(value > SCHED_FIXEDPOINT_SCALE);
+>> > +
+>> > +       /* Compensate rounding errors for: 0, 256, 512, 768, 1024 */
+>> > +       if (likely((value & 0xFF) && ~(value & 0x700)))
+>> > +               rounding = 1;
+>>
+>> Hmm. I don't think ~(value & 0x700) will ever yield FALSE... What am I missing?
+>
+> So, 0x700 is the topmost 3 bits sets (111 0000 0000) which different
+> configuration corresponds to:
+>
+>  001 0000 0000 =>  256
+>  010 0000 0000 =>  512
+>  011 0000 0000 =>  768
+>  100 0000 0000 => 1024
+>
+> Thus, if 0x700 matches then we have one of these values in input and
+> for these cases we have to add a unit to the percentage value.
+>
+> For the case (value == 0) we translate it into 0% thanks to the check
+> on (value & 0xFF) to ensure rounding = 0.
 >
 
--EGRAMMAR
+I think just (value & 0xFF) is enough to get you the right behavior.
+~(value & 0x700) is not needed, it's effectively a NoOp which always
+yields TRUE. For any *value* (value & 0x700) == 0x...00 and ~(value &
+0x700) == 0x...FF == TRUE.
 
-> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+> Here is a small python snippet I've used to check the conversion of
+> all the possible percentage values:
 >
-> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  crypto/ccm.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/crypto/ccm.c b/crypto/ccm.c
-> index 0a083342ec8c..b242fd0d3262 100644
-> --- a/crypto/ccm.c
-> +++ b/crypto/ccm.c
-> @@ -50,7 +50,10 @@ struct crypto_ccm_req_priv_ctx {
->         u32 flags;
->         struct scatterlist src[3];
->         struct scatterlist dst[3];
-> -       struct skcipher_request skreq;
-> +       union {
-> +               struct ahash_request ahreq;
-> +               struct skcipher_request skreq;
-> +       };
->  };
->
->  struct cbcmac_tfm_ctx {
-> @@ -181,7 +184,7 @@ static int crypto_ccm_auth(struct aead_request *req, struct scatterlist *plain,
->         struct crypto_ccm_req_priv_ctx *pctx = crypto_ccm_reqctx(req);
->         struct crypto_aead *aead = crypto_aead_reqtfm(req);
->         struct crypto_ccm_ctx *ctx = crypto_aead_ctx(aead);
-> -       AHASH_REQUEST_ON_STACK(ahreq, ctx->mac);
-> +       struct ahash_request *ahreq = &pctx->ahreq;
->         unsigned int assoclen = req->assoclen;
->         struct scatterlist sg[3];
->         u8 *odata = pctx->odata;
-> @@ -427,7 +430,7 @@ static int crypto_ccm_init_tfm(struct crypto_aead *tfm)
->         crypto_aead_set_reqsize(
->                 tfm,
->                 align + sizeof(struct crypto_ccm_req_priv_ctx) +
-> -               crypto_skcipher_reqsize(ctr));
-> +               max(crypto_ahash_reqsize(mac), crypto_skcipher_reqsize(ctr)));
->
->         return 0;
+> ---8<---
+> values = range(0, 101)
+> for pct in xrange(0, 101):
+>         util = int((1024 * pct) / 100)
+>         rounding = 1
+>         if not ((util & 0xFF) and ~(util & 0x700)):
+>             print "Fixing util_to_perc({:3d} => {:4d})".format(pct, util)
+>             rounding = 0
+>         pct2 = (rounding + ((100 * util) / 1024))
+>         if pct2 in values:
+>                 values.remove(pct2)
+>         if pct != pct2:
+>             print "Convertion failed for: {:3d} => {:4d} => {:3d}".format(pct, util, pct2)
+> if values:
+>     print "ERROR: not all percentage values converted"
+> ---8<---
 >
 > --
-> 2.17.1
+> #include <best/regards.h>
 >
+> Patrick Bellasi
