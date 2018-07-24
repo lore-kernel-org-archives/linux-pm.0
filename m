@@ -1,65 +1,40 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] dt-bindings: thermal: samsung: Add SPDX license
- identifier
-Date: Tue, 24 Jul 2018 18:46:35 +0200
-Message-ID: <2442216.oppRSGRAaL@amdc3058>
-References: <CGME20180718200318epcas3p16aed6c1725d6c1e63ea6b1ad209c5756@epcas3p1.samsung.com>
-        <20180718200250.6478-1-krzk@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180718200250.6478-1-krzk@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: [PATCH v6 02/18] crypto: cbc: Remove VLA usage
+Date: Tue, 24 Jul 2018 09:49:20 -0700
+Message-ID: <20180724164936.37477-3-keescook@chromium.org>
+References: <20180724164936.37477-1-keescook@chromium.org>
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20180724164936.37477-1-keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>
+Cc: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Eric Biggers <ebiggers-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, "Gustavo A. R. Silva" <gustavo-L1vi/lXTdts+Va1GwOuvDg@public.gmane.org>, Alasdair Kergon <agk-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Rabin Vincent <rabinv-VrBV9hrLPhE@public.gmane.org>, Tim Chen <tim.c.chen-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Philipp Reisner <philipp.reisner-63ez5xqkn6DQT0dZR+AlfA@public.gmane.org>, Lars Ellenberg <lars.ellenberg-63ez5xqkn6DQT0dZR+AlfA@public.gmane.org>, Jens Axboe <axboe-tSWWG44O7X1aa/9Udqfwiw@public.gmane.org>, Giovanni Cabiddu <giovanni.cabiddu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mike Snitzer <snitzer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, David Howells <dhowe>
 List-Id: linux-pm@vger.kernel.org
 
+In the quest to remove all stack VLA usage from the kernel[1], this
+uses the upper bounds on blocksize. Since this is always a cipher
+blocksize, use the existing cipher max blocksize.
 
-Hi,
+[1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org
 
-On Wednesday, July 18, 2018 10:02:50 PM Krzysztof Kozlowski wrote:
-> Replace GPL license statement with SPDX license identifier (GPL-2.0+).
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> ---
->  include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
->  1 file changed, 1 insertion(+), 11 deletions(-)
-> 
-> diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
-> index 0646500bca69..642e4e7f4084 100644
-> --- a/include/dt-bindings/thermal/thermal_exynos.h
-> +++ b/include/dt-bindings/thermal/thermal_exynos.h
-> @@ -1,19 +1,9 @@
-> +/* SPDX-License-Identifier: GPL-2.0+ */
+Signed-off-by: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+---
+ include/crypto/cbc.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-This code should be GPL-2.0 only, original license statement is most
-likely result of using wrong file as the source of copy-paste. So I
-would like to have the license fixed first before doing conversion to
-SPDX.
-
->  /*
->   * thermal_exynos.h - Samsung EXYNOS TMU device tree definitions
->   *
->   *  Copyright (C) 2014 Samsung Electronics
->   *  Lukasz Majewski <l.majewski@samsung.com>
-> - *
-> - * This program is free software; you can redistribute it and/or modify
-> - * it under the terms of the GNU General Public License as published by
-> - * the Free Software Foundation; either version 2 of the License, or
-> - * (at your option) any later version.
-> - *
-> - * This program is distributed in the hope that it will be useful,
-> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> - * GNU General Public License for more details.
-> - *
->   */
->  
->  #ifndef _EXYNOS_THERMAL_TMU_DT_H
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/include/crypto/cbc.h b/include/crypto/cbc.h
+index f5b8bfc22e6d..47db0aac2ab9 100644
+--- a/include/crypto/cbc.h
++++ b/include/crypto/cbc.h
+@@ -113,7 +113,9 @@ static inline int crypto_cbc_decrypt_inplace(
+ 	unsigned int bsize = crypto_skcipher_blocksize(tfm);
+ 	unsigned int nbytes = walk->nbytes;
+ 	u8 *src = walk->src.virt.addr;
+-	u8 last_iv[bsize];
++	u8 last_iv[MAX_CIPHER_BLOCKSIZE];
++
++	BUG_ON(bsize > sizeof(last_iv));
+ 
+ 	/* Start of the last block. */
+ 	src += nbytes - (nbytes & (bsize - 1)) - bsize;
+-- 
+2.17.1
