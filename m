@@ -1,34 +1,100 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v6 18/18] crypto: Remove AHASH_REQUEST_ON_STACK
-Date: Tue, 24 Jul 2018 10:31:13 -0700
-Message-ID: <1bdc706ae86039c4ffcff39698251424d54af116.camel@perches.com>
-References: <20180724164936.37477-1-keescook@chromium.org>
-         <20180724164936.37477-19-keescook@chromium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: [PATCH v3] cpufreq: trace frequency limits change
+Date: Tue, 24 Jul 2018 10:35:44 -0700
+Message-ID: <20180724173544.18876-1-joel@joelfernandes.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724164936.37477-19-keescook@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>, Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@google.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Alasdair Kergon <agk@redhat.com>, Rabin Vincent <rabinv@axis.com>, Tim Chen <tim.c.chen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Howells <dhowells@redhat.com>, Johannes Berg <joh>
+To: linux-kernel@vger.kernel.org
+Cc: kernel-team@android.com, Ruchi Kandoi <kandoiruchi@google.com>, Joel Fernandes <joel@joelfernandes.org>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steven Rostedt <rostedt@goodmis.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-07-24 at 09:49 -0700, Kees Cook wrote:
-> All users of AHASH_REQUEST_ON_STACK have been removed from the kernel, so
-> drop it entirely so no VLAs get reintroduced by future users.
+From: Ruchi Kandoi <kandoiruchi@google.com>
 
-checkpatch has a test for that.
-It could now be removed as well.
+systrace used for tracing for Android systems has carried a patch for
+many years in the Android tree that traces when the cpufreq limits
+change.  With the help of this information, systrace can know when the
+policy limits change and can visually display the data. Lets add
+upstream support for the same.
+
+Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 ---
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 34e4683de7a3..a3517334d661 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -796,7 +796,7 @@ our $declaration_macros = qr{(?x:
- 	(?:$Storage\s+)?(?:[A-Z_][A-Z0-9]*_){0,2}(?:DEFINE|DECLARE)(?:_[A-Z0-9]+){1,6}\s*\(|
- 	(?:$Storage\s+)?[HLP]?LIST_HEAD\s*\(|
- 	(?:$Storage\s+)?${Type}\s+uninitialized_var\s*\(|
--	(?:SKCIPHER_REQUEST|SHASH_DESC|AHASH_REQUEST)_ON_STACK\s*\(
-+	(?:SKCIPHER_REQUEST|SHASH_DESC)_ON_STACK\s*\(
- )};
+Viresh since I changed the patch, could you Ack it again?
+
+v2->v3: reduce parameters to tracepoint call (Steve)
+v1->v2: correct ordering of min/max (Viresh)
+
+ Documentation/trace/events-power.rst |  1 +
+ drivers/cpufreq/cpufreq.c            |  1 +
+ include/trace/events/power.h         | 25 +++++++++++++++++++++++++
+ 3 files changed, 27 insertions(+)
+
+diff --git a/Documentation/trace/events-power.rst b/Documentation/trace/events-power.rst
+index a77daca75e30..2ef318962e29 100644
+--- a/Documentation/trace/events-power.rst
++++ b/Documentation/trace/events-power.rst
+@@ -27,6 +27,7 @@ cpufreq.
+ 
+   cpu_idle		"state=%lu cpu_id=%lu"
+   cpu_frequency		"state=%lu cpu_id=%lu"
++  cpu_frequency_limits	"min=%lu max=%lu cpu_id=%lu"
+ 
+ A suspend event is used to indicate the system going in and out of the
+ suspend mode:
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b0dfd3222013..52566f1f1050 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2236,6 +2236,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 
+ 	policy->min = new_policy->min;
+ 	policy->max = new_policy->max;
++	trace_cpu_frequency_limits(policy);
+ 
+ 	policy->cached_target_freq = UINT_MAX;
+ 
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 908977d69783..f7aece721aed 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -5,6 +5,7 @@
+ #if !defined(_TRACE_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
+ #define _TRACE_POWER_H
+ 
++#include <linux/cpufreq.h>
+ #include <linux/ktime.h>
+ #include <linux/pm_qos.h>
+ #include <linux/tracepoint.h>
+@@ -148,6 +149,30 @@ DEFINE_EVENT(cpu, cpu_frequency,
+ 	TP_ARGS(frequency, cpu_id)
+ );
+ 
++TRACE_EVENT(cpu_frequency_limits,
++
++	TP_PROTO(struct cpufreq_policy *policy),
++
++	TP_ARGS(policy),
++
++	TP_STRUCT__entry(
++		__field(u32, min_freq)
++		__field(u32, max_freq)
++		__field(u32, cpu_id)
++	),
++
++	TP_fast_assign(
++		__entry->min_freq = policy->min;
++		__entry->max_freq = policy->max;
++		__entry->cpu_id = policy->cpu;
++	),
++
++	TP_printk("min=%lu max=%lu cpu_id=%lu",
++		  (unsigned long)__entry->min_freq,
++		  (unsigned long)__entry->max_freq,
++		  (unsigned long)__entry->cpu_id)
++);
++
+ TRACE_EVENT(device_pm_callback_start,
+ 
+ 	TP_PROTO(struct device *dev, const char *pm_ops, int event),
+-- 
+2.18.0.233.g985f88cf7e-goog
