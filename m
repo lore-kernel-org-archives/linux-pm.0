@@ -1,151 +1,115 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v13 1/4] iommu/arm-smmu: Add
- pm_runtime/sleep ops
-Date: Tue, 24 Jul 2018 16:21:24 +0100
-Message-ID: <e17fdcb7-2632-753f-4e2e-f81bcded36f1@arm.com>
-References: <20180719101539.6104-1-vivek.gautam@codeaurora.org>
- <20180719101539.6104-2-vivek.gautam@codeaurora.org>
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v2 10/12] sched/core: uclamp: use TG's clamps to restrict
+ Task's clamps
+Date: Tue, 24 Jul 2018 08:28:41 -0700
+Message-ID: <CAJuCfpEUsq=LPZgz20jn79CwymQGgfif8j8fzurUDmEJ3G9q5w@mail.gmail.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-11-patrick.bellasi@arm.com> <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
+ <20180723154025.GF2683@e110439-lin> <CAJuCfpHJ=O1QVFZZ2dpaDDQe+dX1aGkzWdcd76c9zZpxw2fNtA@mail.gmail.com>
+ <20180724095550.GA3162@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180719101539.6104-2-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-GB
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180724095550.GA3162@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTkvMDcvMTggMTE6MTUsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBGcm9tOiBTcmljaGFyYW4g
-UiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+IAo+IFRoZSBzbW11IG5lZWRzIHRvIGJlIGZ1
-bmN0aW9uYWwgb25seSB3aGVuIHRoZSByZXNwZWN0aXZlCj4gbWFzdGVyJ3MgdXNpbmcgaXQgYXJl
-IGFjdGl2ZS4gVGhlIGRldmljZV9saW5rIGZlYXR1cmUKPiBoZWxwcyB0byB0cmFjayBzdWNoIGZ1
-bmN0aW9uYWwgZGVwZW5kZW5jaWVzLCBzbyB0aGF0IHRoZQo+IGlvbW11IGdldHMgcG93ZXJlZCB3
-aGVuIHRoZSBtYXN0ZXIgZGV2aWNlIGVuYWJsZXMgaXRzZWxmCj4gdXNpbmcgcG1fcnVudGltZS4g
-U28gYnkgYWRhcHRpbmcgdGhlIHNtbXUgZHJpdmVyIGZvcgo+IHJ1bnRpbWUgcG0sIGFib3ZlIHNh
-aWQgZGVwZW5kZW5jeSBjYW4gYmUgYWRkcmVzc2VkLgo+IAo+IFRoaXMgcGF0Y2ggYWRkcyB0aGUg
-cG0gcnVudGltZS9zbGVlcCBjYWxsYmFja3MgdG8gdGhlCj4gZHJpdmVyIGFuZCBhbHNvIHRoZSBm
-dW5jdGlvbnMgdG8gcGFyc2UgdGhlIHNtbXUgY2xvY2tzCj4gZnJvbSBEVCBhbmQgZW5hYmxlIHRo
-ZW0gaW4gcmVzdW1lL3N1c3BlbmQuCj4gCj4gQWxzbywgd2hpbGUgd2UgZW5hYmxlIHRoZSBydW50
-aW1lIHBtIGFkZCBhIHBtIHNsZWVwIHN1c3BlbmQKPiBjYWxsYmFjayB0aGF0IHB1c2hlcyBkZXZp
-Y2VzIHRvIGxvdyBwb3dlciBzdGF0ZSBieSB0dXJuaW5nCj4gdGhlIGNsb2NrcyBvZmYgaW4gYSBz
-eXN0ZW0gc2xlZXAuCj4gQWxzbyBhZGQgY29ycmVzcG9uZGluZyBjbG9jayBlbmFibGUgcGF0aCBp
-biByZXN1bWUgY2FsbGJhY2suCj4gCj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNo
-YXJhbkBjb2RlYXVyb3JhLm9yZz4KPiBTaWduZWQtb2ZmLWJ5OiBBcmNoaXQgVGFuZWphIDxhcmNo
-aXR0QGNvZGVhdXJvcmEub3JnPgo+IFt2aXZlazogcmV3b3JrIGZvciBjbG9jayBhbmQgcG0gb3Bz
-XQo+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEu
-b3JnPgo+IFJldmlld2VkLWJ5OiBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPgo+IC0t
-LQo+IAo+IENoYW5nZXMgc2luY2UgdjEyOgo+ICAgLSBBZGRlZCBwbSBzbGVlcCAuc3VzcGVuZCBj
-YWxsYmFjay4gVGhpcyBkaXNhYmxlcyB0aGUgY2xvY2tzLgo+ICAgLSBBZGRlZCBjb3JyZXNwb25k
-aW5nIGNoYW5nZSB0byBlbmFibGUgY2xvY2tzIGluIC5yZXN1bWUKPiAgICBwbSBzbGVlcCBjYWxs
-YmFjay4KPiAKPiAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDc1ICsrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLQo+ICAgMSBmaWxlIGNoYW5nZWQsIDcz
-IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-aW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+IGluZGV4IGM3M2Nm
-Y2UxY2NjMC4uOTEzOGE2ZmZmZTA0IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNt
-bXUuYwo+ICsrKyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+IEBAIC00OCw2ICs0OCw3IEBA
-Cj4gICAjaW5jbHVkZSA8bGludXgvb2ZfaW9tbXUuaD4KPiAgICNpbmNsdWRlIDxsaW51eC9wY2ku
-aD4KPiAgICNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4KPiArI2luY2x1ZGUgPGxp
-bnV4L3BtX3J1bnRpbWUuaD4KPiAgICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+Cj4gICAjaW5jbHVk
-ZSA8bGludXgvc3BpbmxvY2suaD4KPiAgIAo+IEBAIC0yMDUsNiArMjA2LDggQEAgc3RydWN0IGFy
-bV9zbW11X2RldmljZSB7Cj4gICAJdTMyCQkJCW51bV9nbG9iYWxfaXJxczsKPiAgIAl1MzIJCQkJ
-bnVtX2NvbnRleHRfaXJxczsKPiAgIAl1bnNpZ25lZCBpbnQJCQkqaXJxczsKPiArCXN0cnVjdCBj
-bGtfYnVsa19kYXRhCQkqY2xrczsKPiArCWludAkJCQludW1fY2xrczsKPiAgIAo+ICAgCXUzMgkJ
-CQljYXZpdW1faWRfYmFzZTsgLyogU3BlY2lmaWMgdG8gQ2F2aXVtICovCj4gICAKPiBAQCAtMTg5
-NywxMCArMTkwMCwxMiBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9jZmdfcHJvYmUoc3Ry
-dWN0IGFybV9zbW11X2RldmljZSAqc21tdSkKPiAgIHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRh
-IHsKPiAgIAllbnVtIGFybV9zbW11X2FyY2hfdmVyc2lvbiB2ZXJzaW9uOwo+ICAgCWVudW0gYXJt
-X3NtbXVfaW1wbGVtZW50YXRpb24gbW9kZWw7Cj4gKwljb25zdCBjaGFyICogY29uc3QgKmNsa3M7
-Cj4gKwlpbnQgbnVtX2Nsa3M7Cj4gICB9Owo+ICAgCj4gICAjZGVmaW5lIEFSTV9TTU1VX01BVENI
-X0RBVEEobmFtZSwgdmVyLCBpbXApCVwKPiAtc3RhdGljIHN0cnVjdCBhcm1fc21tdV9tYXRjaF9k
-YXRhIG5hbWUgPSB7IC52ZXJzaW9uID0gdmVyLCAubW9kZWwgPSBpbXAgfQo+ICtzdGF0aWMgY29u
-c3Qgc3RydWN0IGFybV9zbW11X21hdGNoX2RhdGEgbmFtZSA9IHsgLnZlcnNpb24gPSB2ZXIsIC5t
-b2RlbCA9IGltcCB9Cj4gICAKPiAgIEFSTV9TTU1VX01BVENIX0RBVEEoc21tdV9nZW5lcmljX3Yx
-LCBBUk1fU01NVV9WMSwgR0VORVJJQ19TTU1VKTsKPiAgIEFSTV9TTU1VX01BVENIX0RBVEEoc21t
-dV9nZW5lcmljX3YyLCBBUk1fU01NVV9WMiwgR0VORVJJQ19TTU1VKTsKPiBAQCAtMTkxOSw2ICsx
-OTI0LDIzIEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGFybV9zbW11X29mX21h
-dGNoW10gPSB7Cj4gICB9Owo+ICAgTU9EVUxFX0RFVklDRV9UQUJMRShvZiwgYXJtX3NtbXVfb2Zf
-bWF0Y2gpOwo+ICAgCj4gK3N0YXRpYyB2b2lkIGFybV9zbW11X2ZpbGxfY2xrX2RhdGEoc3RydWN0
-IGFybV9zbW11X2RldmljZSAqc21tdSwKPiArCQkJCSAgIGNvbnN0IGNoYXIgKiBjb25zdCAqY2xr
-cykKPiArewo+ICsJaW50IGk7Cj4gKwo+ICsJaWYgKHNtbXUtPm51bV9jbGtzIDwgMSkKPiArCQly
-ZXR1cm47Cj4gKwo+ICsJc21tdS0+Y2xrcyA9IGRldm1fa2NhbGxvYyhzbW11LT5kZXYsIHNtbXUt
-Pm51bV9jbGtzLAo+ICsJCQkJICBzaXplb2YoKnNtbXUtPmNsa3MpLCBHRlBfS0VSTkVMKTsKPiAr
-CWlmICghc21tdS0+Y2xrcykKPiArCQlyZXR1cm47Cj4gKwo+ICsJZm9yIChpID0gMDsgaSA8IHNt
-bXUtPm51bV9jbGtzOyBpKyspCj4gKwkJc21tdS0+Y2xrc1tpXS5pZCA9IGNsa3NbaV07Cj4gK30K
-PiArCj4gICAjaWZkZWYgQ09ORklHX0FDUEkKPiAgIHN0YXRpYyBpbnQgYWNwaV9zbW11X2dldF9k
-YXRhKHUzMiBtb2RlbCwgc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSkKPiAgIHsKPiBAQCAt
-MjAwMSw2ICsyMDIzLDkgQEAgc3RhdGljIGludCBhcm1fc21tdV9kZXZpY2VfZHRfcHJvYmUoc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKPiAgIAlkYXRhID0gb2ZfZGV2aWNlX2dldF9tYXRj
-aF9kYXRhKGRldik7Cj4gICAJc21tdS0+dmVyc2lvbiA9IGRhdGEtPnZlcnNpb247Cj4gICAJc21t
-dS0+bW9kZWwgPSBkYXRhLT5tb2RlbDsKPiArCXNtbXUtPm51bV9jbGtzID0gZGF0YS0+bnVtX2Ns
-a3M7Cj4gKwo+ICsJYXJtX3NtbXVfZmlsbF9jbGtfZGF0YShzbW11LCBkYXRhLT5jbGtzKTsKPiAg
-IAo+ICAgCXBhcnNlX2RyaXZlcl9vcHRpb25zKHNtbXUpOwo+ICAgCj4gQEAgLTIwOTksNiArMjEy
-NCwxNCBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1f
-ZGV2aWNlICpwZGV2KQo+ICAgCQlzbW11LT5pcnFzW2ldID0gaXJxOwo+ICAgCX0KPiAgIAo+ICsJ
-ZXJyID0gZGV2bV9jbGtfYnVsa19nZXQoc21tdS0+ZGV2LCBzbW11LT5udW1fY2xrcywgc21tdS0+
-Y2xrcyk7Cj4gKwlpZiAoZXJyKQo+ICsJCXJldHVybiBlcnI7Cj4gKwo+ICsJZXJyID0gY2xrX2J1
-bGtfcHJlcGFyZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4gKwlpZiAoZXJyKQo+ICsJ
-CXJldHVybiBlcnI7Cj4gKwo+ICAgCWVyciA9IGFybV9zbW11X2RldmljZV9jZmdfcHJvYmUoc21t
-dSk7Cj4gICAJaWYgKGVycikKPiAgIAkJcmV0dXJuIGVycjsKPiBAQCAtMjE4MSw2ICsyMjE0LDkg
-QEAgc3RhdGljIGludCBhcm1fc21tdV9kZXZpY2VfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZp
-Y2UgKnBkZXYpCj4gICAKPiAgIAkvKiBUdXJuIHRoZSB0aGluZyBvZmYgKi8KPiAgIAl3cml0ZWwo
-c0NSMF9DTElFTlRQRCwgQVJNX1NNTVVfR1IwX05TKHNtbXUpICsgQVJNX1NNTVVfR1IwX3NDUjAp
-Owo+ICsKPiArCWNsa19idWxrX3VucHJlcGFyZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7
-Cj4gKwo+ICAgCXJldHVybiAwOwo+ICAgfQo+ICAgCj4gQEAgLTIxODksMTUgKzIyMjUsNTAgQEAg
-c3RhdGljIHZvaWQgYXJtX3NtbXVfZGV2aWNlX3NodXRkb3duKHN0cnVjdCBwbGF0Zm9ybV9kZXZp
-Y2UgKnBkZXYpCj4gICAJYXJtX3NtbXVfZGV2aWNlX3JlbW92ZShwZGV2KTsKPiAgIH0KPiAgIAo+
-ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3J1bnRpbWVfcmVzdW1lKHN0cnVj
-dCBkZXZpY2UgKmRldikKPiArewo+ICsJc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IGRl
-dl9nZXRfZHJ2ZGF0YShkZXYpOwo+ICsKPiArCXJldHVybiBjbGtfYnVsa19lbmFibGUoc21tdS0+
-bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwoKSWYgdGhlcmUncyBhIHBvd2VyIGRvbWFpbiBiZWluZyBh
-dXRvbWF0aWNhbGx5IHN3aXRjaGVkIGJ5IGdlbnBkIHRoZW4gd2UgCm5lZWQgYSByZXNldCBoZXJl
-IGJlY2F1c2Ugd2UgbWF5IGhhdmUgbG9zdCBzdGF0ZSBlbnRpcmVseS4gU2luY2UgSSAKcmVtZW1i
-ZXJlZCB0aGUgb3RoZXJ3aXNlLXVzZWxlc3MgR1BVIFNNTVUgb24gSnVubyBpcyBpbiBhIHNlcGFy
-YXRlIHBvd2VyIApkb21haW4sIEkgZ2F2ZSBpdCBhIHBva2luZyB2aWEgc3lzZnMgd2l0aCBzb21l
-IGRlYnVnIHN0dWZmIHRvIGR1bXAgc0NSMCAKaW4gdGhlc2UgY2FsbGJhY2tzLCBhbmQgdGhlIHBy
-b2JsZW0gaXMgY2xlYXI6CgouLi4KWyAgICA0LjYyNTU1MV0gYXJtLXNtbXUgMmI0MDAwMDAuaW9t
-bXU6IGdlbnBkX3J1bnRpbWVfc3VzcGVuZCgpClsgICAgNC42MzExNjNdIGFybS1zbW11IDJiNDAw
-MDAwLmlvbW11OiBhcm1fc21tdV9ydW50aW1lX3N1c3BlbmQ6IDB4MDAyMDE5MzYKWyAgICA0LjYz
-Nzg5N10gYXJtLXNtbXUgMmI0MDAwMDAuaW9tbXU6IHN1c3BlbmQgbGF0ZW5jeSBleGNlZWRlZCwg
-NjczMzk4MCBucwpbICAgMjEuNTY2OTgzXSBhcm0tc21tdSAyYjQwMDAwMC5pb21tdTogZ2VucGRf
-cnVudGltZV9yZXN1bWUoKQpbICAgMjEuNTg0Nzk2XSBhcm0tc21tdSAyYjQwMDAwMC5pb21tdTog
-YXJtX3NtbXVfcnVudGltZV9yZXN1bWU6IDB4MDAyMjAxMDEKWyAgIDIxLjU5MTQ1Ml0gYXJtLXNt
-bXUgMmI0MDAwMDAuaW9tbXU6IHJlc3VtZSBsYXRlbmN5IGV4Y2VlZGVkLCA2NjU4MDIwIG5zCi4u
-LgoKPiArfQo+ICsKPiArc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50aW1l
-X3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQo+ICt7Cj4gKwlzdHJ1Y3QgYXJtX3NtbXVfZGV2
-aWNlICpzbW11ID0gZGV2X2dldF9kcnZkYXRhKGRldik7Cj4gKwo+ICsJY2xrX2J1bGtfZGlzYWJs
-ZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4gKwo+ICsJcmV0dXJuIDA7Cj4gK30KPiAr
-Cj4gICBzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3BtX3Jlc3VtZShzdHJ1Y3Qg
-ZGV2aWNlICpkZXYpCj4gICB7Cj4gICAJc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IGRl
-dl9nZXRfZHJ2ZGF0YShkZXYpOwo+ICsJaW50IHJldDsKPiArCj4gKwlpZiAoIXBtX3J1bnRpbWVf
-c3VzcGVuZGVkKGRldikpIHsKPiArCQlyZXQgPSBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZShkZXYp
-Owo+ICsJCWlmIChyZXQpCj4gKwkJCXJldHVybiByZXQ7Cj4gKwl9Cj4gICAKPiAgIAlhcm1fc21t
-dV9kZXZpY2VfcmVzZXQoc21tdSk7CgpUaGlzIGxvb2tzIGEgYml0IG9mZiB0b28gLSBpZiB3ZSB3
-YWtlIGZyb20gc2xlZXAgd2hlbiB0aGUgU01NVSB3YXMgYWxzbyAKcnVudGltZS1zdXNwZW5kZWQs
-IGl0IGFwcGVhcnMgd2UgbWlnaHQgZW5kIHVwIHRyeWluZyB0byByZXN0b3JlIHRoZSAKcmVnaXN0
-ZXIgc3RhdGUgd2l0aG91dCBjbG9ja3MgZW5hYmxlZC4gU3VyZWx5IHdlIG5lZWQgdG8gYWx3YXlz
-IGVuYWJsZSAKY2xvY2tzIGZvciB0aGUgcmVzZXQsIHRoZW4gcmVzdG9yZSB0aGUgcHJldmlvdXMg
-c3VzcGVuZGVkIHN0YXRlPyAKQWx0aG91Z2ggZ2l2ZW4gbXkgcHJldmlvdXMgcG9pbnQsIGl0J3Mg
-cHJvYmFibHkgbm90IHdvcnRoIGRvaW5nIGFueXRoaW5nIAphdCBhbGwgaGVyZSBmb3IgdGhhdCBj
-YXNlLgoKUm9iaW4uCgo+ICAgCXJldHVybiAwOwo+ICAgfQo+ICAgCj4gLXN0YXRpYyBTSU1QTEVf
-REVWX1BNX09QUyhhcm1fc21tdV9wbV9vcHMsIE5VTEwsIGFybV9zbW11X3BtX3Jlc3VtZSk7Cj4g
-K3N0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcG1fc3VzcGVuZChzdHJ1Y3QgZGV2
-aWNlICpkZXYpCj4gK3sKPiArCWlmICghcG1fcnVudGltZV9zdXNwZW5kZWQoZGV2KSkKPiArCQly
-ZXR1cm4gYXJtX3NtbXVfcnVudGltZV9zdXNwZW5kKGRldik7Cj4gKwo+ICsJcmV0dXJuIDA7Cj4g
-K30KPiArCj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBhcm1fc21tdV9wbV9vcHMg
-PSB7Cj4gKwlTRVRfU1lTVEVNX1NMRUVQX1BNX09QUyhhcm1fc21tdV9wbV9zdXNwZW5kLCBhcm1f
-c21tdV9wbV9yZXN1bWUpCj4gKwlTRVRfUlVOVElNRV9QTV9PUFMoYXJtX3NtbXVfcnVudGltZV9z
-dXNwZW5kLAo+ICsJCQkgICBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZSwgTlVMTCkKPiArfTsKPiAg
-IAo+ICAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgYXJtX3NtbXVfZHJpdmVyID0gewo+
-ICAgCS5kcml2ZXIJPSB7Cj4gCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
-ZWVkcmVubwo=
+Hi Patrick. Thanks for the explanation and links. No more questions
+from me on this one :)
+
+On Tue, Jul 24, 2018 at 2:56 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> On 23-Jul 10:11, Suren Baghdasaryan wrote:
+>> On Mon, Jul 23, 2018 at 8:40 AM, Patrick Bellasi
+>> <patrick.bellasi@arm.com> wrote:
+>> > On 21-Jul 20:05, Suren Baghdasaryan wrote:
+>> >> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
+>
+> [...]
+>
+>> >> So to satisfy both TG and syscall requirements I think you would
+>> >> need to choose the largest value for UCLAMP_MIN and the smallest one
+>> >> for UCLAMP_MAX, meaning the most boosted and most clamped range.
+>> >> Current implementation choses the least boosted value, so
+>> >> effectively one of the UCLAMP_MIN requirements (either from TG or
+>> >> from syscall) are being ignored...  Could you please clarify why
+>> >> this choice is made?
+>> >
+>> > The TG values are always used to specify a _restriction_ on
+>> > task-specific values.
+>> >
+>> > Thus, if you look or example at the CPU mask for a task, you can have
+>> > a task with affinity to CPUs 0-1, currently running on a cgroup with
+>> > cpuset.cpus=0... then the task can run only on CPU 0 (althought its
+>> > affinity includes CPU1 too).
+>> >
+>> > Same we do here: if a task has util_min=10, but it's running in a
+>> > cgroup with cpu.util_min=0, then it will not be boosted.
+>> >
+>> > IOW, this allows to implement a "nice" policy at task level, where a
+>> > task (via syscall) can decide to be less boosted with respect to its
+>> > group but never more boosted. The same task can also decide to be more
+>> > clamped, but not less clamped then its current group.
+>> >
+>>
+>> The fact that boost means "at least this much" to me seems like we can
+>> safely choose higher CPU bandwidth (as long as it's lower than
+>> UCLAMP_MAX)
+>
+> I understand your view point, which actually is matching my first
+> implementation for util_min aggregation:
+>
+>    https://lore.kernel.org/lkml/20180409165615.2326-5-patrick.bellasi@arm.com/
+>
+>
+>> but from your description sounds like TG's UCLAMP_MIN means "at most
+>> this much boost" and it's not safe to use CPU bandwidth higher than
+>> TG's UCLAMP_MIN.
+>
+> Indeed, after this discussion with Tejun:
+>
+>    https://lore.kernel.org/lkml/20180409222417.GK3126663@devbig577.frc2.facebook.com/
+>
+> I've convinced myself that for the cgroup interface we have to got for
+> a "restrictive" interface where a parent value must set the upper
+> bound for all its descendants values. AFAIU, that's one of the basic
+> principles of the "delegation model" implemented by cgroups and the
+> common behavior implemented by all controllers.
+>
+>> So instead of specifying min CPU bandwidth for a task it specifies
+>> the max allowed boost. Seems like a discrepancy to me but maybe
+>> there are compelling usecases when this behavior is necessary?
+>
+> I don't think it's strictly related to use-cases, you can always
+> describe a give use-case in one model or the other.  It all depends on
+> how you configure your hierarchy and where you place your tasks.
+>
+> For our Android use cases, we are still happy to say that all tasks of
+> a CGroup can be boosted up to a certain value and then we can either:
+> - don't configure tasks: and thus get the CG defined boost
+> - configure a task: and explicitly give back what we don't need
+>
+> This model works quite well with containers, where the parent want to
+> precisely control how much resources are (eventually) usable by a
+> given container.
+>
+>> In that case would be good to spell them out to explain why this
+>> choice is made.
+>
+> Yes, well... if I understand it correctly is really just the
+> recommended way cgroups must be used to re-partition resources.
+>
+> I'll try to better explain this behavior in the changelog for this
+> patch.
+>
+> [...]
+>
+> Best,
+> Patrick
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
