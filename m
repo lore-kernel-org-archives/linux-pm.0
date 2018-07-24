@@ -1,779 +1,207 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-Date: Tue, 24 Jul 2018 17:33:35 +0200
-Message-ID: <20180724153335.zimuf2xp4enllyyf@verge.net.au>
-References: <20180724111600.4158975-1-arnd@arndb.de>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Tue, 24 Jul 2018 16:39:16 +0100
+Message-ID: <20180724153916.GA3275@e110439-lin>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-9-patrick.bellasi@arm.com>
+ <20180723153040.GG1934745@devbig577.frc2.facebook.com>
+ <20180723172215.GG2683@e110439-lin>
+ <20180724132902.GI1934745@devbig577.frc2.facebook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <netdev-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180724111600.4158975-1-arnd@arndb.de>
-Sender: netdev-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+In-Reply-To: <20180724132902.GI1934745@devbig577.frc2.facebook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 24, 2018 at 01:13:25PM +0200, Arnd Bergmann wrote:
-> Almost all files in the kernel are either plain text or UTF-8
-> encoded. A couple however are ISO_8859-1, usually just a few
-> characters in a C comments, for historic reasons.
-> 
-> This converts them all to UTF-8 for consistency.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  .../devicetree/bindings/net/nfc/pn544.txt     |   2 +-
->  arch/arm/boot/dts/sun4i-a10-inet97fv2.dts     |   2 +-
->  arch/arm/crypto/sha256_glue.c                 |   2 +-
->  arch/arm/crypto/sha256_neon_glue.c            |   4 +-
->  drivers/crypto/vmx/ghashp8-ppc.pl             |  12 +-
->  drivers/iio/dac/ltc2632.c                     |   2 +-
->  drivers/power/reset/ltc2952-poweroff.c        |   4 +-
->  kernel/events/callchain.c                     |   2 +-
->  net/netfilter/ipvs/Kconfig                    |   8 +-
->  net/netfilter/ipvs/ip_vs_mh.c                 |   4 +-
+Hi Tejun,
 
-IPVS portion:
+I apologize in advance for the (yet another) long reply, however I did
+my best hereafter to try to resume all the controversial points
+discussed so far.
 
-Acked-by: Simon Horman <horms@verge.net.au>
+If you will have (one more time) the patience to go through the
+following text you'll find a set of precise clarifications and
+questions I have for you.
 
+Thank you again for your time.
 
->  tools/power/cpupower/po/de.po                 |  44 +++----
->  tools/power/cpupower/po/fr.po                 | 120 +++++++++---------
->  12 files changed, 103 insertions(+), 103 deletions(-)
+On 24-Jul 06:29, Tejun Heo wrote:
+
+[...]
+
+> > What I describe here is just an additional hint to the scheduler which
+> > enrich the above described model. Provided A and B are already
+> > satisfied, when a task gets a chance to run it will be executed at a
+> > min/max configured frequency. That's really all... there is not
+> > additional impact on "resources allocation".
 > 
-> diff --git a/Documentation/devicetree/bindings/net/nfc/pn544.txt b/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> index 538a86f7b2b0..72593f056b75 100644
-> --- a/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> +++ b/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> @@ -2,7 +2,7 @@
->  
->  Required properties:
->  - compatible: Should be "nxp,pn544-i2c".
-> -- clock-frequency: I²C work frequency.
-> +- clock-frequency: IÂ²C work frequency.
->  - reg: address on the bus
->  - interrupt-parent: phandle for the interrupt gpio controller
->  - interrupts: GPIO interrupt to which the chip is connected
-> diff --git a/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts b/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts
-> index 5d096528e75a..71c27ea0b53e 100644
-> --- a/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts
-> +++ b/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts
-> @@ -1,7 +1,7 @@
->  /*
->   * Copyright 2014 Open Source Support GmbH
->   *
-> - * David Lanzendörfer <david.lanzendoerfer@o2s.ch>
-> + * David LanzendÃ¶rfer <david.lanzendoerfer@o2s.ch>
->   *
->   * This file is dual-licensed: you can use it either under the terms
->   * of the GPL or the X11 license, at your option. Note that this dual
-> diff --git a/arch/arm/crypto/sha256_glue.c b/arch/arm/crypto/sha256_glue.c
-> index bf8ccff2c9d0..0ae900e778f3 100644
-> --- a/arch/arm/crypto/sha256_glue.c
-> +++ b/arch/arm/crypto/sha256_glue.c
-> @@ -2,7 +2,7 @@
->   * Glue code for the SHA256 Secure Hash Algorithm assembly implementation
->   * using optimized ARM assembler and NEON instructions.
->   *
-> - * Copyright © 2015 Google Inc.
-> + * Copyright Â© 2015 Google Inc.
->   *
->   * This file is based on sha256_ssse3_glue.c:
->   *   Copyright (C) 2013 Intel Corporation
-> diff --git a/arch/arm/crypto/sha256_neon_glue.c b/arch/arm/crypto/sha256_neon_glue.c
-> index 9bbee56fbdc8..1d82c6cd31a4 100644
-> --- a/arch/arm/crypto/sha256_neon_glue.c
-> +++ b/arch/arm/crypto/sha256_neon_glue.c
-> @@ -2,10 +2,10 @@
->   * Glue code for the SHA256 Secure Hash Algorithm assembly implementation
->   * using NEON instructions.
->   *
-> - * Copyright © 2015 Google Inc.
-> + * Copyright Â© 2015 Google Inc.
->   *
->   * This file is based on sha512_neon_glue.c:
-> - *   Copyright © 2014 Jussi Kivilinna <jussi.kivilinna@iki.fi>
-> + *   Copyright Â© 2014 Jussi Kivilinna <jussi.kivilinna@iki.fi>
->   *
->   * This program is free software; you can redistribute it and/or modify it
->   * under the terms of the GNU General Public License as published by the Free
-> diff --git a/drivers/crypto/vmx/ghashp8-ppc.pl b/drivers/crypto/vmx/ghashp8-ppc.pl
-> index f746af271460..38b06503ede0 100644
-> --- a/drivers/crypto/vmx/ghashp8-ppc.pl
-> +++ b/drivers/crypto/vmx/ghashp8-ppc.pl
-> @@ -129,9 +129,9 @@ $code=<<___;
->  	 le?vperm	$IN,$IN,$IN,$lemask
->  	vxor		$zero,$zero,$zero
->  
-> -	vpmsumd		$Xl,$IN,$Hl		# H.lo·Xi.lo
-> -	vpmsumd		$Xm,$IN,$H		# H.hi·Xi.lo+H.lo·Xi.hi
-> -	vpmsumd		$Xh,$IN,$Hh		# H.hi·Xi.hi
-> +	vpmsumd		$Xl,$IN,$Hl		# H.loÂ·Xi.lo
-> +	vpmsumd		$Xm,$IN,$H		# H.hiÂ·Xi.lo+H.loÂ·Xi.hi
-> +	vpmsumd		$Xh,$IN,$Hh		# H.hiÂ·Xi.hi
->  
->  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
->  
-> @@ -187,11 +187,11 @@ $code=<<___;
->  .align	5
->  Loop:
->  	 subic		$len,$len,16
-> -	vpmsumd		$Xl,$IN,$Hl		# H.lo·Xi.lo
-> +	vpmsumd		$Xl,$IN,$Hl		# H.loÂ·Xi.lo
->  	 subfe.		r0,r0,r0		# borrow?-1:0
-> -	vpmsumd		$Xm,$IN,$H		# H.hi·Xi.lo+H.lo·Xi.hi
-> +	vpmsumd		$Xm,$IN,$H		# H.hiÂ·Xi.lo+H.loÂ·Xi.hi
->  	 and		r0,r0,$len
-> -	vpmsumd		$Xh,$IN,$Hh		# H.hi·Xi.hi
-> +	vpmsumd		$Xh,$IN,$Hh		# H.hiÂ·Xi.hi
->  	 add		$inp,$inp,r0
->  
->  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
-> diff --git a/drivers/iio/dac/ltc2632.c b/drivers/iio/dac/ltc2632.c
-> index cca278eaa138..885105135580 100644
-> --- a/drivers/iio/dac/ltc2632.c
-> +++ b/drivers/iio/dac/ltc2632.c
-> @@ -1,7 +1,7 @@
->  /*
->   * LTC2632 Digital to analog convertors spi driver
->   *
-> - * Copyright 2017 Maxime Roussin-Bélanger
-> + * Copyright 2017 Maxime Roussin-BÃ©langer
->   * expanded by Silvan Murer <silvan.murer@gmail.com>
->   *
->   * Licensed under the GPL-2.
-> diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-> index 6b911b6b10a6..c484584745bc 100644
-> --- a/drivers/power/reset/ltc2952-poweroff.c
-> +++ b/drivers/power/reset/ltc2952-poweroff.c
-> @@ -2,7 +2,7 @@
->   * LTC2952 (PowerPath) driver
->   *
->   * Copyright (C) 2014, Xsens Technologies BV <info@xsens.com>
-> - * Maintainer: René Moll <linux@r-moll.nl>
-> + * Maintainer: RenÃ© Moll <linux@r-moll.nl>
->   *
->   * This program is free software; you can redistribute it and/or
->   * modify it under the terms of the GNU General Public License
-> @@ -319,6 +319,6 @@ static struct platform_driver ltc2952_poweroff_driver = {
->  
->  module_platform_driver(ltc2952_poweroff_driver);
->  
-> -MODULE_AUTHOR("René Moll <rene.moll@xsens.com>");
-> +MODULE_AUTHOR("RenÃ© Moll <rene.moll@xsens.com>");
->  MODULE_DESCRIPTION("LTC PowerPath power-off driver");
->  MODULE_LICENSE("GPL v2");
-> diff --git a/kernel/events/callchain.c b/kernel/events/callchain.c
-> index c187aa3df3c8..24a77c34e9ad 100644
-> --- a/kernel/events/callchain.c
-> +++ b/kernel/events/callchain.c
-> @@ -4,7 +4,7 @@
->   *  Copyright (C) 2008 Thomas Gleixner <tglx@linutronix.de>
->   *  Copyright (C) 2008-2011 Red Hat, Inc., Ingo Molnar
->   *  Copyright (C) 2008-2011 Red Hat, Inc., Peter Zijlstra
-> - *  Copyright  ©  2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-> + *  Copyright  Â©  2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
->   *
->   * For licensing details see kernel-base/COPYING
->   */
-> diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
-> index 05dc1b77e466..cad48d07c818 100644
-> --- a/net/netfilter/ipvs/Kconfig
-> +++ b/net/netfilter/ipvs/Kconfig
-> @@ -296,10 +296,10 @@ config IP_VS_MH_TAB_INDEX
->  	  stored in a hash table. This table is assigned by a preference
->  	  list of the positions to each destination until all slots in
->  	  the table are filled. The index determines the prime for size of
-> -	  the table as 251, 509, 1021, 2039, 4093, 8191, 16381, 32749,
-> -	  65521 or 131071. When using weights to allow destinations to
-> -	  receive more connections, the table is assigned an amount
-> -	  proportional to the weights specified. The table needs to be large
-> +	  the table asÂ 251, 509, 1021, 2039, 4093, 8191, 16381, 32749,
-> +	  65521 or 131071.Â When using weights to allow destinations to
-> +	  receive more connections,Â the table is assigned an amount
-> +	  proportional to the weights specified.Â The table needs to be large
->  	  enough to effectively fit all the destinations multiplied by their
->  	  respective weights.
->  
-> diff --git a/net/netfilter/ipvs/ip_vs_mh.c b/net/netfilter/ipvs/ip_vs_mh.c
-> index 0f795b186eb3..94d9d349ebb0 100644
-> --- a/net/netfilter/ipvs/ip_vs_mh.c
-> +++ b/net/netfilter/ipvs/ip_vs_mh.c
-> @@ -5,10 +5,10 @@
->   *
->   */
->  
-> -/* The mh algorithm is to assign a preference list of all the lookup
-> +/* The mh algorithm is to assignÂ a preference list of all the lookup
->   * table positions to each destination and populate the table with
->   * the most-preferred position of destinations. Then it is to select
-> - * destination with the hash key of source IP address through looking
-> + * destination with the hash key of source IP addressÂ through looking
->   * up a the lookup table.
->   *
->   * The algorithm is detailed in:
-> diff --git a/tools/power/cpupower/po/de.po b/tools/power/cpupower/po/de.po
-> index 78c09e51663a..840c17cc450a 100644
-> --- a/tools/power/cpupower/po/de.po
-> +++ b/tools/power/cpupower/po/de.po
-> @@ -323,12 +323,12 @@ msgstr "  Hardwarebedingte Grenzen der Taktfrequenz: "
->  #: utils/cpufreq-info.c:256
->  #, c-format
->  msgid "  available frequency steps: "
-> -msgstr "  mögliche Taktfrequenzen: "
-> +msgstr "  mÃ¶gliche Taktfrequenzen: "
->  
->  #: utils/cpufreq-info.c:269
->  #, c-format
->  msgid "  available cpufreq governors: "
-> -msgstr "  mögliche Regler: "
-> +msgstr "  mÃ¶gliche Regler: "
->  
->  #: utils/cpufreq-info.c:280
->  #, c-format
-> @@ -381,7 +381,7 @@ msgstr "Optionen:\n"
->  msgid "  -e, --debug          Prints out debug information [default]\n"
->  msgstr ""
->  "  -e, --debug          Erzeugt detaillierte Informationen, hilfreich\n"
-> -"                       zum Aufspüren von Fehlern\n"
-> +"                       zum AufspÃ¼ren von Fehlern\n"
->  
->  #: utils/cpufreq-info.c:475
->  #, c-format
-> @@ -424,7 +424,7 @@ msgstr "  -p, --policy         Findet die momentane Taktik heraus *\n"
->  #: utils/cpufreq-info.c:482
->  #, c-format
->  msgid "  -g, --governors      Determines available cpufreq governors *\n"
-> -msgstr "  -g, --governors      Erzeugt eine Liste mit verfügbaren Reglern *\n"
-> +msgstr "  -g, --governors      Erzeugt eine Liste mit verfÃ¼gbaren Reglern *\n"
->  
->  #: utils/cpufreq-info.c:483
->  #, c-format
-> @@ -450,7 +450,7 @@ msgstr ""
->  #, c-format
->  msgid "  -s, --stats          Shows cpufreq statistics if available\n"
->  msgstr ""
-> -"  -s, --stats          Zeigt, sofern möglich, Statistiken über cpufreq an.\n"
-> +"  -s, --stats          Zeigt, sofern mÃ¶glich, Statistiken Ã¼ber cpufreq an.\n"
->  
->  #: utils/cpufreq-info.c:487
->  #, c-format
-> @@ -473,9 +473,9 @@ msgid ""
->  "cpufreq\n"
->  "                       interface in 2.4. and early 2.6. kernels\n"
->  msgstr ""
-> -"  -o, --proc           Erzeugt Informationen in einem ähnlichem Format zu "
-> +"  -o, --proc           Erzeugt Informationen in einem Ã¤hnlichem Format zu "
->  "dem\n"
-> -"                       der /proc/cpufreq-Datei in 2.4. und frühen 2.6.\n"
-> +"                       der /proc/cpufreq-Datei in 2.4. und frÃ¼hen 2.6.\n"
->  "                       Kernel-Versionen\n"
->  
->  #: utils/cpufreq-info.c:491
-> @@ -491,7 +491,7 @@ msgstr ""
->  #: utils/cpufreq-info.c:492 utils/cpuidle-info.c:152
->  #, c-format
->  msgid "  -h, --help           Prints out this screen\n"
-> -msgstr "  -h, --help           Gibt diese Kurzübersicht aus\n"
-> +msgstr "  -h, --help           Gibt diese KurzÃ¼bersicht aus\n"
->  
->  #: utils/cpufreq-info.c:495
->  #, c-format
-> @@ -501,7 +501,7 @@ msgid ""
->  msgstr ""
->  "Sofern kein anderer Parameter als '-c, --cpu' angegeben wird, liefert "
->  "dieses\n"
-> -"Programm Informationen, die z.B. zum Berichten von Fehlern nützlich sind.\n"
-> +"Programm Informationen, die z.B. zum Berichten von Fehlern nÃ¼tzlich sind.\n"
->  
->  #: utils/cpufreq-info.c:497
->  #, c-format
-> @@ -557,7 +557,7 @@ msgid ""
->  "select\n"
->  msgstr ""
->  "  -d FREQ, --min FREQ      neue minimale Taktfrequenz, die der Regler\n"
-> -"                           auswählen darf\n"
-> +"                           auswÃ¤hlen darf\n"
->  
->  #: utils/cpufreq-set.c:28
->  #, c-format
-> @@ -566,7 +566,7 @@ msgid ""
->  "select\n"
->  msgstr ""
->  "  -u FREQ, --max FREQ      neue maximale Taktfrequenz, die der Regler\n"
-> -"                           auswählen darf\n"
-> +"                           auswÃ¤hlen darf\n"
->  
->  #: utils/cpufreq-set.c:29
->  #, c-format
-> @@ -579,20 +579,20 @@ msgid ""
->  "  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
->  "                           governor to be available and loaded\n"
->  msgstr ""
-> -"  -f FREQ, --freq FREQ     setze exakte Taktfrequenz. Benötigt den Regler\n"
-> +"  -f FREQ, --freq FREQ     setze exakte Taktfrequenz. BenÃ¶tigt den Regler\n"
->  "                           'userspace'.\n"
->  
->  #: utils/cpufreq-set.c:32
->  #, c-format
->  msgid "  -r, --related            Switches all hardware-related CPUs\n"
->  msgstr ""
-> -"  -r, --related            Setze Werte für alle CPUs, deren Taktfrequenz\n"
-> +"  -r, --related            Setze Werte fÃ¼r alle CPUs, deren Taktfrequenz\n"
->  "                           hardwarebedingt identisch ist.\n"
->  
->  #: utils/cpufreq-set.c:33 utils/cpupower-set.c:28 utils/cpupower-info.c:27
->  #, c-format
->  msgid "  -h, --help               Prints out this screen\n"
-> -msgstr "  -h, --help               Gibt diese Kurzübersicht aus\n"
-> +msgstr "  -h, --help               Gibt diese KurzÃ¼bersicht aus\n"
->  
->  #: utils/cpufreq-set.c:35
->  #, fuzzy, c-format
-> @@ -618,8 +618,8 @@ msgstr ""
->  "   angenommen\n"
->  "2. Der Parameter -f bzw. --freq kann mit keinem anderen als dem Parameter\n"
->  "   -c bzw. --cpu kombiniert werden\n"
-> -"3. FREQuenzen können in Hz, kHz (Standard), MHz, GHz oder THz eingegeben\n"
-> -"   werden, indem der Wert und unmittelbar anschließend (ohne Leerzeichen!)\n"
-> +"3. FREQuenzen kÃ¶nnen in Hz, kHz (Standard), MHz, GHz oder THz eingegeben\n"
-> +"   werden, indem der Wert und unmittelbar anschlieÃŸend (ohne Leerzeichen!)\n"
->  "   die Einheit angegeben werden. (Bsp: 1GHz )\n"
->  "   (FREQuenz in kHz =^ MHz * 1000 =^ GHz * 1000000).\n"
->  
-> @@ -638,7 +638,7 @@ msgid ""
->  msgstr ""
->  "Beim Einstellen ist ein Fehler aufgetreten. Typische Fehlerquellen sind:\n"
->  "- nicht ausreichende Rechte (Administrator)\n"
-> -"- der Regler ist nicht verfügbar bzw. nicht geladen\n"
-> +"- der Regler ist nicht verfÃ¼gbar bzw. nicht geladen\n"
->  "- die angegebene Taktik ist inkorrekt\n"
->  "- eine spezifische Frequenz wurde angegeben, aber der Regler 'userspace'\n"
->  "  kann entweder hardwarebedingt nicht genutzt werden oder ist nicht geladen\n"
-> @@ -821,7 +821,7 @@ msgstr ""
->  #: utils/cpuidle-info.c:48
->  #, fuzzy, c-format
->  msgid "Available idle states:"
-> -msgstr "  mögliche Taktfrequenzen: "
-> +msgstr "  mÃ¶gliche Taktfrequenzen: "
->  
->  #: utils/cpuidle-info.c:71
->  #, c-format
-> @@ -924,7 +924,7 @@ msgstr "Aufruf: cpufreq-info [Optionen]\n"
->  msgid "  -s, --silent         Only show general C-state information\n"
->  msgstr ""
->  "  -e, --debug          Erzeugt detaillierte Informationen, hilfreich\n"
-> -"                       zum Aufspüren von Fehlern\n"
-> +"                       zum AufspÃ¼ren von Fehlern\n"
->  
->  #: utils/cpuidle-info.c:150
->  #, fuzzy, c-format
-> @@ -933,9 +933,9 @@ msgid ""
->  "acpi/processor/*/power\n"
->  "                       interface in older kernels\n"
->  msgstr ""
-> -"  -o, --proc           Erzeugt Informationen in einem ähnlichem Format zu "
-> +"  -o, --proc           Erzeugt Informationen in einem Ã¤hnlichem Format zu "
->  "dem\n"
-> -"                       der /proc/cpufreq-Datei in 2.4. und frühen 2.6.\n"
-> +"                       der /proc/cpufreq-Datei in 2.4. und frÃ¼hen 2.6.\n"
->  "                       Kernel-Versionen\n"
->  
->  #: utils/cpuidle-info.c:209
-> @@ -949,7 +949,7 @@ msgstr ""
->  #~ "  -c CPU, --cpu CPU    CPU number which information shall be determined "
->  #~ "about\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU    Nummer der CPU, über die Informationen "
-> +#~ "  -c CPU, --cpu CPU    Nummer der CPU, Ã¼ber die Informationen "
->  #~ "herausgefunden werden sollen\n"
->  
->  #~ msgid ""
-> diff --git a/tools/power/cpupower/po/fr.po b/tools/power/cpupower/po/fr.po
-> index 245ad20a9bf9..b46ca2548f86 100644
-> --- a/tools/power/cpupower/po/fr.po
-> +++ b/tools/power/cpupower/po/fr.po
-> @@ -212,7 +212,7 @@ msgstr ""
->  #: utils/cpupower.c:91
->  #, c-format
->  msgid "Report errors and bugs to %s, please.\n"
-> -msgstr "Veuillez rapportez les erreurs et les bogues à %s, s'il vous plait.\n"
-> +msgstr "Veuillez rapportez les erreurs et les bogues Ã  %s, s'il vous plait.\n"
->  
->  #: utils/cpupower.c:114
->  #, c-format
-> @@ -227,14 +227,14 @@ msgstr ""
->  #: utils/cpufreq-info.c:31
->  #, c-format
->  msgid "Couldn't count the number of CPUs (%s: %s), assuming 1\n"
-> -msgstr "Détermination du nombre de CPUs (%s : %s) impossible.  Assume 1\n"
-> +msgstr "DÃ©termination du nombre de CPUs (%s : %s) impossible.  Assume 1\n"
->  
->  #: utils/cpufreq-info.c:63
->  #, c-format
->  msgid ""
->  "          minimum CPU frequency  -  maximum CPU frequency  -  governor\n"
->  msgstr ""
-> -"         Fréquence CPU minimale - Fréquence CPU maximale  - régulateur\n"
-> +"         FrÃ©quence CPU minimale - FrÃ©quence CPU maximale  - rÃ©gulateur\n"
->  
->  #: utils/cpufreq-info.c:151
->  #, c-format
-> @@ -302,12 +302,12 @@ msgstr "  pilote : %s\n"
->  #: utils/cpufreq-info.c:219
->  #, fuzzy, c-format
->  msgid "  CPUs which run at the same hardware frequency: "
-> -msgstr "  CPUs qui doivent changer de fréquences en même temps : "
-> +msgstr "  CPUs qui doivent changer de frÃ©quences en mÃªme temps : "
->  
->  #: utils/cpufreq-info.c:230
->  #, fuzzy, c-format
->  msgid "  CPUs which need to have their frequency coordinated by software: "
-> -msgstr "  CPUs qui doivent changer de fréquences en même temps : "
-> +msgstr "  CPUs qui doivent changer de frÃ©quences en mÃªme temps : "
->  
->  #: utils/cpufreq-info.c:241
->  #, c-format
-> @@ -317,22 +317,22 @@ msgstr ""
->  #: utils/cpufreq-info.c:247
->  #, c-format
->  msgid "  hardware limits: "
-> -msgstr "  limitation matérielle : "
-> +msgstr "  limitation matÃ©rielle : "
->  
->  #: utils/cpufreq-info.c:256
->  #, c-format
->  msgid "  available frequency steps: "
-> -msgstr "  plage de fréquence : "
-> +msgstr "  plage de frÃ©quence : "
->  
->  #: utils/cpufreq-info.c:269
->  #, c-format
->  msgid "  available cpufreq governors: "
-> -msgstr "  régulateurs disponibles : "
-> +msgstr "  rÃ©gulateurs disponibles : "
->  
->  #: utils/cpufreq-info.c:280
->  #, c-format
->  msgid "  current policy: frequency should be within "
-> -msgstr "  tactique actuelle : la fréquence doit être comprise entre "
-> +msgstr "  tactique actuelle : la frÃ©quence doit Ãªtre comprise entre "
->  
->  #: utils/cpufreq-info.c:282
->  #, c-format
-> @@ -345,18 +345,18 @@ msgid ""
->  "The governor \"%s\" may decide which speed to use\n"
->  "                  within this range.\n"
->  msgstr ""
-> -"Le régulateur \"%s\" est libre de choisir la vitesse\n"
-> -"                  dans cette plage de fréquences.\n"
-> +"Le rÃ©gulateur \"%s\" est libre de choisir la vitesse\n"
-> +"                  dans cette plage de frÃ©quences.\n"
->  
->  #: utils/cpufreq-info.c:293
->  #, c-format
->  msgid "  current CPU frequency is "
-> -msgstr "  la fréquence actuelle de ce CPU est "
-> +msgstr "  la frÃ©quence actuelle de ce CPU est "
->  
->  #: utils/cpufreq-info.c:296
->  #, c-format
->  msgid " (asserted by call to hardware)"
-> -msgstr " (vérifié par un appel direct du matériel)"
-> +msgstr " (vÃ©rifiÃ© par un appel direct du matÃ©riel)"
->  
->  #: utils/cpufreq-info.c:304
->  #, c-format
-> @@ -377,7 +377,7 @@ msgstr "Options :\n"
->  #: utils/cpufreq-info.c:474
->  #, fuzzy, c-format
->  msgid "  -e, --debug          Prints out debug information [default]\n"
-> -msgstr "  -e, --debug          Afficher les informations de déboguage\n"
-> +msgstr "  -e, --debug          Afficher les informations de dÃ©boguage\n"
->  
->  #: utils/cpufreq-info.c:475
->  #, c-format
-> @@ -385,8 +385,8 @@ msgid ""
->  "  -f, --freq           Get frequency the CPU currently runs at, according\n"
->  "                       to the cpufreq core *\n"
->  msgstr ""
-> -"  -f, --freq           Obtenir la fréquence actuelle du CPU selon le point\n"
-> -"                       de vue du coeur du système de cpufreq *\n"
-> +"  -f, --freq           Obtenir la frÃ©quence actuelle du CPU selon le point\n"
-> +"                       de vue du coeur du systÃ¨me de cpufreq *\n"
->  
->  #: utils/cpufreq-info.c:477
->  #, c-format
-> @@ -394,8 +394,8 @@ msgid ""
->  "  -w, --hwfreq         Get frequency the CPU currently runs at, by reading\n"
->  "                       it from hardware (only available to root) *\n"
->  msgstr ""
-> -"  -w, --hwfreq         Obtenir la fréquence actuelle du CPU directement par\n"
-> -"                       le matériel (doit être root) *\n"
-> +"  -w, --hwfreq         Obtenir la frÃ©quence actuelle du CPU directement par\n"
-> +"                       le matÃ©riel (doit Ãªtre root) *\n"
->  
->  #: utils/cpufreq-info.c:479
->  #, c-format
-> @@ -403,13 +403,13 @@ msgid ""
->  "  -l, --hwlimits       Determine the minimum and maximum CPU frequency "
->  "allowed *\n"
->  msgstr ""
-> -"  -l, --hwlimits       Affiche les fréquences minimales et maximales du CPU "
-> +"  -l, --hwlimits       Affiche les frÃ©quences minimales et maximales du CPU "
->  "*\n"
->  
->  #: utils/cpufreq-info.c:480
->  #, c-format
->  msgid "  -d, --driver         Determines the used cpufreq kernel driver *\n"
-> -msgstr "  -d, --driver         Affiche le pilote cpufreq utilisé *\n"
-> +msgstr "  -d, --driver         Affiche le pilote cpufreq utilisÃ© *\n"
->  
->  #: utils/cpufreq-info.c:481
->  #, c-format
-> @@ -420,7 +420,7 @@ msgstr "  -p, --policy         Affiche la tactique actuelle de cpufreq *\n"
->  #, c-format
->  msgid "  -g, --governors      Determines available cpufreq governors *\n"
->  msgstr ""
-> -"  -g, --governors      Affiche les régulateurs disponibles de cpufreq *\n"
-> +"  -g, --governors      Affiche les rÃ©gulateurs disponibles de cpufreq *\n"
->  
->  #: utils/cpufreq-info.c:483
->  #, fuzzy, c-format
-> @@ -429,7 +429,7 @@ msgid ""
->  "frequency *\n"
->  msgstr ""
->  "  -a, --affected-cpus   Affiche quels sont les CPUs qui doivent changer de\n"
-> -"                        fréquences en même temps *\n"
-> +"                        frÃ©quences en mÃªme temps *\n"
->  
->  #: utils/cpufreq-info.c:484
->  #, fuzzy, c-format
-> @@ -438,7 +438,7 @@ msgid ""
->  "                       coordinated by software *\n"
->  msgstr ""
->  "  -a, --affected-cpus   Affiche quels sont les CPUs qui doivent changer de\n"
-> -"                        fréquences en même temps *\n"
-> +"                        frÃ©quences en mÃªme temps *\n"
->  
->  #: utils/cpufreq-info.c:486
->  #, c-format
-> @@ -453,7 +453,7 @@ msgid ""
->  "  -y, --latency        Determines the maximum latency on CPU frequency "
->  "changes *\n"
->  msgstr ""
-> -"  -l, --hwlimits       Affiche les fréquences minimales et maximales du CPU "
-> +"  -l, --hwlimits       Affiche les frÃ©quences minimales et maximales du CPU "
->  "*\n"
->  
->  #: utils/cpufreq-info.c:488
-> @@ -469,7 +469,7 @@ msgid ""
->  "                       interface in 2.4. and early 2.6. kernels\n"
->  msgstr ""
->  "  -o, --proc           Affiche les informations en utilisant l'interface\n"
-> -"                       fournie par /proc/cpufreq, présente dans les "
-> +"                       fournie par /proc/cpufreq, prÃ©sente dans les "
->  "versions\n"
->  "                       2.4 et les anciennes versions 2.6 du noyau\n"
->  
-> @@ -485,7 +485,7 @@ msgstr ""
->  #: utils/cpufreq-info.c:492 utils/cpuidle-info.c:152
->  #, c-format
->  msgid "  -h, --help           Prints out this screen\n"
-> -msgstr "  -h, --help           affiche l'aide-mémoire\n"
-> +msgstr "  -h, --help           affiche l'aide-mÃ©moire\n"
->  
->  #: utils/cpufreq-info.c:495
->  #, c-format
-> @@ -493,8 +493,8 @@ msgid ""
->  "If no argument or only the -c, --cpu parameter is given, debug output about\n"
->  "cpufreq is printed which is useful e.g. for reporting bugs.\n"
->  msgstr ""
-> -"Par défaut, les informations de déboguage seront affichées si aucun\n"
-> -"argument, ou bien si seulement l'argument -c (--cpu) est donné, afin de\n"
-> +"Par dÃ©faut, les informations de dÃ©boguage seront affichÃ©es si aucun\n"
-> +"argument, ou bien si seulement l'argument -c (--cpu) est donnÃ©, afin de\n"
->  "faciliter les rapports de bogues par exemple\n"
->  
->  #: utils/cpufreq-info.c:497
-> @@ -517,8 +517,8 @@ msgid ""
->  "You can't specify more than one --cpu parameter and/or\n"
->  "more than one output-specific argument\n"
->  msgstr ""
-> -"On ne peut indiquer plus d'un paramètre --cpu, tout comme l'on ne peut\n"
-> -"spécifier plus d'un argument de formatage\n"
-> +"On ne peut indiquer plus d'un paramÃ¨tre --cpu, tout comme l'on ne peut\n"
-> +"spÃ©cifier plus d'un argument de formatage\n"
->  
->  #: utils/cpufreq-info.c:600 utils/cpufreq-set.c:82 utils/cpupower-set.c:42
->  #: utils/cpupower-info.c:42 utils/cpuidle-info.c:213
-> @@ -529,7 +529,7 @@ msgstr "option invalide\n"
->  #: utils/cpufreq-info.c:617
->  #, c-format
->  msgid "couldn't analyze CPU %d as it doesn't seem to be present\n"
-> -msgstr "analyse du CPU %d impossible puisqu'il ne semble pas être présent\n"
-> +msgstr "analyse du CPU %d impossible puisqu'il ne semble pas Ãªtre prÃ©sent\n"
->  
->  #: utils/cpufreq-info.c:620 utils/cpupower-info.c:142
->  #, c-format
-> @@ -547,8 +547,8 @@ msgid ""
->  "  -d FREQ, --min FREQ      new minimum CPU frequency the governor may "
->  "select\n"
->  msgstr ""
-> -"  -d FREQ, --min FREQ       nouvelle fréquence minimale du CPU à utiliser\n"
-> -"                            par le régulateur\n"
-> +"  -d FREQ, --min FREQ       nouvelle frÃ©quence minimale du CPU Ã  utiliser\n"
-> +"                            par le rÃ©gulateur\n"
->  
->  #: utils/cpufreq-set.c:28
->  #, c-format
-> @@ -556,13 +556,13 @@ msgid ""
->  "  -u FREQ, --max FREQ      new maximum CPU frequency the governor may "
->  "select\n"
->  msgstr ""
-> -"  -u FREQ, --max FREQ       nouvelle fréquence maximale du CPU à utiliser\n"
-> -"                            par le régulateur\n"
-> +"  -u FREQ, --max FREQ       nouvelle frÃ©quence maximale du CPU Ã  utiliser\n"
-> +"                            par le rÃ©gulateur\n"
->  
->  #: utils/cpufreq-set.c:29
->  #, c-format
->  msgid "  -g GOV, --governor GOV   new cpufreq governor\n"
-> -msgstr "  -g GOV, --governor GOV   active le régulateur GOV\n"
-> +msgstr "  -g GOV, --governor GOV   active le rÃ©gulateur GOV\n"
->  
->  #: utils/cpufreq-set.c:30
->  #, c-format
-> @@ -570,9 +570,9 @@ msgid ""
->  "  -f FREQ, --freq FREQ     specific frequency to be set. Requires userspace\n"
->  "                           governor to be available and loaded\n"
->  msgstr ""
-> -"  -f FREQ, --freq FREQ     fixe la fréquence du processeur à FREQ. Il faut\n"
-> -"                           que le régulateur « userspace » soit disponible \n"
-> -"                           et activé.\n"
-> +"  -f FREQ, --freq FREQ     fixe la frÃ©quence du processeur Ã  FREQ. Il faut\n"
-> +"                           que le rÃ©gulateur Â« userspace Â» soit disponible \n"
-> +"                           et activÃ©.\n"
->  
->  #: utils/cpufreq-set.c:32
->  #, c-format
-> @@ -582,7 +582,7 @@ msgstr ""
->  #: utils/cpufreq-set.c:33 utils/cpupower-set.c:28 utils/cpupower-info.c:27
->  #, fuzzy, c-format
->  msgid "  -h, --help               Prints out this screen\n"
-> -msgstr "  -h, --help           affiche l'aide-mémoire\n"
-> +msgstr "  -h, --help           affiche l'aide-mÃ©moire\n"
->  
->  #: utils/cpufreq-set.c:35
->  #, fuzzy, c-format
-> @@ -602,11 +602,11 @@ msgid ""
->  "   (FREQuency in kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).\n"
->  msgstr ""
->  "Remarque :\n"
-> -"1. Le CPU numéro 0 sera utilisé par défaut si -c (ou --cpu) est omis ;\n"
-> -"2. l'argument -f FREQ (ou --freq FREQ) ne peut être utilisé qu'avec --cpu ;\n"
-> -"3. on pourra préciser l'unité des fréquences en postfixant sans aucune "
-> +"1. Le CPU numÃ©ro 0 sera utilisÃ© par dÃ©faut si -c (ou --cpu) est omis ;\n"
-> +"2. l'argument -f FREQ (ou --freq FREQ) ne peut Ãªtre utilisÃ© qu'avec --cpu ;\n"
-> +"3. on pourra prÃ©ciser l'unitÃ© des frÃ©quences en postfixant sans aucune "
->  "espace\n"
-> -"   les valeurs par hz, kHz (par défaut), MHz, GHz ou THz\n"
-> +"   les valeurs par hz, kHz (par dÃ©faut), MHz, GHz ou THz\n"
->  "   (kHz =^ Hz * 0.001 =^ MHz * 1000 =^ GHz * 1000000).\n"
->  
->  #: utils/cpufreq-set.c:57
-> @@ -622,21 +622,21 @@ msgid ""
->  "frequency\n"
->  "   or because the userspace governor isn't loaded?\n"
->  msgstr ""
-> -"En ajustant les nouveaux paramètres, une erreur est apparue. Les sources\n"
-> +"En ajustant les nouveaux paramÃ¨tres, une erreur est apparue. Les sources\n"
->  "d'erreur typique sont :\n"
-> -"- droit d'administration insuffisant (êtes-vous root ?) ;\n"
-> -"- le régulateur choisi n'est pas disponible, ou bien n'est pas disponible "
-> +"- droit d'administration insuffisant (Ãªtes-vous root ?) ;\n"
-> +"- le rÃ©gulateur choisi n'est pas disponible, ou bien n'est pas disponible "
->  "en\n"
->  "  tant que module noyau ;\n"
->  "- la tactique n'est pas disponible ;\n"
-> -"- vous voulez utiliser l'option -f/--freq, mais le régulateur « userspace »\n"
-> -"  n'est pas disponible, par exemple parce que le matériel ne le supporte\n"
-> -"  pas, ou bien n'est tout simplement pas chargé.\n"
-> +"- vous voulez utiliser l'option -f/--freq, mais le rÃ©gulateur Â« userspace Â»\n"
-> +"  n'est pas disponible, par exemple parce que le matÃ©riel ne le supporte\n"
-> +"  pas, ou bien n'est tout simplement pas chargÃ©.\n"
->  
->  #: utils/cpufreq-set.c:170
->  #, c-format
->  msgid "wrong, unknown or unhandled CPU?\n"
-> -msgstr "CPU inconnu ou non supporté ?\n"
-> +msgstr "CPU inconnu ou non supportÃ© ?\n"
->  
->  #: utils/cpufreq-set.c:302
->  #, c-format
-> @@ -653,7 +653,7 @@ msgid ""
->  "At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
->  "-g/--governor must be passed\n"
->  msgstr ""
-> -"L'un de ces paramètres est obligatoire : -f/--freq, -d/--min, -u/--max et\n"
-> +"L'un de ces paramÃ¨tres est obligatoire : -f/--freq, -d/--min, -u/--max et\n"
->  "-g/--governor\n"
->  
->  #: utils/cpufreq-set.c:347
-> @@ -810,7 +810,7 @@ msgstr ""
->  #: utils/cpuidle-info.c:48
->  #, fuzzy, c-format
->  msgid "Available idle states:"
-> -msgstr "  plage de fréquence : "
-> +msgstr "  plage de frÃ©quence : "
->  
->  #: utils/cpuidle-info.c:71
->  #, c-format
-> @@ -911,7 +911,7 @@ msgstr "Usage : cpufreq-info [options]\n"
->  #: utils/cpuidle-info.c:149
->  #, fuzzy, c-format
->  msgid "  -s, --silent         Only show general C-state information\n"
-> -msgstr "  -e, --debug          Afficher les informations de déboguage\n"
-> +msgstr "  -e, --debug          Afficher les informations de dÃ©boguage\n"
->  
->  #: utils/cpuidle-info.c:150
->  #, fuzzy, c-format
-> @@ -921,7 +921,7 @@ msgid ""
->  "                       interface in older kernels\n"
->  msgstr ""
->  "  -o, --proc           Affiche les informations en utilisant l'interface\n"
-> -"                       fournie par /proc/cpufreq, présente dans les "
-> +"                       fournie par /proc/cpufreq, prÃ©sente dans les "
->  "versions\n"
->  "                       2.4 et les anciennes versions 2.6 du noyau\n"
->  
-> @@ -929,19 +929,19 @@ msgstr ""
->  #, fuzzy, c-format
->  msgid "You can't specify more than one output-specific argument\n"
->  msgstr ""
-> -"On ne peut indiquer plus d'un paramètre --cpu, tout comme l'on ne peut\n"
-> -"spécifier plus d'un argument de formatage\n"
-> +"On ne peut indiquer plus d'un paramÃ¨tre --cpu, tout comme l'on ne peut\n"
-> +"spÃ©cifier plus d'un argument de formatage\n"
->  
->  #~ msgid ""
->  #~ "  -c CPU, --cpu CPU    CPU number which information shall be determined "
->  #~ "about\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU    Numéro du CPU pour lequel l'information sera "
-> -#~ "affichée\n"
-> +#~ "  -c CPU, --cpu CPU    NumÃ©ro du CPU pour lequel l'information sera "
-> +#~ "affichÃ©e\n"
->  
->  #~ msgid ""
->  #~ "  -c CPU, --cpu CPU        number of CPU where cpufreq settings shall be "
->  #~ "modified\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU        numéro du CPU à prendre en compte pour les\n"
-> +#~ "  -c CPU, --cpu CPU        numÃ©ro du CPU Ã  prendre en compte pour les\n"
->  #~ "                           changements\n"
-> -- 
-> 2.18.0
-> 
+> So, if it's a cpufreq range controller.  It'd have sth like
+> cpu.freq.min and cpu.freq.max, where min defines the maximum minimum
+> cpufreq its descendants can get and max defines the maximum cpufreq
+> allowed in the subtree.  For an example, please refer to how
+> memory.min and memory.max are defined.
+
+I think you are still looking at just one usage of this interface,
+which is likely mainly my fault also because of the long time between
+posting. Sorry for that...
+
+Let me re-propose here an abstract of the cover letter with some
+additional notes inline.
+
+--- Cover Letter Abstract START ---
+
+> > [...] utilization is a task specific property which is used by the scheduler
+> > to know how much CPU bandwidth a task requires (under certain conditions).
+> > Thus, the utilization clamp values defined either per-task or via the
+> > CPU controller, can be used to represent tasks to the scheduler as
+> > being bigger (or smaller) then what they really are.
+          ^^^^^^^^^^^^^^^^^^^
+
+This is a fundamental feature added by utilization clamping: this is a
+task property which can be useful in many different ways to the
+scheduler and not "just" to bias frequency selection.
+
+> > Utilization clamping thus ultimately enable interesting additional
+> > optimizations, especially on asymmetric capacity systems like Arm
+> > big.LITTLE and DynamIQ CPUs, where:
+> > 
+> >  - boosting: small tasks are preferably scheduled on higher-capacity CPUs
+> >    where, despite being less energy efficient, they can complete faster
+> > 
+> >  - clamping: big/background tasks are preferably scheduler on low-capacity CPUs
+> >    where, being more energy efficient, they can still run but save power and
+> >    thermal headroom for more important tasks.
+
+These two point above are two examples of how we can use utilization
+clamping which is not frequency selection.
+
+> > This additional usage of the utilization clamping is not presented in this
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^
+
+Is it acceptable to add a generic interface by properly and completely
+describing, both in the cover letter and in the relative changelogs,
+what will be the future bits we can add ?
+
+> > series but it's an integral part of the Energy Aware Scheduler (EAS) feature
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The EAS scheduler, without the utilization clamping bits, does a great
+job in scheduling tasks while saving energy. However, on every system,
+we are interested also in other metrics, like for example: completion
+time and power dissipation.
+
+Whether certain tasks should be scheduled to optimize energy
+efficiency, completion time and/or power dissipation is something we
+can achieve only by:
+
+1. adopting a proper tasks classification schema
+   => that's why CGroups are of interest
+
+2. using a generic enough mechanism to describe certain tasks
+   properties which affect all the metrics above,
+   i.e. energy, speed and power
+   => that's why utilization and its clamping is of interest
+
+> > set. A similar solution (SchedTune) is already used on Android kernels, which
+                                           ^^^^^^^^^^^^^^^^^^^^^^^
+
+This _complete support_ is already actively and successfully used on
+many Android devices...
+
+> > targets both frequency selection and task placement biasing.
+            ^^^^                     ^^^^^^^^^^^^^^^^^^
+
+... to support _not only_ frequency selections.
+
+> > This series provides the foundation bits to add similar features in mainline
+                             ^^^^^^^^^^^^^^^
+> > and its first simple client with the schedutil integration.
+            ^^^^^^^^^^^^^^^^^^^
+
+The solution presented here shows only the integration with
+cpufreq/schedutil. However, since we are adding a user-space
+interface, we have to add this new interface in a generic way since
+the beginning to support also the complete implementation we will have
+at the end.
+
+--- Cover Letter Abstract END ---
+
+
+>From my comments above I hope it's now more clear that "utilization
+clamping" is not just a "cpufreq range controller" and, since we
+will extend the internal usage of such interface, we cannot add now a
+user-space interface which targets just frequency control.
+
+To resume, here we are at proposing a generic interface which:
+
+a) do not strictly enforce and/or grant any bandwidth to tasks and
+   do not directly define how the CPU resource has to be partitioned
+   among tasks
+
+b) improves the way we can constraint bandwidth consumed by TGs, by
+   specifying a min/max "MIPS range" (in scheduler terms: utilization)
+   the bandwidth can be consumed at
+
+c) it's based on a fundamental task scheduler metric: utilization
+   since the "MIPS range" can be affected by the "type of CPUs" and
+   not only by the "operating frequency"
+
+d) can be used by the scheduler to bias "tasks placement" as well as
+   "frequency selection"
+
+e) do not provide the full implementation here not only to keep the
+   initial patchset limited in size but also because of some
+   dependencies on other EAS bits which are currently under discussion
+   on LKML.
+   These different EAS features can still be progressed independently.
+
+f) at our best, it aims at providing a complete use-case description
+   both in the cover-letter as well as in the relative changelogs
+
+Going back to one of your previous comments, when you says:
+
+> What's described is computation bandwidth control but what's
+> implemented is just frequency clamping.
+
+Do we agree now that:
+
+1. what we propose is not a "computational bandwidth control"
+   mechanism and/or interface
+
+2. what we implement is freq clamping but that's just one use case to
+   keep the series small enough
+
+3. despite 2) we need to add an interface which is generic enough to
+   accommodate the other use-cases
+
+4. the basic metric exposed (i.e. utilization) is used now for
+   frequency clamping but the same one will be used for task placement
+   biasing
+
+?
+
+And again, when you say:
+
+> So, there are fundamental discrepancies between
+> description+interface vs. what it actually does.
+
+Is it acceptable to have a new interface which fits a wider
+description?
+
+With such a description, our aim is also to demonstrate that we are
+_not_ adding a special case new user-space interface but a generic
+enough interface which can be properly extended in the future without
+breaking existing functionalities but just by keep improving them.
+
+Best,
+Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
