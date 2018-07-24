@@ -1,112 +1,113 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 10/12] sched/core: uclamp: use TG's clamps to restrict
- Task's clamps
-Date: Tue, 24 Jul 2018 10:56:18 +0100
-Message-ID: <20180724095550.GA3162@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-11-patrick.bellasi@arm.com>
- <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
- <20180723154025.GF2683@e110439-lin>
- <CAJuCfpHJ=O1QVFZZ2dpaDDQe+dX1aGkzWdcd76c9zZpxw2fNtA@mail.gmail.com>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH v2 3/3] PCI: imx: Initial imx7d pm support
+Date: Tue, 24 Jul 2018 12:09:13 +0200
+Message-ID: <1532426953.32306.5.camel@pengutronix.de>
+References: <cover.1532090446.git.leonard.crestez@nxp.com>
+         <e42a6bb8ff0ddd6eaa31fe381875425a3730a73f.1532090446.git.leonard.crestez@nxp.com>
+         <1532338685.3163.93.camel@pengutronix.de>
+         <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpHJ=O1QVFZZ2dpaDDQe+dX1aGkzWdcd76c9zZpxw2fNtA@mail.gmail.com>
+In-Reply-To: <e8be199b2d5559001a93abb52ba46c283e4454a9.camel@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Leonard Crestez <leonard.crestez@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Joao.Pinto@synopsys.com" <Joao.Pinto@synopsys.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-Jul 10:11, Suren Baghdasaryan wrote:
-> On Mon, Jul 23, 2018 at 8:40 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > On 21-Jul 20:05, Suren Baghdasaryan wrote:
-> >> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
-
-[...]
-
-> >> So to satisfy both TG and syscall requirements I think you would
-> >> need to choose the largest value for UCLAMP_MIN and the smallest one
-> >> for UCLAMP_MAX, meaning the most boosted and most clamped range.
-> >> Current implementation choses the least boosted value, so
-> >> effectively one of the UCLAMP_MIN requirements (either from TG or
-> >> from syscall) are being ignored...  Could you please clarify why
-> >> this choice is made?
-> >
-> > The TG values are always used to specify a _restriction_ on
-> > task-specific values.
-> >
-> > Thus, if you look or example at the CPU mask for a task, you can have
-> > a task with affinity to CPUs 0-1, currently running on a cgroup with
-> > cpuset.cpus=0... then the task can run only on CPU 0 (althought its
-> > affinity includes CPU1 too).
-> >
-> > Same we do here: if a task has util_min=10, but it's running in a
-> > cgroup with cpu.util_min=0, then it will not be boosted.
-> >
-> > IOW, this allows to implement a "nice" policy at task level, where a
-> > task (via syscall) can decide to be less boosted with respect to its
-> > group but never more boosted. The same task can also decide to be more
-> > clamped, but not less clamped then its current group.
-> >
+Am Montag, den 23.07.2018, 12:37 +0000 schrieb Leonard Crestez:
+> On Mon, 2018-07-23 at 11:38 +0200, Lucas Stach wrote:
+> > Hi Leonard,
+> > 
+> > Am Freitag, den 20.07.2018, 15:47 +0300 schrieb Leonard Crestez:
+> > > On imx7d the pcie-phy power domain is turned off in suspend and this can
+> > > make the system hang after resume when attempting any read from PCI.
+> > > 
+> > > Fix this by adding minimal suspend/resume code from the nxp internal
+> > > tree. This will prepare for powering down on suspend and reset the block
+> > > on resume.
+> > > 
+> > > Code is only for imx7d but a very similar sequence can be used for
+> > > other socs.
+> > > 
+> > > +static void imx6_pcie_ltssm_disable(struct device *dev)
+> > > +{
+> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> > > +
+> > > > > > +	switch (imx6_pcie->variant) {
+> > > > > > +	case IMX6Q:
+> > > > > > +	case IMX6SX:
+> > > > > > +	case IMX6QP:
+> > > > > > +		regmap_update_bits(imx6_pcie->iomuxc_gpr, IOMUXC_GPR12,
+> > > +				   IMX6Q_GPR12_PCIE_CTL_2, 0);
+> > 
+> > Has this been tested on i.MX6? LTSSM disable requires a more complex
+> > sequence on this SoC to avoid hanging the system. See commit
+> > 3e3e406e3807 "PCI: imx6: Put LTSSM in "Detect" state before disabling
+> > it".
 > 
-> The fact that boost means "at least this much" to me seems like we can
-> safely choose higher CPU bandwidth (as long as it's lower than
-> UCLAMP_MAX)
+> This patch only enables suspend/resume for imx7d with other SOCs to
+> follow later. The ltssm_disable function is just symmetric with
+> ltssm_enable.
+> 
+> The 6Q parts are affected by errata "ERR005723 PCIe: PCIe does not
+> support L2 power down [i.MX 6Dual/6Quad Only]".
+> 
+> This design error seems to have the same root cause as your problem (no
+> dedicated reset control) so this works out quite nicely: the solution
+> is to never power down pci on affected chips.
 
-I understand your view point, which actually is matching my first
-implementation for util_min aggregation:
+I don't quite like code that looks like it is doing the right thing,
+but then doesn't. Can we at least emit a warning that there might be
+dragons if anyone tries to call this on i.MX6?
 
-   https://lore.kernel.org/lkml/20180409165615.2326-5-patrick.bellasi@arm.com/
+> > > +static int imx6_pcie_resume_noirq(struct device *dev)
+> > > +{
+> > > > > > +	int ret = 0;
+> > > > > > +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> > > > > > +	struct pcie_port *pp = &imx6_pcie->pci->pp;
+> > > +
+> > > > > > +	if (imx6_pcie->variant != IMX7D)
+> > > > > > +		return 0;
+> > > +
+> > > > > > +	imx6_pcie_assert_core_reset(imx6_pcie);
+> > > > > > +	imx6_pcie_init_phy(imx6_pcie);
+> > > > > > +	imx6_pcie_deassert_core_reset(imx6_pcie);
+> > > > > > +	dw_pcie_setup_rc(pp);
+> > > +
+> > > > > > +	ret = imx6_pcie_establish_link(imx6_pcie);
+> > > > > > +	if (ret < 0)
+> > > +		pr_err("pcie link is down after resume.\n");
+> > 
+> > dev_err(), please.
+> 
+> The imx6_pcie_establish_link function already seems to link error
+> information so the message could be dropped. However it's still helpful
+> to know that those pci link errors are specifically related to resume.
+> 
+> Fabio suggested I propagate the return code but I'm not sure that's
+> helpful since "link down" is what happens when the slot is empty and
+> this is clearly not a "error" or "failure". It's not clear if "slot
+> empty" can be distinguished in some way.
 
+I don't think we have a generic way to distinguish between the two
+cases.
 
-> but from your description sounds like TG's UCLAMP_MIN means "at most
-> this much boost" and it's not safe to use CPU bandwidth higher than
-> TG's UCLAMP_MIN.
+> I'll switch to dev_info and drop the error code, is this OK?
 
-Indeed, after this discussion with Tejun:
+Yes, that's fine with me.
 
-   https://lore.kernel.org/lkml/20180409222417.GK3126663@devbig577.frc2.facebook.com/
+> 
+> One aspect that I skipped is PME_Turn_Off support: The PCI standard
+> mandates that this is sent before entering L2/L3 and the designware
+> core supports this but it's not part of this patch.
+> 
+> Is it fine if I post this separately or should it be part of the same
+> series? The turnoff bit is in IOMUX gpr for imx6 but SRC for imx7 so it
+> would require additional patches in reset, dts and then pci.
 
-I've convinced myself that for the cgroup interface we have to got for
-a "restrictive" interface where a parent value must set the upper
-bound for all its descendants values. AFAIU, that's one of the basic
-principles of the "delegation model" implemented by cgroups and the
-common behavior implemented by all controllers.
+IMO it is fine to have this as a follow on patchset.
 
-> So instead of specifying min CPU bandwidth for a task it specifies
-> the max allowed boost. Seems like a discrepancy to me but maybe
-> there are compelling usecases when this behavior is necessary?
-
-I don't think it's strictly related to use-cases, you can always
-describe a give use-case in one model or the other.  It all depends on
-how you configure your hierarchy and where you place your tasks.
-
-For our Android use cases, we are still happy to say that all tasks of
-a CGroup can be boosted up to a certain value and then we can either:
-- don't configure tasks: and thus get the CG defined boost
-- configure a task: and explicitly give back what we don't need
-
-This model works quite well with containers, where the parent want to
-precisely control how much resources are (eventually) usable by a
-given container.
-
-> In that case would be good to spell them out to explain why this
-> choice is made.
-
-Yes, well... if I understand it correctly is really just the
-recommended way cgroups must be used to re-partition resources.
-
-I'll try to better explain this behavior in the changelog for this
-patch.
-
-[...]
-
-Best,
-Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Regards,
+Lucas
