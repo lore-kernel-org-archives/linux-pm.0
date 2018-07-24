@@ -1,99 +1,106 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 12/12] sched/core: uclamp: use percentage clamp values
-Date: Tue, 24 Jul 2018 18:17:39 +0100
-Message-ID: <20180724171739.GC3162@e110439-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-13-patrick.bellasi@arm.com>
- <CAJuCfpEwRtXoa_tnWTFP8CuyPMHsLAXky14K_jyphEeo2d32qg@mail.gmail.com>
- <20180724164303.GB3162@e110439-lin>
- <CAJuCfpHddNKXNVBs21sCADcHjW7zxxue8jg1B4KbPh-QLNe46g@mail.gmail.com>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2] cpufreq: trace frequency limits change
+Date: Tue, 24 Jul 2018 10:24:05 -0700
+Message-ID: <20180724172405.GA257870@joelaf.mtv.corp.google.com>
+References: <20180720222114.200311-1-joel@joelfernandes.org>
+ <20180724094932.11e10452@gandalf.local.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJuCfpHddNKXNVBs21sCADcHjW7zxxue8jg1B4KbPh-QLNe46g@mail.gmail.com>
+In-Reply-To: <20180724094932.11e10452@gandalf.local.home>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, kernel-team@android.com, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24-Jul 10:11, Suren Baghdasaryan wrote:
-> On Tue, Jul 24, 2018 at 9:43 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > On 21-Jul 21:04, Suren Baghdasaryan wrote:
-> >> On Mon, Jul 16, 2018 at 1:29 AM, Patrick Bellasi
-> >> <patrick.bellasi@arm.com> wrote:
-> >
-> > [...]
-> >
-> >> > +static inline unsigned int scale_from_percent(unsigned int pct)
-> >> > +{
-> >> > +       WARN_ON(pct > 100);
-> >> > +
-> >> > +       return ((SCHED_FIXEDPOINT_SCALE * pct) / 100);
-> >> > +}
-> >> > +
-> >> > +static inline unsigned int scale_to_percent(unsigned int value)
-> >> > +{
-> >> > +       unsigned int rounding = 0;
-> >> > +
-> >> > +       WARN_ON(value > SCHED_FIXEDPOINT_SCALE);
-> >> > +
-> >> > +       /* Compensate rounding errors for: 0, 256, 512, 768, 1024 */
-> >> > +       if (likely((value & 0xFF) && ~(value & 0x700)))
-> >> > +               rounding = 1;
-> >>
-> >> Hmm. I don't think ~(value & 0x700) will ever yield FALSE... What am I missing?
-> >
-> > So, 0x700 is the topmost 3 bits sets (111 0000 0000) which different
-> > configuration corresponds to:
-> >
-> >  001 0000 0000 =>  256
-> >  010 0000 0000 =>  512
-> >  011 0000 0000 =>  768
-> >  100 0000 0000 => 1024
-> >
-> > Thus, if 0x700 matches then we have one of these values in input and
-> > for these cases we have to add a unit to the percentage value.
-> >
-> > For the case (value == 0) we translate it into 0% thanks to the check
-> > on (value & 0xFF) to ensure rounding = 0.
-> >
+On Tue, Jul 24, 2018 at 09:49:32AM -0400, Steven Rostedt wrote:
+> On Fri, 20 Jul 2018 15:21:14 -0700
+> Joel Fernandes <joel@joelfernandes.org> wrote:
 > 
-> I think just (value & 0xFF) is enough to get you the right behavior.
-> ~(value & 0x700) is not needed, it's effectively a NoOp which always
-> yields TRUE. For any *value* (value & 0x700) == 0x...00 and ~(value &
-> 0x700) == 0x...FF == TRUE.
+> > From: Ruchi Kandoi <kandoiruchi@google.com>
+> > 
+> > systrace used for tracing for Android systems has carried a patch for
+> > many years in the Android tree that traces when the cpufreq limits
+> > change.  With the help of this information, systrace can know when the
+> > policy limits change and can visually display the data. Lets add
+> > upstream support for the same.
+> > 
+> > Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+> > Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> > ---
+> > v1->v2: Minor changes suggested by Viresh
+> > 
+> >  Documentation/trace/events-power.rst |  1 +
+> >  drivers/cpufreq/cpufreq.c            |  1 +
+> >  include/trace/events/power.h         | 25 +++++++++++++++++++++++++
+> >  3 files changed, 27 insertions(+)
+> > 
+> > diff --git a/Documentation/trace/events-power.rst b/Documentation/trace/events-power.rst
+> > index a77daca75e30..2ef318962e29 100644
+> > --- a/Documentation/trace/events-power.rst
+> > +++ b/Documentation/trace/events-power.rst
+> > @@ -27,6 +27,7 @@ cpufreq.
+> >  
+> >    cpu_idle		"state=%lu cpu_id=%lu"
+> >    cpu_frequency		"state=%lu cpu_id=%lu"
+> > +  cpu_frequency_limits	"min=%lu max=%lu cpu_id=%lu"
+> >  
+> >  A suspend event is used to indicate the system going in and out of the
+> >  suspend mode:
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index b0dfd3222013..4fd935df101e 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -2236,6 +2236,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> >  
+> >  	policy->min = new_policy->min;
+> >  	policy->max = new_policy->max;
+> > +	trace_cpu_frequency_limits(policy->min, policy->max, policy->cpu);
+> 
+> Wouldn't it make more sense just to pass in "policy"?
 
-And you are actually right! ;)
+Yes I agree, good idea.
 
-> > Here is a small python snippet I've used to check the conversion of
-> > all the possible percentage values:
-> >
-> > ---8<---
-> > values = range(0, 101)
-> > for pct in xrange(0, 101):
-> >         util = int((1024 * pct) / 100)
-> >         rounding = 1
-> >         if not ((util & 0xFF) and ~(util & 0x700)):
+> >  
+> >  	policy->cached_target_freq = UINT_MAX;
+> >  
+> > diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> > index 908977d69783..f5bec45108b6 100644
+> > --- a/include/trace/events/power.h
+> > +++ b/include/trace/events/power.h
+> > @@ -148,6 +148,31 @@ DEFINE_EVENT(cpu, cpu_frequency,
+> >  	TP_ARGS(frequency, cpu_id)
+> >  );
+> >  
+> > +TRACE_EVENT(cpu_frequency_limits,
+> > +
+> > +	TP_PROTO(unsigned int min_freq, unsigned int max_freq,
+> > +		unsigned int cpu_id),
+> > +
+> > +	TP_ARGS(min_freq, max_freq, cpu_id),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__field(u32, min_freq)
+> > +		__field(u32, max_freq)
+> > +		__field(u32, cpu_id)
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__entry->min_freq = min_freq;
+> > +		__entry->max_freq = max_freq;
+> > +		__entry->cpu_id = cpu_id;
+> 
+> Then have here:
+> 
+> 		__entry->min_freq = policy->min;
+> 		__entry->max_freq = policy->max;
+> 		__entry->puc_id = policy->cpu;
+> 
+> It would also make the footprint of the tracepoint in the code smaller
+> as it would pass fewer parameters to the trace event.
 
-... it works also by patching the line above!
+Yes, that's a great idea. I'll make the change and post v3.
 
-
-> >             print "Fixing util_to_perc({:3d} => {:4d})".format(pct, util)
-> >             rounding = 0
-> >         pct2 = (rounding + ((100 * util) / 1024))
-> >         if pct2 in values:
-> >                 values.remove(pct2)
-> >         if pct != pct2:
-> >             print "Convertion failed for: {:3d} => {:4d} => {:3d}".format(pct, util, pct2)
-> > if values:
-> >     print "ERROR: not all percentage values converted"
-> > ---8<---
-
-Good catch, thanks!
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+-Joel
+ 
