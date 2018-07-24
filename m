@@ -1,111 +1,203 @@
 From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v6 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Tue, 24 Jul 2018 16:14:15 +0530
-Message-ID: <d5c00072-84d3-6eda-52db-6d6dd4e313e1@codeaurora.org>
-References: <1531892220-2046-1-git-send-email-tdas@codeaurora.org>
- <1531892220-2046-3-git-send-email-tdas@codeaurora.org>
- <20180718054647.ysomgxiwzbuuptoc@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
+Date: Tue, 24 Jul 2018 16:12:49 +0530
+Message-ID: <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180718054647.ysomgxiwzbuuptoc@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Viresh,
+Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+SoCs. This is required for managing the cpu frequency transitions which are
+controlled by the hardware engine.
 
-Thanks for your review comments.
+Signed-off-by: Taniya Das <tdas@codeaurora.org>
+---
+ .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
+ 1 file changed, 172 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
 
-On 7/18/2018 11:16 AM, Viresh Kumar wrote:
-> On 18-07-18, 11:07, Taniya Das wrote:
->> +static int qcom_cpu_resources_init(struct platform_device *pdev,
->> +				   struct device_node *np, unsigned int cpu,
->> +				   unsigned long xo_rate)
->> +{
->> +	struct cpufreq_qcom *c;
->> +	struct resource res;
->> +	struct device *dev = &pdev->dev;
->> +	const u16 *offsets;
->> +	cpumask_t cpus_related;
->> +	int ret, i, cpu_r;
->> +	void __iomem *base;
->> +
->> +	cpumask_clear(&cpus_related);
->> +
->> +	ret = qcom_get_related_cpus(np, &cpus_related);
->> +	if (ret) {
->> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
->> +		return ret;
->> +	}
->> +
->> +	/* Related CPUs */
->> +	cpu_r = cpumask_first(&cpus_related);
->> +	if (cpu != cpu_r) {
->> +		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
->> +		return 0;
->> +	}
->> +
->> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
->> +	if (!c)
->> +		return -ENOMEM;
->> +
->> +	offsets = of_device_get_match_data(&pdev->dev);
->> +	if (!offsets)
->> +		return -EINVAL;
->> +
->> +	if (of_address_to_resource(np, 0, &res))
->> +		return -ENOMEM;
->> +
->> +	base = devm_ioremap_resource(dev, &res);
->> +	if (!base)
->> +		return -ENOMEM;
->> +
->> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
->> +		c->reg_bases[i] = base + offsets[i];
->> +
->> +	/* HW should be in enabled state to proceed */
->> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
->> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
->> +		return -ENODEV;
->> +	}
->> +
->> +	cpumask_copy(&c->related_cpus, &cpus_related);
->> +
->> +	c->max_cores = cpumask_weight(&c->related_cpus);
->> +	if (!c->max_cores)
->> +		return -ENOENT;
->> +
->> +	c->xo_rate = xo_rate;
->> +
->> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
->> +	if (ret) {
->> +		dev_err(dev, "%s failed to read LUT\n", np->name);
->> +		return ret;
->> +	}
->> +
->> +	qcom_freq_domain_map[cpu] = c;
-> 
-> Set this for all related CPUs here and then the check at the top of
-> this routine will be simply:
-> 
-> if (qcom_freq_domain_map[cpu])
->          return 0;
-> 
-
-Please check the latest series, I have updated the code.
-
->> +
->> +	return 0;
->> +}
->> +
-
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+new file mode 100644
+index 0000000..22d4355
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+@@ -0,0 +1,172 @@
++Qualcomm Technologies, Inc. CPUFREQ Bindings
++
++CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
++SoCs to manage frequency in hardware. It is capable of controlling frequency
++for multiple clusters.
++
++Properties:
++- compatible
++	Usage:		required
++	Value type:	<string>
++	Definition:	must be "qcom,cpufreq-hw".
++
++- clocks
++	Usage:		required
++	Value type:	<phandle> From common clock binding.
++	Definition:	clock handle for XO clock.
++
++- clock-names
++	Usage:		required
++	Value type:	<string> From common clock binding.
++	Definition:	must be "xo".
++
++* Property qcom,freq-domain
++Devices supporting freq-domain must set their "qcom,freq-domain" property with
++phandle to a freq_domain_table in their DT node.
++
++* Frequency Domain Table Node
++
++This describes the frequency domain belonging to a device.
++This node can have following properties:
++
++- reg
++	Usage:		required
++	Value type:	<prop-encoded-array>
++	Definition:	Addresses and sizes for the memory of the HW bases.
++
++Example:
++
++Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
++DCVS state together.
++
++/ {
++	cpus {
++		#address-cells = <2>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x0>;
++			enable-method = "psci";
++			next-level-cache = <&L2_0>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_0: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++				L3_0: l3-cache {
++				      compatible = "cache";
++				};
++			};
++		};
++
++		CPU1: cpu@100 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x100>;
++			enable-method = "psci";
++			next-level-cache = <&L2_100>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_100: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU2: cpu@200 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x200>;
++			enable-method = "psci";
++			next-level-cache = <&L2_200>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_200: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU3: cpu@300 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x300>;
++			enable-method = "psci";
++			next-level-cache = <&L2_300>;
++			qcom,freq-domain = <&freq_domain_table0>;
++			L2_300: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU4: cpu@400 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x400>;
++			enable-method = "psci";
++			next-level-cache = <&L2_400>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_400: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU5: cpu@500 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x500>;
++			enable-method = "psci";
++			next-level-cache = <&L2_500>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_500: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU6: cpu@600 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x600>;
++			enable-method = "psci";
++			next-level-cache = <&L2_600>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_600: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++
++		CPU7: cpu@700 {
++			device_type = "cpu";
++			compatible = "qcom,kryo385";
++			reg = <0x0 0x700>;
++			enable-method = "psci";
++			next-level-cache = <&L2_700>;
++			qcom,freq-domain = <&freq_domain_table1>;
++			L2_700: l2-cache {
++				compatible = "cache";
++				next-level-cache = <&L3_0>;
++			};
++		};
++	};
++
++	qcom,cpufreq-hw {
++		compatible = "qcom,cpufreq-hw";
++
++		clocks = <&rpmhcc RPMH_CXO_CLK>;
++		clock-names = "xo";
++
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++		freq_domain_table0: freq_table0 {
++			reg = <0 0x17d43000 0 0x1400>;
++		};
++
++		freq_domain_table1: freq_table1 {
++			reg = <0 0x17d45800 0 0x1400>;
++		};
++	};
++};
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+of the Code Aurora Forum, hosted by the  Linux Foundation.
