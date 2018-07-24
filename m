@@ -1,91 +1,111 @@
 From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH v7 0/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Tue, 24 Jul 2018 16:12:48 +0530
-Message-ID: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+Subject: Re: [PATCH v6 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Tue, 24 Jul 2018 16:14:15 +0530
+Message-ID: <d5c00072-84d3-6eda-52db-6d6dd4e313e1@codeaurora.org>
+References: <1531892220-2046-1-git-send-email-tdas@codeaurora.org>
+ <1531892220-2046-3-git-send-email-tdas@codeaurora.org>
+ <20180718054647.ysomgxiwzbuuptoc@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180718054647.ysomgxiwzbuuptoc@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
- [v7]
-   * Updated the logic to check for related CPUs.
+Hello Viresh,
 
- [v6]
-   * Renamed match table 'qcom_cpufreq_hw_match'.
-   * Renamed 'qcom_read_lut' to 'qcom_cpufreq_hw_read_lut'.
-   * Updated the logic to check for related CPUs at the beginning of the
-     'qcom_cpu_resources_init'.
-   * Use devm_ioremap_resource instead of devm_ioremap.
-   * Update the use of of_node_put to handle error conditions.
-   * Use policy->cached_resolved_idx in fast switch callback.
-   * Keep precalculated offsets 'reg_bases'.
-   * XO clock is taken from Device tree.
-   * Update documentation binding for clocks/clock-names.
-   * Minor comments in Kconfig.arm.
-   * Comments to move dev_info to dev_dbg.
+Thanks for your review comments.
 
- [v5]
-   * Remove mapping different register regions of perf/lut/enable,
-     instead map the entire HW region.
-   * Add reg_offset/cpufreq_qcom_std_offsets to be supplied as device data.
-   * Check of src == 0 during lut read.
-   * Add of_node_put(cpu_np) in qcom_get_related_cpus
-   * Update the qcom_cpu_resources_init for register offset data,
-     and cleanup the related cpus to keep a single copy of CPUfreq.
-   * Replace FW with HW, update Kconfig, rename filename qcom-cpufreq-hw.c
-   * Update the documentation binding to reflect the changes of mapping the
-   * entire HW region.
+On 7/18/2018 11:16 AM, Viresh Kumar wrote:
+> On 18-07-18, 11:07, Taniya Das wrote:
+>> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+>> +				   struct device_node *np, unsigned int cpu,
+>> +				   unsigned long xo_rate)
+>> +{
+>> +	struct cpufreq_qcom *c;
+>> +	struct resource res;
+>> +	struct device *dev = &pdev->dev;
+>> +	const u16 *offsets;
+>> +	cpumask_t cpus_related;
+>> +	int ret, i, cpu_r;
+>> +	void __iomem *base;
+>> +
+>> +	cpumask_clear(&cpus_related);
+>> +
+>> +	ret = qcom_get_related_cpus(np, &cpus_related);
+>> +	if (ret) {
+>> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
+>> +		return ret;
+>> +	}
+>> +
+>> +	/* Related CPUs */
+>> +	cpu_r = cpumask_first(&cpus_related);
+>> +	if (cpu != cpu_r) {
+>> +		qcom_freq_domain_map[cpu] = qcom_freq_domain_map[cpu_r];
+>> +		return 0;
+>> +	}
+>> +
+>> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+>> +	if (!c)
+>> +		return -ENOMEM;
+>> +
+>> +	offsets = of_device_get_match_data(&pdev->dev);
+>> +	if (!offsets)
+>> +		return -EINVAL;
+>> +
+>> +	if (of_address_to_resource(np, 0, &res))
+>> +		return -ENOMEM;
+>> +
+>> +	base = devm_ioremap_resource(dev, &res);
+>> +	if (!base)
+>> +		return -ENOMEM;
+>> +
+>> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
+>> +		c->reg_bases[i] = base + offsets[i];
+>> +
+>> +	/* HW should be in enabled state to proceed */
+>> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
+>> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	cpumask_copy(&c->related_cpus, &cpus_related);
+>> +
+>> +	c->max_cores = cpumask_weight(&c->related_cpus);
+>> +	if (!c->max_cores)
+>> +		return -ENOENT;
+>> +
+>> +	c->xo_rate = xo_rate;
+>> +
+>> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
+>> +	if (ret) {
+>> +		dev_err(dev, "%s failed to read LUT\n", np->name);
+>> +		return ret;
+>> +	}
+>> +
+>> +	qcom_freq_domain_map[cpu] = c;
+> 
+> Set this for all related CPUs here and then the check at the top of
+> this routine will be simply:
+> 
+> if (qcom_freq_domain_map[cpu])
+>          return 0;
+> 
 
- [v4]
-   * Fixed console messages as per comments.
-   * Return error from qcom_resources_init()
-     in the cases where failed to get frequency domain.
-   * Rename cpu_dev to cpu_np in qcom_resources_init,
-     qcom_get_related_cpus(). Also use temp variable freq_np in
-     qcom_get_related_cpus().
-   * Update qcom_cpufreq_fw_get() to use the policy data to incoporate
-     the hotplug use case.
-   * Update code to use of fast_switching.
-   * Check for !c->max_cores instead of cpumask_empty in
-     qcom_get_related_cpus().
-   * Update the logic of assigning 'c' to qcom_freq_domain_map[cpu].
+Please check the latest series, I have updated the code.
 
- [v3]
-   * Remove index check from 'qcom_cpufreq_fw_target_index'.
-   * Update the Documentation binding to add the platform specific properties in
-     the CPU nodes, node name "qcom,freq-domain".
-   * Update return value to '0' from -ENODEV from 'qcom_cpufreq_fw_get'.
-   * Update the logic for boost frequency to use local variables instead of
-     cpufreq driver data in 'qcom_read_lut'.
-   * Update the logic in 'qcom_get_related_cpus' to find the related cpus.
-   * Update the reg-names to remove "_base" and also update the binding with the
-     description of these registers.
-   * Update the logic in 'qcom_resources_init' to address the new device tree
-     notation of handling the frequency domain phandles.
+>> +
+>> +	return 0;
+>> +}
+>> +
 
- [v2]
-   * Fixed the alignment issues in "qcom_cpufreq_fw_target_index" for dev_err and
-     also for "qcom_cpu_resources_init".
-   * Removed ret = 0 from qcom_get_related_cpus and added to check for
-     cpu_mask_empty to return -ENOENT.
-   * Fixes qcom_cpu_resources_init function
-   * Remove initialization of 'index'
-   * Check for valid 'c'
-   * Removed initialization of 'prev_cc' from 'qcom_read_lut'.
-
-Taniya Das (2):
-  dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
-  cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-
- .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 ++++++++++
- drivers/cpufreq/Kconfig.arm                        |  11 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/qcom-cpufreq-hw.c                  | 348 +++++++++++++++++++++
- 4 files changed, 532 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
- create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
 
 --
-Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-of the Code Aurora Forum, hosted by the  Linux Foundation.
