@@ -1,111 +1,100 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v2] cpufreq: trace frequency limits change
-Date: Tue, 24 Jul 2018 09:49:32 -0400
-Message-ID: <20180724094932.11e10452@gandalf.local.home>
-References: <20180720222114.200311-1-joel@joelfernandes.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 24 Jul 2018 22:47:12 +0800
+Message-ID: <20180724144712.GV18419@linux-l9pv.suse>
+References: <cover.1531924968.git.yu.c.chen@intel.com>
+ <20180718202235.GA4132@amd>
+ <20180718235851.GA22170@sandybridge-desktop>
+ <20180719110149.GA4679@amd>
+ <20180719132003.GA30981@sandybridge-desktop>
+ <20180720102532.GA20284@amd>
+ <1532346156.3057.11.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180720222114.200311-1-joel@joelfernandes.org>
+Content-Disposition: inline
+In-Reply-To: <1532346156.3057.11.camel@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: linux-kernel@vger.kernel.org, kernel-team@android.com, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Yu Chen <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 20 Jul 2018 15:21:14 -0700
-Joel Fernandes <joel@joelfernandes.org> wrote:
+Hi Oliver,
 
-> From: Ruchi Kandoi <kandoiruchi@google.com>
+On Mon, Jul 23, 2018 at 01:42:36PM +0200, Oliver Neukum wrote:
+> On Fr, 2018-07-20 at 12:25 +0200, Pavel Machek wrote:
+> > Hi!
 > 
-> systrace used for tracing for Android systems has carried a patch for
-> many years in the Android tree that traces when the cpufreq limits
-> change.  With the help of this information, systrace can know when the
-> policy limits change and can visually display the data. Lets add
-> upstream support for the same.
+> Hello,
 > 
-> Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
-> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-> ---
-> v1->v2: Minor changes suggested by Viresh
+> > > Let me paste the log here:
+> > > 
+> > > 1. (This is not to compare with uswsusp but other
+> > >     tools) One advantage is: Users do not have to
+> > >     encrypt the whole swap partition as other tools.
+> > 
+> > Well.. encrypting the partition seems like good idea anyway.
 > 
->  Documentation/trace/events-power.rst |  1 +
->  drivers/cpufreq/cpufreq.c            |  1 +
->  include/trace/events/power.h         | 25 +++++++++++++++++++++++++
->  3 files changed, 27 insertions(+)
+> Yes, but it is a policy decision the kernel should not force.
+> STD needs to work anyway.
 > 
-> diff --git a/Documentation/trace/events-power.rst b/Documentation/trace/events-power.rst
-> index a77daca75e30..2ef318962e29 100644
-> --- a/Documentation/trace/events-power.rst
-> +++ b/Documentation/trace/events-power.rst
-> @@ -27,6 +27,7 @@ cpufreq.
->  
->    cpu_idle		"state=%lu cpu_id=%lu"
->    cpu_frequency		"state=%lu cpu_id=%lu"
-> +  cpu_frequency_limits	"min=%lu max=%lu cpu_id=%lu"
->  
->  A suspend event is used to indicate the system going in and out of the
->  suspend mode:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index b0dfd3222013..4fd935df101e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2236,6 +2236,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  
->  	policy->min = new_policy->min;
->  	policy->max = new_policy->max;
-> +	trace_cpu_frequency_limits(policy->min, policy->max, policy->cpu);
+> > > 2. Ideally kernel memory should be encrypted by the
+> > >    kernel itself. We have uswsusp to support user
+> > >    space hibernation, however doing the encryption
+> > >    in kernel space has more advantages:
+> > >    2.1 Not having to transfer plain text kernel memory to
+> > >        user space. Per Lee, Chun-Yi, uswsusp is disabled
+> > >        when the kernel is locked down:
+> > >        https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/
+> > >        linux-fs.git/commit/?h=lockdown-20180410&
+> > >        id=8732c1663d7c0305ae01ba5a1ee4d2299b7b4612
+> > >        due to:
+> > >        "There have some functions be locked-down because
+> > >        there have no appropriate mechanisms to check the
+> > >        integrity of writing data."
+> > >        https://patchwork.kernel.org/patch/10476751/
+> > 
+> > So your goal is to make hibernation compatible with kernel
+> > lockdown? Do your patches provide sufficient security that hibernation
+> > can be enabled with kernel lockdown?
+> 
+> OK, maybe I am dense, but if the key comes from user space, will that
+> be enough?
+> 
+> > >    2.2 Not having to copy each page to user space
+> > >        one by one not in parallel, which might introduce
+> > >        significant amount of copy_to_user() and it might
+> > >        not be efficient on servers having large amount of DRAM.
+> > 
+> > So how big speedup can be attributed by not doing copy_to_user?
+> 
+> That would be an argument for compression in kernel space.
+> Not encrpting would always be faster.
+> 
+> > >    2.3 Distribution has requirement to do snapshot
+> > >        signature for verification, which can be built
+> > >        by leveraging this patch set.
+> > 
+> > Signatures can be done by uswsusp, too, right?
+> 
+> Not if you want to keep the chain of trust intact. User space
+> is not signed.
 
-Wouldn't it make more sense just to pass in "policy"?
+Yes, any user space key helper must be authenticated for secure boot
+(or the kernel locked-down mode).
 
->  
->  	policy->cached_target_freq = UINT_MAX;
->  
-> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-> index 908977d69783..f5bec45108b6 100644
-> --- a/include/trace/events/power.h
-> +++ b/include/trace/events/power.h
-> @@ -148,6 +148,31 @@ DEFINE_EVENT(cpu, cpu_frequency,
->  	TP_ARGS(frequency, cpu_id)
->  );
->  
-> +TRACE_EVENT(cpu_frequency_limits,
-> +
-> +	TP_PROTO(unsigned int min_freq, unsigned int max_freq,
-> +		unsigned int cpu_id),
-> +
-> +	TP_ARGS(min_freq, max_freq, cpu_id),
-> +
-> +	TP_STRUCT__entry(
-> +		__field(u32, min_freq)
-> +		__field(u32, max_freq)
-> +		__field(u32, cpu_id)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->min_freq = min_freq;
-> +		__entry->max_freq = max_freq;
-> +		__entry->cpu_id = cpu_id;
+If user choices the user space helper, then they should awares that
+this approach can not be trusted when kernel is in locked-down mode.
+The user space helper be protected by IMA/EVM, or the initrd be
+authentricated with trusted boot.
 
-Then have here:
+The user space key helper is useful when the machine doesn't have
+TPM or EFI firmware, but user still wants to use the hibernation
+encryption/verification.
 
-		__entry->min_freq = policy->min;
-		__entry->max_freq = policy->max;
-		__entry->puc_id = policy->cpu;
+For kernel locked-down mode, EFI key or trusted key TPM can be
+trusted because they can only be created/visibled in kernel space.
 
-It would also make the footprint of the tracepoint in the code smaller
-as it would pass fewer parameters to the trace event.
-
--- Steve
-
-> +	),
-> +
-> +	TP_printk("min=%lu max=%lu cpu_id=%lu",
-> +		  (unsigned long)__entry->min_freq,
-> +		  (unsigned long)__entry->max_freq,
-> +		  (unsigned long)__entry->cpu_id)
-> +);
-> +
->  TRACE_EVENT(device_pm_callback_start,
->  
->  	TP_PROTO(struct device *dev, const char *pm_ops, int event),
+Thanks
+Joey Lee
