@@ -1,42 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: qcom-kryo: add NULL entry to the end
- of_device_id array
-Date: Tue, 24 Jul 2018 09:13:35 +0530
-Message-ID: <20180724034335.v76tfqk2imlyf2eg@vireshk-i7>
-References: <20180723123429.20040-1-yuehaibing@huawei.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: linux-next-20180723: battery status funny after bootup
+Date: Tue, 24 Jul 2018 10:27:08 +0200
+Message-ID: <CAJZ5v0g=Ey6ZiyjA3NWS_C5zXBUydJNaKOZDbRNFYUGEc8YuaQ@mail.gmail.com>
+References: <20180723214917.GA3733@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180723123429.20040-1-yuehaibing@huawei.com>
+In-Reply-To: <20180723214917.GA3733@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: YueHaibing <yuehaibing@huawei.com>
-Cc: ilia.lin@gmail.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 23-07-18, 20:34, YueHaibing wrote:
-> Make sure of_device_id tables are NULL terminated
-> Found by coccinelle spatch "misc/of_table.cocci"
-> 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/cpufreq/qcom-cpufreq-kryo.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> index 29389ac..efc9a7a 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
-> @@ -183,6 +183,7 @@ static struct platform_driver qcom_cpufreq_kryo_driver = {
->  static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
->  	{ .compatible = "qcom,apq8096", },
->  	{ .compatible = "qcom,msm8996", },
-> +	{}
->  };
->  
->  /*
+On Mon, Jul 23, 2018 at 11:49 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>
+> pavel@amd:~$ cat /proc/acpi/battery/BAT0/state
+> present:                 yes
+> capacity state:          ok
+> charging state:          charged
+> present rate:            0 mW
+> remaining capacity:      0 mWh
+> present voltage:         0 mV
+> pavel@amd:~$ uname -a
+> Linux amd 4.18.0-rc6-next-20180723+ #141 SMP Mon Jul 23 22:11:47 CEST
+> 2018 i686 GNU/Linux
+>
+> It will correct itself if I unplug/replug the AC adapter, I
+> believe. Gnome2 battery monitor also looks confused.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+There are two battery changes in linux-next now that are not present
+in the mainline
 
--- 
-viresh
+2a2aad34362b ACPI: battery: remove redundant old_present check on insertion
+706ac4aa536f ACPI: battery: use cache_time as cache "enabled"
+
+Does reverting any of them help?  Or is the problem present in the mainline too?
