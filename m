@@ -1,37 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: trace frequency limits change
-Date: Wed, 25 Jul 2018 09:20:45 +0530
-Message-ID: <CAKohponm0CbBNLY19B-9ccfe3d3jreSJLDePEROR+w1=1JZEWw@mail.gmail.com>
-References: <20180724173544.18876-1-joel@joelfernandes.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
+Date: Wed, 25 Jul 2018 14:20:25 +1000
+Message-ID: <87o9ewx7xy.fsf@concordia.ellerman.id.au>
+References: <20180724111600.4158975-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724173544.18876-1-joel@joelfernandes.org>
+In-Reply-To: <20180724111600.4158975-1-arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Cc: Android Kernel" <kernel-team@android.com>, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steven Rostedt <rostedt@goodmis.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, Arnd Bergmann <arnd@arndb.de>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Jonathan Cameron <jic23@kernel.org>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
 List-Id: linux-pm@vger.kernel.org
 
-On 24 July 2018 at 23:05, Joel Fernandes <joel@joelfernandes.org> wrote:
-> From: Ruchi Kandoi <kandoiruchi@google.com>
->
-> systrace used for tracing for Android systems has carried a patch for
-> many years in the Android tree that traces when the cpufreq limits
-> change.  With the help of this information, systrace can know when the
-> policy limits change and can visually display the data. Lets add
-> upstream support for the same.
->
-> Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
-> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
-> ---
-> Viresh since I changed the patch, could you Ack it again?
->
-> v2->v3: reduce parameters to tracepoint call (Steve)
-> v1->v2: correct ordering of min/max (Viresh)
->
->  Documentation/trace/events-power.rst |  1 +
->  drivers/cpufreq/cpufreq.c            |  1 +
->  include/trace/events/power.h         | 25 +++++++++++++++++++++++++
->  3 files changed, 27 insertions(+)
+Arnd Bergmann <arnd@arndb.de> writes:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Almost all files in the kernel are either plain text or UTF-8
+> encoded. A couple however are ISO_8859-1, usually just a few
+> characters in a C comments, for historic reasons.
+>
+> This converts them all to UTF-8 for consistency.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+...
+>  drivers/crypto/vmx/ghashp8-ppc.pl             |  12 +-
+...
+> diff --git a/drivers/crypto/vmx/ghashp8-ppc.pl b/drivers/crypto/vmx/ghashp8-ppc.pl
+> index f746af271460..38b06503ede0 100644
+> --- a/drivers/crypto/vmx/ghashp8-ppc.pl
+> +++ b/drivers/crypto/vmx/ghashp8-ppc.pl
+> @@ -129,9 +129,9 @@ $code=<<___;
+>  	 le?vperm	$IN,$IN,$IN,$lemask
+>  	vxor		$zero,$zero,$zero
+>  
+> -	vpmsumd		$Xl,$IN,$Hl		# H.loXi.lo
+> -	vpmsumd		$Xm,$IN,$H		# H.hiXi.lo+H.loXi.hi
+> -	vpmsumd		$Xh,$IN,$Hh		# H.hiXi.hi
+> +	vpmsumd		$Xl,$IN,$Hl		# H.lo·Xi.lo
+> +	vpmsumd		$Xm,$IN,$H		# H.hi·Xi.lo+H.lo·Xi.hi
+> +	vpmsumd		$Xh,$IN,$Hh		# H.hi·Xi.hi
+>  
+>  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
+>  
+> @@ -187,11 +187,11 @@ $code=<<___;
+>  .align	5
+>  Loop:
+>  	 subic		$len,$len,16
+> -	vpmsumd		$Xl,$IN,$Hl		# H.loXi.lo
+> +	vpmsumd		$Xl,$IN,$Hl		# H.lo·Xi.lo
+>  	 subfe.		r0,r0,r0		# borrow?-1:0
+> -	vpmsumd		$Xm,$IN,$H		# H.hiXi.lo+H.loXi.hi
+> +	vpmsumd		$Xm,$IN,$H		# H.hi·Xi.lo+H.lo·Xi.hi
+>  	 and		r0,r0,$len
+> -	vpmsumd		$Xh,$IN,$Hh		# H.hiXi.hi
+> +	vpmsumd		$Xh,$IN,$Hh		# H.hi·Xi.hi
+>  	 add		$inp,$inp,r0
+>  
+>  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+
+cheers
