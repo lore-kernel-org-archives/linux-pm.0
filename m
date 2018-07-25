@@ -1,55 +1,84 @@
-From: "Angus Ainslie (Purism)" <angus@akkea.ca>
-Subject: [PATCH v2 4/4] power: bq25890_charger.c: Read back the current battery voltage
-Date: Wed, 25 Jul 2018 13:46:30 -0600
-Message-ID: <20180725194630.10414-5-angus@akkea.ca>
-References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
- <20180725194630.10414-1-angus@akkea.ca>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v1 1/3] thermal: tsens: Rename variable
+Date: Wed, 25 Jul 2018 15:44:47 -0700
+Message-ID: <20180725224447.GR129942@google.com>
+References: <cover.1531898088.git.amit.kucheria@linaro.org>
+ <45062f2bcfd0f20e604f663e3627dcedf01f0be5.1531898088.git.amit.kucheria@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180725194630.10414-1-angus@akkea.ca>
+Content-Disposition: inline
+In-Reply-To: <45062f2bcfd0f20e604f663e3627dcedf01f0be5.1531898088.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Angus Ainslie (Purism)" <angus@akkea.ca>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The part has the capability of reading the current battery voltage
+On Wed, Jul 18, 2018 at 12:55:01PM +0530, Amit Kucheria wrote:
+> We're actually reading the temperature from the status register. Fix the
+> variable name to reflect that.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  drivers/thermal/qcom/tsens-common.c |  6 +++---
+>  drivers/thermal/qcom/tsens-v2.c     | 10 +++++-----
+>  2 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index c22dc18..25e7f24 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -104,11 +104,11 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+>  {
+>  	struct tsens_sensor *s = &tmdev->sensor[id];
+>  	u32 code;
+> -	unsigned int sensor_addr;
+> +	unsigned int status_reg;
+>  	int last_temp = 0, ret;
+>  
+> -	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+> -	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+> +	ret = regmap_read(tmdev->map, status_reg, &code);
+>  	if (ret)
+>  		return ret;
+>  	last_temp = code & SN_ST_TEMP_MASK;
+> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+> index f40150f..908e3dc 100644
+> --- a/drivers/thermal/qcom/tsens-v2.c
+> +++ b/drivers/thermal/qcom/tsens-v2.c
+> @@ -16,11 +16,11 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>  {
+>  	struct tsens_sensor *s = &tmdev->sensor[id];
+>  	u32 code;
+> -	unsigned int sensor_addr;
+> +	unsigned int status_reg;
+>  	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
+>  
+> -	sensor_addr = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
+> -	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
+> +	ret = regmap_read(tmdev->map, status_reg, &code);
+>  	if (ret)
+>  		return ret;
+>  	last_temp = code & LAST_TEMP_MASK;
+> @@ -28,7 +28,7 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>  		goto done;
+>  
+>  	/* Try a second time */
+> -	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	ret = regmap_read(tmdev->map, status_reg, &code);
+>  	if (ret)
+>  		return ret;
+>  	if (code & STATUS_VALID_BIT) {
+> @@ -39,7 +39,7 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>  	}
+>  
+>  	/* Try a third/last time */
+> -	ret = regmap_read(tmdev->map, sensor_addr, &code);
+> +	ret = regmap_read(tmdev->map, status_reg, &code);
+>  	if (ret)
+>  		return ret;
+>  	if (code & STATUS_VALID_BIT) {
 
-Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
----
- drivers/power/supply/bq25890_charger.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index f4cf2987996b..60ccd6c2b7ad 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -464,6 +464,20 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 		val->intval = bq25890_find_val(bq->init_data.iterm, TBL_ITERM);
- 		break;
- 
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		if (!state.online) {
-+			val->intval = 0;
-+			break;
-+		}
-+
-+		ret = bq25890_field_read(bq, F_SYSV); /* read measured value */
-+		if (ret < 0)
-+			return ret;
-+
-+		/* converted_val = 2.304V + ADC_val * 20mV (table 10.3.15) */
-+		val->intval = 2304000 + ret * 20000;
-+		break;
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -672,6 +686,7 @@ static enum power_supply_property bq25890_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
- static char *bq25890_charger_supplied_to[] = {
--- 
-2.17.1
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
