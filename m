@@ -1,70 +1,71 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 3/4] dt-bindings: power: supply: Max17040: Add low level
- SOC alert threshold
-Date: Wed, 25 Jul 2018 12:45:59 +0200
-Message-ID: <CAJKOXPdfxeDR0ovNbNZYAAouxfnpAa6GccZsPMLAYJETKT5Szg@mail.gmail.com>
-References: <20180723040816.19455-1-matheus@castello.eng.br> <20180723040816.19455-4-matheus@castello.eng.br>
+Subject: Re: [PATCH 4/4] power: supply: max17040: Send uevent in SOC changes
+Date: Wed, 25 Jul 2018 12:52:03 +0200
+Message-ID: <CAJKOXPcyPgtifVVT8VJQ3smcGzXxeVSoUdUyCV1ZsD5PbjnnQg@mail.gmail.com>
+References: <20180723040816.19455-1-matheus@castello.eng.br> <20180723040816.19455-5-matheus@castello.eng.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180723040816.19455-4-matheus@castello.eng.br>
+In-Reply-To: <20180723040816.19455-5-matheus@castello.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Matheus Castello <matheus@castello.eng.br>
 Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On 23 July 2018 at 06:08, Matheus Castello <matheus@castello.eng.br> wrote:
-> For configure low level state of charge threshold alert signaled from
-> max17040 we add "maxim,alert-soc-level" property.
+> Add check for changes in state of charge from delayed work, so
+> in case of changes we call power_supply_changed to send an uevent.
 >
-> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
-> ---
->  .../bindings/power/supply/max17040_battery.txt     | 24 ++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/max17040_battery.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-> new file mode 100644
-> index 000000000000..e6e4e46c03c4
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-> @@ -0,0 +1,24 @@
-> +max17040_battery
-> +~~~~~~~~~~~~~~~~
+> power_supply_changed send an uevent for alert user space about
+> changes, is useful for example to user space apps made changes in
+> UI battery level or made other decisions.
 
-> +
-> +Required properties :
-> + - compatible : "maxim,max17040"
+Hi,
 
-Why you skipped "maxim,max77836-battery"?
+Too many "changes". How about:
 
-> +
-> +Optional threshold properties :
-> + If skipped the power up default value will be used
-> + - maxim,alert-soc-level :     The alert threshold that sets the state of
-> +                               charge level where an interrupt is generated.
-> +                               max17040 can be configured from 1 up to 32.
-> +
-> +Remembering that for the interrupt to be handled it must also be described the
-> +information of the interruption in the node.
+Notify core through power_supply_changed() in case of changes in state
+of charge. This is useful for user-space to efficiently update current
+battery level.
 
-Just mention interrupts in optional properties, including the flags.
-BTW, the driver hard-codes the flags which is in contrast with DT
-here.
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
 Best regards,
 Krzysztof
 
+
+> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
+> ---
+>  drivers/power/supply/max17040_battery.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+> index 3efa52d32b44..72915ac9e13b 100644
+> --- a/drivers/power/supply/max17040_battery.c
+> +++ b/drivers/power/supply/max17040_battery.c
+> @@ -202,14 +202,22 @@ static void max17040_get_of_data(struct max17040_chip *chip)
+>  static void max17040_work(struct work_struct *work)
+>  {
+>         struct max17040_chip *chip;
+> +       u16 last_soc;
+>
+>         chip = container_of(work, struct max17040_chip, work.work);
+>
+> +       /* store SOC for check change */
+> +       last_soc = chip->soc;
 > +
-> +Example:
+>         max17040_get_vcell(chip->client);
+>         max17040_get_soc(chip->client);
+>         max17040_get_online(chip->client);
+>         max17040_get_status(chip->client);
+>
+> +       /* check changes and send uevent */
+> +       if (last_soc != chip->soc)
+> +               power_supply_changed(chip->battery);
 > +
-> +       battery-charger@36 {
-> +               compatible = "maxim,max17040";
-> +               reg = <0x36>;
-> +               maxim,alert-soc-level = <10>;
-> +               interrupt-parent = <&gpio>;
-> +               interrupts = <18 IRQ_TYPE_EDGE_FALLING>;
-> +       };
+>         queue_delayed_work(system_power_efficient_wq, &chip->work,
+>                            MAX17040_DELAY);
+>  }
 > --
 > 2.13.3
 >
