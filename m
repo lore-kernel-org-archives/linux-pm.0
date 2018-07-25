@@ -1,251 +1,153 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] bq25890_charger.c : add the BQ25896 part
-Date: Wed, 25 Jul 2018 11:58:37 +0200
-Message-ID: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
-References: <20180723135117.2090-1-angus@akkea.ca>
+Subject: Re: [PATCH 1/4] power: supply: max17040: Add IRQ handler for low SOC alert
+Date: Wed, 25 Jul 2018 12:27:22 +0200
+Message-ID: <CAJKOXPeWq9hohuLSKMopWjHAgm+DX2YXCxqhpK+5N5nySzYpDg@mail.gmail.com>
+References: <20180723040816.19455-1-matheus@castello.eng.br> <20180723040816.19455-2-matheus@castello.eng.br>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180723135117.2090-1-angus@akkea.ca>
+In-Reply-To: <20180723040816.19455-2-matheus@castello.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Angus Ainslie <angus@akkea.ca>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Angus Ainslie <angus.ainslie@puri.sm>
+To: Matheus Castello <matheus@castello.eng.br>
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23 July 2018 at 15:51, Angus Ainslie <angus@akkea.ca> wrote:
-> Add some debugging to be able to check the proper initialization
-> of the BQ25896 part.
-
-Hi,
-
-This should be split into separate patchset. Do not mix two features
-in one commit.
-
-> Enable the BQ25896 part.
+On 23 July 2018 at 06:08, Matheus Castello <matheus@castello.eng.br> wrote:
+> According datasheet max17040 has a pin for alert host for low SOC.
+> This pin can be used as external interrupt, so we need to check for
+> interrupts assigned for device and handle it.
 >
-> Add 2 new parameters "voltage_now" and "model_name".
+> In hadler we are checking and storing fuel gauge registers values
+> and send an uevent to notificate user space, so user space can decide
+> save work or turn off since the alert demonstrate that the battery may
+> no have the power to keep the system turned on for much longer.
 >
-> Signed-off-by: Angus Ainslie <angus.ainslie@puri.sm>
-
-Your signed-off-by does not match From address.
-
+> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 > ---
->  drivers/power/supply/bq25890_charger.c | 68 ++++++++++++++++++++++----
->  1 file changed, 58 insertions(+), 10 deletions(-)
+>  drivers/power/supply/max17040_battery.c | 51 +++++++++++++++++++++++++++++++++
+>  1 file changed, 51 insertions(+)
 >
-> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-> index 8e2c41ded171..32cdae15ce40 100644
-> --- a/drivers/power/supply/bq25890_charger.c
-> +++ b/drivers/power/supply/bq25890_charger.c
-> @@ -32,6 +32,7 @@
->  #define BQ25890_IRQ_PIN                        "bq25890_irq"
+> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+> index 33c40f79d23d..6e54e58814a9 100644
+> --- a/drivers/power/supply/max17040_battery.c
+> +++ b/drivers/power/supply/max17040_battery.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/err.h>
+>  #include <linux/i2c.h>
+>  #include <linux/delay.h>
+> +#include <linux/interrupt.h>
+>  #include <linux/power_supply.h>
+>  #include <linux/max17040_battery.h>
+>  #include <linux/slab.h>
+> @@ -179,6 +180,24 @@ static void max17040_work(struct work_struct *work)
+>                            MAX17040_DELAY);
+>  }
 >
->  #define BQ25890_ID                     3
-> +#define BQ25896_ID                     0
->
->  enum bq25890_fields {
->         F_EN_HIZ, F_EN_ILIM, F_IILIM,                                /* Reg00 */
-> @@ -153,8 +154,8 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_CONV_RATE]           = REG_FIELD(0x02, 6, 6),
->         [F_BOOSTF]              = REG_FIELD(0x02, 5, 5),
->         [F_ICO_EN]              = REG_FIELD(0x02, 4, 4),
-> -       [F_HVDCP_EN]            = REG_FIELD(0x02, 3, 3),
-> -       [F_MAXC_EN]             = REG_FIELD(0x02, 2, 2),
-> +       [F_HVDCP_EN]            = REG_FIELD(0x02, 3, 3),  // reserved on BQ25896
-> +       [F_MAXC_EN]             = REG_FIELD(0x02, 2, 2),  // reserved on BQ25896
->         [F_FORCE_DPM]           = REG_FIELD(0x02, 1, 1),
->         [F_AUTO_DPDM_EN]        = REG_FIELD(0x02, 0, 0),
->         /* REG03 */
-> @@ -163,6 +164,7 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_OTG_CFG]             = REG_FIELD(0x03, 5, 5),
->         [F_CHG_CFG]             = REG_FIELD(0x03, 4, 4),
->         [F_SYSVMIN]             = REG_FIELD(0x03, 1, 3),
-> +       /* MIN_VBAT_SEL on BQ25896 */
->         /* REG04 */
->         [F_PUMPX_EN]            = REG_FIELD(0x04, 7, 7),
->         [F_ICHG]                = REG_FIELD(0x04, 0, 6),
-> @@ -181,7 +183,7 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_CHG_TMR]             = REG_FIELD(0x07, 1, 2),
->         [F_JEITA_ISET]          = REG_FIELD(0x07, 0, 0),
->         /* REG08 */
-> -       [F_BATCMP]              = REG_FIELD(0x08, 6, 7),
-> +       [F_BATCMP]              = REG_FIELD(0x08, 6, 7), // 5-7 on BQ25896
+> +static irqreturn_t max17040_thread_handler(int id, void *dev)
+> +{
+> +       struct max17040_chip *chip = dev;
+> +       struct i2c_client *client = chip->client;
+> +
+> +       dev_warn(&client->dev, "IRQ: Alert battery low level");
+> +       /* read registers */
+> +       max17040_get_vcell(chip->client);
 
-So this field is different on BQ25896...
+You just stored chip->client in client...
 
->         [F_VCLAMP]              = REG_FIELD(0x08, 2, 4),
->         [F_TREG]                = REG_FIELD(0x08, 0, 1),
->         /* REG09 */
-> @@ -195,12 +197,13 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_PUMPX_DN]            = REG_FIELD(0x09, 0, 0),
->         /* REG0A */
->         [F_BOOSTV]              = REG_FIELD(0x0A, 4, 7),
-> +       /* PFM_OTG_DIS 3 on BQ25896 */
->         [F_BOOSTI]              = REG_FIELD(0x0A, 0, 2),
->         /* REG0B */
->         [F_VBUS_STAT]           = REG_FIELD(0x0B, 5, 7),
->         [F_CHG_STAT]            = REG_FIELD(0x0B, 3, 4),
->         [F_PG_STAT]             = REG_FIELD(0x0B, 2, 2),
-> -       [F_SDP_STAT]            = REG_FIELD(0x0B, 1, 1),
-> +       [F_SDP_STAT]            = REG_FIELD(0x0B, 1, 1), // reserved on BQ25896
->         [F_VSYS_STAT]           = REG_FIELD(0x0B, 0, 0),
->         /* REG0C */
->         [F_WD_FAULT]            = REG_FIELD(0x0C, 7, 7),
-> @@ -401,6 +404,18 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
->                 val->strval = BQ25890_MANUFACTURER;
->                 break;
->
-> +       case POWER_SUPPLY_PROP_MODEL_NAME:
-> +               bq->chip_id = bq25890_field_read(bq, F_PN);
+> +       max17040_get_soc(chip->client);
+> +       max17040_get_online(chip->client);
+> +       max17040_get_status(chip->client);
 
-Why do you need to read it again?
+This duplicates max17040_work(). Can you split common part?
 
 > +
-> +               if (bq->chip_id == BQ25890_ID)
-> +                       val->strval = "BQ25890";
-> +               else if (bq->chip_id == BQ25896_ID)
-> +                       val->strval = "BQ25896";
-> +               else
-> +                       val->strval = "UNKNOWN";
+> +       /* send uevent */
+> +       power_supply_changed(chip->battery);
 > +
-> +               break;
+> +       return IRQ_HANDLED;
+> +}
 > +
->         case POWER_SUPPLY_PROP_ONLINE:
->                 val->intval = state.online;
->                 break;
-> @@ -453,6 +468,20 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
->                 val->intval = bq25890_find_val(bq->init_data.iterm, TBL_ITERM);
->                 break;
->
-> +       case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +               if (!state.online) {
-> +                       val->intval = 0;
-> +                       break;
-> +               }
-
-This looks like unrelated change. Please split it.
-
-> +
-> +               ret = bq25890_field_read(bq, F_SYSV); /* read measured value */
-> +               if (ret < 0)
-> +                       return ret;
-> +
-> +               /* converted_val = 2.304V + ADC_val * 20mV (table 10.3.15) */
-> +               val->intval = 2304000 + ret * 20000;
-> +               break;
-> +
->         default:
->                 return -EINVAL;
->         }
-> @@ -608,30 +637,43 @@ static int bq25890_hw_init(struct bq25890_device *bq)
->         };
->
->         ret = bq25890_chip_reset(bq);
-> -       if (ret < 0)
-> +       if (ret < 0) {
-> +               dev_dbg(bq->dev, "BQ259x reset failed %d\n", ret);
-
-"BQ259x" prefix is not needed.
-
->                 return ret;
-> +       }
->
->         /* disable watchdog */
->         ret = bq25890_field_write(bq, F_WD, 0);
-> -       if (ret < 0)
-> +       if (ret < 0) {
-> +               dev_dbg(bq->dev, "disabling watchdog failed %d\n", ret );
-
-1. Run checkpatch to point coding style issues and fix them.
-2. Start string with capital letter.
-
->                 return ret;
-> +       }
->
->         /* initialize currents/voltages and other parameters */
->         for (i = 0; i < ARRAY_SIZE(init_data); i++) {
->                 ret = bq25890_field_write(bq, init_data[i].id,
->                                           init_data[i].value);
-> -               if (ret < 0)
-> +               if (ret < 0) {
-> +                       dev_dbg(bq->dev, "writing init data failed %d\n",
-> +                               ret);
-
-Start string with capital letter.
-
->                         return ret;
-> +               }
->         }
->
->         /* Configure ADC for continuous conversions. This does not enable it. */
->         ret = bq25890_field_write(bq, F_CONV_RATE, 1);
-> -       if (ret < 0)
-> +       if (ret < 0) {
-> +               dev_dbg(bq->dev, "Config ADC failed %d\n",
-> +                       ret);
-
-Line break looks unneeded. Run checkpatch.
-
->                 return ret;
-> +       }
->
->         ret = bq25890_get_chip_state(bq, &state);
-> -       if (ret < 0)
-> +       if (ret < 0) {
-> +               dev_dbg(bq->dev, "BQ2589x get state failed %d\n",
-> +                       ret);
-
-Prefix is not needed.
-
->                 return ret;
-> +       }
->
->         mutex_lock(&bq->lock);
->         bq->state = state;
-> @@ -644,12 +686,14 @@ static enum power_supply_property bq25890_power_supply_props[] = {
->         POWER_SUPPLY_PROP_MANUFACTURER,
+>  static enum power_supply_property max17040_battery_props[] = {
 >         POWER_SUPPLY_PROP_STATUS,
 >         POWER_SUPPLY_PROP_ONLINE,
-> +       POWER_SUPPLY_PROP_MODEL_NAME,
->         POWER_SUPPLY_PROP_HEALTH,
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
->         POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  };
->
->  static char *bq25890_charger_supplied_to[] = {
-> @@ -767,6 +811,9 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
->                         if (props[i].optional)
->                                 continue;
->
-> +                       printk( KERN_ERR "unable to read property %d %s\n", ret
-> +                               , props[i].name );
+> @@ -200,6 +219,8 @@ static int max17040_probe(struct i2c_client *client,
+>         struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+>         struct power_supply_config psy_cfg = {};
+>         struct max17040_chip *chip;
+> +       int ret;
+> +       unsigned int flags;
 
-Remove it. And again - run checkpatch.
+Define them in scope using them.
 
+>
+>         if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
+>                 return -EIO;
+> @@ -221,6 +242,24 @@ static int max17040_probe(struct i2c_client *client,
+>                 return PTR_ERR(chip->battery);
+>         }
+>
+> +       /* check interrupt */
+> +       if (client->irq) {
+> +               dev_info(&client->dev, "IRQ: enabled\n");
+> +               flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
 > +
->                         return ret;
->                 }
->
-> @@ -840,7 +887,7 @@ static int bq25890_probe(struct i2c_client *client,
->                 return bq->chip_id;
->         }
->
-> -       if (bq->chip_id != BQ25890_ID) {
-> +       if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25896_ID)) {
->                 dev_err(dev, "Chip with ID=%d, not supported!\n", bq->chip_id);
->                 return -ENODEV;
->         }
-> @@ -966,6 +1013,7 @@ MODULE_DEVICE_TABLE(i2c, bq25890_i2c_ids);
->
->  static const struct of_device_id bq25890_of_match[] = {
->         { .compatible = "ti,bq25890", },
-> +       { .compatible = "ti,bq25896", },
+> +               ret = devm_request_threaded_irq(&client->dev, client->irq,
+> +                                               NULL,
+> +                                               max17040_thread_handler, flags,
+> +                                               chip->battery->desc->name,
+> +                                               chip);
 
-Document the compatible. If you run checkpatch.... it would point it.
+Please indent it to parenthesis.
+
+> +               if (ret) {
+> +                       client->irq = 0;
+> +                       if (ret != -EBUSY)
+> +                               dev_warn(&client->dev,
+> +                                       "Failed to get IRQ err %d \n", ret);
+> +               }
+> +       }
+> +
+>         max17040_reset(client);
+>         max17040_get_version(client);
+>
+> @@ -248,6 +287,12 @@ static int max17040_suspend(struct device *dev)
+>         struct max17040_chip *chip = i2c_get_clientdata(client);
+>
+>         cancel_delayed_work(&chip->work);
+> +
+> +       if (chip->client->irq) {
+
+I think this should use device wakeup properties (e.g.
+device_init_wakeup(), device_may_wakeup()) coming from pdata.
+
+It would be nice to CC users of this driver. We have it on some of
+boards. Unfortunately get_maintainer will not point it automatically
+so:
+scripts/get_maintainer.pl -f drivers/mfd/max14577.c
 
 Best regards,
 Krzysztof
+
+> +               disable_irq(chip->client->irq);
+> +               enable_irq_wake(chip->client->irq);
+> +       }
+> +
+>         return 0;
+>  }
+>
+> @@ -258,6 +303,12 @@ static int max17040_resume(struct device *dev)
+>
+>         queue_delayed_work(system_power_efficient_wq, &chip->work,
+>                            MAX17040_DELAY);
+> +
+> +       if (chip->client->irq) {
+> +               disable_irq_wake(chip->client->irq);
+> +               enable_irq(chip->client->irq);
+> +       }
+> +
+>         return 0;
+>  }
+>
+> --
+> 2.13.3
+>
