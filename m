@@ -1,57 +1,107 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] dt-bindings: thermal: samsung: Add SPDX license
- identifier
-Date: Wed, 25 Jul 2018 16:43:33 +0200
-Message-ID: <2385592.z8yee4uxt4@amdc3058>
-References: <CGME20180718200318epcas3p16aed6c1725d6c1e63ea6b1ad209c5756@epcas3p1.samsung.com>
-        <2442216.oppRSGRAaL@amdc3058> <20180724200312.xs6u4nvhjckukkig@kozik-lap>
+From: Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
+Date: Wed, 25 Jul 2018 08:33:47 -0700
+Message-ID: <0fa2951559a9618c635d5a1fc6d4e32a5b795826.camel@perches.com>
+References: <20180724111600.4158975-1-arnd@arndb.de>
+         <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
+         <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
+         <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+         <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180724200312.xs6u4nvhjckukkig@kozik-lap>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Cc: Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-wireless <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Networking <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "open list:HARDWARE RANDOM NUMBER GENERATOR CORE" <linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lvs-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netfilter-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, coreteam-Cap9r6Oaw4JrovVCs/uTlw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 24, 2018 10:03:12 PM Krzysztof Kozlowski wrote:
-> On Tue, Jul 24, 2018 at 06:46:35PM +0200, Bartlomiej Zolnierkiewicz wrote:
+On Wed, 2018-07-25 at 15:12 +0200, Arnd Bergmann wrote:
+> tools/perf/tests/.gitignore:
+>                             LLVM byte-codes, uncompressed
+> On Wed, Jul 25, 2018 at 2:55 AM, Andrew Morton
+> <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org> wrote:
+> > On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org> wrote:
 > > 
-> > Hi,
-> > 
-> > On Wednesday, July 18, 2018 10:02:50 PM Krzysztof Kozlowski wrote:
-> > > Replace GPL license statement with SPDX license identifier (GPL-2.0+).
+> > > On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
+> > > > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org> wrote:
+> > > > > Almost all files in the kernel are either plain text or UTF-8
+> > > > > encoded. A couple however are ISO_8859-1, usually just a few
+> > > > > characters in a C comments, for historic reasons.
+> > > > > This converts them all to UTF-8 for consistency.
 > > > 
-> > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > > ---
-> > >  include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
-> > >  1 file changed, 1 insertion(+), 11 deletions(-)
+> > > []
+> > > > Will we be getting a checkpatch rule to keep things this way?
 > > > 
-> > > diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
-> > > index 0646500bca69..642e4e7f4084 100644
-> > > --- a/include/dt-bindings/thermal/thermal_exynos.h
-> > > +++ b/include/dt-bindings/thermal/thermal_exynos.h
-> > > @@ -1,19 +1,9 @@
-> > > +/* SPDX-License-Identifier: GPL-2.0+ */
+> > > How would that be done?
 > > 
-> > This code should be GPL-2.0 only, original license statement is most
-> > likely result of using wrong file as the source of copy-paste. So I
-> > would like to have the license fixed first before doing conversion to
-> > SPDX.
+> > I'm using this, seems to work.
+> > 
+> >         if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
+> >         then
+> >                 echo $p: weird charset
+> >         fi
 > 
-> If you think that's the case, then it makes sense and please go ahead.
-> As fair as I remember this required signed-off from all contributors...
-> so probably just Lukasz and Eduardo?
+> There are a couple of files that my version of 'find' incorrectly identified as
+> something completely different, like:
+> 
+> Documentation/devicetree/bindings/pinctrl/pinctrl-sx150x.txt:
+>             SemOne archive data
+> Documentation/devicetree/bindings/rtc/epson,rtc7301.txt:
+>             Microsoft Document Imaging Format
+> Documentation/filesystems/nfs/pnfs-block-server.txt:
+>             PPMN archive data
+> arch/arm/boot/dts/bcm283x-rpi-usb-host.dtsi:
+>         Sendmail frozen configuration  - version = "host";
+> Documentation/networking/segmentation-offloads.txt:
+>         StuffIt Deluxe Segment (data) : gmentation Offloads in the
+> Linux Networking Stack
+> arch/sparc/include/asm/visasm.h:                              SAS 7+
+> arch/xtensa/kernel/setup.c:                                         ,
+> init=0x454c, stat=0x090a, dev=0x2009, bas=0x2020
+> drivers/cpufreq/powernow-k8.c:
+> TI-XX Graphing Calculator (FLASH)
+> tools/testing/selftests/net/forwarding/tc_shblocks.sh:
+>                             Minix filesystem, V2 (big endian)
+> tools/perf/tests/.gitignore:
+>                             LLVM byte-codes, uncompressed
+> 
+> All of the above seem to be valid ASCII or UTF-8 files, so the check
+> above will lead
+> to false-positives, but it may be good enough as they are the
+> exception, and may be
+> bugs in 'file'.
+> 
+> Not sure if we need to worry about 'file' not being installed.
 
-git blame shows just Lukasz so his Ack should be enough.
+checkpatch works on patches so I think the test isn't
+really relevant.  It has to use the appropriate email
+header that sets the charset.
 
-I'm also fine with doing it in one patch like i.e. in commit a80ea4cb944e
-("pata_bk3710: clarify license version and use SPDX header"), if you are
-also fine with it could you please re-spin the patch (+Cc: Lukasz)?
+perhaps:
+---
+ scripts/checkpatch.pl | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 34e4683de7a3..57355fbd2d28 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2765,9 +2765,13 @@ sub process {
+ # Check if there is UTF-8 in a commit log when a mail header has explicitly
+ # declined it, i.e defined some charset where it is missing.
+ 		if ($in_header_lines &&
+-		    $rawline =~ /^Content-Type:.+charset="(.+)".*$/ &&
+-		    $1 !~ /utf-8/i) {
+-			$non_utf8_charset = 1;
++		    $rawline =~ /^Content-Type:.+charset="?([^\s;"]+)/) {
++			my $charset = $1;
++			$non_utf8_charset = 1 if ($charset !~ /^utf-8$/i);
++			if ($charset !~ /^(?:us-ascii|utf-8|iso-8859-1)$/) {
++				WARN("PATCH_CHARSET",
++				     "Unpreferred email header charset '$charset'\n" . $herecurr);
++			}
+ 		}
+ 
+ 		if ($in_commit_log && $non_utf8_charset && $realfile =~ /^$/ &&
