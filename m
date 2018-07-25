@@ -1,75 +1,91 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 4/4] power: supply: max17040: Send uevent in SOC changes
-Date: Wed, 25 Jul 2018 12:52:03 +0200
-Message-ID: <CAJKOXPcyPgtifVVT8VJQ3smcGzXxeVSoUdUyCV1ZsD5PbjnnQg@mail.gmail.com>
-References: <20180723040816.19455-1-matheus@castello.eng.br> <20180723040816.19455-5-matheus@castello.eng.br>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 10/18] x86/power/64: Remove VLA usage
+Date: Wed, 25 Jul 2018 13:32:23 +0200
+Message-ID: <CAJZ5v0gVDotjufLKUW0YuQu2vA4fmU_gqia=ZA4DocW4XHxx0w@mail.gmail.com>
+References: <20180724164936.37477-1-keescook@chromium.org> <20180724164936.37477-11-keescook@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180723040816.19455-5-matheus@castello.eng.br>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matheus Castello <matheus@castello.eng.br>
-Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20180724164936.37477-11-keescook@chromium.org>
+Sender: netdev-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@google.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Alasdair Kergon <agk@redhat.com>, Rabin Vincent <rabinv@axis.com>, Tim Chen <tim.c.chen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregk>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 July 2018 at 06:08, Matheus Castello <matheus@castello.eng.br> wrote:
-> Add check for changes in state of charge from delayed work, so
-> in case of changes we call power_supply_changed to send an uevent.
+On Tue, Jul 24, 2018 at 6:49 PM, Kees Cook <keescook@chromium.org> wrote:
+> In the quest to remove all stack VLA usage from the kernel[1], this
+> removes the discouraged use of AHASH_REQUEST_ON_STACK by switching to
+> shash directly and allocating the descriptor in heap memory (which should
+> be fine: the tfm has already been allocated there too).
 >
-> power_supply_changed send an uevent for alert user space about
-> changes, is useful for example to user space apps made changes in
-> UI battery level or made other decisions.
+> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Hi,
+I think I can queue this up if there are no objections from others.
 
-Too many "changes". How about:
+Do you want me to do that?
 
-Notify core through power_supply_changed() in case of changes in state
-of charge. This is useful for user-space to efficiently update current
-battery level.
-
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Best regards,
-Krzysztof
-
-
-> Signed-off-by: Matheus Castello <matheus@castello.eng.br>
 > ---
->  drivers/power/supply/max17040_battery.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  arch/x86/power/hibernate_64.c | 36 ++++++++++++++++++++---------------
+>  1 file changed, 21 insertions(+), 15 deletions(-)
 >
-> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-> index 3efa52d32b44..72915ac9e13b 100644
-> --- a/drivers/power/supply/max17040_battery.c
-> +++ b/drivers/power/supply/max17040_battery.c
-> @@ -202,14 +202,22 @@ static void max17040_get_of_data(struct max17040_chip *chip)
->  static void max17040_work(struct work_struct *work)
+> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+> index 67ccf64c8bd8..f8e3b668d20b 100644
+> --- a/arch/x86/power/hibernate_64.c
+> +++ b/arch/x86/power/hibernate_64.c
+> @@ -233,29 +233,35 @@ struct restore_data_record {
+>   */
+>  static int get_e820_md5(struct e820_table *table, void *buf)
 >  {
->         struct max17040_chip *chip;
-> +       u16 last_soc;
+> -       struct scatterlist sg;
+> -       struct crypto_ahash *tfm;
+> +       struct crypto_shash *tfm;
+> +       struct shash_desc *desc;
+>         int size;
+>         int ret = 0;
 >
->         chip = container_of(work, struct max17040_chip, work.work);
+> -       tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
+> +       tfm = crypto_alloc_shash("md5", 0, 0);
+>         if (IS_ERR(tfm))
+>                 return -ENOMEM;
 >
-> +       /* store SOC for check change */
-> +       last_soc = chip->soc;
+> -       {
+> -               AHASH_REQUEST_ON_STACK(req, tfm);
+> -               size = offsetof(struct e820_table, entries) + sizeof(struct e820_entry) * table->nr_entries;
+> -               ahash_request_set_tfm(req, tfm);
+> -               sg_init_one(&sg, (u8 *)table, size);
+> -               ahash_request_set_callback(req, 0, NULL, NULL);
+> -               ahash_request_set_crypt(req, &sg, buf, size);
+> -
+> -               if (crypto_ahash_digest(req))
+> -                       ret = -EINVAL;
+> -               ahash_request_zero(req);
+> +       desc = kmalloc(sizeof(struct shash_desc) + crypto_shash_descsize(tfm),
+> +                      GFP_KERNEL);
+> +       if (!desc) {
+> +               ret = -ENOMEM;
+> +               goto free_tfm;
+>         }
+> -       crypto_free_ahash(tfm);
+>
+> +       desc->tfm = tfm;
+> +       desc->flags = 0;
 > +
->         max17040_get_vcell(chip->client);
->         max17040_get_soc(chip->client);
->         max17040_get_online(chip->client);
->         max17040_get_status(chip->client);
->
-> +       /* check changes and send uevent */
-> +       if (last_soc != chip->soc)
-> +               power_supply_changed(chip->battery);
+> +       size = offsetof(struct e820_table, entries) +
+> +               sizeof(struct e820_entry) * table->nr_entries;
 > +
->         queue_delayed_work(system_power_efficient_wq, &chip->work,
->                            MAX17040_DELAY);
+> +       if (crypto_shash_digest(desc, (u8 *)table, size, buf))
+> +               ret = -EINVAL;
+> +
+> +       kzfree(desc);
+> +
+> +free_tfm:
+> +       crypto_free_shash(tfm);
+>         return ret;
 >  }
-> --
-> 2.13.3
 >
 > --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 2.17.1
+>
