@@ -1,72 +1,113 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-Date: Wed, 25 Jul 2018 15:12:11 +0200
-Message-ID: <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
-References: <20180724111600.4158975-1-arnd@arndb.de> <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
- <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com> <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH v3] cpufreq: trace frequency limits change
+Date: Wed, 25 Jul 2018 09:18:02 -0400
+Message-ID: <20180725091802.74400a81@gandalf.local.home>
+References: <20180724173544.18876-1-joel@joelfernandes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+In-Reply-To: <20180724173544.18876-1-joel@joelfernandes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Joe Perches <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless <linux-wireless@vger.kernel.org>, Networking <netdev@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "open list:HARDWARE RANDOM NUMBER GENERATOR CORE" <linux-crypto@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-iio@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: linux-kernel@vger.kernel.org, kernel-team@android.com, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-tools/perf/tests/.gitignore:
-                            LLVM byte-codes, uncompressed
-On Wed, Jul 25, 2018 at 2:55 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe@perches.com> wrote:
->
->> On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
->> > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
->> > > Almost all files in the kernel are either plain text or UTF-8
->> > > encoded. A couple however are ISO_8859-1, usually just a few
->> > > characters in a C comments, for historic reasons.
->> > > This converts them all to UTF-8 for consistency.
->> []
->> > Will we be getting a checkpatch rule to keep things this way?
->>
->> How would that be done?
->
-> I'm using this, seems to work.
->
->         if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
->         then
->                 echo $p: weird charset
->         fi
+On Tue, 24 Jul 2018 10:35:44 -0700
+Joel Fernandes <joel@joelfernandes.org> wrote:
 
-There are a couple of files that my version of 'find' incorrectly identified as
-something completely different, like:
+> From: Ruchi Kandoi <kandoiruchi@google.com>
+> 
+> systrace used for tracing for Android systems has carried a patch for
+> many years in the Android tree that traces when the cpufreq limits
+> change.  With the help of this information, systrace can know when the
+> policy limits change and can visually display the data. Lets add
+> upstream support for the same.
+> 
+> Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
 
-Documentation/devicetree/bindings/pinctrl/pinctrl-sx150x.txt:
-            SemOne archive data
-Documentation/devicetree/bindings/rtc/epson,rtc7301.txt:
-            Microsoft Document Imaging Format
-Documentation/filesystems/nfs/pnfs-block-server.txt:
-            PPMN archive data
-arch/arm/boot/dts/bcm283x-rpi-usb-host.dtsi:
-        Sendmail frozen configuration  - version = "host";
-Documentation/networking/segmentation-offloads.txt:
-        StuffIt Deluxe Segment (data) : gmentation Offloads in the
-Linux Networking Stack
-arch/sparc/include/asm/visasm.h:                              SAS 7+
-arch/xtensa/kernel/setup.c:                                         ,
-init=0x454c, stat=0x090a, dev=0x2009, bas=0x2020
-drivers/cpufreq/powernow-k8.c:
-TI-XX Graphing Calculator (FLASH)
-tools/testing/selftests/net/forwarding/tc_shblocks.sh:
-                            Minix filesystem, V2 (big endian)
-tools/perf/tests/.gitignore:
-                            LLVM byte-codes, uncompressed
+Better ;-)
 
-All of the above seem to be valid ASCII or UTF-8 files, so the check
-above will lead
-to false-positives, but it may be good enough as they are the
-exception, and may be
-bugs in 'file'.
+Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-Not sure if we need to worry about 'file' not being installed.
+-- Steve
 
-       Arnd
+> ---
+> Viresh since I changed the patch, could you Ack it again?
+> 
+> v2->v3: reduce parameters to tracepoint call (Steve)
+> v1->v2: correct ordering of min/max (Viresh)
+> 
+>  Documentation/trace/events-power.rst |  1 +
+>  drivers/cpufreq/cpufreq.c            |  1 +
+>  include/trace/events/power.h         | 25 +++++++++++++++++++++++++
+>  3 files changed, 27 insertions(+)
+> 
+> diff --git a/Documentation/trace/events-power.rst b/Documentation/trace/events-power.rst
+> index a77daca75e30..2ef318962e29 100644
+> --- a/Documentation/trace/events-power.rst
+> +++ b/Documentation/trace/events-power.rst
+> @@ -27,6 +27,7 @@ cpufreq.
+>  
+>    cpu_idle		"state=%lu cpu_id=%lu"
+>    cpu_frequency		"state=%lu cpu_id=%lu"
+> +  cpu_frequency_limits	"min=%lu max=%lu cpu_id=%lu"
+>  
+>  A suspend event is used to indicate the system going in and out of the
+>  suspend mode:
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b0dfd3222013..52566f1f1050 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2236,6 +2236,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+>  
+>  	policy->min = new_policy->min;
+>  	policy->max = new_policy->max;
+> +	trace_cpu_frequency_limits(policy);
+>  
+>  	policy->cached_target_freq = UINT_MAX;
+>  
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index 908977d69783..f7aece721aed 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -5,6 +5,7 @@
+>  #if !defined(_TRACE_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
+>  #define _TRACE_POWER_H
+>  
+> +#include <linux/cpufreq.h>
+>  #include <linux/ktime.h>
+>  #include <linux/pm_qos.h>
+>  #include <linux/tracepoint.h>
+> @@ -148,6 +149,30 @@ DEFINE_EVENT(cpu, cpu_frequency,
+>  	TP_ARGS(frequency, cpu_id)
+>  );
+>  
+> +TRACE_EVENT(cpu_frequency_limits,
+> +
+> +	TP_PROTO(struct cpufreq_policy *policy),
+> +
+> +	TP_ARGS(policy),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(u32, min_freq)
+> +		__field(u32, max_freq)
+> +		__field(u32, cpu_id)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->min_freq = policy->min;
+> +		__entry->max_freq = policy->max;
+> +		__entry->cpu_id = policy->cpu;
+> +	),
+> +
+> +	TP_printk("min=%lu max=%lu cpu_id=%lu",
+> +		  (unsigned long)__entry->min_freq,
+> +		  (unsigned long)__entry->max_freq,
+> +		  (unsigned long)__entry->cpu_id)
+> +);
+> +
+>  TRACE_EVENT(device_pm_callback_start,
+>  
+>  	TP_PROTO(struct device *dev, const char *pm_ops, int event),
