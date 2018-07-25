@@ -1,51 +1,44 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH v3 00/23] Add multi-channel support to Armada thermal
- driver
-Date: Wed, 25 Jul 2018 09:52:22 +0200
-Message-ID: <20180725095222.054f1e80@xps13>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180718172849.30b7cec0@xps13>
+From: Kalle Valo <kvalo@codeaurora.org>
+Subject: Re: [PATCH v6 13/18] wireless/lib80211: Convert from ahash to shash
+Date: Wed, 25 Jul 2018 11:05:42 +0300
+Message-ID: <87tvong2p5.fsf@purkki.adurom.net>
+References: <20180724164936.37477-1-keescook@chromium.org>
+ <20180724164936.37477-14-keescook@chromium.org>
+ <1532503493.3223.0.camel@sipsolutions.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180718172849.30b7cec0@xps13>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <1532503493.3223.0.camel@sipsolutions.net> (Johannes Berg's
+ message of "Wed, 25 Jul 2018 09:24:53 +0200")
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Mike Snitzer <snitzer@redhat.com>, Eric Biggers <ebiggers@google.com>, linux-wireless@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>, dm-devel@redhat.com, Jia-Ju Bai <baijiaju1990@gmail.com>, Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, linux-afs@lists.infradead.org, Alasdair Kergon <agk@redhat.com>, Rabin Vincent <rabinv@axis.com>, devel@driverdev.osuosl.org, Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, qat-linux@intel.com, Ingo Molnar <mingo@redhat.com>, drbd-dev@lists.linbit.com, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, Tudor-Dan Ambarus <tudor.ambarus@microchip.com>, linux-block@vger.kernel.org, Josh Poimboeuf <jpo>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgRWR1YXJkbywgWmhhbmcsCgpNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJvb3RsaW4u
-Y29tPiB3cm90ZSBvbiBXZWQsIDE4IEp1bCAyMDE4CjE3OjI4OjQ5ICswMjAwOgoKPiBIaSBFZHVh
-cmRvLAo+IAo+IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5jb20+IHdyb3Rl
-IG9uIE1vbiwgMTYgSnVsIDIwMTgKPiAxNjo0MTo0MyArMDIwMDoKPiAKPiA+IFRoZSBvbmx5IGNh
-cGFiaWxpdHkgb2YgdGhlIEFybWFkYSB0aGVybWFsIGRyaXZlciBpcyBjdXJyZW50bHkganVzdCB0
-bwo+ID4gcmVhZCBvbmUgc2Vuc29yICh0aGUgZGVmYXVsdCBvbmUpIHBlciBBUCBhbmQgb25lIHBl
-ciBDUC4gQWN0dWFsbHksCj4gPiB0aGVyZSBpcyBvbmUgc2Vuc29yIHBlciBjb3JlIGluIHRoZSBB
-UDgwNiBwbHVzIG9uZSBzZW5zb3IgaW4gdGhlCj4gPiB0aGVybWFsIElQIGl0c2VsZi4gVGhlIENQ
-MTEwIGp1c3QgZmVhdHVyZXMgb25lIHRoZXJtYWwgc2Vuc29yIGluIGl0cwo+ID4gb3duIHRoZXJt
-YWwgSVAuCj4gPiAKPiA+IFRoaXMgc2VyaWVzIGZpcnN0IGltcHJvdmVzIHRoZSByZWFkYWJpbGl0
-eSBvZiB0aGlzIGRyaXZlciwgdGhlbiBhZGRzCj4gPiBzdXBwb3J0IGZvciBtdWx0aS1jaGFubmVs
-IHRoZXJtYWwgSVBzLiBUaGUgYmluZGluZ3MgYW5kIHRoZQo+ID4gZGV2aWNlLXRyZWVzIGFyZSB1
-cGRhdGVkIGFjY29yZGluZ2x5Lgo+ID4gCj4gPiBUaGFuayB5b3UsCj4gPiBNaXF1w6hsICAKPiAK
-PiBJIGtub3cgSSBzZW50IHRoaXMgc2VyaWVzIG9uIG1vbmRheSBidXQgdGhlcmUgd2FzIGFsbW9z
-dCBubyBjaGFuZ2Ugb24KPiBpdCAoc2VlIGJlbG93KSwgZG8geW91IHRoaW5rIHlvdSB3aWxsIGhh
-dmUgdGhlIHRpbWUgdG8gbG9vayBhdCBpdAo+IGJlZm9yZSBpdCdzIHRvbyBsYXRlIGZvciB0aGUg
-bWVyZ2Ugd2luZG93PwoKSSBrbm93IGEgbGl0dGxlIGJpdCB3aGF0IGl0IGlzIHRvIGJlIG9uIHRo
-ZSBtYWludGFpbmVyIHNpZGUgb2YgYQpzdWJzeXN0ZW0gYnV0IHRoZXNlIGNoYW5nZXMgYXJlIGxh
-eWluZyBzaW5jZSBBcHJpbCwgMjFzdCBhbmQgSSByZWFsbHkKZXhwZWN0IHRvIGdldCB0aGVtIG1l
-cmdlZC4gWmhhbmcsIGFzIEVkdWFyZG8gc2VlbXMgdG8gYmUgb3ZlcmxvYWRlZAp0aGlzIHJlbGVh
-c2UsIGNvdWxkIHlvdSBwbGVhc2UgdGFrZSB0aGUgc2VyaWVzPwoKT2YgY291cnNlIGlmIHRoZXJl
-IGFyZSB0aGluZ3MgdG8gYWRkcmVzcyBJJ2xsIGJlIGhhcHB5IHRvIGRvIHNvLgoKVGhhbmtzLApN
-aXF1w6hsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
-ZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1hcm0ta2VybmVsCg==
+Johannes Berg <johannes@sipsolutions.net> writes:
+
+> On Tue, 2018-07-24 at 09:49 -0700, Kees Cook wrote:
+>> In preparing to remove all stack VLA usage from the kernel[1], this
+>> removes the discouraged use of AHASH_REQUEST_ON_STACK in favor of
+>> the smaller SHASH_DESC_ON_STACK by converting from ahash-wrapped-shash
+>> to direct shash. By removing a layer of indirection this both improves
+>> performance and reduces stack usage. The stack allocation will be made
+>> a fixed size in a later patch to the crypto subsystem.
+>
+> I think you sent this before - it should be in net-next now.
+
+Yup, I see it in net-next:
+
+d17504b16ea2 wireless/lib80211: Convert from ahash to shash
+
+-- 
+Kalle Valo
