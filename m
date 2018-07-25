@@ -1,36 +1,37 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-Date: Tue, 24 Jul 2018 17:55:31 -0700
-Message-ID: <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
-References: <20180724111600.4158975-1-arnd@arndb.de>
-        <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
-        <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: trace frequency limits change
+Date: Wed, 25 Jul 2018 09:20:45 +0530
+Message-ID: <CAKohponm0CbBNLY19B-9ccfe3d3jreSJLDePEROR+w1=1JZEWw@mail.gmail.com>
+References: <20180724173544.18876-1-joel@joelfernandes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
-Sender: netdev-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180724173544.18876-1-joel@joelfernandes.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joel Fernandes <joel@joelfernandes.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Cc: Android Kernel" <kernel-team@android.com>, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe@perches.com> wrote:
+On 24 July 2018 at 23:05, Joel Fernandes <joel@joelfernandes.org> wrote:
+> From: Ruchi Kandoi <kandoiruchi@google.com>
+>
+> systrace used for tracing for Android systems has carried a patch for
+> many years in the Android tree that traces when the cpufreq limits
+> change.  With the help of this information, systrace can know when the
+> policy limits change and can visually display the data. Lets add
+> upstream support for the same.
+>
+> Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
+> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
+> ---
+> Viresh since I changed the patch, could you Ack it again?
+>
+> v2->v3: reduce parameters to tracepoint call (Steve)
+> v1->v2: correct ordering of min/max (Viresh)
+>
+>  Documentation/trace/events-power.rst |  1 +
+>  drivers/cpufreq/cpufreq.c            |  1 +
+>  include/trace/events/power.h         | 25 +++++++++++++++++++++++++
+>  3 files changed, 27 insertions(+)
 
-> On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
-> > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
-> > > Almost all files in the kernel are either plain text or UTF-8
-> > > encoded. A couple however are ISO_8859-1, usually just a few
-> > > characters in a C comments, for historic reasons.
-> > > This converts them all to UTF-8 for consistency.
-> []
-> > Will we be getting a checkpatch rule to keep things this way?
-> 
-> How would that be done?
-
-I'm using this, seems to work.
-
-        if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
-        then
-                echo $p: weird charset
-        fi
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
