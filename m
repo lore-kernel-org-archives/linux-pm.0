@@ -1,36 +1,31 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] MAINTAINERS: Add myself as designated reviewer for thermal
-Date: Thu, 26 Jul 2018 12:29:40 +0200
-Message-ID: <1532600980-29357-1-git-send-email-daniel.lezcano@linaro.org>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 0/3] thermal: tsens: bugfixes, cleanups
+Date: Thu, 26 Jul 2018 16:03:07 +0530
+Message-ID: <cover.1532600791.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I would like to participate in the review process effort for the
-thermal framework, especially the SoC part.
+Here is another series of tsens-related bugfixes and cleanups to prepare
+for IRQ support, among other things. It applies on top of another series[1]
+that did some code consolidation to add support for sdm845.
 
-Instead of capturing emails with message filters, I would like to
-humbly add myself as reviewer so I can receive the patches directly in
-my INBOX and focus on their review.
+[1] https://lore.kernel.org/lkml/cover.1531895128.git.amit.kucheria@linaro.org/T/#t
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+Changes since v1:
+- Fixup a couple of typos
+- Add review tag
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0fe4228..1890aad 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -14119,6 +14119,7 @@ F:	drivers/media/radio/radio-raremono.c
- THERMAL
- M:	Zhang Rui <rui.zhang@intel.com>
- M:	Eduardo Valentin <edubezval@gmail.com>
-+R:	Daniel Lezcano <daniel.lezcano@linaro.org>
- L:	linux-pm@vger.kernel.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+Amit Kucheria (3):
+  thermal: tsens: Rename variable
+  thermal: tsens: switch from of_iomap() to devm_ioremap_resource()
+  thermal: tsens: Fix negative temperature reporting
+
+ drivers/thermal/qcom/tsens-common.c | 19 ++++++++++---------
+ drivers/thermal/qcom/tsens-v2.c     | 23 ++++++++++-------------
+ 2 files changed, 20 insertions(+), 22 deletions(-)
+
 -- 
-2.7.4
+2.17.GIT
