@@ -1,152 +1,70 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 3/4] power: bq25890_charger.c: Add the BQ25896 part
-Date: Thu, 26 Jul 2018 08:56:06 +0200
-Message-ID: <CAJKOXPegncFR1zi6ugxuE1TCYNE1oWv4d_BqUHPfhTWtedE7Kw@mail.gmail.com>
+Subject: Re: [PATCH v2 4/4] power: bq25890_charger.c: Read back the current
+ battery voltage
+Date: Thu, 26 Jul 2018 09:03:50 +0200
+Message-ID: <CAJKOXPc1amTiPKNU02OruOpw+GA6DrZgv1+HhqZ14OZYpA2-YA@mail.gmail.com>
 References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
- <20180725194630.10414-1-angus@akkea.ca> <20180725194630.10414-4-angus@akkea.ca>
+ <20180725194630.10414-1-angus@akkea.ca> <20180725194630.10414-5-angus@akkea.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180725194630.10414-4-angus@akkea.ca>
+In-Reply-To: <20180725194630.10414-5-angus@akkea.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Angus Ainslie (Purism)" <angus@akkea.ca>
 Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 On 25 July 2018 at 21:46, Angus Ainslie (Purism) <angus@akkea.ca> wrote:
-> The BQ25896 is almost identical the the BQ25890
+> The part has the capability of reading the current battery voltage
+>
+> Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
+> ---
+>  drivers/power/supply/bq25890_charger.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+> index f4cf2987996b..60ccd6c2b7ad 100644
+> --- a/drivers/power/supply/bq25890_charger.c
+> +++ b/drivers/power/supply/bq25890_charger.c
+> @@ -464,6 +464,20 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
+>                 val->intval = bq25890_find_val(bq->init_data.iterm, TBL_ITERM);
+>                 break;
+>
+> +       case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +               if (!state.online) {
+> +                       val->intval = 0;
+> +                       break;
+> +               }
 
-Please use full stop on sentences.
-
-This patch (strip from other addons) nicely shows that driver does not
-need to do anything more to support BQ25896. These two devices are
-just compatible. You do not change behavior based on matching to
-compatible,
-
-Therefore you should not add new compatible but use old/existing one.
-If you wish to notify users that they should use this driver, mention
-in bindings that "ti,bq25896" compatible is for BQ2589x (BQ25890.
-BQ25896) devices.
+You use state from cached value (from last interrupt) but the voltage
+is read directly from registers. The driver follows this convention in
+few other places so maybe it is okay. It depends how accurately the
+interrupts are generated - on every change? IOW, is always guaranteed
+that state will be consistent with values read below?
 
 Best regards,
 Krzysztof
 
->
-> Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
-> ---
->  .../bindings/power/supply/bq25890.txt         |  1 +
->  drivers/power/supply/bq25890_charger.c        | 25 +++++++++++++++----
->  2 files changed, 21 insertions(+), 5 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq25890.txt b/Documentation/devicetree/bindings/power/supply/bq25890.txt
-> index c9dd17d142ad..e98312fe6e26 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq25890.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/bq25890.txt
-> @@ -3,6 +3,7 @@ Binding for TI bq25890 Li-Ion Charger
->  Required properties:
->  - compatible: Should contain one of the following:
->      * "ti,bq25890"
-> +    * "ti,bq25896"
->  - reg: integer, i2c address of the device.
->  - ti,battery-regulation-voltage: integer, maximum charging voltage (in uV);
->  - ti,charge-current: integer, maximum charging current (in uA);
-> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-> index 641f7d779e2f..f4cf2987996b 100644
-> --- a/drivers/power/supply/bq25890_charger.c
-> +++ b/drivers/power/supply/bq25890_charger.c
-> @@ -32,6 +32,7 @@
->  #define BQ25890_IRQ_PIN                        "bq25890_irq"
->
->  #define BQ25890_ID                     3
-> +#define BQ25896_ID                     0
->
->  enum bq25890_fields {
->         F_EN_HIZ, F_EN_ILIM, F_IILIM,                                /* Reg00 */
-> @@ -153,8 +154,8 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_CONV_RATE]           = REG_FIELD(0x02, 6, 6),
->         [F_BOOSTF]              = REG_FIELD(0x02, 5, 5),
->         [F_ICO_EN]              = REG_FIELD(0x02, 4, 4),
-> -       [F_HVDCP_EN]            = REG_FIELD(0x02, 3, 3),
-> -       [F_MAXC_EN]             = REG_FIELD(0x02, 2, 2),
-> +       [F_HVDCP_EN]            = REG_FIELD(0x02, 3, 3),  // reserved on BQ25896
-> +       [F_MAXC_EN]             = REG_FIELD(0x02, 2, 2),  // reserved on BQ25896
->         [F_FORCE_DPM]           = REG_FIELD(0x02, 1, 1),
->         [F_AUTO_DPDM_EN]        = REG_FIELD(0x02, 0, 0),
->         /* REG03 */
-> @@ -163,6 +164,7 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_OTG_CFG]             = REG_FIELD(0x03, 5, 5),
->         [F_CHG_CFG]             = REG_FIELD(0x03, 4, 4),
->         [F_SYSVMIN]             = REG_FIELD(0x03, 1, 3),
-> +       /* MIN_VBAT_SEL on BQ25896 */
->         /* REG04 */
->         [F_PUMPX_EN]            = REG_FIELD(0x04, 7, 7),
->         [F_ICHG]                = REG_FIELD(0x04, 0, 6),
-> @@ -181,7 +183,7 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_CHG_TMR]             = REG_FIELD(0x07, 1, 2),
->         [F_JEITA_ISET]          = REG_FIELD(0x07, 0, 0),
->         /* REG08 */
-> -       [F_BATCMP]              = REG_FIELD(0x08, 6, 7),
-> +       [F_BATCMP]              = REG_FIELD(0x08, 6, 7), // 5-7 on BQ25896
->         [F_VCLAMP]              = REG_FIELD(0x08, 2, 4),
->         [F_TREG]                = REG_FIELD(0x08, 0, 1),
->         /* REG09 */
-> @@ -195,12 +197,13 @@ static const struct reg_field bq25890_reg_fields[] = {
->         [F_PUMPX_DN]            = REG_FIELD(0x09, 0, 0),
->         /* REG0A */
->         [F_BOOSTV]              = REG_FIELD(0x0A, 4, 7),
-> +       /* PFM_OTG_DIS 3 on BQ25896 */
->         [F_BOOSTI]              = REG_FIELD(0x0A, 0, 2),
->         /* REG0B */
->         [F_VBUS_STAT]           = REG_FIELD(0x0B, 5, 7),
->         [F_CHG_STAT]            = REG_FIELD(0x0B, 3, 4),
->         [F_PG_STAT]             = REG_FIELD(0x0B, 2, 2),
-> -       [F_SDP_STAT]            = REG_FIELD(0x0B, 1, 1),
-> +       [F_SDP_STAT]            = REG_FIELD(0x0B, 1, 1), // reserved on BQ25896
->         [F_VSYS_STAT]           = REG_FIELD(0x0B, 0, 0),
->         /* REG0C */
->         [F_WD_FAULT]            = REG_FIELD(0x0C, 7, 7),
-> @@ -399,6 +402,16 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
->                 val->strval = BQ25890_MANUFACTURER;
->                 break;
->
-> +       case POWER_SUPPLY_PROP_MODEL_NAME:
-> +               if (bq->chip_id == BQ25890_ID)
-> +                       val->strval = "BQ25890";
-> +               else if (bq->chip_id == BQ25896_ID)
-> +                       val->strval = "BQ25896";
-> +               else
-> +                       val->strval = "UNKNOWN";
 > +
+> +               ret = bq25890_field_read(bq, F_SYSV); /* read measured value */
+> +               if (ret < 0)
+> +                       return ret;
+> +
+> +               /* converted_val = 2.304V + ADC_val * 20mV (table 10.3.15) */
+> +               val->intval = 2304000 + ret * 20000;
 > +               break;
 > +
->         case POWER_SUPPLY_PROP_ONLINE:
->                 val->intval = state.online;
->                 break;
-> @@ -650,6 +663,7 @@ static int bq25890_hw_init(struct bq25890_device *bq)
->
->  static enum power_supply_property bq25890_power_supply_props[] = {
->         POWER_SUPPLY_PROP_MANUFACTURER,
-> +       POWER_SUPPLY_PROP_MODEL_NAME,
->         POWER_SUPPLY_PROP_STATUS,
->         POWER_SUPPLY_PROP_ONLINE,
->         POWER_SUPPLY_PROP_HEALTH,
-> @@ -851,7 +865,7 @@ static int bq25890_probe(struct i2c_client *client,
->                 return bq->chip_id;
+>         default:
+>                 return -EINVAL;
 >         }
->
-> -       if (bq->chip_id != BQ25890_ID) {
-> +       if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25896_ID)) {
->                 dev_err(dev, "Chip with ID=%d, not supported!\n", bq->chip_id);
->                 return -ENODEV;
->         }
-> @@ -977,6 +991,7 @@ MODULE_DEVICE_TABLE(i2c, bq25890_i2c_ids);
->
->  static const struct of_device_id bq25890_of_match[] = {
->         { .compatible = "ti,bq25890", },
-> +       { .compatible = "ti,bq25896", },
->         { },
+> @@ -672,6 +686,7 @@ static enum power_supply_property bq25890_power_supply_props[] = {
+>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+>         POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
 >  };
->  MODULE_DEVICE_TABLE(of, bq25890_of_match);
+>
+>  static char *bq25890_charger_supplied_to[] = {
 > --
 > 2.17.1
 >
