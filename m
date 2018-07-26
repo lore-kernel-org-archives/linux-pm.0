@@ -1,69 +1,45 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 3/3] thermal: tsens: Fix negative temperature reporting
-Date: Thu, 26 Jul 2018 16:03:10 +0530
-Message-ID: <52516c287c9455676e7cbde4a4fa94282d73367f.1532600791.git.amit.kucheria@linaro.org>
-References: <cover.1532600791.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.18-rc7
+Date: Thu, 26 Jul 2018 16:12:20 +0200
+Message-ID: <CAJZ5v0jq73sRO77qRBcDqCH4rojnBNK+mTs9UJ3RQyNLW3x2zw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1532600791.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1532600791.git.amit.kucheria@linaro.org>
-References: <cover.1532600791.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The current code will always return 0xffffffff in case of negative
-temperatures due to a bug in how the binary sign extension is being done.
+Hi Linus,
 
-Use sign_extend32() instead.
+Please pull from the tag
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/thermal/qcom/tsens-v2.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.18-rc7
 
-diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-index 908e3dcb2d5c..44da02f594ac 100644
---- a/drivers/thermal/qcom/tsens-v2.c
-+++ b/drivers/thermal/qcom/tsens-v2.c
-@@ -5,19 +5,20 @@
-  */
- 
- #include <linux/regmap.h>
-+#include <linux/bitops.h>
- #include "tsens.h"
- 
- #define STATUS_OFFSET		0xa0
- #define LAST_TEMP_MASK		0xfff
- #define STATUS_VALID_BIT	BIT(21)
--#define CODE_SIGN_BIT		BIT(11)
- 
- static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- {
- 	struct tsens_sensor *s = &tmdev->sensor[id];
- 	u32 code;
- 	unsigned int status_reg;
--	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
-+	u32 last_temp = 0, last_temp2 = 0, last_temp3 = 0;
-+	int ret;
- 
- 	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
- 	ret = regmap_read(tmdev->map, status_reg, &code);
-@@ -54,12 +55,8 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
- 	else if (last_temp2 == last_temp3)
- 		last_temp = last_temp3;
- done:
--	/* Code sign bit is the sign extension for a negative value */
--	if (last_temp & CODE_SIGN_BIT)
--		last_temp |= ~CODE_SIGN_BIT;
--
--	/* Temperatures are in deciCelicius */
--	*temp = last_temp * 100;
-+	/* Convert temperature from deciCelsius to milliCelsius */
-+	*temp = sign_extend32(last_temp, fls(LAST_TEMP_MASK) - 1) * 100;
- 
- 	return 0;
- }
--- 
-2.17.GIT
+with top-most commit bafaf056e0734f7bca7d27716bb3c672e87bb0b1
+
+ cpufreq: qcom-kryo: add NULL entry to the end of_device_id array
+
+on top of commit d72e90f33aa4709ebecc5005562f52335e106a60
+
+ Linux 4.18-rc6
+
+to receive a power management fix for 4.18-rc7.
+
+This fixes up the recently introduced cpufreq driver for Qualcomm
+Kryo processors by adding a terminating NULL entry to its table of
+device IDs (YueHaibing).
+
+Thanks!
+
+
+---------------
+
+YueHaibing (1):
+      cpufreq: qcom-kryo: add NULL entry to the end of_device_id array
+
+---------------
+
+ drivers/cpufreq/qcom-cpufreq-kryo.c | 1 +
+ 1 file changed, 1 insertion(+)
