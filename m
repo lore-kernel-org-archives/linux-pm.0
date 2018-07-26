@@ -1,70 +1,111 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 4/4] power: bq25890_charger.c: Read back the current
- battery voltage
-Date: Thu, 26 Jul 2018 09:03:50 +0200
-Message-ID: <CAJKOXPc1amTiPKNU02OruOpw+GA6DrZgv1+HhqZ14OZYpA2-YA@mail.gmail.com>
-References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
- <20180725194630.10414-1-angus@akkea.ca> <20180725194630.10414-5-angus@akkea.ca>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v13 1/4] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Thu, 26 Jul 2018 12:42:50 +0530
+Message-ID: <CAFp+6iEYpM7w+pq0bG83vgjedqy4ZkQbUP9Bx=61TbEUN45OkA@mail.gmail.com>
+References: <20180719101539.6104-1-vivek.gautam@codeaurora.org>
+ <20180719101539.6104-2-vivek.gautam@codeaurora.org>
+ <e17fdcb7-2632-753f-4e2e-f81bcded36f1@arm.com>
+ <CAFp+6iF1XzFn1QhWjatxE-1sue-EFS7wNmQ4OB=c3pf1VMLuMA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180725194630.10414-5-angus@akkea.ca>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Angus Ainslie (Purism)" <angus@akkea.ca>
-Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iF1XzFn1QhWjatxE-1sue-EFS7wNmQ4OB=c3pf1VMLuMA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25 July 2018 at 21:46, Angus Ainslie (Purism) <angus@akkea.ca> wrote:
-> The part has the capability of reading the current battery voltage
->
-> Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
-> ---
->  drivers/power/supply/bq25890_charger.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-> index f4cf2987996b..60ccd6c2b7ad 100644
-> --- a/drivers/power/supply/bq25890_charger.c
-> +++ b/drivers/power/supply/bq25890_charger.c
-> @@ -464,6 +464,20 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
->                 val->intval = bq25890_find_val(bq->init_data.iterm, TBL_ITERM);
->                 break;
->
-> +       case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +               if (!state.online) {
-> +                       val->intval = 0;
-> +                       break;
-> +               }
-
-You use state from cached value (from last interrupt) but the voltage
-is read directly from registers. The driver follows this convention in
-few other places so maybe it is okay. It depends how accurately the
-interrupts are generated - on every change? IOW, is always guaranteed
-that state will be consistent with values read below?
-
-Best regards,
-Krzysztof
-
-> +
-> +               ret = bq25890_field_read(bq, F_SYSV); /* read measured value */
-> +               if (ret < 0)
-> +                       return ret;
-> +
-> +               /* converted_val = 2.304V + ADC_val * 20mV (table 10.3.15) */
-> +               val->intval = 2304000 + ret * 20000;
-> +               break;
-> +
->         default:
->                 return -EINVAL;
->         }
-> @@ -672,6 +686,7 @@ static enum power_supply_property bq25890_power_supply_props[] = {
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
->         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
->         POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  };
->
->  static char *bq25890_charger_supplied_to[] = {
-> --
-> 2.17.1
->
+T24gV2VkLCBKdWwgMjUsIDIwMTggYXQgMTE6NDYgUE0sIFZpdmVrIEdhdXRhbQo8dml2ZWsuZ2F1
+dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiBPbiBUdWUsIEp1bCAyNCwgMjAxOCBhdCA4OjUx
+IFBNLCBSb2JpbiBNdXJwaHkgPHJvYmluLm11cnBoeUBhcm0uY29tPiB3cm90ZToKPj4gT24gMTkv
+MDcvMTggMTE6MTUsIFZpdmVrIEdhdXRhbSB3cm90ZToKPj4+Cj4+PiBGcm9tOiBTcmljaGFyYW4g
+UiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+Pj4KPj4+IFRoZSBzbW11IG5lZWRzIHRvIGJl
+IGZ1bmN0aW9uYWwgb25seSB3aGVuIHRoZSByZXNwZWN0aXZlCj4+PiBtYXN0ZXIncyB1c2luZyBp
+dCBhcmUgYWN0aXZlLiBUaGUgZGV2aWNlX2xpbmsgZmVhdHVyZQo+Pj4gaGVscHMgdG8gdHJhY2sg
+c3VjaCBmdW5jdGlvbmFsIGRlcGVuZGVuY2llcywgc28gdGhhdCB0aGUKPj4+IGlvbW11IGdldHMg
+cG93ZXJlZCB3aGVuIHRoZSBtYXN0ZXIgZGV2aWNlIGVuYWJsZXMgaXRzZWxmCj4+PiB1c2luZyBw
+bV9ydW50aW1lLiBTbyBieSBhZGFwdGluZyB0aGUgc21tdSBkcml2ZXIgZm9yCj4+PiBydW50aW1l
+IHBtLCBhYm92ZSBzYWlkIGRlcGVuZGVuY3kgY2FuIGJlIGFkZHJlc3NlZC4KPj4+Cj4+PiBUaGlz
+IHBhdGNoIGFkZHMgdGhlIHBtIHJ1bnRpbWUvc2xlZXAgY2FsbGJhY2tzIHRvIHRoZQo+Pj4gZHJp
+dmVyIGFuZCBhbHNvIHRoZSBmdW5jdGlvbnMgdG8gcGFyc2UgdGhlIHNtbXUgY2xvY2tzCj4+PiBm
+cm9tIERUIGFuZCBlbmFibGUgdGhlbSBpbiByZXN1bWUvc3VzcGVuZC4KPj4+Cj4+PiBBbHNvLCB3
+aGlsZSB3ZSBlbmFibGUgdGhlIHJ1bnRpbWUgcG0gYWRkIGEgcG0gc2xlZXAgc3VzcGVuZAo+Pj4g
+Y2FsbGJhY2sgdGhhdCBwdXNoZXMgZGV2aWNlcyB0byBsb3cgcG93ZXIgc3RhdGUgYnkgdHVybmlu
+Zwo+Pj4gdGhlIGNsb2NrcyBvZmYgaW4gYSBzeXN0ZW0gc2xlZXAuCj4+PiBBbHNvIGFkZCBjb3Jy
+ZXNwb25kaW5nIGNsb2NrIGVuYWJsZSBwYXRoIGluIHJlc3VtZSBjYWxsYmFjay4KPj4+Cj4+PiBT
+aWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+Pj4g
+U2lnbmVkLW9mZi1ieTogQXJjaGl0IFRhbmVqYSA8YXJjaGl0dEBjb2RlYXVyb3JhLm9yZz4KPj4+
+IFt2aXZlazogcmV3b3JrIGZvciBjbG9jayBhbmQgcG0gb3BzXQo+Pj4gU2lnbmVkLW9mZi1ieTog
+Vml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+PiBSZXZpZXdlZC1i
+eTogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPj4+IC0tLQo+Pj4KPj4+IENoYW5n
+ZXMgc2luY2UgdjEyOgo+Pj4gICAtIEFkZGVkIHBtIHNsZWVwIC5zdXNwZW5kIGNhbGxiYWNrLiBU
+aGlzIGRpc2FibGVzIHRoZSBjbG9ja3MuCj4+PiAgIC0gQWRkZWQgY29ycmVzcG9uZGluZyBjaGFu
+Z2UgdG8gZW5hYmxlIGNsb2NrcyBpbiAucmVzdW1lCj4+PiAgICBwbSBzbGVlcCBjYWxsYmFjay4K
+Pj4+Cj4+PiAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDc1Cj4+PiArKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0KPj4+ICAgMSBmaWxlIGNoYW5nZWQs
+IDczIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCj4+Pgo+Pj4gZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+Pj4gaW5k
+ZXggYzczY2ZjZTFjY2MwLi45MTM4YTZmZmZlMDQgMTAwNjQ0Cj4+PiAtLS0gYS9kcml2ZXJzL2lv
+bW11L2FybS1zbW11LmMKPj4+ICsrKyBiL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwoKW3NuaXBd
+Cgo+Pj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+Pj4gICAgICAgICBhcm1fc21tdV9kZXZpY2Vf
+cmVtb3ZlKHBkZXYpOwo+Pj4gICB9Cj4+PiAgICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFy
+bV9zbW11X3J1bnRpbWVfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPj4+ICt7Cj4+PiArICAg
+ICAgIHN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsK
+Pj4+ICsKPj4+ICsgICAgICAgcmV0dXJuIGNsa19idWxrX2VuYWJsZShzbW11LT5udW1fY2xrcywg
+c21tdS0+Y2xrcyk7Cj4+Cj4+Cj4+IElmIHRoZXJlJ3MgYSBwb3dlciBkb21haW4gYmVpbmcgYXV0
+b21hdGljYWxseSBzd2l0Y2hlZCBieSBnZW5wZCB0aGVuIHdlIG5lZWQKPj4gYSByZXNldCBoZXJl
+IGJlY2F1c2Ugd2UgbWF5IGhhdmUgbG9zdCBzdGF0ZSBlbnRpcmVseS4gU2luY2UgSSByZW1lbWJl
+cmVkIHRoZQo+PiBvdGhlcndpc2UtdXNlbGVzcyBHUFUgU01NVSBvbiBKdW5vIGlzIGluIGEgc2Vw
+YXJhdGUgcG93ZXIgZG9tYWluLCBJIGdhdmUgaXQKPj4gYSBwb2tpbmcgdmlhIHN5c2ZzIHdpdGgg
+c29tZSBkZWJ1ZyBzdHVmZiB0byBkdW1wIHNDUjAgaW4gdGhlc2UgY2FsbGJhY2tzLAo+PiBhbmQg
+dGhlIHByb2JsZW0gaXMgY2xlYXI6Cj4+Cj4+IC4uLgo+PiBbICAgIDQuNjI1NTUxXSBhcm0tc21t
+dSAyYjQwMDAwMC5pb21tdTogZ2VucGRfcnVudGltZV9zdXNwZW5kKCkKPj4gWyAgICA0LjYzMTE2
+M10gYXJtLXNtbXUgMmI0MDAwMDAuaW9tbXU6IGFybV9zbW11X3J1bnRpbWVfc3VzcGVuZDogMHgw
+MDIwMTkzNgo+PiBbICAgIDQuNjM3ODk3XSBhcm0tc21tdSAyYjQwMDAwMC5pb21tdTogc3VzcGVu
+ZCBsYXRlbmN5IGV4Y2VlZGVkLCA2NzMzOTgwIG5zCj4+IFsgICAyMS41NjY5ODNdIGFybS1zbW11
+IDJiNDAwMDAwLmlvbW11OiBnZW5wZF9ydW50aW1lX3Jlc3VtZSgpCj4+IFsgICAyMS41ODQ3OTZd
+IGFybS1zbW11IDJiNDAwMDAwLmlvbW11OiBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZTogMHgwMDIy
+MDEwMQo+PiBbICAgMjEuNTkxNDUyXSBhcm0tc21tdSAyYjQwMDAwMC5pb21tdTogcmVzdW1lIGxh
+dGVuY3kgZXhjZWVkZWQsIDY2NTgwMjAgbnMKPj4gLi4uCj4KPiBRdWFsY29tbSBTb0NzIGhhdmUg
+cmV0ZW50aW9uIGVuYWJsZWQgZm9yIFNNTVUgcmVnaXN0ZXJzIHNvIHRoZXkgZG9uJ3QKPiBsb3Nl
+IHN0YXRlLgo+IC4uLgo+IFsgIDI1Ni4wMTMzNjddIGFybS1zbW11IGI0MDAwMC5hcm0sc21tdTog
+YXJtX3NtbXVfcnVudGltZV9zdXNwZW5kCj4gU0NSMCA9IDB4MjAxZTM2Cj4gWyAgMjU2LjAxMzM2
+N10KPiBbICAyNTYuMDE5MTYwXSBhcm0tc21tdSBiNDAwMDAuYXJtLHNtbXU6IGFybV9zbW11X3J1
+bnRpbWVfcmVzdW1lCj4gU0NSMCA9IDB4MjAxZTM2Cj4gWyAgMjU2LjAxOTE2MF0KPiBbICAyNTYu
+MDI3MzY4XSBhcm0tc21tdSBiNDAwMDAuYXJtLHNtbXU6IGFybV9zbW11X3J1bnRpbWVfc3VzcGVu
+ZAo+IFNDUjAgPSAweDIwMWUzNgo+IFsgIDI1Ni4wMjczNjhdCj4gWyAgMjU2LjAzNjc4Nl0gYXJt
+LXNtbXUgYjQwMDAwLmFybSxzbW11OiBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZQo+IFNDUjAgPSAw
+eDIwMWUzNgo+IC4uLgo+Cj4gSG93ZXZlciBhZnRlciBhZGRpbmcgYXJtX3NtbXVfZGV2aWNlX3Jl
+c2V0KCkgaW4gcnVudGltZV9yZXN1bWUoKSBJIG9ic2VydmUKPiBzb21lIHBlcmZvcm1hbmNlIGRl
+Z3JhZGF0aW9uIHdoZW4ga2lsbCBhbiBpbnN0YW5jZSBvZiAna21zY3ViZScgYW5kCj4gc3RhcnQg
+aXQgYWdhaW4uCj4gVGhlIGxhdW5jaCB0aW1lIHdpdGggYXJtX3NtbXVfZGV2aWNlX3Jlc2V0KCkg
+aW4gcnVudGltZV9yZXN1bWUoKSBjaGFuZ2UgaXMKPiBtb3JlLgo+IENvdWxkIHRoaXMgYmUgYmVj
+YXVzZSBvZiBmcmVxdWVudCBUTEIgaW52YWxpZGF0aW9uIGFuZCBzeW5jPwoKU29tZSBtb3JlIGlu
+Zm9ybWF0aW9uIHRoYXQgaSBnYXRoZXJlZC4KT24gUWNvbSBTb0NzIGJlc2lkZXMgdGhlIHJlZ2lz
+dGVycyByZXRlbnRpb24sIFRDVSBpbnZhbGlkYXRlcyBUTEIgY2FjaGUgb24KYSBDWCBwb3dlciBj
+b2xsYXBzZSBleGl0LCB3aGljaCBpcyB0aGUgc3lzdGVtIHdpZGUgc3VzcGVuZCBjYXNlLgpUaGUg
+YXJtLXNtbXUgc29mdHdhcmUgaXMgbm90IGF3YXJlIG9mIHRoaXMgQ1ggcG93ZXIgY29sbGFwc2Ug
+LwphdXRvLWludmFsaWRhdGlvbi4KClNvIHdvdWxkbid0IGRvaW5nIGFuIGV4cGxpY2l0IFRMQiBp
+bnZhbGlkYXRpb25zIGR1cmluZyBydW50aW1lIHJlc3VtZSBiZQpkZXRyaW1lbnRhbCB0byBwZXJm
+b3JtYW5jZT8KCkkgaGF2ZSBvbmUgbW9yZSBkb3VidCBoZXJlIC0KV2UgZG8gcnVudGltZSBwb3dl
+ciBjeWNsZSBhcm91bmQgYXJtX3NtbXVfbWFwL3VubWFwKCkgdG9vLgpOb3cgZHVyaW5nIG1hcC91
+bm1hcCB3ZSBzZWxlY3RpdmVseSBkbyBUTEIgbWFpbnRlbmFuY2UgKGVpdGhlcgp0bGJfc3luYyBv
+ciB0bGJfYWRkX2ZsdXNoKS4KQnV0IHdpdGggcnVudGltZSBwbSB3ZSB3YW50IHRvIGRvIFRMQklB
+TEwqLiBJcyB0aGF0IGEgcHJvYmxlbT8KCkJlc3QgcmVnYXJkcwpWaXZlawoKPgo+IEJlc3QgcmVn
+YXJkcwo+IFZpdmVrCgpbc25pcF0KCi0tIApRVUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1
+YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3Jh
+IEZvcnVtLCBob3N0ZWQgYnkgVGhlIExpbnV4IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVl
+ZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+L21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
