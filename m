@@ -1,49 +1,51 @@
-From: Eduardo Valentin <eduval@amazon.com>
-Subject: Re: [PATCH v2 0/3] thermal: tsens: bugfixes, cleanups
-Date: Thu, 26 Jul 2018 14:03:03 -0700
-Message-ID: <20180726210303.GC7708@u40b0340c692b58f6553c.ant.amazon.com>
-References: <cover.1532600791.git.amit.kucheria@linaro.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: Add myself as designated reviewer for
+ thermal
+Date: Thu, 26 Jul 2018 14:12:38 -0700
+Message-ID: <20180726211237.GA3487@localhost.localdomain>
+References: <1532600980-29357-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <cover.1532600791.git.amit.kucheria@linaro.org>
+In-Reply-To: <1532600980-29357-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hey Amit,
-
-
-On Thu, Jul 26, 2018 at 04:03:07PM +0530, Amit Kucheria wrote:
-> Here is another series of tsens-related bugfixes and cleanups to prepare
-> for IRQ support, among other things. It applies on top of another series[1]
-> that did some code consolidation to add support for sdm845.
+On Thu, Jul 26, 2018 at 12:29:40PM +0200, Daniel Lezcano wrote:
+> I would like to participate in the review process effort for the
+> thermal framework, especially the SoC part.
 > 
-> [1] https://lore.kernel.org/lkml/cover.1531895128.git.amit.kucheria@linaro.org/T/#t
+> Instead of capturing emails with message filters, I would like to
+> humbly add myself as reviewer so I can receive the patches directly in
+> my INBOX and focus on their review.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
 
-Given it is already rc7 time, even if this is fixes series, I will only consider this for the merge window.
+Thanks for the help Daniel.
 
+Rui, want to take care of this?
+
+> ---
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Changes since v1:
-> - Fixup a couple of typos
-> - Add review tag
-> 
-> Amit Kucheria (3):
->   thermal: tsens: Rename variable
->   thermal: tsens: switch from of_iomap() to devm_ioremap_resource()
->   thermal: tsens: Fix negative temperature reporting
-> 
->  drivers/thermal/qcom/tsens-common.c | 19 ++++++++++---------
->  drivers/thermal/qcom/tsens-v2.c     | 23 ++++++++++-------------
->  2 files changed, 20 insertions(+), 22 deletions(-)
-> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0fe4228..1890aad 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -14119,6 +14119,7 @@ F:	drivers/media/radio/radio-raremono.c
+>  THERMAL
+>  M:	Zhang Rui <rui.zhang@intel.com>
+>  M:	Eduardo Valentin <edubezval@gmail.com>
+> +R:	Daniel Lezcano <daniel.lezcano@linaro.org>
+>  L:	linux-pm@vger.kernel.org
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
 > -- 
-> 2.17.GIT
+> 2.7.4
 > 
-
--- 
-All the best,
-Eduardo Valentin
