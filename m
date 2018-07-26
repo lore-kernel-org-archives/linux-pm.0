@@ -1,80 +1,37 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v2 3/3] thermal: tsens: Fix negative temperature reporting
-Date: Thu, 26 Jul 2018 09:41:32 -0700
-Message-ID: <20180726164132.GC5450@tuxbook-pro>
-References: <cover.1532600791.git.amit.kucheria@linaro.org>
- <52516c287c9455676e7cbde4a4fa94282d73367f.1532600791.git.amit.kucheria@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v5 06/14] sched/topology: Lowest energy aware balancing
+ sched_domain level pointer
+Date: Thu, 26 Jul 2018 18:01:48 +0100
+Message-ID: <20180726170146.k5mx2px46blrdiqj@queper01-lin>
+References: <20180724122521.22109-1-quentin.perret@arm.com>
+ <20180724122521.22109-7-quentin.perret@arm.com>
+ <76777be2-0f70-ca54-21a8-5af77a47ea86@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <52516c287c9455676e7cbde4a4fa94282d73367f.1532600791.git.amit.kucheria@linaro.org>
+In-Reply-To: <76777be2-0f70-ca54-21a8-5af77a47ea86@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Valentin Schneider <valentin.schneider@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 26 Jul 03:33 PDT 2018, Amit Kucheria wrote:
-
-> The current code will always return 0xffffffff in case of negative
-> temperatures due to a bug in how the binary sign extension is being done.
+On Thursday 26 Jul 2018 at 17:00:50 (+0100), Valentin Schneider wrote:
+> > +DECLARE_PER_CPU(struct sched_domain *, sd_ea);
 > 
-> Use sign_extend32() instead.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> There's already the asym-packing shortcut which is making naming a bit more
+> tedious, but should that really be named energy-aware? IMO it's just the
+> lowest level at which we can see asymmetry, so perhaps it should be named
+> as such, i.e. something like sd_asym_capa (and perhaps rename the other one
+> as sd_asym_pack)?
 
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+So the 'sd_ea' name comes from the usage we do of this shortcut, and also
+because this is how the EAS shortcut has always been called, historically.
 
-Regards,
-Bjorn
+But TBH, if nobody is against that, I don't mind changing the name at all.
+And maybe we should go for the longer names ? 'sd_asym_packing' and
+'sd_asym_cpucapacity' aren't that long, I think. And they're
+descriptive :-)
 
-> ---
->  drivers/thermal/qcom/tsens-v2.c | 13 +++++--------
->  1 file changed, 5 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
-> index 908e3dcb2d5c..44da02f594ac 100644
-> --- a/drivers/thermal/qcom/tsens-v2.c
-> +++ b/drivers/thermal/qcom/tsens-v2.c
-> @@ -5,19 +5,20 @@
->   */
->  
->  #include <linux/regmap.h>
-> +#include <linux/bitops.h>
->  #include "tsens.h"
->  
->  #define STATUS_OFFSET		0xa0
->  #define LAST_TEMP_MASK		0xfff
->  #define STATUS_VALID_BIT	BIT(21)
-> -#define CODE_SIGN_BIT		BIT(11)
->  
->  static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
->  {
->  	struct tsens_sensor *s = &tmdev->sensor[id];
->  	u32 code;
->  	unsigned int status_reg;
-> -	int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
-> +	u32 last_temp = 0, last_temp2 = 0, last_temp3 = 0;
-> +	int ret;
->  
->  	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
->  	ret = regmap_read(tmdev->map, status_reg, &code);
-> @@ -54,12 +55,8 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
->  	else if (last_temp2 == last_temp3)
->  		last_temp = last_temp3;
->  done:
-> -	/* Code sign bit is the sign extension for a negative value */
-> -	if (last_temp & CODE_SIGN_BIT)
-> -		last_temp |= ~CODE_SIGN_BIT;
-> -
-> -	/* Temperatures are in deciCelicius */
-> -	*temp = last_temp * 100;
-> +	/* Convert temperature from deciCelsius to milliCelsius */
-> +	*temp = sign_extend32(last_temp, fls(LAST_TEMP_MASK) - 1) * 100;
->  
->  	return 0;
->  }
-> -- 
-> 2.17.GIT
-> 
+Thanks,
+Quentin
