@@ -1,33 +1,82 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from
- hibernation
-Date: Thu, 26 Jul 2018 12:59:25 +0300
-Message-ID: <20180726095925.GU2534@lahna.fi.intel.com>
-References: <1645662.bYMTJFObNO@aspire.rjw.lan>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v1 3/3] thermal: tsens: Fix negative temperature reporting
+Date: Thu, 26 Jul 2018 15:47:54 +0530
+Message-ID: <CAHLCerO2CyqzLi2MM_58nRGyigSZk4k56EwxqU=zg9Xak5rbzw@mail.gmail.com>
+References: <cover.1531898088.git.amit.kucheria@linaro.org>
+ <42d6f2a6f9babd6351bd2fcde4000d5ca9c351ce.1531898088.git.amit.kucheria@linaro.org>
+ <20180725234936.GT129942@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1645662.bYMTJFObNO@aspire.rjw.lan>
+In-Reply-To: <20180725234936.GT129942@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 26, 2018 at 10:58:20AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and
-> resume from S3) modified the ACPI driver for Intel SoCs (LPSS) to
-> avoid applying PM quirks on suspend and resume from S3 to address
-> system-wide suspend and resume problems on some systems, but it is
-> reported that the same issue also affects hibernation, so extend
-> the approach used by that commit to cover hibernation as well.
-> 
-> Fixes: a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and resume from S3)
-> Link: https://bugs.launchpad.net/bugs/1774950
-> Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-> Cc: 4.15+ <stable@vger.kernel.org> # 4.15+
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Jul 26, 2018 at 5:19 AM, Matthias Kaehlcke <mka@chromium.org> wrote:
+> On Wed, Jul 18, 2018 at 12:55:03PM +0530, Amit Kucheria wrote:
+>> The current code will always return 0xffffffff in case of negative
+>> temperatures due to a bug in how the binary sign extension is being done.
+>>
+>> Use sign_extend32() instead.
+>>
+>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>> ---
+>>  drivers/thermal/qcom/tsens-v2.c | 13 +++++--------
+>>  1 file changed, 5 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+>> index 908e3dc..46abc21 100644
+>> --- a/drivers/thermal/qcom/tsens-v2.c
+>> +++ b/drivers/thermal/qcom/tsens-v2.c
+>> @@ -5,19 +5,20 @@
+>>   */
+>>
+>>  #include <linux/regmap.h>
+>> +#include <linux/bitops.h>
+>>  #include "tsens.h"
+>>
+>>  #define STATUS_OFFSET                0xa0
+>>  #define LAST_TEMP_MASK               0xfff
+>>  #define STATUS_VALID_BIT     BIT(21)
+>> -#define CODE_SIGN_BIT                BIT(11)
+>>
+>>  static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>>  {
+>>       struct tsens_sensor *s = &tmdev->sensor[id];
+>>       u32 code;
+>>       unsigned int status_reg;
+>> -     int last_temp = 0, last_temp2 = 0, last_temp3 = 0, ret;
+>> +     u32 last_temp = 0, last_temp2 = 0, last_temp3 = 0;
+>> +     int ret;
+>>
+>>       status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * 4;
+>>       ret = regmap_read(tmdev->map, status_reg, &code);
+>> @@ -54,12 +55,8 @@ static int get_temp_tsens_v2(struct tsens_device *tmdev, int id, int *temp)
+>>       else if (last_temp2 == last_temp3)
+>>               last_temp = last_temp3;
+>>  done:
+>> -     /* Code sign bit is the sign extension for a negative value */
+>> -     if (last_temp & CODE_SIGN_BIT)
+>> -             last_temp |= ~CODE_SIGN_BIT;
+>> -
+>> -     /* Temperatures are in deciCelicius */
+>> -     *temp = last_temp * 100;
+>> +     /* Convert temperatures to milliCelicius */
+>
+> nits:
+>
+> s/temperatures/temperature/
+> s/milliCelicius/milliCelsius/
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Embarrassing to have two typos in a single sentence. :-)
+
+>> +     *temp = sign_extend32(last_temp, fls(LAST_TEMP_MASK) - 1) * 100;
+>>
+>>       return 0;
+>>  }
+>
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+
+Thanks for the review.
