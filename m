@@ -1,34 +1,82 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 0/3] thermal: tsens: bugfixes, cleanups
-Date: Fri, 27 Jul 2018 03:42:37 +0530
-Message-ID: <CAP245DV9q7Sbm7HirPsMPrtDD4Vd634VGoV_Z11p1tGGz8Lk8Q@mail.gmail.com>
-References: <cover.1532600791.git.amit.kucheria@linaro.org> <20180726210303.GC7708@u40b0340c692b58f6553c.ant.amazon.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 00/23] Add multi-channel support to Armada thermal
+ driver
+Date: Thu, 26 Jul 2018 15:14:24 -0700
+Message-ID: <20180726221423.GA3569@localhost.localdomain>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
+ <20180718172849.30b7cec0@xps13> <20180725095222.054f1e80@xps13>
+ <1532570441.2358.27.camel@intel.com>
+ <20180726211442.GB3487@localhost.localdomain>
+ <20180726213517.GA15690@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180726210303.GC7708@u40b0340c692b58f6553c.ant.amazon.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: eduval@amazon.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20180726213517.GA15690@localhost.localdomain>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 27, 2018 at 2:38 AM Eduardo Valentin <eduval@amazon.com> wrote:
->
-> Hey Amit,
->
->
-> On Thu, Jul 26, 2018 at 04:03:07PM +0530, Amit Kucheria wrote:
-> > Here is another series of tsens-related bugfixes and cleanups to prepare
-> > for IRQ support, among other things. It applies on top of another series[1]
-> > that did some code consolidation to add support for sdm845.
-> >
-> > [1] https://lore.kernel.org/lkml/cover.1531895128.git.amit.kucheria@linaro.org/T/#t
->
->
-> Given it is already rc7 time, even if this is fixes series, I will only consider this for the merge window.
-
-Sure, I wasn't expecting to land this series in 4.19. I'm hoping that
-[1] can be landed though.
-
-Regards,
-Amit
+T24gVGh1LCBKdWwgMjYsIDIwMTggYXQgMDI6MzU6MThQTSAtMDcwMCwgRWR1YXJkbyBWYWxlbnRp
+biB3cm90ZToKPiBPbiBUaHUsIEp1bCAyNiwgMjAxOCBhdCAwMjoxNDo0M1BNIC0wNzAwLCBFZHVh
+cmRvIFZhbGVudGluIHdyb3RlOgo+ID4gSGVsbG8sCj4gPiAKPiA+IE9uIFRodSwgSnVsIDI2LCAy
+MDE4IGF0IDEwOjAwOjQxQU0gKzA4MDAsIFpoYW5nIFJ1aSB3cm90ZToKPiA+ID4gT24g5LiJLCAy
+MDE4LTA3LTI1IGF0IDA5OjUyICswMjAwLCBNaXF1ZWwgUmF5bmFsIHdyb3RlOgo+ID4gPiA+IEhp
+IEVkdWFyZG8sIFpoYW5nLAo+ID4gPiA+IAo+ID4gPiA+IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5y
+YXluYWxAYm9vdGxpbi5jb20+IHdyb3RlIG9uIFdlZCwgMTggSnVsIDIwMTgKPiA+ID4gPiAxNzoy
+ODo0OSArMDIwMDoKPiA+ID4gPiAKPiA+ID4gPiA+IAo+ID4gPiA+ID4gSGkgRWR1YXJkbywKPiA+
+ID4gPiA+IAo+ID4gPiA+ID4gTWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5hbEBib290bGluLmNv
+bT4gd3JvdGUgb24gTW9uLCAxNiBKdWwgMjAxOAo+ID4gPiA+ID4gMTY6NDE6NDMgKzAyMDA6Cj4g
+PiA+ID4gPiAKPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IFRoZSBvbmx5IGNhcGFiaWxpdHkgb2Yg
+dGhlIEFybWFkYSB0aGVybWFsIGRyaXZlciBpcyBjdXJyZW50bHkKPiA+ID4gPiA+ID4ganVzdCB0
+bwo+ID4gPiA+ID4gPiByZWFkIG9uZSBzZW5zb3IgKHRoZSBkZWZhdWx0IG9uZSkgcGVyIEFQIGFu
+ZCBvbmUgcGVyIENQLgo+ID4gPiA+ID4gPiBBY3R1YWxseSwKPiA+ID4gPiA+ID4gdGhlcmUgaXMg
+b25lIHNlbnNvciBwZXIgY29yZSBpbiB0aGUgQVA4MDYgcGx1cyBvbmUgc2Vuc29yIGluIHRoZQo+
+ID4gPiA+ID4gPiB0aGVybWFsIElQIGl0c2VsZi4gVGhlIENQMTEwIGp1c3QgZmVhdHVyZXMgb25l
+IHRoZXJtYWwgc2Vuc29yIGluCj4gPiA+ID4gPiA+IGl0cwo+ID4gPiA+ID4gPiBvd24gdGhlcm1h
+bCBJUC4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IFRoaXMgc2VyaWVzIGZpcnN0IGltcHJvdmVz
+IHRoZSByZWFkYWJpbGl0eSBvZiB0aGlzIGRyaXZlciwgdGhlbgo+ID4gPiA+ID4gPiBhZGRzCj4g
+PiA+ID4gPiA+IHN1cHBvcnQgZm9yIG11bHRpLWNoYW5uZWwgdGhlcm1hbCBJUHMuIFRoZSBiaW5k
+aW5ncyBhbmQgdGhlCj4gPiA+ID4gPiA+IGRldmljZS10cmVlcyBhcmUgdXBkYXRlZCBhY2NvcmRp
+bmdseS4KPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IFRoYW5rIHlvdSwKPiA+ID4gPiA+ID4gTWlx
+dcOobMKgwqAKPiA+ID4gPiA+IEkga25vdyBJIHNlbnQgdGhpcyBzZXJpZXMgb24gbW9uZGF5IGJ1
+dCB0aGVyZSB3YXMgYWxtb3N0IG5vIGNoYW5nZQo+ID4gPiA+ID4gb24KPiA+ID4gPiA+IGl0IChz
+ZWUgYmVsb3cpLCBkbyB5b3UgdGhpbmsgeW91IHdpbGwgaGF2ZSB0aGUgdGltZSB0byBsb29rIGF0
+IGl0Cj4gPiA+ID4gPiBiZWZvcmUgaXQncyB0b28gbGF0ZSBmb3IgdGhlIG1lcmdlIHdpbmRvdz8K
+PiA+ID4gPiBJIGtub3cgYSBsaXR0bGUgYml0IHdoYXQgaXQgaXMgdG8gYmUgb24gdGhlIG1haW50
+YWluZXIgc2lkZSBvZiBhCj4gPiA+ID4gc3Vic3lzdGVtIGJ1dCB0aGVzZSBjaGFuZ2VzIGFyZSBs
+YXlpbmcgc2luY2UgQXByaWwsIDIxc3QgYW5kIEkgcmVhbGx5Cj4gPiA+ID4gZXhwZWN0IHRvIGdl
+dCB0aGVtIG1lcmdlZC4gWmhhbmcsIGFzIEVkdWFyZG8gc2VlbXMgdG8gYmUgb3ZlcmxvYWRlZAo+
+ID4gPiA+IHRoaXMgcmVsZWFzZSwgY291bGQgeW91IHBsZWFzZSB0YWtlIHRoZSBzZXJpZXM/Cj4g
+PiA+ID4gCj4gPiA+ID4gT2YgY291cnNlIGlmIHRoZXJlIGFyZSB0aGluZ3MgdG8gYWRkcmVzcyBJ
+J2xsIGJlIGhhcHB5IHRvIGRvIHNvLgo+ID4gPiA+IAo+ID4gPiBJIGhhZCBhIHN5bmMgd2l0aCBF
+ZHVhcmRvIGR1cmluZyBsYXN0IG1lcmdlIHdpbmRvdywgYW5kIHdlIGFncmVlZCB0bwo+ID4gPiBz
+ZW5kIHNlcGFyYXRlIGdpdCBwdWxsIHJlcXVlc3RzIHRvIExpbnVzIHNpbmNlIHRoaXMgcmVsZWFz
+ZSBhbmQgc2VlIGhvdwo+ID4gPiBpdCB3b3Jrcy4KPiA+ID4gVGhpcyBtZWFucyB0aGF0IGFsbCB0
+aGUgc29jIHRoZXJtYWwgZHJpdmVyIHBhdGNoZXMgc2hvdWxkIGdvIHRvCj4gPiA+IEVkdWFyZG8n
+IHRyZWUgYW5kIHRoZW4gTGludXMnIHRyZWUgZGlyZWN0bHkuCj4gPiA+IAo+ID4gPiBBbnl3YXks
+IGxldCdzIHBpbmcgRWR1YXJkbyBhbmQgc2VlIGlmIGhlIGNhbiByZXZpZXcvdGFrZSB0aGUgcGF0
+Y2hlcy4KPiA+IAo+ID4gU29ycnkgZmVsbG93cywgYnV0IEkgd2FzIG9mZiBjYW1waW5nIGluIGEg
+cGxhY2Ugd2l0aCBubyBlbGVjdHJpY2l0eS9ubwo+ID4gaW50ZXJuZXQuIEkgbG9va2VkIGF0IHRo
+aXMgc2VyaWVzIGJlZm9yZSwgYW5kIEkgZG8gbm90IHJlbWVtYmVyIGFueXRoaW5nCj4gPiB0aGF0
+IGNvdWxkIGJsb2NrIGl0IHRvIGdvLiBMZXQgbWUgcmVzdGFydCBvbiB3b3JraW5nIG9uIGl0Lgo+
+IAo+IExldCBtZSB0YWtlIHRoYXQgYmFjay4gSSBnb3Qgc29tZSBjb21waWxhdGlvbiBlcnJvci4K
+CgpHaXZlbiB0aGF0IEkgbGV0IHRoaXMgb25lIGZhbGwgaW50byB0aGUgY3JhY2tzIGFuZCB0aGF0
+IHRoZXNlIGFyZSBtaW5vcgppc3N1ZXMsIEkgZml4ZWQgdGhlbSBtYW51YWxseSwgYW5kIGFwcGxp
+ZWQgdXAgdG8gcGF0Y2ggMTkuIEJ1dCBuZXh0IGF0CmxlYXN0IGNvbXBpbGUgdGVzdCB5b3VyIHNl
+cmllcyBhbmQgcnVuIGNoZWNrcGF0Y2ggb24gdGhlbS4KClBhdGNoZXMgMjAtMjMgbmVlZCB0byBn
+byB2aWEgeW91ciBhcmNoIHRyZWUuCgo+IAo+ID4gCj4gPiA+IAo+ID4gPiB0aGFua3MsCj4gPiA+
+IHJ1aQo+ID4gPiA+IFRoYW5rcywKPiA+ID4gPiBNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
+dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
