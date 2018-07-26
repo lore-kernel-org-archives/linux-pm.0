@@ -1,142 +1,68 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] drivers: thermal: step_wise: add support for hysteresis
-Date: Thu, 26 Jul 2018 16:49:29 +0800
-Message-ID: <1532594969.2358.40.camel@intel.com>
-References: <20180507175408.2154-1-ilina@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from S3
+Date: Thu, 26 Jul 2018 10:50:35 +0200
+Message-ID: <24724042.UC9DsrE2FJ@aspire.rjw.lan>
+References: <DEA1AE84-B0FD-481E-8E0D-788CD4EF59AE@canonical.com> <CAJZ5v0ifKcipGG0sM0iK0p4K0-V-PyoL-JfTH6uVVWoCA-eXnw@mail.gmail.com> <76C1A830-EEE1-486B-9B06-6C915C269278@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180507175408.2154-1-ilina@codeaurora.org>
+In-Reply-To: <76C1A830-EEE1-486B-9B06-6C915C269278@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ram Chandrasekar <rkumbako@codeaurora.org>
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Lina,
-
-On 一, 2018-05-07 at 11:54 -0600, Lina Iyer wrote:
-> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+On Thursday, July 26, 2018 10:15:03 AM CEST Kai-Heng Feng wrote:
 > 
-> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+> > On 2018Jul26, at 16:14, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > 
+> > On Thu, Jul 26, 2018 at 5:46 AM, Kai-Heng Feng
+> > <kai.heng.feng@canonical.com> wrote:
+> >> Hi Rafael,
+> >> 
+> >>> On 2018Jul24, at 18:36, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>> 
+> >>> On Tuesday, July 24, 2018 11:13:42 AM CEST Rafael J. Wysocki wrote:
+> >>>> On Tuesday, July 24, 2018 10:46:09 AM CEST Kai Heng Feng wrote:
+> >>>>> Hi Rafael,
+> >>>>> 
+> >>>>>> On Jun 13, 2018, at 7:17 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>>>>> 
+> >>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>>>> 
+> >>>>>> It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
+> >>>>>> runtime PM and system sleep handling) introduced a system suspend
+> >>>>>> regression on some machines, but the only functional change made by
+> >>>>>> it was to cause the PM quirks in the LPSS to also be used during
+> >>>>>> system suspend and resume.  While that should always work for
+> >>>>>> suspend-to-idle, it turns out to be problematic for S3
+> >>>>>> (suspend-to-RAM).
+> >>>>>> 
+> >>>>>> To address that issue restore the previous S3 suspend and resume
+> >>>>>> behavior of the LPSS to avoid applying PM quirks then.
+> >>>>> 
+> >>>>> The users reported that this patch does fix the S3 issue, but the S4 still
+> >>>>> fails.
+> >>>>> 
+> >>>>> Please refer to [1] for more for user's testing result.
+> >>>>> 
+> >>>>> [1] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1774950/comments/60
+> >>>> 
+> >>>> Please ask the users to test the patch below, then, on top of the $subject one.
+> >>> 
+> >>> There was a mistake in the previous patch I posted, sorry about that.
+> >>> 
+> >>> Please test this one instead:
+> >> 
+> >> The result is positive, thanks!
+> > 
+> > Good, thanks!
+> > 
+> > I assume that S3 still works with this patch applied too.
 > 
-> Step wise governor increases the mitigation level when the
-> temperature
-> goes above a threshold and will decrease the mitigation when the
-> temperature falls below the threshold. If it were a case, where the
-> temperature hovers around a threshold, the mitigation will be applied
-> and removed at every iteration. This reaction to the temperature is
-> inefficient for performance.
-> 
-> The use of hysteresis temperature could avoid this ping-pong of
-> mitigation by relaxing the mitigation to happen only when the
-> temperature goes below this lower hysteresis value.
-> 
-the idea looks okay to me, just some minor comments.
+> Yes, S3 continues to work with this patch.
 
-> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
-> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-> ---
->  drivers/thermal/step_wise.c | 33 +++++++++++++++++++++++----------
->  1 file changed, 23 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/thermal/step_wise.c
-> b/drivers/thermal/step_wise.c
-> index ee047ca43084..cf07e2269291 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -36,7 +36,7 @@
->   *       for this trip point
->   *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
->   *       for this trip point
-> - * If the temperature is lower than a trip point,
-> + * If the temperature is lower than a hysteresis temperature,
+OK, thanks!
 
-1. if you update this, you should update "if the temperature is higher
-than ..." as well.
-
-2. the updated comment does not fully match the code change you made
-below.
-
->   *    a. if the trend is THERMAL_TREND_RAISING, do nothing
->   *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
->   *       state for this trip point, if the cooling state already
-> @@ -127,7 +127,7 @@ static void update_passive_instance(struct
-> thermal_zone_device *tz,
->  
->  static void thermal_zone_trip_update(struct thermal_zone_device *tz,
-> int trip)
->  {
-> -	int trip_temp;
-> +	int trip_temp, hyst_temp;
->  	enum thermal_trip_type trip_type;
->  	enum thermal_trend trend;
->  	struct thermal_instance *instance;
-> @@ -135,22 +135,23 @@ static void thermal_zone_trip_update(struct
-> thermal_zone_device *tz, int trip)
->  	int old_target;
->  
->  	if (trip == THERMAL_TRIPS_NONE) {
-> -		trip_temp = tz->forced_passive;
-> +		hyst_temp = trip_temp = tz->forced_passive;
->  		trip_type = THERMAL_TRIPS_NONE;
->  	} else {
->  		tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> +		hyst_temp = trip_temp;
-> +		if (tz->ops->get_trip_hyst) {
-> +			tz->ops->get_trip_hyst(tz, trip,
-> &hyst_temp);
-> +			hyst_temp = trip_temp - hyst_temp;
-> +		}
->  		tz->ops->get_trip_type(tz, trip, &trip_type);
->  	}
->  
->  	trend = get_tz_trend(tz, trip);
->  
-> -	if (tz->temperature >= trip_temp) {
-> -		throttle = true;
-> -		trace_thermal_zone_trip(tz, trip, trip_type);
-> -	}
-> -
-> -	dev_dbg(&tz->device,
-> "Trip%d[type=%d,temp=%d]:trend=%d,throttle=%d\n",
-> -				trip, trip_type, trip_temp, trend,
-> throttle);
-> +	dev_dbg(&tz->device,
-> +		"Trip%d[type=%d,temp=%d,hyst=%d]:trend=%d,throttle=%
-> d\n",
-> +		trip, trip_type, trip_temp, hyst_temp, trend,
-> throttle);
->  
-throttle is not set properly here, so this debug message does not make
-sense.
-
-thanks,
-rui
->  	mutex_lock(&tz->lock);
->  
-> @@ -159,6 +160,18 @@ static void thermal_zone_trip_update(struct
-> thermal_zone_device *tz, int trip)
->  			continue;
->  
->  		old_target = instance->target;
-> +		throttle = false;
-> +		/*
-> +		 * Lower the mitigation only if the temperature
-> +		 * goes below the hysteresis temperature.
-> +		 */
-> +		if (tz->temperature >= trip_temp ||
-> +		   (tz->temperature >= hyst_temp &&
-> +		   old_target != THERMAL_NO_TARGET)) {
-> +			throttle = true;
-> +			trace_thermal_zone_trip(tz, trip,
-> trip_type);
-> +		}
-> +
-
->  		instance->target = get_target_state(instance, trend,
-> throttle);
->  		dev_dbg(&instance->cdev->device, "old_target=%d,
-> target=%d\n",
->  					old_target, (int)instance-
-> >target);
+Let me resend the patch with a proper subject and changelog, then.
