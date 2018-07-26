@@ -1,34 +1,142 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3] cpufreq: trace frequency limits change
-Date: Thu, 26 Jul 2018 10:22:05 +0200
-Message-ID: <CAJZ5v0hzdLpFaZuMVPP1oWOExsp5BBStpkg_C1ZekCEnDQjdgA@mail.gmail.com>
-References: <20180724173544.18876-1-joel@joelfernandes.org> <20180725091802.74400a81@gandalf.local.home>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] drivers: thermal: step_wise: add support for hysteresis
+Date: Thu, 26 Jul 2018 16:49:29 +0800
+Message-ID: <1532594969.2358.40.camel@intel.com>
+References: <20180507175408.2154-1-ilina@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180725091802.74400a81@gandalf.local.home>
+In-Reply-To: <20180507175408.2154-1-ilina@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>, Joel Fernandes <joel@joelfernandes.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kernel-team@android.com, Ruchi Kandoi <kandoiruchi@google.com>, Ingo Molnar <mingo@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Lina Iyer <ilina@codeaurora.org>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ram Chandrasekar <rkumbako@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 25, 2018 at 3:18 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Tue, 24 Jul 2018 10:35:44 -0700
-> Joel Fernandes <joel@joelfernandes.org> wrote:
->
->> From: Ruchi Kandoi <kandoiruchi@google.com>
->>
->> systrace used for tracing for Android systems has carried a patch for
->> many years in the Android tree that traces when the cpufreq limits
->> change.  With the help of this information, systrace can know when the
->> policy limits change and can visually display the data. Lets add
->> upstream support for the same.
->>
->> Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
->> Signed-off-by: Joel Fernandes (Google) <joel@joelfernandes.org>
->
-> Better ;-)
->
-> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Hi, Lina,
 
-Patch applied, thanks!
+On 一, 2018-05-07 at 11:54 -0600, Lina Iyer wrote:
+> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+> 
+> From: Ram Chandrasekar <rkumbako@codeaurora.org>
+> 
+> Step wise governor increases the mitigation level when the
+> temperature
+> goes above a threshold and will decrease the mitigation when the
+> temperature falls below the threshold. If it were a case, where the
+> temperature hovers around a threshold, the mitigation will be applied
+> and removed at every iteration. This reaction to the temperature is
+> inefficient for performance.
+> 
+> The use of hysteresis temperature could avoid this ping-pong of
+> mitigation by relaxing the mitigation to happen only when the
+> temperature goes below this lower hysteresis value.
+> 
+the idea looks okay to me, just some minor comments.
+
+> Signed-off-by: Ram Chandrasekar <rkumbako@codeaurora.org>
+> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+> ---
+>  drivers/thermal/step_wise.c | 33 +++++++++++++++++++++++----------
+>  1 file changed, 23 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/thermal/step_wise.c
+> b/drivers/thermal/step_wise.c
+> index ee047ca43084..cf07e2269291 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -36,7 +36,7 @@
+>   *       for this trip point
+>   *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
+>   *       for this trip point
+> - * If the temperature is lower than a trip point,
+> + * If the temperature is lower than a hysteresis temperature,
+
+1. if you update this, you should update "if the temperature is higher
+than ..." as well.
+
+2. the updated comment does not fully match the code change you made
+below.
+
+>   *    a. if the trend is THERMAL_TREND_RAISING, do nothing
+>   *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
+>   *       state for this trip point, if the cooling state already
+> @@ -127,7 +127,7 @@ static void update_passive_instance(struct
+> thermal_zone_device *tz,
+>  
+>  static void thermal_zone_trip_update(struct thermal_zone_device *tz,
+> int trip)
+>  {
+> -	int trip_temp;
+> +	int trip_temp, hyst_temp;
+>  	enum thermal_trip_type trip_type;
+>  	enum thermal_trend trend;
+>  	struct thermal_instance *instance;
+> @@ -135,22 +135,23 @@ static void thermal_zone_trip_update(struct
+> thermal_zone_device *tz, int trip)
+>  	int old_target;
+>  
+>  	if (trip == THERMAL_TRIPS_NONE) {
+> -		trip_temp = tz->forced_passive;
+> +		hyst_temp = trip_temp = tz->forced_passive;
+>  		trip_type = THERMAL_TRIPS_NONE;
+>  	} else {
+>  		tz->ops->get_trip_temp(tz, trip, &trip_temp);
+> +		hyst_temp = trip_temp;
+> +		if (tz->ops->get_trip_hyst) {
+> +			tz->ops->get_trip_hyst(tz, trip,
+> &hyst_temp);
+> +			hyst_temp = trip_temp - hyst_temp;
+> +		}
+>  		tz->ops->get_trip_type(tz, trip, &trip_type);
+>  	}
+>  
+>  	trend = get_tz_trend(tz, trip);
+>  
+> -	if (tz->temperature >= trip_temp) {
+> -		throttle = true;
+> -		trace_thermal_zone_trip(tz, trip, trip_type);
+> -	}
+> -
+> -	dev_dbg(&tz->device,
+> "Trip%d[type=%d,temp=%d]:trend=%d,throttle=%d\n",
+> -				trip, trip_type, trip_temp, trend,
+> throttle);
+> +	dev_dbg(&tz->device,
+> +		"Trip%d[type=%d,temp=%d,hyst=%d]:trend=%d,throttle=%
+> d\n",
+> +		trip, trip_type, trip_temp, hyst_temp, trend,
+> throttle);
+>  
+throttle is not set properly here, so this debug message does not make
+sense.
+
+thanks,
+rui
+>  	mutex_lock(&tz->lock);
+>  
+> @@ -159,6 +160,18 @@ static void thermal_zone_trip_update(struct
+> thermal_zone_device *tz, int trip)
+>  			continue;
+>  
+>  		old_target = instance->target;
+> +		throttle = false;
+> +		/*
+> +		 * Lower the mitigation only if the temperature
+> +		 * goes below the hysteresis temperature.
+> +		 */
+> +		if (tz->temperature >= trip_temp ||
+> +		   (tz->temperature >= hyst_temp &&
+> +		   old_target != THERMAL_NO_TARGET)) {
+> +			throttle = true;
+> +			trace_thermal_zone_trip(tz, trip,
+> trip_type);
+> +		}
+> +
+
+>  		instance->target = get_target_state(instance, trend,
+> throttle);
+>  		dev_dbg(&instance->cdev->device, "old_target=%d,
+> target=%d\n",
+>  					old_target, (int)instance-
+> >target);
