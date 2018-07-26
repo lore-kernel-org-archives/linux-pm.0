@@ -1,107 +1,132 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] drivers: thermal: do not clobber cooling dev state from
- userspace
-Date: Thu, 26 Jul 2018 16:55:08 +0800
-Message-ID: <1532595308.2358.45.camel@intel.com>
-References: <20180507175505.2389-1-ilina@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from hibernation
+Date: Thu, 26 Jul 2018 10:58:20 +0200
+Message-ID: <1645662.bYMTJFObNO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180507175505.2389-1-ilina@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 一, 2018-05-07 at 11:55 -0600, Lina Iyer wrote:
-> From: Ram Chandrasekar <rkumbako@codeaurora.org>
-> 
-> Let userspace be another voter for cooling device state instead of
-> the
-> overriding authority. It is possible that the thermal governor may
-> find
-> a higher cooling state desirable than what is recommended by the
-> userspace. Separate out the current cooling device state from the
-> userspace request and aggregate the userspace request with the
-> governors' recommendation.
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-hmmm, I don't understand this.
-If the governor does not work well, we should either improve the
-governor or use userspace governor instead.
-do you have any examples that the kernel governor chooses improper
-cooling state?
+Commit a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and
+resume from S3) modified the ACPI driver for Intel SoCs (LPSS) to
+avoid applying PM quirks on suspend and resume from S3 to address
+system-wide suspend and resume problems on some systems, but it is
+reported that the same issue also affects hibernation, so extend
+the approach used by that commit to cover hibernation as well.
 
-thanks,
-rui
+Fixes: a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and resume from S3)
+Link: https://bugs.launchpad.net/bugs/1774950
+Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: 4.15+ <stable@vger.kernel.org> # 4.15+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/acpi_lpss.c |   26 +++++++++++++++++---------
+ 1 file changed, 17 insertions(+), 9 deletions(-)
 
-> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-> ---
->  drivers/thermal/thermal_core.c    | 1 +
->  drivers/thermal/thermal_helpers.c | 2 +-
->  drivers/thermal/thermal_sysfs.c   | 8 +++++++-
->  include/linux/thermal.h           | 1 +
->  4 files changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c
-> b/drivers/thermal/thermal_core.c
-> index 589925ac0994..c2e13e122934 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -970,6 +970,7 @@ __thermal_cooling_device_register(struct
-> device_node *np,
->  	cdev->updated = false;
->  	cdev->device.class = &thermal_class;
->  	cdev->devdata = devdata;
-> +	cdev->sysfs_req = 0;
->  	thermal_cooling_device_setup_sysfs(cdev);
->  	dev_set_name(&cdev->device, "cooling_device%d", cdev->id);
->  	result = device_register(&cdev->device);
-> diff --git a/drivers/thermal/thermal_helpers.c
-> b/drivers/thermal/thermal_helpers.c
-> index 2ba756af76b7..f550fdee0f9b 100644
-> --- a/drivers/thermal/thermal_helpers.c
-> +++ b/drivers/thermal/thermal_helpers.c
-> @@ -166,7 +166,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_set_trips);
->  void thermal_cdev_update(struct thermal_cooling_device *cdev)
->  {
->  	struct thermal_instance *instance;
-> -	unsigned long target = 0;
-> +	unsigned long target = cdev->sysfs_req;
->  
->  	mutex_lock(&cdev->lock);
->  	/* cooling device is updated*/
-> diff --git a/drivers/thermal/thermal_sysfs.c
-> b/drivers/thermal/thermal_sysfs.c
-> index 275ffee292bf..eddada715ad2 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -719,7 +719,13 @@ thermal_cooling_device_cur_state_store(struct
-> device *dev,
->  	result = cdev->ops->set_cur_state(cdev, state);
->  	if (result)
->  		return result;
-> -	thermal_cooling_device_stats_update(cdev, state);
-> +
-> +	cdev->sysfs_req = state;
-> +	mutex_lock(&cdev->lock);
-> +	cdev->updated = false;
-> +	mutex_unlock(&cdev->lock);
-> +	thermal_cdev_update(cdev);
-> +
->  	return count;
->  }
->  
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 5f4705f46c2f..7a133bd6ff86 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -139,6 +139,7 @@ struct thermal_cooling_device {
->  	struct mutex lock; /* protect thermal_instances list */
->  	struct list_head thermal_instances;
->  	struct list_head node;
-> +	unsigned long sysfs_req;
->  };
->  
->  struct thermal_attr {
+Index: linux-pm/drivers/acpi/acpi_lpss.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -879,6 +879,7 @@ static void acpi_lpss_dismiss(struct dev
+ #define LPSS_GPIODEF0_DMA_LLP		BIT(13)
+ 
+ static DEFINE_MUTEX(lpss_iosf_mutex);
++static bool lpss_iosf_d3_entered;
+ 
+ static void lpss_iosf_enter_d3_state(void)
+ {
+@@ -921,6 +922,9 @@ static void lpss_iosf_enter_d3_state(voi
+ 
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+ 			LPSS_IOSF_GPIODEF0, value1, mask1);
++
++	lpss_iosf_d3_entered = true;
++
+ exit:
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+@@ -935,6 +939,11 @@ static void lpss_iosf_exit_d3_state(void
+ 
+ 	mutex_lock(&lpss_iosf_mutex);
+ 
++	if (!lpss_iosf_d3_entered)
++		goto exit;
++
++	lpss_iosf_d3_entered = false;
++
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+ 			LPSS_IOSF_GPIODEF0, value1, mask1);
+ 
+@@ -944,13 +953,13 @@ static void lpss_iosf_exit_d3_state(void
+ 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIO1, MBI_CFG_WRITE,
+ 			LPSS_IOSF_PMCSR, value2, mask2);
+ 
++exit:
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+ 
+-static int acpi_lpss_suspend(struct device *dev, bool runtime)
++static int acpi_lpss_suspend(struct device *dev, bool wakeup)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	bool wakeup = runtime || device_may_wakeup(dev);
+ 	int ret;
+ 
+ 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+@@ -963,14 +972,14 @@ static int acpi_lpss_suspend(struct devi
+ 	 * wrong status for devices being about to be powered off. See
+ 	 * lpss_iosf_enter_d3_state() for further information.
+ 	 */
+-	if ((runtime || !pm_suspend_via_firmware()) &&
++	if (acpi_target_system_state() == ACPI_STATE_S0 &&
+ 	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+ 		lpss_iosf_enter_d3_state();
+ 
+ 	return ret;
+ }
+ 
+-static int acpi_lpss_resume(struct device *dev, bool runtime)
++static int acpi_lpss_resume(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+ 	int ret;
+@@ -979,8 +988,7 @@ static int acpi_lpss_resume(struct devic
+ 	 * This call is kept first to be in symmetry with
+ 	 * acpi_lpss_runtime_suspend() one.
+ 	 */
+-	if ((runtime || !pm_resume_via_firmware()) &&
+-	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
++	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+ 		lpss_iosf_exit_d3_state();
+ 
+ 	ret = acpi_dev_resume(dev);
+@@ -1004,12 +1012,12 @@ static int acpi_lpss_suspend_late(struct
+ 		return 0;
+ 
+ 	ret = pm_generic_suspend_late(dev);
+-	return ret ? ret : acpi_lpss_suspend(dev, false);
++	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
+ }
+ 
+ static int acpi_lpss_resume_early(struct device *dev)
+ {
+-	int ret = acpi_lpss_resume(dev, false);
++	int ret = acpi_lpss_resume(dev);
+ 
+ 	return ret ? ret : pm_generic_resume_early(dev);
+ }
+@@ -1024,7 +1032,7 @@ static int acpi_lpss_runtime_suspend(str
+ 
+ static int acpi_lpss_runtime_resume(struct device *dev)
+ {
+-	int ret = acpi_lpss_resume(dev, true);
++	int ret = acpi_lpss_resume(dev);
+ 
+ 	return ret ? ret : pm_generic_runtime_resume(dev);
+ }
