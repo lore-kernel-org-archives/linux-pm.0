@@ -1,164 +1,153 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 08/23] thermal: armada: use the resource managed
- registration helper alternative
-Date: Thu, 26 Jul 2018 14:37:38 -0700
-Message-ID: <20180726213737.GB15690@localhost.localdomain>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-9-miquel.raynal@bootlin.com>
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v2 10/12] sched/core: uclamp: use TG's clamps to restrict
+ Task's clamps
+Date: Thu, 26 Jul 2018 15:11:39 -0700
+Message-ID: <CAJuCfpFhTYqbmAKFHXPAxh1qDnWWMrCuYso6gFn3AFVRK=tdDA@mail.gmail.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-11-patrick.bellasi@arm.com> <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
+ <20180723154025.GF2683@e110439-lin> <CAJuCfpHJ=O1QVFZZ2dpaDDQe+dX1aGkzWdcd76c9zZpxw2fNtA@mail.gmail.com>
+ <20180724095550.GA3162@e110439-lin> <CAJuCfpEUsq=LPZgz20jn79CwymQGgfif8j8fzurUDmEJ3G9q5w@mail.gmail.com>
+ <20180724154935.GB3275@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20180716144206.30985-9-miquel.raynal@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: multipart/alternative; boundary="00000000000088a3b70571ee47ef"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180724154935.GB3275@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGV5LAoKT24gTW9uLCBKdWwgMTYsIDIwMTggYXQgMDQ6NDE6NTFQTSArMDIwMCwgTWlxdWVsIFJh
-eW5hbCB3cm90ZToKPiBDdXJyZW50IHVzZSBvZiB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVy
-KCkgdHJpZ2dlcnMgYSB3YXJuaW5nIGF0IGJvb3QKPiBhbmQgc2hvdWxkIGJlIHJlcGxhY2VkIGJ5
-IGRldm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlcigpLiBUaGlzCj4gYWxsb3dzIGJl
-dHRlciBoYW5kbGluZyBvZiBtdWx0aXBsZSB0aGVybWFsIHpvbmVzIGZvciBsYXRlciBtdWx0aS1z
-ZW5zb3JzCj4gc3VwcG9ydC4KPiAKPiBBbHNvIGNoYW5nZSB0aGUgZHJpdmVyIGRhdGEgdG8gZW1i
-ZWQgYSBuZXcgc3RydWN0dXJlIHRvIG1ha2UgdGhlCj4gZGlmZmVyZW5jZSBiZXR3ZWVuIGxlZ2Fj
-eSBkYXRhICh3aGljaCBuZWVkcyB0byBiZSBjbGVhbmVkKSBhbmQKPiBzeXNjb24tcmVsYXRlZCBk
-YXRhLgo+IAo+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9v
-dGxpbi5jb20+Cj4gLS0tCj4gIGRyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jIHwgMTIz
-ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tLQo+ICAxIGZpbGUgY2hhbmdl
-ZCwgMTAxIGluc2VydGlvbnMoKyksIDIyIGRlbGV0aW9ucygtKQo+IAo+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9hcm1hZGFf
-dGhlcm1hbC5jCj4gaW5kZXggYmUzNDZjNmFmZGUyLi5kZDg5NDMxMmRlZGYgMTAwNjQ0Cj4gLS0t
-IGEvZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMKPiArKysgYi9kcml2ZXJzL3RoZXJt
-YWwvYXJtYWRhX3RoZXJtYWwuYwo+IEBAIC02NCw2ICs2NCw3IEBAIHN0cnVjdCBhcm1hZGFfdGhl
-cm1hbF9kYXRhOwo+ICAKPiAgLyogTWFydmVsbCBFQlUgVGhlcm1hbCBTZW5zb3IgRGV2IFN0cnVj
-dHVyZSAqLwo+ICBzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiB7Cj4gKwlzdHJ1Y3QgZGV2aWNl
-ICpkZXY7Cj4gIAlzdHJ1Y3QgcmVnbWFwICpzeXNjb247Cj4gIAljaGFyIHpvbmVfbmFtZVtUSEVS
-TUFMX05BTUVfTEVOR1RIXTsKPiAgCXN0cnVjdCBhcm1hZGFfdGhlcm1hbF9kYXRhICpkYXRhOwo+
-IEBAIC05NSw2ICs5NiwyNiBAQCBzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfZGF0YSB7Cj4gIAl1bnNp
-Z25lZCBpbnQgc3lzY29uX3N0YXR1c19vZmY7Cj4gIH07Cj4gIAo+ICtzdHJ1Y3QgYXJtYWRhX2Ry
-dmRhdGEgewo+ICsJZW51bSBkcnZ0eXBlIHsKPiArCQlMRUdBQ1ksCj4gKwkJU1lTQ09OCj4gKwl9
-IHR5cGU7Cj4gKwl1bmlvbiB7Cj4gKwkJc3RydWN0IGFybWFkYV90aGVybWFsX3ByaXYgKnByaXY7
-Cj4gKwkJc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6Owo+ICsJfSBkYXRhOwo+ICt9Owo+
-ICsKPiArLyoKPiArICogc3RydWN0IGFybWFkYV90aGVybWFsX3NlbnNvciAtIGhvbGQgdGhlIGlu
-Zm9ybWF0aW9uIG9mIG9uZSB0aGVybWFsIHNlbnNvcgo+ICsgKiBAdGhlcm1hbDogcG9pbnRlciB0
-byB0aGUgbG9jYWwgcHJpdmF0ZSBzdHJ1Y3R1cmUKPiArICogQHR6ZDogcG9pbnRlciB0byB0aGUg
-dGhlcm1hbCB6b25lIGRldmljZQo+ICsgKi8KPiArc3RydWN0IGFybWFkYV90aGVybWFsX3NlbnNv
-ciB7Cj4gKwlzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdjsKPiArfTsKPiArCj4gIHN0
-YXRpYyB2b2lkIGFybWFkYXhwX2luaXQoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKPiAg
-CQkJICBzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdikKPiAgewo+IEBAIC0yNDMsMTYg
-KzI2NCwxNCBAQCBzdGF0aWMgYm9vbCBhcm1hZGFfaXNfdmFsaWQoc3RydWN0IGFybWFkYV90aGVy
-bWFsX3ByaXYgKnByaXYpCj4gIAlyZXR1cm4gcmVnICYgcHJpdi0+ZGF0YS0+aXNfdmFsaWRfYml0
-Owo+ICB9Cj4gIAo+IC1zdGF0aWMgaW50IGFybWFkYV9nZXRfdGVtcChzdHJ1Y3QgdGhlcm1hbF96
-b25lX2RldmljZSAqdGhlcm1hbCwKPiAtCQkJICAgaW50ICp0ZW1wKQo+ICtzdGF0aWMgaW50IGFy
-bWFkYV9yZWFkX3NlbnNvcihzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdiwgaW50ICp0
-ZW1wKQo+ICB7Cj4gLQlzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdiA9IHRoZXJtYWwt
-PmRldmRhdGE7Cj4gIAl1MzIgcmVnLCBkaXY7Cj4gIAlzNjQgc2FtcGxlLCBiLCBtOwo+ICAKPiAg
-CS8qIFZhbGlkIGNoZWNrICovCj4gIAlpZiAocHJpdi0+ZGF0YS0+aXNfdmFsaWQgJiYgIXByaXYt
-PmRhdGEtPmlzX3ZhbGlkKHByaXYpKSB7Cj4gLQkJZGV2X2VycigmdGhlcm1hbC0+ZGV2aWNlLAo+
-ICsJCWRldl9lcnIocHJpdi0+ZGV2LAo+ICAJCQkiVGVtcGVyYXR1cmUgc2Vuc29yIHJlYWRpbmcg
-bm90IHZhbGlkXG4iKTsKPiAgCQlyZXR1cm4gLUVJTzsKPiAgCX0KPiBAQCAtMjc4LDcgKzI5Nywz
-MyBAQCBzdGF0aWMgaW50IGFybWFkYV9nZXRfdGVtcChzdHJ1Y3QgdGhlcm1hbF96b25lX2Rldmlj
-ZSAqdGhlcm1hbCwKPiAgCXJldHVybiAwOwo+ICB9Cj4gIAo+IC1zdGF0aWMgc3RydWN0IHRoZXJt
-YWxfem9uZV9kZXZpY2Vfb3BzIG9wcyA9IHsKPiArc3RhdGljIGludCBhcm1hZGFfZ2V0X3RlbXBf
-bGVnYWN5KHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0aGVybWFsLAo+ICsJCQkJICBpbnQg
-KnRlbXApCj4gK3sKPiArCXN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2ID0gdGhlcm1h
-bC0+ZGV2ZGF0YTsKPiArCWludCByZXQ7Cj4gKwo+ICsJLyogRG8gdGhlIGFjdHVhbCByZWFkaW5n
-ICovCj4gKwlyZXQgPSBhcm1hZGFfcmVhZF9zZW5zb3IocHJpdiwgdGVtcCk7Cj4gKwo+ICsJcmV0
-dXJuIHJldDsKPiArfQo+ICsKPiArc3RhdGljIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlX29w
-cyBsZWdhY3lfb3BzID0gewo+ICsJLmdldF90ZW1wID0gYXJtYWRhX2dldF90ZW1wX2xlZ2FjeSwK
-PiArfTsKPiArCj4gK3N0YXRpYyBpbnQgYXJtYWRhX2dldF90ZW1wKHZvaWQgKl9zZW5zb3IsIGlu
-dCAqdGVtcCkKPiArewo+ICsJc3RydWN0IGFybWFkYV90aGVybWFsX3NlbnNvciAqc2Vuc29yID0g
-X3NlbnNvcjsKPiArCXN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2ID0gc2Vuc29yLT5w
-cml2Owo+ICsJaW50IHJldDsKCgpUaGUgYWJvdmUgdmFyaWFibGU6CmRyaXZlcnMvdGhlcm1hbC9h
-cm1hZGFfdGhlcm1hbC5jOjMyMDo2OiB3YXJuaW5nOiB1bnVzZWQgdmFyaWFibGUg4oCYcmV04oCZ
-IFstV3VudXNlZC12YXJpYWJsZV0KICBpbnQgcmV0OwogICAgICBefn4KY2MxOiBzb21lIHdhcm5p
-bmdzIGJlaW5nIHRyZWF0ZWQgYXMgZXJyb3JzCnNjcmlwdHMvTWFrZWZpbGUuYnVpbGQ6MzIzOiBy
-ZWNpcGUgZm9yIHRhcmdldCAnZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLm8nIGZhaWxl
-ZAoKCj4gKwo+ICsJLyogRG8gdGhlIGFjdHVhbCByZWFkaW5nICovCj4gKwlyZXR1cm4gYXJtYWRh
-X3JlYWRfc2Vuc29yKHByaXYsICZ0ZW1wKTsKCkkgdGhpbmsgeW91IG1lYW50IAoKKwlyZXR1cm4g
-YXJtYWRhX3JlYWRfc2Vuc29yKHByaXYsIHRlbXApOwoKaGVyZSByaWdodD8KCgpJIG9idmlvdXNs
-eSBnZXQ6CgogIENDIFtNXSAgZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLm8KZHJpdmVy
-cy90aGVybWFsL2FybWFkYV90aGVybWFsLmM6IEluIGZ1bmN0aW9uIOKAmGFybWFkYV9nZXRfdGVt
-cOKAmToKZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmM6MzIzOjM0OiBlcnJvcjogcGFz
-c2luZyBhcmd1bWVudCAyIG9mIOKAmGFybWFkYV9yZWFkX3NlbnNvcuKAmSBmcm9tIGluY29tcGF0
-aWJsZSBwb2ludGVyIHR5cGUgWy1XZXJyb3I9aW5jb21wYXRpYmxlLXBvaW50ZXItdHlwZXNdCiAg
-cmV0dXJuIGFybWFkYV9yZWFkX3NlbnNvcihwcml2LCAmdGVtcCk7CiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICBeCmRyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jOjI2Nzox
-Mjogbm90ZTogZXhwZWN0ZWQg4oCYaW50ICrigJkgYnV0IGFyZ3VtZW50IGlzIG9mIHR5cGUg4oCY
-aW50ICoq4oCZCiBzdGF0aWMgaW50IGFybWFkYV9yZWFkX3NlbnNvcihzdHJ1Y3QgYXJtYWRhX3Ro
-ZXJtYWxfcHJpdiAqcHJpdiwgaW50ICp0ZW1wKQogICAgICAgICAgICBefn5+fn5+fn5+fn5+fn5+
-fn4KCgo+ICt9Cj4gKwo+ICtzdGF0aWMgc3RydWN0IHRoZXJtYWxfem9uZV9vZl9kZXZpY2Vfb3Bz
-IG9mX29wcyA9IHsKPiAgCS5nZXRfdGVtcCA9IGFybWFkYV9nZXRfdGVtcCwKPiAgfTsKPiAgCj4g
-QEAgLTQ4MCw3ICs1MjUsOSBAQCBzdGF0aWMgdm9pZCBhcm1hZGFfc2V0X3NhbmVfbmFtZShzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICAKPiAgc3RhdGljIGludCBhcm1hZGFfdGhlcm1h
-bF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICB7Cj4gLQlzdHJ1Y3QgdGhl
-cm1hbF96b25lX2RldmljZSAqdGhlcm1hbDsKPiArCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNl
-ICp0ejsKPiArCXN0cnVjdCBhcm1hZGFfdGhlcm1hbF9zZW5zb3IgKnNlbnNvcnM7Cj4gKwlzdHJ1
-Y3QgYXJtYWRhX2RydmRhdGEgKmRydmRhdGE7Cj4gIAljb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lk
-ICptYXRjaDsKPiAgCXN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2Owo+ICAJaW50IHJl
-dDsKPiBAQCAtNDkzLDExICs1NDAsMTMgQEAgc3RhdGljIGludCBhcm1hZGFfdGhlcm1hbF9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICAJaWYgKCFwcml2KQo+ICAJCXJldHVy
-biAtRU5PTUVNOwo+ICAKPiArCWRydmRhdGEgPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwgc2l6
-ZW9mKCpkcnZkYXRhKSwgR0ZQX0tFUk5FTCk7Cj4gKwlpZiAoIXByaXYpCj4gKwkJcmV0dXJuIC1F
-Tk9NRU07Cj4gKwo+ICsJcHJpdi0+ZGV2ID0gJnBkZXYtPmRldjsKPiAgCXByaXYtPmRhdGEgPSAo
-c3RydWN0IGFybWFkYV90aGVybWFsX2RhdGEgKiltYXRjaC0+ZGF0YTsKPiAgCj4gLQkvKiBFbnN1
-cmUgZGV2aWNlIG5hbWUgaXMgY29ycmVjdCBmb3IgdGhlIHRoZXJtYWwgY29yZSAqLwo+IC0JYXJt
-YWRhX3NldF9zYW5lX25hbWUocGRldiwgcHJpdik7Cj4gLQo+ICAJLyoKPiAgCSAqIExlZ2FjeSBE
-VCBiaW5kaW5ncyBvbmx5IGRlc2NyaWJlZCAiY29udHJvbDEiIHJlZ2lzdGVyIChhbHNvIHJlZmVy
-cmVkCj4gIAkgKiBhcyAiY29udHJvbCBNU0IiIG9uIG9sZCBkb2N1bWVudGF0aW9uKS4gVGhlbiwg
-YmluZGluZ3MgbW92ZWQgdG8gY292ZXIKPiBAQCAtNTEwLDM1ICs1NTksNjUgQEAgc3RhdGljIGlu
-dCBhcm1hZGFfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICAJ
-ICogaXMgdG8gZGVmaW5lIGFuIG92ZXJhbGwgc3lzdGVtIGNvbnRyb2xsZXIgYW5kIHB1dCB0aGUg
-dGhlcm1hbCBub2RlCj4gIAkgKiBpbnRvIGl0LCB3aGljaCByZXF1aXJlcyB0aGUgdXNlIG9mIHJl
-Z21hcHMgYWNyb3NzIGFsbCB0aGUgZHJpdmVyLgo+ICAJICovCj4gLQlpZiAoSVNfRVJSKHN5c2Nv
-bl9ub2RlX3RvX3JlZ21hcChwZGV2LT5kZXYucGFyZW50LT5vZl9ub2RlKSkpCj4gKwlpZiAoSVNf
-RVJSKHN5c2Nvbl9ub2RlX3RvX3JlZ21hcChwZGV2LT5kZXYucGFyZW50LT5vZl9ub2RlKSkpIHsK
-PiArCQkvKiBFbnN1cmUgZGV2aWNlIG5hbWUgaXMgY29ycmVjdCBmb3IgdGhlIHRoZXJtYWwgY29y
-ZSAqLwo+ICsJCWFybWFkYV9zZXRfc2FuZV9uYW1lKHBkZXYsIHByaXYpOwo+ICsKPiAgCQlyZXQg
-PSBhcm1hZGFfdGhlcm1hbF9wcm9iZV9sZWdhY3kocGRldiwgcHJpdik7Cj4gLQllbHNlCj4gLQkJ
-cmV0ID0gYXJtYWRhX3RoZXJtYWxfcHJvYmVfc3lzY29uKHBkZXYsIHByaXYpOwo+ICsJCWlmIChy
-ZXQpCj4gKwkJCXJldHVybiByZXQ7Cj4gIAo+ICsJCXByaXYtPmRhdGEtPmluaXQocGRldiwgcHJp
-dik7Cj4gKwo+ICsJCXR6ID0gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3Rlcihwcml2LT56b25l
-X25hbWUsIDAsIDAsIHByaXYsCj4gKwkJCQkJCSAgJmxlZ2FjeV9vcHMsIE5VTEwsIDAsIDApOwo+
-ICsJCWlmIChJU19FUlIodHopKSB7Cj4gKwkJCWRldl9lcnIoJnBkZXYtPmRldiwKPiArCQkJCSJG
-YWlsZWQgdG8gcmVnaXN0ZXIgdGhlcm1hbCB6b25lIGRldmljZVxuIik7Cj4gKwkJCXJldHVybiBQ
-VFJfRVJSKHR6KTsKPiArCQl9Cj4gKwo+ICsJCWRydmRhdGEtPnR5cGUgPSBMRUdBQ1k7Cj4gKwkJ
-ZHJ2ZGF0YS0+ZGF0YS50eiA9IHR6Owo+ICsJCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIGRy
-dmRhdGEpOwo+ICsKPiArCQlyZXR1cm4gMDsKPiArCX0KPiArCj4gKwlyZXQgPSBhcm1hZGFfdGhl
-cm1hbF9wcm9iZV9zeXNjb24ocGRldiwgcHJpdik7Cj4gIAlpZiAocmV0KQo+ICAJCXJldHVybiBy
-ZXQ7Cj4gIAo+ICAJcHJpdi0+ZGF0YS0+aW5pdChwZGV2LCBwcml2KTsKPiArCWRydmRhdGEtPnR5
-cGUgPSBTWVNDT047Cj4gKwlkcnZkYXRhLT5kYXRhLnByaXYgPSBwcml2Owo+ICsJcGxhdGZvcm1f
-c2V0X2RydmRhdGEocGRldiwgZHJ2ZGF0YSk7Cj4gIAo+IC0JdGhlcm1hbCA9IHRoZXJtYWxfem9u
-ZV9kZXZpY2VfcmVnaXN0ZXIocHJpdi0+em9uZV9uYW1lLCAwLCAwLCBwcml2LAo+IC0JCQkJCSAg
-ICAgICAmb3BzLCBOVUxMLCAwLCAwKTsKPiAtCWlmIChJU19FUlIodGhlcm1hbCkpIHsKPiArCXNl
-bnNvcnMgPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwgc2l6ZW9mKHN0cnVjdCBhcm1hZGFfdGhl
-cm1hbF9zZW5zb3IpLAo+ICsJCQkgICAgICAgR0ZQX0tFUk5FTCk7Cj4gKwlpZiAoIXNlbnNvcnMp
-Cj4gKwkJcmV0dXJuIC1FTk9NRU07Cj4gKwo+ICsJc2Vuc29ycy0+cHJpdiA9IHByaXY7Cj4gKwo+
-ICsJdHogPSBkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoJnBkZXYtPmRldiwg
-MCwgc2Vuc29ycywKPiArCQkJCQkJICAmb2Zfb3BzKTsKPiArCWlmIChJU19FUlIodHopKSB7Cj4g
-IAkJZGV2X2VycigmcGRldi0+ZGV2LAo+IC0JCQkiRmFpbGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwg
-em9uZSBkZXZpY2VcbiIpOwo+IC0JCXJldHVybiBQVFJfRVJSKHRoZXJtYWwpOwo+ICsJCQkiRmFp
-bGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwgc2Vuc29yIChlcnI6ICVsZClcbiIsCj4gKwkJCVBUUl9F
-UlIodHopKTsKPiArCQlyZXR1cm4gUFRSX0VSUih0eik7Cj4gIAl9Cj4gIAo+IC0JcGxhdGZvcm1f
-c2V0X2RydmRhdGEocGRldiwgdGhlcm1hbCk7Cj4gLQo+ICAJcmV0dXJuIDA7Cj4gIH0KPiAgCj4g
-IHN0YXRpYyBpbnQgYXJtYWRhX3RoZXJtYWxfZXhpdChzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpw
-ZGV2KQo+ICB7Cj4gLQlzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqYXJtYWRhX3RoZXJtYWwg
-PQo+IC0JCXBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOwo+ICsJc3RydWN0IGFybWFkYV9kcnZk
-YXRhICpkcnZkYXRhID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRldik7Cj4gIAo+IC0JdGhlcm1h
-bF96b25lX2RldmljZV91bnJlZ2lzdGVyKGFybWFkYV90aGVybWFsKTsKPiArCWlmIChkcnZkYXRh
-LT50eXBlID09IExFR0FDWSkKPiArCQl0aGVybWFsX3pvbmVfZGV2aWNlX3VucmVnaXN0ZXIoZHJ2
-ZGF0YS0+ZGF0YS50eik7Cj4gIAo+ICAJcmV0dXJuIDA7Cj4gIH0KPiAtLSAKPiAyLjE0LjEKPiAK
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
-bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
-ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
-ZXJuZWwK
+--00000000000088a3b70571ee47ef
+Content-Type: text/plain; charset="UTF-8"
+
+Sorry for the delay. Overlooked this comment...
+
+On Tue, Jul 24, 2018 at 8:49 AM, Patrick Bellasi <patrick.bellasi@arm.com>
+wrote:
+
+> On 24-Jul 08:28, Suren Baghdasaryan wrote:
+> > Hi Patrick. Thanks for the explanation and links. No more questions
+> > from me on this one :)
+>
+> No problems at all!
+>
+> The important question is instead: does it makes sense for you too?
+>
+
+Well, it still feels unnatural to me due to the definition of the boost (at
+least this much CPU bandwidth but higher should be fine).
+Say I have a task which normally has specific boost and clamp requirements
+(say TG.UCLAMP_MIN=20, TG.UCLAMP_MAX=80) which I want to temporarily boost
+using a syscall to UCLAMP_MIN=60 (let's say a process should handle some
+request and temporarily needs more CPU bandwidth). With this interface we
+can clamp more than TG.UCLAMP_MAX value but we can't boost more than
+TG.UCLAMP_MIN. For this usecase I would have to set TG.UCLAMP_MIN=80, then
+use syscall to set SYSCALL.UCLAMP_MIN=20 to get effective UCLAMP_MIN=20 and
+then set SYSCALL.UCLAMP_MIN=60 when I need that temporary boost.
+To summarize, while this API does not stop me from achieving the desired
+result it requires some hoop-jumping :)
+
+
+>
+> I think the important bits are that we are all on the same page about
+> the end goals and features we like to have as well as the interface we use.
+> This last has to fits best our goals and features while still being
+> perfectly aligned with the frameworks we are integrating into... and
+> that's still under discussion with Tejun on PATCH 08/12.
+>
+> Thanks again for your review!
+>
+> Cheers Patrick
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
+>
+
+--00000000000088a3b70571ee47ef
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Sorry for the delay. Overlooked this comment...<br><div cl=
+ass=3D"gmail_extra"><br><div class=3D"gmail_quote">On Tue, Jul 24, 2018 at =
+8:49 AM, Patrick Bellasi <span dir=3D"ltr">&lt;<a href=3D"mailto:patrick.be=
+llasi@arm.com" target=3D"_blank">patrick.bellasi@arm.com</a>&gt;</span> wro=
+te:<br><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex;=
+border-left:1px solid rgb(204,204,204);padding-left:1ex"><span class=3D"gma=
+il-">On 24-Jul 08:28, Suren Baghdasaryan wrote:<br>
+&gt; Hi Patrick. Thanks for the explanation and links. No more questions<br=
+>
+&gt; from me on this one :)<br>
+<br>
+</span>No problems at all!<br>
+<br>
+The important question is instead: does it makes sense for you too?<br></bl=
+ockquote><div><br></div><div>Well, it still feels unnatural to me due to th=
+e definition of the boost (at least this much CPU b<span style=3D"font-size=
+:small;background-color:rgb(255,255,255);text-decoration-style:initial;text=
+-decoration-color:initial;float:none;display:inline">andwidth=C2=A0</span>b=
+ut higher should be fine).</div><div>Say I have a task which normally has s=
+pecific boost and clamp requirements (say TG.UCLAMP_MIN=3D20,=C2=A0<span st=
+yle=3D"font-size:small;background-color:rgb(255,255,255);text-decoration-st=
+yle:initial;text-decoration-color:initial;float:none;display:inline">TG.</s=
+pan><span style=3D"font-size:12.8px;background-color:rgb(255,255,255);text-=
+decoration-style:initial;text-decoration-color:initial;float:none;display:i=
+nline">UCLAMP_MAX=3D80)</span>=C2=A0which I want to temporarily boost using=
+ a syscall to <span style=3D"font-size:small;background-color:rgb(255,255,2=
+55);text-decoration-style:initial;text-decoration-color:initial;float:none;=
+display:inline">UCLAMP_MIN</span><span style=3D"font-size:small;background-=
+color:rgb(255,255,255);text-decoration-style:initial;text-decoration-color:=
+initial;float:none;display:inline">=3D60 (let&#39;s say=C2=A0</span>a proce=
+ss should handle some request and temporarily needs more CPU bandwidth). Wi=
+th this interface we can clamp more than <span style=3D"font-size:small;tex=
+t-decoration-style:initial;text-decoration-color:initial;background-color:r=
+gb(255,255,255);float:none;display:inline">TG.</span><span style=3D"text-de=
+coration-style:initial;text-decoration-color:initial;font-size:12.8px;backg=
+round-color:rgb(255,255,255);float:none;display:inline">UCLAMP_MAX</span>=
+=C2=A0value but we can&#39;t boost more than <span style=3D"font-size:small=
+;background-color:rgb(255,255,255);text-decoration-style:initial;text-decor=
+ation-color:initial;float:none;display:inline">TG.UCLAMP_MIN</span>. For th=
+is usecase I would have to set TG.<span style=3D"font-size:small;background=
+-color:rgb(255,255,255);text-decoration-style:initial;text-decoration-color=
+:initial;float:none;display:inline">UCLAMP_MIN</span><span style=3D"font-si=
+ze:small;background-color:rgb(255,255,255);text-decoration-style:initial;te=
+xt-decoration-color:initial;float:none;display:inline">=3D80, then use sysc=
+all to set SYSCALL<span style=3D"text-decoration-style:initial;text-decorat=
+ion-color:initial;float:none;display:inline">.</span><span style=3D"text-de=
+coration-style:initial;text-decoration-color:initial;float:none;display:inl=
+ine">UCLAMP_MIN</span><span style=3D"text-decoration-style:initial;text-dec=
+oration-color:initial;float:none;display:inline">=3D20 to get effective=C2=
+=A0<span style=3D"font-size:small;background-color:rgb(255,255,255);text-de=
+coration-style:initial;text-decoration-color:initial;float:none;display:inl=
+ine">UCLAMP_MIN=3D20</span></span> and then set=C2=A0<span style=3D"text-de=
+coration-style:initial;text-decoration-color:initial;float:none;display:inl=
+ine">SYSCALL</span><span style=3D"text-decoration-style:initial;text-decora=
+tion-color:initial;float:none;display:inline">.</span><span style=3D"text-d=
+ecoration-style:initial;text-decoration-color:initial;float:none;display:in=
+line">UCLAMP_MIN=3D60</span>=C2=A0when I need that temporary boost.</span><=
+/div><div><span style=3D"font-size:small;background-color:rgb(255,255,255);=
+text-decoration-style:initial;text-decoration-color:initial;float:none;disp=
+lay:inline">To summarize, while this API does not stop me from achieving th=
+e desired result it requires some hoop-jumping :)</span></div><div>=C2=A0<b=
+r></div><blockquote class=3D"gmail_quote" style=3D"margin:0px 0px 0px 0.8ex=
+;border-left:1px solid rgb(204,204,204);padding-left:1ex">
+<br>
+I think the important bits are that we are all on the same page about<br>
+the end goals and features we like to have as well as the interface we use.=
+<br>
+This last has to fits best our goals and features while still being<br>
+perfectly aligned with the frameworks we are integrating into... and<br>
+that&#39;s still under discussion with Tejun on PATCH 08/12.<br>
+<br>
+Thanks again for your review!<br>
+<br>
+Cheers Patrick<br>
+<div class=3D"gmail-HOEnZb"><div class=3D"gmail-h5"><br>
+-- <br>
+#include &lt;best/regards.h&gt;<br>
+<br>
+Patrick Bellasi<br>
+</div></div></blockquote></div><br></div></div>
+
+--00000000000088a3b70571ee47ef--
