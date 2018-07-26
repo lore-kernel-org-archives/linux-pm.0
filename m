@@ -1,105 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Thu, 26 Jul 2018 11:14:56 +0200
-Message-ID: <10360149.m4MlxDWZY5@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <20180620172226.15012-8-ulf.hansson@linaro.org> <3574880.GjmnMm1lMq@aspire.rjw.lan>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from
+ hibernation
+Date: Thu, 26 Jul 2018 12:59:25 +0300
+Message-ID: <20180726095925.GU2534@lahna.fi.intel.com>
+References: <1645662.bYMTJFObNO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3574880.GjmnMm1lMq@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <1645662.bYMTJFObNO@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Kai-Heng Feng <kai.heng.feng@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, July 19, 2018 12:32:52 PM CEST Rafael J. Wysocki wrote:
-> On Wednesday, June 20, 2018 7:22:07 PM CEST Ulf Hansson wrote:
-> > As it's now perfectly possible that a PM domain managed by genpd contains
-> > devices belonging to CPUs, we should start to take into account the
-> > residency values for the idle states during the state selection process.
-> > The residency value specifies the minimum duration of time, the CPU or a
-> > group of CPUs, needs to spend in an idle state to not waste energy entering
-> > it.
-> > 
-> > To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
-> > may be used for a PM domain that have CPU devices attached or if the CPUs
-> > are attached through subdomains.
-> > 
-> > The new governor computes the minimum expected idle duration time for the
-> > online CPUs being attached to the PM domain and its subdomains. Then in the
-> > state selection process, trying the deepest state first, it verifies that
-> > the idle duration time satisfies the state's residency value.
-> > 
-> > It should be noted that, when computing the minimum expected idle duration
-> > time, we use the information from tick_nohz_get_next_wakeup(), to find the
-> > next wakeup for the related CPUs. Future wise, this may deserve to be
-> > improved, as there are more reasons to why a CPU may be woken up from idle.
-> > 
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: Lina Iyer <ilina@codeaurora.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Ingo Molnar <mingo@kernel.org>
-> > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > ---
-> >  drivers/base/power/domain_governor.c | 58 ++++++++++++++++++++++++++++
-> >  include/linux/pm_domain.h            |  2 +
-> >  2 files changed, 60 insertions(+)
-> > 
-> > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> > index 99896fbf18e4..1aad55719537 100644
-> > --- a/drivers/base/power/domain_governor.c
-> > +++ b/drivers/base/power/domain_governor.c
-> > @@ -10,6 +10,9 @@
-> >  #include <linux/pm_domain.h>
-> >  #include <linux/pm_qos.h>
-> >  #include <linux/hrtimer.h>
-> > +#include <linux/cpumask.h>
-> > +#include <linux/ktime.h>
-> > +#include <linux/tick.h>
-> >  
-> >  static int dev_update_qos_constraint(struct device *dev, void *data)
-> >  {
-> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
-> >  	return false;
-> >  }
-> >  
-> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-> > +{
-> > +	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> > +	ktime_t domain_wakeup, cpu_wakeup;
-> > +	s64 idle_duration_ns;
-> > +	int cpu, i;
-> > +
-> > +	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-> > +		return true;
-> > +
-> > +	/*
-> > +	 * Find the next wakeup for any of the online CPUs within the PM domain
-> > +	 * and its subdomains. Note, we only need the genpd->cpus, as it already
-> > +	 * contains a mask of all CPUs from subdomains.
-> > +	 */
-> > +	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> > +	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> > +		cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
-> > +		if (ktime_before(cpu_wakeup, domain_wakeup))
-> > +			domain_wakeup = cpu_wakeup;
-> > +	}
+On Thu, Jul 26, 2018 at 10:58:20AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and
+> resume from S3) modified the ACPI driver for Intel SoCs (LPSS) to
+> avoid applying PM quirks on suspend and resume from S3 to address
+> system-wide suspend and resume problems on some systems, but it is
+> reported that the same issue also affects hibernation, so extend
+> the approach used by that commit to cover hibernation as well.
+> 
+> Fixes: a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and resume from S3)
+> Link: https://bugs.launchpad.net/bugs/1774950
+> Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> Cc: 4.15+ <stable@vger.kernel.org> # 4.15+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Here's a concern I have missed before. :-/
-
-Say, one of the CPUs you're walking here is woken up in the meantime.
-
-I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
-to update domain_wakeup.  We really should just avoid the domain power off in
-that case at all IMO.
-
-Sure enough, if the domain power off is already started and one of the CPUs
-in the domain is woken up then, too bad, it will suffer the latency (but in
-that case the hardware should be able to help somewhat), but otherwise CPU
-wakeup should prevent domain power off from being carried out.
-
-Thanks,
-Rafael
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
