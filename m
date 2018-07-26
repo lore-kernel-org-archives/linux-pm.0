@@ -1,132 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from hibernation
-Date: Thu, 26 Jul 2018 10:58:20 +0200
-Message-ID: <1645662.bYMTJFObNO@aspire.rjw.lan>
+Subject: Re: [PATCH] cpufreq: qcom-kryo: add NULL entry to the end of_device_id array
+Date: Thu, 26 Jul 2018 11:05:05 +0200
+Message-ID: <4102618.ESNx517Qjd@aspire.rjw.lan>
+References: <20180723123429.20040-1-yuehaibing@huawei.com> <20180724034335.v76tfqk2imlyf2eg@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180724034335.v76tfqk2imlyf2eg@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Kai-Heng Feng <kai.heng.feng@canonical.com>, Linux PM <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, YueHaibing <yuehaibing@huawei.com>
+Cc: ilia.lin@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tuesday, July 24, 2018 5:43:35 AM CEST Viresh Kumar wrote:
+> On 23-07-18, 20:34, YueHaibing wrote:
+> > Make sure of_device_id tables are NULL terminated
+> > Found by coccinelle spatch "misc/of_table.cocci"
+> > 
+> > Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> > ---
+> >  drivers/cpufreq/qcom-cpufreq-kryo.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > index 29389ac..efc9a7a 100644
+> > --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> > @@ -183,6 +183,7 @@ static struct platform_driver qcom_cpufreq_kryo_driver = {
+> >  static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
+> >  	{ .compatible = "qcom,apq8096", },
+> >  	{ .compatible = "qcom,msm8996", },
+> > +	{}
+> >  };
+> >  
+> >  /*
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> 
 
-Commit a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and
-resume from S3) modified the ACPI driver for Intel SoCs (LPSS) to
-avoid applying PM quirks on suspend and resume from S3 to address
-system-wide suspend and resume problems on some systems, but it is
-reported that the same issue also affects hibernation, so extend
-the approach used by that commit to cover hibernation as well.
-
-Fixes: a09c59130688 (ACPI / LPSS: Avoid PM quirks on suspend and resume from S3)
-Link: https://bugs.launchpad.net/bugs/1774950
-Reported-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
-Cc: 4.15+ <stable@vger.kernel.org> # 4.15+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c |   26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
-
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -879,6 +879,7 @@ static void acpi_lpss_dismiss(struct dev
- #define LPSS_GPIODEF0_DMA_LLP		BIT(13)
- 
- static DEFINE_MUTEX(lpss_iosf_mutex);
-+static bool lpss_iosf_d3_entered;
- 
- static void lpss_iosf_enter_d3_state(void)
- {
-@@ -921,6 +922,9 @@ static void lpss_iosf_enter_d3_state(voi
- 
- 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
- 			LPSS_IOSF_GPIODEF0, value1, mask1);
-+
-+	lpss_iosf_d3_entered = true;
-+
- exit:
- 	mutex_unlock(&lpss_iosf_mutex);
- }
-@@ -935,6 +939,11 @@ static void lpss_iosf_exit_d3_state(void
- 
- 	mutex_lock(&lpss_iosf_mutex);
- 
-+	if (!lpss_iosf_d3_entered)
-+		goto exit;
-+
-+	lpss_iosf_d3_entered = false;
-+
- 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
- 			LPSS_IOSF_GPIODEF0, value1, mask1);
- 
-@@ -944,13 +953,13 @@ static void lpss_iosf_exit_d3_state(void
- 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIO1, MBI_CFG_WRITE,
- 			LPSS_IOSF_PMCSR, value2, mask2);
- 
-+exit:
- 	mutex_unlock(&lpss_iosf_mutex);
- }
- 
--static int acpi_lpss_suspend(struct device *dev, bool runtime)
-+static int acpi_lpss_suspend(struct device *dev, bool wakeup)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
--	bool wakeup = runtime || device_may_wakeup(dev);
- 	int ret;
- 
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
-@@ -963,14 +972,14 @@ static int acpi_lpss_suspend(struct devi
- 	 * wrong status for devices being about to be powered off. See
- 	 * lpss_iosf_enter_d3_state() for further information.
- 	 */
--	if ((runtime || !pm_suspend_via_firmware()) &&
-+	if (acpi_target_system_state() == ACPI_STATE_S0 &&
- 	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
- 		lpss_iosf_enter_d3_state();
- 
- 	return ret;
- }
- 
--static int acpi_lpss_resume(struct device *dev, bool runtime)
-+static int acpi_lpss_resume(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 	int ret;
-@@ -979,8 +988,7 @@ static int acpi_lpss_resume(struct devic
- 	 * This call is kept first to be in symmetry with
- 	 * acpi_lpss_runtime_suspend() one.
- 	 */
--	if ((runtime || !pm_resume_via_firmware()) &&
--	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
-+	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
- 		lpss_iosf_exit_d3_state();
- 
- 	ret = acpi_dev_resume(dev);
-@@ -1004,12 +1012,12 @@ static int acpi_lpss_suspend_late(struct
- 		return 0;
- 
- 	ret = pm_generic_suspend_late(dev);
--	return ret ? ret : acpi_lpss_suspend(dev, false);
-+	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
- }
- 
- static int acpi_lpss_resume_early(struct device *dev)
- {
--	int ret = acpi_lpss_resume(dev, false);
-+	int ret = acpi_lpss_resume(dev);
- 
- 	return ret ? ret : pm_generic_resume_early(dev);
- }
-@@ -1024,7 +1032,7 @@ static int acpi_lpss_runtime_suspend(str
- 
- static int acpi_lpss_runtime_resume(struct device *dev)
- {
--	int ret = acpi_lpss_resume(dev, true);
-+	int ret = acpi_lpss_resume(dev);
- 
- 	return ret ? ret : pm_generic_runtime_resume(dev);
- }
+Patch applied, thanks!
