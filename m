@@ -1,152 +1,169 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v13 1/4] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Thu, 26 Jul 2018 16:30:53 +0100
-Message-ID: <401d8509-b9ad-913b-334e-f4ac853472e3@arm.com>
-References: <20180719101539.6104-1-vivek.gautam@codeaurora.org>
-	<20180719101539.6104-2-vivek.gautam@codeaurora.org>
-	<e17fdcb7-2632-753f-4e2e-f81bcded36f1@arm.com>
-	<CAFp+6iF1XzFn1QhWjatxE-1sue-EFS7wNmQ4OB=c3pf1VMLuMA@mail.gmail.com>
-	<CAFp+6iEYpM7w+pq0bG83vgjedqy4ZkQbUP9Bx=61TbEUN45OkA@mail.gmail.com>
+From: Eduardo Valentin <eduval@amazon.com>
+Subject: [PATCH RESEND 1/1] x86: tsc: avoid system instability in hibernation
+Date: Thu, 26 Jul 2018 08:56:56 -0700
+Message-ID: <20180726155656.14873-1-eduval@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <CAFp+6iEYpM7w+pq0bG83vgjedqy4ZkQbUP9Bx=61TbEUN45OkA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Eduardo Valentin <eduval@amazon.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26/07/18 08:12, Vivek Gautam wrote:
-> On Wed, Jul 25, 2018 at 11:46 PM, Vivek Gautam
-> <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
->> On Tue, Jul 24, 2018 at 8:51 PM, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org> wrote:
->>> On 19/07/18 11:15, Vivek Gautam wrote:
->>>>
->>>> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>>>
->>>> The smmu needs to be functional only when the respective
->>>> master's using it are active. The device_link feature
->>>> helps to track such functional dependencies, so that the
->>>> iommu gets powered when the master device enables itself
->>>> using pm_runtime. So by adapting the smmu driver for
->>>> runtime pm, above said dependency can be addressed.
->>>>
->>>> This patch adds the pm runtime/sleep callbacks to the
->>>> driver and also the functions to parse the smmu clocks
->>>> from DT and enable them in resume/suspend.
->>>>
->>>> Also, while we enable the runtime pm add a pm sleep suspend
->>>> callback that pushes devices to low power state by turning
->>>> the clocks off in a system sleep.
->>>> Also add corresponding clock enable path in resume callback.
->>>>
->>>> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>>> Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>>> [vivek: rework for clock and pm ops]
->>>> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->>>> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
->>>> ---
->>>>
->>>> Changes since v12:
->>>>    - Added pm sleep .suspend callback. This disables the clocks.
->>>>    - Added corresponding change to enable clocks in .resume
->>>>     pm sleep callback.
->>>>
->>>>    drivers/iommu/arm-smmu.c | 75
->>>> ++++++++++++++++++++++++++++++++++++++++++++++--
->>>>    1 file changed, 73 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
->>>> index c73cfce1ccc0..9138a6fffe04 100644
->>>> --- a/drivers/iommu/arm-smmu.c
->>>> +++ b/drivers/iommu/arm-smmu.c
-> 
-> [snip]
-> 
->>>> platform_device *pdev)
->>>>          arm_smmu_device_remove(pdev);
->>>>    }
->>>>    +static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
->>>> +{
->>>> +       struct arm_smmu_device *smmu = dev_get_drvdata(dev);
->>>> +
->>>> +       return clk_bulk_enable(smmu->num_clks, smmu->clks);
->>>
->>>
->>> If there's a power domain being automatically switched by genpd then we need
->>> a reset here because we may have lost state entirely. Since I remembered the
->>> otherwise-useless GPU SMMU on Juno is in a separate power domain, I gave it
->>> a poking via sysfs with some debug stuff to dump sCR0 in these callbacks,
->>> and the problem is clear:
->>>
->>> ...
->>> [    4.625551] arm-smmu 2b400000.iommu: genpd_runtime_suspend()
->>> [    4.631163] arm-smmu 2b400000.iommu: arm_smmu_runtime_suspend: 0x00201936
->>> [    4.637897] arm-smmu 2b400000.iommu: suspend latency exceeded, 6733980 ns
->>> [   21.566983] arm-smmu 2b400000.iommu: genpd_runtime_resume()
->>> [   21.584796] arm-smmu 2b400000.iommu: arm_smmu_runtime_resume: 0x00220101
->>> [   21.591452] arm-smmu 2b400000.iommu: resume latency exceeded, 6658020 ns
->>> ...
->>
->> Qualcomm SoCs have retention enabled for SMMU registers so they don't
->> lose state.
->> ...
->> [  256.013367] arm-smmu b40000.arm,smmu: arm_smmu_runtime_suspend
->> SCR0 = 0x201e36
->> [  256.013367]
->> [  256.019160] arm-smmu b40000.arm,smmu: arm_smmu_runtime_resume
->> SCR0 = 0x201e36
->> [  256.019160]
->> [  256.027368] arm-smmu b40000.arm,smmu: arm_smmu_runtime_suspend
->> SCR0 = 0x201e36
->> [  256.027368]
->> [  256.036786] arm-smmu b40000.arm,smmu: arm_smmu_runtime_resume
->> SCR0 = 0x201e36
->> ...
->>
->> However after adding arm_smmu_device_reset() in runtime_resume() I observe
->> some performance degradation when kill an instance of 'kmscube' and
->> start it again.
->> The launch time with arm_smmu_device_reset() in runtime_resume() change is
->> more.
->> Could this be because of frequent TLB invalidation and sync?
+System instability are seen during resume from hibernation when system
+is under heavy CPU load. This is due to the lack of update of sched
+clock data, and the scheduler would then think that heavy CPU hog
+tasks need more time in CPU, causing the system to freeze
+during the unfreezing of tasks. For example, threaded irqs,
+and kernel processes servicing network interface may be delayed
+for several tens of seconds, causing the system to be unreachable.
 
-Probably. Plus the reset procedure is a big chunk of MMIO accesses, 
-which for a non-trivial SMMU configuration probably isn't negligible in 
-itself. Unfortunately, unless you know for absolute certain that you 
-don't need to do that, you do.
+Situation like this can be reported by using lockup detectors
+such as workqueue lockup detectors:
 
-> Some more information that i gathered.
-> On Qcom SoCs besides the registers retention, TCU invalidates TLB cache on
-> a CX power collapse exit, which is the system wide suspend case.
-> The arm-smmu software is not aware of this CX power collapse /
-> auto-invalidation.
-> 
-> So wouldn't doing an explicit TLB invalidations during runtime resume be
-> detrimental to performance?
+[root@ip-172-31-67-114 ec2-user]# echo disk > /sys/power/state
 
-Indeed it would be, but resuming with TLBs full of random valid-looking 
-junk is even more so.
+Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+ kernel:BUG: workqueue lockup - pool cpus=0 node=0 flags=0x0 nice=0 stuck for 57s!
 
-> I have one more doubt here -
-> We do runtime power cycle around arm_smmu_map/unmap() too.
-> Now during map/unmap we selectively do TLB maintenance (either
-> tlb_sync or tlb_add_flush).
-> But with runtime pm we want to do TLBIALL*. Is that a problem?
+Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+ kernel:BUG: workqueue lockup - pool cpus=1 node=0 flags=0x0 nice=0 stuck for 57s!
 
-It's technically redundant to do both, true, but as we've covered in 
-previous rounds of discussion it's very difficult to know *which* one is 
-sufficient at any given time, so in order to make progress for now I 
-think we have to settle with doing both.
+Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+ kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 57s!
 
-Robin.
+Message from syslogd@ip-172-31-67-114 at May  7 18:29:06 ...
+ kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 403s!
+
+The fix for this situation is to mark the sched clock as unstable
+as early as possible in the resume path, leaving it unstable
+for the duration of the resume process. This will force the
+scheduler to attempt to align the sched clock across CPUs using
+the delta with time of day, updating sched clock data. In a post
+hibernation event, we can then mark the sched clock as stable
+again, avoiding unnecessary syncs with time of day on systems
+in which TSC is reliable.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Eduardo Valentin <eduval@amazon.com>
+Cc: "mike.travis@hpe.com" <mike.travis@hpe.com>
+Cc: Rajvi Jingar <rajvi.jingar@intel.com>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduval@amazon.com>
+---
+
+Hey,
+
+No changes from first attempt, no pressure on resending. The RESEND
+tag is just because I missed linux-pm in the first attempt.
+
+BR,
+
+ arch/x86/kernel/tsc.c       | 29 +++++++++++++++++++++++++++++
+ include/linux/sched/clock.h |  5 +++++
+ kernel/sched/clock.c        |  4 ++--
+ 3 files changed, 36 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 8ea117f8142e..f197c9742fef 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -13,6 +13,7 @@
+ #include <linux/percpu.h>
+ #include <linux/timex.h>
+ #include <linux/static_key.h>
++#include <linux/suspend.h>
+ 
+ #include <asm/hpet.h>
+ #include <asm/timer.h>
+@@ -1377,3 +1378,31 @@ unsigned long calibrate_delay_is_known(void)
+ 	return 0;
+ }
+ #endif
++
++static int tsc_pm_notifier(struct notifier_block *notifier,
++			   unsigned long pm_event, void *unused)
++{
++	switch (pm_event) {
++	case PM_HIBERNATION_PREPARE:
++		clear_sched_clock_stable();
++		break;
++	case PM_POST_HIBERNATION:
++		/* Set back to the default */
++		if (!check_tsc_unstable())
++			set_sched_clock_stable();
++		break;
++	}
++
++	return 0;
++};
++
++static struct notifier_block tsc_pm_notifier_block = {
++	.notifier_call = tsc_pm_notifier,
++};
++
++static int tsc_setup_pm_notifier(void)
++{
++	return register_pm_notifier(&tsc_pm_notifier_block);
++}
++
++subsys_initcall(tsc_setup_pm_notifier);
+diff --git a/include/linux/sched/clock.h b/include/linux/sched/clock.h
+index 867d588314e0..902654ac5f7e 100644
+--- a/include/linux/sched/clock.h
++++ b/include/linux/sched/clock.h
+@@ -32,6 +32,10 @@ static inline void clear_sched_clock_stable(void)
+ {
+ }
+ 
++static inline void set_sched_clock_stable(void)
++{
++}
++
+ static inline void sched_clock_idle_sleep_event(void)
+ {
+ }
+@@ -51,6 +55,7 @@ static inline u64 local_clock(void)
+ }
+ #else
+ extern int sched_clock_stable(void);
++extern void set_sched_clock_stable(void);
+ extern void clear_sched_clock_stable(void);
+ 
+ /*
+diff --git a/kernel/sched/clock.c b/kernel/sched/clock.c
+index e086babe6c61..8453440e236c 100644
+--- a/kernel/sched/clock.c
++++ b/kernel/sched/clock.c
+@@ -131,7 +131,7 @@ static void __scd_stamp(struct sched_clock_data *scd)
+ 	scd->tick_raw = sched_clock();
+ }
+ 
+-static void __set_sched_clock_stable(void)
++void set_sched_clock_stable(void)
+ {
+ 	struct sched_clock_data *scd;
+ 
+@@ -228,7 +228,7 @@ static int __init sched_clock_init_late(void)
+ 	smp_mb(); /* matches {set,clear}_sched_clock_stable() */
+ 
+ 	if (__sched_clock_stable_early)
+-		__set_sched_clock_stable();
++		set_sched_clock_stable();
+ 
+ 	return 0;
+ }
+-- 
+2.18.0
