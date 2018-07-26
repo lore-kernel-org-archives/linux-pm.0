@@ -1,60 +1,165 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 00/23] Add multi-channel support to Armada thermal
- driver
-Date: Thu, 26 Jul 2018 10:00:41 +0800
-Message-ID: <1532570441.2358.27.camel@intel.com>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180718172849.30b7cec0@xps13> <20180725095222.054f1e80@xps13>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180725095222.054f1e80@xps13>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH] ACPI / LPSS: Avoid PM quirks on suspend and resume from
+ S3
+Date: Thu, 26 Jul 2018 11:46:18 +0800
+Message-ID: <68768884-983A-40EF-B7B4-F19AF4261879@canonical.com>
+References: <DEA1AE84-B0FD-481E-8E0D-788CD4EF59AE@canonical.com>
+ <ABABA247-9C33-4311-ADA5-D0D00B810C6C@canonical.com>
+ <4689933.j1ecWYeVj2@aspire.rjw.lan> <1855125.Q8EGVqeZWv@aspire.rjw.lan>
+Mime-Version: 1.0 (Mac OS X Mail 11.5 \(3445.9.1\))
+Content-Type: text/plain;
+        charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1855125.Q8EGVqeZWv@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, P HeLiOn <perryhelionsemail@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24g5LiJLCAyMDE4LTA3LTI1IGF0IDA5OjUyICswMjAwLCBNaXF1ZWwgUmF5bmFsIHdyb3RlOgo+
-IEhpIEVkdWFyZG8sIFpoYW5nLAo+IAo+IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9v
-dGxpbi5jb20+IHdyb3RlIG9uIFdlZCwgMTggSnVsIDIwMTgKPiAxNzoyODo0OSArMDIwMDoKPiAK
-PiA+IAo+ID4gSGkgRWR1YXJkbywKPiA+IAo+ID4gTWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5h
-bEBib290bGluLmNvbT4gd3JvdGUgb24gTW9uLCAxNiBKdWwgMjAxOAo+ID4gMTY6NDE6NDMgKzAy
-MDA6Cj4gPiAKPiA+ID4gCj4gPiA+IFRoZSBvbmx5IGNhcGFiaWxpdHkgb2YgdGhlIEFybWFkYSB0
-aGVybWFsIGRyaXZlciBpcyBjdXJyZW50bHkKPiA+ID4ganVzdCB0bwo+ID4gPiByZWFkIG9uZSBz
-ZW5zb3IgKHRoZSBkZWZhdWx0IG9uZSkgcGVyIEFQIGFuZCBvbmUgcGVyIENQLgo+ID4gPiBBY3R1
-YWxseSwKPiA+ID4gdGhlcmUgaXMgb25lIHNlbnNvciBwZXIgY29yZSBpbiB0aGUgQVA4MDYgcGx1
-cyBvbmUgc2Vuc29yIGluIHRoZQo+ID4gPiB0aGVybWFsIElQIGl0c2VsZi4gVGhlIENQMTEwIGp1
-c3QgZmVhdHVyZXMgb25lIHRoZXJtYWwgc2Vuc29yIGluCj4gPiA+IGl0cwo+ID4gPiBvd24gdGhl
-cm1hbCBJUC4KPiA+ID4gCj4gPiA+IFRoaXMgc2VyaWVzIGZpcnN0IGltcHJvdmVzIHRoZSByZWFk
-YWJpbGl0eSBvZiB0aGlzIGRyaXZlciwgdGhlbgo+ID4gPiBhZGRzCj4gPiA+IHN1cHBvcnQgZm9y
-IG11bHRpLWNoYW5uZWwgdGhlcm1hbCBJUHMuIFRoZSBiaW5kaW5ncyBhbmQgdGhlCj4gPiA+IGRl
-dmljZS10cmVlcyBhcmUgdXBkYXRlZCBhY2NvcmRpbmdseS4KPiA+ID4gCj4gPiA+IFRoYW5rIHlv
-dSwKPiA+ID4gTWlxdcOobMKgwqAKPiA+IEkga25vdyBJIHNlbnQgdGhpcyBzZXJpZXMgb24gbW9u
-ZGF5IGJ1dCB0aGVyZSB3YXMgYWxtb3N0IG5vIGNoYW5nZQo+ID4gb24KPiA+IGl0IChzZWUgYmVs
-b3cpLCBkbyB5b3UgdGhpbmsgeW91IHdpbGwgaGF2ZSB0aGUgdGltZSB0byBsb29rIGF0IGl0Cj4g
-PiBiZWZvcmUgaXQncyB0b28gbGF0ZSBmb3IgdGhlIG1lcmdlIHdpbmRvdz8KPiBJIGtub3cgYSBs
-aXR0bGUgYml0IHdoYXQgaXQgaXMgdG8gYmUgb24gdGhlIG1haW50YWluZXIgc2lkZSBvZiBhCj4g
-c3Vic3lzdGVtIGJ1dCB0aGVzZSBjaGFuZ2VzIGFyZSBsYXlpbmcgc2luY2UgQXByaWwsIDIxc3Qg
-YW5kIEkgcmVhbGx5Cj4gZXhwZWN0IHRvIGdldCB0aGVtIG1lcmdlZC4gWmhhbmcsIGFzIEVkdWFy
-ZG8gc2VlbXMgdG8gYmUgb3ZlcmxvYWRlZAo+IHRoaXMgcmVsZWFzZSwgY291bGQgeW91IHBsZWFz
-ZSB0YWtlIHRoZSBzZXJpZXM/Cj4gCj4gT2YgY291cnNlIGlmIHRoZXJlIGFyZSB0aGluZ3MgdG8g
-YWRkcmVzcyBJJ2xsIGJlIGhhcHB5IHRvIGRvIHNvLgo+IApJIGhhZCBhIHN5bmMgd2l0aCBFZHVh
-cmRvIGR1cmluZyBsYXN0IG1lcmdlIHdpbmRvdywgYW5kIHdlIGFncmVlZCB0bwpzZW5kIHNlcGFy
-YXRlIGdpdCBwdWxsIHJlcXVlc3RzIHRvIExpbnVzIHNpbmNlIHRoaXMgcmVsZWFzZSBhbmQgc2Vl
-IGhvdwppdCB3b3Jrcy4KVGhpcyBtZWFucyB0aGF0IGFsbCB0aGUgc29jIHRoZXJtYWwgZHJpdmVy
-IHBhdGNoZXMgc2hvdWxkIGdvIHRvCkVkdWFyZG8nIHRyZWUgYW5kIHRoZW4gTGludXMnIHRyZWUg
-ZGlyZWN0bHkuCgpBbnl3YXksIGxldCdzIHBpbmcgRWR1YXJkbyBhbmQgc2VlIGlmIGhlIGNhbiBy
-ZXZpZXcvdGFrZSB0aGUgcGF0Y2hlcy4KCnRoYW5rcywKcnVpCj4gVGhhbmtzLAo+IE1pcXXDqGwK
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
-bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
-ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
-ZXJuZWwK
+Hi Rafael,
+
+> On 2018Jul24, at 18:36, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> 
+> On Tuesday, July 24, 2018 11:13:42 AM CEST Rafael J. Wysocki wrote:
+>> On Tuesday, July 24, 2018 10:46:09 AM CEST Kai Heng Feng wrote:
+>>> Hi Rafael,
+>>> 
+>>>> On Jun 13, 2018, at 7:17 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> 
+>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>> 
+>>>> It is reported that commit a192aa923b66a (ACPI / LPSS: Consolidate
+>>>> runtime PM and system sleep handling) introduced a system suspend
+>>>> regression on some machines, but the only functional change made by
+>>>> it was to cause the PM quirks in the LPSS to also be used during
+>>>> system suspend and resume.  While that should always work for
+>>>> suspend-to-idle, it turns out to be problematic for S3
+>>>> (suspend-to-RAM).
+>>>> 
+>>>> To address that issue restore the previous S3 suspend and resume
+>>>> behavior of the LPSS to avoid applying PM quirks then.
+>>> 
+>>> The users reported that this patch does fix the S3 issue, but the S4 still  
+>>> fails.
+>>> 
+>>> Please refer to [1] for more for user's testing result.
+>>> 
+>>> [1] https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1774950/comments/60
+>> 
+>> Please ask the users to test the patch below, then, on top of the $subject one.
+> 
+> There was a mistake in the previous patch I posted, sorry about that.
+> 
+> Please test this one instead:
+
+The result is positive, thanks!
+
+Kai-Heng
+
+> 
+> ---
+> drivers/acpi/acpi_lpss.c |   26 +++++++++++++++++---------
+> 1 file changed, 17 insertions(+), 9 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/acpi_lpss.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/acpi_lpss.c
+> +++ linux-pm/drivers/acpi/acpi_lpss.c
+> @@ -879,6 +879,7 @@ static void acpi_lpss_dismiss(struct dev
+> #define LPSS_GPIODEF0_DMA_LLP		BIT(13)
+> 
+> static DEFINE_MUTEX(lpss_iosf_mutex);
+> +static bool lpss_iosf_d3_entered;
+> 
+> static void lpss_iosf_enter_d3_state(void)
+> {
+> @@ -921,6 +922,9 @@ static void lpss_iosf_enter_d3_state(voi
+> 
+> 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+> 			LPSS_IOSF_GPIODEF0, value1, mask1);
+> +
+> +	lpss_iosf_d3_entered = true;
+> +
+> exit:
+> 	mutex_unlock(&lpss_iosf_mutex);
+> }
+> @@ -935,6 +939,11 @@ static void lpss_iosf_exit_d3_state(void
+> 
+> 	mutex_lock(&lpss_iosf_mutex);
+> 
+> +	if (!lpss_iosf_d3_entered)
+> +		goto exit;
+> +
+> +	lpss_iosf_d3_entered = false;
+> +
+> 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIOEP, MBI_CR_WRITE,
+> 			LPSS_IOSF_GPIODEF0, value1, mask1);
+> 
+> @@ -944,13 +953,13 @@ static void lpss_iosf_exit_d3_state(void
+> 	iosf_mbi_modify(LPSS_IOSF_UNIT_LPIO1, MBI_CFG_WRITE,
+> 			LPSS_IOSF_PMCSR, value2, mask2);
+> 
+> +exit:
+> 	mutex_unlock(&lpss_iosf_mutex);
+> }
+> 
+> -static int acpi_lpss_suspend(struct device *dev, bool runtime)
+> +static int acpi_lpss_suspend(struct device *dev, bool wakeup)
+> {
+> 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+> -	bool wakeup = runtime || device_may_wakeup(dev);
+> 	int ret;
+> 
+> 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+> @@ -963,14 +972,14 @@ static int acpi_lpss_suspend(struct devi
+> 	 * wrong status for devices being about to be powered off. See
+> 	 * lpss_iosf_enter_d3_state() for further information.
+> 	 */
+> -	if ((runtime || !pm_suspend_via_firmware()) &&
+> +	if (acpi_target_system_state() == ACPI_STATE_S0 &&
+> 	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+> 		lpss_iosf_enter_d3_state();
+> 
+> 	return ret;
+> }
+> 
+> -static int acpi_lpss_resume(struct device *dev, bool runtime)
+> +static int acpi_lpss_resume(struct device *dev)
+> {
+> 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+> 	int ret;
+> @@ -979,8 +988,7 @@ static int acpi_lpss_resume(struct devic
+> 	 * This call is kept first to be in symmetry with
+> 	 * acpi_lpss_runtime_suspend() one.
+> 	 */
+> -	if ((runtime || !pm_resume_via_firmware()) &&
+> -	    lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+> +	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
+> 		lpss_iosf_exit_d3_state();
+> 
+> 	ret = acpi_dev_resume(dev);
+> @@ -1004,12 +1012,12 @@ static int acpi_lpss_suspend_late(struct
+> 		return 0;
+> 
+> 	ret = pm_generic_suspend_late(dev);
+> -	return ret ? ret : acpi_lpss_suspend(dev, false);
+> +	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
+> }
+> 
+> static int acpi_lpss_resume_early(struct device *dev)
+> {
+> -	int ret = acpi_lpss_resume(dev, false);
+> +	int ret = acpi_lpss_resume(dev);
+> 
+> 	return ret ? ret : pm_generic_resume_early(dev);
+> }
+> @@ -1024,7 +1032,7 @@ static int acpi_lpss_runtime_suspend(str
+> 
+> static int acpi_lpss_runtime_resume(struct device *dev)
+> {
+> -	int ret = acpi_lpss_resume(dev, true);
+> +	int ret = acpi_lpss_resume(dev);
+> 
+> 	return ret ? ret : pm_generic_runtime_resume(dev);
+> }
