@@ -1,76 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 06/23] thermal: armada: average over samples to avoid
- glitches
-Date: Fri, 27 Jul 2018 18:29:01 +0200
-Message-ID: <2ab1a1f6-e0c3-3eed-a088-9b04e88fce12@linaro.org>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-7-miquel.raynal@bootlin.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH v3] turbostat: Read extended processor family from CPUID
+Date: Fri, 27 Jul 2018 12:49:50 -0400
+Message-ID: <CAJvTdK=k=VTprGyejhrWXjhg9Lf=j79Wkve+L96Ex2uM40B5Xw@mail.gmail.com>
+References: <20180727113809.8427-1-calvin.walton@kepstin.ca> <20180727115053.8965-1-calvin.walton@kepstin.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180716144206.30985-7-miquel.raynal@bootlin.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180727115053.8965-1-calvin.walton@kepstin.ca>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Calvin Walton <calvin.walton@kepstin.ca>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTYvMDcvMjAxOCAxNjo0MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBDb25maWd1cmUgdGhl
-IHNhbXBsZSBmcmVxdWVuY3kgYW5kIG51bWJlciBvZiBhdmVyYWdlZCBzYW1wbGVzLgo+IAo+IFRo
-aXMgaXMgbmVlZGVkIGZvciB0d28gcmVhc29uczoKPiAxLyBUbyBiZSBib290bG9hZGVyIGluZGVw
-ZW5kZW50Lgo+IDIvIFRvIHByZXBhcmUgdGhlIGludHJvZHVjdGlvbiBvZiBtdWx0aS1zZW5zb3Jz
-IHN1cHBvcnQgYnkgcHJldmVudGluZwo+ICAgIGluY29uc2lzdGVuY2llcyB3aGVuIHJlYWRpbmcg
-dGVtcGVyYXR1cmVzIHRoYXQgY291bGQgYmUgYSBtZWFuIG9mCj4gICAgc2FtcGxlcyB0b29rIGZy
-b20gZGlmZmVyZW50IHNlbnNvcnMuCj4gCj4gU2lnbmVkLW9mZi1ieTogTWlxdWVsIFJheW5hbCA8
-bWlxdWVsLnJheW5hbEBib290bGluLmNvbT4KPiAtLS0KPiAgZHJpdmVycy90aGVybWFsL2FybWFk
-YV90aGVybWFsLmMgfCAyNSArKysrKysrKysrKysrKysrKysrKysrKysrCj4gIDEgZmlsZSBjaGFu
-Z2VkLCAyNSBpbnNlcnRpb25zKCspCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9h
-cm1hZGFfdGhlcm1hbC5jIGIvZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMKPiBpbmRl
-eCA5MjkxZWEzYWQyZjcuLjFmOTcwNmQ5NmEwZCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3RoZXJt
-YWwvYXJtYWRhX3RoZXJtYWwuYwo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1h
-bC5jCj4gQEAgLTU0LDcgKzU0LDEyIEBACj4gICNkZWZpbmUgQ09OVFJPTDBfVFNFTl9TVEFSVAkJ
-QklUKDApCj4gICNkZWZpbmUgQ09OVFJPTDBfVFNFTl9SRVNFVAkJQklUKDEpCj4gICNkZWZpbmUg
-Q09OVFJPTDBfVFNFTl9FTkFCTEUJCUJJVCgyKQo+ICsjZGVmaW5lIENPTlRST0wwX1RTRU5fQVZH
-X0JZUEFTUwlCSVQoNikKPiArI2RlZmluZSBDT05UUk9MMF9UU0VOX09TUl9TSElGVAkJMjQKPiAr
-I2RlZmluZSBDT05UUk9MMF9UU0VOX09TUl9NQVgJCTB4Mwo+ICAKPiArI2RlZmluZSBDT05UUk9M
-MV9UU0VOX0FWR19TSElGVAkJMAoKV2h5IHNoaWZ0IGJ5IHplcm8gPwoKCgo+ICsjZGVmaW5lIENP
-TlRST0wxX1RTRU5fQVZHX01BU0sJCTB4Nwo+ICAjZGVmaW5lIENPTlRST0wxX0VYVF9UU0VOX1NX
-X1JFU0VUCUJJVCg3KQo+ICAjZGVmaW5lIENPTlRST0wxX0VYVF9UU0VOX0hXX1JFU0VUbglCSVQo
-OCkKPiAgCj4gQEAgLTE5NCw2ICsxOTksMTMgQEAgc3RhdGljIHZvaWQgYXJtYWRhX2FwODA2X2lu
-aXQoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKPiAgCXJlZyA9IHJlYWRsX3JlbGF4ZWQo
-cHJpdi0+Y29udHJvbDApOwo+ICAJcmVnICY9IH5DT05UUk9MMF9UU0VOX1JFU0VUOwo+ICAJcmVn
-IHw9IENPTlRST0wwX1RTRU5fU1RBUlQgfCBDT05UUk9MMF9UU0VOX0VOQUJMRTsKPiArCj4gKwkv
-KiBTYW1wbGUgZXZlcnkgfjJtcyAqLwo+ICsJcmVnIHw9IENPTlRST0wwX1RTRU5fT1NSX01BWCA8
-PCBDT05UUk9MMF9UU0VOX09TUl9TSElGVDsKPiArCj4gKwkvKiBFbmFibGUgYXZlcmFnZSAoMiBz
-YW1wbGVzIGJ5IGRlZmF1bHQpICovCj4gKwlyZWcgJj0gfkNPTlRST0wwX1RTRU5fQVZHX0JZUEFT
-UzsKPiArCj4gIAl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sMCk7Cj4gIAo+ICAJLyogV2FpdCB0
-aGUgc2Vuc29ycyB0byBiZSB2YWxpZCBvciB0aGUgY29yZSB3aWxsIHdhcm4gdGhlIHVzZXIgKi8K
-PiBAQCAtMjAzLDcgKzIxNSwyMCBAQCBzdGF0aWMgdm9pZCBhcm1hZGFfYXA4MDZfaW5pdChzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICBzdGF0aWMgdm9pZCBhcm1hZGFfY3AxMTBfaW5p
-dChzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICAJCQkgICAgICBzdHJ1Y3QgYXJtYWRh
-X3RoZXJtYWxfcHJpdiAqcHJpdikKPiAgewo+ICsJdTMyIHJlZzsKPiArCj4gIAlhcm1hZGEzODBf
-aW5pdChwZGV2LCBwcml2KTsKPiArCj4gKwkvKiBTYW1wbGUgZXZlcnkgfjJtcyAqLwo+ICsJcmVn
-ID0gcmVhZGxfcmVsYXhlZChwcml2LT5jb250cm9sMCk7Cj4gKwlyZWcgfD0gQ09OVFJPTDBfVFNF
-Tl9PU1JfTUFYIDw8IENPTlRST0wwX1RTRU5fT1NSX1NISUZUOwo+ICsJd3JpdGVsKHJlZywgcHJp
-di0+Y29udHJvbDApOwo+ICsKPiArCS8qIEF2ZXJhZ2UgdGhlIG91dHB1dCB2YWx1ZSBvdmVyIDJe
-MSA9IDIgc2FtcGxlcyAqLwo+ICsJcmVnID0gcmVhZGxfcmVsYXhlZChwcml2LT5jb250cm9sMSk7
-Cj4gKwlyZWcgJj0gfkNPTlRST0wxX1RTRU5fQVZHX01BU0sgPDwgQ09OVFJPTDFfVFNFTl9BVkdf
-U0hJRlQ7Cj4gKwlyZWcgfD0gMSA8PCBDT05UUk9MMV9UU0VOX0FWR19TSElGVDsKPiArCXdyaXRl
-bChyZWcsIHByaXYtPmNvbnRyb2wxKTsKPiAgfQo+ICAKPiAgc3RhdGljIGJvb2wgYXJtYWRhX2lz
-X3ZhbGlkKHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2KQo+IAoKCi0tIAogPGh0dHA6
-Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZv
-ciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdl
-cy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3
-aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJu
-ZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRw
-Oi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+Applied -- thanks!
+On Fri, Jul 27, 2018 at 7:50 AM Calvin Walton <calvin.walton@kepstin.ca> wrote:
+>
+> This fixes the reported family on modern AMD processors (e.g. Ryzen,
+> which is family 0x17). Previously these processors all showed up as
+> family 0xf.
+>
+> See the document
+> https://support.amd.com/TechDocs/56255_OSRR.pdf
+> section CPUID_Fn00000001_EAX for how to calculate the family
+> from the BaseFamily and ExtFamily values.
+>
+> This matches the code in arch/x86/lib/cpu.c
+>
+> Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
+> ---
+>
+> v3: Having just looked at the arch/x86/lib/cpu.c code again, I realized
+> that it *didn't* actually match - the kernel code uses family >= 6 for
+> applying the extended model number, while I was applying it only to
+>  family == 6 or family >= 0xf. Change that to match for consistency.
+>
+> v2: I'm still working on updating the RAPL patch on top of the changes for
+> v4.18, but this CPUID fix doesn't have to wait.
+>
+>  tools/power/x86/turbostat/turbostat.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index bd9c6b31a504..ed024deed36f 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -4031,7 +4031,9 @@ void process_cpuid()
+>         family = (fms >> 8) & 0xf;
+>         model = (fms >> 4) & 0xf;
+>         stepping = fms & 0xf;
+> -       if (family == 6 || family == 0xf)
+> +       if (family == 0xf)
+> +               family += (fms >> 20) & 0xff;
+> +       if (family >= 6)
+>                 model += ((fms >> 16) & 0xf) << 4;
+>
+>         if (!quiet) {
+> --
+> 2.18.0
+>
+
+
+-- 
+Len Brown, Intel Open Source Technology Center
