@@ -1,61 +1,87 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
- controller
-Date: Fri, 27 Jul 2018 09:09:04 +0100
-Message-ID: <20180727080827.u7tseookdhsckrec@queper01-lin>
-References: <20180716082906.6061-1-patrick.bellasi@arm.com>
- <20180716082906.6061-9-patrick.bellasi@arm.com>
- <20180723153040.GG1934745@devbig577.frc2.facebook.com>
- <20180723172215.GG2683@e110439-lin>
- <20180724132902.GI1934745@devbig577.frc2.facebook.com>
- <20180727003919.GA22416@joelaf.mtv.corp.google.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 01/23] thermal: armada: add a function that sanitizes
+ the thermal zone name
+Date: Fri, 27 Jul 2018 13:34:19 +0200
+Message-ID: <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
+ <20180716144206.30985-2-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180727003919.GA22416@joelaf.mtv.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Fernandes <joel@joelfernandes.org>
-Cc: Tejun Heo <tj@kernel.org>, Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180716144206.30985-2-miquel.raynal@bootlin.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 26 Jul 2018 at 17:39:19 (-0700), Joel Fernandes wrote:
-> On Tue, Jul 24, 2018 at 06:29:02AM -0700, Tejun Heo wrote:
-> > Hello, Patrick.
-> > 
-> > On Mon, Jul 23, 2018 at 06:22:15PM +0100, Patrick Bellasi wrote:
-> > > However, the "best effort" bandwidth control we have for CFS and RT
-> > > can be further improved if, instead of just looking at time spent on
-> > > CPUs, we provide some more hints to the scheduler to know at which
-> > > min/max "MIPS" we want to consume the (best effort) time we have been
-> > > allocated on a CPU.
-> > > 
-> > > Such a simple extension is still quite useful to satisfy many use-case
-> > > we have, mainly on mobile systems, like the ones I've described in the
-> > >    "Newcomer's Short Abstract (Updated)"
-> > > section of the cover letter:
-> > >    https://lore.kernel.org/lkml/20180716082906.6061-1-patrick.bellasi@arm.com/T/#u
-> > 
-> > So, that's all completely fine but then let's please not give it a
-> > name which doesn't quite match what it does.  We can just call it
-> > e.g. cpufreq range control.
-> 
-> But then what name can one give it if it does more than one thing, like
-> task-placement and CPU frequency control?
-> 
-> It doesn't make sense to name it cpufreq IMHO. Its a clamp on the utilization
-> of the task which can be used for many purposes.
-
-Indeed, the scheduler could use clamped utilization values in several
-places. The capacity-awareness bits (mostly useful for big.LITTLE
-platforms) could already use that today I guess.
-
-And on the longer term, depending on where the EAS patches [1] end up,
-utilization clamping might actually become very useful to bias task
-placement decisions. EAS basically decides where to place tasks based on
-their utilization, so util_clamp would make a lot of sense there IMO.
-
-Thanks,
-Quentin
-
-[1] https://lkml.org/lkml/2018/7/24/420
+T24gMTYvMDcvMjAxOCAxNjo0MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBUaGVybWFsIHpvbmUg
+bmFtZXMgbXVzdCBmb2xsb3cgY2VydGFpbiBydWxlcyBpbXBvc2VkIGJ5IHRoZSBmcmFtZXdvcmsu
+Cj4gVGhleSBhcmUgbGltaXRlZCBpbiBsZW5ndGggYW5kIHNoYWxsIG5vdCBoYXZlIGFueSBoeXBo
+ZW4gJy0nLgo+IAo+IFRoaXMgaXMgZG9uZSBpbiBhIHNlcGFyYXRlIGZ1bmN0aW9uIGZvciBmdXR1
+cmUgdXNlIGluIGFub3RoZXIgbG9jYXRpb24uCj4gCj4gU2lnbmVkLW9mZi1ieTogTWlxdWVsIFJh
+eW5hbCA8bWlxdWVsLnJheW5hbEBib290bGluLmNvbT4KCldoeSBkbyB5b3UgaGF2ZSB0byBwcm92
+aWRlIGEgZnVuY3Rpb24gdG8gdGVzdCB0aGF0PwoKTG9naWNhbGx5LCB0aGUgb25lIHdobyBkaWQg
+dGhlIGNoYW5nZSB0byBhZGQgYSB0aGVybWFsIG5hbWUsIHNob3VsZApjaGVjayBpdHMgY29kZSB3
+b3Jrcy4gV2l0aG91dCBhIHByb3BlciBuYW1lIHRoYXQgd29uJ3Qgd29yay4KClNvIHRoaXMgZnVu
+Y3Rpb24gaXMgdGVzdGluZyBzb21ldGhpbmcgd2hpY2ggc2hvdWxkIGJlIGFscmVhZHkgdGVzdGVk
+LCBubz8KCgoKPiAtLS0KPiAgZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMgfCAzNiAr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KPiAgMSBmaWxlIGNoYW5nZWQsIDM1
+IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90
+aGVybWFsL2FybWFkYV90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwu
+Ywo+IGluZGV4IDRjMjc1ZWMxMGFjNS4uMDc3ZThlNTYyMzA2IDEwMDY0NAo+IC0tLSBhL2RyaXZl
+cnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jCj4gKysrIGIvZHJpdmVycy90aGVybWFsL2FybWFk
+YV90aGVybWFsLmMKPiBAQCAtNzAsNiArNzAsNyBAQCBzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJp
+diB7Cj4gIAl2b2lkIF9faW9tZW0gKnN0YXR1czsKPiAgCXZvaWQgX19pb21lbSAqY29udHJvbDA7
+Cj4gIAl2b2lkIF9faW9tZW0gKmNvbnRyb2wxOwo+ICsJY2hhciB6b25lX25hbWVbVEhFUk1BTF9O
+QU1FX0xFTkdUSF07Cj4gIAlzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfZGF0YSAqZGF0YTsKPiAgfTsK
+PiAgCj4gQEAgLTM1Myw2ICszNTQsMzYgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2Vf
+aWQgYXJtYWRhX3RoZXJtYWxfaWRfdGFibGVbXSA9IHsKPiAgfTsKPiAgTU9EVUxFX0RFVklDRV9U
+QUJMRShvZiwgYXJtYWRhX3RoZXJtYWxfaWRfdGFibGUpOwo+ICAKPiArc3RhdGljIHZvaWQgYXJt
+YWRhX3NldF9zYW5lX25hbWUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKPiArCQkJCSBz
+dHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdikKPiArewo+ICsJY29uc3QgY2hhciAqbmFt
+ZSA9IGRldl9uYW1lKCZwZGV2LT5kZXYpOwo+ICsJY2hhciAqaW5zYW5lX2NoYXI7Cj4gKwo+ICsJ
+aWYgKHN0cmxlbihuYW1lKSA+IFRIRVJNQUxfTkFNRV9MRU5HVEgpIHsKPiArCQkvKgo+ICsJCSAq
+IFdoZW4gaW5zaWRlIGEgc3lzdGVtIGNvbnRyb2xsZXIsIHRoZSBkZXZpY2UgbmFtZSBoYXMgdGhl
+Cj4gKwkJICogZm9ybTogZjA2ZjgwMDAuc3lzdGVtLWNvbnRyb2xsZXI6YXAtdGhlcm1hbCBzbyBz
+dHJpcHBpbmcKPiArCQkgKiBhZnRlciB0aGUgJzonIHNob3VsZCBnaXZlIHVzIGEgc2hvcnRlciBi
+dXQgbWVhbmluZ2Z1bCBuYW1lLgo+ICsJCSAqLwo+ICsJCW5hbWUgPSBzdHJyY2hyKG5hbWUsICc6
+Jyk7Cj4gKwkJaWYgKCFuYW1lKQo+ICsJCQluYW1lID0gImFybWFkYV90aGVybWFsIjsKPiArCQll
+bHNlCj4gKwkJCW5hbWUrKzsKPiArCX0KPiArCj4gKwkvKiBTYXZlIHRoZSBuYW1lIGxvY2FsbHkg
+Ki8KPiArCXN0cm5jcHkocHJpdi0+em9uZV9uYW1lLCBuYW1lLCBUSEVSTUFMX05BTUVfTEVOR1RI
+KTsKPiArCj4gKwkvKiBUaGVuIGNoZWNrIHRoZXJlIGFyZSBubyAnLScgb3IgaHdtb24gY29yZSB3
+aWxsIGNvbXBsYWluICovCj4gKwlkbyB7Cj4gKwkJaW5zYW5lX2NoYXIgPSBzdHJwYnJrKHByaXYt
+PnpvbmVfbmFtZSwgIi0iKTsKPiArCQlpZiAoaW5zYW5lX2NoYXIpCj4gKwkJCSppbnNhbmVfY2hh
+ciA9ICdfJzsKPiArCX0gd2hpbGUgKGluc2FuZV9jaGFyKTsKPiArfQo+ICsKPiAgc3RhdGljIGlu
+dCBhcm1hZGFfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICB7
+Cj4gIAl2b2lkIF9faW9tZW0gKmNvbnRyb2wgPSBOVUxMOwo+IEBAIC0zODEsNiArNDEyLDkgQEAg
+c3RhdGljIGludCBhcm1hZGFfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpw
+ZGV2KQo+ICAKPiAgCXByaXYtPmRhdGEgPSAoc3RydWN0IGFybWFkYV90aGVybWFsX2RhdGEgKilt
+YXRjaC0+ZGF0YTsKPiAgCj4gKwkvKiBFbnN1cmUgZGV2aWNlIG5hbWUgaXMgY29ycmVjdCBmb3Ig
+dGhlIHRoZXJtYWwgY29yZSAqLwo+ICsJYXJtYWRhX3NldF9zYW5lX25hbWUocGRldiwgcHJpdik7
+Cj4gKwo+ICAJLyoKPiAgCSAqIExlZ2FjeSBEVCBiaW5kaW5ncyBvbmx5IGRlc2NyaWJlZCAiY29u
+dHJvbDEiIHJlZ2lzdGVyIChhbHNvIHJlZmVycmVkCj4gIAkgKiBhcyAiY29udHJvbCBNU0IiIG9u
+IG9sZCBkb2N1bWVudGF0aW9uKS4gTmV3IGJpbmRpbmdzIGNvdmVyCj4gQEAgLTQwMiw3ICs0MzYs
+NyBAQCBzdGF0aWMgaW50IGFybWFkYV90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZp
+Y2UgKnBkZXYpCj4gIAo+ICAJcHJpdi0+ZGF0YS0+aW5pdF9zZW5zb3IocGRldiwgcHJpdik7Cj4g
+IAo+IC0JdGhlcm1hbCA9IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIoZGV2X25hbWUoJnBk
+ZXYtPmRldiksIDAsIDAsIHByaXYsCj4gKwl0aGVybWFsID0gdGhlcm1hbF96b25lX2RldmljZV9y
+ZWdpc3Rlcihwcml2LT56b25lX25hbWUsIDAsIDAsIHByaXYsCj4gIAkJCQkJICAgICAgICZvcHMs
+IE5VTEwsIDAsIDApOwo+ICAJaWYgKElTX0VSUih0aGVybWFsKSkgewo+ICAJCWRldl9lcnIoJnBk
+ZXYtPmRldiwKPiAKCgotLSAKIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKU
+giBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0
+cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdp
+dHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9s
+aW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVs
+QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9s
+aXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
