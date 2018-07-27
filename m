@@ -1,60 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 01/14] thermal: ti-soc-thermal: fix TALERT IRQ handling
- for DRA752
-Date: Fri, 27 Jul 2018 16:30:22 +0200
-Message-ID: <1926566.4EVPFnjd9v@amdc3058>
-References: <1526298141-14045-1-git-send-email-b.zolnierkie@samsung.com>
-        <2243156.HcYyxvpmOE@amdc3058> <e9452238-319e-ad4b-5e9a-df3cd0d25ae8@ti.com>
-        <CGME20180727143023eucas1p1adfe1860327829e7cf39bcdd3290d11c@eucas1p1.samsung.com>
+From: Angus Ainslie <angus@akkea.ca>
+Subject: Re: [PATCH v2 2/4] power: bq25890_charger.c: Remove unused table
+Date: Fri, 27 Jul 2018 09:26:46 -0600
+Message-ID: <98004c185428f0ff3ba7e21be29f9377@www.akkea.ca>
+References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
+ <20180725194630.10414-1-angus@akkea.ca>
+ <20180725194630.10414-3-angus@akkea.ca>
+ <CAJKOXPeowiD7bXwRrG5horJOcxfEavB6XEmF8sz1unGDoykwoA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <e9452238-319e-ad4b-5e9a-df3cd0d25ae8@ti.com>
+In-Reply-To: <CAJKOXPeowiD7bXwRrG5horJOcxfEavB6XEmF8sz1unGDoykwoA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, July 27, 2018 10:13:51 AM Keerthy wrote:
+Hi Krzysztof,
+
+On 2018-07-26 00:51, Krzysztof Kozlowski wrote:
+> On 25 July 2018 at 21:46, Angus Ainslie (Purism) <angus@akkea.ca> 
+> wrote:
+>> The BATCMP table isn't used so drop it
 > 
-> On Wednesday 25 July 2018 07:57 PM, Bartlomiej Zolnierkiewicz wrote:
-> > On Wednesday, July 11, 2018 07:49:41 AM J, KEERTHY wrote:
-> >>
-> >> On 5/14/2018 5:12 PM, Bartlomiej Zolnierkiewicz wrote:
-> >>> .report_temperature is not set in dra752_data which
-> >>> results in temperature updates not being propagated by
-> >>> ti_bandgap_talert_irq_handler() (it doesn't make much
-> >>> sense to handle TALERT IRQ without reporting temperature
-> >>> updates to the thermal core). Fix it.
-> >>
-> >> ATM no one is using TALERT as the thermal software polls on the 
-> >> temperature. No real benefit from TALERT.
-> >>
-> >> TALERT is set at different temperature and software polling thresholds 
-> >> come from Device tree and i believe its best for software to go by 
-> >> polling and then act on trip points.
-> > 
-> > Could you please explain what do you mean by "no one is using
-> > TALERT"?
-> > 
-> > The code in ti_bandgap_probe() sets TALERT thresholds and requests
-> > IRQ if the TI_BANDGAP_FEATURE_TALERT feature flag is set (and this
-> > flag is set in omap4460_data, omap4470_data, omap5430_data and
-> > dra752_data).
+> TBL_VCLAMP also looks unused. TBL_IPRECHG does not have table entry.
 > 
-> The software thresholds and the polling takes care of reducing the
-> temperature. What i actually meant was we never relied on talert and the
-> polling takes care of keeping a check on the temperature.
 
-OK I see, maybe TALERT handling can be removed altogether?
+I as looking to drop the tables that would be problematic to the new 
+part. Would you like me to resolve these 2 as well ?
 
-If not can we make TALERT behavior on DRA752 consistent with other
-chipsets supporting TALERT (this is useful for code unification
-between OMAP5430 and DRA752)?
+Regards,
+Angus
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> Best regards,
+> Krzysztof
