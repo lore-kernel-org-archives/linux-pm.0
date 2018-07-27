@@ -1,92 +1,49 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: Re: [PATCH v3 00/23] Add multi-channel support to Armada thermal
- driver
-Date: Fri, 27 Jul 2018 00:59:28 +0200
-Message-ID: <20180727005928.6bbe021f@xps13>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180718172849.30b7cec0@xps13> <20180725095222.054f1e80@xps13>
- <1532570441.2358.27.camel@intel.com>
- <20180726211442.GB3487@localhost.localdomain>
- <20180726213517.GA15690@localhost.localdomain>
- <20180726221423.GA3569@localhost.localdomain>
+From: Joel Fernandes <joel@joelfernandes.org>
+Subject: Re: [PATCH v2 08/12] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Thu, 26 Jul 2018 17:39:19 -0700
+Message-ID: <20180727003919.GA22416@joelaf.mtv.corp.google.com>
+References: <20180716082906.6061-1-patrick.bellasi@arm.com>
+ <20180716082906.6061-9-patrick.bellasi@arm.com>
+ <20180723153040.GG1934745@devbig577.frc2.facebook.com>
+ <20180723172215.GG2683@e110439-lin>
+ <20180724132902.GI1934745@devbig577.frc2.facebook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180726221423.GA3569@localhost.localdomain>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180724132902.GI1934745@devbig577.frc2.facebook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgRWR1YXJkbywKCkVkdWFyZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+IHdyb3Rl
-IG9uIFRodSwgMjYgSnVsIDIwMTgKMTU6MTQ6MjQgLTA3MDA6Cgo+IE9uIFRodSwgSnVsIDI2LCAy
-MDE4IGF0IDAyOjM1OjE4UE0gLTA3MDAsIEVkdWFyZG8gVmFsZW50aW4gd3JvdGU6Cj4gPiBPbiBU
-aHUsIEp1bCAyNiwgMjAxOCBhdCAwMjoxNDo0M1BNIC0wNzAwLCBFZHVhcmRvIFZhbGVudGluIHdy
-b3RlOiAgCj4gPiA+IEhlbGxvLAo+ID4gPiAKPiA+ID4gT24gVGh1LCBKdWwgMjYsIDIwMTggYXQg
-MTA6MDA6NDFBTSArMDgwMCwgWmhhbmcgUnVpIHdyb3RlOiAgCj4gPiA+ID4gT24g5LiJLCAyMDE4
-LTA3LTI1IGF0IDA5OjUyICswMjAwLCBNaXF1ZWwgUmF5bmFsIHdyb3RlOiAgCj4gPiA+ID4gPiBI
-aSBFZHVhcmRvLCBaaGFuZywKPiA+ID4gPiA+IAo+ID4gPiA+ID4gTWlxdWVsIFJheW5hbCA8bWlx
-dWVsLnJheW5hbEBib290bGluLmNvbT4gd3JvdGUgb24gV2VkLCAxOCBKdWwgMjAxOAo+ID4gPiA+
-ID4gMTc6Mjg6NDkgKzAyMDA6Cj4gPiA+ID4gPiAgIAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4g
-SGkgRWR1YXJkbywKPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+IE1pcXVlbCBSYXluYWwgPG1pcXVl
-bC5yYXluYWxAYm9vdGxpbi5jb20+IHdyb3RlIG9uIE1vbiwgMTYgSnVsIDIwMTgKPiA+ID4gPiA+
-ID4gMTY6NDE6NDMgKzAyMDA6Cj4gPiA+ID4gPiA+ICAgCj4gPiA+ID4gPiA+ID4gCj4gPiA+ID4g
-PiA+ID4gVGhlIG9ubHkgY2FwYWJpbGl0eSBvZiB0aGUgQXJtYWRhIHRoZXJtYWwgZHJpdmVyIGlz
-IGN1cnJlbnRseQo+ID4gPiA+ID4gPiA+IGp1c3QgdG8KPiA+ID4gPiA+ID4gPiByZWFkIG9uZSBz
-ZW5zb3IgKHRoZSBkZWZhdWx0IG9uZSkgcGVyIEFQIGFuZCBvbmUgcGVyIENQLgo+ID4gPiA+ID4g
-PiA+IEFjdHVhbGx5LAo+ID4gPiA+ID4gPiA+IHRoZXJlIGlzIG9uZSBzZW5zb3IgcGVyIGNvcmUg
-aW4gdGhlIEFQODA2IHBsdXMgb25lIHNlbnNvciBpbiB0aGUKPiA+ID4gPiA+ID4gPiB0aGVybWFs
-IElQIGl0c2VsZi4gVGhlIENQMTEwIGp1c3QgZmVhdHVyZXMgb25lIHRoZXJtYWwgc2Vuc29yIGlu
-Cj4gPiA+ID4gPiA+ID4gaXRzCj4gPiA+ID4gPiA+ID4gb3duIHRoZXJtYWwgSVAuCj4gPiA+ID4g
-PiA+ID4gCj4gPiA+ID4gPiA+ID4gVGhpcyBzZXJpZXMgZmlyc3QgaW1wcm92ZXMgdGhlIHJlYWRh
-YmlsaXR5IG9mIHRoaXMgZHJpdmVyLCB0aGVuCj4gPiA+ID4gPiA+ID4gYWRkcwo+ID4gPiA+ID4g
-PiA+IHN1cHBvcnQgZm9yIG11bHRpLWNoYW5uZWwgdGhlcm1hbCBJUHMuIFRoZSBiaW5kaW5ncyBh
-bmQgdGhlCj4gPiA+ID4gPiA+ID4gZGV2aWNlLXRyZWVzIGFyZSB1cGRhdGVkIGFjY29yZGluZ2x5
-Lgo+ID4gPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiA+IFRoYW5rIHlvdSwKPiA+ID4gPiA+ID4gPiBN
-aXF1w6hswqDCoCAgCj4gPiA+ID4gPiA+IEkga25vdyBJIHNlbnQgdGhpcyBzZXJpZXMgb24gbW9u
-ZGF5IGJ1dCB0aGVyZSB3YXMgYWxtb3N0IG5vIGNoYW5nZQo+ID4gPiA+ID4gPiBvbgo+ID4gPiA+
-ID4gPiBpdCAoc2VlIGJlbG93KSwgZG8geW91IHRoaW5rIHlvdSB3aWxsIGhhdmUgdGhlIHRpbWUg
-dG8gbG9vayBhdCBpdAo+ID4gPiA+ID4gPiBiZWZvcmUgaXQncyB0b28gbGF0ZSBmb3IgdGhlIG1l
-cmdlIHdpbmRvdz8gIAo+ID4gPiA+ID4gSSBrbm93IGEgbGl0dGxlIGJpdCB3aGF0IGl0IGlzIHRv
-IGJlIG9uIHRoZSBtYWludGFpbmVyIHNpZGUgb2YgYQo+ID4gPiA+ID4gc3Vic3lzdGVtIGJ1dCB0
-aGVzZSBjaGFuZ2VzIGFyZSBsYXlpbmcgc2luY2UgQXByaWwsIDIxc3QgYW5kIEkgcmVhbGx5Cj4g
-PiA+ID4gPiBleHBlY3QgdG8gZ2V0IHRoZW0gbWVyZ2VkLiBaaGFuZywgYXMgRWR1YXJkbyBzZWVt
-cyB0byBiZSBvdmVybG9hZGVkCj4gPiA+ID4gPiB0aGlzIHJlbGVhc2UsIGNvdWxkIHlvdSBwbGVh
-c2UgdGFrZSB0aGUgc2VyaWVzPwo+ID4gPiA+ID4gCj4gPiA+ID4gPiBPZiBjb3Vyc2UgaWYgdGhl
-cmUgYXJlIHRoaW5ncyB0byBhZGRyZXNzIEknbGwgYmUgaGFwcHkgdG8gZG8gc28uCj4gPiA+ID4g
-PiAgIAo+ID4gPiA+IEkgaGFkIGEgc3luYyB3aXRoIEVkdWFyZG8gZHVyaW5nIGxhc3QgbWVyZ2Ug
-d2luZG93LCBhbmQgd2UgYWdyZWVkIHRvCj4gPiA+ID4gc2VuZCBzZXBhcmF0ZSBnaXQgcHVsbCBy
-ZXF1ZXN0cyB0byBMaW51cyBzaW5jZSB0aGlzIHJlbGVhc2UgYW5kIHNlZSBob3cKPiA+ID4gPiBp
-dCB3b3Jrcy4KPiA+ID4gPiBUaGlzIG1lYW5zIHRoYXQgYWxsIHRoZSBzb2MgdGhlcm1hbCBkcml2
-ZXIgcGF0Y2hlcyBzaG91bGQgZ28gdG8KPiA+ID4gPiBFZHVhcmRvJyB0cmVlIGFuZCB0aGVuIExp
-bnVzJyB0cmVlIGRpcmVjdGx5Lgo+ID4gPiA+IAo+ID4gPiA+IEFueXdheSwgbGV0J3MgcGluZyBF
-ZHVhcmRvIGFuZCBzZWUgaWYgaGUgY2FuIHJldmlldy90YWtlIHRoZSBwYXRjaGVzLiAgCj4gPiA+
-IAo+ID4gPiBTb3JyeSBmZWxsb3dzLCBidXQgSSB3YXMgb2ZmIGNhbXBpbmcgaW4gYSBwbGFjZSB3
-aXRoIG5vIGVsZWN0cmljaXR5L25vCj4gPiA+IGludGVybmV0LiBJIGxvb2tlZCBhdCB0aGlzIHNl
-cmllcyBiZWZvcmUsIGFuZCBJIGRvIG5vdCByZW1lbWJlciBhbnl0aGluZwo+ID4gPiB0aGF0IGNv
-dWxkIGJsb2NrIGl0IHRvIGdvLiBMZXQgbWUgcmVzdGFydCBvbiB3b3JraW5nIG9uIGl0LiAgCgpO
-byBwcm9ibGVtLgoKPiA+IAo+ID4gTGV0IG1lIHRha2UgdGhhdCBiYWNrLiBJIGdvdCBzb21lIGNv
-bXBpbGF0aW9uIGVycm9yLiAgCj4gCj4gCj4gR2l2ZW4gdGhhdCBJIGxldCB0aGlzIG9uZSBmYWxs
-IGludG8gdGhlIGNyYWNrcyBhbmQgdGhhdCB0aGVzZSBhcmUgbWlub3IKPiBpc3N1ZXMsIEkgZml4
-ZWQgdGhlbSBtYW51YWxseSwgYW5kIGFwcGxpZWQgdXAgdG8gcGF0Y2ggMTkuIEJ1dCBuZXh0IGF0
-Cj4gbGVhc3QgY29tcGlsZSB0ZXN0IHlvdXIgc2VyaWVzIGFuZCBydW4gY2hlY2twYXRjaCBvbiB0
-aGVtLgoKSSB3YXMgcmVhbGx5IHN1cnByaXNlZCBvZiB5b3VyIHJlbWFyayBidXQgaW5kZWVkIHRo
-ZXJlIHdhcyBhIGJ1aWxkCmlzc3VlIGluIHRoZSBtaWRkbGUgb2YgdGhlIHNlcmllcyB0aGF0IEkg
-ZGlkIG5vdCBzZWUgYmVjYXVzZSBJIGFsd2F5cwp0ZXN0IHdpdGggYSBsYXN0IHBhdGNoIGZpeGlu
-ZyBpdCAodGhpcyBwYXRjaCBhZGRzIGludGVycnVwdCBzdXBwb3J0LCBJCnBsYW4gdG8gc2VuZCBp
-dCBmb3IgdGhlIG5leHQgcmVsZWFzZSkuIEknbSB2ZXJ5IHNvcnJ5IGZvciB0aGlzCm1pc3Rha2Us
-IHRoYW5rcyBmb3IgZml4aW5nIGl0IGJ5IHlvdXJzZWxmLgoKPiAKPiBQYXRjaGVzIDIwLTIzIG5l
-ZWQgdG8gZ28gdmlhIHlvdXIgYXJjaCB0cmVlLgoKU3VyZSwgdGhleSB3aWxsIGVudGVyIGluIHRo
-ZSBuZXh0IHJlbGVhc2Ugbm93LgoKVGhhbmtzLApNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
-dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Tue, Jul 24, 2018 at 06:29:02AM -0700, Tejun Heo wrote:
+> Hello, Patrick.
+> 
+> On Mon, Jul 23, 2018 at 06:22:15PM +0100, Patrick Bellasi wrote:
+> > However, the "best effort" bandwidth control we have for CFS and RT
+> > can be further improved if, instead of just looking at time spent on
+> > CPUs, we provide some more hints to the scheduler to know at which
+> > min/max "MIPS" we want to consume the (best effort) time we have been
+> > allocated on a CPU.
+> > 
+> > Such a simple extension is still quite useful to satisfy many use-case
+> > we have, mainly on mobile systems, like the ones I've described in the
+> >    "Newcomer's Short Abstract (Updated)"
+> > section of the cover letter:
+> >    https://lore.kernel.org/lkml/20180716082906.6061-1-patrick.bellasi@arm.com/T/#u
+> 
+> So, that's all completely fine but then let's please not give it a
+> name which doesn't quite match what it does.  We can just call it
+> e.g. cpufreq range control.
+
+But then what name can one give it if it does more than one thing, like
+task-placement and CPU frequency control?
+
+It doesn't make sense to name it cpufreq IMHO. Its a clamp on the utilization
+of the task which can be used for many purposes.
+
+thanks,
+
+- Joel
