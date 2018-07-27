@@ -1,64 +1,101 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v3] turbostat: Read extended processor family from CPUID
-Date: Fri, 27 Jul 2018 12:49:50 -0400
-Message-ID: <CAJvTdK=k=VTprGyejhrWXjhg9Lf=j79Wkve+L96Ex2uM40B5Xw@mail.gmail.com>
-References: <20180727113809.8427-1-calvin.walton@kepstin.ca> <20180727115053.8965-1-calvin.walton@kepstin.ca>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 1/2] ata: ahci: Support state with min power but Partial low power state
+Date: Fri, 27 Jul 2018 13:47:02 -0700
+Message-ID: <20180727204703.6505-2-srinivas.pandruvada@linux.intel.com>
+References: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180727115053.8965-1-calvin.walton@kepstin.ca>
+In-Reply-To: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Calvin Walton <calvin.walton@kepstin.ca>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org
+To: tj@kernel.org, hdegoede@redhat.com, rjw@rjwysocki.net
+Cc: alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Applied -- thanks!
-On Fri, Jul 27, 2018 at 7:50 AM Calvin Walton <calvin.walton@kepstin.ca> wrote:
->
-> This fixes the reported family on modern AMD processors (e.g. Ryzen,
-> which is family 0x17). Previously these processors all showed up as
-> family 0xf.
->
-> See the document
-> https://support.amd.com/TechDocs/56255_OSRR.pdf
-> section CPUID_Fn00000001_EAX for how to calculate the family
-> from the BaseFamily and ExtFamily values.
->
-> This matches the code in arch/x86/lib/cpu.c
->
-> Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
-> ---
->
-> v3: Having just looked at the arch/x86/lib/cpu.c code again, I realized
-> that it *didn't* actually match - the kernel code uses family >= 6 for
-> applying the extended model number, while I was applying it only to
->  family == 6 or family >= 0xf. Change that to match for consistency.
->
-> v2: I'm still working on updating the RAPL patch on top of the changes for
-> v4.18, but this CPUID fix doesn't have to wait.
->
->  tools/power/x86/turbostat/turbostat.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index bd9c6b31a504..ed024deed36f 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -4031,7 +4031,9 @@ void process_cpuid()
->         family = (fms >> 8) & 0xf;
->         model = (fms >> 4) & 0xf;
->         stepping = fms & 0xf;
-> -       if (family == 6 || family == 0xf)
-> +       if (family == 0xf)
-> +               family += (fms >> 20) & 0xff;
-> +       if (family >= 6)
->                 model += ((fms >> 16) & 0xf) << 4;
->
->         if (!quiet) {
-> --
-> 2.18.0
->
+Currently when min_power policy is selected, the partial low power state
+is not entered and link will try aggressively enter to only slumber state.
+Add a new policy which still enable DEVSLP but also try to enter partial
+low power state. This policy is presented as "min_power_with_partial".
 
+For information the difference between partial and slumber
+Partial – PHY logic is powered up, and in a reduced power state. The link
+PM exit latency to active state maximum is 10 ns.
+Slumber – PHY logic is powered up, and in a reduced power state. The link
+PM exit latency to active state maximum is 10 ms.
+Devslp – PHY logic is powered down. The link PM exit latency from this
+state to active state maximum is 20 ms, unless otherwise specified by
+DETO.
 
+Suggested-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/ata/libahci.c     | 5 ++++-
+ drivers/ata/libata-core.c | 1 +
+ drivers/ata/libata-scsi.c | 1 +
+ include/linux/libata.h    | 3 ++-
+ 4 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/ata/libahci.c b/drivers/ata/libahci.c
+index 4c49c7c2a42c..94dcec2a8a5b 100644
+--- a/drivers/ata/libahci.c
++++ b/drivers/ata/libahci.c
+@@ -800,6 +800,8 @@ static int ahci_set_lpm(struct ata_link *link, enum ata_lpm_policy policy,
+ 			cmd |= PORT_CMD_ALPE;
+ 			if (policy == ATA_LPM_MIN_POWER)
+ 				cmd |= PORT_CMD_ASP;
++			else if (policy == ATA_LPM_MIN_POWER_WITH_PARTIAL)
++				cmd &= ~PORT_CMD_ASP;
+ 
+ 			/* write out new cmd value */
+ 			writel(cmd, port_mmio + PORT_CMD);
+@@ -810,7 +812,8 @@ static int ahci_set_lpm(struct ata_link *link, enum ata_lpm_policy policy,
+ 	if ((hpriv->cap2 & HOST_CAP2_SDS) &&
+ 	    (hpriv->cap2 & HOST_CAP2_SADM) &&
+ 	    (link->device->flags & ATA_DFLAG_DEVSLP)) {
+-		if (policy == ATA_LPM_MIN_POWER)
++		if (policy == ATA_LPM_MIN_POWER ||
++		    policy == ATA_LPM_MIN_POWER_WITH_PARTIAL)
+ 			ahci_set_aggressive_devslp(ap, true);
+ 		else
+ 			ahci_set_aggressive_devslp(ap, false);
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 27d15ed7fa3d..773b5f8eed1e 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3967,6 +3967,7 @@ int sata_link_scr_lpm(struct ata_link *link, enum ata_lpm_policy policy,
+ 		scontrol |= (0x6 << 8);
+ 		break;
+ 	case ATA_LPM_MED_POWER_WITH_DIPM:
++	case ATA_LPM_MIN_POWER_WITH_PARTIAL:
+ 	case ATA_LPM_MIN_POWER:
+ 		if (ata_link_nr_enabled(link) > 0)
+ 			/* no restrictions on LPM transitions */
+diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
+index 6a91d04351d9..4648bd5cee15 100644
+--- a/drivers/ata/libata-scsi.c
++++ b/drivers/ata/libata-scsi.c
+@@ -110,6 +110,7 @@ static const char *ata_lpm_policy_names[] = {
+ 	[ATA_LPM_MAX_POWER]		= "max_performance",
+ 	[ATA_LPM_MED_POWER]		= "medium_power",
+ 	[ATA_LPM_MED_POWER_WITH_DIPM]	= "med_power_with_dipm",
++	[ATA_LPM_MIN_POWER_WITH_PARTIAL] = "min_power_with_partial",
+ 	[ATA_LPM_MIN_POWER]		= "min_power",
+ };
+ 
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index 8b8946dd63b9..975543f8c1ff 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -522,7 +522,8 @@ enum ata_lpm_policy {
+ 	ATA_LPM_MAX_POWER,
+ 	ATA_LPM_MED_POWER,
+ 	ATA_LPM_MED_POWER_WITH_DIPM, /* Med power + DIPM as win IRST does */
+-	ATA_LPM_MIN_POWER,
++	ATA_LPM_MIN_POWER_WITH_PARTIAL, /* Min Power + partial and slumber */
++	ATA_LPM_MIN_POWER, /* Min power + no partial (slumber only) */
+ };
+ 
+ enum ata_lpm_hints {
 -- 
-Len Brown, Intel Open Source Technology Center
+2.17.1
