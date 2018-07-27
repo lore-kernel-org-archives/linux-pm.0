@@ -1,138 +1,61 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: [PATCH v14 4/4] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
-Date: Fri, 27 Jul 2018 12:32:24 +0530
-Message-ID: <20180727070224.23966-5-vivek.gautam@codeaurora.org>
-References: <20180727070224.23966-1-vivek.gautam@codeaurora.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] MAINTAINERS: Add myself as designated reviewer for
+ thermal
+Date: Fri, 27 Jul 2018 15:42:44 +0800
+Message-ID: <1532677364.2358.51.camel@intel.com>
+References: <1532600980-29357-1-git-send-email-daniel.lezcano@linaro.org>
+         <20180726211237.GA3487@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180727070224.23966-1-vivek.gautam@codeaurora.org>
+In-Reply-To: <20180726211237.GA3487@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: joro@8bytes.org, robh+dt@kernel.org, rjw@rjwysocki.net, robin.murphy@arm.com, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, freedreno@lists.freedesktop.org
-Cc: alex.williamson@redhat.com, mark.rutland@arm.com, robdclark@gmail.com, linux-pm@vger.kernel.org, sboyd@kernel.org, tfiga@chromium.org, jcrouse@codeaurora.org, sricharan@codeaurora.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
-clock and power requirements. This smmu core is used with
-multiple masters on msm8996, viz. mdss, video, etc.
-Add bindings for the same.
+On 四, 2018-07-26 at 14:12 -0700, Eduardo Valentin wrote:
+> On Thu, Jul 26, 2018 at 12:29:40PM +0200, Daniel Lezcano wrote:
+> > 
+> > I would like to participate in the review process effort for the
+> > thermal framework, especially the SoC part.
+> > 
+> > Instead of capturing emails with message filters, I would like to
+> > humbly add myself as reviewer so I can receive the patches directly
+> > in
+> > my INBOX and focus on their review.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> 
+> Thanks for the help Daniel.
+> 
+> Rui, want to take care of this?
+> 
 
-Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Tomasz Figa <tfiga@chromium.org>
----
+yes, I will take this patch
 
-Change since v13:
- - No change.
-
- .../devicetree/bindings/iommu/arm,smmu.txt         | 42 ++++++++++++++++++++++
- drivers/iommu/arm-smmu.c                           | 13 +++++++
- 2 files changed, 55 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-index 8a6ffce12af5..7c71a6ed465a 100644
---- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-+++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-@@ -17,10 +17,19 @@ conditions.
-                         "arm,mmu-401"
-                         "arm,mmu-500"
-                         "cavium,smmu-v2"
-+                        "qcom,<soc>-smmu-v2", "qcom,smmu-v2"
- 
-                   depending on the particular implementation and/or the
-                   version of the architecture implemented.
- 
-+                  A number of Qcom SoCs use qcom,smmu-v2 version of the IP.
-+                  "qcom,<soc>-smmu-v2" represents a soc specific compatible
-+                  string that should be present along with the "qcom,smmu-v2"
-+                  to facilitate SoC specific clocks/power connections and to
-+                  address specific bug fixes.
-+                  An example string would be -
-+                  "qcom,msm8996-smmu-v2", "qcom,smmu-v2".
-+
- - reg           : Base address and size of the SMMU.
- 
- - #global-interrupts : The number of global interrupts exposed by the
-@@ -71,6 +80,22 @@ conditions.
-                   or using stream matching with #iommu-cells = <2>, and
-                   may be ignored if present in such cases.
- 
-+- clock-names:    List of the names of clocks input to the device. The
-+                  required list depends on particular implementation and
-+                  is as follows:
-+                  - for "qcom,smmu-v2":
-+                    - "bus": clock required for downstream bus access and
-+                             for the smmu ptw,
-+                    - "iface": clock required to access smmu's registers
-+                               through the TCU's programming interface.
-+                  - unspecified for other implementations.
-+
-+- clocks:         Specifiers for all clocks listed in the clock-names property,
-+                  as per generic clock bindings.
-+
-+- power-domains:  Specifiers for power domains required to be powered on for
-+                  the SMMU to operate, as per generic power domain bindings.
-+
- ** Deprecated properties:
- 
- - mmu-masters (deprecated in favour of the generic "iommus" binding) :
-@@ -137,3 +162,20 @@ conditions.
-                 iommu-map = <0 &smmu3 0 0x400>;
-                 ...
-         };
-+
-+	/* Qcom's arm,smmu-v2 implementation */
-+	smmu4: iommu {
-+		compatible = "qcom,msm8996-smmu-v2", "qcom,smmu-v2";
-+		reg = <0xd00000 0x10000>;
-+
-+		#global-interrupts = <1>;
-+		interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
-+		#iommu-cells = <1>;
-+		power-domains = <&mmcc MDSS_GDSC>;
-+
-+		clocks = <&mmcc SMMU_MDP_AXI_CLK>,
-+			 <&mmcc SMMU_MDP_AHB_CLK>;
-+		clock-names = "bus", "iface";
-+	};
-diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index e558abf1ecfc..2b4edba188a5 100644
---- a/drivers/iommu/arm-smmu.c
-+++ b/drivers/iommu/arm-smmu.c
-@@ -119,6 +119,7 @@ enum arm_smmu_implementation {
- 	GENERIC_SMMU,
- 	ARM_MMU500,
- 	CAVIUM_SMMUV2,
-+	QCOM_SMMUV2,
- };
- 
- struct arm_smmu_s2cr {
-@@ -1971,6 +1972,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
- ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
- ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
- 
-+static const char * const qcom_smmuv2_clks[] = {
-+	"bus", "iface",
-+};
-+
-+static const struct arm_smmu_match_data qcom_smmuv2 = {
-+	.version = ARM_SMMU_V2,
-+	.model = QCOM_SMMUV2,
-+	.clks = qcom_smmuv2_clks,
-+	.num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
-+};
-+
- static const struct of_device_id arm_smmu_of_match[] = {
- 	{ .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
- 	{ .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
-@@ -1978,6 +1990,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
- 	{ .compatible = "arm,mmu-401", .data = &arm_mmu401 },
- 	{ .compatible = "arm,mmu-500", .data = &arm_mmu500 },
- 	{ .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
-+	{ .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+thanks,
+rui
+> > 
+> > ---
+> >  MAINTAINERS | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 0fe4228..1890aad 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -14119,6 +14119,7 @@ F:	drivers/media/radio/radio-
+> > raremono.c
+> >  THERMAL
+> >  M:	Zhang Rui <rui.zhang@intel.com>
+> >  M:	Eduardo Valentin <edubezval@gmail.com>
+> > +R:	Daniel Lezcano <daniel.lezcano@linaro.org>
+> >  L:	linux-pm@vger.kernel.org
+> >  T:	git
+> > git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+> >  T:	git
+> > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
+> > thermal.git
