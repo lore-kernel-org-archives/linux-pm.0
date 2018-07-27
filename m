@@ -1,71 +1,87 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 01/23] thermal: armada: add a function that sanitizes
- the thermal zone name
-Date: Fri, 27 Jul 2018 17:29:52 +0200
-Message-ID: <f1d7e8bd-329f-0c9d-c296-0afbe871058f@linaro.org>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-2-miquel.raynal@bootlin.com>
- <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
- <20180727135230.3c7102c7@xps13>
+From: Angus Ainslie <angus@akkea.ca>
+Subject: Re: [PATCH v2 4/4] power: bq25890_charger.c: Read back the current  battery voltage
+Date: Fri, 27 Jul 2018 09:30:31 -0600
+Message-ID: <551b84dd28cba9bf7ca7e2f52c9d1901@www.akkea.ca>
+References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
+ <20180725194630.10414-1-angus@akkea.ca>
+ <20180725194630.10414-5-angus@akkea.ca>
+ <CAJKOXPc1amTiPKNU02OruOpw+GA6DrZgv1+HhqZ14OZYpA2-YA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180727135230.3c7102c7@xps13>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJKOXPc1amTiPKNU02OruOpw+GA6DrZgv1+HhqZ14OZYpA2-YA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjcvMDcvMjAxOCAxMzo1MiwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBIaSBEYW5pZWwsCj4g
-Cj4gRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+IHdyb3RlIG9uIEZy
-aSwgMjcgSnVsIDIwMTgKPiAxMzozNDoxOSArMDIwMDoKPiAKPj4gT24gMTYvMDcvMjAxOCAxNjo0
-MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPj4+IFRoZXJtYWwgem9uZSBuYW1lcyBtdXN0IGZvbGxv
-dyBjZXJ0YWluIHJ1bGVzIGltcG9zZWQgYnkgdGhlIGZyYW1ld29yay4KPj4+IFRoZXkgYXJlIGxp
-bWl0ZWQgaW4gbGVuZ3RoIGFuZCBzaGFsbCBub3QgaGF2ZSBhbnkgaHlwaGVuICctJy4KPj4+Cj4+
-PiBUaGlzIGlzIGRvbmUgaW4gYSBzZXBhcmF0ZSBmdW5jdGlvbiBmb3IgZnV0dXJlIHVzZSBpbiBh
-bm90aGVyIGxvY2F0aW9uLgo+Pj4KPj4+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1p
-cXVlbC5yYXluYWxAYm9vdGxpbi5jb20+ICAKPj4KPj4gV2h5IGRvIHlvdSBoYXZlIHRvIHByb3Zp
-ZGUgYSBmdW5jdGlvbiB0byB0ZXN0IHRoYXQ/Cj4+Cj4+IExvZ2ljYWxseSwgdGhlIG9uZSB3aG8g
-ZGlkIHRoZSBjaGFuZ2UgdG8gYWRkIGEgdGhlcm1hbCBuYW1lLCBzaG91bGQKPj4gY2hlY2sgaXRz
-IGNvZGUgd29ya3MuIFdpdGhvdXQgYSBwcm9wZXIgbmFtZSB0aGF0IHdvbid0IHdvcmsuCj4gCj4g
-V2hhdCBkbyB5b3UgbWVhbiAidGhlIG9uZSB3aG8gZGlkIHRoZSBjaGFuZ2UiPwo+IEkgdGhpbmsg
-dGhlIHRoZXJtYWwgY29yZSBzaG91bGQgbm90IGNhcmUgdGhhdCBtdWNoIHRvIHdoYXQgaXMgZ2l2
-ZW4gYXMKPiBuYW1lIGFuZCBzaG91bGQgcHJvYmFibHkgbm90IGJlIHNvIHN0cmljdC4KPiAKPiBB
-bHNvLCBJIGRvbid0IGNob29zZSB3aGF0IGRldl9uYW1lKCkgcmV0dXJucywgaXQncyBpbiB0aGUg
-ZGV2aWNlIHRyZWUKPiBhbmQgdGhlIGRldmljZSB0cmVlIGRvIG5vdCBjYXJlIGFib3V0IHRoZSBp
-bXBsZW1lbnRhdGlvbiwgaXQncyBqdXN0IGEKPiBkZXNjcmlwdGl2ZSBmaWxlLgo+IAo+Pgo+PiBT
-byB0aGlzIGZ1bmN0aW9uIGlzIHRlc3Rpbmcgc29tZXRoaW5nIHdoaWNoIHNob3VsZCBiZSBhbHJl
-YWR5IHRlc3RlZCwgbm8/Cj4gCj4gSSBkb24ndCB0aGluayBpdCBpcy4gV2l0aG91dCB0aGlzIGZ1
-bmN0aW9uIHRoZSBwcm9iZSB3aWxsIHNpbXBseSBmYWlsLgo+IAo+IFRoZSBleHBsYW5hdGlvbiBv
-ZiB3aGF0IGZhaWxzIGlzIGluIHRoZSBjb2RlOgo+IAo+Pj4gKwkJLyoKPj4+ICsJCSAqIFdoZW4g
-aW5zaWRlIGEgc3lzdGVtIGNvbnRyb2xsZXIsIHRoZSBkZXZpY2UgbmFtZSBoYXMgdGhlCj4+PiAr
-CQkgKiBmb3JtOiBmMDZmODAwMC5zeXN0ZW0tY29udHJvbGxlcjphcC10aGVybWFsIHNvIHN0cmlw
-cGluZwo+Pj4gKwkJICogYWZ0ZXIgdGhlICc6JyBzaG91bGQgZ2l2ZSB1cyBhIHNob3J0ZXIgYnV0
-IG1lYW5pbmdmdWwgbmFtZS4KPj4+ICsJCSAqLwo+Pj4gKwkJbmFtZSA9IHN0cnJjaHIobmFtZSwg
-JzonKTsKPj4+ICsJCWlmICghbmFtZSkKPj4+ICsJCQluYW1lID0gImFybWFkYV90aGVybWFsIjsK
-Pj4+ICsJCWVsc2UKPj4+ICsJCQluYW1lKys7Cj4gCj4gWy4uLl0KCkknbSBub3QgaW4gZmF2b3Ig
-b2YgdGhpcywgcG90ZW50aWFsbHkgaXQgY2FuIGludHJvZHVjZSBhIGJyZWFrIHdoaWNoIGNhbgpi
-ZSBleHBsb2l0ZWQgbGF0ZXIuCgpZb3UgYXJlIGNyZWF0aW5nIHRoZSB0aGVybWFsIHpvbmVzIG1h
-bnVhbGx5IGZyb20gdGhlIGRyaXZlciBidXQgd2FudCB0bwpyZWx5IG9uIHRoZSB0ZW1wZXJhdHVy
-ZSBjb250cm9sbGVyIG5hbWUgdG8gZ2l2ZSBhIG5hbWUgdG8gdGhlIHRoZXJtYWwgem9uZS4KCldo
-eSBub3QgY3JlYXRlIHRoZSB0aGVybWFsIHpvbmUgaW4gdGhlIERUIHdpdGggdGhlIGNvcnJlY3Qg
-bmFtZSBhbmQgdXNlCmRldm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlciA/CgpPciBh
-bHRlcm5hdGl2ZWx5IGhhcmRjb2RlIHRoZSB0aGVybWFsIHpvbmUgbmFtZSA/CgoKCgoKCgotLSAK
-IDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0
-d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5j
-b20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJv
-b3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cK
-CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1h
-cm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5v
-cmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0t
-a2VybmVsCg==
+On 2018-07-26 01:03, Krzysztof Kozlowski wrote:
+> On 25 July 2018 at 21:46, Angus Ainslie (Purism) <angus@akkea.ca> 
+> wrote:
+>> The part has the capability of reading the current battery voltage
+>> 
+>> Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
+>> ---
+>>  drivers/power/supply/bq25890_charger.c | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
+>> 
+>> diff --git a/drivers/power/supply/bq25890_charger.c 
+>> b/drivers/power/supply/bq25890_charger.c
+>> index f4cf2987996b..60ccd6c2b7ad 100644
+>> --- a/drivers/power/supply/bq25890_charger.c
+>> +++ b/drivers/power/supply/bq25890_charger.c
+>> @@ -464,6 +464,20 @@ static int 
+>> bq25890_power_supply_get_property(struct power_supply *psy,
+>>                 val->intval = bq25890_find_val(bq->init_data.iterm, 
+>> TBL_ITERM);
+>>                 break;
+>> 
+>> +       case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+>> +               if (!state.online) {
+>> +                       val->intval = 0;
+>> +                       break;
+>> +               }
+> 
+> You use state from cached value (from last interrupt) but the voltage
+> is read directly from registers. The driver follows this convention in
+> few other places so maybe it is okay. It depends how accurately the
+> interrupts are generated - on every change? IOW, is always guaranteed
+> that state will be consistent with values read below?
+> 
+
+Well I shouldn't even be checking state here as the VOLTAGE_NOW should 
+be valid without it. I'll drop that check.
+
+( Krzysztof sorry for the duplicate email )
+
+> Best regards,
+> Krzysztof
+> 
+>> +
+>> +               ret = bq25890_field_read(bq, F_SYSV); /* read measured 
+>> value */
+>> +               if (ret < 0)
+>> +                       return ret;
+>> +
+>> +               /* converted_val = 2.304V + ADC_val * 20mV (table 
+>> 10.3.15) */
+>> +               val->intval = 2304000 + ret * 20000;
+>> +               break;
+>> +
+>>         default:
+>>                 return -EINVAL;
+>>         }
+>> @@ -672,6 +686,7 @@ static enum power_supply_property 
+>> bq25890_power_supply_props[] = {
+>>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+>>         POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+>>         POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+>> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>  };
+>> 
+>>  static char *bq25890_charger_supplied_to[] = {
+>> --
+>> 2.17.1
+>> 
