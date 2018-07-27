@@ -1,87 +1,47 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 01/23] thermal: armada: add a function that sanitizes
- the thermal zone name
-Date: Fri, 27 Jul 2018 13:34:19 +0200
-Message-ID: <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-2-miquel.raynal@bootlin.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180716144206.30985-2-miquel.raynal@bootlin.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
+From: Calvin Walton <calvin.walton@kepstin.ca>
+Subject: [PATCH v2] turbostat: Read extended processor family from CPUID
+Date: Fri, 27 Jul 2018 07:38:09 -0400
+Message-ID: <20180727113809.8427-1-calvin.walton@kepstin.ca>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Calvin Walton <calvin.walton@kepstin.ca>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTYvMDcvMjAxOCAxNjo0MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBUaGVybWFsIHpvbmUg
-bmFtZXMgbXVzdCBmb2xsb3cgY2VydGFpbiBydWxlcyBpbXBvc2VkIGJ5IHRoZSBmcmFtZXdvcmsu
-Cj4gVGhleSBhcmUgbGltaXRlZCBpbiBsZW5ndGggYW5kIHNoYWxsIG5vdCBoYXZlIGFueSBoeXBo
-ZW4gJy0nLgo+IAo+IFRoaXMgaXMgZG9uZSBpbiBhIHNlcGFyYXRlIGZ1bmN0aW9uIGZvciBmdXR1
-cmUgdXNlIGluIGFub3RoZXIgbG9jYXRpb24uCj4gCj4gU2lnbmVkLW9mZi1ieTogTWlxdWVsIFJh
-eW5hbCA8bWlxdWVsLnJheW5hbEBib290bGluLmNvbT4KCldoeSBkbyB5b3UgaGF2ZSB0byBwcm92
-aWRlIGEgZnVuY3Rpb24gdG8gdGVzdCB0aGF0PwoKTG9naWNhbGx5LCB0aGUgb25lIHdobyBkaWQg
-dGhlIGNoYW5nZSB0byBhZGQgYSB0aGVybWFsIG5hbWUsIHNob3VsZApjaGVjayBpdHMgY29kZSB3
-b3Jrcy4gV2l0aG91dCBhIHByb3BlciBuYW1lIHRoYXQgd29uJ3Qgd29yay4KClNvIHRoaXMgZnVu
-Y3Rpb24gaXMgdGVzdGluZyBzb21ldGhpbmcgd2hpY2ggc2hvdWxkIGJlIGFscmVhZHkgdGVzdGVk
-LCBubz8KCgoKPiAtLS0KPiAgZHJpdmVycy90aGVybWFsL2FybWFkYV90aGVybWFsLmMgfCAzNiAr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KPiAgMSBmaWxlIGNoYW5nZWQsIDM1
-IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90
-aGVybWFsL2FybWFkYV90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwu
-Ywo+IGluZGV4IDRjMjc1ZWMxMGFjNS4uMDc3ZThlNTYyMzA2IDEwMDY0NAo+IC0tLSBhL2RyaXZl
-cnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jCj4gKysrIGIvZHJpdmVycy90aGVybWFsL2FybWFk
-YV90aGVybWFsLmMKPiBAQCAtNzAsNiArNzAsNyBAQCBzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJp
-diB7Cj4gIAl2b2lkIF9faW9tZW0gKnN0YXR1czsKPiAgCXZvaWQgX19pb21lbSAqY29udHJvbDA7
-Cj4gIAl2b2lkIF9faW9tZW0gKmNvbnRyb2wxOwo+ICsJY2hhciB6b25lX25hbWVbVEhFUk1BTF9O
-QU1FX0xFTkdUSF07Cj4gIAlzdHJ1Y3QgYXJtYWRhX3RoZXJtYWxfZGF0YSAqZGF0YTsKPiAgfTsK
-PiAgCj4gQEAgLTM1Myw2ICszNTQsMzYgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2Vf
-aWQgYXJtYWRhX3RoZXJtYWxfaWRfdGFibGVbXSA9IHsKPiAgfTsKPiAgTU9EVUxFX0RFVklDRV9U
-QUJMRShvZiwgYXJtYWRhX3RoZXJtYWxfaWRfdGFibGUpOwo+ICAKPiArc3RhdGljIHZvaWQgYXJt
-YWRhX3NldF9zYW5lX25hbWUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKPiArCQkJCSBz
-dHJ1Y3QgYXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdikKPiArewo+ICsJY29uc3QgY2hhciAqbmFt
-ZSA9IGRldl9uYW1lKCZwZGV2LT5kZXYpOwo+ICsJY2hhciAqaW5zYW5lX2NoYXI7Cj4gKwo+ICsJ
-aWYgKHN0cmxlbihuYW1lKSA+IFRIRVJNQUxfTkFNRV9MRU5HVEgpIHsKPiArCQkvKgo+ICsJCSAq
-IFdoZW4gaW5zaWRlIGEgc3lzdGVtIGNvbnRyb2xsZXIsIHRoZSBkZXZpY2UgbmFtZSBoYXMgdGhl
-Cj4gKwkJICogZm9ybTogZjA2ZjgwMDAuc3lzdGVtLWNvbnRyb2xsZXI6YXAtdGhlcm1hbCBzbyBz
-dHJpcHBpbmcKPiArCQkgKiBhZnRlciB0aGUgJzonIHNob3VsZCBnaXZlIHVzIGEgc2hvcnRlciBi
-dXQgbWVhbmluZ2Z1bCBuYW1lLgo+ICsJCSAqLwo+ICsJCW5hbWUgPSBzdHJyY2hyKG5hbWUsICc6
-Jyk7Cj4gKwkJaWYgKCFuYW1lKQo+ICsJCQluYW1lID0gImFybWFkYV90aGVybWFsIjsKPiArCQll
-bHNlCj4gKwkJCW5hbWUrKzsKPiArCX0KPiArCj4gKwkvKiBTYXZlIHRoZSBuYW1lIGxvY2FsbHkg
-Ki8KPiArCXN0cm5jcHkocHJpdi0+em9uZV9uYW1lLCBuYW1lLCBUSEVSTUFMX05BTUVfTEVOR1RI
-KTsKPiArCj4gKwkvKiBUaGVuIGNoZWNrIHRoZXJlIGFyZSBubyAnLScgb3IgaHdtb24gY29yZSB3
-aWxsIGNvbXBsYWluICovCj4gKwlkbyB7Cj4gKwkJaW5zYW5lX2NoYXIgPSBzdHJwYnJrKHByaXYt
-PnpvbmVfbmFtZSwgIi0iKTsKPiArCQlpZiAoaW5zYW5lX2NoYXIpCj4gKwkJCSppbnNhbmVfY2hh
-ciA9ICdfJzsKPiArCX0gd2hpbGUgKGluc2FuZV9jaGFyKTsKPiArfQo+ICsKPiAgc3RhdGljIGlu
-dCBhcm1hZGFfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+ICB7
-Cj4gIAl2b2lkIF9faW9tZW0gKmNvbnRyb2wgPSBOVUxMOwo+IEBAIC0zODEsNiArNDEyLDkgQEAg
-c3RhdGljIGludCBhcm1hZGFfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpw
-ZGV2KQo+ICAKPiAgCXByaXYtPmRhdGEgPSAoc3RydWN0IGFybWFkYV90aGVybWFsX2RhdGEgKilt
-YXRjaC0+ZGF0YTsKPiAgCj4gKwkvKiBFbnN1cmUgZGV2aWNlIG5hbWUgaXMgY29ycmVjdCBmb3Ig
-dGhlIHRoZXJtYWwgY29yZSAqLwo+ICsJYXJtYWRhX3NldF9zYW5lX25hbWUocGRldiwgcHJpdik7
-Cj4gKwo+ICAJLyoKPiAgCSAqIExlZ2FjeSBEVCBiaW5kaW5ncyBvbmx5IGRlc2NyaWJlZCAiY29u
-dHJvbDEiIHJlZ2lzdGVyIChhbHNvIHJlZmVycmVkCj4gIAkgKiBhcyAiY29udHJvbCBNU0IiIG9u
-IG9sZCBkb2N1bWVudGF0aW9uKS4gTmV3IGJpbmRpbmdzIGNvdmVyCj4gQEAgLTQwMiw3ICs0MzYs
-NyBAQCBzdGF0aWMgaW50IGFybWFkYV90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZp
-Y2UgKnBkZXYpCj4gIAo+ICAJcHJpdi0+ZGF0YS0+aW5pdF9zZW5zb3IocGRldiwgcHJpdik7Cj4g
-IAo+IC0JdGhlcm1hbCA9IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIoZGV2X25hbWUoJnBk
-ZXYtPmRldiksIDAsIDAsIHByaXYsCj4gKwl0aGVybWFsID0gdGhlcm1hbF96b25lX2RldmljZV9y
-ZWdpc3Rlcihwcml2LT56b25lX25hbWUsIDAsIDAsIHByaXYsCj4gIAkJCQkJICAgICAgICZvcHMs
-IE5VTEwsIDAsIDApOwo+ICAJaWYgKElTX0VSUih0aGVybWFsKSkgewo+ICAJCWRldl9lcnIoJnBk
-ZXYtPmRldiwKPiAKCgotLSAKIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKU
-giBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0
-cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdp
-dHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9s
-aW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVs
-QGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+This fixes the reported family on modern AMD processors (e.g. Ryzen,
+which is family 0x17). Previously these processors all showed up as
+family 0xf.
+
+See the document
+https://support.amd.com/TechDocs/56255_OSRR.pdf
+section CPUID_Fn00000001_EAX for how to calculate the family
+from the BaseFamily and ExtFamily values.
+
+This matches the code in arch/x86/lib/cpu.c
+
+Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
+---
+
+I'm still working on updating the RAPL patch on top of the changes for
+v4.18, but this CPUID fix doesn't have to wait.
+
+ tools/power/x86/turbostat/turbostat.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index bd9c6b31a504..8452ace384b3 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -4031,7 +4031,9 @@ void process_cpuid()
+ 	family = (fms >> 8) & 0xf;
+ 	model = (fms >> 4) & 0xf;
+ 	stepping = fms & 0xf;
+-	if (family == 6 || family == 0xf)
++	if (family == 0xf)
++		family += (fms >> 20) & 0xff;
++	if (family == 6 || family >= 0xf)
+ 		model += ((fms >> 16) & 0xf) << 4;
+ 
+ 	if (!quiet) {
+-- 
+2.18.0
