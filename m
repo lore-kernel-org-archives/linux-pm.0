@@ -1,15 +1,14 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 04/23] thermal: armada: rename the initialization
- routine
-Date: Fri, 27 Jul 2018 18:02:33 +0200
-Message-ID: <e371e6c4-7c74-f749-73cd-cc44434c9a6d@linaro.org>
+Subject: Re: [PATCH v3 03/23] thermal: armada: remove misleading comments
+Date: Fri, 27 Jul 2018 18:03:08 +0200
+Message-ID: <ed966280-9200-4993-268d-61096ed41807@linaro.org>
 References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-5-miquel.raynal@bootlin.com>
+ <20180716144206.30985-4-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180716144206.30985-5-miquel.raynal@bootlin.com>
+In-Reply-To: <20180716144206.30985-4-miquel.raynal@bootlin.com>
 Content-Language: en-US
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
@@ -24,17 +23,19 @@ To: Miquel Raynal <miquel.raynal@bootlin.com>, Gregory Clement <gregory.clement@
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTYvMDcvMjAxOCAxNjo0MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBDYWxsaW5nIGEgaG9v
-ayAtPmluaXRfc2Vuc29yKCkgd2hpbGUgd2hhdCBpcyBpbml0aWFsaXplZCBpcyB0aGUgSVAKPiBp
-dHNlbGYgYW5kIG5vdCB0aGUgc2Vuc29ycyBpcyBtaXNsZWFkaW5nLiBSZW5hbWUgdGhlIGhvb2sg
-LT5pbml0KCkgdG8KPiBhdm9pZCBhbnkgY29uZnVzaW9uIGluIGxhdGVyIHdvcmsgYnJpbmdpbmcg
-bXVsdGktc2Vuc29ycyBzdXBwb3J0Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwg
-PG1pcXVlbC5yYXluYWxAYm9vdGxpbi5jb20+CgoKUmV2aWV3ZWQtYnk6IERhbmllbCBMZXpjYW5v
-IDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPgoKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9y
-Zy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9s
-bG93IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vi
-b29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDov
-L3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
-CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+T24gMTYvMDcvMjAxOCAxNjo0MSwgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBPbiBvbGRlciB2ZXJz
+aW9ucyBvZiB0aGlzIHRoZXJtYWwgSVAsIFRTRU4gcmVmZXJyZWQgYXMgdGhlIGludGVybmFsCj4g
+c2Vuc29yIGluIHRoZSB0aGVybWFsIElQIHdoaWxlIEVYVF9UU0VOIHJlZmVycmVkIGFzIHNlbnNv
+cnMgb3V0c2lkZSBvZgo+IHRoaXMgSVAsIGllIGluIHRoZSBDUFVzIG1vc3Qgb2YgdGhlIHRpbWUu
+IFRoZSBiaXQgbmFtZXMgaW4gdGhlCj4gc3BlY2lmaWNhdGlvbnMgZG8gbm90IGZvbGxvdyB0aGlz
+IHJ1bGUgYW55bW9yZSwgc28gcmVtb3ZlIHRoZXNlIGNvbW1lbnRzCj4gdGhhdCBhcmUgbWlzbGVh
+ZGluZy4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJv
+b3RsaW4uY29tPgoKUmV2aWV3ZWQtYnk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0Bs
+aW5hcm8ub3JnPgoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIg
+T3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6
+Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0
+ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGlu
+YXJvLWJsb2cvPiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBs
+aXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlz
+dGluZm8vbGludXgtYXJtLWtlcm5lbAo=
