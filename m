@@ -1,8 +1,10 @@
 From: Calvin Walton <calvin.walton@kepstin.ca>
-Subject: [PATCH v2] turbostat: Read extended processor family from CPUID
-Date: Fri, 27 Jul 2018 07:38:09 -0400
-Message-ID: <20180727113809.8427-1-calvin.walton@kepstin.ca>
+Subject: [PATCH v3] turbostat: Read extended processor family from CPUID
+Date: Fri, 27 Jul 2018 07:50:53 -0400
+Message-ID: <20180727115053.8965-1-calvin.walton@kepstin.ca>
+References: <20180727113809.8427-1-calvin.walton@kepstin.ca>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180727113809.8427-1-calvin.walton@kepstin.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Calvin Walton <calvin.walton@kepstin.ca>
@@ -22,14 +24,19 @@ This matches the code in arch/x86/lib/cpu.c
 Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
 ---
 
-I'm still working on updating the RAPL patch on top of the changes for
+v3: Having just looked at the arch/x86/lib/cpu.c code again, I realized
+that it *didn't* actually match - the kernel code uses family >= 6 for
+applying the extended model number, while I was applying it only to
+ family == 6 or family >= 0xf. Change that to match for consistency.
+
+v2: I'm still working on updating the RAPL patch on top of the changes for
 v4.18, but this CPUID fix doesn't have to wait.
 
  tools/power/x86/turbostat/turbostat.c | 4 +++-
  1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bd9c6b31a504..8452ace384b3 100644
+index bd9c6b31a504..ed024deed36f 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
 @@ -4031,7 +4031,9 @@ void process_cpuid()
@@ -39,7 +46,7 @@ index bd9c6b31a504..8452ace384b3 100644
 -	if (family == 6 || family == 0xf)
 +	if (family == 0xf)
 +		family += (fms >> 20) & 0xff;
-+	if (family == 6 || family >= 0xf)
++	if (family >= 6)
  		model += ((fms >> 16) & 0xf) << 4;
  
  	if (!quiet) {
