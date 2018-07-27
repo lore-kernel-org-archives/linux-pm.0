@@ -1,54 +1,57 @@
-From: Calvin Walton <calvin.walton@kepstin.ca>
-Subject: [PATCH v3] turbostat: Read extended processor family from CPUID
-Date: Fri, 27 Jul 2018 07:50:53 -0400
-Message-ID: <20180727115053.8965-1-calvin.walton@kepstin.ca>
-References: <20180727113809.8427-1-calvin.walton@kepstin.ca>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180727113809.8427-1-calvin.walton@kepstin.ca>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Calvin Walton <calvin.walton@kepstin.ca>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH v3 01/23] thermal: armada: add a function that sanitizes
+ the thermal zone name
+Date: Fri, 27 Jul 2018 13:52:30 +0200
+Message-ID: <20180727135230.3c7102c7@xps13>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
+ <20180716144206.30985-2-miquel.raynal@bootlin.com>
+ <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This fixes the reported family on modern AMD processors (e.g. Ryzen,
-which is family 0x17). Previously these processors all showed up as
-family 0xf.
-
-See the document
-https://support.amd.com/TechDocs/56255_OSRR.pdf
-section CPUID_Fn00000001_EAX for how to calculate the family
-from the BaseFamily and ExtFamily values.
-
-This matches the code in arch/x86/lib/cpu.c
-
-Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
----
-
-v3: Having just looked at the arch/x86/lib/cpu.c code again, I realized
-that it *didn't* actually match - the kernel code uses family >= 6 for
-applying the extended model number, while I was applying it only to
- family == 6 or family >= 0xf. Change that to match for consistency.
-
-v2: I'm still working on updating the RAPL patch on top of the changes for
-v4.18, but this CPUID fix doesn't have to wait.
-
- tools/power/x86/turbostat/turbostat.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bd9c6b31a504..ed024deed36f 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -4031,7 +4031,9 @@ void process_cpuid()
- 	family = (fms >> 8) & 0xf;
- 	model = (fms >> 4) & 0xf;
- 	stepping = fms & 0xf;
--	if (family == 6 || family == 0xf)
-+	if (family == 0xf)
-+		family += (fms >> 20) & 0xff;
-+	if (family >= 6)
- 		model += ((fms >> 16) & 0xf) << 4;
- 
- 	if (!quiet) {
--- 
-2.18.0
+SGkgRGFuaWVsLAoKRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+IHdy
+b3RlIG9uIEZyaSwgMjcgSnVsIDIwMTgKMTM6MzQ6MTkgKzAyMDA6Cgo+IE9uIDE2LzA3LzIwMTgg
+MTY6NDEsIE1pcXVlbCBSYXluYWwgd3JvdGU6Cj4gPiBUaGVybWFsIHpvbmUgbmFtZXMgbXVzdCBm
+b2xsb3cgY2VydGFpbiBydWxlcyBpbXBvc2VkIGJ5IHRoZSBmcmFtZXdvcmsuCj4gPiBUaGV5IGFy
+ZSBsaW1pdGVkIGluIGxlbmd0aCBhbmQgc2hhbGwgbm90IGhhdmUgYW55IGh5cGhlbiAnLScuCj4g
+PiAKPiA+IFRoaXMgaXMgZG9uZSBpbiBhIHNlcGFyYXRlIGZ1bmN0aW9uIGZvciBmdXR1cmUgdXNl
+IGluIGFub3RoZXIgbG9jYXRpb24uCj4gPiAKPiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXlu
+YWwgPG1pcXVlbC5yYXluYWxAYm9vdGxpbi5jb20+ICAKPiAKPiBXaHkgZG8geW91IGhhdmUgdG8g
+cHJvdmlkZSBhIGZ1bmN0aW9uIHRvIHRlc3QgdGhhdD8KPiAKPiBMb2dpY2FsbHksIHRoZSBvbmUg
+d2hvIGRpZCB0aGUgY2hhbmdlIHRvIGFkZCBhIHRoZXJtYWwgbmFtZSwgc2hvdWxkCj4gY2hlY2sg
+aXRzIGNvZGUgd29ya3MuIFdpdGhvdXQgYSBwcm9wZXIgbmFtZSB0aGF0IHdvbid0IHdvcmsuCgpX
+aGF0IGRvIHlvdSBtZWFuICJ0aGUgb25lIHdobyBkaWQgdGhlIGNoYW5nZSI/CkkgdGhpbmsgdGhl
+IHRoZXJtYWwgY29yZSBzaG91bGQgbm90IGNhcmUgdGhhdCBtdWNoIHRvIHdoYXQgaXMgZ2l2ZW4g
+YXMKbmFtZSBhbmQgc2hvdWxkIHByb2JhYmx5IG5vdCBiZSBzbyBzdHJpY3QuCgpBbHNvLCBJIGRv
+bid0IGNob29zZSB3aGF0IGRldl9uYW1lKCkgcmV0dXJucywgaXQncyBpbiB0aGUgZGV2aWNlIHRy
+ZWUKYW5kIHRoZSBkZXZpY2UgdHJlZSBkbyBub3QgY2FyZSBhYm91dCB0aGUgaW1wbGVtZW50YXRp
+b24sIGl0J3MganVzdCBhCmRlc2NyaXB0aXZlIGZpbGUuCgo+IAo+IFNvIHRoaXMgZnVuY3Rpb24g
+aXMgdGVzdGluZyBzb21ldGhpbmcgd2hpY2ggc2hvdWxkIGJlIGFscmVhZHkgdGVzdGVkLCBubz8K
+CkkgZG9uJ3QgdGhpbmsgaXQgaXMuIFdpdGhvdXQgdGhpcyBmdW5jdGlvbiB0aGUgcHJvYmUgd2ls
+bCBzaW1wbHkgZmFpbC4KClRoZSBleHBsYW5hdGlvbiBvZiB3aGF0IGZhaWxzIGlzIGluIHRoZSBj
+b2RlOgoKPiA+ICsJCS8qCj4gPiArCQkgKiBXaGVuIGluc2lkZSBhIHN5c3RlbSBjb250cm9sbGVy
+LCB0aGUgZGV2aWNlIG5hbWUgaGFzIHRoZQo+ID4gKwkJICogZm9ybTogZjA2ZjgwMDAuc3lzdGVt
+LWNvbnRyb2xsZXI6YXAtdGhlcm1hbCBzbyBzdHJpcHBpbmcKPiA+ICsJCSAqIGFmdGVyIHRoZSAn
+Oicgc2hvdWxkIGdpdmUgdXMgYSBzaG9ydGVyIGJ1dCBtZWFuaW5nZnVsIG5hbWUuCj4gPiArCQkg
+Ki8KPiA+ICsJCW5hbWUgPSBzdHJyY2hyKG5hbWUsICc6Jyk7Cj4gPiArCQlpZiAoIW5hbWUpCj4g
+PiArCQkJbmFtZSA9ICJhcm1hZGFfdGhlcm1hbCI7Cj4gPiArCQllbHNlCj4gPiArCQkJbmFtZSsr
+OwoKWy4uLl0KCj4gPiArCj4gPiArCS8qIFRoZW4gY2hlY2sgdGhlcmUgYXJlIG5vICctJyBvciBo
+d21vbiBjb3JlIHdpbGwgY29tcGxhaW4gKi8KClRoYW5rcywKTWlxdcOobAoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
