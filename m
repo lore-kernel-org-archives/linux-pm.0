@@ -1,45 +1,71 @@
-From: oceanhe@zoho.com.cn
-Subject: [PATCH] cpufreq: intel_pstate: warn if HWP Native mode and OOB mode are both set
-Date: Sun, 29 Jul 2018 00:14:56 -0400
-Message-ID: <1532837696-11505-1-git-send-email-oceanhe@zoho.com.cn>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 0/2] ata: ahci: Enable DEVSLP by default on SLP_S0
+ support
+Date: Sun, 29 Jul 2018 11:25:08 +0200
+Message-ID: <930a28d9-6a81-ee03-eb77-4c3802145c65@redhat.com>
+References: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, lenb@kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ocean He <hehy1@lenovo.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, tj@kernel.org, rjw@rjwysocki.net
+Cc: alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Ocean He <hehy1@lenovo.com>
+Hi,
 
-Refer to Intel HWPM Compliance Guide (Document Number: 566474): Bit[6] or
-bit[8] of MSR MISC_PWR_MGMT is set only when BIOS select either HWP Native
-mode or HWP OOB mode. Bit[6] and bit[8] cannot be set both at the same
-time.
+On 27-07-18 22:47, Srinivas Pandruvada wrote:
+> One of the requirement for modern x86 system to enter lowest power mode
+> (SLP_S0) is SATA IP block to be off. This is true even during when
+> platform is suspended to idle and not only in opportunistic (runtime)
+> suspend.
+> This series is to enable DEVSLP by default.
+> 
+> v2:
+>   As suggested by Hans, take care of the module param is same as default
+>   LPM policy
 
-Add a warning message if intel_pstate detects both HWP Native mode and
-HWP OOB mode are set at the same time.
+Thanks.
 
-Signed-off-by: Ocean He <hehy1@lenovo.com>
----
- drivers/cpufreq/intel_pstate.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Series looks good to me:
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3c39712..678d3f2 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2455,8 +2455,12 @@ static bool __init intel_pstate_platform_pwr_mgmt_exists(void)
- 	id = x86_match_cpu(intel_pstate_cpu_oob_ids);
- 	if (id) {
- 		rdmsrl(MSR_MISC_PWR_MGMT, misc_pwr);
--		if ( misc_pwr & (1 << 8))
-+		if (misc_pwr & (1 << 8)) {
-+			if (misc_pwr & (1 << 6))
-+				pr_warn(FW_WARN
-+					"HWP Native mode and OOB mode cannot be set both at the same time.\n");
- 			return true;
-+		}
- 	}
- 
- 	idx = acpi_match_platform_list(plat_info);
--- 
-1.8.3.1
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+
+Note we need to keep an eye out for this causing regressions with
+some disks / firmware-versions.
+
+Regards,
+
+Hans
+
+
+
+
+> 
+> -current (non-rfc) series
+> Implemented suggestions from Hans
+> - no override of policy set via module param
+> - Override lpm policy per host not global policy
+> - changed the new policy name to "min_power_with_partial"
+> 
+> rfc-v2
+> - As suggested by Hans, it is possible to have ASP with DEVSLP, so
+> add a new state.
+> - Removed usage of mem_sleep_current, instead just rely on low power
+> idle flag. Don't feel good to EXPORT from core suspend code.
+> - Depending host policy to decide if we enable DEVSLP by default.
+> 
+> Srinivas Pandruvada (2):
+>    ata: ahci: Support state with min power but Partial low power state
+>    ata: ahci: Enable DEVSLP by default on x86 with SLP_S0
+> 
+>   drivers/ata/ahci.c        | 38 +++++++++++++++++++++++++++++++++-----
+>   drivers/ata/libahci.c     |  5 ++++-
+>   drivers/ata/libata-core.c |  1 +
+>   drivers/ata/libata-scsi.c |  1 +
+>   include/linux/libata.h    |  3 ++-
+>   5 files changed, 41 insertions(+), 7 deletions(-)
+> 
