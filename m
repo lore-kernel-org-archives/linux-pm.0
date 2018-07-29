@@ -1,44 +1,74 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
-Date: Sun, 29 Jul 2018 12:52:02 +0200
-Message-ID: <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com>
-References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH v3 02/23] thermal: armada: remove useless register accesses
+Date: Sun, 29 Jul 2018 21:23:04 +0200
+Message-ID: <20180729212304.00987920@xps13>
+References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
+ <20180716144206.30985-3-miquel.raynal@bootlin.com>
+ <CAAEAJfDZZbsg6UrknYV+6jH-2QeGaTQaazHuZyWo3Zv06J9C+Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAAEAJfDZZbsg6UrknYV+6jH-2QeGaTQaazHuZyWo3Zv06J9C+Q@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Rob Herring <robh+dt@kernel.org>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Many CPU architectures have caches that can scale independent of the CPUs.
-> Frequency scaling of the caches is necessary to make sure the cache is not
-> a performance bottleneck that leads to poor performance and power. The same
-> idea applies for RAM/DDR.
->
-> To achieve this, this patch adds a generic devfreq governor that can listen
-> to the frequency transitions of each CPU frequency domain and then adjusts
-> the frequency of the cache (or any devfreq device) based on the frequency
-> of the CPUs.
->
-> To decide the frequency of the device, the governor does one of the
-> following:
->
-> * Uses a CPU frequency to device frequency mapping table
->   - Either one mapping table used for all CPU freq policies (typically used
->     for system with homogeneous cores/clusters that have the same OPPs.
->   - One mapping table per CPU freq policy (typically used for ASMP systems
->     with heterogeneous CPUs with different OPPs)
->
-> OR
->
-> * Scales the device frequency in proportion to the CPU frequency. So, if
->   the CPUs are running at their max frequency, the device runs at its max
->   frequency.  If the CPUs are running at their min frequency, the device
->   runs at its min frequency. And interpolated for frequencies in between.
-
-While not having looked at the details of the patch yet, I would
-change the name of the feature to "Generic cpufreq transition
-governor" to make it somewhat less ambiguous.
+SGkgRXplcXVpZWwsCgpFemVxdWllbCBHYXJjaWEgPGV6ZXF1aWVsQHZhbmd1YXJkaWFzdXIuY29t
+LmFyPiB3cm90ZSBvbiBGcmksIDI3IEp1bAoyMDE4IDEzOjEzOjIwIC0wMzAwOgoKPiBIaSBNaXF1
+ZWwsCj4gCj4gWW91IGtub3csIGl0IGlzIHVzdWFsbHkgdXNlZnVsIHRvIENjIHRoZSBhdXRob3Ig
+b2YgdGhlIGxpbmVzIGEgcGF0Y2ggdG91Y2hlcyA6LSkKCkkgaGF2ZSB0byBhZG1pdCBJIGxpbWl0
+ZWQgdGhlIENDIGxpc3QgdG8gdGhlIGdldF9tYWludGFpbmVycy5wbCBvdXRwdXQuCkJ1dCBmb3Ig
+c3VyZSBJIGNhbiBhZGQgeW91IGZvciBmdXJ0aGVyIGNoYW5nZXMgOikKCj4gCj4gT24gMTYgSnVs
+eSAyMDE4IGF0IDExOjQxLCBNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwucmF5bmFsQGJvb3RsaW4uY29t
+PiB3cm90ZToKPiA+IFByZXBhcmUgdGhlIG1pZ3JhdGlvbiB0byB1c2UgcmVnbWFwcyBieSBmaXJz
+dCBzaW1wbGlmeWluZyB0aGUKPiA+IGluaXRpYWxpemF0aW9uIGZ1bmN0aW9uczogYXZvaWQgdW5u
+ZWNlc3Nhcnkgd3JpdGUvcmVhZCBjeWNsZXMgb24KPiA+IGNvbmZpZ3VyYXRpb24gcmVnaXN0ZXJz
+Lgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IE1pcXVlbCBSYXluYWwgPG1pcXVlbC5yYXluYWxAYm9v
+dGxpbi5jb20+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwuYyB8
+IDggKystLS0tLS0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCA2IGRlbGV0
+aW9ucygtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJt
+YWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jCj4gPiBpbmRleCAwNzdlOGU1
+NjIzMDYuLjZmZGI5MGIzYzAwMSAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9hcm1h
+ZGFfdGhlcm1hbC5jCj4gPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwuYwo+
+ID4gQEAgLTEwMywxNiArMTAzLDEzIEBAIHN0YXRpYyB2b2lkIGFybWFkYXhwX2luaXRfc2Vuc29y
+KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsCj4gPgo+ID4gICAgICAgICByZWcgPSByZWFk
+bF9yZWxheGVkKHByaXYtPmNvbnRyb2wxKTsKPiA+ICAgICAgICAgcmVnIHw9IFBNVV9UREMwX09U
+Rl9DQUxfTUFTSzsKPiA+IC0gICAgICAgd3JpdGVsKHJlZywgcHJpdi0+Y29udHJvbDEpOwo+ID4K
+PiA+ICAgICAgICAgLyogUmVmZXJlbmNlIGNhbGlicmF0aW9uIHZhbHVlICovCj4gPiAgICAgICAg
+IHJlZyAmPSB+UE1VX1REQzBfUkVGX0NBTF9DTlRfTUFTSzsKPiA+ICAgICAgICAgcmVnIHw9ICgw
+eGYxIDw8IFBNVV9UREMwX1JFRl9DQUxfQ05UX09GRlMpOwo+ID4gLSAgICAgICB3cml0ZWwocmVn
+LCBwcml2LT5jb250cm9sMSk7Cj4gPgo+ID4gICAgICAgICAvKiBSZXNldCB0aGUgc2Vuc29yICov
+Cj4gPiAtICAgICAgIHJlZyA9IHJlYWRsX3JlbGF4ZWQocHJpdi0+Y29udHJvbDEpOwo+ID4gLSAg
+ICAgICB3cml0ZWwoKHJlZyB8IFBNVV9UREMwX1NXX1JTVF9NQVNLKSwgcHJpdi0+Y29udHJvbDEp
+Owo+ID4gKyAgICAgICByZWcgfD0gUE1VX1REQzBfU1dfUlNUX01BU0s7Cj4gPgo+ID4gICAgICAg
+ICB3cml0ZWwocmVnLCBwcml2LT5jb250cm9sMSk7Cj4gPgo+ID4gQEAgLTEyOSwxNCArMTI2LDEz
+IEBAIHN0YXRpYyB2b2lkIGFybWFkYTM3MF9pbml0X3NlbnNvcihzdHJ1Y3QgcGxhdGZvcm1fZGV2
+aWNlICpwZGV2LAo+ID4KPiA+ICAgICAgICAgcmVnID0gcmVhZGxfcmVsYXhlZChwcml2LT5jb250
+cm9sMSk7Cj4gPiAgICAgICAgIHJlZyB8PSBQTVVfVERDMF9PVEZfQ0FMX01BU0s7Cj4gPiAtICAg
+ICAgIHdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wxKTsKPiA+Cj4gPiAgICAgICAgIC8qIFJlZmVy
+ZW5jZSBjYWxpYnJhdGlvbiB2YWx1ZSAqLwo+ID4gICAgICAgICByZWcgJj0gflBNVV9UREMwX1JF
+Rl9DQUxfQ05UX01BU0s7Cj4gPiAgICAgICAgIHJlZyB8PSAoMHhmMSA8PCBQTVVfVERDMF9SRUZf
+Q0FMX0NOVF9PRkZTKTsKPiA+IC0gICAgICAgd3JpdGVsKHJlZywgcHJpdi0+Y29udHJvbDEpOwo+
+ID4KPiA+ICAgICAgICAgcmVnICY9IH5QTVVfVERDMF9TVEFSVF9DQUxfTUFTSzsKPiA+ICsKPiA+
+ICAgICAgICAgd3JpdGVsKHJlZywgcHJpdi0+Y29udHJvbDEpOwo+ID4gIAo+IAo+IElJUkMsIHRo
+ZSBkb2N1bWVudGF0aW9uIGZvciB0aGlzIGhhcmR3YXJlIGJsb2NrIHdhcyBhIG1lYWdlci4KPiAK
+PiBBcmUgeW91IHN1cmUgdGhlcmUgaXNuJ3QgYW55IHJlcXVpcmVtZW50IGZvciB0aGUgY2FsaWJy
+YXRpb24KPiBzdGFydCB0byBiZSBpc3N1ZWQgc2VwYXJhdGVseSBvciBzb21ldGhpbmcgbGlrZSB0
+aGF0PwoKSSBkaWRuJ3QgZmluZCBhbnkgaW5mbyBhYm91dCB0aGlzLCBJIGRvbid0IHRoaW5rIGl0
+IHdpbGwgYmUgYSBwcm9ibGVtCmlmIG15IHVuZGVyc3RhbmRpbmcgb2YgdGhpcyBJUCBpcyBjb3Jy
+ZWN0IChoYWQgYSBsb3Qgb2YgaW50ZXJhY3Rpb25zCndpdGggTWFydmVsbCBlbmdpbmVlcnMpIGJ1
+dCBjYW5ub3QgYmUgMTAwJSBzdXJlLCBpZiBzb21lb25lIGhhcyBhCnByb2JsZW0gd2UnbGwga25v
+dyB3aGVyZSB0byBsb29rIGF0LgoKVGhhbmtzLApNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
+dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
