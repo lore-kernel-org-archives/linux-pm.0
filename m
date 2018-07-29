@@ -1,71 +1,44 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 0/2] ata: ahci: Enable DEVSLP by default on SLP_S0
- support
-Date: Sun, 29 Jul 2018 11:25:08 +0200
-Message-ID: <930a28d9-6a81-ee03-eb77-4c3802145c65@redhat.com>
-References: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
+Date: Sun, 29 Jul 2018 12:52:02 +0200
+Message-ID: <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com>
+References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180727204703.6505-1-srinivas.pandruvada@linux.intel.com>
-Content-Language: en-US
+In-Reply-To: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, tj@kernel.org, rjw@rjwysocki.net
-Cc: alan.cox@intel.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mario.Limonciello@dell.com
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan <skannan@codeaurora.org> wrote:
+> Many CPU architectures have caches that can scale independent of the CPUs.
+> Frequency scaling of the caches is necessary to make sure the cache is not
+> a performance bottleneck that leads to poor performance and power. The same
+> idea applies for RAM/DDR.
+>
+> To achieve this, this patch adds a generic devfreq governor that can listen
+> to the frequency transitions of each CPU frequency domain and then adjusts
+> the frequency of the cache (or any devfreq device) based on the frequency
+> of the CPUs.
+>
+> To decide the frequency of the device, the governor does one of the
+> following:
+>
+> * Uses a CPU frequency to device frequency mapping table
+>   - Either one mapping table used for all CPU freq policies (typically used
+>     for system with homogeneous cores/clusters that have the same OPPs.
+>   - One mapping table per CPU freq policy (typically used for ASMP systems
+>     with heterogeneous CPUs with different OPPs)
+>
+> OR
+>
+> * Scales the device frequency in proportion to the CPU frequency. So, if
+>   the CPUs are running at their max frequency, the device runs at its max
+>   frequency.  If the CPUs are running at their min frequency, the device
+>   runs at its min frequency. And interpolated for frequencies in between.
 
-On 27-07-18 22:47, Srinivas Pandruvada wrote:
-> One of the requirement for modern x86 system to enter lowest power mode
-> (SLP_S0) is SATA IP block to be off. This is true even during when
-> platform is suspended to idle and not only in opportunistic (runtime)
-> suspend.
-> This series is to enable DEVSLP by default.
-> 
-> v2:
->   As suggested by Hans, take care of the module param is same as default
->   LPM policy
-
-Thanks.
-
-Series looks good to me:
-
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
-
-Note we need to keep an eye out for this causing regressions with
-some disks / firmware-versions.
-
-Regards,
-
-Hans
-
-
-
-
-> 
-> -current (non-rfc) series
-> Implemented suggestions from Hans
-> - no override of policy set via module param
-> - Override lpm policy per host not global policy
-> - changed the new policy name to "min_power_with_partial"
-> 
-> rfc-v2
-> - As suggested by Hans, it is possible to have ASP with DEVSLP, so
-> add a new state.
-> - Removed usage of mem_sleep_current, instead just rely on low power
-> idle flag. Don't feel good to EXPORT from core suspend code.
-> - Depending host policy to decide if we enable DEVSLP by default.
-> 
-> Srinivas Pandruvada (2):
->    ata: ahci: Support state with min power but Partial low power state
->    ata: ahci: Enable DEVSLP by default on x86 with SLP_S0
-> 
->   drivers/ata/ahci.c        | 38 +++++++++++++++++++++++++++++++++-----
->   drivers/ata/libahci.c     |  5 ++++-
->   drivers/ata/libata-core.c |  1 +
->   drivers/ata/libata-scsi.c |  1 +
->   include/linux/libata.h    |  3 ++-
->   5 files changed, 41 insertions(+), 7 deletions(-)
-> 
+While not having looked at the details of the patch yet, I would
+change the name of the feature to "Generic cpufreq transition
+governor" to make it somewhat less ambiguous.
