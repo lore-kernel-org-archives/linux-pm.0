@@ -1,127 +1,43 @@
-From: Eero Tamminen <eero.t.tamminen@intel.com>
-Subject: Re: [PATCH 4/4] cpufreq: intel_pstate: enable boost for Skylake Xeon
-Date: Mon, 30 Jul 2018 11:33:25 +0300
-Message-ID: <e1dab3e0-3e75-b50d-7e50-13dc752150c4@intel.com>
-References: <20180605214242.62156-1-srinivas.pandruvada@linux.intel.com>
- <20180605214242.62156-5-srinivas.pandruvada@linux.intel.com>
- <87bmarhqk4.fsf@riseup.net>
- <3afad4b13370fe0ba6ed5020f86ce1b8ff46c603.camel@linux.intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in
+ hibernation
+Date: Mon, 30 Jul 2018 10:53:54 +0200
+Message-ID: <20180730085354.GA2494@hirez.programming.kicks-ass.net>
+References: <20180726155656.14873-1-eduval@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3afad4b13370fe0ba6ed5020f86ce1b8ff46c603.camel@linux.intel.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180726155656.14873-1-eduval@amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Francisco Jerez <currojerez@riseup.net>, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net
-Cc: peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, ggherdovich@suse.cz, Chris Wilson <chris@chris-wilson.co.uk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+To: Eduardo Valentin <eduval@amazon.com>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jul 26, 2018 at 08:56:56AM -0700, Eduardo Valentin wrote:
+> System instability are seen during resume from hibernation when system
+> is under heavy CPU load. This is due to the lack of update of sched
+> clock data
 
-On 28.07.2018 17:14, Srinivas Pandruvada wrote:
-> On Fri, 2018-07-27 at 22:34 -0700, Francisco Jerez wrote:
->> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
->>
->>> Enable HWP boost on Skylake server and workstations.
->>>
->>
->> Please revert this series, it led to significant energy usage and
->> graphics performance regressions [1].
-> Which SKX platform is targeted to graphics?
+Which would suggest you're already running with unstable sched clock.
+Otherwise nobody would care about the scd stuff.
 
-Patch that Chris pointed out is this:
-+static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] = {
-+       ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
-+       ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
-+       {}
-+};
+What kind of machine are you running? What does:
 
-The regressing platforms in our test system were:
-- SKL 6600K i5 / GT2
-- SKL 6770HQ i7 / GT4e
+  dmesg | grep -i tsc
 
-SKL-U i5 / GT3e device wasn't impacted, so I assume U devices don't 
-match INTEL_FAM6_SKYLAKE_DESKTOP.
+say?
 
+> The fix for this situation is to mark the sched clock as unstable
+> as early as possible in the resume path, leaving it unstable
+> for the duration of the resume process. This will force the
+> scheduler to attempt to align the sched clock across CPUs using
+> the delta with time of day, updating sched clock data. In a post
+> hibernation event, we can then mark the sched clock as stable
+> again, avoiding unnecessary syncs with time of day on systems
+> in which TSC is reliable.
 
-
-	- Eero
-
->>   The reasons are roughly the ones
->> we discussed by e-mail off-list last April: This causes the
->> intel_pstate
->> driver to decrease the EPP to zero
-> No. You didn't check this series. We are not using EPP at all.
-> The boost mechanism used here is not boost to max.
-> 
-> Thanks,
-> Srinivas
-> 
->> when the workload blocks on IO
->> frequently enough, which for the regressing benchmarks detailed in
->> [1]
->> is a symptom of the workload being heavily IO-bound, which means they
->> won't benefit at all from the EPP boost since they aren't
->> significantly
->> CPU-bound, and they will suffer a decrease in parallelism due to the
->> active CPU core using a larger fraction of the TDP in order to
->> achieve
->> the same work, causing the GPU to have a lower power budget
->> available,
->> leading to a decrease in system performance.
->>
->> You may want to give a shot to my previous suggestion of using [2] in
->> order to detect whether the system is IO-bound, which you can use as
->> an
->> indicator that the optimization implemented in this series cannot
->> possibly improve performance and can be expected to hurt energy
->> usage.
->>
->> Thanks.
->>
->> [1] https://bugs.freedesktop.org/show_bug.cgi?id=107410
->> [2] https://patchwork.kernel.org/patch/10312259/
->>
->>> Reported-by: Mel Gorman <mgorman@techsingularity.net>
->>> Tested-by: Giovanni Gherdovich <ggherdovich@suse.cz>
->>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
->>> .com>
->>> ---
->>>   drivers/cpufreq/intel_pstate.c | 10 ++++++++++
->>>   1 file changed, 10 insertions(+)
->>>
->>> diff --git a/drivers/cpufreq/intel_pstate.c
->>> b/drivers/cpufreq/intel_pstate.c
->>> index 70bf63bb4e0e..01c8da1f99db 100644
->>> --- a/drivers/cpufreq/intel_pstate.c
->>> +++ b/drivers/cpufreq/intel_pstate.c
->>> @@ -1794,6 +1794,12 @@ static const struct x86_cpu_id
->>> intel_pstate_cpu_ee_disable_ids[] = {
->>>   	{}
->>>   };
->>>   
->>> +static const struct x86_cpu_id intel_pstate_hwp_boost_ids[]
->>> __initconst = {
->>> +	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
->>> +	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
->>> +	{}
->>> +};
->>> +
->>>   static int intel_pstate_init_cpu(unsigned int cpunum)
->>>   {
->>>   	struct cpudata *cpu;
->>> @@ -1824,6 +1830,10 @@ static int intel_pstate_init_cpu(unsigned
->>> int cpunum)
->>>   			intel_pstate_disable_ee(cpunum);
->>>   
->>>   		intel_pstate_hwp_enable(cpu);
->>> +
->>> +		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
->>> +		if (id)
->>> +			hwp_boost = true;
->>>   	}
->>>   
->>>   	intel_pstate_get_cpu_pstates(cpu);
->>> -- 
->>> 2.13.6
+None of this makes any sense. Either you were already unstable and it
+should already have worked and them marking it stable is an outright
+bug, or your sched clock was stable but then your initial diagnosis of
+lack of scd updates is complete garbage.
