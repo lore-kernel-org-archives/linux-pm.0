@@ -1,163 +1,179 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH v4 12/12] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Mon, 30 Jul 2018 17:53:23 +0200
-Message-ID: <CAKfTPtASCvv1sbzp-7N=dsFBjATaGdeorxiyZ9urDgsMO8+XGA@mail.gmail.com>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-13-quentin.perret@arm.com> <CAKfTPtAANKzw7QTzKiU_ntiGYMxZD3etd8wMzXtngwUWHXj+Hg@mail.gmail.com>
- <20180706101858.GC11862@e108498-lin.cambridge.arm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 4/4] cpufreq: intel_pstate: enable boost for Skylake Xeon
+Date: Mon, 30 Jul 2018 08:57:37 -0700
+Message-ID: <50176d26596a019bb6add7b4091046b93004314f.camel@linux.intel.com>
+References: <20180605214242.62156-1-srinivas.pandruvada@linux.intel.com>
+         <20180605214242.62156-5-srinivas.pandruvada@linux.intel.com>
+         <87bmarhqk4.fsf@riseup.net>
+         <20180728123639.7ckv3ljnei3urn6m@techsingularity.net>
+         <87r2jnf6w0.fsf@riseup.net>
+         <20180730154347.wrcrkweckclgbyrp@techsingularity.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180706101858.GC11862@e108498-lin.cambridge.arm.com>
+In-Reply-To: <20180730154347.wrcrkweckclgbyrp@techsingularity.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
+To: Mel Gorman <mgorman@techsingularity.net>, Francisco Jerez <currojerez@riseup.net>
+Cc: lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, ggherdovich@suse.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Chris Wilson <chris@chris-wilson.co.uk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
+On Mon, 2018-07-30 at 16:43 +0100, Mel Gorman wrote:
+> On Sat, Jul 28, 2018 at 01:21:51PM -0700, Francisco Jerez wrote:
+> > > > Please revert this series, it led to significant energy usage
+> > > > and
+> > > > graphics performance regressions [1].  The reasons are roughly
+> > > > the ones
+> > > > we discussed by e-mail off-list last April: This causes the
+> > > > intel_pstate
+> > > > driver to decrease the EPP to zero when the workload blocks on
+> > > > IO
+> > > > frequently enough, which for the regressing benchmarks detailed
+> > > > in [1]
+> > > > is a symptom of the workload being heavily IO-bound, which
+> > > > means they
+> > > > won't benefit at all from the EPP boost since they aren't
+> > > > significantly
+> > > > CPU-bound, and they will suffer a decrease in parallelism due
+> > > > to the
+> > > > active CPU core using a larger fraction of the TDP in order to
+> > > > achieve
+> > > > the same work, causing the GPU to have a lower power budget
+> > > > available,
+> > > > leading to a decrease in system performance.
+> > > 
+> > > It slices both ways.
+> > 
+> > I don't think it's acceptable to land an optimization that trades
+> > performance of one use-case for another,
+> 
+> The same logic applies to a revert but that aside, I see that there
+> is
+> at least one patch floating around to disable HWP Boost for desktops
+> and
+> laptops. Maybe that'll be sufficient for the cases where IGP is a
+> major
+> component.
+We don't have to revert the series. The only contention is desktop cpu
+model. I didn't have this model before the last version.
+One entry level server uses the same CPU model as desktop, some users
+like Giovanni suggested to add. But we know that those machines are
+servers from ACPI. So we can differentiate.
 
-I have noticed the new version but prefer to continue on this thread
-to keep the history of the discussion.
+Thanks,
+Srinivas
 
-On Fri, 6 Jul 2018 at 12:19, Quentin Perret <quentin.perret@arm.com> wrote:
->
-> On Friday 06 Jul 2018 at 12:10:02 (+0200), Vincent Guittot wrote:
-> > On Thu, 28 Jun 2018 at 13:41, Quentin Perret <quentin.perret@arm.com> w=
-rote:
-> > > +static int of_est_power(unsigned long *mW, unsigned long *KHz, int c=
-pu)
-> > > +{
-> > > +       unsigned long mV, Hz, MHz;
-> > > +       struct device *cpu_dev;
-> > > +       struct dev_pm_opp *opp;
-> > > +       struct device_node *np;
-> > > +       u32 cap;
-> > > +       u64 tmp;
-> > > +
-> > > +       cpu_dev =3D get_cpu_device(cpu);
-> > > +       if (!cpu_dev)
-> > > +               return -ENODEV;
-> > > +
-> > > +       np =3D of_node_get(cpu_dev->of_node);
-> > > +       if (!np)
-> > > +               return -EINVAL;
-> > > +
-> > > +       if (of_property_read_u32(np, "dynamic-power-coefficient", &ca=
-p))
-> > > +               return -EINVAL;
-> > > +
-> > > +       Hz =3D *KHz * 1000;
-> > > +       opp =3D dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-> > > +       if (IS_ERR(opp))
-> > > +               return -EINVAL;
-> > > +
-> > > +       mV =3D dev_pm_opp_get_voltage(opp) / 1000;
-> > > +       dev_pm_opp_put(opp);
-> > > +
-> > > +       MHz =3D Hz / 1000000;
-> > > +       tmp =3D (u64)cap * mV * mV * MHz;
-> > > +       do_div(tmp, 1000000000);
-> >
-> > Could you explain the formula above ? and especially the 1000000000 it
-> > seems related to the use of mV and mW instead of uV and uW ...
->
-> That's correct, this is just a matter of units. I simply tried to
-> reproduce here what is currently done for IPA:
->
-> https://elixir.bootlin.com/linux/latest/source/drivers/thermal/cpu_coolin=
-g.c#L252
 
-ok, so you copy/paste what is done in cpu cooling device ?
 
-Nevertheless I still have some concerns with the formula used here and
-in cpu cooling device:
 
-https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bin=
-dings/arm/cpus.txt#L273
-The documentation says
-Pdyn =3D dynamic-power-coefficient * V^2 * f where voltage is in uV,
-frequency is in MHz.
- and  dynamic power coefficient in units of mW/MHz/uV^2.
-
-This implies that the results is in mW and we can summarize the formula wit=
-h :
-
-mW =3D C * (uV)^2 * Mhz with C =3D dynamic-power-coefficient
-then uV =3D 1000*mV
-mW =3D C * (1000*mV)^2 * Mhz
-mW =3D C * 1000000 * mV * mV * Mhz
-
-Which is different from what is used here and in cpu cooling device.
-I may have done something wrong with the formula but i can't catch
-it... My brain is not yet fully back from vacations
-
-Mhz =3D Hz / 1000000
-
-mW =3D C * mV * mV * 1000000 * Hz / 1000000
-mW =3D C * mV * mV * Hz
-
-Let take a simple example with
-C =3D 1
-Voltage =3D 1000 uV =3D 1 mV
-freq =3D 2 Mhz =3D 2000000 Hz
-
-mW =3D C * (uV)^2 * Mhz =3D 1 * (1000)^2 * 2 =3D 2000000
-mW =3D C * mV * mV * Hz =3D 1 * 1 * 1 * 2000000 =3D 2000000
-mW =3D C * mV * mV * MHz / 1000000000 =3D 1 * 1 * 1 * 2 / 1000000000 =3D 0
-
-so there is a mismatch between the formula in the documentation and
-the formula used in cpu_cooling.c (and in this patch).
-
-That being said, I can understand that we can easily overflow the
-result if we use some kind of realistic values like the one for
-hikey960:
-dynamic-power-coefficient  for cpu4 is : 550
-for highest OPP of cpu4:
-opp-hz =3D /bits/ 64 <2362000000>;
-opp-microvolt =3D <1100000>;
-
-Which gives with the formula in the documentation:
-mW =3D 550 * (1100000)^2 * 2362 =3D 1,571911=C3=9710^18 which is quite huge
-even for a big core running at max freq
-and with the formula in cpu_cooling.c:
-mW =3D 550 * 1100 * 1100 * 2362 / 1000000000 =3D 1571 which seems to be a
-bit more reasonable
-
-So it seems that the dynamic-power-coefficient unit is not mW/MHz/uV^2
-but mW/Ghz/V^2
-And given that we use integer, we provide Voltage and frequency by
-(mV/1000) and (Mhz/1000) and factorize all /1000
-
-May be Javi who added the formula for cpu cooling can confirm on this ?
-
->
-> >
-> > Can't you just optimize that into
-> > tmp =3D (u64)cap * mV * mV * Hz;
-> > do_div(tmp, 1000);
-
-In fact the do_div is not needed, I thought that dyn coef unit was
-uW/Mhz/uV^2 whereas it's written mW/MHz/uV^2
-
->
-> I don't think that'll work. If you use Hz instead of MHz you'll need to
-> divide tmp by 1000000000000000 to get milli-watts, as specified by the
-> EM framework.
->
-> FYI, I don't consider this patch to be ready to be merged. I kept it
-> self-contained and simple for the example but I actually think that this
-> of_est_power function should probably be factored-out somewhere else.
-> scpi-cpufreq could use it as well. Anyway, I guess we can discuss that
-> later once the APIs of the EM framework are agreed :-)
-
-It's just that the tests results that you provided in the cover letter
-has used this patch and running tests with wrong formula (it seems
-that's the documentation is wrong) doesn't give much confidence on the
-results
-
-Thanks
-Vincent
->
-> Thanks,
-> Quentin
+> 
+> > especially since one could make
+> > both use-cases happy by avoiding the boost in cases where we know
+> > beforehand that we aren't going to achieve any improvement in
+> > performance, because an application waiting frequently on an IO
+> > device
+> > which is 100% utilized isn't going to run faster just because we
+> > ramp up
+> > the CPU frequency, since the IO device won't be able to process
+> > requests
+> > from the application faster anyway, so we will only be pessimizing
+> > energy efficiency (and potentially decreasing performance of the
+> > GPU
+> > *and* of other CPU cores living on the same package for no
+> > benefit).
+> > 
+> 
+> The benchmarks in question are not necessarily utilising IO at 100%
+> or
+> IO-bound. One pattern is a small fsync which ends up context
+> switching
+> between the process and a journalling thread (may be dedicated
+> thread, may be
+> workqueue depending on filesystem) and the process waking again in
+> the very
+> near future on IO completion. While the workload may be single
+> threaded,
+> more than one core is in use because of how the short sleeps migrate
+> the
+> task to other cores.  HWP does not necessarily notice that the task
+> is
+> quite CPU-intensive due to the migrations and so the performance
+> suffers.
+> 
+> Some effort is made to minimise the number of cores used with this
+> sort
+> of waker/wakee relationship but it's not necessarily enough for HWP
+> to
+> boost the frequency.  Minimally, the journalling thread woken up will
+> not wake on the same CPU as the IO issuer except under extremely
+> heavily
+> utilisation and this is not likely to change (stacking stacks too
+> often
+> increases wakeup latency).
+> 
+> > > With the series, there are large boosts to performance on other
+> > > workloads where a slight increase in power usage is acceptable in
+> > > exchange for performance. For example,
+> > > 
+> > > Single socket skylake running sqlite
+> > >                                  v4.17               41ab43c9
+> > > Min       Trans     2580.85 (   0.00%)     5401.58 ( 109.29%)
+> > > Hmean     Trans     2610.38 (   0.00%)     5518.36 ( 111.40%)
+> > > Stddev    Trans       28.08 (   0.00%)      208.90 (-644.02%)
+> > > CoeffVar  Trans        1.08 (   0.00%)        3.78 (-251.57%)
+> > > Max       Trans     2648.02 (   0.00%)     5992.74 ( 126.31%)
+> > > BHmean-50 Trans     2629.78 (   0.00%)     5643.81 ( 114.61%)
+> > > BHmean-95 Trans     2620.38 (   0.00%)     5538.32 ( 111.36%)
+> > > BHmean-99 Trans     2620.38 (   0.00%)     5538.32 ( 111.36%)
+> > > 
+> > > That's over doubling the transactions per second for that
+> > > workload.
+> > > 
+> > > Two-socket skylake running dbench4
+> > >                                 v4.17               41ab43c9
+> > > Amean      1         40.85 (   0.00%)       14.97 (  63.36%)
+> > > Amean      2         42.31 (   0.00%)       17.33 (  59.04%)
+> > > Amean      4         53.77 (   0.00%)       27.85 (  48.20%)
+> > > Amean      8         68.86 (   0.00%)       43.78 (  36.42%)
+> > > Amean      16        82.62 (   0.00%)       56.51 (  31.60%)
+> > > Amean      32       135.80 (   0.00%)      116.06 (  14.54%)
+> > > Amean      64       737.51 (   0.00%)      701.00 (   4.95%)
+> > > Amean      512    14996.60 (   0.00%)    14755.05 (   1.61%)
+> > > 
+> > > This is reporting the average latency of operations running
+> > > dbench. The series over halves the latencies. There are many
+> > > examples
+> > > of basic workloads that benefit heavily from the series and while
+> > > I
+> > > accept it may not be universal, such as the case where the
+> > > graphics
+> > > card needs the power and not the CPU, a straight revert is not
+> > > the
+> > > answer. Without the series, HWP cripplies the CPU.
+> > > 
+> > 
+> > That seems like a huge overstatement.  HWP doesn't "cripple" the
+> > CPU
+> > without this series.  It will certainly set lower clocks than with
+> > this
+> > series for workloads like you show above that utilize the CPU very
+> > intermittently (i.e. they underutilize it). 
+> 
+> Dbench for example can be quite CPU intensive. When bound to a single
+> core, it shows up to 80% utilisation of a single core. When unbound,
+> the usage of individual cores appears low due to the migrations. It
+> may
+> be intermittent usage as it context switches to worker threads but
+> it's
+> not low utilisation either.
+> 
+> intel_pstate also had logic for IO-boosting before HWP so the user-
+> visible
+> impact for some workloads is that upgrading a machine's CPU can
+> result
+> in regressions due to HWP. Similarly it has been observed prior to
+> the
+> series that specifying no_hwp often performed better. So one could
+> argue
+> that HWP isn't "crippled" but it did have surprising behaviour.
+> 
