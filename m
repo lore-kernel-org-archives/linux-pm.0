@@ -1,42 +1,127 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 2/8] dt-bindings: devfreq: rk3399_dmc: Add rockchip,pmu phandle.
-Date: Mon, 30 Jul 2018 10:11:18 +0200
-Message-ID: <20180730081124.30698-3-enric.balletbo@collabora.com>
-References: <20180730081124.30698-1-enric.balletbo@collabora.com>
+From: Eero Tamminen <eero.t.tamminen@intel.com>
+Subject: Re: [PATCH 4/4] cpufreq: intel_pstate: enable boost for Skylake Xeon
+Date: Mon, 30 Jul 2018 11:33:25 +0300
+Message-ID: <e1dab3e0-3e75-b50d-7e50-13dc752150c4@intel.com>
+References: <20180605214242.62156-1-srinivas.pandruvada@linux.intel.com>
+ <20180605214242.62156-5-srinivas.pandruvada@linux.intel.com>
+ <87bmarhqk4.fsf@riseup.net>
+ <3afad4b13370fe0ba6ed5020f86ce1b8ff46c603.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180730081124.30698-1-enric.balletbo@collabora.com>
+In-Reply-To: <3afad4b13370fe0ba6ed5020f86ce1b8ff46c603.camel@linux.intel.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Francisco Jerez <currojerez@riseup.net>, lenb@kernel.org, rjw@rjwysocki.net, mgorman@techsingularity.net
+Cc: peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, ggherdovich@suse.cz, Chris Wilson <chris@chris-wilson.co.uk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The Rockchip DMC (Dynamic Memory Interface) needs to access to the PMU
-general register files to know the DRAM type, so add a phandle to the
-syscon that manages these registers.
+Hi,
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
+On 28.07.2018 17:14, Srinivas Pandruvada wrote:
+> On Fri, 2018-07-27 at 22:34 -0700, Francisco Jerez wrote:
+>> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
+>>
+>>> Enable HWP boost on Skylake server and workstations.
+>>>
+>>
+>> Please revert this series, it led to significant energy usage and
+>> graphics performance regressions [1].
+> Which SKX platform is targeted to graphics?
 
-Changes in v1:
-- [RFC 2/10] Add reviewed and acked tags from Chanwoo Choi and Rob Herring
+Patch that Chris pointed out is this:
++static const struct x86_cpu_id intel_pstate_hwp_boost_ids[] = {
++       ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
++       ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
++       {}
++};
 
- Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt | 2 ++
- 1 file changed, 2 insertions(+)
+The regressing platforms in our test system were:
+- SKL 6600K i5 / GT2
+- SKL 6770HQ i7 / GT4e
 
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-index 0ec68141f85a..951789c0cdd6 100644
---- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-@@ -12,6 +12,8 @@ Required properties:
- 			 for details.
- - center-supply:	 DMC supply node.
- - status:		 Marks the node enabled/disabled.
-+- rockchip,pmu:		 Phandle to the syscon managing the "PMU general register
-+			 files".
- 
- Optional properties:
- - interrupts:		 The CPU interrupt number. The interrupt specifier
--- 
-2.18.0
+SKL-U i5 / GT3e device wasn't impacted, so I assume U devices don't 
+match INTEL_FAM6_SKYLAKE_DESKTOP.
+
+
+
+	- Eero
+
+>>   The reasons are roughly the ones
+>> we discussed by e-mail off-list last April: This causes the
+>> intel_pstate
+>> driver to decrease the EPP to zero
+> No. You didn't check this series. We are not using EPP at all.
+> The boost mechanism used here is not boost to max.
+> 
+> Thanks,
+> Srinivas
+> 
+>> when the workload blocks on IO
+>> frequently enough, which for the regressing benchmarks detailed in
+>> [1]
+>> is a symptom of the workload being heavily IO-bound, which means they
+>> won't benefit at all from the EPP boost since they aren't
+>> significantly
+>> CPU-bound, and they will suffer a decrease in parallelism due to the
+>> active CPU core using a larger fraction of the TDP in order to
+>> achieve
+>> the same work, causing the GPU to have a lower power budget
+>> available,
+>> leading to a decrease in system performance.
+>>
+>> You may want to give a shot to my previous suggestion of using [2] in
+>> order to detect whether the system is IO-bound, which you can use as
+>> an
+>> indicator that the optimization implemented in this series cannot
+>> possibly improve performance and can be expected to hurt energy
+>> usage.
+>>
+>> Thanks.
+>>
+>> [1] https://bugs.freedesktop.org/show_bug.cgi?id=107410
+>> [2] https://patchwork.kernel.org/patch/10312259/
+>>
+>>> Reported-by: Mel Gorman <mgorman@techsingularity.net>
+>>> Tested-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+>>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
+>>> .com>
+>>> ---
+>>>   drivers/cpufreq/intel_pstate.c | 10 ++++++++++
+>>>   1 file changed, 10 insertions(+)
+>>>
+>>> diff --git a/drivers/cpufreq/intel_pstate.c
+>>> b/drivers/cpufreq/intel_pstate.c
+>>> index 70bf63bb4e0e..01c8da1f99db 100644
+>>> --- a/drivers/cpufreq/intel_pstate.c
+>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>> @@ -1794,6 +1794,12 @@ static const struct x86_cpu_id
+>>> intel_pstate_cpu_ee_disable_ids[] = {
+>>>   	{}
+>>>   };
+>>>   
+>>> +static const struct x86_cpu_id intel_pstate_hwp_boost_ids[]
+>>> __initconst = {
+>>> +	ICPU(INTEL_FAM6_SKYLAKE_X, core_funcs),
+>>> +	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP, core_funcs),
+>>> +	{}
+>>> +};
+>>> +
+>>>   static int intel_pstate_init_cpu(unsigned int cpunum)
+>>>   {
+>>>   	struct cpudata *cpu;
+>>> @@ -1824,6 +1830,10 @@ static int intel_pstate_init_cpu(unsigned
+>>> int cpunum)
+>>>   			intel_pstate_disable_ee(cpunum);
+>>>   
+>>>   		intel_pstate_hwp_enable(cpu);
+>>> +
+>>> +		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
+>>> +		if (id)
+>>> +			hwp_boost = true;
+>>>   	}
+>>>   
+>>>   	intel_pstate_get_cpu_pstates(cpu);
+>>> -- 
+>>> 2.13.6
