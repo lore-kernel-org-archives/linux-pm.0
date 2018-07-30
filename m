@@ -1,79 +1,86 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in
- hibernation
-Date: Mon, 30 Jul 2018 21:49:48 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1807302140390.1725@nanos.tec.linutronix.de>
-References: <20180726155656.14873-1-eduval@amazon.com> <20180730085354.GA2494@hirez.programming.kicks-ass.net> <20180730164100.GD15414@u40b0340c692b58f6553c.ant.amazon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Limit the scope of HWP dynamic boost platforms
+Date: Mon, 30 Jul 2018 15:00:29 -0700
+Message-ID: <20180730220029.81983-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180730164100.GD15414@u40b0340c692b58f6553c.ant.amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduval@amazon.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eero.t.tamminen@intel.com, ggherdovich@suse.cz, mgorman@techsingularity.net, currojerez@riseup.net, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 30 Jul 2018, Eduardo Valentin wrote:
-> On Mon, Jul 30, 2018 at 10:53:54AM +0200, Peter Zijlstra wrote:
-> > On Thu, Jul 26, 2018 at 08:56:56AM -0700, Eduardo Valentin wrote:
-> > > System instability are seen during resume from hibernation when system
-> > > is under heavy CPU load. This is due to the lack of update of sched
-> > > clock data
-> > 
-> > Which would suggest you're already running with unstable sched clock.
-> > Otherwise nobody would care about the scd stuff.
-> 
-> Yes.
+Dynamic boosting of HWP performance on IO wake showed significant
+improvement to IO workloads. This series was intended for Skylake Xeon
+platforms only and feature was enabled by default based on CPU model
+number.
 
-I doubt that...
+But some Xeon platforms reused the Skylake desktop CPU model number. This
+caused some undesirable side effects to some graphics workloads. Since
+they are heavily IO bound, the increase in CPU performance decreased the
+power available for GPU to do its computing and hence decrease in graphics
+benchmark performance.
 
-> > 
-> > What kind of machine are you running? What does:
-> > 
-> >   dmesg | grep -i tsc
-> > 
-> > say?
-> 
-> Here:
-> [    0.000000] tsc: Fast TSC calibration using PIT
-> [    0.004005] tsc: Detected 3000.000 MHz processor
-> [    0.066796] TSC deadline timer enabled
-> [    3.904269] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2b3e459bf4c, max_idle_ns: 440795289890 ns
->
+For example on a Skylake desktop, GpuTest benchmark showed average FPS
+reduction from 529 to 506.
 
-... because if the sched clock would be unstable then you'd have something
-like 'TSC unstable' in dmesg, which you obviously do not.
+This change makes sure that HWP boost feature is only enabled for Skylake
+server platforms by using ACPI FADT preferred PM Profile. If some desktop
+users wants to get benefit of boost, they can still enable boost from
+intel_pstate sysfs attribute "hwp_dynamic_boost".
 
-'sched_clock: Marking unstable' is the other message which would be
-emitted.
+Fixes: 41ab43c9c89e (cpufreq: intel_pstate: enable boost for Skylake Xeon)
+Link: https://bugs.freedesktop.org/show_bug.cgi?id=107410
+Reported-by: Eero Tamminen <eero.t.tamminen@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
 
-> > > The fix for this situation is to mark the sched clock as unstable
-> > > as early as possible in the resume path, leaving it unstable
-> > > for the duration of the resume process. This will force the
-> > > scheduler to attempt to align the sched clock across CPUs using
-> > > the delta with time of day, updating sched clock data. In a post
-> > > hibernation event, we can then mark the sched clock as stable
-> > > again, avoiding unnecessary syncs with time of day on systems
-> > > in which TSC is reliable.
-> > 
-> > None of this makes any sense. Either you were already unstable and it
-> > should already have worked and them marking it stable is an outright
-> > bug, or your sched clock was stable but then your initial diagnosis of
-> > lack of scd updates is complete garbage.
-> > 
-> 
-> I see, or it is just a workaround for the underling issue. I, for sure, see no
-> lockups anymore after forcing the scd updates. The other thing which are not
-> super clear is that this happens during the unfreezing of tasks. If I get a
-> set of cpu hog tasks while unfreezing, I see the system throwing worqueue lockup
-> detectors in hibernation restore.
-
-Yes, it pretty much papers over something else. Can you please provide a
-full dmesg from boot to failure case?
-
-Another question: Does the system recover after issuing the lockup messages
-or is it hosed completely?
-
-Thanks,
-
-	tglx
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3c3971256130..d4ed0022b0dd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -311,12 +311,20 @@ static DEFINE_MUTEX(intel_pstate_limits_lock);
+ 
+ #ifdef CONFIG_ACPI
+ 
+-static bool intel_pstate_get_ppc_enable_status(void)
++static bool intel_pstate_acpi_pm_profile_server(void)
+ {
+ 	if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
+ 	    acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER)
+ 		return true;
+ 
++	return false;
++}
++
++static bool intel_pstate_get_ppc_enable_status(void)
++{
++	if (intel_pstate_acpi_pm_profile_server())
++		return true;
++
+ 	return acpi_ppc;
+ }
+ 
+@@ -459,6 +467,11 @@ static inline void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *pol
+ static inline void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+ {
+ }
++
++static inline bool intel_pstate_acpi_pm_profile_server(void)
++{
++	return false;
++}
+ #endif
+ 
+ static inline void update_turbo_state(void)
+@@ -1841,7 +1854,7 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+ 		intel_pstate_hwp_enable(cpu);
+ 
+ 		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
+-		if (id)
++		if (id && intel_pstate_acpi_pm_profile_server())
+ 			hwp_boost = true;
+ 	}
+ 
+-- 
+2.17.1
