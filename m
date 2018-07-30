@@ -1,132 +1,99 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in hibernation
-Date: Mon, 30 Jul 2018 09:15:48 +0200
-Message-ID: <CAJZ5v0gFQebGMpS0jzJOi7Ft+C7JTTKyiKgDhNj39BrCuQdH1g@mail.gmail.com>
-References: <20180726155656.14873-1-eduval@amazon.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH 0/8] Add support for drm/rockchip to dynamically control the DDR frequency.
+Date: Mon, 30 Jul 2018 10:11:16 +0200
+Message-ID: <20180730081124.30698-1-enric.balletbo@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180726155656.14873-1-eduval@amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduval@amazon.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org, Catalin Marinas <catalin.marinas@arm.com>, Mark Yao <markyao0591@gmail.com>, Jacob Chen <jacob-chen@iotwrt.com>, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Jeffy Chen <jeffy.chen@rock-chips.com>, Nickey Yang <nickey.yang@rock-chips.com>, devicetree@vger.kernel.org, Klaus Goger <klaus.goger@theobroma-systems.com>, Randy Li <ayaka@soulik.info>, Chris Zhong <zyw@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 26, 2018 at 5:56 PM, Eduardo Valentin <eduval@amazon.com> wrote:
-> System instability are seen during resume from hibernation when system
-> is under heavy CPU load. This is due to the lack of update of sched
-> clock data,
+Dear all,
 
-Isn't that the actual bug?
+The rk3399 platform has a DFI controller that can monitor DDR load and a
+DMC driver that talks with the TF-A (Trusted Firmware-A) to dynamically
+set the DDR frequency with following flow.
 
-> and the scheduler would then think that heavy CPU hog
-> tasks need more time in CPU, causing the system to freeze
-> during the unfreezing of tasks. For example, threaded irqs,
-> and kernel processes servicing network interface may be delayed
-> for several tens of seconds, causing the system to be unreachable.
->
-> Situation like this can be reported by using lockup detectors
-> such as workqueue lockup detectors:
->
-> [root@ip-172-31-67-114 ec2-user]# echo disk > /sys/power/state
->
-> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
->  kernel:BUG: workqueue lockup - pool cpus=0 node=0 flags=0x0 nice=0 stuck for 57s!
->
-> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
->  kernel:BUG: workqueue lockup - pool cpus=1 node=0 flags=0x0 nice=0 stuck for 57s!
->
-> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
->  kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 57s!
->
-> Message from syslogd@ip-172-31-67-114 at May  7 18:29:06 ...
->  kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 403s!
->
-> The fix for this situation is to mark the sched clock as unstable
-> as early as possible in the resume path, leaving it unstable
-> for the duration of the resume process.
+             kernel                          Trusted Firmware-A
+                                                  (bl31)
+        monitor ddr load
+                |
+                |
+        get_target_rate
+                |
+                |           pass rate to TF-A
+        clk_set_rate(ddr) --------------------->run ddr dvs flow
+                                                    |
+                                                    |
+                 <------------------------------end ddr dvs flow
+                |
+                |
+              return
 
-I would rather call it a workaround.
+These patches add support for devfreq to dynamically control the DDR
+frequency into the drm rockchip driver. By default it uses the
+'simple_ondemand' governor which can adjust the frequency based on the
+DDR load.
 
-> This will force the
-> scheduler to attempt to align the sched clock across CPUs using
-> the delta with time of day, updating sched clock data. In a post
-> hibernation event, we can then mark the sched clock as stable
-> again, avoiding unnecessary syncs with time of day on systems
-> in which TSC is reliable.
->
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> Cc: Eduardo Valentin <eduval@amazon.com>
-> Cc: "mike.travis@hpe.com" <mike.travis@hpe.com>
-> Cc: Rajvi Jingar <rajvi.jingar@intel.com>
-> Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
-> Cc: Philippe Ombredanne <pombredanne@nexb.com>
-> Cc: Kate Stewart <kstewart@linuxfoundation.org>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: x86@kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduval@amazon.com>
-> ---
->
-> Hey,
->
-> No changes from first attempt, no pressure on resending. The RESEND
-> tag is just because I missed linux-pm in the first attempt.
->
-> BR,
->
->  arch/x86/kernel/tsc.c       | 29 +++++++++++++++++++++++++++++
->  include/linux/sched/clock.h |  5 +++++
->  kernel/sched/clock.c        |  4 ++--
->  3 files changed, 36 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 8ea117f8142e..f197c9742fef 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -13,6 +13,7 @@
->  #include <linux/percpu.h>
->  #include <linux/timex.h>
->  #include <linux/static_key.h>
-> +#include <linux/suspend.h>
->
->  #include <asm/hpet.h>
->  #include <asm/timer.h>
-> @@ -1377,3 +1378,31 @@ unsigned long calibrate_delay_is_known(void)
->         return 0;
->  }
->  #endif
-> +
-> +static int tsc_pm_notifier(struct notifier_block *notifier,
-> +                          unsigned long pm_event, void *unused)
-> +{
-> +       switch (pm_event) {
-> +       case PM_HIBERNATION_PREPARE:
-> +               clear_sched_clock_stable();
-> +               break;
+Waiting for your feedback.
 
-This is too early IMO.  This happens before hibernation starts, even
-before the image is created.
+Best regards,
+ Enric
 
-> +       case PM_POST_HIBERNATION:
-> +               /* Set back to the default */
-> +               if (!check_tsc_unstable())
-> +                       set_sched_clock_stable();
-> +               break;
-> +       }
-> +
-> +       return 0;
-> +};
+Changes in v1:
+- [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+- [RFC 1/10] s/Generic/General/ (Robin Murphy)
+- [RFC 2/10] Add reviewed and acked tags from Chanwoo Choi and Rob Herring
+- [RFC 3/10] Add an explanation for platform SIP calls.
+- [RFC 3/10] Change if statement for a switch.
+- [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
+- [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
+- [RFC 7/10] Removed from the series. I did not found a use case where this matters.
+- [RFC 8/10] Move rk3399-dram.h to dt-includes.
+- [RFC 8/10] Put sdram default values under the dmc node.
+- [RFC 8/10] Removed rk3399-dram-default-timing.dts
 
-If anything like this is the way to go, which honestly I doubt, I
-would prefer it to be done in hibernate() in the !in_suspend case.
+Derek Basehore (2):
+  devfreq: rk3399_dmc / clk: rockchip: Sync with vblank in the kernel
+    for DDRfreq.
+  devfreq: rk3399_dmc / clk: rockchip: Disable DDR clk timeout on
+    suspend.
 
-But why does it only affect hibernation?  Do we do something extra for
-system-wide suspend/resume that is not done for hibernation?
+Enric Balletbo i Serra (3):
+  devfreq: rockchip-dfi: Move GRF definitions to a common place.
+  dt-bindings: devfreq: rk3399_dmc: Add rockchip,pmu phandle.
+  devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.
+
+Lin Huang (2):
+  arm64: dts: rk3399: Add dfi and dmc nodes.
+  arm64: dts: rockchip: Enable dmc and dfi nodes on gru.
+
+Sean Paul (1):
+  drm: rockchip: Add DDR devfreq support.
+
+ .../bindings/devfreq/rk3399_dmc.txt           |   2 +
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  |  21 ++
+ .../boot/dts/rockchip/rk3399-op1-opp.dtsi     |  29 +++
+ arch/arm64/boot/dts/rockchip/rk3399.dtsi      |  51 ++++-
+ drivers/clk/rockchip/clk-ddr.c                | 157 +++++++++++--
+ drivers/clk/rockchip/clk.c                    |   2 +-
+ drivers/clk/rockchip/clk.h                    |   3 +-
+ drivers/devfreq/event/rockchip-dfi.c          |  23 +-
+ drivers/devfreq/rk3399_dmc.c                  | 209 +++++++++++++++---
+ drivers/devfreq/rk3399_dmc_priv.h             |  16 ++
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c   |  46 ++++
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.h   |   9 +
+ drivers/gpu/drm/rockchip/rockchip_drm_fb.c    |  35 +++
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c   |  34 +++
+ include/dt-bindings/power/rk3399-dram.h       |  73 ++++++
+ include/soc/rockchip/rk3399_dmc.h             |  42 ++++
+ include/soc/rockchip/rk3399_grf.h             |  21 ++
+ include/soc/rockchip/rockchip_sip.h           |   1 +
+ 18 files changed, 704 insertions(+), 70 deletions(-)
+ create mode 100644 drivers/devfreq/rk3399_dmc_priv.h
+ create mode 100644 include/dt-bindings/power/rk3399-dram.h
+ create mode 100644 include/soc/rockchip/rk3399_dmc.h
+ create mode 100644 include/soc/rockchip/rk3399_grf.h
+
+-- 
+2.18.0
