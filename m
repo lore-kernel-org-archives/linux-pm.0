@@ -1,49 +1,132 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 01/23] thermal: armada: add a function that sanitizes
- the thermal zone name
-Date: Mon, 30 Jul 2018 08:16:21 +0200
-Message-ID: <6c9315c1-7768-d1c3-bbed-770e56d115d4@linaro.org>
-References: <20180716144206.30985-1-miquel.raynal@bootlin.com>
- <20180716144206.30985-2-miquel.raynal@bootlin.com>
- <84f97022-a470-f314-ee75-e5afb733bea5@linaro.org>
- <20180727135230.3c7102c7@xps13>
- <f1d7e8bd-329f-0c9d-c296-0afbe871058f@linaro.org>
- <20180729212744.31cf0747@xps13>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in hibernation
+Date: Mon, 30 Jul 2018 09:15:48 +0200
+Message-ID: <CAJZ5v0gFQebGMpS0jzJOi7Ft+C7JTTKyiKgDhNj39BrCuQdH1g@mail.gmail.com>
+References: <20180726155656.14873-1-eduval@amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180729212744.31cf0747@xps13>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Eduardo Valentin <edubezval@gmail.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180726155656.14873-1-eduval@amazon.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduval@amazon.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjkvMDcvMjAxOCAyMToyNywgTWlxdWVsIFJheW5hbCB3cm90ZToKPiBIaSBEYW5pZWwsCgpb
-IC4uLiBdCgo+IFRoYXQncyBleGFjdGx5IHdoYXQgaXMgZG9uZSBsYXRlciBpbiB0aGUgc2VyaWVz
-IGFjdHVhbGx5LCBidXQgZm9yIERUCj4gYmFja3dhcmQgY29tcGF0aWJpbGl0eSBhbmQgaW4gb3Jk
-ZXIgdG8gY29udGludWUgYWRkaW5nIGZlYXR1cmUgdG8gdGhpcwo+IGRyaXZlciwgd2UgbXVzdCBl
-bnN1cmUgdGhlcmUgd29uJ3QgYmUgYW55IGRyYXdiYWNrIGZvciBwZW9wbGUgdXNpbmcgb2xkCj4g
-RFQgd2l0aCBkZXByZWNhdGVkIHRoZXJtYWwgcmVwcmVzZW50YXRpb24uCj4gCj4gCj4gVGhhbmtz
-IGZvciByZXZpZXdpbmcsIGlmIHlvdSBkb24ndCBtaW5kIEkgY291bGQgY29weSB5b3UgaW4gZnV0
-dXJlCj4gY2hhbmdlcz8gCgpZZXMsIHN1cmUuCgo+IFVuZm9ydHVuYXRlbHkgZm9yIHRoaXMgc2Vy
-aWVzIGl0J3MgYWxyZWFkeSBiZWVuIGFwcGxpZWQgYW5kIEkKPiB3b3VsZCBsaWtlIG5vdCB0byBk
-byBhbnkgZGVlcCBjaGFuZ2VzIGJlZm9yZSBpdCdzIG1lcmdlZCwgYnV0IGZvciBzdXJlCj4gdGhp
-cyBmdW5jdGlvbiBjb3VsZCBiZSBlbmhhbmNlZC4KCk9yIGZpbmQgYSB3YXkgdG8gcmVtb3ZlIGl0
-ID8gOikKCgotLSAKIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVu
-IHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3
-dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5j
-b20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8t
-YmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3Rz
-LmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9saW51eC1hcm0ta2VybmVsCg==
+On Thu, Jul 26, 2018 at 5:56 PM, Eduardo Valentin <eduval@amazon.com> wrote:
+> System instability are seen during resume from hibernation when system
+> is under heavy CPU load. This is due to the lack of update of sched
+> clock data,
+
+Isn't that the actual bug?
+
+> and the scheduler would then think that heavy CPU hog
+> tasks need more time in CPU, causing the system to freeze
+> during the unfreezing of tasks. For example, threaded irqs,
+> and kernel processes servicing network interface may be delayed
+> for several tens of seconds, causing the system to be unreachable.
+>
+> Situation like this can be reported by using lockup detectors
+> such as workqueue lockup detectors:
+>
+> [root@ip-172-31-67-114 ec2-user]# echo disk > /sys/power/state
+>
+> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+>  kernel:BUG: workqueue lockup - pool cpus=0 node=0 flags=0x0 nice=0 stuck for 57s!
+>
+> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+>  kernel:BUG: workqueue lockup - pool cpus=1 node=0 flags=0x0 nice=0 stuck for 57s!
+>
+> Message from syslogd@ip-172-31-67-114 at May  7 18:23:21 ...
+>  kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 57s!
+>
+> Message from syslogd@ip-172-31-67-114 at May  7 18:29:06 ...
+>  kernel:BUG: workqueue lockup - pool cpus=3 node=0 flags=0x1 nice=0 stuck for 403s!
+>
+> The fix for this situation is to mark the sched clock as unstable
+> as early as possible in the resume path, leaving it unstable
+> for the duration of the resume process.
+
+I would rather call it a workaround.
+
+> This will force the
+> scheduler to attempt to align the sched clock across CPUs using
+> the delta with time of day, updating sched clock data. In a post
+> hibernation event, we can then mark the sched clock as stable
+> again, avoiding unnecessary syncs with time of day on systems
+> in which TSC is reliable.
+>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> Cc: Eduardo Valentin <eduval@amazon.com>
+> Cc: "mike.travis@hpe.com" <mike.travis@hpe.com>
+> Cc: Rajvi Jingar <rajvi.jingar@intel.com>
+> Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Cc: Philippe Ombredanne <pombredanne@nexb.com>
+> Cc: Kate Stewart <kstewart@linuxfoundation.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: x86@kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <eduval@amazon.com>
+> ---
+>
+> Hey,
+>
+> No changes from first attempt, no pressure on resending. The RESEND
+> tag is just because I missed linux-pm in the first attempt.
+>
+> BR,
+>
+>  arch/x86/kernel/tsc.c       | 29 +++++++++++++++++++++++++++++
+>  include/linux/sched/clock.h |  5 +++++
+>  kernel/sched/clock.c        |  4 ++--
+>  3 files changed, 36 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index 8ea117f8142e..f197c9742fef 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/percpu.h>
+>  #include <linux/timex.h>
+>  #include <linux/static_key.h>
+> +#include <linux/suspend.h>
+>
+>  #include <asm/hpet.h>
+>  #include <asm/timer.h>
+> @@ -1377,3 +1378,31 @@ unsigned long calibrate_delay_is_known(void)
+>         return 0;
+>  }
+>  #endif
+> +
+> +static int tsc_pm_notifier(struct notifier_block *notifier,
+> +                          unsigned long pm_event, void *unused)
+> +{
+> +       switch (pm_event) {
+> +       case PM_HIBERNATION_PREPARE:
+> +               clear_sched_clock_stable();
+> +               break;
+
+This is too early IMO.  This happens before hibernation starts, even
+before the image is created.
+
+> +       case PM_POST_HIBERNATION:
+> +               /* Set back to the default */
+> +               if (!check_tsc_unstable())
+> +                       set_sched_clock_stable();
+> +               break;
+> +       }
+> +
+> +       return 0;
+> +};
+
+If anything like this is the way to go, which honestly I doubt, I
+would prefer it to be done in hibernate() in the !in_suspend case.
+
+But why does it only affect hibernation?  Do we do something extra for
+system-wide suspend/resume that is not done for hibernation?
