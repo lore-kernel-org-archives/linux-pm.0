@@ -1,74 +1,201 @@
 From: skannan@codeaurora.org
-Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
-Date: Mon, 30 Jul 2018 11:58:36 -0700
-Message-ID: <534629d03437bc8e72a62d89e726dbe5@codeaurora.org>
-References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
- <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com>
+Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
+ aggregation method
+Date: Mon, 30 Jul 2018 12:35:27 -0700
+Message-ID: <331552975e858911db66bc78c2c8e720@codeaurora.org>
+References: <20180724122521.22109-1-quentin.perret@arm.com>
+ <20180724122521.22109-11-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com>
+In-Reply-To: <20180724122521.22109-11-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rjwysocki@gmail.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-07-29 03:52, Rafael J. Wysocki wrote:
-> On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan 
-> <skannan@codeaurora.org> wrote:
->> Many CPU architectures have caches that can scale independent of the 
->> CPUs.
->> Frequency scaling of the caches is necessary to make sure the cache is 
->> not
->> a performance bottleneck that leads to poor performance and power. The 
->> same
->> idea applies for RAM/DDR.
->> 
->> To achieve this, this patch adds a generic devfreq governor that can 
->> listen
->> to the frequency transitions of each CPU frequency domain and then 
->> adjusts
->> the frequency of the cache (or any devfreq device) based on the 
->> frequency
->> of the CPUs.
->> 
->> To decide the frequency of the device, the governor does one of the
->> following:
->> 
->> * Uses a CPU frequency to device frequency mapping table
->>   - Either one mapping table used for all CPU freq policies (typically 
->> used
->>     for system with homogeneous cores/clusters that have the same 
->> OPPs.
->>   - One mapping table per CPU freq policy (typically used for ASMP 
->> systems
->>     with heterogeneous CPUs with different OPPs)
->> 
->> OR
->> 
->> * Scales the device frequency in proportion to the CPU frequency. So, 
->> if
->>   the CPUs are running at their max frequency, the device runs at its 
->> max
->>   frequency.  If the CPUs are running at their min frequency, the 
->> device
->>   runs at its min frequency. And interpolated for frequencies in 
->> between.
+On 2018-07-24 05:25, Quentin Perret wrote:
+> Schedutil aggregates the PELT signals of CFS, RT, DL and IRQ in order
+> to decide which frequency to request. Energy Aware Scheduling (EAS)
+> needs to be able to predict those requests to assess the energy impact
+> of scheduling decisions. However, the PELT signals aggregation is only
+> done in schedutil for now, hence making it hard to synchronize it with
+> EAS.
 > 
-> While not having looked at the details of the patch yet, I would
-> change the name of the feature to "Generic cpufreq transition
-> governor" to make it somewhat less ambiguous.
+> To address this issue, introduce schedutil_freq_util() to perform the
+> aforementioned aggregation and make it available to other parts of the
+> scheduler. Since frequency selection and energy estimation still need
+> to deal with RT and DL signals slightly differently, 
+> schedutil_freq_util()
+> is called with a different 'type' parameter in those two contexts, and
+> returns an aggregated utilization signal accordingly.
+> 
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 86 +++++++++++++++++++++-----------
+>  kernel/sched/sched.h             | 14 ++++++
+>  2 files changed, 72 insertions(+), 28 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c 
+> b/kernel/sched/cpufreq_schedutil.c
+> index 810193c8e4cd..af86050edcf5 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -198,15 +198,15 @@ static unsigned int get_next_freq(struct
+> sugov_policy *sg_policy,
+>   * based on the task model parameters and gives the minimal 
+> utilization
+>   * required to meet deadlines.
+>   */
+> -static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+> +				  enum schedutil_type type)
+>  {
+> -	struct rq *rq = cpu_rq(sg_cpu->cpu);
+> +	struct rq *rq = cpu_rq(cpu);
+>  	unsigned long util, irq, max;
+> 
+> -	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+> -	sg_cpu->bw_dl = cpu_bw_dl(rq);
+> +	max = arch_scale_cpu_capacity(NULL, cpu);
+> 
+> -	if (rt_rq_is_runnable(&rq->rt))
+> +	if (type == frequency_util && rt_rq_is_runnable(&rq->rt))
+>  		return max;
+> 
+>  	/*
+> @@ -224,20 +224,33 @@ static unsigned long sugov_get_util(struct
+> sugov_cpu *sg_cpu)
+>  	 * utilization (PELT windows are synchronized) we can directly add 
+> them
+>  	 * to obtain the CPU's actual utilization.
+>  	 */
+> -	util = cpu_util_cfs(rq);
+> +	util = util_cfs;
+>  	util += cpu_util_rt(rq);
+> 
+> -	/*
+> -	 * We do not make cpu_util_dl() a permanent part of this sum because 
+> we
+> -	 * want to use cpu_bw_dl() later on, but we need to check if the
+> -	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
+> -	 * f_max when there is no idle time.
+> -	 *
+> -	 * NOTE: numerical errors or stop class might cause us to not quite 
+> hit
+> -	 * saturation when we should -- something for later.
+> -	 */
+> -	if ((util + cpu_util_dl(rq)) >= max)
+> -		return max;
+> +	if (type == frequency_util) {
+> +		/*
+> +		 * For frequency selection we do not make cpu_util_dl() a
+> +		 * permanent part of this sum because we want to use
+> +		 * cpu_bw_dl() later on, but we need to check if the
+> +		 * CFS+RT+DL sum is saturated (ie. no idle time) such
+> +		 * that we select f_max when there is no idle time.
+> +		 *
+> +		 * NOTE: numerical errors or stop class might cause us
+> +		 * to not quite hit saturation when we should --
+> +		 * something for later.
+> +		 */
+> +
+> +		if ((util + cpu_util_dl(rq)) >= max)
+> +			return max;
+> +	} else {
+> +		/*
+> +		 * OTOH, for energy computation we need the estimated
+> +		 * running time, so include util_dl and ignore dl_bw.
+> +		 */
+> +		util += cpu_util_dl(rq);
+> +		if (util >= max)
+> +			return max;
+> +	}
 
-In my opinion it makes it look MORE like this is a cpufreq governor. How 
-about the following?
-PM / devfreq: Generic cpufreq to devfreq mapping governor
-Seem a lot more clear to me.
+If it's going to be a different aggregation from what's done for 
+frequency guidance, I don't see the point of having this inside 
+schedutil. Why not keep it inside the scheduler files? Also, it seems 
+weird to use a governor's code when it might not actually be in use. 
+What if someone is using ondemand, conservative, performance, etc?
 
-I'm open to suggestions for the devfreq governor name too. "cpufreq" has 
-been very confusing so far.
-cpufreq-map maybe?
+> 
+>  	/*
+>  	 * There is still idle time; further improve the number by using the
+> @@ -252,17 +265,34 @@ static unsigned long sugov_get_util(struct
+> sugov_cpu *sg_cpu)
+>  	util /= max;
+>  	util += irq;
+> 
+> -	/*
+> -	 * Bandwidth required by DEADLINE must always be granted while, for
+> -	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a 
+> mechanism
+> -	 * to gracefully reduce the frequency when no tasks show up for 
+> longer
+> -	 * periods of time.
+> -	 *
+> -	 * Ideally we would like to set bw_dl as min/guaranteed freq and util 
+> +
+> -	 * bw_dl as requested freq. However, cpufreq is not yet ready for 
+> such
+> -	 * an interface. So, we only do the latter for now.
+> -	 */
+> -	return min(max, util + sg_cpu->bw_dl);
+> +	if (type == frequency_util) {
+> +		/*
+> +		 * Bandwidth required by DEADLINE must always be granted
+> +		 * while, for FAIR and RT, we use blocked utilization of
+> +		 * IDLE CPUs as a mechanism to gracefully reduce the
+> +		 * frequency when no tasks show up for longer periods of
+> +		 * time.
+> +		 *
+> +		 * Ideally we would like to set bw_dl as min/guaranteed
+> +		 * freq and util + bw_dl as requested freq. However,
+> +		 * cpufreq is not yet ready for such an interface. So,
+> +		 * we only do the latter for now.
+> +		 */
+> +		util += cpu_bw_dl(rq);
+> +	}
+
+Instead of all this indentation, can't you just return early without 
+doing the code inside the if?
+
+> +
+> +	return min(max, util);
+> +}
+> +
+> +static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> +{
+> +	struct rq *rq = cpu_rq(sg_cpu->cpu);
+> +	unsigned long util = cpu_util_cfs(rq);
+> +
+> +	sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+> +	sg_cpu->bw_dl = cpu_bw_dl(rq);
+> +
+> +	return schedutil_freq_util(sg_cpu->cpu, util, frequency_util);
+>  }
+> 
+>  /**
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 6d08ccd1e7a4..51e7f113ee23 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2185,7 +2185,15 @@ static inline void cpufreq_update_util(struct
+> rq *rq, unsigned int flags) {}
+>  # define arch_scale_freq_invariant()	false
+>  #endif
+> 
+> +enum schedutil_type {
+> +	frequency_util,
+> +	energy_util,
+> +};
+
+Please don't use lower case for enums. It's extremely confusing.
 
 Thanks,
 Saravana
