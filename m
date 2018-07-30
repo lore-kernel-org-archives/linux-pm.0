@@ -1,96 +1,71 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH v4 12/12] OPTIONAL: cpufreq: dt: Register an Energy
- Model
-Date: Mon, 30 Jul 2018 17:20:32 +0100
-Message-ID: <20180730162029.2bu3vqipajgelbyz@queper01-lin>
-References: <20180628114043.24724-1-quentin.perret@arm.com>
- <20180628114043.24724-13-quentin.perret@arm.com>
- <CAKfTPtAANKzw7QTzKiU_ntiGYMxZD3etd8wMzXtngwUWHXj+Hg@mail.gmail.com>
- <20180706101858.GC11862@e108498-lin.cambridge.arm.com>
- <CAKfTPtASCvv1sbzp-7N=dsFBjATaGdeorxiyZ9urDgsMO8+XGA@mail.gmail.com>
+From: Eduardo Valentin <eduval@amazon.com>
+Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in
+ hibernation
+Date: Mon, 30 Jul 2018 09:41:00 -0700
+Message-ID: <20180730164100.GD15414@u40b0340c692b58f6553c.ant.amazon.com>
+References: <20180726155656.14873-1-eduval@amazon.com>
+ <20180730085354.GA2494@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtASCvv1sbzp-7N=dsFBjATaGdeorxiyZ9urDgsMO8+XGA@mail.gmail.com>
+In-Reply-To: <20180730085354.GA2494@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Eduardo Valentin <eduval@amazon.com>, "Rafael J . Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
+Hey Peter,
 
-On Monday 30 Jul 2018 at 17:53:23 (+0200), Vincent Guittot wrote:
-[...]
-> ok, so you copy/paste what is done in cpu cooling device ?
+On Mon, Jul 30, 2018 at 10:53:54AM +0200, Peter Zijlstra wrote:
+> On Thu, Jul 26, 2018 at 08:56:56AM -0700, Eduardo Valentin wrote:
+> > System instability are seen during resume from hibernation when system
+> > is under heavy CPU load. This is due to the lack of update of sched
+> > clock data
 > 
-> Nevertheless I still have some concerns with the formula used here and
-> in cpu cooling device:
+> Which would suggest you're already running with unstable sched clock.
+> Otherwise nobody would care about the scd stuff.
+
+
+Yes.
+
 > 
-> https://elixir.bootlin.com/linux/latest/source/Documentation/devicetree/bindings/arm/cpus.txt#L273
-> The documentation says
-> Pdyn = dynamic-power-coefficient * V^2 * f where voltage is in uV,
-> frequency is in MHz.
->  and  dynamic power coefficient in units of mW/MHz/uV^2.
+> What kind of machine are you running? What does:
 > 
-> This implies that the results is in mW and we can summarize the formula with :
+>   dmesg | grep -i tsc
 > 
-> mW = C * (uV)^2 * Mhz with C = dynamic-power-coefficient
-> then uV = 1000*mV
-> mW = C * (1000*mV)^2 * Mhz
-> mW = C * 1000000 * mV * mV * Mhz
+> say?
+
+Here:
+[    0.000000] tsc: Fast TSC calibration using PIT
+[    0.004005] tsc: Detected 3000.000 MHz processor
+[    0.066796] TSC deadline timer enabled
+[    3.904269] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2b3e459bf4c, max_idle_ns: 440795289890 ns
+
 > 
-> Which is different from what is used here and in cpu cooling device.
-> I may have done something wrong with the formula but i can't catch
-> it... My brain is not yet fully back from vacations
+> > The fix for this situation is to mark the sched clock as unstable
+> > as early as possible in the resume path, leaving it unstable
+> > for the duration of the resume process. This will force the
+> > scheduler to attempt to align the sched clock across CPUs using
+> > the delta with time of day, updating sched clock data. In a post
+> > hibernation event, we can then mark the sched clock as stable
+> > again, avoiding unnecessary syncs with time of day on systems
+> > in which TSC is reliable.
+> 
+> None of this makes any sense. Either you were already unstable and it
+> should already have worked and them marking it stable is an outright
+> bug, or your sched clock was stable but then your initial diagnosis of
+> lack of scd updates is complete garbage.
+> 
 
-I think your brain works fine ;) The doc does seem to be incorrect ...
-I also believe that this issue has been discussed recently in another
-thread:
+I see, or it is just a workaround for the underling issue. I, for sure, see no
+lockups anymore after forcing the scd updates. The other thing which are not
+super clear is that this happens during the unfreezing of tasks. If I get a
+set of cpu hog tasks while unfreezing, I see the system throwing worqueue lockup
+detectors in hibernation restore.
 
-http://archive.armlinux.org.uk/lurker/message/20180720.141530.2bf75d5c.en.html
+> 
 
-> Which gives with the formula in the documentation:
-> mW = 550 * (1100000)^2 * 2362 = 1,571911×10^18 which is quite huge
-> even for a big core running at max freq
-> and with the formula in cpu_cooling.c:
-> mW = 550 * 1100 * 1100 * 2362 / 1000000000 = 1571 which seems to be a
-> bit more reasonable
-
-Indeed, 1.5W for a big CPU at max OPP is in the right ballpark I
-believe.
-
-FYI, this is the power values I have in the EM for all OPPs on H960:
-
-        +--------+-------+--------+--------+
-        |      A53s      |       A73s      |
-        +--------+-------+--------+--------+
-        |  MHz   |  mW   |  MHz   |  mW    |
-        +--------+-------+--------+--------+
-        |  533   |  28   |  903   |  243   |
-        |  999   |  70   |  1421  |  500   |
-        |  1402  |  124  |  1805  |  804   |
-        |  1709  |  187  |  2112  |  1161  |
-        |  1844  |  245  |  2362  |  1571  |
-        +--------+-------+--------+--------+
-
-[...]
-
-> It's just that the tests results that you provided in the cover letter
-> has used this patch and running tests with wrong formula (it seems
-> that's the documentation is wrong) doesn't give much confidence on the
-> results
-
-I can understand that the mismatch between the code and the
-documentation can be slightly confusing. However, as you said yourself
-the code _is_ correct, so the test results are valid.
-
-Moreover, the actual unit for the power costs doesn't make any
-difference with EAS as long as that doesn't cause precision issues. EAS
-works in relative terms, so even if the unit was in, say, uW instead of
-mW, the test results would still be valid. And again, that's not the
-case, the code does the right thing here.
-
-Thanks,
-Quentin
+-- 
+All the best,
+Eduardo Valentin
