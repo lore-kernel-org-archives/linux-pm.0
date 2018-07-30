@@ -1,201 +1,79 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Mon, 30 Jul 2018 12:35:27 -0700
-Message-ID: <331552975e858911db66bc78c2c8e720@codeaurora.org>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH RESEND 1/1] x86: tsc: avoid system instability in
+ hibernation
+Date: Mon, 30 Jul 2018 21:49:48 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1807302140390.1725@nanos.tec.linutronix.de>
+References: <20180726155656.14873-1-eduval@amazon.com> <20180730085354.GA2494@hirez.programming.kicks-ass.net> <20180730164100.GD15414@u40b0340c692b58f6553c.ant.amazon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724122521.22109-11-quentin.perret@arm.com>
+In-Reply-To: <20180730164100.GD15414@u40b0340c692b58f6553c.ant.amazon.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
+To: Eduardo Valentin <eduval@amazon.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Dou Liyang <douly.fnst@cn.fujitsu.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "mike.travis@hpe.com" <mike.travis@hpe.com>, Rajvi Jingar <rajvi.jingar@intel.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Philippe Ombredanne <pombredanne@nexb.com>, Kate Stewart <kstewart@linuxfoundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-07-24 05:25, Quentin Perret wrote:
-> Schedutil aggregates the PELT signals of CFS, RT, DL and IRQ in order
-> to decide which frequency to request. Energy Aware Scheduling (EAS)
-> needs to be able to predict those requests to assess the energy impact
-> of scheduling decisions. However, the PELT signals aggregation is only
-> done in schedutil for now, hence making it hard to synchronize it with
-> EAS.
+On Mon, 30 Jul 2018, Eduardo Valentin wrote:
+> On Mon, Jul 30, 2018 at 10:53:54AM +0200, Peter Zijlstra wrote:
+> > On Thu, Jul 26, 2018 at 08:56:56AM -0700, Eduardo Valentin wrote:
+> > > System instability are seen during resume from hibernation when system
+> > > is under heavy CPU load. This is due to the lack of update of sched
+> > > clock data
+> > 
+> > Which would suggest you're already running with unstable sched clock.
+> > Otherwise nobody would care about the scd stuff.
 > 
-> To address this issue, introduce schedutil_freq_util() to perform the
-> aforementioned aggregation and make it available to other parts of the
-> scheduler. Since frequency selection and energy estimation still need
-> to deal with RT and DL signals slightly differently, 
-> schedutil_freq_util()
-> is called with a different 'type' parameter in those two contexts, and
-> returns an aggregated utilization signal accordingly.
-> 
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 86 +++++++++++++++++++++-----------
->  kernel/sched/sched.h             | 14 ++++++
->  2 files changed, 72 insertions(+), 28 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c 
-> b/kernel/sched/cpufreq_schedutil.c
-> index 810193c8e4cd..af86050edcf5 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -198,15 +198,15 @@ static unsigned int get_next_freq(struct
-> sugov_policy *sg_policy,
->   * based on the task model parameters and gives the minimal 
-> utilization
->   * required to meet deadlines.
->   */
-> -static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-> +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-> +				  enum schedutil_type type)
->  {
-> -	struct rq *rq = cpu_rq(sg_cpu->cpu);
-> +	struct rq *rq = cpu_rq(cpu);
->  	unsigned long util, irq, max;
-> 
-> -	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-> -	sg_cpu->bw_dl = cpu_bw_dl(rq);
-> +	max = arch_scale_cpu_capacity(NULL, cpu);
-> 
-> -	if (rt_rq_is_runnable(&rq->rt))
-> +	if (type == frequency_util && rt_rq_is_runnable(&rq->rt))
->  		return max;
-> 
->  	/*
-> @@ -224,20 +224,33 @@ static unsigned long sugov_get_util(struct
-> sugov_cpu *sg_cpu)
->  	 * utilization (PELT windows are synchronized) we can directly add 
-> them
->  	 * to obtain the CPU's actual utilization.
->  	 */
-> -	util = cpu_util_cfs(rq);
-> +	util = util_cfs;
->  	util += cpu_util_rt(rq);
-> 
-> -	/*
-> -	 * We do not make cpu_util_dl() a permanent part of this sum because 
-> we
-> -	 * want to use cpu_bw_dl() later on, but we need to check if the
-> -	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
-> -	 * f_max when there is no idle time.
-> -	 *
-> -	 * NOTE: numerical errors or stop class might cause us to not quite 
-> hit
-> -	 * saturation when we should -- something for later.
-> -	 */
-> -	if ((util + cpu_util_dl(rq)) >= max)
-> -		return max;
-> +	if (type == frequency_util) {
-> +		/*
-> +		 * For frequency selection we do not make cpu_util_dl() a
-> +		 * permanent part of this sum because we want to use
-> +		 * cpu_bw_dl() later on, but we need to check if the
-> +		 * CFS+RT+DL sum is saturated (ie. no idle time) such
-> +		 * that we select f_max when there is no idle time.
-> +		 *
-> +		 * NOTE: numerical errors or stop class might cause us
-> +		 * to not quite hit saturation when we should --
-> +		 * something for later.
-> +		 */
-> +
-> +		if ((util + cpu_util_dl(rq)) >= max)
-> +			return max;
-> +	} else {
-> +		/*
-> +		 * OTOH, for energy computation we need the estimated
-> +		 * running time, so include util_dl and ignore dl_bw.
-> +		 */
-> +		util += cpu_util_dl(rq);
-> +		if (util >= max)
-> +			return max;
-> +	}
+> Yes.
 
-If it's going to be a different aggregation from what's done for 
-frequency guidance, I don't see the point of having this inside 
-schedutil. Why not keep it inside the scheduler files? Also, it seems 
-weird to use a governor's code when it might not actually be in use. 
-What if someone is using ondemand, conservative, performance, etc?
+I doubt that...
 
+> > 
+> > What kind of machine are you running? What does:
+> > 
+> >   dmesg | grep -i tsc
+> > 
+> > say?
 > 
->  	/*
->  	 * There is still idle time; further improve the number by using the
-> @@ -252,17 +265,34 @@ static unsigned long sugov_get_util(struct
-> sugov_cpu *sg_cpu)
->  	util /= max;
->  	util += irq;
-> 
-> -	/*
-> -	 * Bandwidth required by DEADLINE must always be granted while, for
-> -	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a 
-> mechanism
-> -	 * to gracefully reduce the frequency when no tasks show up for 
-> longer
-> -	 * periods of time.
-> -	 *
-> -	 * Ideally we would like to set bw_dl as min/guaranteed freq and util 
-> +
-> -	 * bw_dl as requested freq. However, cpufreq is not yet ready for 
-> such
-> -	 * an interface. So, we only do the latter for now.
-> -	 */
-> -	return min(max, util + sg_cpu->bw_dl);
-> +	if (type == frequency_util) {
-> +		/*
-> +		 * Bandwidth required by DEADLINE must always be granted
-> +		 * while, for FAIR and RT, we use blocked utilization of
-> +		 * IDLE CPUs as a mechanism to gracefully reduce the
-> +		 * frequency when no tasks show up for longer periods of
-> +		 * time.
-> +		 *
-> +		 * Ideally we would like to set bw_dl as min/guaranteed
-> +		 * freq and util + bw_dl as requested freq. However,
-> +		 * cpufreq is not yet ready for such an interface. So,
-> +		 * we only do the latter for now.
-> +		 */
-> +		util += cpu_bw_dl(rq);
-> +	}
+> Here:
+> [    0.000000] tsc: Fast TSC calibration using PIT
+> [    0.004005] tsc: Detected 3000.000 MHz processor
+> [    0.066796] TSC deadline timer enabled
+> [    3.904269] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2b3e459bf4c, max_idle_ns: 440795289890 ns
+>
 
-Instead of all this indentation, can't you just return early without 
-doing the code inside the if?
+... because if the sched clock would be unstable then you'd have something
+like 'TSC unstable' in dmesg, which you obviously do not.
 
-> +
-> +	return min(max, util);
-> +}
-> +
-> +static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-> +{
-> +	struct rq *rq = cpu_rq(sg_cpu->cpu);
-> +	unsigned long util = cpu_util_cfs(rq);
-> +
-> +	sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-> +	sg_cpu->bw_dl = cpu_bw_dl(rq);
-> +
-> +	return schedutil_freq_util(sg_cpu->cpu, util, frequency_util);
->  }
-> 
->  /**
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 6d08ccd1e7a4..51e7f113ee23 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -2185,7 +2185,15 @@ static inline void cpufreq_update_util(struct
-> rq *rq, unsigned int flags) {}
->  # define arch_scale_freq_invariant()	false
->  #endif
-> 
-> +enum schedutil_type {
-> +	frequency_util,
-> +	energy_util,
-> +};
+'sched_clock: Marking unstable' is the other message which would be
+emitted.
 
-Please don't use lower case for enums. It's extremely confusing.
+> > > The fix for this situation is to mark the sched clock as unstable
+> > > as early as possible in the resume path, leaving it unstable
+> > > for the duration of the resume process. This will force the
+> > > scheduler to attempt to align the sched clock across CPUs using
+> > > the delta with time of day, updating sched clock data. In a post
+> > > hibernation event, we can then mark the sched clock as stable
+> > > again, avoiding unnecessary syncs with time of day on systems
+> > > in which TSC is reliable.
+> > 
+> > None of this makes any sense. Either you were already unstable and it
+> > should already have worked and them marking it stable is an outright
+> > bug, or your sched clock was stable but then your initial diagnosis of
+> > lack of scd updates is complete garbage.
+> > 
+> 
+> I see, or it is just a workaround for the underling issue. I, for sure, see no
+> lockups anymore after forcing the scd updates. The other thing which are not
+> super clear is that this happens during the unfreezing of tasks. If I get a
+> set of cpu hog tasks while unfreezing, I see the system throwing worqueue lockup
+> detectors in hibernation restore.
+
+Yes, it pretty much papers over something else. Can you please provide a
+full dmesg from boot to failure case?
+
+Another question: Does the system recover after issuing the lockup messages
+or is it hosed completely?
 
 Thanks,
-Saravana
+
+	tglx
