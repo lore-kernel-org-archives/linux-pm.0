@@ -1,7 +1,7 @@
 From: "Angus Ainslie (Purism)" <angus@akkea.ca>
-Subject: [PATCH v4 1/4] power: bq25890_charger.c: Add debugging output of failed initialization
-Date: Tue, 31 Jul 2018 11:49:06 -0600
-Message-ID: <20180731174909.9392-2-angus@akkea.ca>
+Subject: [PATCH v4 2/4] power: bq25890_charger.c: Remove unused table entries
+Date: Tue, 31 Jul 2018 11:49:07 -0600
+Message-ID: <20180731174909.9392-3-angus@akkea.ca>
 References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
  <20180731174909.9392-1-angus@akkea.ca>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,73 +11,37 @@ To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Angus Ainslie (Purism)" <angus@akkea.ca>
 List-Id: linux-pm@vger.kernel.org
 
-To ease adding a new part variant some debugging is handy.
+There are a few table entries that aren't used. Drop them.
 
 Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
 ---
- drivers/power/supply/bq25890_charger.c | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ drivers/power/supply/bq25890_charger.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 8e2c41ded171..7f0b3a46c50c 100644
+index 7f0b3a46c50c..ca61278e932e 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -608,30 +608,40 @@ static int bq25890_hw_init(struct bq25890_device *bq)
- 	};
+@@ -244,10 +244,7 @@ enum bq25890_table_ids {
+ 	/* range tables */
+ 	TBL_ICHG,
+ 	TBL_ITERM,
+-	TBL_IPRECHG,
+ 	TBL_VREG,
+-	TBL_BATCMP,
+-	TBL_VCLAMP,
+ 	TBL_BOOSTV,
+ 	TBL_SYSVMIN,
  
- 	ret = bq25890_chip_reset(bq);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_dbg(bq->dev, "Reset failed %d\n", ret);
- 		return ret;
-+	};
- 
- 	/* disable watchdog */
- 	ret = bq25890_field_write(bq, F_WD, 0);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_dbg(bq->dev, "Disabling watchdog failed %d\n", ret);
- 		return ret;
-+	};
- 
- 	/* initialize currents/voltages and other parameters */
- 	for (i = 0; i < ARRAY_SIZE(init_data); i++) {
- 		ret = bq25890_field_write(bq, init_data[i].id,
- 					  init_data[i].value);
--		if (ret < 0)
-+		if (ret < 0) {
-+			dev_dbg(bq->dev, "Writing init data failed %d\n", ret);
- 			return ret;
-+		};
- 	}
- 
- 	/* Configure ADC for continuous conversions. This does not enable it. */
- 	ret = bq25890_field_write(bq, F_CONV_RATE, 1);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_dbg(bq->dev, "Config ADC failed %d\n", ret);
- 		return ret;
-+	};
- 
- 	ret = bq25890_get_chip_state(bq, &state);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_dbg(bq->dev, "Get state failed %d\n", ret);
- 		return ret;
-+	};
- 
- 	mutex_lock(&bq->lock);
- 	bq->state = state;
-@@ -767,6 +777,9 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
- 			if (props[i].optional)
- 				continue;
- 
-+			dev_err(bq->dev, "Unable to read property %d %s\n", ret,
-+				props[i].name);
-+
- 			return ret;
- 		}
+@@ -287,8 +284,6 @@ static const union {
+ 	[TBL_ICHG] =	{ .rt = {0,	  5056000, 64000} },	 /* uA */
+ 	[TBL_ITERM] =	{ .rt = {64000,   1024000, 64000} },	 /* uA */
+ 	[TBL_VREG] =	{ .rt = {3840000, 4608000, 16000} },	 /* uV */
+-	[TBL_BATCMP] =	{ .rt = {0,	  140,     20} },	 /* mOhm */
+-	[TBL_VCLAMP] =	{ .rt = {0,	  224000,  32000} },	 /* uV */
+ 	[TBL_BOOSTV] =	{ .rt = {4550000, 5510000, 64000} },	 /* uV */
+ 	[TBL_SYSVMIN] = { .rt = {3000000, 3700000, 100000} },	 /* uV */
  
 -- 
 2.17.1
