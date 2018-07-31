@@ -1,37 +1,83 @@
 From: "Angus Ainslie (Purism)" <angus@akkea.ca>
-Subject: [PATCH v4 0/4] Add the BQ25896 charger IC
-Date: Tue, 31 Jul 2018 11:49:05 -0600
-Message-ID: <20180731174909.9392-1-angus@akkea.ca>
+Subject: [PATCH v4 1/4] power: bq25890_charger.c: Add debugging output of failed initialization
+Date: Tue, 31 Jul 2018 11:49:06 -0600
+Message-ID: <20180731174909.9392-2-angus@akkea.ca>
 References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
+ <20180731174909.9392-1-angus@akkea.ca>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
+In-Reply-To: <20180731174909.9392-1-angus@akkea.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Krzysztof Kozlowski <krzk@kernel.org>
 Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Angus Ainslie (Purism)" <angus@akkea.ca>
 List-Id: linux-pm@vger.kernel.org
 
-Changes since v3:
+To ease adding a new part variant some debugging is handy.
 
-Corrected reviewed-by tags.
-Fix typos.
-Clarify desscriptions of patches.
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
+---
+ drivers/power/supply/bq25890_charger.c | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-Changes since v2:
-
-Remove additional un-used table entries.
-Use the exsisting compitble string for the new part.
-Voltage now doesn't depend on state "online".
-
-Angus Ainslie (Purism) (4):
-  power: bq25890_charger.c: Add debugging output of failed
-    initialization
-  power: bq25890_charger.c: Remove unused table entries
-  power: bq25890_charger.c: Add the BQ25896 part
-  power: bq25890_charger.c: Read back the current battery voltage
-
- .../bindings/power/supply/bq25890.txt         |  3 +
- drivers/power/supply/bq25890_charger.c        | 62 ++++++++++++++-----
- 2 files changed, 50 insertions(+), 15 deletions(-)
-
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index 8e2c41ded171..7f0b3a46c50c 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -608,30 +608,40 @@ static int bq25890_hw_init(struct bq25890_device *bq)
+ 	};
+ 
+ 	ret = bq25890_chip_reset(bq);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_dbg(bq->dev, "Reset failed %d\n", ret);
+ 		return ret;
++	};
+ 
+ 	/* disable watchdog */
+ 	ret = bq25890_field_write(bq, F_WD, 0);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_dbg(bq->dev, "Disabling watchdog failed %d\n", ret);
+ 		return ret;
++	};
+ 
+ 	/* initialize currents/voltages and other parameters */
+ 	for (i = 0; i < ARRAY_SIZE(init_data); i++) {
+ 		ret = bq25890_field_write(bq, init_data[i].id,
+ 					  init_data[i].value);
+-		if (ret < 0)
++		if (ret < 0) {
++			dev_dbg(bq->dev, "Writing init data failed %d\n", ret);
+ 			return ret;
++		};
+ 	}
+ 
+ 	/* Configure ADC for continuous conversions. This does not enable it. */
+ 	ret = bq25890_field_write(bq, F_CONV_RATE, 1);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_dbg(bq->dev, "Config ADC failed %d\n", ret);
+ 		return ret;
++	};
+ 
+ 	ret = bq25890_get_chip_state(bq, &state);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_dbg(bq->dev, "Get state failed %d\n", ret);
+ 		return ret;
++	};
+ 
+ 	mutex_lock(&bq->lock);
+ 	bq->state = state;
+@@ -767,6 +777,9 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
+ 			if (props[i].optional)
+ 				continue;
+ 
++			dev_err(bq->dev, "Unable to read property %d %s\n", ret,
++				props[i].name);
++
+ 			return ret;
+ 		}
+ 
 -- 
 2.17.1
