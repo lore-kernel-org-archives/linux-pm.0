@@ -1,78 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
-Date: Tue, 31 Jul 2018 10:00:13 +0200
-Message-ID: <CAJZ5v0jYmy9z488bg8gbAGceRqv-c-ONhW0DtaKD6GUGUnCTLw@mail.gmail.com>
-References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
- <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com> <534629d03437bc8e72a62d89e726dbe5@codeaurora.org>
+From: Mel Gorman <mgorman@techsingularity.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Limit the scope of HWP dynamic
+ boost platforms
+Date: Tue, 31 Jul 2018 09:03:37 +0100
+Message-ID: <20180731080337.nomq6pwophsvib4s@techsingularity.net>
+References: <20180730220029.81983-1-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <534629d03437bc8e72a62d89e726dbe5@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20180730220029.81983-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eero.t.tamminen@intel.com, ggherdovich@suse.cz, currojerez@riseup.net
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 30, 2018 at 8:58 PM,  <skannan@codeaurora.org> wrote:
-> On 2018-07-29 03:52, Rafael J. Wysocki wrote:
->>
->> On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan <skannan@codeaurora.org>
->> wrote:
->>>
->>> Many CPU architectures have caches that can scale independent of the
->>> CPUs.
->>> Frequency scaling of the caches is necessary to make sure the cache is
->>> not
->>> a performance bottleneck that leads to poor performance and power. The
->>> same
->>> idea applies for RAM/DDR.
->>>
->>> To achieve this, this patch adds a generic devfreq governor that can
->>> listen
->>> to the frequency transitions of each CPU frequency domain and then
->>> adjusts
->>> the frequency of the cache (or any devfreq device) based on the frequency
->>> of the CPUs.
->>>
->>> To decide the frequency of the device, the governor does one of the
->>> following:
->>>
->>> * Uses a CPU frequency to device frequency mapping table
->>>   - Either one mapping table used for all CPU freq policies (typically
->>> used
->>>     for system with homogeneous cores/clusters that have the same OPPs.
->>>   - One mapping table per CPU freq policy (typically used for ASMP
->>> systems
->>>     with heterogeneous CPUs with different OPPs)
->>>
->>> OR
->>>
->>> * Scales the device frequency in proportion to the CPU frequency. So, if
->>>   the CPUs are running at their max frequency, the device runs at its max
->>>   frequency.  If the CPUs are running at their min frequency, the device
->>>   runs at its min frequency. And interpolated for frequencies in between.
->>
->>
->> While not having looked at the details of the patch yet, I would
->> change the name of the feature to "Generic cpufreq transition
->> governor" to make it somewhat less ambiguous.
->
->
-> In my opinion it makes it look MORE like this is a cpufreq governor. How
-> about the following?
-> PM / devfreq: Generic cpufreq to devfreq mapping governor
-> Seem a lot more clear to me.
+On Mon, Jul 30, 2018 at 03:00:29PM -0700, Srinivas Pandruvada wrote:
+> Dynamic boosting of HWP performance on IO wake showed significant
+> improvement to IO workloads. This series was intended for Skylake Xeon
+> platforms only and feature was enabled by default based on CPU model
+> number.
+> 
+> But some Xeon platforms reused the Skylake desktop CPU model number. This
+> caused some undesirable side effects to some graphics workloads. Since
+> they are heavily IO bound, the increase in CPU performance decreased the
+> power available for GPU to do its computing and hence decrease in graphics
+> benchmark performance.
+> 
+> For example on a Skylake desktop, GpuTest benchmark showed average FPS
+> reduction from 529 to 506.
+> 
+> This change makes sure that HWP boost feature is only enabled for Skylake
+> server platforms by using ACPI FADT preferred PM Profile. If some desktop
+> users wants to get benefit of boost, they can still enable boost from
+> intel_pstate sysfs attribute "hwp_dynamic_boost".
+> 
+> Fixes: 41ab43c9c89e (cpufreq: intel_pstate: enable boost for Skylake Xeon)
+> Link: https://bugs.freedesktop.org/show_bug.cgi?id=107410
+> Reported-by: Eero Tamminen <eero.t.tamminen@intel.com>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Well, it's not just mapping, but also it triggers on cpufreq transitions AFAICS.
+Acked-by: Mel Gorman <mgorman@techsingularity.net>
 
-Which makes me wonder if the approach here is the right one at all.
-
-Shouldn't the cpufreq driver be hooked up to the related HW through
-the OPP framework and sharing access with devfreq rather?
-
-> I'm open to suggestions for the devfreq governor name too. "cpufreq" has
-> been very confusing so far.
-> cpufreq-map maybe?
-
-It's more like "cpufreq drriven" IMO, but I don't really have any good
-names for it in mind ATM I'm afraid.
+-- 
+Mel Gorman
+SUSE Labs
