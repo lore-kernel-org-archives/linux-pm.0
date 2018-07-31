@@ -1,86 +1,78 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Tue, 31 Jul 2018 08:59:53 +0100
-Message-ID: <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
- <331552975e858911db66bc78c2c8e720@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
+Date: Tue, 31 Jul 2018 10:00:13 +0200
+Message-ID: <CAJZ5v0jYmy9z488bg8gbAGceRqv-c-ONhW0DtaKD6GUGUnCTLw@mail.gmail.com>
+References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
+ <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com> <534629d03437bc8e72a62d89e726dbe5@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <331552975e858911db66bc78c2c8e720@codeaurora.org>
+In-Reply-To: <534629d03437bc8e72a62d89e726dbe5@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: skannan@codeaurora.org
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
-[...]
-> If it's going to be a different aggregation from what's done for frequency
-> guidance, I don't see the point of having this inside schedutil. Why not
-> keep it inside the scheduler files?
+On Mon, Jul 30, 2018 at 8:58 PM,  <skannan@codeaurora.org> wrote:
+> On 2018-07-29 03:52, Rafael J. Wysocki wrote:
+>>
+>> On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan <skannan@codeaurora.org>
+>> wrote:
+>>>
+>>> Many CPU architectures have caches that can scale independent of the
+>>> CPUs.
+>>> Frequency scaling of the caches is necessary to make sure the cache is
+>>> not
+>>> a performance bottleneck that leads to poor performance and power. The
+>>> same
+>>> idea applies for RAM/DDR.
+>>>
+>>> To achieve this, this patch adds a generic devfreq governor that can
+>>> listen
+>>> to the frequency transitions of each CPU frequency domain and then
+>>> adjusts
+>>> the frequency of the cache (or any devfreq device) based on the frequency
+>>> of the CPUs.
+>>>
+>>> To decide the frequency of the device, the governor does one of the
+>>> following:
+>>>
+>>> * Uses a CPU frequency to device frequency mapping table
+>>>   - Either one mapping table used for all CPU freq policies (typically
+>>> used
+>>>     for system with homogeneous cores/clusters that have the same OPPs.
+>>>   - One mapping table per CPU freq policy (typically used for ASMP
+>>> systems
+>>>     with heterogeneous CPUs with different OPPs)
+>>>
+>>> OR
+>>>
+>>> * Scales the device frequency in proportion to the CPU frequency. So, if
+>>>   the CPUs are running at their max frequency, the device runs at its max
+>>>   frequency.  If the CPUs are running at their min frequency, the device
+>>>   runs at its min frequency. And interpolated for frequencies in between.
+>>
+>>
+>> While not having looked at the details of the patch yet, I would
+>> change the name of the feature to "Generic cpufreq transition
+>> governor" to make it somewhat less ambiguous.
+>
+>
+> In my opinion it makes it look MORE like this is a cpufreq governor. How
+> about the following?
+> PM / devfreq: Generic cpufreq to devfreq mapping governor
+> Seem a lot more clear to me.
 
-This code basically results from a discussion we had with Peter on v4.
-Keeping everything centralized can make sense from a maintenance
-perspective, I think. That makes it easy to see the impact of any change
-to utilization signals for both EAS and schedutil.
+Well, it's not just mapping, but also it triggers on cpufreq transitions AFAICS.
 
+Which makes me wonder if the approach here is the right one at all.
 
-> Also, it seems weird to use a governor's
-> code when it might not actually be in use. What if someone is using
-> ondemand, conservative, performance, etc?
+Shouldn't the cpufreq driver be hooked up to the related HW through
+the OPP framework and sharing access with devfreq rather?
 
-Yeah I thought about that too ... I would say that even if you don't
-use schedutil, it is probably a fair assumption from the scheduler's
-standpoint to assume that somewhat OPPs follow utilization (in a very
-loose way). So yes, if you use ondemand with EAS you won't have a
-perfectly consistent match between the frequency requests and what EAS
-predicts, and that might result in sub-optimal decisions in some cases,
-but I'm not sure if we can do anything better at this stage.
+> I'm open to suggestions for the devfreq governor name too. "cpufreq" has
+> been very confusing so far.
+> cpufreq-map maybe?
 
-Also, if you do use schedutil, EAS will accurately predict what will be
-the frequency _request_, but that gives you no guarantee whatsoever that
-you'll actually get it for real (because you're throttled, or because of
-thermal capping, or simply because the HW refuses it for some reason ...).
-
-There will be inconsistencies between EAS' predictions and the actual
-frequencies, and we have to live with that. The best we can do is make
-sure we're at least internally consistent from the scheduler's
-standpoint, and that's why I think it can make sense to factorize as
-many things as possible with schedutil where applicable.
-
-> > +	if (type == frequency_util) {
-> > +		/*
-> > +		 * Bandwidth required by DEADLINE must always be granted
-> > +		 * while, for FAIR and RT, we use blocked utilization of
-> > +		 * IDLE CPUs as a mechanism to gracefully reduce the
-> > +		 * frequency when no tasks show up for longer periods of
-> > +		 * time.
-> > +		 *
-> > +		 * Ideally we would like to set bw_dl as min/guaranteed
-> > +		 * freq and util + bw_dl as requested freq. However,
-> > +		 * cpufreq is not yet ready for such an interface. So,
-> > +		 * we only do the latter for now.
-> > +		 */
-> > +		util += cpu_bw_dl(rq);
-> > +	}
-> 
-> Instead of all this indentation, can't you just return early without doing
-> the code inside the if?
-
-But then I'll need to duplicate the 'min' below, so not sure if it's
-worth it ?
-
-> > +enum schedutil_type {
-> > +	frequency_util,
-> > +	energy_util,
-> > +};
-> 
-> Please don't use lower case for enums. It's extremely confusing.
-
-Ok, I'll change that in v6.
-
-Thanks !
-Quentin
+It's more like "cpufreq drriven" IMO, but I don't really have any good
+names for it in mind ATM I'm afraid.
