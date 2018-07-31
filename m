@@ -1,76 +1,93 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC] PCI: imx: Add multi-pd support
-Date: Tue, 31 Jul 2018 10:32:31 +0200
-Message-ID: <CAPDyKFpN99iDYf1mcG-G1=AAkiw8OjoynvK+5cBV8GvCs6WtKg@mail.gmail.com>
-References: <8018069bc772376caef29e76280e4d0facffdb68.1532455922.git.leonard.crestez@nxp.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Limit the scope of HWP dynamic boost platforms
+Date: Tue, 31 Jul 2018 11:18:44 +0200
+Message-ID: <1750924.cJQU9QUSYP@aspire.rjw.lan>
+References: <20180730220029.81983-1-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8018069bc772376caef29e76280e4d0facffdb68.1532455922.git.leonard.crestez@nxp.com>
+In-Reply-To: <20180730220029.81983-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jon Hunter <jonathanh@nvidia.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Andrey Smirnov <andrew.smirnov@gmail.com>, Anson Huang <Anson.Huang@nxp.com>, Richard Zhu <hongxing.zhu@nxp.com>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, Sascha Hauer <kernel@pengutronix.de>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: lenb@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eero.t.tamminen@intel.com, ggherdovich@suse.cz, mgorman@techsingularity.net, currojerez@riseup.net
 List-Id: linux-pm@vger.kernel.org
 
-On 24 July 2018 at 20:17, Leonard Crestez <leonard.crestez@nxp.com> wrote:
-> On some chips the PCIE and PCIE_PHY blocks are in separate power domains
-> which can be power-gated independently. The driver needs to handle this
-> by keeping both domain active.
->
-> This is intended for imx6sx where PCIE is in DISPMIX and PCIE_PHY in
-> it's own domain. Defining the DISPMIX domain requires a way for pcie to
-> keep it active or it will break when displays are off.
->
-> The power-domains on imx6sx are meant to look like this:
->         power-domains = <&pd_disp>, <&pd_pci>;
->         power-domain-names = "pcie", "pcie_phy";
->
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-See some comments below...
-
+On Tuesday, July 31, 2018 12:00:29 AM CEST Srinivas Pandruvada wrote:
+> Dynamic boosting of HWP performance on IO wake showed significant
+> improvement to IO workloads. This series was intended for Skylake Xeon
+> platforms only and feature was enabled by default based on CPU model
+> number.
+> 
+> But some Xeon platforms reused the Skylake desktop CPU model number. This
+> caused some undesirable side effects to some graphics workloads. Since
+> they are heavily IO bound, the increase in CPU performance decreased the
+> power available for GPU to do its computing and hence decrease in graphics
+> benchmark performance.
+> 
+> For example on a Skylake desktop, GpuTest benchmark showed average FPS
+> reduction from 529 to 506.
+> 
+> This change makes sure that HWP boost feature is only enabled for Skylake
+> server platforms by using ACPI FADT preferred PM Profile. If some desktop
+> users wants to get benefit of boost, they can still enable boost from
+> intel_pstate sysfs attribute "hwp_dynamic_boost".
+> 
+> Fixes: 41ab43c9c89e (cpufreq: intel_pstate: enable boost for Skylake Xeon)
+> Link: https://bugs.freedesktop.org/show_bug.cgi?id=107410
+> Reported-by: Eero Tamminen <eero.t.tamminen@intel.com>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 > ---
->
-> Right now if a device has a single power domain it will be activated
-> before probe but if it has multiple domains they need to be explicitly
-> "attached" to and controlled. Supporting both is a bit awkward, this
-> patch makes the distinction based on (dev->pm_domain != NULL).
->
-> Maybe the PM core should make this distinction based on a flag in struct
-> device_driver instead of number of power-domains? So by default when a
-> device has multiple power domains they would would be activated
-> together and this patch would be unnecessary.
+>  drivers/cpufreq/intel_pstate.c | 17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 3c3971256130..d4ed0022b0dd 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -311,12 +311,20 @@ static DEFINE_MUTEX(intel_pstate_limits_lock);
+>  
+>  #ifdef CONFIG_ACPI
+>  
+> -static bool intel_pstate_get_ppc_enable_status(void)
+> +static bool intel_pstate_acpi_pm_profile_server(void)
+>  {
+>  	if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
+>  	    acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER)
+>  		return true;
+>  
+> +	return false;
+> +}
+> +
+> +static bool intel_pstate_get_ppc_enable_status(void)
+> +{
+> +	if (intel_pstate_acpi_pm_profile_server())
+> +		return true;
+> +
+>  	return acpi_ppc;
+>  }
+>  
+> @@ -459,6 +467,11 @@ static inline void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *pol
+>  static inline void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+>  {
+>  }
+> +
+> +static inline bool intel_pstate_acpi_pm_profile_server(void)
+> +{
+> +	return false;
+> +}
+>  #endif
+>  
+>  static inline void update_turbo_state(void)
+> @@ -1841,7 +1854,7 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+>  		intel_pstate_hwp_enable(cpu);
+>  
+>  		id = x86_match_cpu(intel_pstate_hwp_boost_ids);
+> -		if (id)
+> +		if (id && intel_pstate_acpi_pm_profile_server())
+>  			hwp_boost = true;
+>  	}
+>  
+> 
 
-Activation is deliberately left to be manged by each user, as the PM
-core/genpd can't know when powering on the PM domains make sense.
-
-The main reason to why genpd powers on the PM domain for the single PM
-domain case, is because of legacy behaviors in drivers. Some drivers
-don't call pm_runtime_get_sync() during ->probe(), but instead use
-pm_runtime_set_active(), to synchronize the state with the HW. This
-means the ->runtime_resume() callback doesn't get invoked for genpd,
-hence genpd must power on the PM domain already at attache to cover
-this case.
-
->
-> This is marked as "RFC" mostly because I believe it should be handled
-> inside PM core, without driver code. Does this make sense to anyone else?
->
-> This is independent of recent patches adding suspend/resume support to
-> imx pci, but supporting suspend with multi-pd requires adding device
-> links, not just activating pds at probe time.
->
-> The device_link is marked as "STATELESS" because otherwise a warning is
-> triggered in device_links_driver_bound. This seems to happen because the
-> pd devices are always marked as "DL_DEV_NO_DRIVER". Maybe they should be
-> instead always be marked as DL_DEV_DRIVER_BOUND?
-
-Using STATELESS is correct, because the supplier devices, which are
-managed by genpd don't have any driver attached to them.
-
-[...]
-
-Kind regards
-Uffe
+Applied, thanks!
