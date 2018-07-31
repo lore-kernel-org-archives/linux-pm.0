@@ -1,40 +1,52 @@
-From: Angus Ainslie <angus@akkea.ca>
-Subject: Re: [PATCH v3 1/4] power: bq25890_charger.c: Add debugging output of  failed initialization
-Date: Tue, 31 Jul 2018 12:16:19 -0600
-Message-ID: <e37abf500ce853afb24a8568b47c6679@www.akkea.ca>
-References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
- <20180731164316.32696-1-angus@akkea.ca>
- <20180731164316.32696-2-angus@akkea.ca>
- <CAJKOXPeaNpdPbhJuc5FcPKdCq_FPr70_PCSuNMmZ5wJAhBXvmQ@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH v6 1/5] dt-bindings: thermal: qcom-spmi-temp-alarm: Fix documentation of 'reg'
+Date: Tue, 31 Jul 2018 11:45:52 -0700
+Message-ID: <20180731184556.169290-1-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPeaNpdPbhJuc5FcPKdCq_FPr70_PCSuNMmZ5wJAhBXvmQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: angus.ainslie@puri.sm, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Douglas Anderson <dianders@chromium.org>, Stephen Boyd <sboyd@kernel.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-07-31 10:57, Krzysztof Kozlowski wrote:
-> On 31 July 2018 at 18:43, Angus Ainslie (Purism) <angus@akkea.ca> 
-> wrote:
->> To ease adding a new part variant some debugging is handy.
->> 
->> Signed-off-by: Angus Ainslie (Purism) <angus@akkea.ca>
-> 
-> You missed my tag - I already reviewed it. Unless you change
-> something, the tag should be added to commit msg:
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> 
-> Krzysztof
-> 
+The documentation claims that the 'reg' property consists of two values,
+the SPMI address and the length of the controller's registers. However
+the SPMI bus to which it is added specifies "#size-cells = <0>;". Remove
+the controller register length from the documentation of the field and the
+example.
 
-Hi Krzysztof,
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
+---
+Changes in v6:
+- patch added to the series
+---
+ .../devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt     | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Ooops, sorry about that.
-
-Thanks for the review.
-
-Angus
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+index 290ec06fa33a..86fb41fe772f 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
++++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+@@ -6,8 +6,7 @@ interrupt signal and status register to identify high PMIC die temperature.
+ 
+ Required properties:
+ - compatible:      Should contain "qcom,spmi-temp-alarm".
+-- reg:             Specifies the SPMI address and length of the controller's
+-                   registers.
++- reg:             Specifies the SPMI address.
+ - interrupts:      PMIC temperature alarm interrupt.
+ - #thermal-sensor-cells: Should be 0. See thermal.txt for a description.
+ 
+@@ -20,7 +19,7 @@ Example:
+ 
+ 	pm8941_temp: thermal-alarm@2400 {
+ 		compatible = "qcom,spmi-temp-alarm";
+-		reg = <0x2400 0x100>;
++		reg = <0x2400>;
+ 		interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
+ 		#thermal-sensor-cells = <0>;
+ 
+-- 
+2.18.0.345.g5c9ce644c3-goog
