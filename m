@@ -1,110 +1,101 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Tue, 31 Jul 2018 12:31:17 -0700
-Message-ID: <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
- <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
+Date: Tue, 31 Jul 2018 12:39:53 -0700
+Message-ID: <20180731193953.GH68975@google.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+ <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
+ <20180703234705.227473-6-mka@chromium.org>
+ <5B3C6C2A.1070205@samsung.com>
+ <20180706175301.GG129942@google.com>
+ <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+ <20180716175050.GZ129942@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
+Content-Disposition: inline
+In-Reply-To: <20180716175050.GZ129942@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-07-31 00:59, Quentin Perret wrote:
-> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org 
-> wrote:
-> [...]
->> If it's going to be a different aggregation from what's done for 
->> frequency
->> guidance, I don't see the point of having this inside schedutil. Why 
->> not
->> keep it inside the scheduler files?
+On Mon, Jul 16, 2018 at 10:50:50AM -0700, Matthias Kaehlcke wrote:
+> On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
+> > Hi Matthias,
+> > 
+> > On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
+> > > Hi Chanwoo,
+> > > 
+> > > On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
+> > > 
+> > >> Firstly,
+> > >> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
+> > >>
+> > >> devfreq already used the OPP interface as default. It means that
+> > >> the outside of 'drivers/devfreq' can disable/enable the frequency
+> > >> such as drivers/thermal/devfreq_cooling.c. Also, when some device
+> > >> drivers disable/enable the specific frequency, the devfreq core
+> > >> consider them.
+> > >>
+> > >> So, devfreq doesn't need to devfreq_verify_within_limits() because
+> > >> already support some interface to change the minimum/maximum frequency
+> > >> of devfreq device. 
+> > >>
+> > >> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
+> > >> to change the minimum/maximum frequency of cpu. some device driver cannot
+> > >> change the minimum/maximum frequency through OPP interface.
+> > >>
+> > >> But, in case of devfreq subsystem, as I explained already, devfreq support
+> > >> the OPP interface as default way. devfreq subsystem doesn't need to add
+> > >> other way to change the minimum/maximum frequency.
+> > > 
+> > > Using the OPP interface exclusively works as long as a
+> > > enabling/disabling of OPPs is limited to a single driver
+> > > (drivers/thermal/devfreq_cooling.c). When multiple drivers are
+> > > involved you need a way to resolve conflicts, that's the purpose of
+> > > devfreq_verify_within_limits(). Please let me know if there are
+> > > existing mechanisms for conflict resolution that I overlooked.
+> > > 
+> > > Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
+> > > devfreq_verify_within_limits() instead of the OPP interface if
+> > > desired, however this seems beyond the scope of this series.
+> > 
+> > Actually, if we uses this approach, it doesn't support the multiple drivers too.
+> > If non throttler drivers uses devfreq_verify_within_limits(), the conflict
+> > happen.
 > 
-> This code basically results from a discussion we had with Peter on v4.
-> Keeping everything centralized can make sense from a maintenance
-> perspective, I think. That makes it easy to see the impact of any 
-> change
-> to utilization signals for both EAS and schedutil.
-
-In that case, I'd argue it makes more sense to keep the code centralized 
-in the scheduler. The scheduler can let schedutil know about the 
-utilization after it aggregates them. There's no need for a cpufreq 
-governor to know that there are scheduling classes or how many there 
-are. And the scheduler can then choose to aggregate one way for task 
-packing and another way for frequency guidance.
-
-It just seems so weird to have logic that's very essential for task 
-placement to be inside a cpufreq governor.
-
->> Also, it seems weird to use a governor's
->> code when it might not actually be in use. What if someone is using
->> ondemand, conservative, performance, etc?
+> As long as drivers limit the max freq there is no conflict, the lowest
+> max freq wins. I expect this to be the usual case, apparently it
+> worked for cpufreq for 10+ years.
 > 
-> Yeah I thought about that too ... I would say that even if you don't
-> use schedutil, it is probably a fair assumption from the scheduler's
-> standpoint to assume that somewhat OPPs follow utilization (in a very
-> loose way). So yes, if you use ondemand with EAS you won't have a
-> perfectly consistent match between the frequency requests and what EAS
-> predicts, and that might result in sub-optimal decisions in some cases,
-> but I'm not sure if we can do anything better at this stage.
+> However it is correct that there would be a conflict if a driver
+> requests a min freq that is higher than the max freq requested by
+> another. In this case devfreq_verify_within_limits() resolves the
+> conflict by raising p->max to the min freq. Not sure if this is
+> something that would ever occur in practice though.
 > 
-> Also, if you do use schedutil, EAS will accurately predict what will be
-> the frequency _request_, but that gives you no guarantee whatsoever 
-> that
-> you'll actually get it for real (because you're throttled, or because 
-> of
-> thermal capping, or simply because the HW refuses it for some reason 
-> ...).
+> If we are really concerned about this case it would also be an option
+> to limit the adjustment to the max frequency.
 > 
-> There will be inconsistencies between EAS' predictions and the actual
-> frequencies, and we have to live with that. The best we can do is make
-> sure we're at least internally consistent from the scheduler's
-> standpoint, and that's why I think it can make sense to factorize as
-> many things as possible with schedutil where applicable.
+> > To resolve the conflict for multiple device driver, maybe OPP interface
+> > have to support 'usage_count' such as clk_enable/disable().
 > 
->> > +	if (type == frequency_util) {
->> > +		/*
->> > +		 * Bandwidth required by DEADLINE must always be granted
->> > +		 * while, for FAIR and RT, we use blocked utilization of
->> > +		 * IDLE CPUs as a mechanism to gracefully reduce the
->> > +		 * frequency when no tasks show up for longer periods of
->> > +		 * time.
->> > +		 *
->> > +		 * Ideally we would like to set bw_dl as min/guaranteed
->> > +		 * freq and util + bw_dl as requested freq. However,
->> > +		 * cpufreq is not yet ready for such an interface. So,
->> > +		 * we only do the latter for now.
->> > +		 */
->> > +		util += cpu_bw_dl(rq);
->> > +	}
->> 
->> Instead of all this indentation, can't you just return early without 
->> doing
->> the code inside the if?
+> This would require supporting negative usage count values, since a OPP
+> should not be enabled if e.g. thermal enables it but the throttler
+> disabled it or viceversa.
 > 
-> But then I'll need to duplicate the 'min' below, so not sure if it's
-> worth it ?
+> Theoretically there could also be conflicts, like one driver disabling
+> the higher OPPs and another the lower ones, with the outcome of all
+> OPPs being disabled, which would be a more drastic conflict resolution
+> than that of devfreq_verify_within_limits().
+> 
+> Viresh, what do you think about an OPP usage count?
 
-I feel like less indentation where reasonably possible leads to more 
-readability. But I don't have a strong opinion in this specific case.
+Ping, can we try to reach a conclusion on this or at least keep the
+discussion going?
 
->> > +enum schedutil_type {
->> > +	frequency_util,
->> > +	energy_util,
->> > +};
->> 
->> Please don't use lower case for enums. It's extremely confusing.
-> 
-> Ok, I'll change that in v6.
-
-Thanks.
-
--Saravana
+Not that it matters, but my preferred solution continues to be
+devfreq_verify_within_limits(). It solves conflicts in some way (which
+could be adjusted if needed) and has proven to work in practice for
+10+ years in a very similar sub-system.
