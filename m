@@ -1,103 +1,110 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
-Date: Tue, 31 Jul 2018 12:29:04 -0700
-Message-ID: <20180731192904.GG68975@google.com>
-References: <20180703234705.227473-1-mka@chromium.org>
- <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
- <20180703234705.227473-8-mka@chromium.org>
- <5B3C5B78.6020401@samsung.com>
- <20180706180923.GH129942@google.com>
- <41164a91-b271-5f3b-b461-21ff5997cc84@samsung.com>
- <20180716194114.GA129942@google.com>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
+ aggregation method
+Date: Tue, 31 Jul 2018 12:31:17 -0700
+Message-ID: <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
+References: <20180724122521.22109-1-quentin.perret@arm.com>
+ <20180724122521.22109-11-quentin.perret@arm.com>
+ <331552975e858911db66bc78c2c8e720@codeaurora.org>
+ <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180716194114.GA129942@google.com>
+In-Reply-To: <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 16, 2018 at 12:41:14PM -0700, Matthias Kaehlcke wrote:
-> Hi Chanwoo,
+On 2018-07-31 00:59, Quentin Perret wrote:
+> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org 
+> wrote:
+> [...]
+>> If it's going to be a different aggregation from what's done for 
+>> frequency
+>> guidance, I don't see the point of having this inside schedutil. Why 
+>> not
+>> keep it inside the scheduler files?
 > 
-> On Thu, Jul 12, 2018 at 06:08:36PM +0900, Chanwoo Choi wrote:
-> > Hi Matthias,
-> > 
-> > On 2018년 07월 07일 03:09, Matthias Kaehlcke wrote:
-> > > Hi,
-> > > 
-> > > On Wed, Jul 04, 2018 at 02:30:32PM +0900, Chanwoo Choi wrote:
-> > > 
-> > >> I didn't see any framework which exporting the class instance.
-> > >> It is very dangerous. Unknown device drivers is able to reset
-> > >> the 'devfreq_class' instance. I can't agree this approach.
-> > > 
-> > > While I agree that it is potential dangerous it is actually a common
-> > > practice to export the class:
-> > > 
-> > 
-> > I tried to find the real usage of exported class instance
-> > and I add the comment for each class instance. Almost exported class
-> > instance are used in the their own director or some exported class
-> > like rio_mport_class/switchtec_class are created from specific device driver
-> > instead of subsystem.
-> > 
-> > Only following two cases are used on outside of subsystem directory.
-> > devtmpfs.c and alarmtimer.c are core feature of linux kernel.
-> > 
-> > 	drivers/base/devtmpfs.c uses 'block_class'.
-> > 	kernel/time/alarmtimer.c uses 'rtc_class'.
-> > 
-> > I cannot yet agree this approach due to only block_class and rtc_class.
-> 
-> I thought your main concern was that the class is exported, which is
-> what several other subsystems do. That the class isn't used outside of
-> the subsystem directory most likely means that there is no need for
-> it, rather than that it shouldn't be done at all (depending on the
-> type of use of course).
-> 
-> In any case not exporting the class object provides a limited
-> protection against potential abuse of the class at best. To use the
-> class API all that is needed is a 'struct device' of a devfreq device,
-> which has a pointer to the class object (dev->class).
-> 
-> Theoretically I could register a fake devfreq device to obtain access
-> to the class object, though that doesn't seem a very neat approach ;-)
-> 
-> > You added the following comment why devfreq_class instance is necessary.
-> > Actullay, I don't know the best solution right now. But, all device drivers
-> > can be added or removed if driver uses the module type. It is not a problem
-> > for only devfreq instance.
-> 
-> Certainly it's not a problem limited to devfreq devices. In many other
-> cases bus notifiers can be used, but since devfreq devices areen't
-> tied to a specific bus this is not an option here.
-> 
-> If you really don't want to export the class we could add wrappers
-> for (un)registering a class interface:
-> 
-> int devfreq_class_interface_register(struct class_interface *)
-> void devfreq_class_interface_unregister(struct class_interface *)
-> 
-> The wrappers would have to assign ci->class since the throttler
-> can't see the class object.
-> 
-> Or add notifiers for device addition/removal, though the throttler
-> relies on the behavior of the class_interface which also notifies
-> about devices added before registration. This might not be what other
-> potential users of the notifiers expect.
+> This code basically results from a discussion we had with Peter on v4.
+> Keeping everything centralized can make sense from a maintenance
+> perspective, I think. That makes it easy to see the impact of any 
+> change
+> to utilization signals for both EAS and schedutil.
 
-Ping
+In that case, I'd argue it makes more sense to keep the code centralized 
+in the scheduler. The scheduler can let schedutil know about the 
+utilization after it aggregates them. There's no need for a cpufreq 
+governor to know that there are scheduling classes or how many there 
+are. And the scheduler can then choose to aggregate one way for task 
+packing and another way for frequency guidance.
 
-Could we please try to find a solution/reach a conclusion for this?
+It just seems so weird to have logic that's very essential for task 
+placement to be inside a cpufreq governor.
 
-Not that it should affect the outcome of this discussion, but I want
-to mention that from my point of view it is a bit unfortunate that
-this and other fundamental concerns were only raised after I spent
-significant time on repeatedly refactoring the throttler driver to
-address other comments. Since you and MyungJoo Ham previously had only
-minor comments on the other devfreq patches in this series I assumed
-there were no major concerns from your side :(
+>> Also, it seems weird to use a governor's
+>> code when it might not actually be in use. What if someone is using
+>> ondemand, conservative, performance, etc?
+> 
+> Yeah I thought about that too ... I would say that even if you don't
+> use schedutil, it is probably a fair assumption from the scheduler's
+> standpoint to assume that somewhat OPPs follow utilization (in a very
+> loose way). So yes, if you use ondemand with EAS you won't have a
+> perfectly consistent match between the frequency requests and what EAS
+> predicts, and that might result in sub-optimal decisions in some cases,
+> but I'm not sure if we can do anything better at this stage.
+> 
+> Also, if you do use schedutil, EAS will accurately predict what will be
+> the frequency _request_, but that gives you no guarantee whatsoever 
+> that
+> you'll actually get it for real (because you're throttled, or because 
+> of
+> thermal capping, or simply because the HW refuses it for some reason 
+> ...).
+> 
+> There will be inconsistencies between EAS' predictions and the actual
+> frequencies, and we have to live with that. The best we can do is make
+> sure we're at least internally consistent from the scheduler's
+> standpoint, and that's why I think it can make sense to factorize as
+> many things as possible with schedutil where applicable.
+> 
+>> > +	if (type == frequency_util) {
+>> > +		/*
+>> > +		 * Bandwidth required by DEADLINE must always be granted
+>> > +		 * while, for FAIR and RT, we use blocked utilization of
+>> > +		 * IDLE CPUs as a mechanism to gracefully reduce the
+>> > +		 * frequency when no tasks show up for longer periods of
+>> > +		 * time.
+>> > +		 *
+>> > +		 * Ideally we would like to set bw_dl as min/guaranteed
+>> > +		 * freq and util + bw_dl as requested freq. However,
+>> > +		 * cpufreq is not yet ready for such an interface. So,
+>> > +		 * we only do the latter for now.
+>> > +		 */
+>> > +		util += cpu_bw_dl(rq);
+>> > +	}
+>> 
+>> Instead of all this indentation, can't you just return early without 
+>> doing
+>> the code inside the if?
+> 
+> But then I'll need to duplicate the 'min' below, so not sure if it's
+> worth it ?
+
+I feel like less indentation where reasonably possible leads to more 
+readability. But I don't have a strong opinion in this specific case.
+
+>> > +enum schedutil_type {
+>> > +	frequency_util,
+>> > +	energy_util,
+>> > +};
+>> 
+>> Please don't use lower case for enums. It's extremely confusing.
+> 
+> Ok, I'll change that in v6.
+
+Thanks.
+
+-Saravana
