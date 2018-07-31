@@ -1,63 +1,44 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Urgent ACPI fixes for v4.18
-Date: Tue, 31 Jul 2018 11:34:30 +0200
-Message-ID: <CAJZ5v0jeTuS0v=9AmQz0c_qAE6ppHVKvBsa2CXJUiRf5axNuCg@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/4] cpufreq: intel_pstate: enable boost for Skylake Xeon
+Date: Tue, 31 Jul 2018 17:04:38 +0200
+Message-ID: <20180731150438.GE2458@hirez.programming.kicks-ass.net>
+References: <20180605214242.62156-1-srinivas.pandruvada@linux.intel.com>
+ <20180605214242.62156-5-srinivas.pandruvada@linux.intel.com>
+ <87bmarhqk4.fsf@riseup.net>
+ <20180728123639.7ckv3ljnei3urn6m@techsingularity.net>
+ <e7388bf4-deb1-34b6-97d7-89ced8e78ef1@intel.com>
+ <605cfcb3f315917c5970f452fab988ae1dc946ff.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <605cfcb3f315917c5970f452fab988ae1dc946ff.camel@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Eero Tamminen <eero.t.tamminen@intel.com>, Mel Gorman <mgorman@techsingularity.net>, Francisco Jerez <currojerez@riseup.net>, lenb@kernel.org, rjw@rjwysocki.net, ggherdovich@suse.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Chris Wilson <chris@chris-wilson.co.uk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Mon, Jul 30, 2018 at 07:06:21AM -0700, Srinivas Pandruvada wrote:
+> On Mon, 2018-07-30 at 14:16 +0300, Eero Tamminen wrote:
+> > Questions:
+> > 
+> > * Does currently kernel CPU freq management have any idea which IO
+> >    devices share TDP with the CPU cores?
 
-Please pull from the tag
+> No. The requests we do to hardware is just indication only (HW can
+> ignore it). The HW has a bias register to adjust and distribute power
+> among users.
+> We can have several other active device on servers beside CPU which
+> when runs need extra power. So the HW arbitrates power.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-urgent-4.18
+That's not entirely accurate AFAIK. "No" is accurate for Intel, but the
+ARM people have their IPA thing (not a beer):
 
-with top-most commit 5f95d39b4246c034838b10f5a4ee50be5b984b95
+  https://developer.arm.com/open-source/intelligent-power-allocation
 
- Merge branch 'acpi-soc'
+  drivers/thermal/power_allocator.c
 
-on top of commit 73c2a01c52b657f4a0ead6c95f64c5279efbd000
+which IIUC interacts with their cpufreq driver to disallow certain OPP
+states.
 
- ACPICA: AML Parser: ignore dispatcher error status during table load
-
-to receive urgent ACPI fixes for final 4.18.
-
-These fix a recent ACPICA regression affecting control method
-execution at the table level and an earlier hibernation regression
-in the ACPI driver for Intel SoCs (LPSS) that was missed by a
-previous fix in this cycle.
-
-Specifics:
-
- - Fix a recent ACPICA regression introduced by a previous fix
-   that caused control method execution at the table level to be
-   mishandled by mistake (Erik Schmauss).
-
- - Fix a hibernation regression from the 4.15 cycle in the ACPI
-   driver for Intel SoCs (LPSS) that caused the platform firmware
-   to be confused during resume from hibernation by the driver's
-   PM quirks which was fixed for system-wide suspend/resume (ACPI
-   S3) earlier in this cycle, but that previous fix missed the
-   hibernation (ACPI S4) case (Rafael Wysocki).
-
-Thanks!
-
-
----------------
-
-Erik Schmauss (1):
-      ACPICA: AML Parser: ignore control method status in module-level code
-
-Rafael J. Wysocki (1):
-      ACPI / LPSS: Avoid PM quirks on suspend and resume from hibernation
-
----------------
-
- drivers/acpi/acpi_lpss.c     | 26 +++++++++++++++++---------
- drivers/acpi/acpica/psloop.c | 19 ++++++++++++-------
- 2 files changed, 29 insertions(+), 16 deletions(-)
+And note that I discourage intel_pstate active mode.
