@@ -1,44 +1,116 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Wed, 1 Aug 2018 09:32:49 +0200
-Message-ID: <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com> <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180731075950.tfvxef6yuja3ad2k@queper01-lin> <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v5 07/12] PM / devfreq: export devfreq_class
+Date: Wed, 01 Aug 2018 17:18:40 +0900
+Message-ID: <5B616CE0.50400@samsung.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+        <CGME20180703234837epcas5p1da751e0394c16816b95ac1956bf6de20@epcas5p1.samsung.com>
+        <20180703234705.227473-8-mka@chromium.org> <5B3C5B78.6020401@samsung.com>
+        <20180706180923.GH129942@google.com>
+        <41164a91-b271-5f3b-b461-21ff5997cc84@samsung.com>
+        <20180716194114.GA129942@google.com> <20180731192904.GG68975@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
+In-reply-to: <20180731192904.GG68975@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, Quentin Perret <quentin.perret@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@quicinc.com, skannan@quicinc.com, Pava
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 31, 2018 at 9:31 PM,  <skannan@codeaurora.org> wrote:
-> On 2018-07-31 00:59, Quentin Perret wrote:
->>
->> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
->> [...]
->>>
->>> If it's going to be a different aggregation from what's done for
->>> frequency
->>> guidance, I don't see the point of having this inside schedutil. Why not
->>> keep it inside the scheduler files?
->>
->>
->> This code basically results from a discussion we had with Peter on v4.
->> Keeping everything centralized can make sense from a maintenance
->> perspective, I think. That makes it easy to see the impact of any change
->> to utilization signals for both EAS and schedutil.
->
->
-> In that case, I'd argue it makes more sense to keep the code centralized in
-> the scheduler. The scheduler can let schedutil know about the utilization
-> after it aggregates them. There's no need for a cpufreq governor to know
-> that there are scheduling classes or how many there are. And the scheduler
-> can then choose to aggregate one way for task packing and another way for
-> frequency guidance.
+Hi Matthias,
 
-Also the aggregate utilization may be used by cpuidle governors in
-principle to decide how deep they can go with idle state selection.
+On 2018년 08월 01일 04:29, Matthias Kaehlcke wrote:
+> On Mon, Jul 16, 2018 at 12:41:14PM -0700, Matthias Kaehlcke wrote:
+>> Hi Chanwoo,
+>>
+>> On Thu, Jul 12, 2018 at 06:08:36PM +0900, Chanwoo Choi wrote:
+>>> Hi Matthias,
+>>>
+>>> On 2018년 07월 07일 03:09, Matthias Kaehlcke wrote:
+>>>> Hi,
+>>>>
+>>>> On Wed, Jul 04, 2018 at 02:30:32PM +0900, Chanwoo Choi wrote:
+>>>>
+>>>>> I didn't see any framework which exporting the class instance.
+>>>>> It is very dangerous. Unknown device drivers is able to reset
+>>>>> the 'devfreq_class' instance. I can't agree this approach.
+>>>>
+>>>> While I agree that it is potential dangerous it is actually a common
+>>>> practice to export the class:
+>>>>
+>>>
+>>> I tried to find the real usage of exported class instance
+>>> and I add the comment for each class instance. Almost exported class
+>>> instance are used in the their own director or some exported class
+>>> like rio_mport_class/switchtec_class are created from specific device driver
+>>> instead of subsystem.
+>>>
+>>> Only following two cases are used on outside of subsystem directory.
+>>> devtmpfs.c and alarmtimer.c are core feature of linux kernel.
+>>>
+>>> 	drivers/base/devtmpfs.c uses 'block_class'.
+>>> 	kernel/time/alarmtimer.c uses 'rtc_class'.
+>>>
+>>> I cannot yet agree this approach due to only block_class and rtc_class.
+>>
+>> I thought your main concern was that the class is exported, which is
+>> what several other subsystems do. That the class isn't used outside of
+>> the subsystem directory most likely means that there is no need for
+>> it, rather than that it shouldn't be done at all (depending on the
+>> type of use of course).
+>>
+>> In any case not exporting the class object provides a limited
+>> protection against potential abuse of the class at best. To use the
+>> class API all that is needed is a 'struct device' of a devfreq device,
+>> which has a pointer to the class object (dev->class).
+>>
+>> Theoretically I could register a fake devfreq device to obtain access
+>> to the class object, though that doesn't seem a very neat approach ;-)
+>>
+>>> You added the following comment why devfreq_class instance is necessary.
+>>> Actullay, I don't know the best solution right now. But, all device drivers
+>>> can be added or removed if driver uses the module type. It is not a problem
+>>> for only devfreq instance.
+>>
+>> Certainly it's not a problem limited to devfreq devices. In many other
+>> cases bus notifiers can be used, but since devfreq devices areen't
+>> tied to a specific bus this is not an option here.
+>>
+>> If you really don't want to export the class we could add wrappers
+>> for (un)registering a class interface:
+>>
+>> int devfreq_class_interface_register(struct class_interface *)
+>> void devfreq_class_interface_unregister(struct class_interface *)
+
+About this approach, I agree because it doesn't export the devfreq_class
+instance as you commented.
+
+
+>>
+>> The wrappers would have to assign ci->class since the throttler
+>> can't see the class object.
+>>
+>> Or add notifiers for device addition/removal, though the throttler
+>> relies on the behavior of the class_interface which also notifies
+>> about devices added before registration. This might not be what other
+>> potential users of the notifiers expect.
+> 
+> Ping
+> 
+> Could we please try to find a solution/reach a conclusion for this?
+> 
+> Not that it should affect the outcome of this discussion, but I want
+> to mention that from my point of view it is a bit unfortunate that
+> this and other fundamental concerns were only raised after I spent
+> significant time on repeatedly refactoring the throttler driver to
+> address other comments. Since you and MyungJoo Ham previously had only
+> minor comments on the other devfreq patches in this series I assumed
+> there were no major concerns from your side :(
+> 
+> 
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
