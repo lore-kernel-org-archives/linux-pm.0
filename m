@@ -1,331 +1,102 @@
-From: Francisco Jerez <currojerez@riseup.net>
-Subject: Re: [PATCH 4/4] cpufreq: intel_pstate: enable boost for Skylake Xeon
-Date: Tue, 31 Jul 2018 23:52:20 -0700
-Message-ID: <87pnz2bmu3.fsf@riseup.net>
-References: <20180605214242.62156-1-srinivas.pandruvada@linux.intel.com> <20180605214242.62156-5-srinivas.pandruvada@linux.intel.com> <87bmarhqk4.fsf@riseup.net> <20180728123639.7ckv3ljnei3urn6m@techsingularity.net> <87r2jnf6w0.fsf@riseup.net> <20180730154347.wrcrkweckclgbyrp@techsingularity.net> <87lg9sefrb.fsf@riseup.net> <1533021001.3300.2.camel@suse.cz>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
+Date: Wed, 1 Aug 2018 09:30:04 +0200
+Message-ID: <CAJZ5v0ihgmR0Dx+BYQAkWKtggov0vk0nqewWiMthcKG-WfqP3Q@mail.gmail.com>
+References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
+ <CAJZ5v0grRtkm5mZto-UW3Dn=OnbAbBARyH12T22V5gZfSaV5dw@mail.gmail.com>
+ <534629d03437bc8e72a62d89e726dbe5@codeaurora.org> <CAJZ5v0jYmy9z488bg8gbAGceRqv-c-ONhW0DtaKD6GUGUnCTLw@mail.gmail.com>
+ <84cdf95b1e3f8b580f4d1df138aaf42b@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533021001.3300.2.camel@suse.cz>
+In-Reply-To: <84cdf95b1e3f8b580f4d1df138aaf42b@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Giovanni Gherdovich <ggherdovich@suse.cz>, Mel Gorman <mgorman@techsingularity.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, juri.lelli@redhat.com, viresh.kumar@linaro.org, Chris Wilson <chris@chris-wilson.co.uk>, Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
-
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Giovanni Gherdovich <ggherdovich@suse.cz> writes:
-
-> On Mon, 2018-07-30 at 11:32 -0700, Francisco Jerez wrote:
->> Mel Gorman <mgorman@techsingularity.net> writes:
->>=C2=A0
->> > On Sat, Jul 28, 2018 at 01:21:51PM -0700, Francisco Jerez wrote:
->> > > > > Please revert this series, it led to significant energy usage and
->> > > > > graphics performance regressions [1].=C2=A0=C2=A0The reasons are=
- roughly the ones
->> > > > > we discussed by e-mail off-list last April: This causes the inte=
-l_pstate
->> > > > > driver to decrease the EPP to zero when the workload blocks on IO
->> > > > > frequently enough, which for the regressing benchmarks detailed =
-in [1]
->> > > > > is a symptom of the workload being heavily IO-bound, which means=
- they
->> > > > > won't benefit at all from the EPP boost since they aren't signif=
-icantly
->> > > > > CPU-bound, and they will suffer a decrease in parallelism due to=
- the
->> > > > > active CPU core using a larger fraction of the TDP in order to a=
-chieve
->> > > > > the same work, causing the GPU to have a lower power budget avai=
-lable,
->> > > > > leading to a decrease in system performance.
->> > > >=C2=A0
->> > > > It slices both ways.
->> > >=C2=A0
->> > > I don't think it's acceptable to land an optimization that trades
->> > > performance of one use-case for another,
->> >=C2=A0
->> > The same logic applies to a revert
->>=C2=A0
->> No, it doesn't, the responsibility of addressing the fallout from a
->> change that happens to hurt performance even though it was supposed to
->> improve it lies on the author of the change, not on the reporter of the
->> regression.
->
-> The server and desktop worlds have different characteristics and needs, w=
-hich
-> in this particular case appear to be conflicting. Luckily we can can
-> differentiate the two scenarios (as in the bugfix patch by Srinivas a few
-> hours ago).
->
-
-I'm skeptical that the needs of the server and desktop world are really
-as different and conflicting as this discussion may make them seem.  In
-a server environment it can be as much (if not more) of a factor how
-many requests the system can process per second rather than the latency
-of any individual request (since the latency of the network can easily
-be an order of magnitude higher than the latency reduction that can
-possibly be achieved by tricking the HWP into reacting faster).  I'm not
-convinced about the usefulness of trading the former for the latter in a
-server environment, particularly since we could achieve both goals
-simultaneously.
-
->> The task scheduler does go through the effort of attempting to re-use
->> the most frequently active CPU when a task wakes up, at least last time
->> I checked.
->
-> Unfortunately that doesn't happen in practice; the load balancer in the
-> scheduler is in a constant tension between spreading tasks evenly across =
-all
-> cores (necessary when the machine is under heavy load) and packing on jus=
-t a
-> few (which makes more sense when only a few threads are working and the b=
-ox is
-> almost idle otherwise). Recent evolutions favour spreading. We often obse=
-rve
-> tasks helplessly bounce from core to core losing all their accrued utilis=
-ation
-> score, and intel_pstate (with or without HWP) penalizes that.
->
-
-That's unfortunate.  Luckily it's easy enough for the cpufreq governor
-to differentiate those cases from the applications that have enough
-parallelism to utilize at least one system resource close to its maximum
-throughput and become non-CPU-bound.
-
-> On Mon, 2018-07-30 at 11:32 -0700, Francisco Jerez wrote:
->> Mel Gorman <mgorman@techsingularity.net> writes:
+On Tue, Jul 31, 2018 at 9:21 PM,  <skannan@codeaurora.org> wrote:
+> On 2018-07-31 01:00, Rafael J. Wysocki wrote:
 >>
->> [...]
->> > One pattern is a small fsync which ends up context switching between
->> > the process and a journalling thread (may be dedicated thread, may be
->> > workqueue depending on filesystem) and the process waking again in the
->> > very near future on IO completion. While the workload may be single
->> > threaded, more than one core is in use because of how the short sleeps
->> > migrate the task to other cores.=C2=A0=C2=A0HWP does not necessarily n=
-otice that
->> > the task is quite CPU-intensive due to the migrations and so the
->> > performance suffers.
->> >=C2=A0
->> > Some effort is made to minimise the number of cores used with this sort
->> > of waker/wakee relationship but it's not necessarily enough for HWP to
->> > boost the frequency.=C2=A0=C2=A0Minimally, the journalling thread woke=
-n up will
->> > not wake on the same CPU as the IO issuer except under extremely heavi=
-ly
->> > utilisation and this is not likely to change (stacking stacks too often
->> > increases wakeup latency).
->> >=C2=A0
->>=C2=A0
->> The task scheduler does go through the effort of attempting to re-use
->> the most frequently active CPU when a task wakes up, at least last time
->> I checked.=C2=A0=C2=A0But yes some migration patterns can exacerbate the=
- downward
->> bias of the response of the HWP to an intermittent workload, primarily
->> in cases where the application is unable to take advantage of the
->> parallelism between CPU and the IO device involved, like you're
->> describing above.
->
-> Unfortunately that doesn't happen in practice; the load balancer in the
-> scheduler is in a constant tension between spreading tasks evenly across =
-all
-> cores (necessary when the machine is under heavy load) and packing on jus=
-t a
-> few (which makes more sense when only a few threads are working and the b=
-ox is
-> idle otherwise). Recent evolutions favour spreading. We often observe tas=
-ks
-> helplessly bounce from core to core losing all their accrued utilization
-> score, and intel_pstate (with or without HWP) penalizes that.
->
-> That's why in our distro SLES-15 (which is based on 4.12.14) we're sporti=
-ng a
-> patch like this:
-> https://kernel.opensuse.org/cgit/kernel/commit/?h=3DSLE15&id=3D3a287868cb=
-7a9 which
-> boosts tasks that have been placed on a previously idle CPU. We haven't e=
-ven
-> proposed this patch upstream as we hope to solve those problems at a more
-> fundamental level, but when you're supporting power management (freq scal=
-ing)
-> in the server world you get compared to the performance governor, so your
-> policy needs to be aggressive.
->
->>=C2=A0
->> > > > With the series, there are large boosts to performance on other
->> > > > workloads where a slight increase in power usage is acceptable in
->> > > > exchange for performance. For example,
->> > > >=C2=A0
->> > > > Single socket skylake running sqlite
->> > > >=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0v4.17=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A041ab43c9
->> > > > Min=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Trans=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A02580.85 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A05401.58 ( 109.29%)
->> > > > Hmean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Trans=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A02610.38 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A05518.3=
-6 ( 111.40%)
->> > > > Stddev=C2=A0=C2=A0=C2=A0=C2=A0Trans=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A028.08 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0208.90 (-644.02%)
->> > > > CoeffVar=C2=A0=C2=A0Trans=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A01.08 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A03.78 (-251.57%)
->> > > > Max=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Trans=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A02648.02 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A05992.74 ( 126.31%)
->> > > > BHmean-50 Trans=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02629.78 (=C2=A0=C2=A0=
-=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A05643.81 ( 114.61%)
->> > > > BHmean-95 Trans=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02620.38 (=C2=A0=C2=A0=
-=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A05538.32 ( 111.36%)
->> > > > BHmean-99 Trans=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02620.38 (=C2=A0=C2=A0=
-=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A0=C2=A05538.32 ( 111.36%)
->> > > >=C2=A0
->> > > > That's over doubling the transactions per second for that workload.
->> > > >=C2=A0
->> > > > Two-socket skylake running dbench4
->> > > >=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0v4.17=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A041ab43c9
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A01=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A040.85 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A014.97 (=C2=A0=C2=A063.36%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A02=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A042.31 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A017.33 (=C2=A0=C2=A059.04%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A04=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A053.77 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A027.85 (=C2=A0=C2=A048.20%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A08=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A068.86 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A043.78 (=C2=A0=C2=A036.42%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A016=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A082.62 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A056.51 (=C2=A0=C2=A031.60%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A032=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0135.80 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0116.06 (=C2=A0=C2=A014.54%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A064=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0737.51 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0701.00 (=C2=A0=C2=A0=C2=A04.95%)
->> > > > Amean=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0512=C2=A0=C2=A0=C2=A0=C2=
-=A014996.60 (=C2=A0=C2=A0=C2=A00.00%)=C2=A0=C2=A0=C2=A0=C2=A014755.05 (=C2=
-=A0=C2=A0=C2=A01.61%)
->> > > >=C2=A0
->> > > > This is reporting the average latency of operations running
->> > > > dbench. The series over halves the latencies. There are many examp=
-les
->> > > > of basic workloads that benefit heavily from the series and while I
->> > > > accept it may not be universal, such as the case where the graphics
->> > > > card needs the power and not the CPU, a straight revert is not the
->> > > > answer. Without the series, HWP cripplies the CPU.
->> > > >=C2=A0
->> > >=C2=A0
->> > > That seems like a huge overstatement.=C2=A0=C2=A0HWP doesn't "crippl=
-e" the CPU
->> > > without this series.=C2=A0=C2=A0It will certainly set lower clocks t=
-han with this
->> > > series for workloads like you show above that utilize the CPU very
->> > > intermittently (i.e. they underutilize it).=C2=A0
->> >=C2=A0
->> > Dbench for example can be quite CPU intensive. When bound to a single
->> > core, it shows up to 80% utilisation of a single core.
->>=C2=A0
->> So even with an oracle cpufreq governor able to guess that the
->> application relies on the CPU being locked to the maximum frequency
->> despite it utilizing less than 80% of the CPU cycles, the application
->> will still perform 20% worse than an alternative application handling
->> its IO work asynchronously.
->
-> It's a matter of being pragmatic. You're saying that a given application =
-is
-> badly designed and should be rewritten to leverage parallelism between CP=
-U and
-> IO.
-
-Maybe some of them should be rewritten but that wasn't what I was trying
-to say -- The point was that the kind of applications that benefit from
-boosting on IO wait are necessarily within this category of workloads
-that aren't able to take full advantage of any system resource anyway.
-It's not like HWP would be "crippling" the CPU for a well-behaved
-application.
-
-> But in the field you *have* applications that behave that way, and the OS
-> is in a position to do something to mitigate the damage.
->
-
-Even when such a mitigation may actually reduce the performance of the
-*same* applications when they are TDP-bound and the parallelism of the
-system is limited by its energy usage?  I'm not objecting to optimizing
-for latency-sensitive applications a priori, but such optimizations
-shouldn't be applied unless we have an indication that the performance
-of the system can possibly improve as a result (e.g. because the
-application doesn't already have a bottleneck on some IO device).
-
->>=C2=A0
->> > When unbound, the usage of individual cores appears low due to the
->> > migrations. It may be intermittent usage as it context switches to
->> > worker threads but it's not low utilisation either.
->> >=C2=A0
->> > intel_pstate also had logic for IO-boosting before HWP=C2=A0
->>=C2=A0
->> The IO-boosting logic of the intel_pstate governor has the same flaw as
->> this unfortunately.
+>> On Mon, Jul 30, 2018 at 8:58 PM,  <skannan@codeaurora.org> wrote:
+>>>
+>>> On 2018-07-29 03:52, Rafael J. Wysocki wrote:
+>>>>
+>>>>
+>>>> On Sat, Jul 28, 2018 at 5:56 AM, Saravana Kannan
+>>>> <skannan@codeaurora.org>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> Many CPU architectures have caches that can scale independent of the
+>>>>> CPUs.
+>>>>> Frequency scaling of the caches is necessary to make sure the cache is
+>>>>> not
+>>>>> a performance bottleneck that leads to poor performance and power. The
+>>>>> same
+>>>>> idea applies for RAM/DDR.
+>>>>>
+>>>>> To achieve this, this patch adds a generic devfreq governor that can
+>>>>> listen
+>>>>> to the frequency transitions of each CPU frequency domain and then
+>>>>> adjusts
+>>>>> the frequency of the cache (or any devfreq device) based on the
+>>>>> frequency
+>>>>> of the CPUs.
+>>>>>
+>>>>> To decide the frequency of the device, the governor does one of the
+>>>>> following:
+>>>>>
+>>>>> * Uses a CPU frequency to device frequency mapping table
+>>>>>   - Either one mapping table used for all CPU freq policies (typically
+>>>>> used
+>>>>>     for system with homogeneous cores/clusters that have the same OPPs.
+>>>>>   - One mapping table per CPU freq policy (typically used for ASMP
+>>>>> systems
+>>>>>     with heterogeneous CPUs with different OPPs)
+>>>>>
+>>>>> OR
+>>>>>
+>>>>> * Scales the device frequency in proportion to the CPU frequency. So,
+>>>>> if
+>>>>>   the CPUs are running at their max frequency, the device runs at its
+>>>>> max
+>>>>>   frequency.  If the CPUs are running at their min frequency, the
+>>>>> device
+>>>>>   runs at its min frequency. And interpolated for frequencies in
+>>>>> between.
+>>>>
+>>>>
+>>>>
+>>>> While not having looked at the details of the patch yet, I would
+>>>> change the name of the feature to "Generic cpufreq transition
+>>>> governor" to make it somewhat less ambiguous.
+>>>
+>>>
+>>>
+>>> In my opinion it makes it look MORE like this is a cpufreq governor. How
+>>> about the following?
+>>> PM / devfreq: Generic cpufreq to devfreq mapping governor
+>>> Seem a lot more clear to me.
 >>
+>>
+>> Well, it's not just mapping, but also it triggers on cpufreq transitions
+>> AFAICS.
 >
-> Again it's a matter of pragmatism. You'll find that another governor uses
-> IO-boosting: schedutil. And while intel_pstate needs it because it gets
-> otherwise killed by migrating tasks,
-
-Right, I've been working on an alternative to that.
-
-> schedutil is based on the PELT utilization signal and doesn't have
-> that problem at all.
-
-Yes, I agree that the reaction time of PELT can be superior to HWP at
-times.
-
-> The principle there is plain and simple: if I've been "wasting time"
-> waiting on "slow" IO (disk), that probably means I'm getting late and
-> there is soon some compute to do: better catch up on the lost time and
-> speed up. IO-wait boosting on schedutil was discussed at
-> https://lore.kernel.org/lkml/3752826.3sXAQIvcIA@vostro.rjw.lan/
 >
+> Right, but I'm not sure that's the most important aspect of this governor.
 
-That principle is nowhere close to a universal rule.  Waiting on an IO
-device repeatedly is often a sign that the IO device is itself
-overloaded and the CPU is running at an unnecessarily high frequency
-(which means lower parallelism than optimal while TDP-bound), since
-otherwise the CPU wouldn't need to wait on the IO device as frequently.
-In such cases IOWAIT boosting gives you the opposite of what the
-application needs.
+What are the other events triggering it, then?
 
+>> Which makes me wonder if the approach here is the right one at all.
+>>
+>> Shouldn't the cpufreq driver be hooked up to the related HW through
+>> the OPP framework and sharing access with devfreq rather?
 >
-> Giovanni Gherdovich
-> SUSE Labs
+> Not sure what you mean here. This devfreq governor is orthogonal to what the
+> cpufreq driver does with its HW. This is just trying to scale L3 or DDR or
+> whatever other device based on current CPU frequency. Not all CPUfreq
+> drivers support OPP. And even if they do, I don't see how it's relevant
+> here.
 
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCW2FYpAAKCRCDmTidfVK/
-W2OsAQCU4ZmTu9n/WSsGVT1DwYgorVB+FesJTq0JqU44OS/24wEAh7f/krJvE8kG
-GQ1VG9enw3fUlvKeiZ6g9opJtrNFwNc=
-=ry1/
------END PGP SIGNATURE-----
---==-=-=--
+OK, fair enough.
