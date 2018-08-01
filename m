@@ -1,317 +1,130 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Wed, 1 Aug 2018 10:35:32 +0200
-Message-ID: <CAJZ5v0joYFXkXxoV8odPtrCNW=jAw3RVv3rTzMoabeYWGDnREw@mail.gmail.com>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com> <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180731075950.tfvxef6yuja3ad2k@queper01-lin> <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
- <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com> <20180801082353.egym4tsbr7ppql27@queper01-lin>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 1/8] devfreq: rockchip-dfi: Move GRF definitions to a
+ common place.
+Date: Wed, 01 Aug 2018 17:36:04 +0900
+Message-ID: <5B6170F4.4070102@samsung.com>
+References: <20180730081124.30698-1-enric.balletbo@collabora.com>
+        <CGME20180730081245epcas3p2794d7d7c21f4059ab89ec59a0ef9fa22@epcas3p2.samsung.com>
+        <20180730081124.30698-2-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180801082353.egym4tsbr7ppql27@queper01-lin>
+In-reply-to: <20180730081124.30698-2-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 1, 2018 at 10:23 AM, Quentin Perret <quentin.perret@arm.com> wrote:
-> On Wednesday 01 Aug 2018 at 09:32:49 (+0200), Rafael J. Wysocki wrote:
->> On Tue, Jul 31, 2018 at 9:31 PM,  <skannan@codeaurora.org> wrote:
->> > On 2018-07-31 00:59, Quentin Perret wrote:
->> >>
->> >> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
->> >> [...]
->> >>>
->> >>> If it's going to be a different aggregation from what's done for
->> >>> frequency
->> >>> guidance, I don't see the point of having this inside schedutil. Why not
->> >>> keep it inside the scheduler files?
->> >>
->> >>
->> >> This code basically results from a discussion we had with Peter on v4.
->> >> Keeping everything centralized can make sense from a maintenance
->> >> perspective, I think. That makes it easy to see the impact of any change
->> >> to utilization signals for both EAS and schedutil.
->> >
->> >
->> > In that case, I'd argue it makes more sense to keep the code centralized in
->> > the scheduler. The scheduler can let schedutil know about the utilization
->> > after it aggregates them. There's no need for a cpufreq governor to know
->> > that there are scheduling classes or how many there are. And the scheduler
->> > can then choose to aggregate one way for task packing and another way for
->> > frequency guidance.
->>
->> Also the aggregate utilization may be used by cpuidle governors in
->> principle to decide how deep they can go with idle state selection.
->
-> The only issue I see with this right now is that some of the things done
-> in this function are policy decisions which really belong to the governor,
-> I think.
+Hi Enric,
 
-Well, the scheduler makes policy decisions too, in quite a few places. :-)
+On 2018년 07월 30일 17:11, Enric Balletbo i Serra wrote:
+> Some rk3399 GRF (Generic Register Files) definitions can be used for
+> different drivers. Move these definitions to a common include so we
+> don't need to duplicate these definitions.
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+> Changes in v1:
+> - [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-The really important consideration here is whether or not there may be
-multiple governors making different policy decisions in that respect.
-If not, then where exactly the single policy decision is made doesn't
-particularly matter IMO.
+Even if you add the changes log, you are missing my Acked-by tag.
 
-> The RT-go-to-max-freq thing in particular. And I really don't
-> think EAS should cope with that, at least for now.
->
-> But if this specific bit is factored out of the aggregation function, I
-> suppose we could move it somewhere else. Maybe pelt.c ?
->
-> How ugly is something like the below (totally untested) code ? It would
-> change slightly how we deal with DL utilization in EAS but I don't think
-> this is an issue.
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index af86050edcf5..51c9ac9f30e8 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -178,121 +178,17 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->         return cpufreq_driver_resolve_freq(policy, freq);
->  }
->
-> -/*
-> - * This function computes an effective utilization for the given CPU, to be
-> - * used for frequency selection given the linear relation: f = u * f_max.
-> - *
-> - * The scheduler tracks the following metrics:
-> - *
-> - *   cpu_util_{cfs,rt,dl,irq}()
-> - *   cpu_bw_dl()
-> - *
-> - * Where the cfs,rt and dl util numbers are tracked with the same metric and
-> - * synchronized windows and are thus directly comparable.
-> - *
-> - * The cfs,rt,dl utilization are the running times measured with rq->clock_task
-> - * which excludes things like IRQ and steal-time. These latter are then accrued
-> - * in the irq utilization.
-> - *
-> - * The DL bandwidth number otoh is not a measured metric but a value computed
-> - * based on the task model parameters and gives the minimal utilization
-> - * required to meet deadlines.
-> - */
-> -unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-> -                                 enum schedutil_type type)
-> -{
-> -       struct rq *rq = cpu_rq(cpu);
-> -       unsigned long util, irq, max;
-> -
-> -       max = arch_scale_cpu_capacity(NULL, cpu);
-> -
-> -       if (type == frequency_util && rt_rq_is_runnable(&rq->rt))
-> -               return max;
-> -
-> -       /*
-> -        * Early check to see if IRQ/steal time saturates the CPU, can be
-> -        * because of inaccuracies in how we track these -- see
-> -        * update_irq_load_avg().
-> -        */
-> -       irq = cpu_util_irq(rq);
-> -       if (unlikely(irq >= max))
-> -               return max;
-> -
-> -       /*
-> -        * Because the time spend on RT/DL tasks is visible as 'lost' time to
-> -        * CFS tasks and we use the same metric to track the effective
-> -        * utilization (PELT windows are synchronized) we can directly add them
-> -        * to obtain the CPU's actual utilization.
-> -        */
-> -       util = util_cfs;
-> -       util += cpu_util_rt(rq);
-> -
-> -       if (type == frequency_util) {
-> -               /*
-> -                * For frequency selection we do not make cpu_util_dl() a
-> -                * permanent part of this sum because we want to use
-> -                * cpu_bw_dl() later on, but we need to check if the
-> -                * CFS+RT+DL sum is saturated (ie. no idle time) such
-> -                * that we select f_max when there is no idle time.
-> -                *
-> -                * NOTE: numerical errors or stop class might cause us
-> -                * to not quite hit saturation when we should --
-> -                * something for later.
-> -                */
-> -
-> -               if ((util + cpu_util_dl(rq)) >= max)
-> -                       return max;
-> -       } else {
-> -               /*
-> -                * OTOH, for energy computation we need the estimated
-> -                * running time, so include util_dl and ignore dl_bw.
-> -                */
-> -               util += cpu_util_dl(rq);
-> -               if (util >= max)
-> -                       return max;
-> -       }
-> -
-> -       /*
-> -        * There is still idle time; further improve the number by using the
-> -        * irq metric. Because IRQ/steal time is hidden from the task clock we
-> -        * need to scale the task numbers:
-> -        *
-> -        *              1 - irq
-> -        *   U' = irq + ------- * U
-> -        *                max
-> -        */
-> -       util *= (max - irq);
-> -       util /= max;
-> -       util += irq;
-> -
-> -       if (type == frequency_util) {
-> -               /*
-> -                * Bandwidth required by DEADLINE must always be granted
-> -                * while, for FAIR and RT, we use blocked utilization of
-> -                * IDLE CPUs as a mechanism to gracefully reduce the
-> -                * frequency when no tasks show up for longer periods of
-> -                * time.
-> -                *
-> -                * Ideally we would like to set bw_dl as min/guaranteed
-> -                * freq and util + bw_dl as requested freq. However,
-> -                * cpufreq is not yet ready for such an interface. So,
-> -                * we only do the latter for now.
-> -                */
-> -               util += cpu_bw_dl(rq);
-> -       }
-> -
-> -       return min(max, util);
-> -}
-> -
->  static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
->  {
->         struct rq *rq = cpu_rq(sg_cpu->cpu);
-> -       unsigned long util = cpu_util_cfs(rq);
->
->         sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
->         sg_cpu->bw_dl = cpu_bw_dl(rq);
->
-> -       return schedutil_freq_util(sg_cpu->cpu, util, frequency_util);
-> +       if (rt_rq_is_runnable(&rq->rt))
-> +               return sg_cpu->max;
+> - [RFC 1/10] s/Generic/General/ (Robin Murphy)
+> - [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
+> - [RFC 7/10] Removed from the series. I did not found a use case where this matters.
+> 
+>  drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
+>  include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
+>  2 files changed, 28 insertions(+), 16 deletions(-)
+>  create mode 100644 include/soc/rockchip/rk3399_grf.h
+> 
+> diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
+> index 22b113363ffc..2fbbcbeb644f 100644
+> --- a/drivers/devfreq/event/rockchip-dfi.c
+> +++ b/drivers/devfreq/event/rockchip-dfi.c
+> @@ -26,6 +26,8 @@
+>  #include <linux/list.h>
+>  #include <linux/of.h>
+>  
+> +#include <soc/rockchip/rk3399_grf.h>
 > +
-> +       return cpu_util_total(sg_cpu->cpu, cpu_util_cfs(rq));
->  }
->
->  /**
-> diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
-> index 35475c0c5419..5f99bd564dfc 100644
-> --- a/kernel/sched/pelt.c
-> +++ b/kernel/sched/pelt.c
-> @@ -397,3 +397,77 @@ int update_irq_load_avg(struct rq *rq, u64 running)
->         return ret;
->  }
->  #endif
-> +
-> +/*
-> + * This function computes an effective utilization for the given CPU, to be
-> + * used for frequency selection given the linear relation: f = u * f_max.
-> + *
-> + * The scheduler tracks the following metrics:
-> + *
-> + *   cpu_util_{cfs,rt,dl,irq}()
-> + *   cpu_bw_dl()
-> + *
-> + * Where the cfs,rt and dl util numbers are tracked with the same metric and
-> + * synchronized windows and are thus directly comparable.
-> + *
-> + * The cfs,rt,dl utilization are the running times measured with rq->clock_task
-> + * which excludes things like IRQ and steal-time. These latter are then accrued
-> + * in the irq utilization.
-> + *
-> + * The DL bandwidth number otoh is not a measured metric but a value computed
-> + * based on the task model parameters and gives the minimal utilization
-> + * required to meet deadlines.
-> + */
-> +unsigned long cpu_util_total(int cpu, unsigned long util_cfs)
-> +{
-> +       struct rq *rq = cpu_rq(cpu);
-> +       unsigned long util, irq, max;
-> +
-> +       max = arch_scale_cpu_capacity(NULL, cpu);
-> +
-> +       /*
-> +        * Early check to see if IRQ/steal time saturates the CPU, can be
-> +        * because of inaccuracies in how we track these -- see
-> +        * update_irq_load_avg().
-> +        */
-> +       irq = cpu_util_irq(rq);
-> +       if (unlikely(irq >= max))
-> +               return max;
-> +
-> +       /*
-> +        * Because the time spend on RT/DL tasks is visible as 'lost' time to
-> +        * CFS tasks and we use the same metric to track the effective
-> +        * utilization (PELT windows are synchronized) we can directly add them
-> +        * to obtain the CPU's actual utilization.
-> +        */
-> +       util = util_cfs;
-> +       util += cpu_util_rt(rq);
-> +
-> +       if ((util + cpu_util_dl(rq)) >= max)
-> +               return max;
-> +
-> +       /*
-> +        * There is still idle time; further improve the number by using the
-> +        * irq metric. Because IRQ/steal time is hidden from the task clock we
-> +        * need to scale the task numbers:
-> +        *
-> +        *              1 - irq
-> +        *   U' = irq + ------- * U
-> +        *                max
-> +        */
-> +       util *= (max - irq);
-> +       util /= max;
-> +       util += irq;
-> +
-> +       /*
-> +        * Bandwidth required by DEADLINE must always be granted while, for
-> +        * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
-> +        * to gracefully reduce the frequency when no tasks show up for longer
-> +        * periods of time.
-> +        *
-> +        * Ideally we would like to set bw_dl as min/guaranteed freq and util +
-> +        * bw_dl as requested freq. However, cpufreq is not yet ready for such
-> +        * an interface. So, we only do the latter for now.
-> +        */
-> +       return min(max, util + cpu_bw_dl(rq));
-> +}
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 51e7f113ee23..7ad037bb653e 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -2185,14 +2185,9 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
->  # define arch_scale_freq_invariant()   false
->  #endif
->
-> -enum schedutil_type {
-> -       frequency_util,
-> -       energy_util,
+>  #define RK3399_DMC_NUM_CH	2
+>  
+>  /* DDRMON_CTRL */
+> @@ -43,18 +45,6 @@
+>  #define DDRMON_CH1_COUNT_NUM		0x3c
+>  #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
+>  
+> -/* pmu grf */
+> -#define PMUGRF_OS_REG2	0x308
+> -#define DDRTYPE_SHIFT	13
+> -#define DDRTYPE_MASK	7
+> -
+> -enum {
+> -	DDR3 = 3,
+> -	LPDDR3 = 6,
+> -	LPDDR4 = 7,
+> -	UNUSED = 0xFF
 > -};
->
-> -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-> -unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-> -                                 enum schedutil_type type);
-> +#ifdef CONFIG_SMP
-> +unsigned long cpu_util_total(int cpu, unsigned long cfs_util);
->
->  static inline unsigned long cpu_bw_dl(struct rq *rq)
->  {
-> @@ -2233,12 +2228,6 @@ static inline unsigned long cpu_util_irq(struct rq *rq)
->  }
->
->  #endif
-> -#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
-> -static inline unsigned long schedutil_freq_util(int cpu, unsigned long util,
-> -                                 enum schedutil_type type)
-> -{
-> -       return util;
-> -}
->  #endif
->
->  #ifdef CONFIG_SMP
+> -
+>  struct dmc_usage {
+>  	u32 access;
+>  	u32 total;
+> @@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
+>  	u32 ddr_type;
+>  
+>  	/* get ddr type */
+> -	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
+> -	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
+> +	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
+> +	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
+> +		    RK3399_PMUGRF_DDRTYPE_MASK;
+>  
+>  	/* clear DDRMON_CTRL setting */
+>  	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* set ddr type to dfi */
+> -	if (ddr_type == LPDDR3)
+> +	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
+>  		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
+> -	else if (ddr_type == LPDDR4)
+> +	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
+>  		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
+>  
+>  	/* enable count, use software mode */
+> diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
+> new file mode 100644
+> index 000000000000..3eebabcb2812
+> --- /dev/null
+> +++ b/include/soc/rockchip/rk3399_grf.h
+> @@ -0,0 +1,21 @@
+> +/* SPDX-License-Identifier: GPL-2.0+ */
+> +/*
+> + * Rockchip General Register Files definitions
+> + *
+> + * Copyright (c) 2018, Collabora Ltd.
+> + * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> + */
+> +
+> +#ifndef __SOC_RK3399_GRF_H
+> +#define __SOC_RK3399_GRF_H
+> +
+> +/* PMU GRF Registers */
+> +#define RK3399_PMUGRF_OS_REG2		0x308
+> +#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
+> +#define RK3399_PMUGRF_DDRTYPE_MASK	7
+> +#define RK3399_PMUGRF_DDRTYPE_DDR3	3
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
+> +#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
+> +
+> +#endif
+> 
 
-This doesn't look objectionable to me.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
