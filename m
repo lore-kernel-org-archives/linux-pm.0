@@ -1,202 +1,76 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 3/8] devfreq: rk3399_dmc: Pass ODT and auto power down
- parameters to TF-A.
-Date: Wed, 01 Aug 2018 18:08:20 +0900
-Message-ID: <5B617884.5070600@samsung.com>
-References: <20180730081124.30698-1-enric.balletbo@collabora.com>
-        <CGME20180730081238epcas5p1ee07f1c70f33018509b34f60736f4832@epcas5p1.samsung.com>
-        <20180730081124.30698-4-enric.balletbo@collabora.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
+ aggregation method
+Date: Wed, 1 Aug 2018 10:23:27 +0100
+Message-ID: <20180801092325.g2upcivcvdo62hub@queper01-ThinkPad-T460s>
+References: <20180724122521.22109-1-quentin.perret@arm.com>
+ <20180724122521.22109-11-quentin.perret@arm.com>
+ <331552975e858911db66bc78c2c8e720@codeaurora.org>
+ <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
+ <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
+ <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com>
+ <20180801082353.egym4tsbr7ppql27@queper01-lin>
+ <CAJZ5v0joYFXkXxoV8odPtrCNW=jAw3RVv3rTzMoabeYWGDnREw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180730081124.30698-4-enric.balletbo@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0joYFXkXxoV8odPtrCNW=jAw3RVv3rTzMoabeYWGDnREw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adhar
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
-
-On 2018년 07월 30일 17:11, Enric Balletbo i Serra wrote:
-> Trusted Firmware-A (TF-A) for rk3399 implements a SiP call to get the
-> on-die termination (ODT) and auto power down parameters from kernel,
-> this patch adds the functionality to do this. Also, if DDR clock
-> frequency is lower than the on-die termination (ODT) disable frequency
-> this driver should disable the DDR ODT.
+On Wednesday 01 Aug 2018 at 10:35:32 (+0200), Rafael J. Wysocki wrote:
+> On Wed, Aug 1, 2018 at 10:23 AM, Quentin Perret <quentin.perret@arm.com> wrote:
+> > On Wednesday 01 Aug 2018 at 09:32:49 (+0200), Rafael J. Wysocki wrote:
+> >> On Tue, Jul 31, 2018 at 9:31 PM,  <skannan@codeaurora.org> wrote:
+> >> >> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
+> >> >>> If it's going to be a different aggregation from what's done for
+> >> >>> frequency
+> >> >>> guidance, I don't see the point of having this inside schedutil. Why not
+> >> >>> keep it inside the scheduler files?
+> >> >>
+> >> >> This code basically results from a discussion we had with Peter on v4.
+> >> >> Keeping everything centralized can make sense from a maintenance
+> >> >> perspective, I think. That makes it easy to see the impact of any change
+> >> >> to utilization signals for both EAS and schedutil.
+> >> >
+> >> > In that case, I'd argue it makes more sense to keep the code centralized in
+> >> > the scheduler. The scheduler can let schedutil know about the utilization
+> >> > after it aggregates them. There's no need for a cpufreq governor to know
+> >> > that there are scheduling classes or how many there are. And the scheduler
+> >> > can then choose to aggregate one way for task packing and another way for
+> >> > frequency guidance.
+> >>
+> >> Also the aggregate utilization may be used by cpuidle governors in
+> >> principle to decide how deep they can go with idle state selection.
+> >
+> > The only issue I see with this right now is that some of the things done
+> > in this function are policy decisions which really belong to the governor,
+> > I think.
 > 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Well, the scheduler makes policy decisions too, in quite a few places. :-)
 
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+That is true ... ;-) But not so much about frequency selection yet I guess
 
-> ---
-> 
-> Changes in v1:
-> - [RFC 3/10] Add an explanation for platform SIP calls.
-> - [RFC 3/10] Change if statement for a switch.
-> - [RFC 3/10] Rename ddr_flag to odt_enable to be more clear.
-> 
->  drivers/devfreq/rk3399_dmc.c        | 74 ++++++++++++++++++++++++++++-
->  include/soc/rockchip/rockchip_sip.h |  1 +
->  2 files changed, 74 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-> index e795ad2b3f6b..c619dc4ac620 100644
-> --- a/drivers/devfreq/rk3399_dmc.c
-> +++ b/drivers/devfreq/rk3399_dmc.c
-> @@ -18,14 +18,17 @@
->  #include <linux/devfreq.h>
->  #include <linux/devfreq-event.h>
->  #include <linux/interrupt.h>
-> +#include <linux/mfd/syscon.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/platform_device.h>
->  #include <linux/pm_opp.h>
-> +#include <linux/regmap.h>
->  #include <linux/regulator/consumer.h>
->  #include <linux/rwsem.h>
->  #include <linux/suspend.h>
->  
-> +#include <soc/rockchip/rk3399_grf.h>
->  #include <soc/rockchip/rockchip_sip.h>
->  
->  struct dram_timing {
-> @@ -69,8 +72,11 @@ struct rk3399_dmcfreq {
->  	struct mutex lock;
->  	struct dram_timing timing;
->  	struct regulator *vdd_center;
-> +	struct regmap *regmap_pmu;
->  	unsigned long rate, target_rate;
->  	unsigned long volt, target_volt;
-> +	unsigned int odt_dis_freq;
-> +	int odt_pd_arg0, odt_pd_arg1;
->  };
->  
->  static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-> @@ -80,6 +86,8 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
->  	struct dev_pm_opp *opp;
->  	unsigned long old_clk_rate = dmcfreq->rate;
->  	unsigned long target_volt, target_rate;
-> +	struct arm_smccc_res res;
-> +	bool odt_enable = false;
->  	int err;
->  
->  	opp = devfreq_recommended_opp(dev, freq, flags);
-> @@ -95,6 +103,19 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
->  
->  	mutex_lock(&dmcfreq->lock);
->  
-> +	if (target_rate >= dmcfreq->odt_dis_freq)
-> +		odt_enable = true;
-> +
-> +	/*
-> +	 * This makes a SMC call to the TF-A to set the DDR PD (power-down)
-> +	 * timings and to enable or disable the ODT (on-die termination)
-> +	 * resistors.
-> +	 */
-> +	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, dmcfreq->odt_pd_arg0,
-> +		      dmcfreq->odt_pd_arg1,
-> +		      ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD,
-> +		      odt_enable, 0, 0, 0, &res);
-> +
->  	/*
->  	 * If frequency scaling from low to high, adjust voltage first.
->  	 * If frequency scaling from high to low, adjust frequency first.
-> @@ -294,11 +315,13 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->  {
->  	struct arm_smccc_res res;
->  	struct device *dev = &pdev->dev;
-> -	struct device_node *np = pdev->dev.of_node;
-> +	struct device_node *np = pdev->dev.of_node, *node;
->  	struct rk3399_dmcfreq *data;
->  	int ret, index, size;
->  	uint32_t *timing;
->  	struct dev_pm_opp *opp;
-> +	u32 ddr_type;
-> +	u32 val;
->  
->  	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
->  	if (!data)
-> @@ -334,6 +357,34 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> +	/* Try to find the optional reference to the pmu syscon */
-> +	node = of_parse_phandle(np, "rockchip,pmu", 0);
-> +	if (node) {
-> +		data->regmap_pmu = syscon_node_to_regmap(node);
-> +		if (IS_ERR(data->regmap_pmu))
-> +			return PTR_ERR(data->regmap_pmu);
-> +	}
-> +
-> +	/* Get DDR type */
-> +	regmap_read(data->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
-> +	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
-> +		    RK3399_PMUGRF_DDRTYPE_MASK;
-> +
-> +	/* Get the odt_dis_freq parameter in function of the DDR type */
-> +	switch (ddr_type) {
-> +	case RK3399_PMUGRF_DDRTYPE_DDR3:
-> +		data->odt_dis_freq = data->timing.ddr3_odt_dis_freq;
-> +		break;
-> +	case RK3399_PMUGRF_DDRTYPE_LPDDR3:
-> +		data->odt_dis_freq = data->timing.lpddr3_odt_dis_freq;
-> +		break;
-> +	case RK3399_PMUGRF_DDRTYPE_LPDDR4:
-> +		data->odt_dis_freq = data->timing.lpddr4_odt_dis_freq;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	};
-> +
->  	/*
->  	 * Get dram timing and pass it to arm trust firmware,
->  	 * the dram drvier in arm trust firmware will get these
-> @@ -358,6 +409,27 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->  		      ROCKCHIP_SIP_CONFIG_DRAM_INIT,
->  		      0, 0, 0, 0, &res);
->  
-> +	/*
-> +	 * In TF-A there is a platform SIP call to set the PD (power-down)
-> +	 * timings and to enable or disable the ODT (on-die termination).
-> +	 * This call needs three arguments as follows:
-> +	 *
-> +	 * arg0:
-> +	 *     bit[0-7]   : sr_idle
-> +	 *     bit[8-15]  : sr_mc_gate_idle
-> +	 *     bit[16-31] : standby idle
-> +	 * arg1:
-> +	 *     bit[0-11]  : pd_idle
-> +	 *     bit[16-27] : srpd_lite_idle
-> +	 * arg2:
-> +	 *     bit[0]     : odt enable
-> +	 */
-> +	data->odt_pd_arg0 = (data->timing.sr_idle & 0xff) |
-> +			    ((data->timing.sr_mc_gate_idle & 0xff) << 8) |
-> +			    ((data->timing.standby_idle & 0xffff) << 16);
-> +	data->odt_pd_arg1 = (data->timing.pd_idle & 0xfff) |
-> +			    ((data->timing.srpd_lite_idle & 0xfff) << 16);
-> +
->  	/*
->  	 * We add a devfreq driver to our parent since it has a device tree node
->  	 * with operating points.
-> diff --git a/include/soc/rockchip/rockchip_sip.h b/include/soc/rockchip/rockchip_sip.h
-> index 7e28092c4d3d..ad9482c56797 100644
-> --- a/include/soc/rockchip/rockchip_sip.h
-> +++ b/include/soc/rockchip/rockchip_sip.h
-> @@ -23,5 +23,6 @@
->  #define ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE	0x05
->  #define ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ	0x06
->  #define ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM	0x07
-> +#define ROCKCHIP_SIP_CONFIG_DRAM_SET_ODT_PD	0x08
->  
->  #endif
-> 
+> The really important consideration here is whether or not there may be
+> multiple governors making different policy decisions in that respect.
+> If not, then where exactly the single policy decision is made doesn't
+> particularly matter IMO.
 
+I think some users of the aggregated utilization signal do want to make
+slightly different decisions (I'm thinking about the RT-go-to-max thing
+again which makes perfect sense in sugov, but could possibly hurt EAS).
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+So the "hard" part of this work is to figure out what really is a
+governor-specific policy decision, and what is common between all users.
+I put "hard" between quotes because I only see the case of RT as truly
+sugov-specific for now.
+
+If we also want a special case for DL, Peter's enum should work OK, and
+enable to add more special cases for new users (cpuidle ?) if needed.
+But maybe that is something for later ?
+
+Thanks,
+Quentin
