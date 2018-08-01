@@ -1,308 +1,65 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Wed, 1 Aug 2018 09:23:55 +0100
-Message-ID: <20180801082353.egym4tsbr7ppql27@queper01-lin>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
- <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
- <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
- <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v5 09/12] dt-bindings: misc: add bindings for throttler
+Date: Wed, 01 Aug 2018 17:27:57 +0900
+Message-ID: <5B616F0D.1050901@samsung.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+        <CGME20180703234851epcas2p366dcf068db0a7761d7cdccabc4f1fb6e@epcas2p3.samsung.com>
+        <20180703234705.227473-10-mka@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com>
+In-reply-to: <20180703234705.227473-10-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adhar
+To: Matthias Kaehlcke <mka@chromium.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 01 Aug 2018 at 09:32:49 (+0200), Rafael J. Wysocki wrote:
-> On Tue, Jul 31, 2018 at 9:31 PM,  <skannan@codeaurora.org> wrote:
-> > On 2018-07-31 00:59, Quentin Perret wrote:
-> >>
-> >> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
-> >> [...]
-> >>>
-> >>> If it's going to be a different aggregation from what's done for
-> >>> frequency
-> >>> guidance, I don't see the point of having this inside schedutil. Why not
-> >>> keep it inside the scheduler files?
-> >>
-> >>
-> >> This code basically results from a discussion we had with Peter on v4.
-> >> Keeping everything centralized can make sense from a maintenance
-> >> perspective, I think. That makes it easy to see the impact of any change
-> >> to utilization signals for both EAS and schedutil.
-> >
-> >
-> > In that case, I'd argue it makes more sense to keep the code centralized in
-> > the scheduler. The scheduler can let schedutil know about the utilization
-> > after it aggregates them. There's no need for a cpufreq governor to know
-> > that there are scheduling classes or how many there are. And the scheduler
-> > can then choose to aggregate one way for task packing and another way for
-> > frequency guidance.
+Hi Matthias,
+
+On 2018년 07월 04일 08:47, Matthias Kaehlcke wrote:
+> The Throttler is used for non-thermal throttling of system components
+> like CPUs or devfreq devices.
 > 
-> Also the aggregate utilization may be used by cpuidle governors in
-> principle to decide how deep they can go with idle state selection.
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> --
+> Changes in v5:
+> - patch added to the series (replacing "dt-bindings: PM / OPP: add
+>   opp-throttlers property")
+> ---
+>  .../devicetree/bindings/misc/throttler.txt          | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/throttler.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/misc/throttler.txt b/Documentation/devicetree/bindings/misc/throttler.txt
+> new file mode 100644
+> index 000000000000..2ea80c62dbe1
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/misc/throttler.txt
+> @@ -0,0 +1,13 @@
+> +Throttler driver
+> +
+> +The Throttler is used for non-thermal throttling of system components like
+> +CPUs or devfreq devices.
+> +
+> +Required properties:
+> +- throttler-opps	Array of OPP-v2 phandles with the OPPs used for
+> +			throttling.
+> +
+> +Example:
+> +	throttler {
+> +		 throttler-opps = <&cpu0_opp03, &cpu1_opp02, &gpu_opp03>;
+> +	};
+> 
 
-The only issue I see with this right now is that some of the things done
-in this function are policy decisions which really belong to the governor,
-I think. The RT-go-to-max-freq thing in particular. And I really don't
-think EAS should cope with that, at least for now.
+If possible, I hope the more detailed example for "cpu0_opp03, &cpu1_opp02, &gpu_opp03"
+because I'm confusing the meaning of 'cpu0_opp03' phandle.
 
-But if this specific bit is factored out of the aggregation function, I
-suppose we could move it somewhere else. Maybe pelt.c ?
+cpu0_opp03 indicates the only one specific OPP entry among set of OPP entries of CPU0 cpufreq? or
+cpu0_opp03 indicates the set of OPP entries for CPU0 cpufreq ?
 
-How ugly is something like the below (totally untested) code ? It would
-change slightly how we deal with DL utilization in EAS but I don't think
-this is an issue.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index af86050edcf5..51c9ac9f30e8 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -178,121 +178,17 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
-        return cpufreq_driver_resolve_freq(policy, freq);
- }
-
--/*
-- * This function computes an effective utilization for the given CPU, to be
-- * used for frequency selection given the linear relation: f = u * f_max.
-- *
-- * The scheduler tracks the following metrics:
-- *
-- *   cpu_util_{cfs,rt,dl,irq}()
-- *   cpu_bw_dl()
-- *
-- * Where the cfs,rt and dl util numbers are tracked with the same metric and
-- * synchronized windows and are thus directly comparable.
-- *
-- * The cfs,rt,dl utilization are the running times measured with rq->clock_task
-- * which excludes things like IRQ and steal-time. These latter are then accrued
-- * in the irq utilization.
-- *
-- * The DL bandwidth number otoh is not a measured metric but a value computed
-- * based on the task model parameters and gives the minimal utilization
-- * required to meet deadlines.
-- */
--unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
--                                 enum schedutil_type type)
--{
--       struct rq *rq = cpu_rq(cpu);
--       unsigned long util, irq, max;
--
--       max = arch_scale_cpu_capacity(NULL, cpu);
--
--       if (type == frequency_util && rt_rq_is_runnable(&rq->rt))
--               return max;
--
--       /*
--        * Early check to see if IRQ/steal time saturates the CPU, can be
--        * because of inaccuracies in how we track these -- see
--        * update_irq_load_avg().
--        */
--       irq = cpu_util_irq(rq);
--       if (unlikely(irq >= max))
--               return max;
--
--       /*
--        * Because the time spend on RT/DL tasks is visible as 'lost' time to
--        * CFS tasks and we use the same metric to track the effective
--        * utilization (PELT windows are synchronized) we can directly add them
--        * to obtain the CPU's actual utilization.
--        */
--       util = util_cfs;
--       util += cpu_util_rt(rq);
--
--       if (type == frequency_util) {
--               /*
--                * For frequency selection we do not make cpu_util_dl() a
--                * permanent part of this sum because we want to use
--                * cpu_bw_dl() later on, but we need to check if the
--                * CFS+RT+DL sum is saturated (ie. no idle time) such
--                * that we select f_max when there is no idle time.
--                *
--                * NOTE: numerical errors or stop class might cause us
--                * to not quite hit saturation when we should --
--                * something for later.
--                */
--
--               if ((util + cpu_util_dl(rq)) >= max)
--                       return max;
--       } else {
--               /*
--                * OTOH, for energy computation we need the estimated
--                * running time, so include util_dl and ignore dl_bw.
--                */
--               util += cpu_util_dl(rq);
--               if (util >= max)
--                       return max;
--       }
--
--       /*
--        * There is still idle time; further improve the number by using the
--        * irq metric. Because IRQ/steal time is hidden from the task clock we
--        * need to scale the task numbers:
--        *
--        *              1 - irq
--        *   U' = irq + ------- * U
--        *                max
--        */
--       util *= (max - irq);
--       util /= max;
--       util += irq;
--
--       if (type == frequency_util) {
--               /*
--                * Bandwidth required by DEADLINE must always be granted
--                * while, for FAIR and RT, we use blocked utilization of
--                * IDLE CPUs as a mechanism to gracefully reduce the
--                * frequency when no tasks show up for longer periods of
--                * time.
--                *
--                * Ideally we would like to set bw_dl as min/guaranteed
--                * freq and util + bw_dl as requested freq. However,
--                * cpufreq is not yet ready for such an interface. So,
--                * we only do the latter for now.
--                */
--               util += cpu_bw_dl(rq);
--       }
--
--       return min(max, util);
--}
--
- static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
- {
-        struct rq *rq = cpu_rq(sg_cpu->cpu);
--       unsigned long util = cpu_util_cfs(rq);
-
-        sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-        sg_cpu->bw_dl = cpu_bw_dl(rq);
-
--       return schedutil_freq_util(sg_cpu->cpu, util, frequency_util);
-+       if (rt_rq_is_runnable(&rq->rt))
-+               return sg_cpu->max;
-+
-+       return cpu_util_total(sg_cpu->cpu, cpu_util_cfs(rq));
- }
-
- /**
-diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
-index 35475c0c5419..5f99bd564dfc 100644
---- a/kernel/sched/pelt.c
-+++ b/kernel/sched/pelt.c
-@@ -397,3 +397,77 @@ int update_irq_load_avg(struct rq *rq, u64 running)
-        return ret;
- }
- #endif
-+
-+/*
-+ * This function computes an effective utilization for the given CPU, to be
-+ * used for frequency selection given the linear relation: f = u * f_max.
-+ *
-+ * The scheduler tracks the following metrics:
-+ *
-+ *   cpu_util_{cfs,rt,dl,irq}()
-+ *   cpu_bw_dl()
-+ *
-+ * Where the cfs,rt and dl util numbers are tracked with the same metric and
-+ * synchronized windows and are thus directly comparable.
-+ *
-+ * The cfs,rt,dl utilization are the running times measured with rq->clock_task
-+ * which excludes things like IRQ and steal-time. These latter are then accrued
-+ * in the irq utilization.
-+ *
-+ * The DL bandwidth number otoh is not a measured metric but a value computed
-+ * based on the task model parameters and gives the minimal utilization
-+ * required to meet deadlines.
-+ */
-+unsigned long cpu_util_total(int cpu, unsigned long util_cfs)
-+{
-+       struct rq *rq = cpu_rq(cpu);
-+       unsigned long util, irq, max;
-+
-+       max = arch_scale_cpu_capacity(NULL, cpu);
-+
-+       /*
-+        * Early check to see if IRQ/steal time saturates the CPU, can be
-+        * because of inaccuracies in how we track these -- see
-+        * update_irq_load_avg().
-+        */
-+       irq = cpu_util_irq(rq);
-+       if (unlikely(irq >= max))
-+               return max;
-+
-+       /*
-+        * Because the time spend on RT/DL tasks is visible as 'lost' time to
-+        * CFS tasks and we use the same metric to track the effective
-+        * utilization (PELT windows are synchronized) we can directly add them
-+        * to obtain the CPU's actual utilization.
-+        */
-+       util = util_cfs;
-+       util += cpu_util_rt(rq);
-+
-+       if ((util + cpu_util_dl(rq)) >= max)
-+               return max;
-+
-+       /*
-+        * There is still idle time; further improve the number by using the
-+        * irq metric. Because IRQ/steal time is hidden from the task clock we
-+        * need to scale the task numbers:
-+        *
-+        *              1 - irq
-+        *   U' = irq + ------- * U
-+        *                max
-+        */
-+       util *= (max - irq);
-+       util /= max;
-+       util += irq;
-+
-+       /*
-+        * Bandwidth required by DEADLINE must always be granted while, for
-+        * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
-+        * to gracefully reduce the frequency when no tasks show up for longer
-+        * periods of time.
-+        *
-+        * Ideally we would like to set bw_dl as min/guaranteed freq and util +
-+        * bw_dl as requested freq. However, cpufreq is not yet ready for such
-+        * an interface. So, we only do the latter for now.
-+        */
-+       return min(max, util + cpu_bw_dl(rq));
-+}
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 51e7f113ee23..7ad037bb653e 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2185,14 +2185,9 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
- # define arch_scale_freq_invariant()   false
- #endif
-
--enum schedutil_type {
--       frequency_util,
--       energy_util,
--};
-
--#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
--unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
--                                 enum schedutil_type type);
-+#ifdef CONFIG_SMP
-+unsigned long cpu_util_total(int cpu, unsigned long cfs_util);
-
- static inline unsigned long cpu_bw_dl(struct rq *rq)
- {
-@@ -2233,12 +2228,6 @@ static inline unsigned long cpu_util_irq(struct rq *rq)
- }
-
- #endif
--#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
--static inline unsigned long schedutil_freq_util(int cpu, unsigned long util,
--                                 enum schedutil_type type)
--{
--       return util;
--}
- #endif
-
- #ifdef CONFIG_SMP
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
