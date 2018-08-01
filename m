@@ -1,58 +1,170 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] PM / devfreq: Generic cpufreq governor
-Date: Wed, 1 Aug 2018 17:03:29 +0100
-Message-ID: <2a9bfa53-31b2-b44a-0bd5-07bcc344a466@arm.com>
-References: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
+Date: Wed, 1 Aug 2018 10:08:24 -0700
+Message-ID: <20180801170824.GJ68975@google.com>
+References: <20180703234705.227473-1-mka@chromium.org>
+ <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
+ <20180703234705.227473-6-mka@chromium.org>
+ <5B3C6C2A.1070205@samsung.com>
+ <20180706175301.GG129942@google.com>
+ <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+ <20180716175050.GZ129942@google.com>
+ <20180731193953.GH68975@google.com>
+ <5B610B48.4030802@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532750217-8886-1-git-send-email-skannan@codeaurora.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <5B610B48.4030802@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Chanwoo,
 
+On Wed, Aug 01, 2018 at 10:22:16AM +0900, Chanwoo Choi wrote:
+> On 2018년 08월 01일 04:39, Matthias Kaehlcke wrote:
+> > On Mon, Jul 16, 2018 at 10:50:50AM -0700, Matthias Kaehlcke wrote:
+> >> On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
+> >>> Hi Matthias,
+> >>>
+> >>> On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
+> >>>> Hi Chanwoo,
+> >>>>
+> >>>> On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
+> >>>>
+> >>>>> Firstly,
+> >>>>> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
+> >>>>>
+> >>>>> devfreq already used the OPP interface as default. It means that
+> >>>>> the outside of 'drivers/devfreq' can disable/enable the frequency
+> >>>>> such as drivers/thermal/devfreq_cooling.c. Also, when some device
+> >>>>> drivers disable/enable the specific frequency, the devfreq core
+> >>>>> consider them.
+> >>>>>
+> >>>>> So, devfreq doesn't need to devfreq_verify_within_limits() because
+> >>>>> already support some interface to change the minimum/maximum frequency
+> >>>>> of devfreq device. 
+> >>>>>
+> >>>>> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
+> >>>>> to change the minimum/maximum frequency of cpu. some device driver cannot
+> >>>>> change the minimum/maximum frequency through OPP interface.
+> >>>>>
+> >>>>> But, in case of devfreq subsystem, as I explained already, devfreq support
+> >>>>> the OPP interface as default way. devfreq subsystem doesn't need to add
+> >>>>> other way to change the minimum/maximum frequency.
+> >>>>
+> >>>> Using the OPP interface exclusively works as long as a
+> >>>> enabling/disabling of OPPs is limited to a single driver
+> >>>> (drivers/thermal/devfreq_cooling.c). When multiple drivers are
+> >>>> involved you need a way to resolve conflicts, that's the purpose of
+> >>>> devfreq_verify_within_limits(). Please let me know if there are
+> >>>> existing mechanisms for conflict resolution that I overlooked.
+> >>>>
+> >>>> Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
+> >>>> devfreq_verify_within_limits() instead of the OPP interface if
+> >>>> desired, however this seems beyond the scope of this series.
+> >>>
+> >>> Actually, if we uses this approach, it doesn't support the multiple drivers too.
+> >>> If non throttler drivers uses devfreq_verify_within_limits(), the conflict
+> >>> happen.
+> >>
+> >> As long as drivers limit the max freq there is no conflict, the lowest
+> >> max freq wins. I expect this to be the usual case, apparently it
+> >> worked for cpufreq for 10+ years.
+> >>
+> >> However it is correct that there would be a conflict if a driver
+> >> requests a min freq that is higher than the max freq requested by
+> >> another. In this case devfreq_verify_within_limits() resolves the
+> >> conflict by raising p->max to the min freq. Not sure if this is
+> >> something that would ever occur in practice though.
+> >>
+> >> If we are really concerned about this case it would also be an option
+> >> to limit the adjustment to the max frequency.
+> >>
+> >>> To resolve the conflict for multiple device driver, maybe OPP interface
+> >>> have to support 'usage_count' such as clk_enable/disable().
+> >>
+> >> This would require supporting negative usage count values, since a OPP
+> >> should not be enabled if e.g. thermal enables it but the throttler
+> >> disabled it or viceversa.
+> >>
+> >> Theoretically there could also be conflicts, like one driver disabling
+> >> the higher OPPs and another the lower ones, with the outcome of all
+> >> OPPs being disabled, which would be a more drastic conflict resolution
+> >> than that of devfreq_verify_within_limits().
+> >>
+> >> Viresh, what do you think about an OPP usage count?
+> > 
+> > Ping, can we try to reach a conclusion on this or at least keep the
+> > discussion going?
+> > 
+> > Not that it matters, but my preferred solution continues to be
+> > devfreq_verify_within_limits(). It solves conflicts in some way (which
+> > could be adjusted if needed) and has proven to work in practice for
+> > 10+ years in a very similar sub-system.
+> 
+> It is not true. Current cpufreq subsystem doesn't support external OPP
+> control to enable/disable the OPP entry. If some device driver
+> controls the OPP entry of cpufreq driver with opp_disable/enable(),
+> the operation is not working. Because cpufreq considers the limit
+> through 'cpufreq_verify_with_limits()' only.
 
-On 28/07/18 04:56, Saravana Kannan wrote:
-> Many CPU architectures have caches that can scale independent of the CPUs.
-> Frequency scaling of the caches is necessary to make sure the cache is not
-> a performance bottleneck that leads to poor performance and power. The same
-> idea applies for RAM/DDR.
-> 
-> To achieve this, this patch adds a generic devfreq governor that can listen
-> to the frequency transitions of each CPU frequency domain and then adjusts
-> the frequency of the cache (or any devfreq device) based on the frequency
-> of the CPUs.
-> 
-> To decide the frequency of the device, the governor does one of the
-> following:
-> 
-> * Uses a CPU frequency to device frequency mapping table
->   - Either one mapping table used for all CPU freq policies (typically used
->     for system with homogeneous cores/clusters that have the same OPPs.
->   - One mapping table per CPU freq policy (typically used for ASMP systems
->     with heterogeneous CPUs with different OPPs)
-> 
-> OR
-> 
-> * Scales the device frequency in proportion to the CPU frequency. So, if
->   the CPUs are running at their max frequency, the device runs at its max
->   frequency.  If the CPUs are running at their min frequency, the device
->   runs at its min frequency. And interpolated for frequencies in between.
-> 
+Ok, we can probably agree that using cpufreq_verify_with_limits()
+exclusively seems to have worked well for cpufreq, and that in their
+overall purpose cpufreq and devfreq are similar subsystems.
 
-Is this solution for the old generation of SDM ?
-I have seen newer ones have some kind of firmware interface/hardware to
-deal with CPUFreq. Do you need this solution for them too ?
+The current throttler series with devfreq_verify_within_limits() takes
+the enabled OPPs into account, the lowest and highest OPP are used as
+a starting point for the frequency adjustment and (in theory) the
+frequency range should only be narrowed by
+devfreq_verify_within_limits().
 
-If yes, why ? IMO firmware can arbitrate various requests for frequency
-scaling and do the *right thing* for the platform. Having OSPM sending
-separate requests for such bus/interconnect might end up with conflicts.
-No ?
+> As I already commented[1], there is different between cpufreq and devfreq.
+> [1] https://lkml.org/lkml/2018/7/4/80
+> 
+> Already, subsystem already used OPP interface in order to control
+> specific OPP entry. I don't want to provide two outside method
+> to control the frequency of devfreq driver. It might make the confusion.
 
--- 
-Regards,
-Sudeep
+I understand your point, it would indeed be preferable to have a
+single method. However I'm not convinced that the OPP interface is
+a suitable solution, as I exposed earlier in this thread (quoted
+below).
+
+I would like you to at least consider the possibility of changing
+drivers/thermal/devfreq_cooling.c to devfreq_verify_within_limits().
+Besides that it's not what is currently used, do you see any technical
+concerns that would make devfreq_verify_within_limits() an unsuitable
+or inferior solution?
+
+> I want to use only OPP interface to enable/disable frequency
+> even if we have to modify the OPP interface.
+
+These are the concerns I raised earlier about a solution with OPP
+usage counts:
+
+"This would require supporting negative usage count values, since a OPP
+should not be enabled if e.g. thermal enables it but the throttler
+disabled it or viceversa.
+
+Theoretically there could also be conflicts, like one driver disabling
+the higher OPPs and another the lower ones, with the outcome of all
+OPPs being disabled, which would be a more drastic conflict resolution
+than that of devfreq_verify_within_limits()."
+
+What do you think about these points?
+
+The negative usage counts aren't necessarily a dealbreaker in a
+technical sense, though I'm not a friend of quirky interfaces that
+don't behave like a typical user would expect (e.g. an OPP isn't
+necessarily enabled after dev_pm_opp_enable()).
+
+I can sent an RFC with OPP usage counts, though due to the above
+concerns I have doubts it will be well received.
+
+Thanks
+
+Matthias
