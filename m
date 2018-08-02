@@ -1,90 +1,60 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Thu, 2 Aug 2018 16:39:19 +0100
-Message-ID: <20180802153917.cpvls5hxkvevjh6s@queper01-lin>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point indicator
+Date: Thu, 2 Aug 2018 17:55:24 +0200
+Message-ID: <CAKfTPtCGGqykN027kxK+chvKvCpNu4bYYdvfZJ+3_7YzT3Utfg@mail.gmail.com>
 References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
- <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180731075950.tfvxef6yuja3ad2k@queper01-lin>
- <75f415911ccdd02d6fd217ca1c7d8902@codeaurora.org>
- <CAJZ5v0j=EYnANGAj9bd44eeux1eCfeMtdn9npe5pSAzE8EVKaA@mail.gmail.com>
- <20180801082353.egym4tsbr7ppql27@queper01-lin>
- <CAJZ5v0joYFXkXxoV8odPtrCNW=jAw3RVv3rTzMoabeYWGDnREw@mail.gmail.com>
- <20180801092325.g2upcivcvdo62hub@queper01-ThinkPad-T460s>
- <20180802130440.GW2476@hirez.programming.kicks-ass.net>
+ <20180724122521.22109-10-quentin.perret@arm.com> <20180802122629.GU2476@hirez.programming.kicks-ass.net>
+ <20180802130337.uf6tlac2hg4nkbwr@queper01-lin> <20180802130801.GL2494@hirez.programming.kicks-ass.net>
+ <20180802131849.mqpt5lbtcqrxbwig@queper01-lin> <CAKfTPtDcoySXK0fBkDNy4wp1vsRxmiuAGT3CDZBh6Vnwyep2BA@mail.gmail.com>
+ <20180802141424.ju4jxxbk6pxw3kyq@queper01-lin> <CAKfTPtCzQZotmpt40X6uN9O0yAerq6c6bFgiFfqhhcbKsm7k4w@mail.gmail.com>
+ <20180802153035.vjtmqwdwujvt7ojs@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180802130440.GW2476@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180802153035.vjtmqwdwujvt7ojs@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adh
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 02 Aug 2018 at 15:04:40 (+0200), Peter Zijlstra wrote:
-> On Wed, Aug 01, 2018 at 10:23:27AM +0100, Quentin Perret wrote:
-> > On Wednesday 01 Aug 2018 at 10:35:32 (+0200), Rafael J. Wysocki wrote:
-> > > On Wed, Aug 1, 2018 at 10:23 AM, Quentin Perret <quentin.perret@arm.com> wrote:
-> > > > On Wednesday 01 Aug 2018 at 09:32:49 (+0200), Rafael J. Wysocki wrote:
-> > > >> On Tue, Jul 31, 2018 at 9:31 PM,  <skannan@codeaurora.org> wrote:
-> > > >> >> On Monday 30 Jul 2018 at 12:35:27 (-0700), skannan@codeaurora.org wrote:
-> > > >> >>> If it's going to be a different aggregation from what's done for
-> > > >> >>> frequency
-> > > >> >>> guidance, I don't see the point of having this inside schedutil. Why not
-> > > >> >>> keep it inside the scheduler files?
-> > > >> >>
-> > > >> >> This code basically results from a discussion we had with Peter on v4.
-> > > >> >> Keeping everything centralized can make sense from a maintenance
-> > > >> >> perspective, I think. That makes it easy to see the impact of any change
-> > > >> >> to utilization signals for both EAS and schedutil.
-> > > >> >
-> > > >> > In that case, I'd argue it makes more sense to keep the code centralized in
-> > > >> > the scheduler. The scheduler can let schedutil know about the utilization
-> > > >> > after it aggregates them. There's no need for a cpufreq governor to know
-> > > >> > that there are scheduling classes or how many there are. And the scheduler
-> > > >> > can then choose to aggregate one way for task packing and another way for
-> > > >> > frequency guidance.
-> > > >>
-> > > >> Also the aggregate utilization may be used by cpuidle governors in
-> > > >> principle to decide how deep they can go with idle state selection.
-> > > >
-> > > > The only issue I see with this right now is that some of the things done
-> > > > in this function are policy decisions which really belong to the governor,
-> > > > I think.
-> > > 
-> > > Well, the scheduler makes policy decisions too, in quite a few places. :-)
-> > 
-> > That is true ... ;-) But not so much about frequency selection yet I guess
-> 
-> Well, sugov is part of the scheduler :-) It being so allows for the
-> co-ordinated decision making required for EAS.
-> 
-> > > The really important consideration here is whether or not there may be
-> > > multiple governors making different policy decisions in that respect.
-> > > If not, then where exactly the single policy decision is made doesn't
-> > > particularly matter IMO.
-> > 
-> > I think some users of the aggregated utilization signal do want to make
-> > slightly different decisions (I'm thinking about the RT-go-to-max thing
-> > again which makes perfect sense in sugov, but could possibly hurt EAS).
-> > 
-> > So the "hard" part of this work is to figure out what really is a
-> > governor-specific policy decision, and what is common between all users.
-> > I put "hard" between quotes because I only see the case of RT as truly
-> > sugov-specific for now.
-> > 
-> > If we also want a special case for DL, Peter's enum should work OK, and
-> > enable to add more special cases for new users (cpuidle ?) if needed.
-> > But maybe that is something for later ?
-> 
-> Right, I don't mind moving the function. What I do oppose is having two
-> very similar functions in different translation units -- because then
-> they _will_ diverge and result in 'funny' things.
+On Thu, 2 Aug 2018 at 17:30, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> On Thursday 02 Aug 2018 at 17:14:15 (+0200), Vincent Guittot wrote:
+> > On Thu, 2 Aug 2018 at 16:14, Quentin Perret <quentin.perret@arm.com> wrote:
+> > > Good point, setting the util_avg to 0 for new tasks should help
+> > > filtering out those tiny tasks too. And that would match with the idea
+> > > of letting tasks build their history before looking at their util_avg ...
+> > >
+> > > But there is one difference w.r.t frequency selection. The current code
+> > > won't mark the system overutilized, but will let sugov raise the
+> > > frequency when a new task is enqueued. So in case of a fork bomb, we
+> >
+> > If the initial value of util_avg is 0, we should not have any impact
+> > on the util_avg of the cfs rq on which the task is attached, isn't it
+> > ? so this should not impact both the over utilization state and the
+> > frequency selected by sugov or I'm missing something ?
+>
+> What I tried to say is that setting util_avg to 0 for new tasks will
+> prevent schedutil from raising the frequency in case of a fork bomb, and
+> I think that could be an issue. And I think this isn't an issue with the
+> patch as-is ...
 
-Sounds good :-) Would kernel/sched/pelt.c be the right place then ? It's
-cross-class and kinda pelt-related I guess
+ok. So you also want to deal with fork bomb
+Not sure that you don't have some problem with current proposal too
+because select_task_rq_fair will always return prev_cpu because
+util_avg and util_est are 0 at that time
 
-Thanks,
-Quentin
+>
+> Sorry if that wasn't clear
+>
+> > Then, select_task_rq_fair is called for a new task but util_avg is
+> > still 0 at that time in the current code so you will have consistent
+> > util_avg of the new task before and after calling
+> > find_energy_efficient_cpu
+>
+> New tasks don't go in find_energy_efficient_cpu(), because, as you said,
+> they have no consistent util_avg yet when select_task_rq_fair() is called
+> for the first time.
+>
+> Thanks,
+> Quentin
