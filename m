@@ -1,137 +1,79 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Thu, 02 Aug 2018 14:00:12 -0700
-Message-ID: <45c77ee02536e237c054399cad4c7669@codeaurora.org>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
- <CGME20180802005756epcas4p465a12f42a0e36f0af6fd276a3a56957f@epcms1p3>
- <20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider bindings
+Date: Thu, 2 Aug 2018 15:02:16 -0600
+Message-ID: <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
+References: <20180731161340.13000-1-georgi.djakov@linaro.org> <20180731161340.13000-3-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3>
+In-Reply-To: <20180731161340.13000-3-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: georgi.djakov@linaro.org, maxime.ripard@bootlin.com
+Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-08-02 02:56, MyungJoo Ham wrote:
->> Many CPU architectures have caches that can scale independent of the 
->> CPUs.
->> Frequency scaling of the caches is necessary to make sure the cache is 
->> not
->> a performance bottleneck that leads to poor performance and power. The 
->> same
->> idea applies for RAM/DDR.
->> 
->> To achieve this, this patch adds a generic devfreq governor that takes 
->> the
->> current frequency of each CPU frequency domain and then adjusts the
->> frequency of the cache (or any devfreq device) based on the frequency 
->> of
->> the CPUs. It listens to CPU frequency transition notifiers to keep 
->> itself
->> up to date on the current CPU frequency.
->> 
->> To decide the frequency of the device, the governor does one of the
->> following:
-> 
-> This exactly has the same purpose with "passive" governor except for 
-> the
-> single part: passive governor depends on another devfreq driver, not
-> cpufreq driver.
-> 
-> If both governors have many features in common, can you merge them into 
-> one?
-> Passive governor also has "get_target_freq", which allows driver 
-> authors
-> to define the mapping.
+On Tue, Jul 31, 2018 at 10:13 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>
+> This binding is intended to represent the interconnect hardware present
+> in some of the modern SoCs. Currently it consists only of a binding for
+> the interconnect hardware devices (provider).
 
-Thanks for the review and pointing me to the passive governor. I agree 
-that at a high level they are both doing the same. I can certainly stuff 
-this CPU freq to dev freq mapping into passive governor, but I think 
-it'll just make one huge set of code that's harder to understand and 
-maintain because it trying to do different things under the hood.
+If you want the bindings reviewed, then you need to send them to the
+DT list. CC'ing me is pointless, I get CC'ed too many things to read.
 
-There are also a bunch of complexities and optimizations that come with 
-the cpufreq-map governor that don't fit with the passive governor.
+The consumer and producer binding should be a single patch. One is not
+useful without the other.
 
-1. It's not one CPU who's frequency we have to listen to. There are 
-multiple CPUs/policies we have to aggregate across.
-2. We have to deal with big vs little having different needs/mappings.
-3. Since it's always just CPUfreq, I can optimize the handling in the 
-transition notifiers. If I have 4 different devices that are scaled 
-based on CPU freq, I still use only 1 transition notifier. It becomes a 
-bit harder to do with the passive governor.
-4. It requires that the device explicitly support the passive governor 
-and pick a mapping function. With cpufreq-map governor, the device 
-drivers don't need to make any changes. Whoever is making a device/board 
-can choose what devices to scale up base on CPU freq based on their 
-board and their needs. Even an end user can say, scale the GPU based on 
-my CPU based on interpolation if they choose to.
-5. If a device has some other use for the private data, it can't work 
-with passive governor, but can work with cpufreq-map governor.
-6. I also want to improve cpufreq-map governor to handle hotplug 
-correctly in later patches (needs more discussion) and that'll add more 
-complexity.
+There is also a patch series from Maxime Ripard that's addressing the
+same general area. See "dt-bindings: Add a dma-parent property". We
+don't need multiple ways to address describing the device to memory
+paths, so you all had better work out a common solution.
 
-I think for these reasons we shouldn't combine these two governors. Let 
-me know what you think.
+Rob
 
-> Probably, you will need to add one more notifier call to get events 
-> from
-> cpufreq instead of devfreq.
-> 
->> 
->> * Uses a CPU frequency to device frequency mapping table
->>  - Either one mapping table used for all CPU freq policies (typically 
->> used
->>    for system with homogeneous cores/clusters that have the same 
->> OPPs).
->>  - One mapping table per CPU freq policy (typically used for ASMP 
->> systems
->>    with heterogeneous CPUs with different OPPs)
->> 
->> OR
->> 
->> * Scales the device frequency in proportion to the CPU frequency. So, 
->> if
->>  the CPUs are running at their max frequency, the device runs at its 
->> max
->>  frequency.  If the CPUs are running at their min frequency, the 
->> device
->>  runs at its min frequency. And interpolated for frequencies in 
->> between.
-> 
-> If you want to satisfy these two cases to the "modified" passive 
-> governors,
-> you may need to supply two "preloaded" get_target_freq functions for
-> struct devfreq_passive_data. If that's impossible, requiring a bit more
-> modifications, you may need to write alternative routines in
-> update_devfreq_passive().
-> 
-
-Thanks for the pointers. I understood what you mean here.
-
->> diff --git a/drivers/devfreq/governor_cpufreq_map.c 
->> b/drivers/devfreq/governor_cpufreq_map.c
->> new file mode 100644
->> index 0000000..084a3ff
->> --- /dev/null
->> +++ b/drivers/devfreq/governor_cpufreq_map.c
->> @@ -0,0 +1,583 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights 
->> reserved.
->> + */
-> 
-> Is this boilerplate fine? ( using // )
-
-I was just following what I thought was the new standard. checkpatch 
-even complains about not having this.
-
-Thanks,
-Saravana
+>
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  .../bindings/interconnect/interconnect.txt    | 33 +++++++++++++++++++
+>  1 file changed, 33 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+>
+> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> new file mode 100644
+> index 000000000000..6e2b2971b094
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> @@ -0,0 +1,33 @@
+> +Interconnect Provider Device Tree Bindings
+> +=========================================
+> +
+> +The purpose of this document is to define a common set of generic interconnect
+> +providers/consumers properties.
+> +
+> +
+> += interconnect providers =
+> +
+> +The interconnect provider binding is intended to represent the interconnect
+> +controllers in the system. Each provider registers a set of interconnect
+> +nodes, which expose the interconnect related capabilities of the interconnect
+> +to consumer drivers. These capabilities can be throughput, latency, priority
+> +etc. The consumer drivers set constraints on interconnect path (or endpoints)
+> +depending on the use case. Interconnect providers can also be interconnect
+> +consumers, such as in the case where two network-on-chip fabrics interface
+> +directly
+> +
+> +Required properties:
+> +- compatible : contains the interconnect provider compatible string
+> +- #interconnect-cells : number of cells in a interconnect specifier needed to
+> +                       encode the interconnect node id
+> +
+> +Example:
+> +
+> +               snoc: snoc@580000 {
+> +                       compatible = "qcom,msm8916-snoc";
+> +                       #interconnect-cells = <1>;
+> +                       reg = <0x580000 0x14000>;
+> +                       clock-names = "bus_clk", "bus_a_clk";
+> +                       clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+> +                                <&rpmcc RPM_SMD_SNOC_A_CLK>;
+> +               };
