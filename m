@@ -1,213 +1,563 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
-Date: Thu, 02 Aug 2018 10:58:59 +0900
-Message-ID: <5B626563.1090302@samsung.com>
-References: <20180703234705.227473-1-mka@chromium.org>
-        <CGME20180703234900epcas1p1cda806bab6bbe69228ca5ee56bc33f36@epcas1p1.samsung.com>
-        <20180703234705.227473-6-mka@chromium.org> <5B3C6C2A.1070205@samsung.com>
-        <20180706175301.GG129942@google.com>
-        <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
-        <20180716175050.GZ129942@google.com> <20180731193953.GH68975@google.com>
-        <5B610B48.4030802@samsung.com> <20180801170824.GJ68975@google.com>
+Subject: Re: [PATCH 4/8] devfreq: rk3399_dmc / clk: rockchip: Sync with
+ vblank in the kernel for DDRfreq.
+Date: Thu, 02 Aug 2018 11:35:24 +0900
+Message-ID: <5B626DEC.2030701@samsung.com>
+References: <20180730081124.30698-1-enric.balletbo@collabora.com>
+        <CGME20180730081231epcas4p3df1bafc11dc546e2b6abdc0f77b43d36@epcas4p3.samsung.com>
+        <20180730081124.30698-5-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20180801170824.GJ68975@google.com>
+In-reply-to: <20180730081124.30698-5-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Matthias,
+Hi Enric,
 
-On 2018년 08월 02일 02:08, Matthias Kaehlcke wrote:
-> Hi Chanwoo,
-> 
-> On Wed, Aug 01, 2018 at 10:22:16AM +0900, Chanwoo Choi wrote:
->> On 2018년 08월 01일 04:39, Matthias Kaehlcke wrote:
->>> On Mon, Jul 16, 2018 at 10:50:50AM -0700, Matthias Kaehlcke wrote:
->>>> On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
->>>>> Hi Matthias,
->>>>>
->>>>> On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
->>>>>> Hi Chanwoo,
->>>>>>
->>>>>> On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
->>>>>>
->>>>>>> Firstly,
->>>>>>> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
->>>>>>>
->>>>>>> devfreq already used the OPP interface as default. It means that
->>>>>>> the outside of 'drivers/devfreq' can disable/enable the frequency
->>>>>>> such as drivers/thermal/devfreq_cooling.c. Also, when some device
->>>>>>> drivers disable/enable the specific frequency, the devfreq core
->>>>>>> consider them.
->>>>>>>
->>>>>>> So, devfreq doesn't need to devfreq_verify_within_limits() because
->>>>>>> already support some interface to change the minimum/maximum frequency
->>>>>>> of devfreq device. 
->>>>>>>
->>>>>>> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
->>>>>>> to change the minimum/maximum frequency of cpu. some device driver cannot
->>>>>>> change the minimum/maximum frequency through OPP interface.
->>>>>>>
->>>>>>> But, in case of devfreq subsystem, as I explained already, devfreq support
->>>>>>> the OPP interface as default way. devfreq subsystem doesn't need to add
->>>>>>> other way to change the minimum/maximum frequency.
->>>>>>
->>>>>> Using the OPP interface exclusively works as long as a
->>>>>> enabling/disabling of OPPs is limited to a single driver
->>>>>> (drivers/thermal/devfreq_cooling.c). When multiple drivers are
->>>>>> involved you need a way to resolve conflicts, that's the purpose of
->>>>>> devfreq_verify_within_limits(). Please let me know if there are
->>>>>> existing mechanisms for conflict resolution that I overlooked.
->>>>>>
->>>>>> Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
->>>>>> devfreq_verify_within_limits() instead of the OPP interface if
->>>>>> desired, however this seems beyond the scope of this series.
->>>>>
->>>>> Actually, if we uses this approach, it doesn't support the multiple drivers too.
->>>>> If non throttler drivers uses devfreq_verify_within_limits(), the conflict
->>>>> happen.
->>>>
->>>> As long as drivers limit the max freq there is no conflict, the lowest
->>>> max freq wins. I expect this to be the usual case, apparently it
->>>> worked for cpufreq for 10+ years.
->>>>
->>>> However it is correct that there would be a conflict if a driver
->>>> requests a min freq that is higher than the max freq requested by
->>>> another. In this case devfreq_verify_within_limits() resolves the
->>>> conflict by raising p->max to the min freq. Not sure if this is
->>>> something that would ever occur in practice though.
->>>>
->>>> If we are really concerned about this case it would also be an option
->>>> to limit the adjustment to the max frequency.
->>>>
->>>>> To resolve the conflict for multiple device driver, maybe OPP interface
->>>>> have to support 'usage_count' such as clk_enable/disable().
->>>>
->>>> This would require supporting negative usage count values, since a OPP
->>>> should not be enabled if e.g. thermal enables it but the throttler
->>>> disabled it or viceversa.
->>>>
->>>> Theoretically there could also be conflicts, like one driver disabling
->>>> the higher OPPs and another the lower ones, with the outcome of all
->>>> OPPs being disabled, which would be a more drastic conflict resolution
->>>> than that of devfreq_verify_within_limits().
->>>>
->>>> Viresh, what do you think about an OPP usage count?
->>>
->>> Ping, can we try to reach a conclusion on this or at least keep the
->>> discussion going?
->>>
->>> Not that it matters, but my preferred solution continues to be
->>> devfreq_verify_within_limits(). It solves conflicts in some way (which
->>> could be adjusted if needed) and has proven to work in practice for
->>> 10+ years in a very similar sub-system.
->>
->> It is not true. Current cpufreq subsystem doesn't support external OPP
->> control to enable/disable the OPP entry. If some device driver
->> controls the OPP entry of cpufreq driver with opp_disable/enable(),
->> the operation is not working. Because cpufreq considers the limit
->> through 'cpufreq_verify_with_limits()' only.
-> 
-> Ok, we can probably agree that using cpufreq_verify_with_limits()
-> exclusively seems to have worked well for cpufreq, and that in their
-> overall purpose cpufreq and devfreq are similar subsystems.
-> 
-> The current throttler series with devfreq_verify_within_limits() takes
-> the enabled OPPs into account, the lowest and highest OPP are used as
-> a starting point for the frequency adjustment and (in theory) the
-> frequency range should only be narrowed by
-> devfreq_verify_within_limits().
-> 
->> As I already commented[1], there is different between cpufreq and devfreq.
->> [1] https://lkml.org/lkml/2018/7/4/80
->>
->> Already, subsystem already used OPP interface in order to control
->> specific OPP entry. I don't want to provide two outside method
->> to control the frequency of devfreq driver. It might make the confusion.
-> 
-> I understand your point, it would indeed be preferable to have a
-> single method. However I'm not convinced that the OPP interface is
-> a suitable solution, as I exposed earlier in this thread (quoted
-> below).
-> 
-> I would like you to at least consider the possibility of changing
-> drivers/thermal/devfreq_cooling.c to devfreq_verify_within_limits().
-> Besides that it's not what is currently used, do you see any technical
-> concerns that would make devfreq_verify_within_limits() an unsuitable
-> or inferior solution?
+I'm not sure this approach is right. Actually, I don't prefer
+the definitions of specific functions for only some device drivers.
+This approach connect with device drivers without subsystem.
+It looks like the direct call function.
 
-As we already discussed, devfreq_verify_within_limits() doesn't support
-the multiple outside controllers (e.g., devfreq-cooling.c).
-
-After you are suggesting the throttler core, there are at least two
-outside controllers (e.g., devfreq-cooling.c and throttler driver).
-As I knew the problem about conflict, I cannot agree the temporary
-method. OPP interface is mandatory for devfreq in order to control
-the OPP (frequency/voltage). In this situation, we have to try to
-find the method through OPP interface.
-
-We can refer to regulator/clock. Multiple device driver can use
-the regulator/clock without any problem. I think that usage of OPP
-is similiar with regulator/clock. As you mentioned, maybe OPP
-would handle the negative count. Although opp_enable/opp_disable()
-have to handle the negative count and opp_enable/opp_disable()
-can support the multiple usage from device drivers, I think that
-this approach is right.
+Generally, all device driver in linux kernel have to
+use the provided API from subsystem as following:
+[A subsystem] --------------------- [B subsystem]
+       |                                  |
+[A device driver]                   [B device driver]
 
 
-> 
->> I want to use only OPP interface to enable/disable frequency
->> even if we have to modify the OPP interface.
-> 
-> These are the concerns I raised earlier about a solution with OPP
-> usage counts:
-> 
-> "This would require supporting negative usage count values, since a OPP
-> should not be enabled if e.g. thermal enables it but the throttler
-> disabled it or viceversa.
+But, this patch looks like following connection.
+I think that it might make the complicated codes.
+We cannot develop the all device drivers with direct call function
+without standard subsystem interface.
 
-Already replied	about negative usage count. I think that negative usage count
-is not problem if this approach could resolve the issue.
-
-> 
-> Theoretically there could also be conflicts, like one driver disabling
-> the higher OPPs and another the lower ones, with the outcome of all
-> OPPs being disabled, which would be a more drastic conflict resolution
-> than that of devfreq_verify_within_limits()."
-> 
-> What do you think about these points?
-
-It depends on how to use OPP interface on multiple device driver.
-Even if devfreq/opp provides the control method, outside device driver
-are misusing them. It is problem of user.
-
-Instead, if we use the OPP interface, we can check why OPP entry
-is disabled or enabled through usage count.
-
-> 
-> The negative usage counts aren't necessarily a dealbreaker in a
-> technical sense, though I'm not a friend of quirky interfaces that
-> don't behave like a typical user would expect (e.g. an OPP isn't
-> necessarily enabled after dev_pm_opp_enable()).
-> 
-> I can sent an RFC with OPP usage counts, though due to the above
-> concerns I have doubts it will be well received.
-
-Please add me to Cc list.
-
-> 
-> Thanks
-> 
-> Matthias
-> 
-> 
+[A subsystem] --------------------- [B subsystem]
+       |                                  |
+[A device driver] ----------------- [B device driver]
 
 
--- 
-Best Regards,
+Regards,
 Chanwoo Choi
-Samsung Electronics
+
+
+On 2018년 07월 30일 17:11, Enric Balletbo i Serra wrote:
+> From: Derek Basehore <dbasehore@chromium.org>
+> 
+> This changes the kernel to sync with vblank for the display in the
+> kernel. This was done in Trusted Firmware-A (TF-A) before, but that locks
+> up one CPU for up to one display frame (1/60 second). That's bad for
+> performance and power, so this moves waiting to the kernel where the
+> waiting thread can properly wait on a completion.
+> 
+> Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> 
+> Changes in v1: None
+> 
+>  drivers/clk/rockchip/clk-ddr.c    | 142 +++++++++++++++++++++++++-----
+>  drivers/clk/rockchip/clk.c        |   2 +-
+>  drivers/clk/rockchip/clk.h        |   3 +-
+>  drivers/devfreq/rk3399_dmc.c      | 125 ++++++++++++++++++++------
+>  drivers/devfreq/rk3399_dmc_priv.h |  15 ++++
+>  include/soc/rockchip/rk3399_dmc.h |  42 +++++++++
+>  6 files changed, 277 insertions(+), 52 deletions(-)
+>  create mode 100644 drivers/devfreq/rk3399_dmc_priv.h
+>  create mode 100644 include/soc/rockchip/rk3399_dmc.h
+> 
+> diff --git a/drivers/clk/rockchip/clk-ddr.c b/drivers/clk/rockchip/clk-ddr.c
+> index e8075359366b..707be1bd8910 100644
+> --- a/drivers/clk/rockchip/clk-ddr.c
+> +++ b/drivers/clk/rockchip/clk-ddr.c
+> @@ -17,7 +17,9 @@
+>  #include <linux/clk.h>
+>  #include <linux/clk-provider.h>
+>  #include <linux/io.h>
+> +#include <linux/ktime.h>
+>  #include <linux/slab.h>
+> +#include <soc/rockchip/rk3399_dmc.h>
+>  #include <soc/rockchip/rockchip_sip.h>
+>  #include "clk.h"
+>  
+> @@ -30,39 +32,104 @@ struct rockchip_ddrclk {
+>  	int		div_shift;
+>  	int		div_width;
+>  	int		ddr_flag;
+> -	spinlock_t	*lock;
+> +	unsigned long	cached_rate;
+> +	struct work_struct set_rate_work;
+> +	struct mutex	lock;
+> +	struct raw_notifier_head sync_chain;
+>  };
+>  
+>  #define to_rockchip_ddrclk_hw(hw) container_of(hw, struct rockchip_ddrclk, hw)
+> +#define DMC_DEFAULT_TIMEOUT_NS		NSEC_PER_SEC
+> +#define DDRCLK_SET_RATE_MAX_RETRIES	3
+>  
+> -static int rockchip_ddrclk_sip_set_rate(struct clk_hw *hw, unsigned long drate,
+> -					unsigned long prate)
+> +static void rockchip_ddrclk_set_rate_func(struct work_struct *work)
+>  {
+> -	struct rockchip_ddrclk *ddrclk = to_rockchip_ddrclk_hw(hw);
+> -	unsigned long flags;
+> +	struct rockchip_ddrclk *ddrclk = container_of(work,
+> +			struct rockchip_ddrclk, set_rate_work);
+> +	ktime_t timeout = ktime_add_ns(ktime_get(), DMC_DEFAULT_TIMEOUT_NS);
+>  	struct arm_smccc_res res;
+> +	int ret, i;
+> +
+> +	mutex_lock(&ddrclk->lock);
+> +	for (i = 0; i < DDRCLK_SET_RATE_MAX_RETRIES; i++) {
+> +		ret = raw_notifier_call_chain(&ddrclk->sync_chain, 0, &timeout);
+> +		if (ret == NOTIFY_BAD)
+> +			goto out;
+> +
+> +		/*
+> +		 * Check the timeout with irqs disabled. This is so we don't get
+> +		 * preempted after checking the timeout. That could cause things
+> +		 * like garbage values for the display if we change the DDR rate
+> +		 * at the wrong time.
+> +		 */
+> +		local_irq_disable();
+> +		if (ktime_after(ktime_add_ns(ktime_get(), DMC_MIN_VBLANK_NS),
+> +				timeout)) {
+> +			local_irq_enable();
+> +			continue;
+> +		}
+> +
+> +		arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, ddrclk->cached_rate, 0,
+> +			      ROCKCHIP_SIP_CONFIG_DRAM_SET_RATE,
+> +			      0, 0, 0, 0, &res);
+> +		local_irq_enable();
+> +		break;
+> +	}
+> +out:
+> +	mutex_unlock(&ddrclk->lock);
+> +}
+>  
+> -	spin_lock_irqsave(ddrclk->lock, flags);
+> -	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, drate, 0,
+> -		      ROCKCHIP_SIP_CONFIG_DRAM_SET_RATE,
+> -		      0, 0, 0, 0, &res);
+> -	spin_unlock_irqrestore(ddrclk->lock, flags);
+> +int rockchip_ddrclk_register_sync_nb(struct clk *clk, struct notifier_block *nb)
+> +{
+> +	struct clk_hw *hw = __clk_get_hw(clk);
+> +	struct rockchip_ddrclk *ddrclk;
+> +	int ret;
+>  
+> -	return res.a0;
+> +	if (!hw || !nb)
+> +		return -EINVAL;
+> +
+> +	ddrclk = to_rockchip_ddrclk_hw(hw);
+> +	if (!ddrclk)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&ddrclk->lock);
+> +	ret = raw_notifier_chain_register(&ddrclk->sync_chain, nb);
+> +	mutex_unlock(&ddrclk->lock);
+> +
+> +	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(rockchip_ddrclk_register_sync_nb);
+>  
+> -static unsigned long
+> -rockchip_ddrclk_sip_recalc_rate(struct clk_hw *hw,
+> -				unsigned long parent_rate)
+> +int rockchip_ddrclk_unregister_sync_nb(struct clk *clk,
+> +				       struct notifier_block *nb)
+>  {
+> -	struct arm_smccc_res res;
+> +	struct clk_hw *hw = __clk_get_hw(clk);
+> +	struct rockchip_ddrclk *ddrclk;
+> +	int ret;
+>  
+> -	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
+> -		      ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE,
+> -		      0, 0, 0, 0, &res);
+> +	if (!hw || !nb)
+> +		return -EINVAL;
+>  
+> -	return res.a0;
+> +	ddrclk = to_rockchip_ddrclk_hw(hw);
+> +	if (!ddrclk)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&ddrclk->lock);
+> +	ret = raw_notifier_chain_unregister(&ddrclk->sync_chain, nb);
+> +	mutex_unlock(&ddrclk->lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(rockchip_ddrclk_unregister_sync_nb);
+> +
+> +void rockchip_ddrclk_wait_set_rate(struct clk *clk)
+> +{
+> +	struct clk_hw *hw = __clk_get_hw(clk);
+> +	struct rockchip_ddrclk *ddrclk = to_rockchip_ddrclk_hw(hw);
+> +
+> +	flush_work(&ddrclk->set_rate_work);
+>  }
+> +EXPORT_SYMBOL_GPL(rockchip_ddrclk_wait_set_rate);
+>  
+>  static long rockchip_ddrclk_sip_round_rate(struct clk_hw *hw,
+>  					   unsigned long rate,
+> @@ -77,6 +144,30 @@ static long rockchip_ddrclk_sip_round_rate(struct clk_hw *hw,
+>  	return res.a0;
+>  }
+>  
+> +static int rockchip_ddrclk_sip_set_rate(struct clk_hw *hw, unsigned long drate,
+> +					unsigned long prate)
+> +{
+> +	struct rockchip_ddrclk *ddrclk = to_rockchip_ddrclk_hw(hw);
+> +	long rate;
+> +
+> +	rate = rockchip_ddrclk_sip_round_rate(hw, drate, &prate);
+> +	if (rate < 0)
+> +		return rate;
+> +
+> +	ddrclk->cached_rate = rate;
+> +	queue_work(system_highpri_wq, &ddrclk->set_rate_work);
+> +	return 0;
+> +}
+> +
+> +static unsigned long
+> +rockchip_ddrclk_sip_recalc_rate(struct clk_hw *hw,
+> +				unsigned long parent_rate)
+> +{
+> +	struct rockchip_ddrclk *ddrclk = to_rockchip_ddrclk_hw(hw);
+> +
+> +	return ddrclk->cached_rate;
+> +}
+> +
+>  static u8 rockchip_ddrclk_get_parent(struct clk_hw *hw)
+>  {
+>  	struct rockchip_ddrclk *ddrclk = to_rockchip_ddrclk_hw(hw);
+> @@ -105,12 +196,12 @@ struct clk *rockchip_clk_register_ddrclk(const char *name, int flags,
+>  					 u8 num_parents, int mux_offset,
+>  					 int mux_shift, int mux_width,
+>  					 int div_shift, int div_width,
+> -					 int ddr_flag, void __iomem *reg_base,
+> -					 spinlock_t *lock)
+> +					 int ddr_flag, void __iomem *reg_base)
+>  {
+>  	struct rockchip_ddrclk *ddrclk;
+>  	struct clk_init_data init;
+>  	struct clk *clk;
+> +	struct arm_smccc_res res;
+>  
+>  	ddrclk = kzalloc(sizeof(*ddrclk), GFP_KERNEL);
+>  	if (!ddrclk)
+> @@ -134,7 +225,6 @@ struct clk *rockchip_clk_register_ddrclk(const char *name, int flags,
+>  	}
+>  
+>  	ddrclk->reg_base = reg_base;
+> -	ddrclk->lock = lock;
+>  	ddrclk->hw.init = &init;
+>  	ddrclk->mux_offset = mux_offset;
+>  	ddrclk->mux_shift = mux_shift;
+> @@ -142,6 +232,14 @@ struct clk *rockchip_clk_register_ddrclk(const char *name, int flags,
+>  	ddrclk->div_shift = div_shift;
+>  	ddrclk->div_width = div_width;
+>  	ddrclk->ddr_flag = ddr_flag;
+> +	mutex_init(&ddrclk->lock);
+> +	INIT_WORK(&ddrclk->set_rate_work, rockchip_ddrclk_set_rate_func);
+> +	RAW_INIT_NOTIFIER_HEAD(&ddrclk->sync_chain);
+> +
+> +	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
+> +		      ROCKCHIP_SIP_CONFIG_DRAM_GET_RATE,
+> +		      0, 0, 0, 0, &res);
+> +	ddrclk->cached_rate = res.a0;
+>  
+>  	clk = clk_register(NULL, &ddrclk->hw);
+>  	if (IS_ERR(clk))
+> diff --git a/drivers/clk/rockchip/clk.c b/drivers/clk/rockchip/clk.c
+> index 326b3fa44f5d..1b7775aff191 100644
+> --- a/drivers/clk/rockchip/clk.c
+> +++ b/drivers/clk/rockchip/clk.c
+> @@ -541,7 +541,7 @@ void __init rockchip_clk_register_branches(
+>  				list->muxdiv_offset, list->mux_shift,
+>  				list->mux_width, list->div_shift,
+>  				list->div_width, list->div_flags,
+> -				ctx->reg_base, &ctx->lock);
+> +				ctx->reg_base);
+>  			break;
+>  		}
+>  
+> diff --git a/drivers/clk/rockchip/clk.h b/drivers/clk/rockchip/clk.h
+> index ef601dded32c..5e4ce49ef337 100644
+> --- a/drivers/clk/rockchip/clk.h
+> +++ b/drivers/clk/rockchip/clk.h
+> @@ -326,8 +326,7 @@ struct clk *rockchip_clk_register_ddrclk(const char *name, int flags,
+>  					 u8 num_parents, int mux_offset,
+>  					 int mux_shift, int mux_width,
+>  					 int div_shift, int div_width,
+> -					 int ddr_flags, void __iomem *reg_base,
+> -					 spinlock_t *lock);
+> +					 int ddr_flags, void __iomem *reg_base);
+>  
+>  #define ROCKCHIP_INVERTER_HIWORD_MASK	BIT(0)
+>  
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index c619dc4ac620..b4ac9ee605be 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -28,9 +28,12 @@
+>  #include <linux/rwsem.h>
+>  #include <linux/suspend.h>
+>  
+> +#include <soc/rockchip/rk3399_dmc.h>
+>  #include <soc/rockchip/rk3399_grf.h>
+>  #include <soc/rockchip/rockchip_sip.h>
+>  
+> +#include "rk3399_dmc_priv.h"
+> +
+>  struct dram_timing {
+>  	unsigned int ddr3_speed_bin;
+>  	unsigned int pd_idle;
+> @@ -70,6 +73,7 @@ struct rk3399_dmcfreq {
+>  	struct clk *dmc_clk;
+>  	struct devfreq_event_dev *edev;
+>  	struct mutex lock;
+> +	struct mutex en_lock;
+>  	struct dram_timing timing;
+>  	struct regulator *vdd_center;
+>  	struct regmap *regmap_pmu;
+> @@ -77,6 +81,8 @@ struct rk3399_dmcfreq {
+>  	unsigned long volt, target_volt;
+>  	unsigned int odt_dis_freq;
+>  	int odt_pd_arg0, odt_pd_arg1;
+> +	int num_sync_nb;
+> +	int disable_count;
+>  };
+>  
+>  static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+> @@ -139,6 +145,13 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+>  		goto out;
+>  	}
+>  
+> +	/*
+> +	 * Setting the dpll is asynchronous since clk_set_rate grabs a global
+> +	 * common clk lock and set_rate for the dpll takes up to one display
+> +	 * frame to complete. We still need to wait for the set_rate to complete
+> +	 * here, though, before we change voltage.
+> +	 */
+> +	rockchip_ddrclk_wait_set_rate(dmcfreq->dmc_clk);
+>  	/*
+>  	 * Check the dpll rate,
+>  	 * There only two result we will get,
+> @@ -205,40 +218,15 @@ static struct devfreq_dev_profile rk3399_devfreq_dmc_profile = {
+>  static __maybe_unused int rk3399_dmcfreq_suspend(struct device *dev)
+>  {
+>  	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
+> -	int ret = 0;
+> -
+> -	ret = devfreq_event_disable_edev(dmcfreq->edev);
+> -	if (ret < 0) {
+> -		dev_err(dev, "failed to disable the devfreq-event devices\n");
+> -		return ret;
+> -	}
+>  
+> -	ret = devfreq_suspend_device(dmcfreq->devfreq);
+> -	if (ret < 0) {
+> -		dev_err(dev, "failed to suspend the devfreq devices\n");
+> -		return ret;
+> -	}
+> -
+> -	return 0;
+> +	return rockchip_dmcfreq_block(dmcfreq->devfreq);
+>  }
+>  
+>  static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
+>  {
+>  	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
+> -	int ret = 0;
+>  
+> -	ret = devfreq_event_enable_edev(dmcfreq->edev);
+> -	if (ret < 0) {
+> -		dev_err(dev, "failed to enable the devfreq-event devices\n");
+> -		return ret;
+> -	}
+> -
+> -	ret = devfreq_resume_device(dmcfreq->devfreq);
+> -	if (ret < 0) {
+> -		dev_err(dev, "failed to resume the devfreq devices\n");
+> -		return ret;
+> -	}
+> -	return ret;
+> +	return rockchip_dmcfreq_unblock(dmcfreq->devfreq);
+>  }
+>  
+>  static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
+> @@ -311,6 +299,88 @@ static int of_get_ddr_timings(struct dram_timing *timing,
+>  	return ret;
+>  }
+>  
+> +int rockchip_dmcfreq_register_clk_sync_nb(struct devfreq *devfreq,
+> +					struct notifier_block *nb)
+> +{
+> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(devfreq->dev.parent);
+> +	int ret;
+> +
+> +	mutex_lock(&dmcfreq->en_lock);
+> +	/*
+> +	 * We have a short amount of time (~1ms or less typically) to run
+> +	 * dmcfreq after we sync with the notifier, so syncing with more than
+> +	 * one notifier is not generally possible. Thus, if more than one sync
+> +	 * notifier is registered, disable dmcfreq.
+> +	 */
+> +	if (dmcfreq->num_sync_nb == 1 && dmcfreq->disable_count <= 0)
+> +		devfreq_suspend_device(devfreq);
+> +
+> +	ret = rockchip_ddrclk_register_sync_nb(dmcfreq->dmc_clk, nb);
+> +	if (ret == 0)
+> +		dmcfreq->num_sync_nb++;
+> +	else if (dmcfreq->num_sync_nb == 1 && dmcfreq->disable_count <= 0)
+> +		devfreq_resume_device(devfreq);
+> +
+> +	mutex_unlock(&dmcfreq->en_lock);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(rockchip_dmcfreq_register_clk_sync_nb);
+> +
+> +int rockchip_dmcfreq_unregister_clk_sync_nb(struct devfreq *devfreq,
+> +					  struct notifier_block *nb)
+> +{
+> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(devfreq->dev.parent);
+> +	int ret;
+> +
+> +	mutex_lock(&dmcfreq->en_lock);
+> +	ret = rockchip_ddrclk_unregister_sync_nb(dmcfreq->dmc_clk, nb);
+> +	if (ret == 0) {
+> +		dmcfreq->num_sync_nb--;
+> +		if (dmcfreq->num_sync_nb == 1 && dmcfreq->disable_count <= 0)
+> +			devfreq_resume_device(devfreq);
+> +	}
+> +
+> +	mutex_unlock(&dmcfreq->en_lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(rockchip_dmcfreq_unregister_clk_sync_nb);
+> +
+> +int rockchip_dmcfreq_block(struct devfreq *devfreq)
+> +{
+> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(devfreq->dev.parent);
+> +	int ret = 0;
+> +
+> +	mutex_lock(&dmcfreq->en_lock);
+> +	if (dmcfreq->num_sync_nb <= 1 && dmcfreq->disable_count <= 0)
+> +		ret = devfreq_suspend_device(devfreq);
+> +
+> +	if (!ret)
+> +		dmcfreq->disable_count++;
+> +	mutex_unlock(&dmcfreq->en_lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(rockchip_dmcfreq_block);
+> +
+> +int rockchip_dmcfreq_unblock(struct devfreq *devfreq)
+> +{
+> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(devfreq->dev.parent);
+> +	int ret = 0;
+> +
+> +	mutex_lock(&dmcfreq->en_lock);
+> +	if (dmcfreq->num_sync_nb <= 1 && dmcfreq->disable_count == 1)
+> +		ret = devfreq_resume_device(devfreq);
+> +
+> +	if (!ret)
+> +		dmcfreq->disable_count--;
+> +	WARN_ON(dmcfreq->disable_count < 0);
+> +	mutex_unlock(&dmcfreq->en_lock);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(rockchip_dmcfreq_unblock);
+> +
+>  static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>  {
+>  	struct arm_smccc_res res;
+> @@ -328,6 +398,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  
+>  	mutex_init(&data->lock);
+> +	mutex_init(&data->en_lock);
+>  
+>  	data->vdd_center = devm_regulator_get(dev, "center");
+>  	if (IS_ERR(data->vdd_center)) {
+> diff --git a/drivers/devfreq/rk3399_dmc_priv.h b/drivers/devfreq/rk3399_dmc_priv.h
+> new file mode 100644
+> index 000000000000..8ac0340a4990
+> --- /dev/null
+> +++ b/drivers/devfreq/rk3399_dmc_priv.h
+> @@ -0,0 +1,15 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (C) 2017-2018 Google, Inc.
+> + * Author: Derek Basehore <dbasehore@chromium.org>
+> + */
+> +
+> +#ifndef __RK3399_DMC_PRIV_H
+> +#define __RK3399_DMC_PRIV_H
+> +
+> +void rockchip_ddrclk_wait_set_rate(struct clk *clk);
+> +int rockchip_ddrclk_register_sync_nb(struct clk *clk,
+> +				     struct notifier_block *nb);
+> +int rockchip_ddrclk_unregister_sync_nb(struct clk *clk,
+> +				       struct notifier_block *nb);
+> +#endif
+> diff --git a/include/soc/rockchip/rk3399_dmc.h b/include/soc/rockchip/rk3399_dmc.h
+> new file mode 100644
+> index 000000000000..8b28563710d1
+> --- /dev/null
+> +++ b/include/soc/rockchip/rk3399_dmc.h
+> @@ -0,0 +1,42 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Copyright (c) 2016-2018, Fuzhou Rockchip Electronics Co., Ltd
+> + * Author: Lin Huang <hl@rock-chips.com>
+> + */
+> +
+> +#ifndef __SOC_RK3399_DMC_H
+> +#define __SOC_RK3399_DMC_H
+> +
+> +#include <linux/devfreq.h>
+> +#include <linux/notifier.h>
+> +
+> +#define DMC_MIN_SET_RATE_NS	(250 * NSEC_PER_USEC)
+> +#define DMC_MIN_VBLANK_NS	(DMC_MIN_SET_RATE_NS + 50 * NSEC_PER_USEC)
+> +
+> +#if IS_ENABLED(CONFIG_ARM_RK3399_DMC_DEVFREQ)
+> +int rockchip_dmcfreq_register_clk_sync_nb(struct devfreq *devfreq,
+> +					  struct notifier_block *nb);
+> +
+> +int rockchip_dmcfreq_unregister_clk_sync_nb(struct devfreq *devfreq,
+> +					    struct notifier_block *nb);
+> +
+> +int rockchip_dmcfreq_block(struct devfreq *devfreq);
+> +
+> +int rockchip_dmcfreq_unblock(struct devfreq *devfreq);
+> +#else
+> +static inline int
+> +rockchip_dmcfreq_register_clk_sync_nb(struct devfreq *devfreq,
+> +				      struct notifier_block *nb)
+> +{ return 0; }
+> +
+> +static inline int
+> +rockchip_dmcfreq_unregister_clk_sync_nb(struct devfreq *devfreq,
+> +					struct notifier_block *nb)
+> +{ return 0; }
+> +
+> +static inline int rockchip_dmcfreq_block(struct devfreq *devfreq) { return 0; }
+> +
+> +static inline int rockchip_dmcfreq_unblock(struct devfreq *devfreq)
+> +{ return 0; }
+> +#endif
+> +#endif
+> 
