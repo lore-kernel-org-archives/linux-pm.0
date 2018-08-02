@@ -1,59 +1,63 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point
- indicator
-Date: Thu, 2 Aug 2018 15:08:01 +0200
-Message-ID: <20180802130801.GL2494@hirez.programming.kicks-ass.net>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-10-quentin.perret@arm.com>
- <20180802122629.GU2476@hirez.programming.kicks-ass.net>
- <20180802130337.uf6tlac2hg4nkbwr@queper01-lin>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Thu, 2 Aug 2018 16:15:09 +0300
+Message-ID: <248eb8ef-6936-a23b-4c44-fd9953992ae2@linaro.org>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+ <CGME20180802005759epcas4p4a68d50e61c8425124a993de1917021a2@epcms1p5>
+ <20180802101341epcms1p53ee79776dbcbeaf6f1e7910b20095220@epcms1p5>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180802130337.uf6tlac2hg4nkbwr@queper01-lin>
+In-Reply-To: <20180802101341epcms1p53ee79776dbcbeaf6f1e7910b20095220@epcms1p5>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: myungjoo.ham@samsung.com
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Saravana Kannan <skannan@codeaurora.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daidavid1@codeaurora.org" <daidavid1@codeaurora.org>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 02, 2018 at 02:03:38PM +0100, Quentin Perret wrote:
-> On Thursday 02 Aug 2018 at 14:26:29 (+0200), Peter Zijlstra wrote:
-> > On Tue, Jul 24, 2018 at 01:25:16PM +0100, Quentin Perret wrote:
-> > > @@ -5100,8 +5118,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> > >  		update_cfs_group(se);
-> > >  	}
-> > >  
-> > > -	if (!se)
-> > > +	if (!se) {
-> > >  		add_nr_running(rq, 1);
-> > > +		/*
-> > > +		 * The utilization of a new task is 'wrong' so wait for it
-> > > +		 * to build some utilization history before trying to detect
-> > > +		 * the overutilized flag.
-> > > +		 */
-> > > +		if (flags & ENQUEUE_WAKEUP)
-> > > +			update_overutilized_status(rq);
-> > > +
-> > > +	}
-> > >  
-> > >  	hrtick_update(rq);
-> > >  }
-> > 
-> > That is a somewhat dodgy hack. There is no guarantee what so ever that
-> > when the task wakes next its history is any better. The comment doesn't
-> > reflect this I feel.
+Hi MyungJoo,
+
+On 08/02/2018 01:13 PM, MyungJoo Ham wrote:
+>> This driver registers itself as a devfreq device that allows devfreq
+>> governors to make bandwidth votes for an interconnect path. This allows
+>> applying various policies for different interconnect paths using devfreq
+>> governors.
+>>
 > 
-> AFAICT the main use-case here is to avoid re-enabling the load balance
-> and ruining all the task placement because of a tiny task. I don't
-> really see how we can do that differently ...
+> First of all, the name, "devfreq_icbw", is not appropriate for a
+> devfreq device driver. It confuses; it looks like a part of the
+> framework itself.
+> 
+>> diff --git a/drivers/devfreq/devfreq_icbw.c b/drivers/devfreq/devfreq_icbw.c
+>> new file mode 100644
+>> index 0000000..231fb21
+>> --- /dev/null
+>> +++ b/drivers/devfreq/devfreq_icbw.c
+>> @@ -0,0 +1,116 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2013-2014, 2018, The Linux Foundation. All rights reserved.
+>> + */
+>> +
+>> +#define pr_fmt(fmt) "icbw: " fmt
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/init.h>
+>> +#include <linux/err.h>
+>> +#include <linux/errno.h>
+>> +#include <linux/mutex.h>
+>> +#include <linux/devfreq.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/of.h>
+>> +#include <linux/interconnect.h>
+> 
+> Where can I find this file?
 
-Sure I realize that.. but it doesn't completely avoid it. Suppose this
-new task instantly blocks and wakes up again. Then its util signal will
-be exactly what you didn't want but we'll account it and cause the above
-scenario you wanted to avoid.
+It is part of the On-chip interconnect API, which is currently under
+review and is available here: https://lkml.org/lkml/2018/7/31/647
 
-Now, I suppose in practise it works well enough.
-
-The alternative is trying to track when a running signal has converged,
-but that's not a simple problem either I suppose.
+Thanks,
+Georgi
