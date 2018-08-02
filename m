@@ -1,90 +1,82 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Thu, 02 Aug 2018 18:56:08 +0900
-Message-ID: <20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
-        <CGME20180802005756epcas4p465a12f42a0e36f0af6fd276a3a56957f@epcms1p3>
+Subject: RE: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for
+ interconnect bandwidth voting
+Date: Thu, 02 Aug 2018 19:13:41 +0900
+Message-ID: <20180802101341epcms1p53ee79776dbcbeaf6f1e7910b20095220@epcms1p5>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+        <CGME20180802005759epcas4p4a68d50e61c8425124a993de1917021a2@epcms1p5>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 Cc: Saravana Kannan <skannan@codeaurora.org>, "georgi.djakov@linaro.org" <georgi.djakov@linaro.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daidavid1@codeaurora.org" <daidavid1@codeaurora.org>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
->Many CPU architectures have caches that can scale independent of the CPUs.
->Frequency scaling of the caches is necessary to make sure the cache is not
->a performance bottleneck that leads to poor performance and power. The same
->idea applies for RAM/DDR.
+>This driver registers itself as a devfreq device that allows devfreq
+>governors to make bandwidth votes for an interconnect path. This allows
+>applying various policies for different interconnect paths using devfreq
+>governors.
 >
->To achieve this, this patch adds a generic devfreq governor that takes the
->current frequency of each CPU frequency domain and then adjusts the
->frequency of the cache (or any devfreq device) based on the frequency of
->the CPUs. It listens to CPU frequency transition notifiers to keep itself
->up to date on the current CPU frequency.
->
->To decide the frequency of the device, the governor does one of the
->following:
 
-This exactly has the same purpose with "passive" governor except for the
-single part: passive governor depends on another devfreq driver, not
-cpufreq driver.
+First of all, the name, "devfreq_icbw", is not appropriate for a
+devfreq device driver. It confuses; it looks like a part of the
+framework itself.
 
-If both governors have many features in common, can you merge them into one?
-Passive governor also has "get_target_freq", which allows driver authors
-to define the mapping.
+>diff --git a/drivers/devfreq/devfreq_icbw.c b/drivers/devfreq/devfreq_icbw.c
+>new file mode 100644
+>index 0000000..231fb21
+>--- /dev/null
+>+++ b/drivers/devfreq/devfreq_icbw.c
+>@@ -0,0 +1,116 @@
+>+// SPDX-License-Identifier: GPL-2.0
+>+/*
+>+ * Copyright (c) 2013-2014, 2018, The Linux Foundation. All rights reserved.
+>+ */
+>+
+>+#define pr_fmt(fmt) "icbw: " fmt
+>+
+>+#include <linux/kernel.h>
+>+#include <linux/module.h>
+>+#include <linux/init.h>
+>+#include <linux/err.h>
+>+#include <linux/errno.h>
+>+#include <linux/mutex.h>
+>+#include <linux/devfreq.h>
+>+#include <linux/platform_device.h>
+>+#include <linux/of.h>
+>+#include <linux/interconnect.h>
 
-Probably, you will need to add one more notifier call to get events from
-cpufreq instead of devfreq.
+Where can I find this file?
 
->
->* Uses a CPU frequency to device frequency mapping table
->  - Either one mapping table used for all CPU freq policies (typically used
->    for system with homogeneous cores/clusters that have the same OPPs).
->  - One mapping table per CPU freq policy (typically used for ASMP systems
->    with heterogeneous CPUs with different OPPs)
->
->OR
->
->* Scales the device frequency in proportion to the CPU frequency. So, if
->  the CPUs are running at their max frequency, the device runs at its max
->  frequency.  If the CPUs are running at their min frequency, the device
->  runs at its min frequency. And interpolated for frequencies in between.
+>+
+>+struct dev_data {
+>+	struct icc_path *path;
+>+	u32 cur_ab;
+>+	u32 cur_pb;
+>+	unsigned long gov_ab;
+>+	struct devfreq *df;
+>+	struct devfreq_dev_profile dp;
+>+};
+>+
+>+static int icbw_target(struct device *dev, unsigned long *freq, u32 flags)
+>+{
+>+	struct dev_data *d = dev_get_drvdata(dev);
+>+	int ret;
+>+	u32 new_pb = *freq, new_ab = d->gov_ab;
+>+
+>+	if (d->cur_pb == new_pb && d->cur_ab == new_ab)
+>+		return 0;
+>+
+>+	dev_dbg(dev, "BW KBps: AB: %u PB: %u\n", new_ab, new_pb);
+>+
+>+	ret = icc_set(d->path, new_ab, new_pb);
 
-If you want to satisfy these two cases to the "modified" passive governors,
-you may need to supply two "preloaded" get_target_freq functions for
-struct devfreq_passive_data. If that's impossible, requiring a bit more
-modifications, you may need to write alternative routines in
-update_devfreq_passive().
+I'm not sure if icc_set is available.
+
 
 Cheers,
 MyungJoo
-
->
->Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->---
-> .../bindings/devfreq/devfreq-cpufreq-map.txt       |  53 ++
-> drivers/devfreq/Kconfig                            |   8 +
-> drivers/devfreq/Makefile                           |   1 +
-> drivers/devfreq/governor_cpufreq_map.c             | 583 +++++++++++++++++++++
-> 4 files changed, 645 insertions(+)
-> create mode 100644 Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> create mode 100644 drivers/devfreq/governor_cpufreq_map.c
->
-[]
->diff --git a/drivers/devfreq/governor_cpufreq_map.c b/drivers/devfreq/governor_cpufreq_map.c
->new file mode 100644
->index 0000000..084a3ff
->--- /dev/null
->+++ b/drivers/devfreq/governor_cpufreq_map.c
->@@ -0,0 +1,583 @@
->+// SPDX-License-Identifier: GPL-2.0
->+/*
->+ * Copyright (c) 2014-2015, 2018, The Linux Foundation. All rights reserved.
->+ */
-
-Is this boilerplate fine? ( using // )
