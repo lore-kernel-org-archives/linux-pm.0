@@ -1,76 +1,41 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v7 8/8] interconnect: Allow endpoints translation via DT
-Date: Thu, 2 Aug 2018 15:07:10 +0300
-Message-ID: <3a7bb27a-0609-133b-08e9-8864f1ccc4bc@linaro.org>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-9-georgi.djakov@linaro.org>
- <804925d5927ccb6927b16f7e9a4aa05c@codeaurora.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point
+ indicator
+Date: Thu, 2 Aug 2018 14:26:29 +0200
+Message-ID: <20180802122629.GU2476@hirez.programming.kicks-ass.net>
+References: <20180724122521.22109-1-quentin.perret@arm.com>
+ <20180724122521.22109-10-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <804925d5927ccb6927b16f7e9a4aa05c@codeaurora.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180724122521.22109-10-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: skannan@codeaurora.org
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, arnd@arndb.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Saravana,
+On Tue, Jul 24, 2018 at 01:25:16PM +0100, Quentin Perret wrote:
+> @@ -5100,8 +5118,17 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>  		update_cfs_group(se);
+>  	}
+>  
+> -	if (!se)
+> +	if (!se) {
+>  		add_nr_running(rq, 1);
+> +		/*
+> +		 * The utilization of a new task is 'wrong' so wait for it
+> +		 * to build some utilization history before trying to detect
+> +		 * the overutilized flag.
+> +		 */
+> +		if (flags & ENQUEUE_WAKEUP)
+> +			update_overutilized_status(rq);
+> +
+> +	}
+>  
+>  	hrtick_update(rq);
+>  }
 
-On 08/02/2018 01:57 AM, skannan@codeaurora.org wrote:
-> On 2018-07-31 09:13, Georgi Djakov wrote:
->> Currently we support only platform data for specifying the interconnect
->> endpoints. As now the endpoints are hard-coded into the consumer driver
->> this may lead to complications when a single driver is used by multiple
->> SoCs, which may have different interconnect topology.
->> To avoid cluttering the consumer drivers, introduce a translation
->> function
->> to help us get the board specific interconnect data from device-tree.
->>
->> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
->> ---
->>  drivers/interconnect/core.c  | 62 ++++++++++++++++++++++++++++++++++++
->>  include/linux/interconnect.h |  7 ++++
->>  2 files changed, 69 insertions(+)
->>
->> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
->> index 9fef180cf77e..d1b6adff0a3d 100644
->> --- a/drivers/interconnect/core.c
->> +++ b/drivers/interconnect/core.c
-[..]
->> --- a/include/linux/interconnect.h
->> +++ b/include/linux/interconnect.h
->> @@ -17,6 +17,7 @@ struct device;
->>
->>  struct icc_path *icc_get(struct device *dev, const int src_id,
->>               const int dst_id);
->> +struct icc_path *of_icc_get(struct device *dev, const char *name);
->>  void icc_put(struct icc_path *path);
->>  int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
->>
->> @@ -28,6 +29,12 @@ static inline struct icc_path *icc_get(struct
->> device *dev, const int src_id,
->>      return NULL;
->>  }
->>
->> +static inline struct icc_path *of_icc_get(struct device *dev,
->> +                      const char *name)
->> +{
->> +    return NULL;
->> +}
->> +
-> 
-> Might want to return PTR(-ENODEV) or some error code so that client
-> doesn't have to do NULL check AND an error check?
-> 
-> -Saravana
-
-NULL is returned when CONFIG_INTERCONNECT=n. Configuration of
-interconnects by consumer drivers could be optional and that's why null
-is returned instead of an error. The consumer drivers decide how to
-proceed in this case and if there is a hard requirement for interconnect
-support, then i would suggest to express it as a dependency in Kconfig.
-
-Thanks,
-Georgi
+That is a somewhat dodgy hack. There is no guarantee what so ever that
+when the task wakes next its history is any better. The comment doesn't
+reflect this I feel.
