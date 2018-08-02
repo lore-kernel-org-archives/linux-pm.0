@@ -1,38 +1,94 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 10/14] sched/cpufreq: Refactor the utilization
- aggregation method
-Date: Thu, 2 Aug 2018 19:36:01 +0200
-Message-ID: <20180802173601.GO2494@hirez.programming.kicks-ass.net>
-References: <20180724122521.22109-1-quentin.perret@arm.com>
- <20180724122521.22109-11-quentin.perret@arm.com>
- <331552975e858911db66bc78c2c8e720@codeaurora.org>
- <20180802123315.GV2476@hirez.programming.kicks-ass.net>
- <20180802124511.GN2512@hirez.programming.kicks-ass.net>
- <20180802152109.2k45jqbfquef6u62@queper01-lin>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Thu, 02 Aug 2018 12:07:07 -0700
+Message-ID: <e7bd0cbc4131f597a1fb68af1cfd1a67@codeaurora.org>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+ <CGME20180802005759epcas4p4a68d50e61c8425124a993de1917021a2@epcms1p5>
+ <20180802101341epcms1p53ee79776dbcbeaf6f1e7910b20095220@epcms1p5>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180802152109.2k45jqbfquef6u62@queper01-lin>
+In-Reply-To: <20180802101341epcms1p53ee79776dbcbeaf6f1e7910b20095220@epcms1p5>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: skannan@codeaurora.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, linux-pm-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 02, 2018 at 04:21:11PM +0100, Quentin Perret wrote:
-> On Thursday 02 Aug 2018 at 14:45:11 (+0200), Peter Zijlstra wrote:
-
-> > To clarify, it makes absolutely no sense what so ever to attempt EAS
-> > when the DVFS control is not coordinated.
+On 2018-08-02 03:13, MyungJoo Ham wrote:
+>> This driver registers itself as a devfreq device that allows devfreq
+>> governors to make bandwidth votes for an interconnect path. This 
+>> allows
+>> applying various policies for different interconnect paths using 
+>> devfreq
+>> governors.
+>> 
 > 
-> I tend to agree with that, but at the same time even if we create a very
-> strong dependency on schedutil, we will have no guarantee that the actual
-> frequencies used on the platform are the ones we predicted in EAS.
+> First of all, the name, "devfreq_icbw", is not appropriate for a
+> devfreq device driver. It confuses; it looks like a part of the
+> framework itself.
+> 
+>> diff --git a/drivers/devfreq/devfreq_icbw.c 
+>> b/drivers/devfreq/devfreq_icbw.c
+>> new file mode 100644
+>> index 0000000..231fb21
+>> --- /dev/null
+>> +++ b/drivers/devfreq/devfreq_icbw.c
+>> @@ -0,0 +1,116 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2013-2014, 2018, The Linux Foundation. All rights 
+>> reserved.
+>> + */
+>> +
+>> +#define pr_fmt(fmt) "icbw: " fmt
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/init.h>
+>> +#include <linux/err.h>
+>> +#include <linux/errno.h>
+>> +#include <linux/mutex.h>
+>> +#include <linux/devfreq.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/of.h>
+>> +#include <linux/interconnect.h>
+> 
+> Where can I find this file?
 
-Sure; on x86 for example our micro-code does whatever. But using
-schedutil we at least 'guide' it in the general direction we'd expect
-with the control that is available.
+Sorry, meant to mention this in the email specific portion of the commit 
+text. This is on top of the interconnect framework series that Georgi 
+has been working on. linux-pm should have those patches.
 
-Using a !schedutil governor doesn't even get us that and we're basically
-running on random input without any feedback to close the loop. Not
-something I feel we should support or care for.
+
+>> +
+>> +struct dev_data {
+>> +	struct icc_path *path;
+>> +	u32 cur_ab;
+>> +	u32 cur_pb;
+>> +	unsigned long gov_ab;
+>> +	struct devfreq *df;
+>> +	struct devfreq_dev_profile dp;
+>> +};
+>> +
+>> +static int icbw_target(struct device *dev, unsigned long *freq, u32 
+>> flags)
+>> +{
+>> +	struct dev_data *d = dev_get_drvdata(dev);
+>> +	int ret;
+>> +	u32 new_pb = *freq, new_ab = d->gov_ab;
+>> +
+>> +	if (d->cur_pb == new_pb && d->cur_ab == new_ab)
+>> +		return 0;
+>> +
+>> +	dev_dbg(dev, "BW KBps: AB: %u PB: %u\n", new_ab, new_pb);
+>> +
+>> +	ret = icc_set(d->path, new_ab, new_pb);
+> 
+> I'm not sure if icc_set is available.
+
+Yeah, it's available on that patch series.
+
+-Saravana
