@@ -1,39 +1,53 @@
-From: Chris Chiu <chiu@endlessm.com>
-Subject: Built in PS2 keyboard in new ASUS/acer laptops can not wake up system
- after s2idle
-Date: Fri, 3 Aug 2018 16:04:09 +0800
-Message-ID: <CAB4CAwfQ0mPMqCLp95TVjw4J0r5zKPWkSvvkK4cpZUGE--w8bQ@mail.gmail.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point
+ indicator
+Date: Fri, 3 Aug 2018 09:18:52 +0100
+Message-ID: <20180803081850.hj7bp5ognuywapmd@queper01-lin>
+References: <20180802141424.ju4jxxbk6pxw3kyq@queper01-lin>
+ <CAKfTPtCzQZotmpt40X6uN9O0yAerq6c6bFgiFfqhhcbKsm7k4w@mail.gmail.com>
+ <20180802153035.vjtmqwdwujvt7ojs@queper01-lin>
+ <CAKfTPtCGGqykN027kxK+chvKvCpNu4bYYdvfZJ+3_7YzT3Utfg@mail.gmail.com>
+ <20180802160009.uhwwj3tqrqmv7q5a@queper01-lin>
+ <CAKfTPtB_tWgOPCB3q2Q2rESKczTPGBDUojcXDY7uP8YTQddBMg@mail.gmail.com>
+ <20180802161027.v2ctgscuc4uxbb7u@queper01-lin>
+ <CAKfTPtDtaF9Qs4NWkKWUSr8Ryi-ScYNmPyacocPQUPxT00XAYg@mail.gmail.com>
+ <20180802165924.7ywgoxj2jwftxycz@queper01-lin>
+ <CAKfTPtDsG4FJy5xBO8+6pJzehEM668=SZ4yQ-szVTduofN3QZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtDsG4FJy5xBO8+6pJzehEM668=SZ4yQ-szVTduofN3QZg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-input <linux-input@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi guys,
-    We have some new laptops with Intel new Intel WiskyLake CPU come
-in and they all have the same problem. They all have the so-called
-"Modern Standby" feature which is s2idle in Linux.
+On Friday 03 Aug 2018 at 09:48:47 (+0200), Vincent Guittot wrote:
+> On Thu, 2 Aug 2018 at 18:59, Quentin Perret <quentin.perret@arm.com> wrote:
+> I'm not really concerned about re-enabling load balance but more that
+> the effort of packing of tasks in few cpus/clusters that EAS tries to
+> do can be broken for every new task.
 
-    The problem is the built-in keyboard no longer wake up the system
-after it goes to s2idle. Only the power button can wake up. It's
-different from the other laptops with old Intel CPUs (CoffeeLake,
-KaybeLake...etc). We found the difference is that the EC (embedded
-controller) no longer signals SCI event when in s2idle.
+Well, re-enabling load balance immediately would break the nice placement
+that EAS found, because it would shuffle all tasks around and break the
+packing strategy. Letting that sole new task go in find_idlest_cpu()
+shouldn't impact the placement of existing tasks. That might have an energy
+cost for that one task, yes, but it's really hard to do anything smarter
+with new tasks IMO ... EAS simply can't work without a utilization value.
 
-    Confirmed with ASUS EC engineer, he also admits that the EC code
-for signaling SCI event in modern standby has been removed on
-WiskyLake models. Because the built-in PS2 keyboard can still wake up
-the system on WisksyLake+Windows10 RS4 combination without EC
-intervention.
+> So I wonder what is better for EAS : Make sure to efficiently spread
+> newly created tasks in cas of fork bomb or  try to not break EAS task
+> placement with every newly created tasks
 
-    Based on this information, we suspect that maybe the built-in
-keyboard wakeup on Windows 10 RS4 in enabled by default (although we
-don't know how to prove that). It's easy to simply do
-'device_set_wakeup_enable' and 'enable_irq_wake' for the i8042
-keyboard port to wake up the system without EC, but it's nasty.
+That shouldn't break the placement per se, we're just making one
+temporary exception for new tasks. What do you think 'the right thing'
+to do is ? To just put new tasks on prev_cpu or something like that ?
 
-    Any suggestion about how to achieve the keyboard wake up function
-on these new laptops in a generic way? Thanks
+That might help some use-cases I suppose, but will probably harm others ...
+I'm just not too keen on making assumptions about the size of new tasks,
+that's all. But I'm definitely open to ideas if there is something
+smarter we can do.
 
-Chris
+Thanks,
+Quentin
