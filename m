@@ -1,74 +1,64 @@
-From: Evan Green <evgreen@chromium.org>
-Subject: Re: [PATCH v7 4/8] interconnect: qcom: Add RPM communication
-Date: Fri, 3 Aug 2018 15:59:28 -0700
-Message-ID: <CAE=gft5VyY5_44df3G2x4gLtogTNq9tqe=nYz5N0MBz42zF+Bg@mail.gmail.com>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-5-georgi.djakov@linaro.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware
+ bindings
+Date: Fri, 03 Aug 2018 16:46:50 -0700
+Message-ID: <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180731161340.13000-5-georgi.djakov@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: georgi.djakov@linaro.org
-Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Vincent Guittot <vincent.guittot@linaro.org>, arnd@arndb.de, linux-pm@vger.kernel.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, Michael Turquette <mturquette@baylibre.com>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, amit.kucheria@linaro.org, Bjorn Andersson <bjorn.andersson@linaro.org>, robh+dt@kernel.org, Saravana Kannan <skannan@codeaurora.org>, Alexandre Bailon <abailon@baylibre.com>, khilman@baylibre.com, linux-arm-msm@vger.kernel.org, daidavid1@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 31, 2018 at 9:13 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> On some Qualcomm SoCs, there is a remote processor, which controls some of
-> the Network-On-Chip interconnect resources. Other CPUs express their needs
-> by communicating with this processor. Add a driver to handle communication
-> with this remote processor.
->
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  .../bindings/interconnect/qcom-smd.txt        | 32 +++++++
->  drivers/interconnect/qcom/Kconfig             | 14 +++
->  drivers/interconnect/qcom/Makefile            |  2 +
->  drivers/interconnect/qcom/smd-rpm.c           | 91 +++++++++++++++++++
->  drivers/interconnect/qcom/smd-rpm.h           | 16 ++++
->  5 files changed, 155 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-smd.txt
->  create mode 100644 drivers/interconnect/qcom/Kconfig
->  create mode 100644 drivers/interconnect/qcom/Makefile
->  create mode 100644 drivers/interconnect/qcom/smd-rpm.c
->  create mode 100644 drivers/interconnect/qcom/smd-rpm.h
->
-> diff --git a/Documentation/devicetree/bindings/interconnect/qcom-smd.txt b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+Quoting Taniya Das (2018-07-24 03:42:49)
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.tx=
+t b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
 > new file mode 100644
-> index 000000000000..88a5aeb50935
+> index 0000000..22d4355
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
-> @@ -0,0 +1,32 @@
-> +Qualcomm SMD-RPM interconnect driver binding
-> +------------------------------------------------
-> +The RPM (Resource Power Manager) is a dedicated hardware engine
-> +for managing the shared SoC resources in order to keep the lowest
-> +power profile. It communicates with other hardware subsystems via
-> +the shared memory driver (SMD) back-end and accepts requests for
-> +various resources.
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,172 @@
+[...]
 > +
-> +Required properties :
-> +- compatible : shall contain only one of the following:
-> +                       "qcom,interconnect-smd-rpm"
+> +               CPU7: cpu@700 {
+> +                       device_type =3D "cpu";
+> +                       compatible =3D "qcom,kryo385";
+> +                       reg =3D <0x0 0x700>;
+> +                       enable-method =3D "psci";
+> +                       next-level-cache =3D <&L2_700>;
+> +                       qcom,freq-domain =3D <&freq_domain_table1>;
+> +                       L2_700: l2-cache {
+> +                               compatible =3D "cache";
+> +                               next-level-cache =3D <&L3_0>;
+> +                       };
+> +               };
+> +       };
 > +
-> +Example:
-> +       smd {
-> +               compatible = "qcom,smd";
+> +       qcom,cpufreq-hw {
+> +               compatible =3D "qcom,cpufreq-hw";
 > +
-> +               rpm {
-> +                       interrupts = <0 168 1>;
+> +               clocks =3D <&rpmhcc RPMH_CXO_CLK>;
+> +               clock-names =3D "xo";
+> +
+> +               #address-cells =3D <2>;
+> +               #size-cells =3D <2>;
+> +               ranges;
+> +               freq_domain_table0: freq_table0 {
+> +                       reg =3D <0 0x17d43000 0 0x1400>;
+> +               };
+> +
+> +               freq_domain_table1: freq_table1 {
+> +                       reg =3D <0 0x17d45800 0 0x1400>;
+> +               };
 
-It would be nice if this interrupt example were more proper, somethine
-like <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>. Other than that:
-
-Reviewed-by: Evan Green <evgreen@chromium.org>
+Sorry, this is just not proper DT design. The whole node should have a
+reg property, and it should contain two (or three if we're handling the
+L3 clk domain?) different offsets for the different power clusters. The
+problem seems to still be that we don't have a way to map the CPUs to
+the clk domains they're in provided by this hardware block. Making
+subnodes is not the solution.
