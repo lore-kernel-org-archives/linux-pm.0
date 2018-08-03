@@ -1,77 +1,92 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v6 3/3] PM / devfreq: Make update_devfreq() public
-Date: Fri,  3 Aug 2018 13:05:11 -0700
-Message-ID: <20180803200511.189664-4-mka@chromium.org>
-References: <20180803200511.189664-1-mka@chromium.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Fri, 03 Aug 2018 15:24:03 -0700
+Message-ID: <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+ <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
+ <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180803200511.189664-1-mka@chromium.org>
+In-Reply-To: <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Evan Green <evgreen@google.com>, skannan@codeaurora.org
+Cc: tdas@codeaurora.org, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently update_devfreq() is only visible to devfreq governors outside
-of devfreq.c. Make it public to allow drivers that adjust devfreq policies
-to cause a re-evaluation of the frequency after a policy change.
+Quoting skannan@codeaurora.org (2018-08-03 12:52:48)
+> On 2018-08-03 12:40, Evan Green wrote:
+> > Hi Taniya,
+> > =
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-Reviewed-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
---
-Changes in v6:
-- added 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>' tag
+> > On Tue, Jul 24, 2018 at 3:44 AM Taniya Das <tdas@codeaurora.org> wrote:
+> >> =
 
-Changes in v5:
-- none
+> >> +               if (src)
+> >> +                       c->table[i].frequency =3D c->xo_rate * lval / =
 
-Changed in v4:
-- added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
+> >> 1000;
+> >> +               else
+> >> +                       c->table[i].frequency =3D INIT_RATE / 1000;
+> > =
 
-Changes in v3:
-- none
+> > I don't know much about how this hardware works, but based on the
+> > mask, src has 4 possible values. So does 0 mean INIT_RATE, and 1, 2,
+> > and 3 all mean xo_rate?
+> > =
 
-Changes in v2:
-- added 'Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>' tag
----
- drivers/devfreq/governor.h | 3 ---
- include/linux/devfreq.h    | 8 ++++++++
- 2 files changed, 8 insertions(+), 3 deletions(-)
+> > Also, is INIT_RATE really constant? It sounds like gpll0 (or
+> > gpll0_out_even?). You're already getting the xo clock, why not get
+> > gpll0's real rate as well?
+> =
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index b81700244ce3..f53339ca610f 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -57,9 +57,6 @@ struct devfreq_governor {
- 				unsigned int event, void *data);
- };
- 
--/* Caution: devfreq->lock must be locked before calling update_devfreq */
--extern int update_devfreq(struct devfreq *devfreq);
--
- extern void devfreq_monitor_start(struct devfreq *devfreq);
- extern void devfreq_monitor_stop(struct devfreq *devfreq);
- extern void devfreq_monitor_suspend(struct devfreq *devfreq);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 3aae5b3af87c..e4963b0f45da 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -198,6 +198,14 @@ extern void devm_devfreq_remove_device(struct device *dev,
- extern int devfreq_suspend_device(struct devfreq *devfreq);
- extern int devfreq_resume_device(struct devfreq *devfreq);
- 
-+/**
-+ * update_devfreq() - Reevaluate the device and configure frequency
-+ * @devfreq:	the devfreq device
-+ *
-+ * Note: devfreq->lock must be held
-+ */
-+extern int update_devfreq(struct devfreq *devfreq);
-+
- /* Helper functions for devfreq user device driver with OPP. */
- extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
- 					   unsigned long *freq, u32 flags);
--- 
-2.18.0.597.ga71716f1ad-goog
+> Actually I was about to comment and say NOT to get clocks just to get =
+
+> their rate. The XO_RATE is just a multiplication factor. This HW/FW can =
+
+> change in the future and make the multiplication factor to 1KHz.
+
+So future changes to this hardware are going to make this register
+return the final frequency that we should use? Sounds great! But that
+isn't how it's working right now. We need to have XO in the binding here
+so the driver can work with different XO frequencies in case that ever
+happens. Same story for GPLL0. Hardcoding this stuff in the driver just
+means we'll have to swizzle things in the driver when it changes.
+
+> We also =
+
+> can't really control any of the clocks going to this block from Linux =
+
+> (it's all locked down).
+
+This shouldn't matter. The clocks going to this hardware block are
+described by the firmware to the OS by means of the DT node. If the
+firmware or the hardware decides to change the input clks then the
+binding can have different clk nodes used.
+
+> Adding clk_get significantly delays when this =
+
+> driver can be probed and increases boot up time.
+
+Huh? Please fix your bootloader to increase the CPU frequency before
+booting the kernel. I really doubt probe defer is going to happen if we
+send GPLL0 here (XO is a DT clk so it's definitely registered before
+this driver), and trying to work around probe defer because the CPU
+won't go fast before that is papering over a larger problem with both
+probe defer and bootloaders not supplying enough CPU speed for you.
+
+> The INIT_RATE will =
+
+> always be 300 MHz independent of what source it's coming from (as in, if =
+
+> GPLL0 can't give 300, the HW design will be so that we'll find a =
+
+> different source).
+> =
+
+> So, I'd like to remove any clock bindings for this driver.
+
+No. Bindings describe how the hardware is connected. Please don't remove
+clocks from the binding just because probe defer is a concern.
