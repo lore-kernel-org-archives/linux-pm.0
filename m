@@ -1,73 +1,180 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [RFC] PCI: imx: Add multi-pd support
-Date: Fri, 3 Aug 2018 18:07:09 +0000
-Message-ID: <53f9f939dbce11e1c96986ff41f29dd6e41b9220.camel@nxp.com>
-References: <8018069bc772376caef29e76280e4d0facffdb68.1532455922.git.leonard.crestez@nxp.com>
-         <CAPDyKFpN99iDYf1mcG-G1=AAkiw8OjoynvK+5cBV8GvCs6WtKg@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Sat, 4 Aug 2018 02:06:24 +0800
+Message-ID: <20180803180624.GE4244@linux-l9pv.suse>
+References: <1532346156.3057.11.camel@suse.com>
+ <20180723162302.GA4503@sandybridge-desktop>
+ <1532590246.7411.3.camel@suse.com>
+ <20180726081404.GG4244@linux-l9pv.suse>
+ <20180730170415.GQ4244@linux-l9pv.suse>
+ <20180803033702.GB416@sandybridge-desktop>
+ <20180803053445.GC4244@linux-l9pv.suse>
+ <CADjb_WSURQz86+E8kakNf7UBDM+aho+uaz3QdDkuGsEgan=szw@mail.gmail.com>
+ <20180803140443.GD4244@linux-l9pv.suse>
+ <CADjb_WQoa7eDhioZ8iVAzc8=BnBMbJyMCCLyxxgLjnzxi-R6XQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpN99iDYf1mcG-G1=AAkiw8OjoynvK+5cBV8GvCs6WtKg@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <B04ACE21F8C2A04CB2EE9769B597C5F6@eurprd04.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <CADjb_WQoa7eDhioZ8iVAzc8=BnBMbJyMCCLyxxgLjnzxi-R6XQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>
-Cc: Richard Zhu <hongxing.zhu@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jonathanh@nvidia.com" <jonathanh@nvidia.com>, dl-linux-imx <linux-imx@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "andrew.smirnov@gmail.com" <andrew.smirnov@gmail.com>, Anson Huang <anson.huang@nxp.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Ryan Chen <yu.chen.surf@gmail.com>
+Cc: Chen Yu <yu.c.chen@intel.com>, oneukum@suse.com, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, ebiggers@google.com, Theodore Ts'o <tytso@mit.edu>, smueller@chronox.de, denkenz@gmail.com, Linux PM list <linux-pm@vger.kernel.org>, linux-crypto@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kookoo.gu@intel.com, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCAyMDE4LTA3LTMxIGF0IDEwOjMyICswMjAwLCBVbGYgSGFuc3NvbiB3cm90ZToNCj4g
-T24gMjQgSnVseSAyMDE4IGF0IDIwOjE3LCBMZW9uYXJkIENyZXN0ZXogPGxlb25hcmQuY3Jlc3Rl
-ekBueHAuY29tPiB3cm90ZToNCj4gPiBPbiBzb21lIGNoaXBzIHRoZSBQQ0lFIGFuZCBQQ0lFX1BI
-WSBibG9ja3MgYXJlIGluIHNlcGFyYXRlIHBvd2VyIGRvbWFpbnMNCj4gPiB3aGljaCBjYW4gYmUg
-cG93ZXItZ2F0ZWQgaW5kZXBlbmRlbnRseS4gVGhlIGRyaXZlciBuZWVkcyB0byBoYW5kbGUgdGhp
-cw0KPiA+IGJ5IGtlZXBpbmcgYm90aCBkb21haW4gYWN0aXZlLg0KPiA+IA0KPiA+IFRoaXMgaXMg
-aW50ZW5kZWQgZm9yIGlteDZzeCB3aGVyZSBQQ0lFIGlzIGluIERJU1BNSVggYW5kIFBDSUVfUEhZ
-IGluDQo+ID4gaXQncyBvd24gZG9tYWluLiBEZWZpbmluZyB0aGUgRElTUE1JWCBkb21haW4gcmVx
-dWlyZXMgYSB3YXkgZm9yIHBjaWUgdG8NCj4gPiBrZWVwIGl0IGFjdGl2ZSBvciBpdCB3aWxsIGJy
-ZWFrIHdoZW4gZGlzcGxheXMgYXJlIG9mZi4NCj4gPiANCj4gPiBUaGUgcG93ZXItZG9tYWlucyBv
-biBpbXg2c3ggYXJlIG1lYW50IHRvIGxvb2sgbGlrZSB0aGlzOg0KPiA+ICAgICAgICAgcG93ZXIt
-ZG9tYWlucyA9IDwmcGRfZGlzcD4sIDwmcGRfcGNpPjsNCj4gPiAgICAgICAgIHBvd2VyLWRvbWFp
-bi1uYW1lcyA9ICJwY2llIiwgInBjaWVfcGh5IjsNCj4gPiANCj4gPiBTaWduZWQtb2ZmLWJ5OiBM
-ZW9uYXJkIENyZXN0ZXogPGxlb25hcmQuY3Jlc3RlekBueHAuY29tPg0KPiBSZXZpZXdlZC1ieTog
-VWxmIEhhbnNzb24gPHVsZi5oYW5zc29uQGxpbmFyby5vcmc+DQoNClRoYW5rcyBmb3IgdGFraW5n
-IHRoZSB0aW1lIHRvIGxvb2sgYXQgdGhpcywgSSB3aWxsIGxpa2VseSByZXBvc3QgdGhpcw0KYXMg
-UEFUQ0ggaW4gYSBzZXJpZXMgbGF0ZXIuDQoNCj4gPiBSaWdodCBub3cgaWYgYSBkZXZpY2UgaGFz
-IGEgc2luZ2xlIHBvd2VyIGRvbWFpbiBpdCB3aWxsIGJlIGFjdGl2YXRlZA0KPiA+IGJlZm9yZSBw
-cm9iZSBidXQgaWYgaXQgaGFzIG11bHRpcGxlIGRvbWFpbnMgdGhleSBuZWVkIHRvIGJlIGV4cGxp
-Y2l0bHkNCj4gPiAiYXR0YWNoZWQiIHRvIGFuZCBjb250cm9sbGVkLiBTdXBwb3J0aW5nIGJvdGgg
-aXMgYSBiaXQgYXdrd2FyZCwgdGhpcw0KPiA+IHBhdGNoIG1ha2VzIHRoZSBkaXN0aW5jdGlvbiBi
-YXNlZCBvbiAoZGV2LT5wbV9kb21haW4gIT0gTlVMTCkuDQo+ID4gDQo+ID4gTWF5YmUgdGhlIFBN
-IGNvcmUgc2hvdWxkIG1ha2UgdGhpcyBkaXN0aW5jdGlvbiBiYXNlZCBvbiBhIGZsYWcgaW4gc3Ry
-dWN0DQo+ID4gZGV2aWNlX2RyaXZlciBpbnN0ZWFkIG9mIG51bWJlciBvZiBwb3dlci1kb21haW5z
-PyBTbyBieSBkZWZhdWx0IHdoZW4gYQ0KPiA+IGRldmljZSBoYXMgbXVsdGlwbGUgcG93ZXIgZG9t
-YWlucyB0aGV5IHdvdWxkIHdvdWxkIGJlIGFjdGl2YXRlZA0KPiA+IHRvZ2V0aGVyIGFuZCB0aGlz
-IHBhdGNoIHdvdWxkIGJlIHVubmVjZXNzYXJ5Lg0KPiANCj4gQWN0aXZhdGlvbiBpcyBkZWxpYmVy
-YXRlbHkgbGVmdCB0byBiZSBtYW5nZWQgYnkgZWFjaCB1c2VyLCBhcyB0aGUgUE0NCj4gY29yZS9n
-ZW5wZCBjYW4ndCBrbm93IHdoZW4gcG93ZXJpbmcgb24gdGhlIFBNIGRvbWFpbnMgbWFrZSBzZW5z
-ZS4NCg0KQnkgZGVmYXVsdCB0aGUgUE0gY29yZSBjb3VsZCB0cmVhdCBhIGxpc3Qgb2YgcG0gZG9t
-YWlucyBqdXN0IGxpa2UgaXQNCnRyZWF0cyBhIGRvbWFpbiBub3cuIE15IHBhdGNoIGRvZXNuJ3Qg
-ZG8gYW55dGhpbmcgcGNpLXNwZWNpZmljLCBpdCBqdXN0DQphdHRhY2hlcyBhbGwgZG9tYWlucyBh
-bmQgY3JlYXRlcyBkZXZpY2UgbGlua3MuIENvdWxkbid0IHRoZSBjb3JlIGRvDQp0aGlzPw0KDQo+
-IFRoZSBtYWluIHJlYXNvbiB0byB3aHkgZ2VucGQgcG93ZXJzIG9uIHRoZSBQTSBkb21haW4gZm9y
-IHRoZSBzaW5nbGUgUE0NCj4gZG9tYWluIGNhc2UsIGlzIGJlY2F1c2Ugb2YgbGVnYWN5IGJlaGF2
-aW9ycyBpbiBkcml2ZXJzLg0KDQpXb3VsZG4ndCBpdCBiZSBuaWNlciB0byBvdXQtb3V0IG9mIHN1
-Y2ggbGVnYWN5IGJlaGF2aW9ycyB3aXRoIGEgZmxhZyBpbg0Kc3RydWN0IGRyaXZlciBpbnN0ZWFk
-IG9mIHNpbmdsZS12ZXJzdXMtbXVsdGlwbGUgZG9tYWlucz8NCg0KPiA+IFRoZSBkZXZpY2VfbGlu
-ayBpcyBtYXJrZWQgYXMgIlNUQVRFTEVTUyIgYmVjYXVzZSBvdGhlcndpc2UgYSB3YXJuaW5nIGlz
-DQo+ID4gdHJpZ2dlcmVkIGluIGRldmljZV9saW5rc19kcml2ZXJfYm91bmQuIFRoaXMgc2VlbXMg
-dG8gaGFwcGVuIGJlY2F1c2UgdGhlDQo+ID4gcGQgZGV2aWNlcyBhcmUgYWx3YXlzIG1hcmtlZCBh
-cyAiRExfREVWX05PX0RSSVZFUiIuIE1heWJlIHRoZXkgc2hvdWxkIGJlDQo+ID4gaW5zdGVhZCBh
-bHdheXMgYmUgbWFya2VkIGFzIERMX0RFVl9EUklWRVJfQk9VTkQ/DQo+IA0KPiBVc2luZyBTVEFU
-RUxFU1MgaXMgY29ycmVjdCwgYmVjYXVzZSB0aGUgc3VwcGxpZXIgZGV2aWNlcywgd2hpY2ggYXJl
-DQo+IG1hbmFnZWQgYnkgZ2VucGQgZG9uJ3QgaGF2ZSBhbnkgZHJpdmVyIGF0dGFjaGVkIHRvIHRo
-ZW0uDQoNCkFzIGZhciBhcyBJIGNhbiB0ZWxsIHRoZXNlIGdlbnBkX2RldiBkZXZpY2VzIG5lZWQg
-dG8gYmUgbWFudWFsbHkNCnVucmVnaXN0ZXJlZCBpbiB0aGUgY29uc3VtZXIncyByZW1vdmUgZnVu
-Y3Rpb24sIHJpZ2h0PyBJZiB0aGV5IHdlcmUNCm1hcmtlZCB3aXRoIERMX0RFVl9EUklWRVJfQk9V
-TkQgdGhlbiB5b3UgY291bGQgdXNlDQpETF9GTEFHX0FVVE9SRU1PVkVfU1VQUExJRVIgb24gdGhl
-bS4NCg0KQXMgZmFyIGFzIEkgY2FuIHRlbGwgdGhlIERMX0RFVl8qIHN0YXRlcyBhcmUgdXNlZCB0
-byBkZWFsIHdpdGggcHJvYmluZw0Kb3JkZXIgYnV0IHNpbmNlIG5vIGRyaXZlciB3aWxsIGV2ZXIg
-YmluZCB0byB0aGVzZSBzdXBwbGllcnMgd2UgY291bGQNCnRyZWF0IHRoZW0gYXMgZWZmZWN0aXZl
-bHkgYWx3YXlzIGJvdW5kcy4NCg0KDQpQZXJoYXBzIHRoaXMgY2FuIGJlIHJldmlzaXRlZCBsYXRl
-ciwgaW14LXBjaSBpcyBub3QgYSB2ZXJ5IGdvb2QgdXNlY2FzZQ0KZm9yIHRoaXMgYmVjYXVzZSBp
-dCBkb2Vzbid0IGV2ZW4gc3VwcG9ydCByZW1vdmUu
+On Sat, Aug 04, 2018 at 12:09:08AM +0800, Ryan Chen wrote:
+> On Fri, Aug 3, 2018 at 10:06 PM joeyli <jlee@suse.com> wrote:
+> >
+> > On Fri, Aug 03, 2018 at 09:14:22PM +0800, Ryan Chen wrote:
+> > > On Fri, Aug 3, 2018 at 1:35 PM joeyli <jlee@suse.com> wrote:
+> > > >
+> > > > On Fri, Aug 03, 2018 at 11:37:02AM +0800, Yu Chen wrote:
+> > > > > Hi Joey,
+> > > > > On Tue, Jul 31, 2018 at 01:04:15AM +0800, joeyli wrote:
+> > > > > > Hi all,
+> > > > > >
+> > > > > > On Thu, Jul 26, 2018 at 04:14:04PM +0800, joeyli wrote:
+> > > > > > > On Thu, Jul 26, 2018 at 09:30:46AM +0200, Oliver Neukum wrote:
+> > > > > > > > On Di, 2018-07-24 at 00:23 +0800, Yu Chen wrote:
+> > > > > > > > >
+> > > > > > > > > Good point, we once tried to generate key in kernel, but people
+> > > > > > > > > suggest to generate key in userspace and provide it to the
+> > > > > > > > > kernel, which is what ecryptfs do currently, so it seems this
+> > > > > > > > > should also be safe for encryption in kernel.
+> > > > > > > > > https://www.spinics.net/lists/linux-crypto/msg33145.html
+> > > > > > > > > Thus Chun-Yi's signature can use EFI key and both the key from
+> > > > > > > > > user space.
+> > > > > > > >
+> > > > > > > > Hi,
+> > > > > > > >
+> > > > > > > > ecryptfs can trust user space. It is supposed to keep data
+> > > > > > > > safe while the system is inoperative. The whole point of Secure
+> > > > > > > > Boot is a cryptographic system of trust that does not include
+> > > > > > > > user space.
+> > > > > > > >
+> > > > > > > > I seriously doubt we want to use trusted computing here. So the
+> > > > > > > > key needs to be generated in kernel space and stored in a safe
+> > > > > > > > manner. As we have a saolution doing that, can we come to ausable
+> > > > > > > > synthesis?
+> > > > > > > >
+> > > > > > > >         Regards
+> > > > > > > >                 Oliver
+> > > > > > >
+> > > > > > > Crurently there have two solutions, they are trusted key and EFI key.
+> > > > > > > Both of them are generated in kernel and are not visible in user space.
+> > > > > > >
+> > > > > > > The trusted key is generated by kernel then sealed by the TPM's
+> > > > > > > SRK. So the trusted key can be stored in anywhere then be enrolled
+> > > > > > > to kernel when we need it. EVM already uses it.
+> > > > > > >
+> > > > > > > The EFI key is Jiri Kosina's idea. It is stored in boot services
+> > > > > > > variable, which means that it can only be access by signed EFI binary
+> > > > > > > (e.g. signed EFI boot stub) when secure boot be enabled. SLE applied
+> > > > > > > this solution a couple of years.
+> > > > > > >
+> > > > > > > I am working on put the EFI key to key retention service. Then
+> > > > > > > EFI key can be a master key of encrypted key. EVM can also use
+> > > > > > > it:
+> > > > > > > https://github.com/joeyli/linux-s4sign/commit/bae39460393ada4c0226dd07cd5e3afcef86b71f
+> > > > > > > https://github.com/joeyli/linux-s4sign/commit/f552f97cc3cca5acd84f424b7f946ffb5fe8e9ec
+> > > > > > >
+> > > > > > > That's why I want to use key retention service in hibernation
+> > > > > > > encryption/authentication. Which means that we can use key
+> > > > > > > API to access trusted key and EFI key.
+> > > > > > >
+> > > > > >
+> > > > > > Here is a proof of concept for using the key retention service
+> > > > > > to encrypt/sign snapshot image. It's using EFI key now, I will
+> > > > > > add encrypted key support in the key handler later:
+> > > > > >     https://github.com/joeyli/linux-s4sign/commit/6311e97038974bc5de8121769fb4d34470009566
+> > > > > >
+> > > > > Thanks for the work, I have two questions here:
+> > > >
+> > > > My EFI key patch set is almost done. I will send it soon.
+> > > >
+> > > Okay, please send them out then we can have further discussion
+> > > on that.
+> > > > > 1. Could you please describe a little more about the scenario on
+> > > > >    how the user could use the secret key for hibernation encryption?
+> > > > >    A requirement is that, the user should provide a passphrase(for key derivation, i.e.)
+> > > > >    during resume. I was thinking how user could interact with
+> > > > >    the security key mechanism here.
+> > > > >
+> > > >
+> > > > User space doesn't need to involve. The EFI root key is generated by
+> > > > EFI boot stub and be transfer to kernel. It's stored in EFI boot service
+> > > > variable that it can only be accessed by trusted EFI binary when
+> > > > secure boot is enabled.
+> > > >
+> > > Okay, this apply to the 'suspend' phase, right?
+> > > I'm still a little confused about the 'resume' phase.
+> > > Taking encryption as example(not signature),
+> > > the purpose of doing hibernation encryption is to prevent other users
+> > > from stealing ram content. Say, user A uses a  passphrase to generate the
+> > > key and encrypted the hibernation snapshot and stores it on the disk .
+> > > Then if user
+> > > B wants to do a hibernation resume to A's previous environment, B has
+> > > to provide the same passphrase.
+> > > If I understand correctly, the secret key is saved in  header and stored
+> > > on the disk. Which means,  any one can read the header from the disk
+> > > to get  the secret key in trampoline  thus decrypt the image, which is not
+> > > safe.
+> >
+> > The secret key that it's saved in snapshot header is a session key which
+> > is encrypted by ERK (EFI root key). The ERK only lives in kernel space.
+> > So the session key is still secure.
+> >
+> > When resume, the session key will be decrypted/verified by ERK. Then
+> > kernel uses the session key to decrypted/verified snapshot image.
+> >
+> OK, I see.
+> > Of course that we can direct use ERK to encrypt/authenticate snapshot
+> > image. Actually the first version of hibernation verification in SLE
+> > direct uses ERK. So the snapshot header only keeps signature but no
+> > encrypted session key.
+> >
+> > I add session key in new version because I want to align with
+> > the use case of TPM trusted key + encrypted key. Then hibernation
+> > can use key retention service API to access EFI key or encrypted key.
+> >
+> > Compare the trusted key with EFI secure key:
+> >
+> > TPM SRK ----seal-----> Trusted key    ---encrypt---> Encrypted key
+> > ERK     ---encrypt---> EFI secure key ---encrypt---> Encrypted key
+> >
+> > Both of them can be the master key of encrypted key.
+> >
+> So either Trusted key or EFI secure key(session key) could be used
+> for snapshot encryption, right?
+
+Yes. Or we can use encrypted key. It depends on different use case.
+
+If the trusted key is sealed with PCRs, then we can not generate
+new trusted key after PCRs be capped. Then we can only use the
+encrypted key as the session key.  
+
+> > If EFI key can not be accepted by kernel community, then the TPM
+> > trusted key + encrypted key will be the only solution. We can very
+> > easy to switch to encrypted key by using key retention service
+> > API.
+> >
+> Back to question raised previously,  how could TPM or EFI key be used to
+> prevent user B from resuming to the environment of A? It appears to me
+> that, although A is the user who  launches the hibernation,   B could
+>  resume to the context of A because there's no certification during
+> resume. Is there any way to introduce the  password based verification?
+
+I see you point. Yes, TPM or EFI key can only be used to prevent that the
+content in snapshot image be detected on other machine. It can not be used
+to prevent the snapshot image be resumed on _the same_ machine by different
+user. Sounds like B can physical accessing the machine. Could you please
+explain more detail for the case? 
+
+As you said, password is useful in this case. But I have no idea for how
+to introduce password without user space helper. And user space helper
+must be authenticate by kernel. Which means that we need to add mechanism
+to verify user space binary. 
+
+Thanks
+Joey Lee 
