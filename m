@@ -1,7 +1,7 @@
 From: Matthias Kaehlcke <mka@chromium.org>
-Subject: [PATCH v6 2/3] PM / devfreq: Don't adjust to user limits in governors
-Date: Fri,  3 Aug 2018 13:05:10 -0700
-Message-ID: <20180803200511.189664-3-mka@chromium.org>
+Subject: [PATCH v6 3/3] PM / devfreq: Make update_devfreq() public
+Date: Fri,  3 Aug 2018 13:05:11 -0700
+Message-ID: <20180803200511.189664-4-mka@chromium.org>
 References: <20180803200511.189664-1-mka@chromium.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,161 +12,66 @@ To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsun
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Several governors use the user space limits df->min/max_freq to adjust
-the target frequency. This is not necessary, since update_devfreq()
-already takes care of this. Instead the governor can request the available
-min/max frequency by setting the target frequency to DEVFREQ_MIN/MAX_FREQ
-and let update_devfreq() take care of any adjustments.
+Currently update_devfreq() is only visible to devfreq governors outside
+of devfreq.c. Make it public to allow drivers that adjust devfreq policies
+to cause a re-evaluation of the frequency after a policy change.
 
 Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 Reviewed-by: Brian Norris <briannorris@chromium.org>
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
----
+--
 Changes in v6:
 - added 'Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>' tag
 
 Changes in v5:
 - none
 
-Changes in v4:
+Changed in v4:
 - added 'Reviewed-by: Brian Norris <briannorris@chromium.org>' tag
 
 Changes in v3:
 - none
 
 Changes in v2:
-- squashed "PM / devfreq: Remove redundant frequency adjustment from governors"
-  and "PM / devfreq: governors: Return device frequency limits instead of user
-  limits"
-- updated subject and commit message
-- use DEVFREQ_MIN/MAX_FREQ instead of df->scaling_min/max_freq
+- added 'Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>' tag
 ---
- drivers/devfreq/governor.h                |  3 +++
- drivers/devfreq/governor_performance.c    |  5 +----
- drivers/devfreq/governor_powersave.c      |  2 +-
- drivers/devfreq/governor_simpleondemand.c | 12 +++---------
- drivers/devfreq/governor_userspace.c      | 16 ++++------------
- 5 files changed, 12 insertions(+), 26 deletions(-)
+ drivers/devfreq/governor.h | 3 ---
+ include/linux/devfreq.h    | 8 ++++++++
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index cfc50a61a90d..b81700244ce3 100644
+index b81700244ce3..f53339ca610f 100644
 --- a/drivers/devfreq/governor.h
 +++ b/drivers/devfreq/governor.h
-@@ -25,6 +25,9 @@
- #define DEVFREQ_GOV_SUSPEND			0x4
- #define DEVFREQ_GOV_RESUME			0x5
+@@ -57,9 +57,6 @@ struct devfreq_governor {
+ 				unsigned int event, void *data);
+ };
  
-+#define DEVFREQ_MIN_FREQ			0
-+#define DEVFREQ_MAX_FREQ			ULONG_MAX
+-/* Caution: devfreq->lock must be locked before calling update_devfreq */
+-extern int update_devfreq(struct devfreq *devfreq);
+-
+ extern void devfreq_monitor_start(struct devfreq *devfreq);
+ extern void devfreq_monitor_stop(struct devfreq *devfreq);
+ extern void devfreq_monitor_suspend(struct devfreq *devfreq);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 3aae5b3af87c..e4963b0f45da 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -198,6 +198,14 @@ extern void devm_devfreq_remove_device(struct device *dev,
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
+ 
++/**
++ * update_devfreq() - Reevaluate the device and configure frequency
++ * @devfreq:	the devfreq device
++ *
++ * Note: devfreq->lock must be held
++ */
++extern int update_devfreq(struct devfreq *devfreq);
 +
- /**
-  * struct devfreq_governor - Devfreq policy governor
-  * @node:		list node - contains registered devfreq governors
-diff --git a/drivers/devfreq/governor_performance.c b/drivers/devfreq/governor_performance.c
-index 4d23ecfbd948..ded429fd51be 100644
---- a/drivers/devfreq/governor_performance.c
-+++ b/drivers/devfreq/governor_performance.c
-@@ -20,10 +20,7 @@ static int devfreq_performance_func(struct devfreq *df,
- 	 * target callback should be able to get floor value as
- 	 * said in devfreq.h
- 	 */
--	if (!df->max_freq)
--		*freq = UINT_MAX;
--	else
--		*freq = df->max_freq;
-+	*freq = DEVFREQ_MAX_FREQ;
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_powersave.c b/drivers/devfreq/governor_powersave.c
-index 0c42f23249ef..9e8897f5ac42 100644
---- a/drivers/devfreq/governor_powersave.c
-+++ b/drivers/devfreq/governor_powersave.c
-@@ -20,7 +20,7 @@ static int devfreq_powersave_func(struct devfreq *df,
- 	 * target callback should be able to get ceiling value as
- 	 * said in devfreq.h
- 	 */
--	*freq = df->min_freq;
-+	*freq = DEVFREQ_MIN_FREQ;
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index 28e0f2de7100..c0417f0e081e 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -27,7 +27,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
- 	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
- 	struct devfreq_simple_ondemand_data *data = df->data;
--	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
- 
- 	err = devfreq_update_stats(df);
- 	if (err)
-@@ -47,7 +46,7 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 
- 	/* Assume MAX if it is going to be divided by zero */
- 	if (stat->total_time == 0) {
--		*freq = max;
-+		*freq = DEVFREQ_MAX_FREQ;
- 		return 0;
- 	}
- 
-@@ -60,13 +59,13 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	/* Set MAX if it's busy enough */
- 	if (stat->busy_time * 100 >
- 	    stat->total_time * dfso_upthreshold) {
--		*freq = max;
-+		*freq = DEVFREQ_MAX_FREQ;
- 		return 0;
- 	}
- 
- 	/* Set MAX if we do not know the initial frequency */
- 	if (stat->current_frequency == 0) {
--		*freq = max;
-+		*freq = DEVFREQ_MAX_FREQ;
- 		return 0;
- 	}
- 
-@@ -85,11 +84,6 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
- 	*freq = (unsigned long) b;
- 
--	if (df->min_freq && *freq < df->min_freq)
--		*freq = df->min_freq;
--	if (df->max_freq && *freq > df->max_freq)
--		*freq = df->max_freq;
--
- 	return 0;
- }
- 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 080607c3f34d..378d84c011df 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -26,19 +26,11 @@ static int devfreq_userspace_func(struct devfreq *df, unsigned long *freq)
- {
- 	struct userspace_data *data = df->data;
- 
--	if (data->valid) {
--		unsigned long adjusted_freq = data->user_frequency;
--
--		if (df->max_freq && adjusted_freq > df->max_freq)
--			adjusted_freq = df->max_freq;
--
--		if (df->min_freq && adjusted_freq < df->min_freq)
--			adjusted_freq = df->min_freq;
--
--		*freq = adjusted_freq;
--	} else {
-+	if (data->valid)
-+		*freq = data->user_frequency;
-+	else
- 		*freq = df->previous_freq; /* No user freq specified yet */
--	}
-+
- 	return 0;
- }
- 
+ /* Helper functions for devfreq user device driver with OPP. */
+ extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+ 					   unsigned long *freq, u32 flags);
 -- 
 2.18.0.597.ga71716f1ad-goog
