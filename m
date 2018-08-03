@@ -1,14 +1,14 @@
 From: Evan Green <evgreen@chromium.org>
-Subject: Re: [PATCH v7 8/8] interconnect: Allow endpoints translation via DT
-Date: Fri, 3 Aug 2018 15:59:56 -0700
-Message-ID: <CAE=gft7+3n-Phh-FdamSFRZVq49Z234_HfU3Ze0MGJiYXGEmcw@mail.gmail.com>
+Subject: Re: [PATCH v7 4/8] interconnect: qcom: Add RPM communication
+Date: Fri, 3 Aug 2018 15:59:28 -0700
+Message-ID: <CAE=gft5VyY5_44df3G2x4gLtogTNq9tqe=nYz5N0MBz42zF+Bg@mail.gmail.com>
 References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-9-georgi.djakov@linaro.org>
+ <20180731161340.13000-5-georgi.djakov@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20180731161340.13000-9-georgi.djakov@linaro.org>
+In-Reply-To: <20180731161340.13000-5-georgi.djakov@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,23 +24,51 @@ List-Id: linux-pm@vger.kernel.org
 
 On Tue, Jul 31, 2018 at 9:13 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
 >
-> Currently we support only platform data for specifying the interconnect
-> endpoints. As now the endpoints are hard-coded into the consumer driver
-> this may lead to complications when a single driver is used by multiple
-> SoCs, which may have different interconnect topology.
-> To avoid cluttering the consumer drivers, introduce a translation function
-> to help us get the board specific interconnect data from device-tree.
+> On some Qualcomm SoCs, there is a remote processor, which controls some of
+> the Network-On-Chip interconnect resources. Other CPUs express their needs
+> by communicating with this processor. Add a driver to handle communication
+> with this remote processor.
 >
 > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 > ---
->  drivers/interconnect/core.c  | 62 ++++++++++++++++++++++++++++++++++++
->  include/linux/interconnect.h |  7 ++++
->  2 files changed, 69 insertions(+)
+>  .../bindings/interconnect/qcom-smd.txt        | 32 +++++++
+>  drivers/interconnect/qcom/Kconfig             | 14 +++
+>  drivers/interconnect/qcom/Makefile            |  2 +
+>  drivers/interconnect/qcom/smd-rpm.c           | 91 +++++++++++++++++++
+>  drivers/interconnect/qcom/smd-rpm.h           | 16 ++++
+>  5 files changed, 155 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>  create mode 100644 drivers/interconnect/qcom/Makefile
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.h
 >
+> diff --git a/Documentation/devicetree/bindings/interconnect/qcom-smd.txt b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+> new file mode 100644
+> index 000000000000..88a5aeb50935
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+> @@ -0,0 +1,32 @@
+> +Qualcomm SMD-RPM interconnect driver binding
+> +------------------------------------------------
+> +The RPM (Resource Power Manager) is a dedicated hardware engine
+> +for managing the shared SoC resources in order to keep the lowest
+> +power profile. It communicates with other hardware subsystems via
+> +the shared memory driver (SMD) back-end and accepts requests for
+> +various resources.
+> +
+> +Required properties :
+> +- compatible : shall contain only one of the following:
+> +                       "qcom,interconnect-smd-rpm"
+> +
+> +Example:
+> +       smd {
+> +               compatible = "qcom,smd";
+> +
+> +               rpm {
+> +                       interrupts = <0 168 1>;
 
-FWIW I don't have any strong opinions on whether of_icc_get returns an
-error or NULL, other than to suggest following suit with what other
-frameworks have chosen to do. Though perhaps most other frameworks are
-not quite as optional for a particular driver.
+It would be nice if this interrupt example were more proper, somethine
+like <GIC_SPI 168 IRQ_TYPE_EDGE_RISING>. Other than that:
 
 Reviewed-by: Evan Green <evgreen@chromium.org>
