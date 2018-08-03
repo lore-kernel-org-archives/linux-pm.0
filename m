@@ -1,56 +1,116 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Fri, 3 Aug 2018 13:42:06 +0200
-Message-ID: <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
+Subject: Re: [PATCH v8 08/26] PM / Domains: Extend genpd CPU governor to cope
+ with QoS constraints
+Date: Fri, 3 Aug 2018 13:42:46 +0200
+Message-ID: <CAPDyKFrqKm3tyUi=nHoOY-_K+o=ok03TA0cDhzpyNg8_jiaZrQ@mail.gmail.com>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <2056372.NMt4aPaF4h@aspire.rjw.lan> <2205807.cU2puvubpP@aspire.rjw.lan> <1726374.375PCQfjLZ@aspire.rjw.lan>
+ <20180620172226.15012-9-ulf.hansson@linaro.org> <1683770.JmsJDzJTZp@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1726374.375PCQfjLZ@aspire.rjw.lan>
+In-Reply-To: <1683770.JmsJDzJTZp@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
-
+On 19 July 2018 at 12:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, June 20, 2018 7:22:08 PM CEST Ulf Hansson wrote:
+>> CPU devices and other regular devices may share the same PM domain and may
+>> also be hierarchically related via subdomains. In either case, all devices
+>> including CPUs, may be attached to a PM domain managed by genpd, that has
+>> an idle state with an enter/exit latency.
 >>
->> Assuming that I have got that right, there are concerns, mostly regarding
->> patch [07/26], but I will reply to that directly.
->
-> Well, I haven't got that right, so never mind.
->
-> There are a few minor things to address, but apart from that the general
-> genpd patches look ready.
-
-Alright, thanks!
-
-I will re-spin the series and post a new version once 4.19 rc1 is out.
-Hopefully we can queue it up early in next cycle to get it tested in
-next for a while.
-
->
->> The $subject patch is fine by me by itself, but it obviously depends on the
->> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
->> particularly useful without the rest of the series.
+>> Let's take these latencies into account in the state selection process by
+>> genpd's governor for CPUs. This means the governor, pm_domain_cpu_gov,
+>> becomes extended to satisfy both a state's residency and a potential dev PM
+>> QoS constraint.
 >>
->> As far as patches [10-26/26] go, I'd like to see some review comments and/or
->> tags from the people with vested interest in there, in particular from Daniel
->> on patch [12/26] and from Sudeep on the PSCI ones.
+>> Cc: Lina Iyer <ilina@codeaurora.org>
+>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/base/power/domain_governor.c | 15 +++++++++++----
+>>  include/linux/pm_domain.h            |  1 +
+>>  2 files changed, 12 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+>> index 1aad55719537..03d4e9454ce9 100644
+>> --- a/drivers/base/power/domain_governor.c
+>> +++ b/drivers/base/power/domain_governor.c
+>> @@ -214,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>>       struct generic_pm_domain *genpd = pd_to_genpd(pd);
+>>       struct gpd_link *link;
+>>
+>> -     if (!genpd->max_off_time_changed)
+>> +     if (!genpd->max_off_time_changed) {
+>> +             genpd->state_idx = genpd->cached_power_down_state_idx;
+>>               return genpd->cached_power_down_ok;
+>> +     }
+>>
+>>       /*
+>>        * We have to invalidate the cached results for the masters, so
+>> @@ -240,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>>               genpd->state_idx--;
+>>       }
+>>
+>> +     genpd->cached_power_down_state_idx = genpd->state_idx;
+>>       return genpd->cached_power_down_ok;
+>>  }
+>>
+>> @@ -255,6 +258,10 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+>>       s64 idle_duration_ns;
+>>       int cpu, i;
+>>
+>> +     /* Validate dev PM QoS constraints. */
+>> +     if (!default_power_down_ok(pd))
+>> +             return false;
+>> +
+>>       if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
+>>               return true;
+>>
+>> @@ -276,9 +283,9 @@ static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+>>       /*
+>>        * Find the deepest idle state that has its residency value satisfied
+>>        * and by also taking into account the power off latency for the state.
+>> -      * Start at the deepest supported state.
+>> +      * Start at the state picked by the dev PM QoS constraint validation.
+>>        */
+>> -     i = genpd->state_count - 1;
+>> +     i = genpd->state_idx;
+>>       do {
+>>               if (!genpd->states[i].residency_ns)
+>>                       break;
+>> @@ -312,6 +319,6 @@ struct dev_power_governor pm_domain_always_on_gov = {
+>>  };
+>>
+>>  struct dev_power_governor pm_domain_cpu_gov = {
+>> -     .suspend_ok = NULL,
+>> +     .suspend_ok = default_suspend_ok,
+>>       .power_down_ok = cpu_power_down_ok,
+>>  };
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 97901c833108..dbc69721cad8 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -81,6 +81,7 @@ struct generic_pm_domain {
+>>       s64 max_off_time_ns;    /* Maximum allowed "suspended" time. */
+>>       bool max_off_time_changed;
+>>       bool cached_power_down_ok;
+>> +     bool cached_power_down_state_idx;
+>>       int (*attach_dev)(struct generic_pm_domain *domain,
+>>                         struct device *dev);
+>>       void (*detach_dev)(struct generic_pm_domain *domain,
+>>
 >
-> But this still holds.
+> I don't see much value in splitting this patch off [07/26] and it actually
+> confused me, so it may as well confuse someone else.
+>
 
-Actually, patch 10 and patch11 is ready to go as well. I ping Daniel
-on patch 12.
+The idea was to let people, explicitly, comment on the whether dev PM
+Qos constraints should be considered by the governor.
 
-In regards to the rest of the series, some of the PSCI/ARM changes
-have been reviewed by Mark Rutland, however several changes have not
-been acked.
-
-On the other hand, one can also interpret the long silence in regards
-to PSCI/ARM changes as they are good to go. :-)
+However, I get your point, let's combine them!
 
 Kind regards
 Uffe
