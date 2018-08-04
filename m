@@ -1,116 +1,47 @@
-From: Emmanuel Vadot <manu@freebsd.org>
-Subject: [PATCH 7/7] arm64: dts: allwinner: H5: Enable the THS on H5 boards
-Date: Sat,  4 Aug 2018 09:03:55 +0200
-Message-ID: <20180804070355.14857-7-manu@freebsd.org>
-References: <20180804070355.14857-1-manu@freebsd.org>
+From: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+Subject: [PATCH] Revert "cpufreq: intel_pstate: Fix ->set_policy() interface for no_turbo"
+Date: Sat,  4 Aug 2018 17:29:32 +0200
+Message-ID: <20180804152932.3861-1-gabriele.mzt@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180804070355.14857-1-manu@freebsd.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Emmanuel Vadot <manu@freebsd.org>
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
+Cc: lenb@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Gabriele Mazzotta <gabriele.mzt@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Enable the Thermal Sensor Controller on all H5 boards.
+This change does not take into account that some BIOSes change
+MSR_IA32_MISC_ENABLE_TURBO_DISABLE depending on the power source.
+If the turbo is disabled when the system boots, policy.max_freq
+is set to pstate.max_pstate. However, if the BIOS later enables
+the turbo, the CPU will never be able to run at pstate.turbo_pstate.
 
-Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
+Since now intel_pstate_set_policy() does its calculations using
+pstate.max_freq and pstate.turbo_freq, we can always calculate
+cpuinfo.max_freq using pstate.turbo_pstate, thus allowing system
+with varying MSR_IA32_MISC_ENABLE_TURBO_DISABLE to run at full
+speed when the turbo is enabled.
+
+This reverts commit 983e600e88835f0321d1a0ea06f52d48b7b5a544.
+
+Signed-off-by: Gabriele Mazzotta <gabriele.mzt@gmail.com>
 ---
- arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts  | 4 ++++
- arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts       | 4 ++++
- arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts      | 4 ++++
- arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-prime.dts    | 4 ++++
- .../arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus.dts | 4 ++++
- .../boot/dts/allwinner/sun50i-h5-orangepi-zero-plus2.dts      | 4 ++++
- 6 files changed, 24 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
-index 506e25ba028a..767826684d2a 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo-plus2.dts
-@@ -189,6 +189,10 @@
- 	status = "okay";
- };
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3c3971256130..4043aae2d611 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2068,9 +2068,8 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+ 	update_turbo_state();
+-	policy->cpuinfo.max_freq = global.turbo_disabled ?
+-			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
+-	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
++	policy->cpuinfo.max_freq =
++		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
  
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-index cc268a69786c..dc49cc942fa9 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-nanopi-neo2.dts
-@@ -140,6 +140,10 @@
- 	status = "okay";
- };
+ 	intel_pstate_init_acpi_perf_limits(policy);
  
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
-index 3e0d5a9c096d..6ffd048c0d93 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-pc2.dts
-@@ -219,6 +219,10 @@
- 	};
- };
- 
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-prime.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-prime.dts
-index b75ca4d7d001..07819747a731 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-prime.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-prime.dts
-@@ -222,6 +222,10 @@
- 	status = "okay";
- };
- 
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus.dts
-index 1238de25a969..405440fedd1e 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus.dts
-@@ -125,6 +125,10 @@
- 	status = "okay";
- };
- 
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus2.dts b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus2.dts
-index 53c8c11620e0..09d2bbefcefa 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus2.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-h5-orangepi-zero-plus2.dts
-@@ -132,6 +132,10 @@
- 	status = "okay";
- };
- 
-+&ths {
-+	status = "okay";
-+};
-+
- &uart0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&uart0_pins_a>;
 -- 
 2.18.0
