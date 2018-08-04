@@ -1,64 +1,42 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware
- bindings
-Date: Fri, 03 Aug 2018 16:46:50 -0700
-Message-ID: <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 2/2] powerpc/cpu: post the event cpux add/remove instead
+ of online/offline during hotplug
+Date: Sat, 04 Aug 2018 12:48:46 +1000
+Message-ID: <87tvoag835.fsf@concordia.ellerman.id.au>
+References: <1533217359-11420-1-git-send-email-kernelfans@gmail.com>
+ <1533217359-11420-2-git-send-email-kernelfans@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
+Content-Type: text/plain
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1533217359-11420-2-git-send-email-kernelfans@gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Pingfan Liu <kernelfans@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Taniya Das (2018-07-24 03:42:49)
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.tx=
-t b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> new file mode 100644
-> index 0000000..22d4355
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> @@ -0,0 +1,172 @@
-[...]
-> +
-> +               CPU7: cpu@700 {
-> +                       device_type =3D "cpu";
-> +                       compatible =3D "qcom,kryo385";
-> +                       reg =3D <0x0 0x700>;
-> +                       enable-method =3D "psci";
-> +                       next-level-cache =3D <&L2_700>;
-> +                       qcom,freq-domain =3D <&freq_domain_table1>;
-> +                       L2_700: l2-cache {
-> +                               compatible =3D "cache";
-> +                               next-level-cache =3D <&L3_0>;
-> +                       };
-> +               };
-> +       };
-> +
-> +       qcom,cpufreq-hw {
-> +               compatible =3D "qcom,cpufreq-hw";
-> +
-> +               clocks =3D <&rpmhcc RPMH_CXO_CLK>;
-> +               clock-names =3D "xo";
-> +
-> +               #address-cells =3D <2>;
-> +               #size-cells =3D <2>;
-> +               ranges;
-> +               freq_domain_table0: freq_table0 {
-> +                       reg =3D <0 0x17d43000 0 0x1400>;
-> +               };
-> +
-> +               freq_domain_table1: freq_table1 {
-> +                       reg =3D <0 0x17d45800 0 0x1400>;
-> +               };
+Hi Pingfan,
 
-Sorry, this is just not proper DT design. The whole node should have a
-reg property, and it should contain two (or three if we're handling the
-L3 clk domain?) different offsets for the different power clusters. The
-problem seems to still be that we don't have a way to map the CPUs to
-the clk domains they're in provided by this hardware block. Making
-subnodes is not the solution.
+Pingfan Liu <kernelfans@gmail.com> writes:
+> Technically speaking, echo 1/0 > cpuX/online is only a subset of cpu
+> hotplug/unplug, i.e. add/remove. The latter one includes the physical
+> adding/removing of a cpu device. Some user space tools such as kexec-tools
+> resort to the event add/remove to automatically rebuild dtb.
+> If the dtb is not rebuilt correctly, we may hang on 2nd kernel due to
+> lack the info of boot-cpu-hwid in dtb.
+
+I notice you also sent a patch for ppc64_cpu to deal with CPUs being
+removed rather than just offlined.
+
+If I apply this patch then existing ppc64_cpu (without your other patch)
+will break. Is that right?
+
+cheers
