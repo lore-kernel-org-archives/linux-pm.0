@@ -1,42 +1,68 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc/cpu: post the event cpux add/remove instead
- of online/offline during hotplug
-Date: Sat, 04 Aug 2018 12:48:46 +1000
-Message-ID: <87tvoag835.fsf@concordia.ellerman.id.au>
-References: <1533217359-11420-1-git-send-email-kernelfans@gmail.com>
- <1533217359-11420-2-git-send-email-kernelfans@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1533217359-11420-2-git-send-email-kernelfans@gmail.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Pingfan Liu <kernelfans@gmail.com>, linux-pm@vger.kernel.org
+From: Emmanuel Vadot <manu@freebsd.org>
+Subject: [PATCH 1/7] dt-bindings: Add DT bindings documentation for Allwinner Thermal Sensor Controller
+Date: Sat,  4 Aug 2018 09:03:49 +0200
+Message-ID: <20180804070355.14857-1-manu@freebsd.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Emmanuel Vadot <manu@freebsd.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pingfan,
+This patch adds documentation for Device-Tree bindings for the Allwinner
+Thermal Sensor Controller found on the H3, H5 and A64 SoCs
 
-Pingfan Liu <kernelfans@gmail.com> writes:
-> Technically speaking, echo 1/0 > cpuX/online is only a subset of cpu
-> hotplug/unplug, i.e. add/remove. The latter one includes the physical
-> adding/removing of a cpu device. Some user space tools such as kexec-tools
-> resort to the event add/remove to automatically rebuild dtb.
-> If the dtb is not rebuilt correctly, we may hang on 2nd kernel due to
-> lack the info of boot-cpu-hwid in dtb.
+Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
+---
+ .../bindings/thermal/allwinner-thermal.txt    | 41 +++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
 
-I notice you also sent a patch for ppc64_cpu to deal with CPUs being
-removed rather than just offlined.
-
-If I apply this patch then existing ppc64_cpu (without your other patch)
-will break. Is that right?
-
-cheers
+diff --git a/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt b/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
+new file mode 100644
+index 000000000000..5810d44cf495
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
+@@ -0,0 +1,41 @@
++* Thermal Sensor Controller on Allwinner SoCs
++
++Required properties:
++- compatible : should be "allwinner,<name>-ths"
++   "allwinner,sun8i-h3-ths": found on H3 and H2+ SoCs
++   "allwinner,sun50i-h5-ths": found on H5 SoC
++   "allwinner,sun50i-a64-ths": found on H5 SoC
++- reg : physical base address of the controller and length of memory mapped
++	region.
++- interrupts : The interrupt number to the cpu. The interrupt specifier format
++	       depends on the interrupt controller.
++- clocks : Must contain an entry for each entry in clock-names.
++- clock-names : Shall be "apb" for the bus, and "ths" for
++		the peripheral clock.
++- resets : Must contain an entry for each entry in reset-names.
++	   See ../reset/reset.txt for details.
++- reset-names : Must be "apb".
++- #thermal-sensor-cells : Depend on the SoC
++   For H3 should be 0
++   For H5 should be 1
++   For A64 should be 2
++   See ./thermal.txt for a description.
++- nvmem-cells : Phandle to the calibration data
++- nvmem-cell-names = Should be "ths-calib"
++
++Example:
++
++ths: thermal_sensor@1c25000 {
++	compatible = "allwinner,sun8i-h3-ths";
++	reg = <0x01c25000 0x100>;
++	interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++	clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
++	clock-names = "apb", "ths";
++	resets = <&ccu RST_BUS_THS>;
++	reset-names = "apb";
++	#thermal-sensor-cells = <0>;
++	status = "disabled";
++
++	nvmem-cells = <&ths_calib>;
++	nvmem-cell-names = "ths-calib";
++};
+-- 
+2.18.0
