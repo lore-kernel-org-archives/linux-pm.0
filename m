@@ -1,46 +1,36 @@
 From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: Re: [PATCH] power: supply: max77693_charger: fix unintentional
- fall-through
-Date: Sat, 4 Aug 2018 21:01:46 -0500
-Message-ID: <20a2e89f-1715-9659-f65f-5ace0b2073fb@embeddedor.com>
-References: <20180717214739.GA19410@embeddedor.com>
- <CAJKOXPc3vss1=gYy+6ej6J2LNz+RtBoHFEN84j18wd0yy_NaDg@mail.gmail.com>
- <20180722221717.fgx6nzljnfrw3d5a@earth.universe>
+Subject: [PATCH] PM / hibernate: Mark expected switch fall-through
+Date: Sat, 4 Aug 2018 21:12:00 -0500
+Message-ID: <20180805021200.GA10911@embeddedor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180722221717.fgx6nzljnfrw3d5a@earth.universe>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-On 07/22/2018 05:17 PM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Wed, Jul 18, 2018 at 08:14:50AM +0200, Krzysztof Kozlowski wrote:
->> On 17 July 2018 at 23:47, Gustavo A. R. Silva <gustavo@embeddedor.com> wrote:
->>> It seems that a *break* is missing in order to avoid a fall-through.
->>> Otherwise, the calculation of *data* makes no sense.
->>>
->>> Addresses-Coverity-ID: 1271172 ("Missing break in switch")
->>> Fixes: 87c2d9067893 ("power: max77693: Add charger driver for Maxim 77693")
->>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
->>> ---
->>>  drivers/power/supply/max77693_charger.c | 1 +
->>>  1 file changed, 1 insertion(+)
->>
->> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> 
-> Thanks, queued to power-supply's fixes branch.
-> 
+Addresses-Coverity-ID: 114713 ("Missing break in switch")
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ kernel/power/hibernate.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-I think this should be tagged for stable.
-
-Thanks
---
-Gustavo
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 9c85c78..38f3f96 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -638,6 +638,7 @@ static void power_down(void)
+ 		break;
+ 	case HIBERNATION_PLATFORM:
+ 		hibernation_platform_enter();
++		/* Fall through */
+ 	case HIBERNATION_SHUTDOWN:
+ 		if (pm_power_off)
+ 			kernel_power_off();
+-- 
+2.7.4
