@@ -1,87 +1,274 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point
- indicator
-Date: Mon, 6 Aug 2018 15:20:27 +0200
-Message-ID: <454ee0da-9c6c-6944-25e5-0fbbf89bc3b6@arm.com>
-References: <20180802153035.vjtmqwdwujvt7ojs@queper01-lin>
- <CAKfTPtCGGqykN027kxK+chvKvCpNu4bYYdvfZJ+3_7YzT3Utfg@mail.gmail.com>
- <20180802160009.uhwwj3tqrqmv7q5a@queper01-lin>
- <CAKfTPtB_tWgOPCB3q2Q2rESKczTPGBDUojcXDY7uP8YTQddBMg@mail.gmail.com>
- <20180802161027.v2ctgscuc4uxbb7u@queper01-lin>
- <CAKfTPtDtaF9Qs4NWkKWUSr8Ryi-ScYNmPyacocPQUPxT00XAYg@mail.gmail.com>
- <20180802165924.7ywgoxj2jwftxycz@queper01-lin>
- <CAKfTPtDsG4FJy5xBO8+6pJzehEM668=SZ4yQ-szVTduofN3QZg@mail.gmail.com>
- <20180803081850.hj7bp5ognuywapmd@queper01-lin>
- <CAKfTPtDkJY=JYicZk8sM9_mJ-iq+Jwse0oVRbW=wpxXKKnEoeQ@mail.gmail.com>
- <20180803155547.sxlhxpmhwcoappit@queper01-lin>
- <CAKfTPtBT-p-Z0EneirfOTwUw=5jEeDGa+4_EE4ogi2Ht7GU9Bg@mail.gmail.com>
- <68689fcb-3cb8-4685-58ef-0bec84be2047@arm.com>
- <CAKfTPtADSDJJaPr17zD8ZNtS7CQGBwfU6JDGRwssLN20zyW7Nw@mail.gmail.com>
- <1cac0d16-9f50-ed30-2460-340b077faa57@arm.com>
- <CAKfTPtDZs2_4skbGFJkrtq1Z+G_MWue7xC3tcoLs5xcpsBkNUw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v3 00/14] Add utilization clamping support
+Date: Mon,  6 Aug 2018 17:39:32 +0100
+Message-ID: <20180806163946.28380-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtDZs2_4skbGFJkrtq1Z+G_MWue7xC3tcoLs5xcpsBkNUw@mail.gmail.com>
-Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Quentin Perret <quentin.perret@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/2018 02:37 PM, Vincent Guittot wrote:
-> On Mon, 6 Aug 2018 at 14:29, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
->>
->> On 08/06/2018 12:33 PM, Vincent Guittot wrote:
->>> On Mon, 6 Aug 2018 at 12:08, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
->>>>
->>>> On 08/06/2018 10:40 AM, Vincent Guittot wrote:
->>>>> On Fri, 3 Aug 2018 at 17:55, Quentin Perret <quentin.perret@arm.com> wrote:
->>>>>>
->>>>>> On Friday 03 Aug 2018 at 15:49:24 (+0200), Vincent Guittot wrote:
->>>>>>> On Fri, 3 Aug 2018 at 10:18, Quentin Perret <quentin.perret@arm.com> wrote:
->>>>>>>>
->>>>>>>> On Friday 03 Aug 2018 at 09:48:47 (+0200), Vincent Guittot wrote:
->>>>>>>>> On Thu, 2 Aug 2018 at 18:59, Quentin Perret <quentin.perret@arm.com> wrote:
->>>>
->>>> [...]
->>>>
->>>>>> I think we're discussing two different things right now:
->>>>>>        1. Should forkees go in find_energy_efficient_cpu() ?
->>>>>>        2. Should forkees have 0 of initial util_avg when EAS is enabled ?
->>>>>
->>>>> It's the same topic: How EAS should consider a newly created task ?
->>>>>
->>>>> For now, we let the "performance" mode selects a CPU. This CPU will
->>>>> most probably be worst CPU from a EAS pov because it's the idlest CPU
->>>>> in the idlest group which is the opposite of what EAS tries to do
->>>>>
->>>>> The current behavior is :
->>>>> For every new task, the cpu selection is done assuming it's a heavy
->>>>> task with the max possible load_avg,  and it looks for the idlest cpu.
->>>>> This means that if the system is lightly loaded, scheduler will select
->>>>> most probably a idle big core.
->>>>
->>>> AFAICS, task load doesn't seem to be used for find_idlest_cpu() (
->>>> find_idlest_group() and find_idlest_group_cpu()). So the forkee
->>>> (SD_BALANCE_FORK) is placed independently of his task load.
->>>
->>> hmm ... so what is used if load or runnable load are not used ?
->>> find_idlest_group() uses load and runnable load but skip spare
->>> capacity in case of fork
->>
->> Yes, runnable load and load are used, but from the cpus, not from the task.
-> 
-> yes that's right, I have skipped the "task" word when reading.
-> So scheduler looks for the idlest CPU taking into account only CPU
-> loads. Then the task load starts to highest value until it get a
-> chance to reduce and stabilize to its final value
+This is a respin of:
 
-This could potentially allow us to find a better init value for 
-sa->[runnable]_load_avg. At least we could use the information of the 
-initial task rq.
+   https://lore.kernel.org/lkml/20180716082906.6061-1-patrick.bellasi@arm.com
 
-> 
->>
->> [...]
+Which has been rebased on today's tip/sched/core:
+
+   commit 1b6266ebe3da ("watchdog: Reduce message verbosity")
+
+and addresses all the comments from Tejun and Suren, thanks for your feedback!
+
+Further comments and feedbacks are more than welcome!
+
+Cheers Patrick
+
+
+Main changes
+============
+
+.:: Properly implemented the cgroup delegation model
+----------------------------------------------------
+
+ As Tejun pointed out in:
+
+    https://lore.kernel.org/lkml/20180409222417.GK3126663@devbig577.frc2.facebook.com
+
+ the cgroup delegation model requires that a parent group can always restrict
+ the resources of a child group. To properly support this behavior we need to
+ add a concept of "effective" clamp values beside the one of "requested" clamp
+ values.
+
+ This means that a child group can always ask for certain clamp values but the
+ effective clamps it get depends on the parent group configuration. More
+ specifically, the effective clamps for a group are defined as the most
+ restrictive value (i.e. the minimum) between a task group clamp value and the
+ effective value of its parent task group.
+
+ This new feature is introduced by this new patch in this series:
+
+    [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
+
+
+.:: Added support for system defaults
+-------------------------------------
+
+ The introduction of the previous patch implies that the root task group must be
+ configured with a default min utilization clamping which corresponds to the
+ maximum value, i.e. root_task_group::uclamp[UTIL_MIN].value = 100%.
+ Otherwise, subgroups will always have an effective 0% minimum clamp.
+
+ To fix this misbehavior, as well as to overcome the (cgroup imposed) limitation
+ of non configurable attributes of the root task group, in this new patch:
+
+    [PATCH v3 12/14] sched/core: uclamp: add system default clamps
+
+ we add sysfs support for system wide defaults.
+
+ This should satisfy another comment by Tejun and it also provides a convenient
+ system wide configuration API, which is available independently from cgroup.
+
+
+.:: Improved syscall API semantics
+----------------------------------
+
+ As pointed out and suggested by Suren, the __sched_setscheduler() syscall
+ semantics has been improved to support:
+ - single attribute configuration
+   by using a new set of dedicated sched_attr::sched_flags we can now specify
+   which clamp values we want to configure
+ - atomic setting or failure in case of two attributes being configured at the
+   same time.
+
+ These changes affect mainly:
+
+    [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to support utilization clamping
+    [PATCH v3 02/14] sched/core: uclamp: map TASK's clamp values into CPU's clamp groups
+
+
+.:: Other notes
+---------------
+
+The rest of the series is similar to v2 and split into these sections:
+
+- Patches [01-04]: Per task (primary) API
+- Patches [05-06]: Schedutil integration
+- Patches [08-13]: Per task group (secondary) API
+- Patches [07,14]: Additional improvements
+
+
+Newcomer's Short Abstract (Updated)
+===================================
+
+The Linux scheduler is able to drive frequency selection, when the schedutil
+cpufreq's governor is in use, based on task utilization aggregated at CPU
+level. The CPU utilization is then used to select the frequency which best
+fits the task's generated workload.  The current translation of utilization
+values into a frequency selection is pretty simple: we just go to max for RT
+tasks or to the minimum frequency which can accommodate the utilization of
+DL+FAIR tasks.
+
+While this simple mechanism is good enough for DL tasks, for RT and FAIR tasks
+we can aim at some better frequency driving which can take into consideration
+hints coming from user-space.
+
+Utilization clamping is a mechanism which allows to "clamp" (i.e. filter) the
+utilization generated by RT and FAIR tasks within a range defined from
+user-space. The clamped utilization value can then be used to enforce a minimum
+and/or maximum frequency depending on which tasks are currently active on a
+CPU.
+
+The main use-cases for utilization clamping are:
+
+ - boosting: better interactive response for small tasks which
+   are affecting the user experience.
+   Consider for example the case of a small control thread for an external
+   accelerator (e.g. GPU, DSP, other devices). In this case, from its
+   utilization the scheduler does not have a complete view of what are the task
+   requirements and, if it's a small utilization task, schedutil will keep
+   selecting a more energy efficient CPU, with smaller capacity and lower
+   frequency, thus affecting the overall time required to complete the task
+   activations.
+
+ - capping: increase energy efficiency for background tasks not directly
+   affecting the user experience.
+   Since running on a lower capacity CPU at a lower frequency is in general
+   more energy efficient, when the completion time is not a main goal, then
+   capping the utilization considered for certain (maybe big) tasks can have
+   positive effects, both on energy consumption and thermal stress.
+   Moreover, this last support allows also to make RT tasks more energy
+   friendly on mobile systems, where running them on high capacity CPUs and at
+   the maximum frequency is not strictly required.
+
+>From these two use-cases, it's worth to notice that frequency selection
+biasing, introduced by patches 5 and 6 of this series, is just one possible
+usage of utilization clamping. Another compelling extension of utilization
+clamping is in helping the scheduler on tasks placement decisions.
+
+Utilization is a task specific property which is used by the scheduler to know
+how much CPU bandwidth a task requires (under certain conditions).
+Thus, the utilization clamp values defined either per-task or via the CPU
+controller, can be used to represent tasks to the scheduler as being bigger
+(or smaller) than what they really are.
+
+Utilization clamping thus ultimately enable interesting additional
+optimizations, especially on asymmetric capacity systems like Arm
+big.LITTLE and DynamIQ CPUs, where:
+
+ - boosting: small tasks are preferably scheduled on higher-capacity CPUs
+   where, despite being less energy efficient, they can complete faster
+
+ - capping: big/background tasks are preferably scheduled on low-capacity CPUs
+   where, being more energy efficient, they can still run but save power and
+   thermal headroom for more important tasks.
+
+This additional usage of the utilization clamping is not presented in this
+series but it's an integral part of the Energy Aware Scheduler (EAS) feature
+set. A similar solution (SchedTune) is already used on Android kernels, which
+targets the biasing of both 'frequency selection' and 'task placement'.
+This series provides the foundation bits to add similar features in mainline
+and its first simple client with the schedutil integration.
+
+
+Detailed Changelog
+==================
+
+Changes in v3:
+ Message-ID: <CAJuCfpF6=L=0LrmNnJrTNPazT4dWKqNv+thhN0dwpKCgUzs9sg@mail.gmail.com>
+ - removed UCLAMP_NONE not used by this patch
+ - remove not necessary checks in uclamp_group_find()
+ - add WARN on unlikely un-referenced decrement in uclamp_group_put()
+ - add WARN on unlikely un-referenced decrement in uclamp_cpu_put_id()
+ - make __setscheduler_uclamp() able to set just one clamp value
+ - make __setscheduler_uclamp() failing if both clamps are required but
+   there is no clamp groups available for one of them
+ - remove uclamp_group_find() from uclamp_group_get() which now takes a
+   group_id as a parameter
+ - add explicit calls to uclamp_group_find()
+   which is now not more part of uclamp_group_get()
+ - fixed a not required override
+ - fixed some typos in comments and changelog
+ Message-ID: <CAJuCfpGaKvxKcO=RLcmveHRB9qbMrvFs2yFVrk=k-v_m7JkxwQ@mail.gmail.com>
+ - few typos fixed
+ Message-ID: <20180409222417.GK3126663@devbig577.frc2.facebook.com>
+ - use "." notation for attributes naming
+   i.e. s/util_{min,max}/util.{min,max}/
+ - added new patches: 09 and 12
+ Other changes:
+ - rebased on tip/sched/core
+
+Changes in v2:
+ Message-ID: <20180413093822.GM4129@hirez.programming.kicks-ass.net>
+ - refactored struct rq::uclamp_cpu to be more cache efficient
+   no more holes, re-arranged vectors to match cache lines with expected
+   data locality
+ Message-ID: <20180413094615.GT4043@hirez.programming.kicks-ass.net>
+ - use *rq as parameter whenever already available
+ - add scheduling class's uclamp_enabled marker
+ - get rid of the "confusing" single callback uclamp_task_update()
+   and use uclamp_cpu_{get,put}() directly from {en,de}queue_task()
+ - fix/remove "bad" comments
+ Message-ID: <20180413113337.GU14248@e110439-lin>
+ - remove inline from init_uclamp, flag it __init
+ Message-ID: <20180413111900.GF4082@hirez.programming.kicks-ass.net>
+ - get rid of the group_id back annotation
+   which is not requires at this stage where we have only per-task
+   clamping support. It will be introduce later when cgroup support is
+   added.
+ Message-ID: <20180409222417.GK3126663@devbig577.frc2.facebook.com>
+ - make attributes available only on non-root nodes
+   a system wide API seems of not immediate interest and thus it's not
+   supported anymore
+ - remove implicit parent-child constraints and dependencies
+ Message-ID: <20180410200514.GA793541@devbig577.frc2.facebook.com>
+ - add some cgroup-v2 documentation for the new attributes
+ - (hopefully) better explain intended use-cases
+   the changelog above has been extended to better justify the naming
+   proposed by the new attributes
+ Other changes:
+ - improved documentation to make more explicit some concepts
+ - set UCLAMP_GROUPS_COUNT=2 by default
+   which allows to fit all the hot-path CPU clamps data into a single cache
+   line while still supporting up to 2 different {min,max}_utiql clamps.
+ - use -ERANGE as range violation error
+ - add attributes to the default hierarchy as well as the legacy one
+ - implement a "nice" semantics where cgroup clamp values are always
+   used to restrict task specific clamp values,
+   i.e. tasks running on a TG are only allowed to demote themself.
+ - patches re-ordering in top-down way
+ - rebased on v4.18-rc4
+
+
+Patrick Bellasi (14):
+  sched/core: uclamp: extend sched_setattr to support utilization
+    clamping
+  sched/core: uclamp: map TASK's clamp values into CPU's clamp groups
+  sched/core: uclamp: add CPU's clamp groups accounting
+  sched/core: uclamp: update CPU's refcount on clamp changes
+  sched/cpufreq: uclamp: add utilization clamping for FAIR tasks
+  sched/cpufreq: uclamp: add utilization clamping for RT tasks
+  sched/core: uclamp: enforce last task UCLAMP_MAX
+  sched/core: uclamp: extend cpu's cgroup controller
+  sched/core: uclamp: propagate parent clamps
+  sched/core: uclamp: map TG's clamp values into CPU's clamp groups
+  sched/core: uclamp: use TG's clamps to restrict Task's clamps
+  sched/core: uclamp: add system default clamps
+  sched/core: uclamp: update CPU's refcount on TG's clamp changes
+  sched/core: uclamp: use percentage clamp values
+
+ Documentation/admin-guide/cgroup-v2.rst |   46 +
+ include/linux/sched.h                   |   58 ++
+ include/linux/sched/sysctl.h            |   11 +
+ include/uapi/linux/sched.h              |    8 +-
+ include/uapi/linux/sched/types.h        |   66 +-
+ init/Kconfig                            |   61 ++
+ kernel/sched/core.c                     | 1186 +++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c        |   38 +-
+ kernel/sched/fair.c                     |    4 +
+ kernel/sched/features.h                 |   10 +
+ kernel/sched/rt.c                       |    4 +
+ kernel/sched/sched.h                    |  194 ++++
+ kernel/sysctl.c                         |   16 +
+ 13 files changed, 1688 insertions(+), 14 deletions(-)
+
+-- 
+2.18.0
