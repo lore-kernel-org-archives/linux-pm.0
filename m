@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
-Date: Mon,  6 Aug 2018 17:39:44 +0100
-Message-ID: <20180806163946.28380-13-patrick.bellasi@arm.com>
+Subject: [PATCH v3 14/14] sched/core: uclamp: use percentage clamp values
+Date: Mon,  6 Aug 2018 17:39:46 +0100
+Message-ID: <20180806163946.28380-15-patrick.bellasi@arm.com>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180806163946.28380-1-patrick.bellasi@arm.com>
@@ -10,241 +10,286 @@ To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Clamp values cannot be tuned at the root cgroup level. Moreover, because
-of the delegation model requirements and how the parent clamps
-propagation works, if we want to enable subgroups to set a non null
-util.min, we need to be able to configure the root group util.min to the
-allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
+The utilization is a well defined property of tasks and CPUs with an
+in-kernel representation based on power-of-two values.
+The current representation, in the [0..SCHED_CAPACITY_SCALE] range,
+allows efficient computations in hot-paths and a sufficient fixed point
+arithmetic precision.
+However, the utilization values range is still an implementation detail
+which is also possibly subject to changes in the future.
 
-Unfortunately this setup will also mean that all tasks running in the
-root group, will always get a maximum util.min clamp, unless they have a
-lower task specific clamp which is definitively not a desirable default
-configuration.
+Since we don't want to commit new user-space APIs to any in-kernel
+implementation detail, let's add an abstraction layer on top of the APIs
+used by util_clamp, i.e. sched_{set,get}attr syscalls and the cgroup's
+cpu.util_{min,max} attributes.
 
-Let's fix this by explicitly adding a system default configuration
-(sysctl_sched_uclamp_util_{min,max}) which works as a restrictive clamp
-for all tasks running on the root group.
-
-This interface is available independently from cgroups, thus providing a
-complete solution for system wide utilization clamping configuration.
+We do that by adding a couple of conversion functions which can be used
+to conveniently transform utilization/capacity values from/to the internal
+SCHED_FIXEDPOINT_SCALE representation to/from a more generic percentage
+in the standard [0..100] range.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Tejun Heo <tj@kernel.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: Paul Turner <pjt@google.com>
 Cc: Suren Baghdasaryan <surenb@google.com>
 Cc: Todd Kjos <tkjos@google.com>
 Cc: Joel Fernandes <joelaf@google.com>
 Cc: Steve Muckle <smuckle@google.com>
 Cc: Juri Lelli <juri.lelli@redhat.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
----
- include/linux/sched/sysctl.h |  11 ++++
- kernel/sched/core.c          | 102 +++++++++++++++++++++++++++++++++--
- kernel/sysctl.c              |  16 ++++++
- 3 files changed, 126 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-index 913488d828cb..c46346d3cc69 100644
---- a/include/linux/sched/sysctl.h
-+++ b/include/linux/sched/sysctl.h
-@@ -55,6 +55,11 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
- extern unsigned int sysctl_sched_rt_period;
- extern int sysctl_sched_rt_runtime;
+---
+Changes in v3:
+ - rebased on tip/sched/core
+
+Changes in v2:
+- none: this is a new patch
+---
+ Documentation/admin-guide/cgroup-v2.rst | 10 +++----
+ include/linux/sched.h                   | 20 +++++++++++++
+ include/uapi/linux/sched/types.h        | 14 ++++++----
+ kernel/sched/core.c                     | 37 +++++++++++++++----------
+ 4 files changed, 55 insertions(+), 26 deletions(-)
+
+diff --git a/Documentation/admin-guide/cgroup-v2.rst b/Documentation/admin-guide/cgroup-v2.rst
+index c73ceaf496b2..6055e4524dc6 100644
+--- a/Documentation/admin-guide/cgroup-v2.rst
++++ b/Documentation/admin-guide/cgroup-v2.rst
+@@ -973,7 +973,7 @@ All time durations are in microseconds.
+         A read-write single value file which exists on non-root cgroups.
+         The default is "0", i.e. no bandwidth boosting.
  
-+#ifdef CONFIG_UCLAMP_TASK
-+extern unsigned int sysctl_sched_uclamp_util_min;
-+extern unsigned int sysctl_sched_uclamp_util_max;
-+#endif
-+
- #ifdef CONFIG_CFS_BANDWIDTH
- extern unsigned int sysctl_sched_cfs_bandwidth_slice;
- #endif
-@@ -74,6 +79,12 @@ extern int sched_rt_handler(struct ctl_table *table, int write,
- 		void __user *buffer, size_t *lenp,
- 		loff_t *ppos);
+-        The requested minimum utilization in the range [0, 1023].
++        The requested minimum percentage of utilization in the range [0, 100].
  
-+#ifdef CONFIG_UCLAMP_TASK
-+extern int sched_uclamp_handler(struct ctl_table *table, int write,
-+				void __user *buffer, size_t *lenp,
-+				loff_t *ppos);
-+#endif
-+
- extern int sysctl_numa_balancing(struct ctl_table *table, int write,
- 				 void __user *buffer, size_t *lenp,
- 				 loff_t *ppos);
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index f54fd9bda9a7..48458fea2d5e 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -728,6 +728,20 @@ static void set_load_weight(struct task_struct *p, bool update_load)
-  */
- static DEFINE_MUTEX(uclamp_mutex);
+         This interface allows reading and setting minimum utilization clamp
+         values similar to the sched_setattr(2). This minimum utilization
+@@ -984,16 +984,16 @@ All time durations are in microseconds.
+         reports minimum utilization clamp value currently enforced on a task
+         group.
  
-+/*
-+ * Minimum utilization for tasks in the root cgroup
-+ * default: 0
-+ */
-+unsigned int sysctl_sched_uclamp_util_min;
-+
-+/*
-+ * Maximum utilization for tasks in the root cgroup
-+ * default: 1024
-+ */
-+unsigned int sysctl_sched_uclamp_util_max = 1024;
-+
-+static struct uclamp_se uclamp_default[UCLAMP_CNT];
-+
- /**
-  * uclamp_map: reference counts a utilization "clamp value"
-  * @value:    the utilization "clamp value" required
-@@ -957,12 +971,25 @@ static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
- 	group_id = uc_se->group_id;
+-        The actual minimum utilization in the range [0, 1023].
++        The actual minimum percentage of utilization in the range [0, 100].
  
- #ifdef CONFIG_UCLAMP_TASK_GROUP
-+	/*
-+	 * Tasks in the root group, which do not have a task specific clamp
-+	 * value, get the system default calmp value.
-+	 */
-+	if (group_id == UCLAMP_NOT_VALID &&
-+	    task_group(p) == &root_task_group) {
-+		return uclamp_default[clamp_id].group_id;
-+	}
-+
- 	/* Use TG's clamp value to limit task specific values */
- 	uc_se = &task_group(p)->uclamp[clamp_id];
- 	if (group_id == UCLAMP_NOT_VALID ||
- 	    clamp_value > uc_se->effective.value) {
- 		group_id = uc_se->effective.group_id;
- 	}
-+#else
-+	/* By default, all tasks get the system default clamp value */
-+	if (group_id == UCLAMP_NOT_VALID)
-+		return uclamp_default[clamp_id].group_id;
- #endif
+         This value can be lower then cpu.util.min in case a parent cgroup
+         is enforcing a more restrictive clamping on minimum utilization.
  
- 	return group_id;
-@@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
- 	uclamp_group_put(clamp_id, prev_group_id);
- }
+   cpu.util.max
+         A read-write single value file which exists on non-root cgroups.
+-        The default is "1023". i.e. no bandwidth clamping
++        The default is "100". i.e. no bandwidth clamping
  
-+int sched_uclamp_handler(struct ctl_table *table, int write,
-+			 void __user *buffer, size_t *lenp,
-+			 loff_t *ppos)
+-        The requested maximum utilization in the range [0, 1023].
++        The requested maximum percentage of utilization in the range [0, 100].
+ 
+         This interface allows reading and setting maximum utilization clamp
+         values similar to the sched_setattr(2). This maximum utilization
+@@ -1004,7 +1004,7 @@ All time durations are in microseconds.
+         reports maximum utilization clamp value currently enforced on a task
+         group.
+ 
+-        The actual maximum utilization in the range [0, 1023].
++        The actual maximum percentage of utilization in the range [0, 100].
+ 
+         This value can be lower then cpu.util.max in case a parent cgroup
+         is enforcing a more restrictive clamping on max utilization.
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 753d10cd25f1..1d48453e8d4c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -321,6 +321,26 @@ struct sched_info {
+ # define SCHED_FIXEDPOINT_SHIFT		10
+ # define SCHED_FIXEDPOINT_SCALE		(1L << SCHED_FIXEDPOINT_SHIFT)
+ 
++static inline unsigned int scale_from_percent(unsigned int pct)
 +{
-+	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-+	struct uclamp_se *uc_se;
-+	int old_min, old_max;
-+	int result;
++	WARN_ON(pct > 100);
 +
-+	mutex_lock(&uclamp_mutex);
-+
-+	old_min = sysctl_sched_uclamp_util_min;
-+	old_max = sysctl_sched_uclamp_util_max;
-+
-+	result = proc_dointvec(table, write, buffer, lenp, ppos);
-+	if (result)
-+		goto undo;
-+	if (!write)
-+		goto done;
-+
-+	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
-+		goto undo;
-+	if (sysctl_sched_uclamp_util_max > 1024)
-+		goto undo;
-+
-+	/* Find a valid group_id for each required clamp value */
-+	if (old_min != sysctl_sched_uclamp_util_min) {
-+		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
-+		if (result == -ENOSPC) {
-+			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
-+			       CONFIG_UCLAMP_GROUPS_COUNT);
-+			goto undo;
-+		}
-+		group_id[UCLAMP_MIN] = result;
-+	}
-+	if (old_max != sysctl_sched_uclamp_util_max) {
-+		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
-+		if (result == -ENOSPC) {
-+			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
-+			       CONFIG_UCLAMP_GROUPS_COUNT);
-+			goto undo;
-+		}
-+		group_id[UCLAMP_MAX] = result;
-+	}
-+
-+	/* Update each required clamp group */
-+	if (old_min != sysctl_sched_uclamp_util_min) {
-+		uc_se = &uclamp_default[UCLAMP_MIN];
-+		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
-+				 uc_se, sysctl_sched_uclamp_util_min);
-+	}
-+	if (old_max != sysctl_sched_uclamp_util_max) {
-+		uc_se = &uclamp_default[UCLAMP_MAX];
-+		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
-+				 uc_se, sysctl_sched_uclamp_util_max);
-+	}
-+
-+	if (result) {
-+undo:
-+		sysctl_sched_uclamp_util_min = old_min;
-+		sysctl_sched_uclamp_util_max = old_max;
-+	}
-+
-+done:
-+	mutex_unlock(&uclamp_mutex);
-+
-+	return result;
++	return ((SCHED_FIXEDPOINT_SCALE * pct) / 100);
 +}
 +
- #ifdef CONFIG_UCLAMP_TASK_GROUP
- /**
-  * init_uclamp_sched_group: initialize data structures required for TG's
-@@ -1291,11 +1387,11 @@ static inline void init_uclamp_sched_group(void)
- 		/* Map root TG's clamp value */
- 		uclamp_group_init(clamp_id, group_id, uclamp_none(clamp_id));
++static inline unsigned int scale_to_percent(unsigned int value)
++{
++	unsigned int rounding = 0;
++
++	WARN_ON(value > SCHED_FIXEDPOINT_SCALE);
++
++	/* Compensate rounding errors for: 0, 256, 512, 768, 1024 */
++	if (likely((value & 0xFF) && ~(value & 0x700)))
++		rounding = 1;
++
++	return (rounding + ((100 * value) / SCHED_FIXEDPOINT_SCALE));
++}
++
+ struct load_weight {
+ 	unsigned long			weight;
+ 	u32				inv_weight;
+diff --git a/include/uapi/linux/sched/types.h b/include/uapi/linux/sched/types.h
+index 7421cd25354d..e2c2acb1c6af 100644
+--- a/include/uapi/linux/sched/types.h
++++ b/include/uapi/linux/sched/types.h
+@@ -84,15 +84,17 @@ struct sched_param {
+  *
+  *  @sched_util_min	represents the minimum utilization
+  *  @sched_util_max	represents the maximum utilization
++ *  @sched_util_min	represents the minimum utilization percentage
++ *  @sched_util_max	represents the maximum utilization percentage
+  *
+- * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE] which
+- * represents the percentage of CPU time used by a task when running at the
+- * maximum frequency on the highest capacity CPU of the system. Thus, for
+- * example, a 20% utilization task is a task running for 2ms every 10ms.
++ * Utilization is a value in the range [0..100] which represents the
++ * percentage of CPU time used by a task when running at the maximum frequency
++ * on the highest capacity CPU of the system. Thus, for example, a 20%
++ * utilization task is a task running for 2ms every 10ms.
+  *
+- * A task with a min utilization value bigger then 0 is more likely to be
++ * A task with a min utilization value bigger then 0% is more likely to be
+  * scheduled on a CPU which can provide that bandwidth.
+- * A task with a max utilization value smaller then 1024 is more likely to be
++ * A task with a max utilization value smaller then 100% is more likely to be
+  * scheduled on a CPU which do not provide more then the required bandwidth.
+  */
+ struct sched_attr {
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 6db307803047..09dc550a4174 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -730,15 +730,15 @@ static DEFINE_MUTEX(uclamp_mutex);
  
--		/* Init root TG's clamp group */
-+		/* Init root TG's clamp group: max values always enabled */
- 		uc_se = &root_task_group.uclamp[clamp_id];
--		uc_se->value = uclamp_none(clamp_id);
-+		uc_se->value = uclamp_none(UCLAMP_MAX);
- 		uc_se->group_id = group_id;
--		uc_se->effective.value = uclamp_none(clamp_id);
-+		uc_se->effective.value = uclamp_none(UCLAMP_MAX);
- 		uc_se->effective.group_id = group_id;
+ /*
+  * Minimum utilization for tasks in the root cgroup
+- * default: 0
++ * default: 0%
+  */
+ unsigned int sysctl_sched_uclamp_util_min;
  
- 		/* Attach root TG's clamp group */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index f22f76b7a138..051d6da237e0 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -442,6 +442,22 @@ static struct ctl_table kern_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= sched_rr_handler,
- 	},
-+#ifdef CONFIG_UCLAMP_TASK
-+	{
-+		.procname	= "sched_uclamp_util_min",
-+		.data		= &sysctl_sched_uclamp_util_min,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= sched_uclamp_handler,
-+	},
-+	{
-+		.procname	= "sched_uclamp_util_max",
-+		.data		= &sysctl_sched_uclamp_util_max,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= sched_uclamp_handler,
-+	},
-+#endif
- #ifdef CONFIG_SCHED_AUTOGROUP
- 	{
- 		.procname	= "sched_autogroup_enabled",
+ /*
+  * Maximum utilization for tasks in the root cgroup
+- * default: 1024
++ * default: 100%
+  */
+-unsigned int sysctl_sched_uclamp_util_max = 1024;
++unsigned int sysctl_sched_uclamp_util_max = 100;
+ 
+ static struct uclamp_se uclamp_default[UCLAMP_CNT];
+ 
+@@ -1329,6 +1329,7 @@ int sched_uclamp_handler(struct ctl_table *table, int write,
+ 	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+ 	struct uclamp_se *uc_se;
+ 	int old_min, old_max;
++	unsigned int value;
+ 	int result;
+ 
+ 	mutex_lock(&uclamp_mutex);
+@@ -1344,7 +1345,7 @@ int sched_uclamp_handler(struct ctl_table *table, int write,
+ 
+ 	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
+ 		goto undo;
+-	if (sysctl_sched_uclamp_util_max > 1024)
++	if (sysctl_sched_uclamp_util_max > 100)
+ 		goto undo;
+ 
+ 	/* Find a valid group_id for each required clamp value */
+@@ -1370,13 +1371,15 @@ int sched_uclamp_handler(struct ctl_table *table, int write,
+ 	/* Update each required clamp group */
+ 	if (old_min != sysctl_sched_uclamp_util_min) {
+ 		uc_se = &uclamp_default[UCLAMP_MIN];
++		value = scale_from_percent(sysctl_sched_uclamp_util_min);
+ 		uclamp_group_get(NULL, NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
+-				 uc_se, sysctl_sched_uclamp_util_min);
++				 uc_se, value);
+ 	}
+ 	if (old_max != sysctl_sched_uclamp_util_max) {
+ 		uc_se = &uclamp_default[UCLAMP_MAX];
++		value = scale_from_percent(sysctl_sched_uclamp_util_max);
+ 		uclamp_group_get(NULL, NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
+-				 uc_se, sysctl_sched_uclamp_util_max);
++				 uc_se, value);
+ 	}
+ 
+ 	if (result) {
+@@ -1519,7 +1522,7 @@ static inline int __setscheduler_uclamp(struct task_struct *p,
+ 			: p->uclamp[UCLAMP_MAX].value;
+ 
+ 		if (upper_bound == UCLAMP_NOT_VALID)
+-			upper_bound = SCHED_CAPACITY_SCALE;
++			upper_bound = 100;
+ 		if (attr->sched_util_min > upper_bound) {
+ 			result = -EINVAL;
+ 			goto done;
+@@ -1541,7 +1544,7 @@ static inline int __setscheduler_uclamp(struct task_struct *p,
+ 		if (lower_bound == UCLAMP_NOT_VALID)
+ 			lower_bound = 0;
+ 		if (attr->sched_util_max < lower_bound ||
+-		    attr->sched_util_max > SCHED_CAPACITY_SCALE) {
++		    attr->sched_util_max > 100) {
+ 			result = -EINVAL;
+ 			goto done;
+ 		}
+@@ -1559,12 +1562,12 @@ static inline int __setscheduler_uclamp(struct task_struct *p,
+ 	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+ 		uc_se = &p->uclamp[UCLAMP_MIN];
+ 		uclamp_group_get(p, NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
+-				 uc_se, attr->sched_util_min);
++				 uc_se, scale_from_percent(attr->sched_util_min));
+ 	}
+ 	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+ 		uc_se = &p->uclamp[UCLAMP_MAX];
+ 		uclamp_group_get(p, NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
+-				 uc_se, attr->sched_util_max);
++				 uc_se, scale_from_percent(attr->sched_util_max));
+ 	}
+ 
+ done:
+@@ -5648,8 +5651,8 @@ SYSCALL_DEFINE4(sched_getattr, pid_t, pid, struct sched_attr __user *, uattr,
+ 		attr.sched_nice = task_nice(p);
+ 
+ #ifdef CONFIG_UCLAMP_TASK
+-	attr.sched_util_min = uclamp_task_value(p, UCLAMP_MIN);
+-	attr.sched_util_max = uclamp_task_value(p, UCLAMP_MAX);
++	attr.sched_util_min = scale_to_percent(uclamp_task_value(p, UCLAMP_MIN));
++	attr.sched_util_max = scale_to_percent(uclamp_task_value(p, UCLAMP_MAX));
+ #endif
+ 
+ 	rcu_read_unlock();
+@@ -7509,8 +7512,10 @@ static int cpu_util_min_write_u64(struct cgroup_subsys_state *css,
+ 	int ret = -EINVAL;
+ 	int group_id;
+ 
+-	if (min_value > SCHED_CAPACITY_SCALE)
++	/* Check range and scale to internal representation */
++	if (min_value > 100)
+ 		return -ERANGE;
++	min_value = scale_from_percent(min_value);
+ 
+ 	mutex_lock(&uclamp_mutex);
+ 	rcu_read_lock();
+@@ -7555,8 +7560,10 @@ static int cpu_util_max_write_u64(struct cgroup_subsys_state *css,
+ 	int ret = -EINVAL;
+ 	int group_id;
+ 
+-	if (max_value > SCHED_CAPACITY_SCALE)
++	/* Check range and scale to internal representation */
++	if (max_value > 100)
+ 		return -ERANGE;
++	max_value = scale_from_percent(max_value);
+ 
+ 	mutex_lock(&uclamp_mutex);
+ 	rcu_read_lock();
+@@ -7607,7 +7614,7 @@ static inline u64 cpu_uclamp_read(struct cgroup_subsys_state *css,
+ 		: tg->uclamp[clamp_id].value;
+ 	rcu_read_unlock();
+ 
+-	return util_clamp;
++	return scale_to_percent(util_clamp);
+ }
+ 
+ static u64 cpu_util_min_read_u64(struct cgroup_subsys_state *css,
 -- 
 2.18.0
