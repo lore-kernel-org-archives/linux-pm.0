@@ -1,284 +1,338 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] of: thermal: Allow multiple devices to share cooling map
-Date: Mon, 6 Aug 2018 11:05:52 -0700
-Message-ID: <20180806180551.GA4760@localhost.localdomain>
-References: <cover.1530766981.git.viresh.kumar@linaro.org>
- <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v5 05/12] PM / devfreq: Add support for policy notifiers
+Date: Mon, 6 Aug 2018 11:46:38 -0700
+Message-ID: <20180806184638.GA160295@google.com>
+References: <5B3C6C2A.1070205@samsung.com>
+ <20180706175301.GG129942@google.com>
+ <5399c191-e140-e2b8-629b-72ddfbf99b0f@samsung.com>
+ <20180716175050.GZ129942@google.com>
+ <20180731193953.GH68975@google.com>
+ <5B610B48.4030802@samsung.com>
+ <20180801170824.GJ68975@google.com>
+ <5B626563.1090302@samsung.com>
+ <20180802231343.GS68975@google.com>
+ <5B639A49.3060804@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
+In-Reply-To: <5B639A49.3060804@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>, Douglas Anderson <dianders@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, Benson Leung <bleung@chromium.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi Chanwoo,
 
-On Tue, Jul 17, 2018 at 04:24:16PM +0530, Viresh Kumar wrote:
-> A cooling map entry may now contain a list of phandles and their
-> arguments representing multiple devices which share the trip point.
+On Fri, Aug 03, 2018 at 08:56:57AM +0900, Chanwoo Choi wrote:
+> Hi Matthias,
 > 
-> This patch updates the thermal OF core to parse them properly.
-
-I am mostly fine with the patch idea, specially because we wont be
-breaking existing DT blobs out there.
-
-See comment below.
-
+> On 2018년 08월 03일 08:13, Matthias Kaehlcke wrote:
+> > Hi Chanwoo,
+> > 
+> > On Thu, Aug 02, 2018 at 10:58:59AM +0900, Chanwoo Choi wrote:
+> >> Hi Matthias,
+> >>
+> >> On 2018년 08월 02일 02:08, Matthias Kaehlcke wrote:
+> >>> Hi Chanwoo,
+> >>>
+> >>> On Wed, Aug 01, 2018 at 10:22:16AM +0900, Chanwoo Choi wrote:
+> >>>> On 2018년 08월 01일 04:39, Matthias Kaehlcke wrote:
+> >>>>> On Mon, Jul 16, 2018 at 10:50:50AM -0700, Matthias Kaehlcke wrote:
+> >>>>>> On Thu, Jul 12, 2018 at 05:44:33PM +0900, Chanwoo Choi wrote:
+> >>>>>>> Hi Matthias,
+> >>>>>>>
+> >>>>>>> On 2018년 07월 07일 02:53, Matthias Kaehlcke wrote:
+> >>>>>>>> Hi Chanwoo,
+> >>>>>>>>
+> >>>>>>>> On Wed, Jul 04, 2018 at 03:41:46PM +0900, Chanwoo Choi wrote:
+> >>>>>>>>
+> >>>>>>>>> Firstly,
+> >>>>>>>>> I'm not sure why devfreq needs the devfreq_verify_within_limits() function.
+> >>>>>>>>>
+> >>>>>>>>> devfreq already used the OPP interface as default. It means that
+> >>>>>>>>> the outside of 'drivers/devfreq' can disable/enable the frequency
+> >>>>>>>>> such as drivers/thermal/devfreq_cooling.c. Also, when some device
+> >>>>>>>>> drivers disable/enable the specific frequency, the devfreq core
+> >>>>>>>>> consider them.
+> >>>>>>>>>
+> >>>>>>>>> So, devfreq doesn't need to devfreq_verify_within_limits() because
+> >>>>>>>>> already support some interface to change the minimum/maximum frequency
+> >>>>>>>>> of devfreq device. 
+> >>>>>>>>>
+> >>>>>>>>> In case of cpufreq subsystem, cpufreq only provides 'cpufreq_verify_with_limits()'
+> >>>>>>>>> to change the minimum/maximum frequency of cpu. some device driver cannot
+> >>>>>>>>> change the minimum/maximum frequency through OPP interface.
+> >>>>>>>>>
+> >>>>>>>>> But, in case of devfreq subsystem, as I explained already, devfreq support
+> >>>>>>>>> the OPP interface as default way. devfreq subsystem doesn't need to add
+> >>>>>>>>> other way to change the minimum/maximum frequency.
+> >>>>>>>>
+> >>>>>>>> Using the OPP interface exclusively works as long as a
+> >>>>>>>> enabling/disabling of OPPs is limited to a single driver
+> >>>>>>>> (drivers/thermal/devfreq_cooling.c). When multiple drivers are
+> >>>>>>>> involved you need a way to resolve conflicts, that's the purpose of
+> >>>>>>>> devfreq_verify_within_limits(). Please let me know if there are
+> >>>>>>>> existing mechanisms for conflict resolution that I overlooked.
+> >>>>>>>>
+> >>>>>>>> Possibly drivers/thermal/devfreq_cooling.c could be migrated to use
+> >>>>>>>> devfreq_verify_within_limits() instead of the OPP interface if
+> >>>>>>>> desired, however this seems beyond the scope of this series.
+> >>>>>>>
+> >>>>>>> Actually, if we uses this approach, it doesn't support the multiple drivers too.
+> >>>>>>> If non throttler drivers uses devfreq_verify_within_limits(), the conflict
+> >>>>>>> happen.
+> >>>>>>
+> >>>>>> As long as drivers limit the max freq there is no conflict, the lowest
+> >>>>>> max freq wins. I expect this to be the usual case, apparently it
+> >>>>>> worked for cpufreq for 10+ years.
+> >>>>>>
+> >>>>>> However it is correct that there would be a conflict if a driver
+> >>>>>> requests a min freq that is higher than the max freq requested by
+> >>>>>> another. In this case devfreq_verify_within_limits() resolves the
+> >>>>>> conflict by raising p->max to the min freq. Not sure if this is
+> >>>>>> something that would ever occur in practice though.
+> >>>>>>
+> >>>>>> If we are really concerned about this case it would also be an option
+> >>>>>> to limit the adjustment to the max frequency.
+> >>>>>>
+> >>>>>>> To resolve the conflict for multiple device driver, maybe OPP interface
+> >>>>>>> have to support 'usage_count' such as clk_enable/disable().
+> >>>>>>
+> >>>>>> This would require supporting negative usage count values, since a OPP
+> >>>>>> should not be enabled if e.g. thermal enables it but the throttler
+> >>>>>> disabled it or viceversa.
+> >>>>>>
+> >>>>>> Theoretically there could also be conflicts, like one driver disabling
+> >>>>>> the higher OPPs and another the lower ones, with the outcome of all
+> >>>>>> OPPs being disabled, which would be a more drastic conflict resolution
+> >>>>>> than that of devfreq_verify_within_limits().
+> >>>>>>
+> >>>>>> Viresh, what do you think about an OPP usage count?
+> >>>>>
+> >>>>> Ping, can we try to reach a conclusion on this or at least keep the
+> >>>>> discussion going?
+> >>>>>
+> >>>>> Not that it matters, but my preferred solution continues to be
+> >>>>> devfreq_verify_within_limits(). It solves conflicts in some way (which
+> >>>>> could be adjusted if needed) and has proven to work in practice for
+> >>>>> 10+ years in a very similar sub-system.
+> >>>>
+> >>>> It is not true. Current cpufreq subsystem doesn't support external OPP
+> >>>> control to enable/disable the OPP entry. If some device driver
+> >>>> controls the OPP entry of cpufreq driver with opp_disable/enable(),
+> >>>> the operation is not working. Because cpufreq considers the limit
+> >>>> through 'cpufreq_verify_with_limits()' only.
+> >>>
+> >>> Ok, we can probably agree that using cpufreq_verify_with_limits()
+> >>> exclusively seems to have worked well for cpufreq, and that in their
+> >>> overall purpose cpufreq and devfreq are similar subsystems.
+> >>>
+> >>> The current throttler series with devfreq_verify_within_limits() takes
+> >>> the enabled OPPs into account, the lowest and highest OPP are used as
+> >>> a starting point for the frequency adjustment and (in theory) the
+> >>> frequency range should only be narrowed by
+> >>> devfreq_verify_within_limits().
+> >>>
+> >>>> As I already commented[1], there is different between cpufreq and devfreq.
+> >>>> [1] https://lkml.org/lkml/2018/7/4/80
+> >>>>
+> >>>> Already, subsystem already used OPP interface in order to control
+> >>>> specific OPP entry. I don't want to provide two outside method
+> >>>> to control the frequency of devfreq driver. It might make the confusion.
+> >>>
+> >>> I understand your point, it would indeed be preferable to have a
+> >>> single method. However I'm not convinced that the OPP interface is
+> >>> a suitable solution, as I exposed earlier in this thread (quoted
+> >>> below).
+> >>>
+> >>> I would like you to at least consider the possibility of changing
+> >>> drivers/thermal/devfreq_cooling.c to devfreq_verify_within_limits().
+> >>> Besides that it's not what is currently used, do you see any technical
+> >>> concerns that would make devfreq_verify_within_limits() an unsuitable
+> >>> or inferior solution?
+> >>
+> >> As we already discussed, devfreq_verify_within_limits() doesn't support
+> >> the multiple outside controllers (e.g., devfreq-cooling.c).
+> > 
+> > That's incorrect, its purpose is precisely that.
+> > 
+> > Are you suggesting that cpufreq with its use of
+> > cpufreq_verify_within_limits() (the inspiration for
+> > devfreq_verify_within_limits()) is broken? It is used by cpu_cooling.c
+> > and other drivers when receiving a CPUFREQ_ADJUST event, essentially
+> > what I am proposing with DEVFREQ_ADJUST.
+> > 
+> > Could you elaborate why this model wouldn't work for devfreq? "OPP
 > 
-> Tested on Hikey960.
+> I don't mention that this model is not working. As I already commented[1],
+> devfreq used OPP interface to control OPP entry on outside of devfreq driver.
+> Because devfreq used OPP interface, I hope to provide only OPP method
+> to control the frequency on outside of devfreq.
+> [1] https://lkml.org/lkml/2018/7/4/80
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> This is a follow up patch to the DT bindings patchset:
+> > interface is mandatory for devfreq" isn't really a technical argument,
+> > is it mandatory for any other reason than that it is the interface
+> > that is currently used?
 > 
-> https://lkml.kernel.org/r/cover.1530766981.git.viresh.kumar@linaro.org
+> In case of controlling the frequency, OPP interface is mandatory for devfreq.
 > 
->  drivers/thermal/of-thermal.c | 140 +++++++++++++++++++++++++----------
->  1 file changed, 102 insertions(+), 38 deletions(-)
+> cpufreq used cpufreq_verify_within_limit(). If outside driver disable
+> specific OPP entry, cpufreq don't consider them because after getting the frequency
+> from devicetree, cpufreq don't use the OPP interface for disabling/enabling.
+> Only if outside driver used cpufreq_verify_within_limit(), cpufreq consider
+> the range of minimum/maximum frequency. cpufreq core doesn't use 'dev_pm_opp_find_*'
+> function. It means that cpufreq code doesn't consider the statue of opp_diable/enable.
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 977a8307fbb1..79c06c4c861b 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -19,22 +19,33 @@
->  /***   Private data structures to represent thermal device tree data ***/
->  
->  /**
-> - * struct __thermal_bind_param - a match between trip and cooling device
-> + * struct __thermal_cooling_bind_param - a cooling device for a trip point
->   * @cooling_device: a pointer to identify the referred cooling device
-> - * @trip_id: the trip point index
-> - * @usage: the percentage (from 0 to 100) of cooling contribution
->   * @min: minimum cooling state used at this trip point
->   * @max: maximum cooling state used at this trip point
->   */
->  
-> -struct __thermal_bind_params {
-> +struct __thermal_cooling_bind_param {
->  	struct device_node *cooling_device;
-> -	unsigned int trip_id;
-> -	unsigned int usage;
->  	unsigned long min;
->  	unsigned long max;
->  };
->  
-> +/**
-> + * struct __thermal_bind_param - a match between trip and cooling device
-> + * @tcbp: a pointer to an array of cooling devices
-> + * @count: number of elements in array
-> + * @trip_id: the trip point index
-> + * @usage: the percentage (from 0 to 100) of cooling contribution
-> + */
-> +
-> +struct __thermal_bind_params {
-> +	struct __thermal_cooling_bind_param *tcbp;
-> +	unsigned int count;
-> +	unsigned int trip_id;
-> +	unsigned int usage;
-> +};
+> devfreq used OPP interface.  If outside driver disable specific OPP entry, devfreq consider them. 
 
-Do you mind elaborating why you needed to do this split and adding a new
-struct? More important, please describe in your commit message.
+What exactly is this 'outside driver' you are referring? The driver
+that 'owns' the devfreq device, e.g. a GPU driver? Or just any
+non-devfreq driver, like devfreq-cooling.c?
 
-> +
->  /**
->   * struct __thermal_zone - internal representation of a thermal zone
->   * @mode: current thermal zone device mode (enabled/disabled)
-> @@ -192,25 +203,31 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
->  			   struct thermal_cooling_device *cdev)
->  {
->  	struct __thermal_zone *data = thermal->devdata;
-> -	int i;
-> +	struct __thermal_bind_params *tbp;
-> +	struct __thermal_cooling_bind_param *tcbp;
-> +	int i, j;
->  
->  	if (!data || IS_ERR(data))
->  		return -ENODEV;
->  
->  	/* find where to bind */
->  	for (i = 0; i < data->num_tbps; i++) {
-> -		struct __thermal_bind_params *tbp = data->tbps + i;
-> +		tbp = data->tbps + i;
->  
-> -		if (tbp->cooling_device == cdev->np) {
-> -			int ret;
-> +		for (j = 0; j < tbp->count; j++) {
-> +			tcbp = tbp->tcbp + j;
->  
-> -			ret = thermal_zone_bind_cooling_device(thermal,
-> +			if (tcbp->cooling_device == cdev->np) {
-> +				int ret;
-> +
-> +				ret = thermal_zone_bind_cooling_device(thermal,
->  						tbp->trip_id, cdev,
-> -						tbp->max,
-> -						tbp->min,
-> +						tcbp->max,
-> +						tcbp->min,
->  						tbp->usage);
-> -			if (ret)
-> -				return ret;
-> +				if (ret)
-> +					return ret;
-> +			}
->  		}
->  	}
->  
-> @@ -221,22 +238,28 @@ static int of_thermal_unbind(struct thermal_zone_device *thermal,
->  			     struct thermal_cooling_device *cdev)
->  {
->  	struct __thermal_zone *data = thermal->devdata;
-> -	int i;
-> +	struct __thermal_bind_params *tbp;
-> +	struct __thermal_cooling_bind_param *tcbp;
-> +	int i, j;
->  
->  	if (!data || IS_ERR(data))
->  		return -ENODEV;
->  
->  	/* find where to unbind */
->  	for (i = 0; i < data->num_tbps; i++) {
-> -		struct __thermal_bind_params *tbp = data->tbps + i;
-> +		tbp = data->tbps + i;
-> +
-> +		for (j = 0; j < tbp->count; j++) {
-> +			tcbp = tbp->tcbp + j;
->  
-> -		if (tbp->cooling_device == cdev->np) {
-> -			int ret;
-> +			if (tcbp->cooling_device == cdev->np) {
-> +				int ret;
->  
-> -			ret = thermal_zone_unbind_cooling_device(thermal,
-> -						tbp->trip_id, cdev);
-> -			if (ret)
-> -				return ret;
-> +				ret = thermal_zone_unbind_cooling_device(thermal,
-> +							tbp->trip_id, cdev);
-> +				if (ret)
-> +					return ret;
-> +			}
->  		}
->  	}
->  
-> @@ -652,8 +675,9 @@ static int thermal_of_populate_bind_params(struct device_node *np,
->  					   int ntrips)
->  {
->  	struct of_phandle_args cooling_spec;
-> +	struct __thermal_cooling_bind_param *__tcbp;
->  	struct device_node *trip;
-> -	int ret, i;
-> +	int ret, i, count;
->  	u32 prop;
->  
->  	/* Default weight. Usage is optional */
-> @@ -680,20 +704,44 @@ static int thermal_of_populate_bind_params(struct device_node *np,
->  		goto end;
->  	}
->  
-> -	ret = of_parse_phandle_with_args(np, "cooling-device", "#cooling-cells",
-> -					 0, &cooling_spec);
-> -	if (ret < 0) {
-> +	count = of_count_phandle_with_args(np, "cooling-device",
-> +					   "#cooling-cells");
-> +	if (!count) {
->  		pr_err("missing cooling_device property\n");
+If it's the first case then this isn't currently working as intended
+when the devfreq device is used as a cooling device, since the cooling
+device would overwrite the state set by the 'owner' in
+partition_enable_opps().
 
-Probably the above error message deserves a better fit to the current
-situation. Maybe:
-+  		pr_err("Add a cooling_device property with at least one device\n");
-
->  		goto end;
->  	}
-> -	__tbp->cooling_device = cooling_spec.np;
-> -	if (cooling_spec.args_count >= 2) { /* at least min and max */
-> -		__tbp->min = cooling_spec.args[0];
-> -		__tbp->max = cooling_spec.args[1];
-> -	} else {
-> -		pr_err("wrong reference to cooling device, missing limits\n");
-> +
-> +	__tcbp = kcalloc(count, sizeof(*__tcbp), GFP_KERNEL);
-> +	if (!__tcbp)
-> +		goto end;
-> +
-> +	for (i = 0; i < count; i++) {
-> +		ret = of_parse_phandle_with_args(np, "cooling-device",
-> +				"#cooling-cells", i, &cooling_spec);
-> +		if (ret < 0) {
-> +			pr_err("missing cooling_device property\n");
-
-Here is a wrongly written cooling_device phandle, no?
-
-> +			goto free_tcbp;
-> +		}
-> +
-> +		__tcbp[i].cooling_device = cooling_spec.np;
-> +
-> +		if (cooling_spec.args_count >= 2) { /* at least min and max */
-> +			__tcbp[i].min = cooling_spec.args[0];
-> +			__tcbp[i].max = cooling_spec.args[1];
-> +		} else {
-> +			pr_err("wrong reference to cooling device, missing limits\n");
-> +		}
->  	}
->  
-> +	__tbp->tcbp= __tcbp;
-> +	__tbp->count = count;
-> +
-> +	goto end;
-> +
-> +free_tcbp:
-> +	for (i = i - 1; i >= 0; i--)
-> +		of_node_put(__tcbp[i].cooling_device);
-> +	kfree(__tcbp);
->  end:
->  	of_node_put(trip);
->  
-> @@ -900,8 +948,16 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
->  	return tz;
->  
->  free_tbps:
-> -	for (i = i - 1; i >= 0; i--)
-> -		of_node_put(tz->tbps[i].cooling_device);
-> +	for (i = i - 1; i >= 0; i--) {
-> +		struct __thermal_bind_params *tbp = tz->tbps + i;
-> +		int j;
-> +
-> +		for (j = 0; j < tbp->count; j++)
-> +			of_node_put(tbp->tcbp[j].cooling_device);
-> +
-> +		kfree(tbp->tcbp);
-> +	}
-> +
->  	kfree(tz->tbps);
->  free_trips:
->  	for (i = 0; i < tz->ntrips; i++)
-> @@ -917,10 +973,18 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
->  
->  static inline void of_thermal_free_zone(struct __thermal_zone *tz)
->  {
-> -	int i;
-> +	struct __thermal_bind_params *tbp;
-> +	int i, j;
-> +
-> +	for (i = 0; i < tz->num_tbps; i++) {
-> +		tbp = tz->tbps + i;
-> +
-> +		for (j = 0; j < tbp->count; j++)
-> +			of_node_put(tbp->tcbp[j].cooling_device);
-> +
-> +		kfree(tbp->tcbp);
-> +	}
->  
-> -	for (i = 0; i < tz->num_tbps; i++)
-> -		of_node_put(tz->tbps[i].cooling_device);
->  	kfree(tz->tbps);
->  	for (i = 0; i < tz->ntrips; i++)
->  		of_node_put(tz->trips[i].np);
-> -- 
-> 2.18.0.rc1.242.g61856ae69a2c
+> When find available minimum frequency, devfreq used OPP interface. (find_available_min_freq)
+> When find available maximum frequency, devfreq used OPP interface. (find_available_max_freq)
+> When make freq_table of devfreq device, devfreq used OPP interface. (set_freq_table)
+> When outside driver disable or enable OPP entry, devfreq receives the notification
+>  from OPP interface and then update the scaling_min_freq/scaling_max_freq by using
+>  OPP interface. (devfreq_notifier_call)
+> At this point of using scaling_min_freq/scaling_max_freq on devfreq, it indicates
+> that devfreq used OPP interface because devfref tried to find scaling_min_freq/scaling_max_freq
+> through OPP interface.
 > 
+> If outside driver use OPP interface in order to control frequency,
+> devfreq core is well working without any modification of devfreq
+> core.
+
+Thanks for elaborating!
+
+I understand that this is how it currently works, but unless I'm
+missing something about the outside driver disabling an OPP I still
+essentially read this as 'the OPP interface is mandatory because it's
+what is currently used by the devfreq core to limit the frequency
+range', rather than that using the OPP interface allows to provide a
+particular feature or is inherently better in some other way.
+
+I don't propose to completely strip the OPP interface out of devfreq,
+but mainly to switch devfreq-cooling.c to
+devfreq_verify_within_limits() to avoid having two mechanisms for
+limiting the frequency range. Besides being simpler this would allow
+to support the case where the 'owner' disables a certain OPP and
+devfreq respects that. The code required in the devfreq core to
+support this would be minimal (this patch).
+
+> >> After you are suggesting the throttler core, there are at least two
+> >> outside controllers (e.g., devfreq-cooling.c and throttler driver).
+> >> As I knew the problem about conflict, I cannot agree the temporary
+> >> method. OPP interface is mandatory for devfreq in order to control
+> >> the OPP (frequency/voltage). In this situation, we have to try to
+> >> find the method through OPP interface.
+> > 
+> > What do you mean with "temporary method"?
+> 
+> this expression might be not proper. Please ignore this expression.
+> 
+> > 
+> > We can try to find a method through the OPP interface, but at this
+> > point I'm not convinced that it is technically necessary or even
+> > preferable.
+> 
+> I replied it about this as following.
+> 
+> > 
+> > Another inconvenient of the OPP approach for both devfreq-cooling.c
+> > and the throttler is that they have to bother with disabling all OPPs
+> > above/below the max/min (they don't/shouldn't have to care), instead
+> > of just telling devfreq the max/min.
+> 
+> I think it doesn't matter. We can enable/disable the OPP entry by traversing.
+> partition_enable_opps() in drivers/thermal/devfreq-cools.c have already done so.
+> 
+> > 
+> >> We can refer to regulator/clock. Multiple device driver can use
+> >> the regulator/clock without any problem. I think that usage of OPP
+> >> is similiar with regulator/clock. As you mentioned, maybe OPP
+> >> would handle the negative count. Although opp_enable/opp_disable()
+> >> have to handle the negative count and opp_enable/opp_disable()
+> >> can support the multiple usage from device drivers, I think that
+> >> this approach is right.
+> > 
+> > The regulator/clock approach with the typical usage counts seems more
+> > intuitive to me, personally I wouldn't write an interface with
+> > negative usage count if I could reasonably avoid it.
+> 
+> I think the use of negative usage count is not problem if it's required.
+> 
+> > 
+> >>>> I want to use only OPP interface to enable/disable frequency
+> >>>> even if we have to modify the OPP interface.
+> >>>
+> >>> These are the concerns I raised earlier about a solution with OPP
+> >>> usage counts:
+> >>>
+> >>> "This would require supporting negative usage count values, since a OPP
+> >>> should not be enabled if e.g. thermal enables it but the throttler
+> >>> disabled it or viceversa.
+> >>
+> >> Already replied	about negative usage count. I think that negative usage count
+> >> is not problem if this approach could resolve the issue.
+> >>
+> >>>
+> >>> Theoretically there could also be conflicts, like one driver disabling
+> >>> the higher OPPs and another the lower ones, with the outcome of all
+> >>> OPPs being disabled, which would be a more drastic conflict resolution
+> >>> than that of devfreq_verify_within_limits()."
+> >>>
+> >>> What do you think about these points?
+> >>
+> >> It depends on how to use OPP interface on multiple device driver.
+> >> Even if devfreq/opp provides the control method, outside device driver
+> >> are misusing them. It is problem of user.
+> > 
+> > I wouldn't call it misusing if two independent drivers take
+> > contradictory actions on an interface that doesn't provide
+> > arbitration. How can driver A know that it shouldn't disable OPPs a, b
+> > and c because driver B disabled d, e and f? Who is misusing the
+> > interface, driver A or driver B?
+> 
+> Each outside driver has their own throttling policy to control OPP entries.
+> They don't care the requirement of other driver and cannot know the requirement
+> of other driver. devfreq core can only recognize them.
+> 
+> > 
+> >> Instead, if we use the OPP interface, we can check why OPP entry
+> >> is disabled or enabled through usage count.
+> >>
+> >>>
+> >>> The negative usage counts aren't necessarily a dealbreaker in a
+> >>> technical sense, though I'm not a friend of quirky interfaces that
+> >>> don't behave like a typical user would expect (e.g. an OPP isn't
+> >>> necessarily enabled after dev_pm_opp_enable()).
+> >>>
+> >>> I can sent an RFC with OPP usage counts, though due to the above
+> >>> concerns I have doubts it will be well received.
+> >>
+> >> Please add me to Cc list.
+> > 
+> > Will do
+> 
+> OK. Thanks.
+
+This might take a bit for a few reasons. Before posting anything I
+would like to experiment a bit with it and find time to do so between
+other tasks (admittedly I'm also procrastinating a bit, because I'm
+unconvinced). And I will be out of office for two weeks starting
+nextweek, it's probably not the best to post and then disapear from
+the discussion. I might post the RFC if I can advance it in the next
+48 hours, otherwise I think it is better to delay until I'm back from
+vacation.
+
+Cheers
+
+Matthias
