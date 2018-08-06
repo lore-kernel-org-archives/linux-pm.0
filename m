@@ -1,61 +1,60 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] Revert "cpufreq: intel_pstate: Fix ->set_policy()
- interface for no_turbo"
-Date: Mon, 06 Aug 2018 09:49:29 -0700
-Message-ID: <cd2287153b369d88cc240068adc7d341ef675acf.camel@linux.intel.com>
-References: <20180804152932.3861-1-gabriele.mzt@gmail.com>
-         <ccf46de4-d75e-306b-9554-9d33f68d2379@gmail.com>
-         <CAJZ5v0iwhVu6PwztsbN8cYmQtnjD2SyFkazkObc1o-1JX6GO5g@mail.gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Mon, 6 Aug 2018 09:50:20 -0700
+Message-ID: <d8a3d533-84df-bfc7-96ae-790141be4926@infradead.org>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iwhVu6PwztsbN8cYmQtnjD2SyFkazkObc1o-1JX6GO5g@mail.gmail.com>
+In-Reply-To: <20180806163946.28380-2-patrick.bellasi@arm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Gabriele Mazzotta <gabriele.mzt@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-08-06 at 10:30 +0200, Rafael J. Wysocki wrote:
-> On Sat, Aug 4, 2018 at 7:31 PM, Gabriele Mazzotta
-> <gabriele.mzt@gmail.com> wrote:
-> > On 04/08/2018 17:29, Gabriele Mazzotta wrote:
-> > > This change does not take into account that some BIOSes change
-> > > MSR_IA32_MISC_ENABLE_TURBO_DISABLE depending on the power source.
-> > > If the turbo is disabled when the system boots, policy.max_freq
-> > > is set to pstate.max_pstate. However, if the BIOS later enables
-> > > the turbo, the CPU will never be able to run at
-> > > pstate.turbo_pstate.
-> > > 
-> > > Since now intel_pstate_set_policy() does its calculations using
-> > > pstate.max_freq and pstate.turbo_freq, we can always calculate
-> > > cpuinfo.max_freq using pstate.turbo_pstate, thus allowing system
-> > > with varying MSR_IA32_MISC_ENABLE_TURBO_DISABLE to run at full
-> > > speed when the turbo is enabled.
-> 
-> Well, the problem with this approach is that always using
-> pstate.turbo_pstate as the max causes the governor to overestimate
-> the
-> target frequency when the turbo range is not available (the target
-> depends on the width of the entire available P-state range including
-> turbo, so if the turbo range is not available, the number take into
-> that computation is too large).
-> 
-> Are we expected to get notified when the BIOS updates
-> MSR_IA32_MISC_ENABLE_TURBO_DISABLE?
+Hi,
 
-Let's try this:
-- boot with kernel command line 
+On 08/06/2018 09:39 AM, Patrick Bellasi wrote:
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 041f3a022122..1d45a6877d6f 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
+>  config GENERIC_SCHED_CLOCK
+>  	bool
+>  
+> +menu "Scheduler features"
+> +
+> +config UCLAMP_TASK
+> +	bool "Enable utilization clamping for RT/FAIR tasks"
+> +	depends on CPU_FREQ_GOV_SCHEDUTIL
+> +	default false
 
-intel_pstate=support_acpi_ppc dyndbg="file processor_perflib.c +p"
-dyndbg="file intel_pstate.c +p"
+	default n
+but just omit the line completely since "n" is already the default.
 
-and send dmesg after you change power sources.
+> +	help
+> +	  This feature enables the scheduler to track the clamped utilization
+> +	  of each CPU based on RUNNABLE tasks currently scheduled on that CPU.
+> +
+> +	  When this option is enabled, the user can specify a min and max CPU
+> +          bandwidth which is allowed for a task.
+> +	  The max bandwidth allows to clamp the maximum frequency a task can
+> +	  use, while the min bandwidth allows to define a minimum frequency a
+> +          task will always use.
 
-- Also try with
-intel_pstate=disable dyndbg="file processor_perflib.c +p"
+Please clean up the indentation above to use one tab + 2 spaces on all lines.
 
-and send dmesg.
+> +
+> +	  If in doubt, say N.
+> +
+> +endmenu
 
-Thanks,
-Srinivas
+
+thanks,
+-- 
+~Randy
