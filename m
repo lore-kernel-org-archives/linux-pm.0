@@ -1,91 +1,70 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Mon, 6 Aug 2018 18:07:21 +0800
-Message-ID: <20180806100721.GA14905@chenyu-desktop>
-References: <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
- <20180723162302.GA4503@sandybridge-desktop>
- <1532590246.7411.3.camel@suse.com>
- <20180806075754.GA12124@chenyu-desktop>
- <20180806094752.GH27062@linux-l9pv.suse>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point
+ indicator
+Date: Mon, 6 Aug 2018 12:08:07 +0200
+Message-ID: <68689fcb-3cb8-4685-58ef-0bec84be2047@arm.com>
+References: <20180802153035.vjtmqwdwujvt7ojs@queper01-lin>
+ <CAKfTPtCGGqykN027kxK+chvKvCpNu4bYYdvfZJ+3_7YzT3Utfg@mail.gmail.com>
+ <20180802160009.uhwwj3tqrqmv7q5a@queper01-lin>
+ <CAKfTPtB_tWgOPCB3q2Q2rESKczTPGBDUojcXDY7uP8YTQddBMg@mail.gmail.com>
+ <20180802161027.v2ctgscuc4uxbb7u@queper01-lin>
+ <CAKfTPtDtaF9Qs4NWkKWUSr8Ryi-ScYNmPyacocPQUPxT00XAYg@mail.gmail.com>
+ <20180802165924.7ywgoxj2jwftxycz@queper01-lin>
+ <CAKfTPtDsG4FJy5xBO8+6pJzehEM668=SZ4yQ-szVTduofN3QZg@mail.gmail.com>
+ <20180803081850.hj7bp5ognuywapmd@queper01-lin>
+ <CAKfTPtDkJY=JYicZk8sM9_mJ-iq+Jwse0oVRbW=wpxXKKnEoeQ@mail.gmail.com>
+ <20180803155547.sxlhxpmhwcoappit@queper01-lin>
+ <CAKfTPtBT-p-Z0EneirfOTwUw=5jEeDGa+4_EE4ogi2Ht7GU9Bg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806094752.GH27062@linux-l9pv.suse>
+In-Reply-To: <CAKfTPtBT-p-Z0EneirfOTwUw=5jEeDGa+4_EE4ogi2Ht7GU9Bg@mail.gmail.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: Oliver Neukum <oneukum@suse.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>, Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org, Juri Lelli <juri.lelli@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 06, 2018 at 05:48:04PM +0800, joeyli wrote:
-> On Mon, Aug 06, 2018 at 03:57:54PM +0800, Yu Chen wrote:
-> > Hi Oliver,
-> > On Thu, Jul 26, 2018 at 09:30:46AM +0200, Oliver Neukum wrote:
-> > > On Di, 2018-07-24 at 00:23 +0800, Yu Chen wrote:
-> > > > 
-> > > > Good point, we once tried to generate key in kernel, but people
-> > > > suggest to generate key in userspace and provide it to the
-> > > > kernel, which is what ecryptfs do currently, so it seems this
-> > > > should also be safe for encryption in kernel.
-> > > > https://www.spinics.net/lists/linux-crypto/msg33145.html
-> > > > Thus Chun-Yi's signature can use EFI key and both the key from
-> > > > user space.
-> 
-> As Ard and James's comments, the EFI key can not be accepted:
-> 	https://lkml.org/lkml/2018/8/5/135
-> 
-> The lower entropy problem can be covered by RDRAND or EFI random
-> protocol. But the key point is that we can not fully trust manufacturer.
-> And, the secure boot relies on Microsoft's business interests. It's
-> not designed for confidentiality.
-> 
-> So I will move to TPM trusted key + encrypted key.
->
-OK.
-> > > 
-> > > Hi,
-> > > 
-> > > ecryptfs can trust user space. It is supposed to keep data
-> > > safe while the system is inoperative.
-> > Humm, I did not quite get the point here, let's take fscrypt
-> > for example, the kernel gets user generated key from user space,
-> > and uses per-inode nonce(random bytes) as the master key to
-> > do a KDF(key derivation function) on user provided key, and uses
-> > that key for encryption. We can also added similar mechanism
-> > to generate the key in kernel space but the key should be
-> > original from user's provided key(password derived), because
-> > the security boot/signature mechanism could not cover the case
-> > that, two different users could resume to each other's context
-> > because there isn't any certification during resume if it is
-> > on the same physical hardware.
-> >
-> 
-> Sounds there have two different purposes. One is to prevent that
-> the secret in snapshop image be detected/changed outside the machine.
-> Another one try to prevent that B user resumes to A user's context
-> on the same machine.
-> 
-Yes, it aims to prevent B from resuming to A's context no matter
-whether it is on the same hardware or not, and prevents others
-from getting the plain content on the disk.
-> In the case of B resumes A's context, I still think that the attacker
-> must physical accesses the machine. Which means that it's out of EFI
-> secure boot's design. Could you please explan the detail for the attack?
-> 
-May I know what attack does it refer to? please refer to another mail I sent to Pavel,
-a simple use case has been described.
-> So I think that the password from user space is for user authentication,
-> and the TPM trusted key is for snapshot image encryption/verification.    
-> 
-password generated key could also be used as encryption.
+On 08/06/2018 10:40 AM, Vincent Guittot wrote:
+> On Fri, 3 Aug 2018 at 17:55, Quentin Perret <quentin.perret@arm.com> wrote:
+>>
+>> On Friday 03 Aug 2018 at 15:49:24 (+0200), Vincent Guittot wrote:
+>>> On Fri, 3 Aug 2018 at 10:18, Quentin Perret <quentin.perret@arm.com> wrote:
+>>>>
+>>>> On Friday 03 Aug 2018 at 09:48:47 (+0200), Vincent Guittot wrote:
+>>>>> On Thu, 2 Aug 2018 at 18:59, Quentin Perret <quentin.perret@arm.com> wrote:
 
-Best,
-Yu
-> Thanks
-> Joey Lee
+[...]
+
+>> I think we're discussing two different things right now:
+>>      1. Should forkees go in find_energy_efficient_cpu() ?
+>>      2. Should forkees have 0 of initial util_avg when EAS is enabled ?
+> 
+> It's the same topic: How EAS should consider a newly created task ?
+> 
+> For now, we let the "performance" mode selects a CPU. This CPU will
+> most probably be worst CPU from a EAS pov because it's the idlest CPU
+> in the idlest group which is the opposite of what EAS tries to do
+> 
+> The current behavior is :
+> For every new task, the cpu selection is done assuming it's a heavy
+> task with the max possible load_avg,  and it looks for the idlest cpu.
+> This means that if the system is lightly loaded, scheduler will select
+> most probably a idle big core.
+
+AFAICS, task load doesn't seem to be used for find_idlest_cpu() ( 
+find_idlest_group() and find_idlest_group_cpu()). So the forkee 
+(SD_BALANCE_FORK) is placed independently of his task load.
+Task load (task_h_load(p)) is used in 
+wake_affine()->wake_affine_weight() but for this to be called it has to 
+be a wakeup (SD_BALANCE_WAKE).
+
+> The utilization of this new task is then set to half of the remaining
+> capacity of the selected CPU which means that the idlest you are, the
+> biggest the task will be initialized to. This can easily be half a big
+> core which can be bigger than the max capacity of a little like on
+> hikey960. Then, util_est  will keep track of this value for a while
+> which will make this task like a big one.
+
+[...]
