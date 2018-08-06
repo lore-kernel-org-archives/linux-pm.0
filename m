@@ -1,104 +1,58 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v8 04/26] PM / Domains: Add support for CPU devices to genpd
-Date: Mon, 6 Aug 2018 11:36:02 +0200
-Message-ID: <CAJZ5v0jah=aiYoV_b_p=-x+puO0sxeGRBCtJnQAD8xb8p1QGfg@mail.gmail.com>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Mon, 6 Aug 2018 11:37:55 +0200
+Message-ID: <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-5-ulf.hansson@linaro.org> <1678369.6pMUSOvdlV@aspire.rjw.lan>
- <CAPDyKFq=m7ad66SwiOr+4ab=e7PNiXrXJ6c8G0ZTPOdO1RQ_6g@mail.gmail.com>
+ <2056372.NMt4aPaF4h@aspire.rjw.lan> <2205807.cU2puvubpP@aspire.rjw.lan>
+ <1726374.375PCQfjLZ@aspire.rjw.lan> <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFq=m7ad66SwiOr+4ab=e7PNiXrXJ6c8G0ZTPOdO1RQ_6g@mail.gmail.com>
+In-Reply-To: <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 3, 2018 at 1:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 19 July 2018 at 12:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Wednesday, June 20, 2018 7:22:04 PM CEST Ulf Hansson wrote:
->>> To enable a device belonging to a CPU to be attached to a PM domain managed
->>> by genpd, let's do a few changes to genpd as to make it convenient to
->>> manage the specifics around CPUs.
->>>
->>> First, as to be able to quickly find out what CPUs that are attached to a
->>> genpd, which typically becomes useful from a genpd governor as following
->>> changes is about to show, let's add a cpumask 'cpus' to the struct
->>> generic_pm_domain.
->>>
->>> At the point when a device that belongs to a CPU, is attached/detached to
->>> its corresponding PM domain via genpd_add_device(), let's update the
->>> cpumask in genpd->cpus. Moreover, propagate the update of the cpumask to
->>> the master domains, which makes the genpd->cpus to contain a cpumask that
->>> hierarchically reflect all CPUs for a genpd, including CPUs attached to
->>> subdomains.
->>>
->>> Second, to unconditionally manage CPUs and the cpumask in genpd->cpus, is
->>> unnecessary for cases when only non-CPU devices are parts of a genpd.
->>> Let's avoid this by adding a new configuration bit, GENPD_FLAG_CPU_DOMAIN.
->>> Clients must set the bit before they call pm_genpd_init(), as to instruct
->>> genpd that it shall deal with CPUs and thus manage the cpumask in
->>> genpd->cpus.
->>>
->>> Cc: Lina Iyer <ilina@codeaurora.org>
->>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> ---
->>>  drivers/base/power/domain.c | 69 ++++++++++++++++++++++++++++++++++++-
->>>  include/linux/pm_domain.h   |  3 ++
->>>  2 files changed, 71 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index 21d298e1820b..6149ce0bfa7b 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -20,6 +20,7 @@
->>>  #include <linux/sched.h>
->>>  #include <linux/suspend.h>
->>>  #include <linux/export.h>
->>> +#include <linux/cpu.h>
->>>
->>>  #include "power.h"
->>>
->>> @@ -126,6 +127,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
->>>  #define genpd_is_irq_safe(genpd)     (genpd->flags & GENPD_FLAG_IRQ_SAFE)
->>>  #define genpd_is_always_on(genpd)    (genpd->flags & GENPD_FLAG_ALWAYS_ON)
->>>  #define genpd_is_active_wakeup(genpd)        (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
->>> +#define genpd_is_cpu_domain(genpd)   (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
->>>
->>>  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
->>>               const struct generic_pm_domain *genpd)
->>> @@ -1377,6 +1379,62 @@ static void genpd_free_dev_data(struct device *dev,
->>>       dev_pm_put_subsys_data(dev);
->>>  }
->>>
->>> +static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
->>> +                                int cpu, bool set, unsigned int depth)
->>> +{
->>> +     struct gpd_link *link;
->>> +
->>> +     if (!genpd_is_cpu_domain(genpd))
->>> +             return;
->>> +
->>> +     list_for_each_entry(link, &genpd->slave_links, slave_node) {
->>> +             struct generic_pm_domain *master = link->master;
->>> +
->>> +             genpd_lock_nested(master, depth + 1);
->>> +             __genpd_update_cpumask(master, cpu, set, depth + 1);
->>> +             genpd_unlock(master);
->>> +     }
->>> +
->>> +     if (set)
->>> +             cpumask_set_cpu(cpu, genpd->cpus);
->>> +     else
->>> +             cpumask_clear_cpu(cpu, genpd->cpus);
->>> +}
->>
->> As noted elsewhere, there is a concern about the possible weight of this
->> cpumask and I think that it would be good to explicitly put a limit on it.
+On Fri, Aug 3, 2018 at 1:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> [...]
 >
-> I have been digesting your comments on the series, but wonder if this
-> is still a relevant concern?
+>>>
+>>> Assuming that I have got that right, there are concerns, mostly regarding
+>>> patch [07/26], but I will reply to that directly.
+>>
+>> Well, I haven't got that right, so never mind.
+>>
+>> There are a few minor things to address, but apart from that the general
+>> genpd patches look ready.
+>
+> Alright, thanks!
+>
+> I will re-spin the series and post a new version once 4.19 rc1 is out.
+> Hopefully we can queue it up early in next cycle to get it tested in
+> next for a while.
+>
+>>
+>>> The $subject patch is fine by me by itself, but it obviously depends on the
+>>> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
+>>> particularly useful without the rest of the series.
+>>>
+>>> As far as patches [10-26/26] go, I'd like to see some review comments and/or
+>>> tags from the people with vested interest in there, in particular from Daniel
+>>> on patch [12/26] and from Sudeep on the PSCI ones.
+>>
+>> But this still holds.
+>
+> Actually, patch 10 and patch11 is ready to go as well. I ping Daniel
+> on patch 12.
+>
+> In regards to the rest of the series, some of the PSCI/ARM changes
+> have been reviewed by Mark Rutland, however several changes have not
+> been acked.
+>
+> On the other hand, one can also interpret the long silence in regards
+> to PSCI/ARM changes as they are good to go. :-)
 
-Well, there are systems with very large cpumasks and it is sort of
-good to have that in mind when designing any code using them.
+Well, in that case giving an ACK to them should not be an issue for
+the people with a vested interest I suppose.
