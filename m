@@ -1,67 +1,39 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Mon, 6 Aug 2018 15:57:54 +0800
-Message-ID: <20180806075754.GA12124@chenyu-desktop>
-References: <cover.1531924968.git.yu.c.chen@intel.com>
- <20180718202235.GA4132@amd>
- <20180718235851.GA22170@sandybridge-desktop>
- <20180719110149.GA4679@amd>
- <20180719132003.GA30981@sandybridge-desktop>
- <20180720102532.GA20284@amd>
- <1532346156.3057.11.camel@suse.com>
- <20180723162302.GA4503@sandybridge-desktop>
- <1532590246.7411.3.camel@suse.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] Revert "cpufreq: intel_pstate: Fix ->set_policy()
+ interface for no_turbo"
+Date: Mon, 6 Aug 2018 10:30:39 +0200
+Message-ID: <CAJZ5v0iwhVu6PwztsbN8cYmQtnjD2SyFkazkObc1o-1JX6GO5g@mail.gmail.com>
+References: <20180804152932.3861-1-gabriele.mzt@gmail.com> <ccf46de4-d75e-306b-9554-9d33f68d2379@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1532590246.7411.3.camel@suse.com>
+In-Reply-To: <ccf46de4-d75e-306b-9554-9d33f68d2379@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
+To: Gabriele Mazzotta <gabriele.mzt@gmail.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Oliver,
-On Thu, Jul 26, 2018 at 09:30:46AM +0200, Oliver Neukum wrote:
-> On Di, 2018-07-24 at 00:23 +0800, Yu Chen wrote:
-> > 
-> > Good point, we once tried to generate key in kernel, but people
-> > suggest to generate key in userspace and provide it to the
-> > kernel, which is what ecryptfs do currently, so it seems this
-> > should also be safe for encryption in kernel.
-> > https://www.spinics.net/lists/linux-crypto/msg33145.html
-> > Thus Chun-Yi's signature can use EFI key and both the key from
-> > user space.
-> 
-> Hi,
-> 
-> ecryptfs can trust user space. It is supposed to keep data
-> safe while the system is inoperative.
-Humm, I did not quite get the point here, let's take fscrypt
-for example, the kernel gets user generated key from user space,
-and uses per-inode nonce(random bytes) as the master key to
-do a KDF(key derivation function) on user provided key, and uses
-that key for encryption. We can also added similar mechanism
-to generate the key in kernel space but the key should be
-original from user's provided key(password derived), because
-the security boot/signature mechanism could not cover the case
-that, two different users could resume to each other's context
-because there isn't any certification during resume if it is
-on the same physical hardware.
+On Sat, Aug 4, 2018 at 7:31 PM, Gabriele Mazzotta
+<gabriele.mzt@gmail.com> wrote:
+> On 04/08/2018 17:29, Gabriele Mazzotta wrote:
+>> This change does not take into account that some BIOSes change
+>> MSR_IA32_MISC_ENABLE_TURBO_DISABLE depending on the power source.
+>> If the turbo is disabled when the system boots, policy.max_freq
+>> is set to pstate.max_pstate. However, if the BIOS later enables
+>> the turbo, the CPU will never be able to run at pstate.turbo_pstate.
+>>
+>> Since now intel_pstate_set_policy() does its calculations using
+>> pstate.max_freq and pstate.turbo_freq, we can always calculate
+>> cpuinfo.max_freq using pstate.turbo_pstate, thus allowing system
+>> with varying MSR_IA32_MISC_ENABLE_TURBO_DISABLE to run at full
+>> speed when the turbo is enabled.
 
-Best,
-Yu
-> The whole point of Secure
-> Boot is a cryptographic system of trust that does not include
-> user space.
-> 
-> I seriously doubt we want to use trusted computing here. So the
-> key needs to be generated in kernel space and stored in a safe
-> manner. As we have a saolution doing that, can we come to ausable
-> synthesis?
+Well, the problem with this approach is that always using
+pstate.turbo_pstate as the max causes the governor to overestimate the
+target frequency when the turbo range is not available (the target
+depends on the width of the entire available P-state range including
+turbo, so if the turbo range is not available, the number take into
+that computation is too large).
 
-> 
-> 	Regards
-> 		Oliver
-> 
+Are we expected to get notified when the BIOS updates
+MSR_IA32_MISC_ENABLE_TURBO_DISABLE?
