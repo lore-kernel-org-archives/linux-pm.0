@@ -1,37 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 10/18] x86/power/64: Remove VLA usage
-Date: Mon, 06 Aug 2018 12:28:28 +0200
-Message-ID: <1782361.6NaZWiq7ky@aspire.rjw.lan>
-References: <20180724164936.37477-1-keescook@chromium.org> <CAJZ5v0gVDotjufLKUW0YuQu2vA4fmU_gqia=ZA4DocW4XHxx0w@mail.gmail.com> <CAGXu5j+NPCc2hq5x7JUwgKYvY6zKN28YdtHbHVapnpgC3GwCsg@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v5 09/14] sched: Add over-utilization/tipping point indicator
+Date: Mon, 6 Aug 2018 12:33:39 +0200
+Message-ID: <CAKfTPtADSDJJaPr17zD8ZNtS7CQGBwfU6JDGRwssLN20zyW7Nw@mail.gmail.com>
+References: <20180802153035.vjtmqwdwujvt7ojs@queper01-lin> <CAKfTPtCGGqykN027kxK+chvKvCpNu4bYYdvfZJ+3_7YzT3Utfg@mail.gmail.com>
+ <20180802160009.uhwwj3tqrqmv7q5a@queper01-lin> <CAKfTPtB_tWgOPCB3q2Q2rESKczTPGBDUojcXDY7uP8YTQddBMg@mail.gmail.com>
+ <20180802161027.v2ctgscuc4uxbb7u@queper01-lin> <CAKfTPtDtaF9Qs4NWkKWUSr8Ryi-ScYNmPyacocPQUPxT00XAYg@mail.gmail.com>
+ <20180802165924.7ywgoxj2jwftxycz@queper01-lin> <CAKfTPtDsG4FJy5xBO8+6pJzehEM668=SZ4yQ-szVTduofN3QZg@mail.gmail.com>
+ <20180803081850.hj7bp5ognuywapmd@queper01-lin> <CAKfTPtDkJY=JYicZk8sM9_mJ-iq+Jwse0oVRbW=wpxXKKnEoeQ@mail.gmail.com>
+ <20180803155547.sxlhxpmhwcoappit@queper01-lin> <CAKfTPtBT-p-Z0EneirfOTwUw=5jEeDGa+4_EE4ogi2Ht7GU9Bg@mail.gmail.com>
+ <68689fcb-3cb8-4685-58ef-0bec84be2047@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <CAGXu5j+NPCc2hq5x7JUwgKYvY6zKN28YdtHbHVapnpgC3GwCsg@mail.gmail.com>
-Sender: netdev-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, Eric Biggers <ebiggers@google.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Alasdair Kergon <agk@redhat.com>, Rabin Vincent <rabinv@axis.com>, Tim Chen <tim.c.chen@linux.intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Philipp Reisner <philipp.reisner@linbit.com>, Lars Ellenberg <lars.ellenberg@linbit.com>, Jens Axboe <axboe@kernel.dk>, Giovanni Cabiddu <giovanni.cabiddu@intel.com>, Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>, Greg Kroah-Hartman <gregkh@>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <68689fcb-3cb8-4685-58ef-0bec84be2047@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Quentin Perret <quentin.perret@arm.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@quicinc.com, "Kannan, Saravana" <skannan@quicinc.com>, pkondeti@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 25, 2018 8:01:47 PM CEST Kees Cook wrote:
-> On Wed, Jul 25, 2018 at 4:32 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Tue, Jul 24, 2018 at 6:49 PM, Kees Cook <keescook@chromium.org> wrote:
-> >> In the quest to remove all stack VLA usage from the kernel[1], this
-> >> removes the discouraged use of AHASH_REQUEST_ON_STACK by switching to
-> >> shash directly and allocating the descriptor in heap memory (which should
-> >> be fine: the tfm has already been allocated there too).
+On Mon, 6 Aug 2018 at 12:08, Dietmar Eggemann <dietmar.eggemann@arm.com> wrote:
+>
+> On 08/06/2018 10:40 AM, Vincent Guittot wrote:
+> > On Fri, 3 Aug 2018 at 17:55, Quentin Perret <quentin.perret@arm.com> wrote:
 > >>
-> >> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
-> >>
-> >> Signed-off-by: Kees Cook <keescook@chromium.org>
-> >> Acked-by: Pavel Machek <pavel@ucw.cz>
+> >> On Friday 03 Aug 2018 at 15:49:24 (+0200), Vincent Guittot wrote:
+> >>> On Fri, 3 Aug 2018 at 10:18, Quentin Perret <quentin.perret@arm.com> wrote:
+> >>>>
+> >>>> On Friday 03 Aug 2018 at 09:48:47 (+0200), Vincent Guittot wrote:
+> >>>>> On Thu, 2 Aug 2018 at 18:59, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> [...]
+>
+> >> I think we're discussing two different things right now:
+> >>      1. Should forkees go in find_energy_efficient_cpu() ?
+> >>      2. Should forkees have 0 of initial util_avg when EAS is enabled ?
 > >
-> > I think I can queue this up if there are no objections from others.
+> > It's the same topic: How EAS should consider a newly created task ?
 > >
-> > Do you want me to do that?
-> 
-> Sure thing. It looks like the other stand-alone patches like this one
-> are getting taken into the non-crypto trees, so that's fine.
-> 
+> > For now, we let the "performance" mode selects a CPU. This CPU will
+> > most probably be worst CPU from a EAS pov because it's the idlest CPU
+> > in the idlest group which is the opposite of what EAS tries to do
+> >
+> > The current behavior is :
+> > For every new task, the cpu selection is done assuming it's a heavy
+> > task with the max possible load_avg,  and it looks for the idlest cpu.
+> > This means that if the system is lightly loaded, scheduler will select
+> > most probably a idle big core.
+>
+> AFAICS, task load doesn't seem to be used for find_idlest_cpu() (
+> find_idlest_group() and find_idlest_group_cpu()). So the forkee
+> (SD_BALANCE_FORK) is placed independently of his task load.
 
-Applied now, thanks!
+hmm ... so what is used if load or runnable load are not used ?
+find_idlest_group() uses load and runnable load but skip spare
+capacity in case of fork
+
+> Task load (task_h_load(p)) is used in
+> wake_affine()->wake_affine_weight() but for this to be called it has to
+> be a wakeup (SD_BALANCE_WAKE).
+>
+> > The utilization of this new task is then set to half of the remaining
+> > capacity of the selected CPU which means that the idlest you are, the
+> > biggest the task will be initialized to. This can easily be half a big
+> > core which can be bigger than the max capacity of a little like on
+> > hikey960. Then, util_est  will keep track of this value for a while
+> > which will make this task like a big one.
+>
+> [...]
+>
