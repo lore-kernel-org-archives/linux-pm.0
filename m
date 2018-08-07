@@ -1,62 +1,39 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Tue, 7 Aug 2018 11:59:05 +0200
-Message-ID: <20180807095905.GB2288@localhost.localdomain>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-2-patrick.bellasi@arm.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 07 Aug 2018 12:04:19 +0200
+Message-ID: <1533636259.7912.2.camel@suse.com>
+References: <20180718202235.GA4132@amd>
+         <20180718235851.GA22170@sandybridge-desktop> <20180719110149.GA4679@amd>
+         <20180719132003.GA30981@sandybridge-desktop> <20180720102532.GA20284@amd>
+         <1532346156.3057.11.camel@suse.com>
+         <20180723162302.GA4503@sandybridge-desktop>
+         <1532590246.7411.3.camel@suse.com> <20180806075754.GA12124@chenyu-desktop>
+         <1533550820.15815.14.camel@suse.com>
+         <20180807073840.GA17894@chenyu-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-2-patrick.bellasi@arm.com>
+In-Reply-To: <20180807073840.GA17894@chenyu-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Di, 2018-08-07 at 15:38 +0800, Yu Chen wrote:
+> > As STD affects the whole machine it must require root rights.
+> > So I cannot see how you can talk about a session belonging
+> > to a user. Please explain.
+> > 
+> 
+> The case is for physical access, not the 'user' in OS.
 
-Minor comments below.
+Well, yes, but Secure Boot does not guard against anybody
+booting or halting the machine. It limits what you can
+boot by a chain of trust.
 
-On 06/08/18 17:39, Patrick Bellasi wrote:
+I think you are trying to add a feature to Secure Boot.
 
-[...]
-
-> + *
-> + * Task Utilization Attributes
-> + * ===========================
-> + *
-> + * A subset of sched_attr attributes allows to specify the utilization which
-> + * should be expected by a task. These attributes allows to inform the
-                                                       ^
-						     allow
-
-> + * scheduler about the utilization boundaries within which is safe to schedule
-
-Isn't all this more about providing hints than safety?
-
-> + * the task. These utilization boundaries are valuable information to support
-> + * scheduler decisions on both task placement and frequencies selection.
-> + *
-> + *  @sched_util_min	represents the minimum utilization
-> + *  @sched_util_max	represents the maximum utilization
-> + *
-> + * Utilization is a value in the range [0..SCHED_CAPACITY_SCALE] which
-> + * represents the percentage of CPU time used by a task when running at the
-> + * maximum frequency on the highest capacity CPU of the system. Thus, for
-> + * example, a 20% utilization task is a task running for 2ms every 10ms.
-> + *
-> + * A task with a min utilization value bigger then 0 is more likely to be
-> + * scheduled on a CPU which can provide that bandwidth.
-> + * A task with a max utilization value smaller then 1024 is more likely to be
-> + * scheduled on a CPU which do not provide more then the required bandwidth.
-
-Isn't s/bandwidth/capacity/ here, above, and in general where you use
-the term "bandwidth" more appropriate? I wonder if overloading this term
-(w.r.t. how is used with DEADLINE) might create confusion. In this case
-we are not providing any sort of guarantees, it's a hint.
-
-Best,
-
-- Juri
+	Regards
+		Oliver
