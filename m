@@ -1,52 +1,218 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re:[PATCH v7 2/8] dt-bindings: Introduce interconnect provider
- bindings
-Date: Tue, 7 Aug 2018 17:54:38 +0300
-Message-ID: <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-3-georgi.djakov@linaro.org>
- <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] power: supply: maxim: Add SPDX license identifiers
+Date: Tue,  7 Aug 2018 18:21:06 +0200
+Message-ID: <20180807162106.18282-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, maxime.ripard@bootlin.com
-Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kerne
+To: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+Replace GPL v2.0 and v2.0+ license statements with SPDX license
+identifiers.
 
-On 08/03/2018 12:02 AM, Rob Herring wrote:
-> On Tue, Jul 31, 2018 at 10:13 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->>
->> This binding is intended to represent the interconnect hardware present
->> in some of the modern SoCs. Currently it consists only of a binding for
->> the interconnect hardware devices (provider).
-> 
-> If you want the bindings reviewed, then you need to send them to the
-> DT list. CC'ing me is pointless, I get CC'ed too many things to read.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/power/supply/max14577_charger.c | 22 ++++++----------------
+ drivers/power/supply/max17040_battery.c | 18 +++++++-----------
+ drivers/power/supply/max17042_battery.c | 32 +++++++++-----------------------
+ drivers/power/supply/max77693_charger.c | 22 ++++++----------------
+ drivers/power/supply/max8997_charger.c  | 26 ++++++--------------------
+ drivers/power/supply/max8998_charger.c  | 26 ++++++--------------------
+ 6 files changed, 40 insertions(+), 106 deletions(-)
 
-Ops, ok!
-
-> The consumer and producer binding should be a single patch. One is not
-> useful without the other.
-
-The reason for splitting them is that they can be reviewed separately.
-Also we can rely on platform data instead of using DT and the consumer
-binding. However will do as you suggest.
-
-> There is also a patch series from Maxime Ripard that's addressing the
-> same general area. See "dt-bindings: Add a dma-parent property". We
-> don't need multiple ways to address describing the device to memory
-> paths, so you all had better work out a common solution.
-
-Looks like this fits exactly into the interconnect API concept. I see
-MBUS as interconnect provider and display/camera as consumers, that
-report their bandwidth needs. I am also planning to add support for
-priority.
-
-Thanks,
-Georgi
+diff --git a/drivers/power/supply/max14577_charger.c b/drivers/power/supply/max14577_charger.c
+index 449fc56f09eb..8a59feac6468 100644
+--- a/drivers/power/supply/max14577_charger.c
++++ b/drivers/power/supply/max14577_charger.c
+@@ -1,19 +1,9 @@
+-/*
+- * max14577_charger.c - Battery charger driver for the Maxim 14577/77836
+- *
+- * Copyright (C) 2013,2014 Samsung Electronics
+- * Krzysztof Kozlowski <krzk@kernel.org>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
++// SPDX-License-Identifier: GPL-2.0+
++//
++// max14577_charger.c - Battery charger driver for the Maxim 14577/77836
++//
++// Copyright (C) 2013,2014 Samsung Electronics
++// Krzysztof Kozlowski <krzk@kernel.org>
+ 
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index 33c40f79d23d..91cafc7bed30 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -1,14 +1,10 @@
+-/*
+- *  max17040_battery.c
+- *  fuel-gauge systems for lithium-ion (Li+) batteries
+- *
+- *  Copyright (C) 2009 Samsung Electronics
+- *  Minkyu Kang <mk7.kang@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
++// SPDX-License-Identifier: GPL-2.0
++//
++//  max17040_battery.c
++//  fuel-gauge systems for lithium-ion (Li+) batteries
++//
++//  Copyright (C) 2009 Samsung Electronics
++//  Minkyu Kang <mk7.kang@samsung.com>
+ 
+ #include <linux/module.h>
+ #include <linux/init.h>
+diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
+index 1a568df383db..2a8d75e5e930 100644
+--- a/drivers/power/supply/max17042_battery.c
++++ b/drivers/power/supply/max17042_battery.c
+@@ -1,26 +1,12 @@
+-/*
+- * Fuel gauge driver for Maxim 17042 / 8966 / 8997
+- *  Note that Maxim 8966 and 8997 are mfd and this is its subdevice.
+- *
+- * Copyright (C) 2011 Samsung Electronics
+- * MyungJoo Ham <myungjoo.ham@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- *
+- * This driver is based on max17040_battery.c
+- */
++// SPDX-License-Identifier: GPL-2.0+
++//
++// Fuel gauge driver for Maxim 17042 / 8966 / 8997
++//  Note that Maxim 8966 and 8997 are mfd and this is its subdevice.
++//
++// Copyright (C) 2011 Samsung Electronics
++// MyungJoo Ham <myungjoo.ham@samsung.com>
++//
++// This driver is based on max17040_battery.c
+ 
+ #include <linux/acpi.h>
+ #include <linux/init.h>
+diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supply/max77693_charger.c
+index 6c78884bad5e..b4cc5b807d53 100644
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -1,19 +1,9 @@
+-/*
+- * max77693_charger.c - Battery charger driver for the Maxim 77693
+- *
+- * Copyright (C) 2014 Samsung Electronics
+- * Krzysztof Kozlowski <krzk@kernel.org>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- */
++// SPDX-License-Identifier: GPL-2.0+
++//
++// max77693_charger.c - Battery charger driver for the Maxim 77693
++//
++// Copyright (C) 2014 Samsung Electronics
++// Krzysztof Kozlowski <krzk@kernel.org>
+ 
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/supply/max8997_charger.c
+index c73fb4221695..f5e84cd47924 100644
+--- a/drivers/power/supply/max8997_charger.c
++++ b/drivers/power/supply/max8997_charger.c
+@@ -1,23 +1,9 @@
+-/*
+- * max8997_charger.c - Power supply consumer driver for the Maxim 8997/8966
+- *
+- *  Copyright (C) 2011 Samsung Electronics
+- *  MyungJoo Ham <myungjoo.ham@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- */
++// SPDX-License-Identifier: GPL-2.0+
++//
++// max8997_charger.c - Power supply consumer driver for the Maxim 8997/8966
++//
++//  Copyright (C) 2011 Samsung Electronics
++//  MyungJoo Ham <myungjoo.ham@samsung.com>
+ 
+ #include <linux/err.h>
+ #include <linux/module.h>
+diff --git a/drivers/power/supply/max8998_charger.c b/drivers/power/supply/max8998_charger.c
+index cad7d1a8feec..95292381c3de 100644
+--- a/drivers/power/supply/max8998_charger.c
++++ b/drivers/power/supply/max8998_charger.c
+@@ -1,23 +1,9 @@
+-/*
+- * max8998_charger.c - Power supply consumer driver for the Maxim 8998/LP3974
+- *
+- *  Copyright (C) 2009-2010 Samsung Electronics
+- *  MyungJoo Ham <myungjoo.ham@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+- */
++// SPDX-License-Identifier: GPL-2.0+
++//
++// max8998_charger.c - Power supply consumer driver for the Maxim 8998/LP3974
++//
++//  Copyright (C) 2009-2010 Samsung Electronics
++//  MyungJoo Ham <myungjoo.ham@samsung.com>
+ 
+ #include <linux/err.h>
+ #include <linux/module.h>
+-- 
+2.14.1
