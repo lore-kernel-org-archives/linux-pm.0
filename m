@@ -1,80 +1,56 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
- bandwidth voting
-Date: Tue, 7 Aug 2018 10:51:03 -0600
-Message-ID: <20180807165103.GA23354@rob-hp-laptop>
-References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+From: Todd Kjos <tkjos@google.com>
+Subject: [RFC] vruntime updated incorrectly when rt_mutex boots prio?
+Date: Tue, 7 Aug 2018 10:40:42 -0700
+Message-ID: <CAHRSSEwdWhUurOkviS0WdcGKj3374r-nCXH3BkQfwFiObyq+4w@mail.gmail.com>
+References: <CA+njcd3z7-jqLvhsBjNWUO9bDrMr_zd13CD2cPdCS0+_kXdc4g@mail.gmail.com>
+ <CAHRSSEwd0Ma+wn3WYCvfWMwg3E8vzYx9CDOOiY63EzH42FZQvg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <CAHRSSEwd0Ma+wn3WYCvfWMwg3E8vzYx9CDOOiY63EzH42FZQvg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Paul Turner <pjt@google.com>
+Cc: John Dias <joaodias@google.com>, Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <Patrick.Bellasi@arm.com>, Chris Redpath <Chris.Redpath@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Android Kernel Team <kernel-team@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 01, 2018 at 05:57:42PM -0700, Saravana Kannan wrote:
-> This driver registers itself as a devfreq device that allows devfreq
-> governors to make bandwidth votes for an interconnect path. This allows
-> applying various policies for different interconnect paths using devfreq
-> governors.
-> 
-> Example uses:
-> * Use the devfreq performance governor to set the CPU to DDR interconnect
->   path for maximum performance.
-> * Use the devfreq performance governor to set the GPU to DDR interconnect
->   path for maximum performance.
-> * Use the CPU frequency to device frequency mapping governor to scale the
->   DDR frequency based on the needs of the CPUs' current frequency.
-> 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
+This issue was discovered on a 4.9-based android device, but the
+relevant mainline code appears to be the same. The symptom is that
+over time the some workloads become sluggish resulting in missed
+frames or sluggishness. It appears to be the same issue described in
+http://lists.infradead.org/pipermail/linux-arm-kernel/2018-March/567836.html.
 
-Please make bindings separate a patch.
+Here is the scenario: A task is deactivated while still in the fair
+class. The task is then boosted to RT, so rt_mutex_setprio() is
+called. This changes the task to RT and calls check_class_changed(),
+which eventually calls detach_task_cfs_rq(), which is where
+vruntime_normalized() sees that the task's state is TASK_WAKING, which
+results in skipping the subtraction of the rq's min_vruntime from the
+task's vruntime. Later, when the prio is deboosted and the task is
+moved back to the fair class, the fair rq's min_vruntime is added to
+the task's vruntime, resulting in vruntime inflation.
 
->  drivers/devfreq/Kconfig                            |  13 +++
->  drivers/devfreq/Makefile                           |   1 +
->  drivers/devfreq/devfreq_icbw.c                     | 116 +++++++++++++++++++++
->  4 files changed, 151 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
->  create mode 100644 drivers/devfreq/devfreq_icbw.c
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt b/Documentation/devicetree/bindings/devfreq/icbw.txt
-> new file mode 100644
-> index 0000000..36cf045
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
-> @@ -0,0 +1,21 @@
-> +Interconnect bandwidth device
-> +
-> +icbw is a device that represents an interconnect path that connects two
-> +devices. This device is typically used to vote for BW requirements between
-> +two devices. Eg: CPU to DDR, GPU to DDR, etc
+When investigating the problem, it was found that the change below
+fixes the problem by forcing vruntime_normalized() to return false if
+the sched_class is not CFS (though we're concerned that it might
+introduce other issues):
 
-I'm pretty sure this doesn't represent a h/w device. This usage doesn't 
-encourage me to accept the interconnects binding either.
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 91f7b3322a15..267056f2e2ca 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -11125,7 +11125,7 @@ static inline bool vruntime_normalized(struct
+task_struct *p)
+         * - A task which has been woken up by try_to_wake_up() and
+         *   waiting for actually being woken up by sched_ttwu_pending().
+         */
+-       if (!se->sum_exec_runtime || p->state == TASK_WAKING)
++       if (!se->sum_exec_runtime || (p->state == TASK_WAKING &&
+p->sched_class == &fair_sched_class))
+                return true;
 
-> +
-> +Required properties:
-> +- compatible:		Must be "devfreq-icbw"
-> +- interconnects:	Pairs of phandles and interconnect provider specifier
-> +			to denote the edge source and destination ports of
-> +			the interconnect path. See also:
-> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
-> +- interconnect-names:	Must have one entry with the name "path".
+        return false;
 
-That's pretty useless...
+Do folks agree that this is incorrect behavior? Does this fix look
+appropriate and safe? Other ideas?
 
-> +
-> +Example:
-> +
-> +	qcom,cpubw {
-
-Someone in QCom please broadcast to stop using qcom,foo for node names. 
-It is amazing how consistent you all are. If only folks were as 
-consistent in reading 
-Documentation/devicetree/bindings/submitting-patches.txt.
-
-Rob
+-Todd
