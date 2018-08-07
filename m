@@ -1,107 +1,80 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Tue, 7 Aug 2018 10:41:14 -0600
-Message-ID: <20180807164114.GA12587@rob-hp-laptop>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Tue, 7 Aug 2018 10:51:03 -0600
+Message-ID: <20180807165103.GA23354@rob-hp-laptop>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
 Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 01, 2018 at 05:57:41PM -0700, Saravana Kannan wrote:
-> Many CPU architectures have caches that can scale independent of the CPUs.
-> Frequency scaling of the caches is necessary to make sure the cache is not
-> a performance bottleneck that leads to poor performance and power. The same
-> idea applies for RAM/DDR.
+On Wed, Aug 01, 2018 at 05:57:42PM -0700, Saravana Kannan wrote:
+> This driver registers itself as a devfreq device that allows devfreq
+> governors to make bandwidth votes for an interconnect path. This allows
+> applying various policies for different interconnect paths using devfreq
+> governors.
 > 
-> To achieve this, this patch adds a generic devfreq governor that takes the
-> current frequency of each CPU frequency domain and then adjusts the
-> frequency of the cache (or any devfreq device) based on the frequency of
-> the CPUs. It listens to CPU frequency transition notifiers to keep itself
-> up to date on the current CPU frequency.
-> 
-> To decide the frequency of the device, the governor does one of the
-> following:
-> 
-> * Uses a CPU frequency to device frequency mapping table
->   - Either one mapping table used for all CPU freq policies (typically used
->     for system with homogeneous cores/clusters that have the same OPPs).
->   - One mapping table per CPU freq policy (typically used for ASMP systems
->     with heterogeneous CPUs with different OPPs)
-> 
-> OR
-> 
-> * Scales the device frequency in proportion to the CPU frequency. So, if
->   the CPUs are running at their max frequency, the device runs at its max
->   frequency.  If the CPUs are running at their min frequency, the device
->   runs at its min frequency. And interpolated for frequencies in between.
+> Example uses:
+> * Use the devfreq performance governor to set the CPU to DDR interconnect
+>   path for maximum performance.
+> * Use the devfreq performance governor to set the GPU to DDR interconnect
+>   path for maximum performance.
+> * Use the CPU frequency to device frequency mapping governor to scale the
+>   DDR frequency based on the needs of the CPUs' current frequency.
 > 
 > Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 > ---
->  .../bindings/devfreq/devfreq-cpufreq-map.txt       |  53 ++
+>  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
 
-Bindings should be a separate patch.
+Please make bindings separate a patch.
 
->  drivers/devfreq/Kconfig                            |   8 +
+>  drivers/devfreq/Kconfig                            |  13 +++
 >  drivers/devfreq/Makefile                           |   1 +
->  drivers/devfreq/governor_cpufreq_map.c             | 583 +++++++++++++++++++++
->  4 files changed, 645 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
->  create mode 100644 drivers/devfreq/governor_cpufreq_map.c
+>  drivers/devfreq/devfreq_icbw.c                     | 116 +++++++++++++++++++++
+>  4 files changed, 151 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
+>  create mode 100644 drivers/devfreq/devfreq_icbw.c
 > 
-> diff --git a/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
+> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt b/Documentation/devicetree/bindings/devfreq/icbw.txt
 > new file mode 100644
-> index 0000000..982a30b
+> index 0000000..36cf045
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> @@ -0,0 +1,53 @@
-> +Devfreq CPUfreq governor
+> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
+> @@ -0,0 +1,21 @@
+> +Interconnect bandwidth device
 > +
-> +devfreq-cpufreq-map is a parent device that contains one or more child devices.
-> +Each child device provides CPU frequency to device frequency mapping for a
-> +specific device. Examples of devices that could use this are: DDR, cache and
-> +CCI.
+> +icbw is a device that represents an interconnect path that connects two
+> +devices. This device is typically used to vote for BW requirements between
+> +two devices. Eg: CPU to DDR, GPU to DDR, etc
+
+I'm pretty sure this doesn't represent a h/w device. This usage doesn't 
+encourage me to accept the interconnects binding either.
+
 > +
-> +Parent device name shall be "devfreq-cpufreq-map".
-> +
-> +Required child device properties:
-> +- cpu-to-dev-map, or cpu-to-dev-map-<X>:
-> +			A list of tuples where each tuple consists of a
-> +			CPU frequency (KHz) and the corresponding device
-> +			frequency. CPU frequencies not listed in the table
-> +			will use the device frequency that corresponds to the
-> +			next rounded up CPU frequency.
-> +			Use "cpu-to-dev-map" if all CPUs in the system should
-> +			share same mapping.
-> +			Use cpu-to-dev-map-<cpuid> to describe different
-> +			mappings for different CPUs. The property should be
-> +			listed only for the first CPU if multiple CPUs are
-> +			synchronous.
-> +- target-dev:		Phandle to device that this mapping applies to.
+> +Required properties:
+> +- compatible:		Must be "devfreq-icbw"
+> +- interconnects:	Pairs of phandles and interconnect provider specifier
+> +			to denote the edge source and destination ports of
+> +			the interconnect path. See also:
+> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
+> +- interconnect-names:	Must have one entry with the name "path".
+
+That's pretty useless...
+
 > +
 > +Example:
-> +	devfreq-cpufreq-map {
-> +		cpubw-cpufreq {
-> +			target-dev = <&cpubw>;
-> +			cpu-to-dev-map =
-> +				<  300000  1144000 >,
-> +				<  422400  2288000 >,
-> +				<  652800  3051000 >,
-> +				<  883200  5996000 >,
-> +				< 1190400  8056000 >,
-> +				< 1497600 10101000 >,
-> +				< 1728000 12145000 >,
-> +				< 2649600 16250000 >;
+> +
+> +	qcom,cpubw {
 
-Now we have frequencies listed in multiple places, the OPP tables and 
-here? Perhaps it is grouping OPPs that should be done.
-
-This all looks bolted on and very much Linux specifc.
+Someone in QCom please broadcast to stop using qcom,foo for node names. 
+It is amazing how consistent you all are. If only folks were as 
+consistent in reading 
+Documentation/devicetree/bindings/submitting-patches.txt.
 
 Rob
