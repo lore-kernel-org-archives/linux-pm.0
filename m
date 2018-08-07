@@ -1,88 +1,89 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 3/3] dt-bindings: mfd: max8998: Add charger subnode
- binding
-Date: Tue, 7 Aug 2018 11:57:42 -0600
-Message-ID: <20180807175741.GA30886@rob-hp-laptop>
-References: <1531843509-3533-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
- <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+From: skannan@codeaurora.org
+Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Tue, 07 Aug 2018 12:24:14 -0700
+Message-ID: <74d27daca2bb03716fc84f9c57118af0@codeaurora.org>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+ <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
+ <b362d9f769fde3ce1a2dcd89f20eb476@codeaurora.org>
+ <20180807111237.GA1588@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+In-Reply-To: <20180807111237.GA1588@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 17, 2018 at 06:05:09PM +0200, Paweł Chmiel wrote:
-> This patch adds devicetree bindings documentation for
-> battery charging controller as the subnode of MAX8998 PMIC.
+On 2018-08-07 04:12, Sudeep Holla wrote:
+> On Mon, Aug 06, 2018 at 01:54:24PM -0700, skannan@codeaurora.org wrote:
+>> On 2018-08-03 16:46, Stephen Boyd wrote:
+>> >Quoting Taniya Das (2018-07-24 03:42:49)
+>> >>diff --git
+>> >>a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> >>b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> >>new file mode 100644
+>> >>index 0000000..22d4355
+>> >>--- /dev/null
+>> >>+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> >>@@ -0,0 +1,172 @@
+>> >[...]
+>> >>+
+>> >>+               CPU7: cpu@700 {
+>> >>+                       device_type = "cpu";
+>> >>+                       compatible = "qcom,kryo385";
+>> >>+                       reg = <0x0 0x700>;
+>> >>+                       enable-method = "psci";
+>> >>+                       next-level-cache = <&L2_700>;
+>> >>+                       qcom,freq-domain = <&freq_domain_table1>;
+>> >>+                       L2_700: l2-cache {
+>> >>+                               compatible = "cache";
+>> >>+                               next-level-cache = <&L3_0>;
+>> >>+                       };
+>> >>+               };
+>> >>+       };
+>> >>+
+>> >>+       qcom,cpufreq-hw {
+>> >>+               compatible = "qcom,cpufreq-hw";
+>> >>+
+>> >>+               clocks = <&rpmhcc RPMH_CXO_CLK>;
+>> >>+               clock-names = "xo";
+>> >>+
+>> >>+               #address-cells = <2>;
+>> >>+               #size-cells = <2>;
+>> >>+               ranges;
+>> >>+               freq_domain_table0: freq_table0 {
+>> >>+                       reg = <0 0x17d43000 0 0x1400>;
+>> >>+               };
+>> >>+
+>> >>+               freq_domain_table1: freq_table1 {
+>> >>+                       reg = <0 0x17d45800 0 0x1400>;
+>> >>+               };
+>> >
+>> >Sorry, this is just not proper DT design. The whole node should have a
+>> >reg property, and it should contain two (or three if we're handling the
+>> >L3 clk domain?) different offsets for the different power clusters. The
+>> >problem seems to still be that we don't have a way to map the CPUs to
+>> >the clk domains they're in provided by this hardware block. Making
+>> >subnodes is not the solution.
+>> 
+>> The problem is mapping clock domains to logical CPUs that CPUfreq 
+>> uses. The
+>> physical CPU to logical CPU mapping can be changed by the kernel (even
+>> through DT if I'm not mistaken). So we need to have a way to tell in 
+>> DT
+>> which physical CPUs are connected to which CPU freq clock domain.
+>> 
 > 
-> Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
-> ---
-> Changes from v2:
->   - Make charge-restart-level-microvolt optional.
->   - Make charge-timeout-hours optional.
-> 
-> Changes from v1:
->   - Removed unneeded Fixes tag
->   - Correct description of all charger values
->   - Added missing property unit
-> ---
->  Documentation/devicetree/bindings/mfd/max8998.txt | 25 +++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Documentation/devicetree/bindings/mfd/max8998.txt
-> index 23a3650ff2a2..264040f4ad15 100644
-> --- a/Documentation/devicetree/bindings/mfd/max8998.txt
-> +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-> @@ -50,6 +50,24 @@ Additional properties required if max8998,pmic-buck2-dvs-gpio is defined:
->  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microvolts
->    for buck2 regulator that can be selected using dvs gpio.
->  
-> +Charger: Configuration for battery charging controller should be added
-> +inside a child node named 'charger'.
-> +  Required properties:
-> +  - max8998,charge-eoc-percent: Setup End of Charge Level.
+> How about passing CPU freq clock domain id as along with phandle in
+> qcom,freq-domain ?
 
-This should have a vendor prefix and max8998 is not a vendor. Don't 
-continue that pattern even if we already have some properties like that.
+Now sure what you mean here. There's no such this as CPUfreq clock 
+domain id. It has policies that are made up of logical CPU numbers. 
+Logical CPU is not something that you can fix in DT.
 
-These seem like perhaps they should be common charger properties.
-
-> +    If value equals 0, leave it unchanged.
-> +    Otherwise it should be value from 10 to 45 by 5 step.
-> +
-> +  Optional properties:
-> +  - max8998,charge-restart-level-microvolt: Setup Charge Restart Level.
-> +    If property is not present, this will be disabled.
-> +    If value equals 0, leave it unchanged.
-> +    Otherwise it should be one of following values: 100, 150, 200.
-> +
-> +  - max8998,charge-timeout-hours: Setup Charge Full Timeout.
-> +    If property is not present, this will be disabled.
-> +    If value equals 0, leave it unchanged.
-> +    Otherwise it should be one of following values: 5, 6, 7.
-> +
->  Regulators: All the regulators of MAX8998 to be instantiated shall be
->  listed in a child node named 'regulators'. Each regulator is represented
->  by a child node of the 'regulators' node.
-> @@ -99,6 +117,13 @@ Example:
->  		max8998,pmic-buck2-dvs-gpio = <&gpx0 0 3 0 0>; /* SET3 */
->  		max8998,pmic-buck2-dvs-voltage = <1350000>, <1300000>;
->  
-> +		/* Charger configuration */
-> +		charger {
-> +			max8998,charge-eoc-percent = <0>;
-> +			max8998,charge-restart-level-microvolt = <100>;
-> +			max8998,charge-timeout-hours = <7>;
-> +		};
-> +
->  		/* Regulators to instantiate */
->  		regulators {
->  			ldo2_reg: LDO2 {
-> -- 
-> 2.7.4
-> 
+-Saravana
