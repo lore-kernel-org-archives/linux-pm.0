@@ -1,48 +1,52 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
- for RT tasks
-Date: Tue, 7 Aug 2018 14:54:04 +0100
-Message-ID: <20180807135403.s7jktvxmhycujeht@queper01-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-7-patrick.bellasi@arm.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re:[PATCH v7 2/8] dt-bindings: Introduce interconnect provider
+ bindings
+Date: Tue, 7 Aug 2018 17:54:38 +0300
+Message-ID: <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
+References: <20180731161340.13000-1-georgi.djakov@linaro.org>
+ <20180731161340.13000-3-georgi.djakov@linaro.org>
+ <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-7-patrick.bellasi@arm.com>
+In-Reply-To: <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Rob Herring <robh@kernel.org>, maxime.ripard@bootlin.com
+Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, devicetree@vger.kerne
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
+Hi Rob,
 
-On Monday 06 Aug 2018 at 17:39:38 (+0100), Patrick Bellasi wrote:
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index a7affc729c25..bb25ef66c2d3 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -200,6 +200,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->  static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
->  {
->  	struct rq *rq = cpu_rq(sg_cpu->cpu);
-> +	unsigned long util_cfs, util_rt;
->  	unsigned long util, irq, max;
->  
->  	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+On 08/03/2018 12:02 AM, Rob Herring wrote:
+> On Tue, Jul 31, 2018 at 10:13 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>>
+>> This binding is intended to represent the interconnect hardware present
+>> in some of the modern SoCs. Currently it consists only of a binding for
+>> the interconnect hardware devices (provider).
+> 
+> If you want the bindings reviewed, then you need to send them to the
+> DT list. CC'ing me is pointless, I get CC'ed too many things to read.
 
-IIUC, not far below this you should still have something like:
+Ops, ok!
 
-	if (rt_rq_is_runnable(&rq->rt))
-		return max;
+> The consumer and producer binding should be a single patch. One is not
+> useful without the other.
 
-So you won't reach the actual clamping code at the end of the function
-when a RT task is runnable no?
+The reason for splitting them is that they can be reviewed separately.
+Also we can rely on platform data instead of using DT and the consumer
+binding. However will do as you suggest.
 
-Also, I always had the feeling that the default for RT should be
-util_min == 1024, and then users could decide to lower the bar if they
-want to. For the specific case of RT, that feels more natural than
-applying a max util clamp IMO. What do you think ?
+> There is also a patch series from Maxime Ripard that's addressing the
+> same general area. See "dt-bindings: Add a dma-parent property". We
+> don't need multiple ways to address describing the device to memory
+> paths, so you all had better work out a common solution.
+
+Looks like this fits exactly into the interconnect API concept. I see
+MBUS as interconnect provider and display/camera as consumers, that
+report their bandwidth needs. I am also planning to add support for
+priority.
 
 Thanks,
-Quentin
+Georgi
