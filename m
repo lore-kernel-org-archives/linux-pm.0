@@ -1,56 +1,88 @@
-From: Todd Kjos <tkjos@google.com>
-Subject: [RFC] vruntime updated incorrectly when rt_mutex boots prio?
-Date: Tue, 7 Aug 2018 10:40:42 -0700
-Message-ID: <CAHRSSEwdWhUurOkviS0WdcGKj3374r-nCXH3BkQfwFiObyq+4w@mail.gmail.com>
-References: <CA+njcd3z7-jqLvhsBjNWUO9bDrMr_zd13CD2cPdCS0+_kXdc4g@mail.gmail.com>
- <CAHRSSEwd0Ma+wn3WYCvfWMwg3E8vzYx9CDOOiY63EzH42FZQvg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 3/3] dt-bindings: mfd: max8998: Add charger subnode
+ binding
+Date: Tue, 7 Aug 2018 11:57:42 -0600
+Message-ID: <20180807175741.GA30886@rob-hp-laptop>
+References: <1531843509-3533-1-git-send-email-pawel.mikolaj.chmiel@gmail.com>
+ <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHRSSEwd0Ma+wn3WYCvfWMwg3E8vzYx9CDOOiY63EzH42FZQvg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Paul Turner <pjt@google.com>
-Cc: John Dias <joaodias@google.com>, Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <Patrick.Bellasi@arm.com>, Chris Redpath <Chris.Redpath@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Android Kernel Team <kernel-team@android.com>
+To: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
+Cc: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This issue was discovered on a 4.9-based android device, but the
-relevant mainline code appears to be the same. The symptom is that
-over time the some workloads become sluggish resulting in missed
-frames or sluggishness. It appears to be the same issue described in
-http://lists.infradead.org/pipermail/linux-arm-kernel/2018-March/567836.html.
+On Tue, Jul 17, 2018 at 06:05:09PM +0200, Paweł Chmiel wrote:
+> This patch adds devicetree bindings documentation for
+> battery charging controller as the subnode of MAX8998 PMIC.
+> 
+> Signed-off-by: Paweł Chmiel <pawel.mikolaj.chmiel@gmail.com>
+> ---
+> Changes from v2:
+>   - Make charge-restart-level-microvolt optional.
+>   - Make charge-timeout-hours optional.
+> 
+> Changes from v1:
+>   - Removed unneeded Fixes tag
+>   - Correct description of all charger values
+>   - Added missing property unit
+> ---
+>  Documentation/devicetree/bindings/mfd/max8998.txt | 25 +++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Documentation/devicetree/bindings/mfd/max8998.txt
+> index 23a3650ff2a2..264040f4ad15 100644
+> --- a/Documentation/devicetree/bindings/mfd/max8998.txt
+> +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
+> @@ -50,6 +50,24 @@ Additional properties required if max8998,pmic-buck2-dvs-gpio is defined:
+>  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in microvolts
+>    for buck2 regulator that can be selected using dvs gpio.
+>  
+> +Charger: Configuration for battery charging controller should be added
+> +inside a child node named 'charger'.
+> +  Required properties:
+> +  - max8998,charge-eoc-percent: Setup End of Charge Level.
 
-Here is the scenario: A task is deactivated while still in the fair
-class. The task is then boosted to RT, so rt_mutex_setprio() is
-called. This changes the task to RT and calls check_class_changed(),
-which eventually calls detach_task_cfs_rq(), which is where
-vruntime_normalized() sees that the task's state is TASK_WAKING, which
-results in skipping the subtraction of the rq's min_vruntime from the
-task's vruntime. Later, when the prio is deboosted and the task is
-moved back to the fair class, the fair rq's min_vruntime is added to
-the task's vruntime, resulting in vruntime inflation.
+This should have a vendor prefix and max8998 is not a vendor. Don't 
+continue that pattern even if we already have some properties like that.
 
-When investigating the problem, it was found that the change below
-fixes the problem by forcing vruntime_normalized() to return false if
-the sched_class is not CFS (though we're concerned that it might
-introduce other issues):
+These seem like perhaps they should be common charger properties.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 91f7b3322a15..267056f2e2ca 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -11125,7 +11125,7 @@ static inline bool vruntime_normalized(struct
-task_struct *p)
-         * - A task which has been woken up by try_to_wake_up() and
-         *   waiting for actually being woken up by sched_ttwu_pending().
-         */
--       if (!se->sum_exec_runtime || p->state == TASK_WAKING)
-+       if (!se->sum_exec_runtime || (p->state == TASK_WAKING &&
-p->sched_class == &fair_sched_class))
-                return true;
-
-        return false;
-
-Do folks agree that this is incorrect behavior? Does this fix look
-appropriate and safe? Other ideas?
-
--Todd
+> +    If value equals 0, leave it unchanged.
+> +    Otherwise it should be value from 10 to 45 by 5 step.
+> +
+> +  Optional properties:
+> +  - max8998,charge-restart-level-microvolt: Setup Charge Restart Level.
+> +    If property is not present, this will be disabled.
+> +    If value equals 0, leave it unchanged.
+> +    Otherwise it should be one of following values: 100, 150, 200.
+> +
+> +  - max8998,charge-timeout-hours: Setup Charge Full Timeout.
+> +    If property is not present, this will be disabled.
+> +    If value equals 0, leave it unchanged.
+> +    Otherwise it should be one of following values: 5, 6, 7.
+> +
+>  Regulators: All the regulators of MAX8998 to be instantiated shall be
+>  listed in a child node named 'regulators'. Each regulator is represented
+>  by a child node of the 'regulators' node.
+> @@ -99,6 +117,13 @@ Example:
+>  		max8998,pmic-buck2-dvs-gpio = <&gpx0 0 3 0 0>; /* SET3 */
+>  		max8998,pmic-buck2-dvs-voltage = <1350000>, <1300000>;
+>  
+> +		/* Charger configuration */
+> +		charger {
+> +			max8998,charge-eoc-percent = <0>;
+> +			max8998,charge-restart-level-microvolt = <100>;
+> +			max8998,charge-timeout-hours = <7>;
+> +		};
+> +
+>  		/* Regulators to instantiate */
+>  		regulators {
+>  			ldo2_reg: LDO2 {
+> -- 
+> 2.7.4
+> 
