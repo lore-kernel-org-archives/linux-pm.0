@@ -1,89 +1,89 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Mon, 06 Aug 2018 22:49:48 -0700
-Message-ID: <35ff3e303f5de9980979b49c89f9a687@codeaurora.org>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
- <CGME20180802005756epcas4p465a12f42a0e36f0af6fd276a3a56957f@epcms1p3>
- <20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3>
- <45c77ee02536e237c054399cad4c7669@codeaurora.org>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Tue, 7 Aug 2018 15:38:40 +0800
+Message-ID: <20180807073840.GA17894@chenyu-desktop>
+References: <20180718202235.GA4132@amd>
+ <20180718235851.GA22170@sandybridge-desktop>
+ <20180719110149.GA4679@amd>
+ <20180719132003.GA30981@sandybridge-desktop>
+ <20180720102532.GA20284@amd>
+ <1532346156.3057.11.camel@suse.com>
+ <20180723162302.GA4503@sandybridge-desktop>
+ <1532590246.7411.3.camel@suse.com>
+ <20180806075754.GA12124@chenyu-desktop>
+ <1533550820.15815.14.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <45c77ee02536e237c054399cad4c7669@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <1533550820.15815.14.camel@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Eric Biggers <ebiggers@google.com>, "Lee, Chun-Yi" <jlee@suse.com>, Theodore Ts o <tytso@mit.edu>, Stephan Mueller <smueller@chronox.de>, Denis Kenzior <denkenz@gmail.com>, linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, "Gu, Kookoo" <kookoo.gu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-08-02 14:00, skannan@codeaurora.org wrote:
-> On 2018-08-02 02:56, MyungJoo Ham wrote:
->>> Many CPU architectures have caches that can scale independent of the 
->>> CPUs.
->>> Frequency scaling of the caches is necessary to make sure the cache 
->>> is not
->>> a performance bottleneck that leads to poor performance and power. 
->>> The same
->>> idea applies for RAM/DDR.
->>> 
->>> To achieve this, this patch adds a generic devfreq governor that 
->>> takes the
->>> current frequency of each CPU frequency domain and then adjusts the
->>> frequency of the cache (or any devfreq device) based on the frequency 
->>> of
->>> the CPUs. It listens to CPU frequency transition notifiers to keep 
->>> itself
->>> up to date on the current CPU frequency.
->>> 
->>> To decide the frequency of the device, the governor does one of the
->>> following:
->> 
->> This exactly has the same purpose with "passive" governor except for 
->> the
->> single part: passive governor depends on another devfreq driver, not
->> cpufreq driver.
->> 
->> If both governors have many features in common, can you merge them 
->> into one?
->> Passive governor also has "get_target_freq", which allows driver 
->> authors
->> to define the mapping.
+On Mon, Aug 06, 2018 at 12:20:20PM +0200, Oliver Neukum wrote:
+> On Mo, 2018-08-06 at 15:57 +0800, Yu Chen wrote:
+> > Hi Oliver,
+> > On Thu, Jul 26, 2018 at 09:30:46AM +0200, Oliver Neukum wrote:
+> > > On Di, 2018-07-24 at 00:23 +0800, Yu Chen wrote:
+> > > > 
+> > > > Good point, we once tried to generate key in kernel, but people
+> > > > suggest to generate key in userspace and provide it to the
+> > > > kernel, which is what ecryptfs do currently, so it seems this
+> > > > should also be safe for encryption in kernel.
+> > > > https://www.spinics.net/lists/linux-crypto/msg33145.html
+> > > > Thus Chun-Yi's signature can use EFI key and both the key from
+> > > > user space.
+> > > 
+> > > Hi,
+> > > 
+> > > ecryptfs can trust user space. It is supposed to keep data
+> > > safe while the system is inoperative.
+> > 
+> > Humm, I did not quite get the point here, let's take fscrypt
 > 
-> Thanks for the review and pointing me to the passive governor. I agree
-> that at a high level they are both doing the same. I can certainly
-> stuff this CPU freq to dev freq mapping into passive governor, but I
-> think it'll just make one huge set of code that's harder to understand
-> and maintain because it trying to do different things under the hood.
+> While the system is running and the fs is mounted, your data
+> is as secure as root access to your machine, right? You encrypt
+> a disk primarily so data cannot be recovered (and altered) while
+> the system is not running.
+>
+> Secure Boot does not trust root fully. There is a cryptographic
+> chain of trust and user space is not part of it.
+>
+Okay, I see. So if we want to use secure boot mechanism for
+hibernation encryption, user space is trusted.
+> > for example, the kernel gets user generated key from user space,
+> > and uses per-inode nonce(random bytes) as the master key to
+> > do a KDF(key derivation function) on user provided key, and uses
+> > that key for encryption. We can also added similar mechanism
+> > to generate the key in kernel space but the key should be
+> > original from user's provided key(password derived), because
+> > the security boot/signature mechanism could not cover the case
+> > that, two different users could resume to each other's context
+> > because there isn't any certification during resume if it is
+> > on the same physical hardware.
 > 
-> There are also a bunch of complexities and optimizations that come
-> with the cpufreq-map governor that don't fit with the passive
-> governor.
+> Please explain. You will always have to suspend the whole machine
+> with all tasks of all users. And STD with Secure Boot need not
+> imply that you encrypt your discs. You need to encrypt only
+> kernel memory to meet the requirements.
 > 
-> 1. It's not one CPU who's frequency we have to listen to. There are
-> multiple CPUs/policies we have to aggregate across.
-> 2. We have to deal with big vs little having different needs/mappings.
-> 3. Since it's always just CPUfreq, I can optimize the handling in the
-> transition notifiers. If I have 4 different devices that are scaled
-> based on CPU freq, I still use only 1 transition notifier. It becomes
-> a bit harder to do with the passive governor.
-> 4. It requires that the device explicitly support the passive governor
-> and pick a mapping function. With cpufreq-map governor, the device
-> drivers don't need to make any changes. Whoever is making a
-> device/board can choose what devices to scale up base on CPU freq
-> based on their board and their needs. Even an end user can say, scale
-> the GPU based on my CPU based on interpolation if they choose to.
-> 5. If a device has some other use for the private data, it can't work
-> with passive governor, but can work with cpufreq-map governor.
-> 6. I also want to improve cpufreq-map governor to handle hotplug
-> correctly in later patches (needs more discussion) and that'll add
-> more complexity.
+> As STD affects the whole machine it must require root rights.
+> So I cannot see how you can talk about a session belonging
+> to a user. Please explain.
 > 
-> I think for these reasons we shouldn't combine these two governors.
-> Let me know what you think.
+The case is for physical access, not the 'user' in OS.
+> It seems to me that you can in theory encrypt the password
+> by a key coming from user space, so that you need to know
+> an additional key to resume the system, but that seems to me
+> above and beyond what Secure Boot requires.
+> 
+Understand.
 
-Friendly reminder.
-
-Thanks,
-Saravana
+Best,
+Yu
+> 	Regards
+> 		Oliver
+> 
