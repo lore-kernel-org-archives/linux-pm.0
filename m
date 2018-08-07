@@ -1,134 +1,82 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH 1/8] devfreq: rockchip-dfi: Move GRF definitions to a
- common place.
-Date: Tue, 7 Aug 2018 12:50:46 +0200
-Message-ID: <94d01f35-7baa-aa6a-710e-c046fcf52286@collabora.com>
-References: <20180730081124.30698-1-enric.balletbo@collabora.com>
- <CGME20180730081245epcas3p2794d7d7c21f4059ab89ec59a0ef9fa22@epcas3p2.samsung.com>
- <20180730081124.30698-2-enric.balletbo@collabora.com>
- <5B6170F4.4070102@samsung.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Tue, 7 Aug 2018 12:12:37 +0100
+Message-ID: <20180807111237.GA1588@e107155-lin>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+ <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
+ <b362d9f769fde3ce1a2dcd89f20eb476@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5B6170F4.4070102@samsung.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <b362d9f769fde3ce1a2dcd89f20eb476@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Rob Herring <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Sandy Huang <hjc@rock-chips.com>, David Airlie <airlied@linux.ie>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, dri-devel@lists.freedesktop.org, Lin Huang <hl@rock-chips.com>, kernel@collabora.com, robin.murphy@arm.com, Sean Paul <seanpaul@chromium.org>, linux-arm-kernel@lists.infradead.org
+To: skannan@codeaurora.org
+Cc: Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org, evgreen@google.com, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Mon, Aug 06, 2018 at 01:54:24PM -0700, skannan@codeaurora.org wrote:
+> On 2018-08-03 16:46, Stephen Boyd wrote:
+> >Quoting Taniya Das (2018-07-24 03:42:49)
+> >>diff --git
+> >>a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> >>b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> >>new file mode 100644
+> >>index 0000000..22d4355
+> >>--- /dev/null
+> >>+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> >>@@ -0,0 +1,172 @@
+> >[...]
+> >>+
+> >>+               CPU7: cpu@700 {
+> >>+                       device_type = "cpu";
+> >>+                       compatible = "qcom,kryo385";
+> >>+                       reg = <0x0 0x700>;
+> >>+                       enable-method = "psci";
+> >>+                       next-level-cache = <&L2_700>;
+> >>+                       qcom,freq-domain = <&freq_domain_table1>;
+> >>+                       L2_700: l2-cache {
+> >>+                               compatible = "cache";
+> >>+                               next-level-cache = <&L3_0>;
+> >>+                       };
+> >>+               };
+> >>+       };
+> >>+
+> >>+       qcom,cpufreq-hw {
+> >>+               compatible = "qcom,cpufreq-hw";
+> >>+
+> >>+               clocks = <&rpmhcc RPMH_CXO_CLK>;
+> >>+               clock-names = "xo";
+> >>+
+> >>+               #address-cells = <2>;
+> >>+               #size-cells = <2>;
+> >>+               ranges;
+> >>+               freq_domain_table0: freq_table0 {
+> >>+                       reg = <0 0x17d43000 0 0x1400>;
+> >>+               };
+> >>+
+> >>+               freq_domain_table1: freq_table1 {
+> >>+                       reg = <0 0x17d45800 0 0x1400>;
+> >>+               };
+> >
+> >Sorry, this is just not proper DT design. The whole node should have a
+> >reg property, and it should contain two (or three if we're handling the
+> >L3 clk domain?) different offsets for the different power clusters. The
+> >problem seems to still be that we don't have a way to map the CPUs to
+> >the clk domains they're in provided by this hardware block. Making
+> >subnodes is not the solution.
+> 
+> The problem is mapping clock domains to logical CPUs that CPUfreq uses. The
+> physical CPU to logical CPU mapping can be changed by the kernel (even
+> through DT if I'm not mistaken). So we need to have a way to tell in DT
+> which physical CPUs are connected to which CPU freq clock domain.
+> 
 
-On 01/08/18 10:36, Chanwoo Choi wrote:
-> Hi Enric,
-> 
-> On 2018년 07월 30일 17:11, Enric Balletbo i Serra wrote:
->> Some rk3399 GRF (Generic Register Files) definitions can be used for
->> different drivers. Move these definitions to a common include so we
->> don't need to duplicate these definitions.
->>
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> ---
->>
->> Changes in v1:
->> - [RFC 1/10] Add Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
-> Even if you add the changes log, you are missing my Acked-by tag.
-> 
+How about passing CPU freq clock domain id as along with phandle in
+qcom,freq-domain ?
 
-Ops, right, sorry about that. I'll fix in next version.
-
->> - [RFC 1/10] s/Generic/General/ (Robin Murphy)
->> - [RFC 4/10] Removed from the series. I did not found a use case where not holding the mutex causes the issue.
->> - [RFC 7/10] Removed from the series. I did not found a use case where this matters.
->>
->>  drivers/devfreq/event/rockchip-dfi.c | 23 +++++++----------------
->>  include/soc/rockchip/rk3399_grf.h    | 21 +++++++++++++++++++++
->>  2 files changed, 28 insertions(+), 16 deletions(-)
->>  create mode 100644 include/soc/rockchip/rk3399_grf.h
->>
->> diff --git a/drivers/devfreq/event/rockchip-dfi.c b/drivers/devfreq/event/rockchip-dfi.c
->> index 22b113363ffc..2fbbcbeb644f 100644
->> --- a/drivers/devfreq/event/rockchip-dfi.c
->> +++ b/drivers/devfreq/event/rockchip-dfi.c
->> @@ -26,6 +26,8 @@
->>  #include <linux/list.h>
->>  #include <linux/of.h>
->>  
->> +#include <soc/rockchip/rk3399_grf.h>
->> +
->>  #define RK3399_DMC_NUM_CH	2
->>  
->>  /* DDRMON_CTRL */
->> @@ -43,18 +45,6 @@
->>  #define DDRMON_CH1_COUNT_NUM		0x3c
->>  #define DDRMON_CH1_DFI_ACCESS_NUM	0x40
->>  
->> -/* pmu grf */
->> -#define PMUGRF_OS_REG2	0x308
->> -#define DDRTYPE_SHIFT	13
->> -#define DDRTYPE_MASK	7
->> -
->> -enum {
->> -	DDR3 = 3,
->> -	LPDDR3 = 6,
->> -	LPDDR4 = 7,
->> -	UNUSED = 0xFF
->> -};
->> -
->>  struct dmc_usage {
->>  	u32 access;
->>  	u32 total;
->> @@ -83,16 +73,17 @@ static void rockchip_dfi_start_hardware_counter(struct devfreq_event_dev *edev)
->>  	u32 ddr_type;
->>  
->>  	/* get ddr type */
->> -	regmap_read(info->regmap_pmu, PMUGRF_OS_REG2, &val);
->> -	ddr_type = (val >> DDRTYPE_SHIFT) & DDRTYPE_MASK;
->> +	regmap_read(info->regmap_pmu, RK3399_PMUGRF_OS_REG2, &val);
->> +	ddr_type = (val >> RK3399_PMUGRF_DDRTYPE_SHIFT) &
->> +		    RK3399_PMUGRF_DDRTYPE_MASK;
->>  
->>  	/* clear DDRMON_CTRL setting */
->>  	writel_relaxed(CLR_DDRMON_CTRL, dfi_regs + DDRMON_CTRL);
->>  
->>  	/* set ddr type to dfi */
->> -	if (ddr_type == LPDDR3)
->> +	if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR3)
->>  		writel_relaxed(LPDDR3_EN, dfi_regs + DDRMON_CTRL);
->> -	else if (ddr_type == LPDDR4)
->> +	else if (ddr_type == RK3399_PMUGRF_DDRTYPE_LPDDR4)
->>  		writel_relaxed(LPDDR4_EN, dfi_regs + DDRMON_CTRL);
->>  
->>  	/* enable count, use software mode */
->> diff --git a/include/soc/rockchip/rk3399_grf.h b/include/soc/rockchip/rk3399_grf.h
->> new file mode 100644
->> index 000000000000..3eebabcb2812
->> --- /dev/null
->> +++ b/include/soc/rockchip/rk3399_grf.h
->> @@ -0,0 +1,21 @@
->> +/* SPDX-License-Identifier: GPL-2.0+ */
->> +/*
->> + * Rockchip General Register Files definitions
->> + *
->> + * Copyright (c) 2018, Collabora Ltd.
->> + * Author: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->> + */
->> +
->> +#ifndef __SOC_RK3399_GRF_H
->> +#define __SOC_RK3399_GRF_H
->> +
->> +/* PMU GRF Registers */
->> +#define RK3399_PMUGRF_OS_REG2		0x308
->> +#define RK3399_PMUGRF_DDRTYPE_SHIFT	13
->> +#define RK3399_PMUGRF_DDRTYPE_MASK	7
->> +#define RK3399_PMUGRF_DDRTYPE_DDR3	3
->> +#define RK3399_PMUGRF_DDRTYPE_LPDDR2	5
->> +#define RK3399_PMUGRF_DDRTYPE_LPDDR3	6
->> +#define RK3399_PMUGRF_DDRTYPE_LPDDR4	7
->> +
->> +#endif
->>
-> 
-> 
+--
+Regards,
+Sudeep
