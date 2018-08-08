@@ -1,132 +1,99 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Wed, 8 Aug 2018 15:45:26 +0530
-Message-ID: <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
- <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
- <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
- <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
- <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
- <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Wed, 8 Aug 2018 11:56:19 +0100
+Message-ID: <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <2056372.NMt4aPaF4h@aspire.rjw.lan>
+ <2205807.cU2puvubpP@aspire.rjw.lan>
+ <1726374.375PCQfjLZ@aspire.rjw.lan>
+ <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
+ <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, skannan@codeaurora.org
-Cc: Evan Green <evgreen@google.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Aug 06, 2018 at 11:37:55AM +0200, Rafael J. Wysocki wrote:
+> On Fri, Aug 3, 2018 at 1:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > [...]
+> >
+> >>>
+> >>> Assuming that I have got that right, there are concerns, mostly regarding
+> >>> patch [07/26], but I will reply to that directly.
+> >>
+> >> Well, I haven't got that right, so never mind.
+> >>
+> >> There are a few minor things to address, but apart from that the general
+> >> genpd patches look ready.
+> >
+> > Alright, thanks!
+> >
+> > I will re-spin the series and post a new version once 4.19 rc1 is out.
+> > Hopefully we can queue it up early in next cycle to get it tested in
+> > next for a while.
+> >
+> >>
+> >>> The $subject patch is fine by me by itself, but it obviously depends on the
+> >>> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
+> >>> particularly useful without the rest of the series.
+> >>>
+> >>> As far as patches [10-26/26] go, I'd like to see some review comments and/or
+> >>> tags from the people with vested interest in there, in particular from Daniel
+> >>> on patch [12/26] and from Sudeep on the PSCI ones.
+> >>
+> >> But this still holds.
+> >
+> > Actually, patch 10 and patch11 is ready to go as well. I ping Daniel
+> > on patch 12.
+> >
+> > In regards to the rest of the series, some of the PSCI/ARM changes
+> > have been reviewed by Mark Rutland, however several changes have not
+> > been acked.
+> >
+> > On the other hand, one can also interpret the long silence in regards
+> > to PSCI/ARM changes as they are good to go. :-)
+> 
+> Well, in that case giving an ACK to them should not be an issue for
+> the people with a vested interest I suppose.
 
+Apologies to everyone for the delay in replying.
 
-On 8/8/2018 11:52 AM, Stephen Boyd wrote:
-> Quoting skannan@codeaurora.org (2018-08-06 13:46:05)
->> On 2018-08-03 15:24, Stephen Boyd wrote:
->>> Quoting skannan@codeaurora.org (2018-08-03 12:52:48)
->>>> On 2018-08-03 12:40, Evan Green wrote:
->>>>> Hi Taniya,
->>>>>
->>>>> On Tue, Jul 24, 2018 at 3:44 AM Taniya Das <tdas@codeaurora.org> wrote:
->>>>>>
->>>>>> +               if (src)
->>>>>> +                       c->table[i].frequency = c->xo_rate * lval /
->>>>>> 1000;
->>>>>> +               else
->>>>>> +                       c->table[i].frequency = INIT_RATE / 1000;
->>>>>
->>>>> I don't know much about how this hardware works, but based on the
->>>>> mask, src has 4 possible values. So does 0 mean INIT_RATE, and 1, 2,
->>>>> and 3 all mean xo_rate?
->>>>>
->>>>> Also, is INIT_RATE really constant? It sounds like gpll0 (or
->>>>> gpll0_out_even?). You're already getting the xo clock, why not get
->>>>> gpll0's real rate as well?
->>>>
->>>> Actually I was about to comment and say NOT to get clocks just to get
->>>> their rate. The XO_RATE is just a multiplication factor. This HW/FW
->>>> can
->>>> change in the future and make the multiplication factor to 1KHz.
->>>
->>> So future changes to this hardware are going to make this register
->>> return the final frequency that we should use? Sounds great! But that
->>> isn't how it's working right now. We need to have XO in the binding
->>> here
->>> so the driver can work with different XO frequencies in case that ever
->>> happens. Same story for GPLL0. Hardcoding this stuff in the driver just
->>> means we'll have to swizzle things in the driver when it changes.
->>
->> XO being a different frequency in a Qualcomm chip is way way less likely
->> than anything else we are discussing here. In the 10+years I've been
->> there this has never changed.
->>
->> So, how about making this binding optional? If it's not present we can
->> make assumptions for XO rate and init rate. That'll handle your
->> hypothetical use case while also being optimized.
-> 
-> Optional properties are almost never correct for clks. Either the clk
-> goes there or it doesn't go there. The only time it's optional is if the
-> HW has the choice of generating the clk itself internally or to use an
-> external clk as input.
-> 
-> In this case, it's not optional, it's actually used so marking it
-> optional is highly confusing.
-> 
->>
->>>> We also
->>>> can't really control any of the clocks going to this block from Linux
->>>> (it's all locked down).
->>>
->>> This shouldn't matter. The clocks going to this hardware block are
->>> described by the firmware to the OS by means of the DT node. If the
->>> firmware or the hardware decides to change the input clks then the
->>> binding can have different clk nodes used.
->>
->> There are tons of clocks that are input to blocks in an SoC that are
->> never controlled by Linux. Or are expose in DT because they are set up
->> ahead of time and can't change. So, why make an exception here?
-> 
-> Because the driver doesn't have to hard-code some frequency that can
-> easily come from the DT, making it more flexible for frequency plan
-> changes. It doesn't matter about control of clks at all here, so this
-> comparison is just plain wrong.
-> 
->>
->>>> The INIT_RATE will
->>>> always be 300 MHz independent of what source it's coming from (as in,
->>>> if
->>>> GPLL0 can't give 300, the HW design will be so that we'll find a
->>>> different source).
->>>>
->>>> So, I'd like to remove any clock bindings for this driver.
->>>
->>> No. Bindings describe how the hardware is connected. Please don't
->>> remove
->>> clocks from the binding just because probe defer is a concern.
->>
->> Binding describes hardware controllable by the OS. That's the reality.
->> Let's not add mandatory clock bindings for clocks that the OS can't do
->> anything about.
->>
-> 
-> It seems that you believe clks should only be used to turn on/off and
-> control rates. That is not the whole truth. Sometimes clks are there
-> just to express the clk frequencies that are present in the design so
-> that drivers can figure out what to do.
-> 
+Side note: cpu_pm_enter()/exit() are also called through syscore ops in
+s2RAM/IDLE, you know that but I just wanted to mention it to compound
+the discussion.
 
-Stephen,
+As for PSCI patches I do not personally think PSCI OSI enablement is
+beneficial (and my position has always been the same since PSCI OSI was
+added to the specification, I am not even talking about this patchset)
+and Arm Trusted Firmware does not currently support it for the same
+reason.
 
-As this clock is not configurable by linux clock drivers and we really 
-do not care the parent src(as mentioned by Saravana) to generate the 
-300MHz, would it be good to define a fixed rate clock so as to express 
-the HW connectivity & frequency?
+We (if Mark and Sudeep agree) will enable PSCI OSI if and when we have a
+definitive and constructive answer to *why* we have to do that that is
+not a dogmatic "the kernel knows better" but rather a comprehensive
+power benchmark evaluation - I thought that was the agreement reached
+at OSPM but apparently I was mistaken.
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
+As a reminder - PSCI firmware implementation has to have state machines
+and locking to guarantee safe power down operations (and to flush caches
+only if necessary - which requires cpu masks for power domains) and
+that's true whether we enable PSCI OSI or not, the coordination logic
+must be in firmware/hardware _already_ - the cpumasks, the power domain
+topology, etc.
 
---
+I agree with the power-domains representation of idle-states (since
+that's the correct HW description) and I thought and hoped that runtime
+PM could help _remove_ the CPU PM notifiers (by making the notifiers
+callbacks a runtime PM one) even though I have to say that's quite
+complex, given that only few (ie one instance :)) CPU PM notifiers
+callbacks are backed by a struct device (eg an ARM PMU is a device but
+for instance the GIC is not a device so its save/restore code I am not
+sure it can be implemented with runtime PM callbacks).
+
+Lorenzo
