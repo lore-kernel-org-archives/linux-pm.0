@@ -1,103 +1,113 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Wed, 8 Aug 2018 19:58:45 +0200
-Message-ID: <20180808175845.GB16217@amd>
-References: <20180723162302.GA4503@sandybridge-desktop>
- <1532590246.7411.3.camel@suse.com>
- <20180726081404.GG4244@linux-l9pv.suse>
- <20180730170415.GQ4244@linux-l9pv.suse>
- <20180803033702.GB416@sandybridge-desktop>
- <20180803053445.GC4244@linux-l9pv.suse>
- <CADjb_WSURQz86+E8kakNf7UBDM+aho+uaz3QdDkuGsEgan=szw@mail.gmail.com>
- <20180805100200.GB22948@amd>
- <20180806084534.GB12124@chenyu-desktop>
- <20180806103958.GI27062@linux-l9pv.suse>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Wed, 8 Aug 2018 12:02:48 -0600
+Message-ID: <20180808180248.GC27850@codeaurora.org>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <2056372.NMt4aPaF4h@aspire.rjw.lan>
+ <2205807.cU2puvubpP@aspire.rjw.lan>
+ <1726374.375PCQfjLZ@aspire.rjw.lan>
+ <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
+ <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
+ <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="61jdw2sOBCFtR2d/"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180806103958.GI27062@linux-l9pv.suse>
+In-Reply-To: <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: Yu Chen <yu.c.chen@intel.com>, Ryan Chen <yu.chen.surf@gmail.com>, oneukum@suse.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, ebiggers@google.com, Theodore Ts'o <tytso@mit.edu>, smueller@chronox.de, denkenz@gmail.com, Linux PM list <linux-pm@vger.kernel.org>, linux-crypto@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kookoo.gu@intel.com, Zhang Rui <rui.zhang@intel.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Aug 08 2018 at 04:56 -0600, Lorenzo Pieralisi wrote:
+>On Mon, Aug 06, 2018 at 11:37:55AM +0200, Rafael J. Wysocki wrote:
+>> On Fri, Aug 3, 2018 at 1:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > [...]
+>> >
+>> >>>
+>> >>> Assuming that I have got that right, there are concerns, mostly regarding
+>> >>> patch [07/26], but I will reply to that directly.
+>> >>
+>> >> Well, I haven't got that right, so never mind.
+>> >>
+>> >> There are a few minor things to address, but apart from that the general
+>> >> genpd patches look ready.
+>> >
+>> > Alright, thanks!
+>> >
+>> > I will re-spin the series and post a new version once 4.19 rc1 is out.
+>> > Hopefully we can queue it up early in next cycle to get it tested in
+>> > next for a while.
+>> >
+>> >>
+>> >>> The $subject patch is fine by me by itself, but it obviously depends on the
+>> >>> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
+>> >>> particularly useful without the rest of the series.
+>> >>>
+>> >>> As far as patches [10-26/26] go, I'd like to see some review comments and/or
+>> >>> tags from the people with vested interest in there, in particular from Daniel
+>> >>> on patch [12/26] and from Sudeep on the PSCI ones.
+>> >>
+>> >> But this still holds.
+>> >
+>> > Actually, patch 10 and patch11 is ready to go as well. I ping Daniel
+>> > on patch 12.
+>> >
+>> > In regards to the rest of the series, some of the PSCI/ARM changes
+>> > have been reviewed by Mark Rutland, however several changes have not
+>> > been acked.
+>> >
+>> > On the other hand, one can also interpret the long silence in regards
+>> > to PSCI/ARM changes as they are good to go. :-)
+>>
+>> Well, in that case giving an ACK to them should not be an issue for
+>> the people with a vested interest I suppose.
+>
+>Apologies to everyone for the delay in replying.
+>
+>Side note: cpu_pm_enter()/exit() are also called through syscore ops in
+>s2RAM/IDLE, you know that but I just wanted to mention it to compound
+>the discussion.
+>
+>As for PSCI patches I do not personally think PSCI OSI enablement is
+>beneficial (and my position has always been the same since PSCI OSI was
+>added to the specification, I am not even talking about this patchset)
+>and Arm Trusted Firmware does not currently support it for the same
+>reason.
+>
+>We (if Mark and Sudeep agree) will enable PSCI OSI if and when we have a
+>definitive and constructive answer to *why* we have to do that that is
+>not a dogmatic "the kernel knows better" but rather a comprehensive
+>power benchmark evaluation - I thought that was the agreement reached
+>at OSPM but apparently I was mistaken.
+>
+I will not speak to any comparison of benchmarks between OSI and PC.
+AFAIK, there are no platforms supporting both.
 
---61jdw2sOBCFtR2d/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+But, the OSI feature is critical for QCOM mobile platforms. The
+last man activities during cpuidle save quite a lot of power. Powering
+off the clocks, busses, regulators and even the oscillator is very
+important to have a reasonable battery life when using the phone.
+Platform coordinated approach falls quite short of the needs of a
+powerful processor with a desired battery efficiency.
 
-On Mon 2018-08-06 18:39:58, joeyli wrote:
-> On Mon, Aug 06, 2018 at 04:45:34PM +0800, Yu Chen wrote:
-> > Hi Pavel,
-> > On Sun, Aug 05, 2018 at 12:02:00PM +0200, Pavel Machek wrote:
-> > > Hi!
-> > >=20
-> > > > > User space doesn't need to involve. The EFI root key is generated=
- by
-> > > > > EFI boot stub and be transfer to kernel. It's stored in EFI boot =
-service
-> > > > > variable that it can only be accessed by trusted EFI binary when
-> > > > > secure boot is enabled.
-> > > > >
-> > > > Okay, this apply to the 'suspend' phase, right?
-> > > > I'm still a little confused about the 'resume' phase.
-> > > > Taking encryption as example(not signature),
-> > > > the purpose of doing hibernation encryption is to prevent other use=
-rs
-> > > > from stealing ram content. Say, user A uses a  passphrase to genera=
-te the
-> > >=20
-> > > No, I don't think that's purpose here.
-> > >=20
-> > > Purpose here is to prevent user from reading/modifying kernel memory
-> > > content on machine he owns.
-> > >
-> > Say, A puts his laptop into hibernation and walks away,
-> > and B walks by, and opens A's laptop and wakes up the system and he
-> > can do what he wants. Although EFI key/TPM trusted key is enabled,
-> > currently there's no certification during resume, which sounds
-> > unsafe to me. Afterall, the original requirement is to probe
-> > user for password during resume, which sounds more natural.
->=20
-> OK, I saw your case. This is a physical accessing.
->=20
-> I have a question: The suspend to memory also has the same behavior
-> and more people are using suspend. Should we think a common solution
-> to cover S3 and S4?=20
+-- Lina
 
-Well, we have similar problem during runtime, too ;-).
-
-Anyway, I don't think we should encrypt memory during S3 in kernel.
-
-If you wanted to do that, you could use uswsusp to take snapshot,
-store it in ram, encrypt, erase originals (new API might be
-needed... hmm. does not exactly sound easy... kexec?), trigger S3, decrypt,
-resume from snapshot...
-
-Sounds like a bit of work...
-
-Best regards,
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---61jdw2sOBCFtR2d/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAltrL1UACgkQMOfwapXb+vKFDwCff3blvM3rAHLkiEXPpIldRgRl
-b2YAnjV9fbZsH9FDXiTJOYJ/YcxhL69c
-=kQRP
------END PGP SIGNATURE-----
-
---61jdw2sOBCFtR2d/--
+>As a reminder - PSCI firmware implementation has to have state machines
+>and locking to guarantee safe power down operations (and to flush caches
+>only if necessary - which requires cpu masks for power domains) and
+>that's true whether we enable PSCI OSI or not, the coordination logic
+>must be in firmware/hardware _already_ - the cpumasks, the power domain
+>topology, etc.
+>
+>I agree with the power-domains representation of idle-states (since
+>that's the correct HW description) and I thought and hoped that runtime
+>PM could help _remove_ the CPU PM notifiers (by making the notifiers
+>callbacks a runtime PM one) even though I have to say that's quite
+>complex, given that only few (ie one instance :)) CPU PM notifiers
+>callbacks are backed by a struct device (eg an ARM PMU is a device but
+>for instance the GIC is not a device so its save/restore code I am not
+>sure it can be implemented with runtime PM callbacks).
+>
+>Lorenzo
