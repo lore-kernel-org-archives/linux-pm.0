@@ -1,58 +1,61 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v3 05/14] sched/cpufreq: uclamp: add utilization clamping
- for FAIR tasks
-Date: Wed, 8 Aug 2018 15:18:59 +0200
-Message-ID: <CAKfTPtC2adLupg7wy1JU9zxKx1466Sza6fSCcr92wcawm1OYkg@mail.gmail.com>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com> <20180806163946.28380-6-patrick.bellasi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH] x86/ACPI/cstate: Output AMD on APCI C1 FFH MWAIT AMD systems
+Date: Wed,  8 Aug 2018 13:47:35 -0400
+Message-ID: <20180808174735.3114-1-prarit@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180806163946.28380-6-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, viresh kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, "Cc: Steve Muckle" <smuckle@google.com>, surenb@google.com
+To: linux-kernel@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
+commit 5209654a46ee ("x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+systems") allows use of FFH for ACPI C1 but tools like cpupower and turbostat
+display INTEL for the cstate description.
 
-On Mon, 6 Aug 2018 at 18:40, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
->
+Output "AMD" for AMD systems with FFH for ACPI C1.
 
-> @@ -222,8 +222,13 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ arch/x86/kernel/acpi/cstate.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
->         util = cpu_util_cfs(rq);
-> +       if (util)
-> +               util = uclamp_util(cpu_of(rq), util);
->         util += cpu_util_rt(rq);
->
->         /*
-
-> @@ -322,11 +328,24 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-
-> +       max_boost = sg_cpu->iowait_boost_max;
-> +       if (!cpu_util_rt(cpu_rq(sg_cpu->cpu)))
-> +               max_boost = uclamp_util(sg_cpu->cpu, max_boost);
-> +
-
-> +static inline unsigned int uclamp_value(unsigned int cpu, int clamp_id)
-> +{
-> +       struct uclamp_cpu *uc_cpu = &cpu_rq(cpu)->uclamp;
-> +
-> +       if (uc_cpu->value[clamp_id] == UCLAMP_NOT_VALID)
-> +               return uclamp_none(clamp_id);
-> +
-> +       return uc_cpu->value[clamp_id];
-> +}
-> +
-
-> +static inline unsigned int uclamp_util(unsigned int cpu, unsigned int util)
-
-using struct *rq rq instead of cpu as parameter would align
-uclamp_util() interface with other cpu_util_*() interface and remove
-some cpu_of(rq) and  cpu_rq(cpu)
-> +{
-> +       unsigned int min_util = uclamp_value(cpu, UCLAMP_MIN);
-> +       unsigned int max_util = uclamp_value(cpu, UCLAMP_MAX);
-> +
-> +       return clamp(util, min_util, max_util);
-> +}
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index dde437f5d14f..f10d3c673519 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -76,6 +76,7 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+ 	unsigned int edx_part;
+ 	unsigned int cstate_type; /* C-state type and not ACPI C-state type */
+ 	unsigned int num_cstate_subtype;
++	struct cpuinfo_x86 *c = &boot_cpu_data;
+ 
+ 	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &edx);
+ 
+@@ -107,9 +108,14 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+ 			"Monitor-Mwait will be used to enter C-%d state\n",
+ 			cx->type);
+ 	}
+-	snprintf(cx->desc,
+-			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+-			cx->address);
++	if (c->x86_vendor == X86_VENDOR_INTEL)
++		snprintf(cx->desc,
++			 ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
++			 cx->address);
++	else
++		snprintf(cx->desc,
++			 ACPI_CX_DESC_LEN, "ACPI FFH AMD MWAIT 0x%x",
++			 cx->address);
+ out:
+ 	return retval;
+ }
+-- 
+2.14.4
