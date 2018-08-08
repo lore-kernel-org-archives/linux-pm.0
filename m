@@ -1,138 +1,264 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Tue, 07 Aug 2018 23:22:12 -0700
-Message-ID: <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
- <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
- <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
- <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
- <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] of: thermal: Allow multiple devices to share cooling map
+Date: Wed,  8 Aug 2018 12:38:14 +0530
+Message-ID: <438c3792a41b31629fb702c919ad244db97c0283.1533711976.git.viresh.kumar@linaro.org>
+References: <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
+In-Reply-To: <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: skannan@codeaurora.org
-Cc: Evan Green <evgreen@google.com>, tdas@codeaurora.org, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting skannan@codeaurora.org (2018-08-06 13:46:05)
-> On 2018-08-03 15:24, Stephen Boyd wrote:
-> > Quoting skannan@codeaurora.org (2018-08-03 12:52:48)
-> >> On 2018-08-03 12:40, Evan Green wrote:
-> >> > Hi Taniya,
-> >> >
-> >> > On Tue, Jul 24, 2018 at 3:44 AM Taniya Das <tdas@codeaurora.org> wro=
-te:
-> >> >>
-> >> >> +               if (src)
-> >> >> +                       c->table[i].frequency =3D c->xo_rate * lval=
- /
-> >> >> 1000;
-> >> >> +               else
-> >> >> +                       c->table[i].frequency =3D INIT_RATE / 1000;
-> >> >
-> >> > I don't know much about how this hardware works, but based on the
-> >> > mask, src has 4 possible values. So does 0 mean INIT_RATE, and 1, 2,
-> >> > and 3 all mean xo_rate?
-> >> >
-> >> > Also, is INIT_RATE really constant? It sounds like gpll0 (or
-> >> > gpll0_out_even?). You're already getting the xo clock, why not get
-> >> > gpll0's real rate as well?
-> >> =
+A cooling map entry may now contain a list of phandles and their
+arguments representing multiple devices which share the trip point.
 
-> >> Actually I was about to comment and say NOT to get clocks just to get
-> >> their rate. The XO_RATE is just a multiplication factor. This HW/FW =
+This patch updates the thermal OF core to parse them properly. The trip
+point and contribution value is shared by multiple cooling devices now
+and so a new structure is created, struct __thermal_cooling_bind_param,
+which represents a cooling device and its min/max states and the
+existing struct __thermal_bind_params now contains an array of this new
+cooling device structure.
 
-> >> can
-> >> change in the future and make the multiplication factor to 1KHz.
-> > =
+Tested on Hikey960.
 
-> > So future changes to this hardware are going to make this register
-> > return the final frequency that we should use? Sounds great! But that
-> > isn't how it's working right now. We need to have XO in the binding =
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2:
+- Updated commit log to include new structures information
+- Updated two error messages to give better error log
 
-> > here
-> > so the driver can work with different XO frequencies in case that ever
-> > happens. Same story for GPLL0. Hardcoding this stuff in the driver just
-> > means we'll have to swizzle things in the driver when it changes.
-> =
+ drivers/thermal/of-thermal.c | 142 +++++++++++++++++++++++++----------
+ 1 file changed, 103 insertions(+), 39 deletions(-)
 
-> XO being a different frequency in a Qualcomm chip is way way less likely =
-
-> than anything else we are discussing here. In the 10+years I've been =
-
-> there this has never changed.
-> =
-
-> So, how about making this binding optional? If it's not present we can =
-
-> make assumptions for XO rate and init rate. That'll handle your =
-
-> hypothetical use case while also being optimized.
-
-Optional properties are almost never correct for clks. Either the clk
-goes there or it doesn't go there. The only time it's optional is if the
-HW has the choice of generating the clk itself internally or to use an
-external clk as input.
-
-In this case, it's not optional, it's actually used so marking it
-optional is highly confusing.
-
-> =
-
-> >> We also
-> >> can't really control any of the clocks going to this block from Linux
-> >> (it's all locked down).
-> > =
-
-> > This shouldn't matter. The clocks going to this hardware block are
-> > described by the firmware to the OS by means of the DT node. If the
-> > firmware or the hardware decides to change the input clks then the
-> > binding can have different clk nodes used.
-> =
-
-> There are tons of clocks that are input to blocks in an SoC that are =
-
-> never controlled by Linux. Or are expose in DT because they are set up =
-
-> ahead of time and can't change. So, why make an exception here?
-
-Because the driver doesn't have to hard-code some frequency that can
-easily come from the DT, making it more flexible for frequency plan
-changes. It doesn't matter about control of clks at all here, so this
-comparison is just plain wrong.
-
-> =
-
-> >> The INIT_RATE will
-> >> always be 300 MHz independent of what source it's coming from (as in, =
-
-> >> if
-> >> GPLL0 can't give 300, the HW design will be so that we'll find a
-> >> different source).
-> >> =
-
-> >> So, I'd like to remove any clock bindings for this driver.
-> > =
-
-> > No. Bindings describe how the hardware is connected. Please don't =
-
-> > remove
-> > clocks from the binding just because probe defer is a concern.
-> =
-
-> Binding describes hardware controllable by the OS. That's the reality. =
-
-> Let's not add mandatory clock bindings for clocks that the OS can't do =
-
-> anything about.
-> =
-
-
-It seems that you believe clks should only be used to turn on/off and
-control rates. That is not the whole truth. Sometimes clks are there
-just to express the clk frequencies that are present in the design so
-that drivers can figure out what to do.
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 977a8307fbb1..16b890a4fb50 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -19,22 +19,33 @@
+ /***   Private data structures to represent thermal device tree data ***/
+ 
+ /**
+- * struct __thermal_bind_param - a match between trip and cooling device
++ * struct __thermal_cooling_bind_param - a cooling device for a trip point
+  * @cooling_device: a pointer to identify the referred cooling device
+- * @trip_id: the trip point index
+- * @usage: the percentage (from 0 to 100) of cooling contribution
+  * @min: minimum cooling state used at this trip point
+  * @max: maximum cooling state used at this trip point
+  */
+ 
+-struct __thermal_bind_params {
++struct __thermal_cooling_bind_param {
+ 	struct device_node *cooling_device;
+-	unsigned int trip_id;
+-	unsigned int usage;
+ 	unsigned long min;
+ 	unsigned long max;
+ };
+ 
++/**
++ * struct __thermal_bind_param - a match between trip and cooling device
++ * @tcbp: a pointer to an array of cooling devices
++ * @count: number of elements in array
++ * @trip_id: the trip point index
++ * @usage: the percentage (from 0 to 100) of cooling contribution
++ */
++
++struct __thermal_bind_params {
++	struct __thermal_cooling_bind_param *tcbp;
++	unsigned int count;
++	unsigned int trip_id;
++	unsigned int usage;
++};
++
+ /**
+  * struct __thermal_zone - internal representation of a thermal zone
+  * @mode: current thermal zone device mode (enabled/disabled)
+@@ -192,25 +203,31 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
+ 			   struct thermal_cooling_device *cdev)
+ {
+ 	struct __thermal_zone *data = thermal->devdata;
+-	int i;
++	struct __thermal_bind_params *tbp;
++	struct __thermal_cooling_bind_param *tcbp;
++	int i, j;
+ 
+ 	if (!data || IS_ERR(data))
+ 		return -ENODEV;
+ 
+ 	/* find where to bind */
+ 	for (i = 0; i < data->num_tbps; i++) {
+-		struct __thermal_bind_params *tbp = data->tbps + i;
++		tbp = data->tbps + i;
+ 
+-		if (tbp->cooling_device == cdev->np) {
+-			int ret;
++		for (j = 0; j < tbp->count; j++) {
++			tcbp = tbp->tcbp + j;
+ 
+-			ret = thermal_zone_bind_cooling_device(thermal,
++			if (tcbp->cooling_device == cdev->np) {
++				int ret;
++
++				ret = thermal_zone_bind_cooling_device(thermal,
+ 						tbp->trip_id, cdev,
+-						tbp->max,
+-						tbp->min,
++						tcbp->max,
++						tcbp->min,
+ 						tbp->usage);
+-			if (ret)
+-				return ret;
++				if (ret)
++					return ret;
++			}
+ 		}
+ 	}
+ 
+@@ -221,22 +238,28 @@ static int of_thermal_unbind(struct thermal_zone_device *thermal,
+ 			     struct thermal_cooling_device *cdev)
+ {
+ 	struct __thermal_zone *data = thermal->devdata;
+-	int i;
++	struct __thermal_bind_params *tbp;
++	struct __thermal_cooling_bind_param *tcbp;
++	int i, j;
+ 
+ 	if (!data || IS_ERR(data))
+ 		return -ENODEV;
+ 
+ 	/* find where to unbind */
+ 	for (i = 0; i < data->num_tbps; i++) {
+-		struct __thermal_bind_params *tbp = data->tbps + i;
++		tbp = data->tbps + i;
++
++		for (j = 0; j < tbp->count; j++) {
++			tcbp = tbp->tcbp + j;
+ 
+-		if (tbp->cooling_device == cdev->np) {
+-			int ret;
++			if (tcbp->cooling_device == cdev->np) {
++				int ret;
+ 
+-			ret = thermal_zone_unbind_cooling_device(thermal,
+-						tbp->trip_id, cdev);
+-			if (ret)
+-				return ret;
++				ret = thermal_zone_unbind_cooling_device(thermal,
++							tbp->trip_id, cdev);
++				if (ret)
++					return ret;
++			}
+ 		}
+ 	}
+ 
+@@ -652,8 +675,9 @@ static int thermal_of_populate_bind_params(struct device_node *np,
+ 					   int ntrips)
+ {
+ 	struct of_phandle_args cooling_spec;
++	struct __thermal_cooling_bind_param *__tcbp;
+ 	struct device_node *trip;
+-	int ret, i;
++	int ret, i, count;
+ 	u32 prop;
+ 
+ 	/* Default weight. Usage is optional */
+@@ -680,20 +704,44 @@ static int thermal_of_populate_bind_params(struct device_node *np,
+ 		goto end;
+ 	}
+ 
+-	ret = of_parse_phandle_with_args(np, "cooling-device", "#cooling-cells",
+-					 0, &cooling_spec);
+-	if (ret < 0) {
+-		pr_err("missing cooling_device property\n");
++	count = of_count_phandle_with_args(np, "cooling-device",
++					   "#cooling-cells");
++	if (!count) {
++		pr_err("Add a cooling_device property with at least one device\n");
+ 		goto end;
+ 	}
+-	__tbp->cooling_device = cooling_spec.np;
+-	if (cooling_spec.args_count >= 2) { /* at least min and max */
+-		__tbp->min = cooling_spec.args[0];
+-		__tbp->max = cooling_spec.args[1];
+-	} else {
+-		pr_err("wrong reference to cooling device, missing limits\n");
++
++	__tcbp = kcalloc(count, sizeof(*__tcbp), GFP_KERNEL);
++	if (!__tcbp)
++		goto end;
++
++	for (i = 0; i < count; i++) {
++		ret = of_parse_phandle_with_args(np, "cooling-device",
++				"#cooling-cells", i, &cooling_spec);
++		if (ret < 0) {
++			pr_err("Invalid cooling-device entry\n");
++			goto free_tcbp;
++		}
++
++		__tcbp[i].cooling_device = cooling_spec.np;
++
++		if (cooling_spec.args_count >= 2) { /* at least min and max */
++			__tcbp[i].min = cooling_spec.args[0];
++			__tcbp[i].max = cooling_spec.args[1];
++		} else {
++			pr_err("wrong reference to cooling device, missing limits\n");
++		}
+ 	}
+ 
++	__tbp->tcbp= __tcbp;
++	__tbp->count = count;
++
++	goto end;
++
++free_tcbp:
++	for (i = i - 1; i >= 0; i--)
++		of_node_put(__tcbp[i].cooling_device);
++	kfree(__tcbp);
+ end:
+ 	of_node_put(trip);
+ 
+@@ -900,8 +948,16 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 	return tz;
+ 
+ free_tbps:
+-	for (i = i - 1; i >= 0; i--)
+-		of_node_put(tz->tbps[i].cooling_device);
++	for (i = i - 1; i >= 0; i--) {
++		struct __thermal_bind_params *tbp = tz->tbps + i;
++		int j;
++
++		for (j = 0; j < tbp->count; j++)
++			of_node_put(tbp->tcbp[j].cooling_device);
++
++		kfree(tbp->tcbp);
++	}
++
+ 	kfree(tz->tbps);
+ free_trips:
+ 	for (i = 0; i < tz->ntrips; i++)
+@@ -917,10 +973,18 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
+ 
+ static inline void of_thermal_free_zone(struct __thermal_zone *tz)
+ {
+-	int i;
++	struct __thermal_bind_params *tbp;
++	int i, j;
++
++	for (i = 0; i < tz->num_tbps; i++) {
++		tbp = tz->tbps + i;
++
++		for (j = 0; j < tbp->count; j++)
++			of_node_put(tbp->tcbp[j].cooling_device);
++
++		kfree(tbp->tcbp);
++	}
+ 
+-	for (i = 0; i < tz->num_tbps; i++)
+-		of_node_put(tz->tbps[i].cooling_device);
+ 	kfree(tz->tbps);
+ 	for (i = 0; i < tz->ntrips; i++)
+ 		of_node_put(tz->trips[i].np);
+-- 
+2.18.0.rc1.242.g61856ae69a2c
