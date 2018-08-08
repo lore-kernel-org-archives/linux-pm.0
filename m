@@ -1,166 +1,138 @@
 From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware
- bindings
-Date: Tue, 07 Aug 2018 23:15:02 -0700
-Message-ID: <153370890232.220756.13782706852981763402@swboyd.mtv.corp.google.com>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
+Date: Tue, 07 Aug 2018 23:22:12 -0700
+Message-ID: <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
 References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
- <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
- <b362d9f769fde3ce1a2dcd89f20eb476@codeaurora.org>
- <20180807111237.GA1588@e107155-lin>
- <74d27daca2bb03716fc84f9c57118af0@codeaurora.org>
- <1aa8b42d-721f-1f5b-b1be-a6b4f220d023@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+ <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
+ <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
+ <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
+ <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1aa8b42d-721f-1f5b-b1be-a6b4f220d023@codeaurora.org>
+In-Reply-To: <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Taniya Das <tdas@codeaurora.org>, skannan@codeaurora.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: skannan@codeaurora.org
+Cc: Evan Green <evgreen@google.com>, tdas@codeaurora.org, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Taniya Das (2018-08-07 19:46:01)
-> =
+Quoting skannan@codeaurora.org (2018-08-06 13:46:05)
+> On 2018-08-03 15:24, Stephen Boyd wrote:
+> > Quoting skannan@codeaurora.org (2018-08-03 12:52:48)
+> >> On 2018-08-03 12:40, Evan Green wrote:
+> >> > Hi Taniya,
+> >> >
+> >> > On Tue, Jul 24, 2018 at 3:44 AM Taniya Das <tdas@codeaurora.org> wro=
+te:
+> >> >>
+> >> >> +               if (src)
+> >> >> +                       c->table[i].frequency =3D c->xo_rate * lval=
+ /
+> >> >> 1000;
+> >> >> +               else
+> >> >> +                       c->table[i].frequency =3D INIT_RATE / 1000;
+> >> >
+> >> > I don't know much about how this hardware works, but based on the
+> >> > mask, src has 4 possible values. So does 0 mean INIT_RATE, and 1, 2,
+> >> > and 3 all mean xo_rate?
+> >> >
+> >> > Also, is INIT_RATE really constant? It sounds like gpll0 (or
+> >> > gpll0_out_even?). You're already getting the xo clock, why not get
+> >> > gpll0's real rate as well?
+> >> =
 
-> =
+> >> Actually I was about to comment and say NOT to get clocks just to get
+> >> their rate. The XO_RATE is just a multiplication factor. This HW/FW =
 
-> On 8/8/2018 12:54 AM, skannan@codeaurora.org wrote:
-> > On 2018-08-07 04:12, Sudeep Holla wrote:
-> >> On Mon, Aug 06, 2018 at 01:54:24PM -0700, skannan@codeaurora.org wrote:
-> >>> On 2018-08-03 16:46, Stephen Boyd wrote:
-> >>> >Quoting Taniya Das (2018-07-24 03:42:49)
-> >>> >>diff --git
-> >>> >>a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> >>> >>b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> >>> >>new file mode 100644
-> >>> >>index 0000000..22d4355
-> >>> >>--- /dev/null
-> >>> >>+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> >>> >>@@ -0,0 +1,172 @@
-> >>> >[...]
-> >>> >>+
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 CPU7: cpu@700 {
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 device_t=
-ype =3D "cpu";
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 compatib=
-le =3D "qcom,kryo385";
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 reg =3D =
-<0x0 0x700>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 enable-m=
-ethod =3D "psci";
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 next-lev=
-el-cache =3D <&L2_700>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 qcom,fre=
-q-domain =3D <&freq_domain_table1>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 L2_700: =
-l2-cache {
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 compatible =3D "cache";
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 next-level-cache =3D <&L3_0>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 };
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 };
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 };
-> >>> >>+
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 qcom,cpufreq-hw {
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 compatible =3D "qcom,cpufreq-hw";
-> >>> >>+
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 clocks =3D <&rpmhcc RPMH_CXO_CLK>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 clock-names =3D "xo";
-> >>> >>+
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 #address-cells =3D <2>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 #size-cells =3D <2>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 ranges;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 freq_domain_table0: freq_table0 {
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 reg =3D =
-<0 0x17d43000 0 0x1400>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 };
-> >>> >>+
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 freq_domain_table1: freq_table1 {
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 reg =3D =
-<0 0x17d45800 0 0x1400>;
-> >>> >>+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0 };
-> >>> >
-> >>> >Sorry, this is just not proper DT design. The whole node should have=
- a
-> >>> >reg property, and it should contain two (or three if we're handling =
-the
-> >>> >L3 clk domain?) different offsets for the different power clusters. =
-The
-> >>> >problem seems to still be that we don't have a way to map the CPUs to
-> >>> >the clk domains they're in provided by this hardware block. Making
-> >>> >subnodes is not the solution.
-> >>>
-> >>> The problem is mapping clock domains to logical CPUs that CPUfreq =
-
-> >>> uses. The
-> >>> physical CPU to logical CPU mapping can be changed by the kernel (even
-> >>> through DT if I'm not mistaken). So we need to have a way to tell in =
-DT
-> >>> which physical CPUs are connected to which CPU freq clock domain.
-> >>>
-> >>
-> >> How about passing CPU freq clock domain id as along with phandle in
-> >> qcom,freq-domain ?
+> >> can
+> >> change in the future and make the multiplication factor to 1KHz.
 > > =
 
-> > Now sure what you mean here. There's no such this as CPUfreq clock =
+> > So future changes to this hardware are going to make this register
+> > return the final frequency that we should use? Sounds great! But that
+> > isn't how it's working right now. We need to have XO in the binding =
 
-> > domain id. It has policies that are made up of logical CPU numbers. =
+> > here
+> > so the driver can work with different XO frequencies in case that ever
+> > happens. Same story for GPLL0. Hardcoding this stuff in the driver just
+> > means we'll have to swizzle things in the driver when it changes.
+> =
 
-> > Logical CPU is not something that you can fix in DT.
+> XO being a different frequency in a Qualcomm chip is way way less likely =
+
+> than anything else we are discussing here. In the 10+years I've been =
+
+> there this has never changed.
+> =
+
+> So, how about making this binding optional? If it's not present we can =
+
+> make assumptions for XO rate and init rate. That'll handle your =
+
+> hypothetical use case while also being optimized.
+
+Optional properties are almost never correct for clks. Either the clk
+goes there or it doesn't go there. The only time it's optional is if the
+HW has the choice of generating the clk itself internally or to use an
+external clk as input.
+
+In this case, it's not optional, it's actually used so marking it
+optional is highly confusing.
+
+> =
+
+> >> We also
+> >> can't really control any of the clocks going to this block from Linux
+> >> (it's all locked down).
 > > =
 
-> > -Saravana
+> > This shouldn't matter. The clocks going to this hardware block are
+> > described by the firmware to the OS by means of the DT node. If the
+> > firmware or the hardware decides to change the input clks then the
+> > binding can have different clk nodes used.
 > =
 
-> Sudeep,
+> There are tons of clocks that are input to blocks in an SoC that are =
+
+> never controlled by Linux. Or are expose in DT because they are set up =
+
+> ahead of time and can't change. So, why make an exception here?
+
+Because the driver doesn't have to hard-code some frequency that can
+easily come from the DT, making it more flexible for frequency plan
+changes. It doesn't matter about control of clks at all here, so this
+comparison is just plain wrong.
+
 > =
 
-> Earlier the design was the freq_domain would take the CPU phandles
+> >> The INIT_RATE will
+> >> always be 300 MHz independent of what source it's coming from (as in, =
+
+> >> if
+> >> GPLL0 can't give 300, the HW design will be so that we'll find a
+> >> different source).
+> >> =
+
+> >> So, I'd like to remove any clock bindings for this driver.
+> > =
+
+> > No. Bindings describe how the hardware is connected. Please don't =
+
+> > remove
+> > clocks from the binding just because probe defer is a concern.
 > =
 
-> freq_domain:
->    cpus =3D <&cpu0 &cpu1....>;
+> Binding describes hardware controllable by the OS. That's the reality. =
+
+> Let's not add mandatory clock bindings for clocks that the OS can't do =
+
+> anything about.
 > =
 
 
-I believe Sudeep is recommending something I recommended earlier. It
-would look like:
-
-   cpu7 {
-	   qcom,freq-domain =3D <&cpufreq_hw 1>;
-   }
-
-to indicate that cpu7 is in cpufreq_hw's frequency domain #1. That
-should probably be called clk domain BTW.
-
-If that was done with a phandle and a single cell, then we should have
-something similar on the cpufreq_hw node side indicating how to parse
-the cells in qcom,freq-domain. A property like #qcom,freq-domain-cells =3D
-<1> to indicate that one u32 follows the phandle.
+It seems that you believe clks should only be used to turn on/off and
+control rates. That is not the whole truth. Sometimes clks are there
+just to express the clk frequencies that are present in the design so
+that drivers can figure out what to do.
