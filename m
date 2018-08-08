@@ -1,166 +1,48 @@
-From: skannan@codeaurora.org
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Wed, 08 Aug 2018 14:18:18 -0700
-Message-ID: <8c7ab63d4c646733b89962a1d2a0a4ae@codeaurora.org>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
- <20180807164114.GA12587@rob-hp-laptop>
- <496ac47a3c78f37655b60841fba7494c@codeaurora.org>
- <20180808084754.GB25416@e107155-lin>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [v3 PATCH 0/2] arm64: dts: Add sdm845 GPU/GMU and SMMU
+Date: Wed,  8 Aug 2018 16:46:59 -0600
+Message-ID: <20180808224701.7527-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180808084754.GB25416@e107155-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rob Herring <robh@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hoegsberg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sibis-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-08-08 01:47, Sudeep Holla wrote:
-> On Tue, Aug 07, 2018 at 12:37:07PM -0700, skannan@codeaurora.org wrote:
->> On 2018-08-07 09:41, Rob Herring wrote:
->> >On Wed, Aug 01, 2018 at 05:57:41PM -0700, Saravana Kannan wrote:
->> >>Many CPU architectures have caches that can scale independent of the
->> >>CPUs.
->> >>Frequency scaling of the caches is necessary to make sure the cache is
->> >>not
->> >>a performance bottleneck that leads to poor performance and power. The
->> >>same
->> >>idea applies for RAM/DDR.
->> >>
->> >>To achieve this, this patch adds a generic devfreq governor that takes
->> >>the
->> >>current frequency of each CPU frequency domain and then adjusts the
->> >>frequency of the cache (or any devfreq device) based on the frequency of
->> >>the CPUs. It listens to CPU frequency transition notifiers to keep
->> >>itself
->> >>up to date on the current CPU frequency.
->> >>
->> >>To decide the frequency of the device, the governor does one of the
->> >>following:
->> >>
->> >>* Uses a CPU frequency to device frequency mapping table
->> >>  - Either one mapping table used for all CPU freq policies (typically
->> >>used
->> >>    for system with homogeneous cores/clusters that have the same OPPs).
->> >>  - One mapping table per CPU freq policy (typically used for ASMP
->> >>systems
->> >>    with heterogeneous CPUs with different OPPs)
->> >>
->> >>OR
->> >>
->> >>* Scales the device frequency in proportion to the CPU frequency. So, if
->> >>  the CPUs are running at their max frequency, the device runs at its
->> >>max
->> >>  frequency.  If the CPUs are running at their min frequency, the device
->> >>  runs at its min frequency. And interpolated for frequencies in
->> >>between.
->> >>
->> >>Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> >>---
->> >> .../bindings/devfreq/devfreq-cpufreq-map.txt       |  53 ++
->> >
->> >Bindings should be a separate patch.
->> >
->> >> drivers/devfreq/Kconfig                            |   8 +
->> >> drivers/devfreq/Makefile                           |   1 +
->> >> drivers/devfreq/governor_cpufreq_map.c             | 583
->> >>+++++++++++++++++++++
->> >> 4 files changed, 645 insertions(+)
->> >> create mode 100644
->> >>Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
->> >> create mode 100644 drivers/devfreq/governor_cpufreq_map.c
->> >>
->> >>diff --git
->> >>a/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
->> >>b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
->> >>new file mode 100644
->> >>index 0000000..982a30b
->> >>--- /dev/null
->> >>+++ b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
->> >>@@ -0,0 +1,53 @@
->> >>+Devfreq CPUfreq governor
->> >>+
->> >>+devfreq-cpufreq-map is a parent device that contains one or more child
->> >>devices.
->> >>+Each child device provides CPU frequency to device frequency mapping
->> >>for a
->> >>+specific device. Examples of devices that could use this are: DDR,
->> >>cache and
->> >>+CCI.
->> >>+
->> >>+Parent device name shall be "devfreq-cpufreq-map".
->> >>+
->> >>+Required child device properties:
->> >>+- cpu-to-dev-map, or cpu-to-dev-map-<X>:
->> >>+			A list of tuples where each tuple consists of a
->> >>+			CPU frequency (KHz) and the corresponding device
->> >>+			frequency. CPU frequencies not listed in the table
->> >>+			will use the device frequency that corresponds to the
->> >>+			next rounded up CPU frequency.
->> >>+			Use "cpu-to-dev-map" if all CPUs in the system should
->> >>+			share same mapping.
->> >>+			Use cpu-to-dev-map-<cpuid> to describe different
->> >>+			mappings for different CPUs. The property should be
->> >>+			listed only for the first CPU if multiple CPUs are
->> >>+			synchronous.
->> >>+- target-dev:		Phandle to device that this mapping applies to.
->> >>+
->> >>+Example:
->> >>+	devfreq-cpufreq-map {
->> >>+		cpubw-cpufreq {
->> >>+			target-dev = <&cpubw>;
->> >>+			cpu-to-dev-map =
->> >>+				<  300000  1144000 >,
->> >>+				<  422400  2288000 >,
->> >>+				<  652800  3051000 >,
->> >>+				<  883200  5996000 >,
->> >>+				< 1190400  8056000 >,
->> >>+				< 1497600 10101000 >,
->> >>+				< 1728000 12145000 >,
->> >>+				< 2649600 16250000 >;
->> >
->> >Now we have frequencies listed in multiple places, the OPP tables and
->> >here? Perhaps it is grouping OPPs that should be done.
->> 
->> This doesn't list all OPPs (it can if necessary). This is listing the
->> minimum frequency needed to give good performance/power for a
->> device/product.
->> 
-> 
-> Shouldn't the "status" property be used to disable OPPs you don't need
-> on a particular platform ?
-
-But that's not the point here? We aren't trying to disable any OPPs 
-here? Not sure what you mean.
-
-> Duplicating values is highly prone to errors and should be avoided.
-> 
->> AFAIK, OPP grouping isn't something that's supported in OPP framework 
->> or in
->> DT. Is there something specific you had in mind? Also, I'd like for 
->> this to
->> work even with devices that don't have OPPs listed in DT.
->> 
-> Also what's the solution you have for platforms with new *QCom FW 
-> Cpufreq* ?
-> IIUC the frequency is obtained from the firmware. TBH this should 
-> ideally
-> be handled in firmware if cpufreq is also handled by the firmware. I 
-> guess
-> this platform doesn't have that ?
-
-All QC platforms would use this.
-
-As a personal (non-Qcom) opinion, I'd rather the kernel control this 
-than have some black magic FW manage this. I've a really bitter taste in 
-my mouth for FW hiding this because of a broken ACPI implementation in 
-one of my x86 motherboards prevented CPUfreq from working (this was well 
-before I worked on CPUfreq). Pushing stuff to FW seems to beat the ideal 
-behind an opensource OS. In a few cases it's elegant or more robust, so 
-maybe in those cases its okay to use a FW. But I'd rather not for 
-simpler stuff like this.
-
--Saravana
+QWRkIERUIG5vZGVzIGZvciB0aGUgc2RtODQ1IEdQVS9HTVUgKGdyYXBoaWNzIG1hbmFnZW1lbnQg
+dW5pdCkgYW5kIHRoZSBjb21wYW5pb24KYXJtLXNtbXUtdjIgY29tcGF0aWJsZSBTTU1VLgoKVGhp
+cyBidWlsZHMgb24gdGhlIGZvbGxvd2luZyBkZXBlbmRlbmNpZXMgLQpodHRwczovL3BhdGNod29y
+ay5rZXJuZWwub3JnL3BhdGNoLzEwMjg2MzY5LyAtIGJpbmRpbmdzIGZvciBxY29tLGxldmVsCmh0
+dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTAyODE1OTkvIC0gcWNvbSxzbW11LXYy
+IGJpbmRpbmdzCgpBbmQgcmVxdWlyZXMgdGhlc2UgdHdvIGNoYW5nZXMgZm9yIHRoZSBkcml2ZXI6
+CgpodHRwczovL3BhdGNod29yay5mcmVlZGVza3RvcC5vcmcvcGF0Y2gvMjQzNTEyLyAtIHVzZSBu
+ZXcgUERDIHNlY3Rpb25zCmh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9yZy9wYXRjaC8y
+NDM1MTMvIC0gdXNlIHFjb20sZ211IGluc3RlYWQgb2YgZ211CgpJIHRoaW5rIHdlIGFyZSBzdGls
+bCB3YWl0aW5nIGZvciB0aGUgZGVwZW5kZW5jaWVzIHRvIG1lcmdlIGJ1dCB0aGlzIHNob3VsZAph
+dCBsZWFzdCBiZSB1c2FibGUgZm9yIGFueWJvZHkgd2l0aCBhIHRhcmdldCB0aGF0IHdhbnRzIHRv
+IGdldCB0aGUgR1BVIHVwCmFuZCBoYXBweS4KClt2MyAtIFNwbGl0IEdNVSBQREMgcmVnaW9uIGlu
+dG8gdHdvIEdQVSBzcGVjaWZpYyBzZWN0aW9ucywgZml4IGluZGVudGF0aW9uLAogIHJlYWxseSB1
+c2UgcWNvbSxnbXUgZm9yIHRoZSBwaGFuZGxlIG5hbWVdClt2MiAtIGNoYW5nZWQgcWNvbSxhcmMt
+bGV2ZWwgdG8gcWNvbSxsZXZlbCBmb2xsb3dpbmcgZGlzY3Vzc2lvbiB3aXRoIFZpcmVzaDsKY2hh
+bmdlIGdtdSBwaGFuZGxlIHRvIHFjb20sZ211IHBlciBSb2JdCgpKb3JkYW4gQ3JvdXNlICgyKToK
+ICBkdC1iaW5kaW5nczogRG9jdW1lbnQgcWNvbSxhZHJlbm8tZ211CiAgYXJtNjQ6IGR0czogc2Rt
+ODQ1OiBBZGQgZ3B1IGFuZCBnbXUgZGV2aWNlIG5vZGVzCgogLi4uL2RldmljZXRyZWUvYmluZGlu
+Z3MvZGlzcGxheS9tc20vZ211LnR4dCAgIHwgIDU0ICsrKysrKysrCiAuLi4vZGV2aWNldHJlZS9i
+aW5kaW5ncy9kaXNwbGF5L21zbS9ncHUudHh0ICAgfCAgMTAgKy0KIGFyY2gvYXJtNjQvYm9vdC9k
+dHMvcWNvbS9zZG04NDUuZHRzaSAgICAgICAgICB8IDEyMSArKysrKysrKysrKysrKysrKysKIDMg
+ZmlsZXMgY2hhbmdlZCwgMTgzIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCiBjcmVhdGUg
+bW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNt
+L2dtdS50eHQKCi0tIAoyLjE4LjAKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVk
+ZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2ZyZWVkcmVubwo=
