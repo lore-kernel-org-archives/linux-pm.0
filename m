@@ -1,264 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] of: thermal: Allow multiple devices to share cooling map
-Date: Wed,  8 Aug 2018 12:38:14 +0530
-Message-ID: <438c3792a41b31629fb702c919ad244db97c0283.1533711976.git.viresh.kumar@linaro.org>
-References: <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Wed, 8 Aug 2018 09:37:38 +0100
+Message-ID: <20180808083738.GA25416@e107155-lin>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-2-git-send-email-tdas@codeaurora.org>
+ <153334001055.10763.8002698033760154254@swboyd.mtv.corp.google.com>
+ <b362d9f769fde3ce1a2dcd89f20eb476@codeaurora.org>
+ <20180807111237.GA1588@e107155-lin>
+ <74d27daca2bb03716fc84f9c57118af0@codeaurora.org>
+ <1aa8b42d-721f-1f5b-b1be-a6b4f220d023@codeaurora.org>
+ <153370890232.220756.13782706852981763402@swboyd.mtv.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b5555967e713fd601bc74de0cab8ab45608399c4.1531824436.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <153370890232.220756.13782706852981763402@swboyd.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Stephen Boyd <sboyd@kernel.org>
+Cc: Taniya Das <tdas@codeaurora.org>, skannan@codeaurora.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org, evgreen@google.com, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-A cooling map entry may now contain a list of phandles and their
-arguments representing multiple devices which share the trip point.
+On Tue, Aug 07, 2018 at 11:15:02PM -0700, Stephen Boyd wrote:
+> Quoting Taniya Das (2018-08-07 19:46:01)
+[...]
 
-This patch updates the thermal OF core to parse them properly. The trip
-point and contribution value is shared by multiple cooling devices now
-and so a new structure is created, struct __thermal_cooling_bind_param,
-which represents a cooling device and its min/max states and the
-existing struct __thermal_bind_params now contains an array of this new
-cooling device structure.
+> > Sudeep,
+> > 
+> > Earlier the design was the freq_domain would take the CPU phandles
+> > 
+> > freq_domain:
+> >    cpus = <&cpu0 &cpu1....>;
+> > 
+> 
+> I believe Sudeep is recommending something I recommended earlier. It
+> would look like:
+> 
+>    cpu7 {
+> 	   qcom,freq-domain = <&cpufreq_hw 1>;
+>    }
+> 
+> to indicate that cpu7 is in cpufreq_hw's frequency domain #1. That
+> should probably be called clk domain BTW.
+>
 
-Tested on Hikey960.
+Thanks Stephen, that's exactly what I meant. You have explained all the
+details saving me time :)
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2:
-- Updated commit log to include new structures information
-- Updated two error messages to give better error log
+> If that was done with a phandle and a single cell, then we should have
+> something similar on the cpufreq_hw node side indicating how to parse
+> the cells in qcom,freq-domain. A property like #qcom,freq-domain-cells =
+> <1> to indicate that one u32 follows the phandle.
+>
 
- drivers/thermal/of-thermal.c | 142 +++++++++++++++++++++++++----------
- 1 file changed, 103 insertions(+), 39 deletions(-)
+As Saravana mentions in the other email I can't believe it's just made up
+of logical CPU numbers. If that's the case is it software configurable.
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 977a8307fbb1..16b890a4fb50 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -19,22 +19,33 @@
- /***   Private data structures to represent thermal device tree data ***/
- 
- /**
-- * struct __thermal_bind_param - a match between trip and cooling device
-+ * struct __thermal_cooling_bind_param - a cooling device for a trip point
-  * @cooling_device: a pointer to identify the referred cooling device
-- * @trip_id: the trip point index
-- * @usage: the percentage (from 0 to 100) of cooling contribution
-  * @min: minimum cooling state used at this trip point
-  * @max: maximum cooling state used at this trip point
-  */
- 
--struct __thermal_bind_params {
-+struct __thermal_cooling_bind_param {
- 	struct device_node *cooling_device;
--	unsigned int trip_id;
--	unsigned int usage;
- 	unsigned long min;
- 	unsigned long max;
- };
- 
-+/**
-+ * struct __thermal_bind_param - a match between trip and cooling device
-+ * @tcbp: a pointer to an array of cooling devices
-+ * @count: number of elements in array
-+ * @trip_id: the trip point index
-+ * @usage: the percentage (from 0 to 100) of cooling contribution
-+ */
-+
-+struct __thermal_bind_params {
-+	struct __thermal_cooling_bind_param *tcbp;
-+	unsigned int count;
-+	unsigned int trip_id;
-+	unsigned int usage;
-+};
-+
- /**
-  * struct __thermal_zone - internal representation of a thermal zone
-  * @mode: current thermal zone device mode (enabled/disabled)
-@@ -192,25 +203,31 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
- 			   struct thermal_cooling_device *cdev)
- {
- 	struct __thermal_zone *data = thermal->devdata;
--	int i;
-+	struct __thermal_bind_params *tbp;
-+	struct __thermal_cooling_bind_param *tcbp;
-+	int i, j;
- 
- 	if (!data || IS_ERR(data))
- 		return -ENODEV;
- 
- 	/* find where to bind */
- 	for (i = 0; i < data->num_tbps; i++) {
--		struct __thermal_bind_params *tbp = data->tbps + i;
-+		tbp = data->tbps + i;
- 
--		if (tbp->cooling_device == cdev->np) {
--			int ret;
-+		for (j = 0; j < tbp->count; j++) {
-+			tcbp = tbp->tcbp + j;
- 
--			ret = thermal_zone_bind_cooling_device(thermal,
-+			if (tcbp->cooling_device == cdev->np) {
-+				int ret;
-+
-+				ret = thermal_zone_bind_cooling_device(thermal,
- 						tbp->trip_id, cdev,
--						tbp->max,
--						tbp->min,
-+						tcbp->max,
-+						tcbp->min,
- 						tbp->usage);
--			if (ret)
--				return ret;
-+				if (ret)
-+					return ret;
-+			}
- 		}
- 	}
- 
-@@ -221,22 +238,28 @@ static int of_thermal_unbind(struct thermal_zone_device *thermal,
- 			     struct thermal_cooling_device *cdev)
- {
- 	struct __thermal_zone *data = thermal->devdata;
--	int i;
-+	struct __thermal_bind_params *tbp;
-+	struct __thermal_cooling_bind_param *tcbp;
-+	int i, j;
- 
- 	if (!data || IS_ERR(data))
- 		return -ENODEV;
- 
- 	/* find where to unbind */
- 	for (i = 0; i < data->num_tbps; i++) {
--		struct __thermal_bind_params *tbp = data->tbps + i;
-+		tbp = data->tbps + i;
-+
-+		for (j = 0; j < tbp->count; j++) {
-+			tcbp = tbp->tcbp + j;
- 
--		if (tbp->cooling_device == cdev->np) {
--			int ret;
-+			if (tcbp->cooling_device == cdev->np) {
-+				int ret;
- 
--			ret = thermal_zone_unbind_cooling_device(thermal,
--						tbp->trip_id, cdev);
--			if (ret)
--				return ret;
-+				ret = thermal_zone_unbind_cooling_device(thermal,
-+							tbp->trip_id, cdev);
-+				if (ret)
-+					return ret;
-+			}
- 		}
- 	}
- 
-@@ -652,8 +675,9 @@ static int thermal_of_populate_bind_params(struct device_node *np,
- 					   int ntrips)
- {
- 	struct of_phandle_args cooling_spec;
-+	struct __thermal_cooling_bind_param *__tcbp;
- 	struct device_node *trip;
--	int ret, i;
-+	int ret, i, count;
- 	u32 prop;
- 
- 	/* Default weight. Usage is optional */
-@@ -680,20 +704,44 @@ static int thermal_of_populate_bind_params(struct device_node *np,
- 		goto end;
- 	}
- 
--	ret = of_parse_phandle_with_args(np, "cooling-device", "#cooling-cells",
--					 0, &cooling_spec);
--	if (ret < 0) {
--		pr_err("missing cooling_device property\n");
-+	count = of_count_phandle_with_args(np, "cooling-device",
-+					   "#cooling-cells");
-+	if (!count) {
-+		pr_err("Add a cooling_device property with at least one device\n");
- 		goto end;
- 	}
--	__tbp->cooling_device = cooling_spec.np;
--	if (cooling_spec.args_count >= 2) { /* at least min and max */
--		__tbp->min = cooling_spec.args[0];
--		__tbp->max = cooling_spec.args[1];
--	} else {
--		pr_err("wrong reference to cooling device, missing limits\n");
-+
-+	__tcbp = kcalloc(count, sizeof(*__tcbp), GFP_KERNEL);
-+	if (!__tcbp)
-+		goto end;
-+
-+	for (i = 0; i < count; i++) {
-+		ret = of_parse_phandle_with_args(np, "cooling-device",
-+				"#cooling-cells", i, &cooling_spec);
-+		if (ret < 0) {
-+			pr_err("Invalid cooling-device entry\n");
-+			goto free_tcbp;
-+		}
-+
-+		__tcbp[i].cooling_device = cooling_spec.np;
-+
-+		if (cooling_spec.args_count >= 2) { /* at least min and max */
-+			__tcbp[i].min = cooling_spec.args[0];
-+			__tcbp[i].max = cooling_spec.args[1];
-+		} else {
-+			pr_err("wrong reference to cooling device, missing limits\n");
-+		}
- 	}
- 
-+	__tbp->tcbp= __tcbp;
-+	__tbp->count = count;
-+
-+	goto end;
-+
-+free_tcbp:
-+	for (i = i - 1; i >= 0; i--)
-+		of_node_put(__tcbp[i].cooling_device);
-+	kfree(__tcbp);
- end:
- 	of_node_put(trip);
- 
-@@ -900,8 +948,16 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
- 	return tz;
- 
- free_tbps:
--	for (i = i - 1; i >= 0; i--)
--		of_node_put(tz->tbps[i].cooling_device);
-+	for (i = i - 1; i >= 0; i--) {
-+		struct __thermal_bind_params *tbp = tz->tbps + i;
-+		int j;
-+
-+		for (j = 0; j < tbp->count; j++)
-+			of_node_put(tbp->tcbp[j].cooling_device);
-+
-+		kfree(tbp->tcbp);
-+	}
-+
- 	kfree(tz->tbps);
- free_trips:
- 	for (i = 0; i < tz->ntrips; i++)
-@@ -917,10 +973,18 @@ __init *thermal_of_build_thermal_zone(struct device_node *np)
- 
- static inline void of_thermal_free_zone(struct __thermal_zone *tz)
- {
--	int i;
-+	struct __thermal_bind_params *tbp;
-+	int i, j;
-+
-+	for (i = 0; i < tz->num_tbps; i++) {
-+		tbp = tz->tbps + i;
-+
-+		for (j = 0; j < tbp->count; j++)
-+			of_node_put(tbp->tcbp[j].cooling_device);
-+
-+		kfree(tbp->tcbp);
-+	}
- 
--	for (i = 0; i < tz->num_tbps; i++)
--		of_node_put(tz->tbps[i].cooling_device);
- 	kfree(tz->tbps);
- 	for (i = 0; i < tz->ntrips; i++)
- 		of_node_put(tz->trips[i].np);
--- 
-2.18.0.rc1.242.g61856ae69a2c
+--
+Regards,
+Sudeep
