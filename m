@@ -1,146 +1,132 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Wed, 8 Aug 2018 09:47:54 +0100
-Message-ID: <20180808084754.GB25416@e107155-lin>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
- <20180807164114.GA12587@rob-hp-laptop>
- <496ac47a3c78f37655b60841fba7494c@codeaurora.org>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Wed, 8 Aug 2018 15:45:26 +0530
+Message-ID: <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+ <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
+ <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
+ <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
+ <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
+ <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <496ac47a3c78f37655b60841fba7494c@codeaurora.org>
+In-Reply-To: <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: skannan@codeaurora.org
-Cc: Rob Herring <robh@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+To: Stephen Boyd <sboyd@kernel.org>, skannan@codeaurora.org
+Cc: Evan Green <evgreen@google.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 07, 2018 at 12:37:07PM -0700, skannan@codeaurora.org wrote:
-> On 2018-08-07 09:41, Rob Herring wrote:
-> >On Wed, Aug 01, 2018 at 05:57:41PM -0700, Saravana Kannan wrote:
-> >>Many CPU architectures have caches that can scale independent of the
-> >>CPUs.
-> >>Frequency scaling of the caches is necessary to make sure the cache is
-> >>not
-> >>a performance bottleneck that leads to poor performance and power. The
-> >>same
-> >>idea applies for RAM/DDR.
-> >>
-> >>To achieve this, this patch adds a generic devfreq governor that takes
-> >>the
-> >>current frequency of each CPU frequency domain and then adjusts the
-> >>frequency of the cache (or any devfreq device) based on the frequency of
-> >>the CPUs. It listens to CPU frequency transition notifiers to keep
-> >>itself
-> >>up to date on the current CPU frequency.
-> >>
-> >>To decide the frequency of the device, the governor does one of the
-> >>following:
-> >>
-> >>* Uses a CPU frequency to device frequency mapping table
-> >>  - Either one mapping table used for all CPU freq policies (typically
-> >>used
-> >>    for system with homogeneous cores/clusters that have the same OPPs).
-> >>  - One mapping table per CPU freq policy (typically used for ASMP
-> >>systems
-> >>    with heterogeneous CPUs with different OPPs)
-> >>
-> >>OR
-> >>
-> >>* Scales the device frequency in proportion to the CPU frequency. So, if
-> >>  the CPUs are running at their max frequency, the device runs at its
-> >>max
-> >>  frequency.  If the CPUs are running at their min frequency, the device
-> >>  runs at its min frequency. And interpolated for frequencies in
-> >>between.
-> >>
-> >>Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> >>---
-> >> .../bindings/devfreq/devfreq-cpufreq-map.txt       |  53 ++
-> >
-> >Bindings should be a separate patch.
-> >
-> >> drivers/devfreq/Kconfig                            |   8 +
-> >> drivers/devfreq/Makefile                           |   1 +
-> >> drivers/devfreq/governor_cpufreq_map.c             | 583
-> >>+++++++++++++++++++++
-> >> 4 files changed, 645 insertions(+)
-> >> create mode 100644
-> >>Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> >> create mode 100644 drivers/devfreq/governor_cpufreq_map.c
-> >>
-> >>diff --git
-> >>a/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> >>b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> >>new file mode 100644
-> >>index 0000000..982a30b
-> >>--- /dev/null
-> >>+++ b/Documentation/devicetree/bindings/devfreq/devfreq-cpufreq-map.txt
-> >>@@ -0,0 +1,53 @@
-> >>+Devfreq CPUfreq governor
-> >>+
-> >>+devfreq-cpufreq-map is a parent device that contains one or more child
-> >>devices.
-> >>+Each child device provides CPU frequency to device frequency mapping
-> >>for a
-> >>+specific device. Examples of devices that could use this are: DDR,
-> >>cache and
-> >>+CCI.
-> >>+
-> >>+Parent device name shall be "devfreq-cpufreq-map".
-> >>+
-> >>+Required child device properties:
-> >>+- cpu-to-dev-map, or cpu-to-dev-map-<X>:
-> >>+			A list of tuples where each tuple consists of a
-> >>+			CPU frequency (KHz) and the corresponding device
-> >>+			frequency. CPU frequencies not listed in the table
-> >>+			will use the device frequency that corresponds to the
-> >>+			next rounded up CPU frequency.
-> >>+			Use "cpu-to-dev-map" if all CPUs in the system should
-> >>+			share same mapping.
-> >>+			Use cpu-to-dev-map-<cpuid> to describe different
-> >>+			mappings for different CPUs. The property should be
-> >>+			listed only for the first CPU if multiple CPUs are
-> >>+			synchronous.
-> >>+- target-dev:		Phandle to device that this mapping applies to.
-> >>+
-> >>+Example:
-> >>+	devfreq-cpufreq-map {
-> >>+		cpubw-cpufreq {
-> >>+			target-dev = <&cpubw>;
-> >>+			cpu-to-dev-map =
-> >>+				<  300000  1144000 >,
-> >>+				<  422400  2288000 >,
-> >>+				<  652800  3051000 >,
-> >>+				<  883200  5996000 >,
-> >>+				< 1190400  8056000 >,
-> >>+				< 1497600 10101000 >,
-> >>+				< 1728000 12145000 >,
-> >>+				< 2649600 16250000 >;
-> >
-> >Now we have frequencies listed in multiple places, the OPP tables and
-> >here? Perhaps it is grouping OPPs that should be done.
+
+
+On 8/8/2018 11:52 AM, Stephen Boyd wrote:
+> Quoting skannan@codeaurora.org (2018-08-06 13:46:05)
+>> On 2018-08-03 15:24, Stephen Boyd wrote:
+>>> Quoting skannan@codeaurora.org (2018-08-03 12:52:48)
+>>>> On 2018-08-03 12:40, Evan Green wrote:
+>>>>> Hi Taniya,
+>>>>>
+>>>>> On Tue, Jul 24, 2018 at 3:44 AM Taniya Das <tdas@codeaurora.org> wrote:
+>>>>>>
+>>>>>> +               if (src)
+>>>>>> +                       c->table[i].frequency = c->xo_rate * lval /
+>>>>>> 1000;
+>>>>>> +               else
+>>>>>> +                       c->table[i].frequency = INIT_RATE / 1000;
+>>>>>
+>>>>> I don't know much about how this hardware works, but based on the
+>>>>> mask, src has 4 possible values. So does 0 mean INIT_RATE, and 1, 2,
+>>>>> and 3 all mean xo_rate?
+>>>>>
+>>>>> Also, is INIT_RATE really constant? It sounds like gpll0 (or
+>>>>> gpll0_out_even?). You're already getting the xo clock, why not get
+>>>>> gpll0's real rate as well?
+>>>>
+>>>> Actually I was about to comment and say NOT to get clocks just to get
+>>>> their rate. The XO_RATE is just a multiplication factor. This HW/FW
+>>>> can
+>>>> change in the future and make the multiplication factor to 1KHz.
+>>>
+>>> So future changes to this hardware are going to make this register
+>>> return the final frequency that we should use? Sounds great! But that
+>>> isn't how it's working right now. We need to have XO in the binding
+>>> here
+>>> so the driver can work with different XO frequencies in case that ever
+>>> happens. Same story for GPLL0. Hardcoding this stuff in the driver just
+>>> means we'll have to swizzle things in the driver when it changes.
+>>
+>> XO being a different frequency in a Qualcomm chip is way way less likely
+>> than anything else we are discussing here. In the 10+years I've been
+>> there this has never changed.
+>>
+>> So, how about making this binding optional? If it's not present we can
+>> make assumptions for XO rate and init rate. That'll handle your
+>> hypothetical use case while also being optimized.
 > 
-> This doesn't list all OPPs (it can if necessary). This is listing the
-> minimum frequency needed to give good performance/power for a
-> device/product.
->
+> Optional properties are almost never correct for clks. Either the clk
+> goes there or it doesn't go there. The only time it's optional is if the
+> HW has the choice of generating the clk itself internally or to use an
+> external clk as input.
+> 
+> In this case, it's not optional, it's actually used so marking it
+> optional is highly confusing.
+> 
+>>
+>>>> We also
+>>>> can't really control any of the clocks going to this block from Linux
+>>>> (it's all locked down).
+>>>
+>>> This shouldn't matter. The clocks going to this hardware block are
+>>> described by the firmware to the OS by means of the DT node. If the
+>>> firmware or the hardware decides to change the input clks then the
+>>> binding can have different clk nodes used.
+>>
+>> There are tons of clocks that are input to blocks in an SoC that are
+>> never controlled by Linux. Or are expose in DT because they are set up
+>> ahead of time and can't change. So, why make an exception here?
+> 
+> Because the driver doesn't have to hard-code some frequency that can
+> easily come from the DT, making it more flexible for frequency plan
+> changes. It doesn't matter about control of clks at all here, so this
+> comparison is just plain wrong.
+> 
+>>
+>>>> The INIT_RATE will
+>>>> always be 300 MHz independent of what source it's coming from (as in,
+>>>> if
+>>>> GPLL0 can't give 300, the HW design will be so that we'll find a
+>>>> different source).
+>>>>
+>>>> So, I'd like to remove any clock bindings for this driver.
+>>>
+>>> No. Bindings describe how the hardware is connected. Please don't
+>>> remove
+>>> clocks from the binding just because probe defer is a concern.
+>>
+>> Binding describes hardware controllable by the OS. That's the reality.
+>> Let's not add mandatory clock bindings for clocks that the OS can't do
+>> anything about.
+>>
+> 
+> It seems that you believe clks should only be used to turn on/off and
+> control rates. That is not the whole truth. Sometimes clks are there
+> just to express the clk frequencies that are present in the design so
+> that drivers can figure out what to do.
+> 
 
-Shouldn't the "status" property be used to disable OPPs you don't need
-on a particular platform ?
+Stephen,
 
-Duplicating values is highly prone to errors and should be avoided.
+As this clock is not configurable by linux clock drivers and we really 
+do not care the parent src(as mentioned by Saravana) to generate the 
+300MHz, would it be good to define a fixed rate clock so as to express 
+the HW connectivity & frequency?
 
-> AFAIK, OPP grouping isn't something that's supported in OPP framework or in
-> DT. Is there something specific you had in mind? Also, I'd like for this to
-> work even with devices that don't have OPPs listed in DT.
->
-Also what's the solution you have for platforms with new *QCom FW Cpufreq* ?
-IIUC the frequency is obtained from the firmware. TBH this should ideally
-be handled in firmware if cpufreq is also handled by the firmware. I guess
-this platform doesn't have that ?
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
 
 --
-Regards,
-Sudeep
