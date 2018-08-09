@@ -1,89 +1,143 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v6 3/5] thermal: qcom-spmi: Use PMIC thermal stage 2 for
- critical trip points
-Date: Thu, 9 Aug 2018 14:28:12 -0700
-Message-ID: <CAD=FV=Us-Cp6AEUfbNbAuRwri4y1opiGY6O+HHModserppYdxQ@mail.gmail.com>
-References: <20180731185917.176074-1-mka@chromium.org> <20180731185917.176074-3-mka@chromium.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] sched: idle: Reenable sched tick for cpuidle request
+Date: Thu, 09 Aug 2018 23:31:46 +0200
+Message-ID: <8620035.OlGfqWSkfk@aspire.rjw.lan>
+References: <1533793647-5628-1-git-send-email-leo.yan@linaro.org> <20180809162957.GD14362@leoy-ThinkPad-X240s> <CAJZ5v0it0XM29OGnNfanrRAH3E8uHkJjXVwgHBQRiT9aZ0747A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180731185917.176074-3-mka@chromium.org>
+In-Reply-To: <CAJZ5v0it0XM29OGnNfanrRAH3E8uHkJjXVwgHBQRiT9aZ0747A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thursday, August 9, 2018 6:43:55 PM CEST Rafael J. Wysocki wrote:
+> On Thu, Aug 9, 2018 at 6:29 PM,  <leo.yan@linaro.org> wrote:
+> > On Thu, Aug 09, 2018 at 05:42:30PM +0200, Rafael J. Wysocki wrote:
+> >
+> > [...]
+> >
+> >> >> This issue can be easily reproduce with the case on Arm Hikey board: use
+> >> >> CPU0 to send IPI to CPU7, CPU7 receives the IPI and in the callback
+> >> >> function it start a hrtimer with 4ms, so the 4ms timer delta value can
+> >> >> let 'menu' governor to choose deepest state in the next entering idle
+> >> >> time.  From then on, CPU7 restarts hrtimer with 1ms interval for total
+> >> >> 10 times, so this can utilize the typical pattern in 'menu' governor to
+> >> >> have prediction for 1ms duration, finally idle governor is easily to
+> >> >> select a shallow state, on Hikey board it usually is to select CPU off
+> >> >> state.  From then on, CPU7 stays in this shallow state for long time
+> >> >> until there have other interrupts on it.
+> >> >
+> >> > And which means that the above-mentioned code misses this case.
+> >>
+> >> And I don't really understand how this happens. :-/
+> >>
+> >> If menu sees that the tick has been stopped, it sets
+> >> data->predicted_us to the minimum of TICK_USEC and
+> >> ktime_to_us(delta_next) and the latency requirements comes from PM QoS
+> >> (no interactivity boost).  Thus the only case when it will say "do not
+> >> stop the tick" is when delta_next is below the tick period length, but
+> >> that's OK, because it means that there is a timer pending that much
+> >> time away, so it doesn't make sense to select a deeper idle state
+> >> then.
+> >>
+> >> If there is a short-interval timer pending every time we go idle, it
+> >> doesn't matter that the tick is stopped really, because the other
+> >> timer will wake the CPU up anyway.
+> >>
+> >> Have I missed anything?
+> >
+> > Yeah, you miss one case is if there haven't anymore timer event, for this
+> > case the ktime_to_us(delta_next) is a quite large value and
+> > data->predicted_us will be to set TICK_USEC; if HZ=1000 then TICK_USEC is
+> > 1000us, on Hikey board if data->predicted_us is 1000us then it's easily
+> > to set shallow state (C1) rather than C2.  Unfortunately, this is the
+> > last time the CPU can predict idle state before it will stay in idle
+> > for long period.
+> 
+> Fair enough, but in that case the governor will want the tick to be
+> stopped, because expected_interval is TICK_USEC then, so I'm not sure
+> how the patch helps?
+> 
+> > [...]
+> >
+> >> >> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> >> >> index 1a3e9bd..802286e 100644
+> >> >> --- a/kernel/sched/idle.c
+> >> >> +++ b/kernel/sched/idle.c
+> >> >> @@ -190,10 +190,18 @@ static void cpuidle_idle_call(void)
+> >> >>                */
+> >> >>               next_state = cpuidle_select(drv, dev, &stop_tick);
+> >> >>
+> >> >> -             if (stop_tick)
+> >> >> +             if (stop_tick) {
+> >> >>                       tick_nohz_idle_stop_tick();
+> >> >> -             else
+> >> >> +             } else {
+> >> >> +                     /*
+> >> >> +                      * The cpuidle framework says to not stop tick but
+> >> >> +                      * the tick has been stopped yet, so restart it.
+> >> >> +                      */
+> >> >> +                     if (tick_nohz_tick_stopped())
+> >> >> +                             tick_nohz_idle_restart_tick();
+> >> >
+> >> > You need an "else" here IMO as Peter said.
+> >
+> > Yeah, I have replied to Peter, after we restart the tick, I found must to
+> > call tick_retain() to clear 'ts->timer_expires_base' to 0, otherwise
+> > tick_nohz_idle_exit() reports warning when exit from idle loop.
+> 
+> I see now, thanks.
+> 
+> >> And I really would prefer to avoid restarting the tick here, because
+> >> it is overhead and quite likely unnecessary.
+> >
+> > I understand the logic when read the code, actually I did some experiments
+> > on the function menu_select(), in menu_select() function it discards the
+> > consideration for typical pattern interval and it also tries to avoid to
+> > enable tick and select more shallow state at the bottom of function.  So I
+> > agree that in the middle of idles it's redundant to reenable tick and the
+> > code is careful thought.
+> >
+> > But this patch tries to rescue the case at the last time the CPU enter one
+> > shallow idle state but without wake up event.
+> 
+> It is better to avoid entering a shallow state IMO.  Let me think
+> about that a bit.
 
-On Tue, Jul 31, 2018 at 11:59 AM, Matthias Kaehlcke <mka@chromium.org> wrot=
-e:
-> There are three thermal stages defined in the PMIC:
->
-> stage 1: warning
-> stage 2: system should shut down
-> stage 3: emergency shut down
->
-> By default the PMIC assumes that the OS isn't doing anything and thus
-> at stage 2 it does a partial PMIC shutdown and at stage 3 it kills
-> all power. When switching between thermal stages the PMIC generates an
-> interrupt which is handled by the driver. The partial PMIC shutdown at
-> stage 2 can be disabled by software, which allows the OS to initiate a
-> shutdown at stage 2 with a thermal zone configured accordingly.
->
-> If a critical trip point is configured in the thermal zone the driver
-> adjusts the stage 1-3 temperature thresholds to (closely) match the
-> critical temperature with a stage 2 threshold (125/130/135/140 =C2=B0C).
-> If a suitable match is found the partial shutdown at stage 2 is
-> disabled. If for some reason the system doesn't shutdown at stage 2
-> the emergency shutdown at stage 3 kicks in.
->
-> The partial shutdown at stage 2 remains enabled in these cases:
-> - no critical trip point defined
-> - the temperature of the critical trip point is < 125=C2=B0C
-> - the temperature of the critical trip point is > 140=C2=B0C and no
->   ADC channel is configured (thus the OS is not notified when the critica=
-l
->   temperature is reached)
->
-> Suggested-by: Douglas Anderson <dianders@chromium.org>
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
-> Changes in v6:
-> - fixed condition to check if ADC is configured in
->   qpnp_tm_update_critical_trip_temp()
-> - changed =C2=B0C in logs to C
-> - removed needless evaluation of qpnp_tm_write() return value in
->   qpnp_tm_update_critical_trip_temp()
-> - move assignment of chip->initialized to true to qpnp_tm_init(),
->   where the lock is held
-> - call thermal_zone_device_update() after initialization is
->   completed
-> - split some #define + comment in two lines to avoid exceeding
->   chars per line limit
-> - removed extra closing parenthesis in qpnp_tm_get_temp()
-> - remove unnecessary parentheses around conditions in
->   qpnp_tm_update_critical_trip_temp() and qpnp_tm_get_critical_trip_temp(=
-)
-> - fixed indentation of call devm_thermal_zone_of_sensor_register() call
->   in qpnp_tm_probe()
->
-> Changes in v5:
-> - patch added to the series
-> ---
->  drivers/thermal/qcom-spmi-temp-alarm.c | 158 ++++++++++++++++++++++---
->  1 file changed, 140 insertions(+), 18 deletions(-)
+The simple change below should address this issue and I don't quite see
+what it can break.  It may cause deeper idle states to be selected with
+the tick already stopped, but that really shouldn't be problematic, as
+(since the tick has been stopped) there are no strict latency constraints,
+so even if there is an early wakeup, we should be able to tolerate the
+extra latency just fine.
 
-I won't claim to have spent too much time in the thermal framework,
-but from what I can tell everything looks supergreat now.  FWIW:
+---
+ drivers/cpuidle/governors/menu.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-Reviewed-by: Douglas Anderson <dianders@chromium.org>
-
-One minor comment I'd have is that I personally would have ordered
-this in the series before the patch ("dt-bindings: thermal:
-qcom-spmi-temp-alarm: Improve thermal zone in example") just because
-that patch only really makes sense after this one lands.  ...but I
-don't think it's terribly important.
-
-
--Doug
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -349,14 +349,12 @@ static int menu_select(struct cpuidle_dr
+ 		 * If the tick is already stopped, the cost of possible short
+ 		 * idle duration misprediction is much higher, because the CPU
+ 		 * may be stuck in a shallow idle state for a long time as a
+-		 * result of it.  In that case say we might mispredict and try
+-		 * to force the CPU into a state for which we would have stopped
+-		 * the tick, unless a timer is going to expire really soon
+-		 * anyway.
++		 * result of it.  In that case say we might mispredict and use
++		 * the known time to the closest timer event for the idle state
++		 * selection.
+ 		 */
+ 		if (data->predicted_us < TICK_USEC)
+-			data->predicted_us = min_t(unsigned int, TICK_USEC,
+-						   ktime_to_us(delta_next));
++			data->predicted_us = ktime_to_us(delta_next);
+ 	} else {
+ 		/*
+ 		 * Use the performance multiplier and the user-configurable
