@@ -1,88 +1,123 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH 2/2] arm64: dts: sdm845: Add gpu and gmu device
- nodes
-Date: Wed,  8 Aug 2018 16:47:01 -0600
-Message-ID: <20180808224701.7527-3-jcrouse@codeaurora.org>
-References: <20180808224701.7527-1-jcrouse@codeaurora.org>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
+ encryption
+Date: Thu, 9 Aug 2018 11:01:35 +0800
+Message-ID: <20180809030135.GA21364@chenyu-desktop>
+References: <20180723162302.GA4503@sandybridge-desktop>
+ <1532590246.7411.3.camel@suse.com>
+ <20180726081404.GG4244@linux-l9pv.suse>
+ <20180730170415.GQ4244@linux-l9pv.suse>
+ <20180803033702.GB416@sandybridge-desktop>
+ <20180803053445.GC4244@linux-l9pv.suse>
+ <CADjb_WSURQz86+E8kakNf7UBDM+aho+uaz3QdDkuGsEgan=szw@mail.gmail.com>
+ <20180805100200.GB22948@amd>
+ <20180806084534.GB12124@chenyu-desktop>
+ <20180808175036.GA16217@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180808224701.7527-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hoegsberg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sibis-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180808175036.GA16217@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ryan Chen <yu.chen.surf@gmail.com>, jlee@suse.com, oneukum@suse.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, ebiggers@google.com, Theodore Ts'o <tytso@mit.edu>, smueller@chronox.de, denkenz@gmail.com, Linux PM list <linux-pm@vger.kernel.org>, linux-crypto@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kookoo.gu@intel.com, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIHRoZSBub2RlcyB0byBkZXNjcmliZSB0aGUgQWRyZW5vIEdQVSBhbmQgR01VIGRldmljZXMu
-CgpTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgot
-LS0KIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSB8IDEyMSArKysrKysrKysr
-KysrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxMjEgaW5zZXJ0aW9ucygrKQoKZGlm
-ZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJt
-NjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQppbmRleCBjZGFhYmViM2M5OTUuLjlmYjkwYmI0
-ZWExZiAxMDA2NDQKLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpCisr
-KyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQpAQCAtMzIzLDUgKzMyMywx
-MjYgQEAKIAkJCQlzdGF0dXMgPSAiZGlzYWJsZWQiOwogCQkJfTsKIAkJfTsKKworCQlhZHJlbm9f
-c21tdTogYXJtLHNtbXUtYWRyZW5vQDUwNDAwMDAgeworCQkJY29tcGF0aWJsZSA9ICJxY29tLG1z
-bTg5OTYtc21tdS12MiI7CisJCQlyZWcgPSA8MHg1MDQwMDAwIDB4MTAwMDA+OworCQkJI2lvbW11
-LWNlbGxzID0gPDE+OworCQkjZ2xvYmFsLWludGVycnVwdHMgPSA8Mj47CisJCQlpbnRlcnJ1cHRz
-ID0gPEdJQ19TUEkgMjI5IElSUV9UWVBFX0xFVkVMX0hJR0g+LAorCQkJICAgICA8R0lDX1NQSSAy
-MzEgSVJRX1RZUEVfTEVWRUxfSElHSD4sCisJCQkgICAgIDxHSUNfU1BJIDM2NCBJUlFfVFlQRV9F
-REdFX1JJU0lORz4sCisJCQkgICAgIDxHSUNfU1BJIDM2NSBJUlFfVFlQRV9FREdFX1JJU0lORz4s
-CisJCQkgICAgIDxHSUNfU1BJIDM2NiBJUlFfVFlQRV9FREdFX1JJU0lORz4sCisJCQkgICAgIDxH
-SUNfU1BJIDM2NyBJUlFfVFlQRV9FREdFX1JJU0lORz4sCisJCQkgICAgIDxHSUNfU1BJIDM2OCBJ
-UlFfVFlQRV9FREdFX1JJU0lORz4sCisJCQkgICAgIDxHSUNfU1BJIDM2OSBJUlFfVFlQRV9FREdF
-X1JJU0lORz4sCisJCQkgICAgIDxHSUNfU1BJIDM3MCBJUlFfVFlQRV9FREdFX1JJU0lORz4sCisJ
-CQkgICAgIDxHSUNfU1BJIDM3MSBJUlFfVFlQRV9FREdFX1JJU0lORz47CisJCQljbG9ja3MgPSA8
-JmNsb2NrX2djYyBHQ0NfR1BVX01FTU5PQ19HRlhfQ0xLPiwKKwkJCQk8JmNsb2NrX2djYyBHQ0Nf
-R1BVX0NGR19BSEJfQ0xLPjsKKwkJCWNsb2NrLW5hbWVzID0gImJ1cyIsICJpZmFjZSI7CisKKwkJ
-CXBvd2VyLWRvbWFpbnMgPSA8JmNsb2NrX2dwdWNjIEdQVV9DWF9HRFNDPjsKKwkJfTsKKworCQln
-cHVfb3BwX3RhYmxlOiBhZHJlbm8tb3BwLXRhYmxlIHsKKwkJCWNvbXBhdGlibGUgPSAib3BlcmF0
-aW5nLXBvaW50cy12MiI7CisKKwkJCW9wcC03MTAwMDAwMDAgeworCQkJCW9wcC1oeiA9IC9iaXRz
-LyA2NCA8NzEwMDAwMDAwPjsKKwkJCQlxY29tLGxldmVsID0gPDQxNj47CisJCQl9OworCisJCQlv
-cHAtNjc1MDAwMDAwIHsKKwkJCQlvcHAtaHogPSAvYml0cy8gNjQgPDY3NTAwMDAwMD47CisJCQkJ
-cWNvbSxsZXZlbCA9IDwzODQ+OworCQkJfTsKKworCQkJb3BwLTU5NjAwMDAwMCB7CisJCQkJb3Bw
-LWh6ID0gL2JpdHMvIDY0IDw1OTYwMDAwMDA+OworCQkJCXFjb20sbGV2ZWwgPSA8MzIwPjsKKwkJ
-CX07CisKKwkJCW9wcC01MjAwMDAwMDAgeworCQkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8NTIwMDAw
-MDAwPjsKKwkJCQlxY29tLGxldmVsID0gPDI1Nj47CisJCQl9OworCisJCQlvcHAtNDE0MDAwMDAw
-IHsKKwkJCQlvcHAtaHogPSAvYml0cy8gNjQgPDQxNDAwMDAwMD47CisJCQkJcWNvbSxsZXZlbCA9
-IDwxOTI+OworCQkJfTsKKworCQkJb3BwLTM0MjAwMDAwMCB7CisJCQkJb3BwLWh6ID0gL2JpdHMv
-IDY0IDwzNDIwMDAwMDA+OworCQkJCXFjb20sbGV2ZWwgPSA8MTI4PjsKKwkJCX07CisKKwkJCW9w
-cC0yNTcwMDAwMDAgeworCQkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8MjU3MDAwMDAwPjsKKwkJCQlx
-Y29tLGxldmVsID0gPDY0PjsKKwkJCX07CisJCX07CisKKwkJZ3B1QDUwMDAwMDAgeworCQkJY29t
-cGF0aWJsZSA9ICJxY29tLGFkcmVuby02MzAuMiIsICJxY29tLGFkcmVubyI7CisJCQkjc3RyZWFt
-LWlkLWNlbGxzID0gPDE2PjsKKworCQkJcmVnID0gPDB4NTAwMDAwMCAweDQwMDAwPjsKKwkJCXJl
-Zy1uYW1lcyA9ICJrZ3NsXzNkMF9yZWdfbWVtb3J5IjsKKworCQkJLyoKKwkJCSAqIExvb2sgbWEs
-IG5vIGNsb2NrcyEgVGhlIEdQVSBjbG9ja3MgYW5kIHBvd2VyIGFyZQorCQkJICogY29udHJvbGxl
-ZCBlbnRpcmVseSBieSB0aGUgR01VCisJCQkgKi8KKworCQkJaW50ZXJydXB0cyA9IDwwIDMwMCAw
-PjsKKwkJCWludGVycnVwdC1uYW1lcyA9ICJrZ3NsXzNkMF9pcnEiOworCisJCQlpb21tdXMgPSA8
-JmFkcmVub19zbW11IDA+OworCisJCQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVfb3BwX3Rh
-YmxlPjsKKworCQkJcWNvbSxnbXUgPSA8JmdtdT47CisJCX07CisKKwkJZ211X29wcF90YWJsZTog
-YWRyZW5vLWdtdS1vcHAtdGFibGUgeworCQkJY29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRz
-LXYyIjsKKworCQkJb3BwLTQwMDAwMDAwMCB7CisJCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw0MDAw
-MDAwMDA+OworCQkJCXFjb20sbGV2ZWwgPSA8MTI4PjsKKwkJCX07CisKKwkJCW9wcC0yMDAwMDAw
-MDAgeworCQkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8MjAwMDAwMDAwPjsKKwkJCQlxY29tLGxldmVs
-ID0gPDQ4PjsKKwkJCX07CisJCX07CisKKwkJZ211OiBnbXVANTA2YTAwMCB7CisJCQljb21wYXRp
-YmxlPSJxY29tLGFkcmVuby1nbXUiOworCisJCQlyZWcgPSA8MHg1MDZhMDAwIDB4MzAwMDA+LAor
-CQkJCTwweGIyODAwMDAgMHgxMDAwMD4sCisJCQkJPDB4YjQ4MDAwMCAweDEwMDAwPjsKKwkJCXJl
-Zy1uYW1lcyA9ICJnbXUiLCAiZ211X3BkYyIsICJnbXVfcGRjX3NlcSI7CisKKwkJCWludGVycnVw
-dHMgPSA8R0lDX1NQSSAzMDQgSVJRX1RZUEVfTEVWRUxfSElHSD4sCisJCQkgICAgIDxHSUNfU1BJ
-IDMwNSBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKKwkJCWludGVycnVwdC1uYW1lcyA9ICJoZmkiLCAi
-Z211IjsKKworCQkJY2xvY2tzID0gPCZjbG9ja19ncHVjYyBHUFVfQ0NfQ1hfR01VX0NMSz4sCisJ
-CQkJPCZjbG9ja19ncHVjYyBHUFVfQ0NfQ1hPX0NMSz4sCisJCQkJPCZnY2MgR0NDX0REUlNTX0dQ
-VV9BWElfQ0xLPiwKKwkJCQk8JmdjYyBHQ0NfR1BVX01FTU5PQ19HRlhfQ0xLPjsKKwkJCWNsb2Nr
-LW5hbWVzID0gImdtdSIsICJjeG8iLCAiYXhpIiwgIm1lbW5vYyI7CisKKwkJCXBvd2VyLWRvbWFp
-bnMgPSA8JmNsb2NrX2dwdWNjIEdQVV9DWF9HRFNDPjsKKwkJCWlvbW11cyA9IDwmYWRyZW5vX3Nt
-bXUgNT47CisKKwkJCW9wZXJhdGluZy1wb2ludHMtdjIgPSA8JmdtdV9vcHBfdGFibGU+OworCQl9
-OwogCX07CiB9OwotLSAKMi4xOC4wCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9mcmVlZHJlbm8K
+Hi Pavel, Joey, Oliver
+Please let me describe the original requirement and my
+understanding about hibernation encryption here, thus
+help us sync on the same thread:
+On Wed, Aug 08, 2018 at 07:50:36PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > User space doesn't need to involve. The EFI root key is generated by
+> > > > > EFI boot stub and be transfer to kernel. It's stored in EFI boot service
+> > > > > variable that it can only be accessed by trusted EFI binary when
+> > > > > secure boot is enabled.
+> > > > >
+> > > > Okay, this apply to the 'suspend' phase, right?
+> > > > I'm still a little confused about the 'resume' phase.
+> > > > Taking encryption as example(not signature),
+> > > > the purpose of doing hibernation encryption is to prevent other users
+> > > > from stealing ram content. Say, user A uses a  passphrase to generate the
+> > > 
+> > > No, I don't think that's purpose here.
+> > > 
+> > > Purpose here is to prevent user from reading/modifying kernel memory
+> > > content on machine he owns.
+> > >
+> > Say, A puts his laptop into hibernation and walks away,
+> > and B walks by, and opens A's laptop and wakes up the system and he
+> > can do what he wants. Although EFI key/TPM trusted key is enabled,
+> > currently there's no certification during resume, which sounds
+> > unsafe to me. Afterall, the original requirement is to probe
+> 
+> Define unsafe.
+> 
+> If you want security against bad people resuming your machines, please
+Yes, this is one of the requirements.
+> take a look at existing uswsusp solutions. It defends against that.
+>
+> If you want security against bad people tampering with your machines
+> physically, sorry, there's no way to defend against that.
+No, this is not the requirement.
+> 
+> But I thought you were trying to do something for secure boot, and "bad
+> person resumes your machine" is out of scope there.
+> 
+Not exactly, secure boot is one solution to meet the requirement.
+> So please always explain security against _what kind of attack_ you
+> are trying to improve; intelligent communication is not possible
+> without that.
+> 
+User requirement:
+A is the user, B is the attacker, user A launches a STD and
+encrypts A's ram data, then writes these encrypted data onto
+the disk,  so that: Even if user B has access to the disk,
+B could not know the content of A. Which implies:
+1. If B unplugs the disk from A's machine, and plugs the disk onto
+   another machine, B could not decode the content without A's
+   'permission'.
+2. If B is using the same machine as A, even A has walked away leaving
+   the system suspend, B could not resume to A's context without
+   A's 'permission'.
+
+Previously, there are three proposal for this:
+a. Enhance the uswsusp(Pavel)
+b. Using user provided password to generate the key, for encryption(Yu)
+c. Using security boot(TPM or EFI key) for encryption(Joey)
+
+Since I was proposing solution b, I'll say a little more about it.
+The original idea was that, the user provides a password, then this
+password is used to generate the key, which means, if user B has provided
+an incorrect password, the kernel will fail to decrypt the data and is
+likely to fail the resume process. That is to say, no matter
+which physical machine B is using, only if he has provided the
+password, he would be able to resume. In the first version, the key
+deviration was firstly done in kernel space, which satisfies the
+requirement and both saftey. Unfortunately it was rejected and
+people would like to see the key generated in user space instead.
+However, using user provided key directly is not safe, according
+to the discussion in the thread. I don't have good idea on
+how to improve this, but only have some workarounds, say, ask the
+kernel to use TPM key to protects the user provided 'key', etc.
+
+
+Then let's talk a little more about secure boot. According
+to my understanding, the situation secure boot tries to deal
+with is a little different from the user case we raised above -
+It is an enhancement for case 1, because it refuses to resume
+once the machine is changed. And it does not cover case 2. But
+if it is a requirement from the user, that's ok.
+
+uswsusp is to do all the staff in user space, and other two
+aim to do all the staff in kernel space. I'm not arguing
+which one is better, but I'm not sure how often user is using
+it, as we don't get uswsusp related bug report on kernel
+bugzilla (both internally)recent years. Another point is,
+why the compression is in kernel rather than in uswsusp,
+it looks like the same case as encryption here.
+
+
+Best,
+Yu
