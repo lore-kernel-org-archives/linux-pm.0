@@ -1,96 +1,53 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Thu, 9 Aug 2018 11:50:43 +0200
-Message-ID: <20180809095043.GC22465@localhost.localdomain>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-2-patrick.bellasi@arm.com>
- <20180807123550.GA3062@localhost.localdomain>
- <20180809091427.4p2c4fbxocpkjaby@darkstar>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Thu, 9 Aug 2018 10:58:44 +0100
+Message-ID: <20180809095844.GA3444@e107155-lin>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <2056372.NMt4aPaF4h@aspire.rjw.lan>
+ <2205807.cU2puvubpP@aspire.rjw.lan>
+ <1726374.375PCQfjLZ@aspire.rjw.lan>
+ <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
+ <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
+ <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
+ <20180808180248.GC27850@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180809091427.4p2c4fbxocpkjaby@darkstar>
+In-Reply-To: <20180808180248.GC27850@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sudeep
 List-Id: linux-pm@vger.kernel.org
 
-On 09/08/18 10:14, Patrick Bellasi wrote:
-> On 07-Aug 14:35, Juri Lelli wrote:
-> > On 06/08/18 17:39, Patrick Bellasi wrote:
-> > 
-> > [...]
-> > 
-> > > @@ -4218,6 +4245,13 @@ static int __sched_setscheduler(struct task_struct *p,
-> > >  			return retval;
-> > >  	}
-> > >  
-> > > +	/* Configure utilization clamps for the task */
-> > > +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) {
-> > > +		retval = __setscheduler_uclamp(p, attr);
-> > > +		if (retval)
-> > > +			return retval;
-> > > +	}
-> > > +
-> > 
-> > IIUC, this is available to root and non-root users. In the latter case,
-> > how do we cope with the fact that some user might occupy all the
-> > available clamping groups configured for the system?
-> 
-> That's a very good point, glad you noticed it.
-> 
-> What concern me most is that we set constraints to the cgroups
-> delegation model. If all clamp groups have been used it could be
-> not possible for a parent group to shrink resources for its subgroups.
+On Wed, Aug 08, 2018 at 12:02:48PM -0600, Lina Iyer wrote:
 
-Right, when groups are in use the problem might actually be even more
-serious.
+[...]
 
-> In both cases however, in principle, I think we can live with the idea
-> that the "System Management Software" (SMS) can pre-allocate all the
-> required boost groups at boot time;  malicious tasks and dependent
-> groups will eventually get an -ENOSPC error.
-> 
-> These are the main reason why I did not posted a more "safe" solution:
-> this series is already big enough, a properly (pre)configured system
-> is still reasonably functional safe and  this feature can be added in
-> a second step.
+> I will not speak to any comparison of benchmarks between OSI and PC.
+> AFAIK, there are no platforms supporting both.
+>
 
-I see, but I also fear that there will be times and usages of this new
-interface where no SMS is present.
+That's the fundamental issue here. So we have never ever done a proper
+comparison.
 
-> However, I already have a couple of possible extensions/fixes which I
-> can add on top on the next respin. They are along these lines:
+> But, the OSI feature is critical for QCOM mobile platforms. The
+> last man activities during cpuidle save quite a lot of power. Powering
+> off the clocks, busses, regulators and even the oscillator is very
+> important to have a reasonable battery life when using the phone.
+> Platform coordinated approach falls quite short of the needs of a
+> powerful processor with a desired battery efficiency.
+>
 
-These are exactly what I was thinking about as well. :-)
+As mentioned above, without the actual comparison it's hard to justify
+that. While there are corner cases where OSI is able to make better
+judgement, may be we can add ways to deal with that in the firmware
+with PC mode, have we explored that before adding complexity to the OSPM ?
+Since the firmware complexity with OSI remains same as PC mode, isn't it
+worth checking if the corner case we are talking here can be handled in
+the firmware.
 
-> 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
->    time parameter to relax this check
-
-It seems to me that this might work well with that the intended usage of
-the interface that you depict above. SMS only (or any privileged user)
-will be in control of how groups are configured, so no problem for
-normal users.
-
-> 2) add discretization support to clamp groups allocation
-
-And this might also work well if we feel that we don't want to restrict
-usage of the interface to admin only, however...
-
-> This second feature specifically, will ensure that clamp values are
-> always mapped into one of the available clamp groups. While the exact
-> clamp value can always be used for tasks placement biasing, when it
-> comes to frequency selection biasing, depending on concurrently
-> running tasks, you can end up with an effective clamp value which is a
-> rounded up.
-
-what I'm not so sure about is that we might lose in flexibility if the
-number of available discrete clamp groups is too small compared to the
-number of available OPP on the platform.
-
-> Will likely add a couple of additional patches on v4 posting.
-> Do you have any other possible idea?
-
-As said, I though as well about the two options you mentioned.
+--
+Regards,
+Sudeep
