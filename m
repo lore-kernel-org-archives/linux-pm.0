@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 07/10] thermal: tsens: Check if the IP is correctly enabled by firmware
-Date: Thu,  9 Aug 2018 18:02:39 +0530
-Message-ID: <985ed415774fdac9ac21afad4b4b74f30f6c5068.1533815718.git.amit.kucheria@linaro.org>
+Subject: [PATCH v1 08/10] thermal: tsens: Get rid of 'id' field
+Date: Thu,  9 Aug 2018 18:02:40 +0530
+Message-ID: <3810cbe6b499d265d7e3fb97c408cb80a12d5850.1533815718.git.amit.kucheria@linaro.org>
 References: <cover.1533815718.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1533815718.git.amit.kucheria@linaro.org>
@@ -12,55 +12,76 @@ To: linux-kernel@vger.kernel.org
 Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The SROT registers are initialised by the secure firmware at boot. We
-don't have write access to the registers. Check if the block is enabled
-before continuing.
+The hw_id field in 'struct tsens_sensor' can do the job of tracking
+unique ids for each sensor connected to each tsens device instance. It
+also allows hw_ids to be overridden (e.g. 8916) in cases where some
+sensors in a sequence are disabled on a particular platform.
+
+Use the hw_id field instead of the id field consistently across the
+tsens code.
+
+While, we're at it, document the fields of struct tsens_sensor.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ drivers/thermal/qcom/tsens.c |  5 ++---
+ drivers/thermal/qcom/tsens.h | 10 +++++++++-
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 0b8a793f15f4..d250b757d1f0 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -12,6 +12,11 @@
- #include <linux/regmap.h>
- #include "tsens.h"
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 9a8e8f7b4ae1..fb728ec5d77f 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -17,7 +17,7 @@ static int tsens_get_temp(void *data, int *temp)
+ 	const struct tsens_sensor *s = data;
+ 	struct tsens_device *tmdev = s->tmdev;
  
-+/* SROT */
-+#define CTRL_OFFSET		0x4
-+#define TSENS_EN		BIT(0)
-+
-+/* TM */
- #define STATUS_OFFSET		0x30
- #define SN_ADDR_OFFSET		0x4
- #define SN_ST_TEMP_MASK		0x3ff
-@@ -119,6 +124,8 @@ int __init init_common(struct tsens_device *tmdev)
- {
- 	void __iomem *tm_base, *srot_base;
- 	struct resource *res;
-+	u32 code;
-+	int ret;
- 	struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
- 
- 	if (!op)
-@@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
- 	if (IS_ERR(tmdev->tm_map))
- 		return PTR_ERR(tmdev->tm_map);
- 
-+	if (tmdev->srot_map) {
-+		ret = regmap_read(tmdev->srot_map, CTRL_OFFSET, &code);
-+		if (ret)
-+			return ret;
-+		if (!(code & TSENS_EN)) {
-+			dev_err(tmdev->dev, "tsens device is not enabled\n");
-+			return -ENODEV;
-+		}
-+	}
-+
- 	return 0;
+-	return tmdev->ops->get_temp(tmdev, s->id, temp);
++	return tmdev->ops->get_temp(tmdev, s->hw_id, temp);
  }
+ 
+ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
+@@ -26,7 +26,7 @@ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
+ 	struct tsens_device *tmdev = s->tmdev;
+ 
+ 	if (tmdev->ops->get_trend)
+-		return  tmdev->ops->get_trend(tmdev, s->id, trend);
++		return  tmdev->ops->get_trend(tmdev, s->hw_id, trend);
+ 
+ 	return -ENOTSUPP;
+ }
+@@ -83,7 +83,6 @@ static int tsens_register(struct tsens_device *tmdev)
+ 
+ 	for (i = 0;  i < tmdev->num_sensors; i++) {
+ 		tmdev->sensor[i].tmdev = tmdev;
+-		tmdev->sensor[i].id = i;
+ 		tzd = devm_thermal_zone_of_sensor_register(tmdev->dev, i,
+ 							   &tmdev->sensor[i],
+ 							   &tsens_of_ops);
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index b9c4bcf255fa..2a3174dfc1a9 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -14,11 +14,19 @@
+ 
+ struct tsens_device;
+ 
++/**
++ * struct tsens_sensor - sensor-specific data
++ * @tmdev: tsens device instance this sensor is connected to
++ * @tzd: thermal zone corresponding to this sensor
++ * @offset: offset from calibration data to convert ADC data to degrees
++ * @hw_id: unique sensor ID for each sensor connected to tsens device instance
++ * @slope: slope from calibration data to convert ADC data to degrees
++ * @status: 8960-specific status register addresses
++ */
+ struct tsens_sensor {
+ 	struct tsens_device		*tmdev;
+ 	struct thermal_zone_device	*tzd;
+ 	int				offset;
+-	int				id;
+ 	int				hw_id;
+ 	int				slope;
+ 	u32				status;
 -- 
 2.17.1
