@@ -1,116 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] sched: idle: Reenable sched tick for cpuidle request
-Date: Thu, 09 Aug 2018 14:05:52 +0200
-Message-ID: <2704016.RYJlhC2yyo@aspire.rjw.lan>
-References: <1533793647-5628-1-git-send-email-leo.yan@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v1 00/10] Another round of tsens cleanups
+Date: Thu,  9 Aug 2018 18:02:32 +0530
+Message-ID: <cover.1533815718.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533793647-5628-1-git-send-email-leo.yan@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 9, 2018 7:47:27 AM CEST Leo Yan wrote:
-> The idle loop stops tick by respecting the decision from cpuidle
-> framework, if the condition 'need_resched()' is false without any task
-> scheduling, the CPU keeps running in the loop in do_idle() and it has no
-> chance call tick_nohz_idle_exit() to enable the tick.  This results in
-> the idle loop cannot reenable sched tick afterwards, if the idle
-> governor selects a shallow state, thus the powernightmares issue can
-> occur again.
+This is another series of tsens cleanups before we add interrupt support.
+This applies on top of the earlier two series[1][2] that have already been
+accepted for 4.19.
 
-Well, there is code in the menu governor to avoid that.
+In this series, we have the following:
+- splitup 8916 and 8974 register address spaces for SROT and TM
+- cleanups: move to spdx, dead code removal, removal of id field
+- Add support to map the SROT address space for DTs that list it separately
+- Check if TSENS IP is enabled in firmware by querying the SROT space
+- Add reg-names property to get more readable outputs in /proc/iomem
+- Add myself as maintainer of tsens
 
-> This issue can be easily reproduce with the case on Arm Hikey board: use
-> CPU0 to send IPI to CPU7, CPU7 receives the IPI and in the callback
-> function it start a hrtimer with 4ms, so the 4ms timer delta value can
-> let 'menu' governor to choose deepest state in the next entering idle
-> time.  From then on, CPU7 restarts hrtimer with 1ms interval for total
-> 10 times, so this can utilize the typical pattern in 'menu' governor to
-> have prediction for 1ms duration, finally idle governor is easily to
-> select a shallow state, on Hikey board it usually is to select CPU off
-> state.  From then on, CPU7 stays in this shallow state for long time
-> until there have other interrupts on it.
+Regards,
+Amit
 
-And which means that the above-mentioned code misses this case.
+[1] https://lore.kernel.org/lkml/cover.1531895128.git.amit.kucheria@linaro.org/
+[2] https://lore.kernel.org/lkml/cover.1532600791.git.amit.kucheria@linaro.org/
 
-> 
-> C2: cluster off; C1: CPU off
-> 
-> Idle state:           C2    C2    C2    C2    C2    C2    C2    C1
->             --------------------------------------------------------->
-> Interrupt:   ^        ^     ^     ^     ^     ^     ^     ^     ^
->             IPI      Timer Timer Timer Timer Timer Timer Timer Timer
-> 	             4ms   1ms   1ms   1ms   1ms   1ms   1ms   1ms
-> 
-> To fix this issue, the idle loop needs to support reenabling sched tick.
-> This patch checks the conditions 'stop_tick' is false when the tick is
-> stopped, this condition indicates the cpuidle governor asks to reenable
-> the tick and we can use tick_nohz_idle_restart_tick() for this purpose.
-> 
-> A synthetic case is used to to verify this patch, we use CPU0 to send
-> IPI to wake up CPU7 with 50ms interval, CPU7 generate a series hrtimer
-> events (the first interval is 4ms, then the sequential 10 timer events
-> are 1ms interval, same as described above).  We do statistics for idle
-> states duration, the unit is second (s), the testing result shows the
-> C2 state (deepest state) staying time can be improved significantly for
-> CPU7 (+7.942s for 10s execution time on CPU7) and all CPUs wide
-> (+13.360s for ~80s of all CPUs execution time).
-> 
->        Without patches         With patches         Difference
->      --------------------  --------------------  -----------------------
-> CPU    C0     C1      C2     C0     C1      C2      C0      C1       C2
-> 0    0.000  0.027   9.941  0.055  0.038   9.700  +0.055  +0.010   -0.240
-> 1    0.045  0.000   9.964  0.019  0.000   9.943  -0.026  +0.000   -0.020
-> 2    0.002  0.003  10.007  0.035  0.053   9.916  +0.033  +0.049   -0.090
-> 3    0.000  0.023   9.994  0.024  0.246   9.732  +0.024  +0.222   -0.261
-> 4    0.032  0.000   9.985  0.015  0.007   9.993  -0.016  +0.007   +0.008
-> 5    0.001  0.000   9.226  0.039  0.000   9.971  +0.038  +0.000   +0.744
-> 6    0.000  0.000   0.000  0.036  0.000   5.278  +0.036  +0.000   +5.278
-> 7    1.894  8.013   0.059  1.509  0.026   8.002  -0.384  -7.987   +7.942
-> All  1.976  8.068  59.179  1.737  0.372  72.539  -0.239  -7.695  +13.360
-> 
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> ---
->  kernel/sched/idle.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 1a3e9bd..802286e 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -190,10 +190,18 @@ static void cpuidle_idle_call(void)
->  		 */
->  		next_state = cpuidle_select(drv, dev, &stop_tick);
->  
-> -		if (stop_tick)
-> +		if (stop_tick) {
->  			tick_nohz_idle_stop_tick();
-> -		else
-> +		} else {
-> +			/*
-> +			 * The cpuidle framework says to not stop tick but
-> +			 * the tick has been stopped yet, so restart it.
-> +			 */
-> +			if (tick_nohz_tick_stopped())
-> +				tick_nohz_idle_restart_tick();
 
-You need an "else" here IMO as Peter said.
+Amit Kucheria (10):
+  arm/arm64: dts: msm8974/msm8916: thermal: Split address space into two
+  dt-bindings: thermal: Fix a typo in documentation
+  thermal: tsens: Add SPDX license identifiers
+  thermal: tsens: Get rid of dead code
+  thermal: tsens: Rename map field in order to add a second address map
+  thermal: tsens: Add the SROT address map
+  thermal: tsens: Check if the IP is correctly enabled by firmware
+  thermal: tsens: Get rid of 'id' field
+  arm64: dts: qcom: Add reg-names for all tsens nodes
+  MAINTAINERS: Add entry for Qualcomm TSENS thermal drivers
 
-> +
->  			tick_nohz_idle_retain_tick();
-> +		}
->  
->  		rcu_idle_enter();
->  
-> 
+ .../devicetree/bindings/thermal/thermal.txt   |  2 +-
+ MAINTAINERS                                   |  7 +++
+ arch/arm/boot/dts/qcom-msm8974.dtsi           |  7 ++-
+ arch/arm64/boot/dts/qcom/msm8916.dtsi         |  7 ++-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi         |  2 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |  2 +
+ drivers/thermal/qcom/tsens-8916.c             | 11 +---
+ drivers/thermal/qcom/tsens-8960.c             | 41 +++++-------
+ drivers/thermal/qcom/tsens-8974.c             | 11 +---
+ drivers/thermal/qcom/tsens-common.c           | 62 ++++++++++++-------
+ drivers/thermal/qcom/tsens-v2.c               |  6 +-
+ drivers/thermal/qcom/tsens.c                  | 21 +------
+ drivers/thermal/qcom/tsens.h                  | 24 +++----
+ 13 files changed, 99 insertions(+), 104 deletions(-)
 
-Please CC cpuidle patches to linux-pm@vger.kernel.org, that helps a lot.
-
-Thanks,
-Rafael
+-- 
+2.17.1
