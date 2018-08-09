@@ -1,101 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 03/14] PM: Introduce an Energy Model management framework
-Date: Thu, 09 Aug 2018 23:52:29 +0200
-Message-ID: <1598998.9rBByrtVSM@aspire.rjw.lan>
-References: <20180724122521.22109-1-quentin.perret@arm.com> <20180724122521.22109-4-quentin.perret@arm.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 7/8] arm64: dts: rk3399: Add dfi and dmc nodes.
+Date: Thu, 09 Aug 2018 16:41:22 -0600
+Message-ID: <5b6cc314.1c69fb81.96ced.16f7@mx.google.com>
+References: <20180730081124.30698-1-enric.balletbo@collabora.com>
+ <20180730081124.30698-8-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180724122521.22109-4-quentin.perret@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20180730081124.30698-8-enric.balletbo@collabora.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: enric.balletbo@collabora.com
+Cc: Mark Rutland <mark.rutland@arm.com>, Douglas Anderson <dianders@chromium.org>, David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Klaus Goger <klaus.goger@theobroma-systems.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, kernel@collabora.com, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, Brian Norris <briannorris@chromium.org>, Chanwoo Choi <cw00.choi@samsung.com>, Nickey Yang <nickey.yang@rock-chips.com>, Jacob Chen <jacob-chen@iotwrt.com>, devicetree@vger.kernel.org, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, Mark Yao <markyao0591@gmail.com>, linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>, Kyungmin Park <kyungmin.park@samsung.com>, robin.murphy@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 24, 2018 2:25:10 PM CEST Quentin Perret wrote:
-> Several subsystems in the kernel (task scheduler and/or thermal at the
-> time of writing) can benefit from knowing about the energy consumed by
-> CPUs. Yet, this information can come from different sources (DT or
-> firmware for example), in different formats, hence making it hard to
-> exploit without a standard API.
-> 
-> As an attempt to address this, introduce a centralized Energy Model
-> (EM) management framework which aggregates the power values provided
-> by drivers into a table for each frequency domain in the system. The
-> power cost tables are made available to interested clients (e.g. task
-> scheduler or thermal) via platform-agnostic APIs. The overall design
-> is represented by the diagram below (focused on Arm-related drivers as
-> an example, but applicable to any architecture):
-> 
->      +---------------+  +-----------------+  +-------------+
->      | Thermal (IPA) |  | Scheduler (EAS) |  |    Other    |
->      +---------------+  +-----------------+  +-------------+
->              |                 | em_fd_energy()     |
->              |                 | em_cpu_get()       |
->              +-----------+     |         +----------+
->                          |     |         |
->                          v     v         v
->                       +---------------------+
->                       |                     |
->                       |    Energy Model     |
->                       |                     |
->                       |     Framework       |
->                       |                     |
->                       +---------------------+
->                          ^       ^       ^
->                          |       |       | em_register_freq_domain()
->               +----------+       |       +---------+
->               |                  |                 |
->       +---------------+  +---------------+  +--------------+
->       |  cpufreq-dt   |  |   arm_scmi    |  |    Other     |
->       +---------------+  +---------------+  +--------------+
->               ^                  ^                 ^
->               |                  |                 |
->       +--------------+   +---------------+  +--------------+
->       | Device Tree  |   |   Firmware    |  |      ?       |
->       +--------------+   +---------------+  +--------------+
-> 
-> Drivers (typically, but not limited to, CPUFreq drivers) can register
-> data in the EM framework using the em_register_freq_domain() API. The
-> calling driver must provide a callback function with a standardized
-> signature that will be used by the EM framework to build the power
-> cost tables of the frequency domain. This design should offer a lot of
-> flexibility to calling drivers which are free of reading information
-> from any location and to use any technique to compute power costs.
-> Moreover, the capacity states registered by drivers in the EM framework
-> are not required to match real performance states of the target. This
-> is particularly important on targets where the performance states are
-> not known by the OS.
-> 
-> On the client side, the EM framework offers APIs to access the power
-> cost tables of a CPU (em_cpu_get()), and to estimate the energy
-> consumed by the CPUs of a frequency domain (em_fd_energy()). Clients
-> such as the task scheduler can then use these APIs to access the shared
-> data structures holding the Energy Model of CPUs.
-
-I'm a bit concerned that the code here appears to be designed around the
-frequency domains concept which seems to be a limitation and which probably
-is related to the properties of the current generation of hardware.
-
-Assumptions like that tend to get tangled into the code tightly over time
-and they may be hard to untangle from it when new use cases arise later.
-
-For example, there probably will be more firmware involvement in future
-systems and the firmware may not be willing to expose "raw" frequency
-domains to the OS.  That already is the case with P-states on Intel HW and
-with ACPI CPPC in general.
-
-IMO, frequency domains in your current code could be replaced with something
-more general, like "performance domains" providing the scheduler with the
-(relative) cost of running a task on a busy (non-idle) CPU (and, analogously,
-"idle domains" that would provide the scheduler with the - relative - cost
-of waking up an idle CPU to run a task on it or, the other way around, the
-possible relative gain from taking all tasks away from a CPU in order to make
-it go idle).
-
-Also bear in mind that the CPUs the scheduler deals with are logical ones,
-so they may be like hardware threads within a single core, for example.
-
-Thanks,
-Rafael
+SGksIHRoaXMgaXMgYW4gYXV0b21hdGVkIGVtYWlsIGZyb20gUm9iJ3MgKGV4cGVyaW1lbnRhbCkg
+cmV2aWV3IGJvdC4gSQpmb3VuZCBhIGNvdXBsZSBvZiBjb21tb24gcHJvYmxlbXMgd2l0aCB5b3Vy
+IHBhdGNoLiBQbGVhc2Ugc2VlIGJlbG93LgoKT24gTW9uLCAzMCBKdWwgMjAxOCAxMDoxMToyMyAr
+MDIwMCwgRW5yaWMgQmFsbGV0Ym8gaSBTZXJyYSB3cm90ZToKPiBGcm9tOiBMaW4gSHVhbmcgPGhs
+QHJvY2stY2hpcHMuY29tPgo+IAo+IFRoZXNlIGFyZSByZXF1aXJlZCB0byBzdXBwb3J0IEREUiBE
+VkZTIG9uIHJrMzM5OSBwbGF0Zm9ybS4gVGhlIHBhdGNoIGFsc28KPiBpbnRyb2R1Y2VzIHR3byBu
+ZXcgZmlsZXMgKHJrMzM5OS1kcmFtLmggYW5kIHJrMzM5OS1kcmFtLWRlZmF1bHQtdGltaW5nKQo+
+IHdpdGggZGVmYXVsdCBEUkFNIHNldHRpbmdzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFu
+ZyA8aGxAcm9jay1jaGlwcy5jb20+Cj4gU2lnbmVkLW9mZi1ieTogRW5yaWMgQmFsbGV0Ym8gaSBT
+ZXJyYSA8ZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbT4KClRoZSBwcmVmZXJyZWQgc3ViamVj
+dCBwcmVmaXggaXMgImR0LWJpbmRpbmdzOiA8YmluZGluZyBkaXI+OiAuLi4iLgoKPiAtLS0KPiAK
+PiBDaGFuZ2VzIGluIHYxOgo+IC0gW1JGQyA4LzEwXSBNb3ZlIHJrMzM5OS1kcmFtLmggdG8gZHQt
+aW5jbHVkZXMuCj4gLSBbUkZDIDgvMTBdIFB1dCBzZHJhbSBkZWZhdWx0IHZhbHVlcyB1bmRlciB0
+aGUgZG1jIG5vZGUuCj4gLSBbUkZDIDgvMTBdIFJlbW92ZWQgcmszMzk5LWRyYW0tZGVmYXVsdC10
+aW1pbmcuZHRzCj4gCj4gIC4uLi9ib290L2R0cy9yb2NrY2hpcC9yazMzOTktb3AxLW9wcC5kdHNp
+ICAgICB8IDI5ICsrKysrKysrCj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvcm9ja2NoaXAvcmszMzk5
+LmR0c2kgICAgICB8IDQ5ICsrKysrKysrKysrKysKPiAgaW5jbHVkZS9kdC1iaW5kaW5ncy9wb3dl
+ci9yazMzOTktZHJhbS5oICAgICAgIHwgNzMgKysrKysrKysrKysrKysrKysrKwo+ICAzIGZpbGVz
+IGNoYW5nZWQsIDE1MSBpbnNlcnRpb25zKCspCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRl
+L2R0LWJpbmRpbmdzL3Bvd2VyL3JrMzM5OS1kcmFtLmgKPiAKCkRUIGJpbmRpbmdzIChpbmNsdWRp
+bmcgYmluZGluZyBoZWFkZXJzKSBzaG91bGQgYmUgYSBzZXBhcmF0ZSBwYXRjaC4gU2VlCkRvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zdWJtaXR0aW5nLXBhdGNoZXMudHh0LgoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1h
+aWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
+ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
