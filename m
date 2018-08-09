@@ -1,75 +1,116 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] x86/ACPI/cstate: Output AMD on APCI C1 FFH MWAIT AMD
- systems
-Date: Thu, 9 Aug 2018 07:43:47 -0400
-Message-ID: <932b8a78-a7b4-ea8c-a640-b7f657f45b63@redhat.com>
-References: <20180808174735.3114-1-prarit@redhat.com>
- <20180808195856.GA20912@amd>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] sched: idle: Reenable sched tick for cpuidle request
+Date: Thu, 09 Aug 2018 14:05:52 +0200
+Message-ID: <2704016.RYJlhC2yyo@aspire.rjw.lan>
+References: <1533793647-5628-1-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180808195856.GA20912@amd>
-Content-Language: en-GB
+In-Reply-To: <1533793647-5628-1-git-send-email-leo.yan@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thursday, August 9, 2018 7:47:27 AM CEST Leo Yan wrote:
+> The idle loop stops tick by respecting the decision from cpuidle
+> framework, if the condition 'need_resched()' is false without any task
+> scheduling, the CPU keeps running in the loop in do_idle() and it has no
+> chance call tick_nohz_idle_exit() to enable the tick.  This results in
+> the idle loop cannot reenable sched tick afterwards, if the idle
+> governor selects a shallow state, thus the powernightmares issue can
+> occur again.
 
+Well, there is code in the menu governor to avoid that.
 
-On 08/08/2018 03:58 PM, Pavel Machek wrote:
-> On Wed 2018-08-08 13:47:35, Prarit Bhargava wrote:
->> commit 5209654a46ee ("x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
->> systems") allows use of FFH for ACPI C1 but tools like cpupower and turbostat
->> display INTEL for the cstate description.
->>
->> Output "AMD" for AMD systems with FFH for ACPI C1.
-> 
-> Um, is it good idea?
->> First, you are changing kernel API.
+> This issue can be easily reproduce with the case on Arm Hikey board: use
+> CPU0 to send IPI to CPU7, CPU7 receives the IPI and in the callback
+> function it start a hrtimer with 4ms, so the 4ms timer delta value can
+> let 'menu' governor to choose deepest state in the next entering idle
+> time.  From then on, CPU7 restarts hrtimer with 1ms interval for total
+> 10 times, so this can utilize the typical pattern in 'menu' governor to
+> have prediction for 1ms duration, finally idle governor is easily to
+> select a shallow state, on Hikey board it usually is to select CPU off
+> state.  From then on, CPU7 stays in this shallow state for long time
+> until there have other interrupts on it.
 
-I thought about that and the AMD support was only added a year ago so I think it
-is okay to change.  Secondly, I did a grep for the use of the desc file in the
-Fedora sources and only found a few places where the file is referenced.  They
-all *report* the data but do not use it to make a decision.
-
-For example, turbostat and cpupower only return the data to the console.
-
-> 
->> @@ -107,9 +108,14 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
->>  			"Monitor-Mwait will be used to enter C-%d state\n",
->>  			cx->type);
->>  	}
->> -	snprintf(cx->desc,
->> -			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
->> -			cx->address);
->> +	if (c->x86_vendor == X86_VENDOR_INTEL)
->> +		snprintf(cx->desc,
->> +			 ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
->> +			 cx->address);
->> +	else
->> +		snprintf(cx->desc,
->> +			 ACPI_CX_DESC_LEN, "ACPI FFH AMD MWAIT 0x%x",
->> +			 cx->address);
-> 
-> Second, I read it as "Intel MWAIT" instruction is used. Yes, AMD cpu can
-> use Intel MWAIT, too...
-
-That's true but the weirdness of seeing INTEL on an AMD box there made me push
-this patch.
+And which means that the above-mentioned code misses this case.
 
 > 
-> Third, there are more CPU vendors out there.
-
-Not in this code.  It is AMD & Intel only.  I thought about dropping INTEL, and
-also switching to X86.
-
-Should we drop INTEL from the above or not (as suggested later in this thread)?
-It feels like everyone is on the fence about it.
-
-P.
-
+> C2: cluster off; C1: CPU off
 > 
-> 									Pavel
+> Idle state:           C2    C2    C2    C2    C2    C2    C2    C1
+>             --------------------------------------------------------->
+> Interrupt:   ^        ^     ^     ^     ^     ^     ^     ^     ^
+>             IPI      Timer Timer Timer Timer Timer Timer Timer Timer
+> 	             4ms   1ms   1ms   1ms   1ms   1ms   1ms   1ms
 > 
+> To fix this issue, the idle loop needs to support reenabling sched tick.
+> This patch checks the conditions 'stop_tick' is false when the tick is
+> stopped, this condition indicates the cpuidle governor asks to reenable
+> the tick and we can use tick_nohz_idle_restart_tick() for this purpose.
+> 
+> A synthetic case is used to to verify this patch, we use CPU0 to send
+> IPI to wake up CPU7 with 50ms interval, CPU7 generate a series hrtimer
+> events (the first interval is 4ms, then the sequential 10 timer events
+> are 1ms interval, same as described above).  We do statistics for idle
+> states duration, the unit is second (s), the testing result shows the
+> C2 state (deepest state) staying time can be improved significantly for
+> CPU7 (+7.942s for 10s execution time on CPU7) and all CPUs wide
+> (+13.360s for ~80s of all CPUs execution time).
+> 
+>        Without patches         With patches         Difference
+>      --------------------  --------------------  -----------------------
+> CPU    C0     C1      C2     C0     C1      C2      C0      C1       C2
+> 0    0.000  0.027   9.941  0.055  0.038   9.700  +0.055  +0.010   -0.240
+> 1    0.045  0.000   9.964  0.019  0.000   9.943  -0.026  +0.000   -0.020
+> 2    0.002  0.003  10.007  0.035  0.053   9.916  +0.033  +0.049   -0.090
+> 3    0.000  0.023   9.994  0.024  0.246   9.732  +0.024  +0.222   -0.261
+> 4    0.032  0.000   9.985  0.015  0.007   9.993  -0.016  +0.007   +0.008
+> 5    0.001  0.000   9.226  0.039  0.000   9.971  +0.038  +0.000   +0.744
+> 6    0.000  0.000   0.000  0.036  0.000   5.278  +0.036  +0.000   +5.278
+> 7    1.894  8.013   0.059  1.509  0.026   8.002  -0.384  -7.987   +7.942
+> All  1.976  8.068  59.179  1.737  0.372  72.539  -0.239  -7.695  +13.360
+> 
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> ---
+>  kernel/sched/idle.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index 1a3e9bd..802286e 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -190,10 +190,18 @@ static void cpuidle_idle_call(void)
+>  		 */
+>  		next_state = cpuidle_select(drv, dev, &stop_tick);
+>  
+> -		if (stop_tick)
+> +		if (stop_tick) {
+>  			tick_nohz_idle_stop_tick();
+> -		else
+> +		} else {
+> +			/*
+> +			 * The cpuidle framework says to not stop tick but
+> +			 * the tick has been stopped yet, so restart it.
+> +			 */
+> +			if (tick_nohz_tick_stopped())
+> +				tick_nohz_idle_restart_tick();
+
+You need an "else" here IMO as Peter said.
+
+> +
+>  			tick_nohz_idle_retain_tick();
+> +		}
+>  
+>  		rcu_idle_enter();
+>  
+> 
+
+Please CC cpuidle patches to linux-pm@vger.kernel.org, that helps a lot.
+
+Thanks,
+Rafael
