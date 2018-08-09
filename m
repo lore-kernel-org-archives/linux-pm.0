@@ -1,117 +1,75 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Thu, 9 Aug 2018 11:25:04 +0100
-Message-ID: <20180809102504.GB13428@e107981-ln.cambridge.arm.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <2056372.NMt4aPaF4h@aspire.rjw.lan>
- <2205807.cU2puvubpP@aspire.rjw.lan>
- <1726374.375PCQfjLZ@aspire.rjw.lan>
- <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
- <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
- <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
- <20180808180248.GC27850@codeaurora.org>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] x86/ACPI/cstate: Output AMD on APCI C1 FFH MWAIT AMD
+ systems
+Date: Thu, 9 Aug 2018 07:43:47 -0400
+Message-ID: <932b8a78-a7b4-ea8c-a640-b7f657f45b63@redhat.com>
+References: <20180808174735.3114-1-prarit@redhat.com>
+ <20180808195856.GA20912@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180808180248.GC27850@codeaurora.org>
+In-Reply-To: <20180808195856.GA20912@amd>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 08, 2018 at 12:02:48PM -0600, Lina Iyer wrote:
-> On Wed, Aug 08 2018 at 04:56 -0600, Lorenzo Pieralisi wrote:
-> >On Mon, Aug 06, 2018 at 11:37:55AM +0200, Rafael J. Wysocki wrote:
-> >>On Fri, Aug 3, 2018 at 1:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >>> [...]
-> >>>
-> >>>>>
-> >>>>> Assuming that I have got that right, there are concerns, mostly regarding
-> >>>>> patch [07/26], but I will reply to that directly.
-> >>>>
-> >>>> Well, I haven't got that right, so never mind.
-> >>>>
-> >>>> There are a few minor things to address, but apart from that the general
-> >>>> genpd patches look ready.
-> >>>
-> >>> Alright, thanks!
-> >>>
-> >>> I will re-spin the series and post a new version once 4.19 rc1 is out.
-> >>> Hopefully we can queue it up early in next cycle to get it tested in
-> >>> next for a while.
-> >>>
-> >>>>
-> >>>>> The $subject patch is fine by me by itself, but it obviously depends on the
-> >>>>> previous ones.  Patches [01-02/26] are fine too, but they don't seem to be
-> >>>>> particularly useful without the rest of the series.
-> >>>>>
-> >>>>> As far as patches [10-26/26] go, I'd like to see some review comments and/or
-> >>>>> tags from the people with vested interest in there, in particular from Daniel
-> >>>>> on patch [12/26] and from Sudeep on the PSCI ones.
-> >>>>
-> >>>> But this still holds.
-> >>>
-> >>> Actually, patch 10 and patch11 is ready to go as well. I ping Daniel
-> >>> on patch 12.
-> >>>
-> >>> In regards to the rest of the series, some of the PSCI/ARM changes
-> >>> have been reviewed by Mark Rutland, however several changes have not
-> >>> been acked.
-> >>>
-> >>> On the other hand, one can also interpret the long silence in regards
-> >>> to PSCI/ARM changes as they are good to go. :-)
-> >>
-> >>Well, in that case giving an ACK to them should not be an issue for
-> >>the people with a vested interest I suppose.
-> >
-> >Apologies to everyone for the delay in replying.
-> >
-> >Side note: cpu_pm_enter()/exit() are also called through syscore ops in
-> >s2RAM/IDLE, you know that but I just wanted to mention it to compound
-> >the discussion.
-> >
-> >As for PSCI patches I do not personally think PSCI OSI enablement is
-> >beneficial (and my position has always been the same since PSCI OSI was
-> >added to the specification, I am not even talking about this patchset)
-> >and Arm Trusted Firmware does not currently support it for the same
-> >reason.
-> >
-> >We (if Mark and Sudeep agree) will enable PSCI OSI if and when we have a
-> >definitive and constructive answer to *why* we have to do that that is
-> >not a dogmatic "the kernel knows better" but rather a comprehensive
-> >power benchmark evaluation - I thought that was the agreement reached
-> >at OSPM but apparently I was mistaken.
-> >
-> I will not speak to any comparison of benchmarks between OSI and PC.
-> AFAIK, there are no platforms supporting both.
 
-PSCI specifications, 5.20.1:
 
-"The platform will boot in platform-coordinated mode."
+On 08/08/2018 03:58 PM, Pavel Machek wrote:
+> On Wed 2018-08-08 13:47:35, Prarit Bhargava wrote:
+>> commit 5209654a46ee ("x86/ACPI/cstate: Allow ACPI C1 FFH MWAIT use on AMD
+>> systems") allows use of FFH for ACPI C1 but tools like cpupower and turbostat
+>> display INTEL for the cstate description.
+>>
+>> Output "AMD" for AMD systems with FFH for ACPI C1.
+> 
+> Um, is it good idea?
+>> First, you are changing kernel API.
 
-So all platforms implementing OSI have to support both.
+I thought about that and the AMD support was only added a year ago so I think it
+is okay to change.  Secondly, I did a grep for the use of the desc file in the
+Fedora sources and only found a few places where the file is referenced.  They
+all *report* the data but do not use it to make a decision.
 
-> But, the OSI feature is critical for QCOM mobile platforms. The
-> last man activities during cpuidle save quite a lot of power.
+For example, turbostat and cpupower only return the data to the console.
 
-What I expressed above was that, in PSCI based systems (OSI or PC
-alike), it is up to firmware/hardware to detect "the last man" not
-the kernel.
+> 
+>> @@ -107,9 +108,14 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+>>  			"Monitor-Mwait will be used to enter C-%d state\n",
+>>  			cx->type);
+>>  	}
+>> -	snprintf(cx->desc,
+>> -			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+>> -			cx->address);
+>> +	if (c->x86_vendor == X86_VENDOR_INTEL)
+>> +		snprintf(cx->desc,
+>> +			 ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+>> +			 cx->address);
+>> +	else
+>> +		snprintf(cx->desc,
+>> +			 ACPI_CX_DESC_LEN, "ACPI FFH AMD MWAIT 0x%x",
+>> +			 cx->address);
+> 
+> Second, I read it as "Intel MWAIT" instruction is used. Yes, AMD cpu can
+> use Intel MWAIT, too...
 
-I need to understand what you mean by "last man activities" to
-provide feedback here.
+That's true but the weirdness of seeing INTEL on an AMD box there made me push
+this patch.
 
-> Powering off the clocks, busses, regulators and even the oscillator is
-> very important to have a reasonable battery life when using the phone.
-> Platform coordinated approach falls quite short of the needs of a
-> powerful processor with a desired battery efficiency.
+> 
+> Third, there are more CPU vendors out there.
 
-I am sorry but if you want us to merge PSCI patches in this series you
-will have to back the claim above with a detailed technical explanation
-of *why* platform-coordination falls short of QCOM (or whoever else)
-needs wrt PSCI OSI.
+Not in this code.  It is AMD & Intel only.  I thought about dropping INTEL, and
+also switching to X86.
 
-Thanks,
-Lorenzo
+Should we drop INTEL from the above or not (as suggested later in this thread)?
+It feels like everyone is on the fence about it.
+
+P.
+
+> 
+> 									Pavel
+> 
