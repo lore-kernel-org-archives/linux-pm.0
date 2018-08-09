@@ -1,143 +1,101 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] sched: idle: Reenable sched tick for cpuidle request
-Date: Thu, 09 Aug 2018 23:31:46 +0200
-Message-ID: <8620035.OlGfqWSkfk@aspire.rjw.lan>
-References: <1533793647-5628-1-git-send-email-leo.yan@linaro.org> <20180809162957.GD14362@leoy-ThinkPad-X240s> <CAJZ5v0it0XM29OGnNfanrRAH3E8uHkJjXVwgHBQRiT9aZ0747A@mail.gmail.com>
+Subject: Re: [PATCH v5 03/14] PM: Introduce an Energy Model management framework
+Date: Thu, 09 Aug 2018 23:52:29 +0200
+Message-ID: <1598998.9rBByrtVSM@aspire.rjw.lan>
+References: <20180724122521.22109-1-quentin.perret@arm.com> <20180724122521.22109-4-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0it0XM29OGnNfanrRAH3E8uHkJjXVwgHBQRiT9aZ0747A@mail.gmail.com>
+In-Reply-To: <20180724122521.22109-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 9, 2018 6:43:55 PM CEST Rafael J. Wysocki wrote:
-> On Thu, Aug 9, 2018 at 6:29 PM,  <leo.yan@linaro.org> wrote:
-> > On Thu, Aug 09, 2018 at 05:42:30PM +0200, Rafael J. Wysocki wrote:
-> >
-> > [...]
-> >
-> >> >> This issue can be easily reproduce with the case on Arm Hikey board: use
-> >> >> CPU0 to send IPI to CPU7, CPU7 receives the IPI and in the callback
-> >> >> function it start a hrtimer with 4ms, so the 4ms timer delta value can
-> >> >> let 'menu' governor to choose deepest state in the next entering idle
-> >> >> time.  From then on, CPU7 restarts hrtimer with 1ms interval for total
-> >> >> 10 times, so this can utilize the typical pattern in 'menu' governor to
-> >> >> have prediction for 1ms duration, finally idle governor is easily to
-> >> >> select a shallow state, on Hikey board it usually is to select CPU off
-> >> >> state.  From then on, CPU7 stays in this shallow state for long time
-> >> >> until there have other interrupts on it.
-> >> >
-> >> > And which means that the above-mentioned code misses this case.
-> >>
-> >> And I don't really understand how this happens. :-/
-> >>
-> >> If menu sees that the tick has been stopped, it sets
-> >> data->predicted_us to the minimum of TICK_USEC and
-> >> ktime_to_us(delta_next) and the latency requirements comes from PM QoS
-> >> (no interactivity boost).  Thus the only case when it will say "do not
-> >> stop the tick" is when delta_next is below the tick period length, but
-> >> that's OK, because it means that there is a timer pending that much
-> >> time away, so it doesn't make sense to select a deeper idle state
-> >> then.
-> >>
-> >> If there is a short-interval timer pending every time we go idle, it
-> >> doesn't matter that the tick is stopped really, because the other
-> >> timer will wake the CPU up anyway.
-> >>
-> >> Have I missed anything?
-> >
-> > Yeah, you miss one case is if there haven't anymore timer event, for this
-> > case the ktime_to_us(delta_next) is a quite large value and
-> > data->predicted_us will be to set TICK_USEC; if HZ=1000 then TICK_USEC is
-> > 1000us, on Hikey board if data->predicted_us is 1000us then it's easily
-> > to set shallow state (C1) rather than C2.  Unfortunately, this is the
-> > last time the CPU can predict idle state before it will stay in idle
-> > for long period.
+On Tuesday, July 24, 2018 2:25:10 PM CEST Quentin Perret wrote:
+> Several subsystems in the kernel (task scheduler and/or thermal at the
+> time of writing) can benefit from knowing about the energy consumed by
+> CPUs. Yet, this information can come from different sources (DT or
+> firmware for example), in different formats, hence making it hard to
+> exploit without a standard API.
 > 
-> Fair enough, but in that case the governor will want the tick to be
-> stopped, because expected_interval is TICK_USEC then, so I'm not sure
-> how the patch helps?
+> As an attempt to address this, introduce a centralized Energy Model
+> (EM) management framework which aggregates the power values provided
+> by drivers into a table for each frequency domain in the system. The
+> power cost tables are made available to interested clients (e.g. task
+> scheduler or thermal) via platform-agnostic APIs. The overall design
+> is represented by the diagram below (focused on Arm-related drivers as
+> an example, but applicable to any architecture):
 > 
-> > [...]
-> >
-> >> >> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> >> >> index 1a3e9bd..802286e 100644
-> >> >> --- a/kernel/sched/idle.c
-> >> >> +++ b/kernel/sched/idle.c
-> >> >> @@ -190,10 +190,18 @@ static void cpuidle_idle_call(void)
-> >> >>                */
-> >> >>               next_state = cpuidle_select(drv, dev, &stop_tick);
-> >> >>
-> >> >> -             if (stop_tick)
-> >> >> +             if (stop_tick) {
-> >> >>                       tick_nohz_idle_stop_tick();
-> >> >> -             else
-> >> >> +             } else {
-> >> >> +                     /*
-> >> >> +                      * The cpuidle framework says to not stop tick but
-> >> >> +                      * the tick has been stopped yet, so restart it.
-> >> >> +                      */
-> >> >> +                     if (tick_nohz_tick_stopped())
-> >> >> +                             tick_nohz_idle_restart_tick();
-> >> >
-> >> > You need an "else" here IMO as Peter said.
-> >
-> > Yeah, I have replied to Peter, after we restart the tick, I found must to
-> > call tick_retain() to clear 'ts->timer_expires_base' to 0, otherwise
-> > tick_nohz_idle_exit() reports warning when exit from idle loop.
+>      +---------------+  +-----------------+  +-------------+
+>      | Thermal (IPA) |  | Scheduler (EAS) |  |    Other    |
+>      +---------------+  +-----------------+  +-------------+
+>              |                 | em_fd_energy()     |
+>              |                 | em_cpu_get()       |
+>              +-----------+     |         +----------+
+>                          |     |         |
+>                          v     v         v
+>                       +---------------------+
+>                       |                     |
+>                       |    Energy Model     |
+>                       |                     |
+>                       |     Framework       |
+>                       |                     |
+>                       +---------------------+
+>                          ^       ^       ^
+>                          |       |       | em_register_freq_domain()
+>               +----------+       |       +---------+
+>               |                  |                 |
+>       +---------------+  +---------------+  +--------------+
+>       |  cpufreq-dt   |  |   arm_scmi    |  |    Other     |
+>       +---------------+  +---------------+  +--------------+
+>               ^                  ^                 ^
+>               |                  |                 |
+>       +--------------+   +---------------+  +--------------+
+>       | Device Tree  |   |   Firmware    |  |      ?       |
+>       +--------------+   +---------------+  +--------------+
 > 
-> I see now, thanks.
+> Drivers (typically, but not limited to, CPUFreq drivers) can register
+> data in the EM framework using the em_register_freq_domain() API. The
+> calling driver must provide a callback function with a standardized
+> signature that will be used by the EM framework to build the power
+> cost tables of the frequency domain. This design should offer a lot of
+> flexibility to calling drivers which are free of reading information
+> from any location and to use any technique to compute power costs.
+> Moreover, the capacity states registered by drivers in the EM framework
+> are not required to match real performance states of the target. This
+> is particularly important on targets where the performance states are
+> not known by the OS.
 > 
-> >> And I really would prefer to avoid restarting the tick here, because
-> >> it is overhead and quite likely unnecessary.
-> >
-> > I understand the logic when read the code, actually I did some experiments
-> > on the function menu_select(), in menu_select() function it discards the
-> > consideration for typical pattern interval and it also tries to avoid to
-> > enable tick and select more shallow state at the bottom of function.  So I
-> > agree that in the middle of idles it's redundant to reenable tick and the
-> > code is careful thought.
-> >
-> > But this patch tries to rescue the case at the last time the CPU enter one
-> > shallow idle state but without wake up event.
-> 
-> It is better to avoid entering a shallow state IMO.  Let me think
-> about that a bit.
+> On the client side, the EM framework offers APIs to access the power
+> cost tables of a CPU (em_cpu_get()), and to estimate the energy
+> consumed by the CPUs of a frequency domain (em_fd_energy()). Clients
+> such as the task scheduler can then use these APIs to access the shared
+> data structures holding the Energy Model of CPUs.
 
-The simple change below should address this issue and I don't quite see
-what it can break.  It may cause deeper idle states to be selected with
-the tick already stopped, but that really shouldn't be problematic, as
-(since the tick has been stopped) there are no strict latency constraints,
-so even if there is an early wakeup, we should be able to tolerate the
-extra latency just fine.
+I'm a bit concerned that the code here appears to be designed around the
+frequency domains concept which seems to be a limitation and which probably
+is related to the properties of the current generation of hardware.
 
----
- drivers/cpuidle/governors/menu.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+Assumptions like that tend to get tangled into the code tightly over time
+and they may be hard to untangle from it when new use cases arise later.
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -349,14 +349,12 @@ static int menu_select(struct cpuidle_dr
- 		 * If the tick is already stopped, the cost of possible short
- 		 * idle duration misprediction is much higher, because the CPU
- 		 * may be stuck in a shallow idle state for a long time as a
--		 * result of it.  In that case say we might mispredict and try
--		 * to force the CPU into a state for which we would have stopped
--		 * the tick, unless a timer is going to expire really soon
--		 * anyway.
-+		 * result of it.  In that case say we might mispredict and use
-+		 * the known time to the closest timer event for the idle state
-+		 * selection.
- 		 */
- 		if (data->predicted_us < TICK_USEC)
--			data->predicted_us = min_t(unsigned int, TICK_USEC,
--						   ktime_to_us(delta_next));
-+			data->predicted_us = ktime_to_us(delta_next);
- 	} else {
- 		/*
- 		 * Use the performance multiplier and the user-configurable
+For example, there probably will be more firmware involvement in future
+systems and the firmware may not be willing to expose "raw" frequency
+domains to the OS.  That already is the case with P-states on Intel HW and
+with ACPI CPPC in general.
+
+IMO, frequency domains in your current code could be replaced with something
+more general, like "performance domains" providing the scheduler with the
+(relative) cost of running a task on a busy (non-idle) CPU (and, analogously,
+"idle domains" that would provide the scheduler with the - relative - cost
+of waking up an idle CPU to run a task on it or, the other way around, the
+possible relative gain from taking all tasks away from a CPU in order to make
+it go idle).
+
+Also bear in mind that the CPUs the scheduler deals with are logical ones,
+so they may be like hardware threads within a single core, for example.
+
+Thanks,
+Rafael
