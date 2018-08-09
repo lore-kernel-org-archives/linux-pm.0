@@ -1,95 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RESEND PATCH v1 2/2] cpuidle: menu: Dismiss tick impaction on
- correction factors
-Date: Thu, 9 Aug 2018 23:06:07 +0200
-Message-ID: <CAJZ5v0ggZXDCvQ7EbO1gtZhMewK6ToRW9JSiDzwpdZqZLDY31g@mail.gmail.com>
-References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org> <1533835203-5789-3-git-send-email-leo.yan@linaro.org>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH v6 3/5] thermal: qcom-spmi: Use PMIC thermal stage 2 for
+ critical trip points
+Date: Thu, 9 Aug 2018 14:28:12 -0700
+Message-ID: <CAD=FV=Us-Cp6AEUfbNbAuRwri4y1opiGY6O+HHModserppYdxQ@mail.gmail.com>
+References: <20180731185917.176074-1-mka@chromium.org> <20180731185917.176074-3-mka@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533835203-5789-3-git-send-email-leo.yan@linaro.org>
+In-Reply-To: <20180731185917.176074-3-mka@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 9, 2018 at 7:20 PM, Leo Yan <leo.yan@linaro.org> wrote:
-> If the idle duration predictor detects the tick is triggered, and with
-> meeting the condition 'data->next_timer_us > TICK_USEC', it will give a
-> big compensation for the 'measured' interval; this is purposed to avoid
-> artificially small correction factor values.  Unfortunately, this still
-> cannot cover all cases of the tick impaction on correction factors,
-> e.g. if the predicted next event is less than ITCK_USEC, then all
-> wakening up by the ticks will be taken as usual case and reducing exit
-> latency, as results the tick events heavily impacts the correction
-> factors.
->
-> Moreover, the coming tick sometimes is very soon, especially
-> at the first time when the CPU becomes idle the tick expire time might
-> be vary, so ticks can introduce big deviation on correction factors.
->
-> If idle governor deliberately doesn't stop the tick timer, the tick
-> event is coming as expected with fixed interval, so the tick event is
-> predictable; if the tick event is coming early than other normal timer
-> event and other possible wakeup events, we need to dismiss the tick
-> impaction on correction factors, this can let the correction factor
-> array is purely used for other wakeup events correctness rather than
-> sched tick.
->
-> This patch is to check if it's a tick wakeup, it takes the CPU can
-> stay in the idle state for enough time so it gives high compensation
-> for the measured' interval, this can avoid tick impaction on the
-> correction factor array.
+Hi,
 
-Well, again, this is questionable.
-
-Yes, you can remove the tick influence on correction factors this way,
-but will the resulting idle duration predictions be actually better
-because of that?
-
-Do you have any data to demonstrate the difference?
-
+On Tue, Jul 31, 2018 at 11:59 AM, Matthias Kaehlcke <mka@chromium.org> wrot=
+e:
+> There are three thermal stages defined in the PMIC:
 >
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> stage 1: warning
+> stage 2: system should shut down
+> stage 3: emergency shut down
+>
+> By default the PMIC assumes that the OS isn't doing anything and thus
+> at stage 2 it does a partial PMIC shutdown and at stage 3 it kills
+> all power. When switching between thermal stages the PMIC generates an
+> interrupt which is handled by the driver. The partial PMIC shutdown at
+> stage 2 can be disabled by software, which allows the OS to initiate a
+> shutdown at stage 2 with a thermal zone configured accordingly.
+>
+> If a critical trip point is configured in the thermal zone the driver
+> adjusts the stage 1-3 temperature thresholds to (closely) match the
+> critical temperature with a stage 2 threshold (125/130/135/140 =C2=B0C).
+> If a suitable match is found the partial shutdown at stage 2 is
+> disabled. If for some reason the system doesn't shutdown at stage 2
+> the emergency shutdown at stage 3 kicks in.
+>
+> The partial shutdown at stage 2 remains enabled in these cases:
+> - no critical trip point defined
+> - the temperature of the critical trip point is < 125=C2=B0C
+> - the temperature of the critical trip point is > 140=C2=B0C and no
+>   ADC channel is configured (thus the OS is not notified when the critica=
+l
+>   temperature is reached)
+>
+> Suggested-by: Douglas Anderson <dianders@chromium.org>
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
 > ---
->  drivers/cpuidle/governors/menu.c | 14 ++++++--------
->  1 file changed, 6 insertions(+), 8 deletions(-)
+> Changes in v6:
+> - fixed condition to check if ADC is configured in
+>   qpnp_tm_update_critical_trip_temp()
+> - changed =C2=B0C in logs to C
+> - removed needless evaluation of qpnp_tm_write() return value in
+>   qpnp_tm_update_critical_trip_temp()
+> - move assignment of chip->initialized to true to qpnp_tm_init(),
+>   where the lock is held
+> - call thermal_zone_device_update() after initialization is
+>   completed
+> - split some #define + comment in two lines to avoid exceeding
+>   chars per line limit
+> - removed extra closing parenthesis in qpnp_tm_get_temp()
+> - remove unnecessary parentheses around conditions in
+>   qpnp_tm_update_critical_trip_temp() and qpnp_tm_get_critical_trip_temp(=
+)
+> - fixed indentation of call devm_thermal_zone_of_sensor_register() call
+>   in qpnp_tm_probe()
 >
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 2ce4068..43cbde3 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -525,15 +525,13 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->          * assume the state was never reached and the exit latency is 0.
->          */
->
-> -       if (data->tick_wakeup && data->next_timer_us > TICK_USEC) {
-> +       if (data->tick_wakeup) {
->                 /*
-> -                * The nohz code said that there wouldn't be any events within
-> -                * the tick boundary (if the tick was stopped), but the idle
-> -                * duration predictor had a differing opinion.  Since the CPU
-> -                * was woken up by a tick (that wasn't stopped after all), the
-> -                * predictor was not quite right, so assume that the CPU could
-> -                * have been idle long (but not forever) to help the idle
-> -                * duration predictor do a better job next time.
-> +                * Since the CPU was woken up by a tick (that wasn't stopped
-> +                * after all), the predictor was not quite right, so assume
+> Changes in v5:
+> - patch added to the series
+> ---
+>  drivers/thermal/qcom-spmi-temp-alarm.c | 158 ++++++++++++++++++++++---
+>  1 file changed, 140 insertions(+), 18 deletions(-)
 
-This part of the comment is not valid any more IMO.
+I won't claim to have spent too much time in the thermal framework,
+but from what I can tell everything looks supergreat now.  FWIW:
 
-The fact that the CPU was woken up by the tick alone doesn't tell you
-much about the prediction.  The tick may have not been stopped,
-because the nohz code saw timer events within the tick boundary, in
-which case the CPU could not be idle very long.  The next_timer_us
-check is there to see what the nohz code told us.
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
 
-> +                * that the CPU could have been idle long (but not forever)
-> +                * to help the idle duration predictor do a better job next
-> +                * time.
->                  */
->                 measured_us = 9 * MAX_INTERESTING / 10;
->         } else {
-> --
+One minor comment I'd have is that I personally would have ordered
+this in the series before the patch ("dt-bindings: thermal:
+qcom-spmi-temp-alarm: Improve thermal zone in example") just because
+that patch only really makes sense after this one lands.  ...but I
+don't think it's terribly important.
+
+
+-Doug
