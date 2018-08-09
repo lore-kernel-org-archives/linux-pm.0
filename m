@@ -1,96 +1,77 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH 0/4][RFC v2] Introduce the in-kernel hibernation
- encryption
-Date: Thu, 09 Aug 2018 11:03:20 +0200
-Message-ID: <1533805400.17217.16.camel@suse.com>
-References: <20180723162302.GA4503@sandybridge-desktop>
-         <1532590246.7411.3.camel@suse.com> <20180726081404.GG4244@linux-l9pv.suse>
-         <20180730170415.GQ4244@linux-l9pv.suse>
-         <20180803033702.GB416@sandybridge-desktop>
-         <20180803053445.GC4244@linux-l9pv.suse>
-         <CADjb_WSURQz86+E8kakNf7UBDM+aho+uaz3QdDkuGsEgan=szw@mail.gmail.com>
-         <20180805100200.GB22948@amd> <20180806084534.GB12124@chenyu-desktop>
-         <20180808175036.GA16217@amd> <20180809030135.GA21364@chenyu-desktop>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Thu, 9 Aug 2018 10:14:27 +0100
+Message-ID: <20180809091427.4p2c4fbxocpkjaby@darkstar>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-2-patrick.bellasi@arm.com>
+ <20180807123550.GA3062@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180809030135.GA21364@chenyu-desktop>
+Content-Disposition: inline
+In-Reply-To: <20180807123550.GA3062@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Ryan Chen <yu.chen.surf@gmail.com>, jlee@suse.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, ebiggers@google.com, Theodore Ts'o <tytso@mit.edu>, smueller@chronox.de, denkenz@gmail.com, Linux PM list <linux-pm@vger.kernel.org>, linux-crypto@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kookoo.gu@intel.com, Zhang Rui <rui.zhang@intel.com>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Do, 2018-08-09 at 11:01 +0800, Yu Chen wrote:
-
-Hi,
-
-> User requirement:
-> A is the user, B is the attacker, user A launches a STD and
-> encrypts A's ram data, then writes these encrypted data onto
-> the disk,  so that: Even if user B has access to the disk,
-> B could not know the content of A. Which implies:
-> 1. If B unplugs the disk from A's machine, and plugs the disk onto
->    another machine, B could not decode the content without A's
->    'permission'.
-
-That is what encrypted STD does.
-
-> 2. If B is using the same machine as A, even A has walked away leaving
->    the system suspend, B could not resume to A's context without
->    A's 'permission'.
-
-No, that is out of scope for Secure Boot
-
-> Previously, there are three proposal for this:
-> a. Enhance the uswsusp(Pavel)
-> b. Using user provided password to generate the key, for encryption(Yu)
-> c. Using security boot(TPM or EFI key) for encryption(Joey)
+On 07-Aug 14:35, Juri Lelli wrote:
+> On 06/08/18 17:39, Patrick Bellasi wrote:
 > 
-> Since I was proposing solution b, I'll say a little more about it.
-> The original idea was that, the user provides a password, then this
-> password is used to generate the key, which means, if user B has provided
-> an incorrect password, the kernel will fail to decrypt the data and is
-> likely to fail the resume process. That is to say, no matter
-> which physical machine B is using, only if he has provided the
-> password, he would be able to resume. In the first version, the key
-> deviration was firstly done in kernel space, which satisfies the
-> requirement and both saftey. Unfortunately it was rejected and
-> people would like to see the key generated in user space instead.
-> However, using user provided key directly is not safe, according
-> to the discussion in the thread. I don't have good idea on
-> how to improve this, but only have some workarounds, say, ask the
-> kernel to use TPM key to protects the user provided 'key', etc.
-
-Well, this has no relation to Secure Boot.
-Secure Boot will not prevent you from booting the machine.
-It restricts the OS you can boot to a cryptographically signed subset.
-
-If you want to demand a password to resume a machine, you can
-do so. But it has no relation to encrypted STD, other than that
-you need encrypted STD for this to make sense.
-
-> Then let's talk a little more about secure boot. According
-> to my understanding, the situation secure boot tries to deal
-> with is a little different from the user case we raised above -
-> It is an enhancement for case 1, because it refuses to resume
-> once the machine is changed. And it does not cover case 2. But
-> if it is a requirement from the user, that's ok.
+> [...]
 > 
-> uswsusp is to do all the staff in user space, and other two
-> aim to do all the staff in kernel space. I'm not arguing
-> which one is better, but I'm not sure how often user is using
-> it, as we don't get uswsusp related bug report on kernel
-> bugzilla (both internally)recent years. Another point is,
-> why the compression is in kernel rather than in uswsusp,
-> it looks like the same case as encryption here.
+> > @@ -4218,6 +4245,13 @@ static int __sched_setscheduler(struct task_struct *p,
+> >  			return retval;
+> >  	}
+> >  
+> > +	/* Configure utilization clamps for the task */
+> > +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP) {
+> > +		retval = __setscheduler_uclamp(p, attr);
+> > +		if (retval)
+> > +			return retval;
+> > +	}
+> > +
+> 
+> IIUC, this is available to root and non-root users. In the latter case,
+> how do we cope with the fact that some user might occupy all the
+> available clamping groups configured for the system?
 
-Secure Boot has no concept of users. Code is trusted, not users.
-For Secure Boot to work, you need a key generated and RAM encrypted
-in kernel space.
+That's a very good point, glad you noticed it.
 
-If you want a requirement to restrict booting or resuming, you need
-to encrypt the key. These are different things.
+What concern me most is that we set constraints to the cgroups
+delegation model. If all clamp groups have been used it could be
+not possible for a parent group to shrink resources for its subgroups.
 
-	Regards
-		Oliver
+In both cases however, in principle, I think we can live with the idea
+that the "System Management Software" (SMS) can pre-allocate all the
+required boost groups at boot time;  malicious tasks and dependent
+groups will eventually get an -ENOSPC error.
+
+These are the main reason why I did not posted a more "safe" solution:
+this series is already big enough, a properly (pre)configured system
+is still reasonably functional safe and  this feature can be added in
+a second step.
+
+However, I already have a couple of possible extensions/fixes which I
+can add on top on the next respin. They are along these lines:
+1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
+   time parameter to relax this check
+2) add discretization support to clamp groups allocation
+
+This second feature specifically, will ensure that clamp values are
+always mapped into one of the available clamp groups. While the exact
+clamp value can always be used for tasks placement biasing, when it
+comes to frequency selection biasing, depending on concurrently
+running tasks, you can end up with an effective clamp value which is a
+rounded up.
+
+Will likely add a couple of additional patches on v4 posting.
+Do you have any other possible idea?
+
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
