@@ -1,87 +1,97 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 08/10] thermal: tsens: Get rid of 'id' field
-Date: Thu,  9 Aug 2018 18:02:40 +0530
-Message-ID: <3810cbe6b499d265d7e3fb97c408cb80a12d5850.1533815718.git.amit.kucheria@linaro.org>
-References: <cover.1533815718.git.amit.kucheria@linaro.org>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v7 8/8] interconnect: Allow endpoints translation via DT
+Date: Thu, 9 Aug 2018 17:17:37 +0300
+Message-ID: <df517d56-a181-b72b-2fb4-cb58bb817a99@linaro.org>
+References: <20180731161340.13000-1-georgi.djakov@linaro.org>
+ <20180731161340.13000-9-georgi.djakov@linaro.org>
+ <804925d5927ccb6927b16f7e9a4aa05c@codeaurora.org>
+ <3a7bb27a-0609-133b-08e9-8864f1ccc4bc@linaro.org>
+ <37ac189618cda02567977f65570d15d3@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1533815718.git.amit.kucheria@linaro.org>
-In-Reply-To: <cover.1533815718.git.amit.kucheria@linaro.org>
-References: <cover.1533815718.git.amit.kucheria@linaro.org>
+In-Reply-To: <37ac189618cda02567977f65570d15d3@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: skannan@codeaurora.org
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, arnd@arndb.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The hw_id field in 'struct tsens_sensor' can do the job of tracking
-unique ids for each sensor connected to each tsens device instance. It
-also allows hw_ids to be overridden (e.g. 8916) in cases where some
-sensors in a sequence are disabled on a particular platform.
+Hi Saravana,
 
-Use the hw_id field instead of the id field consistently across the
-tsens code.
+On 08/02/2018 10:12 PM, skannan@codeaurora.org wrote:
+> On 2018-08-02 05:07, Georgi Djakov wrote:
+>> Hi Saravana,
+>>
+>> On 08/02/2018 01:57 AM, skannan@codeaurora.org wrote:
+>>> On 2018-07-31 09:13, Georgi Djakov wrote:
+>>>> Currently we support only platform data for specifying the interconnect
+>>>> endpoints. As now the endpoints are hard-coded into the consumer driver
+>>>> this may lead to complications when a single driver is used by multiple
+>>>> SoCs, which may have different interconnect topology.
+>>>> To avoid cluttering the consumer drivers, introduce a translation
+>>>> function
+>>>> to help us get the board specific interconnect data from device-tree.
+>>>>
+>>>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>>>> ---
+>>>>  drivers/interconnect/core.c  | 62 ++++++++++++++++++++++++++++++++++++
+>>>>  include/linux/interconnect.h |  7 ++++
+>>>>  2 files changed, 69 insertions(+)
+>>>>
+>>>> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+>>>> index 9fef180cf77e..d1b6adff0a3d 100644
+>>>> --- a/drivers/interconnect/core.c
+>>>> +++ b/drivers/interconnect/core.c
+>> [..]
+>>>> --- a/include/linux/interconnect.h
+>>>> +++ b/include/linux/interconnect.h
+>>>> @@ -17,6 +17,7 @@ struct device;
+>>>>
+>>>>  struct icc_path *icc_get(struct device *dev, const int src_id,
+>>>>               const int dst_id);
+>>>> +struct icc_path *of_icc_get(struct device *dev, const char *name);
+>>>>  void icc_put(struct icc_path *path);
+>>>>  int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw);
+>>>>
+>>>> @@ -28,6 +29,12 @@ static inline struct icc_path *icc_get(struct
+>>>> device *dev, const int src_id,
+>>>>      return NULL;
+>>>>  }
+>>>>
+>>>> +static inline struct icc_path *of_icc_get(struct device *dev,
+>>>> +                      const char *name)
+>>>> +{
+>>>> +    return NULL;
+>>>> +}
+>>>> +
+>>>
+>>> Might want to return PTR(-ENODEV) or some error code so that client
+>>> doesn't have to do NULL check AND an error check?
+>>>
+>>> -Saravana
+>>
+>> NULL is returned when CONFIG_INTERCONNECT=n. Configuration of
+>> interconnects by consumer drivers could be optional and that's why null
+>> is returned instead of an error. The consumer drivers decide how to
+>> proceed in this case and if there is a hard requirement for interconnect
+>> support, then i would suggest to express it as a dependency in Kconfig.
+> 
+> Ehh... you could make the same argument with an error. If it's not
+> mandatory for functioning, they can ignore a specific error and
+> continue? At a minimum, these stub functions returning NULL doesn't
+> match with the documentation that says these APIs will only ever return
+> ERR_PTR().
+> 
+> -Saravana
 
-While, we're at it, document the fields of struct tsens_sensor.
+Here i am trying to align with other frameworks, which provide some
+resources to consumers. The regulator/clock/reset frameworks return
+NULL, so i prefer to do the same here. Drivers are free to handle NULL
+specifically, but they don't have to. This NULL may also mean that
+interconnects have been already configured by bootloader or firmware.
+Of course i accept the comment to update the documentation to mention this.
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/qcom/tsens.c |  5 ++---
- drivers/thermal/qcom/tsens.h | 10 +++++++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 9a8e8f7b4ae1..fb728ec5d77f 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -17,7 +17,7 @@ static int tsens_get_temp(void *data, int *temp)
- 	const struct tsens_sensor *s = data;
- 	struct tsens_device *tmdev = s->tmdev;
- 
--	return tmdev->ops->get_temp(tmdev, s->id, temp);
-+	return tmdev->ops->get_temp(tmdev, s->hw_id, temp);
- }
- 
- static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
-@@ -26,7 +26,7 @@ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
- 	struct tsens_device *tmdev = s->tmdev;
- 
- 	if (tmdev->ops->get_trend)
--		return  tmdev->ops->get_trend(tmdev, s->id, trend);
-+		return  tmdev->ops->get_trend(tmdev, s->hw_id, trend);
- 
- 	return -ENOTSUPP;
- }
-@@ -83,7 +83,6 @@ static int tsens_register(struct tsens_device *tmdev)
- 
- 	for (i = 0;  i < tmdev->num_sensors; i++) {
- 		tmdev->sensor[i].tmdev = tmdev;
--		tmdev->sensor[i].id = i;
- 		tzd = devm_thermal_zone_of_sensor_register(tmdev->dev, i,
- 							   &tmdev->sensor[i],
- 							   &tsens_of_ops);
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index b9c4bcf255fa..2a3174dfc1a9 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -14,11 +14,19 @@
- 
- struct tsens_device;
- 
-+/**
-+ * struct tsens_sensor - sensor-specific data
-+ * @tmdev: tsens device instance this sensor is connected to
-+ * @tzd: thermal zone corresponding to this sensor
-+ * @offset: offset from calibration data to convert ADC data to degrees
-+ * @hw_id: unique sensor ID for each sensor connected to tsens device instance
-+ * @slope: slope from calibration data to convert ADC data to degrees
-+ * @status: 8960-specific status register addresses
-+ */
- struct tsens_sensor {
- 	struct tsens_device		*tmdev;
- 	struct thermal_zone_device	*tzd;
- 	int				offset;
--	int				id;
- 	int				hw_id;
- 	int				slope;
- 	u32				status;
--- 
-2.17.1
+Thanks,
+Georgi
