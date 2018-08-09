@@ -1,77 +1,92 @@
-From: Randy Dunlap <rdunlap@infradead.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
  support utilization clamping
-Date: Thu, 9 Aug 2018 08:20:17 -0700
-Message-ID: <87897157-0b49-a0be-f66c-81cc2942b4dd@infradead.org>
+Date: Thu, 9 Aug 2018 16:23:13 +0100
+Message-ID: <20180809152313.lewfhufidhxb2qrk@darkstar>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
  <20180806163946.28380-2-patrick.bellasi@arm.com>
- <d8a3d533-84df-bfc7-96ae-790141be4926@infradead.org>
- <20180809083947.2ogkudkpg6d52roc@darkstar>
+ <20180807123550.GA3062@localhost.localdomain>
+ <20180809091427.4p2c4fbxocpkjaby@darkstar>
+ <20180809095043.GC22465@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180809083947.2ogkudkpg6d52roc@darkstar>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180809095043.GC22465@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/09/2018 01:39 AM, Patrick Bellasi wrote:
-> On 06-Aug 09:50, Randy Dunlap wrote:
->> Hi,
-> 
-> Hi Randy,
-> 
->> On 08/06/2018 09:39 AM, Patrick Bellasi wrote:
->>> diff --git a/init/Kconfig b/init/Kconfig
->>> index 041f3a022122..1d45a6877d6f 100644
->>> --- a/init/Kconfig
->>> +++ b/init/Kconfig
->>> @@ -583,6 +583,25 @@ config HAVE_UNSTABLE_SCHED_CLOCK
->>>  config GENERIC_SCHED_CLOCK
->>>  	bool
->>>  
->>> +menu "Scheduler features"
->>> +
->>> +config UCLAMP_TASK
->>> +	bool "Enable utilization clamping for RT/FAIR tasks"
->>> +	depends on CPU_FREQ_GOV_SCHEDUTIL
->>> +	default false
->>
->> 	default n
->> but just omit the line completely since "n" is already the default.
-> 
-> 
-> Right, will update for next posting!
-> Is there a strict rule to omit this line when it's already the
-> default?
+On 09-Aug 11:50, Juri Lelli wrote:
+> On 09/08/18 10:14, Patrick Bellasi wrote:
+> > On 07-Aug 14:35, Juri Lelli wrote:
+> > > On 06/08/18 17:39, Patrick Bellasi wrote:
 
-It's not documented AFAIK, but it's commonly repeated on LKML.
+[...]
 
->>> +	help
->>> +	  This feature enables the scheduler to track the clamped utilization
->>> +	  of each CPU based on RUNNABLE tasks currently scheduled on that CPU.
->>> +
->>> +	  When this option is enabled, the user can specify a min and max CPU
->>> +          bandwidth which is allowed for a task.
->>> +	  The max bandwidth allows to clamp the maximum frequency a task can
->>> +	  use, while the min bandwidth allows to define a minimum frequency a
->>> +          task will always use.
->>
->> Please clean up the indentation above to use one tab + 2 spaces on all lines.
+> > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
+> >    time parameter to relax this check
 > 
-> Sure, my bad I did not notice it... although I'm quite sure the patch
-> passed a checkpatch... will check better next time.
+> It seems to me that this might work well with that the intended usage of
+> the interface that you depict above. SMS only (or any privileged user)
+> will be in control of how groups are configured, so no problem for
+> normal users.
 
-Thanks.
+Yes, well... apart normal users still getting a -ENOSPC is they are
+requesting one of the not pre-configured clamp values. Which is why
+the following bits can be helpful.
 
->>> +
->>> +	  If in doubt, say N.
->>> +
->>> +endmenu
+> > 2) add discretization support to clamp groups allocation
+> 
+> And this might also work well if we feel that we don't want to restrict
+> usage of the interface to admin only, however...
+> 
+> > This second feature specifically, will ensure that clamp values are
+> > always mapped into one of the available clamp groups. While the exact
+> > clamp value can always be used for tasks placement biasing, when it
+> > comes to frequency selection biasing, depending on concurrently
+> > running tasks, you can end up with an effective clamp value which is a
+> > rounded up.
+> 
+> what I'm not so sure about is that we might lose in flexibility if the
+> number of available discrete clamp groups is too small compared to the
+> number of available OPP on the platform.
 
+Regarding this concern, I would say that we should consider that, for
+frequency biasing, we are in general not interested in nailing down
+the single 1% difference and/or exact OPP capacities
+
+A certain coarse grained resolution is usually acceptable for many
+different reasons:
+a) schedutil already uses a 20% margin which can potentially eclipse
+   few OPP when we scale up/down
+b) tasks/CPUs utilization are good enough but never exact and precise
+   values
+c) reducing the number of OPP switches could have some benefits on
+   stability/latencies
+d) clamping is actually defining minimum/maximum preferred values, is
+   not to be considered a tool for "precise control"
+
+All that considered, I would say that maybe a 5% resolution could
+still be considered an acceptable _worst case_ rounding since we don't
+have always to round up to the next 5%.
+
+For example, if we have:
+ - TaskA: util_min=41%
+ - TaskB: util_nin=44%
+they will be both accounted in the 40-45% clamp group but the clamp
+group value can be modulated at run-time depending on RUNNABLE
+tasks. When TaskA is running alone, we can still set util_min to
+41%, while we will use 44% (not 45%) when TaskB is (also) running.
+
+It's worth to notice that we pre-allocated at compile time 20 clamp
+groups, but not necessarily all of them will be used at run-time.
+Indeed, we will still use a policy where only the actual required
+values are allocated at the beginning of the clamps map, thus
+optimizing max updates.
 
 -- 
-~Randy
+#include <best/regards.h>
+
+Patrick Bellasi
