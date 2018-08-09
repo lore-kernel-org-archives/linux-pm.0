@@ -1,153 +1,74 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Thu, 9 Aug 2018 16:39:25 +0100
-Message-ID: <20180809153925.GA20329@red-moon>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-8-ulf.hansson@linaro.org>
- <3574880.GjmnMm1lMq@aspire.rjw.lan>
- <10360149.m4MlxDWZY5@aspire.rjw.lan>
- <CAPDyKFonHYSq32WxvB1x5PXissXZvraqazgU_ZyLR=tsyD9vAA@mail.gmail.com>
- <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
+ for RT tasks
+Date: Thu, 9 Aug 2018 16:41:56 +0100
+Message-ID: <20180809154156.gdsx2vacjmp6p6dp@darkstar>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-7-patrick.bellasi@arm.com>
+ <20180807135403.s7jktvxmhycujeht@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
+In-Reply-To: <20180807135403.s7jktvxmhycujeht@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisbec@>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 06, 2018 at 11:20:59AM +0200, Rafael J. Wysocki wrote:
+On 07-Aug 14:54, Quentin Perret wrote:
+> Hi Patrick,
 
-[...]
+Hi Quentin!
 
-> >>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
-> >>> >     return false;
-> >>> >  }
-> >>> >
-> >>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-> >>> > +{
-> >>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> >>> > +   ktime_t domain_wakeup, cpu_wakeup;
-> >>> > +   s64 idle_duration_ns;
-> >>> > +   int cpu, i;
-> >>> > +
-> >>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-> >>> > +           return true;
-> >>> > +
-> >>> > +   /*
-> >>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
-> >>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
-> >>> > +    * contains a mask of all CPUs from subdomains.
-> >>> > +    */
-> >>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> >>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> >>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
-> >>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
-> >>> > +                   domain_wakeup = cpu_wakeup;
-> >>> > +   }
-> >>
-> >> Here's a concern I have missed before. :-/
-> >>
-> >> Say, one of the CPUs you're walking here is woken up in the meantime.
-> >
-> > Yes, that can happen - when we miss-predicted "next wakeup".
-> >
-> >>
-> >> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
-> >> to update domain_wakeup.  We really should just avoid the domain power off in
-> >> that case at all IMO.
-> >
-> > Correct.
-> >
-> > However, we also want to avoid locking contentions in the idle path,
-> > which is what this boils done to.
+> On Monday 06 Aug 2018 at 17:39:38 (+0100), Patrick Bellasi wrote:
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index a7affc729c25..bb25ef66c2d3 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -200,6 +200,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+> >  static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> >  {
+> >  	struct rq *rq = cpu_rq(sg_cpu->cpu);
+> > +	unsigned long util_cfs, util_rt;
+> >  	unsigned long util, irq, max;
+> >  
+> >  	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
 > 
-> This already is done under genpd_lock() AFAICS, so I'm not quite sure
-> what exactly you mean.
+> IIUC, not far below this you should still have something like:
 > 
-> Besides, this is not just about increased latency, which is a concern
-> by itself but maybe not so much in all environments, but also about
-> possibility of missing a CPU wakeup, which is a major issue.
-> 
-> If one of the CPUs sharing the domain with the current one is woken up
-> during cpu_power_down_ok() and the wakeup is an edge-triggered
-> interrupt and the domain is turned off regardless, the wakeup may be
-> missed entirely if I'm not mistaken.
-> 
-> It looks like there needs to be a way for the hardware to prevent a
-> domain poweroff when there's a pending interrupt or I don't quite see
-> how this can be handled correctly.
-> 
-> >> Sure enough, if the domain power off is already started and one of the CPUs
-> >> in the domain is woken up then, too bad, it will suffer the latency (but in
-> >> that case the hardware should be able to help somewhat), but otherwise CPU
-> >> wakeup should prevent domain power off from being carried out.
-> >
-> > The CPU is not prevented from waking up, as we rely on the FW to deal with that.
-> >
-> > Even if the above computation turns out to wrongly suggest that the
-> > cluster can be powered off, the FW shall together with the genpd
-> > backend driver prevent it.
-> 
-> Fine, but then the solution depends on specific FW/HW behavior, so I'm
-> not sure how generic it really is.  At least, that expectation should
-> be clearly documented somewhere, preferably in code comments.
-> 
-> > To cover this case for PSCI, we also use a per cpu variable for the
-> > CPU's power off state, as can be seen later in the series.
-> 
-> Oh great, but the generic part should be independent on the underlying
-> implementation of the driver.  If it isn't, then it also is not
-> generic.
-> 
-> > Hope this clarifies your concern, else tell and will to elaborate a bit more.
-> 
-> Not really.
-> 
-> There also is one more problem and that is the interaction between
-> this code and the idle governor.
-> 
-> Namely, the idle governor may select a shallower state for some
-> reason, for example due to an additional latency limit derived from
-> CPU utilization (like in the menu governor), and how does the code in
-> cpu_power_down_ok() know what state has been selected and how does it
-> honor the selection made by the idle governor?
+> 	if (rt_rq_is_runnable(&rq->rt))
+> 		return max;
 
-That's a good question and it maybe gives a path towards a solution.
+Do you mean that when RT tasks are RUNNABLE we still want to got to
+MAX? Not sure to understand... since this patch is actually to clamp
+the RT class...
 
-AFAICS the genPD governor only selects the idle state parameter that
-determines the idle state at, say, GenPD cpumask level it does not touch
-the CPUidle decision, that works on a subset of idle states (at cpu
-level).
+> So you won't reach the actual clamping code at the end of the function
+> when a RT task is runnable no?
 
-That's my understanding, which can be wrong so please correct me
-if that's the case because that's a bit confusing.
+... mmm... no... this patch is to clamp RT tasks... Am I missing
+something?
 
-Let's imagine that we flattened out the list of idle states and feed
-CPUidle with it (all of them - cpu, cluster, package, system - as it is
-in the mainline _now_). Then the GenPD governor can run-through the
-CPUidle selection and _demote_ the idle state if necessary since it
-understands that some CPUs in the GenPD will wake up shortly and break
-the target residency hyphothesis the CPUidle governor is expecting.
+> Also, I always had the feeling that the default for RT should be
+> util_min == 1024, and then users could decide to lower the bar if they
+> want to.
 
-The whole idea about this series is improving CPUidle decision when
-the target idle state is _shared_ among groups of cpus (again, please
-do correct me if I am wrong).
+Mmm... good point! This would keep the policy unaltered for RT tasks.
 
-It is obvious that a GenPD governor must only demote - never promote a
-CPU idle state selection given that hierarchy implies more power
-savings and higher target residencies required.
+I want to keep sched class specific code in uclamp at minimum, but
+likely this should be achievable by just properly initializing the
+task-specific util_min for RT tasks, if the original task has
+UCLAM_NOT_VALID.
 
-This whole series would become more generic and won't depend on
-PSCI OSI at all - actually that would become a hierarchical
-CPUidle governor.
+> For the specific case of RT, that feels more natural than
+> applying a max util clamp IMO. What do you think ?
 
-I still think that PSCI firmware and most certainly mwait() play the
-role the GenPD governor does since they can detect in FW/HW whether
-that's worthwhile to switch off a domain, the information is obviously
-there and the kernel would just add latency to the idle path in that
-case but let's gloss over this for the sake of this discussion.
+I'll look better into this for the next posting!
 
-Lorenzo
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
