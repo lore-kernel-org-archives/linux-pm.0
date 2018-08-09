@@ -1,90 +1,95 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v1 08/10] thermal: tsens: Get rid of 'id' field
-Date: Thu, 9 Aug 2018 13:55:19 -0700
-Message-ID: <20180809205519.GP160295@google.com>
-References: <cover.1533815718.git.amit.kucheria@linaro.org>
- <3810cbe6b499d265d7e3fb97c408cb80a12d5850.1533815718.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RESEND PATCH v1 2/2] cpuidle: menu: Dismiss tick impaction on
+ correction factors
+Date: Thu, 9 Aug 2018 23:06:07 +0200
+Message-ID: <CAJZ5v0ggZXDCvQ7EbO1gtZhMewK6ToRW9JSiDzwpdZqZLDY31g@mail.gmail.com>
+References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org> <1533835203-5789-3-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3810cbe6b499d265d7e3fb97c408cb80a12d5850.1533815718.git.amit.kucheria@linaro.org>
+In-Reply-To: <1533835203-5789-3-git-send-email-leo.yan@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 09, 2018 at 06:02:40PM +0530, Amit Kucheria wrote:
-> The hw_id field in 'struct tsens_sensor' can do the job of tracking
-> unique ids for each sensor connected to each tsens device instance. It
-> also allows hw_ids to be overridden (e.g. 8916) in cases where some
-> sensors in a sequence are disabled on a particular platform.
-> 
-> Use the hw_id field instead of the id field consistently across the
-> tsens code.
-> 
-> While, we're at it, document the fields of struct tsens_sensor.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/thermal/qcom/tsens.c |  5 ++---
->  drivers/thermal/qcom/tsens.h | 10 +++++++++-
->  2 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 9a8e8f7b4ae1..fb728ec5d77f 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -17,7 +17,7 @@ static int tsens_get_temp(void *data, int *temp)
->  	const struct tsens_sensor *s = data;
->  	struct tsens_device *tmdev = s->tmdev;
->  
-> -	return tmdev->ops->get_temp(tmdev, s->id, temp);
-> +	return tmdev->ops->get_temp(tmdev, s->hw_id, temp);
->  }
->  
->  static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
-> @@ -26,7 +26,7 @@ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
->  	struct tsens_device *tmdev = s->tmdev;
->  
->  	if (tmdev->ops->get_trend)
-> -		return  tmdev->ops->get_trend(tmdev, s->id, trend);
-> +		return  tmdev->ops->get_trend(tmdev, s->hw_id, trend);
->  
->  	return -ENOTSUPP;
->  }
-> @@ -83,7 +83,6 @@ static int tsens_register(struct tsens_device *tmdev)
->  
->  	for (i = 0;  i < tmdev->num_sensors; i++) {
->  		tmdev->sensor[i].tmdev = tmdev;
-> -		tmdev->sensor[i].id = i;
->  		tzd = devm_thermal_zone_of_sensor_register(tmdev->dev, i,
->  							   &tmdev->sensor[i],
->  							   &tsens_of_ops);
-> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-> index b9c4bcf255fa..2a3174dfc1a9 100644
-> --- a/drivers/thermal/qcom/tsens.h
-> +++ b/drivers/thermal/qcom/tsens.h
-> @@ -14,11 +14,19 @@
->  
->  struct tsens_device;
->  
-> +/**
-> + * struct tsens_sensor - sensor-specific data
-> + * @tmdev: tsens device instance this sensor is connected to
-> + * @tzd: thermal zone corresponding to this sensor
-> + * @offset: offset from calibration data to convert ADC data to degrees
-> + * @hw_id: unique sensor ID for each sensor connected to tsens device instance
-> + * @slope: slope from calibration data to convert ADC data to degrees
-> + * @status: 8960-specific status register addresses
-> + */
->  struct tsens_sensor {
->  	struct tsens_device		*tmdev;
->  	struct thermal_zone_device	*tzd;
->  	int				offset;
-> -	int				id;
->  	int				hw_id;
->  	int				slope;
->  	u32				status;
+On Thu, Aug 9, 2018 at 7:20 PM, Leo Yan <leo.yan@linaro.org> wrote:
+> If the idle duration predictor detects the tick is triggered, and with
+> meeting the condition 'data->next_timer_us > TICK_USEC', it will give a
+> big compensation for the 'measured' interval; this is purposed to avoid
+> artificially small correction factor values.  Unfortunately, this still
+> cannot cover all cases of the tick impaction on correction factors,
+> e.g. if the predicted next event is less than ITCK_USEC, then all
+> wakening up by the ticks will be taken as usual case and reducing exit
+> latency, as results the tick events heavily impacts the correction
+> factors.
+>
+> Moreover, the coming tick sometimes is very soon, especially
+> at the first time when the CPU becomes idle the tick expire time might
+> be vary, so ticks can introduce big deviation on correction factors.
+>
+> If idle governor deliberately doesn't stop the tick timer, the tick
+> event is coming as expected with fixed interval, so the tick event is
+> predictable; if the tick event is coming early than other normal timer
+> event and other possible wakeup events, we need to dismiss the tick
+> impaction on correction factors, this can let the correction factor
+> array is purely used for other wakeup events correctness rather than
+> sched tick.
+>
+> This patch is to check if it's a tick wakeup, it takes the CPU can
+> stay in the idle state for enough time so it gives high compensation
+> for the measured' interval, this can avoid tick impaction on the
+> correction factor array.
 
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Well, again, this is questionable.
+
+Yes, you can remove the tick influence on correction factors this way,
+but will the resulting idle duration predictions be actually better
+because of that?
+
+Do you have any data to demonstrate the difference?
+
+>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> ---
+>  drivers/cpuidle/governors/menu.c | 14 ++++++--------
+>  1 file changed, 6 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 2ce4068..43cbde3 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -525,15 +525,13 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>          * assume the state was never reached and the exit latency is 0.
+>          */
+>
+> -       if (data->tick_wakeup && data->next_timer_us > TICK_USEC) {
+> +       if (data->tick_wakeup) {
+>                 /*
+> -                * The nohz code said that there wouldn't be any events within
+> -                * the tick boundary (if the tick was stopped), but the idle
+> -                * duration predictor had a differing opinion.  Since the CPU
+> -                * was woken up by a tick (that wasn't stopped after all), the
+> -                * predictor was not quite right, so assume that the CPU could
+> -                * have been idle long (but not forever) to help the idle
+> -                * duration predictor do a better job next time.
+> +                * Since the CPU was woken up by a tick (that wasn't stopped
+> +                * after all), the predictor was not quite right, so assume
+
+This part of the comment is not valid any more IMO.
+
+The fact that the CPU was woken up by the tick alone doesn't tell you
+much about the prediction.  The tick may have not been stopped,
+because the nohz code saw timer events within the tick boundary, in
+which case the CPU could not be idle very long.  The next_timer_us
+check is there to see what the nohz code told us.
+
+> +                * that the CPU could have been idle long (but not forever)
+> +                * to help the idle duration predictor do a better job next
+> +                * time.
+>                  */
+>                 measured_us = 9 * MAX_INTERESTING / 10;
+>         } else {
+> --
