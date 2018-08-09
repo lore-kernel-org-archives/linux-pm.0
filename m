@@ -1,72 +1,110 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [RESEND PATCH v1 2/2] cpuidle: menu: Dismiss tick impaction on correction factors
-Date: Fri, 10 Aug 2018 01:20:03 +0800
-Message-ID: <1533835203-5789-3-git-send-email-leo.yan@linaro.org>
-References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v1 01/10] arm/arm64: dts: msm8974/msm8916: thermal: Split
+ address space into two
+Date: Thu, 9 Aug 2018 12:10:59 -0700
+Message-ID: <20180809191059.GI160295@google.com>
+References: <cover.1533815718.git.amit.kucheria@linaro.org>
+ <d01f560abed221b536b27bfaa42a530257642974.1533815718.git.amit.kucheria@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <d01f560abed221b536b27bfaa42a530257642974.1533815718.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
-Cc: Leo Yan <leo.yan@linaro.org>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Zhang Rui <rui.zhang@intel.com>, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-If the idle duration predictor detects the tick is triggered, and with
-meeting the condition 'data->next_timer_us > TICK_USEC', it will give a
-big compensation for the 'measured' interval; this is purposed to avoid
-artificially small correction factor values.  Unfortunately, this still
-cannot cover all cases of the tick impaction on correction factors,
-e.g. if the predicted next event is less than ITCK_USEC, then all
-wakening up by the ticks will be taken as usual case and reducing exit
-latency, as results the tick events heavily impacts the correction
-factors.  Moreover, the coming tick sometimes is very soon, especially
-at the first time when the CPU becomes idle the tick expire time might
-be vary, so ticks can introduce big deviation on correction factors.
+On Thu, Aug 09, 2018 at 06:02:33PM +0530, Amit Kucheria wrote:
+> We've earlier added support to split the register address space into TM
+> and SROT regions.
+> 
+> Split up the regmap address space into two for the remaining platforms that
+> have a similar register layout and make corresponding changes to the
+> get_temp_common() function used by these platforms.
+> 
+> Since tsens-common.c/init_common() currently only registers one address
+> space, the order is important (TM before SROT).  This is OK since the code
+> doesn't really use the SROT functionality yet.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  arch/arm/boot/dts/qcom-msm8974.dtsi   | 6 ++++--
+>  arch/arm64/boot/dts/qcom/msm8916.dtsi | 6 ++++--
+>  drivers/thermal/qcom/tsens-common.c   | 5 +++--
+>  3 files changed, 11 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> index d9019a49b292..3c4b81c29798 100644
+> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> @@ -427,11 +427,13 @@
+>  			};
+>  		};
+>  
+> -		tsens: thermal-sensor@fc4a8000 {
+> +		tsens: thermal-sensor@fc4a9000 {
+>  			compatible = "qcom,msm8974-tsens";
+> -			reg = <0xfc4a8000 0x2000>;
+> +			reg = <0xfc4a9000 0x1000>, /* TM */
+> +			      <0xfc4a8000 0x1000>; /* SROT */
+>  			nvmem-cells = <&tsens_calib>, <&tsens_backup>;
+>  			nvmem-cell-names = "calib", "calib_backup";
+> +			#qcom,sensors = <11>;
 
-If idle governor deliberately doesn't stop the tick timer, the tick
-event is coming as expected with fixed interval, so the tick event is
-predictable; if the tick event is coming early than other normal timer
-event and other possible wakeup events, we need to dismiss the tick
-impaction on correction factors, this can let the correction factor
-array is purely used for other wakeup events correctness rather than
-sched tick.
+nit: adding the number of sensors isn't directly related and probably
+should be in a separate patch. Not important enough to re-spin just
+for this though ;-)
 
-This patch is to check if it's a tick wakeup, it takes the CPU can
-stay in the idle state for enough time so it gives high compensation
-for the measured' interval, this can avoid tick impaction on the
-correction factor array.
+>  			#thermal-sensor-cells = <1>;
+>  		};
+>  
+> diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> index cc1040eacdf5..abf84df5a7bc 100644
+> --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> @@ -774,11 +774,13 @@
+>  			};
+>  		};
+>  
+> -		tsens: thermal-sensor@4a8000 {
+> +		tsens: thermal-sensor@4a9000 {
+>  			compatible = "qcom,msm8916-tsens";
+> -			reg = <0x4a8000 0x2000>;
+> +			reg = <0x4a9000 0x1000>, /* TM */
+> +			      <0x4a8000 0x1000>; /* SROT */
+>  			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+>  			nvmem-cell-names = "calib", "calib_sel";
+> +			#qcom,sensors = <5>;
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/cpuidle/governors/menu.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ditto
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 2ce4068..43cbde3 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -525,15 +525,13 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 	 * assume the state was never reached and the exit latency is 0.
- 	 */
- 
--	if (data->tick_wakeup && data->next_timer_us > TICK_USEC) {
-+	if (data->tick_wakeup) {
- 		/*
--		 * The nohz code said that there wouldn't be any events within
--		 * the tick boundary (if the tick was stopped), but the idle
--		 * duration predictor had a differing opinion.  Since the CPU
--		 * was woken up by a tick (that wasn't stopped after all), the
--		 * predictor was not quite right, so assume that the CPU could
--		 * have been idle long (but not forever) to help the idle
--		 * duration predictor do a better job next time.
-+		 * Since the CPU was woken up by a tick (that wasn't stopped
-+		 * after all), the predictor was not quite right, so assume
-+		 * that the CPU could have been idle long (but not forever)
-+		 * to help the idle duration predictor do a better job next
-+		 * time.
- 		 */
- 		measured_us = 9 * MAX_INTERESTING / 10;
- 	} else {
--- 
-2.7.4
+>  			#thermal-sensor-cells = <1>;
+>  		};
+>  
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index 6207d8d92351..478739543bbc 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -21,7 +21,7 @@
+>  #include <linux/regmap.h>
+>  #include "tsens.h"
+>  
+> -#define S0_ST_ADDR		0x1030
+> +#define STATUS_OFFSET		0x30
+>  #define SN_ADDR_OFFSET		0x4
+>  #define SN_ST_TEMP_MASK		0x3ff
+>  #define CAL_DEGC_PT1		30
+> @@ -107,8 +107,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+>  	unsigned int status_reg;
+>  	int last_temp = 0, ret;
+>  
+> -	status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+> +	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * SN_ADDR_OFFSET;
+>  	ret = regmap_read(tmdev->map, status_reg, &code);
+> +
+>  	if (ret)
+>  		return ret;
+>  	last_temp = code & SN_ST_TEMP_MASK;
+
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
