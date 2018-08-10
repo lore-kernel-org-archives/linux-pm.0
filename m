@@ -1,49 +1,130 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 7/8] arm64: dts: rk3399: Add dfi and dmc nodes.
-Date: Thu, 09 Aug 2018 16:41:22 -0600
-Message-ID: <5b6cc314.1c69fb81.96ced.16f7@mx.google.com>
-References: <20180730081124.30698-1-enric.balletbo@collabora.com>
- <20180730081124.30698-8-enric.balletbo@collabora.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v1 01/10] arm/arm64: dts: msm8974/msm8916: thermal: Split
+ address space into two
+Date: Fri, 10 Aug 2018 10:20:38 +0530
+Message-ID: <CAP245DUtn=dzfaNPTmYdHZBRDzmKJ9q4EZw-n9-zgeoeBPGr2g@mail.gmail.com>
+References: <cover.1533815718.git.amit.kucheria@linaro.org>
+ <d01f560abed221b536b27bfaa42a530257642974.1533815718.git.amit.kucheria@linaro.org>
+ <20180809191059.GI160295@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20180730081124.30698-8-enric.balletbo@collabora.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: enric.balletbo@collabora.com
-Cc: Mark Rutland <mark.rutland@arm.com>, Douglas Anderson <dianders@chromium.org>, David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Klaus Goger <klaus.goger@theobroma-systems.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, kernel@collabora.com, linux-clk@vger.kernel.org, linux-rockchip@lists.infradead.org, Brian Norris <briannorris@chromium.org>, Chanwoo Choi <cw00.choi@samsung.com>, Nickey Yang <nickey.yang@rock-chips.com>, Jacob Chen <jacob-chen@iotwrt.com>, devicetree@vger.kernel.org, Randy Li <ayaka@soulik.info>, linux-pm@vger.kernel.org, Derek Basehore <dbasehore@chromium.org>, Mark Yao <markyao0591@gmail.com>, linux-arm-kernel@lists.infradead.org, Lin Huang <hl@rock-chips.com>, Kyungmin Park <kyungmin.park@samsung.com>, robin.murphy@arm.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20180809191059.GI160295@google.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: mka@chromium.org
+Cc: Mark Rutland <mark.rutland@arm.com>, DTML <devicetree@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Rajendra Nayak <rnayak@codeaurora.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smohanad@codeaurora.org, Eduardo Valentin <edubezval@gmail.com>, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Andy Gross <andy.gross@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Bjorn Andersson <bjorn.andersson@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Lists LAKML <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIHRoaXMgaXMgYW4gYXV0b21hdGVkIGVtYWlsIGZyb20gUm9iJ3MgKGV4cGVyaW1lbnRhbCkg
-cmV2aWV3IGJvdC4gSQpmb3VuZCBhIGNvdXBsZSBvZiBjb21tb24gcHJvYmxlbXMgd2l0aCB5b3Vy
-IHBhdGNoLiBQbGVhc2Ugc2VlIGJlbG93LgoKT24gTW9uLCAzMCBKdWwgMjAxOCAxMDoxMToyMyAr
-MDIwMCwgRW5yaWMgQmFsbGV0Ym8gaSBTZXJyYSB3cm90ZToKPiBGcm9tOiBMaW4gSHVhbmcgPGhs
-QHJvY2stY2hpcHMuY29tPgo+IAo+IFRoZXNlIGFyZSByZXF1aXJlZCB0byBzdXBwb3J0IEREUiBE
-VkZTIG9uIHJrMzM5OSBwbGF0Zm9ybS4gVGhlIHBhdGNoIGFsc28KPiBpbnRyb2R1Y2VzIHR3byBu
-ZXcgZmlsZXMgKHJrMzM5OS1kcmFtLmggYW5kIHJrMzM5OS1kcmFtLWRlZmF1bHQtdGltaW5nKQo+
-IHdpdGggZGVmYXVsdCBEUkFNIHNldHRpbmdzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFu
-ZyA8aGxAcm9jay1jaGlwcy5jb20+Cj4gU2lnbmVkLW9mZi1ieTogRW5yaWMgQmFsbGV0Ym8gaSBT
-ZXJyYSA8ZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbT4KClRoZSBwcmVmZXJyZWQgc3ViamVj
-dCBwcmVmaXggaXMgImR0LWJpbmRpbmdzOiA8YmluZGluZyBkaXI+OiAuLi4iLgoKPiAtLS0KPiAK
-PiBDaGFuZ2VzIGluIHYxOgo+IC0gW1JGQyA4LzEwXSBNb3ZlIHJrMzM5OS1kcmFtLmggdG8gZHQt
-aW5jbHVkZXMuCj4gLSBbUkZDIDgvMTBdIFB1dCBzZHJhbSBkZWZhdWx0IHZhbHVlcyB1bmRlciB0
-aGUgZG1jIG5vZGUuCj4gLSBbUkZDIDgvMTBdIFJlbW92ZWQgcmszMzk5LWRyYW0tZGVmYXVsdC10
-aW1pbmcuZHRzCj4gCj4gIC4uLi9ib290L2R0cy9yb2NrY2hpcC9yazMzOTktb3AxLW9wcC5kdHNp
-ICAgICB8IDI5ICsrKysrKysrCj4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvcm9ja2NoaXAvcmszMzk5
-LmR0c2kgICAgICB8IDQ5ICsrKysrKysrKysrKysKPiAgaW5jbHVkZS9kdC1iaW5kaW5ncy9wb3dl
-ci9yazMzOTktZHJhbS5oICAgICAgIHwgNzMgKysrKysrKysrKysrKysrKysrKwo+ICAzIGZpbGVz
-IGNoYW5nZWQsIDE1MSBpbnNlcnRpb25zKCspCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRl
-L2R0LWJpbmRpbmdzL3Bvd2VyL3JrMzM5OS1kcmFtLmgKPiAKCkRUIGJpbmRpbmdzIChpbmNsdWRp
-bmcgYmluZGluZyBoZWFkZXJzKSBzaG91bGQgYmUgYSBzZXBhcmF0ZSBwYXRjaC4gU2VlCkRvY3Vt
-ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9zdWJtaXR0aW5nLXBhdGNoZXMudHh0LgoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1h
-aWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
-ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On Fri, Aug 10, 2018 at 12:41 AM Matthias Kaehlcke <mka@chromium.org> wrote:
+>
+> On Thu, Aug 09, 2018 at 06:02:33PM +0530, Amit Kucheria wrote:
+> > We've earlier added support to split the register address space into TM
+> > and SROT regions.
+> >
+> > Split up the regmap address space into two for the remaining platforms that
+> > have a similar register layout and make corresponding changes to the
+> > get_temp_common() function used by these platforms.
+> >
+> > Since tsens-common.c/init_common() currently only registers one address
+> > space, the order is important (TM before SROT).  This is OK since the code
+> > doesn't really use the SROT functionality yet.
+> >
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > ---
+> >  arch/arm/boot/dts/qcom-msm8974.dtsi   | 6 ++++--
+> >  arch/arm64/boot/dts/qcom/msm8916.dtsi | 6 ++++--
+> >  drivers/thermal/qcom/tsens-common.c   | 5 +++--
+> >  3 files changed, 11 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > index d9019a49b292..3c4b81c29798 100644
+> > --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > @@ -427,11 +427,13 @@
+> >                       };
+> >               };
+> >
+> > -             tsens: thermal-sensor@fc4a8000 {
+> > +             tsens: thermal-sensor@fc4a9000 {
+> >                       compatible = "qcom,msm8974-tsens";
+> > -                     reg = <0xfc4a8000 0x2000>;
+> > +                     reg = <0xfc4a9000 0x1000>, /* TM */
+> > +                           <0xfc4a8000 0x1000>; /* SROT */
+> >                       nvmem-cells = <&tsens_calib>, <&tsens_backup>;
+> >                       nvmem-cell-names = "calib", "calib_backup";
+> > +                     #qcom,sensors = <11>;
+>
+> nit: adding the number of sensors isn't directly related and probably
+> should be in a separate patch. Not important enough to re-spin just
+> for this though ;-)
+
+Hi Matthias,
+
+Sometimes the urge to avoid frivolous patches takes over too strongly. :-)
+
+I'll split it out in a respin. Thanks for the quick review of the series.
+
+Regards,
+Amit
+
+> >                       #thermal-sensor-cells = <1>;
+> >               };
+> >
+> > diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > index cc1040eacdf5..abf84df5a7bc 100644
+> > --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > @@ -774,11 +774,13 @@
+> >                       };
+> >               };
+> >
+> > -             tsens: thermal-sensor@4a8000 {
+> > +             tsens: thermal-sensor@4a9000 {
+> >                       compatible = "qcom,msm8916-tsens";
+> > -                     reg = <0x4a8000 0x2000>;
+> > +                     reg = <0x4a9000 0x1000>, /* TM */
+> > +                           <0x4a8000 0x1000>; /* SROT */
+> >                       nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+> >                       nvmem-cell-names = "calib", "calib_sel";
+> > +                     #qcom,sensors = <5>;
+>
+> ditto
+>
+> >                       #thermal-sensor-cells = <1>;
+> >               };
+> >
+> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> > index 6207d8d92351..478739543bbc 100644
+> > --- a/drivers/thermal/qcom/tsens-common.c
+> > +++ b/drivers/thermal/qcom/tsens-common.c
+> > @@ -21,7 +21,7 @@
+> >  #include <linux/regmap.h>
+> >  #include "tsens.h"
+> >
+> > -#define S0_ST_ADDR           0x1030
+> > +#define STATUS_OFFSET                0x30
+> >  #define SN_ADDR_OFFSET               0x4
+> >  #define SN_ST_TEMP_MASK              0x3ff
+> >  #define CAL_DEGC_PT1         30
+> > @@ -107,8 +107,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+> >       unsigned int status_reg;
+> >       int last_temp = 0, ret;
+> >
+> > -     status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+> > +     status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * SN_ADDR_OFFSET;
+> >       ret = regmap_read(tmdev->map, status_reg, &code);
+> > +
+> >       if (ret)
+> >               return ret;
+> >       last_temp = code & SN_ST_TEMP_MASK;
+>
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
