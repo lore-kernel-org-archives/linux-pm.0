@@ -1,146 +1,115 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 03/14] PM: Introduce an Energy Model management framework
-Date: Fri, 10 Aug 2018 10:41:56 +0200
-Message-ID: <2467271.WAtZ4Z8dKT@aspire.rjw.lan>
-References: <20180724122521.22109-1-quentin.perret@arm.com> <1598998.9rBByrtVSM@aspire.rjw.lan> <20180810081537.w3utogy4ujxf2cp4@queper01-lin>
+From: leo.yan@linaro.org
+Subject: Re: [RESEND PATCH v1 1/2] cpuidle: menu: Correct the criteria for
+ stopping tick
+Date: Fri, 10 Aug 2018 16:49:06 +0800
+Message-ID: <20180810084906.GD11817@leoy-ThinkPad-X240s>
+References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
+ <1533835203-5789-2-git-send-email-leo.yan@linaro.org>
+ <CAJZ5v0hU3Qp3ycJ=aGHtPMMC_6A+XsByYALYN22dz2VJ1Z0MgQ@mail.gmail.com>
+ <20180810071321.GC11817@leoy-ThinkPad-X240s>
+ <CAJZ5v0iyGFFDO83KGcET9a+UpPCDQ=_sxZeGxuG6fL4O+hcw+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180810081537.w3utogy4ujxf2cp4@queper01-lin>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iyGFFDO83KGcET9a+UpPCDQ=_sxZeGxuG6fL4O+hcw+w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@quicinc.com, skannan@quicinc.com, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
-
-On Friday, August 10, 2018 10:15:39 AM CEST Quentin Perret wrote:
-> Hi Rafael,
+On Fri, Aug 10, 2018 at 09:22:10AM +0200, Rafael J. Wysocki wrote:
+> On Fri, Aug 10, 2018 at 9:13 AM,  <leo.yan@linaro.org> wrote:
+> > On Thu, Aug 09, 2018 at 10:47:17PM +0200, Rafael J. Wysocki wrote:
+> >> On Thu, Aug 9, 2018 at 7:20 PM, Leo Yan <leo.yan@linaro.org> wrote:
 > 
-> On Thursday 09 Aug 2018 at 23:52:29 (+0200), Rafael J. Wysocki wrote:
-> > I'm a bit concerned that the code here appears to be designed around the
-> > frequency domains concept which seems to be a limitation and which probably
-> > is related to the properties of the current generation of hardware.
+> [cut]
 > 
-> That's correct. I went for 'frequency domains' only because this is what
-> EAS and IPA are interested in, as of today at least. And both of them
-> are somewhat dependent on CPU-Freq, which is called CPU-*Freq*, not
-> CPU-Perf after all :-)
-
-Still, cpufreq manages CPU performance scaling really.
-
-A cpufreq policy may represent a frequency domain or generally a group of
-related CPUs and what matters is that there is a coordination between them
-and not how that coordination happens at the hardware/firmware level etc.
-
-> > Assumptions like that tend to get tangled into the code tightly over time
-> > and they may be hard to untangle from it when new use cases arise later.
-> > 
-> > For example, there probably will be more firmware involvement in future
-> > systems and the firmware may not be willing to expose "raw" frequency
-> > domains to the OS.  That already is the case with P-states on Intel HW and
-> > with ACPI CPPC in general.
+> >> And that will cause the tick to be stopped unnecessarily in certain
+> >> situations, so why is this better?
+> >
+> > Let's see below two cases, the first one case we configure
+> > TICK_USEC=1000 (1ms) and the second case we configure TICK_USEC=4000
+> > (4ms).
+> >
+> > Let's assume we do the testing one the same platform and have two runs,
+> > in the Case 1 we configure HZ=1000 so TICK_USEC=1ms, expected_interval
+> > is 3ms and deepest idle state target residency is 2ms, finally the idle
+> > governor will choose the deepest state and skip to calibrate to shallow
+> > state caused by 'expected_interval' > TICK_USEC;
+> >
+> > In the Case 2 we configure HZ=250 so TICK_USE=4ms, expected_interval
+> > (3ms) and deepest idle state target residency (2ms) are same with the
+> > Case 1; but because expected_interval < TICK_USEC so the idle governor
+> > will do calibration to select a shallower state.  If we image on one
+> > platform, the deepest idle state's target residency is smaller value,
+> > then it has bigger gap with TICK_USEC, the deepest idle state is harder
+> > to be selected due 'expected_interval' can be easily hit the range
+> > [Deepest target residency..TICK_USEC).
+> >
+> > This patch has no any change for Case 1 and it wants to optimize for
+> > Case 2 so Case 2 has chance to stay in deepest idle state.  I
+> > understand from the performance pespective, we need to avoid to stop
+> > tick for shallow states; on the other hand we cannot prevent CPU run
+> > into deepest idle state just only we want to keep the tick running,
+> > especially the expected interval is longer than the deepest state
+> > target residency.
+> >
+> > Case 1:
+> >       Deepest idle state's target residency=2ms
+> >                      |
+> >                      V
+> > |--------------------------------------------------------> time (ms)
+> >       ^                              ^
+> >       |                              |
+> > TICK_USEC=1ms           expected_interval=3ms
+> >
+> >
+> > Case 2:
+> >       Deepest idle state's target residency = 2ms
+> >                      |
+> >                      V
+> > |--------------------------------------------------------> time (ms)
+> >                                      ^                  ^
+> >                                      |                  |
+> >                           expected_interval = 3ms   TICK_USEC = 4ms
+> >
+> >
+> >
+> >> >                 unsigned int delta_next_us = ktime_to_us(delta_next);
+> >> >
+> >> >                 *stop_tick = false;
+> >> > --
 > 
-> Agreed, and embedded/mobile systems are going in that direction too ...
+> Well, I don't quite agree with the approach here, then.
 > 
-> > IMO, frequency domains in your current code could be replaced with something
-> > more general, like "performance domains"
+> As I said in the previous reply, IMO restarting the stopped tick
+> before leaving the loop in do_idle() is pointless overhead.  It is not
+> necessary to do that to avoid leaving CPUs in shallow idle states for
+> too long (I'll send an alternative patch to fix this issue shortly).
 > 
-> I don't mind using a more abstract name as long as we keep the same
-> assumptions, and especially that all CPUs in a perf. domain *must* have
-> the same micro-architecture.
+> While you may think that pointless overhead is not a problem, I don't
+> quite agree with that.
 
-That's fair enough I think.
+I disagree this patch will introduce any extra overhead.
 
-> From that assumption result several
-> properties that EAS (in its current) form needs. The first one is that
-> all CPUs of a performance domain have the same capacity at any possible
-> performance state. And the second is that they all consume the same
-> amount of (active) power.
-> 
-> I know it is theoretically possible to mix CPU types in the same perf
-> domain, but that becomes nightmare-ish to manage in EAS, and I don't
-> think there is a single platform like this on the market today. And I
-> hope nobody will build one. Peter wanted to mandate that too, I think.
+Firstly, the idle loop doesn't support restarting tick even this patch
+tells idle loop to restart the tick; secondly this patch is mainly to
+resolve issue for the CPU cannot stay in deepest state in Case 2, as a
+side effect it also can tell idle loop to restart the tick for case 3
+in below, actually IMHO this makes sense to tell the idle loop to
+enable the tick but idle loop can ignore this info.
 
-There are departures, say, at least as far as the capacity is concerned.
+Furthermore, we have another thread for the patch to always stop
+tick after the the tick has been stopped in the idle loop.
 
-The uarch is the same for all of them, but the max capacity may vary
-between them.
+So this patch is still valid.
 
-> > providing the scheduler with the (relative) cost of running a task
-> 
-> What do you mean by relative ? That we should normalize the power costs ?
-> Or just use an abstract scale, without specifying the unit ?
-
-I mean "relative with respect to the other choices"; not absolute.
-
-> The main reason I'm a bit reluctant to do that just now is because IPA
-> needs to compare the power of CPUs with the power of other components
-> (GPUs, for example). And the power of those other components is specified
-> with a specific unit too. So, not imposing a comparable unit for the
-> power of CPUs will result in an unspecified behaviour in IPA, and that
-> will break things for sure. I would very much like to avoid that, of
-> course.
-
-The absolute power numbers are generally hard to get though.
-
-In the majority of cases you can figure out what the extra cost of X with
-respect to (alternative) Y is (in certain units), but you may not be able
-to say what X and Y are equal to in absolute terms (for example, there
-may be an unknown component in both X and Y that you cannot measure, but
-it may not be relevant for the outcome of the computation).
-
-> What I am currently proposing is to keep the unit (mW) in the EM
-> framework so that migrating IPA to using it can be done in a (relatively)
-> painless way. On a system where drivers  don't know the exact wattage,
-> then they should just 'lie' to the EM framework, but it's their job to
-> lie coherently to all subsystems and keep things consistent, because all
-> subsystems have specified power in comparable units.
-
-Alternatively, there could be a translation layer between EM and IPA.
-
->From my experience, if you want people to come up with some numbers,
-they will just choose them to game the system this way or another
-unless those numbers can be measured directly or are clearly documented.
-
-And if that happens and then you want to make any significant changes,
-you'll need to deal with "regressions" occuring because someone chose
-the numbers to make the system behave in a specific way and your changes
-break that.
-
-As a rule, I rather avoid requesting unknown numbers from people. :-)
-
-> Another solution to solve this problem could be to extend the EM
-> framework introduced by this patch and make it manage the EM of any
-> device, not just CPUs. Then we could just specify that all power costs
-> must be in the same scale, regardless of the actual unit, and register
-> the EM of CPUs, GPUs, ...
-> However, I was hoping that this patch as-is was enough for a first step,
-> and that this extension of the framework could be done in a second step ?
-> Thoughts ?
-> 
-> In any case, if we decide to keep the mW unit for now, I should at least
-> explain clearly why in the commit message.
-
-Right.
-
-Actually, the unit is as good as any other, but you need to bear in mind that
-the numbers provided may not be realistic.
-
-> > on a busy (non-idle) CPU (and, analogously,
-> > "idle domains" that would provide the scheduler with the - relative - cost
-> > of waking up an idle CPU to run a task on it or, the other way around, the
-> > possible relative gain from taking all tasks away from a CPU in order to make
-> > it go idle).
-> 
-> +1 for idle costs as a second type of 'domains' which could be managed
-> by the EM framework, alongside the 'perf' domains. I don't think we have
-> users of that just now (or providers of idle costs ?) so maybe that is
-> for later too ?
-
-Yes, this is for later IMO.
-
-Thanks,
-Rafael
+Case 3:
+      Deepest idle state's target residency = 2ms
+                     |
+                     V
+|--------------------------------------------------------> time (ms)
+      ^        `
+      |         \
+TICK_USEC=1ms   expected_interval = 1.5ms
