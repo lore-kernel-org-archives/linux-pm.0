@@ -1,67 +1,88 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been stopped
-Date: Fri, 10 Aug 2018 09:15:54 +0200
-Message-ID: <CAJZ5v0h6WRPe46RU+sx-xDDbSWMOdcV+n6J-_5e_wqp9zsyB=Q@mail.gmail.com>
-References: <2161372.IsD4PDzmmY@aspire.rjw.lan> <20180810061917.GB11817@leoy-ThinkPad-X240s>
+Subject: Re: [RESEND PATCH v1 1/2] cpuidle: menu: Correct the criteria for
+ stopping tick
+Date: Fri, 10 Aug 2018 09:22:10 +0200
+Message-ID: <CAJZ5v0iyGFFDO83KGcET9a+UpPCDQ=_sxZeGxuG6fL4O+hcw+w@mail.gmail.com>
+References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
+ <1533835203-5789-2-git-send-email-leo.yan@linaro.org> <CAJZ5v0hU3Qp3ycJ=aGHtPMMC_6A+XsByYALYN22dz2VJ1Z0MgQ@mail.gmail.com>
+ <20180810071321.GC11817@leoy-ThinkPad-X240s>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180810061917.GB11817@leoy-ThinkPad-X240s>
+In-Reply-To: <20180810071321.GC11817@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Leo Yan <leo.yan@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 10, 2018 at 8:19 AM,  <leo.yan@linaro.org> wrote:
-> On Thu, Aug 09, 2018 at 07:08:34PM +0200, Rafael J . Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> If the tick has been stopped already, but the governor has not asked to
->> stop it (which it can do sometimes), the idle loop should invoke
->> tick_nohz_idle_stop_tick(), to let tick_nohz_stop_tick() take care
->> of this case properly.
+On Fri, Aug 10, 2018 at 9:13 AM,  <leo.yan@linaro.org> wrote:
+> On Thu, Aug 09, 2018 at 10:47:17PM +0200, Rafael J. Wysocki wrote:
+>> On Thu, Aug 9, 2018 at 7:20 PM, Leo Yan <leo.yan@linaro.org> wrote:
+
+[cut]
+
+>> And that will cause the tick to be stopped unnecessarily in certain
+>> situations, so why is this better?
 >
-> IMHO, I don't think this patch is on the right way;
+> Let's see below two cases, the first one case we configure
+> TICK_USEC=1000 (1ms) and the second case we configure TICK_USEC=4000
+> (4ms).
+>
+> Let's assume we do the testing one the same platform and have two runs,
+> in the Case 1 we configure HZ=1000 so TICK_USEC=1ms, expected_interval
+> is 3ms and deepest idle state target residency is 2ms, finally the idle
+> governor will choose the deepest state and skip to calibrate to shallow
+> state caused by 'expected_interval' > TICK_USEC;
+>
+> In the Case 2 we configure HZ=250 so TICK_USE=4ms, expected_interval
+> (3ms) and deepest idle state target residency (2ms) are same with the
+> Case 1; but because expected_interval < TICK_USEC so the idle governor
+> will do calibration to select a shallower state.  If we image on one
+> platform, the deepest idle state's target residency is smaller value,
+> then it has bigger gap with TICK_USEC, the deepest idle state is harder
+> to be selected due 'expected_interval' can be easily hit the range
+> [Deepest target residency..TICK_USEC).
+>
+> This patch has no any change for Case 1 and it wants to optimize for
+> Case 2 so Case 2 has chance to stay in deepest idle state.  I
+> understand from the performance pespective, we need to avoid to stop
+> tick for shallow states; on the other hand we cannot prevent CPU run
+> into deepest idle state just only we want to keep the tick running,
+> especially the expected interval is longer than the deepest state
+> target residency.
+>
+> Case 1:
+>       Deepest idle state's target residency=2ms
+>                      |
+>                      V
+> |--------------------------------------------------------> time (ms)
+>       ^                              ^
+>       |                              |
+> TICK_USEC=1ms           expected_interval=3ms
+>
+>
+> Case 2:
+>       Deepest idle state's target residency = 2ms
+>                      |
+>                      V
+> |--------------------------------------------------------> time (ms)
+>                                      ^                  ^
+>                                      |                  |
+>                           expected_interval = 3ms   TICK_USEC = 4ms
+>
+>
+>
+>> >                 unsigned int delta_next_us = ktime_to_us(delta_next);
+>> >
+>> >                 *stop_tick = false;
+>> > --
 
-So we disagree here, quite obviously.
+Well, I don't quite agree with the approach here, then.
 
-> from the idle loop side, it needs to provide sane fundamental supports,
-> for example, it can stop or restart the tick per idle governor's request.
+As I said in the previous reply, IMO restarting the stopped tick
+before leaving the loop in do_idle() is pointless overhead.  It is not
+necessary to do that to avoid leaving CPUs in shallow idle states for
+too long (I'll send an alternative patch to fix this issue shortly).
 
-No, if the tick is stopped, restarting it is pointless until we exit
-the loop in do_idle().
-
-> On the other hand, the idle governors can decide their own policy for how to
-> use the tick in idle loop.  This patch seems mixes two things and
-> finally it's possible to couple the implementation between idle loop
-> and 'menu' governor for sched tick usage.
-
-I'm not following this, sorry.
-
-> I still think my patch to restart the tick is valid :)
-
-It changes the behavior significantly, though, and it is not clear if
-the new behavior is desirable.
-
-The patch here simply fixes a problem while leaving the overall behavior as is.
-
->> Fixes: 554c8aa8ecad (sched: idle: Select idle state before stopping the tick)
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
->>  kernel/sched/idle.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> Index: linux-pm/kernel/sched/idle.c
->> ===================================================================
->> --- linux-pm.orig/kernel/sched/idle.c
->> +++ linux-pm/kernel/sched/idle.c
->> @@ -190,7 +190,7 @@ static void cpuidle_idle_call(void)
->>                */
->>               next_state = cpuidle_select(drv, dev, &stop_tick);
->>
->> -             if (stop_tick)
->> +             if (stop_tick || tick_nohz_tick_stopped())
->>                       tick_nohz_idle_stop_tick();
->>               else
->>                       tick_nohz_idle_retain_tick();
->>
+While you may think that pointless overhead is not a problem, I don't
+quite agree with that.
