@@ -1,46 +1,101 @@
 From: Fabien Parent <fparent@baylibre.com>
-Subject: [PATCH v2 0/3] power: supply: cros: add support for dedicated port and expose connected ports
-Date: Fri, 10 Aug 2018 15:13:46 +0200
-Message-ID: <20180810131349.3883-1-fparent@baylibre.com>
+Subject: [PATCH v2 3/3] power: supply: cros: add property to detect connected ports
+Date: Fri, 10 Aug 2018 15:13:49 +0200
+Message-ID: <20180810131349.3883-4-fparent@baylibre.com>
+References: <20180810131349.3883-1-fparent@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180810131349.3883-1-fparent@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gpain@baylibre.com, Fabien Parent <fparent@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Dear all,
+When a port is connected but acting as a source, its 'online' and
+'status' properties are identical to a port that is not connected. This
+makes it tedious for userspace to know for sure whether a port is
+connected or not.
 
-This patch series adds support for an optional dedicated port
-to the ChromeOS power supply driver and adds a new property that expose
-when a power supply is connected. The series was tested on ChromeOS "Fizz"
-hardware.
+This commit adds a new property 'present' to reflect whether a port
+is connected or not.
 
-This patch series depends on the following patch serie which adds
-the ChromeOS power supply driver:
- * https://lkml.org/lkml/2018/5/2/585 [PATCH v4 0/3] mfd/power: cros_ec: add
-   support for USBPD charger driver
+Signed-off-by: Fabien Parent <fparent@baylibre.com>
+---
 
-The ChromeOS power supply driver also depends on the following patches to be
-applied:
- * https://lkml.org/lkml/2018/4/23/602 ([PATCH v8 0/6] typec: tcpm: Add
-   sink side support for PPS)
- * https://lkml.org/lkml/2018/4/18/229 ([RESEND PATCH v5 4/7] mfd:
-   cros_ec_dev: Register cros-ec-rtc driver as a subdevice.)
+V1 -> V2:
+  * No change
 
-Best Regards,
-Fabien
+---
+ drivers/power/supply/cros_usbpd-charger.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-V2:
-  * Rebased to fixed apply issue with patch #2
-
-Fabien Parent (3):
-  mfd: cros: add charger port count command definition
-  power: supply: cros: add support for dedicated port
-  power: supply: cros: add property to detect connected ports
-
- drivers/power/supply/cros_usbpd-charger.c | 126 +++++++++++++++++++---
- include/linux/mfd/cros_ec_commands.h      |  10 ++
- 2 files changed, 122 insertions(+), 14 deletions(-)
-
+diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
+index fe1502715e46..6307424f36ec 100644
+--- a/drivers/power/supply/cros_usbpd-charger.c
++++ b/drivers/power/supply/cros_usbpd-charger.c
+@@ -32,6 +32,7 @@ struct port_data {
+ 	struct power_supply_desc psy_desc;
+ 	int psy_usb_type;
+ 	int psy_online;
++	int psy_present;
+ 	int psy_status;
+ 	int psy_current_max;
+ 	int psy_voltage_max_design;
+@@ -54,6 +55,7 @@ struct charger_data {
+ 
+ static enum power_supply_property cros_usbpd_charger_props[] = {
+ 	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_PRESENT,
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_CURRENT_MAX,
+ 	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+@@ -65,6 +67,7 @@ static enum power_supply_property cros_usbpd_charger_props[] = {
+ 
+ static enum power_supply_property cros_usbpd_dedicated_charger_props[] = {
+ 	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_PRESENT,
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ };
+@@ -205,18 +208,22 @@ static int cros_usbpd_charger_get_power_info(struct port_data *port)
+ 	case USB_PD_PORT_POWER_DISCONNECTED:
+ 		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+ 		port->psy_online = 0;
++		port->psy_present = 0;
+ 		break;
+ 	case USB_PD_PORT_POWER_SOURCE:
+ 		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+ 		port->psy_online = 0;
++		port->psy_present = 1;
+ 		break;
+ 	case USB_PD_PORT_POWER_SINK:
+ 		port->psy_status = POWER_SUPPLY_STATUS_CHARGING;
+ 		port->psy_online = 1;
++		port->psy_present = 1;
+ 		break;
+ 	case USB_PD_PORT_POWER_SINK_NOT_CHARGING:
+ 		port->psy_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+ 		port->psy_online = 1;
++		port->psy_present = 1;
+ 		break;
+ 	default:
+ 		dev_err(dev, "Unknown role %d\n", resp.role);
+@@ -363,6 +370,7 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
+ 		if (ec_device->mkbp_event_supported || port->psy_online)
+ 			break;
+ 		/* fall through */
++	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_CURRENT_MAX:
+ 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+ 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+@@ -381,6 +389,9 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_ONLINE:
+ 		val->intval = port->psy_online;
+ 		break;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = port->psy_present;
++		break;
+ 	case POWER_SUPPLY_PROP_STATUS:
+ 		val->intval = port->psy_status;
+ 		break;
 -- 
 2.18.0
