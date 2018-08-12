@@ -1,46 +1,153 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Ignore turbo active ratio in HWP
-Date: Sun, 12 Aug 2018 13:20:58 +0200
-Message-ID: <7876484.jIFljIylbc@aspire.rjw.lan>
-References: <20180802002606.42766-1-srinivas.pandruvada@linux.intel.com>
+From: leo.yan@linaro.org
+Subject: Re: [PATCH v2] cpuidle: menu: Handle stopped tick more aggressively
+Date: Sun, 12 Aug 2018 21:44:04 +0800
+Message-ID: <20180812134404.GA28966@leoy-ThinkPad-X240s>
+References: <1951009.1jlQfyrxio@aspire.rjw.lan>
+ <3174357.2tBMdxG3bF@aspire.rjw.lan>
+ <20180810092034.GF11817@leoy-ThinkPad-X240s>
+ <CAJZ5v0h8T99pqhNoj+V9Mb5yS621OT_=d05YbWtbCW5H362myA@mail.gmail.com>
+ <20180810123143.GG11817@leoy-ThinkPad-X240s>
+ <CAJZ5v0h5XWES6ye152MjijWKqTWBVO2mjo5Jz3MmMn+=7tRqWA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180802002606.42766-1-srinivas.pandruvada@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h5XWES6ye152MjijWKqTWBVO2mjo5Jz3MmMn+=7tRqWA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: lenb@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 2, 2018 2:26:06 AM CEST Srinivas Pandruvada wrote:
-> When HWP is active turbo active ratio is not used, so we should allow
-> policy max frequency above turbo activation ratio to be set. When HWP is
-> not active, then any policy max frequency above turbo activation ratio
-> can result upto max one-core turbo frequency.
-> 
-> This fix helps better thermal control in turbo region when other methods
-> like "Running Average Power Limit" is not available to use.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index efb015a5f7ac..32c10e69241e 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2020,7 +2020,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  static void intel_pstate_adjust_policy_max(struct cpufreq_policy *policy,
->  					 struct cpudata *cpu)
->  {
-> -	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate &&
-> +	if (!hwp_active &&
-> +	    cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate &&
->  	    policy->max < policy->cpuinfo.max_freq &&
->  	    policy->max > cpu->pstate.max_freq) {
->  		pr_debug("policy->max > max non turbo frequency\n");
-> 
+On Sun, Aug 12, 2018 at 12:07:45PM +0200, Rafael J. Wysocki wrote:
 
-Applied, thanks!
+[...]
+
+> > > > > --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> > > > > +++ linux-pm/drivers/cpuidle/governors/menu.c
+> > > > > @@ -285,9 +285,8 @@ static int menu_select(struct cpuidle_dr
+> > > > >  {
+> > > > >       struct menu_device *data = this_cpu_ptr(&menu_devices);
+> > > > >       int latency_req = cpuidle_governor_latency_req(dev->cpu);
+> > > > > -     int i;
+> > > > > -     int first_idx;
+> > > > > -     int idx;
+> > > > > +     int first_idx = 0;
+> > > > > +     int idx, i;
+> > > > >       unsigned int interactivity_req;
+> > > > >       unsigned int expected_interval;
+> > > > >       unsigned long nr_iowaiters, cpu_load;
+> > > > > @@ -307,6 +306,18 @@ static int menu_select(struct cpuidle_dr
+> > > > >       /* determine the expected residency time, round up */
+> > > > >       data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
+> > > > >
+> > > > > +     /*
+> > > > > +      * If the tick is already stopped, the cost of possible short idle
+> > > > > +      * duration misprediction is much higher, because the CPU may be stuck
+> > > > > +      * in a shallow idle state for a long time as a result of it.  In that
+> > > > > +      * case say we might mispredict and use the known time till the closest
+> > > > > +      * timer event for the idle state selection.
+> > > > > +      */
+> > > > > +     if (tick_nohz_tick_stopped()) {
+> > > > > +             data->predicted_us = ktime_to_us(delta_next);
+> > > > > +             goto select;
+> > > > > +     }
+> > > > > +
+> > > >
+> > > > This introduce two potential issues:
+> > > >
+> > > > - This will totally ignore the typical pattern in idle loop; I
+> > > >   observed on the mmc driver can trigger multiple times (> 10 times)
+> > > >   with consistent interval;
+> > >
+> > > I'm not sure what you mean by "ignore".
+> >
+> > You could see after move code from blow to this position, the typical
+> > pattern interval will not be accounted; so if in the middle of idles
+> > there have a bunch of interrupts with fix pattern, the upper code
+> > cannot detect this pattern anymore.
+> 
+> I'm not really following you here.
+> 
+> The part of the code skipped for tick_nohz_tick_stopped() doesn't
+> update the data at all AFAICS.  It only computes some values that
+> would be discarded later anyway, so I'm not sure what the point of
+> running that computation is.
+
+Sorry I don't explain clearly, so try to rephrase:
+
+With your patch for the tick stopped case, it directly uses tick delta
+value as prediction and goto 'select' tag.  So it skips below code
+pieces, these codes have minor improvement for typical pattern which
+can be applied in the middle of idles, for example, the mmc driver
+triggers 16 interrupts with ~1500us interval, these interrupts are all
+handled within the idle loop, so the typical pattern can detect the mmc
+interrupts pattern and it will help idle governor to select a shallower
+idle state so can avoid to break the residency.
+
+You mentioned these computed values would be discarded later, this is
+true for most cases, but it isn't always true actually.  Without your
+patch, the governor will discard the computed values only when
+'data->predicted_us < TICK_USEC', otherwise the interval pattern is
+still be applied in the prediction.
+
+	expected_interval = get_typical_interval(data);
+	expected_interval = min(expected_interval, data->next_timer_us);
+
+	[...]
+
+	/*
+	 * Use the lowest expected idle interval to pick the idle state.
+	 */
+	data->predicted_us = min(data->predicted_us, expected_interval);
+
+> The statistics are updated by menu_update() and that still runs and it
+> will take the actual wakeup events into account, won't it?
+
+Yes.
+
+> > [...]
+> >
+> > > > > -     if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+> > > > > -         expected_interval < TICK_USEC) {
+> > > > > +     if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+> > > > > +         expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
+> > > >
+> > > > I am not sure this logic is right... Why not use below checking, so
+> > > > for POLLING state we will never ask to stop the tick?
+> > > >
+> > > >         if (drv->states[idx].flags & CPUIDLE_FLAG_POLLING ||
+> > > >             (expected_interval < TICK_USEC && !tick_nohz_tick_stopped())) {
+> > > >
+> > >
+> > > The only effect of it would be setting stop_tick to false, but why
+> > > would that matter?
+> >
+> > Please consider below situation, not sure if this case is existed or
+> > not:
+> >
+> >   step1: first time: enter one idle state with stopping tick;
+> >   step2: second time: select POLLING state and tick_nohz_tick_stopped()
+> >   is true;
+> >
+> > So in step2, it cannot set stop_tick to false with below sentence.
+> >
+> > > > >               unsigned int delta_next_us = ktime_to_us(delta_next);
+> > > > >
+> > > > >               *stop_tick = false;
+> 
+> But setting *stop_tick has no effect as far as the current code is
+> concerned (up to the bug fixed by the other patch).
+
+Yeah.
+
+> Also the POLLING state can only be selected if there are no other
+> states matching delta_next available in that case which means that
+> there will be a timer to break the polling loop soon enough (and BTW
+> the polling has a built-in timeout too), so I don't really see a
+> problem here.
+
+Ah, now I understand the logic and I misunderstand the POLLING mode
+before; now agree with this.  Sorry for noise.
+
+Thanks,
+Leo Yan
