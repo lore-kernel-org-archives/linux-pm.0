@@ -1,7 +1,7 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v1 2/5] cpuidle: menu: Record tick delta value in struct menu_device
-Date: Mon, 13 Aug 2018 00:09:28 +0800
-Message-ID: <1534090171-14464-3-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH v1 3/5] cpuidle: menu: Provide menu_decide_stopping_tick()
+Date: Mon, 13 Aug 2018 00:09:29 +0800
+Message-ID: <1534090171-14464-4-git-send-email-leo.yan@linaro.org>
 References: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
@@ -10,73 +10,112 @@ To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <
 Cc: Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Since the tick delta is used in multiple places in menu_select(), it's
-better to use single one variable to record this value; furthermore, for
-more readable we can refactor the code to split a separate function to
-making decision for stopping tick, which also needs to use tick delta
-value as one metric for consideration.
-
-To achieve these purposes, this patch adds a new item 'tick_delta_us' in
-struct menu_device to record tick delta value.  This patch also is a
-preparation for optimization stopping tick in sequential patches.
+This patch is only for code refactoring and without functional change.
+It introduces a new function menu_decide_stopping_tick(); we can use
+this function to focus on making stopping tick decision.  With moving
+out stopping tick decision code, it lets the below piece code is
+simplized only for the idle state calibration and thus save one indent
+level in the loop.
 
 Signed-off-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/cpuidle/governors/menu.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c | 76 ++++++++++++++++++++++++++--------------
+ 1 file changed, 50 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index b972db1..83618ab 100644
+index 83618ab..4f02207 100644
 --- a/drivers/cpuidle/governors/menu.c
 +++ b/drivers/cpuidle/governors/menu.c
-@@ -124,6 +124,7 @@ struct menu_device {
- 	int             tick_wakeup;
+@@ -276,6 +276,37 @@ static unsigned int get_typical_interval(struct menu_device *data)
+ }
  
- 	unsigned int	next_timer_us;
-+	unsigned int	tick_delta_us;
- 	unsigned int	predicted_us;
- 	unsigned int	bucket;
- 	unsigned int	correction_factor[BUCKETS];
-@@ -305,6 +306,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ /**
++ * menu_decide_stopping_tick - decides if need to stopping tick
++ * @drv: cpuidle driver containing state data
++ * @data: menu_device structure pointer
++ * @idx: the candidate idle state index
++ */
++static bool menu_decide_stopping_tick(struct cpuidle_driver *drv,
++				      struct menu_device *data, int idx)
++{
++	/*
++	 * If the tick has been stopped yet, force to stop it afterwards and
++	 * don't give chance to set *stop_tick to false.
++	 */
++	if (tick_nohz_tick_stopped())
++		return true;
++
++	/* Don't stop the tick if the selected state is a polling one */
++	if (drv->states[idx].flags & CPUIDLE_FLAG_POLLING)
++		return false;
++
++	/*
++	 * Don't stop the tick if the prediction is shorter than the
++	 * tick period length.
++	 */
++	if (data->predicted_us < TICK_USEC)
++		return false;
++
++	/* Otherwise, let's stop the tick at this time. */
++	return true;
++}
++
++/**
+  * menu_select - selects the next idle state to enter
+  * @drv: cpuidle driver containing state data
+  * @dev: the CPU
+@@ -396,33 +427,26 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 	if (idx == -1)
+ 		idx = 0; /* No states enabled. Must use 0. */
  
- 	/* determine the expected residency time, round up */
- 	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
-+	data->tick_delta_us = ktime_to_us(delta_next);
+-	/*
+-	 * Don't stop the tick if the selected state is a polling one or if the
+-	 * expected idle duration is shorter than the tick period length.
+-	 */
+-	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+-	    data->predicted_us < TICK_USEC) && !tick_nohz_tick_stopped()) {
+-
+-		*stop_tick = false;
++	*stop_tick = menu_decide_stopping_tick(drv, data, idx);
  
- 	get_iowait_load(&nr_iowaiters, &cpu_load);
- 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
-@@ -317,7 +319,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	 * timer event for the idle state selection.
- 	 */
- 	if (tick_nohz_tick_stopped()) {
--		data->predicted_us = ktime_to_us(delta_next);
-+		data->predicted_us = data->tick_delta_us;
- 		goto select;
+-		if (idx > 0 &&
+-		    drv->states[idx].target_residency > data->tick_delta_us) {
+-			/*
+-			 * The tick is not going to be stopped and the target
+-			 * residency of the state to be returned is not within
+-			 * the time until the next timer event including the
+-			 * tick, so try to correct that.
+-			 */
+-			for (i = idx - 1; i >= 0; i--) {
+-			    if (drv->states[i].disabled ||
+-			        dev->states_usage[i].disable)
+-					continue;
+-
+-				idx = i;
+-				if (drv->states[i].target_residency <=
+-				    data->tick_delta_us)
+-					break;
+-			}
++	/* Calibrate the idle state according to the tick event. */
++	if (!*stop_tick && idx > 0 &&
++	    drv->states[idx].target_residency > data->tick_delta_us) {
++		/*
++		 * The tick is not going to be stopped and the target
++		 * residency of the state to be returned is not within
++		 * the time until the next timer event including the
++		 * tick, so try to correct that.
++		 */
++		for (i = idx - 1; i >= 0; i--) {
++			if (drv->states[i].disabled ||
++			    dev->states_usage[i].disable)
++				continue;
++
++			idx = i;
++			if (drv->states[i].target_residency <=
++			    data->tick_delta_us)
++				break;
+ 		}
  	}
  
-@@ -400,11 +402,11 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	 */
- 	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
- 	    data->predicted_us < TICK_USEC) && !tick_nohz_tick_stopped()) {
--		unsigned int delta_next_us = ktime_to_us(delta_next);
- 
- 		*stop_tick = false;
- 
--		if (idx > 0 && drv->states[idx].target_residency > delta_next_us) {
-+		if (idx > 0 &&
-+		    drv->states[idx].target_residency > data->tick_delta_us) {
- 			/*
- 			 * The tick is not going to be stopped and the target
- 			 * residency of the state to be returned is not within
-@@ -417,7 +419,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 					continue;
- 
- 				idx = i;
--				if (drv->states[i].target_residency <= delta_next_us)
-+				if (drv->states[i].target_residency <=
-+				    data->tick_delta_us)
- 					break;
- 			}
- 		}
 -- 
 2.7.4
