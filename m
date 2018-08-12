@@ -1,202 +1,187 @@
 From: leo.yan@linaro.org
-Subject: Re: [PATCH v3] cpuidle: menu: Handle stopped tick more aggressively
-Date: Sun, 12 Aug 2018 22:55:15 +0800
-Message-ID: <20180812145515.GB28966@leoy-ThinkPad-X240s>
-References: <1951009.1jlQfyrxio@aspire.rjw.lan>
- <3174357.2tBMdxG3bF@aspire.rjw.lan>
- <1754612.IcCR94pSYR@aspire.rjw.lan>
+Subject: Re: [RESEND PATCH v1 1/2] cpuidle: menu: Correct the criteria for
+ stopping tick
+Date: Mon, 13 Aug 2018 00:07:40 +0800
+Message-ID: <20180812160740.GC28966@leoy-ThinkPad-X240s>
+References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
+ <1533835203-5789-2-git-send-email-leo.yan@linaro.org>
+ <CAJZ5v0hU3Qp3ycJ=aGHtPMMC_6A+XsByYALYN22dz2VJ1Z0MgQ@mail.gmail.com>
+ <20180810071321.GC11817@leoy-ThinkPad-X240s>
+ <CAJZ5v0iyGFFDO83KGcET9a+UpPCDQ=_sxZeGxuG6fL4O+hcw+w@mail.gmail.com>
+ <20180810084906.GD11817@leoy-ThinkPad-X240s>
+ <20180810090327.GE11817@leoy-ThinkPad-X240s>
+ <CAJZ5v0gM+PNnMH=Myn5yRLYg4SVV3JnF-htO_gueJp4odivT6w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1754612.IcCR94pSYR@aspire.rjw.lan>
+In-Reply-To: <CAJZ5v0gM+PNnMH=Myn5yRLYg4SVV3JnF-htO_gueJp4odivT6w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 10, 2018 at 01:15:58PM +0200, Rafael J . Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sun, Aug 12, 2018 at 01:12:41PM +0200, Rafael J. Wysocki wrote:
+> On Fri, Aug 10, 2018 at 11:03 AM <leo.yan@linaro.org> wrote:
+> >
+> > On Fri, Aug 10, 2018 at 04:49:06PM +0800, Leo Yan wrote:
+> > > On Fri, Aug 10, 2018 at 09:22:10AM +0200, Rafael J. Wysocki wrote:
+> > > > On Fri, Aug 10, 2018 at 9:13 AM,  <leo.yan@linaro.org> wrote:
+> > > > > On Thu, Aug 09, 2018 at 10:47:17PM +0200, Rafael J. Wysocki wrote:
+> > > > >> On Thu, Aug 9, 2018 at 7:20 PM, Leo Yan <leo.yan@linaro.org> wrote:
+> > > >
+> > > > [cut]
+> > > >
+> > > > >> And that will cause the tick to be stopped unnecessarily in certain
+> > > > >> situations, so why is this better?
+> > > > >
+> > > > > Let's see below two cases, the first one case we configure
+> > > > > TICK_USEC=1000 (1ms) and the second case we configure TICK_USEC=4000
+> > > > > (4ms).
+> > > > >
+> > > > > Let's assume we do the testing one the same platform and have two runs,
+> > > > > in the Case 1 we configure HZ=1000 so TICK_USEC=1ms, expected_interval
+> > > > > is 3ms and deepest idle state target residency is 2ms, finally the idle
+> > > > > governor will choose the deepest state and skip to calibrate to shallow
+> > > > > state caused by 'expected_interval' > TICK_USEC;
+> > > > >
+> > > > > In the Case 2 we configure HZ=250 so TICK_USE=4ms, expected_interval
+> > > > > (3ms) and deepest idle state target residency (2ms) are same with the
+> > > > > Case 1; but because expected_interval < TICK_USEC so the idle governor
+> > > > > will do calibration to select a shallower state.  If we image on one
+> > > > > platform, the deepest idle state's target residency is smaller value,
+> > > > > then it has bigger gap with TICK_USEC, the deepest idle state is harder
+> > > > > to be selected due 'expected_interval' can be easily hit the range
+> > > > > [Deepest target residency..TICK_USEC).
+> > > > >
+> > > > > This patch has no any change for Case 1 and it wants to optimize for
+> > > > > Case 2 so Case 2 has chance to stay in deepest idle state.  I
+> > > > > understand from the performance pespective, we need to avoid to stop
+> > > > > tick for shallow states; on the other hand we cannot prevent CPU run
+> > > > > into deepest idle state just only we want to keep the tick running,
+> > > > > especially the expected interval is longer than the deepest state
+> > > > > target residency.
+> > > > >
+> > > > > Case 1:
+> > > > >       Deepest idle state's target residency=2ms
+> > > > >                      |
+> > > > >                      V
+> > > > > |--------------------------------------------------------> time (ms)
+> > > > >       ^                              ^
+> > > > >       |                              |
+> > > > > TICK_USEC=1ms           expected_interval=3ms
+> > > > >
+> > > > >
+> > > > > Case 2:
+> > > > >       Deepest idle state's target residency = 2ms
+> > > > >                      |
+> > > > >                      V
+> > > > > |--------------------------------------------------------> time (ms)
+> > > > >                                      ^                  ^
+> > > > >                                      |                  |
+> > > > >                           expected_interval = 3ms   TICK_USEC = 4ms
+> > > > >
+> > > > >
+> > > > >
+> > > > >> >                 unsigned int delta_next_us = ktime_to_us(delta_next);
+> > > > >> >
+> > > > >> >                 *stop_tick = false;
+> > > > >> > --
+> > > >
+> > > > Well, I don't quite agree with the approach here, then.
+> > > >
+> > > > As I said in the previous reply, IMO restarting the stopped tick
+> > > > before leaving the loop in do_idle() is pointless overhead.  It is not
+> > > > necessary to do that to avoid leaving CPUs in shallow idle states for
+> > > > too long (I'll send an alternative patch to fix this issue shortly).
+> > > >
+> > > > While you may think that pointless overhead is not a problem, I don't
+> > > > quite agree with that.
+> > >
+> > > I disagree this patch will introduce any extra overhead.
+> > >
+> > > Firstly, the idle loop doesn't support restarting tick even this patch
+> > > tells idle loop to restart the tick;
 > 
-> Commit 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states
-> with stopped tick) missed the case when the target residencies of
-> deep idle states of CPUs are above the tick boundary which may cause
-> the CPU to get stuck in a shallow idle state for a long time.
-> 
-> Say there are two CPU idle states available: one shallow, with the
-> target residency much below the tick boundary and one deep, with
-> the target residency significantly above the tick boundary.  In
-> that case, if the tick has been stopped already and the expected
-> next timer event is relatively far in the future, the governor will
-> assume the idle duration to be equal to TICK_USEC and it will select
-> the idle state for the CPU accordingly.  However, that will cause the
-> shallow state to be selected even though it would have been more
-> energy-efficient to select the deep one.
-> 
-> To address this issue, modify the governor to always assume idle
-> duration to be equal to the time till the closest timer event if
-> the tick is not running which will cause the selected idle states
-> to always match the known CPU wakeup time.
-> 
-> Also make it always indicate that the tick should be stopped in
-> that case for consistency.
-> 
-> Fixes: 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states with stopped tick)
-> Reported-by: Leo Yan <leo.yan@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2: Initialize first_idx properly in the stopped tick case.
-> 
-> -> v3: Compute data->bucket before checking whether or not the tick has been
->        stopped already to prevent it from becoming stale.
-> 
-> ---
->  drivers/cpuidle/governors/menu.c |   55 +++++++++++++++++----------------------
->  1 file changed, 25 insertions(+), 30 deletions(-)
-> 
-> Index: linux-pm/drivers/cpuidle/governors/menu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> +++ linux-pm/drivers/cpuidle/governors/menu.c
-> @@ -285,9 +285,8 @@ static int menu_select(struct cpuidle_dr
->  {
->  	struct menu_device *data = this_cpu_ptr(&menu_devices);
->  	int latency_req = cpuidle_governor_latency_req(dev->cpu);
-> -	int i;
-> -	int first_idx;
-> -	int idx;
-> +	int first_idx = 0;
-> +	int idx, i;
->  	unsigned int interactivity_req;
->  	unsigned int expected_interval;
->  	unsigned long nr_iowaiters, cpu_load;
-> @@ -311,6 +310,18 @@ static int menu_select(struct cpuidle_dr
->  	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
->  
->  	/*
-> +	 * If the tick is already stopped, the cost of possible short idle
-> +	 * duration misprediction is much higher, because the CPU may be stuck
-> +	 * in a shallow idle state for a long time as a result of it.  In that
-> +	 * case say we might mispredict and use the known time till the closest
-> +	 * timer event for the idle state selection.
-> +	 */
-> +	if (tick_nohz_tick_stopped()) {
-> +		data->predicted_us = ktime_to_us(delta_next);
-> +		goto select;
-> +	}
+> I'm not talking about restarting the tick, but about stopping it more
+> often on average.
 
-I tried this patch at my side, firstly just clarify this patch is okay
-for me, but there have other underlying issues I observed the CPU
-staying shallow idle state with tick stopped, so just note at here.
+Ah, yes, I agree.
 
->From my understanding, the rational for this patch is we
-only use the timer event as the reliable wake up source; if there have
-one short timer event then we can select shallow state, otherwise we
-also can select deepest idle state for long expired timer.
-
-This means the idle governor needs to know the reliable info for the
-timer event, so far I observe there at least have two issues for timer
-event delta value cannot be trusted.
-
-The first one issue is caused by timer cancel, I wrote one case for
-CPU_0 starting a hrtimer with pinned mode with short expire time and
-when the CPU_0 goes to sleep this short timeout timer can let idle
-governor selects a shallow state; at the meantime another CPU_1 will
-be used to try to cancel the timer, my purpose is to cheat CPU_0 so can
-see the CPU_0 staying in shallow state for long time;  it has low
-percentage to cancel the timer successfully, but I do see seldomly the
-timer can be canceled successfully so CPU_0 will stay in idle for long
-time (I cannot explain why the timer cannot be canceled successfully
-for every time, this might be another issue?).  This case is tricky,
-but it's possible happen in drivers with timer cancel.
-
-Another issue is caused by spurious interrupts; if we review the
-function tick_nohz_get_sleep_length(), it uses 'ts->idle_entrytime' to
-calculate tick or timer delta, so every time when exit from interrupt
-and before enter idle governor, it needs to update
-'ts->idle_entrytime'; but for spurious interrupts, it will not call
-irq_enter() and irq_exit() pairs, so it doesn't invoke below flows:
-
-  irq_exit()
-    `->tick_irq_exit()
-         `->tick_nohz_irq_exit()
-              `->tick_nohz_start_idle()
-
-As result, after spurious interrupts handling, the idle loop doesn't
-update for ts->idle_entrytime so the governor might read back a stale
-value.  I don't really locate this issue, but I can see the CPU is
-waken up without any interrupt handling and then directly go to
-sleep again, the menu governor selects one shallow state so the cpu
-stay in shallow state for long time.
-
-> +
-> +	/*
->  	 * Force the result of multiplication to be 64 bits even if both
->  	 * operands are 32 bits.
->  	 * Make sure to round up for half microseconds.
-> @@ -322,7 +333,6 @@ static int menu_select(struct cpuidle_dr
->  	expected_interval = get_typical_interval(data);
->  	expected_interval = min(expected_interval, data->next_timer_us);
->  
-> -	first_idx = 0;
->  	if (drv->states[0].flags & CPUIDLE_FLAG_POLLING) {
->  		struct cpuidle_state *s = &drv->states[1];
->  		unsigned int polling_threshold;
-> @@ -344,29 +354,15 @@ static int menu_select(struct cpuidle_dr
->  	 */
->  	data->predicted_us = min(data->predicted_us, expected_interval);
->  
-> -	if (tick_nohz_tick_stopped()) {
-> -		/*
-> -		 * If the tick is already stopped, the cost of possible short
-> -		 * idle duration misprediction is much higher, because the CPU
-> -		 * may be stuck in a shallow idle state for a long time as a
-> -		 * result of it.  In that case say we might mispredict and try
-> -		 * to force the CPU into a state for which we would have stopped
-> -		 * the tick, unless a timer is going to expire really soon
-> -		 * anyway.
-> -		 */
-> -		if (data->predicted_us < TICK_USEC)
-> -			data->predicted_us = min_t(unsigned int, TICK_USEC,
-> -						   ktime_to_us(delta_next));
-> -	} else {
-> -		/*
-> -		 * Use the performance multiplier and the user-configurable
-> -		 * latency_req to determine the maximum exit latency.
-> -		 */
-> -		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
-> -		if (latency_req > interactivity_req)
-> -			latency_req = interactivity_req;
-> -	}
-> +	/*
-> +	 * Use the performance multiplier and the user-configurable latency_req
-> +	 * to determine the maximum exit latency.
-> +	 */
-> +	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
-> +	if (latency_req > interactivity_req)
-> +		latency_req = interactivity_req;
->  
-> +select:
->  	expected_interval = data->predicted_us;
->  	/*
->  	 * Find the idle state with the lowest power while satisfying
-> @@ -403,14 +399,13 @@ static int menu_select(struct cpuidle_dr
->  	 * Don't stop the tick if the selected state is a polling one or if the
->  	 * expected idle duration is shorter than the tick period length.
->  	 */
-> -	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
-> -	    expected_interval < TICK_USEC) {
-> +	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
-> +	    expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
->  		unsigned int delta_next_us = ktime_to_us(delta_next);
->  
->  		*stop_tick = false;
->  
-> -		if (!tick_nohz_tick_stopped() && idx > 0 &&
-> -		    drv->states[idx].target_residency > delta_next_us) {
-> +		if (idx > 0 && drv->states[idx].target_residency > delta_next_us) {
->  			/*
->  			 * The tick is not going to be stopped and the target
->  			 * residency of the state to be returned is not within
+> > > secondly this patch is mainly to
+> > > resolve issue for the CPU cannot stay in deepest state in Case 2,
 > 
+> I understand what you are trying to achieve here, but I don't agree with it.
+
+I agree we need find more general method for fixing.
+
+> The condition modified by this patch is not about how much time the
+> CPU can potentially be idle, but about when it is expected to wake up.
+> The "expected" part is really key here.
+> 
+> The governor has gone through the effort of making an idle duration
+> prediction and it now it has a certain expectation regarding when the
+> CPU will wake up.  If the governor's prediction is any good at all and
+> this expectation is in the tick range, the CPU will be woken up by
+> something close enough to the tick in the majority of cases, so there
+> is no need to stop the tick.  Not because the CPU cannot be idle
+> longer, but because it is expected to wake up early enough anyway (and
+> yes, you can argue that 2 times the tick range may still be "early
+> enough" and so on, but then I'd like to see numbers in support of
+> that).
+
+Thanks for explaination; I also think this is good methodology, but
+just want to improve a bit based on this.  For example, the governor
+is always to use 'expectation' to compare with TICK_USEC, TICK_USEC is a
+predefined interval as a boundary, but in reality the tick incoming time
+is in the range of [0..TICK_USEC]; so currently method we cannot make
+decision according to the tick's delta in realtime.
+
+I'd like take this issue as 'how to improve the decision for stopping
+tick?', if we can make better decision for stopping tick, then it's
+possible to resolve Case 2 and without stopping tick more offten, e.g.
+the CPU even can run into deepest idle state without stopping the tick
+if the prediction is less than the tick.
+
+I will send out a new patch set based on these ideas for reviewing.
+
+> Now, if the governor is junk and its predictions are useless, the
+> above will not be the case any more, but then I'm not sure what the
+> benefit from using that governor at all is. :-)
+
+I really don't think the governor and predictions are useless :)
+
+Just want to remind the side topic, after introducing tick in idle loop,
+the tick also can impact the predictions (e.g. it have some impactions
+on correction factors but need more time for modeling on this).
+
+> > > as a side effect it also can tell idle loop to restart the tick for case 3
+> > > in below, actually IMHO this makes sense to tell the idle loop to
+> > > enable the tick but idle loop can ignore this info.
+> > >
+> > > Furthermore, we have another thread for the patch to always stop
+> > > tick after the the tick has been stopped in the idle loop.
+> > >
+> > > So this patch is still valid.
+> >
+> > Correct for Case 3 as below, actually this case will disappear if we
+> > force to set expected_interval=ktime_to_us(delta_next) in another
+> > proposaled patch.  If so, this patch will have no any chance to
+> > introduce extra ticks.
+> 
+> Yes, it will or at least it may.
+> 
+> Assuming shot noise wakeups, if
+> drv->states[drv->state_count-1].target_residency is less than
+> TICK_USEC, the tick will be stopped for CPUs more often on average
+> with the patch applied (simply because the idle duration range for
+> which it will not be stopped is narrower then).
+
+Yes, good point, so in the new approach I try to change the code
+to compare with next tick delta rather than TICK_USEC, it can keeps
+running tick for the tick with long expire time (similiar with
+comparing with TICK_USEC) but we also can stop tick if the tick is likely
+to break idle residency.
+
+Thanks,
+Leo Yan
