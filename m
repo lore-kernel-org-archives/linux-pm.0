@@ -1,57 +1,205 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v1 5/5] cpuidle: menu: Change to compare prediction with tick delta
-Date: Mon, 13 Aug 2018 00:09:31 +0800
-Message-ID: <1534090171-14464-6-git-send-email-leo.yan@linaro.org>
-References: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ramesh Thomas <ramesh.thomas@intel.com>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
-Cc: Leo Yan <leo.yan@linaro.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH] cpuidle: menu: Handle stopped tick more
+ aggressively
+Date: Mon, 13 Aug 2018 01:13:38 +0300
+Message-ID: <20180812221338.vwyorgitaqxkbldg@mwanda>
+References: <1951009.1jlQfyrxio@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <kbuild-bounces@lists.01.org>
+Content-Disposition: inline
+In-Reply-To: <1951009.1jlQfyrxio@aspire.rjw.lan>
+List-Unsubscribe: <https://lists.01.org/mailman/options/kbuild>,
+ <mailto:kbuild-request@lists.01.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/kbuild/>
+List-Post: <mailto:kbuild@lists.01.org>
+List-Help: <mailto:kbuild-request@lists.01.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/kbuild>,
+ <mailto:kbuild-request@lists.01.org?subject=subscribe>
+Errors-To: kbuild-bounces@lists.01.org
+Sender: "kbuild" <kbuild-bounces@lists.01.org>
+To: kbuild@01.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Frederic Weisbecker <frederic@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kbuild-all@01.org, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The tick stopping decision is made by comparing the prediction with
-TICK_USEC, if the prediction is shorter than TICK_USEC then this means
-the CPU is likely waken up before the tick event so it's pointless to
-stop tick.  In reality when make the decision, though the tick period is
-fixed to TICK_USEC, but the CPU is randomly entering/exiting idle
-states so the next tick delta is float and should be in the range
-[0, TICK_USEC].  This can result in wrong decision for stopping tick,
-e.g. if the prediction is 3ms idle duration and we compare with
-TICK_USEC=4000 (HZ=250), this can lead to a wrong conclusion is the tick
-event will be later than the prediction duration so the governor doesn't
-stop the tick; but in fact the tick is expired for 1ms, so the tick
-wakes up the CPU ahead and the CPU cannot stay in idle for 3ms as
-expected.
+Hi Rafael,
 
-Alternatively, 'data->tick_delta_us' is for the tick delta value and
-it's a accurate estimation for tick event coming.  This patch changes to
-compare prediction with tick delta rather than comparing with the static
-tick interval.
+I love your patch! Perhaps something to improve:
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/cpuidle/governors/menu.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+url:    https://github.com/0day-ci/linux/commits/Rafael-J-Wysocki/cpuidle-menu-Handle-stopped-tick-more-aggressively/20180811-191914
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 566c65c..06d5942 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -300,10 +300,11 @@ static bool menu_decide_stopping_tick(struct cpuidle_driver *drv,
- 		return false;
- 
- 	/*
--	 * Don't stop the tick if the prediction is shorter than the
--	 * tick period length.
-+	 * If the prediction is shorter than the next tick event, means
-+	 * the CPU will be waken up before the tick event; don't stop
-+	 * the tick.
- 	 */
--	if (data->predicted_us < TICK_USEC)
-+	if (data->predicted_us < data->tick_delta_us)
- 		return false;
- 
- 	/*
--- 
-2.7.4
+smatch warnings:
+drivers/cpuidle/governors/menu.c:374 menu_select() error: uninitialized symbol 'first_idx'.
+
+# https://github.com/0day-ci/linux/commit/5f9f09809ebd1b4f7820c9925a0cbd417bd3a823
+git remote add linux-review https://github.com/0day-ci/linux
+git remote update linux-review
+git checkout 5f9f09809ebd1b4f7820c9925a0cbd417bd3a823
+vim +/first_idx +374 drivers/cpuidle/governors/menu.c
+
+1f85f87d4 Arjan van de Ven              2010-05-24  276  
+4f86d3a8e Len Brown                     2007-10-03  277  /**
+4f86d3a8e Len Brown                     2007-10-03  278   * menu_select - selects the next idle state to enter
+46bcfad7a Deepthi Dharwar               2011-10-28  279   * @drv: cpuidle driver containing state data
+4f86d3a8e Len Brown                     2007-10-03  280   * @dev: the CPU
+45f1ff59e Rafael J. Wysocki             2018-03-22  281   * @stop_tick: indication on whether or not to stop the tick
+4f86d3a8e Len Brown                     2007-10-03  282   */
+45f1ff59e Rafael J. Wysocki             2018-03-22  283  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+45f1ff59e Rafael J. Wysocki             2018-03-22  284  		       bool *stop_tick)
+4f86d3a8e Len Brown                     2007-10-03  285  {
+229b6863b Christoph Lameter             2014-08-17  286  	struct menu_device *data = this_cpu_ptr(&menu_devices);
+0fc784fb0 Rafael J. Wysocki             2018-05-30  287  	int latency_req = cpuidle_governor_latency_req(dev->cpu);
+4f86d3a8e Len Brown                     2007-10-03  288  	int i;
+3ed09c945 Nicholas Piggin               2017-06-26  289  	int first_idx;
+3ed09c945 Nicholas Piggin               2017-06-26  290  	int idx;
+96e95182e tuukka.tikkanen@linaro.org    2014-02-24  291  	unsigned int interactivity_req;
+e132b9b3b Rik van Riel                  2016-03-16  292  	unsigned int expected_interval;
+372ba8cb4 Mel Gorman                    2014-08-06  293  	unsigned long nr_iowaiters, cpu_load;
+296bb1e51 Rafael J. Wysocki             2018-04-05  294  	ktime_t delta_next;
+4f86d3a8e Len Brown                     2007-10-03  295  
+672917dcc Corrado Zoccolo               2009-09-21  296  	if (data->needs_update) {
+46bcfad7a Deepthi Dharwar               2011-10-28  297  		menu_update(drv, dev);
+672917dcc Corrado Zoccolo               2009-09-21  298  		data->needs_update = 0;
+672917dcc Corrado Zoccolo               2009-09-21  299  	}
+672917dcc Corrado Zoccolo               2009-09-21  300  
+69d25870f Arjan van de Ven              2009-09-21  301  	/* Special case when user has set very strict latency requirement */
+45f1ff59e Rafael J. Wysocki             2018-03-22  302  	if (unlikely(latency_req == 0)) {
+45f1ff59e Rafael J. Wysocki             2018-03-22  303  		*stop_tick = false;
+a2bd92023 venkatesh.pallipadi@intel.com 2008-07-30  304  		return 0;
+45f1ff59e Rafael J. Wysocki             2018-03-22  305  	}
+a2bd92023 venkatesh.pallipadi@intel.com 2008-07-30  306  
+69d25870f Arjan van de Ven              2009-09-21  307  	/* determine the expected residency time, round up */
+296bb1e51 Rafael J. Wysocki             2018-04-05  308  	data->next_timer_us = ktime_to_us(tick_nohz_get_sleep_length(&delta_next));
+69d25870f Arjan van de Ven              2009-09-21  309  
+5f9f09809 Rafael J. Wysocki             2018-08-10  310  	/*
+5f9f09809 Rafael J. Wysocki             2018-08-10  311  	 * If the tick is already stopped, the cost of possible short idle
+5f9f09809 Rafael J. Wysocki             2018-08-10  312  	 * duration misprediction is much higher, because the CPU may be stuck
+5f9f09809 Rafael J. Wysocki             2018-08-10  313  	 * in a shallow idle state for a long time as a result of it.  In that
+5f9f09809 Rafael J. Wysocki             2018-08-10  314  	 * case say we might mispredict and use the known time till the closest
+5f9f09809 Rafael J. Wysocki             2018-08-10  315  	 * timer event for the idle state selection.
+5f9f09809 Rafael J. Wysocki             2018-08-10  316  	 */
+5f9f09809 Rafael J. Wysocki             2018-08-10  317  	if (tick_nohz_tick_stopped()) {
+5f9f09809 Rafael J. Wysocki             2018-08-10  318  		data->predicted_us = ktime_to_us(delta_next);
+5f9f09809 Rafael J. Wysocki             2018-08-10  319  		goto select;
+                                                                        ^^^^^^^^^^^
+We hit this goto
+
+5f9f09809 Rafael J. Wysocki             2018-08-10  320  	}
+5f9f09809 Rafael J. Wysocki             2018-08-10  321  
+372ba8cb4 Mel Gorman                    2014-08-06  322  	get_iowait_load(&nr_iowaiters, &cpu_load);
+64b4ca5cb Mel Gorman                    2014-08-06  323  	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
+69d25870f Arjan van de Ven              2009-09-21  324  
+69d25870f Arjan van de Ven              2009-09-21  325  	/*
+51f245b89 Tuukka Tikkanen               2013-08-14  326  	 * Force the result of multiplication to be 64 bits even if both
+51f245b89 Tuukka Tikkanen               2013-08-14  327  	 * operands are 32 bits.
+51f245b89 Tuukka Tikkanen               2013-08-14  328  	 * Make sure to round up for half microseconds.
+51f245b89 Tuukka Tikkanen               2013-08-14  329  	 */
+ee3c86f35 Javi Merino                   2015-04-16  330  	data->predicted_us = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_us *
+51f245b89 Tuukka Tikkanen               2013-08-14  331  					 data->correction_factor[data->bucket],
+69d25870f Arjan van de Ven              2009-09-21  332  					 RESOLUTION * DECAY);
+69d25870f Arjan van de Ven              2009-09-21  333  
+e132b9b3b Rik van Riel                  2016-03-16  334  	expected_interval = get_typical_interval(data);
+e132b9b3b Rik van Riel                  2016-03-16  335  	expected_interval = min(expected_interval, data->next_timer_us);
+96e95182e tuukka.tikkanen@linaro.org    2014-02-24  336  
+dc2251bf9 Rafael J. Wysocki             2017-08-23  337  	first_idx = 0;
+dc2251bf9 Rafael J. Wysocki             2017-08-23  338  	if (drv->states[0].flags & CPUIDLE_FLAG_POLLING) {
+dc2251bf9 Rafael J. Wysocki             2017-08-23  339  		struct cpuidle_state *s = &drv->states[1];
+0c313cb20 Rafael J. Wysocki             2016-03-20  340  		unsigned int polling_threshold;
+0c313cb20 Rafael J. Wysocki             2016-03-20  341  
+96e95182e tuukka.tikkanen@linaro.org    2014-02-24  342  		/*
+69d25870f Arjan van de Ven              2009-09-21  343  		 * We want to default to C1 (hlt), not to busy polling
+e132b9b3b Rik van Riel                  2016-03-16  344  		 * unless the timer is happening really really soon, or
+e132b9b3b Rik van Riel                  2016-03-16  345  		 * C1's exit latency exceeds the user configured limit.
+69d25870f Arjan van de Ven              2009-09-21  346  		 */
+0c313cb20 Rafael J. Wysocki             2016-03-20  347  		polling_threshold = max_t(unsigned int, 20, s->target_residency);
+0c313cb20 Rafael J. Wysocki             2016-03-20  348  		if (data->next_timer_us > polling_threshold &&
+0c313cb20 Rafael J. Wysocki             2016-03-20  349  		    latency_req > s->exit_latency && !s->disabled &&
+dc2251bf9 Rafael J. Wysocki             2017-08-23  350  		    !dev->states_usage[1].disable)
+dc2251bf9 Rafael J. Wysocki             2017-08-23  351  			first_idx = 1;
+9c4b2867e Rafael J. Wysocki             2016-01-14  352  	}
+4f86d3a8e Len Brown                     2007-10-03  353  
+71abbbf85 Ai Li                         2010-08-09  354  	/*
+e132b9b3b Rik van Riel                  2016-03-16  355  	 * Use the lowest expected idle interval to pick the idle state.
+e132b9b3b Rik van Riel                  2016-03-16  356  	 */
+e132b9b3b Rik van Riel                  2016-03-16  357  	data->predicted_us = min(data->predicted_us, expected_interval);
+e132b9b3b Rik van Riel                  2016-03-16  358  
+e132b9b3b Rik van Riel                  2016-03-16  359  	/*
+5f9f09809 Rafael J. Wysocki             2018-08-10  360  	 * Use the performance multiplier and the user-configurable latency_req
+5f9f09809 Rafael J. Wysocki             2018-08-10  361  	 * to determine the maximum exit latency.
+e132b9b3b Rik van Riel                  2016-03-16  362  	 */
+e132b9b3b Rik van Riel                  2016-03-16  363  	interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
+e132b9b3b Rik van Riel                  2016-03-16  364  	if (latency_req > interactivity_req)
+e132b9b3b Rik van Riel                  2016-03-16  365  		latency_req = interactivity_req;
+e132b9b3b Rik van Riel                  2016-03-16  366  
+5f9f09809 Rafael J. Wysocki             2018-08-10  367  select:
+45f1ff59e Rafael J. Wysocki             2018-03-22  368  	expected_interval = data->predicted_us;
+e132b9b3b Rik van Riel                  2016-03-16  369  	/*
+71abbbf85 Ai Li                         2010-08-09  370  	 * Find the idle state with the lowest power while satisfying
+71abbbf85 Ai Li                         2010-08-09  371  	 * our constraints.
+71abbbf85 Ai Li                         2010-08-09  372  	 */
+3ed09c945 Nicholas Piggin               2017-06-26  373  	idx = -1;
+3ed09c945 Nicholas Piggin               2017-06-26 @374  	for (i = first_idx; i < drv->state_count; i++) {
+                                                                     ^^^^^^^^^^^^^^
+This is uninitialized
+
+46bcfad7a Deepthi Dharwar               2011-10-28  375  		struct cpuidle_state *s = &drv->states[i];
+dc7fd275a ShuoX Liu                     2012-07-03  376  		struct cpuidle_state_usage *su = &dev->states_usage[i];
+4f86d3a8e Len Brown                     2007-10-03  377  
+cbc9ef028 Rafael J. Wysocki             2012-07-03  378  		if (s->disabled || su->disable)
+3a53396b0 ShuoX Liu                     2012-03-28  379  			continue;
+3ed09c945 Nicholas Piggin               2017-06-26  380  		if (idx == -1)
+3ed09c945 Nicholas Piggin               2017-06-26  381  			idx = i; /* first enabled state */
+148519120 Rafael J. Wysocki             2013-07-27  382  		if (s->target_residency > data->predicted_us)
+8e37e1a2a Alex Shi                      2017-01-12  383  			break;
+45f1ff59e Rafael J. Wysocki             2018-03-22  384  		if (s->exit_latency > latency_req) {
+45f1ff59e Rafael J. Wysocki             2018-03-22  385  			/*
+45f1ff59e Rafael J. Wysocki             2018-03-22  386  			 * If we break out of the loop for latency reasons, use
+45f1ff59e Rafael J. Wysocki             2018-03-22  387  			 * the target residency of the selected state as the
+45f1ff59e Rafael J. Wysocki             2018-03-22  388  			 * expected idle duration so that the tick is retained
+45f1ff59e Rafael J. Wysocki             2018-03-22  389  			 * as long as that target residency is low enough.
+45f1ff59e Rafael J. Wysocki             2018-03-22  390  			 */
+45f1ff59e Rafael J. Wysocki             2018-03-22  391  			expected_interval = drv->states[idx].target_residency;
+8e37e1a2a Alex Shi                      2017-01-12  392  			break;
+45f1ff59e Rafael J. Wysocki             2018-03-22  393  		}
+3ed09c945 Nicholas Piggin               2017-06-26  394  		idx = i;
+71abbbf85 Ai Li                         2010-08-09  395  	}
+4f86d3a8e Len Brown                     2007-10-03  396  
+3ed09c945 Nicholas Piggin               2017-06-26  397  	if (idx == -1)
+3ed09c945 Nicholas Piggin               2017-06-26  398  		idx = 0; /* No states enabled. Must use 0. */
+3ed09c945 Nicholas Piggin               2017-06-26  399  
+45f1ff59e Rafael J. Wysocki             2018-03-22  400  	/*
+45f1ff59e Rafael J. Wysocki             2018-03-22  401  	 * Don't stop the tick if the selected state is a polling one or if the
+45f1ff59e Rafael J. Wysocki             2018-03-22  402  	 * expected idle duration is shorter than the tick period length.
+45f1ff59e Rafael J. Wysocki             2018-03-22  403  	 */
+5f9f09809 Rafael J. Wysocki             2018-08-10  404  	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+5f9f09809 Rafael J. Wysocki             2018-08-10  405  	    expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
+296bb1e51 Rafael J. Wysocki             2018-04-05  406  		unsigned int delta_next_us = ktime_to_us(delta_next);
+296bb1e51 Rafael J. Wysocki             2018-04-05  407  
+45f1ff59e Rafael J. Wysocki             2018-03-22  408  		*stop_tick = false;
+45f1ff59e Rafael J. Wysocki             2018-03-22  409  
+5f9f09809 Rafael J. Wysocki             2018-08-10  410  		if (idx > 0 && drv->states[idx].target_residency > delta_next_us) {
+296bb1e51 Rafael J. Wysocki             2018-04-05  411  			/*
+296bb1e51 Rafael J. Wysocki             2018-04-05  412  			 * The tick is not going to be stopped and the target
+296bb1e51 Rafael J. Wysocki             2018-04-05  413  			 * residency of the state to be returned is not within
+296bb1e51 Rafael J. Wysocki             2018-04-05  414  			 * the time until the next timer event including the
+296bb1e51 Rafael J. Wysocki             2018-04-05  415  			 * tick, so try to correct that.
+296bb1e51 Rafael J. Wysocki             2018-04-05  416  			 */
+296bb1e51 Rafael J. Wysocki             2018-04-05  417  			for (i = idx - 1; i >= 0; i--) {
+296bb1e51 Rafael J. Wysocki             2018-04-05  418  			    if (drv->states[i].disabled ||
+296bb1e51 Rafael J. Wysocki             2018-04-05  419  			        dev->states_usage[i].disable)
+296bb1e51 Rafael J. Wysocki             2018-04-05  420  					continue;
+296bb1e51 Rafael J. Wysocki             2018-04-05  421  
+296bb1e51 Rafael J. Wysocki             2018-04-05  422  				idx = i;
+296bb1e51 Rafael J. Wysocki             2018-04-05  423  				if (drv->states[i].target_residency <= delta_next_us)
+296bb1e51 Rafael J. Wysocki             2018-04-05  424  					break;
+296bb1e51 Rafael J. Wysocki             2018-04-05  425  			}
+296bb1e51 Rafael J. Wysocki             2018-04-05  426  		}
+296bb1e51 Rafael J. Wysocki             2018-04-05  427  	}
+296bb1e51 Rafael J. Wysocki             2018-04-05  428  
+3ed09c945 Nicholas Piggin               2017-06-26  429  	data->last_state_idx = idx;
+3ed09c945 Nicholas Piggin               2017-06-26  430  
+69d25870f Arjan van de Ven              2009-09-21  431  	return data->last_state_idx;
+4f86d3a8e Len Brown                     2007-10-03  432  }
+4f86d3a8e Len Brown                     2007-10-03  433  
