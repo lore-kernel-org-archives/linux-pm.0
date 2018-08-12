@@ -1,67 +1,88 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v1 1/5] cpuidle: menu: Clean up variables usage in menu_select()
-Date: Mon, 13 Aug 2018 00:09:27 +0800
-Message-ID: <1534090171-14464-2-git-send-email-leo.yan@linaro.org>
-References: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH v1 0/5] Improvement stopping tick decision making in 'menu' idle governor
+Date: Mon, 13 Aug 2018 00:09:26 +0800
+Message-ID: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ramesh Thomas <ramesh.thomas@intel.com>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 Cc: Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The usage for two variables 'data->predicted_us' and 'expected_interval'
-in menu_select() are confused, especially these two variables are
-assigned with each other: firstly 'data->predicted_us' is assigned to
-the minimum value between 'data->predicted_us' and 'expected_interval',
-so it presents the prediction period for taking account different
-factors and include consideration for expected interval; but later
-'data->predicted_us' is assigned back to 'expected_interval' and from
-then on the function uses 'expected_interval' to select idle state; this
-results in 'expected_interval' has two different semantics between the
-top half and the bottom half of the same function.
+We found the CPU cannot stay in deepest idle state as expected with
+running synthetic workloads with mainline kernel on Arm platform
+(96boards Hikey620 with octa CA53 CPUs).
 
-This patch is to clean up the usage of these two variables, we always
-use 'data->predicted_us' to present the idle duration predictions and
-it can be used to compare with idle state target residency or tick
-boundary for choosing idle state; we purely use 'expected_interval' to
-record the expected interval value, which is mainly for interval
-interrupt estimation.
+The main issue is the criteria for decision stopping tick; now
+the criteria is checking expected interval is less than TICK_USEC, but
+this doesn't consider the next tick detla is float due CPU randomly
+eneters and exits idle states; furthermore, it's stick to checking
+TICK_USEC as boundary for decision stopping tick, unfortunately this has
+hole to select a shallow state with stopping tick, so the CPU stays in
+shallow state for long time.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/cpuidle/governors/menu.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+This patch series is to explore more reasonable making decision for
+stopping tick and the most important fixing is to avoid powernightmares
+issue after we apply these criterias for making decisions.  Patches
+0001 ~ 0003 are used to refactor the variables and structures for more
+readable code, it also provides a function menu_decide_stopping_tick()
+which can be used to encapsulate the making decision logics.  The last
+two patches are primary for improvement, patch 0004 'cpuidle: menu:
+Don't stay in shallow state for a long time' introduces a new criteria
+(it's a more strict criteria than before) for not stopping tick for
+shallow state cases; patch 0005 is use the dynamic tick detla to replace
+the static value TICK_USEC for decision if the tick is expired before or
+after the prediction, according this comparison we can get conclusion if
+need to stop tick or not.
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 5eb7d6f..b972db1 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -363,7 +363,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		latency_req = interactivity_req;
- 
- select:
--	expected_interval = data->predicted_us;
- 	/*
- 	 * Find the idle state with the lowest power while satisfying
- 	 * our constraints.
-@@ -386,7 +385,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 			 * expected idle duration so that the tick is retained
- 			 * as long as that target residency is low enough.
- 			 */
--			expected_interval = drv->states[idx].target_residency;
-+			data->predicted_us = drv->states[idx].target_residency;
- 			break;
- 		}
- 		idx = i;
-@@ -400,7 +399,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	 * expected idle duration is shorter than the tick period length.
- 	 */
- 	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
--	    expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
-+	    data->predicted_us < TICK_USEC) && !tick_nohz_tick_stopped()) {
- 		unsigned int delta_next_us = ktime_to_us(delta_next);
- 
- 		*stop_tick = false;
+With more accurate decision for stopping tick, one immediate benefit is
+the CPUs have more chance to stay in deepest state, it also can avoid to
+run tick unnecessarily and so avoid a shallower state introduced by tick
+event.  For the testing result in below table, we can see the result
+proves the improvement by better stopping tick decision making in this
+patch series, we run the workload generated by rt-app (a single task
+with period 5ms and duty cycle 1%/3%/5%/10%/20%/30%/40%), the total
+running time is 60s.  We do statistics for all CPUs for all idle states
+duration, the unit is second (s), for cases (dutycycle=1%/3%/5%/10%/20%)
+we can see the shallow state C0/C1 duration are reduced and the time
+has been moved to deepest state, so the deepest state C2 duration can
+have improvement for ~9s to ~21s.  for cases (dutycycle=30%/40%) though
+we can see the deepest state durations are parity between with and
+without patch series, but it has a minor improvement for C1 state
+duration by stealing C0 state duration.
+
+Some notations are used in the table:
+
+state: C0: WFI; C1: CPU OFF; C2: Cluster OFF
+
+All testing cases have single task with 5ms period:
+
+		 Without patches           With patches               Difference
+            -----------------------  -----------------------   --------------------------
+Duty cycle    C0     C1       C2       C0      C1      C2        C0        C1        C2
+  1%        2.397  16.528  471.905   0.916    2.688  487.328   -1.481   -13.840   +15.422
+  3%        3.957  20.541  464.434   1.510    2.398  485.914   -2.447   -18.143   +21.480
+  5%        2.866   8.609  474.777   1.166    2.250  483.983   -1.699    -6.359    +9.205
+ 10%        2.893  28.753  453.277   1.147   14.134  469.190   -1.745   -14.618   +15.913
+ 20%        7.620  41.086  431.735   1.595   35.055  442.482   -6.024    -6.030   +10.747
+ 30%        4.394  38.328  431.442   1.964   40.857  430.973   -2.430    +2.529    -0.468
+ 40%        7.390  29.415  430.914   1.789   34.832  431.588   -5.600    +5.417    -0.673
+
+
+P.s. for the testing, applied Rafael's patch 'cpuidle: menu: Handle
+stopped tick more aggressively' [1] to avoid select unexpected shallow
+state after tick has been stopped.
+
+[1] https://lkml.org/lkml/2018/8/10/259
+
+Leo Yan (5):
+  cpuidle: menu: Clean up variables usage in menu_select()
+  cpuidle: menu: Record tick delta value in struct menu_device
+  cpuidle: menu: Provide menu_decide_stopping_tick()
+  cpuidle: menu: Don't stay in shallow state for a long time
+  cpuidle: menu: Change to compare prediction with tick delta
+
+ drivers/cpuidle/governors/menu.c | 104 ++++++++++++++++++++++++++++-----------
+ 1 file changed, 76 insertions(+), 28 deletions(-)
+
 -- 
 2.7.4
