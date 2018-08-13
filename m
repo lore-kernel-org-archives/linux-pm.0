@@ -1,84 +1,40 @@
-From: "Schmauss, Erik" <erik.schmauss@intel.com>
-Subject: RE: [PATCH] ACPICA: Clear status of all events when entering sleep
- states
-Date: Mon, 13 Aug 2018 17:15:19 +0000
-Message-ID: <CF6A88132359CE47947DB4C6E1709ED53BB67514@ORSMSX110.amr.corp.intel.com>
-References: <1764673.ub23GCSM6t@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH v1] thermal: core: Fix use-after-free in thermal_cooling_device_destroy_sysfs
+Date: Mon, 13 Aug 2018 20:14:00 +0300
+Message-ID: <20180813171400.15345-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1764673.ub23GCSM6t@aspire.rjw.lan>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Paul Menzel <pmenzel@molgen.mpg.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+This patch fixes use-after-free that was detected by KASAN. The bug is
+triggered on a CPUFreq driver module unload by freeing 'cdev' on device
+unregister and then using the freed structure during of the cdev's sysfs
+data destruction. The solution is to unregister the sysfs at first, then
+destroy sysfs data and finally release the cooling device.
 
+Cc: <stable@vger.kernel.org> # v4.17+
+Fixes: 8ea229511e06 ("thermal: Add cooling device's statistics in sysfs")
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/thermal/thermal_core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
-> owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-> Sent: Sunday, August 12, 2018 3:50 AM
-> To: Linux ACPI <linux-acpi@vger.kernel.org>
-> Cc: Paul Menzel <pmenzel@molgen.mpg.de>; Linux PM <linux-
-> pm@vger.kernel.org>; LKML <linux-kernel@vger.kernel.org>; Schmauss, Erik
-> <erik.schmauss@intel.com>
-> Subject: [PATCH] ACPICA: Clear status of all events when entering sleep states
-> 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Commit fa85015c0d95 (ACPICA: Clear status of all events when entering
-> S5) made the sleep state entry code in ACPICA clear the status of all ACPI events
-> when entering S5 to fix a functional regression reported against commit
-> 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI IRQs during
-> suspend/resume).  However, it is reported now that the regression also affects
-> system states other than S5 on some systems and causes them to wake up from
-> sleep prematurely.
-> 
-> For this reason, make the code in question clear the status of all ACPI events
-> when entering all sleep states (in addition to S5) to avoid the premature
-> wakeups (this may cause some wakeup events to be missed in theory, but the
-> likelihood of that is small and the change here simply restores the previous
-> behavior of the code).
-> 
-> Fixes: 18996f2db918 (ACPICA: Events: Stop unconditionally clearing ACPI IRQs
-> during suspend/resume)
-> Reported-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> Tested-by: Paul Menzel <pmenzel@molgen.mpg.de>
-> Cc: 4.17+ <stable@vger.kernel.org> # 4.17+: fa85015c0d95 ACPICA: Clear
-> status ...
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/acpi/acpica/hwsleep.c |   11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
-> 
-> Index: linux-pm/drivers/acpi/acpica/hwsleep.c
-> =================================================================
-> ==
-> --- linux-pm.orig/drivers/acpi/acpica/hwsleep.c
-> +++ linux-pm/drivers/acpi/acpica/hwsleep.c
-> @@ -56,14 +56,9 @@ acpi_status acpi_hw_legacy_sleep(u8 slee
->  	if (ACPI_FAILURE(status)) {
->  		return_ACPI_STATUS(status);
->  	}
-> -	/*
-> -	 * If the target sleep state is S5, clear all GPEs and fixed events too
-> -	 */
-> -	if (sleep_state == ACPI_STATE_S5) {
-> -		status = acpi_hw_clear_acpi_status();
-> -		if (ACPI_FAILURE(status)) {
-> -			return_ACPI_STATUS(status);
-> -		}
-> +	status = acpi_hw_clear_acpi_status();
-> +	if (ACPI_FAILURE(status)) {
-> +		return_ACPI_STATUS(status);
->  	}
->  	acpi_gbl_system_awake_and_running = FALSE;
-> 
-
-I'll backport this for the next ACPICA release
-
-Thanks,
-Erik
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 6ab982309e6a..441778100887 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1102,8 +1102,9 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ 	mutex_unlock(&thermal_list_lock);
+ 
+ 	ida_simple_remove(&thermal_cdev_ida, cdev->id);
+-	device_unregister(&cdev->device);
++	device_del(&cdev->device);
+ 	thermal_cooling_device_destroy_sysfs(cdev);
++	put_device(&cdev->device);
+ }
+ EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
+ 
+-- 
+2.18.0
