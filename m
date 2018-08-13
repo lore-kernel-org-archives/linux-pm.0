@@ -1,94 +1,86 @@
-From: leo.yan@linaro.org
-Subject: Re: [RESEND PATCH v1 1/2] cpuidle: menu: Correct the criteria for
- stopping tick
-Date: Mon, 13 Aug 2018 17:58:01 +0800
-Message-ID: <20180813095801.GB11775@leoy-ThinkPad-X240s>
-References: <1533835203-5789-1-git-send-email-leo.yan@linaro.org>
- <1533835203-5789-2-git-send-email-leo.yan@linaro.org>
- <CAJZ5v0hU3Qp3ycJ=aGHtPMMC_6A+XsByYALYN22dz2VJ1Z0MgQ@mail.gmail.com>
- <20180810071321.GC11817@leoy-ThinkPad-X240s>
- <CAJZ5v0iyGFFDO83KGcET9a+UpPCDQ=_sxZeGxuG6fL4O+hcw+w@mail.gmail.com>
- <20180810084906.GD11817@leoy-ThinkPad-X240s>
- <20180810090327.GE11817@leoy-ThinkPad-X240s>
- <CAJZ5v0gM+PNnMH=Myn5yRLYg4SVV3JnF-htO_gueJp4odivT6w@mail.gmail.com>
- <20180812160740.GC28966@leoy-ThinkPad-X240s>
- <CAJZ5v0g-ZaUe1AJ=4tixtacaGB-roMXLXj5HNHBqMk+jf3aYnA@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
+ for RT tasks
+Date: Mon, 13 Aug 2018 11:12:21 +0100
+Message-ID: <20180813101221.GA2605@e110439-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-7-patrick.bellasi@arm.com>
+ <20180807132630.GB3062@localhost.localdomain>
+ <20180809153423.nsoepprhut3dv4u2@darkstar>
+ <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g-ZaUe1AJ=4tixtacaGB-roMXLXj5HNHBqMk+jf3aYnA@mail.gmail.com>
+In-Reply-To: <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, viresh kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, "Cc: Steve Muckle" <smuckle@google.com>, surenb@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 13, 2018 at 10:01:20AM +0200, Rafael J. Wysocki wrote:
-> On Sun, Aug 12, 2018 at 6:07 PM <leo.yan@linaro.org> wrote:
+Hi Vincent!
+
+On 09-Aug 18:03, Vincent Guittot wrote:
+> > On 07-Aug 15:26, Juri Lelli wrote:
+
+[...]
+
+> > > > +   util_cfs = cpu_util_cfs(rq);
+> > > > +   util_rt  = cpu_util_rt(rq);
+> > > > +   if (sched_feat(UCLAMP_SCHED_CLASS)) {
+> > > > +           util = 0;
+> > > > +           if (util_cfs)
+> > > > +                   util += uclamp_util(cpu_of(rq), util_cfs);
+> > > > +           if (util_rt)
+> > > > +                   util += uclamp_util(cpu_of(rq), util_rt);
+> > > > +   } else {
+> > > > +           util  = cpu_util_cfs(rq);
+> > > > +           util += cpu_util_rt(rq);
+> > > > +           util  = uclamp_util(cpu_of(rq), util);
+> > > > +   }
 > >
-> > On Sun, Aug 12, 2018 at 01:12:41PM +0200, Rafael J. Wysocki wrote:
-> > > On Fri, Aug 10, 2018 at 11:03 AM <leo.yan@linaro.org> wrote:
+> > Regarding the two policies, do you have any comment?
 > 
-> [cut]
-> 
-> > >
-> > > Assuming shot noise wakeups, if
-> > > drv->states[drv->state_count-1].target_residency is less than
-> > > TICK_USEC, the tick will be stopped for CPUs more often on average
-> > > with the patch applied (simply because the idle duration range for
-> > > which it will not be stopped is narrower then).
-> >
-> > Yes, good point, so in the new approach I try to change the code
-> > to compare with next tick delta rather than TICK_USEC, it can keeps
-> > running tick for the tick with long expire time (similiar with
-> > comparing with TICK_USEC) but we also can stop tick if the tick is likely
-> > to break idle residency.
-> 
-> We tried something similar and the results were not encouraging.
-> Please see https://lore.kernel.org/lkml/079e16b6-2e04-2518-0553-66becab226a6@tu-dresden.de/
+> Does the policy for (sched_feat(UCLAMP_SCHED_CLASS)== true) really
+> make sense as it is ?
+> I mean, uclamp_util doesn't make any difference between rt and cfs
+> tasks when clamping the utilization so why should be add twice the
+> returned value ?
+> IMHO, this policy would make sense if there were something like
+> uclamp_util_rt() and a uclamp_util_cfs()
 
-I reviewed the result, in the shared page, it said to use next tick
-delta and results in the power data increasing, I think this can be
-explained.
+The idea for the UCLAMP_SCHED_CLASS policy is to improve fairness on
+low-priority classese, especially when we have high RT utilization.
 
-If we use prediction to compare with next tick delta rather than
-TICK_USEC, Thomas gave the expectation is 'This works as a I expect in
-the sense of stopping the tick more often and allowing deeper sleep
-states in some cases.'; but we also need to expect the change will give
-more chance for powernightmares to occurring, if the expect_interval
-just falls into the range [delta_next_us..TICK_USEC) then idle
-governor will stop tick after comparing with the next tick delta, but
-at the meantime the idle governor is very likely to select one shallow
-state for expect_interval is a small value.  So though the change
-gives more chance for staying deeper state but it also give more
-chance for staying in shallow state for longer time.
+Let say we have:
 
->From the testing report, I don't find it do statistics for idle state
-duration time.  The email said 'No more sched tick, no more C1E
-requests, but increased power.', so this is just for statistics for
-idle state requests (entering/exiting times), but not for duration
-statistics.  So this isn't clear for me how the difference for idle
-duration.
+ util_rt  = 40%, util_min=0%
+ util_cfs = 10%, util_min=50%
 
-Because the change gives more chance for powernightmares, so we need
-use extra method to avoid it.  This is why I add one extra patch for
-this [1], it checks for shallow state with long expire timer, for this
-case we should not stop the tick.
+the two policies will select:
 
-Actually the powernightmares issue is not completely resolved so it
-still impact the power data; after we really get rid of the impaction
-of powernightmares, I think we may have chance to see the benefits of
-comparing with next tick delta.
+  UCLAMP_SCHED_CLASS: util = uclamp(40) + uclamp(10) = 50 + 50   = 100%
+ !UCLAMP_SCHED_CLASS: util = uclamp(40 + 10)         = uclmp(50) =  50%
 
-Based on these ideas, I worked out the patch set 'Improvement stopping
-tick decision making in 'menu' idle governor' [2], the testing result
-supports the idle duration improvement, which shared in the cover letter.
+Which means that, despite the CPU's util_min will be set to 50% when
+CFS is running, these tasks will have almost no boost at all, since
+their bandwidth margin is eclipsed by RT tasks.
 
-Please help review and let me know if it's doable or not.  Thanks for
-the suggestion.
+> > We had an internal discussion and we found pro/cons for both... but
 
-Thanks,
-Leo Yan
+The UCLAMP_SCHED_CLASS policy is thus less energy efficiency but it
+should grant a better "isolation" in terms of what is the expected
+speed-up a task will get at run-time, independently from higher
+priority classes.
 
-[1] https://lkml.org/lkml/2018/8/12/84
-[2] https://lkml.org/lkml/2018/8/12/82
+Does that make sense?
+
+> > I'm not sure keeping the sched_feat is a good solution on the long
+> > run, i.e. mainline merge ;)
+
+This problem still stands...
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
