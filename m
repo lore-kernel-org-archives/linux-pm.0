@@ -1,40 +1,97 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [PATCH v1] thermal: core: Fix use-after-free in thermal_cooling_device_destroy_sysfs
-Date: Mon, 13 Aug 2018 20:14:00 +0300
-Message-ID: <20180813171400.15345-1-digetx@gmail.com>
+From: Rishabh Bhatnagar <rishabhb@quicinc.com>
+Subject: [PATCH v1] dd: Invoke one probe retry cycle after some initcall levels
+Date: Mon, 13 Aug 2018 10:39:49 -0700
+Message-ID: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rafael@kernel.org
+Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, psodagud@codeaurora.org, ckadabi@codeaurora.org, tsoni@codeaurora.org, linux-pm@vger.kernel.org, Rishabh Bhatnagar <rishabhb@codeaurora.org>, Vikram Mulukutla <markivx@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch fixes use-after-free that was detected by KASAN. The bug is
-triggered on a CPUFreq driver module unload by freeing 'cdev' on device
-unregister and then using the freed structure during of the cdev's sysfs
-data destruction. The solution is to unregister the sysfs at first, then
-destroy sysfs data and finally release the cooling device.
+From: Rishabh Bhatnagar <rishabhb@codeaurora.org>
 
-Cc: <stable@vger.kernel.org> # v4.17+
-Fixes: 8ea229511e06 ("thermal: Add cooling device's statistics in sysfs")
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Drivers that are registered at an initcall level may have to
+wait until late_init before the probe deferral mechanism can
+retry their probe functions. It is possible that their
+dependencies were resolved much earlier, in some cases even
+before the next initcall level. Invoke one probe retry cycle
+at every _sync initcall level after subsys initcall, allowing
+these drivers to be probed earlier.
+To give an example many Qualcomm drivers are dependent on the 
+regulator and bus driver. Both the regulator and bus driver 
+are probed in the subsys_initcall level. Now the probe of bus 
+driver requires regulator to be working. If the probe of bus 
+driver happens before regulator, then bus driver's probe will 
+be deferred and all other device's probes which depend on bus 
+driver will also be deferred.
+The impact of this problem is reduced if we have this patch.
+
+Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
+Signed-off-by: Rishabh Bhatnagar <rishabhb@codeaurora.org>
 ---
- drivers/thermal/thermal_core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6ab982309e6a..441778100887 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1102,8 +1102,9 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 	mutex_unlock(&thermal_list_lock);
- 
- 	ida_simple_remove(&thermal_cdev_ida, cdev->id);
--	device_unregister(&cdev->device);
-+	device_del(&cdev->device);
- 	thermal_cooling_device_destroy_sysfs(cdev);
-+	put_device(&cdev->device);
+Changes since v0:
+ * Remove arch_initcall_sync(deferred_probe_initcall) from patch. This is not
+   really needed as none of the devices are re-probed in arch_initcall_sync
+   level.
+
+ drivers/base/dd.c | 32 ++++++++++++++++++++++++++------
+ 1 file changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 1435d72..9aa41aa 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -224,23 +224,43 @@ void device_unblock_probing(void)
+ 	driver_deferred_probe_trigger();
  }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
  
++static void enable_trigger_defer_cycle(void)
++{
++	driver_deferred_probe_enable = true;
++	driver_deferred_probe_trigger();
++	/*
++	 * Sort as many dependencies as possible before the next initcall
++	 * level
++	 */
++	flush_work(&deferred_probe_work);
++}
++
+ /**
+  * deferred_probe_initcall() - Enable probing of deferred devices
+  *
+  * We don't want to get in the way when the bulk of drivers are getting probed.
+  * Instead, this initcall makes sure that deferred probing is delayed until
+- * late_initcall time.
++ * all the registered initcall functions at a particular level are completed.
++ * This function is invoked at every *_initcall_sync level.
+  */
+ static int deferred_probe_initcall(void)
+ {
+-	driver_deferred_probe_enable = true;
+-	driver_deferred_probe_trigger();
+-	/* Sort as many dependencies as possible before exiting initcalls */
+-	flush_work(&deferred_probe_work);
++	enable_trigger_defer_cycle();
++	driver_deferred_probe_enable = false;
++	return 0;
++}
++subsys_initcall_sync(deferred_probe_initcall);
++fs_initcall_sync(deferred_probe_initcall);
++device_initcall_sync(deferred_probe_initcall);
++
++static int deferred_probe_enable_fn(void)
++{
++	/* Enable deferred probing for all time */
++	enable_trigger_defer_cycle();
+ 	initcalls_done = true;
+ 	return 0;
+ }
+-late_initcall(deferred_probe_initcall);
++late_initcall(deferred_probe_enable_fn);
+ 
+ /**
+  * device_is_bound() - Check if device is bound to a driver
 -- 
-2.18.0
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
