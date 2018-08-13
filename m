@@ -1,84 +1,50 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
  for RT tasks
-Date: Mon, 13 Aug 2018 11:12:21 +0100
-Message-ID: <20180813101221.GA2605@e110439-lin>
+Date: Mon, 13 Aug 2018 11:17:24 +0100
+Message-ID: <20180813101724.GB2605@e110439-lin>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
  <20180806163946.28380-7-patrick.bellasi@arm.com>
- <20180807132630.GB3062@localhost.localdomain>
- <20180809153423.nsoepprhut3dv4u2@darkstar>
- <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
+ <20180807135403.s7jktvxmhycujeht@queper01-lin>
+ <20180809154156.gdsx2vacjmp6p6dp@darkstar>
+ <20180809155551.bp46sixk4u3ilcnh@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
+In-Reply-To: <20180809155551.bp46sixk4u3ilcnh@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, viresh kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, "Cc: Steve Muckle" <smuckle@google.com>, surenb@google.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent!
+Hi Quentin!
 
-On 09-Aug 18:03, Vincent Guittot wrote:
-> > On 07-Aug 15:26, Juri Lelli wrote:
-
-[...]
-
-> > > > +   util_cfs = cpu_util_cfs(rq);
-> > > > +   util_rt  = cpu_util_rt(rq);
-> > > > +   if (sched_feat(UCLAMP_SCHED_CLASS)) {
-> > > > +           util = 0;
-> > > > +           if (util_cfs)
-> > > > +                   util += uclamp_util(cpu_of(rq), util_cfs);
-> > > > +           if (util_rt)
-> > > > +                   util += uclamp_util(cpu_of(rq), util_rt);
-> > > > +   } else {
-> > > > +           util  = cpu_util_cfs(rq);
-> > > > +           util += cpu_util_rt(rq);
-> > > > +           util  = uclamp_util(cpu_of(rq), util);
-> > > > +   }
-> >
-> > Regarding the two policies, do you have any comment?
+On 09-Aug 16:55, Quentin Perret wrote:
+> Hi Patrick,
 > 
-> Does the policy for (sched_feat(UCLAMP_SCHED_CLASS)== true) really
-> make sense as it is ?
-> I mean, uclamp_util doesn't make any difference between rt and cfs
-> tasks when clamping the utilization so why should be add twice the
-> returned value ?
-> IMHO, this policy would make sense if there were something like
-> uclamp_util_rt() and a uclamp_util_cfs()
+> On Thursday 09 Aug 2018 at 16:41:56 (+0100), Patrick Bellasi wrote:
+> > > IIUC, not far below this you should still have something like:
+> > > 
+> > > 	if (rt_rq_is_runnable(&rq->rt))
+> > > 		return max;
+> > 
+> > Do you mean that when RT tasks are RUNNABLE we still want to got to
+> > MAX? Not sure to understand... since this patch is actually to clamp
+> > the RT class...
+> 
+> Argh, reading my message again it wasn't very clear indeed. Sorry about
+> that ...
+> 
+> What I'm try to say is that your patch does _not_ remove the snippet of code
+> above from sugov_get_util(). So I think that when a RT task is runnable,
+> you will not reach the end of the function where the clamping is done.
+> And this is not what you want AFAICT.
+> 
+> Does that make any sense ?
 
-The idea for the UCLAMP_SCHED_CLASS policy is to improve fairness on
-low-priority classese, especially when we have high RT utilization.
-
-Let say we have:
-
- util_rt  = 40%, util_min=0%
- util_cfs = 10%, util_min=50%
-
-the two policies will select:
-
-  UCLAMP_SCHED_CLASS: util = uclamp(40) + uclamp(10) = 50 + 50   = 100%
- !UCLAMP_SCHED_CLASS: util = uclamp(40 + 10)         = uclmp(50) =  50%
-
-Which means that, despite the CPU's util_min will be set to 50% when
-CFS is running, these tasks will have almost no boost at all, since
-their bandwidth margin is eclipsed by RT tasks.
-
-> > We had an internal discussion and we found pro/cons for both... but
-
-The UCLAMP_SCHED_CLASS policy is thus less energy efficiency but it
-should grant a better "isolation" in terms of what is the expected
-speed-up a task will get at run-time, independently from higher
-priority classes.
-
-Does that make sense?
-
-> > I'm not sure keeping the sched_feat is a good solution on the long
-> > run, i.e. mainline merge ;)
-
-This problem still stands...
+Oh gotcha... you right, I've missed that bit when I rebased on tip.
+Will fix on the next iteration!
 
 -- 
 #include <best/regards.h>
