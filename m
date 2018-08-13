@@ -1,122 +1,190 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
- for RT tasks
-Date: Mon, 13 Aug 2018 13:49:11 +0100
-Message-ID: <20180813124911.GD2605@e110439-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-7-patrick.bellasi@arm.com>
- <20180807132630.GB3062@localhost.localdomain>
- <20180809153423.nsoepprhut3dv4u2@darkstar>
- <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
- <20180813101221.GA2605@e110439-lin>
- <CAKfTPtBN+K=8fqukZix2k0rdcjG8YiYagxZtzLx7kk3US+9V2Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: [PATCH V11 00/14] Krait clocks + Krait CPUfreq
+Date: Mon, 13 Aug 2018 19:05:53 +0530
+Message-ID: <1534167367-17545-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtBN+K=8fqukZix2k0rdcjG8YiYagxZtzLx7kk3US+9V2Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, viresh kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, "Cc: Steve Muckle" <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
+Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Aug 14:07, Vincent Guittot wrote:
-> On Mon, 13 Aug 2018 at 12:12, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> >
-> > Hi Vincent!
-> >
-> > On 09-Aug 18:03, Vincent Guittot wrote:
-> > > > On 07-Aug 15:26, Juri Lelli wrote:
-> >
-> > [...]
-> >
-> > > > > > +   util_cfs = cpu_util_cfs(rq);
-> > > > > > +   util_rt  = cpu_util_rt(rq);
-> > > > > > +   if (sched_feat(UCLAMP_SCHED_CLASS)) {
-> > > > > > +           util = 0;
-> > > > > > +           if (util_cfs)
-> > > > > > +                   util += uclamp_util(cpu_of(rq), util_cfs);
-> > > > > > +           if (util_rt)
-> > > > > > +                   util += uclamp_util(cpu_of(rq), util_rt);
-> > > > > > +   } else {
-> > > > > > +           util  = cpu_util_cfs(rq);
-> > > > > > +           util += cpu_util_rt(rq);
-> > > > > > +           util  = uclamp_util(cpu_of(rq), util);
-> > > > > > +   }
-> > > >
-> > > > Regarding the two policies, do you have any comment?
-> > >
-> > > Does the policy for (sched_feat(UCLAMP_SCHED_CLASS)== true) really
-> > > make sense as it is ?
-> > > I mean, uclamp_util doesn't make any difference between rt and cfs
-> > > tasks when clamping the utilization so why should be add twice the
-> > > returned value ?
-> > > IMHO, this policy would make sense if there were something like
-> > > uclamp_util_rt() and a uclamp_util_cfs()
-> >
-> > The idea for the UCLAMP_SCHED_CLASS policy is to improve fairness on
-> > low-priority classese, especially when we have high RT utilization.
-> >
-> > Let say we have:
-> >
-> >  util_rt  = 40%, util_min=0%
-> >  util_cfs = 10%, util_min=50%
-> >
-> > the two policies will select:
-> >
-> >   UCLAMP_SCHED_CLASS: util = uclamp(40) + uclamp(10) = 50 + 50   = 100%
-> >  !UCLAMP_SCHED_CLASS: util = uclamp(40 + 10)         = uclmp(50) =  50%
-> >
-> > Which means that, despite the CPU's util_min will be set to 50% when
-> > CFS is running, these tasks will have almost no boost at all, since
-> > their bandwidth margin is eclipsed by RT tasks.
-> 
-> Hmm ... At the opposite, even if there is no running rt task but only
-> some remaining blocked rt utilization,
-> even if util_rt  = 10%, util_min=0%
-> and  util_cfs = 40%, util_min=50%
-> the UCLAMP_SCHED_CLASS: util = uclamp(10) + uclamp(40) = 50 + 50   = 100%
+[v11]
+  * Dropped patch 13 and 14 from v10 and
+    merged the qcom-cpufreq-krait driver to the existing qcom-cpufreq-kryo.c
+  * Rebased on top of clk-next
+  * Fixed a bug while populating the pvs version for krait.
 
-Yes, that's true... since now I clamp util_rt if it's non zero.
-Perhaps this can be fixed by clamping util_rt only:
-  if (rt_rq_is_runnable(&rq->rt))
-?
+[v10]
+  * Addressed Stephen's comments to add clocks bindings properties
+    to the newly introduced nodes.
+  * Added a change to include opp-supported-hw to qcom-cpufreq.c
+  * Rebased on top of clk-next
+  * Although there were minor changes to bindings and the driver
+    retained the acked-by tags from Rob and Viresh respectively.    
 
-> So cfs task can get double boosted by a small rt task.
+[v9]
+  * Fixed a rebase issue in Makefile and added Tag from Robh.
 
-Well, in principle we don't know if the 50% clamp was asserted by the
-RT or the CFS task, since in the current implementation we max
-aggregate clamp values across all RT and CFS tasks.
+[v8]
+  * Fixed a bug in path#14 pointed out by Viresh and also added tags.
+    No change in any other patch.
 
-> Furthermore, if there is no rt task but 2 cfs tasks of 40% and 10%
-> the UCLAMP_SCHED_CLASS: util = uclamp(0) + uclamp(40) = 50   = 50%
+[v7]
+  * Fixed comments from Viresh for cleaning up the error handling
+    in qcom-cpufreq.c. Also changed the init function to lateinit
+    call. This is required because nvmem which gets initialised with
+    module_init needs to go first.
+  * Fixed Rob's comments for bindings documentation
+  * Fixed kbuild build issue in clk-lpc32xx.c
+  * Rebased on top of clk-next
 
-True, but here we are within the same class and what utilization
-clamping aims to do is to defined the minimum capacity to run _all_
-the RUNNABLE tasks... not the minimum capacity for _each_ one of them.
+[v6]
+  * Adrressed comments from Viresh for patch #14 in v5 [5]
+  * Introduced a new binding operating-points-v2-krait-cpu
+    as per discussion with Rob
+  * Added Review tags
 
-> So in this case cfs tasks don't get more boost and have to share the
-> bandwidth and you don't ensure 50% for each unlike what you try to do
-> for rt.
+[v5]
+  * Addressed comments from Rob for bindings
+  * Addressed comments from Viresh to use dev_pm_opp_set_prop_name, accordingly
+    dropped patch #12 and corrected patch #11 from previous patch set in [4]
+  * Converted to use #spdx tags for newly introduced files
 
-Above I'm not trying to fix a per-task issue. The UCLAMP_SCHED_CLASS
-policy is just "trying" to fix a cross-class issue... if we agree
-there can be a cross-class issue worth to be fixed.
+Mostly a resend of the v3 posted by Stephen quite some time back [1]
+except for few changes.
+  Based on reading some feedback from list,
+  * Dropped the patch "clk: Add safe switch hook" from v3 [2].
+    Now this is taken care by patch#10 in this series only for Krait.
+  * Dropped the path "clk: Avoid sending high rates to downstream
+		      clocks during set_rate" from v3 [3].
+  * Rebased on top of clk-next.
+  * Dropped the DT update from the series. Will send separately
+  * Now with cpufreq-dt+opp supporting voltage scaling, registering the
+    krait cpu supplies in DT should be sufficient. But one issue is,
+    the qcom-cpufreq drivers reads the efuse and based on that registers
+    the opp data and then registers the cpufreq-dt device. So when
+    cpufreq-dt driver probes and registers the regulator to the OPP framework,
+    it expects that the opp data for the device should not be registered before
+    the regulator. Will send a RFC patch removing that check, to find out the
+    right way of doing it.
 
-> You create a difference in the behavior depending of the class of the
-> others co-schedule tasks which is not sane IMHO
+These patches provide cpufreq scaling on devices with Krait CPUs.
+In Krait CPU designs there's one PLL and two muxes per CPU, allowing
+us to switch CPU frequencies independently.
 
-Yes I agree that the current behavior is not completely clean... still
-the question is: do you reckon the problem I depicted above, i.e. RT
-workloads eclipsing the min_util required by lower priority classes?
+				 secondary
+	 +-----+                    +
+	 | QSB |-------+------------|\
+	 +-----+       |            | |-+
+		       |    +-------|/  |
+		       |    |       +   |
+	 +-----+       |    |           |
+	 | PLL |----+-------+           |   primary
+	 +-----+    |  |                |     +
+		    |  |                +-----|\       +------+
+	 +-------+  |  |                      | \      |      |
+	 | HFPLL |----------+-----------------|  |-----| CPU0 |
+	 +-------+  |  |    |                 |  |     |      |
+		    |  |    | +-----+         | /      +------+
+		    |  |    +-| / 2 |---------|/
+		    |  |      +-----+         +
+		    |  |         secondary
+		    |  |            +
+		    |  +------------|\
+		    |               | |-+
+		    +---------------|/  |   primary
+				    +   |     +
+					+-----|\       +------+
+	 +-------+                            | \      |      |
+	 | HFPLL |----------------------------|  |-----| CPU1 |
+	 +-------+          |                 |  |     |      |
+			    | +-----+         | /      +------+
+			    +-| / 2 |---------|/
+			      +-----+         +
 
-To a certain extend I see this problem similar to the rt/dl/irq pressure
-in defining cpu_capacity, isn't it?
+To support this in the common clock framework we model the muxes,
+dividers, and PLLs as different clocks. CPUfreq only interacts
+with the primary mux (farthest right in the diagram). When CPUfreq
+sets a rate, the mux code finds the best parent that can provide the rate.
+Due to the design, QSB and the top PLL are always a fixed rate and thus
+only support one frequency each. These sources provide the lowest
+frequencies for the CPUs. The HFPLLs are where we can make the CPU go
+faster (GHz range). Sometimes we need to run the HFPLL twice as
+fast and divide it by two to get a particular frequency.
 
-Maybe we can make use of (cpu_capacity_orig - cpu_capacity) to factor
-in a util_min compensation for CFS tasks?
+When switching rates we can't leave the CPU clocked by the HFPLL because
+we need to turn off the output of the PLL when changing its frequency.
+This means we have to switch over to the secondary mux and use one of the
+fixed sources. This is why we need something like the safe parent patch.
+
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
+[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
+[3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
+[4] https://lwn.net/Articles/740994/ 
+[5] https://lkml.org/lkml/2017/12/19/537
+
+
+Sricharan R (3):
+  clk: qcom: Add safe switch hook for krait mux clocks
+  cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem
+    based qcom socs
+  cpufreq: qcom: Add support for krait based socs
+
+Stephen Boyd (11):
+  ARM: Add Krait L2 register accessor functions
+  clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+  clk: qcom: Add HFPLL driver
+  dt-bindings: clock: Document qcom,hfpll
+  clk: qcom: Add MSM8960/APQ8064's HFPLLs
+  clk: qcom: Add IPQ806X's HFPLLs
+  clk: qcom: Add support for Krait clocks
+  clk: qcom: Add KPSS ACC/GCC driver
+  dt-bindings: arm: Document qcom,kpss-gcc
+  clk: qcom: Add Krait clock controller driver
+  dt-bindings: clock: Document qcom,krait-cc
+
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  19 +
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  44 +++
+ .../devicetree/bindings/clock/qcom,hfpll.txt       |  60 ++++
+ .../devicetree/bindings/clock/qcom,krait-cc.txt    |  34 ++
+ .../{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt}   |   7 +-
+ arch/arm/common/Kconfig                            |   3 +
+ arch/arm/common/Makefile                           |   1 +
+ arch/arm/common/krait-l2-accessors.c               |  48 +++
+ arch/arm/include/asm/krait-l2-accessors.h          |   9 +
+ drivers/clk/qcom/Kconfig                           |  28 ++
+ drivers/clk/qcom/Makefile                          |   5 +
+ drivers/clk/qcom/clk-hfpll.c                       | 244 +++++++++++++
+ drivers/clk/qcom/clk-hfpll.h                       |  44 +++
+ drivers/clk/qcom/clk-krait.c                       | 126 +++++++
+ drivers/clk/qcom/clk-krait.h                       |  40 +++
+ drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
+ drivers/clk/qcom/hfpll.c                           |  96 +++++
+ drivers/clk/qcom/kpss-xcc.c                        |  87 +++++
+ drivers/clk/qcom/krait-cc.c                        | 397 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |   6 +-
+ drivers/cpufreq/Makefile                           |   2 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
+ drivers/cpufreq/qcom-cpufreq-kryo.c                | 232 ------------
+ drivers/cpufreq/qcom-cpufreq-nvmem.c               | 387 ++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
+ 26 files changed, 1941 insertions(+), 239 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+ rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (98%)
+ create mode 100644 arch/arm/common/krait-l2-accessors.c
+ create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ create mode 100644 drivers/clk/qcom/clk-hfpll.c
+ create mode 100644 drivers/clk/qcom/clk-hfpll.h
+ create mode 100644 drivers/clk/qcom/clk-krait.c
+ create mode 100644 drivers/clk/qcom/clk-krait.h
+ create mode 100644 drivers/clk/qcom/hfpll.c
+ create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ create mode 100644 drivers/clk/qcom/krait-cc.c
+ delete mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq-nvmem.c
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
