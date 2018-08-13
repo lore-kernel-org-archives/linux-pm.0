@@ -1,286 +1,154 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH 14/14] cpufreq: qcom: Add support for krait based socs
-Date: Mon, 13 Aug 2018 19:06:07 +0530
-Message-ID: <1534167367-17545-15-git-send-email-sricharan@codeaurora.org>
-References: <1534167367-17545-1-git-send-email-sricharan@codeaurora.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
+ for RT tasks
+Date: Mon, 13 Aug 2018 16:06:23 +0200
+Message-ID: <CAKfTPtDgXdQso94DOwJ4+nyRpJwigEwf7JmNZcgFOg3z6iUWyw@mail.gmail.com>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-7-patrick.bellasi@arm.com> <20180807132630.GB3062@localhost.localdomain>
+ <20180809153423.nsoepprhut3dv4u2@darkstar> <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
+ <20180813101221.GA2605@e110439-lin> <CAKfTPtBN+K=8fqukZix2k0rdcjG8YiYagxZtzLx7kk3US+9V2Q@mail.gmail.com>
+ <20180813124911.GD2605@e110439-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534167367-17545-1-git-send-email-sricharan@codeaurora.org>
+In-Reply-To: <20180813124911.GD2605@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
-Cc: sricharan@codeaurora.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, viresh kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, "Cc: Steve Muckle" <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-In Certain QCOM SoCs like ipq8064, apq8064, msm8960, msm8974
-that has KRAIT processors the voltage/current value of each OPP
-varies based on the silicon variant in use.
+On Mon, 13 Aug 2018 at 14:49, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+>
+> On 13-Aug 14:07, Vincent Guittot wrote:
+> > On Mon, 13 Aug 2018 at 12:12, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
+> > >
+> > > Hi Vincent!
+> > >
+> > > On 09-Aug 18:03, Vincent Guittot wrote:
+> > > > > On 07-Aug 15:26, Juri Lelli wrote:
+> > >
+> > > [...]
+> > >
+> > > > > > > +   util_cfs = cpu_util_cfs(rq);
+> > > > > > > +   util_rt  = cpu_util_rt(rq);
+> > > > > > > +   if (sched_feat(UCLAMP_SCHED_CLASS)) {
+> > > > > > > +           util = 0;
+> > > > > > > +           if (util_cfs)
+> > > > > > > +                   util += uclamp_util(cpu_of(rq), util_cfs);
+> > > > > > > +           if (util_rt)
+> > > > > > > +                   util += uclamp_util(cpu_of(rq), util_rt);
+> > > > > > > +   } else {
+> > > > > > > +           util  = cpu_util_cfs(rq);
+> > > > > > > +           util += cpu_util_rt(rq);
+> > > > > > > +           util  = uclamp_util(cpu_of(rq), util);
+> > > > > > > +   }
+> > > > >
+> > > > > Regarding the two policies, do you have any comment?
+> > > >
+> > > > Does the policy for (sched_feat(UCLAMP_SCHED_CLASS)== true) really
+> > > > make sense as it is ?
+> > > > I mean, uclamp_util doesn't make any difference between rt and cfs
+> > > > tasks when clamping the utilization so why should be add twice the
+> > > > returned value ?
+> > > > IMHO, this policy would make sense if there were something like
+> > > > uclamp_util_rt() and a uclamp_util_cfs()
+> > >
+> > > The idea for the UCLAMP_SCHED_CLASS policy is to improve fairness on
+> > > low-priority classese, especially when we have high RT utilization.
+> > >
+> > > Let say we have:
+> > >
+> > >  util_rt  = 40%, util_min=0%
+> > >  util_cfs = 10%, util_min=50%
+> > >
+> > > the two policies will select:
+> > >
+> > >   UCLAMP_SCHED_CLASS: util = uclamp(40) + uclamp(10) = 50 + 50   = 100%
+> > >  !UCLAMP_SCHED_CLASS: util = uclamp(40 + 10)         = uclmp(50) =  50%
+> > >
+> > > Which means that, despite the CPU's util_min will be set to 50% when
+> > > CFS is running, these tasks will have almost no boost at all, since
+> > > their bandwidth margin is eclipsed by RT tasks.
+> >
+> > Hmm ... At the opposite, even if there is no running rt task but only
+> > some remaining blocked rt utilization,
+> > even if util_rt  = 10%, util_min=0%
+> > and  util_cfs = 40%, util_min=50%
+> > the UCLAMP_SCHED_CLASS: util = uclamp(10) + uclamp(40) = 50 + 50   = 100%
+>
+> Yes, that's true... since now I clamp util_rt if it's non zero.
+> Perhaps this can be fixed by clamping util_rt only:
+>   if (rt_rq_is_runnable(&rq->rt))
+> ?
+>
+> > So cfs task can get double boosted by a small rt task.
+>
+> Well, in principle we don't know if the 50% clamp was asserted by the
+> RT or the CFS task, since in the current implementation we max
+> aggregate clamp values across all RT and CFS tasks.
 
-The required OPP related data is determined based on
-the efuse value. This is similar to the existing code for
-kryo cores. So adding support for krait cores here.
+Yes it was just the assumption of your example above.
+IMHO, having util = 100% for your use case looks more like a bug than a feature
 
-Signed-off-by: Sricharan R <sricharan@codeaurora.org>
----
- .../devicetree/bindings/opp/qcom-nvmem-cpufreq.txt |   3 +-
- drivers/cpufreq/Kconfig.arm                        |   2 +-
- drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c               | 151 +++++++++++++++++++--
- 4 files changed, 149 insertions(+), 12 deletions(-)
+As you said below: "what utilization clamping aims to do is to defined
+the minimum capacity to run _all_
+the RUNNABLE tasks... not the minimum capacity for _each_ one of them "
 
-diff --git a/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-index 6dcdfcd..7bc0f1a 100644
---- a/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-+++ b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
-@@ -19,7 +19,8 @@ In 'cpus' nodes:
- 
- In 'operating-points-v2' table:
- - compatible: Should be
--	- 'operating-points-v2-qcom-cpu' for apq8096 and msm8996.
-+	- 'operating-points-v2-qcom-cpu' for apq8096, msm8996, msm8974,
-+					     apq8064, msm8960 and ipq8074.
- - nvmem-cells: A phandle pointing to a nvmem-cells node representing the
- 		efuse registers that has information about the
- 		speedbin that is used to select the right frequency/voltage
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 13fbd97..497ae89 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -126,7 +126,7 @@ config ARM_OMAP2PLUS_CPUFREQ
- 
- config ARM_QCOM_CPUFREQ_NVMEM
- 	tristate "Qualcomm nvmem based CPUFreq"
--	depends on ARM64
-+	depends on ARCH_QCOM
- 	depends on QCOM_QFPROM
- 	depends on QCOM_SMEM
- 	select PM_OPP
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index fe14c57..917cdc2 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -128,6 +128,11 @@
- 	{ .compatible = "ti,am43", },
- 	{ .compatible = "ti,dra7", },
- 
-+	{ .compatible = "qcom,ipq8064", },
-+	{ .compatible = "qcom,apq8064", },
-+	{ .compatible = "qcom,msm8974", },
-+	{ .compatible = "qcom,msm8960", },
-+
- 	{ }
- };
- 
-diff --git a/drivers/cpufreq/qcom-cpufreq-nvmem.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-index 0ad8e5b..5f2add0 100644
---- a/drivers/cpufreq/qcom-cpufreq-nvmem.c
-+++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
-@@ -45,6 +45,82 @@ enum _msm8996_version {
- 
- static struct platform_device *cpufreq_dt_pdev, *cpufreq_pdev;
- 
-+static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver,
-+					  struct nvmem_cell *pvs_nvmem, u8 *buf)
-+{
-+	u32 pte_efuse;
-+
-+	pte_efuse = *((u32 *)buf);
-+
-+	*speed = pte_efuse & 0xf;
-+	if (*speed == 0xf)
-+		*speed = (pte_efuse >> 4) & 0xf;
-+
-+	if (*speed == 0xf) {
-+		*speed = 0;
-+		pr_warn("Speed bin: Defaulting to %d\n", *speed);
-+	} else {
-+		pr_info("Speed bin: %d\n", *speed);
-+	}
-+
-+	*pvs = (pte_efuse >> 10) & 0x7;
-+	if (*pvs == 0x7)
-+		*pvs = (pte_efuse >> 13) & 0x7;
-+
-+	if (*pvs == 0x7) {
-+		*pvs = 0;
-+		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
-+	} else {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	}
-+
-+	kfree(buf);
-+}
-+
-+static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver,
-+					  struct nvmem_cell *pvs_nvmem, u8 *buf)
-+{
-+	u32 pte_efuse, redundant_sel;
-+
-+	pte_efuse = *((u32 *)buf);
-+	redundant_sel = (pte_efuse >> 24) & 0x7;
-+	*speed = pte_efuse & 0x7;
-+
-+	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
-+	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
-+	*pvs_ver = (pte_efuse >> 4) & 0x3;
-+
-+	switch (redundant_sel) {
-+	case 1:
-+		*speed = (pte_efuse >> 27) & 0xf;
-+		break;
-+	case 2:
-+		*pvs = (pte_efuse >> 27) & 0xf;
-+		break;
-+	}
-+
-+	/* Check SPEED_BIN_BLOW_STATUS */
-+	if (pte_efuse & BIT(3)) {
-+		pr_info("Speed bin: %d\n", *speed);
-+	} else {
-+		pr_warn("Speed bin not set. Defaulting to 0!\n");
-+		*speed = 0;
-+	}
-+
-+	/* Check PVS_BLOW_STATUS */
-+	pte_efuse = *(((u32 *)buf) + 4);
-+	pte_efuse &= BIT(21);
-+	if (pte_efuse) {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	} else {
-+		pr_warn("PVS bin not set. Defaulting to 0!\n");
-+		*pvs = 0;
-+	}
-+
-+	pr_info("PVS version: %d\n", *pvs_ver);
-+	kfree(buf);
-+}
-+
- static enum _msm8996_version __init qcom_cpufreq_get_msm_id(void)
- {
- 	size_t len;
-@@ -74,6 +150,35 @@ static enum _msm8996_version __init qcom_cpufreq_get_msm_id(void)
- 	return version;
- }
- 
-+static int qcom_cpufreq_krait_name_version(struct device *cpu_dev,
-+					   struct nvmem_cell *speedbin_nvmem,
-+					   char **name,
-+					   u32 *versions)
-+{
-+	int speed = 0, pvs = 0, pvs_ver = 0;
-+	u8 *buf;
-+	size_t len;
-+
-+	buf = nvmem_cell_read(speedbin_nvmem, &len);
-+	if (len == 4) {
-+		get_krait_bin_format_a(&speed, &pvs, &pvs_ver,
-+				       speedbin_nvmem, buf);
-+	} else if (len == 8) {
-+		get_krait_bin_format_b(&speed, &pvs, &pvs_ver,
-+				       speedbin_nvmem, buf);
-+	} else {
-+		dev_err(cpu_dev, "Unable to read nvmem data. Defaulting to 0!\n");
-+		return -ENODEV;
-+	}
-+
-+	snprintf(*name, sizeof("speedXX-pvsXX-vXX"), "speed%d-pvs%d-v%d",
-+		 speed, pvs, pvs_ver);
-+
-+	*versions = (1 << speed);
-+
-+	return 0;
-+}
-+
- static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
- 					  struct nvmem_cell *speedbin_nvmem,
- 					  char **pvs_name,
-@@ -83,6 +188,7 @@ static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
- 	u8 *speedbin;
- 	enum _msm8996_version msm8996_version;
- 
-+	*pvs_name = NULL;
- 	msm8996_version = qcom_cpufreq_get_msm_id();
- 	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
- 		dev_err(cpu_dev, "Not Snapdragon 820/821!");
-@@ -111,7 +217,7 @@ static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
- 
- static int qcom_cpufreq_probe(struct platform_device *pdev)
- {
--	struct opp_table *opp_tables[NR_CPUS] = { NULL };
-+	struct opp_table *tbl1[NR_CPUS] = { NULL }, *tbl2[NR_CPUS] = { NULL };
- 	int (*get_version)(struct device *cpu_dev,
- 			   struct nvmem_cell *speedbin_nvmem,
- 			   char **name, int *versions);
-@@ -120,8 +226,8 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 	struct device *cpu_dev;
- 	unsigned cpu;
- 	u32 versions;
--	char *pvs_name = NULL;
- 	const struct of_device_id *match;
-+	char *pvs_name = "speedXX-pvsXX-vXX";
- 	int ret;
- 
- 	cpu_dev = get_cpu_device(0);
-@@ -163,10 +269,19 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 			goto free_opp;
- 		}
- 
--		opp_tables[cpu] = dev_pm_opp_set_supported_hw(cpu_dev,
--							      &versions, 1);
--		if (IS_ERR(opp_tables[cpu])) {
--			ret = PTR_ERR(opp_tables[cpu]);
-+		if (pvs_name) {
-+			tbl1[cpu] = dev_pm_opp_set_prop_name(cpu_dev, pvs_name);
-+			if (IS_ERR(tbl1[cpu])) {
-+				ret = PTR_ERR(tbl1[cpu]);
-+				dev_err(cpu_dev, "Failed to add OPP name %s\n",
-+					pvs_name);
-+				goto free_opp;
-+			}
-+		}
-+
-+		tbl2[cpu] = dev_pm_opp_set_supported_hw(cpu_dev, &versions, 1);
-+		if (IS_ERR(tbl2[cpu])) {
-+			ret = PTR_ERR(tbl2[cpu]);
- 			dev_err(cpu_dev, "Failed to set supported hardware\n");
- 			goto free_opp;
- 		}
-@@ -182,9 +297,15 @@ static int qcom_cpufreq_probe(struct platform_device *pdev)
- 
- free_opp:
- 	for_each_possible_cpu(cpu) {
--		if (IS_ERR_OR_NULL(opp_tables[cpu]))
-+		if (IS_ERR_OR_NULL(tbl1[cpu]))
-+			break;
-+		dev_pm_opp_put_prop_name(tbl1[cpu]);
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		if (IS_ERR_OR_NULL(tbl2[cpu]))
- 			break;
--		dev_pm_opp_put_supported_hw(opp_tables[cpu]);
-+		dev_pm_opp_put_supported_hw(tbl2[cpu]);
- 	}
- 
- 	return ret;
-@@ -205,8 +326,18 @@ static int qcom_cpufreq_remove(struct platform_device *pdev)
- };
- 
- static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
--	{ .compatible = "qcom,apq8096", .data = qcom_cpufreq_kryo_name_version},
--	{ .compatible = "qcom,msm8996", .data = qcom_cpufreq_kryo_name_version},
-+	{ .compatible = "qcom,apq8096",
-+	  .data = qcom_cpufreq_kryo_name_version},
-+	{ .compatible = "qcom,msm8996",
-+	  .data = qcom_cpufreq_kryo_name_version},
-+	{ .compatible = "qcom,ipq8064",
-+	  .data = qcom_cpufreq_krait_name_version },
-+	{ .compatible = "qcom,apq8064",
-+	  .data = qcom_cpufreq_krait_name_version },
-+	{ .compatible = "qcom,msm8974",
-+	  .data = qcom_cpufreq_krait_name_version },
-+	{ .compatible = "qcom,msm8960",
-+	  .data = qcom_cpufreq_krait_name_version },
- 	{},
- };
- 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
+>
+> > Furthermore, if there is no rt task but 2 cfs tasks of 40% and 10%
+> > the UCLAMP_SCHED_CLASS: util = uclamp(0) + uclamp(40) = 50   = 50%
+>
+> True, but here we are within the same class and what utilization
+> clamping aims to do is to defined the minimum capacity to run _all_
+> the RUNNABLE tasks... not the minimum capacity for _each_ one of them.
+
+I fully agree and that's exactly what I want to highlight: With
+UCLAMP_SCHED_CLASS policy, you try (but fail because the clamping is
+not done per class) to distinguish rt and cfs as different kind of
+runnable tasks.
+
+>
+> > So in this case cfs tasks don't get more boost and have to share the
+> > bandwidth and you don't ensure 50% for each unlike what you try to do
+> > for rt.
+>
+> Above I'm not trying to fix a per-task issue. The UCLAMP_SCHED_CLASS
+> policy is just "trying" to fix a cross-class issue... if we agree
+> there can be a cross-class issue worth to be fixed.
+
+But the cross class issue that you are describing can also exists
+between cfs tasks with different uclamp_min
+So I'm not sure that's there is more cross-class issue than in class issue
+
+>
+> > You create a difference in the behavior depending of the class of the
+> > others co-schedule tasks which is not sane IMHO
+>
+> Yes I agree that the current behavior is not completely clean... still
+> the question is: do you reckon the problem I depicted above, i.e. RT
+> workloads eclipsing the min_util required by lower priority classes?
+
+As said above, I don't think that there is a problem that is specific
+to cross class scheduling that can't also happen in the same class.
+
+Regarding your example:
+task TA util=40% with uclamp_min 50%
+task TB util=10% with uclamp_min 0%
+
+If TA and TB are cfs, util=50% and it doesn't seem to be a problem
+whereas TB will steal some bandwidth to TA and delay it (and i even
+don't speak about the impact of the nice priority of TB)
+If TA is cfs and TB is rt, Why util=50% is now a problem for TA ?
+
+>
+> To a certain extend I see this problem similar to the rt/dl/irq pressure
+> in defining cpu_capacity, isn't it?
+>
+> Maybe we can make use of (cpu_capacity_orig - cpu_capacity) to factor
+> in a util_min compensation for CFS tasks?
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
