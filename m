@@ -1,7 +1,7 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v12 07/14] clk: qcom: Add support for Krait clocks
-Date: Tue, 14 Aug 2018 17:42:26 +0530
-Message-ID: <1534248753-2440-8-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v12 13/14] cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem based qcom socs
+Date: Tue, 14 Aug 2018 17:42:32 +0530
+Message-ID: <1534248753-2440-14-git-send-email-sricharan@codeaurora.org>
 References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
@@ -10,221 +10,314 @@ To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+The kryo cpufreq driver reads the nvmem cell and uses that data to
+populate the opps. There are other qcom cpufreq socs like krait which
+does similar thing. Except for the interpretation of the read data,
+rest of the driver is same for both the cases. So pull the common things
+out for reuse.
 
-The Krait clocks are made up of a series of muxes and a divider
-that choose between a fixed rate clock and dedicated HFPLLs for
-each CPU. Instead of using mmio accesses to remux parents, the
-Krait implementation exposes the remux control via cp15
-registers. Support these clocks.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig     |   4 ++
- drivers/clk/qcom/Makefile    |   1 +
- drivers/clk/qcom/clk-krait.c | 124 +++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/qcom/clk-krait.h |  37 +++++++++++++
- 4 files changed, 166 insertions(+)
- create mode 100644 drivers/clk/qcom/clk-krait.c
- create mode 100644 drivers/clk/qcom/clk-krait.h
+ .../{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt}   |   6 +-
+ drivers/cpufreq/Kconfig.arm                        |   4 +-
+ drivers/cpufreq/Makefile                           |   2 +-
+ .../{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c}  | 124 ++++++++++++---------
+ 4 files changed, 80 insertions(+), 56 deletions(-)
+ rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (99%)
+ rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (65%)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 21aec10..ada4160 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -280,3 +280,7 @@ config QCOM_HFPLL
- 	  Support for the high-frequency PLLs present on Qualcomm devices.
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as MSM8974, APQ8084, etc.
+diff --git a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+similarity index 99%
+rename from Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
+rename to Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+index c2127b9..6dcdfcd 100644
+--- a/Documentation/devicetree/bindings/opp/kryo-cpufreq.txt
++++ b/Documentation/devicetree/bindings/opp/qcom-nvmem-cpufreq.txt
+@@ -19,7 +19,7 @@ In 'cpus' nodes:
+ 
+ In 'operating-points-v2' table:
+ - compatible: Should be
+-	- 'operating-points-v2-kryo-cpu' for apq8096 and msm8996.
++	- 'operating-points-v2-qcom-cpu' for apq8096 and msm8996.
+ - nvmem-cells: A phandle pointing to a nvmem-cells node representing the
+ 		efuse registers that has information about the
+ 		speedbin that is used to select the right frequency/voltage
+@@ -127,7 +127,7 @@ Example 1:
+ 	};
+ 
+ 	cluster0_opp: opp_table0 {
+-		compatible = "operating-points-v2-kryo-cpu";
++		compatible = "operating-points-v2-qcom-cpu";
+ 		nvmem-cells = <&speedbin_efuse>;
+ 		opp-shared;
+ 
+@@ -338,7 +338,7 @@ Example 1:
+ 	};
+ 
+ 	cluster1_opp: opp_table1 {
+-		compatible = "operating-points-v2-kryo-cpu";
++		compatible = "operating-points-v2-qcom-cpu";
+ 		nvmem-cells = <&speedbin_efuse>;
+ 		opp-shared;
+ 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 52f5f1a..13fbd97 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -124,8 +124,8 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
+ 
+-config ARM_QCOM_CPUFREQ_KRYO
+-	tristate "Qualcomm Kryo based CPUFreq"
++config ARM_QCOM_CPUFREQ_NVMEM
++	tristate "Qualcomm nvmem based CPUFreq"
+ 	depends on ARM64
+ 	depends on QCOM_QFPROM
+ 	depends on QCOM_SMEM
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index fb4a2ec..5544441 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -65,7 +65,7 @@ obj-$(CONFIG_MACH_MVEBU_V7)		+= mvebu-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+-obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-kryo.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ_NVMEM)	+= qcom-cpufreq-nvmem.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+similarity index 65%
+rename from drivers/cpufreq/qcom-cpufreq-kryo.c
+rename to drivers/cpufreq/qcom-cpufreq-nvmem.c
+index efc9a7a..0ad8e5b 100644
+--- a/drivers/cpufreq/qcom-cpufreq-kryo.c
++++ b/drivers/cpufreq/qcom-cpufreq-nvmem.c
+@@ -9,7 +9,7 @@
+  * based on the silicon variant in use. Qualcomm Process Voltage Scaling Tables
+  * defines the voltage and frequency value based on the msm-id in SMEM
+  * and speedbin blown in the efuse combination.
+- * The qcom-cpufreq-kryo driver reads the msm-id and efuse value from the SoC
++ * The qcom-cpufreq driver reads the msm-id and efuse value from the SoC
+  * to provide the OPP framework with required information.
+  * This is used to determine the voltage and frequency value for each OPP of
+  * operating-points-v2 table when it is parsed by the OPP framework.
+@@ -22,6 +22,7 @@
+ #include <linux/module.h>
+ #include <linux/nvmem-consumer.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_opp.h>
+ #include <linux/slab.h>
+@@ -42,9 +43,9 @@ enum _msm8996_version {
+ 	NUM_OF_MSM8996_VERSIONS,
+ };
+ 
+-struct platform_device *cpufreq_dt_pdev, *kryo_cpufreq_pdev;
++static struct platform_device *cpufreq_dt_pdev, *cpufreq_pdev;
+ 
+-static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
++static enum _msm8996_version __init qcom_cpufreq_get_msm_id(void)
+ {
+ 	size_t len;
+ 	u32 *msm_id;
+@@ -73,34 +74,70 @@ static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
+ 	return version;
+ }
+ 
+-static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
++static int qcom_cpufreq_kryo_name_version(struct device *cpu_dev,
++					  struct nvmem_cell *speedbin_nvmem,
++					  char **pvs_name,
++					  u32 *versions)
+ {
+-	struct opp_table *opp_tables[NR_CPUS] = {0};
++	size_t len;
++	u8 *speedbin;
+ 	enum _msm8996_version msm8996_version;
 +
-+config KRAIT_CLOCKS
-+	bool
-+	select KRAIT_L2_ACCESSORS
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index f82eeac..506c4cf 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -11,6 +11,7 @@ clk-qcom-y += clk-branch.o
- clk-qcom-y += clk-regmap-divider.o
- clk-qcom-y += clk-regmap-mux.o
- clk-qcom-y += clk-regmap-mux-div.o
-+clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
- clk-qcom-y += clk-hfpll.o
- clk-qcom-y += reset.o
- clk-qcom-$(CONFIG_QCOM_GDSC) += gdsc.o
-diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
-new file mode 100644
-index 0000000..2e41767
---- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.c
-@@ -0,0 +1,124 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (c) 2018, The Linux Foundation. All rights reserved.
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/clk-provider.h>
-+#include <linux/spinlock.h>
-+
-+#include <asm/krait-l2-accessors.h>
-+
-+#include "clk-krait.h"
-+
-+/* Secondary and primary muxes share the same cp15 register */
-+static DEFINE_SPINLOCK(krait_clock_reg_lock);
-+
-+#define LPL_SHIFT	8
-+static void __krait_mux_set_sel(struct krait_mux_clk *mux, int sel)
-+{
-+	unsigned long flags;
-+	u32 regval;
-+
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	regval = krait_get_l2_indirect_reg(mux->offset);
-+	regval &= ~(mux->mask << mux->shift);
-+	regval |= (sel & mux->mask) << mux->shift;
-+	if (mux->lpl) {
-+		regval &= ~(mux->mask << (mux->shift + LPL_SHIFT));
-+		regval |= (sel & mux->mask) << (mux->shift + LPL_SHIFT);
++	msm8996_version = qcom_cpufreq_get_msm_id();
++	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
++		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++		return -ENODEV;
 +	}
-+	krait_set_l2_indirect_reg(mux->offset, regval);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
 +
-+	/* Wait for switch to complete. */
-+	mb();
-+	udelay(1);
-+}
++	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	if (IS_ERR(speedbin))
++		return PTR_ERR(speedbin);
 +
-+static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
++	switch (msm8996_version) {
++	case MSM8996_V3:
++		*versions = 1 << (unsigned int)(*speedbin);
++		break;
++	case MSM8996_SG:
++		*versions = 1 << ((unsigned int)(*speedbin) + 4);
++		break;
++	default:
++		BUG();
++		break;
++	}
 +
-+	sel = clk_mux_reindex(index, mux->parent_map, 0);
-+	mux->en_mask = sel;
-+	/* Don't touch mux if CPU is off as it won't work */
-+	if (__clk_is_enabled(hw->clk))
-+		__krait_mux_set_sel(mux, sel);
-+
++	kfree(speedbin);
 +	return 0;
 +}
 +
-+static u8 krait_mux_get_parent(struct clk_hw *hw)
++static int qcom_cpufreq_probe(struct platform_device *pdev)
 +{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
-+
-+	sel = krait_get_l2_indirect_reg(mux->offset);
-+	sel >>= mux->shift;
-+	sel &= mux->mask;
-+	mux->en_mask = sel;
-+
-+	return clk_mux_get_parent(hw, sel, mux->parent_map, 0);
-+}
-+
-+const struct clk_ops krait_mux_clk_ops = {
-+	.set_parent = krait_mux_set_parent,
-+	.get_parent = krait_mux_get_parent,
-+	.determine_rate = __clk_mux_determine_rate_closest,
-+};
-+EXPORT_SYMBOL_GPL(krait_mux_clk_ops);
-+
-+/* The divider can divide by 2, 4, 6 and 8. But we only really need div-2. */
-+static long krait_div2_round_rate(struct clk_hw *hw, unsigned long rate,
-+				  unsigned long *parent_rate)
-+{
-+	*parent_rate = clk_hw_round_rate(clk_hw_get_parent(hw), rate * 2);
-+	return DIV_ROUND_UP(*parent_rate, 2);
-+}
-+
-+static int krait_div2_set_rate(struct clk_hw *hw, unsigned long rate,
-+			       unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	unsigned long flags;
-+	u32 val;
-+	u32 mask = BIT(d->width) - 1;
-+
-+	if (d->lpl)
-+		mask = mask << (d->shift + LPL_SHIFT) | mask << d->shift;
-+
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	val = krait_get_l2_indirect_reg(d->offset);
-+	val &= ~mask;
-+	krait_set_l2_indirect_reg(d->offset, val);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
-+
-+	return 0;
-+}
-+
-+static unsigned long
-+krait_div2_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	u32 mask = BIT(d->width) - 1;
-+	u32 div;
-+
-+	div = krait_get_l2_indirect_reg(d->offset);
-+	div >>= d->shift;
-+	div &= mask;
-+	div = (div + 1) * 2;
-+
-+	return DIV_ROUND_UP(parent_rate, div);
-+}
-+
-+const struct clk_ops krait_div2_clk_ops = {
-+	.round_rate = krait_div2_round_rate,
-+	.set_rate = krait_div2_set_rate,
-+	.recalc_rate = krait_div2_recalc_rate,
-+};
-+EXPORT_SYMBOL_GPL(krait_div2_clk_ops);
-diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
-new file mode 100644
-index 0000000..441ba1e
---- /dev/null
-+++ b/drivers/clk/qcom/clk-krait.h
-@@ -0,0 +1,37 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef __QCOM_CLK_KRAIT_H
-+#define __QCOM_CLK_KRAIT_H
-+
-+#include <linux/clk-provider.h>
-+
-+struct krait_mux_clk {
-+	unsigned int	*parent_map;
-+	u32		offset;
-+	u32		mask;
-+	u32		shift;
-+	u32		en_mask;
-+	bool		lpl;
-+
-+	struct clk_hw	hw;
-+	struct notifier_block   clk_nb;
-+};
-+
-+#define to_krait_mux_clk(_hw) container_of(_hw, struct krait_mux_clk, hw)
-+
-+extern const struct clk_ops krait_mux_clk_ops;
-+
-+struct krait_div2_clk {
-+	u32		offset;
-+	u8		width;
-+	u32		shift;
-+	bool		lpl;
-+
-+	struct clk_hw	hw;
-+};
-+
-+#define to_krait_div2_clk(_hw) container_of(_hw, struct krait_div2_clk, hw)
-+
-+extern const struct clk_ops krait_div2_clk_ops;
-+
-+#endif
++	struct opp_table *opp_tables[NR_CPUS] = { NULL };
++	int (*get_version)(struct device *cpu_dev,
++			   struct nvmem_cell *speedbin_nvmem,
++			   char **name, int *versions);
+ 	struct nvmem_cell *speedbin_nvmem;
+ 	struct device_node *np;
+ 	struct device *cpu_dev;
+ 	unsigned cpu;
+-	u8 *speedbin;
+ 	u32 versions;
+-	size_t len;
++	char *pvs_name = NULL;
++	const struct of_device_id *match;
+ 	int ret;
+ 
+ 	cpu_dev = get_cpu_device(0);
+ 	if (!cpu_dev)
+ 		return -ENODEV;
+ 
+-	msm8996_version = qcom_cpufreq_kryo_get_msm_id();
+-	if (NUM_OF_MSM8996_VERSIONS == msm8996_version) {
+-		dev_err(cpu_dev, "Not Snapdragon 820/821!");
++	match = pdev->dev.platform_data;
++	get_version = match->data;
++	if (!get_version)
+ 		return -ENODEV;
+-	}
+ 
+ 	np = dev_pm_opp_of_get_opp_desc_node(cpu_dev);
+ 	if (!np)
+ 		return -ENOENT;
+ 
+-	ret = of_device_is_compatible(np, "operating-points-v2-kryo-cpu");
++	ret = of_device_is_compatible(np, "operating-points-v2-qcom-cpu");
+ 	if (!ret) {
+ 		of_node_put(np);
+ 		return -ENOENT;
+@@ -114,23 +151,10 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 		return PTR_ERR(speedbin_nvmem);
+ 	}
+ 
+-	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	ret = get_version(cpu_dev, speedbin_nvmem, &pvs_name, &versions);
+ 	nvmem_cell_put(speedbin_nvmem);
+-	if (IS_ERR(speedbin))
+-		return PTR_ERR(speedbin);
+-
+-	switch (msm8996_version) {
+-	case MSM8996_V3:
+-		versions = 1 << (unsigned int)(*speedbin);
+-		break;
+-	case MSM8996_SG:
+-		versions = 1 << ((unsigned int)(*speedbin) + 4);
+-		break;
+-	default:
+-		BUG();
+-		break;
+-	}
+-	kfree(speedbin);
++	if (ret)
++		return ret;
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		cpu_dev = get_cpu_device(cpu);
+@@ -166,24 +190,24 @@ static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
++static int qcom_cpufreq_remove(struct platform_device *pdev)
+ {
+ 	platform_device_unregister(cpufreq_dt_pdev);
+ 	return 0;
+ }
+ 
+-static struct platform_driver qcom_cpufreq_kryo_driver = {
+-	.probe = qcom_cpufreq_kryo_probe,
+-	.remove = qcom_cpufreq_kryo_remove,
++static struct platform_driver qcom_cpufreq_driver = {
++	.probe = qcom_cpufreq_probe,
++	.remove = qcom_cpufreq_remove,
+ 	.driver = {
+-		.name = "qcom-cpufreq-kryo",
++		.name = "qcom-cpufreq",
+ 	},
+ };
+ 
+-static const struct of_device_id qcom_cpufreq_kryo_match_list[] __initconst = {
+-	{ .compatible = "qcom,apq8096", },
+-	{ .compatible = "qcom,msm8996", },
+-	{}
++static const struct of_device_id qcom_cpufreq_match_list[] __initconst = {
++	{ .compatible = "qcom,apq8096", .data = qcom_cpufreq_kryo_name_version},
++	{ .compatible = "qcom,msm8996", .data = qcom_cpufreq_kryo_name_version},
++	{},
+ };
+ 
+ /*
+@@ -192,7 +216,7 @@ static int qcom_cpufreq_kryo_remove(struct platform_device *pdev)
+  * which may be defered as well. The init here is only registering
+  * the driver and the platform device.
+  */
+-static int __init qcom_cpufreq_kryo_init(void)
++static int __init qcom_cpufreq_init(void)
+ {
+ 	struct device_node *np = of_find_node_by_path("/");
+ 	const struct of_device_id *match;
+@@ -201,32 +225,32 @@ static int __init qcom_cpufreq_kryo_init(void)
+ 	if (!np)
+ 		return -ENODEV;
+ 
+-	match = of_match_node(qcom_cpufreq_kryo_match_list, np);
++	match = of_match_node(qcom_cpufreq_match_list, np);
+ 	of_node_put(np);
+ 	if (!match)
+ 		return -ENODEV;
+ 
+-	ret = platform_driver_register(&qcom_cpufreq_kryo_driver);
++	ret = platform_driver_register(&qcom_cpufreq_driver);
+ 	if (unlikely(ret < 0))
+ 		return ret;
+ 
+-	kryo_cpufreq_pdev = platform_device_register_simple(
+-		"qcom-cpufreq-kryo", -1, NULL, 0);
+-	ret = PTR_ERR_OR_ZERO(kryo_cpufreq_pdev);
++	cpufreq_pdev = platform_device_register_data(NULL, "qcom-cpufreq",
++						     -1, match, sizeof(*match));
++	ret = PTR_ERR_OR_ZERO(cpufreq_pdev);
+ 	if (0 == ret)
+ 		return 0;
+ 
+-	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
++	platform_driver_unregister(&qcom_cpufreq_driver);
+ 	return ret;
+ }
+-module_init(qcom_cpufreq_kryo_init);
++module_init(qcom_cpufreq_init);
+ 
+-static void __init qcom_cpufreq_kryo_exit(void)
++static void __init qcom_cpufreq_exit(void)
+ {
+-	platform_device_unregister(kryo_cpufreq_pdev);
+-	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
++	platform_device_unregister(cpufreq_pdev);
++	platform_driver_unregister(&qcom_cpufreq_driver);
+ }
+-module_exit(qcom_cpufreq_kryo_exit);
++module_exit(qcom_cpufreq_exit);
+ 
+-MODULE_DESCRIPTION("Qualcomm Technologies, Inc. Kryo CPUfreq driver");
++MODULE_DESCRIPTION("Qualcomm Technologies, Inc. CPUfreq driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
