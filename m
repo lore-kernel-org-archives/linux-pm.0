@@ -1,131 +1,124 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v12 06/14] clk: qcom: Add IPQ806X's HFPLLs
-Date: Tue, 14 Aug 2018 17:42:25 +0530
-Message-ID: <1534248753-2440-7-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v12 09/14] dt-bindings: arm: Document qcom,kpss-gcc
+Date: Tue, 14 Aug 2018 17:42:28 +0530
+Message-ID: <1534248753-2440-10-git-send-email-sricharan@codeaurora.org>
 References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
-Describe the HFPLLs present on IPQ806X devices.
+The ACC and GCC regions present in KPSSv1 contain registers to
+control clocks and power to each Krait CPU and L2. Documenting
+the bindings here.
 
+Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 ---
- drivers/clk/qcom/gcc-ipq806x.c | 82 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  | 19 ++++++++++
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 44 ++++++++++++++++++++++
+ 2 files changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
 
-diff --git a/drivers/clk/qcom/gcc-ipq806x.c b/drivers/clk/qcom/gcc-ipq806x.c
-index 5f61225..33d1bc5 100644
---- a/drivers/clk/qcom/gcc-ipq806x.c
-+++ b/drivers/clk/qcom/gcc-ipq806x.c
-@@ -30,6 +30,7 @@
- #include "clk-pll.h"
- #include "clk-rcg.h"
- #include "clk-branch.h"
-+#include "clk-hfpll.h"
- #include "reset.h"
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+index 1333db9..7f69636 100644
+--- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+@@ -21,10 +21,29 @@ PROPERTIES
+ 		    the register region. An optional second element specifies
+ 		    the base address and size of the alias register region.
  
- static struct clk_pll pll0 = {
-@@ -113,6 +114,84 @@
- 	},
- };
++- clocks:
++        Usage: required
++        Value type: <prop-encoded-array>
++        Definition: reference to the pll parents.
++
++- clock-names:
++        Usage: required
++        Value type: <stringlist>
++        Definition: must be "pll8_vote", "pxo".
++
++- clock-output-names:
++	Usage: optional
++	Value type: <string>
++	Definition: Name of the output clock. Typically acpuX_aux where X is a
++		    CPU number starting at 0.
++
+ Example:
  
-+static struct hfpll_data hfpll0_data = {
-+	.mode_reg = 0x3200,
-+	.l_reg = 0x3208,
-+	.m_reg = 0x320c,
-+	.n_reg = 0x3210,
-+	.config_reg = 0x3204,
-+	.status_reg = 0x321c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3214,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
+ 	clock-controller@2088000 {
+ 		compatible = "qcom,kpss-acc-v2";
+ 		reg = <0x02088000 0x1000>,
+ 		      <0x02008000 0x1000>;
++		clocks = <&gcc PLL8_VOTE>, <&gcc PXO_SRC>;
++		clock-names = "pll8_vote", "pxo";
++		clock-output-names = "acpu0_aux";
+ 	};
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+new file mode 100644
+index 0000000..e628758
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+@@ -0,0 +1,44 @@
++Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
 +
-+static struct clk_hfpll hfpll0 = {
-+	.d = &hfpll0_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll0",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
-+};
++PROPERTIES
 +
-+static struct hfpll_data hfpll1_data = {
-+	.mode_reg = 0x3240,
-+	.l_reg = 0x3248,
-+	.m_reg = 0x324c,
-+	.n_reg = 0x3250,
-+	.config_reg = 0x3244,
-+	.status_reg = 0x325c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
++- compatible:
++	Usage: required
++	Value type: <string>
++	Definition: should be one of the following. The generic compatible
++			"qcom,kpss-gcc" should also be included.
++			"qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc"
++			"qcom,kpss-gcc-apq8064", "qcom,kpss-gcc"
++			"qcom,kpss-gcc-msm8974", "qcom,kpss-gcc"
++			"qcom,kpss-gcc-msm8960", "qcom,kpss-gcc"
 +
-+static struct clk_hfpll hfpll1 = {
-+	.d = &hfpll1_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll1",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
-+};
++- reg:
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: base address and size of the register region
 +
-+static struct hfpll_data hfpll_l2_data = {
-+	.mode_reg = 0x3300,
-+	.l_reg = 0x3308,
-+	.m_reg = 0x330c,
-+	.n_reg = 0x3310,
-+	.config_reg = 0x3304,
-+	.status_reg = 0x331c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
++- clocks:
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: reference to the pll parents.
 +
-+static struct clk_hfpll hfpll_l2 = {
-+	.d = &hfpll_l2_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll_l2",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
-+};
++- clock-names:
++	Usage: required
++	Value type: <stringlist>
++	Definition: must be "pll8_vote", "pxo".
 +
- static struct clk_pll pll14 = {
- 	.l_reg = 0x31c4,
- 	.m_reg = 0x31c8,
-@@ -2797,6 +2876,9 @@ enum {
- 	[UBI32_CORE2_CLK_SRC] = &ubi32_core2_src_clk.clkr,
- 	[NSSTCM_CLK_SRC] = &nss_tcm_src.clkr,
- 	[NSSTCM_CLK] = &nss_tcm_clk.clkr,
-+	[PLL9] = &hfpll0.clkr,
-+	[PLL10] = &hfpll1.clkr,
-+	[PLL12] = &hfpll_l2.clkr,
- };
- 
- static const struct qcom_reset_map gcc_ipq806x_resets[] = {
++- clock-output-names:
++	Usage: required
++	Value type: <string>
++	Definition: Name of the output clock. Typically acpu_l2_aux indicating
++		    an L2 cache auxiliary clock.
++
++Example:
++
++	l2cc: clock-controller@2011000 {
++		compatible = "qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc";
++		reg = <0x2011000 0x1000>;
++		clocks = <&gcc PLL8_VOTE>, <&gcc PXO_SRC>;
++		clock-names = "pll8_vote", "pxo";
++		clock-output-names = "acpu_l2_aux";
++	};
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
