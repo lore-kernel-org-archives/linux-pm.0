@@ -1,124 +1,67 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v12 09/14] dt-bindings: arm: Document qcom,kpss-gcc
-Date: Tue, 14 Aug 2018 17:42:28 +0530
-Message-ID: <1534248753-2440-10-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v12 11/14] dt-bindings: clock: Document qcom,krait-cc
+Date: Tue, 14 Aug 2018 17:42:30 +0530
+Message-ID: <1534248753-2440-12-git-send-email-sricharan@codeaurora.org>
 References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
-The ACC and GCC regions present in KPSSv1 contain registers to
-control clocks and power to each Krait CPU and L2. Documenting
-the bindings here.
+The Krait clock controller controls the krait CPU and the L2 clocks
+consisting a primary mux and secondary mux. Add document for that.
 
 Reviewed-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 ---
- .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  | 19 ++++++++++
- .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 44 ++++++++++++++++++++++
- 2 files changed, 63 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ .../devicetree/bindings/clock/qcom,krait-cc.txt    | 34 ++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-index 1333db9..7f69636 100644
---- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-@@ -21,10 +21,29 @@ PROPERTIES
- 		    the register region. An optional second element specifies
- 		    the base address and size of the alias register region.
- 
-+- clocks:
-+        Usage: required
-+        Value type: <prop-encoded-array>
-+        Definition: reference to the pll parents.
-+
-+- clock-names:
-+        Usage: required
-+        Value type: <stringlist>
-+        Definition: must be "pll8_vote", "pxo".
-+
-+- clock-output-names:
-+	Usage: optional
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpuX_aux where X is a
-+		    CPU number starting at 0.
-+
- Example:
- 
- 	clock-controller@2088000 {
- 		compatible = "qcom,kpss-acc-v2";
- 		reg = <0x02088000 0x1000>,
- 		      <0x02008000 0x1000>;
-+		clocks = <&gcc PLL8_VOTE>, <&gcc PXO_SRC>;
-+		clock-names = "pll8_vote", "pxo";
-+		clock-output-names = "acpu0_aux";
- 	};
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+diff --git a/Documentation/devicetree/bindings/clock/qcom,krait-cc.txt b/Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
 new file mode 100644
-index 0000000..e628758
+index 0000000..030ba60
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
-@@ -0,0 +1,44 @@
-+Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
++++ b/Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+@@ -0,0 +1,34 @@
++Krait Clock Controller
 +
 +PROPERTIES
 +
 +- compatible:
 +	Usage: required
 +	Value type: <string>
-+	Definition: should be one of the following. The generic compatible
-+			"qcom,kpss-gcc" should also be included.
-+			"qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-apq8064", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-msm8974", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-msm8960", "qcom,kpss-gcc"
++	Definition: must be one of:
++			"qcom,krait-cc-v1"
++			"qcom,krait-cc-v2"
 +
-+- reg:
++- #clock-cells:
 +	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: base address and size of the register region
++	Value type: <u32>
++	Definition: must be 1
 +
 +- clocks:
 +	Usage: required
 +	Value type: <prop-encoded-array>
-+	Definition: reference to the pll parents.
++	Definition: reference to the clock parents of hfpll, secondary muxes.
 +
 +- clock-names:
 +	Usage: required
 +	Value type: <stringlist>
-+	Definition: must be "pll8_vote", "pxo".
-+
-+- clock-output-names:
-+	Usage: required
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpu_l2_aux indicating
-+		    an L2 cache auxiliary clock.
++	Definition: must be "hfpll0", "hfpll1", "acpu0_aux", "acpu1_aux", "qsb".
 +
 +Example:
 +
-+	l2cc: clock-controller@2011000 {
-+		compatible = "qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc";
-+		reg = <0x2011000 0x1000>;
-+		clocks = <&gcc PLL8_VOTE>, <&gcc PXO_SRC>;
-+		clock-names = "pll8_vote", "pxo";
-+		clock-output-names = "acpu_l2_aux";
++	kraitcc: clock-controller {
++		compatible = "qcom,krait-cc-v1";
++		clocks = <&hfpll0>, <&hfpll1>, <&acpu0_aux>, <&acpu1_aux>, <qsb>;
++		clock-names = "hfpll0", "hfpll1", "acpu0_aux", "acpu1_aux", "qsb";
++		#clock-cells = <1>;
 +	};
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
