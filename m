@@ -1,182 +1,137 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI updates for v4.19-rc1
-Date: Tue, 14 Aug 2018 12:27:21 +0200
-Message-ID: <CAJZ5v0iet7uBBQgygjm=m0DtosdCCOtELCJdWcC3hZw4UUQ40w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v5] cpuidle: menu: Handle stopped tick more aggressively
+Date: Tue, 14 Aug 2018 12:34:40 +0200
+Message-ID: <1572343.jWaXB8XNF1@aspire.rjw.lan>
+References: <1951009.1jlQfyrxio@aspire.rjw.lan> <1754612.IcCR94pSYR@aspire.rjw.lan> <1582055.9b67urWYFa@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1582055.9b67urWYFa@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Leo Yan <leo.yan@linaro.org>, Frederic Weisbecker <frederic@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+Commit 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states
+with stopped tick) missed the case when the target residencies of
+deep idle states of CPUs are above the tick boundary which may cause
+the CPU to get stuck in a shallow idle state for a long time.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.19-rc1
+Say there are two CPU idle states available: one shallow, with the
+target residency much below the tick boundary and one deep, with
+the target residency significantly above the tick boundary.  In
+that case, if the tick has been stopped already and the expected
+next timer event is relatively far in the future, the governor will
+assume the idle duration to be equal to TICK_USEC and it will select
+the idle state for the CPU accordingly.  However, that will cause the
+shallow state to be selected even though it would have been more
+energy-efficient to select the deep one.
 
-with top-most commit 76f7d6c07acd7a694ccc97355d37637f6677de51
+To address this issue, modify the governor to always use the time
+till the closest timer event instead of the predicted idle duration
+if the latter is less than the tick period length and the tick has
+been stopped already.  Also make it extend the search for a matching
+idle state if the tick is stopped to avoid settling on a shallow
+state if deep states with target residencies above the tick period
+length are available.
 
- Merge branches 'acpi-button', 'acpi-battery' and 'acpi-osi'
+In addition, make it always indicate that the tick should be stopped
+if it has been stopped already for consistency.
 
-on top of commit 1ffaddd029c867d134a1dde39f540dcc8c52e274
+Fixes: 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states with stopped tick)
+Reported-by: Leo Yan <leo.yan@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+-> v2: Initialize first_idx properly in the stopped tick case.
+ 
+v2 -> v3: Compute data->bucket before checking whether or not the tick has been
+          stopped already to prevent it from becoming stale.
 
- Linux 4.18-rc8
+v3 -> v4: Allow the usual state selection to be carried out if the tick has been
+          stopped in case the predicted idle duration is greater than the tick
+          period length and a matching state can be found without overriding
+          the prediction result.
 
-to receive the first batch of ACPI updates for 4.19-rc1.
+v4 -> v5: Rework code to be more straightforward.  Functionally, it should
+          behave like the v4.
+---
+ drivers/cpuidle/governors/menu.c |   36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
 
-These revert two ACPICA commits that are not needed any more, rework
-the property graphs support in ACPI to be more aligned with the
-analogous DT code, add some new quirks and remove one that isn't
-needed any more, add a special platform driver to enumerate multiple
-I2C devices hooked up to the same device object in the ACPI tables
-and update the battery and button drivers.
-
-Specifics:
-
- - Revert two ACPICA commits that are not needed any more (Erik
-   Schmauss).
-
- - Rework property graph support in the ACPI device properties
-   framework to make it behave more like the analogous DT code
-   and update the documentation of it (Sakari Ailus).
-
- - Change the default ACPI device status after initialization
-   to ACPI_STA_DEFAULT instead of 0 (Hans de Goede).
-
- - Add a special platform driver for enumerating multiple I2C devices
-   hooked up to the same object in the ACPI tables (Hans de Goede).
-
- - Fix the ACPI battery driver to avoid reporting full capacity on
-   systems without support for that and clean it up (Hans de Goede,
-   Dmitry Rozhkov, Lucas Rangit Magasweran).
-
- - Add two system wakeup quirks to the ACPI EC driver (Aaron Ma,
-   Mika Westerberg).
-
- - Add the touchscreen on Dell Venue Pro 7139 to the list of "always
-   present" devices to make it work (Tristian Celestin).
-
- - Revert a special tables handling quirk for Dell XPS 9570 and
-   Precision M5530 which is not needed any more (Kai Heng Feng).
-
- - Add support for a new OEM _OSI string to allow system vendors to
-   work around issues with NVidia HDMI audio (Alex Hung).
-
- - Prevent the ACPI button driver from reporting excessive system
-   wakeup events and clean it up (Ravi Chandra Sadineni, Randy Dunlap).
-
- - Clean up two minor code style issues in the ACPI core and GHES
-   handling on ARM64 (Dongjiu Geng, John Garry, Tom Todd).
-
-Thanks!
-
-
----------------
-
-Aaron Ma (1):
-      ACPI / EC: Use ec_no_wakeup on ThinkPad X1 Yoga 3rd
-
-Alex Hung (1):
-      ACPI / OSI: Add OEM _OSI string to enable NVidia HDMI audio
-
-Bob Moore (1):
-      ACPICA: Update version to 20180629
-
-Dmitry Rozhkov (4):
-      ACPI / battery: drop inclusion of init.h
-      ACPI / battery: reorder headers alphabetically
-      ACPI / battery: use specialized print macros
-      ACPI / battery: get rid of negations in conditions
-
-Dongjiu Geng (1):
-      arm64 / ACPI: clean the additional checks before calling ghes_notify_sea()
-
-Erik Schmauss (2):
-      ACPICA: Revert "iASL: change processing of external op namespace
-nodes for correctness"
-      ACPICA: Revert "iASL compiler: allow compilation of externals
-with paths that refer to existing names"
-
-Hans de Goede (5):
-      ACPI / battery: Do not export energy_full[_design] on devices
-without full_charge_capacity
-      ACPI / scan: Initialize status to ACPI_STA_DEFAULT
-      ACPI / scan: Create platform device for fwnodes with multiple i2c devices
-      ACPI / x86: utils: Remove status workaround from
-acpi_device_always_present()
-      platform/x86: Add ACPI i2c-multi-instantiate pseudo driver
-
-John Garry (1):
-      ACPI / scan: Add static attribute to indirect_io_hosts[]
-
-Kai Heng Feng (1):
-      Revert "ACPI / bus: Parse tables as term_list for Dell XPS 9570
-and Precision M5530"
-
-Lucas Rangit Magasweran (1):
-      ACPI: battery: remove redundant old_present check on insertion
-
-Mika Westerberg (1):
-      ACPI / EC: Add another entry for Thinkpad X1 Carbon 6th
-
-Randy Dunlap (1):
-      ACPI / button: fix defined but not used warning
-
-Ravi Chandra Sadineni (1):
-      ACPI / button: increment wakeup count only when notified
-
-Sakari Ailus (11):
-      ACPI: Convert ACPI reference args to generic fwnode reference args
-      ACPI: property: Allow making references to non-device nodes
-      ACPI: property: Document hierarchical data extension references
-      ACPI: property: Make the ACPI graph API private
-      ACPI: property: Allow direct graph endpoint references
-      ACPI: property: Use data node name and reg property for graphs
-      ACPI: property: Document key numbering for hierarchical data
-extension refs
-      ACPI: property: Update documentation for hierarchical data extension 1.1
-      ACPI: property: graph: Fix graph documentation
-      ACPI: property: graph: Improve graph documentation for port/ep numbering
-      ACPI: property: graph: Update graph documentation to use generic
-references
-
-Tom Todd (1):
-      ACPI: bus: Fix a pointer coding style issue
-
-Tristian Celestin (1):
-      ACPI / x86: enable touchscreen on Dell Venue Pro 7139
-
----------------
-
- Documentation/acpi/dsd/data-node-references.txt   |  89 +++++++++
- Documentation/acpi/dsd/graph.txt                  |  72 ++++----
- MAINTAINERS                                       |   6 +
- arch/arm64/mm/fault.c                             |   7 +-
- drivers/acpi/acpica/aclocal.h                     |   1 -
- drivers/acpi/acpica/nsaccess.c                    |   7 -
- drivers/acpi/acpica/nssearch.c                    |   1 -
- drivers/acpi/battery.c                            |  69 ++++---
- drivers/acpi/bus.c                                |  40 +----
- drivers/acpi/button.c                             |  17 +-
- drivers/acpi/ec.c                                 |  14 ++
- drivers/acpi/osi.c                                |   8 +
- drivers/acpi/property.c                           | 209 ++++++++++------------
- drivers/acpi/scan.c                               |  23 ++-
- drivers/acpi/x86/utils.c                          |  22 +--
- drivers/gpio/gpiolib-acpi.c                       |  11 +-
- drivers/infiniband/hw/hns/hns_roce_hw_v1.c        |  10 +-
- drivers/media/v4l2-core/v4l2-fwnode.c             |   2 +-
- drivers/net/ethernet/apm/xgene/xgene_enet_hw.c    |   6 +-
- drivers/net/ethernet/hisilicon/hns/hns_dsaf_mac.c |   6 +-
- drivers/net/ethernet/hisilicon/hns/hns_enet.c     |   8 +-
- drivers/platform/x86/Kconfig                      |  11 ++
- drivers/platform/x86/Makefile                     |   1 +
- drivers/platform/x86/i2c-multi-instantiate.c      | 132 ++++++++++++++
- include/acpi/acpixf.h                             |   2 +-
- include/acpi/ghes.h                               |   4 +
- include/linux/acpi.h                              |  25 +--
- include/linux/fwnode.h                            |   2 +-
- 28 files changed, 528 insertions(+), 277 deletions(-)
+Index: linux-pm/drivers/cpuidle/governors/menu.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -349,14 +349,12 @@ static int menu_select(struct cpuidle_dr
+ 		 * If the tick is already stopped, the cost of possible short
+ 		 * idle duration misprediction is much higher, because the CPU
+ 		 * may be stuck in a shallow idle state for a long time as a
+-		 * result of it.  In that case say we might mispredict and try
+-		 * to force the CPU into a state for which we would have stopped
+-		 * the tick, unless a timer is going to expire really soon
+-		 * anyway.
++		 * result of it.  In that case say we might mispredict and use
++		 * the known time till the closest timer event for the idle
++		 * state selection.
+ 		 */
+ 		if (data->predicted_us < TICK_USEC)
+-			data->predicted_us = min_t(unsigned int, TICK_USEC,
+-						   ktime_to_us(delta_next));
++			data->predicted_us = ktime_to_us(delta_next);
+ 	} else {
+ 		/*
+ 		 * Use the performance multiplier and the user-configurable
+@@ -381,8 +379,22 @@ static int menu_select(struct cpuidle_dr
+ 			continue;
+ 		if (idx == -1)
+ 			idx = i; /* first enabled state */
+-		if (s->target_residency > data->predicted_us)
+-			break;
++		if (s->target_residency > data->predicted_us) {
++			if (!tick_nohz_tick_stopped())
++				break;
++
++			/*
++			 * If the state selected so far is shallow and this
++			 * state's target residency matches the time till the
++			 * closest timer event, select this one to avoid getting
++			 * stuck in the shallow one for too long.
++			 */
++			if (drv->states[idx].target_residency < TICK_USEC &&
++			    s->target_residency <= ktime_to_us(delta_next))
++				idx = i;
++
++			goto out;
++		}
+ 		if (s->exit_latency > latency_req) {
+ 			/*
+ 			 * If we break out of the loop for latency reasons, use
+@@ -403,14 +415,13 @@ static int menu_select(struct cpuidle_dr
+ 	 * Don't stop the tick if the selected state is a polling one or if the
+ 	 * expected idle duration is shorter than the tick period length.
+ 	 */
+-	if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
+-	    expected_interval < TICK_USEC) {
++	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
++	     expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
+ 		unsigned int delta_next_us = ktime_to_us(delta_next);
+ 
+ 		*stop_tick = false;
+ 
+-		if (!tick_nohz_tick_stopped() && idx > 0 &&
+-		    drv->states[idx].target_residency > delta_next_us) {
++		if (idx > 0 && drv->states[idx].target_residency > delta_next_us) {
+ 			/*
+ 			 * The tick is not going to be stopped and the target
+ 			 * residency of the state to be returned is not within
+@@ -429,6 +440,7 @@ static int menu_select(struct cpuidle_dr
+ 		}
+ 	}
+ 
++out:
+ 	data->last_state_idx = idx;
+ 
+ 	return data->last_state_idx;
