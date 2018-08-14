@@ -1,82 +1,67 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
- Allwinner Thermal Sensor Controller
-Date: Tue, 14 Aug 2018 13:20:53 -0600
-Message-ID: <20180814192053.GA28118@rob-hp-laptop>
-References: <20180804070355.14857-1-manu@freebsd.org>
+From: Dominique Martinet <asmadeus@codewreck.org>
+Subject: Re: [PATCH 18/18] cpupower: change strncpy+truncation to strlcpy
+Date: Tue, 14 Aug 2018 21:27:28 +0200
+Message-ID: <20180814192728.GA6264@nautica>
+References: <1531444483-17338-1-git-send-email-asmadeus@codewreck.org>
+ <1531445169-19912-1-git-send-email-asmadeus@codewreck.org>
+ <CAEUSe78K3bxfXp8mAoxtd64ZeBFVN4v0sJ+puvffM_ZkUNsW+A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180804070355.14857-1-manu@freebsd.org>
+In-Reply-To: <CAEUSe78K3bxfXp8mAoxtd64ZeBFVN4v0sJ+puvffM_ZkUNsW+A@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Emmanuel Vadot <manu@freebsd.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, mark.rutland@arm.com, maxime.ripard@bootlin.com, wens@csie.org, catalin.marinas@arm.com, will.deacon@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Daniel =?utf-8?B?RMOtYXo=?= <daniel.diaz@linaro.org>
+Cc: Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
-> This patch adds documentation for Device-Tree bindings for the Allwinner
-> Thermal Sensor Controller found on the H3, H5 and A64 SoCs
+Daniel Díaz wrote on Tue, Aug 14, 2018:
+> I can't get cpupower to compile anymore now that it made its way to linux-next:
+>   [/linux/tools/power/cpupower]$ make
+>     CC       lib/cpufreq.o
+>   [...]
+>   make[1]: Entering directory '/linux/tools/power/cpupower/bench'
+>     CC       main.o
+>     CC       parse.o
+>   parse.c: In function ‘prepare_config’:
+>   parse.c:224:4: warning: implicit declaration of function ‘strlcpy’
+> [-Wimplicit-function-declaration]
+>       strlcpy(config->governor, val,
+>       ^
+>     CC       system.o
+>     CC       benchmark.o
+>     CC       cpufreq-bench
+>   .//parse.o: In function `prepare_config':
+>   /linux/tools/power/cpupower/bench/parse.c:224: undefined reference
+> to `strlcpy'
+>   collect2: error: ld returned 1 exit status
+>   Makefile:25: recipe for target 'cpufreq-bench' failed
+>   make[1]: *** [cpufreq-bench] Error 1
+>   make[1]: Leaving directory '/linux/tools/power/cpupower/bench'
+>   Makefile:258: recipe for target 'compile-bench' failed
+>   make: *** [compile-bench] Error 2
 > 
-> Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
-> ---
->  .../bindings/thermal/allwinner-thermal.txt    | 41 +++++++++++++++++++
->  1 file changed, 41 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt b/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
-> new file mode 100644
-> index 000000000000..5810d44cf495
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/allwinner-thermal.txt
-> @@ -0,0 +1,41 @@
-> +* Thermal Sensor Controller on Allwinner SoCs
-> +
-> +Required properties:
-> +- compatible : should be "allwinner,<name>-ths"
-> +   "allwinner,sun8i-h3-ths": found on H3 and H2+ SoCs
-> +   "allwinner,sun50i-h5-ths": found on H5 SoC
-> +   "allwinner,sun50i-a64-ths": found on H5 SoC
-> +- reg : physical base address of the controller and length of memory mapped
-> +	region.
-> +- interrupts : The interrupt number to the cpu. The interrupt specifier format
-> +	       depends on the interrupt controller.
+> Does it need anything special to make?
 
-Just need to say how many entries (and order if more than one).
+Ugh, no, I am really ashamed about this patch series for insufficient
+testing in general. It is currently "under rework" for an indefinite
+time frame as I have had other priorities but I'll add cpupower to the
+list...
+More precisely, the function is defined in the linux kernel but for
+userspace strlcpy is only available through libbsd, and I don't believe
+we should pull that in just for this.
 
-> +- clocks : Must contain an entry for each entry in clock-names.
-> +- clock-names : Shall be "apb" for the bus, and "ths" for
-> +		the peripheral clock.
-> +- resets : Must contain an entry for each entry in reset-names.
-> +	   See ../reset/reset.txt for details.
-> +- reset-names : Must be "apb".
-> +- #thermal-sensor-cells : Depend on the SoC
-> +   For H3 should be 0
-> +   For H5 should be 1
-> +   For A64 should be 2
-> +   See ./thermal.txt for a description.
-> +- nvmem-cells : Phandle to the calibration data
-> +- nvmem-cell-names = Should be "ths-calib"
-> +
-> +Example:
-> +
-> +ths: thermal_sensor@1c25000 {
+I'll send a second patch using snprintf and warning if a truncation
+occurs (which is the proper fix that the gcc folks intended people to do
+anyway) when I get around to it, but I would recommend to just revert
+the patch for now.
 
-thermal-sensor@...
 
-> +	compatible = "allwinner,sun8i-h3-ths";
-> +	reg = <0x01c25000 0x100>;
-> +	interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-> +	clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-> +	clock-names = "apb", "ths";
-> +	resets = <&ccu RST_BUS_THS>;
-> +	reset-names = "apb";
-> +	#thermal-sensor-cells = <0>;
-> +	status = "disabled";
-> +
-> +	nvmem-cells = <&ths_calib>;
-> +	nvmem-cell-names = "ths-calib";
-> +};
-> -- 
-> 2.18.0
-> 
+Shuah, could you take the patch off please if you haven't pushed it to
+linus yet?
+
+
+Sorry for the time you might have spent on this,
+-- 
+Dominique Martinet
