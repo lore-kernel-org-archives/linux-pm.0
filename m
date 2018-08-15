@@ -1,72 +1,72 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Wed, 15 Aug 2018 11:44:50 +0100
-Message-ID: <20180815104449.GA29108@red-moon>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <2056372.NMt4aPaF4h@aspire.rjw.lan>
- <2205807.cU2puvubpP@aspire.rjw.lan>
- <1726374.375PCQfjLZ@aspire.rjw.lan>
- <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
- <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
- <20180808105619.GB25150@e107981-ln.cambridge.arm.com>
- <20180808180248.GC27850@codeaurora.org>
- <20180809102504.GB13428@e107981-ln.cambridge.arm.com>
- <20180810201815.GE5081@codeaurora.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
+ accounting
+Date: Wed, 15 Aug 2018 11:54:28 +0100
+Message-ID: <20180815105428.GA7388@e110439-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-4-patrick.bellasi@arm.com>
+ <a24def9b-57bb-d072-5064-0421076d2e43@arm.com>
+ <20180814164905.GG2605@e110439-lin>
+ <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180810201815.GE5081@codeaurora.org>
+In-Reply-To: <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 10, 2018 at 02:18:15PM -0600, Lina Iyer wrote:
-
-[...]
-
-> >>But, the OSI feature is critical for QCOM mobile platforms. The
-> >>last man activities during cpuidle save quite a lot of power.
+On 15-Aug 11:37, Dietmar Eggemann wrote:
+> On 08/14/2018 06:49 PM, Patrick Bellasi wrote:
+> >Hi Dietmar!
 > >
-> >What I expressed above was that, in PSCI based systems (OSI or PC
-> >alike), it is up to firmware/hardware to detect "the last man" not
-> >the kernel.
-> >
-> >I need to understand what you mean by "last man activities" to
-> >provide feedback here.
-> >
-> When the last CPU goes down during deep sleep, the following would be
-> done
-> - Lower resource requirements for shared resources such as clocks,
->  busses and regulators that were used by drivers in AP. These shared
->  resources when not used by other processors in the SoC may be turned
->  off and put in low power state by a remote processor. [1][2]
-> - Enable and setup wakeup capable interrupts on an always-on interrupt
->  controller, so the GIC and the GPIO controllers may be put in low
->  power state. [3][4]
-> - Write next known wakeup value to the timer, so the blocks that were
->  powered off, may be brought back into operational before the wakeup.
->  [4][5]
+> >On 14-Aug 17:44, Dietmar Eggemann wrote:
+> >>On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 > 
-> These are commonly done during suspend, but to achieve a good power
-> efficiency, we have to do this when all the CPUs are just executing CPU
-> idle. Also, they cannot be done from the firmware (because the data
-> required for all this is part of Linux). OSI plays a crucial role in
-> determining when to do all this.
+> [...]
+> 
+> >>This one indicates that there are some holes in your ref-counting.
+> >
+> >Not really, this has been added not because I've detected a refcount
+> >issue... but because it was suggested as a possible safety check in a
+> >previous code review comment:
+> >
+> >    https://lore.kernel.org/lkml/20180720151156.GA31421@e110439-lin/
+> >
+> >>It's probably easier to debug that there is still a task but the
+> >>uc_grp[group_id].tasks value == 0 (A). I assume the other problem exists as
+> >>well, i.e. last task and uc_grp[group_id].tasks > 1 (B)?
+> >>
+> >>You have uclamp_cpu_[get/put](_id)() in [enqueue/dequeue]_task.
+> >>
+> >>Patch 04/14 introduces its use in uclamp_task_update_active().
+> >>
+> >>Do you know why (A) (and (B)) are happening?
+> >
+> >I've never saw that warning in my tests so far so, again, the warning
+> >is there just to support testing/debugging when refcounting code
+> >is/will be touched in the future. That's also the reason why is
+> >SCHED_DEBUG protected.
+> 
+> Ah, OK, I thought you really see it more often and that it also relate to
+> Pavan's comment on 02/14 about the missing treatment of exiting tasks.
+> 
+> If this is only for testing/debugging, I would suggest a simple one line
+> BUG_ON()
 
-No it does not. It is the power domain cpumasks that allow this code to
-make an educated guess on the last cpu running (the kernel), PSCI OSI is
-not crucial at all (it is crucial in QC platforms because that's the
-only mode supported but that's not a reason I accept as valid since it
-does not comply with the PSCI specifications).
+These are (eventually) considered as recoverable errors... thus,
+AFAIK, using BUG_ON is overkilling and discouraged:
+  https://elixir.bootlin.com/linux/latest/source/include/asm-generic/bug.h#L42
 
-As I mentioned in another thread[1] the generic part of this
-series may be applicable in a platform agnostic way to the
-CPUidle framework, whether that's beneficial it has to be proven
-and it is benchmark specific anyway.
+> You find CONFIG_SCHED_DEBUG=y in production kernels as well.
 
-Lorenzo
+AFAIK, that setting is discouraged for production kernels...
+Moreover, it's still better to WARN sometimes on a production kernel
+the crash the device, isnt't it?
 
-[1]: https://marc.info/?l=linux-pm&m=153382916513032&w=2 
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
