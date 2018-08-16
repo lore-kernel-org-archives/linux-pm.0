@@ -1,114 +1,167 @@
 From: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
-Date: Thu, 16 Aug 2018 14:39:06 +0530
-Message-ID: <20180816090906.GC2661@codeaurora.org>
+Subject: Re: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
+Date: Thu, 16 Aug 2018 14:43:48 +0530
+Message-ID: <20180816091348.GD2661@codeaurora.org>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-10-patrick.bellasi@arm.com>
+ <20180806163946.28380-13-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-10-patrick.bellasi@arm.com>
+In-Reply-To: <20180806163946.28380-13-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 06, 2018 at 05:39:41PM +0100, Patrick Bellasi wrote:
-> In order to properly support hierarchical resources control, the cgroup
-> delegation model requires that attribute writes from a child group never
-> fail but still are (potentially) constrained based on parent's assigned
-> resources. This requires to properly propagate and aggregate parent
-> attributes down to its descendants.
+On Mon, Aug 06, 2018 at 05:39:44PM +0100, Patrick Bellasi wrote:
+> Clamp values cannot be tuned at the root cgroup level. Moreover, because
+> of the delegation model requirements and how the parent clamps
+> propagation works, if we want to enable subgroups to set a non null
+> util.min, we need to be able to configure the root group util.min to the
+> allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
 > 
-> Let's implement this mechanism by adding a new "effective" clamp value
-> for each task group. The effective clamp value is defined as the smaller
-> value between the clamp value of a group and the effective clamp value
-> of its parent. This represent also the clamp value which is actually
-> used to clamp tasks in each task group.
+> Unfortunately this setup will also mean that all tasks running in the
+> root group, will always get a maximum util.min clamp, unless they have a
+> lower task specific clamp which is definitively not a desirable default
+> configuration.
 > 
-> Since it can be interesting for tasks in a cgroup to know exactly what
-> is the currently propagated/enforced configuration, the effective clamp
-> values are exposed to user-space by means of a new pair of read-only
-> attributes: cpu.util.{min,max}.effective.
+> Let's fix this by explicitly adding a system default configuration
+> (sysctl_sched_uclamp_util_{min,max}) which works as a restrictive clamp
+> for all tasks running on the root group.
+> 
+> This interface is available independently from cgroups, thus providing a
+> complete solution for system wide utilization clamping configuration.
 > 
 > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 > Cc: Ingo Molnar <mingo@redhat.com>
 > Cc: Peter Zijlstra <peterz@infradead.org>
 > Cc: Tejun Heo <tj@kernel.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Paul Turner <pjt@google.com>
 > Cc: Suren Baghdasaryan <surenb@google.com>
 > Cc: Todd Kjos <tkjos@google.com>
 > Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Steve Muckle <smuckle@google.com>
 > Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
 > Cc: linux-kernel@vger.kernel.org
 > Cc: linux-pm@vger.kernel.org
->  
 
 <snip>
 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 8f48e64fb8a6..3fac2d098084 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -589,6 +589,11 @@ struct uclamp_se {
->  	unsigned int value;
->  	/* Utilization clamp group for this constraint */
->  	unsigned int group_id;
-> +	/* Effective clamp  for tasks in this group */
-> +	struct {
-> +		unsigned int value;
-> +		unsigned int group_id;
-> +	} effective;
->  };
+> +/*
+> + * Minimum utilization for tasks in the root cgroup
+> + * default: 0
+> + */
+> +unsigned int sysctl_sched_uclamp_util_min;
+> +
+> +/*
+> + * Maximum utilization for tasks in the root cgroup
+> + * default: 1024
+> + */
+> +unsigned int sysctl_sched_uclamp_util_max = 1024;
+> +
+> +static struct uclamp_se uclamp_default[UCLAMP_CNT];
+> +
 
-Are these needed when CONFIG_UCLAMP_TASK_GROUP is disabled?
+The default group id for un-clamped root tasks is 0 because of
+this declaration, correct?
 
+>  /**
+>   * uclamp_map: reference counts a utilization "clamp value"
+>   * @value:    the utilization "clamp value" required
+> @@ -957,12 +971,25 @@ static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
+>  	group_id = uc_se->group_id;
 >  
->  union rcu_special {
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 2ba55a4afffb..f692df3787bd 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -1237,6 +1237,8 @@ static inline void init_uclamp_sched_group(void)
->  		uc_se = &root_task_group.uclamp[clamp_id];
->  		uc_se->value = uclamp_none(clamp_id);
->  		uc_se->group_id = group_id;
-> +		uc_se->effective.value = uclamp_none(clamp_id);
-> +		uc_se->effective.group_id = group_id;
->  
->  		/* Attach root TG's clamp group */
->  		uc_map[group_id].se_count = 1;
->  
-
-<snip>
-
-> @@ -7622,11 +7687,19 @@ static struct cftype cpu_legacy_files[] = {
->  		.read_u64 = cpu_util_min_read_u64,
->  		.write_u64 = cpu_util_min_write_u64,
->  	},
-> +	{
-> +		.name = "util.min.effective",
-> +		.read_u64 = cpu_util_min_effective_read_u64,
-> +	},
->  	{
->  		.name = "util.max",
->  		.read_u64 = cpu_util_max_read_u64,
->  		.write_u64 = cpu_util_max_write_u64,
->  	},
-> +	{
-> +		.name = "util.max.effective",
-> +		.read_u64 = cpu_util_max_effective_read_u64,
-> +	},
+>  #ifdef CONFIG_UCLAMP_TASK_GROUP
+> +	/*
+> +	 * Tasks in the root group, which do not have a task specific clamp
+> +	 * value, get the system default calmp value.
+> +	 */
+> +	if (group_id == UCLAMP_NOT_VALID &&
+> +	    task_group(p) == &root_task_group) {
+> +		return uclamp_default[clamp_id].group_id;
+> +	}
+> +
+>  	/* Use TG's clamp value to limit task specific values */
+>  	uc_se = &task_group(p)->uclamp[clamp_id];
+>  	if (group_id == UCLAMP_NOT_VALID ||
+>  	    clamp_value > uc_se->effective.value) {
+>  		group_id = uc_se->effective.group_id;
+>  	}
+> +#else
+> +	/* By default, all tasks get the system default clamp value */
+> +	if (group_id == UCLAMP_NOT_VALID)
+> +		return uclamp_default[clamp_id].group_id;
 >  #endif
->  	{ }	/* Terminate */
->  };
+>  
+>  	return group_id;
+> @@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
+>  	uclamp_group_put(clamp_id, prev_group_id);
+>  }
+>  
+> +int sched_uclamp_handler(struct ctl_table *table, int write,
+> +			 void __user *buffer, size_t *lenp,
+> +			 loff_t *ppos)
+> +{
+> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> +	struct uclamp_se *uc_se;
+> +	int old_min, old_max;
+> +	int result;
+> +
+> +	mutex_lock(&uclamp_mutex);
+> +
+> +	old_min = sysctl_sched_uclamp_util_min;
+> +	old_max = sysctl_sched_uclamp_util_max;
+> +
+> +	result = proc_dointvec(table, write, buffer, lenp, ppos);
+> +	if (result)
+> +		goto undo;
+> +	if (!write)
+> +		goto done;
+> +
+> +	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
+> +		goto undo;
+> +	if (sysctl_sched_uclamp_util_max > 1024)
+> +		goto undo;
+> +
+> +	/* Find a valid group_id for each required clamp value */
+> +	if (old_min != sysctl_sched_uclamp_util_min) {
+> +		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
+> +		if (result == -ENOSPC) {
+> +			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
+> +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> +			goto undo;
+> +		}
+> +		group_id[UCLAMP_MIN] = result;
+> +	}
+> +	if (old_max != sysctl_sched_uclamp_util_max) {
+> +		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
+> +		if (result == -ENOSPC) {
+> +			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
+> +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> +			goto undo;
+> +		}
+> +		group_id[UCLAMP_MAX] = result;
+> +	}
+> +
+> +	/* Update each required clamp group */
+> +	if (old_min != sysctl_sched_uclamp_util_min) {
+> +		uc_se = &uclamp_default[UCLAMP_MIN];
+> +		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
+> +				 uc_se, sysctl_sched_uclamp_util_min);
+> +	}
+> +	if (old_max != sysctl_sched_uclamp_util_max) {
+> +		uc_se = &uclamp_default[UCLAMP_MAX];
+> +		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
+> +				 uc_se, sysctl_sched_uclamp_util_max);
+> +	}
 
-Is there any reason why these are not added for the default hierarchy?
-
-Thanks,
-Pavan
+uclamp_group_get() also drops the reference on the previous group id.
+The initial group id for uclamp_default[] i.e 0 is never claimed by
+us. so we end up releasing it. But root group still points to group#0.
+is this a problem?
 
 -- 
 Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
