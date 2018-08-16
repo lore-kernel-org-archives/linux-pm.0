@@ -1,133 +1,69 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] console: Add console=auto option
-Date: Thu, 16 Aug 2018 13:23:26 -0400
-Message-ID: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
-References: <20180816141055.451-1-prarit@redhat.com>
- <20180816150948.GA10648@kroah.com>
- <4335912e-dab7-c516-d71e-47ed479c638a@redhat.com>
- <20180816113311.676971d0@gandalf.local.home>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 07/14] sched/core: uclamp: enforce last task UCLAMP_MAX
+Date: Thu, 16 Aug 2018 18:27:02 +0100
+Message-ID: <20180816172702.GH2960@e110439-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-8-patrick.bellasi@arm.com>
+ <2366fe11-db1f-4f39-df03-960535611319@arm.com>
+ <20180816164745.GF2960@e110439-lin>
+ <e99cef73-3bd8-9982-1d09-17de7ec8f76a@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180816113311.676971d0@gandalf.local.home>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <e99cef73-3bd8-9982-1d09-17de7ec8f76a@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 08/16/2018 11:33 AM, Steven Rostedt wrote:
-> On Thu, 16 Aug 2018 11:28:24 -0400
-> Prarit Bhargava <prarit@redhat.com> wrote:
+On 16-Aug 19:10, Dietmar Eggemann wrote:
+> On 08/16/2018 06:47 PM, Patrick Bellasi wrote:
+> >On 16-Aug 17:43, Dietmar Eggemann wrote:
+> >>On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
+> >>>When a util_max clamped task sleeps, its clamp constraints are removed
+> >>>from the CPU. However, the blocked utilization on that CPU can still be
+> >>>higher than the max clamp value enforced while that task was running.
+> >>>This max clamp removal when a CPU is going to be idle could thus allow
+> >>>unwanted CPU frequency increases, right while the task is not running.
+> >>
+> >>So 'rq->uclamp.flags == UCLAMP_FLAG_IDLE' means CPU is IDLE because
+> >>non-clamped tasks are tracked as well ((group_id = 0)).
+> >
+> >Right, but... with (group_id = 0) you mean that "non-clamped tasks are
+> >tracked" in the first clamp group?
 > 
->> On 08/16/2018 11:09 AM, Greg Kroah-Hartman wrote:
->>> On Thu, Aug 16, 2018 at 10:10:55AM -0400, Prarit Bhargava wrote:  
->>>> ACPI may contain an SPCR table that defines a default system console.
->>>> On ARM if the table is present then the SPCR console is enabled by default.
->>>> On x86 the SPCR console is used if 'earlycon' (no parameters) is
->>>> specified as a kernel parameter and is used only as the early console.
->>>> To use the SPCR data as a console a user must boot with 'earlycon',
->>>> grep logs & specify a console= kernel parameter, and then reboot again.
->>>>
->>>> Add 'console=auto' that enables a firmware or hardware console, and on
->>>> x86 enable the SPCR console if 'console=auto' is specified.
->>>>
->>>> Tested on systems with and without an ACPI SPCR.  The following kernel
->>>> parameters were also tested:
->>>>
->>>> console=ttyS0,115200    		works
->>>> earlycon                		works (early console only)
->>>> console=auto            		works (full console as expected)
->>>> no console or earlycon arguments	works (no output as expected)
->>>>
->>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>>> Cc: Mark Salter <msalter@redhat.com>
->>>> Cc: Al Stone <ahs3@redhat.com>
->>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>>> Cc: Len Brown <len.brown@intel.com>
->>>> Cc: Pavel Machek <pavel@ucw.cz>
->>>> Cc: x86@kernel.org
->>>> Cc: Petr Mladek <pmladek@suse.com>
->>>> Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
->>>> Cc: Steven Rostedt <rostedt@goodmis.org>
->>>> Cc: Kees Cook <keescook@chromium.org>
->>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->>>> Cc: linux-pm@vger.kernel.org
->>>> ---
->>>>  Documentation/admin-guide/kernel-parameters.txt |  1 +
->>>>  arch/x86/kernel/acpi/boot.c                     |  5 +++++
->>>>  include/linux/console.h                         |  1 +
->>>>  kernel/printk/printk.c                          | 10 ++++++++++
->>>>  4 files changed, 17 insertions(+)
->>>>
->>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->>>> index a32f2a126791..dd057224f33b 100644
->>>> --- a/Documentation/admin-guide/kernel-parameters.txt
->>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
->>>> @@ -635,6 +635,7 @@
->>>>  
->>>>  		hvc<n>	Use the hypervisor console device <n>. This is for
->>>>  			both Xen and PowerPC hypervisors.
->>>> +		auto	[X86] Enable ACPI SPCR console
->>>>  
->>>>  		If the device connected to the port is not a TTY but a braille
->>>>  		device, prepend "brl," before the device type, for instance
->>>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->>>> index 3b20607d581b..fb2616ba3b21 100644
->>>> --- a/arch/x86/kernel/acpi/boot.c
->>>> +++ b/arch/x86/kernel/acpi/boot.c
->>>> @@ -1771,3 +1771,8 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
->>>>  	e820__range_add(addr, size, E820_TYPE_ACPI);
->>>>  	e820__update_table_print();
->>>>  }
->>>> +
->>>> +void __init arch_console_setup(void)
->>>> +{
->>>> +	acpi_parse_spcr(false, true);
->>>> +}  
->>>
->>> <snip>
->>>   
->>>> +int arch_console_setup(void);  
->>>
->>> Function does not match its prototype :(
->>>
->>> How did you build this successfully?  
->>
->> Weird, it compiles on my system?
-> 
-> Are you compiling with ACPI enabled?
-> 
+> Yes. I was asking myself what will happen if there are only non-clamped
+> tasks runnable ...
 
-Yes, CONFIG_ACPI is enabled.
+Non clamped tasks is kind-of ambiguous, since you can have:
+a) tasks with util_max = UCLAMP_NOT_VALID (the default for all tasks)
+b) tasks with util_max = SCHED_CAPACITY_SCALE as a task specific
+    clamp value
 
-> It would still compile without it and use the properly prototyped
-> "weak" function.
+They are both technically not clamped but, for case b there should not
+be issue, since we will track SCHED_CAPACITY_SCALE as idle hold value.
 
-I did this:
+For case a instead is a bit different, especially when they mix with
+tasks with a valid task specific clamp value, as I've just commented
+in this posting:
 
-1.  git co linux.git
-2.  git am 0001-console-Add-console-auto-option.patch
-3.  make -j224
-
-and I have a clean compile with no warnings or errors.  My config is the
-standard Fedora .config so it has CONFIG_ACPI enabled and CONFIG_ACPI_SPCR_TABLE
-enabled.
-
-IMO the compile should have warned or error'd out.  Is there a possibility that
-some subtlety of weak functions that causes this to not be an error?
-
-In any case, I've changed the prototype and other functions to void and am
-finishing up retesting.
-
-P.
+   Message-ID: <20180816172016.GG2960@e110439-lin>
 
 > 
-> -- Steve
+> >
+> >>Maybe this is worth mentioning here?
+> >
+> >Maybe I can explicitely say that we detect that there are not RUNNABLE
+> >tasks because all the clamp groups are in UCLAMP_NOT_VALID status.
 > 
->>
->> I'll fix it though.
->>
+> Yes, would have helped me the grasp this earlier ...
+
+Right, I'm going to add a bit of text on that.
+
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
