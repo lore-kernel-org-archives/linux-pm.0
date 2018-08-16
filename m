@@ -1,29 +1,36 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 05/14] sched/cpufreq: uclamp: add utilization clamping
- for FAIR tasks
-Date: Wed, 15 Aug 2018 17:30:43 +0200
-Message-ID: <012b7e15-888c-a200-c34b-4fac0f8ab8b9@arm.com>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-6-patrick.bellasi@arm.com>
+From: Chris Chiu <chiu@endlessm.com>
+Subject: Keyboard lost after exit s2idle on ASUS UX433FN
+Date: Thu, 16 Aug 2018 10:45:12 +0800
+Message-ID: <CAB4CAwfms8_zJ=xB5wJ0Sgr6gu9-mFnqwEz2cUR-sOHdEV5zqQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180806163946.28380-6-patrick.bellasi@arm.com>
-Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: jacob.jun.pan@linux.intel.com, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
+Hi,
+    We recently hit a weird problem on the ASUS laptop UX433FN with
+latest Intel Core i7-8565U CPU on kernel 4.18. The keyboard stops
+functioning after exit s2idle. It stops firing interrupts after resume
+on any keypress. We thought it should be something wrong with i8042
+driver or even atkbd driver, so we tried to skip the suspend/resume
+path of i8042 and input devices but no luck.
 
-[...]
+    Then we tried to hack the s2idle code to fail right before it goes
+into the idle state to find out which code really cause the keyboard
+broken. It comes with an interesting finding that if it aborts s2idle
+before cpuidle_resume() in s2idle_enter(), the keyboard is fine. If it
+aborts after cpuidle_resume, then the keyboard down. At least it
+proves that even with dpm_noirq_begin() and
+dpm_noirq_suspend_devices() executed, the keyboard is still alive.
+There should be something wrong with the cpuidle.
 
-> +#else /* CONFIG_UCLAMP_TASK */
-> +static inline unsigned int uclamp_value(unsigned int cpu, int clamp_id)
-> +{
-> +	return uclamp_none(clamp_id);
-> +}
+    Going deeper into intel_idle_s2idle() which is invoked by
+cpuidle_enter_s2idle(), we found that the keyboard interrupt will no
+longer function after mwait_idle_with_hints() which just simply
+executing intel monitor and mwait instructions. So I don't know what
+should be the next step I can take. Can anyone give some pieces of
+advice?
 
-Looks like that uclamp_value() is not used outside CONFIG_UCLAMP_TASK areas.
+Chris
