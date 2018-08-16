@@ -1,116 +1,48 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 06/14] sched/cpufreq: uclamp: add utilization clamping
- for RT tasks
-Date: Thu, 16 Aug 2018 14:40:46 +0100
-Message-ID: <20180816134046.GB2960@e110439-lin>
-References: <20180806163946.28380-7-patrick.bellasi@arm.com>
- <20180807132630.GB3062@localhost.localdomain>
- <20180809153423.nsoepprhut3dv4u2@darkstar>
- <CAKfTPtCWcq2bOmaC5EDdhS8ih8Sv7Mwzn=84xerKA2tY6kXLkw@mail.gmail.com>
- <20180813101221.GA2605@e110439-lin>
- <CAKfTPtBN+K=8fqukZix2k0rdcjG8YiYagxZtzLx7kk3US+9V2Q@mail.gmail.com>
- <20180813124911.GD2605@e110439-lin>
- <CAKfTPtDgXdQso94DOwJ4+nyRpJwigEwf7JmNZcgFOg3z6iUWyw@mail.gmail.com>
- <20180813150112.GE2605@e110439-lin>
- <1b72b94c-5411-4b95-01a6-49ac978acbd5@arm.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
+ accounting
+Date: Thu, 16 Aug 2018 15:45:45 +0200
+Message-ID: <dfd21361-1776-16db-c37b-cecc5ebe6db5@arm.com>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-4-patrick.bellasi@arm.com>
+ <a24def9b-57bb-d072-5064-0421076d2e43@arm.com>
+ <20180814164905.GG2605@e110439-lin>
+ <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
+ <20180815105428.GA7388@e110439-lin>
+ <ccd9c53f-55f7-a285-39eb-4303888dafcd@arm.com>
+ <20180816133249.GA2964@e110439-lin>
+ <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1b72b94c-5411-4b95-01a6-49ac978acbd5@arm.com>
+In-Reply-To: <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <juri.lelli@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16-Aug 12:34, Dietmar Eggemann wrote:
-> On 08/13/2018 05:01 PM, Patrick Bellasi wrote:
-> >On 13-Aug 16:06, Vincent Guittot wrote:
-> >>On Mon, 13 Aug 2018 at 14:49, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> >>>On 13-Aug 14:07, Vincent Guittot wrote:
-> >>>>On Mon, 13 Aug 2018 at 12:12, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> >
-> >[...]
-> >
-> >>>Yes I agree that the current behavior is not completely clean... still
-> >>>the question is: do you reckon the problem I depicted above, i.e. RT
-> >>>workloads eclipsing the min_util required by lower priority classes?
-> >>
-> >>As said above, I don't think that there is a problem that is specific
-> >>to cross class scheduling that can't also happen in the same class.
-> >>
-> >>Regarding your example:
-> >>task TA util=40% with uclamp_min 50%
-> >>task TB util=10% with uclamp_min 0%
-> >>
-> >>If TA and TB are cfs, util=50% and it doesn't seem to be a problem
-> >>whereas TB will steal some bandwidth to TA and delay it (and i even
-> >>don't speak about the impact of the nice priority of TB)
-> >>If TA is cfs and TB is rt, Why util=50% is now a problem for TA ?
-> >
-> >You right, in the current implementation, where we _do not_
-> >distinguish among scheduling classes it's not possible to get a
-> >reasonable implementation of a per sched class clamping.
-> >
-> >>>To a certain extend I see this problem similar to the rt/dl/irq pressure
-> >>>in defining cpu_capacity, isn't it?
-> >
-> >However, I still think that higher priority classes eclipsing the
-> >clamping of lower priority classes can still be a problem.
-> >
-> >In your example above, the main difference between TA and TB being on
-> >the same class or different classes is that in the second case TB
-> >is granted to always preempt TA. We can end up with a non boosted RT
-> >task consuming all the boosted bandwidth required by a CFS task.
-> >
-> >This does not happen, apart maybe for the corner case of really
-> >different nice values, if the tasks are both CFS, since the fair
-> >scheduler will grant some progress for both of them.
-> >
-> >Thus, given the current implementation, I think it makes sense to drop
-> >the UCLAMP_SCHED_CLASS policy and stick with a more clean and
-> >consistent design.
+On 08/16/2018 03:37 PM, Quentin Perret wrote:
+>>> IMHO, if this is something which should not happen at all, a BUG_ON() is the
+>>> right thing to do here.
+>>
+>> I don't agree on that. I agree it should not happen but since it's a
+>> recoverable error it think we should not panic.
 > 
-> I agree with everything said in this thread so far.
-
-Cool!
-
-> So in case you skip UCLAMP_SCHED_CLASS [(B) combine the clamped
-> utilizations] in v4, you will only provide [A) clamp the combined
-> utilization]?
-
-Right... unless I find time to add support to per scheduling class
-tracking of clamps values. It should be relatively simple... but I
-guess it's also something we can keep as a really low prio and propose
-it once the main bits are not controversial anymore.
-
-> I assume that we don't have to guard the util clamping for rt tasks behind a
-> disabled by default sched feature because all runnable rt tasks will have
-> util_min = SCHED_CAPACITY_SCALE by default?
-
-So, that's what Quentin also proposed in a previous discussion:
-   https://lore.kernel.org/lkml/20180809155551.bp46sixk4u3ilcnh@queper01-lin/
-
-but yes, you're right: it's in my todo list to ensure that by default
-RT tasks get a task-specific util_min set SCHED_CAPACITY_SCALE.
-
-> >I'll then see if it makes sense to add a dedicated patch on top of the
-> >series to add a proper per-class clamp tracking.
+> FWIW, if this is a recoverable error, I think Linus will agree with
+> Patrick on this one :-)
 > 
-> I assume if you introduce this per-class clamping you will switch to use the
-> UCLAMP_SCHED_CLASS approach?
+> https://lkml.org/lkml/2016/10/4/1
 
-Likely... but at that point we probably don't need the sched feature
-anymore and it could be just the default and unique aggregation
-policy.
+Yeah, not really agreeing here that this is a recoverable error. 
+Besides, we only consider under-run here, what about over-run?
 
-But let see when we will have the patches... and we don't necessarily
-need them for v4.
+Currently this warning doesn't hit and if the code will be changed and 
+it hits, I still find a BUG_ON more appealing here ...
 
-Best,
-Patrick
+So this error scenario can happen over and over again and we always 
+recover from ? The important thing is that we find the culprit for this 
+behaviour as fast as possible ...
 
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Warning or bug, at least a stack trace is necessary.
