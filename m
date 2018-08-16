@@ -1,74 +1,87 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
- accounting
-Date: Thu, 16 Aug 2018 17:00:44 +0200
-Message-ID: <434c550d-65da-1b41-b949-c91b9cfdd127@arm.com>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-4-patrick.bellasi@arm.com>
- <a24def9b-57bb-d072-5064-0421076d2e43@arm.com>
- <20180814164905.GG2605@e110439-lin>
- <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
- <20180815105428.GA7388@e110439-lin>
- <ccd9c53f-55f7-a285-39eb-4303888dafcd@arm.com>
- <20180816133249.GA2964@e110439-lin>
- <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
- <dfd21361-1776-16db-c37b-cecc5ebe6db5@arm.com>
- <20180816142115.v7nybc4qfazdiz6n@queper01-lin>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] console: Add console=auto option
+Date: Thu, 16 Aug 2018 17:09:48 +0200
+Message-ID: <20180816150948.GA10648@kroah.com>
+References: <20180816141055.451-1-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180816142115.v7nybc4qfazdiz6n@queper01-lin>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20180816141055.451-1-prarit@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/16/2018 04:21 PM, Quentin Perret wrote:
-> On Thursday 16 Aug 2018 at 15:45:45 (+0200), Dietmar Eggemann wrote:
->> On 08/16/2018 03:37 PM, Quentin Perret wrote:
->>>>> IMHO, if this is something which should not happen at all, a BUG_ON() is the
->>>>> right thing to do here.
->>>>
->>>> I don't agree on that. I agree it should not happen but since it's a
->>>> recoverable error it think we should not panic.
->>>
->>> FWIW, if this is a recoverable error, I think Linus will agree with
->>> Patrick on this one :-)
->>>
->>> https://lkml.org/lkml/2016/10/4/1
->>
->> Yeah, not really agreeing here that this is a recoverable error.
+On Thu, Aug 16, 2018 at 10:10:55AM -0400, Prarit Bhargava wrote:
+> ACPI may contain an SPCR table that defines a default system console.
+> On ARM if the table is present then the SPCR console is enabled by default.
+> On x86 the SPCR console is used if 'earlycon' (no parameters) is
+> specified as a kernel parameter and is used only as the early console.
+> To use the SPCR data as a console a user must boot with 'earlycon',
+> grep logs & specify a console= kernel parameter, and then reboot again.
 > 
-> A non-recoverable scenario could be, for example, if you corrupt your
-> stack and there is absolutely _nothing_ you can do to keep the system up
-> and running, because it's just too broken. I don't feel like we're
-> talking about such an extreme case here ...
-
-Yeah, that's the extreme. But what about this lovely BUG_ON(busiest == 
-env.dst_rq) in fair.c's load_balance()?
-
-We could recover by just bailing out ;-)
-
-I guess we know by now that there are different opinions here.
-
+> Add 'console=auto' that enables a firmware or hardware console, and on
+> x86 enable the SPCR console if 'console=auto' is specified.
 > 
->> Besides, we
->> only consider under-run here, what about over-run?
-
-Important thing is to also detect the over-run, i.e. add the first task 
-and the task counter is already > 0.
-
->>
->> Currently this warning doesn't hit and if the code will be changed and it
->> hits, I still find a BUG_ON more appealing here ...
->>
->> So this error scenario can happen over and over again and we always recover
->> from ? The important thing is that we find the culprit for this behaviour as
->> fast as possible ...
+> Tested on systems with and without an ACPI SPCR.  The following kernel
+> parameters were also tested:
 > 
-> Agreed, we want to debug that ASAP, but WARN should let us do that just
-> fine, I think.
+> console=ttyS0,115200    		works
+> earlycon                		works (early console only)
+> console=auto            		works (full console as expected)
+> no console or earlycon arguments	works (no output as expected)
+> 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> Cc: Mark Salter <msalter@redhat.com>
+> Cc: Al Stone <ahs3@redhat.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: x86@kernel.org
+> Cc: Petr Mladek <pmladek@suse.com>
+> Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Kees Cook <keescook@chromium.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt |  1 +
+>  arch/x86/kernel/acpi/boot.c                     |  5 +++++
+>  include/linux/console.h                         |  1 +
+>  kernel/printk/printk.c                          | 10 ++++++++++
+>  4 files changed, 17 insertions(+)
+> 
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index a32f2a126791..dd057224f33b 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -635,6 +635,7 @@
+>  
+>  		hvc<n>	Use the hypervisor console device <n>. This is for
+>  			both Xen and PowerPC hypervisors.
+> +		auto	[X86] Enable ACPI SPCR console
+>  
+>  		If the device connected to the port is not a TTY but a braille
+>  		device, prepend "brl," before the device type, for instance
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 3b20607d581b..fb2616ba3b21 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -1771,3 +1771,8 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+>  	e820__range_add(addr, size, E820_TYPE_ACPI);
+>  	e820__update_table_print();
+>  }
+> +
+> +void __init arch_console_setup(void)
+> +{
+> +	acpi_parse_spcr(false, true);
+> +}
 
-+1.
+<snip>
+
+> +int arch_console_setup(void);
+
+Function does not match its prototype :(
+
+How did you build this successfully?
