@@ -1,168 +1,112 @@
-From: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: Re: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
-Date: Thu, 16 Aug 2018 14:43:48 +0530
-Message-ID: <20180816091348.GD2661@codeaurora.org>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-13-patrick.bellasi@arm.com>
+From: Chris Chiu <chiu@endlessm.com>
+Subject: Re: Keyboard lost after exit s2idle on ASUS UX433FN
+Date: Thu, 16 Aug 2018 18:05:53 +0800
+Message-ID: <CAB4CAweumP0qZEJGsNNeEEH3-g13E1dGQD9+zsh1fKysA9MsuQ@mail.gmail.com>
+References: <CAB4CAwfms8_zJ=xB5wJ0Sgr6gu9-mFnqwEz2cUR-sOHdEV5zqQ@mail.gmail.com>
+ <CAJZ5v0gKfyB7=5ZGj9uXejoBjkuf2snsKwYJM2Ar1_Vg8A8SCg@mail.gmail.com>
+ <CAB4CAwfdwU6FQVEWWO2dLw-RJHTpqWeuk_BiH04ssE=iCOrJ+A@mail.gmail.com> <CAJZ5v0i6PXg1rTjBTZy3tGVihmb84qZpqzmHrwSdACWZ+SOgYg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-13-patrick.bellasi@arm.com>
+In-Reply-To: <CAJZ5v0i6PXg1rTjBTZy3tGVihmb84qZpqzmHrwSdACWZ+SOgYg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 06, 2018 at 05:39:44PM +0100, Patrick Bellasi wrote:
-> Clamp values cannot be tuned at the root cgroup level. Moreover, because
-> of the delegation model requirements and how the parent clamps
-> propagation works, if we want to enable subgroups to set a non null
-> util.min, we need to be able to configure the root group util.min to the
-> allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
-> 
-> Unfortunately this setup will also mean that all tasks running in the
-> root group, will always get a maximum util.min clamp, unless they have a
-> lower task specific clamp which is definitively not a desirable default
-> configuration.
-> 
-> Let's fix this by explicitly adding a system default configuration
-> (sysctl_sched_uclamp_util_{min,max}) which works as a restrictive clamp
-> for all tasks running on the root group.
-> 
-> This interface is available independently from cgroups, thus providing a
-> complete solution for system wide utilization clamping configuration.
-> 
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Paul Turner <pjt@google.com>
-> Cc: Suren Baghdasaryan <surenb@google.com>
-> Cc: Todd Kjos <tkjos@google.com>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Steve Muckle <smuckle@google.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
+On Thu, Aug 16, 2018 at 4:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Aug 16, 2018 at 10:18 AM Chris Chiu <chiu@endlessm.com> wrote:
+>>
+>> On Thu, Aug 16, 2018 at 3:26 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> > On Thu, Aug 16, 2018 at 4:45 AM Chris Chiu <chiu@endlessm.com> wrote:
+>> >>
+>> >> Hi,
+>> >>     We recently hit a weird problem on the ASUS laptop UX433FN with
+>> >> latest Intel Core i7-8565U CPU on kernel 4.18. The keyboard stops
+>> >> functioning after exit s2idle. It stops firing interrupts after resume
+>> >> on any keypress. We thought it should be something wrong with i8042
+>> >> driver or even atkbd driver, so we tried to skip the suspend/resume
+>> >> path of i8042 and input devices but no luck.
+>> >>
+>> >>     Then we tried to hack the s2idle code to fail right before it goes
+>> >> into the idle state to find out which code really cause the keyboard
+>> >> broken. It comes with an interesting finding that if it aborts s2idle
+>> >> before cpuidle_resume() in s2idle_enter(), the keyboard is fine. If it
+>> >> aborts after cpuidle_resume, then the keyboard down. At least it
+>> >> proves that even with dpm_noirq_begin() and
+>> >> dpm_noirq_suspend_devices() executed, the keyboard is still alive.
+>> >> There should be something wrong with the cpuidle.
+>> >>
+>> >>     Going deeper into intel_idle_s2idle() which is invoked by
+>> >> cpuidle_enter_s2idle(), we found that the keyboard interrupt will no
+>> >> longer function after mwait_idle_with_hints() which just simply
+>> >> executing intel monitor and mwait instructions. So I don't know what
+>> >> should be the next step I can take. Can anyone give some pieces of
+>> >> advice?
+>> >
+>> > It may indicate that the deepest C-states used by s2idle simply don't
+>> > work correctly on the affected system.
+>> >
+>> > To verify this, you can try to disable the deepest C-states via sysfs
+>> > using the "disable" attribute under
+>> > /sys/devices/system/cpu/cpuX/cpuidle/stateX/
+>> >
+>> Thanks for the great help. I can have the keyboard work after s2idle with
+>> the following command
+>>
+>> echo 1 > /sys/devices/system/cpu/cpuX/cpuidle/state8/disable
+>>
+>> cpuX, X can be 0 to 7 on this CPU.
+>> And only state8 disable would work, it fails on state 0~7 disabled.
+>
+> Well, if you disable one of states 0-7 alone, it will still attempt to
+> use state8. :-)
+>
+> It generally uses the deepest one enabled.
+>
+>> There're 9 (0-8) states on the cpuidle of this machine. However, I have another
+>> laptop with the same CPU Intel Core i7-8565U which only have 4(0-3) states
+>> under the same '/sys/devices/system/cpu/cpuX/cpuidle/' entry. Sorry that I
+>> don't have enough background knowledge about cpuidle. I thought the #C
+>> state should be depend on CPU, but why the same i7-8565 has different
+>> number of C-states?
+>
+> What is there in /sys/devices/system/cpu/cpuidle/current_driver on
+> each of these systems?
+>
+>>  And for this case, should I just disable C-8 state or there
+>> should be a generic fix with it?
+>
+> No, it just doesn't work specifically on your system, unfortunately,
+> so you need to disable state8 manually, at least for the time being.
+> If all UX433FNs turn out to be affected, we may consider adding a
+> quirk for them, but for now we just don't know.
+>
+> Do the "name" and "desc" sysfs files of state8 on the affected system
+> contain "C10" and "MWAIT 0x60", respectively?
+>
+> To make a more persistent record of this issue, you can file a bug at
+> bugzilla.kernel.org against cpuidle and put all of the relevant
+> information into it.  It is possible that some special magic is needed
+> to make the deepest idle state safe on this system and it may be hard
+> to find out, but at least it is good to know that this happens.
+>
 
-<snip>
+Thanks. I've reported on https://bugzilla.kernel.org/show_bug.cgi?id=200829.
+Also, include information you request. Please let me know if anything missing.
 
-> +/*
-> + * Minimum utilization for tasks in the root cgroup
-> + * default: 0
-> + */
-> +unsigned int sysctl_sched_uclamp_util_min;
-> +
-> +/*
-> + * Maximum utilization for tasks in the root cgroup
-> + * default: 1024
-> + */
-> +unsigned int sysctl_sched_uclamp_util_max = 1024;
-> +
-> +static struct uclamp_se uclamp_default[UCLAMP_CNT];
-> +
+Chris
 
-The default group id for un-clamped root tasks is 0 because of
-this declaration, correct?
-
->  /**
->   * uclamp_map: reference counts a utilization "clamp value"
->   * @value:    the utilization "clamp value" required
-> @@ -957,12 +971,25 @@ static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
->  	group_id = uc_se->group_id;
->  
->  #ifdef CONFIG_UCLAMP_TASK_GROUP
-> +	/*
-> +	 * Tasks in the root group, which do not have a task specific clamp
-> +	 * value, get the system default calmp value.
-> +	 */
-> +	if (group_id == UCLAMP_NOT_VALID &&
-> +	    task_group(p) == &root_task_group) {
-> +		return uclamp_default[clamp_id].group_id;
-> +	}
-> +
->  	/* Use TG's clamp value to limit task specific values */
->  	uc_se = &task_group(p)->uclamp[clamp_id];
->  	if (group_id == UCLAMP_NOT_VALID ||
->  	    clamp_value > uc_se->effective.value) {
->  		group_id = uc_se->effective.group_id;
->  	}
-> +#else
-> +	/* By default, all tasks get the system default clamp value */
-> +	if (group_id == UCLAMP_NOT_VALID)
-> +		return uclamp_default[clamp_id].group_id;
->  #endif
->  
->  	return group_id;
-> @@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
->  	uclamp_group_put(clamp_id, prev_group_id);
->  }
->  
-> +int sched_uclamp_handler(struct ctl_table *table, int write,
-> +			 void __user *buffer, size_t *lenp,
-> +			 loff_t *ppos)
-> +{
-> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> +	struct uclamp_se *uc_se;
-> +	int old_min, old_max;
-> +	int result;
-> +
-> +	mutex_lock(&uclamp_mutex);
-> +
-> +	old_min = sysctl_sched_uclamp_util_min;
-> +	old_max = sysctl_sched_uclamp_util_max;
-> +
-> +	result = proc_dointvec(table, write, buffer, lenp, ppos);
-> +	if (result)
-> +		goto undo;
-> +	if (!write)
-> +		goto done;
-> +
-> +	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
-> +		goto undo;
-> +	if (sysctl_sched_uclamp_util_max > 1024)
-> +		goto undo;
-> +
-> +	/* Find a valid group_id for each required clamp value */
-> +	if (old_min != sysctl_sched_uclamp_util_min) {
-> +		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
-> +		if (result == -ENOSPC) {
-> +			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
-> +			       CONFIG_UCLAMP_GROUPS_COUNT);
-> +			goto undo;
-> +		}
-> +		group_id[UCLAMP_MIN] = result;
-> +	}
-> +	if (old_max != sysctl_sched_uclamp_util_max) {
-> +		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
-> +		if (result == -ENOSPC) {
-> +			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
-> +			       CONFIG_UCLAMP_GROUPS_COUNT);
-> +			goto undo;
-> +		}
-> +		group_id[UCLAMP_MAX] = result;
-> +	}
-> +
-> +	/* Update each required clamp group */
-> +	if (old_min != sysctl_sched_uclamp_util_min) {
-> +		uc_se = &uclamp_default[UCLAMP_MIN];
-> +		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
-> +				 uc_se, sysctl_sched_uclamp_util_min);
-> +	}
-> +	if (old_max != sysctl_sched_uclamp_util_max) {
-> +		uc_se = &uclamp_default[UCLAMP_MAX];
-> +		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
-> +				 uc_se, sysctl_sched_uclamp_util_max);
-> +	}
-
-uclamp_group_get() also drops the reference on the previous group id.
-The initial group id for uclamp_default[] i.e 0 is never claimed by
-us. so we end up releasing it. But root group still points to group#0.
-is this a problem?
-
--- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
+>> > Is s2idle the default suspend method on that system?  If so, have you
+>> > checked whether or not suspend-to-RAM works too?
+>> >
+>>
+>> Yes, it's default s2idle. If I do 'echo mem > /sys/power/state', the keyboard
+>> would still fail.
+>
+> OK
+>
+> What's there in /sys/power/mem_sleep ?
+>
+> Thanks,
+> Rafael
