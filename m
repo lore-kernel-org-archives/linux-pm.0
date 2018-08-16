@@ -1,59 +1,193 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
- accounting
-Date: Thu, 16 Aug 2018 15:21:17 +0100
-Message-ID: <20180816142115.v7nybc4qfazdiz6n@queper01-lin>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
+Date: Thu, 16 Aug 2018 15:37:34 +0100
+Message-ID: <20180816143734.GE2960@e110439-lin>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-4-patrick.bellasi@arm.com>
- <a24def9b-57bb-d072-5064-0421076d2e43@arm.com>
- <20180814164905.GG2605@e110439-lin>
- <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
- <20180815105428.GA7388@e110439-lin>
- <ccd9c53f-55f7-a285-39eb-4303888dafcd@arm.com>
- <20180816133249.GA2964@e110439-lin>
- <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
- <dfd21361-1776-16db-c37b-cecc5ebe6db5@arm.com>
+ <20180806163946.28380-13-patrick.bellasi@arm.com>
+ <20180816091348.GD2661@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <dfd21361-1776-16db-c37b-cecc5ebe6db5@arm.com>
+In-Reply-To: <20180816091348.GD2661@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Pavan Kondeti <pkondeti@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 16 Aug 2018 at 15:45:45 (+0200), Dietmar Eggemann wrote:
-> On 08/16/2018 03:37 PM, Quentin Perret wrote:
-> > > > IMHO, if this is something which should not happen at all, a BUG_ON() is the
-> > > > right thing to do here.
-> > > 
-> > > I don't agree on that. I agree it should not happen but since it's a
-> > > recoverable error it think we should not panic.
+On 16-Aug 14:43, Pavan Kondeti wrote:
+> On Mon, Aug 06, 2018 at 05:39:44PM +0100, Patrick Bellasi wrote:
+> > Clamp values cannot be tuned at the root cgroup level. Moreover, because
+> > of the delegation model requirements and how the parent clamps
+> > propagation works, if we want to enable subgroups to set a non null
+> > util.min, we need to be able to configure the root group util.min to the
+> > allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
 > > 
-> > FWIW, if this is a recoverable error, I think Linus will agree with
-> > Patrick on this one :-)
+> > Unfortunately this setup will also mean that all tasks running in the
+> > root group, will always get a maximum util.min clamp, unless they have a
+> > lower task specific clamp which is definitively not a desirable default
+> > configuration.
 > > 
-> > https://lkml.org/lkml/2016/10/4/1
+> > Let's fix this by explicitly adding a system default configuration
+> > (sysctl_sched_uclamp_util_{min,max}) which works as a restrictive clamp
+> > for all tasks running on the root group.
+> > 
+> > This interface is available independently from cgroups, thus providing a
+> > complete solution for system wide utilization clamping configuration.
+> > 
+> > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Tejun Heo <tj@kernel.org>
+> > Cc: Paul Turner <pjt@google.com>
+> > Cc: Suren Baghdasaryan <surenb@google.com>
+> > Cc: Todd Kjos <tkjos@google.com>
+> > Cc: Joel Fernandes <joelaf@google.com>
+> > Cc: Steve Muckle <smuckle@google.com>
+> > Cc: Juri Lelli <juri.lelli@redhat.com>
+> > Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > Cc: Morten Rasmussen <morten.rasmussen@arm.com>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
 > 
-> Yeah, not really agreeing here that this is a recoverable error.
-
-A non-recoverable scenario could be, for example, if you corrupt your
-stack and there is absolutely _nothing_ you can do to keep the system up
-and running, because it's just too broken. I don't feel like we're
-talking about such an extreme case here ...
-
-> Besides, we
-> only consider under-run here, what about over-run?
+> <snip>
 > 
-> Currently this warning doesn't hit and if the code will be changed and it
-> hits, I still find a BUG_ON more appealing here ...
+> > +/*
+> > + * Minimum utilization for tasks in the root cgroup
+> > + * default: 0
+> > + */
+> > +unsigned int sysctl_sched_uclamp_util_min;
+> > +
+> > +/*
+> > + * Maximum utilization for tasks in the root cgroup
+> > + * default: 1024
+> > + */
+> > +unsigned int sysctl_sched_uclamp_util_max = 1024;
+> > +
+> > +static struct uclamp_se uclamp_default[UCLAMP_CNT];
+> > +
 > 
-> So this error scenario can happen over and over again and we always recover
-> from ? The important thing is that we find the culprit for this behaviour as
-> fast as possible ...
+> The default group id for un-clamped root tasks is 0 because of
+> this declaration, correct?
 
-Agreed, we want to debug that ASAP, but WARN should let us do that just
-fine, I think.
+Yes, the clamp group 0 is (should be) initialized to track the system
+default values:
 
-Quentin
+  util_min = 0 and util_max = SCHED_CAPACITY_SCALE
+
+but...
+
+> >  /**
+> >   * uclamp_map: reference counts a utilization "clamp value"
+> >   * @value:    the utilization "clamp value" required
+> > @@ -957,12 +971,25 @@ static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
+> >  	group_id = uc_se->group_id;
+> >  
+> >  #ifdef CONFIG_UCLAMP_TASK_GROUP
+> > +	/*
+> > +	 * Tasks in the root group, which do not have a task specific clamp
+> > +	 * value, get the system default calmp value.
+> > +	 */
+> > +	if (group_id == UCLAMP_NOT_VALID &&
+> > +	    task_group(p) == &root_task_group) {
+> > +		return uclamp_default[clamp_id].group_id;
+> > +	}
+> > +
+> >  	/* Use TG's clamp value to limit task specific values */
+> >  	uc_se = &task_group(p)->uclamp[clamp_id];
+> >  	if (group_id == UCLAMP_NOT_VALID ||
+> >  	    clamp_value > uc_se->effective.value) {
+> >  		group_id = uc_se->effective.group_id;
+> >  	}
+> > +#else
+> > +	/* By default, all tasks get the system default clamp value */
+> > +	if (group_id == UCLAMP_NOT_VALID)
+> > +		return uclamp_default[clamp_id].group_id;
+> >  #endif
+> >  
+> >  	return group_id;
+> > @@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
+> >  	uclamp_group_put(clamp_id, prev_group_id);
+> >  }
+> >  
+> > +int sched_uclamp_handler(struct ctl_table *table, int write,
+> > +			 void __user *buffer, size_t *lenp,
+> > +			 loff_t *ppos)
+> > +{
+> > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> > +	struct uclamp_se *uc_se;
+> > +	int old_min, old_max;
+> > +	int result;
+> > +
+> > +	mutex_lock(&uclamp_mutex);
+> > +
+> > +	old_min = sysctl_sched_uclamp_util_min;
+> > +	old_max = sysctl_sched_uclamp_util_max;
+> > +
+> > +	result = proc_dointvec(table, write, buffer, lenp, ppos);
+> > +	if (result)
+> > +		goto undo;
+> > +	if (!write)
+> > +		goto done;
+> > +
+> > +	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
+> > +		goto undo;
+> > +	if (sysctl_sched_uclamp_util_max > 1024)
+> > +		goto undo;
+> > +
+> > +	/* Find a valid group_id for each required clamp value */
+> > +	if (old_min != sysctl_sched_uclamp_util_min) {
+> > +		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
+> > +		if (result == -ENOSPC) {
+> > +			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
+> > +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> > +			goto undo;
+> > +		}
+> > +		group_id[UCLAMP_MIN] = result;
+> > +	}
+> > +	if (old_max != sysctl_sched_uclamp_util_max) {
+> > +		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
+> > +		if (result == -ENOSPC) {
+> > +			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
+> > +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> > +			goto undo;
+> > +		}
+> > +		group_id[UCLAMP_MAX] = result;
+> > +	}
+> > +
+> > +	/* Update each required clamp group */
+> > +	if (old_min != sysctl_sched_uclamp_util_min) {
+> > +		uc_se = &uclamp_default[UCLAMP_MIN];
+> > +		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
+> > +				 uc_se, sysctl_sched_uclamp_util_min);
+> > +	}
+> > +	if (old_max != sysctl_sched_uclamp_util_max) {
+> > +		uc_se = &uclamp_default[UCLAMP_MAX];
+> > +		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
+> > +				 uc_se, sysctl_sched_uclamp_util_max);
+> > +	}
+> 
+
+... you are right hereafter: there are still some lose points.
+
+> uclamp_group_get() also drops the reference on the previous group id.
+> The initial group id for uclamp_default[] i.e 0 is never claimed by
+> us. so we end up releasing it. But root group still points to group#0.
+> is this a problem?
+
+No, it's not correct... and it's similar to the issue you already
+raised for the refcounting decrement on task exit.
+
+I'm working on v4 to review and fixup all the lose points and missing
+initializations (like in this case) related to the clamp groups
+mapping refcounting.
+
+Thanks for pointing this out!
+
+Best,
+Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
