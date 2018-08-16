@@ -1,110 +1,133 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 07/14] sched/core: uclamp: enforce last task UCLAMP_MAX
-Date: Thu, 16 Aug 2018 18:20:17 +0100
-Message-ID: <20180816172016.GG2960@e110439-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-8-patrick.bellasi@arm.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] console: Add console=auto option
+Date: Thu, 16 Aug 2018 13:23:26 -0400
+Message-ID: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+References: <20180816141055.451-1-prarit@redhat.com>
+ <20180816150948.GA10648@kroah.com>
+ <4335912e-dab7-c516-d71e-47ed479c638a@redhat.com>
+ <20180816113311.676971d0@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-8-patrick.bellasi@arm.com>
+In-Reply-To: <20180816113311.676971d0@gandalf.local.home>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06-Aug 17:39, Patrick Bellasi wrote:
-> When a util_max clamped task sleeps, its clamp constraints are removed
-> from the CPU. However, the blocked utilization on that CPU can still be
-> higher than the max clamp value enforced while that task was running.
-> This max clamp removal when a CPU is going to be idle could thus allow
-> unwanted CPU frequency increases, right while the task is not running.
+
+
+On 08/16/2018 11:33 AM, Steven Rostedt wrote:
+> On Thu, 16 Aug 2018 11:28:24 -0400
+> Prarit Bhargava <prarit@redhat.com> wrote:
 > 
-> This can happen, for example, where there is another (smaller) task
-> running on a different CPU of the same frequency domain.
-> In this case, when we aggregate the utilization of all the CPUs in a
-> shared frequency domain, schedutil can still see the full non clamped
-> blocked utilization of all the CPUs and thus eventually increase the
-> frequency.
+>> On 08/16/2018 11:09 AM, Greg Kroah-Hartman wrote:
+>>> On Thu, Aug 16, 2018 at 10:10:55AM -0400, Prarit Bhargava wrote:  
+>>>> ACPI may contain an SPCR table that defines a default system console.
+>>>> On ARM if the table is present then the SPCR console is enabled by default.
+>>>> On x86 the SPCR console is used if 'earlycon' (no parameters) is
+>>>> specified as a kernel parameter and is used only as the early console.
+>>>> To use the SPCR data as a console a user must boot with 'earlycon',
+>>>> grep logs & specify a console= kernel parameter, and then reboot again.
+>>>>
+>>>> Add 'console=auto' that enables a firmware or hardware console, and on
+>>>> x86 enable the SPCR console if 'console=auto' is specified.
+>>>>
+>>>> Tested on systems with and without an ACPI SPCR.  The following kernel
+>>>> parameters were also tested:
+>>>>
+>>>> console=ttyS0,115200    		works
+>>>> earlycon                		works (early console only)
+>>>> console=auto            		works (full console as expected)
+>>>> no console or earlycon arguments	works (no output as expected)
+>>>>
+>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>> Cc: Mark Salter <msalter@redhat.com>
+>>>> Cc: Al Stone <ahs3@redhat.com>
+>>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>>>> Cc: Len Brown <len.brown@intel.com>
+>>>> Cc: Pavel Machek <pavel@ucw.cz>
+>>>> Cc: x86@kernel.org
+>>>> Cc: Petr Mladek <pmladek@suse.com>
+>>>> Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+>>>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>>>> Cc: Kees Cook <keescook@chromium.org>
+>>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>>> Cc: linux-pm@vger.kernel.org
+>>>> ---
+>>>>  Documentation/admin-guide/kernel-parameters.txt |  1 +
+>>>>  arch/x86/kernel/acpi/boot.c                     |  5 +++++
+>>>>  include/linux/console.h                         |  1 +
+>>>>  kernel/printk/printk.c                          | 10 ++++++++++
+>>>>  4 files changed, 17 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+>>>> index a32f2a126791..dd057224f33b 100644
+>>>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>>>> @@ -635,6 +635,7 @@
+>>>>  
+>>>>  		hvc<n>	Use the hypervisor console device <n>. This is for
+>>>>  			both Xen and PowerPC hypervisors.
+>>>> +		auto	[X86] Enable ACPI SPCR console
+>>>>  
+>>>>  		If the device connected to the port is not a TTY but a braille
+>>>>  		device, prepend "brl," before the device type, for instance
+>>>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>>>> index 3b20607d581b..fb2616ba3b21 100644
+>>>> --- a/arch/x86/kernel/acpi/boot.c
+>>>> +++ b/arch/x86/kernel/acpi/boot.c
+>>>> @@ -1771,3 +1771,8 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+>>>>  	e820__range_add(addr, size, E820_TYPE_ACPI);
+>>>>  	e820__update_table_print();
+>>>>  }
+>>>> +
+>>>> +void __init arch_console_setup(void)
+>>>> +{
+>>>> +	acpi_parse_spcr(false, true);
+>>>> +}  
+>>>
+>>> <snip>
+>>>   
+>>>> +int arch_console_setup(void);  
+>>>
+>>> Function does not match its prototype :(
+>>>
+>>> How did you build this successfully?  
+>>
+>> Weird, it compiles on my system?
 > 
-> Let's fix this by using:
+> Are you compiling with ACPI enabled?
 > 
->    uclamp_cpu_put_id(UCLAMP_MAX)
->       uclamp_cpu_update(last_clamp_value)
+
+Yes, CONFIG_ACPI is enabled.
+
+> It would still compile without it and use the properly prototyped
+> "weak" function.
+
+I did this:
+
+1.  git co linux.git
+2.  git am 0001-console-Add-console-auto-option.patch
+3.  make -j224
+
+and I have a clean compile with no warnings or errors.  My config is the
+standard Fedora .config so it has CONFIG_ACPI enabled and CONFIG_ACPI_SPCR_TABLE
+enabled.
+
+IMO the compile should have warned or error'd out.  Is there a possibility that
+some subtlety of weak functions that causes this to not be an error?
+
+In any case, I've changed the prototype and other functions to void and am
+finishing up retesting.
+
+P.
+
 > 
-> to detect when a CPU has no more RUNNABLE clamped tasks and to flag this
-> condition. Thus, while a CPU is idle, we can still enforce the last used
-> clamp value for it.
+> -- Steve
 > 
-> To the contrary, we do not track any UCLAMP_MIN since, while a CPU is
-> idle, we don't want to enforce any minimum frequency
-> Indeed, we rely just on blocked load decay to smoothly reduce the
-> frequency.
-
-[...]
-
-> @@ -906,7 +906,8 @@ uclamp_group_find(int clamp_id, unsigned int clamp_value)
->   * For the specified clamp index, this method computes the new CPU utilization
->   * clamp to use until the next change on the set of RUNNABLE tasks on that CPU.
->   */
-> -static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
-> +static inline void uclamp_cpu_update(struct rq *rq, int clamp_id,
-> +				     unsigned int last_clamp_value)
->  {
->  	struct uclamp_group *uc_grp = &rq->uclamp.group[clamp_id][0];
->  	int max_value = UCLAMP_NOT_VALID;
-> @@ -924,6 +925,19 @@ static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
->  		if (max_value >= SCHED_CAPACITY_SCALE)
->  			break;
->  	}
-> +
-> +	/*
-> +	 * Just for the UCLAMP_MAX value, in case there are no RUNNABLE
-> +	 * task, we keep the CPU clamped to the last task's clamp value.
-> +	 * This avoids frequency spikes to MAX when one CPU, with an high
-> +	 * blocked utilization, sleeps and another CPU, in the same frequency
-> +	 * domain, do not see anymore the clamp on the first CPU.
-> +	 */
-> +	if (clamp_id == UCLAMP_MAX && max_value == UCLAMP_NOT_VALID) {
-> +		rq->uclamp.flags |= UCLAMP_FLAG_IDLE;
-> +		max_value = last_clamp_value;
-> +	}
-> +
->  	rq->uclamp.value[clamp_id] = max_value;
->  }
->  
-> @@ -953,13 +967,26 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
->  	uc_grp = &rq->uclamp.group[clamp_id][0];
->  	uc_grp[group_id].tasks += 1;
->  
-> +	/* Force clamp update on idle exit */
-> +	uc_cpu = &rq->uclamp;
-> +	clamp_value = p->uclamp[clamp_id].value;
-> +	if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
-> +		/*
-> +		 * This function is called for both UCLAMP_MIN (before) and
-> +		 * UCLAMP_MAX (after). Let's reset the flag only the second
-> +		 * once we know that UCLAMP_MIN has been already updated.
-> +		 */
-> +		if (clamp_id == UCLAMP_MAX)
-> +			uc_cpu->flags &= ~UCLAMP_FLAG_IDLE;
-> +		uc_cpu->value[clamp_id] = clamp_value;
-> +		return;
-> +	}
-
-Just notice that the code block above is not reached when we enqueue a task
-without a valid clamp group, i.e. an un-clamped task, which is the
-default for all tasks.
-
-The fix should be as simple as moving this block at the beginning of
-uclamp_cpu_update() so that we always un-conditionally release the
-clamp holding as soon as we enqueue the first task after a CPU wakeup,
-i.e. when the UCLAMP_FLAG_IDLE flag is set.
-
-Will fix this on v4.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+>>
+>> I'll fix it though.
+>>
