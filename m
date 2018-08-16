@@ -1,48 +1,40 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
- accounting
-Date: Thu, 16 Aug 2018 15:45:45 +0200
-Message-ID: <dfd21361-1776-16db-c37b-cecc5ebe6db5@arm.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 05/14] sched/cpufreq: uclamp: add utilization clamping
+ for FAIR tasks
+Date: Thu, 16 Aug 2018 14:53:00 +0100
+Message-ID: <20180816135300.GC2960@e110439-lin>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-4-patrick.bellasi@arm.com>
- <a24def9b-57bb-d072-5064-0421076d2e43@arm.com>
- <20180814164905.GG2605@e110439-lin>
- <7c45c1a8-24cb-6798-5b6f-3b5dfc9b490d@arm.com>
- <20180815105428.GA7388@e110439-lin>
- <ccd9c53f-55f7-a285-39eb-4303888dafcd@arm.com>
- <20180816133249.GA2964@e110439-lin>
- <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
+ <20180806163946.28380-6-patrick.bellasi@arm.com>
+ <012b7e15-888c-a200-c34b-4fac0f8ab8b9@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180816133737.xfwfoenbhb5wnndi@queper01-lin>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <012b7e15-888c-a200-c34b-4fac0f8ab8b9@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/16/2018 03:37 PM, Quentin Perret wrote:
->>> IMHO, if this is something which should not happen at all, a BUG_ON() is the
->>> right thing to do here.
->>
->> I don't agree on that. I agree it should not happen but since it's a
->> recoverable error it think we should not panic.
+On 15-Aug 17:30, Dietmar Eggemann wrote:
+> On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 > 
-> FWIW, if this is a recoverable error, I think Linus will agree with
-> Patrick on this one :-)
+> [...]
 > 
-> https://lkml.org/lkml/2016/10/4/1
+> >+#else /* CONFIG_UCLAMP_TASK */
+> >+static inline unsigned int uclamp_value(unsigned int cpu, int clamp_id)
+> >+{
+> >+	return uclamp_none(clamp_id);
+> >+}
+> 
+> Looks like that uclamp_value() is not used outside CONFIG_UCLAMP_TASK areas.
 
-Yeah, not really agreeing here that this is a recoverable error. 
-Besides, we only consider under-run here, what about over-run?
+Yes, you right... I use it on some debug patches I'm tracking on
+top of the series... but I can defenitivel drop it in v4.
 
-Currently this warning doesn't hit and if the code will be changed and 
-it hits, I still find a BUG_ON more appealing here ...
+Cheers Patrick
 
-So this error scenario can happen over and over again and we always 
-recover from ? The important thing is that we find the culprit for this 
-behaviour as fast as possible ...
+-- 
+#include <best/regards.h>
 
-Warning or bug, at least a stack trace is necessary.
+Patrick Bellasi
