@@ -1,104 +1,115 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Keyboard lost after exit s2idle on ASUS UX433FN
-Date: Thu, 16 Aug 2018 10:54:15 +0200
-Message-ID: <CAJZ5v0i6PXg1rTjBTZy3tGVihmb84qZpqzmHrwSdACWZ+SOgYg@mail.gmail.com>
-References: <CAB4CAwfms8_zJ=xB5wJ0Sgr6gu9-mFnqwEz2cUR-sOHdEV5zqQ@mail.gmail.com>
- <CAJZ5v0gKfyB7=5ZGj9uXejoBjkuf2snsKwYJM2Ar1_Vg8A8SCg@mail.gmail.com> <CAB4CAwfdwU6FQVEWWO2dLw-RJHTpqWeuk_BiH04ssE=iCOrJ+A@mail.gmail.com>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
+Date: Thu, 16 Aug 2018 14:39:06 +0530
+Message-ID: <20180816090906.GC2661@codeaurora.org>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-10-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAB4CAwfdwU6FQVEWWO2dLw-RJHTpqWeuk_BiH04ssE=iCOrJ+A@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180806163946.28380-10-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chris Chiu <chiu@endlessm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 16, 2018 at 10:18 AM Chris Chiu <chiu@endlessm.com> wrote:
->
-> On Thu, Aug 16, 2018 at 3:26 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Thu, Aug 16, 2018 at 4:45 AM Chris Chiu <chiu@endlessm.com> wrote:
-> >>
-> >> Hi,
-> >>     We recently hit a weird problem on the ASUS laptop UX433FN with
-> >> latest Intel Core i7-8565U CPU on kernel 4.18. The keyboard stops
-> >> functioning after exit s2idle. It stops firing interrupts after resume
-> >> on any keypress. We thought it should be something wrong with i8042
-> >> driver or even atkbd driver, so we tried to skip the suspend/resume
-> >> path of i8042 and input devices but no luck.
-> >>
-> >>     Then we tried to hack the s2idle code to fail right before it goes
-> >> into the idle state to find out which code really cause the keyboard
-> >> broken. It comes with an interesting finding that if it aborts s2idle
-> >> before cpuidle_resume() in s2idle_enter(), the keyboard is fine. If it
-> >> aborts after cpuidle_resume, then the keyboard down. At least it
-> >> proves that even with dpm_noirq_begin() and
-> >> dpm_noirq_suspend_devices() executed, the keyboard is still alive.
-> >> There should be something wrong with the cpuidle.
-> >>
-> >>     Going deeper into intel_idle_s2idle() which is invoked by
-> >> cpuidle_enter_s2idle(), we found that the keyboard interrupt will no
-> >> longer function after mwait_idle_with_hints() which just simply
-> >> executing intel monitor and mwait instructions. So I don't know what
-> >> should be the next step I can take. Can anyone give some pieces of
-> >> advice?
-> >
-> > It may indicate that the deepest C-states used by s2idle simply don't
-> > work correctly on the affected system.
-> >
-> > To verify this, you can try to disable the deepest C-states via sysfs
-> > using the "disable" attribute under
-> > /sys/devices/system/cpu/cpuX/cpuidle/stateX/
-> >
-> Thanks for the great help. I can have the keyboard work after s2idle with
-> the following command
->
-> echo 1 > /sys/devices/system/cpu/cpuX/cpuidle/state8/disable
->
-> cpuX, X can be 0 to 7 on this CPU.
-> And only state8 disable would work, it fails on state 0~7 disabled.
+On Mon, Aug 06, 2018 at 05:39:41PM +0100, Patrick Bellasi wrote:
+> In order to properly support hierarchical resources control, the cgroup
+> delegation model requires that attribute writes from a child group never
+> fail but still are (potentially) constrained based on parent's assigned
+> resources. This requires to properly propagate and aggregate parent
+> attributes down to its descendants.
+> 
+> Let's implement this mechanism by adding a new "effective" clamp value
+> for each task group. The effective clamp value is defined as the smaller
+> value between the clamp value of a group and the effective clamp value
+> of its parent. This represent also the clamp value which is actually
+> used to clamp tasks in each task group.
+> 
+> Since it can be interesting for tasks in a cgroup to know exactly what
+> is the currently propagated/enforced configuration, the effective clamp
+> values are exposed to user-space by means of a new pair of read-only
+> attributes: cpu.util.{min,max}.effective.
+> 
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Tejun Heo <tj@kernel.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Suren Baghdasaryan <surenb@google.com>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Juri Lelli <juri.lelli@redhat.com>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+>  
 
-Well, if you disable one of states 0-7 alone, it will still attempt to
-use state8. :-)
+<snip>
 
-It generally uses the deepest one enabled.
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 8f48e64fb8a6..3fac2d098084 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -589,6 +589,11 @@ struct uclamp_se {
+>  	unsigned int value;
+>  	/* Utilization clamp group for this constraint */
+>  	unsigned int group_id;
+> +	/* Effective clamp  for tasks in this group */
+> +	struct {
+> +		unsigned int value;
+> +		unsigned int group_id;
+> +	} effective;
+>  };
 
-> There're 9 (0-8) states on the cpuidle of this machine. However, I have another
-> laptop with the same CPU Intel Core i7-8565U which only have 4(0-3) states
-> under the same '/sys/devices/system/cpu/cpuX/cpuidle/' entry. Sorry that I
-> don't have enough background knowledge about cpuidle. I thought the #C
-> state should be depend on CPU, but why the same i7-8565 has different
-> number of C-states?
+Are these needed when CONFIG_UCLAMP_TASK_GROUP is disabled?
 
-What is there in /sys/devices/system/cpu/cpuidle/current_driver on
-each of these systems?
+>  
+>  union rcu_special {
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 2ba55a4afffb..f692df3787bd 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -1237,6 +1237,8 @@ static inline void init_uclamp_sched_group(void)
+>  		uc_se = &root_task_group.uclamp[clamp_id];
+>  		uc_se->value = uclamp_none(clamp_id);
+>  		uc_se->group_id = group_id;
+> +		uc_se->effective.value = uclamp_none(clamp_id);
+> +		uc_se->effective.group_id = group_id;
+>  
+>  		/* Attach root TG's clamp group */
+>  		uc_map[group_id].se_count = 1;
+>  
 
->  And for this case, should I just disable C-8 state or there
-> should be a generic fix with it?
+<snip>
 
-No, it just doesn't work specifically on your system, unfortunately,
-so you need to disable state8 manually, at least for the time being.
-If all UX433FNs turn out to be affected, we may consider adding a
-quirk for them, but for now we just don't know.
+> @@ -7622,11 +7687,19 @@ static struct cftype cpu_legacy_files[] = {
+>  		.read_u64 = cpu_util_min_read_u64,
+>  		.write_u64 = cpu_util_min_write_u64,
+>  	},
+> +	{
+> +		.name = "util.min.effective",
+> +		.read_u64 = cpu_util_min_effective_read_u64,
+> +	},
+>  	{
+>  		.name = "util.max",
+>  		.read_u64 = cpu_util_max_read_u64,
+>  		.write_u64 = cpu_util_max_write_u64,
+>  	},
+> +	{
+> +		.name = "util.max.effective",
+> +		.read_u64 = cpu_util_max_effective_read_u64,
+> +	},
+>  #endif
+>  	{ }	/* Terminate */
+>  };
 
-Do the "name" and "desc" sysfs files of state8 on the affected system
-contain "C10" and "MWAIT 0x60", respectively?
-
-To make a more persistent record of this issue, you can file a bug at
-bugzilla.kernel.org against cpuidle and put all of the relevant
-information into it.  It is possible that some special magic is needed
-to make the deepest idle state safe on this system and it may be hard
-to find out, but at least it is good to know that this happens.
-
-> > Is s2idle the default suspend method on that system?  If so, have you
-> > checked whether or not suspend-to-RAM works too?
-> >
->
-> Yes, it's default s2idle. If I do 'echo mem > /sys/power/state', the keyboard
-> would still fail.
-
-OK
-
-What's there in /sys/power/mem_sleep ?
+Is there any reason why these are not added for the default hierarchy?
 
 Thanks,
-Rafael
+Pavan
+
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
