@@ -1,123 +1,130 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.19-rc1
-Date: Thu, 16 Aug 2018 08:47:03 -0700
-Message-ID: <20180816154702.GA5033@localhost.localdomain>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 07/14] sched/core: uclamp: enforce last task UCLAMP_MAX
+Date: Thu, 16 Aug 2018 17:47:45 +0100
+Message-ID: <20180816164745.GF2960@e110439-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-8-patrick.bellasi@arm.com>
+ <2366fe11-db1f-4f39-df03-960535611319@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <2366fe11-db1f-4f39-df03-960535611319@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Linus,
+On 16-Aug 17:43, Dietmar Eggemann wrote:
+> On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
+> >When a util_max clamped task sleeps, its clamp constraints are removed
+> >from the CPU. However, the blocked utilization on that CPU can still be
+> >higher than the max clamp value enforced while that task was running.
+> >This max clamp removal when a CPU is going to be idle could thus allow
+> >unwanted CPU frequency increases, right while the task is not running.
+> 
+> So 'rq->uclamp.flags == UCLAMP_FLAG_IDLE' means CPU is IDLE because
+> non-clamped tasks are tracked as well ((group_id = 0)).
 
-Please consider pulling from
+Right, but... with (group_id = 0) you mean that "non-clamped tasks are
+tracked" in the first clamp group?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+> Maybe this is worth mentioning here?
 
-to receive Thermal-SoC Management updates for v4.19-rc1 with top-most
+Maybe I can explicitely say that we detect that there are not RUNNABLE
+tasks because all the clamp groups are in UCLAMP_NOT_VALID status.
 
-84b64de597bcc26549a7cbfe2fa8022bbc142daa:
+> >This can happen, for example, where there is another (smaller) task
+> >running on a different CPU of the same frequency domain.
+> >In this case, when we aggregate the utilization of all the CPUs in a
+> >shared frequency domain, schedutil can still see the full non clamped
+> >blocked utilization of all the CPUs and thus eventually increase the
+> >frequency.
+> >
+> >Let's fix this by using:
+> >
+> >    uclamp_cpu_put_id(UCLAMP_MAX)
+> >       uclamp_cpu_update(last_clamp_value)
+> >
+> >to detect when a CPU has no more RUNNABLE clamped tasks and to flag this
+> >condition. Thus, while a CPU is idle, we can still enforce the last used
+> >clamp value for it.
+> >
+> >To the contrary, we do not track any UCLAMP_MIN since, while a CPU is
+> >idle, we don't want to enforce any minimum frequency
+> >Indeed, we rely just on blocked load decay to smoothly reduce the
+> >frequency.
+> 
+> [...]
+> 
+> >diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> >index bc2beedec7bf..ff76b000bbe8 100644
+> >--- a/kernel/sched/core.c
+> >+++ b/kernel/sched/core.c
+> >@@ -906,7 +906,8 @@ uclamp_group_find(int clamp_id, unsigned int clamp_value)
+> >   * For the specified clamp index, this method computes the new CPU utilization
+> >   * clamp to use until the next change on the set of RUNNABLE tasks on that CPU.
+> >   */
+> >-static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
+> >+static inline void uclamp_cpu_update(struct rq *rq, int clamp_id,
+> >+				     unsigned int last_clamp_value)
+> >  {
+> >  	struct uclamp_group *uc_grp = &rq->uclamp.group[clamp_id][0];
+> >  	int max_value = UCLAMP_NOT_VALID;
+> >@@ -924,6 +925,19 @@ static inline void uclamp_cpu_update(struct rq *rq, int clamp_id)
+> 
+> The condition:
+> 
+>     if (!uclamp_group_active(uc_grp, group_id))
+>         continue;
+> 
+> in 'for (group_id = 0; group_id <= CONFIG_UCLAMP_GROUPS_COUNT; ++group_id)
+> {}' makes sure that 'max_value == UCLAMP_NOT_VALID' is true for the if
+> condition (*):
+> 
+> 
+> >  		if (max_value >= SCHED_CAPACITY_SCALE)
+> >  			break;
+> >  	}
+> >+
+> >+	/*
+> >+	 * Just for the UCLAMP_MAX value, in case there are no RUNNABLE
+> >+	 * task, we keep the CPU clamped to the last task's clamp value.
+> >+	 * This avoids frequency spikes to MAX when one CPU, with an high
+> >+	 * blocked utilization, sleeps and another CPU, in the same frequency
+> >+	 * domain, do not see anymore the clamp on the first CPU.
+> >+	 */
+> >+	if (clamp_id == UCLAMP_MAX && max_value == UCLAMP_NOT_VALID) {
+> >+		rq->uclamp.flags |= UCLAMP_FLAG_IDLE;
+> >+		max_value = last_clamp_value;
+> >+	}
+> >+
+> 
+> (*): So the uc_grp[group_id].value stays last_clamp_value?
 
-  thermal: armada: fix copy-paste error in armada_thermal_probe() (2018-08-01 09:56:12 -0700)
+A bit confusing... but I think you've got the point.
 
-on top of commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063:
+> What do you do when the blocked utilization decays below this enforced
+> last_clamp_value on that CPU?
 
-  Linux 4.18-rc3 (2018-07-01 16:04:53 -0700)
+This is done _just_ for max_util:
+- it clamps a blocked utilization bigger then last_clamp_value
+  thus avoiding the selection of an OPP bigger then the one enforced
+  while the task was runnable
+- it has not effect on a blocked utilization smaller then last_clamp_value
+  thus allowing to reduce gracefully the OPP as long as the blocked
+  utilization is decayed
 
-Specifics:
-- Rework of tsens driver to add support for tsens-v2 (Amit Kucheria)
-- Rework of armada thermal driver to use syscon and multichannel support (Miquel Raynal)
-- Fixes on following drivers: TI SoC, IMX, Exynos, RCar, thermal hwmon
+> I assume there are plenty of this kind of corner cases because we have
+> blocked signals (including all tasks) and clamping (including runnable
+> tasks).
 
-KernelCI bot testing links:
-Full Boot Summary:
-https://kernelci.org/boot/all/job/evalenti/branch/for-kernelci/kernel/v4.18-rc3-34-g84b64de597bc/
-Full Build Summary:
-https://kernelci.org/build/evalenti/branch/for-kernelci/kernel/v4.18-rc3-34-g84b64de597bc/
+This is a pretty compelling one I've noticed in my tests and thus
+worth a fix... I don't have on hand other similar corner cases, do
+you?
 
-BR,
 
-Eduardo Valentin
+-- 
+#include <best/regards.h>
 
-----------------------------------------------------------------
-Amit Kucheria (8):
-      thermal: tsens: Get rid of unused fields in structure
-      dt: thermal: tsens: Document the fallback DT property for v2 of TSENS IP
-      thermal: tsens: Add support to split up register address space into two
-      thermal: tsens: Rename tsens-8996 to tsens-v2 for reuse
-      thermal: tsens: Add generic support for TSENS v2 IP
-      thermal: tsens: Rename variable
-      thermal: tsens: switch from of_iomap() to devm_ioremap_resource()
-      thermal: tsens: Fix negative temperature reporting
-
-Bartlomiej Zolnierkiewicz (1):
-      thermal: ti-soc-thermal: remove dead code
-
-Jean-Christophe Dubois (1):
-      thermal: i.MX: Allow thermal probe to fail gracefully in case of bad calibration.
-
-Krzysztof Kozlowski (1):
-      thermal: samsung: Remove Exynos5440 clock handling left-overs
-
-Marc Zyngier (2):
-      thermal_hwmon: Sanitize attribute name passed to hwmon
-      thermal_hwmon: Pass the originating device down to hwmon_device_register_with_info
-
-Miquel Raynal (19):
-      thermal: armada: add a function that sanitizes the thermal zone name
-      thermal: armada: remove useless register accesses
-      thermal: armada: remove misleading comments
-      thermal: armada: rename the initialization routine
-      thermal: armada: dissociate a380 and cp110 ->init() hooks
-      thermal: armada: average over samples to avoid glitches
-      thermal: armada: convert driver to syscon register accesses
-      thermal: armada: use the resource managed registration helper alternative
-      thermal: armada: add multi-channel sensors support
-      thermal: armada: remove sensors validity from the IP initialization
-      thermal: armada: move validity check out of the read function
-      thermal: armada: get rid of the ->is_valid() pointer
-      dt-bindings: cp110: rename cp110 syscon file
-      dt-bindings: ap806: prepare the syscon file to list other syscons nodes
-      dt-bindings: cp110: prepare the syscon file to list other syscons nodes
-      dt-bindings: ap806: add the thermal node in the syscon file
-      dt-bindings: cp110: update documentation since DT de-duplication
-      dt-bindings: cp110: add the thermal node in the syscon file
-      dt-bindings: thermal: armada: add reference to new bindings
-
-Simon Horman (1):
-      thermal: rcar_thermal: avoid NULL dereference in absence of IRQ resources
-
-Wei Yongjun (1):
-      thermal: armada: fix copy-paste error in armada_thermal_probe()
-
- .../arm/marvell/ap806-system-controller.txt        |  48 +-
- ...controller0.txt => cp110-system-controller.txt} |  61 ++-
- .../devicetree/bindings/thermal/armada-thermal.txt |   5 +
- .../devicetree/bindings/thermal/qcom-tsens.txt     |  31 +-
- drivers/thermal/armada_thermal.c                   | 534 ++++++++++++++++-----
- drivers/thermal/imx_thermal.c                      |   5 +-
- drivers/thermal/qcom/Makefile                      |   2 +-
- drivers/thermal/qcom/tsens-8996.c                  |  84 ----
- drivers/thermal/qcom/tsens-common.c                |  29 +-
- drivers/thermal/qcom/tsens-v2.c                    |  77 +++
- drivers/thermal/qcom/tsens.c                       |   3 +
- drivers/thermal/qcom/tsens.h                       |   8 +-
- drivers/thermal/rcar_thermal.c                     |   2 +-
- drivers/thermal/samsung/exynos_tmu.c               |   5 -
- drivers/thermal/thermal_hwmon.c                    |   3 +-
- drivers/thermal/ti-soc-thermal/dra752-bandgap.h    |  68 ---
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  65 ---
- .../thermal/ti-soc-thermal/omap3-thermal-data.c    |   6 -
- .../thermal/ti-soc-thermal/omap4-thermal-data.c    |  10 -
- drivers/thermal/ti-soc-thermal/omap4xxx-bandgap.h  |  10 -
- .../thermal/ti-soc-thermal/omap5-thermal-data.c    |  46 +-
- drivers/thermal/ti-soc-thermal/omap5xxx-bandgap.h  |  41 --
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 370 --------------
- drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  43 +-
- 24 files changed, 649 insertions(+), 907 deletions(-)
- rename Documentation/devicetree/bindings/arm/marvell/{cp110-system-controller0.txt => cp110-system-controller.txt} (85%)
- delete mode 100644 drivers/thermal/qcom/tsens-8996.c
- create mode 100644 drivers/thermal/qcom/tsens-v2.c
+Patrick Bellasi
