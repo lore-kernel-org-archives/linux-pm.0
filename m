@@ -1,68 +1,71 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Fri, 17 Aug 2018 11:57:31 +0100
-Message-ID: <20180817105731.GI2960@e110439-lin>
+Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
+ accounting
+Date: Fri, 17 Aug 2018 12:04:21 +0100
+Message-ID: <20180817110421.GJ2960@e110439-lin>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-2-patrick.bellasi@arm.com>
- <20180807123550.GA3062@localhost.localdomain>
- <20180809091427.4p2c4fbxocpkjaby@darkstar>
- <20180809095043.GC22465@localhost.localdomain>
- <20180809152313.lewfhufidhxb2qrk@darkstar>
- <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
+ <20180806163946.28380-4-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
+In-Reply-To: <20180806163946.28380-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 17-Aug 11:34, Quentin Perret wrote:
-> Hi Patrick,
-> 
-> On Thursday 09 Aug 2018 at 16:23:13 (+0100), Patrick Bellasi wrote:
-> > On 09-Aug 11:50, Juri Lelli wrote:
-> > > On 09/08/18 10:14, Patrick Bellasi wrote:
-> > > > On 07-Aug 14:35, Juri Lelli wrote:
-> > > > > On 06/08/18 17:39, Patrick Bellasi wrote:
-> > 
-> > [...]
-> > 
-> > > > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
-> > > >    time parameter to relax this check
-> > > 
-> > > It seems to me that this might work well with that the intended usage of
-> > > the interface that you depict above. SMS only (or any privileged user)
-> > > will be in control of how groups are configured, so no problem for
-> > > normal users.
-> > 
-> > Yes, well... apart normal users still getting a -ENOSPC is they are
-> > requesting one of the not pre-configured clamp values. Which is why
-> > the following bits can be helpful.
-> 
-> So IIUC, normal users would still be free of choosing their clamp values
-> as long as they choose one in the list of pre-allocated ones ? Is that
-> correct ?
+On 06-Aug 17:39, Patrick Bellasi wrote:
 
-No, with the CAP_SYS_NICE/ADMIN guard in place, as discussed above in
-point 1, the syscall will just fail for normal users.
+[...]
 
-Only privileged tasks (i.e. SMS control threads) can change clamp values.
+> +/**
+> + * uclamp_cpu_get_id(): increase reference count for a clamp group on a CPU
+> + * @p: the task being enqueued on a CPU
+> + * @rq: the CPU's rq where the clamp group has to be reference counted
+> + * @clamp_id: the utilization clamp (e.g. min or max utilization) to reference
+> + *
+> + * Once a task is enqueued on a CPU's RQ, the clamp group currently defined by
+> + * the task's uclamp.group_id is reference counted on that CPU.
+> + */
+> +static inline void uclamp_cpu_get_id(struct task_struct *p,
+> +				     struct rq *rq, int clamp_id)
+> +{
+> +	struct uclamp_group *uc_grp;
+> +	struct uclamp_cpu *uc_cpu;
+> +	int clamp_value;
+> +	int group_id;
+> +
+> +	/* No task specific clamp values: nothing to do */
+> +	group_id = p->uclamp[clamp_id].group_id;
+> +	if (group_id == UCLAMP_NOT_VALID)
+> +		return;
 
-> If yes, that would still let normal users make they tasks look bigger no ?
-> They could just choose the clamp group with the highest min_clamp or
-> something. Isn't this a problem too ? I mean, if that can be abused easily,
-> I'm pretty sure people _will_ abuse it ...
+This is broken for util_max aggression.
 
-It should not be possible with 1) in place.
+By not refcounting tasks without a task specific clamp value, we end
+up enforcing a max_util to these tasks when they are co-scheduled with
+another max clamped task.
 
-However, if the system is booted with that check disabled (e.g. via
-kernel boot parameter) that probably means you trust/control your
-userspace and don't want to impose restrictions on non privileged
-tasks. In this case "abuses" are just "acceptable usages"...
+I need to fix this by removing this "optimization" (working just for
+util_min) and refcount all the tasks.
+
+> +
+> +	/* Reference count the task into its current group_id */
+> +	uc_grp = &rq->uclamp.group[clamp_id][0];
+> +	uc_grp[group_id].tasks += 1;
+> +
+> +	/*
+> +	 * If this is the new max utilization clamp value, then we can update
+> +	 * straight away the CPU clamp value. Otherwise, the current CPU clamp
+> +	 * value is still valid and we are done.
+> +	 */
+> +	uc_cpu = &rq->uclamp;
+> +	clamp_value = p->uclamp[clamp_id].value;
+> +	if (uc_cpu->value[clamp_id] < clamp_value)
+> +		uc_cpu->value[clamp_id] = clamp_value;
+> +}
+> +
 
 -- 
 #include <best/regards.h>
