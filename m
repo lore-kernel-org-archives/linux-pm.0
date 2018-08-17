@@ -1,59 +1,103 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Fri, 17 Aug 2018 12:14:31 +0100
-Message-ID: <20180817111429.3nhqm3lrr42lzqho@queper01-lin>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 08/14] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Fri, 17 Aug 2018 14:21:22 +0200
+Message-ID: <82db1123-339f-0dbf-9332-7e37ee9e4f20@arm.com>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-2-patrick.bellasi@arm.com>
- <20180807123550.GA3062@localhost.localdomain>
- <20180809091427.4p2c4fbxocpkjaby@darkstar>
- <20180809095043.GC22465@localhost.localdomain>
- <20180809152313.lewfhufidhxb2qrk@darkstar>
- <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
- <20180817105731.GI2960@e110439-lin>
+ <20180806163946.28380-9-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180817105731.GI2960@e110439-lin>
+In-Reply-To: <20180806163946.28380-9-patrick.bellasi@arm.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday 17 Aug 2018 at 11:57:31 (+0100), Patrick Bellasi wrote:
-> On 17-Aug 11:34, Quentin Perret wrote:
-> > Hi Patrick,
-> > 
-> > On Thursday 09 Aug 2018 at 16:23:13 (+0100), Patrick Bellasi wrote:
-> > > On 09-Aug 11:50, Juri Lelli wrote:
-> > > > On 09/08/18 10:14, Patrick Bellasi wrote:
-> > > > > On 07-Aug 14:35, Juri Lelli wrote:
-> > > > > > On 06/08/18 17:39, Patrick Bellasi wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
-> > > > >    time parameter to relax this check
-> > > > 
-> > > > It seems to me that this might work well with that the intended usage of
-> > > > the interface that you depict above. SMS only (or any privileged user)
-> > > > will be in control of how groups are configured, so no problem for
-> > > > normal users.
-> > > 
-> > > Yes, well... apart normal users still getting a -ENOSPC is they are
-> > > requesting one of the not pre-configured clamp values. Which is why
-> > > the following bits can be helpful.
-> > 
-> > So IIUC, normal users would still be free of choosing their clamp values
-> > as long as they choose one in the list of pre-allocated ones ? Is that
-> > correct ?
-> 
-> No, with the CAP_SYS_NICE/ADMIN guard in place, as discussed above in
-> point 1, the syscall will just fail for normal users.
+On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 
-Right, I just misunderstood then :-)
-Sorry for the noise ...
+[...]
 
-Thanks,
-Quentin
+> Give the above mechanisms, it is now possible to extend the cpu
+> controller to specify what is the minimum (or maximum) utilization which
+> a task is expected (or allowed) to generate.
+> Constraints on minimum and maximum utilization allowed for tasks in a
+> CPU cgroup can improve the control on the actual amount of CPU bandwidth
+> consumed by tasks.
+
+I assume this is covered by the s/bandwidth/capacity/ you had w/ Juri on 
+01/14.
+
+[...]
+
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index ff76b000bbe8..2ba55a4afffb 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -1211,6 +1211,74 @@ static inline void uclamp_group_get(struct task_struct *p,
+>   	uclamp_group_put(clamp_id, prev_group_id);
+>   }
+>   
+> +#ifdef CONFIG_UCLAMP_TASK_GROUP
+> +/**
+> + * init_uclamp_sched_group: initialize data structures required for TG's
+> + *                          utilization clamping
+> + */
+> +static inline void init_uclamp_sched_group(void)
+> +{
+> +	struct uclamp_map *uc_map;
+> +	struct uclamp_se *uc_se;
+> +	int group_id;
+> +	int clamp_id;
+> +
+> +	/* Root TG's is statically assigned to the first clamp group */
+> +	group_id = 0;
+> +
+> +	/* Initialize root TG's to default (none) clamp values */
+> +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> +		uc_map = &uclamp_maps[clamp_id][0];
+> +
+> +		/* Map root TG's clamp value */
+> +		uclamp_group_init(clamp_id, group_id, uclamp_none(clamp_id));
+> +
+> +		/* Init root TG's clamp group */
+> +		uc_se = &root_task_group.uclamp[clamp_id];
+> +		uc_se->value = uclamp_none(clamp_id);
+> +		uc_se->group_id = group_id;
+> +
+> +		/* Attach root TG's clamp group */
+> +		uc_map[group_id].se_count = 1;
+> +	}
+> +}
+
+Can you not save some lines here:
+
+  static inline void init_uclamp_sched_group(void)
+  {
+-       struct uclamp_map *uc_map;
+         struct uclamp_se *uc_se;
+         int group_id;
+         int clamp_id;
+@@ -1228,8 +1227,6 @@ static inline void init_uclamp_sched_group(void)
+
+         /* Initialize root TG's to default (none) clamp values */
+         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+-               uc_map = &uclamp_maps[clamp_id][0];
+-
+                 /* Map root TG's clamp value */
+                 uclamp_group_init(clamp_id, group_id, 
+uclamp_none(clamp_id));
+
+@@ -1239,7 +1236,7 @@ static inline void init_uclamp_sched_group(void)
+                 uc_se->group_id = group_id;
+
+                 /* Attach root TG's clamp group */
+-               uc_map[group_id].se_count = 1;
++               uclamp_maps[clamp_id][group_id].se_count = 1;
+         }
+
+This would also make uclamp_group_available() smaller.
+
+[...]
