@@ -1,73 +1,114 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 03/14] sched/core: uclamp: add CPU's clamp groups
- accounting
-Date: Fri, 17 Aug 2018 12:04:21 +0100
-Message-ID: <20180817110421.GJ2960@e110439-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-4-patrick.bellasi@arm.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] console: Add console=auto option
+Date: Fri, 17 Aug 2018 07:06:56 -0400
+Message-ID: <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
+References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+ <20180816173902.18971-1-prarit@redhat.com>
+ <20180817093828.GA10337@jagdpanzerIV>
+ <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
+ <20180817105046.GB10337@jagdpanzerIV>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180806163946.28380-4-patrick.bellasi@arm.com>
+In-Reply-To: <20180817105046.GB10337@jagdpanzerIV>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06-Aug 17:39, Patrick Bellasi wrote:
 
-[...]
 
-> +/**
-> + * uclamp_cpu_get_id(): increase reference count for a clamp group on a CPU
-> + * @p: the task being enqueued on a CPU
-> + * @rq: the CPU's rq where the clamp group has to be reference counted
-> + * @clamp_id: the utilization clamp (e.g. min or max utilization) to reference
-> + *
-> + * Once a task is enqueued on a CPU's RQ, the clamp group currently defined by
-> + * the task's uclamp.group_id is reference counted on that CPU.
-> + */
-> +static inline void uclamp_cpu_get_id(struct task_struct *p,
-> +				     struct rq *rq, int clamp_id)
-> +{
-> +	struct uclamp_group *uc_grp;
-> +	struct uclamp_cpu *uc_cpu;
-> +	int clamp_value;
-> +	int group_id;
-> +
-> +	/* No task specific clamp values: nothing to do */
-> +	group_id = p->uclamp[clamp_id].group_id;
-> +	if (group_id == UCLAMP_NOT_VALID)
-> +		return;
+On 08/17/2018 06:50 AM, Sergey Senozhatsky wrote:
+> Hello,
+> 
+> Cc-ing Peter Zijlstra
+> 
+>   lkml.kernel.org/r/728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com
+>   lkml.kernel.org/r/20180817081947.m425gok2ugt7tglp@pathway.suse.cz
+>   lkml.kernel.org/r/00c60dca-60bc-8568-eaa3-d4b0c326cab4@redhat.com
+> 
+> On (08/17/18 06:36), Prarit Bhargava wrote:
+>> On 08/17/2018 05:38 AM, Sergey Senozhatsky wrote:
+>>> On (08/16/18 13:39), Prarit Bhargava wrote:
+>>>>
+>>>> +		auto	[X86] Enable ACPI SPCR console
+>>> 			^^^^
+>>> 			And arm64?
+>>
+>> Hi Sergey, on arm64 if an SPCR is present the early console and console are
+>> initialized by default.  IOW no kernel parameter is necessary to initialize the
+>> console in that case.
+> 
+> OK, thanks.
+> 
+>>> Any chance we can rename param to "spcr" or something more clear?
+>>> To explicitly state what exactly it's going to do. `auto' sounds
+>>> too general and doesn't tell me that much. I'm probably the only
+>>> here who can't see a connection between "auto" and "SPCR", but
+>>> still.
+>>
+>> I came up with "auto" because I think it is generic.  I also thought about
+>> "console=fw", or just "console".  If in the future another arch wants to
+>> optionally bring up a firmware or hardware defined console then they could use
+>> auto too.
+> 
+> Hmm, I see your point.
+> My [sort of a] problem with "auto" is that it tells me as much as "magic"
+> [and "magic" tells me almost nothing]. By the way, would be fun if we had
+> "magic" instead of "auto" all over the kernel
+> 
+> 	echo "magic" > /sys/bus/usb/...../power/control
+> 
+>>> 	void arch_console_setup(void)
+>>> 	{
+>>> 		if (acpi_parse_spcr(false, true))
+>>> 			pr_err(.........);
+>>> 	}
+>>>
+>>> There can be other consoles in the system, logging an error is not
+>>> such a useless thing.
+>>
+>> I can make the second change.  The problem (IIRC) with returning an error in an
+>> setup fn is that the rest of the setup functions will not execute.  I don't want
+>> to fail the setup callbacks because of an incorrect SPCR table.
+> 
+> OK, fair enough.
+> Letting users know that SPCR is incorrect also makes sense, so option #2
+> I guess is what we want after all.
+> 
+>> Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
+>> feelings about changing the behaviour of earlycon on x86?  I could make it so
+>> that specifying just earlycon would also initialize the console.
+> 
+> x86 people and/or scheduler people might have strong opinions on this.
+> I Cc-ed Peter Zijlstra; he represents both groups and is known to be
+> a hardcore earlycon user.
 
-This is broken for util_max aggression.
+Thanks, I'm a user of earlycon too, but only moderately.
 
-By not refcounting tasks without a task specific clamp value, we end
-up enforcing a max_util to these tasks when they are co-scheduled with
-another max clamped task.
+peterz, to give you an overview:  Currently on x86, the SPCR information is only
+interpreted by the early console code, and can be enabled with kernel parameter
+"earlycon" (no arguments).  In this patch I'm proposing adding "console=auto"
+that would enable the console based on the SPCR data.
 
-I need to fix this by removing this "optimization" (working just for
-util_min) and refcount all the tasks.
+There are two options on the table.  One, we could go with this patch which
+would make users do "earlycon console=auto" or, I could just change the
+behaviour of earlycon (no arguments) to also bring up the console.  In the
+second case the kernel parameter would just be "earlycon".  There is precedent
+for the second option as arm64 enables both the earlycon and console by default
+if SPCR is present.  However, on x86, I know many users do not want the console
+enabled by default so we should keep it on demand.
 
-> +
-> +	/* Reference count the task into its current group_id */
-> +	uc_grp = &rq->uclamp.group[clamp_id][0];
-> +	uc_grp[group_id].tasks += 1;
-> +
-> +	/*
-> +	 * If this is the new max utilization clamp value, then we can update
-> +	 * straight away the CPU clamp value. Otherwise, the current CPU clamp
-> +	 * value is still valid and we are done.
-> +	 */
-> +	uc_cpu = &rq->uclamp;
-> +	clamp_value = p->uclamp[clamp_id].value;
-> +	if (uc_cpu->value[clamp_id] < clamp_value)
-> +		uc_cpu->value[clamp_id] = clamp_value;
-> +}
-> +
+tl;dr: Pick one
 
--- 
-#include <best/regards.h>
+Option 1: earlycon enables both the early console and console.
+Option 2: earlycon only enables the early console, and console=auto enables the
+console.
 
-Patrick Bellasi
+P.
+
+> 
+> 	-ss
+> 
