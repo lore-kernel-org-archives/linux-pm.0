@@ -1,114 +1,116 @@
-From: Frederic Weisbecker <frederic@kernel.org>
-Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been
- stopped
-Date: Fri, 17 Aug 2018 16:12:54 +0200
-Message-ID: <20180817141252.GA12426@lerouge>
-References: <2161372.IsD4PDzmmY@aspire.rjw.lan>
- <20180816132723.GA6010@lerouge>
- <10817203.8q7neLTJVD@aspire.rjw.lan>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 08/14] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Fri, 17 Aug 2018 15:24:15 +0100
+Message-ID: <20180817142415.GK2960@e110439-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-9-patrick.bellasi@arm.com>
+ <82db1123-339f-0dbf-9332-7e37ee9e4f20@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <10817203.8q7neLTJVD@aspire.rjw.lan>
+In-Reply-To: <82db1123-339f-0dbf-9332-7e37ee9e4f20@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Leo Yan <leo.yan@linaro.org>
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 17, 2018 at 11:32:07AM +0200, Rafael J. Wysocki wrote:
-> On Thursday, August 16, 2018 3:27:24 PM CEST Frederic Weisbecker wrote:
-> > On Thu, Aug 09, 2018 at 07:08:34PM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > If the tick has been stopped already, but the governor has not asked to
-> > > stop it (which it can do sometimes), the idle loop should invoke
-> > > tick_nohz_idle_stop_tick(), to let tick_nohz_stop_tick() take care
-> > > of this case properly.
-> > > 
-> > > Fixes: 554c8aa8ecad (sched: idle: Select idle state before stopping the tick)
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >  kernel/sched/idle.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > Index: linux-pm/kernel/sched/idle.c
-> > > ===================================================================
-> > > --- linux-pm.orig/kernel/sched/idle.c
-> > > +++ linux-pm/kernel/sched/idle.c
-> > > @@ -190,7 +190,7 @@ static void cpuidle_idle_call(void)
-> > >  		 */
-> > >  		next_state = cpuidle_select(drv, dev, &stop_tick);
-> > >  
-> > > -		if (stop_tick)
-> > > +		if (stop_tick || tick_nohz_tick_stopped())
-> > >  			tick_nohz_idle_stop_tick();
-> > >  		else
-> > >  			tick_nohz_idle_retain_tick();
-> > 
-> > So what if tick_nohz_idle_stop_tick() sees no timer to schedule and
-> > cancels it, we may remain idle in a shallow state for a long while?
+On 17-Aug 14:21, Dietmar Eggemann wrote:
+> On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 > 
-> Yes, but the governor is expected to avoid using shallow states when the
-> tick is stopped already.
-
-So what kind of sleep do we enter to when an idle tick fires and we go
-back to idle? Is it always deep?
-
-I believe that ts->tick_stopped == 1 shouldn't be too relevant for the governor.
-We can definetly have scenarios where the idle tick is stopped for a long while,
-then it fires and schedules the next timer at NOW() + TICK_NSEC (as if the tick
-had been restarted). This can even repeat that way for some time, because
-ts->tick_stopped == 1 only implies that the tick has been stopped once since
-we entered the idle loop. After that we may well have a periodic tick behaviour.
-In that case we probably don't want deep idle state. Especially if we have:
-
-              idle_loop() {
-                  tick_stop (scheduled several seconds forward)
-                  deep_idle_sleep()
-                  //several seconds later
-                  tick()
-                  tick_stop (scheduled TICK_NSEC forward)
-                  deep_idle_sleep()
-                  tick() {
-                      set_need_resched()
-                  }
-                  exit idle loop
-              }
-
-Here the last deep idle state isn't necessary.
-
+> [...]
 > 
-> > Otherwise we can have something like this:
-> > 
-> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > index da9455a..408c985 100644
-> > --- a/kernel/time/tick-sched.c
-> > +++ b/kernel/time/tick-sched.c
-> > @@ -806,6 +806,9 @@ static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
-> >  static void tick_nohz_retain_tick(struct tick_sched *ts)
-> >  {
-> >  	ts->timer_expires_base = 0;
-> > +
-> > +	if (ts->tick_stopped)
-> > +		tick_nohz_restart(ts, ktime_get());
+> >Give the above mechanisms, it is now possible to extend the cpu
+> >controller to specify what is the minimum (or maximum) utilization which
+> >a task is expected (or allowed) to generate.
+> >Constraints on minimum and maximum utilization allowed for tasks in a
+> >CPU cgroup can improve the control on the actual amount of CPU bandwidth
+> >consumed by tasks.
+> 
+> I assume this is covered by the s/bandwidth/capacity/ you had w/ Juri on
+> 01/14.
+
+Yes... I need to update this changelog too.
+
+> [...]
+> 
+> >diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> >index ff76b000bbe8..2ba55a4afffb 100644
+> >--- a/kernel/sched/core.c
+> >+++ b/kernel/sched/core.c
+> >@@ -1211,6 +1211,74 @@ static inline void uclamp_group_get(struct task_struct *p,
+> >  	uclamp_group_put(clamp_id, prev_group_id);
 > >  }
-> >  
-> >  #ifdef CONFIG_NO_HZ_FULL
-> > 
+> >+#ifdef CONFIG_UCLAMP_TASK_GROUP
+> >+/**
+> >+ * init_uclamp_sched_group: initialize data structures required for TG's
+> >+ *                          utilization clamping
+> >+ */
+> >+static inline void init_uclamp_sched_group(void)
+> >+{
+> >+	struct uclamp_map *uc_map;
+> >+	struct uclamp_se *uc_se;
+> >+	int group_id;
+> >+	int clamp_id;
+> >+
+> >+	/* Root TG's is statically assigned to the first clamp group */
+> >+	group_id = 0;
+> >+
+> >+	/* Initialize root TG's to default (none) clamp values */
+> >+	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> >+		uc_map = &uclamp_maps[clamp_id][0];
+> >+
+> >+		/* Map root TG's clamp value */
+> >+		uclamp_group_init(clamp_id, group_id, uclamp_none(clamp_id));
+> >+
+> >+		/* Init root TG's clamp group */
+> >+		uc_se = &root_task_group.uclamp[clamp_id];
+> >+		uc_se->value = uclamp_none(clamp_id);
+> >+		uc_se->group_id = group_id;
+> >+
+> >+		/* Attach root TG's clamp group */
+> >+		uc_map[group_id].se_count = 1;
+> >+	}
+> >+}
 > 
-> We could do that, but my concern with that approach is that we may end up
-> stopping and starting the tick back and forth without exiting the loop
-> in do_idle() just because somebody uses a periodic timer behind our
-> back and the governor gets confused.
+> Can you not save some lines here:
 > 
-> Besides, that would be a change in behavior, while the $subject patch
-> simply fixes a mistake in the original design.
+>  static inline void init_uclamp_sched_group(void)
+>  {
+> -       struct uclamp_map *uc_map;
+>         struct uclamp_se *uc_se;
+>         int group_id;
+>         int clamp_id;
+> @@ -1228,8 +1227,6 @@ static inline void init_uclamp_sched_group(void)
+> 
+>         /* Initialize root TG's to default (none) clamp values */
+>         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
+> -               uc_map = &uclamp_maps[clamp_id][0];
+> -
+>                 /* Map root TG's clamp value */
+>                 uclamp_group_init(clamp_id, group_id,
+> uclamp_none(clamp_id));
+> 
+> @@ -1239,7 +1236,7 @@ static inline void init_uclamp_sched_group(void)
+>                 uc_se->group_id = group_id;
+> 
+>                 /* Attach root TG's clamp group */
+> -               uc_map[group_id].se_count = 1;
+> +               uclamp_maps[clamp_id][group_id].se_count = 1;
+>         }
+> 
+> This would also make uclamp_group_available() smaller.
 
-Ok, let's take the safe approach for now as this is a fix and it should even be
-routed to stable.
+Unfortunately this var name and its matrix indexes tends to become
+quite long easily and in some usages we exceed the 80 columns sometimes.
 
-But then in the longer term, perhaps cpuidle_select() should think that
-through.
+That's why, for consistency, I always shortcut to *uc_map a reference
+to a clamp group and use that variable name consistently in the code.
 
-Thanks.
+I'll see if it's possible to get rid of the shortcut in the next version.
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
