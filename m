@@ -1,84 +1,40 @@
-From: Teika Kazura <teika@gmx.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] PCI / ACPI / PM: Resume all bridges on suspend-to-RAM
-Date: Fri, 17 Aug 2018 14:43:54 +0900 (JST)
-Message-ID: <20180817.144354.2288619657950222607.teika@gmx.com>
-References: <6401388.2t0qD3iTOr@aspire.rjw.lan>
+Date: Fri, 17 Aug 2018 09:50:52 +0200
+Message-ID: <CAJZ5v0gueiBtbAS00LQ0yp15=OmvZe-i2ETzxaPvVD5wuZGV7Q@mail.gmail.com>
+References: <6401388.2t0qD3iTOr@aspire.rjw.lan> <20180817.144354.2288619657950222607.teika@gmx.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6401388.2t0qD3iTOr@aspire.rjw.lan>
+In-Reply-To: <20180817.144354.2288619657950222607.teika@gmx.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pci@vger.kernel.org, bhelgaas@google.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, mika.westerberg@linux.intel.com
+To: teika@gmx.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Rm9yIHRoZSByZWNvcmQsIGFib3V0IHRoZSBleGFjdG5lc3Mgb2YgdGhlIHBhdGNoIGRlc2NyaXB0
-aW9uLg0KDQpUaGUgcGF0Y2ggbWVudGlvbnMgdGhlIHJlZ3Jlc3Npb24gYnkgdGhlIGNvbW1pdCBj
-NjJlYzQ2MTBjNDAsIGJ1dCBpdCBpcyBub3QgdGhlIGNhdXNlIG9mIHRoZSBidWcgKGh0dHBzOi8v
-YnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAwNjcpIHJlcG9ydGVkIGJ5IG1l
-OyBJIHJldmVydGVkIGM2MmVjNDYxMGM0MCBvbiBsaW51eC00LjE3LjEzLCBhbmQgdGhlIGJ1ZyBy
-ZW1haW5lZC4NCg0KIyBTb21lIGRldGFpbHM6IG15IGJ1ZyB3YXMgaW50cm9kdWNlZCBieSB0aGUg
-Y29tbWl0IChpKSA4NzdiMzcyOWNhMCBvbiBKYW4gMy4gVGhlIGNvbW1pdCAoaWkpIGM2MmVjNDYx
-MGM0MCB3YXMgb24gTWF5IDIyLiBUaGUgY29tbWl0IChpaWkpIDI2MTEyZGRjMjU0YyBvbiBKdW4g
-MzAgZml4ZXMgb25lIHByb2JsZW0gY2F1c2VkIGJ5IGM2MmVjNDYxMGM0MC4gVGhlIHByZXNlbnQg
-cGF0Y2ggbW9kaWZpZXMgdGhlIGNvZGUgb2YgdGhlIGNvbW1pdCAoaWlpKSwgc28gaXQgY2FuIGJl
-IHNhaWQgYXMgdGhlIGNvbXBsZXRpb24gb2YgdGhlIGNvbW1pdCAoaWlpKS4gSXQgYXQgdGhlIHNh
-bWUgdGltZSBmaXhlcyBteSBidWcsIHRvby4NCg0KVGhpcyBzdWdnZXN0cyB0aGUgcHJlc2VudCBw
-YXRjaCBwb3NzaWJseSBmaXhlcyBvdGhlciB1bmtub3duIFBNIHByb2JsZW1zOyBmb3JtZXIga2Vy
-bmVscyBoYWQgc29tZSBsb29zZSBlbmQocykuIE5vdyB0aGlzIHBhdGNoIHB1dHMgdGhlIGtlcm5l
-bCBpbiBhIGJldHRlciBwb3NpdGlvbi4NCg0KSSdtIGEgbGF5IExpbnV4IHVzZXIsIGFuZCBkb24n
-dCBrbm93IGlmIHRoaXMgcG9zdCBoZWxwcy4gSWYgaXQgZG9lcywgaXQgbWF5IGJlIHdvcnRoIG1l
-bnRpb25pbmcgaXQgaW4gdGhlIGFib3ZlIGJ1Z3ppbGxhIGVudHJ5Lg0KDQpEemnEmWt1asSZICh0
-aGFua3MpLCBrZXJuZWwgZGV2ZWxvcGVycy4gQmVzdCByZWdhcmRzLA0KVGVpa2EgKFRlaWthIGth
-enVyYSkNCg0KRnJvbTogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+DQpT
-dWJqZWN0OiBbUEFUQ0hdIFBDSSAvIEFDUEkgLyBQTTogUmVzdW1lIGFsbCBicmlkZ2VzIG9uIHN1
-c3BlbmQtdG8tUkFNDQpEYXRlOiBUaHUsIDE2IEF1ZyAyMDE4IDEyOjU2OjQ2ICswMjAwDQoNCj4g
-RnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPiAN
-Cj4gQ29tbWl0IDI2MTEyZGRjMjU0YyAoUENJIC8gQUNQSSAvIFBNOiBSZXN1bWUgYnJpZGdlcyB3
-L28gZHJpdmVycyBvbg0KPiBzdXNwZW5kLXRvLVJBTSkgYXR0ZW1wdGVkIHRvIGZpeCBhIGZ1bmN0
-aW9uYWwgcmVncmVzc2lvbiByZXN1bHRpbmcNCj4gZnJvbSBjb21taXQgYzYyZWM0NjEwYzQwIChQ
-TSAvIGNvcmU6IEZpeCBkaXJlY3RfY29tcGxldGUgaGFuZGxpbmcNCj4gZm9yIGRldmljZXMgd2l0
-aCBubyBjYWxsYmFja3MpIGJ5IHJlc3VtaW5nIFBDSSBicmlkZ2VzIHdpdGhvdXQNCj4gZHJpdmVy
-cyAodGhhdCBpcywgInBhcmFsbGVsIFBDSSIgb25lcykgZHVyaW5nIHN5c3RlbS13aWRlIHN1c3Bl
-bmQgaWYNCj4gdGhlIHRhcmdldCBzeXN0ZW0gc3RhdGUgaXMgbm90IEFDUEkgUzAgKHdvcmtpbmcg
-c3RhdGUpLg0KPiANCj4gVGhhdCB0dXJucyBvdXQgaW5zdWZmaWNpZW50LCBob3dldmVyLCBhcyBp
-dCBpcyByZXBvcnRlZCB0aGF0LCBhdA0KPiBsZWFzdCBpbiBvbmUgY2FzZSwgdGhlIHBsYXRmb3Jt
-IGZpcm13YXJlIGdldHMgY29uZnVzZWQgaWYgYSBQQ0llDQo+IHJvb3QgcG9ydCBpcyBzdXNwZW5k
-ZWQgYmVmb3JlIGVudGVyaW5nIHRoZSBBQ1BJIFMzIHNsZWVwIHN0YXRlLg0KPiANCj4gRm9yIHRo
-aXMgcmVhc29uLCBkcm9wIHRoZSBkcml2ZXIgY2hlY2sgZnJvbSBhY3BpX3BjaV9uZWVkX3Jlc3Vt
-ZSgpDQo+IGFuZCByZXN1bWUgYWxsIGJyaWRnZXMgKGluY2x1ZGluZyBQQ0llIHBvcnRzIHdpdGgg
-ZHJpdmVycykgZHVyaW5nDQo+IHN5c3RlbS13aWRlIHN1c3BlbmQgaWYgdGhlIHRhcmdldCBzeXN0
-ZW0gc3RhdGUgaXMgbm90IEFDUEkgUzAuDQo+IA0KPiBbSWYgdGhlIHRhcmdldCBzeXN0ZW0gc3Rh
-dGUgaXMgQUNQSSBTMCwgaXQgbWVhbnMgc3VzcGVuZC10by1pZGxlDQo+ICBhbmQgdGhlIHBsYXRm
-b3JtIGZpcm13YXJlIGlzIG5vdCBnb2luZyB0byBiZSBpbnZva2VkIHRvIGFjdHVhbGx5DQo+ICBz
-dXNwZW5kIHRoZSBzeXN0ZW0sIHNvIHRoZXJlIGlzIG5vIG5lZWQgdG8gcmVzdW1lIHRoZSBicmlk
-Z2VzIGluDQo+ICB0aGF0IGNhc2UuXQ0KPiANCj4gRml4ZXM6IGM2MmVjNDYxMGM0MCAoUE0gLyBj
-b3JlOiBGaXggZGlyZWN0X2NvbXBsZXRlIGhhbmRsaW5nIGZvciBkZXZpY2VzIHdpdGggbm8gY2Fs
-bGJhY2tzKQ0KPiBSZXBvcnRlZC1ieTogdGVpa2Ega2F6dXJhIDx0ZWlrYUBnbXguY29tPg0KPiBU
-ZXN0ZWQtYnk6IHRlaWthIGthenVyYSA8dGVpa2FAZ214LmNvbT4NCj4gTGluazogaHR0cHM6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMDA2NzUNCj4gQ2M6IDQuMTUrIDxz
-dGFibGVAdmdlci5rZXJuZWwub3JnPiAjIDQuMTUrOiAyNjExMmRkYzI1NGMgKFBDSSAvIEFDUEkg
-LyBQTTogUmVzdW1lIGJyaWRnZXMgLi4uKQ0KPiBTaWduZWQtb2ZmLWJ5OiBSYWZhZWwgSi4gV3lz
-b2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9wY2kv
-cGNpLWFjcGkuYyB8ICAgIDYgKystLS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25z
-KCspLCA0IGRlbGV0aW9ucygtKQ0KPiANCj4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvcGNpL3Bj
-aS1hY3BpLmMNCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PQ0KPiAtLS0gbGludXgtcG0ub3JpZy9kcml2ZXJzL3BjaS9w
-Y2ktYWNwaS5jDQo+ICsrKyBsaW51eC1wbS9kcml2ZXJzL3BjaS9wY2ktYWNwaS5jDQo+IEBAIC02
-MzIsMTMgKzYzMiwxMSBAQCBzdGF0aWMgYm9vbCBhY3BpX3BjaV9uZWVkX3Jlc3VtZShzdHJ1Y3QN
-Cj4gIAkvKg0KPiAgCSAqIEluIHNvbWUgY2FzZXMgKGVnLiBTYW1zdW5nIDMwNVY0QSkgbGVhdmlu
-ZyBhIGJyaWRnZSBpbiBzdXNwZW5kIG92ZXINCj4gIAkgKiBzeXN0ZW0td2lkZSBzdXNwZW5kL3Jl
-c3VtZSBjb25mdXNlcyB0aGUgcGxhdGZvcm0gZmlybXdhcmUsIHNvIGF2b2lkDQo+IC0JICogZG9p
-bmcgdGhhdCwgdW5sZXNzIHRoZSBicmlkZ2UgaGFzIGEgZHJpdmVyIHRoYXQgc2hvdWxkIHRha2Ug
-Y2FyZSBvZg0KPiAtCSAqIHRoZSBQTSBoYW5kbGluZy4gIEFjY29yZGluZyB0byBTZWN0aW9uIDE2
-LjEuNiBvZiBBQ1BJIDYuMiwgZW5kcG9pbnQNCj4gKwkgKiBkb2luZyB0aGF0LiAgQWNjb3JkaW5n
-IHRvIFNlY3Rpb24gMTYuMS42IG9mIEFDUEkgNi4yLCBlbmRwb2ludA0KPiAgCSAqIGRldmljZXMg
-YXJlIGV4cGVjdGVkIHRvIGJlIGluIEQzIGJlZm9yZSBpbnZva2luZyB0aGUgUzMgZW50cnkgcGF0
-aA0KPiAgCSAqIGZyb20gdGhlIGZpcm13YXJlLCBzbyB0aGV5IHNob3VsZCBub3QgYmUgYWZmZWN0
-ZWQgYnkgdGhpcyBpc3N1ZS4NCj4gIAkgKi8NCj4gLQlpZiAocGNpX2lzX2JyaWRnZShkZXYpICYm
-ICFkZXYtPmRyaXZlciAmJg0KPiAtCSAgICBhY3BpX3RhcmdldF9zeXN0ZW1fc3RhdGUoKSAhPSBB
-Q1BJX1NUQVRFX1MwKQ0KPiArCWlmIChwY2lfaXNfYnJpZGdlKGRldikgJiYgYWNwaV90YXJnZXRf
-c3lzdGVtX3N0YXRlKCkgIT0gQUNQSV9TVEFURV9TMCkNCj4gIAkJcmV0dXJuIHRydWU7DQo+ICAN
-Cj4gIAlpZiAoIWFkZXYgfHwgIWFjcGlfZGV2aWNlX3Bvd2VyX21hbmFnZWFibGUoYWRldikpDQo+
-IA0K
+On Fri, Aug 17, 2018 at 7:45 AM Teika Kazura <teika@gmx.com> wrote:
+>
+> For the record, about the exactness of the patch description.
+>
+> The patch mentions the regression by the commit c62ec4610c40, but it is not the cause of the bug (https://bugzilla.kernel.org/show_bug.cgi?id=20067)
+> reported by me; I reverted c62ec4610c40 on linux-4.17.13, and the bug remained.
+>
+> # Some details: my bug was introduced by the commit (i) 877b3729ca0 on Jan 3. The commit (ii) c62ec4610c40 was on May 22. The commit (iii) 26112ddc254c
+> on Jun 30 fixes one problem caused by c62ec4610c40. The present patch modifies the code of the commit (iii), so it can be said as the completion of the
+> commit (iii). It at the same time fixes my bug, too.
+
+You are right, commit 877b3729ca0 introduced the issue for you, but it
+did that by exposing the same functional problem in the firmware that
+was previously addressed by commit 26112ddc254c in a different case.
+
+> This suggests the present patch possibly fixes other unknown PM problems; former kernels had some loose end(s). Now this patch puts the kernel in a better position.
+>
+> I'm a lay Linux user, and don't know if this post helps. If it does, it may be worth mentioning it in the above bugzilla entry.
+
+Yes, it does, thanks!
+
+I have updated the tags and the commit log of this patch according to
+the information above.
+
+Cheers,
+Rafael
