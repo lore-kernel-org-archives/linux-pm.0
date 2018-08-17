@@ -1,62 +1,114 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
-Date: Fri, 17 Aug 2018 15:43:59 +0200
-Message-ID: <804c7937-2c47-0781-9c53-a8ef8eb04530@arm.com>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-10-patrick.bellasi@arm.com>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been
+ stopped
+Date: Fri, 17 Aug 2018 16:12:54 +0200
+Message-ID: <20180817141252.GA12426@lerouge>
+References: <2161372.IsD4PDzmmY@aspire.rjw.lan>
+ <20180816132723.GA6010@lerouge>
+ <10817203.8q7neLTJVD@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180806163946.28380-10-patrick.bellasi@arm.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <10817203.8q7neLTJVD@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
-> In order to properly support hierarchical resources control, the cgroup
-> delegation model requires that attribute writes from a child group never
-> fail but still are (potentially) constrained based on parent's assigned
-> resources. This requires to properly propagate and aggregate parent
-> attributes down to its descendants.
-
-I don't understand the reason mentioned here:
-
-IMHO, a write to a child's (tg1/tg11) cpu.rt_runtime_us can fail if the 
-value is restricted by the parents value:
-
-root@juno:/sys/fs/cgroup/cpu# cat cpu.rt_*
-1000000
-950000
-root@juno:/sys/fs/cgroup/cpu# cat tg1/cpu.rt_*
-1000000
-0
-root@juno:/sys/fs/cgroup/cpu# cat tg1/tg11/cpu.rt_*
-1000000
-0
-root@juno:/sys/fs/cgroup/cpu# echo 950000 > tg1/tg11/cpu.rt_runtime_us
--bash: echo: write error: Invalid argument
-root@juno:/sys/fs/cgroup/cpu# echo 950000 > tg1/cpu.rt_runtime_us
-root@juno:/sys/fs/cgroup/cpu# echo 950000 > tg1/tg11/cpu.rt_runtime_us
-root@juno:/sys/fs/cgroup/cpu#
-
-> Let's implement this mechanism by adding a new "effective" clamp value
-> for each task group. The effective clamp value is defined as the smaller
-> value between the clamp value of a group and the effective clamp value
-> of its parent. This represent also the clamp value which is actually
-> used to clamp tasks in each task group.
+On Fri, Aug 17, 2018 at 11:32:07AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, August 16, 2018 3:27:24 PM CEST Frederic Weisbecker wrote:
+> > On Thu, Aug 09, 2018 at 07:08:34PM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > If the tick has been stopped already, but the governor has not asked to
+> > > stop it (which it can do sometimes), the idle loop should invoke
+> > > tick_nohz_idle_stop_tick(), to let tick_nohz_stop_tick() take care
+> > > of this case properly.
+> > > 
+> > > Fixes: 554c8aa8ecad (sched: idle: Select idle state before stopping the tick)
+> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> > >  kernel/sched/idle.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > 
+> > > Index: linux-pm/kernel/sched/idle.c
+> > > ===================================================================
+> > > --- linux-pm.orig/kernel/sched/idle.c
+> > > +++ linux-pm/kernel/sched/idle.c
+> > > @@ -190,7 +190,7 @@ static void cpuidle_idle_call(void)
+> > >  		 */
+> > >  		next_state = cpuidle_select(drv, dev, &stop_tick);
+> > >  
+> > > -		if (stop_tick)
+> > > +		if (stop_tick || tick_nohz_tick_stopped())
+> > >  			tick_nohz_idle_stop_tick();
+> > >  		else
+> > >  			tick_nohz_idle_retain_tick();
+> > 
+> > So what if tick_nohz_idle_stop_tick() sees no timer to schedule and
+> > cancels it, we may remain idle in a shallow state for a long while?
 > 
-> Since it can be interesting for tasks in a cgroup to know exactly what
-> is the currently propagated/enforced configuration, the effective clamp
-> values are exposed to user-space by means of a new pair of read-only
-> attributes: cpu.util.{min,max}.effective.
+> Yes, but the governor is expected to avoid using shallow states when the
+> tick is stopped already.
 
-I assume here that the cpu.util.{min,max} of the child will not be used 
-any more because the 'effective' counterparts are taken instead.
+So what kind of sleep do we enter to when an idle tick fires and we go
+back to idle? Is it always deep?
 
-I wonder if this propagation not been provided with only 
-cpu.util.{min,max}?
+I believe that ts->tick_stopped == 1 shouldn't be too relevant for the governor.
+We can definetly have scenarios where the idle tick is stopped for a long while,
+then it fires and schedules the next timer at NOW() + TICK_NSEC (as if the tick
+had been restarted). This can even repeat that way for some time, because
+ts->tick_stopped == 1 only implies that the tick has been stopped once since
+we entered the idle loop. After that we may well have a periodic tick behaviour.
+In that case we probably don't want deep idle state. Especially if we have:
 
-[...]
+              idle_loop() {
+                  tick_stop (scheduled several seconds forward)
+                  deep_idle_sleep()
+                  //several seconds later
+                  tick()
+                  tick_stop (scheduled TICK_NSEC forward)
+                  deep_idle_sleep()
+                  tick() {
+                      set_need_resched()
+                  }
+                  exit idle loop
+              }
+
+Here the last deep idle state isn't necessary.
+
+> 
+> > Otherwise we can have something like this:
+> > 
+> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> > index da9455a..408c985 100644
+> > --- a/kernel/time/tick-sched.c
+> > +++ b/kernel/time/tick-sched.c
+> > @@ -806,6 +806,9 @@ static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
+> >  static void tick_nohz_retain_tick(struct tick_sched *ts)
+> >  {
+> >  	ts->timer_expires_base = 0;
+> > +
+> > +	if (ts->tick_stopped)
+> > +		tick_nohz_restart(ts, ktime_get());
+> >  }
+> >  
+> >  #ifdef CONFIG_NO_HZ_FULL
+> > 
+> 
+> We could do that, but my concern with that approach is that we may end up
+> stopping and starting the tick back and forth without exiting the loop
+> in do_idle() just because somebody uses a periodic timer behind our
+> back and the governor gets confused.
+> 
+> Besides, that would be a change in behavior, while the $subject patch
+> simply fixes a mistake in the original design.
+
+Ok, let's take the safe approach for now as this is a fix and it should even be
+routed to stable.
+
+But then in the longer term, perhaps cpuidle_select() should think that
+through.
+
+Thanks.
