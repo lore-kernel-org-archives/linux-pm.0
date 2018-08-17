@@ -1,56 +1,78 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
- support utilization clamping
-Date: Fri, 17 Aug 2018 11:34:38 +0100
-Message-ID: <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-2-patrick.bellasi@arm.com>
- <20180807123550.GA3062@localhost.localdomain>
- <20180809091427.4p2c4fbxocpkjaby@darkstar>
- <20180809095043.GC22465@localhost.localdomain>
- <20180809152313.lewfhufidhxb2qrk@darkstar>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] console: Add console=auto option
+Date: Fri, 17 Aug 2018 06:36:10 -0400
+Message-ID: <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
+References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+ <20180816173902.18971-1-prarit@redhat.com>
+ <20180817093828.GA10337@jagdpanzerIV>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180809152313.lewfhufidhxb2qrk@darkstar>
+In-Reply-To: <20180817093828.GA10337@jagdpanzerIV>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Patrick,
 
-On Thursday 09 Aug 2018 at 16:23:13 (+0100), Patrick Bellasi wrote:
-> On 09-Aug 11:50, Juri Lelli wrote:
-> > On 09/08/18 10:14, Patrick Bellasi wrote:
-> > > On 07-Aug 14:35, Juri Lelli wrote:
-> > > > On 06/08/18 17:39, Patrick Bellasi wrote:
+
+On 08/17/2018 05:38 AM, Sergey Senozhatsky wrote:
+> On (08/16/18 13:39), Prarit Bhargava wrote:
+>>
+>> +		auto	[X86] Enable ACPI SPCR console
+> 			^^^^
+> 			And arm64?
+
+Hi Sergey, on arm64 if an SPCR is present the early console and console are
+initialized by default.  IOW no kernel parameter is necessary to initialize the
+console in that case.
+
 > 
-> [...]
 > 
-> > > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
-> > >    time parameter to relax this check
-> > 
-> > It seems to me that this might work well with that the intended usage of
-> > the interface that you depict above. SMS only (or any privileged user)
-> > will be in control of how groups are configured, so no problem for
-> > normal users.
+> Any chance we can rename param to "spcr" or something more clear?
+> To explicitly state what exactly it's going to do. `auto' sounds
+> too general and doesn't tell me that much. I'm probably the only
+> here who can't see a connection between "auto" and "SPCR", but
+> still.
+
+I came up with "auto" because I think it is generic.  I also thought about
+"console=fw", or just "console".  If in the future another arch wants to
+optionally bring up a firmware or hardware defined console then they could use
+auto too.
+
 > 
-> Yes, well... apart normal users still getting a -ENOSPC is they are
-> requesting one of the not pre-configured clamp values. Which is why
-> the following bits can be helpful.
+> One more thing, as far as I can tell, acpi_parse_spcr() can fail
+> and return an error. arch_console_setup() hides all errors and
+> returns void. Should it return error code?
+> 
+> 	int arch_console_setup(void)
+> 	{
+> 		return acpi_parse_spcr(false, true);
+> 	}
+> 
+> Or maybe
+> 
+> 	void arch_console_setup(void)
+> 	{
+> 		if (acpi_parse_spcr(false, true))
+> 			pr_err(.........);
+> 	}
+> 
+> There can be other consoles in the system, logging an error is not
+> such a useless thing.
 
-So IIUC, normal users would still be free of choosing their clamp values
-as long as they choose one in the list of pre-allocated ones ? Is that
-correct ?
+I can make the second change.  The problem (IIRC) with returning an error in an
+setup fn is that the rest of the setup functions will not execute.  I don't want
+to fail the setup callbacks because of an incorrect SPCR table.
 
-If yes, that would still let normal users make they tasks look bigger no ?
-They could just choose the clamp group with the highest min_clamp or
-something. Isn't this a problem too ? I mean, if that can be abused easily,
-I'm pretty sure people _will_ abuse it ...
+Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
+feelings about changing the behaviour of earlycon on x86?  I could make it so
+that specifying just earlycon would also initialize the console.
 
-Or maybe I misunderstood something ?
+P.
 
-Thanks,
-Quentin
+> 
+> 	-ss
+> 
