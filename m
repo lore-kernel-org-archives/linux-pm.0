@@ -1,36 +1,42 @@
-From: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Subject: [PATCH 2/2] dt-bindings: thermal: rcar-gen3-thermal: Add r8a774a1 support
-Date: Fri, 17 Aug 2018 15:53:04 +0100
-Message-ID: <1534517584-14434-3-git-send-email-fabrizio.castro@bp.renesas.com>
-References: <1534517584-14434-1-git-send-email-fabrizio.castro@bp.renesas.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v12 13/14] cpufreq: qcom: Re-organise kryo cpufreq to use
+ it for other nvmem based qcom socs
+Date: Fri, 17 Aug 2018 09:09:02 -0600
+Message-ID: <20180817150902.GA19164@rob-hp-laptop>
+References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
+ <1534248753-2440-14-git-send-email-sricharan@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534517584-14434-1-git-send-email-fabrizio.castro@bp.renesas.com>
+Content-Disposition: inline
+In-Reply-To: <1534248753-2440-14-git-send-email-sricharan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: Fabrizio Castro <fabrizio.castro@bp.renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org, sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Document RZ/G2M (R8A774A1) SoC bindings.
+Hi, this email is from Rob's (experimental) review bot. I found a couple
+of common problems with your patch. Please see below.
 
-Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Reviewed-by: Biju Das <biju.das@bp.renesas.com>
----
-This patch applies on top of next-20180817
+On Tue, 14 Aug 2018 17:42:32 +0530, Sricharan R wrote:
+> The kryo cpufreq driver reads the nvmem cell and uses that data to
+> populate the opps. There are other qcom cpufreq socs like krait which
+> does similar thing. Except for the interpretation of the read data,
+> rest of the driver is same for both the cases. So pull the common things
+> out for reuse.
+> 
+> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 
- Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt | 1 +
- 1 file changed, 1 insertion(+)
+The preferred subject prefix is "dt-bindings: <binding dir>: ...".
 
-diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-index cfa154b..098bf95 100644
---- a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-@@ -7,6 +7,7 @@ inside the LSI.
- Required properties:
- - compatible		: "renesas,<soctype>-thermal",
- 			  Examples with soctypes are:
-+			    - "renesas,r8a774a1-thermal" (RZ/G2M)
- 			    - "renesas,r8a7795-thermal" (R-Car H3)
- 			    - "renesas,r8a7796-thermal" (R-Car M3-W)
- 			    - "renesas,r8a77965-thermal" (R-Car M3-N)
--- 
-2.7.4
+> ---
+>  .../{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt}   |   6 +-
+>  drivers/cpufreq/Kconfig.arm                        |   4 +-
+>  drivers/cpufreq/Makefile                           |   2 +-
+>  .../{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c}  | 124 ++++++++++++---------
+>  4 files changed, 80 insertions(+), 56 deletions(-)
+>  rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (99%)
+>  rename drivers/cpufreq/{qcom-cpufreq-kryo.c => qcom-cpufreq-nvmem.c} (65%)
+> 
+
+DT bindings (including binding headers) should be a separate patch. See
+Documentation/devicetree/bindings/submitting-patches.txt.
