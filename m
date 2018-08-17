@@ -1,94 +1,90 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been stopped
-Date: Fri, 17 Aug 2018 12:05:22 +0200
-Message-ID: <CAJZ5v0jtQnickEdWamyqVyiS_Q12f9dsfA_d7QM93oS5LxF76g@mail.gmail.com>
-References: <2161372.IsD4PDzmmY@aspire.rjw.lan> <20180816132723.GA6010@lerouge>
- <10817203.8q7neLTJVD@aspire.rjw.lan>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] console: Add console=auto option
+Date: Fri, 17 Aug 2018 06:26:38 -0400
+Message-ID: <00c60dca-60bc-8568-eaa3-d4b0c326cab4@redhat.com>
+References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+ <20180816173902.18971-1-prarit@redhat.com>
+ <20180817081947.m425gok2ugt7tglp@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <10817203.8q7neLTJVD@aspire.rjw.lan>
+In-Reply-To: <20180817081947.m425gok2ugt7tglp@pathway.suse.cz>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Frederic Weisbecker <frederic@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Leo Yan <leo.yan@linaro.org>
+To: Petr Mladek <pmladek@suse.com>
+Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 17, 2018 at 11:34 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Thursday, August 16, 2018 3:27:24 PM CEST Frederic Weisbecker wrote:
-> > On Thu, Aug 09, 2018 at 07:08:34PM +0200, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > If the tick has been stopped already, but the governor has not asked to
-> > > stop it (which it can do sometimes), the idle loop should invoke
-> > > tick_nohz_idle_stop_tick(), to let tick_nohz_stop_tick() take care
-> > > of this case properly.
-> > >
-> > > Fixes: 554c8aa8ecad (sched: idle: Select idle state before stopping the tick)
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >  kernel/sched/idle.c |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >
-> > > Index: linux-pm/kernel/sched/idle.c
-> > > ===================================================================
-> > > --- linux-pm.orig/kernel/sched/idle.c
-> > > +++ linux-pm/kernel/sched/idle.c
-> > > @@ -190,7 +190,7 @@ static void cpuidle_idle_call(void)
-> > >              */
-> > >             next_state = cpuidle_select(drv, dev, &stop_tick);
-> > >
-> > > -           if (stop_tick)
-> > > +           if (stop_tick || tick_nohz_tick_stopped())
-> > >                     tick_nohz_idle_stop_tick();
-> > >             else
-> > >                     tick_nohz_idle_retain_tick();
-> >
-> > So what if tick_nohz_idle_stop_tick() sees no timer to schedule and
-> > cancels it, we may remain idle in a shallow state for a long while?
->
-> Yes, but the governor is expected to avoid using shallow states when the
-> tick is stopped already.
->
-> > Otherwise we can have something like this:
-> >
-> > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > index da9455a..408c985 100644
-> > --- a/kernel/time/tick-sched.c
-> > +++ b/kernel/time/tick-sched.c
-> > @@ -806,6 +806,9 @@ static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
-> >  static void tick_nohz_retain_tick(struct tick_sched *ts)
-> >  {
-> >       ts->timer_expires_base = 0;
-> > +
-> > +     if (ts->tick_stopped)
-> > +             tick_nohz_restart(ts, ktime_get());
-> >  }
-> >
-> >  #ifdef CONFIG_NO_HZ_FULL
-> >
->
-> We could do that, but my concern with that approach is that we may end up
-> stopping and starting the tick back and forth without exiting the loop
-> in do_idle() just because somebody uses a periodic timer behind our
-> back and the governor gets confused.
->
-> Besides, that would be a change in behavior, while the $subject patch
-> simply fixes a mistake in the original design.
 
-Anyway, I'm sort of divided here.
 
-We need to do something, this way or another, because the current code
-is not strictly correct.
+On 08/17/2018 04:19 AM, Petr Mladek wrote:
+> On Thu 2018-08-16 13:39:01, Prarit Bhargava wrote:
+>> ACPI may contain an SPCR table that defines a default system console.
+>> On ARM if the table is present then the SPCR console is enabled by default.
+>> On x86 the SPCR console is used if 'earlycon' (no parameters) is
+>> specified as a kernel parameter and is used only as the early console.
+>> To use the SPCR data as a console a user must boot with 'earlycon',
+>> grep logs & specify a console= kernel parameter, and then reboot again.
+>>
+>> Add 'console=auto' that enables a firmware or hardware console, and on
+>> x86 enable the SPCR console if 'console=auto' is specified.
+> 
+> I basically like the idea. Just one or two nits below.
+> 
+> 
+>> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+>> index a32f2a126791..dd057224f33b 100644
+>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>> @@ -635,6 +635,7 @@
+>>  
+>>  		hvc<n>	Use the hypervisor console device <n>. This is for
+>>  			both Xen and PowerPC hypervisors.
+>> +		auto	[X86] Enable ACPI SPCR console
+> 
+> The "auto" option sounds reasonable. But earlycon does exactly this
+> when used without no extra options. I prefer to stay consistent
+> with the existing earlycon behavior.
 
-If there are no concerns about the possible extra overhead related to
-restarting the tick, I'd just add a tick_nohz_idle_restart_tick() to
-the tick_nohz_idle_retain_tick() branch in cpuidle_idle_call() (it
-would do what's needed in there without affecting any other places).
+Hi Petr, on x86 earlycon still only enables the early console but does not
+enable the console.
 
-Then, of course, governors would not need to worry about leaving the
-tick stopped, so menu could be simplified somewhat, which may be a
-good thing after all.
+> 
+> 
+>>  		If the device connected to the port is not a TTY but a braille
+>>  		device, prepend "brl," before the device type, for instance
+>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>> index 3b20607d581b..fb2616ba3b21 100644
+>> --- a/arch/x86/kernel/acpi/boot.c
+>> +++ b/arch/x86/kernel/acpi/boot.c
+>> @@ -1771,3 +1771,8 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
+>>  	e820__range_add(addr, size, E820_TYPE_ACPI);
+>>  	e820__update_table_print();
+>>  }
+>> +
+>> +void __init arch_console_setup(void)
+>> +{
+>> +	acpi_parse_spcr(false, true);
+> 
+> Just for record. I was curious that this might be called twice
+> (also from acpi_boot_init(). But it looks safe after all.
+> 
 
-Cheers,
-Rafael
+Yes, the console code prevents the same console from being registered twice.
+
+> The trick is in the two bool parameters. One call allows to
+> register/enable earlycon and ignores normal console. This other
+> call does exactly the opposite. I do not see any unwanted side
+> effects.
+
+Thanks.  I'd like to know if you (or anyone else) has strong feelings about
+changing the behaviour of earlycon on x86?  I could make it so that specifying
+just earlycon would also initialize the console.
+
+P.
+
+> 
+> Best Regards,
+> Petr
+> 
