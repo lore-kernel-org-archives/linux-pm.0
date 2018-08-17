@@ -1,90 +1,56 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH v2] console: Add console=auto option
-Date: Fri, 17 Aug 2018 06:26:38 -0400
-Message-ID: <00c60dca-60bc-8568-eaa3-d4b0c326cab4@redhat.com>
-References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
- <20180816173902.18971-1-prarit@redhat.com>
- <20180817081947.m425gok2ugt7tglp@pathway.suse.cz>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Fri, 17 Aug 2018 11:34:38 +0100
+Message-ID: <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-2-patrick.bellasi@arm.com>
+ <20180807123550.GA3062@localhost.localdomain>
+ <20180809091427.4p2c4fbxocpkjaby@darkstar>
+ <20180809095043.GC22465@localhost.localdomain>
+ <20180809152313.lewfhufidhxb2qrk@darkstar>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180817081947.m425gok2ugt7tglp@pathway.suse.cz>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20180809152313.lewfhufidhxb2qrk@darkstar>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Patrick,
 
+On Thursday 09 Aug 2018 at 16:23:13 (+0100), Patrick Bellasi wrote:
+> On 09-Aug 11:50, Juri Lelli wrote:
+> > On 09/08/18 10:14, Patrick Bellasi wrote:
+> > > On 07-Aug 14:35, Juri Lelli wrote:
+> > > > On 06/08/18 17:39, Patrick Bellasi wrote:
+> 
+> [...]
+> 
+> > > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
+> > >    time parameter to relax this check
+> > 
+> > It seems to me that this might work well with that the intended usage of
+> > the interface that you depict above. SMS only (or any privileged user)
+> > will be in control of how groups are configured, so no problem for
+> > normal users.
+> 
+> Yes, well... apart normal users still getting a -ENOSPC is they are
+> requesting one of the not pre-configured clamp values. Which is why
+> the following bits can be helpful.
 
-On 08/17/2018 04:19 AM, Petr Mladek wrote:
-> On Thu 2018-08-16 13:39:01, Prarit Bhargava wrote:
->> ACPI may contain an SPCR table that defines a default system console.
->> On ARM if the table is present then the SPCR console is enabled by default.
->> On x86 the SPCR console is used if 'earlycon' (no parameters) is
->> specified as a kernel parameter and is used only as the early console.
->> To use the SPCR data as a console a user must boot with 'earlycon',
->> grep logs & specify a console= kernel parameter, and then reboot again.
->>
->> Add 'console=auto' that enables a firmware or hardware console, and on
->> x86 enable the SPCR console if 'console=auto' is specified.
-> 
-> I basically like the idea. Just one or two nits below.
-> 
-> 
->> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
->> index a32f2a126791..dd057224f33b 100644
->> --- a/Documentation/admin-guide/kernel-parameters.txt
->> +++ b/Documentation/admin-guide/kernel-parameters.txt
->> @@ -635,6 +635,7 @@
->>  
->>  		hvc<n>	Use the hypervisor console device <n>. This is for
->>  			both Xen and PowerPC hypervisors.
->> +		auto	[X86] Enable ACPI SPCR console
-> 
-> The "auto" option sounds reasonable. But earlycon does exactly this
-> when used without no extra options. I prefer to stay consistent
-> with the existing earlycon behavior.
+So IIUC, normal users would still be free of choosing their clamp values
+as long as they choose one in the list of pre-allocated ones ? Is that
+correct ?
 
-Hi Petr, on x86 earlycon still only enables the early console but does not
-enable the console.
+If yes, that would still let normal users make they tasks look bigger no ?
+They could just choose the clamp group with the highest min_clamp or
+something. Isn't this a problem too ? I mean, if that can be abused easily,
+I'm pretty sure people _will_ abuse it ...
 
-> 
-> 
->>  		If the device connected to the port is not a TTY but a braille
->>  		device, prepend "brl," before the device type, for instance
->> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
->> index 3b20607d581b..fb2616ba3b21 100644
->> --- a/arch/x86/kernel/acpi/boot.c
->> +++ b/arch/x86/kernel/acpi/boot.c
->> @@ -1771,3 +1771,8 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
->>  	e820__range_add(addr, size, E820_TYPE_ACPI);
->>  	e820__update_table_print();
->>  }
->> +
->> +void __init arch_console_setup(void)
->> +{
->> +	acpi_parse_spcr(false, true);
-> 
-> Just for record. I was curious that this might be called twice
-> (also from acpi_boot_init(). But it looks safe after all.
-> 
+Or maybe I misunderstood something ?
 
-Yes, the console code prevents the same console from being registered twice.
-
-> The trick is in the two bool parameters. One call allows to
-> register/enable earlycon and ignores normal console. This other
-> call does exactly the opposite. I do not see any unwanted side
-> effects.
-
-Thanks.  I'd like to know if you (or anyone else) has strong feelings about
-changing the behaviour of earlycon on x86?  I could make it so that specifying
-just earlycon would also initialize the console.
-
-P.
-
-> 
-> Best Regards,
-> Petr
-> 
+Thanks,
+Quentin
