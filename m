@@ -1,103 +1,86 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 08/14] sched/core: uclamp: extend cpu's cgroup
- controller
-Date: Fri, 17 Aug 2018 14:21:22 +0200
-Message-ID: <82db1123-339f-0dbf-9332-7e37ee9e4f20@arm.com>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-9-patrick.bellasi@arm.com>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH v2] console: Add console=auto option
+Date: Fri, 17 Aug 2018 14:57:14 +0200
+Message-ID: <20180817125714.yekdxxqflmgajf2s@pathway.suse.cz>
+References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+ <20180816173902.18971-1-prarit@redhat.com>
+ <20180817093828.GA10337@jagdpanzerIV>
+ <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
+ <20180817105046.GB10337@jagdpanzerIV>
+ <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180806163946.28380-9-patrick.bellasi@arm.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
+On Fri 2018-08-17 07:06:56, Prarit Bhargava wrote:
+> On 08/17/2018 06:50 AM, Sergey Senozhatsky wrote:
+> >> Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
+> >> feelings about changing the behaviour of earlycon on x86?  I could make it so
+> >> that specifying just earlycon would also initialize the console.
+> > 
+> > x86 people and/or scheduler people might have strong opinions on this.
+> > I Cc-ed Peter Zijlstra; he represents both groups and is known to be
+> > a hardcore earlycon user.
+> 
+> Thanks, I'm a user of earlycon too, but only moderately.
+> 
+> peterz, to give you an overview:  Currently on x86, the SPCR information is only
+> interpreted by the early console code, and can be enabled with kernel parameter
+> "earlycon" (no arguments).  In this patch I'm proposing adding "console=auto"
+> that would enable the console based on the SPCR data.
+> 
+> There are two options on the table.  One, we could go with this patch which
+> would make users do "earlycon console=auto" or, I could just change the
+> behaviour of earlycon (no arguments) to also bring up the console.  In the
+> second case the kernel parameter would just be "earlycon".  There is precedent
+> for the second option as arm64 enables both the earlycon and console by default
+> if SPCR is present.  However, on x86, I know many users do not want the console
+> enabled by default so we should keep it on demand.
+> 
+> tl;dr: Pick one
+> 
+> Option 1: earlycon enables both the early console and console.
 
-[...]
+I am afraid that this is not acceptable. Users are sensitive
+when a new kernel suddenly enables different consoles. For example,
+see:
 
-> Give the above mechanisms, it is now possible to extend the cpu
-> controller to specify what is the minimum (or maximum) utilization which
-> a task is expected (or allowed) to generate.
-> Constraints on minimum and maximum utilization allowed for tasks in a
-> CPU cgroup can improve the control on the actual amount of CPU bandwidth
-> consumed by tasks.
++ commit dac8bbbae1d0ccba9 ("Revert "printk: fix double printing with
+  earlycon")
 
-I assume this is covered by the s/bandwidth/capacity/ you had w/ Juri on 
-01/14.
++ commit c6c7d83b9c9e6a8b3 ("Revert "console: don't prefer first
+  registered if DT specifies stdout-path")
 
-[...]
 
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index ff76b000bbe8..2ba55a4afffb 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -1211,6 +1211,74 @@ static inline void uclamp_group_get(struct task_struct *p,
->   	uclamp_group_put(clamp_id, prev_group_id);
->   }
->   
-> +#ifdef CONFIG_UCLAMP_TASK_GROUP
-> +/**
-> + * init_uclamp_sched_group: initialize data structures required for TG's
-> + *                          utilization clamping
-> + */
-> +static inline void init_uclamp_sched_group(void)
-> +{
-> +	struct uclamp_map *uc_map;
-> +	struct uclamp_se *uc_se;
-> +	int group_id;
-> +	int clamp_id;
-> +
-> +	/* Root TG's is statically assigned to the first clamp group */
-> +	group_id = 0;
-> +
-> +	/* Initialize root TG's to default (none) clamp values */
-> +	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
-> +		uc_map = &uclamp_maps[clamp_id][0];
-> +
-> +		/* Map root TG's clamp value */
-> +		uclamp_group_init(clamp_id, group_id, uclamp_none(clamp_id));
-> +
-> +		/* Init root TG's clamp group */
-> +		uc_se = &root_task_group.uclamp[clamp_id];
-> +		uc_se->value = uclamp_none(clamp_id);
-> +		uc_se->group_id = group_id;
-> +
-> +		/* Attach root TG's clamp group */
-> +		uc_map[group_id].se_count = 1;
-> +	}
-> +}
+By other words, the new behavior must depend on a new option.
 
-Can you not save some lines here:
 
-  static inline void init_uclamp_sched_group(void)
-  {
--       struct uclamp_map *uc_map;
-         struct uclamp_se *uc_se;
-         int group_id;
-         int clamp_id;
-@@ -1228,8 +1227,6 @@ static inline void init_uclamp_sched_group(void)
+> Option 2: earlycon only enables the early console, and console=auto enables the
+> console.
 
-         /* Initialize root TG's to default (none) clamp values */
-         for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
--               uc_map = &uclamp_maps[clamp_id][0];
--
-                 /* Map root TG's clamp value */
-                 uclamp_group_init(clamp_id, group_id, 
-uclamp_none(clamp_id));
+I suggest:
 
-@@ -1239,7 +1236,7 @@ static inline void init_uclamp_sched_group(void)
-                 uc_se->group_id = group_id;
+Option 3: "earlycon" enables early console defined by SPCR
+	  "console" enables console defined by SPCR
 
-                 /* Attach root TG's clamp group */
--               uc_map[group_id].se_count = 1;
-+               uclamp_maps[clamp_id][group_id].se_count = 1;
-         }
+I mean that "console" without extra options would enable the console
+defined by ACPI SPCR. It would work the same as "earlycon" without
+extra options for early consoles.
 
-This would also make uclamp_group_available() smaller.
+If you would want to make it explicit than I agree with Sergey
+and would prefer "console=spcr" instead of "console=auto".
 
-[...]
+Note kernel tries to enable some consoles automatically even
+when "console" parameter is not defined at all. Therefore "auto"
+is somehow misleading.
+
+Best Regards,
+Petr
+
+PS: JFYI, I have vacation the following week...
