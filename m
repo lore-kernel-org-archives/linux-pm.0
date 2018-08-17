@@ -1,114 +1,59 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH v2] console: Add console=auto option
-Date: Fri, 17 Aug 2018 07:06:56 -0400
-Message-ID: <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
-References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
- <20180816173902.18971-1-prarit@redhat.com>
- <20180817093828.GA10337@jagdpanzerIV>
- <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
- <20180817105046.GB10337@jagdpanzerIV>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v3 01/14] sched/core: uclamp: extend sched_setattr to
+ support utilization clamping
+Date: Fri, 17 Aug 2018 12:14:31 +0100
+Message-ID: <20180817111429.3nhqm3lrr42lzqho@queper01-lin>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-2-patrick.bellasi@arm.com>
+ <20180807123550.GA3062@localhost.localdomain>
+ <20180809091427.4p2c4fbxocpkjaby@darkstar>
+ <20180809095043.GC22465@localhost.localdomain>
+ <20180809152313.lewfhufidhxb2qrk@darkstar>
+ <20180817103406.gmve4clcxmhwlmtc@queper01-lin>
+ <20180817105731.GI2960@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180817105046.GB10337@jagdpanzerIV>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20180817105731.GI2960@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Friday 17 Aug 2018 at 11:57:31 (+0100), Patrick Bellasi wrote:
+> On 17-Aug 11:34, Quentin Perret wrote:
+> > Hi Patrick,
+> > 
+> > On Thursday 09 Aug 2018 at 16:23:13 (+0100), Patrick Bellasi wrote:
+> > > On 09-Aug 11:50, Juri Lelli wrote:
+> > > > On 09/08/18 10:14, Patrick Bellasi wrote:
+> > > > > On 07-Aug 14:35, Juri Lelli wrote:
+> > > > > > On 06/08/18 17:39, Patrick Bellasi wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > > 1) make CAP_SYS_NICE protected the clamp groups, with an optional boot
+> > > > >    time parameter to relax this check
+> > > > 
+> > > > It seems to me that this might work well with that the intended usage of
+> > > > the interface that you depict above. SMS only (or any privileged user)
+> > > > will be in control of how groups are configured, so no problem for
+> > > > normal users.
+> > > 
+> > > Yes, well... apart normal users still getting a -ENOSPC is they are
+> > > requesting one of the not pre-configured clamp values. Which is why
+> > > the following bits can be helpful.
+> > 
+> > So IIUC, normal users would still be free of choosing their clamp values
+> > as long as they choose one in the list of pre-allocated ones ? Is that
+> > correct ?
+> 
+> No, with the CAP_SYS_NICE/ADMIN guard in place, as discussed above in
+> point 1, the syscall will just fail for normal users.
 
+Right, I just misunderstood then :-)
+Sorry for the noise ...
 
-On 08/17/2018 06:50 AM, Sergey Senozhatsky wrote:
-> Hello,
-> 
-> Cc-ing Peter Zijlstra
-> 
->   lkml.kernel.org/r/728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com
->   lkml.kernel.org/r/20180817081947.m425gok2ugt7tglp@pathway.suse.cz
->   lkml.kernel.org/r/00c60dca-60bc-8568-eaa3-d4b0c326cab4@redhat.com
-> 
-> On (08/17/18 06:36), Prarit Bhargava wrote:
->> On 08/17/2018 05:38 AM, Sergey Senozhatsky wrote:
->>> On (08/16/18 13:39), Prarit Bhargava wrote:
->>>>
->>>> +		auto	[X86] Enable ACPI SPCR console
->>> 			^^^^
->>> 			And arm64?
->>
->> Hi Sergey, on arm64 if an SPCR is present the early console and console are
->> initialized by default.  IOW no kernel parameter is necessary to initialize the
->> console in that case.
-> 
-> OK, thanks.
-> 
->>> Any chance we can rename param to "spcr" or something more clear?
->>> To explicitly state what exactly it's going to do. `auto' sounds
->>> too general and doesn't tell me that much. I'm probably the only
->>> here who can't see a connection between "auto" and "SPCR", but
->>> still.
->>
->> I came up with "auto" because I think it is generic.  I also thought about
->> "console=fw", or just "console".  If in the future another arch wants to
->> optionally bring up a firmware or hardware defined console then they could use
->> auto too.
-> 
-> Hmm, I see your point.
-> My [sort of a] problem with "auto" is that it tells me as much as "magic"
-> [and "magic" tells me almost nothing]. By the way, would be fun if we had
-> "magic" instead of "auto" all over the kernel
-> 
-> 	echo "magic" > /sys/bus/usb/...../power/control
-> 
->>> 	void arch_console_setup(void)
->>> 	{
->>> 		if (acpi_parse_spcr(false, true))
->>> 			pr_err(.........);
->>> 	}
->>>
->>> There can be other consoles in the system, logging an error is not
->>> such a useless thing.
->>
->> I can make the second change.  The problem (IIRC) with returning an error in an
->> setup fn is that the rest of the setup functions will not execute.  I don't want
->> to fail the setup callbacks because of an incorrect SPCR table.
-> 
-> OK, fair enough.
-> Letting users know that SPCR is incorrect also makes sense, so option #2
-> I guess is what we want after all.
-> 
->> Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
->> feelings about changing the behaviour of earlycon on x86?  I could make it so
->> that specifying just earlycon would also initialize the console.
-> 
-> x86 people and/or scheduler people might have strong opinions on this.
-> I Cc-ed Peter Zijlstra; he represents both groups and is known to be
-> a hardcore earlycon user.
-
-Thanks, I'm a user of earlycon too, but only moderately.
-
-peterz, to give you an overview:  Currently on x86, the SPCR information is only
-interpreted by the early console code, and can be enabled with kernel parameter
-"earlycon" (no arguments).  In this patch I'm proposing adding "console=auto"
-that would enable the console based on the SPCR data.
-
-There are two options on the table.  One, we could go with this patch which
-would make users do "earlycon console=auto" or, I could just change the
-behaviour of earlycon (no arguments) to also bring up the console.  In the
-second case the kernel parameter would just be "earlycon".  There is precedent
-for the second option as arm64 enables both the earlycon and console by default
-if SPCR is present.  However, on x86, I know many users do not want the console
-enabled by default so we should keep it on demand.
-
-tl;dr: Pick one
-
-Option 1: earlycon enables both the early console and console.
-Option 2: earlycon only enables the early console, and console=auto enables the
-console.
-
-P.
-
-> 
-> 	-ss
-> 
+Thanks,
+Quentin
