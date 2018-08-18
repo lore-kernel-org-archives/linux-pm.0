@@ -1,65 +1,29 @@
-From: Calvin Walton <calvin.walton@kepstin.ca>
-Subject: [PATCH v3 2/2] [WIP] tools/power turbostat: Also read package power on AMD F17h (Zen)
-Date: Fri, 17 Aug 2018 12:34:42 -0400
-Message-ID: <20180817163442.10065-3-calvin.walton@kepstin.ca>
-References: <20180817163442.10065-1-calvin.walton@kepstin.ca>
+From: Anshuman Gupta <anshuman.gupta@intel.com>
+Subject: [PATCH v2 0/1] cover-letter hdac-codec runtime suspended at PM:Suspend.
+Date: Sat, 18 Aug 2018 23:42:02 +0530
+Message-ID: <1534615923-8541-1-git-send-email-anshuman.gupta@intel.com>
+References: <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180817163442.10065-1-calvin.walton@kepstin.ca>
+In-Reply-To: <CAJZ5v0hyk=jto8Wt0er==YmKEsgvfvZhO2wDbGOhxZaWWCNgBg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Calvin Walton <calvin.walton@kepstin.ca>
+To: puneethx.prabhu@intel.com, lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, rafael@kernel.org
+Cc: alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, anshuman.gupta@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-The package power can also be read from an MSR. It's not clear exactly
-what is included, and whether it's aggregated over all nodes or
-reported separately.
+Current implementation of hdac hdmi codec driver uses its
+suspend/resume operation callback in its prepare/complete callback
+which has issues with hdac direct-complete, it has been reviewed earlier
+that hdac hdmi codec driver requires a rework
+(https://patchwork.kernel.org/patch/10276021/),
+but as there is no rework with driver, it require to fix hdac direct complete
+issue to leverage hdac direct complete in order to optimize its resume latency
+while resuming from system wide suspend.
 
-It does look like this is reported separately per CCX (I get a single
-value on the Ryzen R7 1700), but it might be reported separately per-
-die (node?) on larger processors. If that's the case, it would have to
-be recorded per node and aggregated for the socket.
+Anshuman Gupta (1):
+  hdac-codec runtime suspended at PM:Suspend.
 
-Note that although Zen has these MSRs reporting power, it looks like
-the actual RAPL configuration (power limits, configured TDP) is done
-through PCI configuration space. I have not yet found any public
-documentation for this.
+ sound/soc/codecs/hdac_hdmi.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Signed-off-by: Calvin Walton <calvin.walton@kepstin.ca>
----
- tools/power/x86/turbostat/turbostat.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 89d4e2e75774..675c894b8595 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1973,6 +1973,11 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 			return -16;
- 		p->rapl_dram_perf_status = msr & 0xFFFFFFFF;
- 	}
-+	if (do_rapl & RAPL_AMD_F17H) {
-+		if (get_msr(cpu, MSR_PKG_ENERGY_STAT, &msr))
-+			return -13;
-+		p->energy_pkg = msr & 0xFFFFFFFF;
-+	}
- 	if (DO_BIC(BIC_PkgTmp)) {
- 		if (get_msr(cpu, MSR_IA32_PACKAGE_THERM_STATUS, &msr))
- 			return -17;
-@@ -3986,10 +3991,13 @@ void rapl_probe_amd(unsigned int family, unsigned int model)
- 	switch (family) {
- 	case 0x17: /* Zen, Zen+ */
- 		do_rapl = RAPL_AMD_F17H | RAPL_PER_CORE_ENERGY;
--		if (rapl_joules)
-+		if (rapl_joules) {
-+			BIC_PRESENT(BIC_Pkg_J);
- 			BIC_PRESENT(BIC_Cor_J);
--		else
-+		} else {
-+			BIC_PRESENT(BIC_PkgWatt);
- 			BIC_PRESENT(BIC_CorWatt);
-+		}
- 		break;
- 	default:
- 		return;
 -- 
-2.18.0
+2.7.4
