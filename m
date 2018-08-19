@@ -1,105 +1,121 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been stopped
-Date: Sun, 19 Aug 2018 09:57:21 +0200
-Message-ID: <CAJZ5v0hTRkwE3SwOD3qW9qe0xFQ42yGXNnMpKYXMdiRh2FirsA@mail.gmail.com>
-References: <2161372.IsD4PDzmmY@aspire.rjw.lan> <20180816132723.GA6010@lerouge>
- <10817203.8q7neLTJVD@aspire.rjw.lan> <20180817141252.GA12426@lerouge>
- <CAJZ5v0gD79NuTgr3dVS_3cBFz5Q1JtQTP8mDfSM1tvwDcYkFAQ@mail.gmail.com> <20180819003632.GA11280@leoy-ThinkPad-X240s>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Pu Wen <puwen@hygon.cn>
+Subject: [PATCH v4 00/16] Add support for Hygon Dhyana Family 18h processor
+Date: Mon, 20 Aug 2018 00:07:49 +0800
+Message-ID: <cover.1534599097.git.puwen@hygon.cn>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180819003632.GA11280@leoy-ThinkPad-X240s>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Frederic Weisbecker <frederic@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, bp@alien8.de, pbonzini@redhat.com, tony.luck@intel.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org, mchehab@kernel.org, trenn@suse.com, shuah@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, Pu Wen <puwen@hygon.cn>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 19, 2018 at 2:36 AM <leo.yan@linaro.org> wrote:
->
-> On Sat, Aug 18, 2018 at 11:57:00PM +0200, Rafael J. Wysocki wrote:
->
-> [...]
->
-> > > > > Otherwise we can have something like this:
-> > > > >
-> > > > > diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> > > > > index da9455a..408c985 100644
-> > > > > --- a/kernel/time/tick-sched.c
-> > > > > +++ b/kernel/time/tick-sched.c
-> > > > > @@ -806,6 +806,9 @@ static void tick_nohz_stop_tick(struct tick_sched *ts, int cpu)
-> > > > >  static void tick_nohz_retain_tick(struct tick_sched *ts)
-> > > > >  {
-> > > > >     ts->timer_expires_base = 0;
-> > > > > +
-> > > > > +   if (ts->tick_stopped)
-> > > > > +           tick_nohz_restart(ts, ktime_get());
-> > > > >  }
-> > > > >
-> > > > >  #ifdef CONFIG_NO_HZ_FULL
-> > > > >
-> > > >
-> > > > We could do that, but my concern with that approach is that we may end up
-> > > > stopping and starting the tick back and forth without exiting the loop
-> > > > in do_idle() just because somebody uses a periodic timer behind our
-> > > > back and the governor gets confused.
-> > > >
-> > > > Besides, that would be a change in behavior, while the $subject patch
-> > > > simply fixes a mistake in the original design.
-> > >
-> > > Ok, let's take the safe approach for now as this is a fix and it should even be
-> > > routed to stable.
-> >
-> > Right.  I'll queue up this patch, then.
-> >
-> > > But then in the longer term, perhaps cpuidle_select() should think that
-> > > through.
-> >
-> > So I have given more consideration to this and my conclusion is that
-> > restarting the tick between cpuidle_select() and call_cpuidle() is a
-> > bad idea.
-> >
-> > First off, if need_resched() is "false", the primary reason for
-> > running the tick on the given CPU is not there, so it only might be
-> > useful as a "backup" timer to wake up the CPU from an inadequate idle
-> > state.
-> >
-> > Now, in general, there are two reasons for the idle governor (whatever
-> > it is) to select an idle state with a target residency below the tick
-> > period length.  The first reason is when the governor knows that the
-> > closest timer event is going to occur in this time frame, but in that
-> > case (as stated above), it is not necessary to worry about the tick,
-> > because the other timer will trigger soon enough anyway.  The second
-> > reason is when the governor predicts a wakeup which is not by a timer
-> > in this time frame and it is quite arguable what the governor should
-> > do then.  IMO it at least is not unreasonable to throw the prediction
-> > away and still go for the closest timer event in that case (which is
-> > the current approach).
-> >
-> > There's more, though.  Restarting the tick between cpuidle_select()
-> > and call_cpuidle() might introduce quite a bit of latency into that
-> > point and that would mess up with the idle state selection (e.g.
-> > selecting a very shallow idle state might not make a lot of sense if
-> > that latency was high enough, because the expected wakeup might very
-> > well take place when the tick was being restarted), so it should
-> > rather be avoided IMO.
->
-> I expect the idle governor doesn't introduce many restarting tick
-> operations, the reason is if there have a close timer event than idle
-> governor can trust it to wake up CPU so in this case the idle governor
-> will not restart tick;  if the the timer event is long delta and the
-> shallow state selection is caused by factors (e.g. typical pattern),
-> then we need restart tick to avoid powernightmares, for this case we
-> can restart tick only once at the beginning for the typical pattern
-> interrupt events; after the typical pattern interrupt doesn't continue
-> then we can rely on the tick to rescue the idle state to deep one.
+As a new x86 CPU Vendor, Chengdu Haiguang IC Design Co., Ltd (Hygon)
+is a Joint Venture between AMD and Haiguang Information Technology Co.,
+Ltd., and aims at providing high performance x86 processor for China
+server market.
 
-No, we don't need to restart the tick at all.  We just need to require
-the governor to disregard "typical patterns" (which are not
-timer-induced, mind you) when it knows that the tick has been stopped
-already.
+The first generation Hygon's processor(Dhyana) originates from AMD
+technology and shares most of the architecture with AMD's family 17h,
+but with different CPU Vendor ID("HygonGenuine")/PCIE Device Vendor ID
+(0x1D94)/Family series number (Family 18h).
 
-Unfortunately, the menu governor cannot distinguish a timer-induced
-"typical" pattern from one related to device interrupts, but I don't
-really see a reason to worry about the latter when the CPU is idle and
-with stopped tick (which means that the workload can tolerate extra
-latency from deep idle states anyway).
+To enable the support of Linux kernel to Hygon's CPU, we added a new
+vendor type (X86_VENDOR_HYGON, with value of 9) in arch/x86/include/
+asm/processor.h, and shared most of kernel support codes with AMD
+family 17h.
+
+This patch series have been applied and tested successfully in Hygon's
+Dhyana SoC silicon. Also tested on AMD's EPYC (Family 17h) processor
+works fine and makes no harm to existing codes.
+
+
+v3->v4:
+  - Rebased on 4.18.3 and tested against it.
+  - Merge patchs 05/17 perfctr and 10/17 events in v3 to patch 05/16
+    PMU for better patch function group.
+  - Add hygon_get_topology_early() in patch 01/16.
+  - Rework vendor checking and refine coding style.
+  - Add Acked-by from Bjorn Helgaas for pci.
+  - Add Acked-by from Rafael J. Wysocki for cpufreq and acpi.
+
+v2->v3:
+  - Rebased on 4.18-rc8 and tested against it.
+  - Rework vendor checking codes to improve consistency.
+
+v1->v2:
+  - Rebased on 4.18-rc6 and tested against it.
+  - Split the patchset to small series of patches.
+  - Rework patch descriptions.
+  - Create a separated arch/x86/kernel/cpu/hygon.c for Dhyana CPU
+    initialization to reduce long-term maintenance effort.
+
+
+Pu Wen (16):
+  x86/cpu: create Dhyana init file and register new cpu_dev to system
+  x86/cache: get cache size/leaves and setup cache cpumap for Dhyana
+  x86/mtrr: get MTRR number and support TOP_MEM2
+  x86/smpboot: smp init nodelay and no flush caches before sleep
+  x86/pmu: enable Hygon support to PMU infrastructure
+  x86/nops: init ideal_nops for Hygon
+  x86/pci: add Hygon PCI vendor and northbridge support
+  x86/apic: add modern APIC support for Hygon
+  x86/bugs: add lfence mitigation to spectre v2 and no meltdown for
+    Hygon
+  x86/mce: enable Hygon support to MCE infrastructure
+  x86/kvm: enable Hygon support to KVM infrastructure
+  x86/xen: enable Hygon support to Xen
+  driver/acpi: enable Hygon support to ACPI driver
+  driver/cpufreq: enable Hygon support to cpufreq driver
+  driver/edac: enable Hygon support to AMD64 EDAC driver
+  tools/cpupower: enable Hygon support to cpupower tool
+
+ MAINTAINERS                                        |   6 +
+ arch/x86/Kconfig                                   |   2 +-
+ arch/x86/Kconfig.cpu                               |  13 +
+ arch/x86/events/amd/core.c                         |   6 +
+ arch/x86/events/amd/uncore.c                       |  15 +-
+ arch/x86/events/core.c                             |   4 +
+ arch/x86/include/asm/cacheinfo.h                   |   1 +
+ arch/x86/include/asm/kvm_emulate.h                 |   4 +
+ arch/x86/include/asm/mce.h                         |   5 +
+ arch/x86/include/asm/nospec-branch.h               |   4 +-
+ arch/x86/include/asm/processor.h                   |   3 +-
+ arch/x86/include/asm/virtext.h                     |   5 +-
+ arch/x86/kernel/alternative.c                      |   4 +
+ arch/x86/kernel/amd_nb.c                           |  51 ++-
+ arch/x86/kernel/apic/apic.c                        |  19 +-
+ arch/x86/kernel/apic/probe_32.c                    |   1 +
+ arch/x86/kernel/cpu/Makefile                       |   1 +
+ arch/x86/kernel/cpu/bugs.c                         |  28 +-
+ arch/x86/kernel/cpu/cacheinfo.c                    |  31 +-
+ arch/x86/kernel/cpu/common.c                       |   1 +
+ arch/x86/kernel/cpu/cpu.h                          |   1 +
+ arch/x86/kernel/cpu/hygon.c                        | 409 +++++++++++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce-severity.c          |   3 +-
+ arch/x86/kernel/cpu/mcheck/mce.c                   |  21 +-
+ arch/x86/kernel/cpu/mtrr/cleanup.c                 |   3 +-
+ arch/x86/kernel/cpu/mtrr/generic.c                 |   5 +-
+ arch/x86/kernel/cpu/mtrr/mtrr.c                    |   2 +-
+ arch/x86/kernel/cpu/perfctr-watchdog.c             |   2 +
+ arch/x86/kernel/smpboot.c                          |   4 +-
+ arch/x86/kvm/emulate.c                             |  11 +-
+ arch/x86/pci/amd_bus.c                             |   6 +-
+ arch/x86/xen/pmu.c                                 |  12 +-
+ drivers/acpi/acpi_pad.c                            |   1 +
+ drivers/acpi/processor_idle.c                      |   1 +
+ drivers/cpufreq/acpi-cpufreq.c                     |   5 +
+ drivers/cpufreq/amd_freq_sensitivity.c             |   9 +-
+ drivers/edac/amd64_edac.c                          |  52 ++-
+ drivers/edac/amd64_edac.h                          |   5 +
+ drivers/edac/mce_amd.c                             |  15 +-
+ include/linux/pci_ids.h                            |   2 +
+ tools/power/cpupower/utils/cpufreq-info.c          |   6 +-
+ tools/power/cpupower/utils/helpers/amd.c           |   6 +-
+ tools/power/cpupower/utils/helpers/cpuid.c         |   8 +-
+ tools/power/cpupower/utils/helpers/helpers.h       |   2 +-
+ tools/power/cpupower/utils/helpers/misc.c          |   3 +-
+ .../cpupower/utils/idle_monitor/mperf_monitor.c    |   3 +-
+ 46 files changed, 732 insertions(+), 69 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/hygon.c
+
+-- 
+2.7.4
