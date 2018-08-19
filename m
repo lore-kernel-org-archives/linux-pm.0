@@ -1,121 +1,87 @@
 From: Pu Wen <puwen@hygon.cn>
-Subject: [PATCH v4 00/16] Add support for Hygon Dhyana Family 18h processor
-Date: Mon, 20 Aug 2018 00:07:49 +0800
-Message-ID: <cover.1534599097.git.puwen@hygon.cn>
+Subject: [PATCH v4 14/16] driver/cpufreq: enable Hygon support to cpufreq driver
+Date: Mon, 20 Aug 2018 00:14:28 +0800
+Message-ID: <ba12d5ecb16dfb99c7ab99d4305a326880d31b96.1534599097.git.puwen@hygon.cn>
+References: <cover.1534599097.git.puwen@hygon.cn>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1534599097.git.puwen@hygon.cn>
 Sender: linux-kernel-owner@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, bp@alien8.de, pbonzini@redhat.com, tony.luck@intel.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org, mchehab@kernel.org, trenn@suse.com, shuah@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, Pu Wen <puwen@hygon.cn>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, bp@alien8.de, pbonzini@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, rafael@kernel.org, rafael.j.wysocki@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, Pu Wen <puwen@hygon.cn>
 List-Id: linux-pm@vger.kernel.org
 
-As a new x86 CPU Vendor, Chengdu Haiguang IC Design Co., Ltd (Hygon)
-is a Joint Venture between AMD and Haiguang Information Technology Co.,
-Ltd., and aims at providing high performance x86 processor for China
-server market.
+Enable ACPI cpufreq driver support for Hygon by adding family ID check
+along with AMD.
 
-The first generation Hygon's processor(Dhyana) originates from AMD
-technology and shares most of the architecture with AMD's family 17h,
-but with different CPU Vendor ID("HygonGenuine")/PCIE Device Vendor ID
-(0x1D94)/Family series number (Family 18h).
+As Hygon platforms have SMBus device(PCI device ID 0x790b), enable Hygon
+support to function amd_freq_sensitivity_init().
 
-To enable the support of Linux kernel to Hygon's CPU, we added a new
-vendor type (X86_VENDOR_HYGON, with value of 9) in arch/x86/include/
-asm/processor.h, and shared most of kernel support codes with AMD
-family 17h.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Pu Wen <puwen@hygon.cn>
+---
+ drivers/cpufreq/acpi-cpufreq.c         | 5 +++++
+ drivers/cpufreq/amd_freq_sensitivity.c | 9 +++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-This patch series have been applied and tested successfully in Hygon's
-Dhyana SoC silicon. Also tested on AMD's EPYC (Family 17h) processor
-works fine and makes no harm to existing codes.
-
-
-v3->v4:
-  - Rebased on 4.18.3 and tested against it.
-  - Merge patchs 05/17 perfctr and 10/17 events in v3 to patch 05/16
-    PMU for better patch function group.
-  - Add hygon_get_topology_early() in patch 01/16.
-  - Rework vendor checking and refine coding style.
-  - Add Acked-by from Bjorn Helgaas for pci.
-  - Add Acked-by from Rafael J. Wysocki for cpufreq and acpi.
-
-v2->v3:
-  - Rebased on 4.18-rc8 and tested against it.
-  - Rework vendor checking codes to improve consistency.
-
-v1->v2:
-  - Rebased on 4.18-rc6 and tested against it.
-  - Split the patchset to small series of patches.
-  - Rework patch descriptions.
-  - Create a separated arch/x86/kernel/cpu/hygon.c for Dhyana CPU
-    initialization to reduce long-term maintenance effort.
-
-
-Pu Wen (16):
-  x86/cpu: create Dhyana init file and register new cpu_dev to system
-  x86/cache: get cache size/leaves and setup cache cpumap for Dhyana
-  x86/mtrr: get MTRR number and support TOP_MEM2
-  x86/smpboot: smp init nodelay and no flush caches before sleep
-  x86/pmu: enable Hygon support to PMU infrastructure
-  x86/nops: init ideal_nops for Hygon
-  x86/pci: add Hygon PCI vendor and northbridge support
-  x86/apic: add modern APIC support for Hygon
-  x86/bugs: add lfence mitigation to spectre v2 and no meltdown for
-    Hygon
-  x86/mce: enable Hygon support to MCE infrastructure
-  x86/kvm: enable Hygon support to KVM infrastructure
-  x86/xen: enable Hygon support to Xen
-  driver/acpi: enable Hygon support to ACPI driver
-  driver/cpufreq: enable Hygon support to cpufreq driver
-  driver/edac: enable Hygon support to AMD64 EDAC driver
-  tools/cpupower: enable Hygon support to cpupower tool
-
- MAINTAINERS                                        |   6 +
- arch/x86/Kconfig                                   |   2 +-
- arch/x86/Kconfig.cpu                               |  13 +
- arch/x86/events/amd/core.c                         |   6 +
- arch/x86/events/amd/uncore.c                       |  15 +-
- arch/x86/events/core.c                             |   4 +
- arch/x86/include/asm/cacheinfo.h                   |   1 +
- arch/x86/include/asm/kvm_emulate.h                 |   4 +
- arch/x86/include/asm/mce.h                         |   5 +
- arch/x86/include/asm/nospec-branch.h               |   4 +-
- arch/x86/include/asm/processor.h                   |   3 +-
- arch/x86/include/asm/virtext.h                     |   5 +-
- arch/x86/kernel/alternative.c                      |   4 +
- arch/x86/kernel/amd_nb.c                           |  51 ++-
- arch/x86/kernel/apic/apic.c                        |  19 +-
- arch/x86/kernel/apic/probe_32.c                    |   1 +
- arch/x86/kernel/cpu/Makefile                       |   1 +
- arch/x86/kernel/cpu/bugs.c                         |  28 +-
- arch/x86/kernel/cpu/cacheinfo.c                    |  31 +-
- arch/x86/kernel/cpu/common.c                       |   1 +
- arch/x86/kernel/cpu/cpu.h                          |   1 +
- arch/x86/kernel/cpu/hygon.c                        | 409 +++++++++++++++++++++
- arch/x86/kernel/cpu/mcheck/mce-severity.c          |   3 +-
- arch/x86/kernel/cpu/mcheck/mce.c                   |  21 +-
- arch/x86/kernel/cpu/mtrr/cleanup.c                 |   3 +-
- arch/x86/kernel/cpu/mtrr/generic.c                 |   5 +-
- arch/x86/kernel/cpu/mtrr/mtrr.c                    |   2 +-
- arch/x86/kernel/cpu/perfctr-watchdog.c             |   2 +
- arch/x86/kernel/smpboot.c                          |   4 +-
- arch/x86/kvm/emulate.c                             |  11 +-
- arch/x86/pci/amd_bus.c                             |   6 +-
- arch/x86/xen/pmu.c                                 |  12 +-
- drivers/acpi/acpi_pad.c                            |   1 +
- drivers/acpi/processor_idle.c                      |   1 +
- drivers/cpufreq/acpi-cpufreq.c                     |   5 +
- drivers/cpufreq/amd_freq_sensitivity.c             |   9 +-
- drivers/edac/amd64_edac.c                          |  52 ++-
- drivers/edac/amd64_edac.h                          |   5 +
- drivers/edac/mce_amd.c                             |  15 +-
- include/linux/pci_ids.h                            |   2 +
- tools/power/cpupower/utils/cpufreq-info.c          |   6 +-
- tools/power/cpupower/utils/helpers/amd.c           |   6 +-
- tools/power/cpupower/utils/helpers/cpuid.c         |   8 +-
- tools/power/cpupower/utils/helpers/helpers.h       |   2 +-
- tools/power/cpupower/utils/helpers/misc.c          |   3 +-
- .../cpupower/utils/idle_monitor/mperf_monitor.c    |   3 +-
- 46 files changed, 732 insertions(+), 69 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/hygon.c
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index b61f4ec..d62fd37 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -61,6 +61,7 @@ enum {
+ 
+ #define INTEL_MSR_RANGE		(0xffff)
+ #define AMD_MSR_RANGE		(0x7)
++#define HYGON_MSR_RANGE		(0x7)
+ 
+ #define MSR_K7_HWCR_CPB_DIS	(1ULL << 25)
+ 
+@@ -95,6 +96,7 @@ static bool boost_state(unsigned int cpu)
+ 		rdmsr_on_cpu(cpu, MSR_IA32_MISC_ENABLE, &lo, &hi);
+ 		msr = lo | ((u64)hi << 32);
+ 		return !(msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
++	case X86_VENDOR_HYGON:
+ 	case X86_VENDOR_AMD:
+ 		rdmsr_on_cpu(cpu, MSR_K7_HWCR, &lo, &hi);
+ 		msr = lo | ((u64)hi << 32);
+@@ -113,6 +115,7 @@ static int boost_set_msr(bool enable)
+ 		msr_addr = MSR_IA32_MISC_ENABLE;
+ 		msr_mask = MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
+ 		break;
++	case X86_VENDOR_HYGON:
+ 	case X86_VENDOR_AMD:
+ 		msr_addr = MSR_K7_HWCR;
+ 		msr_mask = MSR_K7_HWCR_CPB_DIS;
+@@ -225,6 +228,8 @@ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
+ 
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+ 		msr &= AMD_MSR_RANGE;
++	else if (boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
++		msr &= HYGON_MSR_RANGE;
+ 	else
+ 		msr &= INTEL_MSR_RANGE;
+ 
+diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+index be926d9..4ac7c3c 100644
+--- a/drivers/cpufreq/amd_freq_sensitivity.c
++++ b/drivers/cpufreq/amd_freq_sensitivity.c
+@@ -111,11 +111,16 @@ static int __init amd_freq_sensitivity_init(void)
+ {
+ 	u64 val;
+ 	struct pci_dev *pcidev;
++	unsigned int pci_vendor;
+ 
+-	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
++		pci_vendor = PCI_VENDOR_ID_AMD;
++	else if (boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
++		pci_vendor = PCI_VENDOR_ID_HYGON;
++	else
+ 		return -ENODEV;
+ 
+-	pcidev = pci_get_device(PCI_VENDOR_ID_AMD,
++	pcidev = pci_get_device(pci_vendor,
+ 			PCI_DEVICE_ID_AMD_KERNCZ_SMBUS, NULL);
+ 
+ 	if (!pcidev) {
 -- 
 2.7.4
