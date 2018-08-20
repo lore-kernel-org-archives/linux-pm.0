@@ -1,70 +1,96 @@
-From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v14 0/4] iommu/arm-smmu: Add runtime pm/sleep support
-Date: Mon, 20 Aug 2018 18:31:03 +0900
-Message-ID: <CAAFQd5C+ctVA-ynrWy=0=pjKZj0TGmHL+bWAu2yWWjYe4Oyf8w@mail.gmail.com>
-References: <20180727070224.23966-1-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v6 01/14] sched: Relocate arch_scale_cpu_capacity
+Date: Mon, 20 Aug 2018 10:44:07 +0100
+Message-ID: <20180820094420.26590-2-quentin.perret@arm.com>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180727070224.23966-1-vivek.gautam@codeaurora.org>
+In-Reply-To: <20180820094420.26590-1-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>"list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, devicetree@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, freedreno <freedreno@lists.freedesktop.org>, Alex Williamson <alex.williamson@redhat.com>, Mark Rutland <mark.rutland@arm.com>, Rob Clark <robdclark@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, jcrouse@codeaurora.org, Sricharan R <sricharan@codeaurora.org>
+To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Robin,
+By default, arch_scale_cpu_capacity() is only visible from within the
+kernel/sched folder. Relocate it to include/linux/sched/topology.h to
+make it visible to other clients needing to know about the capacity of
+CPUs, such as the Energy Model framework.
 
-On Fri, Jul 27, 2018 at 4:02 PM Vivek Gautam
-<vivek.gautam@codeaurora.org> wrote:
->
-> This series provides the support for turning on the arm-smmu's
-> clocks/power domains using runtime pm. This is done using
-> device links between smmu and client devices. The device link
-> framework keeps the two devices in correct order for power-cycling
-> across runtime PM or across system-wide PM.
->
-> With addition of a new device link flag DL_FLAG_AUTOREMOVE_SUPPLIER [8]
-> (available in linux-next of Rafael's linux-pm tree [9]), the device links
-> created between arm-smmu and its clients will be automatically purged
-> when arm-smmu driver unbinds from its device.
->
-> As not all implementations support clock/power gating, we are checking
-> for a valid 'smmu->dev's pm_domain' to conditionally enable the runtime
-> power management for such smmu implementations that can support it.
-> Otherwise, the clocks are turned to be always on in .probe until .remove.
-> With conditional runtime pm now, we avoid touching dev->power.lock
-> in fastpaths for smmu implementations that don't need to do anything
-> useful with pm_runtime.
-> This lets us to use the much-argued pm_runtime_get_sync/put_sync()
-> calls in map/unmap callbacks so that the clients do not have to
-> worry about handling any of the arm-smmu's power.
->
-> This series also adds support for Qcom's arm-smmu-v2 variant that
-> has different clocks and power requirements.
->
-> Previous version of this patch series is @ [2].
->
-> Tested this series on msm8996, and sdm845 after pulling in Rafael's linux-pm
-> linux-next[9] and Joerg's iommu next[10] branches, and related changes for
-> device tree, etc.
->
-> Hi Robin, Will,
-> I have addressed the comments for v13. If there's still a chance
-> can you please consider pulling this for v4.19.
-> Thanks.
->
-> [v14]
->    * Moved arm_smmu_device_reset() from arm_smmu_pm_resume() to
->      arm_smmu_runtime_resume() so that the pm_resume callback calls
->      only runtime_resume to resume the device.
->      This should take care of restoring the state of smmu in systems
->      in which smmu lose register state on power-domain collapse.
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+---
+ include/linux/sched/topology.h | 19 +++++++++++++++++++
+ kernel/sched/sched.h           | 21 ---------------------
+ 2 files changed, 19 insertions(+), 21 deletions(-)
 
-It's been a while since this series was posted and no more comments
-seem to be left anymore. Would you have some time to take a look
-again? Thanks.
-
-Best regards,
-Tomasz
+diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+index 4fe2e49ab13b..1aaa14462207 100644
+--- a/include/linux/sched/topology.h
++++ b/include/linux/sched/topology.h
+@@ -202,6 +202,17 @@ extern void set_sched_topology(struct sched_domain_topology_level *tl);
+ # define SD_INIT_NAME(type)
+ #endif
+ 
++#ifndef arch_scale_cpu_capacity
++static __always_inline
++unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
++{
++	if (sd && (sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
++		return sd->smt_gain / sd->span_weight;
++
++	return SCHED_CAPACITY_SCALE;
++}
++#endif
++
+ #else /* CONFIG_SMP */
+ 
+ struct sched_domain_attr;
+@@ -217,6 +228,14 @@ static inline bool cpus_share_cache(int this_cpu, int that_cpu)
+ 	return true;
+ }
+ 
++#ifndef arch_scale_cpu_capacity
++static __always_inline
++unsigned long arch_scale_cpu_capacity(void __always_unused *sd, int cpu)
++{
++	return SCHED_CAPACITY_SCALE;
++}
++#endif
++
+ #endif	/* !CONFIG_SMP */
+ 
+ static inline int task_node(const struct task_struct *p)
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 85b3a2bf6c2b..481e6759441b 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1761,27 +1761,6 @@ unsigned long arch_scale_freq_capacity(int cpu)
+ }
+ #endif
+ 
+-#ifdef CONFIG_SMP
+-#ifndef arch_scale_cpu_capacity
+-static __always_inline
+-unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+-{
+-	if (sd && (sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
+-		return sd->smt_gain / sd->span_weight;
+-
+-	return SCHED_CAPACITY_SCALE;
+-}
+-#endif
+-#else
+-#ifndef arch_scale_cpu_capacity
+-static __always_inline
+-unsigned long arch_scale_cpu_capacity(void __always_unused *sd, int cpu)
+-{
+-	return SCHED_CAPACITY_SCALE;
+-}
+-#endif
+-#endif
+-
+ struct rq *__task_rq_lock(struct task_struct *p, struct rq_flags *rf)
+ 	__acquires(rq->lock);
+ 
+-- 
+2.17.1
