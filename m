@@ -1,121 +1,39 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v6 14/14] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Mon, 20 Aug 2018 10:44:20 +0100
-Message-ID: <20180820094420.26590-15-quentin.perret@arm.com>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
+Date: Mon, 20 Aug 2018 12:01:09 +0200
+Message-ID: <0a26a0de-f9e6-ef77-ceac-eb25bbf01664@arm.com>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-10-patrick.bellasi@arm.com>
+ <804c7937-2c47-0781-9c53-a8ef8eb04530@arm.com>
+ <20180817144540.GL2960@e110439-lin>
+ <d6c3b6f4-b3bd-22d9-70c0-38ad587b9339@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180820094420.26590-1-quentin.perret@arm.com>
+In-Reply-To: <d6c3b6f4-b3bd-22d9-70c0-38ad587b9339@arm.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-*******************************************************************
-* This patch illustrates the usage of the newly introduced Energy *
-* Model framework and isn't supposed to be merged as-is.          *
-*******************************************************************
+On 08/17/2018 05:50 PM, Dietmar Eggemann wrote:
+> On 08/17/2018 04:45 PM, Patrick Bellasi wrote:
+>> On 17-Aug 15:43, Dietmar Eggemann wrote:
+>>> On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 
-The Energy Model framework provides an API to register the active power
-of CPUs. Call this API from the cpufreq-dt driver with an estimation
-of the power as P = C * V^2 * f with C, V, and f respectively the
-capacitance of the CPU and the voltage and frequency of the OPP.
+[...]
 
-The CPU capacitance is read from the "dynamic-power-coefficient" DT
-binding (originally introduced for thermal/IPA), and the voltage and
-frequency values from PM_OPP.
+>> AFAIK the default hierarcy (cgroups v2) has a much more stricy set of
+>> requirements for the "delegation model".
+> 
+> Could be ... I guess I have to study this more.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/cpufreq/cpufreq-dt.c | 45 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+So I see that this idea with the .effective files is used in Waiman's 
+new cpuset cgroupv2 controller proposal.
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 0a9ebf00be46..fd5903091631 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -16,6 +16,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/energy_model.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -149,8 +150,47 @@ static int resources_available(void)
- 	return 0;
- }
- 
-+static int of_est_power(unsigned long *mW, unsigned long *KHz, int cpu)
-+{
-+	unsigned long mV, Hz, MHz;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	struct device_node *np;
-+	u32 cap;
-+	u64 tmp;
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -EINVAL;
-+
-+	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-+		return -EINVAL;
-+
-+	Hz = *KHz * 1000;
-+	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-+	if (IS_ERR(opp))
-+		return -EINVAL;
-+
-+	mV = dev_pm_opp_get_voltage(opp) / 1000;
-+	dev_pm_opp_put(opp);
-+
-+	MHz = Hz / 1000000;
-+	tmp = (u64)cap * mV * mV * MHz;
-+	do_div(tmp, 1000000000);
-+
-+	*mW = (unsigned long)tmp;
-+	*KHz = Hz / 1000;
-+
-+	return 0;
-+}
-+
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
-+	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
- 	struct cpufreq_frequency_table *freq_table;
- 	struct opp_table *opp_table = NULL;
- 	struct private_data *priv;
-@@ -159,7 +199,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	unsigned int transition_latency;
- 	bool fallback = false;
- 	const char *name;
--	int ret;
-+	int ret, nr_opp;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -226,6 +266,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		ret = -EPROBE_DEFER;
- 		goto out_free_opp;
- 	}
-+	nr_opp = ret;
- 
- 	if (fallback) {
- 		cpumask_setall(policy->cpus);
-@@ -278,6 +319,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
--- 
-2.17.1
+The cpu controller with you util clamp extension has to be usable under 
+cgroupv2 and cgroupv1, I assume?
+
+[...]
