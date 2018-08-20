@@ -1,72 +1,154 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH 18/18] cpupower: change strncpy+truncation to strlcpy
-Date: Mon, 20 Aug 2018 08:27:23 -0600
-Message-ID: <379ea973-0234-fbaf-12bc-7ec154833a0a@kernel.org>
-References: <1531444483-17338-1-git-send-email-asmadeus@codewreck.org>
- <1531445169-19912-1-git-send-email-asmadeus@codewreck.org>
- <CAEUSe78K3bxfXp8mAoxtd64ZeBFVN4v0sJ+puvffM_ZkUNsW+A@mail.gmail.com>
- <20180814192728.GA6264@nautica>
+From: Frederic Weisbecker <frederic@kernel.org>
+Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been
+ stopped
+Date: Mon, 20 Aug 2018 16:42:50 +0200
+Message-ID: <20180820144249.GA9770@lerouge>
+References: <2161372.IsD4PDzmmY@aspire.rjw.lan>
+ <20180816132723.GA6010@lerouge>
+ <10817203.8q7neLTJVD@aspire.rjw.lan>
+ <20180817141252.GA12426@lerouge>
+ <CAJZ5v0gD79NuTgr3dVS_3cBFz5Q1JtQTP8mDfSM1tvwDcYkFAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180814192728.GA6264@nautica>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gD79NuTgr3dVS_3cBFz5Q1JtQTP8mDfSM1tvwDcYkFAQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dominique Martinet <asmadeus@codewreck.org>, =?UTF-8?Q?Daniel_D=c3=adaz?= <daniel.diaz@linaro.org>
-Cc: Thomas Renninger <trenn@suse.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, Shuah Khan <shuah@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/14/2018 01:27 PM, Dominique Martinet wrote:
-> Daniel Díaz wrote on Tue, Aug 14, 2018:
->> I can't get cpupower to compile anymore now that it made its way to linux-next:
->>   [/linux/tools/power/cpupower]$ make
->>     CC       lib/cpufreq.o
->>   [...]
->>   make[1]: Entering directory '/linux/tools/power/cpupower/bench'
->>     CC       main.o
->>     CC       parse.o
->>   parse.c: In function ‘prepare_config’:
->>   parse.c:224:4: warning: implicit declaration of function ‘strlcpy’
->> [-Wimplicit-function-declaration]
->>       strlcpy(config->governor, val,
->>       ^
->>     CC       system.o
->>     CC       benchmark.o
->>     CC       cpufreq-bench
->>   .//parse.o: In function `prepare_config':
->>   /linux/tools/power/cpupower/bench/parse.c:224: undefined reference
->> to `strlcpy'
->>   collect2: error: ld returned 1 exit status
->>   Makefile:25: recipe for target 'cpufreq-bench' failed
->>   make[1]: *** [cpufreq-bench] Error 1
->>   make[1]: Leaving directory '/linux/tools/power/cpupower/bench'
->>   Makefile:258: recipe for target 'compile-bench' failed
->>   make: *** [compile-bench] Error 2
->>
->> Does it need anything special to make?
+On Sat, Aug 18, 2018 at 11:57:00PM +0200, Rafael J. Wysocki wrote:
+> On Fri, Aug 17, 2018 at 4:12 PM Frederic Weisbecker <frederic@kernel.org> wrote:
+> >
+> > On Fri, Aug 17, 2018 at 11:32:07AM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday, August 16, 2018 3:27:24 PM CEST Frederic Weisbecker wrote:
+> > > > On Thu, Aug 09, 2018 at 07:08:34PM +0200, Rafael J. Wysocki wrote:
+> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > >
+> > > > > If the tick has been stopped already, but the governor has not asked to
+> > > > > stop it (which it can do sometimes), the idle loop should invoke
+> > > > > tick_nohz_idle_stop_tick(), to let tick_nohz_stop_tick() take care
+> > > > > of this case properly.
+> > > > >
+> > > > > Fixes: 554c8aa8ecad (sched: idle: Select idle state before stopping the tick)
+> > > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > ---
+> > > > >  kernel/sched/idle.c |    2 +-
+> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > > >
+> > > > > Index: linux-pm/kernel/sched/idle.c
+> > > > > ===================================================================
+> > > > > --- linux-pm.orig/kernel/sched/idle.c
+> > > > > +++ linux-pm/kernel/sched/idle.c
+> > > > > @@ -190,7 +190,7 @@ static void cpuidle_idle_call(void)
+> > > > >            */
+> > > > >           next_state = cpuidle_select(drv, dev, &stop_tick);
+> > > > >
+> > > > > -         if (stop_tick)
+> > > > > +         if (stop_tick || tick_nohz_tick_stopped())
+> > > > >                   tick_nohz_idle_stop_tick();
+> > > > >           else
+> > > > >                   tick_nohz_idle_retain_tick();
+> > > >
+> > > > So what if tick_nohz_idle_stop_tick() sees no timer to schedule and
+> > > > cancels it, we may remain idle in a shallow state for a long while?
+> > >
+> > > Yes, but the governor is expected to avoid using shallow states when the
+> > > tick is stopped already.
+> >
+> > So what kind of sleep do we enter to when an idle tick fires and we go
+> > back to idle? Is it always deep?
 > 
-> Ugh, no, I am really ashamed about this patch series for insufficient
-> testing in general. It is currently "under rework" for an indefinite
-> time frame as I have had other priorities but I'll add cpupower to the
-> list...
-> More precisely, the function is defined in the linux kernel but for
-> userspace strlcpy is only available through libbsd, and I don't believe
-> we should pull that in just for this.
+> No, it isn't.
 > 
-> I'll send a second patch using snprintf and warning if a truncation
-> occurs (which is the proper fix that the gcc folks intended people to do
-> anyway) when I get around to it, but I would recommend to just revert
-> the patch for now.
-> 
-> 
-> Shuah, could you take the patch off please if you haven't pushed it to
-> linus yet?
-> 
-> 
-> Sorry for the time you might have spent on this,
-> 
-I will go ahead and revert it.
+> The state to select must always fit the time till the closest timer
+> event and that may be shorter than the tick period.
 
-thanks,
--- Shuah
+Ah ok, so that's fine then.
+
+> 
+> If there's a non-tick timer to wake the CPU up, we don't need to worry
+> about restarting the tick, though. :-)
+
+Ok.
+
+> 
+> > I believe that ts->tick_stopped == 1 shouldn't be too relevant for the governor.
+> > We can definetly have scenarios where the idle tick is stopped for a long while,
+> > then it fires and schedules the next timer at NOW() + TICK_NSEC (as if the tick
+> > had been restarted). This can even repeat that way for some time, because
+> > ts->tick_stopped == 1 only implies that the tick has been stopped once since
+> > we entered the idle loop. After that we may well have a periodic tick behaviour.
+> > In that case we probably don't want deep idle state. Especially if we have:
+> >
+> >               idle_loop() {
+> >                   tick_stop (scheduled several seconds forward)
+> >                   deep_idle_sleep()
+> >                   //several seconds later
+> >                   tick()
+> >                   tick_stop (scheduled TICK_NSEC forward)
+> >                   deep_idle_sleep()
+> >                   tick() {
+> >                       set_need_resched()
+> >                   }
+> >                   exit idle loop
+> >               }
+> >
+> > Here the last deep idle state isn't necessary.
+> 
+> No, it isn't.
+> 
+> However, that is not relevant for the question of whether or not to
+> restart the tick before entering the idle state IMO (see the
+> considerations below).
+
+Yes indeed.
+
+> > But then in the longer term, perhaps cpuidle_select() should think that
+> > through.
+> 
+> So I have given more consideration to this and my conclusion is that
+> restarting the tick between cpuidle_select() and call_cpuidle() is a
+> bad idea.
+> 
+> First off, if need_resched() is "false", the primary reason for
+> running the tick on the given CPU is not there, so it only might be
+> useful as a "backup" timer to wake up the CPU from an inadequate idle
+> state.
+> 
+> Now, in general, there are two reasons for the idle governor (whatever
+> it is) to select an idle state with a target residency below the tick
+> period length.  The first reason is when the governor knows that the
+> closest timer event is going to occur in this time frame, but in that
+> case (as stated above), it is not necessary to worry about the tick,
+> because the other timer will trigger soon enough anyway.  The second
+> reason is when the governor predicts a wakeup which is not by a timer
+> in this time frame and it is quite arguable what the governor should
+> do then.  IMO it at least is not unreasonable to throw the prediction
+> away and still go for the closest timer event in that case (which is
+> the current approach).
+
+Then in this case, when you say you throw away that prediction, does it
+mean you select an idle state that only takes the next timer event into
+consideration?
+
+So for example we predict a wake up event TICK_NSEC ahead but the next
+timer event is a few seconds, you're going to select an idle state
+according to that "few seconds" ahead next event, right? (which in
+practice is likely to be deep I guess).
+
+I guess so but, just want to be sure I understand you correctly.
+
+> 
+> There's more, though.  Restarting the tick between cpuidle_select()
+> and call_cpuidle() might introduce quite a bit of latency into that
+> point and that would mess up with the idle state selection (e.g.
+> selecting a very shallow idle state might not make a lot of sense if
+> that latency was high enough, because the expected wakeup might very
+> well take place when the tick was being restarted), so it should
+> rather be avoided IMO.
+
+Yes indeed.
+
+Thanks.
