@@ -1,75 +1,249 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider
- bindings
-Date: Mon, 20 Aug 2018 17:32:07 +0200
-Message-ID: <20180820153207.xx5outviph7ec76p@flea>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-3-georgi.djakov@linaro.org>
- <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
- <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Subject: [PATCH V5 1/5] dt-bindings: arm: fsl: add scu binding doc
+Date: Tue, 21 Aug 2018 00:08:21 +0800
+Message-ID: <1534781305-4770-2-git-send-email-aisheng.dong@nxp.com>
+References: <1534781305-4770-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="nsqsqzl6ecisbpih"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.ke
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1534781305-4770-1-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, dongas86@gmail.com, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-imx@nxp.com, kernel@pengutronix.de, linux-pm@vger.kernel.org, fabio.estevam@nxp.com, shawnguo@kernel.org, linux-clk@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+The System Controller Firmware (SCFW) is a low-level system function
+which runs on a dedicated Cortex-M core to provide power, clock, and
+resource management. It exists on some i.MX8 processors. e.g. i.MX8QM
+(QM, QP), and i.MX8QX (QXP, DX).
 
---nsqsqzl6ecisbpih
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>
+Cc: Jassi Brar <jassisinghbrar@gmail.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Stephen Boyd <sboyd@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: devicetree@vger.kernel.org
+Cc: linux-clk@vger.kernel.org
+Cc: linux-gpio@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+v4->v5:
+ * scu node should be under firmware node
+ * add pd/clk/pinctrl binding as well according to Rob's suggestion
+ * switch to new generic MU binding
+   Use 8 separate mu channels in one MU instance for SCU communication
+v3->v4:
+ * fully change to mailbox binding
+ * add child node description
+v2->v3:
+ * update a bit to mailbox binding
+v1->v2:
+ * remove status
+ * changed to mu1
+---
+ .../devicetree/bindings/arm/freescale/fsl,scu.txt  | 179 +++++++++++++++++++++
+ 1 file changed, 179 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
 
-Hi Georgi,
-
-On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
-> > There is also a patch series from Maxime Ripard that's addressing the
-> > same general area. See "dt-bindings: Add a dma-parent property". We
-> > don't need multiple ways to address describing the device to memory
-> > paths, so you all had better work out a common solution.
->=20
-> Looks like this fits exactly into the interconnect API concept. I see
-> MBUS as interconnect provider and display/camera as consumers, that
-> report their bandwidth needs. I am also planning to add support for
-> priority.
-
-Thanks for working on this. After looking at your serie, the one thing
-I'm a bit uncertain about (and the most important one to us) is how we
-would be able to tell through which interconnect the DMA are done.
-
-This is important to us since our topology is actually quite simple as
-you've seen, but the RAM is not mapped on that bus and on the CPU's,
-so we need to apply an offset to each buffer being DMA'd.
-
-Maxime
-
---=20
-Maxime Ripard, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---nsqsqzl6ecisbpih
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAlt63vYACgkQ0rTAlCFN
-r3TtAw//anYGPzaYAXU2DfIhIP1WNOqjhKjLIXnfx3R/tY+yQzvEmnSGYUWRcwGD
-WHtoOg6GYW1mUWWjyq6RFJeTbeBjLTcz2Lm7rYP/Oq78lCBUHO8jPWj/Ry10NuN/
-sM4emc7NyLJ4ZHzqLOIUXb5HEay6rN1pCbDKnTPM4eQf0Fewt2guDzr4lv9iCsYY
-NL6Xeval9Y/RhEJsaNcgYheMloheJAjmM3zo6CSjItA+PgRaaXI1wGCfLn8ilXty
-niTfLSVeJfVOVZ+WTfdUjhmWZ8mkt/jMvka39qLCI8njsvxLz/chwDkUAIIvHCmA
-qxvGhRbbLK6gzlW9ccE98bilvB/BcGEqq5SIZ+Uuu5CoO7vzqYbiXSqM4IUZJRCx
-VP5C+JXbT0fY6mn9OyvwGCeQ6TTbHPtFHiu7DSEfLg0eK6z9gobOVXWBqUO5o7Iz
-t9YyiwH2mU8uVRbhma4BjYghLoaE5v8O/QSNeEM6EyNqRYy0LdWJf4xOCt2szbGX
-xI3LYYe8lryCzfyQ9F+D0Rs7SI99KY7TYXEvl33YlszjWb5b8Qrb/YwnnlOybF84
-MvyXb8ru1Ku5ZUdn6VEXGqiR0MH9hFHq4aKyBQZQ/5gtxAHelt3zTvq+FMPjjyBa
-hdTlTFP/57Sc4s2OOFG/X+kpjrXaoohKoLFvUYMFx9tK9Y61Ook=
-=4UZ2
------END PGP SIGNATURE-----
-
---nsqsqzl6ecisbpih--
+diff --git a/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+new file mode 100644
+index 0000000..2cd7e4a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt
+@@ -0,0 +1,179 @@
++NXP i.MX System Controller Firmware (SCFW) --------------------------------------------------------------------
++
++The System Controller Firmware (SCFW) is a low-level system function
++which runs on a dedicated Cortex-M core to provide power, clock, and
++resource management. It exists on some i.MX8 processors. e.g. i.MX8QM
++(QM, QP), and i.MX8QX (QXP, DX).
++
++The AP communicates with the SC using a multi-ported MU module found
++in the LSIO subsystem. The current definition of this MU module provides
++5 remote AP connections to the SC to support up to 5 execution environments
++(TZ, HV, standard Linux, etc.). The SC side of this MU module interfaces
++with the LSIO DSC IP bus. The SC firmware will communicate with this MU
++using the MSI bus.
++
++System Controller Device Node:
++============================================================
++
++The scu node with the following properties shall be under the /firmware/ node.
++
++Required properties:
++-------------------
++- compatible:	should be "fsl,imx-scu".
++- mbox-names:	should include "tx0", "tx1", "tx2", "tx3",
++			       "rx0", "rx1", "rx2", "rx3".
++- mboxes:	List of phandle of 4 MU channels for tx and 4 MU channels
++		for rx. All 8 MU channels must be in the same MU instance.
++		Cross instances are not allowed. The MU instance can only
++		be one of LSIO MU0~M4 for imx8qxp and imx8qm. Users need
++		to make sure use the one which is not conflict with other
++		execution environments. e.g. ATF.
++		Note:
++		Channel 0 must be "tx0" or "rx0".
++		Channel 1 must be "tx1" or "rx1".
++		Channel 2 must be "tx2" or "rx2".
++		Channel 3 must be "tx3" or "rx3".
++		e.g.
++		mboxes = <&lsio_mu1 0 0
++			  &lsio_mu1 0 1
++			  &lsio_mu1 0 2
++			  &lsio_mu1 0 3
++			  &lsio_mu1 1 0
++			  &lsio_mu1 1 1
++			  &lsio_mu1 1 2
++			  &lsio_mu1 1 3>;
++		See Documentation/devicetree/bindings/mailbox/fsl,mu.txt
++		for detailed mailbox binding.
++
++i.MX SCU Client Device Node:
++============================================================
++
++Client nodes are maintained as children of the relevant IMX-SCU device node.
++
++Power domain bindings based on SCU Message Protocol
++------------------------------------------------------------
++
++This binding for the SCU power domain providers uses the generic power
++domain binding[2].
++
++Required properties:
++- compatible:		Should be "fsl,scu-pd".
++- #address-cells:	Should be 1.
++- #size-cells:		Should be 0.
++
++Required properties for power domain sub nodes:
++- #power-domain-cells:	Must be 0.
++
++Optional Properties:
++- reg:			Resource ID of this power domain.
++			No exist means uncontrollable by user.
++			See detailed Resource ID list from:
++			include/dt-bindings/power/imx-rsrc.h
++- power-domains:	phandle pointing to the parent power domain.
++
++Clock bindings based on SCU Message Protocol
++------------------------------------------------------------
++
++This binding uses the common clock binding[1].
++
++Required properties:
++- compatible:		Should be "fsl,imx8qxp-clock".
++- #clock-cells:		Should be 1. Contains the Clock ID value.
++
++The clock consumer should specify the desired clock by having the clock
++ID in its "clocks" phandle cell.
++
++See the full list of clock IDs from:
++include/dt-bindings/clock/imx8qxp-clock.h
++
++Pinctrl bindings based on SCU Message Protocol
++------------------------------------------------------------
++
++This binding uses the i.MX common pinctrl binding[3].
++
++Required properties:
++- compatible:		Should be "fsl,imx8qxp-iomuxc".
++
++Required properties for Pinctrl sub nodes:
++- fsl,pins:		Each entry consists of 3 integers which represents
++			the mux and config setting for one pin. The first 2
++			integers <pin_id mux_mode> are specified using a
++			PIN_FUNC_ID macro, which can be found in
++			<dt-bindings/pinctrl/pads-imx8qxp.h>.
++			The last integer CONFIG is the pad setting value like
++			pull-up on this pin.
++
++			Please refer to i.MX8QXP Reference Manual for detailed
++			CONFIG settings.
++
++[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
++[2] Documentation/devicetree/bindings/power/power_domain.txt
++[3] Documentation/devicetree/bindings/pinctrl/fsl,imx-pinctrl.txt
++
++Example (imx8qxp):
++-------------
++lsio_mu1: mailbox@5d1c0000 {
++	...
++	#mbox-cells = <2>;
++};
++
++firmware {
++	scu {
++		compatible = "fsl,imx-scu";
++		mbox-names = "tx0", "tx1", "tx2", "tx3",
++			     "rx0", "rx1", "rx2", "rx3";
++		mboxes = <&lsio_mu1 0 0
++			  &lsio_mu1 0 1
++			  &lsio_mu1 0 2
++			  &lsio_mu1 0 3
++			  &lsio_mu1 1 0
++			  &lsio_mu1 1 1
++			  &lsio_mu1 1 2
++			  &lsio_mu1 1 3>;
++
++		clk: clk {
++			compatible = "fsl,imx8qxp-clk";
++			#clock-cells = <1>;
++		};
++
++		iomuxc {
++			compatible = "fsl,imx8qxp-iomuxc";
++
++			pinctrl_lpuart0: lpuart0grp {
++				fsl,pins = <
++					SC_P_UART0_RX_ADMA_UART0_RX	0x06000020
++					SC_P_UART0_TX_ADMA_UART0_TX	0x06000020
++				>;
++			};
++			...
++		};
++
++		imx8qx-pm {
++			compatible = "fsl,scu-pd";
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			pd_dma: dma-power-domain {
++				#power-domain-cells = <0>;
++
++				pd_dma_lpuart0: dma-lpuart0@57 {
++					reg = <SC_R_UART_0>;
++					#power-domain-cells = <0>;
++					power-domains = <&pd_dma>;
++				};
++				...
++			};
++			...
++		};
++	};
++};
++
++serial@5a060000 {
++	...
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_lpuart0>;
++	clocks = <&clk IMX8QXP_UART0_CLK>,
++		 <&clk IMX8QXP_UART0_IPG_CLK>;
++	clock-names = "per", "ipg";
++	power-domains = <&pd_dma_lpuart0>;
++};
+-- 
+2.7.4
