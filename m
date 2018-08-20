@@ -1,64 +1,61 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: armada: fix incorrect check for drvdata
- allocation failure
-Date: Mon, 20 Aug 2018 11:52:34 -0700
-Message-ID: <20180820185232.GA16026@localhost.localdomain>
-References: <20180730122716.6267-1-colin.king@canonical.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] sched: idle: Avoid retaining the tick when it has been stopped
+Date: Mon, 20 Aug 2018 23:21:13 +0200
+Message-ID: <CAJZ5v0hATzs2NqPEdPSJFcSNWXVu+jkE-KoToCEr-c-y1yphtw@mail.gmail.com>
+References: <2161372.IsD4PDzmmY@aspire.rjw.lan> <20180816132723.GA6010@lerouge>
+ <10817203.8q7neLTJVD@aspire.rjw.lan> <20180817141252.GA12426@lerouge>
+ <CAJZ5v0gD79NuTgr3dVS_3cBFz5Q1JtQTP8mDfSM1tvwDcYkFAQ@mail.gmail.com> <20180820144249.GA9770@lerouge>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180730122716.6267-1-colin.king@canonical.com>
+In-Reply-To: <20180820144249.GA9770@lerouge>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Colin King <colin.king@canonical.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Frederic Weisbecker <frederic@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-hello Colin,
+On Mon, Aug 20, 2018 at 4:42 PM Frederic Weisbecker <frederic@kernel.org> wrote:
+>
+> On Sat, Aug 18, 2018 at 11:57:00PM +0200, Rafael J. Wysocki wrote:
+> > On Fri, Aug 17, 2018 at 4:12 PM Frederic Weisbecker <frederic@kernel.org> wrote:
 
-On Mon, Jul 30, 2018 at 01:27:16PM +0100, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Currently the drvdata allocation failure is being incorrectly checked by
-> checking priv and not drvdata.  Fix this and also free priv to fix a
-> memory leak.
-> 
-> Detected by Coverity Scan, CID#1472102 ("Logically dead code")
-> 
-> Fixes: c9899c183921 ("thermal: armada: use the resource managed registration helper alternative")
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/thermal/armada_thermal.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index 4164a5a4e480..b164fd9f21ac 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -611,8 +611,10 @@ static int armada_thermal_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  
->  	drvdata = devm_kzalloc(&pdev->dev, sizeof(*drvdata), GFP_KERNEL);
-> -	if (!priv)
-> +	if (!drvdata) {
+[cut]
 
-Thanks for the fix but, I already collected this patch:
+> >
+> > Now, in general, there are two reasons for the idle governor (whatever
+> > it is) to select an idle state with a target residency below the tick
+> > period length.  The first reason is when the governor knows that the
+> > closest timer event is going to occur in this time frame, but in that
+> > case (as stated above), it is not necessary to worry about the tick,
+> > because the other timer will trigger soon enough anyway.  The second
+> > reason is when the governor predicts a wakeup which is not by a timer
+> > in this time frame and it is quite arguable what the governor should
+> > do then.  IMO it at least is not unreasonable to throw the prediction
+> > away and still go for the closest timer event in that case (which is
+> > the current approach).
+>
+> Then in this case, when you say you throw away that prediction, does it
+> mean you select an idle state that only takes the next timer event into
+> consideration?
 
-84b64de597bc ("thermal: armada: fix copy-paste error in armada_thermal_probe()")
+Yes, it does.
 
-which fixes the same issue you are addressing here.
+> So for example we predict a wake up event TICK_NSEC ahead but the next
+> timer event is a few seconds, you're going to select an idle state
+> according to that "few seconds" ahead next event, right? (which in
+> practice is likely to be deep I guess).
+>
+> I guess so but, just want to be sure I understand you correctly.
 
-> +		devm_kfree(&pdev->dev, priv);
+More precisely, if the original predicted idle duration is less than
+TICK_USEC and the tick has been stopped, the governor takes the time
+till the next timer event instead of the predicted value (so
+effectively the predicted value is discarded).
 
-As already mentioned by Daniel, the above is not necessary, as it is a
-devm_* helper.
+If the original predicted idle duration is TICK_USEC or more, the tick
+would have been stopped anyway (had it not been stopped already), so
+it may as well be used for idle state selection in the stopped tick
+case.
 
-BR,
->  		return -ENOMEM;
-> +	}
->  
->  	priv->dev = &pdev->dev;
->  	priv->data = (struct armada_thermal_data *)match->data;
-> -- 
-> 2.17.1
-> 
+Cheers,
+Rafael
