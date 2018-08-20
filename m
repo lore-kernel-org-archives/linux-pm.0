@@ -1,61 +1,72 @@
-From: Emmanuel Vadot <manu@bidouilliste.com>
-Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
- Allwinner Thermal Sensor Controller
-Date: Mon, 20 Aug 2018 16:27:15 +0200
-Message-ID: <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
-References: <20180804070355.14857-1-manu@freebsd.org>
-        <20180820111755.rzg7l2lznmbpuf2e@flea>
-        <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
-        <20180820140737.xmqhu5ndqzehvkql@flea>
+From: Shuah Khan <shuah@kernel.org>
+Subject: Re: [PATCH 18/18] cpupower: change strncpy+truncation to strlcpy
+Date: Mon, 20 Aug 2018 08:27:23 -0600
+Message-ID: <379ea973-0234-fbaf-12bc-7ec154833a0a@kernel.org>
+References: <1531444483-17338-1-git-send-email-asmadeus@codewreck.org>
+ <1531445169-19912-1-git-send-email-asmadeus@codewreck.org>
+ <CAEUSe78K3bxfXp8mAoxtd64ZeBFVN4v0sJ+puvffM_ZkUNsW+A@mail.gmail.com>
+ <20180814192728.GA6264@nautica>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180820140737.xmqhu5ndqzehvkql@flea>
+In-Reply-To: <20180814192728.GA6264@nautica>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
+To: Dominique Martinet <asmadeus@codewreck.org>, =?UTF-8?Q?Daniel_D=c3=adaz?= <daniel.diaz@linaro.org>
+Cc: Thomas Renninger <trenn@suse.com>, Colin Ian King <colin.king@canonical.com>, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, Shuah Khan <shuah@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 20 Aug 2018 16:07:37 +0200
-Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-
-> On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
-> > On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > >
-> > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
-> > > > This patch adds documentation for Device-Tree bindings for the Allwinner
-> > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
-> > > >
-> > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
-> > >
-> > > I'm not going to merge a binding for a device that doesn't have any
-> > > driver implemented at the moment in Linux.
-> > 
-> > I'll take it then. Linux is not the only DT client.
+On 08/14/2018 01:27 PM, Dominique Martinet wrote:
+> Daniel Díaz wrote on Tue, Aug 14, 2018:
+>> I can't get cpupower to compile anymore now that it made its way to linux-next:
+>>   [/linux/tools/power/cpupower]$ make
+>>     CC       lib/cpufreq.o
+>>   [...]
+>>   make[1]: Entering directory '/linux/tools/power/cpupower/bench'
+>>     CC       main.o
+>>     CC       parse.o
+>>   parse.c: In function ‘prepare_config’:
+>>   parse.c:224:4: warning: implicit declaration of function ‘strlcpy’
+>> [-Wimplicit-function-declaration]
+>>       strlcpy(config->governor, val,
+>>       ^
+>>     CC       system.o
+>>     CC       benchmark.o
+>>     CC       cpufreq-bench
+>>   .//parse.o: In function `prepare_config':
+>>   /linux/tools/power/cpupower/bench/parse.c:224: undefined reference
+>> to `strlcpy'
+>>   collect2: error: ld returned 1 exit status
+>>   Makefile:25: recipe for target 'cpufreq-bench' failed
+>>   make[1]: *** [cpufreq-bench] Error 1
+>>   make[1]: Leaving directory '/linux/tools/power/cpupower/bench'
+>>   Makefile:258: recipe for target 'compile-bench' failed
+>>   make: *** [compile-bench] Error 2
+>>
+>> Does it need anything special to make?
 > 
-> Then don't complain if we ever have to break the ABI. We never tested
-> that hardware, never had any code running on it, and it *will* cause
-> some issues. For example, the calibration data have never been used
-> and how they should be represented have never been described, since no
-> one ever actually tried to use it.
+> Ugh, no, I am really ashamed about this patch series for insufficient
+> testing in general. It is currently "under rework" for an indefinite
+> time frame as I have had other priorities but I'll add cpupower to the
+> list...
+> More precisely, the function is defined in the linux kernel but for
+> userspace strlcpy is only available through libbsd, and I don't believe
+> we should pull that in just for this.
 > 
-> And sure, Linux is not the only DT client. Just like FreeBSD isn't.
+> I'll send a second patch using snprintf and warning if a truncation
+> occurs (which is the proper fix that the gcc folks intended people to do
+> anyway) when I get around to it, but I would recommend to just revert
+> the patch for now.
 > 
-> Maxime
+> 
+> Shuah, could you take the patch off please if you haven't pushed it to
+> linus yet?
+> 
+> 
+> Sorry for the time you might have spent on this,
+> 
+I will go ahead and revert it.
 
- Maxime,
-
- What kind of data would you need for me to make things better ?
- We have the driver in FreeBSD for almost two years now, whne I started
-to see how to upstream it I noticed a lot of problems and spent 4 or 5
-days to try on all the SoCs mentionned in the serie, the only SoC I
-didn't include it the A83T as for some reason I couldn't make the
-driver work.
- I just hope that you understand that we cannot wait for Linux to have
-a driver to have some bindings.
-
- Cheers,
-
--- 
-Emmanuel Vadot <manu@bidouilliste.com> <manu@freebsd.org>
+thanks,
+-- Shuah
