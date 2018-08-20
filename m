@@ -1,50 +1,107 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3] cpuidle: menu: Handle stopped tick more aggressively
-Date: Mon, 20 Aug 2018 12:15:41 +0200
-Message-ID: <20180820101541.GW2494@hirez.programming.kicks-ass.net>
-References: <1951009.1jlQfyrxio@aspire.rjw.lan>
- <3174357.2tBMdxG3bF@aspire.rjw.lan>
- <1754612.IcCR94pSYR@aspire.rjw.lan>
- <20180812145515.GB28966@leoy-ThinkPad-X240s>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
+Date: Mon, 20 Aug 2018 12:18:40 +0200
+Message-ID: <2816b340-ca91-4d09-1610-df05a9893da2@arm.com>
+References: <20180806163946.28380-1-patrick.bellasi@arm.com>
+ <20180806163946.28380-13-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180812145515.GB28966@leoy-ThinkPad-X240s>
+In-Reply-To: <20180806163946.28380-13-patrick.bellasi@arm.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: leo.yan@linaro.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 12, 2018 at 10:55:15PM +0800, leo.yan@linaro.org wrote:
-> The first one issue is caused by timer cancel, I wrote one case for
-> CPU_0 starting a hrtimer with pinned mode with short expire time and
-> when the CPU_0 goes to sleep this short timeout timer can let idle
-> governor selects a shallow state; at the meantime another CPU_1 will
-> be used to try to cancel the timer, my purpose is to cheat CPU_0 so can
-> see the CPU_0 staying in shallow state for long time;  it has low
-> percentage to cancel the timer successfully, but I do see seldomly the
-> timer can be canceled successfully so CPU_0 will stay in idle for long
-> time (I cannot explain why the timer cannot be canceled successfully
-> for every time, this might be another issue?).  This case is tricky,
-> but it's possible happen in drivers with timer cancel.
+On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
+> Clamp values cannot be tuned at the root cgroup level. Moreover, because
+> of the delegation model requirements and how the parent clamps
+> propagation works, if we want to enable subgroups to set a non null
+> util.min, we need to be able to configure the root group util.min to the
+> allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
 
-So this is really difficuly to make hapen I think; you first need the
-CPU to go deep idle, such that it disabled the tick. Then you have to
-start the hrtimer there (using an IPI I suppose) which will then force
-the governor to pick a shallow idle state, and then you have to cancel
-the timer before it gets triggered.
+Why 1024 (100)? Would any non 0 value work here?
 
-And then, if the CPU stays perfectly idle, it will be stuck in that
-shallow state... forever more.
+[...]
 
-_However_ IIRC when we (remotely) cancel an hrtimer, we do not in fact
-reprogram the timer hardware. So the timer _will_ trigger.
-hrtimer_interrupt() will observe nothing to do and reprogram the
-hardware for the next timer (if there is one).
+> @@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
+>   	uclamp_group_put(clamp_id, prev_group_id);
+>   }
+>   
+> +int sched_uclamp_handler(struct ctl_table *table, int write,
+> +			 void __user *buffer, size_t *lenp,
+> +			 loff_t *ppos)
+> +{
+> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> +	struct uclamp_se *uc_se;
+> +	int old_min, old_max;
+> +	int result;
+> +
+> +	mutex_lock(&uclamp_mutex);
+> +
+> +	old_min = sysctl_sched_uclamp_util_min;
+> +	old_max = sysctl_sched_uclamp_util_max;
+> +
+> +	result = proc_dointvec(table, write, buffer, lenp, ppos);
+> +	if (result)
+> +		goto undo;
+> +	if (!write)
+> +		goto done;
+> +
+> +	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
+> +		goto undo;
+> +	if (sysctl_sched_uclamp_util_max > 1024)
+> +		goto undo;
+> +
+> +	/* Find a valid group_id for each required clamp value */
+> +	if (old_min != sysctl_sched_uclamp_util_min) {
+> +		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
+> +		if (result == -ENOSPC) {
+> +			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
+> +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> +			goto undo;
+> +		}
+> +		group_id[UCLAMP_MIN] = result;
+> +	}
+> +	if (old_max != sysctl_sched_uclamp_util_max) {
+> +		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
+> +		if (result == -ENOSPC) {
+> +			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
+> +			       CONFIG_UCLAMP_GROUPS_COUNT);
+> +			goto undo;
+> +		}
+> +		group_id[UCLAMP_MAX] = result;
+> +	}
+> +
+> +	/* Update each required clamp group */
+> +	if (old_min != sysctl_sched_uclamp_util_min) {
+> +		uc_se = &uclamp_default[UCLAMP_MIN];
+> +		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
+> +				 uc_se, sysctl_sched_uclamp_util_min);
+> +	}
+> +	if (old_max != sysctl_sched_uclamp_util_max) {
+> +		uc_se = &uclamp_default[UCLAMP_MAX];
+> +		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
+> +				 uc_se, sysctl_sched_uclamp_util_max);
+> +	}
+> +
+> +	if (result) {
+> +undo:
+> +		sysctl_sched_uclamp_util_min = old_min;
+> +		sysctl_sched_uclamp_util_max = old_max;
+> +	}
 
-This should be enough to cycle through the idle loop and re-select an
-idle state and avoid this whole problem.
+This looks strange! In case uclamp_group_find() returns free_group_id 
+instead of -ENOSPC, the sysctl min/max values are reset?
 
-If that is not happening, then something is busted and we need to figure
-out what.
+I was under the assumption that I could specify:
+
+sysctl_sched_uclamp_util_min = 40 (for boosting)
+sysctl_sched_uclamp_util_max = 80 (for clamping)
+
+with an empty cpu controller hierarchy and then those values become the 
+.effective values of (a first level) task group?
+
+[...]
