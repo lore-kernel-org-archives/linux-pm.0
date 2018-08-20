@@ -1,117 +1,46 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 12/14] sched/core: uclamp: add system default clamps
-Date: Mon, 20 Aug 2018 13:27:28 +0100
-Message-ID: <20180820122728.GM2960@e110439-lin>
+Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
+Date: Mon, 20 Aug 2018 13:28:49 +0100
+Message-ID: <20180820122849.GN2960@e110439-lin>
 References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-13-patrick.bellasi@arm.com>
- <2816b340-ca91-4d09-1610-df05a9893da2@arm.com>
+ <20180806163946.28380-10-patrick.bellasi@arm.com>
+ <804c7937-2c47-0781-9c53-a8ef8eb04530@arm.com>
+ <20180817144540.GL2960@e110439-lin>
+ <d6c3b6f4-b3bd-22d9-70c0-38ad587b9339@arm.com>
+ <0a26a0de-f9e6-ef77-ceac-eb25bbf01664@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2816b340-ca91-4d09-1610-df05a9893da2@arm.com>
+In-Reply-To: <0a26a0de-f9e6-ef77-ceac-eb25bbf01664@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-Aug 12:18, Dietmar Eggemann wrote:
-> On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
-> >Clamp values cannot be tuned at the root cgroup level. Moreover, because
-> >of the delegation model requirements and how the parent clamps
-> >propagation works, if we want to enable subgroups to set a non null
-> >util.min, we need to be able to configure the root group util.min to the
-> >allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
+On 20-Aug 12:01, Dietmar Eggemann wrote:
+> On 08/17/2018 05:50 PM, Dietmar Eggemann wrote:
+> >On 08/17/2018 04:45 PM, Patrick Bellasi wrote:
+> >>On 17-Aug 15:43, Dietmar Eggemann wrote:
+> >>>On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
 > 
-> Why 1024 (100)? Would any non 0 value work here?
-
-Something less then 100% will clamp subgroups util.min to that value.
-If we want to allow the full span to subgroups, the root group should
-not enforce boundaries... hence util.min should be set to 100%.
-
 > [...]
 > 
-> >@@ -1269,6 +1296,75 @@ static inline void uclamp_group_get(struct task_struct *p,
-> >  	uclamp_group_put(clamp_id, prev_group_id);
-> >  }
-> >+int sched_uclamp_handler(struct ctl_table *table, int write,
-> >+			 void __user *buffer, size_t *lenp,
-> >+			 loff_t *ppos)
-> >+{
-> >+	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> >+	struct uclamp_se *uc_se;
-> >+	int old_min, old_max;
-> >+	int result;
-> >+
-> >+	mutex_lock(&uclamp_mutex);
-> >+
-> >+	old_min = sysctl_sched_uclamp_util_min;
-> >+	old_max = sysctl_sched_uclamp_util_max;
-> >+
-> >+	result = proc_dointvec(table, write, buffer, lenp, ppos);
-> >+	if (result)
-> >+		goto undo;
-> >+	if (!write)
-> >+		goto done;
-> >+
-> >+	if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
-> >+		goto undo;
-> >+	if (sysctl_sched_uclamp_util_max > 1024)
-> >+		goto undo;
-> >+
-> >+	/* Find a valid group_id for each required clamp value */
-> >+	if (old_min != sysctl_sched_uclamp_util_min) {
-> >+		result = uclamp_group_find(UCLAMP_MIN, sysctl_sched_uclamp_util_min);
-> >+		if (result == -ENOSPC) {
-> >+			pr_err("Cannot allocate more than %d UTIL_MIN clamp groups\n",
-> >+			       CONFIG_UCLAMP_GROUPS_COUNT);
-> >+			goto undo;
-> >+		}
-> >+		group_id[UCLAMP_MIN] = result;
-> >+	}
-> >+	if (old_max != sysctl_sched_uclamp_util_max) {
-> >+		result = uclamp_group_find(UCLAMP_MAX, sysctl_sched_uclamp_util_max);
-> >+		if (result == -ENOSPC) {
-> >+			pr_err("Cannot allocate more than %d UTIL_MAX clamp groups\n",
-> >+			       CONFIG_UCLAMP_GROUPS_COUNT);
-> >+			goto undo;
-> >+		}
-> >+		group_id[UCLAMP_MAX] = result;
-> >+	}
-> >+
-> >+	/* Update each required clamp group */
-> >+	if (old_min != sysctl_sched_uclamp_util_min) {
-> >+		uc_se = &uclamp_default[UCLAMP_MIN];
-> >+		uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
-> >+				 uc_se, sysctl_sched_uclamp_util_min);
-> >+	}
-> >+	if (old_max != sysctl_sched_uclamp_util_max) {
-> >+		uc_se = &uclamp_default[UCLAMP_MAX];
-> >+		uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
-> >+				 uc_se, sysctl_sched_uclamp_util_max);
-> >+	}
-> >+
-> >+	if (result) {
-> >+undo:
-> >+		sysctl_sched_uclamp_util_min = old_min;
-> >+		sysctl_sched_uclamp_util_max = old_max;
-> >+	}
+> >>AFAIK the default hierarcy (cgroups v2) has a much more stricy set of
+> >>requirements for the "delegation model".
+> >
+> >Could be ... I guess I have to study this more.
 > 
-> This looks strange! In case uclamp_group_find() returns free_group_id
-> instead of -ENOSPC, the sysctl min/max values are reset?
+> So I see that this idea with the .effective files is used in Waiman's new
+> cpuset cgroupv2 controller proposal.
 > 
-> I was under the assumption that I could specify:
-> 
-> sysctl_sched_uclamp_util_min = 40 (for boosting)
-> sysctl_sched_uclamp_util_max = 80 (for clamping)
-> 
-> with an empty cpu controller hierarchy and then those values become the
-> .effective values of (a first level) task group?
+> The cpu controller with you util clamp extension has to be usable under
+> cgroupv2 and cgroupv1, I assume?
 
-You right, I forgot to reset result=0 once we passed the two
-uclamp_group_find() calls. Will fix in v4.
+Right, and in general what works for v2 should work fine for v1 too.
 
-Cheers Patrick
+Best,
+Patrick
 
 -- 
 #include <best/regards.h>
