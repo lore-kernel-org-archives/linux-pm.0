@@ -1,48 +1,45 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 09/14] sched/core: uclamp: propagate parent clamps
-Date: Mon, 20 Aug 2018 13:28:49 +0100
-Message-ID: <20180820122849.GN2960@e110439-lin>
-References: <20180806163946.28380-1-patrick.bellasi@arm.com>
- <20180806163946.28380-10-patrick.bellasi@arm.com>
- <804c7937-2c47-0781-9c53-a8ef8eb04530@arm.com>
- <20180817144540.GL2960@e110439-lin>
- <d6c3b6f4-b3bd-22d9-70c0-38ad587b9339@arm.com>
- <0a26a0de-f9e6-ef77-ceac-eb25bbf01664@arm.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v12 13/14] cpufreq: qcom: Re-organise kryo cpufreq to use
+ it for other nvmem based qcom socs
+Date: Mon, 20 Aug 2018 18:15:12 +0530
+Message-ID: <a89bd80c-bdfc-77ed-1de9-9cad38da7cf5@codeaurora.org>
+References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
+ <1534248753-2440-14-git-send-email-sricharan@codeaurora.org>
+ <20180817150902.GA19164@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0a26a0de-f9e6-ef77-ceac-eb25bbf01664@arm.com>
+In-Reply-To: <20180817150902.GA19164@rob-hp-laptop>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Rob Herring <robh@kernel.org>
+Cc: mark.rutland@arm.com, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 20-Aug 12:01, Dietmar Eggemann wrote:
-> On 08/17/2018 05:50 PM, Dietmar Eggemann wrote:
-> >On 08/17/2018 04:45 PM, Patrick Bellasi wrote:
-> >>On 17-Aug 15:43, Dietmar Eggemann wrote:
-> >>>On 08/06/2018 06:39 PM, Patrick Bellasi wrote:
-> 
-> [...]
-> 
-> >>AFAIK the default hierarcy (cgroups v2) has a much more stricy set of
-> >>requirements for the "delegation model".
-> >
-> >Could be ... I guess I have to study this more.
-> 
-> So I see that this idea with the .effective files is used in Waiman's new
-> cpuset cgroupv2 controller proposal.
-> 
-> The cpu controller with you util clamp extension has to be usable under
-> cgroupv2 and cgroupv1, I assume?
+Hi Rob,
 
-Right, and in general what works for v2 should work fine for v1 too.
+On 8/17/2018 8:39 PM, Rob Herring wrote:
+> Hi, this email is from Rob's (experimental) review bot. I found a couple
+> of common problems with your patch. Please see below.
+> 
+> On Tue, 14 Aug 2018 17:42:32 +0530, Sricharan R wrote:
+>> The kryo cpufreq driver reads the nvmem cell and uses that data to
+>> populate the opps. There are other qcom cpufreq socs like krait which
+>> does similar thing. Except for the interpretation of the read data,
+>> rest of the driver is same for both the cases. So pull the common things
+>> out for reuse.
+>>
+>> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+> 
+> The preferred subject prefix is "dt-bindings: <binding dir>: ...".
+> 
 
-Best,
-Patrick
+ ok, will change and keep the bindings update part out for this and the next
+ patch.
+
+Regards,
+ Sricharan
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
