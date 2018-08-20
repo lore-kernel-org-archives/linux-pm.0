@@ -1,41 +1,77 @@
-From: Emmanuel Vadot <manu@bidouilliste.com>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
 Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
  Allwinner Thermal Sensor Controller
-Date: Mon, 20 Aug 2018 15:57:57 +0200
-Message-ID: <20180820155757.7f393d75fdbe55610efff0c1@bidouilliste.com>
+Date: Mon, 20 Aug 2018 16:07:37 +0200
+Message-ID: <20180820140737.xmqhu5ndqzehvkql@flea>
 References: <20180804070355.14857-1-manu@freebsd.org>
-        <20180820111755.rzg7l2lznmbpuf2e@flea>
-        <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
+ <20180820111755.rzg7l2lznmbpuf2e@flea>
+ <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="dfblawrkuzgtn55u"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rob Herring <robh+dt@kernel.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
+Cc: Emmanuel Vadot <manu@freebsd.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 20 Aug 2018 07:41:22 -0600
-Rob Herring <robh+dt@kernel.org> wrote:
 
-> On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+--dfblawrkuzgtn55u
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
+> On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.com>=
+ wrote:
 > >
 > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
-> > > This patch adds documentation for Device-Tree bindings for the Allwinner
+> > > This patch adds documentation for Device-Tree bindings for the Allwin=
+ner
 > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
 > > >
 > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
 > >
 > > I'm not going to merge a binding for a device that doesn't have any
 > > driver implemented at the moment in Linux.
-> 
+>=20
 > I'll take it then. Linux is not the only DT client.
-> 
-> Rob
 
- Thanks Rob, I'll send a V2 shortly with the modification you asked and
-some minor others documentation corrections.
+Then don't complain if we ever have to break the ABI. We never tested
+that hardware, never had any code running on it, and it *will* cause
+some issues. For example, the calibration data have never been used
+and how they should be represented have never been described, since no
+one ever actually tried to use it.
 
--- 
-Emmanuel Vadot <manu@bidouilliste.com> <manu@freebsd.org>
+And sure, Linux is not the only DT client. Just like FreeBSD isn't.
+
+Maxime
+
+--=20
+Maxime Ripard, Bootlin (formerly Free Electrons)
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--dfblawrkuzgtn55u
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAlt6yygACgkQ0rTAlCFN
+r3Sy1w/+OamHTodVCKCQSHPZ8BlltgfldcvvWSDZQSAGyaNvyQPxDx9R5CZSmBwc
+Xl/xvrz9wDKg3TQOl2KSfMwFoHyhMmKaWIWHOi2KJNdfDzflNvsMBN8Vo0RL/W5J
+J7rVy1q8VZz2IQ5q+lSq81vqaV9cu7g4gAEDCzyFtZJU7oEXV3zLgC32ONKVVhIP
+1tBP+QcTTq4zyFkQrwCN8W1PWLDUFh1+HUMf5TeNcI13DekGIOQiyWLOK7c7ORXN
+2qLo153ZlTiqWP8vjI4eFA4RvfpKvHFd2F6h8FNm9pxPWdegMme5RPdrBxshzap3
+4sn0EN/AFrygrSqyFmKf+8KHqBq+Jxx4ho3ZrMmKQSD2Kd525vtqzPO6QSLlEo6A
+dCnpAq5uImcthubuotRn+R4NX0FLkDXSxX/xnhID4OYetyX6thldnaMFol8453a1
+E73kV5JwkQ9VYnkx9vWSlbSyNsn+RP5xfCTepbPc8ziPI5gspqL49b5icJpdy9hx
+bNyEhYmTvViAOP09hnx+APCK4Lg9E+09RI9dF1UwoDa4LfmgIs3/jIcfiahzmZIx
+RuIIfCAJQL14pGawOsKdT1EjIUrfkqtVwoTTN4Ri5XZIt+5v7wvPfCxn+gPbxR6w
+fYqmFW3g7j+gPKAuHDB8g4SRQI3XQTfyfGu7Sgu+629a3eYDH0E=
+=oSp1
+-----END PGP SIGNATURE-----
+
+--dfblawrkuzgtn55u--
