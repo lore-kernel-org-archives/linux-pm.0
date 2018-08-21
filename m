@@ -1,54 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 4/5] cpuidle: menu: Don't stay in shallow state for a long time
-Date: Tue, 21 Aug 2018 10:35:23 +0200
-Message-ID: <7779444.DV2K5n5ugl@aspire.rjw.lan>
-References: <1534090171-14464-1-git-send-email-leo.yan@linaro.org> <1534090171-14464-5-git-send-email-leo.yan@linaro.org>
+Subject: Re: [PATCH v1 0/5] Improvement stopping tick decision making in 'menu' idle governor
+Date: Tue, 21 Aug 2018 10:37:42 +0200
+Message-ID: <1980448.5HStMnL72j@aspire.rjw.lan>
+References: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534090171-14464-5-git-send-email-leo.yan@linaro.org>
+In-Reply-To: <1534090171-14464-1-git-send-email-leo.yan@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Leo Yan <leo.yan@linaro.org>
 Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ramesh Thomas <ramesh.thomas@intel.com>, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, August 12, 2018 6:09:30 PM CEST Leo Yan wrote:
-> To avoid staying in a shallow state for a long time, the menu governor
-> relies on not stopping tick when detects the prediction is shorter than
-> the tick event.  This is just luckily to cover most cases but cannot say
-> it is completely safe.  For example, if the prediction is 2000us and the
-> TICK_USEC=1000 so it's impossible to meet the condition
-> 'data->predicted_us < TICK_USEC' and this lead to stop the tick for a
-> shallow state; finally the CPU is possible to stay in this shallow state
-> for very long time.
+On Sunday, August 12, 2018 6:09:26 PM CEST Leo Yan wrote:
+> We found the CPU cannot stay in deepest idle state as expected with
+> running synthetic workloads with mainline kernel on Arm platform
+> (96boards Hikey620 with octa CA53 CPUs).
 > 
-> This patch checks the candidate idle state isn't deepest one and find if
-> the timer will come after more than 2 times of the maximum target
-> residency, though the governor selects a shallow state according to
-> prediction, due the timer is most reliable waken up source but it will
-> come very late, so the CPU has chance to stay in the shallow state
-> for a long time; the patch doesn't stop the tick for this case so can
-> avoid powernightmares issue.
+> The main issue is the criteria for decision stopping tick; now
+> the criteria is checking expected interval is less than TICK_USEC, but
+> this doesn't consider the next tick detla is float due CPU randomly
+> eneters and exits idle states; furthermore, it's stick to checking
+> TICK_USEC as boundary for decision stopping tick, unfortunately this has
+> hole to select a shallow state with stopping tick, so the CPU stays in
+> shallow state for long time.
 > 
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> ---
->  drivers/cpuidle/governors/menu.c | 21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
+> This patch series is to explore more reasonable making decision for
+> stopping tick and the most important fixing is to avoid powernightmares
+> issue after we apply these criterias for making decisions.  Patches
+> 0001 ~ 0003 are used to refactor the variables and structures for more
+> readable code, it also provides a function menu_decide_stopping_tick()
+> which can be used to encapsulate the making decision logics.  The last
+> two patches are primary for improvement, patch 0004 'cpuidle: menu:
+> Don't stay in shallow state for a long time' introduces a new criteria
+> (it's a more strict criteria than before) for not stopping tick for
+> shallow state cases; patch 0005 is use the dynamic tick detla to replace
+> the static value TICK_USEC for decision if the tick is expired before or
+> after the prediction, according this comparison we can get conclusion if
+> need to stop tick or not.
 > 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 4f02207..566c65c 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -284,6 +284,10 @@ static unsigned int get_typical_interval(struct menu_device *data)
->  static bool menu_decide_stopping_tick(struct cpuidle_driver *drv,
->  				      struct menu_device *data, int idx)
->  {
-> +	int max_target_residency;
-> +
-> +	max_target_residency = drv->states[drv->state_count-1].target_residency;
+> With more accurate decision for stopping tick, one immediate benefit is
+> the CPUs have more chance to stay in deepest state, it also can avoid to
+> run tick unnecessarily and so avoid a shallower state introduced by tick
+> event.  For the testing result in below table, we can see the result
+> proves the improvement by better stopping tick decision making in this
+> patch series, we run the workload generated by rt-app (a single task
+> with period 5ms and duty cycle 1%/3%/5%/10%/20%/30%/40%), the total
+> running time is 60s.  We do statistics for all CPUs for all idle states
+> duration, the unit is second (s), for cases (dutycycle=1%/3%/5%/10%/20%)
+> we can see the shallow state C0/C1 duration are reduced and the time
+> has been moved to deepest state, so the deepest state C2 duration can
+> have improvement for ~9s to ~21s.  for cases (dutycycle=30%/40%) though
+> we can see the deepest state durations are parity between with and
+> without patch series, but it has a minor improvement for C1 state
+> duration by stealing C0 state duration.
+> 
+> Some notations are used in the table:
+> 
+> state: C0: WFI; C1: CPU OFF; C2: Cluster OFF
+> 
+> All testing cases have single task with 5ms period:
+> 
+> 		 Without patches           With patches               Difference
+>             -----------------------  -----------------------   --------------------------
+> Duty cycle    C0     C1       C2       C0      C1      C2        C0        C1        C2
+>   1%        2.397  16.528  471.905   0.916    2.688  487.328   -1.481   -13.840   +15.422
+>   3%        3.957  20.541  464.434   1.510    2.398  485.914   -2.447   -18.143   +21.480
+>   5%        2.866   8.609  474.777   1.166    2.250  483.983   -1.699    -6.359    +9.205
+>  10%        2.893  28.753  453.277   1.147   14.134  469.190   -1.745   -14.618   +15.913
+>  20%        7.620  41.086  431.735   1.595   35.055  442.482   -6.024    -6.030   +10.747
+>  30%        4.394  38.328  431.442   1.964   40.857  430.973   -2.430    +2.529    -0.468
+>  40%        7.390  29.415  430.914   1.789   34.832  431.588   -5.600    +5.417    -0.673
+> 
+> 
+> P.s. for the testing, applied Rafael's patch 'cpuidle: menu: Handle
+> stopped tick more aggressively' [1] to avoid select unexpected shallow
+> state after tick has been stopped.
+> 
+> [1] https://lkml.org/lkml/2018/8/10/259
+> 
+> Leo Yan (5):
+>   cpuidle: menu: Clean up variables usage in menu_select()
+>   cpuidle: menu: Record tick delta value in struct menu_device
+>   cpuidle: menu: Provide menu_decide_stopping_tick()
+>   cpuidle: menu: Don't stay in shallow state for a long time
+>   cpuidle: menu: Change to compare prediction with tick delta
+> 
+>  drivers/cpuidle/governors/menu.c | 104 ++++++++++++++++++++++++++++-----------
+>  1 file changed, 76 insertions(+), 28 deletions(-)
+> 
+> 
 
-But this state may be disabled, may it not?
+Overall, I don't like this series, sorry about that.
+
+The majority of changes in it are code reorganization, quite questionable
+in a couple of cases, and a similar goal can be achieved with a very simple
+patch that I'm going to post shortly.
 
 Thanks,
 Rafael
