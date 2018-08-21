@@ -1,62 +1,152 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: [PATCH] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
-Date: Tue, 21 Aug 2018 18:41:25 +0200
-Message-ID: <1534869685-22221-1-git-send-email-vincent.guittot@linaro.org>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
+Date: Tue, 21 Aug 2018 15:45:20 -0500
+Message-ID: <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com> <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, punit.agrawal@arm.com
-Cc: edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: vabhav.sharma@nxp.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk <linux-clk@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>, Kate Stewart <kstewart@linuxfoundation.org>Ma
 List-Id: linux-pm@vger.kernel.org
 
-The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
-its usage in the code assumes that unit is mW/GHz/V^2
+On Mon, Aug 20, 2018 at 1:52 PM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
+>
+> LX2160A reference design board (RDB) is a high-performance
+> computing, evaluation, and development platform with LX2160A
+> SoC.
+>
+> Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
+> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> ---
+>  arch/arm64/boot/dts/freescale/Makefile            |  1 +
+>  arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 95 +++++++++++++++++++++++
+>  2 files changed, 96 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+>
+> diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
+> index 86e18ad..445b72b 100644
+> --- a/arch/arm64/boot/dts/freescale/Makefile
+> +++ b/arch/arm64/boot/dts/freescale/Makefile
+> @@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
+>  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
+> +dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
+> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+> new file mode 100644
+> index 0000000..70fad20
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+> @@ -0,0 +1,95 @@
+> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+> +//
+> +// Device Tree file for LX2160ARDB
+> +//
+> +// Copyright 2018 NXP
+> +
+> +/dts-v1/;
+> +
+> +#include "fsl-lx2160a.dtsi"
+> +
+> +/ {
+> +       model = "NXP Layerscape LX2160ARDB";
+> +       compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
+> +
+> +       aliases {
+> +               crypto = &crypto;
 
-In drivers/thermal/cpu_cooling.c, the code is :
+Drop this. Aliases should be numbered, and this is not a standard
+alias name either.
 
-power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-do_div(power, 1000000000);
+> +               serial0 = &uart0;
+> +               serial1 = &uart1;
+> +               serial2 = &uart2;
+> +               serial3 = &uart3;
+> +       };
+> +       chosen {
+> +               stdout-path = "serial0:115200n8";
+> +       };
+> +};
+> +
+> +&uart0 {
+> +       status = "okay";
+> +};
+> +
+> +&uart1 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c0 {
+> +       status = "okay";
+> +       pca9547@77 {
 
-which can be summarized as :
-power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
+i2c-mux@77
 
-Furthermore, if we test basic values like :
-voltage_mv = 1000mV = 1V
-freq_mhz = 1000Mhz = 1Ghz
+> +               compatible = "nxp,pca9547";
+> +               reg = <0x77>;
+> +               #address-cells = <1>;
+> +               #size-cells = <0>;
+> +
+> +               i2c@2 {
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x2>;
+> +
+> +                       ina220@40 {
+> +                               compatible = "ti,ina220";
+> +                               reg = <0x40>;
+> +                               shunt-resistor = <1000>;
+> +                       };
+> +               };
+> +
+> +               i2c@3 {
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       reg = <0x3>;
+> +
+> +                       sa56004@4c {
 
-The minimum possible power, when dynamic-power-coefficient equals 1, will
-be :
-min power = 1 * 1000  * (1000000)^2 = 10^15 mW
-which is not realistic
+temperature-sensor@4c
 
-With the unit used by the code, the min power is
-min power =  1 * 1 * 1^2 = 1mW which is far more realistic
-
-Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
----
- Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-index 29e1dc5..0148d7d 100644
---- a/Documentation/devicetree/bindings/arm/cpus.txt
-+++ b/Documentation/devicetree/bindings/arm/cpus.txt
-@@ -274,7 +274,7 @@ described below.
- 		Usage: optional
- 		Value type: <prop-encoded-array>
- 		Definition: A u32 value that represents the running time dynamic
--			    power coefficient in units of mW/MHz/uV^2. The
-+			    power coefficient in units of mW/GHz/V^2. The
- 			    coefficient can either be calculated from power
- 			    measurements or derived by analysis.
- 
-@@ -285,7 +285,7 @@ described below.
- 
- 			    Pdyn = dynamic-power-coefficient * V^2 * f
- 
--			    where voltage is in uV, frequency is in MHz.
-+			    where voltage is in V, frequency is in GHz.
- 
- Example 1 (dual-cluster big.LITTLE system 32-bit):
- 
--- 
-2.7.4
+> +                               compatible = "nxp,sa56004";
+> +                               reg = <0x4c>;
+> +                       };
+> +
+> +                       sa56004@4d {
+> +                               compatible = "nxp,sa56004";
+> +                               reg = <0x4d>;
+> +                       };
+> +               };
+> +       };
+> +};
+> +
+> +&i2c4 {
+> +       status = "okay";
+> +
+> +       rtc@51 {
+> +               compatible = "nxp,pcf2129";
+> +               reg = <0x51>;
+> +               // IRQ10_B
+> +               interrupts = <0 150 0x4>;
+> +               };
+> +
+> +};
+> +
+> +&usb0 {
+> +       status = "okay";
+> +};
+> +
+> +&usb1 {
+> +       status = "okay";
+> +};
+> +
+> +&crypto {
+> +       status = "okay";
+> +};
+> --
+> 2.7.4
+>
