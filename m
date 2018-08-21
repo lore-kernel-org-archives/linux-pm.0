@@ -1,24 +1,62 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 2/2] dt-bindings: thermal: rcar-gen3-thermal: Add
- r8a774a1 support
-Date: Tue, 21 Aug 2018 15:35:47 +0200
-Message-ID: <20180821133547.3s4stv6peqhjkm6x@verge.net.au>
-References: <1534517584-14434-1-git-send-email-fabrizio.castro@bp.renesas.com>
- <1534517584-14434-3-git-send-email-fabrizio.castro@bp.renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: [PATCH] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
+Date: Tue, 21 Aug 2018 18:41:25 +0200
+Message-ID: <1534869685-22221-1-git-send-email-vincent.guittot@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1534517584-14434-3-git-send-email-fabrizio.castro@bp.renesas.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Chris Paterson <Chris.Paterson2@renesas.com>, Biju Das <biju.das@bp.renesas.com>, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, punit.agrawal@arm.com
+Cc: edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 17, 2018 at 03:53:04PM +0100, Fabrizio Castro wrote:
-> Document RZ/G2M (R8A774A1) SoC bindings.
-> 
-> Signed-off-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-> Reviewed-by: Biju Das <biju.das@bp.renesas.com>
+The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
+its usage in the code assumes that unit is mW/GHz/V^2
 
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+In drivers/thermal/cpu_cooling.c, the code is :
+
+power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+do_div(power, 1000000000);
+
+which can be summarized as :
+power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
+
+Furthermore, if we test basic values like :
+voltage_mv = 1000mV = 1V
+freq_mhz = 1000Mhz = 1Ghz
+
+The minimum possible power, when dynamic-power-coefficient equals 1, will
+be :
+min power = 1 * 1000  * (1000000)^2 = 10^15 mW
+which is not realistic
+
+With the unit used by the code, the min power is
+min power =  1 * 1 * 1^2 = 1mW which is far more realistic
+
+Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index 29e1dc5..0148d7d 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -274,7 +274,7 @@ described below.
+ 		Usage: optional
+ 		Value type: <prop-encoded-array>
+ 		Definition: A u32 value that represents the running time dynamic
+-			    power coefficient in units of mW/MHz/uV^2. The
++			    power coefficient in units of mW/GHz/V^2. The
+ 			    coefficient can either be calculated from power
+ 			    measurements or derived by analysis.
+ 
+@@ -285,7 +285,7 @@ described below.
+ 
+ 			    Pdyn = dynamic-power-coefficient * V^2 * f
+ 
+-			    where voltage is in uV, frequency is in MHz.
++			    where voltage is in V, frequency is in GHz.
+ 
+ Example 1 (dual-cluster big.LITTLE system 32-bit):
+ 
+-- 
+2.7.4
