@@ -1,107 +1,159 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
-Date: Wed, 22 Aug 2018 16:32:39 +0200
-Message-ID: <CAKfTPtBGJf3tPgUXwVGbQBxgCwuW4TKhLtyeXYp5SZZxmyXEsg@mail.gmail.com>
-References: <1534869685-22221-1-git-send-email-vincent.guittot@linaro.org> <87ftz6ww1h.fsf@e105922-lin.cambridge.arm.com>
+From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v14 4/4] iommu/arm-smmu: Add support for qcom,smmu-v2
+	variant
+Date: Wed, 22 Aug 2018 16:27:04 +0100
+Message-ID: <44c79159-bf14-cdf0-70ab-421b1dc3c83e@arm.com>
+References: <20180727070224.23966-1-vivek.gautam@codeaurora.org>
+	<20180727070224.23966-5-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87ftz6ww1h.fsf@e105922-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20180727070224.23966-5-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Language: en-GB
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Amit,
+On 27/07/18 08:02, Vivek Gautam wrote:
+> qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+> clock and power requirements. This smmu core is used with
+> multiple masters on msm8996, viz. mdss, video, etc.
+> Add bindings for the same.
+> 
+> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> ---
+> 
+> Change since v13:
+>   - No change.
+> 
+>   .../devicetree/bindings/iommu/arm,smmu.txt         | 42 ++++++++++++++++++++++
+>   drivers/iommu/arm-smmu.c                           | 13 +++++++
+>   2 files changed, 55 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> index 8a6ffce12af5..7c71a6ed465a 100644
+> --- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> +++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+> @@ -17,10 +17,19 @@ conditions.
+>                           "arm,mmu-401"
+>                           "arm,mmu-500"
+>                           "cavium,smmu-v2"
+> +                        "qcom,<soc>-smmu-v2", "qcom,smmu-v2"
+>   
+>                     depending on the particular implementation and/or the
+>                     version of the architecture implemented.
+>   
+> +                  A number of Qcom SoCs use qcom,smmu-v2 version of the IP.
+> +                  "qcom,<soc>-smmu-v2" represents a soc specific compatible
+> +                  string that should be present along with the "qcom,smmu-v2"
+> +                  to facilitate SoC specific clocks/power connections and to
+> +                  address specific bug fixes.
 
-On Wed, 22 Aug 2018 at 12:11, Punit Agrawal <punit.agrawal@arm.com> wrote:
->
-> Hi Vincent,
->
-> Thanks for the patch. One comment about the choice of units below.
->
-> Vincent Guittot <vincent.guittot@linaro.org> writes:
->
-> > The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
-> > its usage in the code assumes that unit is mW/GHz/V^2
->
-> Instead of choosing GHz as the base, I'd prefer to use uW/MHz/V^2. It'll
-> avoid introducing fractional GHz value for frequency calculations.
+As demonstrated in the GPU thread, this proves a bit too vague for a 
+useful binding. Provided Qcom folks can reach a consensus on what a 
+given SoC is actually called, I'd rather just unambiguously list 
+whatever sets of fully-defined strings we need.
 
-I don't understand your concern about fractional Ghz value for
-frequency calculation ?
-I mean, why it's a problem for frequency with Ghz vs Mhz but not a
-problem for voltage with V vs mV ?
-Don't we have the same "problem" in both case ?
+Robin.
 
->
-> > In drivers/thermal/cpu_cooling.c, the code is :
-> >
-> > power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> > do_div(power, 1000000000);
-> >
-> > which can be summarized as :
-> > power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
->
-> Which would then translate to -
->
-> power (mW) = power (uW) / 1000 = capacitance * freq_mhz * (voltage_mv/1000)^2
-
-Not sure that the equation above is correct. If we consider uW/MHz/V^2
-for the unit, the equation becomes :
-power (mW) = power (uW) / 1000 = capacitance * freq_mhz *
-(voltage_mv/1000)^2 / 1000
-which can be rearranged as
-power (mW) = power (uW) / 1000 = capacitance * freq_mhz/ 1000 *
-(voltage_mv/1000)^2
-
-TBH, I don't really mind between  mW/GHz/V^2 or uW/MHz/V^2 as they are
-the same at the end
-but I don't catch your reasoning
-
-Regards,
-Vincent
-
->
-> Thanks,
-> Punit
->
-> >
-> > Furthermore, if we test basic values like :
-> > voltage_mv = 1000mV = 1V
-> > freq_mhz = 1000Mhz = 1Ghz
-> >
-> > The minimum possible power, when dynamic-power-coefficient equals 1, will
-> > be :
-> > min power = 1 * 1000  * (1000000)^2 = 10^15 mW
-> > which is not realistic
-> >
-> > With the unit used by the code, the min power is
-> > min power =  1 * 1 * 1^2 = 1mW which is far more realistic
-> >
-> > Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > ---
-> >  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-> > index 29e1dc5..0148d7d 100644
-> > --- a/Documentation/devicetree/bindings/arm/cpus.txt
-> > +++ b/Documentation/devicetree/bindings/arm/cpus.txt
-> > @@ -274,7 +274,7 @@ described below.
-> >               Usage: optional
-> >               Value type: <prop-encoded-array>
-> >               Definition: A u32 value that represents the running time dynamic
-> > -                         power coefficient in units of mW/MHz/uV^2. The
-> > +                         power coefficient in units of mW/GHz/V^2. The
-> >                           coefficient can either be calculated from power
-> >                           measurements or derived by analysis.
-> >
-> > @@ -285,7 +285,7 @@ described below.
-> >
-> >                           Pdyn = dynamic-power-coefficient * V^2 * f
-> >
-> > -                         where voltage is in uV, frequency is in MHz.
-> > +                         where voltage is in V, frequency is in GHz.
-> >
-> >  Example 1 (dual-cluster big.LITTLE system 32-bit):
+> +                  An example string would be -
+> +                  "qcom,msm8996-smmu-v2", "qcom,smmu-v2".
+> +
+>   - reg           : Base address and size of the SMMU.
+>   
+>   - #global-interrupts : The number of global interrupts exposed by the
+> @@ -71,6 +80,22 @@ conditions.
+>                     or using stream matching with #iommu-cells = <2>, and
+>                     may be ignored if present in such cases.
+>   
+> +- clock-names:    List of the names of clocks input to the device. The
+> +                  required list depends on particular implementation and
+> +                  is as follows:
+> +                  - for "qcom,smmu-v2":
+> +                    - "bus": clock required for downstream bus access and
+> +                             for the smmu ptw,
+> +                    - "iface": clock required to access smmu's registers
+> +                               through the TCU's programming interface.
+> +                  - unspecified for other implementations.
+> +
+> +- clocks:         Specifiers for all clocks listed in the clock-names property,
+> +                  as per generic clock bindings.
+> +
+> +- power-domains:  Specifiers for power domains required to be powered on for
+> +                  the SMMU to operate, as per generic power domain bindings.
+> +
+>   ** Deprecated properties:
+>   
+>   - mmu-masters (deprecated in favour of the generic "iommus" binding) :
+> @@ -137,3 +162,20 @@ conditions.
+>                   iommu-map = <0 &smmu3 0 0x400>;
+>                   ...
+>           };
+> +
+> +	/* Qcom's arm,smmu-v2 implementation */
+> +	smmu4: iommu {
+> +		compatible = "qcom,msm8996-smmu-v2", "qcom,smmu-v2";
+> +		reg = <0xd00000 0x10000>;
+> +
+> +		#global-interrupts = <1>;
+> +		interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
+> +			     <GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
+> +			     <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
+> +		#iommu-cells = <1>;
+> +		power-domains = <&mmcc MDSS_GDSC>;
+> +
+> +		clocks = <&mmcc SMMU_MDP_AXI_CLK>,
+> +			 <&mmcc SMMU_MDP_AHB_CLK>;
+> +		clock-names = "bus", "iface";
+> +	};
+> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+> index e558abf1ecfc..2b4edba188a5 100644
+> --- a/drivers/iommu/arm-smmu.c
+> +++ b/drivers/iommu/arm-smmu.c
+> @@ -119,6 +119,7 @@ enum arm_smmu_implementation {
+>   	GENERIC_SMMU,
+>   	ARM_MMU500,
+>   	CAVIUM_SMMUV2,
+> +	QCOM_SMMUV2,
+>   };
+>   
+>   struct arm_smmu_s2cr {
+> @@ -1971,6 +1972,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
+>   ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+>   ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
+>   
+> +static const char * const qcom_smmuv2_clks[] = {
+> +	"bus", "iface",
+> +};
+> +
+> +static const struct arm_smmu_match_data qcom_smmuv2 = {
+> +	.version = ARM_SMMU_V2,
+> +	.model = QCOM_SMMUV2,
+> +	.clks = qcom_smmuv2_clks,
+> +	.num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
+> +};
+> +
+>   static const struct of_device_id arm_smmu_of_match[] = {
+>   	{ .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
+>   	{ .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
+> @@ -1978,6 +1990,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
+>   	{ .compatible = "arm,mmu-401", .data = &arm_mmu401 },
+>   	{ .compatible = "arm,mmu-500", .data = &arm_mmu500 },
+>   	{ .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
+> +	{ .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
+>   	{ },
+>   };
+>   MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+> 
