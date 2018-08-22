@@ -1,109 +1,81 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] More ACPI updates for v4.19-rc1
-Date: Wed, 22 Aug 2018 11:41:24 +0200
-Message-ID: <CAJZ5v0gJYBtH2P3oS-hGxk0p1Vy6jcv-ZzggoDS3PSS+S9k_ng@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
+Date: Wed, 22 Aug 2018 11:11:22 +0100
+Message-ID: <87ftz6ww1h.fsf@e105922-lin.cambridge.arm.com>
+References: <1534869685-22221-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1534869685-22221-1-git-send-email-vincent.guittot@linaro.org>
+        (Vincent Guittot's message of "Tue, 21 Aug 2018 18:41:25 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hi Vincent,
 
-Please pull from the tag
+Thanks for the patch. One comment about the choice of units below.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.19-rc1-2
+Vincent Guittot <vincent.guittot@linaro.org> writes:
 
-with top-most commit d1f3ab5b13c03b6f32d5379cd3cd5c7e50ce612c
+> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
+> its usage in the code assumes that unit is mW/GHz/V^2
 
- Merge branch 'acpi-pmic'
+Instead of choosing GHz as the base, I'd prefer to use uW/MHz/V^2. It'll
+avoid introducing fractional GHz value for frequency calculations.
 
-on top of commit 2c20443ec221dcb76484b30933593e8ecd836bbd
+> In drivers/thermal/cpu_cooling.c, the code is :
+>
+> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+> do_div(power, 1000000000);
+>
+> which can be summarized as :
+> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
 
- Merge tag 'acpi-4.19-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+Which would then translate to -
 
-to receive more ACPI updates for 4.19-rc1.
+power (mW) = power (uW) / 1000 = capacitance * freq_mhz * (voltage_mv/1000)^2
 
-These update the ACPICA code in the kernel to the most recent
-upstream revision (which includes a regression fix and other
-improvements), make ACPICA clear the status of all ACPI events
-when entering sleep states (to restore the previous behavior)
-and update the ACPI operation region driver for the CrystalCove
-PMIC.
+Thanks,
+Punit
 
-Specifics:
-
- - Update the ACPICA code in the kernel to upstream revision 20180810
-   including:
-   * Fix for AML parser regression causing it to mishandle opcodes
-     that open a scope upon parse failures (Erik Schmauss).
-   * Fix for a reference counting issue on large systems (Erik
-     Schmauss).
-   * Fix to discard values coming from register reads that have
-     failed (Erik Schmauss).
-   * Two acpiexec fixes (Bob Moore, Erik Schmauss).
-   * Debugger cleanup (Bob Moore).
-   * Cleanup of duplicate table error message (Bob Moore).
-   * Cleanup of hex detection in the utilities (Erik Schmauss).
-
- - Make ACPICA clear the status of all ACPI events when entering
-   sleep states again to avoid functional regressions (Rafael Wysocki).
-
- - Update the ACPI operation region driver for the CrystalCove PMIC
-   to cover all of the known operation region fields (Hans de Goede).
-
-Thanks!
-
-
----------------
-
-Bob Moore (4):
-      ACPICA: Update an error message for a duplicate table
-      ACPICA: Debugger: Cleanup interface to the AML disassembler
-      ACPICA: acpiexec: fix a small memory leak regression
-      ACPICA: Update version to 20180810
-
-Erik Schmauss (7):
-      ACPICA: AML Parser: ignore all exceptions resulting from
-incorrect AML during table load
-      ACPICA: ACPICA: add status check for acpi_hw_read before
-assigning return value
-      ACPICA: Utilities: split hex detection into smaller functions
-      ACPICA: AML Parser: skip opcodes that open a scope upon parse failure
-      ACPICA: acpi_exec: fixing -fi option
-      ACPICA: Reference count: add additional debugging details
-      ACPICA: Reference Counts: increase max to 0x4000 for large servers
-
-Hans de Goede (1):
-      ACPI / PMIC: CrystalCove: Extend PMOP support to support all
-possible fields
-
-Rafael J. Wysocki (1):
-      ACPICA: Clear status of all events when entering sleep states
-
----------------
-
- drivers/acpi/acpica/aclocal.h      |   1 +
- drivers/acpi/acpica/acnamesp.h     |  17 +++---
- drivers/acpi/acpica/acutils.h      |   2 +
- drivers/acpi/acpica/dbinput.c      |  10 ++++
- drivers/acpi/acpica/dbmethod.c     |   8 +--
- drivers/acpi/acpica/dbxface.c      |  10 +++-
- drivers/acpi/acpica/dsfield.c      |  34 +++++++++++-
- drivers/acpi/acpica/hwregs.c       |   9 ++-
- drivers/acpi/acpica/hwsleep.c      |  11 +---
- drivers/acpi/acpica/nsaccess.c     |  13 +++++
- drivers/acpi/acpica/psloop.c       |  43 ++++++++-------
- drivers/acpi/acpica/tbdata.c       |   4 +-
- drivers/acpi/acpica/utdelete.c     |   7 ++-
- drivers/acpi/acpica/utstrsuppt.c   |  26 ++++++++-
- drivers/acpi/acpica/utstrtoul64.c  |   2 +-
- drivers/acpi/pmic/intel_pmic_crc.c | 109 ++++++++++++++++++++++++++++++++++++-
- include/acpi/acconfig.h            |   2 +-
- include/acpi/acexcep.h             |   6 ++
- include/acpi/acpixf.h              |   2 +-
- 19 files changed, 260 insertions(+), 56 deletions(-)
+>
+> Furthermore, if we test basic values like :
+> voltage_mv = 1000mV = 1V
+> freq_mhz = 1000Mhz = 1Ghz
+>
+> The minimum possible power, when dynamic-power-coefficient equals 1, will
+> be :
+> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
+> which is not realistic
+>
+> With the unit used by the code, the min power is
+> min power =  1 * 1 * 1^2 = 1mW which is far more realistic
+>
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> index 29e1dc5..0148d7d 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -274,7 +274,7 @@ described below.
+>  		Usage: optional
+>  		Value type: <prop-encoded-array>
+>  		Definition: A u32 value that represents the running time dynamic
+> -			    power coefficient in units of mW/MHz/uV^2. The
+> +			    power coefficient in units of mW/GHz/V^2. The
+>  			    coefficient can either be calculated from power
+>  			    measurements or derived by analysis.
+>  
+> @@ -285,7 +285,7 @@ described below.
+>  
+>  			    Pdyn = dynamic-power-coefficient * V^2 * f
+>  
+> -			    where voltage is in uV, frequency is in MHz.
+> +			    where voltage is in V, frequency is in GHz.
+>  
+>  Example 1 (dual-cluster big.LITTLE system 32-bit):
