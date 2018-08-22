@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] More power management updates for v4.19-rc1
-Date: Wed, 22 Aug 2018 11:40:07 +0200
-Message-ID: <CAJZ5v0ifNDOGwtMo7mQvv2eJYmUjDk=GUiQYeG4scNxrP2MsKg@mail.gmail.com>
+Subject: [GIT PULL] More ACPI updates for v4.19-rc1
+Date: Wed, 22 Aug 2018 11:41:24 +0200
+Message-ID: <CAJZ5v0gJYBtH2P3oS-hGxk0p1Vy6jcv-ZzggoDS3PSS+S9k_ng@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
@@ -15,76 +15,95 @@ Hi Linus,
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.19-rc1-2
+ acpi-4.19-rc1-2
 
-with top-most commit 01ac7c4c2e035bc8d0d47dc880bbc25bf562a648
+with top-most commit d1f3ab5b13c03b6f32d5379cd3cd5c7e50ce612c
 
- Merge branches 'pm-cpufreq', 'pm-pci' and 'pm-sleep'
+ Merge branch 'acpi-pmic'
 
-on top of commit b018fc9800557bd14a40d69501e19c340eb2c521
+on top of commit 2c20443ec221dcb76484b30933593e8ecd836bbd
 
- Merge tag 'pm-4.19-rc1' of
+ Merge tag 'acpi-4.19-rc1' of
 git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
 
-to receive more power management updates for 4.19-rc1.
+to receive more ACPI updates for 4.19-rc1.
 
-These fix the main idle loop and the menu cpuidle governor, clean up
-the latter, fix a mistake in the PCI bus type's support for system
-suspend and resume, fix the ondemand and conservative cpufreq
-governors, address a build issue in the system wakeup framework and
-make the ACPI C-states desciptions less confusing.
+These update the ACPICA code in the kernel to the most recent
+upstream revision (which includes a regression fix and other
+improvements), make ACPICA clear the status of all ACPI events
+when entering sleep states (to restore the previous behavior)
+and update the ACPI operation region driver for the CrystalCove
+PMIC.
 
 Specifics:
 
- - Make the idle loop handle stopped scheduler tick correctly (Rafael
-   Wysocki).
+ - Update the ACPICA code in the kernel to upstream revision 20180810
+   including:
+   * Fix for AML parser regression causing it to mishandle opcodes
+     that open a scope upon parse failures (Erik Schmauss).
+   * Fix for a reference counting issue on large systems (Erik
+     Schmauss).
+   * Fix to discard values coming from register reads that have
+     failed (Erik Schmauss).
+   * Two acpiexec fixes (Bob Moore, Erik Schmauss).
+   * Debugger cleanup (Bob Moore).
+   * Cleanup of duplicate table error message (Bob Moore).
+   * Cleanup of hex detection in the utilities (Erik Schmauss).
 
- - Prevent the menu cpuidle governor from letting CPUs spend too much
-   time in shallow idle states when it is invoked with scheduler tick
-   stopped and clean it up somewhat (Rafael Wysocki).
+ - Make ACPICA clear the status of all ACPI events when entering
+   sleep states again to avoid functional regressions (Rafael Wysocki).
 
- - Avoid invoking the platform firmware to make the platform enter
-   the ACPI S3 sleep state with suspended PCIe root ports which may
-   confuse the firmware and cause it to crash (Rafael Wysocki).
-
- - Fix sysfs-related race in the ondemand and conservative cpufreq
-   governors which may cause the system to crash if the governor
-   module is removed during an update of CPU frequency limits (Henry
-   Willard).
-
- - Select SRCU when building the system wakeup framework to avoid a
-   build issue in it (zhangyi).
-
- - Make the descriptions of ACPI C-states vendor-neutral to avoid
-   confusion (Prarit Bhargava).
+ - Update the ACPI operation region driver for the CrystalCove PMIC
+   to cover all of the known operation region fields (Hans de Goede).
 
 Thanks!
 
 
 ---------------
 
-Henry Willard (1):
-      cpufreq: governor: Avoid accessing invalid governor_data
+Bob Moore (4):
+      ACPICA: Update an error message for a duplicate table
+      ACPICA: Debugger: Cleanup interface to the AML disassembler
+      ACPICA: acpiexec: fix a small memory leak regression
+      ACPICA: Update version to 20180810
 
-Prarit Bhargava (1):
-      x86/ACPI/cstate: Make APCI C1 FFH MWAIT C-state description vendor-neutral
+Erik Schmauss (7):
+      ACPICA: AML Parser: ignore all exceptions resulting from
+incorrect AML during table load
+      ACPICA: ACPICA: add status check for acpi_hw_read before
+assigning return value
+      ACPICA: Utilities: split hex detection into smaller functions
+      ACPICA: AML Parser: skip opcodes that open a scope upon parse failure
+      ACPICA: acpi_exec: fixing -fi option
+      ACPICA: Reference count: add additional debugging details
+      ACPICA: Reference Counts: increase max to 0x4000 for large servers
 
-Rafael J. Wysocki (5):
-      cpuidle: menu: Fix white space
-      cpuidle: menu: Update stale polling override comment
-      PCI / ACPI / PM: Resume all bridges on suspend-to-RAM
-      sched: idle: Avoid retaining the tick when it has been stopped
-      cpuidle: menu: Handle stopped tick more aggressively
+Hans de Goede (1):
+      ACPI / PMIC: CrystalCove: Extend PMOP support to support all
+possible fields
 
-zhangyi (F) (1):
-      PM / sleep: wakeup: Fix build error caused by missing SRCU support
+Rafael J. Wysocki (1):
+      ACPICA: Clear status of all events when entering sleep states
 
 ---------------
 
- arch/x86/kernel/acpi/cstate.c      |  2 +-
- drivers/cpufreq/cpufreq_governor.c | 12 ++++++++--
- drivers/cpuidle/governors/menu.c   | 45 ++++++++++++++++++++++++--------------
- drivers/pci/pci-acpi.c             |  6 ++---
- kernel/power/Kconfig               |  1 +
- kernel/sched/idle.c                |  2 +-
- 6 files changed, 43 insertions(+), 25 deletions(-)
+ drivers/acpi/acpica/aclocal.h      |   1 +
+ drivers/acpi/acpica/acnamesp.h     |  17 +++---
+ drivers/acpi/acpica/acutils.h      |   2 +
+ drivers/acpi/acpica/dbinput.c      |  10 ++++
+ drivers/acpi/acpica/dbmethod.c     |   8 +--
+ drivers/acpi/acpica/dbxface.c      |  10 +++-
+ drivers/acpi/acpica/dsfield.c      |  34 +++++++++++-
+ drivers/acpi/acpica/hwregs.c       |   9 ++-
+ drivers/acpi/acpica/hwsleep.c      |  11 +---
+ drivers/acpi/acpica/nsaccess.c     |  13 +++++
+ drivers/acpi/acpica/psloop.c       |  43 ++++++++-------
+ drivers/acpi/acpica/tbdata.c       |   4 +-
+ drivers/acpi/acpica/utdelete.c     |   7 ++-
+ drivers/acpi/acpica/utstrsuppt.c   |  26 ++++++++-
+ drivers/acpi/acpica/utstrtoul64.c  |   2 +-
+ drivers/acpi/pmic/intel_pmic_crc.c | 109 ++++++++++++++++++++++++++++++++++++-
+ include/acpi/acconfig.h            |   2 +-
+ include/acpi/acexcep.h             |   6 ++
+ include/acpi/acpixf.h              |   2 +-
+ 19 files changed, 260 insertions(+), 56 deletions(-)
