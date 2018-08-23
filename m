@@ -1,90 +1,111 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH] cpufreq: ti-cpufreq: Only register platform_device when
- supported
-Date: Thu, 23 Aug 2018 09:50:58 +0200
-Message-ID: <20180823075058.GR14967@localhost>
-References: <20180823024432.7000-1-d-gerlach@ti.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Thu, 23 Aug 2018 16:00:18 +0300
+Message-ID: <4fcac639-cba9-1a71-9b78-326ebb9242da@linaro.org>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180823024432.7000-1-d-gerlach@ti.com>
+In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Keerthy J <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Stephen Boyd <sboyd@kernel.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 22, 2018 at 09:44:32PM -0500, Dave Gerlach wrote:
-> Currently the ti-cpufreq driver blindly registers a 'ti-cpufreq' to force
-> the driver to probe on any platforms where the driver is built in.
-> However, this should only happen on platforms that actually can make use
-> of the driver. There is already functionality in place to match the
-> SoC compatible so let's factor this out into a separate call and
-> make sure we find a match before creating the ti-cpufreq driver device.
+Hi Saravana,
+
+On 08/02/2018 03:57 AM, Saravana Kannan wrote:
+> This driver registers itself as a devfreq device that allows devfreq
+> governors to make bandwidth votes for an interconnect path. This allows
+> applying various policies for different interconnect paths using devfreq
+> governors.
 > 
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> Example uses:
+> * Use the devfreq performance governor to set the CPU to DDR interconnect
+>   path for maximum performance.
+> * Use the devfreq performance governor to set the GPU to DDR interconnect
+>   path for maximum performance.
+> * Use the CPU frequency to device frequency mapping governor to scale the
+>   DDR frequency based on the needs of the CPUs' current frequency.
+
+Usually CPUs and GPUs have dedicated cpufreq/devfreq drivers and i was
+wondering if the interconnect support could be put into these drivers
+directly?
+
+> 
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 > ---
->  drivers/cpufreq/ti-cpufreq.c | 25 ++++++++++++++++++++-----
->  1 file changed, 20 insertions(+), 5 deletions(-)
+>  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
+>  drivers/devfreq/Kconfig                            |  13 +++
+>  drivers/devfreq/Makefile                           |   1 +
+>  drivers/devfreq/devfreq_icbw.c                     | 116 +++++++++++++++++++++
+>  4 files changed, 151 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
+>  create mode 100644 drivers/devfreq/devfreq_icbw.c
 > 
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index 3f0e2a14895a..541fdcf17b57 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -201,19 +201,31 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
->  	{},
->  };
->  
-> +static const struct of_device_id *ti_cpufreq_match_node(void)
-> +{
-> +	struct device_node *np;
-> +	const struct of_device_id *match;
+> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt b/Documentation/devicetree/bindings/devfreq/icbw.txt
+> new file mode 100644
+> index 0000000..36cf045
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
+> @@ -0,0 +1,21 @@
+> +Interconnect bandwidth device
 > +
-> +	np = of_find_node_by_path("/");
-> +	match = of_match_node(ti_cpufreq_of_match, np);
-> +	of_node_put(np);
+> +icbw is a device that represents an interconnect path that connects two
+> +devices. This device is typically used to vote for BW requirements between
+> +two devices. Eg: CPU to DDR, GPU to DDR, etc
 > +
-> +	if (!match)
-> +		return NULL;
-> +	else
-> +		return match;
-
-Shouldn't this just be "return match"?
-
-> +}
+> +Required properties:
+> +- compatible:		Must be "devfreq-icbw"
+> +- interconnects:	Pairs of phandles and interconnect provider specifier
+> +			to denote the edge source and destination ports of
+> +			the interconnect path. See also:
+> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
+> +- interconnect-names:	Must have one entry with the name "path".
 > +
->  static int ti_cpufreq_probe(struct platform_device *pdev)
->  {
->  	u32 version[VERSION_COUNT];
-> -	struct device_node *np;
->  	const struct of_device_id *match;
->  	struct opp_table *ti_opp_table;
->  	struct ti_cpufreq_data *opp_data;
->  	const char * const reg_names[] = {"vdd", "vbb"};
->  	int ret;
->  
-> -	np = of_find_node_by_path("/");
-> -	match = of_match_node(ti_cpufreq_of_match, np);
-> -	of_node_put(np);
-> +	match = ti_cpufreq_match_node();
->  	if (!match)
->  		return -ENODEV;
->  
-> @@ -290,7 +302,10 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
->  
->  static int ti_cpufreq_init(void)
->  {
-> -	platform_device_register_simple("ti-cpufreq", -1, NULL, 0);
-> +	/* Check to ensure we are on a compatible platform */
-> +	if (ti_cpufreq_match_node())
-> +		platform_device_register_simple("ti-cpufreq", -1, NULL, 0);
+> +Example:
 > +
->  	return 0;
->  }
->  module_init(ti_cpufreq_init);
+> +	qcom,cpubw {
+> +		compatible = "devfreq-icbw";
+> +		interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
+> +		interconnect-names = "path";
 
-With that fixed, feel free to add:
+interconnect-names is optional when there is only a single path.
 
-Reviewed-by: Johan Hovold <johan@kernel.org>
+> +	};
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 3d9ae68..590370e 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -121,6 +121,19 @@ config ARM_RK3399_DMC_DEVFREQ
+>            It sets the frequency for the memory controller and reads the usage counts
+>            from hardware.
+>  
+> +config DEVFREQ_ICBW
+> +	bool "DEVFREQ device for making bandwidth votes on interconnect paths"
 
-Johan
+Can this be a module?
+
+> +	select DEVFREQ_GOV_PERFORMANCE
+> +	select DEVFREQ_GOV_POWERSAVE
+> +	select DEVFREQ_GOV_USERSPACE
+> +	default n
+
+There's no need to specify this default. It is 'n' by default anyway.
+Also maybe you want to add something like:
+	depends on INTERCONNECT=y
+
+Thanks,
+Georgi
+
+> +	help
+> +	  Different devfreq governors use this devfreq device to make
+> +	  bandwidth votes for interconnect paths between different devices
+> +	  (Eg: CPU to DDR, GPU to DDR, etc). This driver provides a generic
+> +	  interface so that the devfreq governors can be shared across SoCs
+> +	  and architectures.
+> +
+>  source "drivers/devfreq/event/Kconfig"
