@@ -1,59 +1,80 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Thu, 23 Aug 2018 11:38:31 -0700
-Message-ID: <153504951102.28926.11593809590549791317@swboyd.mtv.corp.google.com>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
- <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
- <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
- <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
- <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
- <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
- <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH v2] cpufreq: ti-cpufreq: Only register platform_device when supported
+Date: Thu, 23 Aug 2018 14:20:35 -0500
+Message-ID: <20180823192035.22940-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>, skannan@codeaurora.org
-Cc: Evan Green <evgreen@google.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Tero Kristo <t-kristo@ti.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Dave Gerlach <d-gerlach@ti.com>, Keerthy J <j-keerthy@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Taniya Das (2018-08-08 03:15:26)
-> =
+Currently the ti-cpufreq driver blindly registers a 'ti-cpufreq' to force
+the driver to probe on any platforms where the driver is built in.
+However, this should only happen on platforms that actually can make use
+of the driver. There is already functionality in place to match the
+SoC compatible so let's factor this out into a separate call and
+make sure we find a match before creating the ti-cpufreq platform device.
 
-> =
+Reviewed-by: Johan Hovold <johan@kernel.org>
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+v1->v2:
+* Return 'match' directly in ti_cpufreq_match_node.
+* Add Johan's Reviewed-by.
 
-> On 8/8/2018 11:52 AM, Stephen Boyd wrote:
-> >>
-> >> Binding describes hardware controllable by the OS. That's the reality.
-> >> Let's not add mandatory clock bindings for clocks that the OS can't do
-> >> anything about.
-> >>
-> > =
+ drivers/cpufreq/ti-cpufreq.c | 22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
-> > It seems that you believe clks should only be used to turn on/off and
-> > control rates. That is not the whole truth. Sometimes clks are there
-> > just to express the clk frequencies that are present in the design so
-> > that drivers can figure out what to do.
-> > =
-
-> =
-
-> Stephen,
-> =
-
-> As this clock is not configurable by linux clock drivers and we really =
-
-> do not care the parent src(as mentioned by Saravana) to generate the =
-
-> 300MHz, would it be good to define a fixed rate clock so as to express =
-
-> the HW connectivity & frequency?
-> =
-
-
-As a hack that works great, but why do we need to workaround problems by
-adding a fixed rate clk to DT for this PLL? The PLL is provided by GCC
-node so it should be connected to the GCC node.
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 3f0e2a14895a..6b025953ddee 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -201,19 +201,28 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{},
+ };
+ 
++static const struct of_device_id *ti_cpufreq_match_node(void)
++{
++	struct device_node *np;
++	const struct of_device_id *match;
++
++	np = of_find_node_by_path("/");
++	match = of_match_node(ti_cpufreq_of_match, np);
++	of_node_put(np);
++
++	return match;
++}
++
+ static int ti_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	u32 version[VERSION_COUNT];
+-	struct device_node *np;
+ 	const struct of_device_id *match;
+ 	struct opp_table *ti_opp_table;
+ 	struct ti_cpufreq_data *opp_data;
+ 	const char * const reg_names[] = {"vdd", "vbb"};
+ 	int ret;
+ 
+-	np = of_find_node_by_path("/");
+-	match = of_match_node(ti_cpufreq_of_match, np);
+-	of_node_put(np);
++	match = ti_cpufreq_match_node();
+ 	if (!match)
+ 		return -ENODEV;
+ 
+@@ -290,7 +299,10 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
+ 
+ static int ti_cpufreq_init(void)
+ {
+-	platform_device_register_simple("ti-cpufreq", -1, NULL, 0);
++	/* Check to ensure we are on a compatible platform */
++	if (ti_cpufreq_match_node())
++		platform_device_register_simple("ti-cpufreq", -1, NULL, 0);
++
+ 	return 0;
+ }
+ module_init(ti_cpufreq_init);
+-- 
+2.16.1
