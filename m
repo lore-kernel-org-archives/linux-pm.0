@@ -1,103 +1,52 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
- Allwinner Thermal Sensor Controller
-Date: Fri, 24 Aug 2018 16:58:40 +0200
-Message-ID: <20180824145840.isdcg3fr6mw4ntzg@flea>
-References: <20180804070355.14857-1-manu@freebsd.org>
- <20180820111755.rzg7l2lznmbpuf2e@flea>
- <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
- <20180820140737.xmqhu5ndqzehvkql@flea>
- <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH v3 2/2] arm64: dts: sdm845: Add interconnect provider DT
+ nodes
+Date: Fri, 24 Aug 2018 08:58:40 -0600
+Message-ID: <20180824145840.GK5081@codeaurora.org>
+References: <1535075814-17343-1-git-send-email-daidavid1@codeaurora.org>
+ <1535075814-17343-3-git-send-email-daidavid1@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="ctw732jamwpz6sc5"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
+In-Reply-To: <1535075814-17343-3-git-send-email-daidavid1@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Emmanuel Vadot <manu@bidouilliste.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
+To: David Dai <daidavid1@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, grahamr@qti.qualcomm.com, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Aug 23 2018 at 19:57 -0600, David Dai wrote:
+>Add RSC(Resource State Coordinator) provider
+>dictating network-on-chip interconnect bus performance
+>found on SDM845-based platforms.
+>
+>Change-Id: I58f0bfc3ed484d7b45064dceb94dcfda507e9333
+Remove this pls.
 
---ctw732jamwpz6sc5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-- Lina
 
-Hi,
-
-On Mon, Aug 20, 2018 at 04:27:15PM +0200, Emmanuel Vadot wrote:
-> On Mon, 20 Aug 2018 16:07:37 +0200
-> Maxime Ripard <maxime.ripard@bootlin.com> wrote:
->=20
-> > On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
-> > > On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.=
-com> wrote:
-> > > >
-> > > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
-> > > > > This patch adds documentation for Device-Tree bindings for the Al=
-lwinner
-> > > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
-> > > > >
-> > > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
-> > > >
-> > > > I'm not going to merge a binding for a device that doesn't have any
-> > > > driver implemented at the moment in Linux.
-> > >=20
-> > > I'll take it then. Linux is not the only DT client.
-> >=20
-> > Then don't complain if we ever have to break the ABI. We never tested
-> > that hardware, never had any code running on it, and it *will* cause
-> > some issues. For example, the calibration data have never been used
-> > and how they should be represented have never been described, since no
-> > one ever actually tried to use it.
-> >=20
-> > And sure, Linux is not the only DT client. Just like FreeBSD isn't.
->=20
->  What kind of data would you need for me to make things better ?
->  We have the driver in FreeBSD for almost two years now, whne I started
-> to see how to upstream it I noticed a lot of problems and spent 4 or 5
-> days to try on all the SoCs mentionned in the serie, the only SoC I
-> didn't include it the A83T as for some reason I couldn't make the
-> driver work.
-
-Do you have a link to that driver? How and how much did you test it?
-
-Are you using the calibration data stored in the SID?
-
-> I just hope that you understand that we cannot wait for Linux to
-> have a driver to have some bindings.
-
-Just like I'm sure you can understand that just merging the DT bits
-without testing anything caused some troubles in the past, and I don't
-want to discover it in a year from now.
-
-Maxime
-
---=20
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---ctw732jamwpz6sc5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAluAHR8ACgkQ0rTAlCFN
-r3SZQRAAmXuqaVEN/HMxUrhEiqWT9FyK11pZERNZsHYv+YfegdJDZw23huBgiJUH
-4rAtpVwXukCaf0EzUyNL84lwYS+kVQA3Y+Y0gArCyEhUB96lUJYtbdsoJwZ/KKcj
-Y5dhAgSLaYzpnGtcpVx5fhrpCQ6XkDSEhSvWrmeanVCDdpMqw7CVL3z/BEqJVBvO
-obCFucd3aQqYDqtvxfcF2jD08BeQBbxtcKweQaFIJEP0u/G0HzrIIgFaasyrpsUe
-npZCOZyHIiT8+ANG34sG/t4T9tl6DWuaVc1YGIFVD77Umin3Jkt4Co7XCF1PprlZ
-2c0WEEogAffVGlQl/TPScXgLDXjByllikb4Gag+6sZwEmUYkunjSC3S65LX8ix7K
-CchCpEelxO6Yx9RnGBVDrHNJf/bfaIf8dweiuEN4/0lujdKmYZ/qytQZZE3yc0wP
-rUL5af8SMLabWA+dM8JeOrJTksz/styrBBrB5Vi5rZXaZfgbeCGrOL62OabJ2Fcn
-HcvgGMGVUe7O608ML7wKxCKJduJuRmjhb6wNU0rYPUnS/wJVOvLN5yDcUPAie3mJ
-1GgAOMtZ18RuGgmYwVS8WZHcp2NAVV5nKS91vYS/oxPTpE5C1Ypye+Pla6zMWXzD
-R1Cs1CJTpMQxNVgE6j8yjfe98wkdBYYajLmRsncke1TyXbY14js=
-=1xTs
------END PGP SIGNATURE-----
-
---ctw732jamwpz6sc5--
+>Signed-off-by: David Dai <daidavid1@codeaurora.org>
+>---
+> arch/arm64/boot/dts/qcom/sdm845.dtsi | 5 +++++
+> 1 file changed, 5 insertions(+)
+>
+>diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>index 1097c7e..4d15784 100644
+>--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>@@ -1651,6 +1651,11 @@
+> 				compatible = "qcom,sdm845-rpmh-clk";
+> 				#clock-cells = <1>;
+> 			};
+>+
+>+			qnoc: qnoc{
+>+				compatible = "qcom,sdm845-rsc-hlos";
+>+				#interconnect-cells = <1>;
+>+			};
+> 		};
+>
+> 		ufsphy: phy@1d87000 {
+>--
+>The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+>a Linux Foundation Collaborative Project
+>
