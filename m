@@ -1,114 +1,74 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 04/26] PM / Domains: Add support for CPU devices to genpd
-Date: Fri, 24 Aug 2018 08:47:21 +0200
-Message-ID: <CAPDyKFpatx81aMrbDtaeNPH=FXBYPCHsog3i=a0VN5=Q8if0=Q@mail.gmail.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-5-ulf.hansson@linaro.org> <1678369.6pMUSOvdlV@aspire.rjw.lan>
- <CAPDyKFq=m7ad66SwiOr+4ab=e7PNiXrXJ6c8G0ZTPOdO1RQ_6g@mail.gmail.com> <CAJZ5v0jah=aiYoV_b_p=-x+puO0sxeGRBCtJnQAD8xb8p1QGfg@mail.gmail.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH] thermal: of-thermal: disable passive polling when thermal
+ zone is disabled
+Date: Fri, 24 Aug 2018 07:10:13 +0000
+Message-ID: <DB3PR0402MB39168BB2C854A55401D4C648F5360@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1532969809-8300-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jah=aiYoV_b_p=-x+puO0sxeGRBCtJnQAD8xb8p1QGfg@mail.gmail.com>
+In-Reply-To: <1532969809-8300-1-git-send-email-Anson.Huang@nxp.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: dl-linux-imx <linux-imx@nxp.com>, Nitin Garg <nitin.garg@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 August 2018 at 11:36, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Aug 3, 2018 at 1:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 19 July 2018 at 12:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Wednesday, June 20, 2018 7:22:04 PM CEST Ulf Hansson wrote:
->>>> To enable a device belonging to a CPU to be attached to a PM domain managed
->>>> by genpd, let's do a few changes to genpd as to make it convenient to
->>>> manage the specifics around CPUs.
->>>>
->>>> First, as to be able to quickly find out what CPUs that are attached to a
->>>> genpd, which typically becomes useful from a genpd governor as following
->>>> changes is about to show, let's add a cpumask 'cpus' to the struct
->>>> generic_pm_domain.
->>>>
->>>> At the point when a device that belongs to a CPU, is attached/detached to
->>>> its corresponding PM domain via genpd_add_device(), let's update the
->>>> cpumask in genpd->cpus. Moreover, propagate the update of the cpumask to
->>>> the master domains, which makes the genpd->cpus to contain a cpumask that
->>>> hierarchically reflect all CPUs for a genpd, including CPUs attached to
->>>> subdomains.
->>>>
->>>> Second, to unconditionally manage CPUs and the cpumask in genpd->cpus, is
->>>> unnecessary for cases when only non-CPU devices are parts of a genpd.
->>>> Let's avoid this by adding a new configuration bit, GENPD_FLAG_CPU_DOMAIN.
->>>> Clients must set the bit before they call pm_genpd_init(), as to instruct
->>>> genpd that it shall deal with CPUs and thus manage the cpumask in
->>>> genpd->cpus.
->>>>
->>>> Cc: Lina Iyer <ilina@codeaurora.org>
->>>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>> ---
->>>>  drivers/base/power/domain.c | 69 ++++++++++++++++++++++++++++++++++++-
->>>>  include/linux/pm_domain.h   |  3 ++
->>>>  2 files changed, 71 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>> index 21d298e1820b..6149ce0bfa7b 100644
->>>> --- a/drivers/base/power/domain.c
->>>> +++ b/drivers/base/power/domain.c
->>>> @@ -20,6 +20,7 @@
->>>>  #include <linux/sched.h>
->>>>  #include <linux/suspend.h>
->>>>  #include <linux/export.h>
->>>> +#include <linux/cpu.h>
->>>>
->>>>  #include "power.h"
->>>>
->>>> @@ -126,6 +127,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
->>>>  #define genpd_is_irq_safe(genpd)     (genpd->flags & GENPD_FLAG_IRQ_SAFE)
->>>>  #define genpd_is_always_on(genpd)    (genpd->flags & GENPD_FLAG_ALWAYS_ON)
->>>>  #define genpd_is_active_wakeup(genpd)        (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
->>>> +#define genpd_is_cpu_domain(genpd)   (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
->>>>
->>>>  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
->>>>               const struct generic_pm_domain *genpd)
->>>> @@ -1377,6 +1379,62 @@ static void genpd_free_dev_data(struct device *dev,
->>>>       dev_pm_put_subsys_data(dev);
->>>>  }
->>>>
->>>> +static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
->>>> +                                int cpu, bool set, unsigned int depth)
->>>> +{
->>>> +     struct gpd_link *link;
->>>> +
->>>> +     if (!genpd_is_cpu_domain(genpd))
->>>> +             return;
->>>> +
->>>> +     list_for_each_entry(link, &genpd->slave_links, slave_node) {
->>>> +             struct generic_pm_domain *master = link->master;
->>>> +
->>>> +             genpd_lock_nested(master, depth + 1);
->>>> +             __genpd_update_cpumask(master, cpu, set, depth + 1);
->>>> +             genpd_unlock(master);
->>>> +     }
->>>> +
->>>> +     if (set)
->>>> +             cpumask_set_cpu(cpu, genpd->cpus);
->>>> +     else
->>>> +             cpumask_clear_cpu(cpu, genpd->cpus);
->>>> +}
->>>
->>> As noted elsewhere, there is a concern about the possible weight of this
->>> cpumask and I think that it would be good to explicitly put a limit on it.
->>
->> I have been digesting your comments on the series, but wonder if this
->> is still a relevant concern?
->
-> Well, there are systems with very large cpumasks and it is sort of
-> good to have that in mind when designing any code using them.
+Gentle Ping...
 
-Right.
+Anson Huang
+Best Regards!
 
-So, if I avoid allocating the cpumask for those genpd structures that
-doesn't need it (those not having GENPD_FLAG_CPU_DOMAIN set), would
-that be sufficient to deal with your concern?
 
-Kind regards
-Uffe
+> -----Original Message-----
+> From: Anson Huang
+> Sent: Tuesday, July 31, 2018 12:57 AM
+> To: rui.zhang@intel.com; edubezval@gmail.com; linux-pm@vger.kernel.org;
+> linux-kernel@vger.kernel.org
+> Cc: dl-linux-imx <linux-imx@nxp.com>; Nitin Garg <nitin.garg@nxp.com>
+> Subject: [PATCH] thermal: of-thermal: disable passive polling when therma=
+l
+> zone is disabled
+>=20
+> When thermal zone is in passive mode, disabling its mode from sysfs is NO=
+T
+> taking effect at all, it is still polling the temperature of the disabled=
+ thermal
+> zone and handling all thermal trips, it makes user confused. The disablin=
+g
+> operation should disable the thermal zone behavior completely, for both a=
+ctive
+> and passive mode, this patch clears the passive_delay when thermal zone i=
+s
+> disabled and restores it when it is enabled.
+>=20
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+>  drivers/thermal/of-thermal.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c =
+index
+> 977a830..4f28165 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -260,10 +260,13 @@ static int of_thermal_set_mode(struct
+> thermal_zone_device *tz,
+>=20
+>  	mutex_lock(&tz->lock);
+>=20
+> -	if (mode =3D=3D THERMAL_DEVICE_ENABLED)
+> +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
+>  		tz->polling_delay =3D data->polling_delay;
+> -	else
+> +		tz->passive_delay =3D data->passive_delay;
+> +	} else {
+>  		tz->polling_delay =3D 0;
+> +		tz->passive_delay =3D 0;
+> +	}
+>=20
+>  	mutex_unlock(&tz->lock);
+>=20
+> --
+> 2.7.4
