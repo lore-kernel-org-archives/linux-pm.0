@@ -1,114 +1,126 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Fri, 24 Aug 2018 11:38:28 +0100
-Message-ID: <20180824103828.GA11491@red-moon>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v8 09/26] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Fri, 24 Aug 2018 14:24:20 +0200
+Message-ID: <CAPDyKFr6vx+rHj0kP5e_7_NzK413df7J72QPoH7eDbK5386D-w@mail.gmail.com>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-8-ulf.hansson@linaro.org>
- <3574880.GjmnMm1lMq@aspire.rjw.lan>
- <10360149.m4MlxDWZY5@aspire.rjw.lan>
- <CAPDyKFonHYSq32WxvB1x5PXissXZvraqazgU_ZyLR=tsyD9vAA@mail.gmail.com>
- <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
- <20180809153925.GA20329@red-moon>
- <CAPDyKFp=AuqEPHKYgi-+DAhejQZSHixmtLORj_Rkn3m8fUoqJw@mail.gmail.com>
+ <2056372.NMt4aPaF4h@aspire.rjw.lan> <2205807.cU2puvubpP@aspire.rjw.lan>
+ <1726374.375PCQfjLZ@aspire.rjw.lan> <CAPDyKFrmP15+_hyRp44Jw-wsTmsNFKORdCeGJEgW8o0OoKiHhA@mail.gmail.com>
+ <CAJZ5v0hk1wfm10fyycmddKF6wR4D51r30fD_-J5UDMbtB3+V-Q@mail.gmail.com>
+ <20180808105619.GB25150@e107981-ln.cambridge.arm.com> <20180808180248.GC27850@codeaurora.org>
+ <20180809102504.GB13428@e107981-ln.cambridge.arm.com> <20180810201815.GE5081@codeaurora.org>
+ <20180815104449.GA29108@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFp=AuqEPHKYgi-+DAhejQZSHixmtLORj_Rkn3m8fUoqJw@mail.gmail.com>
+In-Reply-To: <20180815104449.GA29108@red-moon>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisb>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: Lina Iyer <ilina@codeaurora.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 24, 2018 at 11:26:19AM +0200, Ulf Hansson wrote:
+Lorenzo, Sudeep, Mark
 
-[...]
+On 15 August 2018 at 12:44, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> On Fri, Aug 10, 2018 at 02:18:15PM -0600, Lina Iyer wrote:
+>
+> [...]
+>
+>> >>But, the OSI feature is critical for QCOM mobile platforms. The
+>> >>last man activities during cpuidle save quite a lot of power.
+>> >
+>> >What I expressed above was that, in PSCI based systems (OSI or PC
+>> >alike), it is up to firmware/hardware to detect "the last man" not
+>> >the kernel.
+>> >
+>> >I need to understand what you mean by "last man activities" to
+>> >provide feedback here.
+>> >
+>> When the last CPU goes down during deep sleep, the following would be
+>> done
+>> - Lower resource requirements for shared resources such as clocks,
+>>  busses and regulators that were used by drivers in AP. These shared
+>>  resources when not used by other processors in the SoC may be turned
+>>  off and put in low power state by a remote processor. [1][2]
+>> - Enable and setup wakeup capable interrupts on an always-on interrupt
+>>  controller, so the GIC and the GPIO controllers may be put in low
+>>  power state. [3][4]
+>> - Write next known wakeup value to the timer, so the blocks that were
+>>  powered off, may be brought back into operational before the wakeup.
+>>  [4][5]
+>>
+>> These are commonly done during suspend, but to achieve a good power
+>> efficiency, we have to do this when all the CPUs are just executing CPU
+>> idle. Also, they cannot be done from the firmware (because the data
+>> required for all this is part of Linux). OSI plays a crucial role in
+>> determining when to do all this.
+>
+> No it does not. It is the power domain cpumasks that allow this code to
+> make an educated guess on the last cpu running (the kernel), PSCI OSI is
+> not crucial at all (it is crucial in QC platforms because that's the
+> only mode supported but that's not a reason I accept as valid since it
+> does not comply with the PSCI specifications).
 
-> > That's a good question and it maybe gives a path towards a solution.
-> >
-> > AFAICS the genPD governor only selects the idle state parameter that
-> > determines the idle state at, say, GenPD cpumask level it does not touch
-> > the CPUidle decision, that works on a subset of idle states (at cpu
-> > level).
-> >
-> > That's my understanding, which can be wrong so please correct me
-> > if that's the case because that's a bit confusing.
-> >
-> > Let's imagine that we flattened out the list of idle states and feed
-> > CPUidle with it (all of them - cpu, cluster, package, system - as it is
-> > in the mainline _now_). Then the GenPD governor can run-through the
-> > CPUidle selection and _demote_ the idle state if necessary since it
-> > understands that some CPUs in the GenPD will wake up shortly and break
-> > the target residency hyphothesis the CPUidle governor is expecting.
-> >
-> > The whole idea about this series is improving CPUidle decision when
-> > the target idle state is _shared_ among groups of cpus (again, please
-> > do correct me if I am wrong).
-> 
-> Absolutely, this is one of the main reason for the series!
-> 
-> >
-> > It is obvious that a GenPD governor must only demote - never promote a
-> > CPU idle state selection given that hierarchy implies more power
-> > savings and higher target residencies required.
-> 
-> Absolutely. I apologize if I have been using the word "promote"
-> wrongly, I realize it may be a bit confusing.
-> 
-> >
-> > This whole series would become more generic and won't depend on
-> > PSCI OSI at all - actually that would become a hierarchical
-> > CPUidle governor.
-> 
-> Well, to me we need a first user of the new infrastructure code in
-> genpd and PSCI is probably the easiest one to start with. An option
-> would be to start with an old ARM32 platform, but it seems a bit silly
-> to me.
+We can keep argue on this back and forward, but it seems to lead
+nowhere. As a matter of fact I am also surprised that this kind of
+discussion pops up, again. I thought we had sorted this out,
+especially since we have also met face to face, discussing this in
+detail, several times by now. Well, well, let's try again. :-)
 
-If the code can be structured as described above as a hierarchical
-(possibly optional through a Kconfig entry or sysfs tuning) idle
-decision you can apply it to _any_ PSCI based platform out there,
-provided that the new governor improves power savings.
+First, in regards to complying with the PSCI spec, to me, that sounds
+like nonsense, sorry! Is the spec stating that the PSCI FW needs to
+support all the idle states in PC mode, when the optional OSI mode
+also is supported? To me, it looks like the QCOM PSCI FW supports PC
+mode, but in that mode only a subset of the idle states can be
+reached, so that should be fine, no?
 
-> In regards to OS-initiated mode vs platform coordinated mode, let's
-> discuss that in details in the other email thread instead.
+Moving forward, I am wondering if a more detailed technical
+description, comparing the benefits from OSI mode vs the benefits from
+PC mode could help? Or is just a waste of everybody time, as you all
+already know this? Anyway I am willing to try, just tell me and I
+provide you with the best details I can give, about why OSI is better
+suited for these kind of QCOM SoCs. I trust Lina to help to fill in,
+if/when needed.
 
-I think that's crystal clear by now that IMHO PSCI OS-initiated mode is
-a red-herring, it has nothing to do with this series, it is there just
-because QC firmware does not support PSCI platform coordinated suspend
-mode.
+Why? Simply because I doubt we ever see the QCOM FW for the battery
+driven embedded devices to support all idles states in the PC mode, so
+doing a comparison on for example the 410c platform, just doesn't
+seems to be possible, sorry!
 
-You can apply the concept in this series to _any_ arch provided
-the power domains representation is correct (and again, I would sound
-like a broken record but the series must improve power savings over
-vanilla CPUidle menu governor).
+I also have another, quite important, concern. That is, ARM decided to
+put the OSI mode into the PSCI spec, I assume there were reasons for
+it. Then, when the ARM community wants to implement support for OSI
+mode, you are now requiring us to proof the justification of it in the
+spec. To me, that is, nicely stated, weird. :-) But it also worries
+me, ARM vendors observes the behavior.
 
-> > I still think that PSCI firmware and most certainly mwait() play the
-> > role the GenPD governor does since they can detect in FW/HW whether
-> > that's worthwhile to switch off a domain, the information is obviously
-> > there and the kernel would just add latency to the idle path in that
-> > case but let's gloss over this for the sake of this discussion.
-> 
-> Yep, let's discuss that separately.
-> 
-> That said, can I interpret your comments on the series up until this
-> change, that you seems rather happy with where the series is going?
+That said, in the end we are discussing a quite limited amount of
+lines of code to support PSCI OSI (some which may not even be
+considered as OSI specific). It's ~200 lines of code, where most of
+the code lives in a separate new c-file (psci_pm_domain.c).
+Additionally, existing PC mode only platforms should still work as
+before, without drawbacks.
 
-It is something we have been discussing with Daniel since generic idle
-was merged for Arm a long while back. I have nothing against describing
-idle states with power domains but it must improve idle decisions
-against the mainline. As I said before, runtime PM can also be used
-to get rid of CPU PM notifiers (because with power domains we KNOW
-what devices eg PMU are switched off on idle entry, we do not guess
-any longer; replacing CPU PM notifiers is challenging and can be
-tackled - if required - in a different series).
+Really, why are we arguing about this at all?
 
-Bottom line (talk is cheap, I know and apologise about that): this
-series (up until this change) adds complexity to the idle path and lots
-of code; if its usage is made optional and can be switched on on systems
-where it saves power that's fine by me as long as we keep PSCI
-OS-initiated idle states out of the equation, that's an orthogonal
-discussion as, I hope, I managed to convey.
+>
+> As I mentioned in another thread[1] the generic part of this
+> series may be applicable in a platform agnostic way to the
+> CPUidle framework, whether that's beneficial it has to be proven
+> and it is benchmark specific anyway.
 
-Thanks,
-Lorenzo
+I don't think this can be made fully platform agnostic. Or maybe you
+are suggesting another helper layer above the new genpd
+infrastructure?
+
+Anyway, my point is, the genpd backend driver requires knowledge about
+the FW and the last man standing algorithm, hence a platform agnostic
+backend doesn't sound feasible to me.
+
+>
+> Lorenzo
+>
+> [1]: https://marc.info/?l=linux-pm&m=153382916513032&w=2
+
+Kind regards
+Uffe
