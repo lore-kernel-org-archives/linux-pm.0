@@ -1,65 +1,53 @@
-From: Jassi Brar <jassisinghbrar@gmail.com>
-Subject: Re: [PATCH V5 1/5] dt-bindings: arm: fsl: add scu binding doc
-Date: Fri, 24 Aug 2018 15:06:58 +0530
-Message-ID: <CABb+yY1+J+=nV2gNN30KLr2YQDy_g81-dJS1DJq8NgUv7Qqcog@mail.gmail.com>
-References: <1534781305-4770-1-git-send-email-aisheng.dong@nxp.com>
- <1534781305-4770-2-git-send-email-aisheng.dong@nxp.com>
- <20180820181155.GA13901@bogus>
- <AM0PR04MB4211B9113831B292110C709280310@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider
+ bindings
+Date: Fri, 24 Aug 2018 17:51:37 +0300
+Message-ID: <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
+References: <20180731161340.13000-1-georgi.djakov@linaro.org>
+ <20180731161340.13000-3-georgi.djakov@linaro.org>
+ <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
+ <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
+ <20180820153207.xx5outviph7ec76p@flea>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <AM0PR04MB4211B9113831B292110C709280310@AM0PR04MB4211.eurprd04.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "A.s. Dong" <aisheng.dong@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, ulf.hansson@linaro.org, Dong Aisheng <dongas86@gmail.com>, Devicetree List <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-gpio@vger.kernel.org, dl-linux-imx <linux-imx@nxp.com>, ", Sascha Hauer" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180820153207.xx5outviph7ec76p@flea>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@bootlin.com>
+Cc: Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.ke
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 21, 2018 at 8:30 AM A.s. Dong <aisheng.dong@nxp.com> wrote:
->
-> > > +
-> > > +The System Controller Firmware (SCFW) is a low-level system function
-> > > +which runs on a dedicated Cortex-M core to provide power, clock, and
-> > > +resource management. It exists on some i.MX8 processors. e.g. i.MX8QM
-> > > +(QM, QP), and i.MX8QX (QXP, DX).
-> > > +
-> > > +The AP communicates with the SC using a multi-ported MU module found
-> > > +in the LSIO subsystem. The current definition of this MU module
-> > > +provides
-> > > +5 remote AP connections to the SC to support up to 5 execution
-> > > +environments (TZ, HV, standard Linux, etc.). The SC side of this MU
-> > > +module interfaces with the LSIO DSC IP bus. The SC firmware will
-> > > +communicate with this MU using the MSI bus.
-> >
-> > How are 5 users supported with only 4 channels defined below?
->
-> There're 5 MU instances designed to be specifically communicate with
-> SCU Firmware on MX8 hardware.
->
-This is correct.
+Hi Maxime,
 
-> With the new generic mu binding [1], each MU instance is abstracted
-> Into 16 virtual MU channels. (4 Tx, 4 Rx, 4 Tx doorbell, 4 Rx doorbell).
-> (MU has 4 pair of Tx/Rx data register which can be used to send/receive
-> multi words. With new binding, each data register is abstracted into one
-> MU channel, totally 8 channels for data transfer).
->
-> SCU protocol is already designed to uses all data registers to send/receive
-> multi words according to MU hardware reference manual. So it must
-> use all channels in one MU instances with new binding.
->
-FYI, this is incorrect.
-The 16 channels are physical and not virtual. In fact, all this is to
-avoid virtual channels.
-The physical resources required by new bindings are exactly the same
-as by old bindings. Now you use 8 physical channels instead of 1
-virtual.
+On 08/20/2018 06:32 PM, Maxime Ripard wrote:
+> Hi Georgi,
+> 
+> On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
+>>> There is also a patch series from Maxime Ripard that's addressing the
+>>> same general area. See "dt-bindings: Add a dma-parent property". We
+>>> don't need multiple ways to address describing the device to memory
+>>> paths, so you all had better work out a common solution.
+>>
+>> Looks like this fits exactly into the interconnect API concept. I see
+>> MBUS as interconnect provider and display/camera as consumers, that
+>> report their bandwidth needs. I am also planning to add support for
+>> priority.
+> 
+> Thanks for working on this. After looking at your serie, the one thing
+> I'm a bit uncertain about (and the most important one to us) is how we
+> would be able to tell through which interconnect the DMA are done.
+> 
+> This is important to us since our topology is actually quite simple as
+> you've seen, but the RAM is not mapped on that bus and on the CPU's,
+> so we need to apply an offset to each buffer being DMA'd.
+
+Ok, i see - your problem is not about bandwidth scaling but about using
+different memory ranges by the driver to access the same location. So
+this is not really the same and your problem is different. Also the
+interconnect bindings are describing a path and endpoints. However i am
+open to any ideas.
+
+Thanks,
+Georgi
