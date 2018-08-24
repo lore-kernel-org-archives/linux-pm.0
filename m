@@ -1,64 +1,44 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider bindings
-Date: Fri, 24 Aug 2018 10:35:23 -0500
-Message-ID: <CAL_JsqKMPm=qmfYMQH99_gqSv0-ynUSvbkoNjjeDKtyxfgE1tg@mail.gmail.com>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-3-georgi.djakov@linaro.org> <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
- <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org> <20180820153207.xx5outviph7ec76p@flea>
- <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpuidle: menu: Retain tick when shallow state is selected
+Date: Fri, 24 Aug 2018 08:44:35 -0700
+Message-ID: <000701d43bc1$5e0c2c50$1a2484f0$@net>
+References: <34910476.pgRhNDWo5t@aspire.rjw.lan> t8fgfrW4IttF2t8fhf7XeN
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
+In-Reply-To: t8fgfrW4IttF2t8fhf7XeN
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, Evan Green <evgreen@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, moderated list:
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'LKML' <linux-kernel@vger.kernel.org>, 'Leo Yan' <leo.yan@linaro.org>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 24, 2018 at 9:51 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
->
-> Hi Maxime,
->
-> On 08/20/2018 06:32 PM, Maxime Ripard wrote:
-> > Hi Georgi,
-> >
-> > On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
-> >>> There is also a patch series from Maxime Ripard that's addressing the
-> >>> same general area. See "dt-bindings: Add a dma-parent property". We
-> >>> don't need multiple ways to address describing the device to memory
-> >>> paths, so you all had better work out a common solution.
-> >>
-> >> Looks like this fits exactly into the interconnect API concept. I see
-> >> MBUS as interconnect provider and display/camera as consumers, that
-> >> report their bandwidth needs. I am also planning to add support for
-> >> priority.
-> >
-> > Thanks for working on this. After looking at your serie, the one thing
-> > I'm a bit uncertain about (and the most important one to us) is how we
-> > would be able to tell through which interconnect the DMA are done.
-> >
-> > This is important to us since our topology is actually quite simple as
-> > you've seen, but the RAM is not mapped on that bus and on the CPU's,
-> > so we need to apply an offset to each buffer being DMA'd.
->
-> Ok, i see - your problem is not about bandwidth scaling but about using
-> different memory ranges by the driver to access the same location. So
-> this is not really the same and your problem is different. Also the
-> interconnect bindings are describing a path and endpoints. However i am
-> open to any ideas.
+On 2018.08.24 02:44 Rafael J. Wysocki wrote:
+> On Tuesday, August 21, 2018 10:44:10 AM CEST Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> 
+>> The case addressed by commit 5ef499cd571c (cpuidle: menu: Handle
+>> stopped tick more aggressively) in the stopped tick case is present
+>> when the tick has not been stopped yet too.
 
-It may be different things you need, but both are related to the path
-between a bus master and memory. We can't have each 'problem'
-described in a different way. Well, we could as long as each platform
-has different problems, but that's unlikely.
+... [snip] ...
 
-It could turn out that the only commonality is property naming
-convention, but that's still better than 2 independent solutions.
+>> Fixes: 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states with stopped tick)
 
-I know you each want to just fix your issues, but the fact that DT
-doesn't model the DMA side of the bus structure has been an issue at
-least since the start of DT on ARM. Either we should address this in a
-flexible way or we can just continue to manage without. So I'm not
-inclined to take something that only addresses one SoC family.
+... [snip] ...
 
-Rob
+> Due to the lack of objections, I'm inclined to queue this up.
+
+I have been following these threads.
+Recall that I was involved, over a period of months, in the original
+"powernightmare" stuff.
+I have revived my tests (and wish I had left myself better notes), and
+am establishing a baseline before adding and trying this patch.
+My baseline is actually two tests with and without the previous two patches (the ones
+that were just sent a couple of days ago in "More power management updates for v4.19-rc1".
+I might have those results in some presentable form by later today (it looks O.K.)
+Results with this patch will take another couple of days.
+
+... Doug
