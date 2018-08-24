@@ -1,211 +1,173 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Fri, 24 Aug 2018 10:29:39 +0200
-Message-ID: <CAPDyKFqOv9d=w80s2W_+wcKEtBWnBKQ3CqGaG2yGJt8_qRTu6g@mail.gmail.com>
+Date: Fri, 24 Aug 2018 11:26:19 +0200
+Message-ID: <CAPDyKFp=AuqEPHKYgi-+DAhejQZSHixmtLORj_Rkn3m8fUoqJw@mail.gmail.com>
 References: <20180620172226.15012-1-ulf.hansson@linaro.org>
  <20180620172226.15012-8-ulf.hansson@linaro.org> <3574880.GjmnMm1lMq@aspire.rjw.lan>
  <10360149.m4MlxDWZY5@aspire.rjw.lan> <CAPDyKFonHYSq32WxvB1x5PXissXZvraqazgU_ZyLR=tsyD9vAA@mail.gmail.com>
- <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
+ <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com> <20180809153925.GA20329@red-moon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
+In-Reply-To: <20180809153925.GA20329@red-moon>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisb>
 List-Id: linux-pm@vger.kernel.org
 
-On 6 August 2018 at 11:20, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Aug 3, 2018 at 4:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 26 July 2018 at 11:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Thursday, July 19, 2018 12:32:52 PM CEST Rafael J. Wysocki wrote:
->>>> On Wednesday, June 20, 2018 7:22:07 PM CEST Ulf Hansson wrote:
->>>> > As it's now perfectly possible that a PM domain managed by genpd contains
->>>> > devices belonging to CPUs, we should start to take into account the
->>>> > residency values for the idle states during the state selection process.
->>>> > The residency value specifies the minimum duration of time, the CPU or a
->>>> > group of CPUs, needs to spend in an idle state to not waste energy entering
->>>> > it.
->>>> >
->>>> > To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
->>>> > may be used for a PM domain that have CPU devices attached or if the CPUs
->>>> > are attached through subdomains.
->>>> >
->>>> > The new governor computes the minimum expected idle duration time for the
->>>> > online CPUs being attached to the PM domain and its subdomains. Then in the
->>>> > state selection process, trying the deepest state first, it verifies that
->>>> > the idle duration time satisfies the state's residency value.
->>>> >
->>>> > It should be noted that, when computing the minimum expected idle duration
->>>> > time, we use the information from tick_nohz_get_next_wakeup(), to find the
->>>> > next wakeup for the related CPUs. Future wise, this may deserve to be
->>>> > improved, as there are more reasons to why a CPU may be woken up from idle.
->>>> >
->>>> > Cc: Thomas Gleixner <tglx@linutronix.de>
->>>> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>>> > Cc: Lina Iyer <ilina@codeaurora.org>
->>>> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
->>>> > Cc: Ingo Molnar <mingo@kernel.org>
->>>> > Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->>>> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>> > ---
->>>> >  drivers/base/power/domain_governor.c | 58 ++++++++++++++++++++++++++++
->>>> >  include/linux/pm_domain.h            |  2 +
->>>> >  2 files changed, 60 insertions(+)
->>>> >
->>>> > diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
->>>> > index 99896fbf18e4..1aad55719537 100644
->>>> > --- a/drivers/base/power/domain_governor.c
->>>> > +++ b/drivers/base/power/domain_governor.c
->>>> > @@ -10,6 +10,9 @@
->>>> >  #include <linux/pm_domain.h>
->>>> >  #include <linux/pm_qos.h>
->>>> >  #include <linux/hrtimer.h>
->>>> > +#include <linux/cpumask.h>
->>>> > +#include <linux/ktime.h>
->>>> > +#include <linux/tick.h>
->>>> >
->>>> >  static int dev_update_qos_constraint(struct device *dev, void *data)
->>>> >  {
->>>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
->>>> >     return false;
->>>> >  }
->>>> >
->>>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
->>>> > +{
->>>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
->>>> > +   ktime_t domain_wakeup, cpu_wakeup;
->>>> > +   s64 idle_duration_ns;
->>>> > +   int cpu, i;
->>>> > +
->>>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
->>>> > +           return true;
->>>> > +
->>>> > +   /*
->>>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
->>>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
->>>> > +    * contains a mask of all CPUs from subdomains.
->>>> > +    */
->>>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
->>>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
->>>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
->>>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
->>>> > +                   domain_wakeup = cpu_wakeup;
->>>> > +   }
->>>
->>> Here's a concern I have missed before. :-/
->>>
->>> Say, one of the CPUs you're walking here is woken up in the meantime.
+On 9 August 2018 at 17:39, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+> On Mon, Aug 06, 2018 at 11:20:59AM +0200, Rafael J. Wysocki wrote:
+>
+> [...]
+>
+>> >>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+>> >>> >     return false;
+>> >>> >  }
+>> >>> >
+>> >>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+>> >>> > +{
+>> >>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
+>> >>> > +   ktime_t domain_wakeup, cpu_wakeup;
+>> >>> > +   s64 idle_duration_ns;
+>> >>> > +   int cpu, i;
+>> >>> > +
+>> >>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
+>> >>> > +           return true;
+>> >>> > +
+>> >>> > +   /*
+>> >>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
+>> >>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
+>> >>> > +    * contains a mask of all CPUs from subdomains.
+>> >>> > +    */
+>> >>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+>> >>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+>> >>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
+>> >>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
+>> >>> > +                   domain_wakeup = cpu_wakeup;
+>> >>> > +   }
+>> >>
+>> >> Here's a concern I have missed before. :-/
+>> >>
+>> >> Say, one of the CPUs you're walking here is woken up in the meantime.
+>> >
+>> > Yes, that can happen - when we miss-predicted "next wakeup".
+>> >
+>> >>
+>> >> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
+>> >> to update domain_wakeup.  We really should just avoid the domain power off in
+>> >> that case at all IMO.
+>> >
+>> > Correct.
+>> >
+>> > However, we also want to avoid locking contentions in the idle path,
+>> > which is what this boils done to.
 >>
->> Yes, that can happen - when we miss-predicted "next wakeup".
+>> This already is done under genpd_lock() AFAICS, so I'm not quite sure
+>> what exactly you mean.
 >>
->>>
->>> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
->>> to update domain_wakeup.  We really should just avoid the domain power off in
->>> that case at all IMO.
+>> Besides, this is not just about increased latency, which is a concern
+>> by itself but maybe not so much in all environments, but also about
+>> possibility of missing a CPU wakeup, which is a major issue.
 >>
->> Correct.
+>> If one of the CPUs sharing the domain with the current one is woken up
+>> during cpu_power_down_ok() and the wakeup is an edge-triggered
+>> interrupt and the domain is turned off regardless, the wakeup may be
+>> missed entirely if I'm not mistaken.
 >>
->> However, we also want to avoid locking contentions in the idle path,
->> which is what this boils done to.
->
-> This already is done under genpd_lock() AFAICS, so I'm not quite sure
-> what exactly you mean.
->
-> Besides, this is not just about increased latency, which is a concern
-> by itself but maybe not so much in all environments, but also about
-> possibility of missing a CPU wakeup, which is a major issue.
->
-> If one of the CPUs sharing the domain with the current one is woken up
-> during cpu_power_down_ok() and the wakeup is an edge-triggered
-> interrupt and the domain is turned off regardless, the wakeup may be
-> missed entirely if I'm not mistaken.
->
-> It looks like there needs to be a way for the hardware to prevent a
-> domain poweroff when there's a pending interrupt or I don't quite see
-> how this can be handled correctly.
-
-Well, the job of genpd and its new cpu governor is not directly to
-power off the PM domain, but rather to try to select/promote an idle
-state for it. Along the lines of what Lorenzo explained in the other
-thread.
-
-Then what happens in the genpd backend driver's ->power_off()
-callback, is platform specific. In other words, it's the job of the
-backend driver to understand how its FW works and thus to correctly
-deal with the last man standing algorithm.
-
-In regards to the PSCI FW, it supports the race condition you are
-referring to in the FW (which makes it easier), no matter if it's
-running in OS-initiated mode or platform-coordinated mode.
-
->
->>> Sure enough, if the domain power off is already started and one of the CPUs
->>> in the domain is woken up then, too bad, it will suffer the latency (but in
->>> that case the hardware should be able to help somewhat), but otherwise CPU
->>> wakeup should prevent domain power off from being carried out.
+>> It looks like there needs to be a way for the hardware to prevent a
+>> domain poweroff when there's a pending interrupt or I don't quite see
+>> how this can be handled correctly.
 >>
->> The CPU is not prevented from waking up, as we rely on the FW to deal with that.
+>> >> Sure enough, if the domain power off is already started and one of the CPUs
+>> >> in the domain is woken up then, too bad, it will suffer the latency (but in
+>> >> that case the hardware should be able to help somewhat), but otherwise CPU
+>> >> wakeup should prevent domain power off from being carried out.
+>> >
+>> > The CPU is not prevented from waking up, as we rely on the FW to deal with that.
+>> >
+>> > Even if the above computation turns out to wrongly suggest that the
+>> > cluster can be powered off, the FW shall together with the genpd
+>> > backend driver prevent it.
 >>
->> Even if the above computation turns out to wrongly suggest that the
->> cluster can be powered off, the FW shall together with the genpd
->> backend driver prevent it.
+>> Fine, but then the solution depends on specific FW/HW behavior, so I'm
+>> not sure how generic it really is.  At least, that expectation should
+>> be clearly documented somewhere, preferably in code comments.
+>>
+>> > To cover this case for PSCI, we also use a per cpu variable for the
+>> > CPU's power off state, as can be seen later in the series.
+>>
+>> Oh great, but the generic part should be independent on the underlying
+>> implementation of the driver.  If it isn't, then it also is not
+>> generic.
+>>
+>> > Hope this clarifies your concern, else tell and will to elaborate a bit more.
+>>
+>> Not really.
+>>
+>> There also is one more problem and that is the interaction between
+>> this code and the idle governor.
+>>
+>> Namely, the idle governor may select a shallower state for some
+>> reason, for example due to an additional latency limit derived from
+>> CPU utilization (like in the menu governor), and how does the code in
+>> cpu_power_down_ok() know what state has been selected and how does it
+>> honor the selection made by the idle governor?
 >
-> Fine, but then the solution depends on specific FW/HW behavior, so I'm
-> not sure how generic it really is.  At least, that expectation should
-> be clearly documented somewhere, preferably in code comments.
+> That's a good question and it maybe gives a path towards a solution.
+>
+> AFAICS the genPD governor only selects the idle state parameter that
+> determines the idle state at, say, GenPD cpumask level it does not touch
+> the CPUidle decision, that works on a subset of idle states (at cpu
+> level).
+>
+> That's my understanding, which can be wrong so please correct me
+> if that's the case because that's a bit confusing.
+>
+> Let's imagine that we flattened out the list of idle states and feed
+> CPUidle with it (all of them - cpu, cluster, package, system - as it is
+> in the mainline _now_). Then the GenPD governor can run-through the
+> CPUidle selection and _demote_ the idle state if necessary since it
+> understands that some CPUs in the GenPD will wake up shortly and break
+> the target residency hyphothesis the CPUidle governor is expecting.
+>
+> The whole idea about this series is improving CPUidle decision when
+> the target idle state is _shared_ among groups of cpus (again, please
+> do correct me if I am wrong).
 
-Alright, let me add some comments somewhere in the code, to explain a
-bit about what a genpd backend driver should expect when using the
-GENPD_FLAG_CPU_DOMAIN flag.
+Absolutely, this is one of the main reason for the series!
 
 >
->> To cover this case for PSCI, we also use a per cpu variable for the
->> CPU's power off state, as can be seen later in the series.
->
-> Oh great, but the generic part should be independent on the underlying
-> implementation of the driver.  If it isn't, then it also is not
-> generic.
->
->> Hope this clarifies your concern, else tell and will to elaborate a bit more.
->
-> Not really.
->
-> There also is one more problem and that is the interaction between
-> this code and the idle governor.
->
-> Namely, the idle governor may select a shallower state for some
-> reason, for example due to an additional latency limit derived from
-> CPU utilization (like in the menu governor), and how does the code in
-> cpu_power_down_ok() know what state has been selected and how does it
-> honor the selection made by the idle governor?
+> It is obvious that a GenPD governor must only demote - never promote a
+> CPU idle state selection given that hierarchy implies more power
+> savings and higher target residencies required.
 
-This is indeed a valid concern. I must have failed to explained this
-during various conferences, but at least I have tried. :-)
+Absolutely. I apologize if I have been using the word "promote"
+wrongly, I realize it may be a bit confusing.
 
-Ideally, we need the menu idle governor and genpd's new cpu governor
-to share code or exchange information, somehow. I am looking into that
-as a next step of improvements, count on it!
+>
+> This whole series would become more generic and won't depend on
+> PSCI OSI at all - actually that would become a hierarchical
+> CPUidle governor.
 
-The idea at this point was instead to take a simplified approach to
-the problem, to at least get some support for cpu cluster idle
-management in place, then improve it on top.
+Well, to me we need a first user of the new infrastructure code in
+genpd and PSCI is probably the easiest one to start with. An option
+would be to start with an old ARM32 platform, but it seems a bit silly
+to me.
 
-This means, for PSCI, we are using the new genpd cpu governor *only*
-for the cluster PM domain (master), but not for the genpd subdomains,
-which each contains of a single CPU device. So, the subdomains don't
-have a genpd governor assigned, but instead rely on the existing menu
-idle governor to select an idle state for the CPU. This means that
-*most* of the problem disappears, as its only when the last CPU in the
-cluster goes idle, when the selection could be "wrong". In worst case,
-genpd will promote an idle state for the cluster PM domain, while it
-shouldn't.
+In regards to OS-initiated mode vs platform coordinated mode, let's
+discuss that in details in the other email thread instead.
 
-Moreover, for the QCOM case in 410c, this isn't even a potential
-problem, because there is only *one* idle state to pick by the menu
-idle governor for the CPU (besides WFI). Hence, when the genpd cpu
-governor runs to pick and idle state, we know that the menu idle
-governor have already selected the deepest idle state for each CPU.
+>
+> I still think that PSCI firmware and most certainly mwait() play the
+> role the GenPD governor does since they can detect in FW/HW whether
+> that's worthwhile to switch off a domain, the information is obviously
+> there and the kernel would just add latency to the idle path in that
+> case but let's gloss over this for the sake of this discussion.
+
+Yep, let's discuss that separately.
+
+That said, can I interpret your comments on the series up until this
+change, that you seems rather happy with where the series is going?
 
 Kind regards
 Uffe
