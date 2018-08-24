@@ -1,102 +1,82 @@
-From: Emmanuel Vadot <manu@bidouilliste.com>
-Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
- Allwinner Thermal Sensor Controller
-Date: Fri, 24 Aug 2018 21:59:21 +0200
-Message-ID: <20180824215921.59d060b54eb3a1e7d1552bde@bidouilliste.com>
-References: <20180804070355.14857-1-manu@freebsd.org>
-        <20180820111755.rzg7l2lznmbpuf2e@flea>
-        <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
-        <20180820140737.xmqhu5ndqzehvkql@flea>
-        <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
-        <20180824145840.isdcg3fr6mw4ntzg@flea>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Subject: [PATCH RFC 0/6] drivers: qcom: enable system low power modes for SDM845
+Date: Sat, 25 Aug 2018 01:36:22 +0530
+Message-ID: <1535141188-29731-1-git-send-email-rplsssn@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180824145840.isdcg3fr6mw4ntzg@flea>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
+To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, lorenzo.pieralisi@arm.com, rafael@kernel.org, drake@endlessm.com, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
- Hi,
+This is an attempt at a solution to perform activities necessary while entering
+deeper low power modes supported by firmware for QCOM SoCs which have hardened
+IP (Resource Power Manager Hardened - RPMH) for shared resource management.
 
-On Fri, 24 Aug 2018 16:58:40 +0200
-Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+The shared resources that are no longer used, when processor enters deep idle
+states, can be turned off or put to lower state via sleep requests. Clients vote
+for lower resource state when application processor is asleep. These votes need
+to be flushed only during entry to low power modes.
 
-> Hi,
-> 
-> On Mon, Aug 20, 2018 at 04:27:15PM +0200, Emmanuel Vadot wrote:
-> > On Mon, 20 Aug 2018 16:07:37 +0200
-> > Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > 
-> > > On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
-> > > > On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > > > >
-> > > > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
-> > > > > > This patch adds documentation for Device-Tree bindings for the Allwinner
-> > > > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
-> > > > > >
-> > > > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
-> > > > >
-> > > > > I'm not going to merge a binding for a device that doesn't have any
-> > > > > driver implemented at the moment in Linux.
-> > > > 
-> > > > I'll take it then. Linux is not the only DT client.
-> > > 
-> > > Then don't complain if we ever have to break the ABI. We never tested
-> > > that hardware, never had any code running on it, and it *will* cause
-> > > some issues. For example, the calibration data have never been used
-> > > and how they should be represented have never been described, since no
-> > > one ever actually tried to use it.
-> > > 
-> > > And sure, Linux is not the only DT client. Just like FreeBSD isn't.
-> > 
-> >  What kind of data would you need for me to make things better ?
-> >  We have the driver in FreeBSD for almost two years now, whne I started
-> > to see how to upstream it I noticed a lot of problems and spent 4 or 5
-> > days to try on all the SoCs mentionned in the serie, the only SoC I
-> > didn't include it the A83T as for some reason I couldn't make the
-> > driver work.
-> 
-> Do you have a link to that driver? 
+In addition to this, an always-on power domain wake-up timer present in PDC
+(Power Domain Controller)  needs to be programmed so that RSC is up and running
+by the time CPU has to wake-up. 
 
- https://github.com/freebsd/freebsd/blob/master/sys/arm/allwinner/aw_thermal.c
+The kernel does not notify that the CPU powering down is the last CPU.
+Therefore, in this series, we are doing a reference count to determine the last
+CPU in the system to enter idle and use that to perform the last-man activities.
+It would be optimal to do this than to flush whenever a core enters idle. The
+current approach can be revisited in future if OS-initiated support becomes
+available that enables certain actions to be taken when last core enters deepest
+low power mode.
 
-> How and how much did you test it?
+Apart from idle sleep, the deeper low modes can be exercised in system suspend.
+As it is expected that all other cores except the core entering system suspend
+will be disabled during suspend operations, the device suspend calls are
+utilized to perform the required tasks.
 
- Using a cheap IR thermometer as it's all I can afford.
- Then running multiples cpufreq-a53 process and comparing the result.
- Did the same without using the calibration data, result where closer
-when I used them.
+Please review these patches. Your inputs would be greatly appreciated.
 
-> Are you using the calibration data stored in the SID?
+Thanks,
+Raju
 
- Yes, which is why the serie contain the nvmem cell for the SID.
+Dependencies:
 
-> 
-> > I just hope that you understand that we cannot wait for Linux to
-> > have a driver to have some bindings.
-> 
-> Just like I'm sure you can understand that just merging the DT bits
-> without testing anything caused some troubles in the past, and I don't
-> want to discover it in a year from now.
+The current series depends on patches[1][2], which add RPMH communication
+support, to send shared resource request votes by clients. The patches[1][2]
+also provide functions that are expected to be called by sleep manager client
+during low power mode entry. The other patches[3][4][5] which fix couple of
+issues are also needed. Apart from RPMH related patches, the current series
+depends on knowing the next wake up timer of a CPU[6] for programing the
+always-on timer present in PDC.
 
- I do, I don't like wrong DT info as much as you do I think. I had
-the unfortunate event to find that the sun4i-a10-timer compatible used
-in every soc is plain wrong for !A10 and !A13, patches comming soon.
- I want those bits merged but I also want that they reflect reality,
-this is not a hard driver to do, NetBSD also have one I think, maybe
-OpenBSD do to.
+[1]. https://lkml.org/lkml/2018/6/20/519
+[2]. https://lkml.org/lkml/2018/7/27/326
+[3]. https://lkml.org/lkml/2018/7/13/358 
+[4]. https://lkml.org/lkml/2018/7/19/84
+[5]. https://lkml.org/lkml/2018/8/24/641
+[6]. https://lkml.org/lkml/2018/6/20/800
 
-> Maxime
-> 
-> -- 
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
+Raju P.L.S.S.S.N (6):
+  drivers: qcom: system_pm: add system PM client for RPMH based SoCs
+  dt-bindings: introduce System PM bindings for Qualcomm SoCs
+  drivers: qcom: system_pm: Add power management ops
+  drivers: qcom: system_pm: program next wakeup to PDC timer
+  drivers: qcom: rpmh: force flush new sleep/wake requests during
+    suspend
+  drivers: soc: system_pm: Add suspend notifier
 
+ .../devicetree/bindings/soc/qcom/system_pm.txt     |  28 ++++
+ drivers/soc/qcom/Kconfig                           |  11 ++
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/rpmh-internal.h                   |   1 +
+ drivers/soc/qcom/rpmh.c                            |  17 +++
+ drivers/soc/qcom/system_pm.c                       | 168 +++++++++++++++++++++
+ include/soc/qcom/rpmh.h                            |   5 +
+ 7 files changed, 231 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/qcom/system_pm.txt
+ create mode 100644 drivers/soc/qcom/system_pm.c
 
 -- 
-Emmanuel Vadot <manu@bidouilliste.com> <manu@freebsd.org>
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum, hosted by The Linux Foundation.
