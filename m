@@ -1,82 +1,114 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Rewriting Intel PCI bridge prefetch base address bits
- solves nvidia graphics issues
-Date: Fri, 24 Aug 2018 11:31:54 +0800
-Message-ID: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v8 04/26] PM / Domains: Add support for CPU devices to genpd
+Date: Fri, 24 Aug 2018 08:47:21 +0200
+Message-ID: <CAPDyKFpatx81aMrbDtaeNPH=FXBYPCHsog3i=a0VN5=Q8if0=Q@mail.gmail.com>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <20180620172226.15012-5-ulf.hansson@linaro.org> <1678369.6pMUSOvdlV@aspire.rjw.lan>
+ <CAPDyKFq=m7ad66SwiOr+4ab=e7PNiXrXJ6c8G0ZTPOdO1RQ_6g@mail.gmail.com> <CAJZ5v0jah=aiYoV_b_p=-x+puO0sxeGRBCtJnQAD8xb8p1QGfg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jah=aiYoV_b_p=-x+puO0sxeGRBCtJnQAD8xb8p1QGfg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpXZSBhcmUgZmFjaW5nIGEgc3VzcGVuZC9yZXN1bWUgcHJvYmxlbSB3aXRoIG1hbnkgZGlm
-ZmVyZW50IEFzdXMgbGFwdG9wCm1vZGVscyAoMzArIHByb2R1Y3RzKSB3aXRoIEludGVsIGNoaXBz
-ZXRzIChtdWx0aXBsZSBnZW5lcmF0aW9ucykgYW5kCm52aWRpYSBHUFVzIChzZXZlcmFsIGRpZmZl
-cmVudCBvbmVzKS4gUmVwcm9kdWNlcnMgaW5jbHVkZToKCjEuIEJvb3QKMi4gU3VzcGVuZC9yZXN1
-bWUKMy4gTG9hZCBub3V2ZWF1IGRyaXZlcgo0LiBTdGFydCBYCjUuIE9ic2VydmUgc2xvdyBYIHN0
-YXJ0dXAgYW5kIG1hbnkgbWFueSBlcnJvcnMgaW4gbG9ncyAocHJpbWFyaWx5Cm5vdXZlYXUgZmlm
-byBmYXVsdHMpCgpvcgoKMS4gQm9vdAoyLiBMb2FkIG5vdXZlYXUgZHJpdmVyCjMuIFN0YXJ0IFgK
-NC4gUnVuIGdseGdlYXJzIC0gb2JzZXJ2ZSBzcGlubmluZyBnZWFycwo0LiBTdXNwZW5kL3Jlc3Vt
-ZQo1LiBSdW4gZ2x4Z2VhcnMgLSBvYnNlcnZlIHRoYXQgb3V0cHV0IGlzIGFsbCBibGFjawoKb3IK
-CjEuIEJvb3QKMi4gTG9hZCBwcm9wcmlldGFyeSBudmlkaWEgZHJpdmVyCjMuIFN0YXJ0IFgKNC4g
-U3VzcGVuZC9yZXN1bWUKNS4gT2JzZXJ2ZSBzY3JlZW4gYWxsIGJsYWNrLCBYb3JnIHVzaW5nIDEw
-MCUgQ1BVCgpTbywgc3VzcGVuZC9yZXN1bWUgYmFzaWNhbGx5IGtpbGxzIHRoZSBudmlkaWEgY2Fy
-ZCBpbiBzb21lIHdheS4KCkFmdGVyIGEgbG90IG9mIGV4cGVyaW1lbnRhdGlvbiBJIGZvdW5kIGEg
-d29ya2Fyb3VuZDogZHVyaW5nIHJlc3VtZSwKc2V0IHRoZSB2YWx1ZSBvZiBQQ0lfUFJFRl9CQVNF
-X1VQUEVSMzIgdG8gMCBvbiB0aGUgcGFyZW50IFBDSSBicmlkZ2UuCkVhc2lseSBkb25lIGluIGRy
-aXZlcnMvcGNpL3F1aXJrcy5jLiBOb3cgYWxsIG52aWRpYSBzdHVmZiB3b3JrcyBmaW5lLgoKQXMg
-YW4gZXhhbXBsZSBvZiBhbiBhZmZlY3RlZCBwcm9kdWN0LCB0YWtlIHRoZSBBc3VzIFg1NDJVUSAo
-SW50ZWwKS2FieUxha2UgaTctNzUwMFUgd2l0aCBOdmlkaWEgR2VGb3JjZSA5NDBNWCkuIFRoZSBQ
-Q0kgYnJpZGdlIGlzOgoKMDA6MWMuMCBQQ0kgYnJpZGdlIFswNjA0XTogSW50ZWwgQ29ycG9yYXRp
-b24gU3VucmlzZSBQb2ludC1MUCBQQ0kKRXhwcmVzcyBSb290IFBvcnQgWzgwODY6OWQxMF0gKHJl
-diBmMSkgKHByb2ctaWYgMDAgW05vcm1hbCBkZWNvZGVdKQogICAgRmxhZ3M6IGJ1cyBtYXN0ZXIs
-IGZhc3QgZGV2c2VsLCBsYXRlbmN5IDAsIElSUSAxMjAKICAgIEJ1czogcHJpbWFyeT0wMCwgc2Vj
-b25kYXJ5PTAxLCBzdWJvcmRpbmF0ZT0wMSwgc2VjLWxhdGVuY3k9MAogICAgSS9PIGJlaGluZCBi
-cmlkZ2U6IDAwMDBlMDAwLTAwMDBlZmZmCiAgICBNZW1vcnkgYmVoaW5kIGJyaWRnZTogZWUwMDAw
-MDAtZWYwZmZmZmYKICAgIFByZWZldGNoYWJsZSBtZW1vcnkgYmVoaW5kIGJyaWRnZTogMDAwMDAw
-MDBkMDAwMDAwMC0wMDAwMDAwMGUxZmZmZmZmCiAgICBDYXBhYmlsaXRpZXM6IFs0MF0gRXhwcmVz
-cyBSb290IFBvcnQgKFNsb3QrKSwgTVNJIDAwCiAgICBDYXBhYmlsaXRpZXM6IFs4MF0gTVNJOiBF
-bmFibGUrIENvdW50PTEvMSBNYXNrYWJsZS0gNjRiaXQtCiAgICBDYXBhYmlsaXRpZXM6IFs5MF0g
-U3Vic3lzdGVtOiBBU1VTVGVLIENvbXB1dGVyIEluYy4gU3VucmlzZQpQb2ludC1MUCBQQ0kgRXhw
-cmVzcyBSb290IFBvcnQgWzEwNDM6MWEwMF0KICAgIENhcGFiaWxpdGllczogW2EwXSBQb3dlciBN
-YW5hZ2VtZW50IHZlcnNpb24gMwogICAgQ2FwYWJpbGl0aWVzOiBbMTAwXSBBZHZhbmNlZCBFcnJv
-ciBSZXBvcnRpbmcKICAgIENhcGFiaWxpdGllczogWzE0MF0gQWNjZXNzIENvbnRyb2wgU2Vydmlj
-ZXMKICAgIENhcGFiaWxpdGllczogWzIwMF0gTDEgUE0gU3Vic3RhdGVzCiAgICBDYXBhYmlsaXRp
-ZXM6IFsyMjBdICMxOQogICAgS2VybmVsIGRyaXZlciBpbiB1c2U6IHBjaWVwb3J0CgpUaGUgcmVh
-bGx5IHdlaXJkIHRoaW5nIGhlcmUgaXMgdGhhdCB0aGUgd29ya2Fyb3VuZCByZWdpc3RlcgpQQ0lf
-UFJFRl9CQVNFX1VQUEVSMzIgYWxyZWFkeSBhcHBlYXJzIHRvIGhhdmUgdmFsdWUgMCwgYXMgc2hv
-d24gYWJvdmUKYW5kIGFsc28gdmVyaWZpZWQgZHVyaW5nIHJlc3VtZS4gQnV0IHNpbXBseSB3cml0
-aW5nIHZhbHVlIDAgYWdhaW4KZGVmaW5pdGVseSByZXN1bHRzIGluIGFsbCB0aGUgcHJvYmxlbXMg
-Z29pbmcgYXdheS4KCgoxLiBJcyB0aGUgSW50ZWwgUENJIGJyaWRnZSBtaXNiZWhhdmluZyBoZXJl
-PyBXaHkgZG9lcyB3cml0aW5nIHRoZSBzYW1lCnZhbHVlIG9mIFBDSV9QUkVGX0JBU0VfVVBQRVIz
-MiBtYWtlIGFueSBkaWZmZXJlbmNlIGF0IGFsbD8KCgoyLiBXaG8gaXMgcmVzcG9uc2libGUgZm9y
-IHNhdmluZyBhbmQgcmVzdG9yaW5nIFBDSSBicmlkZ2UKY29uZmlndXJhdGlvbiBkdXJpbmcgc3Vz
-cGVuZCBhbmQgcmVzdW1lPyBMaW51eD8gQUNQST8gQklPUz8KCkkgY291bGQgbm90IHNlZSBhbnkg
-TGludXggY29kZSB0byBzYXZlIGFuZCByZXN0b3JlIHRoZXNlIHJlZ2lzdGVycy4KTGlrZXdpc2Ug
-SSBkaWRuJ3QgZmluZCBhbnl0aGluZyBpbiB0aGUgQUNQSSBEU0RUL1NTRFQgLSBuZWl0aGVyIG9u
-IHRoZQphZmZlY3RlZCBwcm9kdWN0cywgbm9yIG9uIGEgc2ltaWxhciBwcm9kdWN0IHRoYXQgZG9l
-cyBub3Qgc3VmZmVyIHRoaXMKbnZpZGlhIGlzc3VlLiBMaW51eCBkb2VzIHB1dCB0aGUgUENJIGJy
-aWRnZSBpbnRvIEQzIHBvd2VyIHN0YXRlIGR1cmluZwpzdXNwZW5kLCBhbmQgdXBvbiByZXN1bWUg
-dGhlIGxvd2VyIDMyIGJpdHMgb2YgdGhlIHByZWZldGNoIGFkZHJlc3MgYXJlCnN0aWxsIHNldCB0
-byB0aGUgc2FtZSB2YWx1ZSwgc28gdGhyb3VnaCBzb21lIG1lYW5zIHRoaXMgaW5mbyBpcyBub3QK
-YmVpbmcgbG9zdC4KCgozLiBBbnkgb3RoZXIgc3VnZ2VzdGlvbnMsIGhpbnRzIG9yIGV4cGVyaW1l
-bnRzIEkgY291bGQgZG8gdG8gaGVscCBtb3ZlCmZvcndhcmQgb24gdGhpcyBpc3N1ZT8KCk15IGdv
-YWwgaXMgdG8gYWRkIGEgd29ya2Fyb3VuZCB0byBMaW51eCAocGVyaGFwcyBhcyBhIHBjaSBxdWly
-aykgZm9yCmV4aXN0aW5nIGRldmljZXMsIGJ1dCBhbHNvIHdlIGFyZSBpbiBjb252ZXJzYXRpb24g
-d2l0aCBBc3VzIGVuZ2luZWVycwphbmQgaWYgd2UgY2FuIGNvbWUgdXAgd2l0aCBhIGNvbmNyZXRl
-IGRpYWdub3Npcywgd2Ugc2hvdWxkIGJlIGFibGUgdG8KaGF2ZSB0aGVtIGZpeCB0aGlzIGF0IHRo
-ZSBCSU9TIGxldmVsIGluIGZ1dHVyZSBwcm9kdWN0cy4KCgpUaGFua3MKRGFuaWVsCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBs
-aXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+On 6 August 2018 at 11:36, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Aug 3, 2018 at 1:43 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 19 July 2018 at 12:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Wednesday, June 20, 2018 7:22:04 PM CEST Ulf Hansson wrote:
+>>>> To enable a device belonging to a CPU to be attached to a PM domain managed
+>>>> by genpd, let's do a few changes to genpd as to make it convenient to
+>>>> manage the specifics around CPUs.
+>>>>
+>>>> First, as to be able to quickly find out what CPUs that are attached to a
+>>>> genpd, which typically becomes useful from a genpd governor as following
+>>>> changes is about to show, let's add a cpumask 'cpus' to the struct
+>>>> generic_pm_domain.
+>>>>
+>>>> At the point when a device that belongs to a CPU, is attached/detached to
+>>>> its corresponding PM domain via genpd_add_device(), let's update the
+>>>> cpumask in genpd->cpus. Moreover, propagate the update of the cpumask to
+>>>> the master domains, which makes the genpd->cpus to contain a cpumask that
+>>>> hierarchically reflect all CPUs for a genpd, including CPUs attached to
+>>>> subdomains.
+>>>>
+>>>> Second, to unconditionally manage CPUs and the cpumask in genpd->cpus, is
+>>>> unnecessary for cases when only non-CPU devices are parts of a genpd.
+>>>> Let's avoid this by adding a new configuration bit, GENPD_FLAG_CPU_DOMAIN.
+>>>> Clients must set the bit before they call pm_genpd_init(), as to instruct
+>>>> genpd that it shall deal with CPUs and thus manage the cpumask in
+>>>> genpd->cpus.
+>>>>
+>>>> Cc: Lina Iyer <ilina@codeaurora.org>
+>>>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> ---
+>>>>  drivers/base/power/domain.c | 69 ++++++++++++++++++++++++++++++++++++-
+>>>>  include/linux/pm_domain.h   |  3 ++
+>>>>  2 files changed, 71 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>>> index 21d298e1820b..6149ce0bfa7b 100644
+>>>> --- a/drivers/base/power/domain.c
+>>>> +++ b/drivers/base/power/domain.c
+>>>> @@ -20,6 +20,7 @@
+>>>>  #include <linux/sched.h>
+>>>>  #include <linux/suspend.h>
+>>>>  #include <linux/export.h>
+>>>> +#include <linux/cpu.h>
+>>>>
+>>>>  #include "power.h"
+>>>>
+>>>> @@ -126,6 +127,7 @@ static const struct genpd_lock_ops genpd_spin_ops = {
+>>>>  #define genpd_is_irq_safe(genpd)     (genpd->flags & GENPD_FLAG_IRQ_SAFE)
+>>>>  #define genpd_is_always_on(genpd)    (genpd->flags & GENPD_FLAG_ALWAYS_ON)
+>>>>  #define genpd_is_active_wakeup(genpd)        (genpd->flags & GENPD_FLAG_ACTIVE_WAKEUP)
+>>>> +#define genpd_is_cpu_domain(genpd)   (genpd->flags & GENPD_FLAG_CPU_DOMAIN)
+>>>>
+>>>>  static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+>>>>               const struct generic_pm_domain *genpd)
+>>>> @@ -1377,6 +1379,62 @@ static void genpd_free_dev_data(struct device *dev,
+>>>>       dev_pm_put_subsys_data(dev);
+>>>>  }
+>>>>
+>>>> +static void __genpd_update_cpumask(struct generic_pm_domain *genpd,
+>>>> +                                int cpu, bool set, unsigned int depth)
+>>>> +{
+>>>> +     struct gpd_link *link;
+>>>> +
+>>>> +     if (!genpd_is_cpu_domain(genpd))
+>>>> +             return;
+>>>> +
+>>>> +     list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>>>> +             struct generic_pm_domain *master = link->master;
+>>>> +
+>>>> +             genpd_lock_nested(master, depth + 1);
+>>>> +             __genpd_update_cpumask(master, cpu, set, depth + 1);
+>>>> +             genpd_unlock(master);
+>>>> +     }
+>>>> +
+>>>> +     if (set)
+>>>> +             cpumask_set_cpu(cpu, genpd->cpus);
+>>>> +     else
+>>>> +             cpumask_clear_cpu(cpu, genpd->cpus);
+>>>> +}
+>>>
+>>> As noted elsewhere, there is a concern about the possible weight of this
+>>> cpumask and I think that it would be good to explicitly put a limit on it.
+>>
+>> I have been digesting your comments on the series, but wonder if this
+>> is still a relevant concern?
+>
+> Well, there are systems with very large cpumasks and it is sort of
+> good to have that in mind when designing any code using them.
+
+Right.
+
+So, if I avoid allocating the cpumask for those genpd structures that
+doesn't need it (those not having GENPD_FLAG_CPU_DOMAIN set), would
+that be sufficient to deal with your concern?
+
+Kind regards
+Uffe
