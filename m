@@ -1,53 +1,103 @@
-From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider
- bindings
-Date: Fri, 24 Aug 2018 17:51:37 +0300
-Message-ID: <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-3-georgi.djakov@linaro.org>
- <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
- <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
- <20180820153207.xx5outviph7ec76p@flea>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
+ Allwinner Thermal Sensor Controller
+Date: Fri, 24 Aug 2018 16:58:40 +0200
+Message-ID: <20180824145840.isdcg3fr6mw4ntzg@flea>
+References: <20180804070355.14857-1-manu@freebsd.org>
+ <20180820111755.rzg7l2lznmbpuf2e@flea>
+ <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
+ <20180820140737.xmqhu5ndqzehvkql@flea>
+ <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="ctw732jamwpz6sc5"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180820153207.xx5outviph7ec76p@flea>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.ke
+To: Emmanuel Vadot <manu@bidouilliste.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Maxime,
 
-On 08/20/2018 06:32 PM, Maxime Ripard wrote:
-> Hi Georgi,
-> 
-> On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
->>> There is also a patch series from Maxime Ripard that's addressing the
->>> same general area. See "dt-bindings: Add a dma-parent property". We
->>> don't need multiple ways to address describing the device to memory
->>> paths, so you all had better work out a common solution.
->>
->> Looks like this fits exactly into the interconnect API concept. I see
->> MBUS as interconnect provider and display/camera as consumers, that
->> report their bandwidth needs. I am also planning to add support for
->> priority.
-> 
-> Thanks for working on this. After looking at your serie, the one thing
-> I'm a bit uncertain about (and the most important one to us) is how we
-> would be able to tell through which interconnect the DMA are done.
-> 
-> This is important to us since our topology is actually quite simple as
-> you've seen, but the RAM is not mapped on that bus and on the CPU's,
-> so we need to apply an offset to each buffer being DMA'd.
+--ctw732jamwpz6sc5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, i see - your problem is not about bandwidth scaling but about using
-different memory ranges by the driver to access the same location. So
-this is not really the same and your problem is different. Also the
-interconnect bindings are describing a path and endpoints. However i am
-open to any ideas.
+Hi,
 
-Thanks,
-Georgi
+On Mon, Aug 20, 2018 at 04:27:15PM +0200, Emmanuel Vadot wrote:
+> On Mon, 20 Aug 2018 16:07:37 +0200
+> Maxime Ripard <maxime.ripard@bootlin.com> wrote:
+>=20
+> > On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
+> > > On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@bootlin.=
+com> wrote:
+> > > >
+> > > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wrote:
+> > > > > This patch adds documentation for Device-Tree bindings for the Al=
+lwinner
+> > > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
+> > > > >
+> > > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
+> > > >
+> > > > I'm not going to merge a binding for a device that doesn't have any
+> > > > driver implemented at the moment in Linux.
+> > >=20
+> > > I'll take it then. Linux is not the only DT client.
+> >=20
+> > Then don't complain if we ever have to break the ABI. We never tested
+> > that hardware, never had any code running on it, and it *will* cause
+> > some issues. For example, the calibration data have never been used
+> > and how they should be represented have never been described, since no
+> > one ever actually tried to use it.
+> >=20
+> > And sure, Linux is not the only DT client. Just like FreeBSD isn't.
+>=20
+>  What kind of data would you need for me to make things better ?
+>  We have the driver in FreeBSD for almost two years now, whne I started
+> to see how to upstream it I noticed a lot of problems and spent 4 or 5
+> days to try on all the SoCs mentionned in the serie, the only SoC I
+> didn't include it the A83T as for some reason I couldn't make the
+> driver work.
+
+Do you have a link to that driver? How and how much did you test it?
+
+Are you using the calibration data stored in the SID?
+
+> I just hope that you understand that we cannot wait for Linux to
+> have a driver to have some bindings.
+
+Just like I'm sure you can understand that just merging the DT bits
+without testing anything caused some troubles in the past, and I don't
+want to discover it in a year from now.
+
+Maxime
+
+--=20
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--ctw732jamwpz6sc5
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAluAHR8ACgkQ0rTAlCFN
+r3SZQRAAmXuqaVEN/HMxUrhEiqWT9FyK11pZERNZsHYv+YfegdJDZw23huBgiJUH
+4rAtpVwXukCaf0EzUyNL84lwYS+kVQA3Y+Y0gArCyEhUB96lUJYtbdsoJwZ/KKcj
+Y5dhAgSLaYzpnGtcpVx5fhrpCQ6XkDSEhSvWrmeanVCDdpMqw7CVL3z/BEqJVBvO
+obCFucd3aQqYDqtvxfcF2jD08BeQBbxtcKweQaFIJEP0u/G0HzrIIgFaasyrpsUe
+npZCOZyHIiT8+ANG34sG/t4T9tl6DWuaVc1YGIFVD77Umin3Jkt4Co7XCF1PprlZ
+2c0WEEogAffVGlQl/TPScXgLDXjByllikb4Gag+6sZwEmUYkunjSC3S65LX8ix7K
+CchCpEelxO6Yx9RnGBVDrHNJf/bfaIf8dweiuEN4/0lujdKmYZ/qytQZZE3yc0wP
+rUL5af8SMLabWA+dM8JeOrJTksz/styrBBrB5Vi5rZXaZfgbeCGrOL62OabJ2Fcn
+HcvgGMGVUe7O608ML7wKxCKJduJuRmjhb6wNU0rYPUnS/wJVOvLN5yDcUPAie3mJ
+1GgAOMtZ18RuGgmYwVS8WZHcp2NAVV5nKS91vYS/oxPTpE5C1Ypye+Pla6zMWXzD
+R1Cs1CJTpMQxNVgE6j8yjfe98wkdBYYajLmRsncke1TyXbY14js=
+=1xTs
+-----END PGP SIGNATURE-----
+
+--ctw732jamwpz6sc5--
