@@ -1,74 +1,49 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v1 07/10] thermal: tsens: Check if the IP is correctly
- enabled by firmware
-Date: Fri, 24 Aug 2018 16:30:41 -0700
-Message-ID: <20180824233039.GF25163@localhost.localdomain>
-References: <cover.1533815718.git.amit.kucheria@linaro.org>
- <985ed415774fdac9ac21afad4b4b74f30f6c5068.1533815718.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle: menu: Retain tick when shallow state is selected
+Date: Sat, 25 Aug 2018 13:21:44 +0200
+Message-ID: <CAJZ5v0gtsEM9OMaJO=uM30R8dUBzk8C1E+8nzX0Oj4xA-J3-tw@mail.gmail.com>
+References: <34910476.pgRhNDWo5t@aspire.rjw.lan> <000701d43bc1$5e0c2c50$1a2484f0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <985ed415774fdac9ac21afad4b4b74f30f6c5068.1533815718.git.amit.kucheria@linaro.org>
+In-Reply-To: <000701d43bc1$5e0c2c50$1a2484f0$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Leo Yan <leo.yan@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Frederic Weisbecker <frederic@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 09, 2018 at 06:02:39PM +0530, Amit Kucheria wrote:
-> The SROT registers are initialised by the secure firmware at boot. We
-> don't have write access to the registers. Check if the block is enabled
-> before continuing.
-> 
+On Fri, Aug 24, 2018 at 5:52 PM Doug Smythies <dsmythies@telus.net> wrote:
+>
+> On 2018.08.24 02:44 Rafael J. Wysocki wrote:
+> > On Tuesday, August 21, 2018 10:44:10 AM CEST Rafael J. Wysocki wrote:
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> The case addressed by commit 5ef499cd571c (cpuidle: menu: Handle
+> >> stopped tick more aggressively) in the stopped tick case is present
+> >> when the tick has not been stopped yet too.
+>
+> ... [snip] ...
+>
+> >> Fixes: 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states with stopped tick)
+>
+> ... [snip] ...
+>
+> > Due to the lack of objections, I'm inclined to queue this up.
+>
+> I have been following these threads.
+> Recall that I was involved, over a period of months, in the original
+> "powernightmare" stuff.
+> I have revived my tests (and wish I had left myself better notes), and
+> am establishing a baseline before adding and trying this patch.
+> My baseline is actually two tests with and without the previous two patches (the ones
+> that were just sent a couple of days ago in "More power management updates for v4.19-rc1".
+> I might have those results in some presentable form by later today (it looks O.K.)
+> Results with this patch will take another couple of days.
 
-Should this be merged to patch 6?
+Thanks Doug, much appreciated!
 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-> index 0b8a793f15f4..d250b757d1f0 100644
-> --- a/drivers/thermal/qcom/tsens-common.c
-> +++ b/drivers/thermal/qcom/tsens-common.c
-> @@ -12,6 +12,11 @@
->  #include <linux/regmap.h>
->  #include "tsens.h"
->  
-> +/* SROT */
-> +#define CTRL_OFFSET		0x4
-> +#define TSENS_EN		BIT(0)
-> +
-> +/* TM */
->  #define STATUS_OFFSET		0x30
->  #define SN_ADDR_OFFSET		0x4
->  #define SN_ST_TEMP_MASK		0x3ff
-> @@ -119,6 +124,8 @@ int __init init_common(struct tsens_device *tmdev)
->  {
->  	void __iomem *tm_base, *srot_base;
->  	struct resource *res;
-> +	u32 code;
-> +	int ret;
->  	struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
->  
->  	if (!op)
-> @@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
->  	if (IS_ERR(tmdev->tm_map))
->  		return PTR_ERR(tmdev->tm_map);
->  
-> +	if (tmdev->srot_map) {
-> +		ret = regmap_read(tmdev->srot_map, CTRL_OFFSET, &code);
-> +		if (ret)
-> +			return ret;
-> +		if (!(code & TSENS_EN)) {
-> +			dev_err(tmdev->dev, "tsens device is not enabled\n");
-> +			return -ENODEV;
-> +		}
-> +	}
-> +
->  	return 0;
->  }
-> -- 
-> 2.17.1
-> 
+This patch has been queued up, but I will wait for your results for a
+few days before pushing it.
+
+Cheers,
+Rafael
