@@ -1,63 +1,148 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [Patch v15 5/5] iommu/arm-smmu: Add support for qcom,
- smmu-v2 variant
-Date: Mon, 27 Aug 2018 16:25:51 +0530
-Message-ID: <20180827105551.16346-6-vivek.gautam@codeaurora.org>
-References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180827105551.16346-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [RESEND PATCH v5] PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.
+Date: Mon, 27 Aug 2018 13:05:32 +0200
+Message-ID: <20180827110532.28551-1-enric.balletbo@collabora.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-cWNvbSxzbW11LXYyIGlzIGFuIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uIHdpdGggc3BlY2lm
-aWMKY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4KT24gbXNtODk5NiwgbXVsdGlwbGUgY29y
-ZXMsIHZpei4gbWRzcywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKc21tdS4gT24gc2RtODQ1LCB0aGlz
-IHNtbXUgaXMgdXNlZCB3aXRoIGdwdS4KQWRkIGJpbmRpbmdzIGZvciB0aGUgc2FtZS4KClNpZ25l
-ZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgpSZXZp
-ZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4KUmV2aWV3ZWQtYnk6IFRvbWFz
-eiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+ClRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRs
-YSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5hcm8ub3JnPgotLS0KCkNoYW5nZXMgc2luY2UgdjE0
-OgogLSBNb3ZlZCBvdXQgZHQtYmluZGluZ3MgY2hhbmdlIHRvIHNlcGFyYXRlIHBhdGNoLgoKIGRy
-aXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEzICsrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2Vk
-LCAxMyBpbnNlcnRpb25zKCspCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-IGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCmluZGV4IGI1ZTdmNzJkNDE4Yy4uYzAxNzdlYTMy
-Njc4IDEwMDY0NAotLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKKysrIGIvZHJpdmVycy9p
-b21tdS9hcm0tc21tdS5jCkBAIC0xMTksNiArMTE5LDcgQEAgZW51bSBhcm1fc21tdV9pbXBsZW1l
-bnRhdGlvbiB7CiAJR0VORVJJQ19TTU1VLAogCUFSTV9NTVU1MDAsCiAJQ0FWSVVNX1NNTVVWMiwK
-KwlRQ09NX1NNTVVWMiwKIH07CiAKIHN0cnVjdCBhcm1fc21tdV9zMmNyIHsKQEAgLTE5NzAsNiAr
-MTk3MSwxNyBAQCBBUk1fU01NVV9NQVRDSF9EQVRBKGFybV9tbXU0MDEsIEFSTV9TTU1VX1YxXzY0
-SywgR0VORVJJQ19TTU1VKTsKIEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTUwMCwgQVJNX1NN
-TVVfVjIsIEFSTV9NTVU1MDApOwogQVJNX1NNTVVfTUFUQ0hfREFUQShjYXZpdW1fc21tdXYyLCBB
-Uk1fU01NVV9WMiwgQ0FWSVVNX1NNTVVWMik7CiAKK3N0YXRpYyBjb25zdCBjaGFyICogY29uc3Qg
-cWNvbV9zbW11djJfY2xrc1tdID0geworCSJidXMiLCAiaWZhY2UiLAorfTsKKworc3RhdGljIGNv
-bnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0geworCS52ZXJzaW9u
-ID0gQVJNX1NNTVVfVjIsCisJLm1vZGVsID0gUUNPTV9TTU1VVjIsCisJLmNsa3MgPSBxY29tX3Nt
-bXV2Ml9jbGtzLAorCS5udW1fY2xrcyA9IEFSUkFZX1NJWkUocWNvbV9zbW11djJfY2xrcyksCit9
-OworCiBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBhcm1fc21tdV9vZl9tYXRjaFtd
-ID0gewogCXsgLmNvbXBhdGlibGUgPSAiYXJtLHNtbXUtdjEiLCAuZGF0YSA9ICZzbW11X2dlbmVy
-aWNfdjEgfSwKIAl7IC5jb21wYXRpYmxlID0gImFybSxzbW11LXYyIiwgLmRhdGEgPSAmc21tdV9n
-ZW5lcmljX3YyIH0sCkBAIC0xOTc3LDYgKzE5ODksNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9m
-X2RldmljZV9pZCBhcm1fc21tdV9vZl9tYXRjaFtdID0gewogCXsgLmNvbXBhdGlibGUgPSAiYXJt
-LG1tdS00MDEiLCAuZGF0YSA9ICZhcm1fbW11NDAxIH0sCiAJeyAuY29tcGF0aWJsZSA9ICJhcm0s
-bW11LTUwMCIsIC5kYXRhID0gJmFybV9tbXU1MDAgfSwKIAl7IC5jb21wYXRpYmxlID0gImNhdml1
-bSxzbW11LXYyIiwgLmRhdGEgPSAmY2F2aXVtX3NtbXV2MiB9LAorCXsgLmNvbXBhdGlibGUgPSAi
-cWNvbSxzbW11LXYyIiwgLmRhdGEgPSAmcWNvbV9zbW11djIgfSwKIAl7IH0sCiB9OwogTU9EVUxF
-X0RFVklDRV9UQUJMRShvZiwgYXJtX3NtbXVfb2ZfbWF0Y2gpOwotLSAKUVVBTENPTU0gSU5ESUEs
-IG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJl
-cgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8g
-bWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+When the devfreq driver and the governor driver are built as modules,
+the call to devfreq_add_device() or governor_store() fails because the
+governor driver is not loaded at the time the devfreq driver loads. The
+devfreq driver has a build dependency on the governor but also should
+have a runtime dependency. We need to make sure that the governor driver
+is loaded before the devfreq driver.
+
+This patch fixes this bug by adding a try_then_request_governor()
+function. First tries to find the governor, and then, if it is not
+found, it requests the module and tries again.
+
+Fixes: 1b5c1be2c88e (PM / devfreq: map devfreq drivers to governor using name)
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+
+Changes in v5:
+- Requested by MyungJoo and Chanwoo.
+  - Fix returning without the lock acquired after request_module.
+- Requested by Chanwoo.
+  - In request governor function check if governor name is NULL or not.
+  - Remove some unrelated changes (added/removed some blank lines).
+
+Changes in v4:
+- Kept "locked" devfreq_list from the return of find_devfreq_governor() to
+  the unlock of governor_store(). Requested by MyungJoo Ham.
+
+Changes in v3:
+- Remove unneded change in dev_err message.
+- Fix err returned value in case to not find the governor.
+
+Changes in v2:
+- Add a new function to request the module and call that function from
+  devfreq_add_device and governor_store.
+
+ drivers/devfreq/devfreq.c | 53 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 49 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 4c49bb1330b5..62ead442a872 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -11,6 +11,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/kmod.h>
+ #include <linux/sched.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+@@ -221,6 +222,49 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
++/**
++ * try_then_request_governor() - Try to find the governor and request the
++ *                               module if is not found.
++ * @name:	name of the governor
++ *
++ * Search the list of devfreq governors and request the module and try again
++ * if is not found. This can happen when both drivers (the governor driver
++ * and the driver that call devfreq_add_device) are built as modules.
++ * devfreq_list_lock should be held by the caller. Returns the matched
++ * governor's pointer.
++ */
++static struct devfreq_governor *try_then_request_governor(const char *name)
++{
++	struct devfreq_governor *governor;
++	int err = 0;
++
++	if (IS_ERR_OR_NULL(name)) {
++		pr_err("DEVFREQ: %s: Invalid parameters\n", __func__);
++		return ERR_PTR(-EINVAL);
++	}
++	WARN(!mutex_is_locked(&devfreq_list_lock),
++	     "devfreq_list_lock must be locked.");
++
++	governor = find_devfreq_governor(name);
++	if (IS_ERR(governor)) {
++		mutex_unlock(&devfreq_list_lock);
++
++		if (!strncmp(name, DEVFREQ_GOV_SIMPLE_ONDEMAND,
++			     DEVFREQ_NAME_LEN))
++			err = request_module("governor_%s", "simpleondemand");
++		else
++			err = request_module("governor_%s", name);
++		/* Restore previous state before return */
++		mutex_lock(&devfreq_list_lock);
++		if (err)
++			return NULL;
++
++		governor = find_devfreq_governor(name);
++	}
++
++	return governor;
++}
++
+ static int devfreq_notify_transition(struct devfreq *devfreq,
+ 		struct devfreq_freqs *freqs, unsigned int state)
+ {
+@@ -646,9 +690,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	mutex_unlock(&devfreq->lock);
+ 
+ 	mutex_lock(&devfreq_list_lock);
+-	list_add(&devfreq->node, &devfreq_list);
+ 
+-	governor = find_devfreq_governor(devfreq->governor_name);
++	governor = try_then_request_governor(devfreq->governor_name);
+ 	if (IS_ERR(governor)) {
+ 		dev_err(dev, "%s: Unable to find governor for the device\n",
+ 			__func__);
+@@ -664,12 +707,14 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 			__func__);
+ 		goto err_init;
+ 	}
++
++	list_add(&devfreq->node, &devfreq_list);
++
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+ 	return devfreq;
+ 
+ err_init:
+-	list_del(&devfreq->node);
+ 	mutex_unlock(&devfreq_list_lock);
+ 
+ 	device_unregister(&devfreq->dev);
+@@ -991,7 +1036,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&devfreq_list_lock);
+-	governor = find_devfreq_governor(str_governor);
++	governor = try_then_request_governor(str_governor);
+ 	if (IS_ERR(governor)) {
+ 		ret = PTR_ERR(governor);
+ 		goto out;
+-- 
+2.18.0
