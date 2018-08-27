@@ -1,98 +1,80 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider
- bindings
-Date: Mon, 27 Aug 2018 17:08:36 +0200
-Message-ID: <20180827150836.shl7einpuvuw42p7@flea>
-References: <20180731161340.13000-1-georgi.djakov@linaro.org>
- <20180731161340.13000-3-georgi.djakov@linaro.org>
- <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
- <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
- <20180820153207.xx5outviph7ec76p@flea>
- <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
+From: Jordan Crouse <jcrouse@codeaurora.org>
+Subject: [PATCH 0/9] Add interconnect support + bindings for A630 GPU
+Date: Mon, 27 Aug 2018 09:11:03 -0600
+Message-ID: <20180827151112.25211-1-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="tlmv2cpuyt6qe6ep"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mike Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, skannan@codeaurora.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.ke
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: freedreno@lists.freedesktop.org, georgi.djakov@linaro.org
+Cc: nm@ti.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, vireshk@kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-
---tlmv2cpuyt6qe6ep
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-On Fri, Aug 24, 2018 at 05:51:37PM +0300, Georgi Djakov wrote:
-> Hi Maxime,
->=20
-> On 08/20/2018 06:32 PM, Maxime Ripard wrote:
-> > Hi Georgi,
-> >=20
-> > On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
-> >>> There is also a patch series from Maxime Ripard that's addressing the
-> >>> same general area. See "dt-bindings: Add a dma-parent property". We
-> >>> don't need multiple ways to address describing the device to memory
-> >>> paths, so you all had better work out a common solution.
-> >>
-> >> Looks like this fits exactly into the interconnect API concept. I see
-> >> MBUS as interconnect provider and display/camera as consumers, that
-> >> report their bandwidth needs. I am also planning to add support for
-> >> priority.
-> >=20
-> > Thanks for working on this. After looking at your serie, the one thing
-> > I'm a bit uncertain about (and the most important one to us) is how we
-> > would be able to tell through which interconnect the DMA are done.
-> >=20
-> > This is important to us since our topology is actually quite simple as
-> > you've seen, but the RAM is not mapped on that bus and on the CPU's,
-> > so we need to apply an offset to each buffer being DMA'd.
->=20
-> Ok, i see - your problem is not about bandwidth scaling but about using
-> different memory ranges by the driver to access the same location.
-
-Well, it turns out that the problem we are bitten by at the moment is
-the memory range one, but the controller it goes through also provides
-bandwidth scaling, priorities and so on, so it's not too far off.
-
-> So this is not really the same and your problem is different. Also
-> the interconnect bindings are describing a path and
-> endpoints. However i am open to any ideas.
-
-It's describing a path and endpoints, but it can describe multiple of
-them for the same device, right? If so, we'd need to provide
-additional information to distinguish which path is used for DMA.
-
-Maxime
-
---=20
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---tlmv2cpuyt6qe6ep
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAluEE/QACgkQ0rTAlCFN
-r3TDkRAAj4uNEPLFjyHIix2x+VjZqXaBDLhJZaZz8qwSZ1xWQqcYwJnqS1V65QdW
-o4VI5AuIymA8yMjKjkOHceEYCrod2tNUiBh7SvQG38tQJD/zMsu5m8xM2JswURjj
-JfTtDLthBottb8p3lzq6dyUNrrAO92sZXTHjqn4RuxOhNtHDzPrY7Cg91ZQUxg79
-NeJHEyUHRJ8i/KGRXXu0lsBEQHmoqLchIEUz2X5tSazdpVnHlcipdMg10jQkf6xQ
-jbGcj7KCW1tGf1YA1TJ4E5t1GqZorUFAVQh1Ja9BVny0uYqiRK5Z73kz1n7gh2MU
-LmKqFfLv//MivaHV5GMbcEYUfZbc3/EXZ9gPXXkShNtWIQT6dOQmGSd7rKnqS/up
-1RnEVHLnvPBPZXMKptvxZaqXVnl5X+z82w6ucH3vCXtX+Hj96VYZDGHDgY5MVrsn
-5tcBLMNBHxrlBRN+sBR123Ao0J1cMpol69kqqkRe72RY++gvRehXdueBjoOK4pKR
-YXtUxuyx2h7Jf0qcusdQhntsPfKCC3/bT7955qwmYeAvU00VQqzEYY3oqz/SvUK2
-mYQ30V5IpO0LysFXROko5UTVO6m861RjELJFES5/NpqZFh+c4i0kTaKDg0zkyvug
-4RZ9w1crO5XQxArKc4DahgYPyvSROOK6Aibs1Cave8e+F8Whb1A=
-=M/QC
------END PGP SIGNATURE-----
-
---tlmv2cpuyt6qe6ep--
+VGhpcyBwYXRjaCBzZXJpZXMgaXMgYSBmaXJzdCBzdGFiIGF0IHRyeWluZyB0byBhZGQgaW50ZXJj
+b25uZWN0IHN1cHBvcnQKZm9yIHRoZSBBZHJlbm8gNjMwIEdQVSBpbiB0aGUgc2RtODQ1IFNPQy4g
+VGhlIG1vc3QgaW50ZXJlc3RpbmcgdGhpbmcKZm9yIGRpc2N1c3Npb24gaXMgdGhlIE9QUCBiaW5k
+aW5nIGZvciBzcGVjaWZ5aW5nIGJhbmR3aWR0aCAtIG9uY2UgdGhhdAppcyB3b3JrZWQgb3V0IHRo
+ZSBhY3R1YWwgY29kZSB0byBpbXBsZW1lbnQgaXQgaXMgcHJldHR5IHN0cmFpZ2h0IGZvcndhcmQK
+dGhhbmtzIHRvIHRoZSBoYXJkIHdvcmsgZnJvbSBHZW9yZ2kgYW5kIHRoZSBQTSBsaXN0cy4KClRo
+ZSBmaXJzdCA1IHBhdGNoZXMgYXJlIGFyZSBqdXN0IGEgc3luYyAvIHJlbWluZGVyIG9mIHRoZSBz
+dGlsbCBwZW5kaW5nCkRUIGJpbmRpbmdzIGFuZCBlbnRyaWVzIGZvciB0aGUgR1BVIGl0c2VsZiAt
+IHRoZSBpbnRlcmNvbm5lY3QgZm9sa3MgY2FuCnJlZmVyIHRvIHRoZW0gYXMgYSByZWZlcmVuY2Ug
+dG8gc2VlIHdoYXQgdGhlIEdQVSBub2RlcyB3aWxsIGxvb2sgbGlrZQpidXQgSSBzdXNwZWN0IHRo
+ZXkgYXJlIG9mIG1vcmUgaW50ZXJlc3QgZm9yIHRoZSBHUFUuCgpQYXRjaCA2IGFkZHMgYSBwcm9w
+b3NlZCBiaW5kaW5nIHRvIHNwZWNpZnkgdGhlIGludGVyY29ubmVjdCBhdmcvcGVhawpCVyBmb3Ig
+YSBnaXZlbiBvcGVyYXRpbmcgcG9pbnQuIE9uIGRldmljZXMgdGhhdCBjYW4gZG8gYWdncmVzc2l2
+ZQpmcmVxdWVuY3kgc2NhbGluZyBsaWtlIHRoZSBHUFUgd2Ugd2FudCB0byBiZSBhYmxlIHRvIHNl
+dCBhIHBlYWsKYmFuZHdpZHRoIGFsb25nIHdpdGggdGhlIGZyZXF1ZW5jeSBzbyB0aGF0IHdlIGNh
+biBtYWtlIHN1cmUgdGhhdAp0aGUgYnVzIGNhbiBoYW5kbGUgYSBmYXN0ZXIgR1BVIGZyZXF1ZW5j
+eSBpZiB3ZSBzY2FsZSB1cCBidXQgYWxzbwp0byByZWR1Y2UgcG93ZXIgY29uc3VtcHRpb24gb24g
+dGhlIGJ1cyB3aGVuIHdlIHNjYWxlIGRvd24uCgpUaGUgcHJvcG9zZWQgYmluZGluZyB1c2VzIHRo
+ZSBmb3JtOgoKb3BwLWludGVyY29ubmVjdC1idy08bmFtZT4gPSA8YXZnIHBlYWs+CgpXaGVyZSAn
+bmFtZScgaXMgdGhlIGNvcnJlc3BvbmRpbmcgaW50ZXJjb25uZWN0LW5hbWUgb2YgdGhlIGludGVy
+ZXN0ZWQKcGF0aCBhbmQgJ2F2ZycgYW5kICdwZWFrJyBhcmUgdGhlIGF2ZXJhZ2UgYW5kIHBlYWsg
+YmFuZHdpZHRoIHZhbHVlcwppbiBIWiB0byBwcm9ncmFtIGZvciB0aGUgb3BlcmF0aW5nIHBvaW50
+LiBUaGUgcGF0aCBuYW1lIGlzIHVzZWQgdG8KaWRlbnRpZnkgcGF0aCBzcGVjaWZpYyBzZXR0aW5n
+cyBmb3IgZGV2aWNlcyB0aGF0IG1heSBoYXZlIG11bHRpcGxlCmFjdGl2ZSBpbnRlcmNvbm5lY3Qg
+cGF0aHMuCgpUaGUgbmV4dCBwYXRjaCBhZGRzIGEgZ2VuZXJpYyBPUFAgQVBJIHRvIHJlYWQgdGhl
+IGludGVyY29ubmVjdCB2YWx1ZXMKZ2l2ZW4gYSBvcGVyYXRpbmcgcG9pbnQgYW5kIGEgbmFtZS4K
+ClRoZSA4dGggcGF0Y2ggYWRkcyBjb2RlIHN1cHBvcnQgZm9yIGFuIGludGVyY29ubmVjdCBwYXRo
+IHRvIHRoZSBmb3IKdGhlIGE2eHggR1BVIHJlYWRpbmcgdGhlIGJhbmR3aWR0aCBmb3IgdGhlIG9w
+ZXJhdGluZyBwb2ludCBmcm9tIHRoZQpPUFAgQVBJLgoKQW5kIHRoZSBmaW5hbCBwYXRjaCBhZGRz
+IHRoZSBhY3R1YWwgaW50ZXJjb25uZWN0IGRldGFpbHMgdGhlCmRldmljZSB0cmVlIHNwZWNpZnlp
+bmcgYm90aCB0aGUgaW50ZXJjb25uZWN0IGRldGFpbHMgYXMgd2VsbCBhcwp0aGUgYmFuZHdpZHRo
+IHJlcXVpcmVtZW50cyBmb3IgZWFjaCBvZiB0aGUgb3BlcmF0aW5nIHBvaW50cyBvbiB0aGUKYTYz
+MCBHUFUuCgpKb3JkYW4gQ3JvdXNlICg5KToKICBkcm0vbXNtL2E2eHg6IHJubmRiIHVwZGF0ZXMg
+Zm9yIGE2eHgKICBkcm0vbXNtL2E2eHg6IEZpeCBQREMgcmVnaXN0ZXIgb3ZlcmxhcAogIGRybS9t
+c20vYTZ4eDogUmVuYW1lIGdtdSBwaGFuZGxlIHRvIHFjb20sZ211CiAgZHQtYmluZGluZ3M6IERv
+Y3VtZW50IHFjb20sYWRyZW5vLWdtdQogIGFybTY0OiBkdHM6IHNkbTg0NTogQWRkIGdwdSBhbmQg
+Z211IGRldmljZSBub2RlcwogIFBNIC8gT1BQOiBkdC1iaW5kaW5nczogQWRkIG9wcC1pbnRlcmNv
+bm5lY3QtYncKICBPUFA6IEFkZCBkZXZfcG1fb3BwX2dldF9pbnRlcmNvbm5lY3RfYncoKQogIGRy
+bS9tc20vYTZ4eDogQWRkIHN1cHBvcnQgZm9yIGFuIGludGVyY29ubmVjdCBwYXRoCiAgYXJtNjQ6
+IGR0czogQWRkIGludGVyY29ubmVjdCBmb3IgdGhlIEdQVSBvbiBTRE04NDUKCiAuLi4vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9kaXNwbGF5L21zbS9nbXUudHh0ICAgfCAgNTQgKysKIC4uLi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL2Rpc3BsYXkvbXNtL2dwdS50eHQgICB8ICAxMCArLQogRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL29wcC9vcHAudHh0IHwgIDM2ICsKIGFyY2gvYXJtNjQvYm9v
+dC9kdHMvcWNvbS9zZG04NDUuZHRzaSAgICAgICAgICB8IDEzMSArKysrCiBkcml2ZXJzL2dwdS9k
+cm0vbXNtL2FkcmVuby9hNnh4LnhtbC5oICAgICAgICAgfCA2NDIgKysrKysrKysrKystLS0tLS0t
+CiBkcml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9hNnh4X2dtdS5jICAgICAgICAgfCAxMTQgKyst
+LQogZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9nbXUuaCAgICAgICAgIHwgICA2IC0K
+IGRyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2E2eHhfZ211LnhtbC5oICAgICB8ICAyNiArLQog
+ZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9ncHUuYyAgICAgICAgIHwgICAyICstCiBk
+cml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9hZHJlbm9fZ3B1LmMgICAgICAgfCAgIDcgKwogZHJp
+dmVycy9ncHUvZHJtL21zbS9tc21fZ3B1LmggICAgICAgICAgICAgICAgIHwgICAzICsKIGRyaXZl
+cnMvb3BwL29mLmMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAzNiArCiBpbmNsdWRl
+L2xpbnV4L3BtX29wcC5oICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDcgKwogMTMgZmlsZXMg
+Y2hhbmdlZCwgNzc1IGluc2VydGlvbnMoKyksIDI5OSBkZWxldGlvbnMoLSkKIGNyZWF0ZSBtb2Rl
+IDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9tc20vZ211
+LnR4dAoKLS0gCjIuMTguMAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0
+b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJp
+LWRldmVsCg==
