@@ -1,96 +1,52 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH 8/9] drm/msm/a6xx: Add support for an
- interconnect path
-Date: Mon, 27 Aug 2018 09:11:11 -0600
-Message-ID: <20180827151112.25211-9-jcrouse@codeaurora.org>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+From: Shuah Khan <shuah@kernel.org>
+Subject: Re: [PATCH] cpupower: remove stringop-truncation waring
+Date: Mon, 27 Aug 2018 11:46:49 -0600
+Message-ID: <a25c0c8b-10e3-c4c1-fc09-09bd39442b0e@kernel.org>
+References: <20180821120225.3516-1-anders.roxell@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180827151112.25211-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180821120225.3516-1-anders.roxell@linaro.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anders Roxell <anders.roxell@linaro.org>, trenn@suse.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shuah Khan <shuah@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIHN1cHBvcnQgZm9yIHNldHRpbmcgdGhlIE9QUCBkZWZpbmVkIGJhbmR3aWR0aCBmb3IgYSBn
-aXZlbgpHUFUgZnJlcXVlbmN5IHZhbHVlIGZvciBhNnh4LiBPbiBzZG04NDUgZXZlbiB0aG91Z2gg
-dGhlIEdQVQpmcmVxdWVuY3kgaXMgc2V0IGJ5IHRoZSBHTVUgYnV0IHRoZSBidXMgYmFuZHdpZHRo
-IHF1b3RhIGlzCnNldCBieSB0aGUgQ1BVLgoKU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8
-amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KLS0tCiBkcml2ZXJzL2dwdS9kcm0vbXNtL2FkcmVuby9h
-Nnh4X2dtdS5jICAgfCAyNyArKysrKysrKysrKysrKysrKysrKysrKy0tCiBkcml2ZXJzL2dwdS9k
-cm0vbXNtL2FkcmVuby9hZHJlbm9fZ3B1LmMgfCAgNyArKysrKysrCiBkcml2ZXJzL2dwdS9kcm0v
-bXNtL21zbV9ncHUuaCAgICAgICAgICAgfCAgMyArKysKIDMgZmlsZXMgY2hhbmdlZCwgMzUgaW5z
-ZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0v
-bXNtL2FkcmVuby9hNnh4X2dtdS5jIGIvZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9n
-bXUuYwppbmRleCBkMGRhYzRjMmUzZTcuLmQ2M2VlZmM3Yzc0ZCAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9ncHUvZHJtL21zbS9hZHJlbm8vYTZ4eF9nbXUuYworKysgYi9kcml2ZXJzL2dwdS9kcm0vbXNt
-L2FkcmVuby9hNnh4X2dtdS5jCkBAIC00LDYgKzQsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2Nsay5o
-PgogI2luY2x1ZGUgPGxpbnV4L2lvcG9sbC5oPgogI2luY2x1ZGUgPGxpbnV4L3BtX29wcC5oPgor
-I2luY2x1ZGUgPGxpbnV4L2ludGVyY29ubmVjdC5oPgogI2luY2x1ZGUgPHNvYy9xY29tL2NtZC1k
-Yi5oPgogCiAjaW5jbHVkZSAiYTZ4eF9ncHUuaCIKQEAgLTY1LDggKzY2LDE1IEBAIHN0YXRpYyBi
-b29sIGE2eHhfZ211X2d4X2lzX29uKHN0cnVjdCBhNnh4X2dtdSAqZ211KQogCQlBNlhYX0dNVV9T
-UFRQUkFDX1BXUl9DTEtfU1RBVFVTX0dYX0hNX0NMS19PRkYpKTsKIH0KIAotc3RhdGljIGludCBh
-Nnh4X2dtdV9zZXRfZnJlcShzdHJ1Y3QgYTZ4eF9nbXUgKmdtdSwgaW50IGluZGV4KQorc3RhdGlj
-IHZvaWQgYTZ4eF9nbXVfc2V0X2ZyZXEoc3RydWN0IGE2eHhfZ211ICpnbXUsIGludCBpbmRleCkK
-IHsKKwlzdHJ1Y3QgYTZ4eF9ncHUgKmE2eHhfZ3B1ID0gY29udGFpbmVyX29mKGdtdSwgc3RydWN0
-IGE2eHhfZ3B1LCBnbXUpOworCXN0cnVjdCBhZHJlbm9fZ3B1ICphZHJlbm9fZ3B1ID0gJmE2eHhf
-Z3B1LT5iYXNlOworCXN0cnVjdCBtc21fZ3B1ICpncHUgPSAmYWRyZW5vX2dwdS0+YmFzZTsKKwlz
-dHJ1Y3QgZGV2X3BtX29wcCAqb3BwOworCXU2NCBhYiwgaWI7CisJaW50IHJldDsKKwogCWdtdV93
-cml0ZShnbXUsIFJFR19BNlhYX0dNVV9EQ1ZTX0FDS19PUFRJT04sIDApOwogCiAJZ211X3dyaXRl
-KGdtdSwgUkVHX0E2WFhfR01VX0RDVlNfUEVSRl9TRVRUSU5HLApAQCAtODIsNyArOTAsMjIgQEAg
-c3RhdGljIGludCBhNnh4X2dtdV9zZXRfZnJlcShzdHJ1Y3QgYTZ4eF9nbXUgKmdtdSwgaW50IGlu
-ZGV4KQogCWE2eHhfZ211X3NldF9vb2IoZ211LCBHTVVfT09CX0RDVlNfU0VUKTsKIAlhNnh4X2dt
-dV9jbGVhcl9vb2IoZ211LCBHTVVfT09CX0RDVlNfU0VUKTsKIAotCXJldHVybiBnbXVfcmVhZChn
-bXUsIFJFR19BNlhYX0dNVV9EQ1ZTX1JFVFVSTik7CisJcmV0ID0gZ211X3JlYWQoZ211LCBSRUdf
-QTZYWF9HTVVfRENWU19SRVRVUk4pOworCWlmIChyZXQpCisJCWRldl9lcnIoZ211LT5kZXYsICJH
-TVUgc2V0IEdQVSBmcmVxdWVuY3kgZXJyb3I6ICVkXG4iLCByZXQpOworCisJLyogU2V0IHRoZSBp
-bnRlcmNvbm5lY3QgYmFuZHdpZHRoIGZyb20gdGhlIENQVSAqLworCWlmIChJU19FUlJfT1JfTlVM
-TChncHUtPmljY19wYXRoKSkKKwkJcmV0dXJuOworCisJb3BwID0gZGV2X3BtX29wcF9maW5kX2Zy
-ZXFfZXhhY3QoJmdwdS0+cGRldi0+ZGV2LAorCQlnbXUtPmdwdV9mcmVxc1tpbmRleF0sIHRydWUp
-OworCWlmICghSVNfRVJSX09SX05VTEwob3BwKSkgeworCQlpZiAoIWRldl9wbV9vcHBfZ2V0X2lu
-dGVyY29ubmVjdF9idyhvcHAsICJwb3J0MCIsICZhYiwgJmliKSkKKwkJCWljY19zZXQoZ3B1LT5p
-Y2NfcGF0aCwgYWIsIGliKTsKKworCQlkZXZfcG1fb3BwX3B1dChvcHApOworCX0KIH0KIAogc3Rh
-dGljIGJvb2wgYTZ4eF9nbXVfY2hlY2tfaWRsZV9sZXZlbChzdHJ1Y3QgYTZ4eF9nbXUgKmdtdSkK
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2FkcmVub19ncHUuYyBiL2Ry
-aXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2FkcmVub19ncHUuYwppbmRleCBkYTEzNjNhMGM1NGQu
-LjJlYWNlOWJmMzJjNyAxMDA2NDQKLS0tIGEvZHJpdmVycy9ncHUvZHJtL21zbS9hZHJlbm8vYWRy
-ZW5vX2dwdS5jCisrKyBiL2RyaXZlcnMvZ3B1L2RybS9tc20vYWRyZW5vL2FkcmVub19ncHUuYwpA
-QCAtMjEsNiArMjEsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgogI2luY2x1ZGUgPGxp
-bnV4L3BtX29wcC5oPgogI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KKyNpbmNsdWRlIDxsaW51eC9p
-bnRlcmNvbm5lY3QuaD4KICNpbmNsdWRlICJhZHJlbm9fZ3B1LmgiCiAjaW5jbHVkZSAibXNtX2dl
-bS5oIgogI2luY2x1ZGUgIm1zbV9tbXUuaCIKQEAgLTY5NCw2ICs2OTUsOSBAQCBzdGF0aWMgaW50
-IGFkcmVub19nZXRfcHdybGV2ZWxzKHN0cnVjdCBkZXZpY2UgKmRldiwKIAogCURCRygiZmFzdF9y
-YXRlPSV1LCBzbG93X3JhdGU9MjcwMDAwMDAiLCBncHUtPmZhc3RfcmF0ZSk7CiAKKwkvKiBDaGVj
-ayBmb3IgYW4gaW50ZXJjb25uZWN0IHBhdGggZm9yIHRoZSBidXMgKi8KKwlncHUtPmljY19wYXRo
-ID0gb2ZfaWNjX2dldChkZXYsICJwb3J0MCIpOworCiAJcmV0dXJuIDA7CiB9CiAKQEAgLTczMiwx
-MCArNzM2LDEzIEBAIGludCBhZHJlbm9fZ3B1X2luaXQoc3RydWN0IGRybV9kZXZpY2UgKmRybSwg
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwKIAogdm9pZCBhZHJlbm9fZ3B1X2NsZWFudXAo
-c3RydWN0IGFkcmVub19ncHUgKmFkcmVub19ncHUpCiB7CisJc3RydWN0IG1zbV9ncHUgKmdwdSA9
-ICZhZHJlbm9fZ3B1LT5iYXNlOwogCXVuc2lnbmVkIGludCBpOwogCiAJZm9yIChpID0gMDsgaSA8
-IEFSUkFZX1NJWkUoYWRyZW5vX2dwdS0+aW5mby0+ZncpOyBpKyspCiAJCXJlbGVhc2VfZmlybXdh
-cmUoYWRyZW5vX2dwdS0+ZndbaV0pOwogCisJaWNjX3B1dChncHUtPmljY19wYXRoKTsKKwogCW1z
-bV9ncHVfY2xlYW51cCgmYWRyZW5vX2dwdS0+YmFzZSk7CiB9CmRpZmYgLS1naXQgYS9kcml2ZXJz
-L2dwdS9kcm0vbXNtL21zbV9ncHUuaCBiL2RyaXZlcnMvZ3B1L2RybS9tc20vbXNtX2dwdS5oCmlu
-ZGV4IDkxMjJlZTZlNTVlNC4uOWM4NTFkMDNmMzQ0IDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9k
-cm0vbXNtL21zbV9ncHUuaAorKysgYi9kcml2ZXJzL2dwdS9kcm0vbXNtL21zbV9ncHUuaApAQCAt
-MjAsNiArMjAsNyBAQAogCiAjaW5jbHVkZSA8bGludXgvY2xrLmg+CiAjaW5jbHVkZSA8bGludXgv
-cmVndWxhdG9yL2NvbnN1bWVyLmg+CisjaW5jbHVkZSA8bGludXgvaW50ZXJjb25uZWN0Lmg+CiAK
-ICNpbmNsdWRlICJtc21fZHJ2LmgiCiAjaW5jbHVkZSAibXNtX2ZlbmNlLmgiCkBAIC0xMTcsNiAr
-MTE4LDggQEAgc3RydWN0IG1zbV9ncHUgewogCXN0cnVjdCBjbGsgKmViaTFfY2xrLCAqY29yZV9j
-bGssICpyYmJtdGltZXJfY2xrOwogCXVpbnQzMl90IGZhc3RfcmF0ZTsKIAorCXN0cnVjdCBpY2Nf
-cGF0aCAqaWNjX3BhdGg7CisKIAkvKiBIYW5nIGFuZCBJbmFjdGl2aXR5IERldGVjdGlvbjoKIAkg
-Ki8KICNkZWZpbmUgRFJNX01TTV9JTkFDVElWRV9QRVJJT0QgICA2NiAvKiBpbiBtcyAocm91Z2hs
-eSBmb3VyIGZyYW1lcykgKi8KLS0gCjIuMTguMAoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
-bGlzdGluZm8vZnJlZWRyZW5vCg==
+On 08/21/2018 06:02 AM, Anders Roxell wrote:
+> The strncpy doesn't null terminate the string because the size is too
+> short by one byte.
+> 
+> parse.c: In function ‘prepare_default_config’:
+> parse.c:148:2: warning: ‘strncpy’ output truncated before terminating
+>     nul copying 8 bytes from a string of the same length
+>     [-Wstringop-truncation]
+>   strncpy(config->governor, "ondemand", 8);
+>   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 
+> Passing the length of the input argument to strncpy() is almost always
+> wrong and provides no extra benefit over strcpy(), and since 'ondemand'
+> fits within 15 bytes" and it null terminates the string its safe to use
+> strcpy().
+> 
+> Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
+> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+> ---
+>  tools/power/cpupower/bench/parse.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
+> index 9ba8a44ad2a7..91b5b768ffd2 100644
+> --- a/tools/power/cpupower/bench/parse.c
+> +++ b/tools/power/cpupower/bench/parse.c
+> @@ -145,7 +145,7 @@ struct config *prepare_default_config()
+>  	config->cpu = 0;
+>  	config->prio = SCHED_HIGH;
+>  	config->verbose = 0;
+> -	strncpy(config->governor, "ondemand", 8);
+> +	strcpy(config->governor, "ondemand");
+This change is fine, however continuing to use strncpy with sizeof(config->governor).
+
+thanks,
+-- Shuah
