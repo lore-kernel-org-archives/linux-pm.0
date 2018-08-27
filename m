@@ -1,88 +1,113 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu device
- nodes
-Date: Mon, 27 Aug 2018 09:11:08 -0600
-Message-ID: <20180827151112.25211-6-jcrouse@codeaurora.org>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH v7 2/8] dt-bindings: Introduce interconnect provider
+ bindings
+Date: Mon, 27 Aug 2018 17:11:40 +0200
+Message-ID: <20180827151140.luysp2kfbcq6patg@flea>
+References: <20180731161340.13000-1-georgi.djakov@linaro.org>
+ <20180731161340.13000-3-georgi.djakov@linaro.org>
+ <CABGGisxq+hf91R18pnZ=VZ9f99GssWWPhpPCjNAROJmKg5-udA@mail.gmail.com>
+ <e114ed83-fd54-4952-f375-e1d94826ac6e@linaro.org>
+ <20180820153207.xx5outviph7ec76p@flea>
+ <672e6c6c-222f-5e7f-5d0c-acc8da68b1ab@linaro.org>
+ <CAL_JsqKMPm=qmfYMQH99_gqSv0-ynUSvbkoNjjeDKtyxfgE1tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180827151112.25211-1-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="zo6ztequdzzl7s7j"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqKMPm=qmfYMQH99_gqSv0-ynUSvbkoNjjeDKtyxfgE1tg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, Evan Green <evgreen@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Alexandre Bailon <abailon@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, moderated list:A
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIHRoZSBub2RlcyB0byBkZXNjcmliZSB0aGUgQWRyZW5vIEdQVSBhbmQgR01VIGRldmljZXMu
-CgpTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgot
-LS0KIGFyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSB8IDEyMSArKysrKysrKysr
-KysrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxMjEgaW5zZXJ0aW9ucygrKQoKZGlm
-ZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaSBiL2FyY2gvYXJt
-NjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQppbmRleCBjZGFhYmViM2M5OTUuLjEwZGIwY2Vi
-MzY5OSAxMDA2NDQKLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpCisr
-KyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvcWNvbS9zZG04NDUuZHRzaQpAQCAtMTkyLDYgKzE5Miw1
-OSBAQAogCQltZXRob2QgPSAic21jIjsKIAl9OwogCitncHVfb3BwX3RhYmxlOiBhZHJlbm8tb3Bw
-LXRhYmxlIHsKKwkJY29tcGF0aWJsZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyLXFjb20tbGV2ZWwi
-OworCisJCW9wcC03MTAwMDAwMDAgeworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw3MTAwMDAwMDA+
-OworCQkJcWNvbSxsZXZlbCA9IDw0MTY+OworCQl9OworCisJCW9wcC02NzUwMDAwMDAgeworCQkJ
-b3BwLWh6ID0gL2JpdHMvIDY0IDw2NzUwMDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDwzODQ+Owor
-CQl9OworCisJCW9wcC01OTYwMDAwMDAgeworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw1OTYwMDAw
-MDA+OworCQkJcWNvbSxsZXZlbCA9IDwzMjA+OworCQl9OworCisJCW9wcC01MjAwMDAwMDAgewor
-CQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw1MjAwMDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDwyNTY+
-OworCQl9OworCisJCW9wcC00MTQwMDAwMDAgeworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDw0MTQw
-MDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDwxOTI+OworCQl9OworCisJCW9wcC0zNDIwMDAwMDAg
-eworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDwzNDIwMDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDwx
-Mjg+OworCQl9OworCisJCW9wcC0yNTcwMDAwMDAgeworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDwy
-NTcwMDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDw2ND47CisJCX07CisJfTsKKworCWdtdV9vcHBf
-dGFibGU6IGFkcmVuby1nbXUtb3BwLXRhYmxlIHsKKwkJY29tcGF0aWJsZSA9ICJvcGVyYXRpbmct
-cG9pbnRzLXYyLXFjb20tbGV2ZWwiOworCisJCW9wcC00MDAwMDAwMDAgeworCQkJb3BwLWh6ID0g
-L2JpdHMvIDY0IDw0MDAwMDAwMDA+OworCQkJcWNvbSxsZXZlbCA9IDwxMjg+OworCQl9OworCisJ
-CW9wcC0yMDAwMDAwMDAgeworCQkJb3BwLWh6ID0gL2JpdHMvIDY0IDwyMDAwMDAwMDA+OworCQkJ
-cWNvbSxsZXZlbCA9IDw0OD47CisJCX07CisJfTsKKwogCXNvYzogc29jIHsKIAkJI2FkZHJlc3Mt
-Y2VsbHMgPSA8MT47CiAJCSNzaXplLWNlbGxzID0gPDE+OwpAQCAtMzIzLDUgKzM3Niw3MyBAQAog
-CQkJCXN0YXR1cyA9ICJkaXNhYmxlZCI7CiAJCQl9OwogCQl9OworCisJCWFkcmVub19zbW11OiBh
-ZHJlbm8tc21tdUA1MDQwMDAwIHsKKwkJCWNvbXBhdGlibGUgPSAicWNvbSxzZG04NDUtc21tdS12
-MiIsICJxY29tLHNtbXUtdjIiOworCQkJcmVnID0gPDB4NTA0MDAwMCAweDEwMDAwPjsKKwkJCSNp
-b21tdS1jZWxscyA9IDwxPjsKKwkJCSNnbG9iYWwtaW50ZXJydXB0cyA9IDwyPjsKKwkJCWludGVy
-cnVwdHMgPSA8R0lDX1NQSSAyMjkgSVJRX1RZUEVfTEVWRUxfSElHSD4sCisJCQkJCTxHSUNfU1BJ
-IDIzMSBJUlFfVFlQRV9MRVZFTF9ISUdIPiwKKwkJCQkJPEdJQ19TUEkgMzY0IElSUV9UWVBFX0VE
-R0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY1IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJ
-CQkJPEdJQ19TUEkgMzY2IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY3
-IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY4IElSUV9UWVBFX0VER0Vf
-UklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzY5IElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJ
-PEdJQ19TUEkgMzcwIElSUV9UWVBFX0VER0VfUklTSU5HPiwKKwkJCQkJPEdJQ19TUEkgMzcxIElS
-UV9UWVBFX0VER0VfUklTSU5HPjsKKwkJCWNsb2NrcyA9IDwmZ2NjIEdDQ19HUFVfTUVNTk9DX0dG
-WF9DTEs+LAorCQkJCTwmZ2NjIEdDQ19HUFVfQ0ZHX0FIQl9DTEs+OworCQkJY2xvY2stbmFtZXMg
-PSAiYnVzIiwgImlmYWNlIjsKKworCQkJcG93ZXItZG9tYWlucyA9IDwmZ3B1Y2MgR1BVX0NYX0dE
-U0M+OworCQl9OworCisJCWdwdUA1MDAwMDAwIHsKKwkJCWNvbXBhdGlibGUgPSAicWNvbSxhZHJl
-bm8tNjMwLjIiLCAicWNvbSxhZHJlbm8iOworCQkJI3N0cmVhbS1pZC1jZWxscyA9IDwxNj47CisK
-KwkJCXJlZyA9IDwweDUwMDAwMDAgMHg0MDAwMD47CisJCQlyZWctbmFtZXMgPSAia2dzbF8zZDBf
-cmVnX21lbW9yeSI7CisKKwkJCS8qCisJCQkgKiBMb29rIG1hLCBubyBjbG9ja3MhIFRoZSBHUFUg
-Y2xvY2tzIGFuZCBwb3dlciBhcmUKKwkJCSAqIGNvbnRyb2xsZWQgZW50aXJlbHkgYnkgdGhlIEdN
-VQorCQkJICovCisKKwkJCWludGVycnVwdHMgPSA8MCAzMDAgMD47CisJCQlpbnRlcnJ1cHQtbmFt
-ZXMgPSAia2dzbF8zZDBfaXJxIjsKKworCQkJaW9tbXVzID0gPCZhZHJlbm9fc21tdSAwPjsKKwor
-CQkJb3BlcmF0aW5nLXBvaW50cy12MiA9IDwmZ3B1X29wcF90YWJsZT47CisKKwkJCXFjb20sZ211
-ID0gPCZnbXU+OworCQl9OworCisJCWdtdTogZ211QDUwNmEwMDAgeworCQkJY29tcGF0aWJsZT0i
-cWNvbSxhZHJlbm8tZ211IjsKKworCQkJcmVnID0gPDB4NTA2YTAwMCAweDMwMDAwPiwKKwkJCQk8
-MHhiMjgwMDAwIDB4MTAwMDA+LAorCQkJCTwweGI0ODAwMDAgMHgxMDAwMD47CisJCQlyZWctbmFt
-ZXMgPSAiZ211IiwgImdtdV9wZGMiLCAiZ211X3BkY19zZXEiOworCisJCQlpbnRlcnJ1cHRzID0g
-PEdJQ19TUEkgMzA0IElSUV9UWVBFX0xFVkVMX0hJR0g+LAorCQkJICAgICA8R0lDX1NQSSAzMDUg
-SVJRX1RZUEVfTEVWRUxfSElHSD47CisJCQlpbnRlcnJ1cHQtbmFtZXMgPSAiaGZpIiwgImdtdSI7
-CisKKwkJCWNsb2NrcyA9IDwmZ3B1Y2MgR1BVX0NDX0NYX0dNVV9DTEs+LAorCQkJCTwmZ3B1Y2Mg
-R1BVX0NDX0NYT19DTEs+LAorCQkJCTwmZ2NjIEdDQ19ERFJTU19HUFVfQVhJX0NMSz4sCisJCQkJ
-PCZnY2MgR0NDX0dQVV9NRU1OT0NfR0ZYX0NMSz47CisJCQljbG9jay1uYW1lcyA9ICJnbXUiLCAi
-Y3hvIiwgImF4aSIsICJtZW1ub2MiOworCisJCQlwb3dlci1kb21haW5zID0gPCZncHVjYyBHUFVf
-Q1hfR0RTQz47CisJCQlpb21tdXMgPSA8JmFkcmVub19zbW11IDU+OworCisJCQlvcGVyYXRpbmct
-cG9pbnRzLXYyID0gPCZnbXVfb3BwX3RhYmxlPjsKKwkJfTsKIAl9OwogfTsKLS0gCjIuMTguMAoK
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5v
-IG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+
+--zo6ztequdzzl7s7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Aug 24, 2018 at 10:35:23AM -0500, Rob Herring wrote:
+> On Fri, Aug 24, 2018 at 9:51 AM Georgi Djakov <georgi.djakov@linaro.org> =
+wrote:
+> >
+> > Hi Maxime,
+> >
+> > On 08/20/2018 06:32 PM, Maxime Ripard wrote:
+> > > Hi Georgi,
+> > >
+> > > On Tue, Aug 07, 2018 at 05:54:38PM +0300, Georgi Djakov wrote:
+> > >>> There is also a patch series from Maxime Ripard that's addressing t=
+he
+> > >>> same general area. See "dt-bindings: Add a dma-parent property". We
+> > >>> don't need multiple ways to address describing the device to memory
+> > >>> paths, so you all had better work out a common solution.
+> > >>
+> > >> Looks like this fits exactly into the interconnect API concept. I see
+> > >> MBUS as interconnect provider and display/camera as consumers, that
+> > >> report their bandwidth needs. I am also planning to add support for
+> > >> priority.
+> > >
+> > > Thanks for working on this. After looking at your serie, the one thing
+> > > I'm a bit uncertain about (and the most important one to us) is how we
+> > > would be able to tell through which interconnect the DMA are done.
+> > >
+> > > This is important to us since our topology is actually quite simple as
+> > > you've seen, but the RAM is not mapped on that bus and on the CPU's,
+> > > so we need to apply an offset to each buffer being DMA'd.
+> >
+> > Ok, i see - your problem is not about bandwidth scaling but about using
+> > different memory ranges by the driver to access the same location. So
+> > this is not really the same and your problem is different. Also the
+> > interconnect bindings are describing a path and endpoints. However i am
+> > open to any ideas.
+>=20
+> It may be different things you need, but both are related to the path
+> between a bus master and memory. We can't have each 'problem'
+> described in a different way. Well, we could as long as each platform
+> has different problems, but that's unlikely.
+>=20
+> It could turn out that the only commonality is property naming
+> convention, but that's still better than 2 independent solutions.
+
+Yeah, I really don't think the two issues are unrelated. Can we maybe
+have a particular interconnect-names value to mark the interconnect
+being used to perform DMA?
+
+> I know you each want to just fix your issues, but the fact that DT
+> doesn't model the DMA side of the bus structure has been an issue at
+> least since the start of DT on ARM. Either we should address this in a
+> flexible way or we can just continue to manage without. So I'm not
+> inclined to take something that only addresses one SoC family.
+
+I'd really like to have it addressed. We're getting bit by this, and
+the hacks we have don't work well anymore.
+
+Maxime
+
+--=20
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--zo6ztequdzzl7s7j
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAluEFKsACgkQ0rTAlCFN
+r3Q3rw/9GTXP9K0EFEOmC0zlMe8iH8k32ZPazjghmW/LNDnXa8mr6DPdF4Sn8Xt6
++Y0CoX89XgLR96H9SVhUOVJjTNn14//azdje3vBe+LmMuwTQHsYgqbwtSIF17CUk
+TYNiPOPlQ0HNj0WG3PMVFaji5saN2IRQIdoP7FffszPJrHCJrOx421ea9m9f//QN
+b38J09/uo9hOLVkzH1ufQR5kQsZUzIOW9X2NspgGK8ZHkms88+DKxliOe/qbqbQT
+iC9/XwhpSgxzqtyjbdp5kiwWtjRmkAbmf3EmH09siPhWBGWFPZ+lAkCmH2hTPv+d
+/R1jtcfLNFD4XZWdcNsqO5ng8dPJRcSwljzM/Q8CEDd+FpZuFudWjDisYHF6WecP
+NbirwCBzQqe32iABFKW6+jdhJts/Xp5wQieuJmhsgE8MzM7o7tJNhb3sml5VTARW
+BRZRzlcq4qftUZ7LZ0sjAGVKJs1oUNzUPgc7gB8MgqPrhEDWji2B6oHm55sNJ/y3
+Kh2sVdz8dFlFcHu/fc/AiUP8bVppUK/jzzWerKCYD0XJrDKXRo6lbjh7Hm02/fq7
+L/ofWv+mLPLSli+B/V7KT7SYzggqVGGHVAXHVs8F0NpSInWmYVitTlbl5uWqW9fc
+AOwCLMrF9god3vYhRItTWyCDgo5F/4rr2e0NeLSAgn363M8BB5s=
+=qybd
+-----END PGP SIGNATURE-----
+
+--zo6ztequdzzl7s7j--
