@@ -1,45 +1,78 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] power: supply: remove unused pointer 'dev'
-Date: Tue, 28 Aug 2018 17:28:42 +0100
-Message-ID: <20180828162842.17503-1-colin.king@canonical.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+From: Anshuman Gupta <anshuman.gupta@intel.com>
+Subject: Re: [PATCH v2 1/1] hdac-codec runtime suspended at PM:Suspend.
+Date: Tue, 28 Aug 2018 22:04:15 +0530
+Message-ID: <1535474055-11763-1-git-send-email-anshuman.gupta@intel.com>
+References: <1534615923-8541-2-git-send-email-anshuman.gupta@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1534615923-8541-2-git-send-email-anshuman.gupta@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: puneethx.prabhu@intel.com, lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz, tiwai@suse.com, rafael@kernel.org
+Cc: alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, anshuman.gupta@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+Is this patch not in consideration, there are no review comment for it. 
+this patch fixes an issue with hdac hdmi codec driver.
 
-Pointer 'dev' is being assigned but is never used hence it is
-redundant and can be removed.
+On one of our platform HD audio controller takes arounf 300ms.
+Below are the snippet of dmesg log.
 
-Cleans up clang warning:
-variable 'dev' set but not used [-Wunused-but-set-variable]
+[ 3778.461888] calling  0000:00:0e.0+ @ 3667, parent: pci0000:00, cb: pci_pm_resume
+[ 3778.775273] call 0000:00:0e.0+ returned 0 after 306016 usecs
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/power/supply/cros_usbpd-charger.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-index 688a16bacfbb..f2b8de502b82 100644
---- a/drivers/power/supply/cros_usbpd-charger.c
-+++ b/drivers/power/supply/cros_usbpd-charger.c
-@@ -378,12 +378,10 @@ static int cros_usbpd_charger_ec_event(struct notifier_block *nb,
- {
- 	struct cros_ec_device *ec_device;
- 	struct charger_data *charger;
--	struct device *dev;
- 	u32 host_event;
+When HD audio controller is in runtime suspend state, 
+with direct complete, we can improve overall system wide resume latency.
  
- 	charger = container_of(nb, struct charger_data, notifier);
- 	ec_device = charger->ec_device;
--	dev = charger->dev;
+On Sat, Aug 18, 2018 at 11:42:03PM +0530, Anshuman Gupta wrote:
+> Keep hdac hdmi codec to be in runtime suspended while entering to
+> system wide suspend. Currently hdac hdmi codec driver using its
+> suspend and resume operation in prepare and complete PM callbacks,
+> and it resumes the hd audio controller (parent of self) from runtime
+> suspend and blocks the direct complete for hd audio controller.
+>
+> If hdac-codec is already in runtime suspend state skip its power down
+> sequence in prepare, power up sequence in complete phase. It enables
+> direct complete path for hdac-codec and hd audio controller
+> PCI device.
+>
+> Signed-off-by: Anshuman Gupta <anshuman.gupta@intel.com>
+> ---
+> Changes in v2
+> - Changed the commit message.
+> - Using pm_runtime_suspended instead of pm_runtime_status_suspended
+>   in order to handle any race condition.
+>
+> sound/soc/codecs/hdac_hdmi.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/sound/soc/codecs/hdac_hdmi.c b/sound/soc/codecs/hdac_hdmi.c
+> index 84f7a7a..e965338 100644
+> --- a/sound/soc/codecs/hdac_hdmi.c
+> +++ b/sound/soc/codecs/hdac_hdmi.c
+> @@ -1859,6 +1859,9 @@ static int hdmi_codec_prepare(struct device *dev)
+>       struct hdac_ext_device *edev = to_hda_ext_device(dev);
+>       struct hdac_device *hdev = &edev->hdev;
+>
+> +     if (pm_runtime_suspended(dev))
+> +             return 1;
+> +
+>       pm_runtime_get_sync(&edev->hdev.dev);
+>
+>       /*
+> @@ -1880,6 +1883,9 @@ static void hdmi_codec_complete(struct device *dev)
+>       struct hdac_hdmi_priv *hdmi = hdev_to_hdmi_priv(&edev->hdev);
+>       struct hdac_device *hdev = &edev->hdev;
+>
+> +     if (pm_runtime_suspended(dev))
+> +             return;
+> +
+>       /* Power up afg */
+>       snd_hdac_codec_read(hdev, hdev->afg, 0, AC_VERB_SET_POWER_STATE,
+>                                                       AC_PWRST_D0);
+> --
+> 2.7.4
+>
+
+--
+Thanks,
+Anshuman.
  
- 	host_event = cros_ec_get_host_event(ec_device);
- 	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_PD_MCU)) {
--- 
-2.17.1
