@@ -1,77 +1,60 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH] thermal: Convert to using %pOFn instead of device_node.name
-Date: Mon, 27 Aug 2018 20:52:46 -0500
-Message-ID: <20180828015252.28511-45-robh@kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] devfreq: Convert to using %pOFn instead of
+ device_node.name
+Date: Tue, 28 Aug 2018 11:06:56 +0900
+Message-ID: <5B84AE40.50305@samsung.com>
 References: <20180828015252.28511-1-robh@kernel.org>
+        <CGME20180828015312epcas2p2fdb2ee1d1b292f212ec773dd8fb4bfc7@epcas2p2.samsung.com>
+        <20180828015252.28511-15-robh@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828015252.28511-1-robh@kernel.org>
+In-reply-to: <20180828015252.28511-15-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In preparation to remove the node name pointer from struct device_node,
-convert printf users to use the %pOFn format specifier.
+Dear Rob,
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/thermal/of-thermal.c    | 10 +++++-----
- drivers/thermal/qoriq_thermal.c |  4 ++--
- 2 files changed, 7 insertions(+), 7 deletions(-)
+On 2018년 08월 28일 10:52, Rob Herring wrote:
+> In preparation to remove the node name pointer from struct device_node,
+> convert printf users to use the %pOFn format specifier.
+> 
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index a9c64f0d3284..c61de0bdf053 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -535,8 +535,8 @@ static int of_get_devfreq_events(struct device_node *np,
+>  
+>  		if (i == ARRAY_SIZE(ppmu_events)) {
+>  			dev_warn(dev,
+> -				"don't know how to configure events : %s\n",
+> -				node->name);
+> +				"don't know how to configure events : %pOFn\n",
+> +				node);
+>  			continue;
+>  		}
+>  
+> 
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 977a8307fbb1..e201ae1c382f 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -483,8 +483,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 		if (sensor_specs.args_count >= 1) {
- 			id = sensor_specs.args[0];
- 			WARN(sensor_specs.args_count > 1,
--			     "%s: too many cells in sensor specifier %d\n",
--			     sensor_specs.np->name, sensor_specs.args_count);
-+			     "%pOFn: too many cells in sensor specifier %d\n",
-+			     sensor_specs.np, sensor_specs.args_count);
- 		} else {
- 			id = 0;
- 		}
-@@ -960,8 +960,8 @@ int __init of_parse_thermal_zones(void)
- 
- 		tz = thermal_of_build_thermal_zone(child);
- 		if (IS_ERR(tz)) {
--			pr_err("failed to build thermal zone %s: %ld\n",
--			       child->name,
-+			pr_err("failed to build thermal zone %pOFn: %ld\n",
-+			       child,
- 			       PTR_ERR(tz));
- 			continue;
- 		}
-@@ -995,7 +995,7 @@ int __init of_parse_thermal_zones(void)
- 						    tz->passive_delay,
- 						    tz->polling_delay);
- 		if (IS_ERR(zone)) {
--			pr_err("Failed to build %s zone %ld\n", child->name,
-+			pr_err("Failed to build %pOFn zone %ld\n", child,
- 			       PTR_ERR(zone));
- 			kfree(tzp);
- 			kfree(ops);
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index c866cc165960..1fa132fc316b 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -129,8 +129,8 @@ static int qoriq_tmu_get_sensor_id(void)
- 	if (sensor_specs.args_count >= 1) {
- 		id = sensor_specs.args[0];
- 		WARN(sensor_specs.args_count > 1,
--				"%s: too many cells in sensor specifier %d\n",
--				sensor_specs.np->name, sensor_specs.args_count);
-+				"%pOFn: too many cells in sensor specifier %d\n",
-+				sensor_specs.np, sensor_specs.args_count);
- 	} else {
- 		id = 0;
- 	}
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+
 -- 
-2.17.1
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
