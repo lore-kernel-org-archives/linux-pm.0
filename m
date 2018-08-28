@@ -1,55 +1,93 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 00/11] Another round of tsens cleanups
-Date: Tue, 28 Aug 2018 19:08:29 +0530
-Message-ID: <cover.1535462942.git.amit.kucheria@linaro.org>
+Subject: [PATCH v2 01/11] arm/arm64: dts: msm8974/msm8916: thermal: Split address space into two
+Date: Tue, 28 Aug 2018 19:08:30 +0530
+Message-ID: <882739b10bd0a3b655baef9b7ee1958680aa0b04.1535462942.git.amit.kucheria@linaro.org>
+References: <cover.1535462942.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1535462942.git.amit.kucheria@linaro.org>
+In-Reply-To: <cover.1535462942.git.amit.kucheria@linaro.org>
+References: <cover.1535462942.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is another series of tsens cleanups before we add interrupt support. This applies on top of 4.19-rc1.
+We've earlier added support to split the register address space into TM
+and SROT regions.
 
-In this series, we have the following:
-- splitup 8916 and 8974 register address spaces for SROT and TM
-- cleanups: move to spdx, dead code removal, removal of id field
-- Add support to map the SROT address space for DTs that list it separately
-- Check if TSENS IP is enabled in firmware by querying the SROT space
-- Add reg-names property to get more readable outputs in /proc/iomem
-- Add myself as maintainer of tsens
+Split up the regmap address space into two for the remaining platforms
+that have a similar register layout and make corresponding changes to
+the get_temp_common() function used by these platforms.
 
-Changes since v1:
-- Split up changes that split the address space and added qcom,sensors
-  property into two separate patches
-- Remove brackets in typo correction patch
+Since tsens-common.c/init_common() currently only registers one address
+space, the order is important (TM before SROT).  This is OK since the
+code doesn't really use the SROT functionality yet.
 
-Amit Kucheria (11):
-  arm/arm64: dts: msm8974/msm8916: thermal: Split address space into two
-  arm/arm64: dts: msm8974/msm8916: thermal: Add "qcom,sensors" property
-  dt-bindings: thermal: Fix a typo in documentation
-  thermal: tsens: Add SPDX license identifiers
-  thermal: tsens: Get rid of dead code
-  thermal: tsens: Rename map field in order to add a second address map
-  thermal: tsens: Add the SROT address map
-  thermal: tsens: Check if the IP is correctly enabled by firmware
-  thermal: tsens: Get rid of 'id' field
-  arm64: dts: qcom: Add reg-names for all tsens nodes
-  MAINTAINERS: Add entry for Qualcomm TSENS thermal drivers
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ arch/arm/boot/dts/qcom-msm8974.dtsi   | 5 +++--
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 5 +++--
+ drivers/thermal/qcom/tsens-common.c   | 5 +++--
+ 3 files changed, 9 insertions(+), 6 deletions(-)
 
- .../devicetree/bindings/thermal/thermal.txt   |  2 +-
- MAINTAINERS                                   |  7 +++
- arch/arm/boot/dts/qcom-msm8974.dtsi           |  7 ++-
- arch/arm64/boot/dts/qcom/msm8916.dtsi         |  7 ++-
- arch/arm64/boot/dts/qcom/msm8996.dtsi         |  2 +
- arch/arm64/boot/dts/qcom/sdm845.dtsi          |  2 +
- drivers/thermal/qcom/tsens-8916.c             | 11 +---
- drivers/thermal/qcom/tsens-8960.c             | 41 +++++-------
- drivers/thermal/qcom/tsens-8974.c             | 11 +---
- drivers/thermal/qcom/tsens-common.c           | 62 ++++++++++++-------
- drivers/thermal/qcom/tsens-v2.c               |  6 +-
- drivers/thermal/qcom/tsens.c                  | 21 +------
- drivers/thermal/qcom/tsens.h                  | 24 +++----
- 13 files changed, 99 insertions(+), 104 deletions(-)
-
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index d9019a49b292..56dbbf788d15 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -427,9 +427,10 @@
+ 			};
+ 		};
+ 
+-		tsens: thermal-sensor@fc4a8000 {
++		tsens: thermal-sensor@fc4a9000 {
+ 			compatible = "qcom,msm8974-tsens";
+-			reg = <0xfc4a8000 0x2000>;
++			reg = <0xfc4a9000 0x1000>, /* TM */
++			      <0xfc4a8000 0x1000>; /* SROT */
+ 			nvmem-cells = <&tsens_calib>, <&tsens_backup>;
+ 			nvmem-cell-names = "calib", "calib_backup";
+ 			#thermal-sensor-cells = <1>;
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 7b32b8990d62..6a277fce3333 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -761,9 +761,10 @@
+ 			};
+ 		};
+ 
+-		tsens: thermal-sensor@4a8000 {
++		tsens: thermal-sensor@4a9000 {
+ 			compatible = "qcom,msm8916-tsens";
+-			reg = <0x4a8000 0x2000>;
++			reg = <0x4a9000 0x1000>, /* TM */
++			      <0x4a8000 0x1000>; /* SROT */
+ 			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+ 			nvmem-cell-names = "calib", "calib_sel";
+ 			#thermal-sensor-cells = <1>;
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index 6207d8d92351..478739543bbc 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -21,7 +21,7 @@
+ #include <linux/regmap.h>
+ #include "tsens.h"
+ 
+-#define S0_ST_ADDR		0x1030
++#define STATUS_OFFSET		0x30
+ #define SN_ADDR_OFFSET		0x4
+ #define SN_ST_TEMP_MASK		0x3ff
+ #define CAL_DEGC_PT1		30
+@@ -107,8 +107,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+ 	unsigned int status_reg;
+ 	int last_temp = 0, ret;
+ 
+-	status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
++	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * SN_ADDR_OFFSET;
+ 	ret = regmap_read(tmdev->map, status_reg, &code);
++
+ 	if (ret)
+ 		return ret;
+ 	last_temp = code & SN_ST_TEMP_MASK;
 -- 
 2.17.1
