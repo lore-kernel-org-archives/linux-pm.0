@@ -1,66 +1,48 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 9/9] arm64: dts: Add interconnect for the
- GPU on SDM845
-Date: Tue, 28 Aug 2018 12:16:58 -0600
-Message-ID: <20180828181658.GA7254@jcrouse-lnx.qualcomm.com>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-10-jcrouse@codeaurora.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH v4 07/16] sched/core: uclamp: extend cpu's cgroup
+ controller
+Date: Tue, 28 Aug 2018 11:29:00 -0700
+Message-ID: <ad7a1f15-d1ad-84f2-6b4d-cbfc4560a7a4@infradead.org>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-8-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20180827151112.25211-10-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180828135324.21976-8-patrick.bellasi@arm.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBBdWcgMjcsIDIwMTggYXQgMDk6MTE6MTJBTSAtMDYwMCwgSm9yZGFuIENyb3VzZSB3
-cm90ZToKPiBBZGQgdGhlIGludGVyY29ubmVjdCBwcm9wZXJ0aWVzIGZvciB0aGUgR1BVIG9uIFNE
-TTg0NQo+IGFuZCBzZXQgdGhlIGNvcnJlc3BvbmRpbmcgT1BQIGJhbmR3aWR0aCB2YWx1ZXMuCj4g
-Cj4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4K
-PiAtLS0KPiAgYXJjaC9hcm02NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpIHwgMTAgKysrKysr
-KysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQg
-YS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kgYi9hcmNoL2FybTY0L2Jvb3Qv
-ZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiBpbmRleCAxMGRiMGNlYjM2OTkuLjFlNjdmNGZkZDdkMSAx
-MDA2NDQKPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiArKysg
-Yi9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiBAQCAtMTk4LDM2ICsxOTgs
-NDMgQEAgZ3B1X29wcF90YWJsZTogYWRyZW5vLW9wcC10YWJsZSB7Cj4gIAkJb3BwLTcxMDAwMDAw
-MCB7Cj4gIAkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8NzEwMDAwMDAwPjsKPiAgCQkJcWNvbSxsZXZl
-bCA9IDw0MTY+Owo+ICsJCQlvcHAtaW50ZXJjb25uZWN0LWJ3LXBvcnQwID0gL2JpdHMvIDY0IDww
-IDcyMTYwMDAwMDA+Owo+ICAJCX07Cj4gIAo+ICAJCW9wcC02NzUwMDAwMDAgewo+ICAJCQlvcHAt
-aHogPSAvYml0cy8gNjQgPDY3NTAwMDAwMD47Cj4gIAkJCXFjb20sbGV2ZWwgPSA8Mzg0PjsKPiAr
-CQkJb3BwLWludGVyY29ubmVjdC1idy1wb3J0MCA9IC9iaXRzLyA2NCA8MCA3MjE2MDAwMDAwPjsK
-PiAgCQl9Owo+ICAKPiAgCQlvcHAtNTk2MDAwMDAwIHsKPiAgCQkJb3BwLWh6ID0gL2JpdHMvIDY0
-IDw1OTYwMDAwMDA+Owo+ICAJCQlxY29tLGxldmVsID0gPDMyMD47Cj4gKwkJCW9wcC1pbnRlcmNv
-bm5lY3QtYnctcG9ydDAgPSAvYml0cy8gNjQgPDAgNTE4NDAwMDAwMD47Cj4gIAkJfTsKPiAgCj4g
-IAkJb3BwLTUyMDAwMDAwMCB7Cj4gIAkJCW9wcC1oeiA9IC9iaXRzLyA2NCA8NTIwMDAwMDAwPjsK
-PiAgCQkJcWNvbSxsZXZlbCA9IDwyNTY+Owo+ICsJCQlvcHAtaW50ZXJjb25uZWN0LWJ3LXBvcnQw
-ID0gL2JpdHMvIDY0IDwwIDQwNjgwMDAwMDA+Owo+ICAJCX07Cj4gIAo+ICAJCW9wcC00MTQwMDAw
-MDAgewo+ICAJCQlvcHAtaHogPSAvYml0cy8gNjQgPDQxNDAwMDAwMD47Cj4gIAkJCXFjb20sbGV2
-ZWwgPSA8MTkyPjsKPiArCQkJb3BwLWludGVyY29ubmVjdC1idy1wb3J0MCA9IC9iaXRzLyA2NCA8
-MCAzMDcyMDAwMDAwPjsKPiAgCQl9Owo+ICAKPiAgCQlvcHAtMzQyMDAwMDAwIHsKPiAgCQkJb3Bw
-LWh6ID0gL2JpdHMvIDY0IDwzNDIwMDAwMDA+Owo+ICAJCQlxY29tLGxldmVsID0gPDEyOD47Cj4g
-KwkJCW9wcC1pbnRlcmNvbm5lY3QtYnctcG9ydDAgPSAvYml0cy8gNjQgPDAgMjE4ODAwMDAwMD47
-Cj4gIAkJfTsKPiAgCj4gIAkJb3BwLTI1NzAwMDAwMCB7Cj4gIAkJCW9wcC1oeiA9IC9iaXRzLyA2
-NCA8MjU3MDAwMDAwPjsKPiAgCQkJcWNvbSxsZXZlbCA9IDw2ND47Cj4gKwkJCW9wcC1pbnRlcmNv
-bm5lY3QtYnctcG9ydDAgPSAvYml0cy8gNjQgPDAgMTIwMDAwMDAwMD47Cj4gIAkJfTsKPiAgCX07
-Cj4gIAo+IEBAIC00MTgsNiArNDI1LDkgQEAgZ3B1X29wcF90YWJsZTogYWRyZW5vLW9wcC10YWJs
-ZSB7Cj4gIAo+ICAJCQlvcGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVfb3BwX3RhYmxlPjsKPiAg
-Cj4gKwkJCWludGVyY29ubmVjdHMgPSA8JnFub2MgMjYgJnFub2MgNTEyPjsKClBvaW50aW5nIG91
-dCBmb3IgcG9zdGVyaXR5IHRoYXQgdGhlIHNyY19pZCBoZXJlIGlzIGluY29ycmVjdC4gSXQgc2hv
-dWxkIGJlIDM2LgoKSm9yZGFuCgotLSAKVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJ
-bmMuIGlzIGEgbWVtYmVyIG9mIENvZGUgQXVyb3JhIEZvcnVtLAphIExpbnV4IEZvdW5kYXRpb24g
-Q29sbGFib3JhdGl2ZSBQcm9qZWN0Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVk
-ZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2ZyZWVkcmVubwo=
+On 08/28/2018 06:53 AM, Patrick Bellasi wrote:
+> +config UCLAMP_TASK_GROUP
+> +	bool "Utilization clamping per group of tasks"
+> +	depends on CGROUP_SCHED
+> +	depends on UCLAMP_TASK
+> +	default n
+> +	help
+> +	  This feature enables the scheduler to track the clamped utilization
+> +	  of each CPU based on RUNNABLE tasks currently scheduled on that CPU.
+> +
+> +	  When this option is enabled, the user can specify a min and max
+> +	  CPU bandwidth which is allowed for each single task in a group.
+> +	  The max bandwidth allows to clamp the maximum frequency a task
+> +	  can use, while the min bandwidth allows to define a minimum
+> +	  frequency a task will always use.
+> +
+> +	  When task group based utilization clamping is enabled, an eventually
+> +          specified task-specific clamp value is constrained by the cgroup
+> +	  specified clamp value. Both minimum and maximum task clamping cannot
+> +          be bigger than the corresponding clamping defined at task group level.
+
+The 4 lines above should all be indented the same (one tab + 2 spaces).
+
+> +
+> +	  If in doubt, say N.
+> +
+
+
+-- 
+~Randy
