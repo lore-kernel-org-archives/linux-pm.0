@@ -1,56 +1,31 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH v2] cpupower: remove stringop-truncation waring
-Date: Tue, 28 Aug 2018 15:48:20 -0600
-Message-ID: <a886478f-e068-415a-44b6-e31a6d593a48@kernel.org>
-References: <a25c0c8b-10e3-c4c1-fc09-09bd39442b0e@kernel.org>
- <20180828093118.28326-1-anders.roxell@linaro.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+Date: Tue, 28 Aug 2018 15:39:47 -0700
+Message-ID: <153549598745.129321.12633089552143824401@swboyd.mtv.corp.google.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828093118.28326-1-anders.roxell@linaro.org>
-Content-Language: en-US
+In-Reply-To: <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anders Roxell <anders.roxell@linaro.org>, trenn@suse.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shuah Khan <shuah@kernel.org>
+To: arnd@arndb.de, catalin.marinas@arm.com, devicetree@vger.kernel.org, gregkh@linuxfoundation.org, kstewart@linuxfoundation.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-kernel-owner@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com, mturquette@baylibre.com, rjw@rjwysocki.net, robh+dt@kernel.org, viresh.kumar@linaro.org, will.deacon@arm.com, yamada.masahiro@socionext.com
+Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Tang Yuantian <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/28/2018 03:31 AM, Anders Roxell wrote:
-> The strncpy doesn't null terminate the string because the size is too
-> short by one byte.
-> 
-> parse.c: In function ‘prepare_default_config’:
-> parse.c:148:2: warning: ‘strncpy’ output truncated before terminating
->     nul copying 8 bytes from a string of the same length
->     [-Wstringop-truncation]
->   strncpy(config->governor, "ondemand", 8);
->   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> 
-> The normal method of passing the length of the destination buffer works
-> correctly here.
-> 
-> Fixes: 7fe2f6399a84 ("cpupowerutils - cpufrequtils extended with quite some features")
-> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+Quoting Vabhav Sharma (2018-08-19 23:47:14)
+> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> =
+
+> Add clockgen support for lx2160a.
+> Added entry for compat 'fsl,lx2160a-clockgen'.
+> As LX2160A is 16 core, so modified value for NUM_CMUX
+> =
+
+> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
 > ---
->  tools/power/cpupower/bench/parse.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
-> index 9ba8a44ad2a7..84caee38418f 100644
-> --- a/tools/power/cpupower/bench/parse.c
-> +++ b/tools/power/cpupower/bench/parse.c
-> @@ -145,7 +145,7 @@ struct config *prepare_default_config()
->  	config->cpu = 0;
->  	config->prio = SCHED_HIGH;
->  	config->verbose = 0;
-> -	strncpy(config->governor, "ondemand", 8);
-> +	strncpy(config->governor, "ondemand", sizeof(config->governor));
->  
->  	config->output = stdout;
->  
-> 
 
-Thanks. Applied to cpupower git for 4.19-rc3
-
-thanks,
--- Shuah
+Acked-by: Stephen Boyd <sboyd@kernel.org>
