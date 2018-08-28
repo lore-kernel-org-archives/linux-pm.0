@@ -1,103 +1,55 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Tue, 28 Aug 2018 16:00:32 +0530
-Message-ID: <CAFp+6iHFB1Z9zQ4Uitt=4xCh+G+bfK3Xsjo=iMSPTveuTxwWsg@mail.gmail.com>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-6-jcrouse@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180827151112.25211-6-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 00/11] Another round of tsens cleanups
+Date: Tue, 28 Aug 2018 19:08:29 +0530
+Message-ID: <cover.1535462942.git.amit.kucheria@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgSm9yZGFuLAoKT24gTW9uLCBBdWcgMjcsIDIwMTggYXQgODo0MiBQTSBKb3JkYW4gQ3JvdXNl
-IDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPgo+IEFkZCB0aGUgbm9kZXMgdG8gZGVz
-Y3JpYmUgdGhlIEFkcmVubyBHUFUgYW5kIEdNVSBkZXZpY2VzLgo+Cj4gU2lnbmVkLW9mZi1ieTog
-Sm9yZGFuIENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgYXJjaC9hcm02
-NC9ib290L2R0cy9xY29tL3NkbTg0NS5kdHNpIHwgMTIxICsrKysrKysrKysrKysrKysrKysrKysr
-KysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgMTIxIGluc2VydGlvbnMoKykKPgo+IGRpZmYgLS1naXQg
-YS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kgYi9hcmNoL2FybTY0L2Jvb3Qv
-ZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiBpbmRleCBjZGFhYmViM2M5OTUuLjEwZGIwY2ViMzY5OSAx
-MDA2NDQKPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiArKysg
-Yi9hcmNoL2FybTY0L2Jvb3QvZHRzL3Fjb20vc2RtODQ1LmR0c2kKPiBAQCAtMTkyLDYgKzE5Miw1
-OSBAQAo+ICAgICAgICAgICAgICAgICBtZXRob2QgPSAic21jIjsKPiAgICAgICAgIH07Cj4KPiAr
-Z3B1X29wcF90YWJsZTogYWRyZW5vLW9wcC10YWJsZSB7Cj4gKyAgICAgICAgICAgICAgIGNvbXBh
-dGlibGUgPSAib3BlcmF0aW5nLXBvaW50cy12Mi1xY29tLWxldmVsIjsKPiArCj4gKyAgICAgICAg
-ICAgICAgIG9wcC03MTAwMDAwMDAgewo+ICsgICAgICAgICAgICAgICAgICAgICAgIG9wcC1oeiA9
-IC9iaXRzLyA2NCA8NzEwMDAwMDAwPjsKPiArICAgICAgICAgICAgICAgICAgICAgICBxY29tLGxl
-dmVsID0gPDQxNj47Cj4gKyAgICAgICAgICAgICAgIH07Cj4gKwo+ICsgICAgICAgICAgICAgICBv
-cHAtNjc1MDAwMDAwIHsKPiArICAgICAgICAgICAgICAgICAgICAgICBvcHAtaHogPSAvYml0cy8g
-NjQgPDY3NTAwMDAwMD47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgcWNvbSxsZXZlbCA9IDwz
-ODQ+Owo+ICsgICAgICAgICAgICAgICB9Owo+ICsKPiArICAgICAgICAgICAgICAgb3BwLTU5NjAw
-MDAwMCB7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgb3BwLWh6ID0gL2JpdHMvIDY0IDw1OTYw
-MDAwMDA+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgIHFjb20sbGV2ZWwgPSA8MzIwPjsKPiAr
-ICAgICAgICAgICAgICAgfTsKPiArCj4gKyAgICAgICAgICAgICAgIG9wcC01MjAwMDAwMDAgewo+
-ICsgICAgICAgICAgICAgICAgICAgICAgIG9wcC1oeiA9IC9iaXRzLyA2NCA8NTIwMDAwMDAwPjsK
-PiArICAgICAgICAgICAgICAgICAgICAgICBxY29tLGxldmVsID0gPDI1Nj47Cj4gKyAgICAgICAg
-ICAgICAgIH07Cj4gKwo+ICsgICAgICAgICAgICAgICBvcHAtNDE0MDAwMDAwIHsKPiArICAgICAg
-ICAgICAgICAgICAgICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDQxNDAwMDAwMD47Cj4gKyAgICAg
-ICAgICAgICAgICAgICAgICAgcWNvbSxsZXZlbCA9IDwxOTI+Owo+ICsgICAgICAgICAgICAgICB9
-Owo+ICsKPiArICAgICAgICAgICAgICAgb3BwLTM0MjAwMDAwMCB7Cj4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgb3BwLWh6ID0gL2JpdHMvIDY0IDwzNDIwMDAwMDA+Owo+ICsgICAgICAgICAgICAg
-ICAgICAgICAgIHFjb20sbGV2ZWwgPSA8MTI4PjsKPiArICAgICAgICAgICAgICAgfTsKPiArCj4g
-KyAgICAgICAgICAgICAgIG9wcC0yNTcwMDAwMDAgewo+ICsgICAgICAgICAgICAgICAgICAgICAg
-IG9wcC1oeiA9IC9iaXRzLyA2NCA8MjU3MDAwMDAwPjsKPiArICAgICAgICAgICAgICAgICAgICAg
-ICBxY29tLGxldmVsID0gPDY0PjsKPiArICAgICAgICAgICAgICAgfTsKPiArICAgICAgIH07Cj4g
-Kwo+ICsgICAgICAgZ211X29wcF90YWJsZTogYWRyZW5vLWdtdS1vcHAtdGFibGUgewo+ICsgICAg
-ICAgICAgICAgICBjb21wYXRpYmxlID0gIm9wZXJhdGluZy1wb2ludHMtdjItcWNvbS1sZXZlbCI7
-Cj4gKwo+ICsgICAgICAgICAgICAgICBvcHAtNDAwMDAwMDAwIHsKPiArICAgICAgICAgICAgICAg
-ICAgICAgICBvcHAtaHogPSAvYml0cy8gNjQgPDQwMDAwMDAwMD47Cj4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgcWNvbSxsZXZlbCA9IDwxMjg+Owo+ICsgICAgICAgICAgICAgICB9Owo+ICsKPiAr
-ICAgICAgICAgICAgICAgb3BwLTIwMDAwMDAwMCB7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAg
-b3BwLWh6ID0gL2JpdHMvIDY0IDwyMDAwMDAwMDA+Owo+ICsgICAgICAgICAgICAgICAgICAgICAg
-IHFjb20sbGV2ZWwgPSA8NDg+Owo+ICsgICAgICAgICAgICAgICB9Owo+ICsgICAgICAgfTsKPiAr
-Cj4gICAgICAgICBzb2M6IHNvYyB7Cj4gICAgICAgICAgICAgICAgICNhZGRyZXNzLWNlbGxzID0g
-PDE+Owo+ICAgICAgICAgICAgICAgICAjc2l6ZS1jZWxscyA9IDwxPjsKPiBAQCAtMzIzLDUgKzM3
-Niw3MyBAQAo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgc3RhdHVzID0gImRpc2Fi
-bGVkIjsKPiAgICAgICAgICAgICAgICAgICAgICAgICB9Owo+ICAgICAgICAgICAgICAgICB9Owo+
-ICsKPiArICAgICAgICAgICAgICAgYWRyZW5vX3NtbXU6IGFkcmVuby1zbW11QDUwNDAwMDAgewoK
-aW9tbXVANTA0MDAwMCBhcyBwb2ludGVkIG91dCBieSBSb2IgaW4gWzFdCgo+ICsgICAgICAgICAg
-ICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAicWNvbSxzZG04NDUtc21tdS12MiIsICJxY29tLHNt
-bXUtdjIiOwo+ICsgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDUwNDAwMDAgMHgxMDAw
-MD47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgI2lvbW11LWNlbGxzID0gPDE+Owo+ICsgICAg
-ICAgICAgICAgICAgICAgICAgICNnbG9iYWwtaW50ZXJydXB0cyA9IDwyPjsKPiArICAgICAgICAg
-ICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMjI5IElSUV9UWVBFX0xFVkVMX0hJ
-R0g+LAo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8R0lDX1NQSSAy
-MzEgSVJRX1RZUEVfTEVWRUxfSElHSD4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgIDxHSUNfU1BJIDM2NCBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxHSUNfU1BJIDM2NSBJUlFfVFlQRV9FREdF
-X1JJU0lORz4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxHSUNf
-U1BJIDM2NiBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIDxHSUNfU1BJIDM2NyBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKyAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxHSUNfU1BJIDM2OCBJUlFfVFlQ
-RV9FREdFX1JJU0lORz4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IDxHSUNfU1BJIDM2OSBJUlFfVFlQRV9FREdFX1JJU0lORz4sCj4gKyAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIDxHSUNfU1BJIDM3MCBJUlFfVFlQRV9FREdFX1JJU0lORz4s
-Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDxHSUNfU1BJIDM3MSBJ
-UlFfVFlQRV9FREdFX1JJU0lORz47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgY2xvY2tzID0g
-PCZnY2MgR0NDX0dQVV9NRU1OT0NfR0ZYX0NMSz4sCj4gKyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICA8JmdjYyBHQ0NfR1BVX0NGR19BSEJfQ0xLPjsKPiArICAgICAgICAgICAgICAgICAg
-ICAgICBjbG9jay1uYW1lcyA9ICJidXMiLCAiaWZhY2UiOwo+ICsKPiArICAgICAgICAgICAgICAg
-ICAgICAgICBwb3dlci1kb21haW5zID0gPCZncHVjYyBHUFVfQ1hfR0RTQz47CgphbmQgZm9yIHRo
-aXMgeW91IG5lZWQgdG8gaW5jbHVkZSB0aGUgZ3B1Y2MgZHQtYmluZGluZ3MgaGVhZGVyIHdoaWNo
-IGlzIGNvbWluZwpmcm9tIEFtaXQncyBncHVjYyBkcml2ZXIgcGF0Y2guCgpbMV0gaHR0cHM6Ly9w
-YXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDUzNDk5OS8KCkJlc3QgcmVnYXJkcwpWaXZlawoK
-W3NuaXBdCgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0
-aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVk
-IGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZy
-ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2ZyZWVkcmVubwo=
+This is another series of tsens cleanups before we add interrupt support. This applies on top of 4.19-rc1.
+
+In this series, we have the following:
+- splitup 8916 and 8974 register address spaces for SROT and TM
+- cleanups: move to spdx, dead code removal, removal of id field
+- Add support to map the SROT address space for DTs that list it separately
+- Check if TSENS IP is enabled in firmware by querying the SROT space
+- Add reg-names property to get more readable outputs in /proc/iomem
+- Add myself as maintainer of tsens
+
+Changes since v1:
+- Split up changes that split the address space and added qcom,sensors
+  property into two separate patches
+- Remove brackets in typo correction patch
+
+Amit Kucheria (11):
+  arm/arm64: dts: msm8974/msm8916: thermal: Split address space into two
+  arm/arm64: dts: msm8974/msm8916: thermal: Add "qcom,sensors" property
+  dt-bindings: thermal: Fix a typo in documentation
+  thermal: tsens: Add SPDX license identifiers
+  thermal: tsens: Get rid of dead code
+  thermal: tsens: Rename map field in order to add a second address map
+  thermal: tsens: Add the SROT address map
+  thermal: tsens: Check if the IP is correctly enabled by firmware
+  thermal: tsens: Get rid of 'id' field
+  arm64: dts: qcom: Add reg-names for all tsens nodes
+  MAINTAINERS: Add entry for Qualcomm TSENS thermal drivers
+
+ .../devicetree/bindings/thermal/thermal.txt   |  2 +-
+ MAINTAINERS                                   |  7 +++
+ arch/arm/boot/dts/qcom-msm8974.dtsi           |  7 ++-
+ arch/arm64/boot/dts/qcom/msm8916.dtsi         |  7 ++-
+ arch/arm64/boot/dts/qcom/msm8996.dtsi         |  2 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |  2 +
+ drivers/thermal/qcom/tsens-8916.c             | 11 +---
+ drivers/thermal/qcom/tsens-8960.c             | 41 +++++-------
+ drivers/thermal/qcom/tsens-8974.c             | 11 +---
+ drivers/thermal/qcom/tsens-common.c           | 62 ++++++++++++-------
+ drivers/thermal/qcom/tsens-v2.c               |  6 +-
+ drivers/thermal/qcom/tsens.c                  | 21 +------
+ drivers/thermal/qcom/tsens.h                  | 24 +++----
+ 13 files changed, 99 insertions(+), 104 deletions(-)
+
+-- 
+2.17.1
