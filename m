@@ -1,133 +1,61 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 03/14] PM: Introduce an Energy Model management
- framework
-Date: Wed, 29 Aug 2018 11:04:35 +0100
-Message-ID: <20180829100435.GP2960@e110439-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-4-quentin.perret@arm.com>
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] PM / devfreq: Add new name attribute for sysfs
+Date: Wed, 29 Aug 2018 03:57:38 -0700
+Message-ID: <20180829105738.GA26948@kroah.com>
+References: <CGME20180829073410epcas1p2f314e6c4c29eacfe3ebd5fb4f7f2f122@epcas1p2.samsung.com>
+ <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180820094420.26590-4-quentin.perret@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+In-Reply-To: <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Quentin,
-few possible optimizations related to the (simplified) following
-code:
-
-On 20-Aug 10:44, Quentin Perret wrote:
-
-[...]
-
-> +struct em_perf_domain {
-> +	struct em_cap_state *table; /* Capacity states, in ascending order. */
-> +	int nr_cap_states;
-> +	unsigned long cpus[0]; /* CPUs of the frequency domain. */
-> +};
-
-[...]
-
-> +static DEFINE_PER_CPU(struct em_perf_domain *, em_data);
-
-[...]
-
-> +struct em_perf_domain *em_cpu_get(int cpu)
+On Wed, Aug 29, 2018 at 04:34:06PM +0900, Chanwoo Choi wrote:
+> commit 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for
+> sysfs") changed the node name to devfreq(x). After this commit, it is not
+> possible to get the device name through /sys/class/devfreq/devfreq(X)/*.
+> 
+> Add new name attribute in order to get device name.
+> 
+> Cc: stable@vger.kernel.org
+> Fixes: 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for sysfs")
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  drivers/devfreq/devfreq.c | 11 +++++++++++
+>  include/linux/devfreq.h   |  3 +++
+>  2 files changed, 14 insertions(+)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 4c49bb1330b5..2145563d5ee5 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -620,6 +620,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  	}
+>  	devfreq->max_freq = devfreq->scaling_max_freq;
+> 
+> +	devfreq->name = dev_name(devfreq->dev.parent);
+> +	if (IS_ERR_OR_NULL(devfreq->name))
+> +		return -EINVAL;
+>  	dev_set_name(&devfreq->dev, "devfreq%d",
+>  				atomic_inc_return(&devfreq_no));
+>  	err = device_register(&devfreq->dev);
+> @@ -1261,6 +1264,13 @@ static ssize_t trans_stat_show(struct device *dev,
+>  }
+>  static DEVICE_ATTR_RO(trans_stat);
+> 
+> +static ssize_t name_show(struct device *dev,
+> +			struct device_attribute *attr, char *buf)
 > +{
-> +	return READ_ONCE(per_cpu(em_data, cpu));
+> +	return sprintf(buf, "%s\n", to_devfreq(dev)->name);
 > +}
+> +static DEVICE_ATTR_RO(name);
 
-[...]
+You need a new Documentation/ABI/ entry for this.
 
-> +int em_register_perf_domain(cpumask_t *span, unsigned int nr_states,
-> +						struct em_data_callback *cb)
-> +{
+thanks,
 
-[...]
-
-> +	mutex_lock(&em_pd_mutex);
-> +
-[...]
-
-> +     for_each_cpu(cpu, span) {
-> +             if (READ_ONCE(per_cpu(em_data, cpu))) {
-> +                     ret = -EEXIST;
-> +                     goto unlock;
-> +             }
-
-[...]
-
-> +	for_each_cpu(cpu, span) {
-> +		/*
-> +		 * The per-cpu array can be concurrently accessed from
-> +		 * em_cpu_get().
-> +		 */
-> +		smp_store_release(per_cpu_ptr(&em_data, cpu), pd);
-> +	}
-
-[...]
-
-> +unlock:
-> +	mutex_unlock(&em_pd_mutex);
-> +}
-
-
-In the loop above we use smp_store_release() to propagate the pointer
-setting in a PER_CPU(em_data), which ultimate goal is to protect
-em_register_perf_domain() from multiple clients registering the same
-power domain.
-
-I think there are two possible optimizations there:
-
-1. use of a single memory barrier
-
-   Since we are already em_pd_mutex protected, i.e. there cannot be a
-   concurrent writers, we can use one single memory barrier after the
-   loop, i.e.
-
-        for_each_cpu(cpu, span)
-                WRITE_ONCE()
-        smp_wmb()
-
-   which should be just enough to ensure that all other CPUs will see
-   the pointer set once we release the mutex
-
-2. avoid using PER_CPU variables
-
-   Apart from the initialization code, i.e. boot time, the em_data is
-   expected to be read only, isn't it?
-
-   If that's the case, I think that using PER_CPU variables is not
-   strictly required while it unnecessarily increases the cache pressure.
-
-   In the worst case we can end up with one cache line for each CPU to
-   host just an 8B pointer, instead of using that single cache line to host
-   up to 8 pointers if we use just an array, i.e.
-
-        struct em_perf_domain *em_data[NR_CPUS]
-                ____cacheline_aligned_in_smp __read_mostly;
-
-   Consider also that: up to 8 pointers in a single cache line means
-   also that single cache line can be enough to access the EM from all
-   the CPUs of almost every modern mobile phone SoC.
-
-   Note entirely sure if PER_CPU uses less overall memory in case you
-   have much less CPUs then the compile time defined NR_CPUS.
-   But still, if the above makes sense, you still have a 8x gain
-   factor between number Write allocated .data..percp sections and
-   the value of NR_CPUS. Meaning that in the worst case we allocate
-   the same amount of memory using NR_CPUS=64 (the default on arm64)
-   while running on an 8 CPUs system... but still we should get less
-   cluster caches pressure at run-time with the array approach, 1
-   cache line vs 4.
-
-Best,
-Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+greg k-h
