@@ -1,37 +1,56 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] power: supply: remove unused pointer 'dev'
-Date: Wed, 29 Aug 2018 15:54:13 +0200
-Message-ID: <CAJKOXPcy3emsEPRRK+sKxe51ZWPoVscwHdrVz0fw7vJfLh9HWw@mail.gmail.com>
-References: <20180828162842.17503-1-colin.king@canonical.com>
+Subject: Re: [PATCH 1/2] dt-bindings: power: Add Spreadtrum SC2731 charger documentation
+Date: Wed, 29 Aug 2018 16:08:08 +0200
+Message-ID: <CAJKOXPd9-aLYFLBHwUyNecneHA6X+VbnZSK4paXsMcmvobnGhA@mail.gmail.com>
+References: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828162842.17503-1-colin.king@canonical.com>
+In-Reply-To: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: colin.king@canonical.com
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: baolin.wang@linaro.org
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 28 Aug 2018 at 18:29, Colin King <colin.king@canonical.com> wrote:
+On Tue, 28 Aug 2018 at 11:04, Baolin Wang <baolin.wang@linaro.org> wrote:
 >
-> From: Colin Ian King <colin.king@canonical.com>
+> This patch adds the binding documentation for Spreadtrum SC2731 charger
+> device.
 >
-> Pointer 'dev' is being assigned but is never used hence it is
-> redundant and can be removed.
->
-> Cleans up clang warning:
-> variable 'dev' set but not used [-Wunused-but-set-variable]
->
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 > ---
->  drivers/power/supply/cros_usbpd-charger.c | 2 --
->  1 file changed, 2 deletions(-)
+>  .../bindings/power/supply/sc2731_charger.txt       |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
 >
+> diff --git a/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+> new file mode 100644
+> index 0000000..02b616c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+> @@ -0,0 +1,14 @@
+> +Spreadtrum SC2731 PMIC battery charger binding
+> +
+> +Required properties:
+> + - compatible: Should be "sprd,sc2731-charger".
+> + - reg: Address offset of charger register.
+> + - phys: Contains a phandle to the USB phy.
+> +
+> +Example:
+> +
+> +       charger@0 {
+> +               compatible = "sprd,sc2731-charger";
+> +               reg = <0x0>;
 
-Maybe add cros_usbpd prefix to the subject?
-
-Anyway:
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Can you include also few lines of parent node? You use this "reg"
+later as a base address so probably your parent node requires address
+mapping. It would be nice to see it in example.
 
 Best regards,
 Krzysztof
+
+> +               phys = <&ssphy>;
+> +       };
+> --
+> 1.7.9.5
+>
