@@ -1,67 +1,97 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Add new name attribute for sysfs
-Date: Wed, 29 Aug 2018 14:50:46 +0200
-Message-ID: <3263263.FggQa7iA9D@amdc3058>
-References: <CGME20180829073410epcas1p2f314e6c4c29eacfe3ebd5fb4f7f2f122@epcas1p2.samsung.com>
-        <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] console: Add console=auto option
+Date: Wed, 29 Aug 2018 08:54:37 -0400
+Message-ID: <8689f544-c905-3542-5d45-2d817cf86283@redhat.com>
+References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
+ <20180816173902.18971-1-prarit@redhat.com>
+ <20180817093828.GA10337@jagdpanzerIV>
+ <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
+ <20180817105046.GB10337@jagdpanzerIV>
+ <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
+ <20180817125714.yekdxxqflmgajf2s@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180817125714.yekdxxqflmgajf2s@pathway.suse.cz>
+Content-Language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
-Hi Chanwoo,
 
-On Wednesday, August 29, 2018 04:34:06 PM Chanwoo Choi wrote:
-> commit 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for
-> sysfs") changed the node name to devfreq(x). After this commit, it is not
-> possible to get the device name through /sys/class/devfreq/devfreq(X)/*.
+On 08/17/2018 08:57 AM, Petr Mladek wrote:
+> On Fri 2018-08-17 07:06:56, Prarit Bhargava wrote:
+>> On 08/17/2018 06:50 AM, Sergey Senozhatsky wrote:
+>>>> Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
+>>>> feelings about changing the behaviour of earlycon on x86?  I could make it so
+>>>> that specifying just earlycon would also initialize the console.
+>>>
+>>> x86 people and/or scheduler people might have strong opinions on this.
+>>> I Cc-ed Peter Zijlstra; he represents both groups and is known to be
+>>> a hardcore earlycon user.
+>>
+>> Thanks, I'm a user of earlycon too, but only moderately.
+>>
+>> peterz, to give you an overview:  Currently on x86, the SPCR information is only
+>> interpreted by the early console code, and can be enabled with kernel parameter
+>> "earlycon" (no arguments).  In this patch I'm proposing adding "console=auto"
+>> that would enable the console based on the SPCR data.
+>>
+>> There are two options on the table.  One, we could go with this patch which
+>> would make users do "earlycon console=auto" or, I could just change the
+>> behaviour of earlycon (no arguments) to also bring up the console.  In the
+>> second case the kernel parameter would just be "earlycon".  There is precedent
+>> for the second option as arm64 enables both the earlycon and console by default
+>> if SPCR is present.  However, on x86, I know many users do not want the console
+>> enabled by default so we should keep it on demand.
+>>
+>> tl;dr: Pick one
+>>
+>> Option 1: earlycon enables both the early console and console.
 > 
-> Add new name attribute in order to get device name.
-
-Could you please describe the issue encountered in more detail
-(what the old device name is needed for)?
- 
-> Cc: stable@vger.kernel.org
-> Fixes: 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for sysfs")
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 11 +++++++++++
->  include/linux/devfreq.h   |  3 +++
->  2 files changed, 14 insertions(+)
+> I am afraid that this is not acceptable. Users are sensitive
+> when a new kernel suddenly enables different consoles. For example,
+> see:
 > 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 4c49bb1330b5..2145563d5ee5 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -620,6 +620,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	}
->  	devfreq->max_freq = devfreq->scaling_max_freq;
+> + commit dac8bbbae1d0ccba9 ("Revert "printk: fix double printing with
+>   earlycon")
 > 
-> +	devfreq->name = dev_name(devfreq->dev.parent);
+> + commit c6c7d83b9c9e6a8b3 ("Revert "console: don't prefer first
+>   registered if DT specifies stdout-path")
+> 
+> 
+> By other words, the new behavior must depend on a new option.
+> 
+> 
+>> Option 2: earlycon only enables the early console, and console=auto enables the
+>> console.
+> 
+> I suggest:
+> 
+> Option 3: "earlycon" enables early console defined by SPCR
+> 	  "console" enables console defined by SPCR
+> 
+> I mean that "console" without extra options would enable the console
+> defined by ACPI SPCR. It would work the same as "earlycon" without
+> extra options for early consoles.
+> 
+> If you would want to make it explicit than I agree with Sergey
+> and would prefer "console=spcr" instead of "console=auto".
 
-It seems that 'dev' can be used instead of 'devfreq->dev.parent'.
+I'm going with "console=spcr".  FYI.
 
-> +	if (IS_ERR_OR_NULL(devfreq->name))
+P.
 
-Error values are not encoded into pointer returned by dev_name()
-(drivers/base/ code is only checking for pointer being NULL).
-
-> +		return -EINVAL;
-
-This leaks 'devfreq' object and doesn't encode return value into
-pointer returned by devfreq_add_device(), it should be replaced by:
-
-	err = -EINVAL;
-	goto err_dev;
-
->  	dev_set_name(&devfreq->dev, "devfreq%d",
->  				atomic_inc_return(&devfreq_no));
->  	err = device_register(&devfreq->dev);
-
-Best regards,
+> 
+> Note kernel tries to enable some consoles automatically even
+> when "console" parameter is not defined at all. Therefore "auto"
+> is somehow misleading.
+> 
+> Best Regards,
+> Petr
+> 
+> PS: JFYI, I have vacation the following week...
+> 
