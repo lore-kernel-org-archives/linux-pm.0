@@ -1,82 +1,112 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH] PM / devfreq: Add new name attribute for sysfs
-Date: Wed, 29 Aug 2018 16:34:06 +0900
-Message-ID: <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20180829073410epcas1p2f314e6c4c29eacfe3ebd5fb4f7f2f122@epcas1p2.samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [Patch v15 4/5] dt-bindings: arm-smmu: Add bindings
+ for qcom, smmu-v2
+Date: Wed, 29 Aug 2018 14:05:10 +0530
+Message-ID: <a1e31d1e-aaa4-5951-2261-3169033c636a@codeaurora.org>
+References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
+ <20180827105551.16346-5-vivek.gautam@codeaurora.org>
+ <20180828203418.GA18366@bogus>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180828203418.GA18366@bogus>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-commit 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for
-sysfs") changed the node name to devfreq(x). After this commit, it is not
-possible to get the device name through /sys/class/devfreq/devfreq(X)/*.
-
-Add new name attribute in order to get device name.
-
-Cc: stable@vger.kernel.org
-Fixes: 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for sysfs")
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 11 +++++++++++
- include/linux/devfreq.h   |  3 +++
- 2 files changed, 14 insertions(+)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4c49bb1330b5..2145563d5ee5 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -620,6 +620,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	}
- 	devfreq->max_freq = devfreq->scaling_max_freq;
-
-+	devfreq->name = dev_name(devfreq->dev.parent);
-+	if (IS_ERR_OR_NULL(devfreq->name))
-+		return -EINVAL;
- 	dev_set_name(&devfreq->dev, "devfreq%d",
- 				atomic_inc_return(&devfreq_no));
- 	err = device_register(&devfreq->dev);
-@@ -1261,6 +1264,13 @@ static ssize_t trans_stat_show(struct device *dev,
- }
- static DEVICE_ATTR_RO(trans_stat);
-
-+static ssize_t name_show(struct device *dev,
-+			struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%s\n", to_devfreq(dev)->name);
-+}
-+static DEVICE_ATTR_RO(name);
-+
- static struct attribute *devfreq_attrs[] = {
- 	&dev_attr_governor.attr,
- 	&dev_attr_available_governors.attr,
-@@ -1271,6 +1281,7 @@ static ssize_t trans_stat_show(struct device *dev,
- 	&dev_attr_min_freq.attr,
- 	&dev_attr_max_freq.attr,
- 	&dev_attr_trans_stat.attr,
-+	&dev_attr_name.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(devfreq);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 3aae5b3af87c..f79b5a666102 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -111,6 +111,7 @@ struct devfreq_dev_profile {
-
- /**
-  * struct devfreq - Device devfreq structure
-+ * @name:	name of the device
-  * @node:	list node - contains the devices with devfreq that have been
-  *		registered.
-  * @lock:	a mutex to protect accessing devfreq.
-@@ -146,6 +147,8 @@ struct devfreq_dev_profile {
-  * to protect its own private data in void *data as well.
-  */
- struct devfreq {
-+	const char *name;
-+
- 	struct list_head node;
-
- 	struct mutex lock;
+SGkgUm9iLAoKCk9uIDgvMjkvMjAxOCAyOjA0IEFNLCBSb2IgSGVycmluZyB3cm90ZToKPiBPbiBN
+b24sIEF1ZyAyNywgMjAxOCBhdCAwNDoyNTo1MFBNICswNTMwLCBWaXZlayBHYXV0YW0gd3JvdGU6
+Cj4+IEFkZCBiaW5kaW5ncyBkb2MgZm9yIFFjb20ncyBzbW11LXYyIGltcGxlbWVudGF0aW9uLgo+
+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3Jh
+Lm9yZz4KPj4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4+
+IFRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5h
+cm8ub3JnPgo+PiAtLS0KPj4KPj4gQ2hhbmdlcyBzaW5jZSB2MTQ6Cj4+ICAgLSBUaGlzIGlzIGEg
+bmV3IHBhdGNoIGFkZGVkIGluIHYxNSBhZnRlciBub3RpY2luZyB0aGUgbmV3Cj4+ICAgICBjaGVj
+a3BhdGNoIHdhcm5pbmcgZm9yIHNlcGFyYXRlIGR0LWJpbmRpbmdzIGRvYy4KPj4gICAtIFRoaXMg
+cGF0Y2ggYWxzbyBhZGRyZXNzZXMgY29tbWVudHMgZ2l2ZW4gYnkgUm9iIGFuZCBSb2JpbiB0byBh
+ZGQKPj4gICAgIGEgbGlzdCBvZiB2YWxpZCB2YWx1ZXMgb2YgJzxzb2M+JyBpbiAicWNvbSw8c29j
+Pi1zbW11LXYyIgo+PiAgICAgY29tcGF0aWJsZSBzdHJpbmcuCj4+Cj4+ICAgLi4uL2RldmljZXRy
+ZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0ICAgICAgICAgfCA0NyArKysrKysrKysrKysr
+KysrKysrKysrCj4+ICAgMSBmaWxlIGNoYW5nZWQsIDQ3IGluc2VydGlvbnMoKykKPj4KPj4gZGlm
+ZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9hcm0sc21t
+dS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUu
+dHh0Cj4+IGluZGV4IDhhNmZmY2UxMmFmNS4uNTIxOThhNTM5NjA2IDEwMDY0NAo+PiAtLS0gYS9E
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0Cj4+ICsr
+KyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQK
+Pj4gQEAgLTE3LDEwICsxNywyNCBAQCBjb25kaXRpb25zLgo+PiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICJhcm0sbW11LTQwMSIKPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAiYXJtLG1t
+dS01MDAiCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgImNhdml1bSxzbW11LXYyIgo+PiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgInFjb20sPHNvYz4tc21tdS12MiIsICJxY29tLHNtbXUt
+djIiCj4gVGhlIHYyIGluIHRoZSBjb21wYXRpYmxlIHN0cmluZyBpcyBraW5kIG9mIHJlZHVuZGFu
+dCB1bmxlc3MgdGhlIFNvQyBoYXMKPiBvdGhlciBTTU1VIHR5cGVzLgoKc2RtODQ1IGhhcyBzbW11
+LXYyLCBhbmQgc21tdS01MDAgWzFdLgoKPj4gICAKPj4gICAgICAgICAgICAgICAgICAgICBkZXBl
+bmRpbmcgb24gdGhlIHBhcnRpY3VsYXIgaW1wbGVtZW50YXRpb24gYW5kL29yIHRoZQo+PiAgICAg
+ICAgICAgICAgICAgICAgIHZlcnNpb24gb2YgdGhlIGFyY2hpdGVjdHVyZSBpbXBsZW1lbnRlZC4K
+Pj4gICAKPj4gKyAgICAgICAgICAgICAgICAgIEEgbnVtYmVyIG9mIFFjb20gU29DcyB1c2UgcWNv
+bSxzbW11LXYyIHZlcnNpb24gb2YgdGhlIElQLgo+PiArICAgICAgICAgICAgICAgICAgInFjb20s
+PHNvYz4tc21tdS12MiIgcmVwcmVzZW50cyBhIHNvYyBzcGVjaWZpYyBjb21wYXRpYmxlCj4+ICsg
+ICAgICAgICAgICAgICAgICBzdHJpbmcgdGhhdCBzaG91bGQgYmUgcHJlc2VudCBhbG9uZyB3aXRo
+IHRoZSAicWNvbSxzbW11LXYyIgo+PiArICAgICAgICAgICAgICAgICAgdG8gZmFjaWxpdGF0ZSBT
+b0Mgc3BlY2lmaWMgY2xvY2tzL3Bvd2VyIGNvbm5lY3Rpb25zIGFuZCB0bwo+PiArICAgICAgICAg
+ICAgICAgICAgYWRkcmVzcyBzcGVjaWZpYyBidWcgZml4ZXMuCj4+ICsgICAgICAgICAgICAgICAg
+ICAnPHNvYz4nIHN0cmluZyBpbiAicWNvbSw8c29jPi1zbW11LXYyIiBzaG91bGQgYmUgb25lIG9m
+IHRoZQo+PiArICAgICAgICAgICAgICAgICAgZm9sbG93aW5nOgo+PiArICAgICAgICAgICAgICAg
+ICAgbXNtODk5NiAtIGZvciBtc204OTk2IFFjb20gU29DLgo+PiArICAgICAgICAgICAgICAgICAg
+c2RtODQ1IC0gZm9yIHNkbTg0NSBRY29tIFNvYy4KPiBSYXRoZXIgdGhhbiBhbGwgdGhpcyBwcm9z
+ZSwgaXQgd291bGQgYmUgc2ltcGxlciB0byBqdXN0IGFkZCAyIGxpbmVzIHdpdGgKPiB0aGUgZnVs
+bCBjb21wYXRpYmxlcyByYXRoZXIgdGhhbiA8c29jPi4gVGhlIDxzb2M+IHRoaW5nIGlzIG5vdCBn
+b2luZyB0bwo+IHdvcmsgd2hlbi9pZiB3ZSBtb3ZlIGJpbmRpbmdzIHRvIGpzb24tc2NoZW1hIGFs
+c28uCgp0aGVuIHdlIGtlZXAgYWRkaW5nCiDCoMKgwqDCoMKgwqDCoMKgICJxY29tLG1zbTg5OTYt
+c21tdS12MiIsICJxY29tLHNtbXUtdjIiCiDCoMKgwqDCoMKgwqDCoMKgICJxY29tLG1zbTg5OTgt
+c21tdS12MiIsICJxY29tLHNtbXUtdjIiCiDCoMKgwqDCoMKgwqDCoMKgICJxY29tLHNkbTg0NS1z
+bW11LXYyIiwgInFjb20sc21tdS12MiIsCmFuZCBmcm9tIFsxXQogwqDCoMKgwqDCoMKgwqDCoCAi
+cWNvbSxzZG04NDUtc21tdS01MDAiLCAiYXJtLG1tdS01MDAiLCBldGMuCmZvciBlYWNoIFNvQ3M/
+Cgo+Cj4+ICsKPj4gKyAgICAgICAgICAgICAgICAgIEFuIGV4YW1wbGUgc3RyaW5nIHdvdWxkIGJl
+IC0KPj4gKyAgICAgICAgICAgICAgICAgICJxY29tLG1zbTg5OTYtc21tdS12MiIsICJxY29tLHNt
+bXUtdjIiLgo+PiArCj4+ICAgLSByZWcgICAgICAgICAgIDogQmFzZSBhZGRyZXNzIGFuZCBzaXpl
+IG9mIHRoZSBTTU1VLgo+PiAgIAo+PiAgIC0gI2dsb2JhbC1pbnRlcnJ1cHRzIDogVGhlIG51bWJl
+ciBvZiBnbG9iYWwgaW50ZXJydXB0cyBleHBvc2VkIGJ5IHRoZQo+PiBAQCAtNzEsNiArODUsMjIg
+QEAgY29uZGl0aW9ucy4KPj4gICAgICAgICAgICAgICAgICAgICBvciB1c2luZyBzdHJlYW0gbWF0
+Y2hpbmcgd2l0aCAjaW9tbXUtY2VsbHMgPSA8Mj4sIGFuZAo+PiAgICAgICAgICAgICAgICAgICAg
+IG1heSBiZSBpZ25vcmVkIGlmIHByZXNlbnQgaW4gc3VjaCBjYXNlcy4KPj4gICAKPj4gKy0gY2xv
+Y2stbmFtZXM6ICAgIExpc3Qgb2YgdGhlIG5hbWVzIG9mIGNsb2NrcyBpbnB1dCB0byB0aGUgZGV2
+aWNlLiBUaGUKPj4gKyAgICAgICAgICAgICAgICAgIHJlcXVpcmVkIGxpc3QgZGVwZW5kcyBvbiBw
+YXJ0aWN1bGFyIGltcGxlbWVudGF0aW9uIGFuZAo+PiArICAgICAgICAgICAgICAgICAgaXMgYXMg
+Zm9sbG93czoKPj4gKyAgICAgICAgICAgICAgICAgIC0gZm9yICJxY29tLHNtbXUtdjIiOgo+PiAr
+ICAgICAgICAgICAgICAgICAgICAtICJidXMiOiBjbG9jayByZXF1aXJlZCBmb3IgZG93bnN0cmVh
+bSBidXMgYWNjZXNzIGFuZAo+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICBmb3IgdGhl
+IHNtbXUgcHR3LAo+PiArICAgICAgICAgICAgICAgICAgICAtICJpZmFjZSI6IGNsb2NrIHJlcXVp
+cmVkIHRvIGFjY2VzcyBzbW11J3MgcmVnaXN0ZXJzCj4+ICsgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgdGhyb3VnaCB0aGUgVENVJ3MgcHJvZ3JhbW1pbmcgaW50ZXJmYWNlLgo+PiArICAg
+ICAgICAgICAgICAgICAgLSB1bnNwZWNpZmllZCBmb3Igb3RoZXIgaW1wbGVtZW50YXRpb25zLgo+
+PiArCj4+ICstIGNsb2NrczogICAgICAgICBTcGVjaWZpZXJzIGZvciBhbGwgY2xvY2tzIGxpc3Rl
+ZCBpbiB0aGUgY2xvY2stbmFtZXMgcHJvcGVydHksCj4+ICsgICAgICAgICAgICAgICAgICBhcyBw
+ZXIgZ2VuZXJpYyBjbG9jayBiaW5kaW5ncy4KPj4gKwo+PiArLSBwb3dlci1kb21haW5zOiAgU3Bl
+Y2lmaWVycyBmb3IgcG93ZXIgZG9tYWlucyByZXF1aXJlZCB0byBiZSBwb3dlcmVkIG9uIGZvcgo+
+PiArICAgICAgICAgICAgICAgICAgdGhlIFNNTVUgdG8gb3BlcmF0ZSwgYXMgcGVyIGdlbmVyaWMg
+cG93ZXIgZG9tYWluIGJpbmRpbmdzLgo+PiArCj4+ICAgKiogRGVwcmVjYXRlZCBwcm9wZXJ0aWVz
+Ogo+PiAgIAo+PiAgIC0gbW11LW1hc3RlcnMgKGRlcHJlY2F0ZWQgaW4gZmF2b3VyIG9mIHRoZSBn
+ZW5lcmljICJpb21tdXMiIGJpbmRpbmcpIDoKPj4gQEAgLTEzNywzICsxNjcsMjAgQEAgY29uZGl0
+aW9ucy4KPj4gICAgICAgICAgICAgICAgICAgaW9tbXUtbWFwID0gPDAgJnNtbXUzIDAgMHg0MDA+
+Owo+PiAgICAgICAgICAgICAgICAgICAuLi4KPj4gICAgICAgICAgIH07Cj4+ICsKPj4gKwkvKiBR
+Y29tJ3MgYXJtLHNtbXUtdjIgaW1wbGVtZW50YXRpb24gKi8KPj4gKwlzbW11NDogaW9tbXUgewo+
+IE5lZWRzIGEgdW5pdC1hZGRyZXNzLgoKSSB3ZW50IGluIHN5bW1ldHJ5IHdpdGggYW5vdGhlciBl
+eGFtcGxlIGluIHRoaXMgZmlsZSBmb3IgJ3NtbXUxJy4gSSB3aWxsIAphZGQgdGhlIGFkZHJlc3Mg
+aGVyZS4KQW5kIGlmIHlvdSB3b3VsZCBsaWtlLCBJIGNhbiBzcXVhc2ggYSBjaGFuZ2UgZm9yICdz
+bW11MScgdG9vIGluIHRoaXMgCnBhdGNoLCBhbHRob3VnaCB0aGF0IHdpbGwgYmUgdHJpdmlhbC4K
+ClsxXSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNTY1MjkxLwoKQmVzdCBy
+ZWdhcmRzClZpdmVrCgpbc25pcF0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
+ZnJlZWRyZW5vCg==
