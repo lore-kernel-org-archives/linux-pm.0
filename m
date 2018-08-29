@@ -1,194 +1,276 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Wed, 29 Aug 2018 11:01:22 -0700
-Message-ID: <20180829180122.GC10879@google.com>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: maxim: Add SPDX license identifiers
+Date: Thu, 30 Aug 2018 00:32:55 +0200
+Message-ID: <20180829223255.nshvzapgtbd7ucrv@earth.universe>
+References: <20180807162106.18282-1-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="26gxn3qednu6n4bl"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+In-Reply-To: <20180807162106.18282-1-krzk@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Taniya,
 
-On Tue, Jul 24, 2018 at 04:12:50PM +0530, Taniya Das wrote:
-> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
-> for changing the frequency of CPUs. The driver implements the cpufreq
-> driver interface for this hardware engine.
-> 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+--26gxn3qednu6n4bl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Aug 07, 2018 at 06:21:06PM +0200, Krzysztof Kozlowski wrote:
+> Replace GPL v2.0 and v2.0+ license statements with SPDX license
+> identifiers.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 > ---
->  drivers/cpufreq/Kconfig.arm       |  11 ++
->  drivers/cpufreq/Makefile          |   1 +
->  drivers/cpufreq/qcom-cpufreq-hw.c | 348 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 360 insertions(+)
->  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 0cd8eb7..93a9d72 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -298,3 +298,14 @@ config ARM_PXA2xx_CPUFREQ
->  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
-> 
->  	  If in doubt, say N.
-> +
-> +config ARM_QCOM_CPUFREQ_HW
-> +	bool "QCOM CPUFreq HW driver"
-> +	depends on ARCH_QCOM
-> +	help
-> +	 Support for the CPUFreq HW driver.
-> +	 Some QCOM chipsets have a HW engine to offload the steps
-> +	 necessary for changing the frequency of the CPUs. Firmware loaded
-> +	 in this engine exposes a programming interface to the OS.
-> +	 The driver implements the cpufreq interface for this HW engine.
-> +	 Say Y if you want to support CPUFreq HW.
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index c1ffeab..ca48a1d 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
->  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
->  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
-> 
-> 
->  ##################################################################################
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> new file mode 100644
-> index 0000000..ea8f7d1
-> --- /dev/null
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -0,0 +1,348 @@
+
+Thanks, queued.
+
+-- Sebastian
+
+>  drivers/power/supply/max14577_charger.c | 22 ++++++----------------
+>  drivers/power/supply/max17040_battery.c | 18 +++++++-----------
+>  drivers/power/supply/max17042_battery.c | 32 +++++++++------------------=
+-----
+>  drivers/power/supply/max77693_charger.c | 22 ++++++----------------
+>  drivers/power/supply/max8997_charger.c  | 26 ++++++--------------------
+>  drivers/power/supply/max8998_charger.c  | 26 ++++++--------------------
+>  6 files changed, 40 insertions(+), 106 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/max14577_charger.c b/drivers/power/supp=
+ly/max14577_charger.c
+> index 449fc56f09eb..8a59feac6468 100644
+> --- a/drivers/power/supply/max14577_charger.c
+> +++ b/drivers/power/supply/max14577_charger.c
+> @@ -1,19 +1,9 @@
+> -/*
+> - * max14577_charger.c - Battery charger driver for the Maxim 14577/77836
+> - *
+> - * Copyright (C) 2013,2014 Samsung Electronics
+> - * Krzysztof Kozlowski <krzk@kernel.org>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - */
+> +// SPDX-License-Identifier: GPL-2.0+
+> +//
+> +// max14577_charger.c - Battery charger driver for the Maxim 14577/77836
+> +//
+> +// Copyright (C) 2013,2014 Samsung Electronics
+> +// Krzysztof Kozlowski <krzk@kernel.org>
+> =20
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supp=
+ly/max17040_battery.c
+> index 33c40f79d23d..91cafc7bed30 100644
+> --- a/drivers/power/supply/max17040_battery.c
+> +++ b/drivers/power/supply/max17040_battery.c
+> @@ -1,14 +1,10 @@
+> -/*
+> - *  max17040_battery.c
+> - *  fuel-gauge systems for lithium-ion (Li+) batteries
+> - *
+> - *  Copyright (C) 2009 Samsung Electronics
+> - *  Minkyu Kang <mk7.kang@samsung.com>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License version 2 as
+> - * published by the Free Software Foundation.
+> - */
 > +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> + */
-> +
-> +#include <linux/cpufreq.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +
-> +#define INIT_RATE			300000000UL
-> +#define LUT_MAX_ENTRIES			40U
-> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
-> +#define LUT_ROW_SIZE			32
-> +
-> +enum {
-> +	REG_ENABLE,
-> +	REG_LUT_TABLE,
-> +	REG_PERF_STATE,
-> +
-> +	REG_ARRAY_SIZE,
-> +};
-> +
-> +struct cpufreq_qcom {
-> +	struct cpufreq_frequency_table *table;
-> +	struct device *dev;
+> +//
+> +//  max17040_battery.c
+> +//  fuel-gauge systems for lithium-ion (Li+) batteries
+> +//
+> +//  Copyright (C) 2009 Samsung Electronics
+> +//  Minkyu Kang <mk7.kang@samsung.com>
+> =20
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
+ly/max17042_battery.c
+> index 1a568df383db..2a8d75e5e930 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -1,26 +1,12 @@
+> -/*
+> - * Fuel gauge driver for Maxim 17042 / 8966 / 8997
+> - *  Note that Maxim 8966 and 8997 are mfd and this is its subdevice.
+> - *
+> - * Copyright (C) 2011 Samsung Electronics
+> - * MyungJoo Ham <myungjoo.ham@samsung.com>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 =
+ USA
+> - *
+> - * This driver is based on max17040_battery.c
+> - */
+> +// SPDX-License-Identifier: GPL-2.0+
+> +//
+> +// Fuel gauge driver for Maxim 17042 / 8966 / 8997
+> +//  Note that Maxim 8966 and 8997 are mfd and this is its subdevice.
+> +//
+> +// Copyright (C) 2011 Samsung Electronics
+> +// MyungJoo Ham <myungjoo.ham@samsung.com>
+> +//
+> +// This driver is based on max17040_battery.c
+> =20
+>  #include <linux/acpi.h>
+>  #include <linux/init.h>
+> diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supp=
+ly/max77693_charger.c
+> index 6c78884bad5e..b4cc5b807d53 100644
+> --- a/drivers/power/supply/max77693_charger.c
+> +++ b/drivers/power/supply/max77693_charger.c
+> @@ -1,19 +1,9 @@
+> -/*
+> - * max77693_charger.c - Battery charger driver for the Maxim 77693
+> - *
+> - * Copyright (C) 2014 Samsung Electronics
+> - * Krzysztof Kozlowski <krzk@kernel.org>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - */
+> +// SPDX-License-Identifier: GPL-2.0+
+> +//
+> +// max77693_charger.c - Battery charger driver for the Maxim 77693
+> +//
+> +// Copyright (C) 2014 Samsung Electronics
+> +// Krzysztof Kozlowski <krzk@kernel.org>
+> =20
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/suppl=
+y/max8997_charger.c
+> index c73fb4221695..f5e84cd47924 100644
+> --- a/drivers/power/supply/max8997_charger.c
+> +++ b/drivers/power/supply/max8997_charger.c
+> @@ -1,23 +1,9 @@
+> -/*
+> - * max8997_charger.c - Power supply consumer driver for the Maxim 8997/8=
+966
+> - *
+> - *  Copyright (C) 2011 Samsung Electronics
+> - *  MyungJoo Ham <myungjoo.ham@samsung.com>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 =
+ USA
+> - */
+> +// SPDX-License-Identifier: GPL-2.0+
+> +//
+> +// max8997_charger.c - Power supply consumer driver for the Maxim 8997/8=
+966
+> +//
+> +//  Copyright (C) 2011 Samsung Electronics
+> +//  MyungJoo Ham <myungjoo.ham@samsung.com>
+> =20
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> diff --git a/drivers/power/supply/max8998_charger.c b/drivers/power/suppl=
+y/max8998_charger.c
+> index cad7d1a8feec..95292381c3de 100644
+> --- a/drivers/power/supply/max8998_charger.c
+> +++ b/drivers/power/supply/max8998_charger.c
+> @@ -1,23 +1,9 @@
+> -/*
+> - * max8998_charger.c - Power supply consumer driver for the Maxim 8998/L=
+P3974
+> - *
+> - *  Copyright (C) 2009-2010 Samsung Electronics
+> - *  MyungJoo Ham <myungjoo.ham@samsung.com>
+> - *
+> - * This program is free software; you can redistribute it and/or modify
+> - * it under the terms of the GNU General Public License as published by
+> - * the Free Software Foundation; either version 2 of the License, or
+> - * (at your option) any later version.
+> - *
+> - * This program is distributed in the hope that it will be useful,
+> - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> - * GNU General Public License for more details.
+> - *
+> - * You should have received a copy of the GNU General Public License
+> - * along with this program; if not, write to the Free Software
+> - * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 =
+ USA
+> - */
+> +// SPDX-License-Identifier: GPL-2.0+
+> +//
+> +// max8998_charger.c - Power supply consumer driver for the Maxim 8998/L=
+P3974
+> +//
+> +//  Copyright (C) 2009-2010 Samsung Electronics
+> +//  MyungJoo Ham <myungjoo.ham@samsung.com>
+> =20
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> --=20
+> 2.14.1
+>=20
 
-'dev' is not used and can be removed.
+--26gxn3qednu6n4bl
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> ...
-> 
-> +static int qcom_cpu_resources_init(struct platform_device *pdev,
-> +				   struct device_node *np, unsigned int cpu,
-> +				   unsigned long xo_rate)
-> +{
-> +	struct cpufreq_qcom *c;
-> +	struct resource res;
-> +	struct device *dev = &pdev->dev;
-> +	const u16 *offsets;
-> +	int ret, i, cpu_first, cpu_r;
-> +	void __iomem *base;
-> +
-> +	if (qcom_freq_domain_map[cpu])
-> +		return 0;
-> +
-> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
-> +	if (!c)
-> +		return -ENOMEM;
-> +
-> +	offsets = of_device_get_match_data(&pdev->dev);
-> +	if (!offsets)
-> +		return -EINVAL;
-> +
-> +	if (of_address_to_resource(np, 0, &res))
-> +		return -ENOMEM;
-> +
-> +	base = devm_ioremap_resource(dev, &res);
-> +	if (!base)
-> +		return -ENOMEM;
-> +
-> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
-> +		c->reg_bases[i] = base + offsets[i];
-> +
-> +	/* HW should be in enabled state to proceed */
-> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
-> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
-> +		return -ENODEV;
-> +	}
-> +
-> +	ret = qcom_get_related_cpus(np, &c->related_cpus);
-> +	if (ret) {
-> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
-> +		return ret;
-> +	}
-> +
-> +	c->max_cores = cpumask_weight(&c->related_cpus);
-> +	if (!c->max_cores)
-> +		return -ENOENT;
-> +
-> +	c->xo_rate = xo_rate;
-> +
-> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
-> +	if (ret) {
-> +		dev_err(dev, "%s failed to read LUT\n", np->name);
-> +		return ret;
-> +	}
-> +
-> +	qcom_freq_domain_map[cpu] = c;
-> +
-> +	/* Related CPUs */
-> +	cpu_first = cpumask_first(&c->related_cpus);
-> +
-> +	for_each_cpu(cpu_r, &c->related_cpus) {
-> +		if (cpu_r != cpu_first)
-> +			qcom_freq_domain_map[cpu_r] =
-> +				qcom_freq_domain_map[cpu_first];
-> +	}
+-----BEGIN PGP SIGNATURE-----
 
-The above ten lines could be simplified to:
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHHxQACgkQ2O7X88g7
++prZ2A/7BrhItDOaBKHM1oeGj0dsaGJPI9X3dk0bYlKMSD3fEE8suZOJHf1uvMMC
+vEhYcqVPXOY1eMo6ZHBi0CIsj8Nv+BvvzI1nngtk/RRf2uGIOuUOQzwmRW+8/rtT
+X3KGlkXUqWzNjZ6luY1zPpZb47j4Iz3fnYIqGVO2rKTi0ivRawBlBMzjXaCTJchw
+7YPTuOxvkuALb5BcOBG4d1tx8SfxL3bN/fYnZVq30qznR8O+aa28MalBG9iD6UNz
+AV6+o3lv0SX0AKnrhq55CX5g9nL0PCEaRtlgUuMsmOUcs2vZ8oAex6BMWlN9bNBc
+C2tVn53T/iEAAqsAF/4ugeVz4QlQ8gz+ZEfCqxZLqyM/HipkS5Pm/OAGqhYXEdfG
+Y305sOY4tTtxm1yFHoM2gUtxcJn001hDfFmAceGivyaW4yNsDxom0GjE91ytKi3B
+5THmIVXqwT0KjE9UCihON20rz8YYgVl2EJJnUF2tLqBg/v4Zg4yzI4LjfAefS3vH
+EHIsECan8sZobH75UTf2DQyM4xheaxvRuMTZLWosjh1IaUp7SFcTe2UXeSQhZgsN
+rtPcYY+/K2AQ4lu9sKIu/WcXXTp/1dSvmGt6t1nTl4o1DoIPiGLQ+dLrk0gpCvd9
+pPwpP/UOr3UT1xRxrWS3Vd8qcZAebaItsKE5M7XgXiPIVUplisM=
+=MhZq
+-----END PGP SIGNATURE-----
 
-	for_each_cpu(cpu_r, &c->related_cpus)
-		qcom_freq_domain_map[cpu_r] = c;
-
-> ...
-> 
-> +static int __init qcom_cpufreq_hw_init(void)
-> +{
-> +	return platform_driver_register(&qcom_cpufreq_hw_driver);
-> +}
-> +subsys_initcall(qcom_cpufreq_hw_init);
-
-Is subsys_initcall used for a particular reason? It will cause
-problems when registering cooling devices, since the thermal device
-class is initialized through an fs_initcall, which are executed
-later.
-
-Most cpufreq drivers use module_init, device_initcall or
-late_initcall, can't this driver use one of those?
-
-Cheers
-
-Matthias
+--26gxn3qednu6n4bl--
