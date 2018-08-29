@@ -1,145 +1,194 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
- static key
-Date: Wed, 29 Aug 2018 18:20:06 +0100
-Message-ID: <20180829172004.afbe2oukprvptqs2@queper01-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-8-quentin.perret@arm.com>
- <20180829165058.GR2960@e110439-lin>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Wed, 29 Aug 2018 11:01:22 -0700
+Message-ID: <20180829180122.GC10879@google.com>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180829165058.GR2960@e110439-lin>
+In-Reply-To: <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 29 Aug 2018 at 17:50:58 (+0100), Patrick Bellasi wrote:
-> > +/*
-> > + * The complexity of the Energy Model is defined as: nr_pd * (nr_cpus + nr_cs)
-> > + * with: 'nr_pd' the number of performance domains; 'nr_cpus' the number of
-> > + * CPUs; and 'nr_cs' the sum of the capacity states numbers of all performance
-> > + * domains.
-> > + *
-> > + * It is generally not a good idea to use such a model in the wake-up path on
-> > + * very complex platforms because of the associated scheduling overheads. The
-> > + * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
-> > + * with per-CPU DVFS and less than 8 capacity states each, for example.
-> 
-> According to the formula above, that should give a "complexity value" of:
-> 
->   16 * (16 + 9) = 384
-> 
-> while, 2K complexity seems more like a 40xCPUs system with 8 OPPs.
-> 
-> Maybe we should update either the example or the constant below ?
+Hi Taniya,
 
-Hmm I guess the example isn't really clear. 'nr_cs' is the _sum_ of the
-number of OPPs of all perf. domains. So, in the example above, if you
-have 16 CPUs with per-CPU DVFS, and each DVFS island has 8 OPPs, then
-nr_cs = 16 * 8 = 128.
-
-So if you apply the formula you get C = 16 * (16 + 128) = 2304, which is
-more than EM_MAX_COMPLEXITY, so EAS cannot start.
-
-If the DVFS island had 7 OPPs instead of 8 (for example) you would get
-nr_cs = 112, C = 2048, and so EAS could start.
-
-I can try to re-work that comment to explain things a bit better ...
-
+On Tue, Jul 24, 2018 at 04:12:50PM +0530, Taniya Das wrote:
+> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+> for changing the frequency of CPUs. The driver implements the cpufreq
+> driver interface for this hardware engine.
 > 
-> > + */
-> > +#define EM_MAX_COMPLEXITY 2048
-> > +
-> >  static void build_perf_domains(const struct cpumask *cpu_map)
-> >  {
-> > +	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
-> >  	struct perf_domain *pd = NULL, *tmp;
-> >  	int cpu = cpumask_first(cpu_map);
-> >  	struct root_domain *rd = cpu_rq(cpu)->rd;
-> > -	int i;
-> > +
-> > +	/* EAS is enabled for asymmetric CPU capacity topologies. */
-> > +	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
-> > +		if (sched_debug()) {
-> > +			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
-> > +					cpumask_pr_args(cpu_map));
-> > +		}
-> > +		goto free;
-> > +	}
-> >  
-> >  	for_each_cpu(i, cpu_map) {
-> >  		/* Skip already covered CPUs. */
-> > @@ -288,6 +318,21 @@ static void build_perf_domains(const struct cpumask *cpu_map)
-> >  			goto free;
-> >  		tmp->next = pd;
-> >  		pd = tmp;
-> > +
-> > +		/*
-> > +		 * Count performance domains and capacity states for the
-> > +		 * complexity check.
-> > +		 */
-> > +		nr_pd++;
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm       |  11 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 348 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 360 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
 > 
-> A special case where EAS is not going to be used is for systems where
-> nr_pd matches the number of online CPUs, isn't it ?
-
-Well, it depends. Say you have only 4 CPUs with 3 OPPs each. Even with
-per-CPU DVFS the complexity is low enough to start EAS. I don't really
-see a good reason for not doing so no ?
-
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 0cd8eb7..93a9d72 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -298,3 +298,14 @@ config ARM_PXA2xx_CPUFREQ
+>  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
 > 
-> If that's the case, then, by caching this nr_pd you can probably check
-> this condition in the sched_energy_start() and bail out even faster by
-> avoiding to scan all the doms_new's pd ?
+>  	  If in doubt, say N.
+> +
+> +config ARM_QCOM_CPUFREQ_HW
+> +	bool "QCOM CPUFreq HW driver"
+> +	depends on ARCH_QCOM
+> +	help
+> +	 Support for the CPUFreq HW driver.
+> +	 Some QCOM chipsets have a HW engine to offload the steps
+> +	 necessary for changing the frequency of the CPUs. Firmware loaded
+> +	 in this engine exposes a programming interface to the OS.
+> +	 The driver implements the cpufreq interface for this HW engine.
+> +	 Say Y if you want to support CPUFreq HW.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index c1ffeab..ca48a1d 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+>  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
 > 
 > 
-> > +		nr_cs += em_pd_nr_cap_states(pd->obj);
-> > +	}
-> > +
-> > +	/* Bail out if the Energy Model complexity is too high. */
-> > +	if (nr_pd * (nr_cs + nr_cpus) > EM_MAX_COMPLEXITY) {
-> > +		if (sched_debug())
-> > +			pr_info("rd %*pbl: EM complexity is too high\n ",
-> > +						cpumask_pr_args(cpu_map));
-> > +		goto free;
-> >  	}
-> >  
-> >  	perf_domain_debug(cpu_map, pd);
-> > @@ -307,6 +352,35 @@ static void build_perf_domains(const struct cpumask *cpu_map)
-> >  	if (tmp)
-> >  		call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
-> >  }
-> > +
-> > +static void sched_energy_start(int ndoms_new, cpumask_var_t doms_new[])
-> > +{
-> > +	/*
-> > +	 * The conditions for EAS to start are checked during the creation of
-> > +	 * root domains. If one of them meets all conditions, it will have a
-> > +	 * non-null list of performance domains.
-> > +	 */
-> > +	while (ndoms_new) {
-> > +		if (cpu_rq(cpumask_first(doms_new[ndoms_new - 1]))->rd->pd)
-> > +			goto enable;
-> > +		ndoms_new--;
-> > +	}
-> > +
-> > +	if (static_branch_unlikely(&sched_energy_present)) {
->                           ^^^^^^^^
-> Is this defined unlikely to reduce overheads on systems which never
-> satisfy all the conditions above while still rebuild SDs from time to
-> time ?
+>  ##################################################################################
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> new file mode 100644
+> index 0000000..ea8f7d1
+> --- /dev/null
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -0,0 +1,348 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> + */
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +
+> +#define INIT_RATE			300000000UL
+> +#define LUT_MAX_ENTRIES			40U
+> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
+> +#define LUT_ROW_SIZE			32
+> +
+> +enum {
+> +	REG_ENABLE,
+> +	REG_LUT_TABLE,
+> +	REG_PERF_STATE,
+> +
+> +	REG_ARRAY_SIZE,
+> +};
+> +
+> +struct cpufreq_qcom {
+> +	struct cpufreq_frequency_table *table;
+> +	struct device *dev;
 
-Something like that. I just thought that the case where EAS needs to be
-disabled after being enabled isn't very common. I mean, the most typical
-use-case is, EAS is enabled at boot and stays enabled forever, or EAS
-never gets enabled.
+'dev' is not used and can be removed.
 
-Enabling/disabling EAS because of hotplug (for example) can definitely
-happen, but that shouldn't be the case very often in practice, I think.
-So we can optimize things out a bit I suppose.
+> ...
+> 
+> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+> +				   struct device_node *np, unsigned int cpu,
+> +				   unsigned long xo_rate)
+> +{
+> +	struct cpufreq_qcom *c;
+> +	struct resource res;
+> +	struct device *dev = &pdev->dev;
+> +	const u16 *offsets;
+> +	int ret, i, cpu_first, cpu_r;
+> +	void __iomem *base;
+> +
+> +	if (qcom_freq_domain_map[cpu])
+> +		return 0;
+> +
+> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+> +	if (!c)
+> +		return -ENOMEM;
+> +
+> +	offsets = of_device_get_match_data(&pdev->dev);
+> +	if (!offsets)
+> +		return -EINVAL;
+> +
+> +	if (of_address_to_resource(np, 0, &res))
+> +		return -ENOMEM;
+> +
+> +	base = devm_ioremap_resource(dev, &res);
+> +	if (!base)
+> +		return -ENOMEM;
+> +
+> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
+> +		c->reg_bases[i] = base + offsets[i];
+> +
+> +	/* HW should be in enabled state to proceed */
+> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
+> +		dev_err(dev, "%s cpufreq hardware not enabled\n", np->name);
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = qcom_get_related_cpus(np, &c->related_cpus);
+> +	if (ret) {
+> +		dev_err(dev, "%s failed to get related CPUs\n", np->name);
+> +		return ret;
+> +	}
+> +
+> +	c->max_cores = cpumask_weight(&c->related_cpus);
+> +	if (!c->max_cores)
+> +		return -ENOENT;
+> +
+> +	c->xo_rate = xo_rate;
+> +
+> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
+> +	if (ret) {
+> +		dev_err(dev, "%s failed to read LUT\n", np->name);
+> +		return ret;
+> +	}
+> +
+> +	qcom_freq_domain_map[cpu] = c;
+> +
+> +	/* Related CPUs */
+> +	cpu_first = cpumask_first(&c->related_cpus);
+> +
+> +	for_each_cpu(cpu_r, &c->related_cpus) {
+> +		if (cpu_r != cpu_first)
+> +			qcom_freq_domain_map[cpu_r] =
+> +				qcom_freq_domain_map[cpu_first];
+> +	}
 
-Thanks !
-Quentin
+The above ten lines could be simplified to:
+
+	for_each_cpu(cpu_r, &c->related_cpus)
+		qcom_freq_domain_map[cpu_r] = c;
+
+> ...
+> 
+> +static int __init qcom_cpufreq_hw_init(void)
+> +{
+> +	return platform_driver_register(&qcom_cpufreq_hw_driver);
+> +}
+> +subsys_initcall(qcom_cpufreq_hw_init);
+
+Is subsys_initcall used for a particular reason? It will cause
+problems when registering cooling devices, since the thermal device
+class is initialized through an fs_initcall, which are executed
+later.
+
+Most cpufreq drivers use module_init, device_initcall or
+late_initcall, can't this driver use one of those?
+
+Cheers
+
+Matthias
