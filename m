@@ -1,90 +1,81 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH] power: reset: piix4-poweroff: Replace mdelay() with
- msleep() and usleep_range() in piix4_poweroff()
-Date: Thu, 30 Aug 2018 00:44:56 +0200
-Message-ID: <20180829224456.3iadf2hnv5pxlms4@earth.universe>
-References: <20180730134838.9124-1-baijiaju1990@gmail.com>
+Subject: Re: [PATCH] power: reset: syscon-poweroff: Replace mdelay() with
+ msleep() in syscon_poweroff()
+Date: Thu, 30 Aug 2018 00:46:27 +0200
+Message-ID: <20180829224627.g42fm5ujzygxi4mp@earth.universe>
+References: <20180730135029.9228-1-baijiaju1990@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="e6z24ml27j33bwcs"
+        protocol="application/pgp-signature"; boundary="juyk23fuxnvgrlxg"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180730134838.9124-1-baijiaju1990@gmail.com>
+In-Reply-To: <20180730135029.9228-1-baijiaju1990@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Jia-Ju Bai <baijiaju1990@gmail.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---e6z24ml27j33bwcs
+--juyk23fuxnvgrlxg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Jul 30, 2018 at 09:48:38PM +0800, Jia-Ju Bai wrote:
-> piix4_poweroff() is never called in atomic context.
+On Mon, Jul 30, 2018 at 09:50:29PM +0800, Jia-Ju Bai wrote:
+> syscon_poweroff() is never called in atomic context.
 > It calls mdelay() to busily wait, which is not necessary.
-> mdelay() can be replaced with msleep() and usleep_range().
+> mdelay() can be replaced with msleep().
 >=20
 > This is found by a static analysis tool named DCNS written by myself.
 >=20
 > Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
 > ---
 
-This is a shutdown driver, so busy waiting is ok.
+This is also a shutdown driver, not applying.
 
 -- Sebastian
 
->  drivers/power/reset/piix4-poweroff.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/power/reset/syscon-poweroff.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/power/reset/piix4-poweroff.c b/drivers/power/reset/p=
-iix4-poweroff.c
-> index 20ce3ff5e039..5d4c72992d2c 100644
-> --- a/drivers/power/reset/piix4-poweroff.c
-> +++ b/drivers/power/reset/piix4-poweroff.c
-> @@ -47,7 +47,7 @@ static void piix4_poweroff(void)
->  	     io_offset + PIIX4_FUNC3IO_PMCNTRL);
+> diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/=
+syscon-poweroff.c
+> index f9f1cb54fbf9..b8b154606dbe 100644
+> --- a/drivers/power/reset/syscon-poweroff.c
+> +++ b/drivers/power/reset/syscon-poweroff.c
+> @@ -36,7 +36,7 @@ static void syscon_poweroff(void)
+>  	/* Issue the poweroff */
+>  	regmap_update_bits(map, offset, mask, value);
 > =20
->  	/* If the special cycle occurs too soon this doesn't work... */
-> -	mdelay(10);
-> +	usleep_range(10000, 11000);
-> =20
->  	/*
->  	 * The PIIX4 will enter the suspend state only after seeing a special
-> @@ -59,7 +59,7 @@ static void piix4_poweroff(void)
->  				   PIIX4_SUSPEND_MAGIC);
-> =20
->  	/* Give the system some time to power down, then error */
 > -	mdelay(1000);
 > +	msleep(1000);
+> =20
 >  	pr_emerg("Unable to poweroff system\n");
 >  }
-> =20
 > --=20
 > 2.17.0
 >=20
 
---e6z24ml27j33bwcs
+--juyk23fuxnvgrlxg
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHIegACgkQ2O7X88g7
-+prmXg/7B8AukUKPN9HKBpe0p6+SVWU8sgcHbz/vQEl9PbMI1ZFx5r75LljtlnVH
-rOZLa3T4sko945gfrC07aG8a3BJS/V7ozVGWnfde5/Xsn2AtTiVO8UZPEIktnYgi
-ELvJVwUkCziMd8O64K2Y3eiyUJEJVrdbCitPvIKbYINuH8XpCdnWT9GkAfsjAYkn
-9Gxq7zlIf/DXjX8wUor/xlXILyW08KvKe4UxjHY8q5CWTdUo/CAUBfwJ6v1Jx8Bk
-VrqHwZPCGPUIaY769BTy3tpUyltO8tsAjx0DOfLz0rlME6qZ76fSDtv9gMOqmXZf
-CJ8KaD8KfD6mzW973/Sq3Pxy1UynZ0OXaml9gEEPiY/srQnCD9+SbyY5aRiRVFOy
-sIO7RPsLrQaaqlqhfyqrZL7RTiaaykpX7pR40JxOKvuzCkw2/IzZK+EdsAhA5v0g
-KdBxnu+ltUioSt7tVcCSVK53b2eCb4Hhu9A9Id/bVvCnH8IsKv5qjMaGqpjLhMzE
-KzlwRRGxwEV7O7pYDwfBlYpTyIIIKtysdg+OT5ob+bo04vkMzmsCl6GOHJ8+Uf4V
-JK13LnRBn34kFeqN1bq+LKJPVgrFBZGt/C3HDGxwR9Xu8X6naBkecTUl9jTt7hkq
-H7ZFc10wxqUjTNbriFIOowyy1NCtPVCfrOmayVydZyl1x0P5zNg=
-=VUEm
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHIkMACgkQ2O7X88g7
++pqQTBAApt7BJKuvQgjBnyZDwc5ndZyjuRXbv13ihfhyl7GTtV7yctPv87Ir6aBK
+ojnngKXZC44L76XDmrI+5tnmm31XQGt1iCN7Egl+XKh4Mj/8STQlIyY24zT6d6iQ
+CsEpPhP/L/CBXojQMa3PipqOKe24Mr+izec74ustbSboacUdesYRvygbreFaS3Fe
+pxqbMBJbKKOhbBIeIvYMcTbHgAAcvj62+pePl5m1H0QQm251UO5FaznZFolE06OF
+g2EWPwgO/adyHm/s7M57jq1DHiNPIQSZd3ZiDmqxYNb/C54baTyRrUJAbhSpgKZ3
+SxKb+iId396CFwWXpR4HVioHTm7nKMCk6BvpcbF2dKwsdI4vUNCapevJuRnne4ll
+ODlfOivzuFsxM5oqeoCMWkdEHJL2tgyIEeQ8QqY7Hvvvr841NHWUtEKlLoKzXKEA
+ecW9teJ2fGMUYP8TRcpHwE+PXLYWUmL3hYcaxTcILoiWaMSlMjxDfuv4rwUGnyHY
+d/LLfs7OeoROV/VXnTkT2L6jhX9tBX63leTgmRF26vRfvYl6aTFyYKdkJKH+JKr9
+CdEeHgeRby2Flqs8ec12mNXfipV6hpti8F3LU4Mg7DRtTm9i8oeFweQI7i8g0VVw
+7y9T1hHM77UCFdB60LFMsiqwiqc7sPVWqJ8TQH2/auohRJh+h8k=
+=u/zi
 -----END PGP SIGNATURE-----
 
---e6z24ml27j33bwcs--
+--juyk23fuxnvgrlxg--
