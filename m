@@ -1,118 +1,126 @@
-From: Karol Herbst <kherbst-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: Rewriting Intel PCI bridge prefetch base address bits
- solves nvidia graphics issues
-Date: Wed, 29 Aug 2018 14:40:21 +0200
-Message-ID: <CACO55tsoOYfrA2Wqf38JA6n83yz8YGxzvfLun+kOisWN6pjb8A@mail.gmail.com>
-References: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
- <20180824154212.GB8601@al>
- <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Pu Wen <puwen@hygon.cn>
+Subject: [PATCH v5 00/16] Add support for Hygon Dhyana Family 18h processor
+Date: Wed, 29 Aug 2018 20:42:15 +0800
+Message-ID: <cover.1535459012.git.puwen@hygon.cn>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, bp@alien8.de, pbonzini@redhat.com, tony.luck@intel.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org, mchehab@kernel.org, trenn@suse.com, shuah@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, Pu Wen <puwen@hygon.cn>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBBdWcgMjgsIDIwMTggYXQgNDoyMyBBTSwgRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRs
-ZXNzbS5jb20+IHdyb3RlOgo+IE9uIEZyaSwgQXVnIDI0LCAyMDE4IGF0IDExOjQyIFBNLCBQZXRl
-ciBXdSA8cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3JvdGU6Cj4+IEFyZSB0aGVzZSBzeXN0ZW1zIGFs
-c28gYWZmZWN0ZWQgdGhyb3VnaCBydW50aW1lIHBvd2VyIG1hbmFnZW1lbnQ/IEZvcgo+PiBleGFt
-cGxlOgo+Pgo+PiAgICAgbW9kcHJvYmUgbm91dmVhdSAgICAjIHNob3VsZCBlbmFibGUgcnVudGlt
-ZSBQTQo+PiAgICAgc2xlZXAgNiAgICAgICAgICAgICAjIHdhaXQgZm9yIHJ1bnRpbWUgc3VzcGVu
-ZCB0byBraWNrIGluCj4+ICAgICBsc3BjaSAtczE6ICAgICAgICAgICMgcnVudGltZSByZXN1bWUg
-YnkgcmVhZGluZyBQQ0kgY29uZmlnIHNwYWNlCj4+Cj4+IE9uIGxhcHRvcHMgZnJvbSBhYm91dCAy
-MDE1LTIwMTYgd2l0aCBhIEdUWCA5eHhNIHRoaXMgc2VxdWVuY2UgcmVzdWx0cyBpbgo+PiBoYW5n
-cyBvbiB2YXJpb3VzIGxhcHRvcHMKPj4gKGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
-X2J1Zy5jZ2k/aWQ9MTU2MzQxKS4KPgo+IFRoaXMgd29ya3MgZmluZSBoZXJlLiBJJ20gZmFjaW5n
-IGEgZGlmZmVyZW50IGlzc3VlLgo+Cj4+PiBBZnRlciBhIGxvdCBvZiBleHBlcmltZW50YXRpb24g
-SSBmb3VuZCBhIHdvcmthcm91bmQ6IGR1cmluZyByZXN1bWUsCj4+PiBzZXQgdGhlIHZhbHVlIG9m
-IFBDSV9QUkVGX0JBU0VfVVBQRVIzMiB0byAwIG9uIHRoZSBwYXJlbnQgUENJIGJyaWRnZS4KPj4+
-IEVhc2lseSBkb25lIGluIGRyaXZlcnMvcGNpL3F1aXJrcy5jLiBOb3cgYWxsIG52aWRpYSBzdHVm
-ZiB3b3JrcyBmaW5lLgo+Pgo+PiBJIGFtIGN1cmlvdXMsIGhvdyBkaWQgeW91IGRpc2NvdmVyIHRo
-aXM/IFdoaWxlIHRoaXMgY291bGQgd29yaywgcGVyaGFwcwo+PiB0aGVyZSBhcmUgYWx0ZXJuYXRp
-dmUgd29ya2Fyb3VuZHMvZml4ZXM/Cj4KPiBCYXNlZCBvbiB0aGUgb2JzZXJ2YXRpb24gdGhhdCB0
-aGUgZm9sbG93aW5nIHByb2NlZHVyZSB3b3JrcyBmaW5lIChub3RlCj4gdGhlIGFkZGl0aW9uIG9m
-IHN0ZXAgMyk6Cj4KPiAxLiBCb290Cj4gMi4gU3VzcGVuZC9yZXN1bWUKPiAzLiBlY2hvIHJlc2Nh
-biA+IC9zeXMvYnVzL3BjaS9kZXZpY2VzLzAwMDA6MDA6MWMuMC9yZXNjYW4KPiA0LiBMb2FkIG5v
-dXZlYXUgZHJpdmVyCj4gNS4gU3RhcnQgWAo+Cj4gSSB3b3JrZWQgdGhyb3VnaCB0aGUgcmVzY2Fu
-IGNvZGVwYXRoIHVudGlsIEkgaGFkIGlzb2xhdGVkIHRoZSBzcGVjaWZpYwo+IGNvZGUgd2hpY2gg
-bWFnaWNhbGx5IG1ha2VzIHRoaW5ncyB3b3JrIChpbiBwY2lfYnJpZGdlX2NoZWNrX3Jhbmdlcyku
-Cj4KPiBIYXZpbmcgZm91bmQgdGhhdCwgc3RlcCAzIGluIHRoZSBhYm92ZSB0ZXN0IHByb2NlZHVy
-ZSBjYW4gYmUgcmVwbGFjZWQKPiB3aXRoIGEgc2ltcGxlOgo+ICAgIHNldHBjaSAtcyAwMDoxYy4w
-IDB4MjgubD0wCj4KPj4gV2hlbiB5b3Ugc2F5ICJwYXJlbnQgUENJIiBicmlkZ2UsIGlzIHRoYXQg
-YWN0dWFsbHkgdGhlIGRldmljZSB5b3Ugc2VlIGluCj4+ICJsc3BjaSAtdHYiPyBPbiBhIERlbGwg
-WFBTIDk1NjAsIHRoZSBHUFUgaXMgdW5kZXIgYSBkaWZmZXJlbnQgZGV2aWNlOgo+Pgo+PiAgIC1b
-MDAwMDowMF0tKy0wMC4wICBJbnRlbCBDb3Jwb3JhdGlvbiBYZW9uIEUzLTEyMDAgdjYvN3RoIEdl
-biBDb3JlIFByb2Nlc3NvciBIb3N0IEJyaWRnZS9EUkFNIFJlZ2lzdGVycwo+PiAgICAgICAgICAg
-ICAgKy0wMS4wLVswMV0tLS0tMDAuMCAgTlZJRElBIENvcnBvcmF0aW9uIEdQMTA3TSBbR2VGb3Jj
-ZSBHVFggMTA1MCBNb2JpbGVdCj4+Cj4+ICAwMDowMS4wIFBDSSBicmlkZ2UgWzA2MDRdOiBJbnRl
-bCBDb3Jwb3JhdGlvbiBYZW9uIEUzLTEyMDAgdjUvRTMtMTUwMCB2NS82dGggR2VuIENvcmUgUHJv
-Y2Vzc29yIFBDSWUgQ29udHJvbGxlciAoeDE2KSBbODA4NjoxOTAxXSAocmV2IDA1KQo+Cj4gWWVz
-LCBpdCdzIHRoZSBwYXJlbnQgYnJpZGdlIHNob3duIGJ5IGxzcGNpLiBUaGUgYWRkcmVzcyBvZiB0
-aGlzIHZhcmllcwo+IGZyb20gc3lzdGVtIHRvIHN5c3RlbS4KPgo+Pj4gMS4gSXMgdGhlIEludGVs
-IFBDSSBicmlkZ2UgbWlzYmVoYXZpbmcgaGVyZT8gV2h5IGRvZXMgd3JpdGluZyB0aGUgc2FtZQo+
-Pj4gdmFsdWUgb2YgUENJX1BSRUZfQkFTRV9VUFBFUjMyIG1ha2UgYW55IGRpZmZlcmVuY2UgYXQg
-YWxsPwo+Pgo+PiBBdCB3aGF0IHBvaW50IGluIHRoZSBzdXNwZW5kIGNvZGUgcGF0aCBkaWQgeW91
-IGluc2VydCB0aGlzIHdyaXRlPyBJdCBpcwo+PiBwb3NzaWJsZSB0aGF0IHRoZSB3cml0ZSBzb21l
-aG93IGFjdGVkIGFzIGEgZmVuY2UvbWVtb3J5IGJhcnJpZXI/Cj4KPiBzdGF0aWMgdm9pZCBxdWly
-a19wcmVmX2Jhc2VfdXBwZXIzMihzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+IHsKPiAgICAgICAgdTMy
-IHByZWZfYmFzZV91cHBlcjMyOwo+ICAgICAgICBwY2lfcmVhZF9jb25maWdfZHdvcmQoZGV2LCBQ
-Q0lfUFJFRl9CQVNFX1VQUEVSMzIsICZwcmVmX2Jhc2VfdXBwZXIzMik7Cj4gICAgICAgIHBjaV93
-cml0ZV9jb25maWdfZHdvcmQoZGV2LCBQQ0lfUFJFRl9CQVNFX1VQUEVSMzIsIHByZWZfYmFzZV91
-cHBlcjMyKTsKPiB9Cj4gREVDTEFSRV9QQ0lfRklYVVBfUkVTVU1FKFBDSV9WRU5ET1JfSURfSU5U
-RUwsICAweDlkMTAsIHF1aXJrX3ByZWZfYmFzZV91cHBlcjMyKTsKPgoKdGhpcyB3b3JrYXJvdW5k
-IGZpeGVzIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgb24gbXkgbGFwdG9wIGFzIHdlbGwuLi4KYnV0
-IHdoYXQgYmFmZmxlcyBtZSBtb3N0IGlzLCB1bmxvYWRpbmcgbm91dmVhdSBkb2VzIGFzIHdlbGwu
-IEkgd2lsbApzZWUgd2hhdCBiaXRzIGFyZSBleGFjdGx5ICJmaXhpbmciIGl0IGluIHRoZSBub3V2
-ZWF1IHVubG9hZGluZyBwYXRoCmFuZCBtYXliZSB3ZSBjYW4gZ2V0IGFyb3VuZCB0aGlzIGlzc3Vl
-IGluc2lkZSBub3V2ZWF1LiBJdCB3b3VsZCBiZQpzdGlsbCBuaWNlIHRvIGdldCB0byB0aGUgcm9v
-dCBjYXVzZSBvZiBhbGwgb2YgdGhpcyBhcyB0aGVyZSBhcmUgdGhyZWUKa25vd24gd29ya2Fyb3Vu
-ZHMgKGF0IGxlYXN0IG9uIG15IHN5c3RlbSk6CjEuIHVubG9hZCBub3V2ZWF1CjIuIHNraXAgc2V0
-dGluZyB0aGUgRDMgcG93ZXIgc3RhdGUgdmlhIFBDSSBjb25maWcgc3BhY2UgKGFuZCBzdGlsbCBk
-bwp0aGUgQUNQSSBiaXRzKQozLiB3cml0ZSB2YWx1ZSBvZiBQQ0lfUFJFRl9CQVNFX1VQUEVSMzIK
-Cj4gSSBkb24ndCB0aGluayBpdCdzIGFjdGluZyBhcyBhIGJhcnJpZXIuIEkgdHJpZWQgY2hhbmdp
-bmcgdGhpcyBjb2RlIHRvCj4gcmV3cml0ZSBvdGhlciByZWdpc3RlcnMgc3VjaCBhcyBQQ0lfUFJF
-Rl9NRU1PUllfQkFTRSBhbmQgdGhhdCBtYWtlcwo+IHRoZSBidWcgY29tZSBiYWNrLgo+Cj4+PiAy
-LiBXaG8gaXMgcmVzcG9uc2libGUgZm9yIHNhdmluZyBhbmQgcmVzdG9yaW5nIFBDSSBicmlkZ2UK
-Pj4+IGNvbmZpZ3VyYXRpb24gZHVyaW5nIHN1c3BlbmQgYW5kIHJlc3VtZT8gTGludXg/IEFDUEk/
-IEJJT1M/Cj4+Cj4+IE5vdCBzdXJlIGFib3V0IFBDSSBicmlkZ2VzLCBidXQgYXQgbGVhc3QgZm9y
-IHRoZSBQQ0kgRXhwcmVzcyBDYXBhYmlsaXR5Cj4+IHJlZ2lzdGVycywgaXQgaXMgaW4gY29udHJv
-bCBvZiB0aGUgT1Mgd2hlbiBjb250cm9sIGlzIGdyYW50ZWQgdmlhIHRoZQo+PiBBQ1BJIF9PU0Mg
-bWV0aG9kLgo+Cj4gSSBndWVzcyB5b3UgYXJlIHJlZmVycmluZyB0byBwY2lfc2F2ZV9wY2llX3N0
-YXRlKCkuIEkgY2FuJ3Qgc2VlCj4gYW55dGhpbmcgZXF1aXZhbGVudCBmb3IgdGhlIGJyaWRnZSBy
-ZWdpc3RlcnMuCj4KPj4gQXMgV2luZG93cyBpcyBwcm9iYWJseSBub3QgYWZmZWN0ZWQgYnkgdGhp
-cyBpc3N1ZSwgYSBjaGFuZ2UgbXVzdCBiZQo+PiBwb3NzaWJsZSB0byBtYWtlIExpbnV4IG1vcmUg
-Y29tcGF0aWJsZSB3aXRoIFdpbmRvd3MuIFRob3VnaCBJIGFtIG5vdAo+PiBzdXJlIHdoYXQgY2hh
-bmdlIGlzIG5lZWRlZC4KPgo+IEkgYWdyZWUuIFRoZXJlJ3MgYSBkZWZpbml0ZSBkaWZmZXJlbmNl
-IHdpdGggV2luZG93cyBoZXJlIGFuZCBpdCB3b3VsZAo+IGJlIGdyZWF0IHRvIGZpbmQgYSBmaXgg
-YWxvbmcgdGhvc2UgbGluZXMuCj4KPj4gSSByZWNlbnRseSBjb21wYXJlZCBQQ0kgY29uZmlndXJh
-dGlvbiBzcGFjZSBhY2Nlc3MgYW5kIEFDUEkgbWV0aG9kCj4+IGludm9jYXRpb24gdXNpbmcgUUVN
-VSArIFZGSU8gd2l0aCBMaW51eCA0LjE4LCBXaW5kb3dzIDcgYW5kIFdpbmRvd3MgMTAKPj4gKDE4
-MDMpLiBUaGVyZSB3ZXJlIGRpZmZlcmVuY2VzIGxpa2UgZGlzYWJsaW5nIE1TSS9pbnRlcnJ1cHRz
-IGJlZm9yZQo+PiBzdXNwZW5kLCBzZXR0aW5nIHRoZSBFbmFibGUgQ2xvY2sgUG93ZXIgTWFuYWdl
-bWVudCBiaXQgaW4gUENJIEV4cHJlc3MKPj4gTGluayBDb250cm9sIGFuZCBtb3JlLCBidXQgYXBw
-bHlpbmcgdGhlc2UgY2hhbmdlcyB3ZXJlIHNvIGZhciBub3QgcmVhbGx5Cj4+IHN1Y2Nlc3NmdWwu
-Cj4KPiBJbnRlcmVzdGluZy4gRG8geW91IGtub3cgYW55IHdheSB0aGF0IEkgY291bGQgc3B5IG9u
-IFdpbmRvd3MnIGFjY2Vzc2VzCj4gdG8gdGhlIFBDSSBicmlkZ2UgcmVnaXN0ZXJzPwo+IExvb2tp
-bmcgYXQgYXQgaHR0cHM6Ly93aWtpLmFyY2hsaW51eC5vcmcvaW5kZXgucGhwL1BDSV9wYXNzdGhy
-b3VnaF92aWFfT1ZNRgo+IEkgc3VzcGVjdCBWRklPIHdvdWxkIG5vdCBoZWxwIG1lIGhlcmUuCj4g
-SXQgc2F5czoKPiAgICAgTm90ZTogSWYgdGhleSBhcmUgZ3JvdXBlZCB3aXRoIG90aGVyIGRldmlj
-ZXMgaW4gdGhpcyBtYW5uZXIsIHBjaQo+IHJvb3QgcG9ydHMgYW5kIGJyaWRnZXMgc2hvdWxkIG5l
-aXRoZXIgYmUgYm91bmQgdG8gdmZpbyBhdCBib290LCBub3IgYmUKPiBhZGRlZCB0byB0aGUgVk0u
-Cj4KPiBUaGFua3MKPiBEYW5pZWwKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwo+IE5vdXZlYXUgbWFpbGluZyBsaXN0Cj4gTm91dmVhdUBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL25vdXZlYXUKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0
-cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+As a new x86 CPU Vendor, Chengdu Haiguang IC Design Co., Ltd (Hygon)
+is a Joint Venture between AMD and Haiguang Information Technology Co.,
+Ltd., and aims at providing high performance x86 processor for China
+server market.
+
+The first generation Hygon's processor(Dhyana) originates from AMD
+technology and shares most of the architecture with AMD's family 17h,
+but with different CPU Vendor ID("HygonGenuine")/PCIE Device Vendor ID
+(0x1D94)/Family series number (Family 18h).
+
+To enable the support of Linux kernel to Hygon's CPU, we added a new
+vendor type (X86_VENDOR_HYGON, with value of 9) in arch/x86/include/
+asm/processor.h, and shared most of kernel support codes with AMD
+family 17h.
+
+This patch series have been applied and tested successfully in Hygon's
+Dhyana SoC silicon. Also tested on AMD's EPYC (Family 17h) processor
+works fine and makes no harm to existing codes.
+
+
+v4->v5:
+  - Rebased on 4.19-rc1 and tested against it.
+  - Add Reviewed-by from Boris Ostrovsky for Xen.
+  - Rework EDAC patch without vendor checking for minimal modification.
+
+v3->v4:
+  - Rebased on 4.18.3 and tested against it.
+  - Merge patchs 05/17 perfctr and 10/17 events in v3 to patch 05/16
+    PMU for better patch function group.
+  - Add hygon_get_topology_early() in patch 01/16.
+  - Rework vendor checking and refine coding style.
+  - Add Acked-by from Bjorn Helgaas for pci.
+  - Add Acked-by from Rafael J. Wysocki for cpufreq and acpi.
+
+v2->v3:
+  - Rebased on 4.18-rc8 and tested against it.
+  - Rework vendor checking codes to improve consistency.
+
+v1->v2:
+  - Rebased on 4.18-rc6 and tested against it.
+  - Split the patchset to small series of patches.
+  - Rework patch descriptions.
+  - Create a separated arch/x86/kernel/cpu/hygon.c for Dhyana CPU
+    initialization to reduce long-term maintenance effort.
+
+
+Pu Wen (16):
+  x86/cpu: create Dhyana init file and register new cpu_dev to system
+  x86/cache: get cache size/leaves and setup cache cpumap for Dhyana
+  x86/mtrr: get MTRR number and support TOP_MEM2
+  x86/smpboot: smp init nodelay and no flush caches before sleep
+  x86/pmu: enable Hygon support to PMU infrastructure
+  x86/nops: init ideal_nops for Hygon
+  x86/pci: add Hygon PCI vendor and northbridge support
+  x86/apic: add modern APIC support for Hygon
+  x86/bugs: add lfence mitigation to spectre v2 and no meltdown for
+    Hygon
+  x86/mce: enable Hygon support to MCE infrastructure
+  x86/kvm: enable Hygon support to KVM infrastructure
+  x86/xen: enable Hygon support to Xen
+  driver/acpi: enable Hygon support to ACPI driver
+  driver/cpufreq: enable Hygon support to cpufreq driver
+  driver/edac: enable Hygon support to AMD64 EDAC driver
+  tools/cpupower: enable Hygon support to cpupower tool
+
+ MAINTAINERS                                        |   6 +
+ arch/x86/Kconfig                                   |   2 +-
+ arch/x86/Kconfig.cpu                               |  13 +
+ arch/x86/events/amd/core.c                         |   6 +
+ arch/x86/events/amd/uncore.c                       |  15 +-
+ arch/x86/events/core.c                             |   4 +
+ arch/x86/include/asm/cacheinfo.h                   |   1 +
+ arch/x86/include/asm/kvm_emulate.h                 |   4 +
+ arch/x86/include/asm/mce.h                         |   5 +
+ arch/x86/include/asm/nospec-branch.h               |   4 +-
+ arch/x86/include/asm/processor.h                   |   3 +-
+ arch/x86/include/asm/virtext.h                     |   5 +-
+ arch/x86/kernel/alternative.c                      |   4 +
+ arch/x86/kernel/amd_nb.c                           |  51 ++-
+ arch/x86/kernel/apic/apic.c                        |  19 +-
+ arch/x86/kernel/apic/probe_32.c                    |   1 +
+ arch/x86/kernel/cpu/Makefile                       |   1 +
+ arch/x86/kernel/cpu/bugs.c                         |  28 +-
+ arch/x86/kernel/cpu/cacheinfo.c                    |  31 +-
+ arch/x86/kernel/cpu/common.c                       |   1 +
+ arch/x86/kernel/cpu/cpu.h                          |   1 +
+ arch/x86/kernel/cpu/hygon.c                        | 411 +++++++++++++++++++++
+ arch/x86/kernel/cpu/mcheck/mce-severity.c          |   3 +-
+ arch/x86/kernel/cpu/mcheck/mce.c                   |  21 +-
+ arch/x86/kernel/cpu/mtrr/cleanup.c                 |   3 +-
+ arch/x86/kernel/cpu/mtrr/generic.c                 |   5 +-
+ arch/x86/kernel/cpu/mtrr/mtrr.c                    |   2 +-
+ arch/x86/kernel/cpu/perfctr-watchdog.c             |   2 +
+ arch/x86/kernel/smpboot.c                          |   4 +-
+ arch/x86/kvm/emulate.c                             |  11 +-
+ arch/x86/pci/amd_bus.c                             |   6 +-
+ arch/x86/xen/pmu.c                                 |  12 +-
+ drivers/acpi/acpi_pad.c                            |   1 +
+ drivers/acpi/processor_idle.c                      |   1 +
+ drivers/cpufreq/acpi-cpufreq.c                     |   5 +
+ drivers/cpufreq/amd_freq_sensitivity.c             |   9 +-
+ drivers/edac/amd64_edac.c                          |  20 +-
+ drivers/edac/amd64_edac.h                          |   4 +
+ drivers/edac/mce_amd.c                             |   4 +-
+ include/linux/pci_ids.h                            |   2 +
+ tools/power/cpupower/utils/cpufreq-info.c          |   6 +-
+ tools/power/cpupower/utils/helpers/amd.c           |   6 +-
+ tools/power/cpupower/utils/helpers/cpuid.c         |   8 +-
+ tools/power/cpupower/utils/helpers/helpers.h       |   2 +-
+ tools/power/cpupower/utils/helpers/misc.c          |   3 +-
+ .../cpupower/utils/idle_monitor/mperf_monitor.c    |   3 +-
+ 46 files changed, 690 insertions(+), 69 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/hygon.c
+
+-- 
+2.7.4
