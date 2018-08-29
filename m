@@ -1,160 +1,118 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 1/7] dt-bindings: Add DT bindings documentation for
- Allwinner Thermal Sensor Controller
-Date: Wed, 29 Aug 2018 14:38:35 +0200
-Message-ID: <20180829123835.pe674l7kwwtq3nm5@flea>
-References: <20180804070355.14857-1-manu@freebsd.org>
- <20180820111755.rzg7l2lznmbpuf2e@flea>
- <CAL_JsqLVQDRH1esAXghfQdxmp+iorWVCArM2qTwjbgmQzmhzQw@mail.gmail.com>
- <20180820140737.xmqhu5ndqzehvkql@flea>
- <20180820162715.49e6d8a469ece983f3c1d288@bidouilliste.com>
- <20180824145840.isdcg3fr6mw4ntzg@flea>
- <20180824215921.59d060b54eb3a1e7d1552bde@bidouilliste.com>
- <20180824230338.GA19399@localhost.localdomain>
- <20180825174352.68de8a2720f4c91b987be914@bidouilliste.com>
+From: Karol Herbst <kherbst-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: Rewriting Intel PCI bridge prefetch base address bits
+ solves nvidia graphics issues
+Date: Wed, 29 Aug 2018 14:40:21 +0200
+Message-ID: <CACO55tsoOYfrA2Wqf38JA6n83yz8YGxzvfLun+kOisWN6pjb8A@mail.gmail.com>
+References: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
+ <20180824154212.GB8601@al>
+ <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="q2hvfmvfl4mg43xk"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180825174352.68de8a2720f4c91b987be914@bidouilliste.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Emmanuel Vadot <manu@bidouilliste.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Emmanuel Vadot <manu@freebsd.org>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---q2hvfmvfl4mg43xk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sat, Aug 25, 2018 at 05:43:52PM +0200, Emmanuel Vadot wrote:
->=20
->  Hi,
->=20
-> On Fri, 24 Aug 2018 16:03:40 -0700
-> Eduardo Valentin <edubezval@gmail.com> wrote:
->=20
-> > On Fri, Aug 24, 2018 at 09:59:21PM +0200, Emmanuel Vadot wrote:
-> > >=20
-> > >  Hi,
-> > >=20
-> > > On Fri, 24 Aug 2018 16:58:40 +0200
-> > > Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > >=20
-> > > > Hi,
-> > > >=20
-> > > > On Mon, Aug 20, 2018 at 04:27:15PM +0200, Emmanuel Vadot wrote:
-> > > > > On Mon, 20 Aug 2018 16:07:37 +0200
-> > > > > Maxime Ripard <maxime.ripard@bootlin.com> wrote:
-> > > > >=20
-> > > > > > On Mon, Aug 20, 2018 at 07:41:22AM -0600, Rob Herring wrote:
-> > > > > > > On Mon, Aug 20, 2018 at 5:17 AM Maxime Ripard <maxime.ripard@=
-bootlin.com> wrote:
-> > > > > > > >
-> > > > > > > > On Sat, Aug 04, 2018 at 09:03:49AM +0200, Emmanuel Vadot wr=
-ote:
-> > > > > > > > > This patch adds documentation for Device-Tree bindings fo=
-r the Allwinner
-> > > > > > > > > Thermal Sensor Controller found on the H3, H5 and A64 SoCs
-> > > > > > > > >
-> > > > > > > > > Signed-off-by: Emmanuel Vadot <manu@freebsd.org>
-> > > > > > > >
-> > > > > > > > I'm not going to merge a binding for a device that doesn't =
-have any
-> > > > > > > > driver implemented at the moment in Linux.
-> > > > > > >=20
-> > > > > > > I'll take it then. Linux is not the only DT client.
-> > > > > >=20
-> > > > > > Then don't complain if we ever have to break the ABI. We never =
-tested
-> > > > > > that hardware, never had any code running on it, and it *will* =
-cause
-> > > > > > some issues. For example, the calibration data have never been =
-used
-> > > > > > and how they should be represented have never been described, s=
-ince no
-> > > > > > one ever actually tried to use it.
-> > > > > >=20
-> > > > > > And sure, Linux is not the only DT client. Just like FreeBSD is=
-n't.
-> > > > >=20
-> > > > >  What kind of data would you need for me to make things better ?
-> > > > >  We have the driver in FreeBSD for almost two years now, whne I s=
-tarted
-> > > > > to see how to upstream it I noticed a lot of problems and spent 4=
- or 5
-> > > > > days to try on all the SoCs mentionned in the serie, the only SoC=
- I
-> > > > > didn't include it the A83T as for some reason I couldn't make the
-> > > > > driver work.
-> > > >=20
-> > > > Do you have a link to that driver?=20
-> > >=20
-> > >  https://github.com/freebsd/freebsd/blob/master/sys/arm/allwinner/aw_=
-thermal.c
-> > >=20
-> > > > How and how much did you test it?
-> > >=20
-> > >  Using a cheap IR thermometer as it's all I can afford.
-> > >  Then running multiples cpufreq-a53 process and comparing the result.
-> > >  Did the same without using the calibration data, result where closer
-> > > when I used them.
-> > >=20
-> > > > Are you using the calibration data stored in the SID?
-> > >=20
-> > >  Yes, which is why the serie contain the nvmem cell for the SID.
-> > >=20
-> > > >=20
-> > > > > I just hope that you understand that we cannot wait for Linux to
-> > > > > have a driver to have some bindings.
-> > > >=20
-> > > > Just like I'm sure you can understand that just merging the DT bits
-> > > > without testing anything caused some troubles in the past, and I do=
-n't
-> > > > want to discover it in a year from now.
-> > >=20
-> > >  I do, I don't like wrong DT info as much as you do I think. I had
-> > > the unfortunate event to find that the sun4i-a10-timer compatible used
-> > > in every soc is plain wrong for !A10 and !A13, patches comming soon.
-> > >  I want those bits merged but I also want that they reflect reality,
-> > > this is not a hard driver to do, NetBSD also have one I think, maybe
-> > > OpenBSD do to.
-> >=20
-> >=20
-> > I would prefer to see a series of DT bindings + driver. Can you send
-> > your next iteration with the driver so we can review both together?
->=20
->  You mean a link to the FreeBSD driver (and OpenBSD since they have one
-> too) in the cover letter ?
-
-That would definitely be valuable, yes, thanks!
-Maxime
-
---=20
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---q2hvfmvfl4mg43xk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEE0VqZU19dR2zEVaqr0rTAlCFNr3QFAluGk8oACgkQ0rTAlCFN
-r3QJ/g//a4mp6I3H6oWNN8cchbSP736FQREIQNC7B5qaGY3V55L9H/kuPfkyO+38
-MhXGqr23P0HXsqeC3zLqr2xYXTevb0+0vVJCEamGSWu2jIywPm0ycNIS/9cLKHCb
-2mKs6IjwecjVxsBrjTqY4u2ddLC0c0qpRdLUEOcBD4GE6piFdARUb0nRjN6nM7Gn
-i+1/XDtNDvLNQLAyd5KGsRvp8R+veCU7hBSeyr9U/yBejNjqi0SCZjnk7wi7hTZ1
-elyvWIX/kBnBoO84Z1M+IYgSrTH+s274pf6H1ocY+TnS67+LWaSTlWEmsOwpSiod
-LpxFAg/rhTMMaxJzDaddeupsULqBiP8+RyclYzNv2jZOO5D5tBRlvUcVGNnINutl
-d5oO7Xy+Ao7JdmK/mn9FBBdA5Bl0r8OUUmbTsd69pw+8Tm41jtW/cNOI0x9Y6XD9
-vS2U0r3Nthnb7FIdGzBVch6N9oVnRRK4GUhyAogA0/0bfITkwheDQHoSn68DDAS2
-qY/hfdamCoZk9EvjoVo/Gydz2I+b+ncq881aBd6zcvRkhaAx409ITQ1JbE44oWGL
-oL/nQjeUvDucStlZEBTHpr9eU0Mii/CfF3TGmS4fuqOi/UhOmtEaKF2v43Z9wm6m
-01mQ9dyBCJkEUcaech7tlnZVK/ApBi0PLPWhHhIjMWtYbdgyHVc=
-=4od8
------END PGP SIGNATURE-----
-
---q2hvfmvfl4mg43xk--
+T24gVHVlLCBBdWcgMjgsIDIwMTggYXQgNDoyMyBBTSwgRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRs
+ZXNzbS5jb20+IHdyb3RlOgo+IE9uIEZyaSwgQXVnIDI0LCAyMDE4IGF0IDExOjQyIFBNLCBQZXRl
+ciBXdSA8cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3JvdGU6Cj4+IEFyZSB0aGVzZSBzeXN0ZW1zIGFs
+c28gYWZmZWN0ZWQgdGhyb3VnaCBydW50aW1lIHBvd2VyIG1hbmFnZW1lbnQ/IEZvcgo+PiBleGFt
+cGxlOgo+Pgo+PiAgICAgbW9kcHJvYmUgbm91dmVhdSAgICAjIHNob3VsZCBlbmFibGUgcnVudGlt
+ZSBQTQo+PiAgICAgc2xlZXAgNiAgICAgICAgICAgICAjIHdhaXQgZm9yIHJ1bnRpbWUgc3VzcGVu
+ZCB0byBraWNrIGluCj4+ICAgICBsc3BjaSAtczE6ICAgICAgICAgICMgcnVudGltZSByZXN1bWUg
+YnkgcmVhZGluZyBQQ0kgY29uZmlnIHNwYWNlCj4+Cj4+IE9uIGxhcHRvcHMgZnJvbSBhYm91dCAy
+MDE1LTIwMTYgd2l0aCBhIEdUWCA5eHhNIHRoaXMgc2VxdWVuY2UgcmVzdWx0cyBpbgo+PiBoYW5n
+cyBvbiB2YXJpb3VzIGxhcHRvcHMKPj4gKGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93
+X2J1Zy5jZ2k/aWQ9MTU2MzQxKS4KPgo+IFRoaXMgd29ya3MgZmluZSBoZXJlLiBJJ20gZmFjaW5n
+IGEgZGlmZmVyZW50IGlzc3VlLgo+Cj4+PiBBZnRlciBhIGxvdCBvZiBleHBlcmltZW50YXRpb24g
+SSBmb3VuZCBhIHdvcmthcm91bmQ6IGR1cmluZyByZXN1bWUsCj4+PiBzZXQgdGhlIHZhbHVlIG9m
+IFBDSV9QUkVGX0JBU0VfVVBQRVIzMiB0byAwIG9uIHRoZSBwYXJlbnQgUENJIGJyaWRnZS4KPj4+
+IEVhc2lseSBkb25lIGluIGRyaXZlcnMvcGNpL3F1aXJrcy5jLiBOb3cgYWxsIG52aWRpYSBzdHVm
+ZiB3b3JrcyBmaW5lLgo+Pgo+PiBJIGFtIGN1cmlvdXMsIGhvdyBkaWQgeW91IGRpc2NvdmVyIHRo
+aXM/IFdoaWxlIHRoaXMgY291bGQgd29yaywgcGVyaGFwcwo+PiB0aGVyZSBhcmUgYWx0ZXJuYXRp
+dmUgd29ya2Fyb3VuZHMvZml4ZXM/Cj4KPiBCYXNlZCBvbiB0aGUgb2JzZXJ2YXRpb24gdGhhdCB0
+aGUgZm9sbG93aW5nIHByb2NlZHVyZSB3b3JrcyBmaW5lIChub3RlCj4gdGhlIGFkZGl0aW9uIG9m
+IHN0ZXAgMyk6Cj4KPiAxLiBCb290Cj4gMi4gU3VzcGVuZC9yZXN1bWUKPiAzLiBlY2hvIHJlc2Nh
+biA+IC9zeXMvYnVzL3BjaS9kZXZpY2VzLzAwMDA6MDA6MWMuMC9yZXNjYW4KPiA0LiBMb2FkIG5v
+dXZlYXUgZHJpdmVyCj4gNS4gU3RhcnQgWAo+Cj4gSSB3b3JrZWQgdGhyb3VnaCB0aGUgcmVzY2Fu
+IGNvZGVwYXRoIHVudGlsIEkgaGFkIGlzb2xhdGVkIHRoZSBzcGVjaWZpYwo+IGNvZGUgd2hpY2gg
+bWFnaWNhbGx5IG1ha2VzIHRoaW5ncyB3b3JrIChpbiBwY2lfYnJpZGdlX2NoZWNrX3Jhbmdlcyku
+Cj4KPiBIYXZpbmcgZm91bmQgdGhhdCwgc3RlcCAzIGluIHRoZSBhYm92ZSB0ZXN0IHByb2NlZHVy
+ZSBjYW4gYmUgcmVwbGFjZWQKPiB3aXRoIGEgc2ltcGxlOgo+ICAgIHNldHBjaSAtcyAwMDoxYy4w
+IDB4MjgubD0wCj4KPj4gV2hlbiB5b3Ugc2F5ICJwYXJlbnQgUENJIiBicmlkZ2UsIGlzIHRoYXQg
+YWN0dWFsbHkgdGhlIGRldmljZSB5b3Ugc2VlIGluCj4+ICJsc3BjaSAtdHYiPyBPbiBhIERlbGwg
+WFBTIDk1NjAsIHRoZSBHUFUgaXMgdW5kZXIgYSBkaWZmZXJlbnQgZGV2aWNlOgo+Pgo+PiAgIC1b
+MDAwMDowMF0tKy0wMC4wICBJbnRlbCBDb3Jwb3JhdGlvbiBYZW9uIEUzLTEyMDAgdjYvN3RoIEdl
+biBDb3JlIFByb2Nlc3NvciBIb3N0IEJyaWRnZS9EUkFNIFJlZ2lzdGVycwo+PiAgICAgICAgICAg
+ICAgKy0wMS4wLVswMV0tLS0tMDAuMCAgTlZJRElBIENvcnBvcmF0aW9uIEdQMTA3TSBbR2VGb3Jj
+ZSBHVFggMTA1MCBNb2JpbGVdCj4+Cj4+ICAwMDowMS4wIFBDSSBicmlkZ2UgWzA2MDRdOiBJbnRl
+bCBDb3Jwb3JhdGlvbiBYZW9uIEUzLTEyMDAgdjUvRTMtMTUwMCB2NS82dGggR2VuIENvcmUgUHJv
+Y2Vzc29yIFBDSWUgQ29udHJvbGxlciAoeDE2KSBbODA4NjoxOTAxXSAocmV2IDA1KQo+Cj4gWWVz
+LCBpdCdzIHRoZSBwYXJlbnQgYnJpZGdlIHNob3duIGJ5IGxzcGNpLiBUaGUgYWRkcmVzcyBvZiB0
+aGlzIHZhcmllcwo+IGZyb20gc3lzdGVtIHRvIHN5c3RlbS4KPgo+Pj4gMS4gSXMgdGhlIEludGVs
+IFBDSSBicmlkZ2UgbWlzYmVoYXZpbmcgaGVyZT8gV2h5IGRvZXMgd3JpdGluZyB0aGUgc2FtZQo+
+Pj4gdmFsdWUgb2YgUENJX1BSRUZfQkFTRV9VUFBFUjMyIG1ha2UgYW55IGRpZmZlcmVuY2UgYXQg
+YWxsPwo+Pgo+PiBBdCB3aGF0IHBvaW50IGluIHRoZSBzdXNwZW5kIGNvZGUgcGF0aCBkaWQgeW91
+IGluc2VydCB0aGlzIHdyaXRlPyBJdCBpcwo+PiBwb3NzaWJsZSB0aGF0IHRoZSB3cml0ZSBzb21l
+aG93IGFjdGVkIGFzIGEgZmVuY2UvbWVtb3J5IGJhcnJpZXI/Cj4KPiBzdGF0aWMgdm9pZCBxdWly
+a19wcmVmX2Jhc2VfdXBwZXIzMihzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+IHsKPiAgICAgICAgdTMy
+IHByZWZfYmFzZV91cHBlcjMyOwo+ICAgICAgICBwY2lfcmVhZF9jb25maWdfZHdvcmQoZGV2LCBQ
+Q0lfUFJFRl9CQVNFX1VQUEVSMzIsICZwcmVmX2Jhc2VfdXBwZXIzMik7Cj4gICAgICAgIHBjaV93
+cml0ZV9jb25maWdfZHdvcmQoZGV2LCBQQ0lfUFJFRl9CQVNFX1VQUEVSMzIsIHByZWZfYmFzZV91
+cHBlcjMyKTsKPiB9Cj4gREVDTEFSRV9QQ0lfRklYVVBfUkVTVU1FKFBDSV9WRU5ET1JfSURfSU5U
+RUwsICAweDlkMTAsIHF1aXJrX3ByZWZfYmFzZV91cHBlcjMyKTsKPgoKdGhpcyB3b3JrYXJvdW5k
+IGZpeGVzIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgb24gbXkgbGFwdG9wIGFzIHdlbGwuLi4KYnV0
+IHdoYXQgYmFmZmxlcyBtZSBtb3N0IGlzLCB1bmxvYWRpbmcgbm91dmVhdSBkb2VzIGFzIHdlbGwu
+IEkgd2lsbApzZWUgd2hhdCBiaXRzIGFyZSBleGFjdGx5ICJmaXhpbmciIGl0IGluIHRoZSBub3V2
+ZWF1IHVubG9hZGluZyBwYXRoCmFuZCBtYXliZSB3ZSBjYW4gZ2V0IGFyb3VuZCB0aGlzIGlzc3Vl
+IGluc2lkZSBub3V2ZWF1LiBJdCB3b3VsZCBiZQpzdGlsbCBuaWNlIHRvIGdldCB0byB0aGUgcm9v
+dCBjYXVzZSBvZiBhbGwgb2YgdGhpcyBhcyB0aGVyZSBhcmUgdGhyZWUKa25vd24gd29ya2Fyb3Vu
+ZHMgKGF0IGxlYXN0IG9uIG15IHN5c3RlbSk6CjEuIHVubG9hZCBub3V2ZWF1CjIuIHNraXAgc2V0
+dGluZyB0aGUgRDMgcG93ZXIgc3RhdGUgdmlhIFBDSSBjb25maWcgc3BhY2UgKGFuZCBzdGlsbCBk
+bwp0aGUgQUNQSSBiaXRzKQozLiB3cml0ZSB2YWx1ZSBvZiBQQ0lfUFJFRl9CQVNFX1VQUEVSMzIK
+Cj4gSSBkb24ndCB0aGluayBpdCdzIGFjdGluZyBhcyBhIGJhcnJpZXIuIEkgdHJpZWQgY2hhbmdp
+bmcgdGhpcyBjb2RlIHRvCj4gcmV3cml0ZSBvdGhlciByZWdpc3RlcnMgc3VjaCBhcyBQQ0lfUFJF
+Rl9NRU1PUllfQkFTRSBhbmQgdGhhdCBtYWtlcwo+IHRoZSBidWcgY29tZSBiYWNrLgo+Cj4+PiAy
+LiBXaG8gaXMgcmVzcG9uc2libGUgZm9yIHNhdmluZyBhbmQgcmVzdG9yaW5nIFBDSSBicmlkZ2UK
+Pj4+IGNvbmZpZ3VyYXRpb24gZHVyaW5nIHN1c3BlbmQgYW5kIHJlc3VtZT8gTGludXg/IEFDUEk/
+IEJJT1M/Cj4+Cj4+IE5vdCBzdXJlIGFib3V0IFBDSSBicmlkZ2VzLCBidXQgYXQgbGVhc3QgZm9y
+IHRoZSBQQ0kgRXhwcmVzcyBDYXBhYmlsaXR5Cj4+IHJlZ2lzdGVycywgaXQgaXMgaW4gY29udHJv
+bCBvZiB0aGUgT1Mgd2hlbiBjb250cm9sIGlzIGdyYW50ZWQgdmlhIHRoZQo+PiBBQ1BJIF9PU0Mg
+bWV0aG9kLgo+Cj4gSSBndWVzcyB5b3UgYXJlIHJlZmVycmluZyB0byBwY2lfc2F2ZV9wY2llX3N0
+YXRlKCkuIEkgY2FuJ3Qgc2VlCj4gYW55dGhpbmcgZXF1aXZhbGVudCBmb3IgdGhlIGJyaWRnZSBy
+ZWdpc3RlcnMuCj4KPj4gQXMgV2luZG93cyBpcyBwcm9iYWJseSBub3QgYWZmZWN0ZWQgYnkgdGhp
+cyBpc3N1ZSwgYSBjaGFuZ2UgbXVzdCBiZQo+PiBwb3NzaWJsZSB0byBtYWtlIExpbnV4IG1vcmUg
+Y29tcGF0aWJsZSB3aXRoIFdpbmRvd3MuIFRob3VnaCBJIGFtIG5vdAo+PiBzdXJlIHdoYXQgY2hh
+bmdlIGlzIG5lZWRlZC4KPgo+IEkgYWdyZWUuIFRoZXJlJ3MgYSBkZWZpbml0ZSBkaWZmZXJlbmNl
+IHdpdGggV2luZG93cyBoZXJlIGFuZCBpdCB3b3VsZAo+IGJlIGdyZWF0IHRvIGZpbmQgYSBmaXgg
+YWxvbmcgdGhvc2UgbGluZXMuCj4KPj4gSSByZWNlbnRseSBjb21wYXJlZCBQQ0kgY29uZmlndXJh
+dGlvbiBzcGFjZSBhY2Nlc3MgYW5kIEFDUEkgbWV0aG9kCj4+IGludm9jYXRpb24gdXNpbmcgUUVN
+VSArIFZGSU8gd2l0aCBMaW51eCA0LjE4LCBXaW5kb3dzIDcgYW5kIFdpbmRvd3MgMTAKPj4gKDE4
+MDMpLiBUaGVyZSB3ZXJlIGRpZmZlcmVuY2VzIGxpa2UgZGlzYWJsaW5nIE1TSS9pbnRlcnJ1cHRz
+IGJlZm9yZQo+PiBzdXNwZW5kLCBzZXR0aW5nIHRoZSBFbmFibGUgQ2xvY2sgUG93ZXIgTWFuYWdl
+bWVudCBiaXQgaW4gUENJIEV4cHJlc3MKPj4gTGluayBDb250cm9sIGFuZCBtb3JlLCBidXQgYXBw
+bHlpbmcgdGhlc2UgY2hhbmdlcyB3ZXJlIHNvIGZhciBub3QgcmVhbGx5Cj4+IHN1Y2Nlc3NmdWwu
+Cj4KPiBJbnRlcmVzdGluZy4gRG8geW91IGtub3cgYW55IHdheSB0aGF0IEkgY291bGQgc3B5IG9u
+IFdpbmRvd3MnIGFjY2Vzc2VzCj4gdG8gdGhlIFBDSSBicmlkZ2UgcmVnaXN0ZXJzPwo+IExvb2tp
+bmcgYXQgYXQgaHR0cHM6Ly93aWtpLmFyY2hsaW51eC5vcmcvaW5kZXgucGhwL1BDSV9wYXNzdGhy
+b3VnaF92aWFfT1ZNRgo+IEkgc3VzcGVjdCBWRklPIHdvdWxkIG5vdCBoZWxwIG1lIGhlcmUuCj4g
+SXQgc2F5czoKPiAgICAgTm90ZTogSWYgdGhleSBhcmUgZ3JvdXBlZCB3aXRoIG90aGVyIGRldmlj
+ZXMgaW4gdGhpcyBtYW5uZXIsIHBjaQo+IHJvb3QgcG9ydHMgYW5kIGJyaWRnZXMgc2hvdWxkIG5l
+aXRoZXIgYmUgYm91bmQgdG8gdmZpbyBhdCBib290LCBub3IgYmUKPiBhZGRlZCB0byB0aGUgVk0u
+Cj4KPiBUaGFua3MKPiBEYW5pZWwKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwo+IE5vdXZlYXUgbWFpbGluZyBsaXN0Cj4gTm91dmVhdUBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKPiBodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL25vdXZlYXUKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0
+cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
