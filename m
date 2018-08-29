@@ -1,81 +1,67 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH] power: reset: syscon-poweroff: Replace mdelay() with
- msleep() in syscon_poweroff()
-Date: Thu, 30 Aug 2018 00:46:27 +0200
-Message-ID: <20180829224627.g42fm5ujzygxi4mp@earth.universe>
-References: <20180730135029.9228-1-baijiaju1990@gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Add new name attribute for sysfs
+Date: Thu, 30 Aug 2018 07:50:58 +0900
+Message-ID: <5B872352.6030304@samsung.com>
+References: <CGME20180829073410epcas1p2f314e6c4c29eacfe3ebd5fb4f7f2f122@epcas1p2.samsung.com>
+        <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
+        <20180829105738.GA26948@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="juyk23fuxnvgrlxg"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180730135029.9228-1-baijiaju1990@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jia-Ju Bai <baijiaju1990@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <20180829105738.GA26948@kroah.com>
+Sender: stable-owner@vger.kernel.org
+To: Greg KH <greg@kroah.com>
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Dear Greg,
 
---juyk23fuxnvgrlxg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2018년 08월 29일 19:57, Greg KH wrote:
+> On Wed, Aug 29, 2018 at 04:34:06PM +0900, Chanwoo Choi wrote:
+>> commit 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for
+>> sysfs") changed the node name to devfreq(x). After this commit, it is not
+>> possible to get the device name through /sys/class/devfreq/devfreq(X)/*.
+>>
+>> Add new name attribute in order to get device name.
+>>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for sysfs")
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 11 +++++++++++
+>>  include/linux/devfreq.h   |  3 +++
+>>  2 files changed, 14 insertions(+)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 4c49bb1330b5..2145563d5ee5 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -620,6 +620,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>  	}
+>>  	devfreq->max_freq = devfreq->scaling_max_freq;
+>>
+>> +	devfreq->name = dev_name(devfreq->dev.parent);
+>> +	if (IS_ERR_OR_NULL(devfreq->name))
+>> +		return -EINVAL;
+>>  	dev_set_name(&devfreq->dev, "devfreq%d",
+>>  				atomic_inc_return(&devfreq_no));
+>>  	err = device_register(&devfreq->dev);
+>> @@ -1261,6 +1264,13 @@ static ssize_t trans_stat_show(struct device *dev,
+>>  }
+>>  static DEVICE_ATTR_RO(trans_stat);
+>>
+>> +static ssize_t name_show(struct device *dev,
+>> +			struct device_attribute *attr, char *buf)
+>> +{
+>> +	return sprintf(buf, "%s\n", to_devfreq(dev)->name);
+>> +}
+>> +static DEVICE_ATTR_RO(name);
+> 
+> You need a new Documentation/ABI/ entry for this.
 
-Hi,
+Thanks for comment. I'll.
 
-On Mon, Jul 30, 2018 at 09:50:29PM +0800, Jia-Ju Bai wrote:
-> syscon_poweroff() is never called in atomic context.
-> It calls mdelay() to busily wait, which is not necessary.
-> mdelay() can be replaced with msleep().
->=20
-> This is found by a static analysis tool named DCNS written by myself.
->=20
-> Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
-> ---
-
-This is also a shutdown driver, not applying.
-
--- Sebastian
-
->  drivers/power/reset/syscon-poweroff.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/=
-syscon-poweroff.c
-> index f9f1cb54fbf9..b8b154606dbe 100644
-> --- a/drivers/power/reset/syscon-poweroff.c
-> +++ b/drivers/power/reset/syscon-poweroff.c
-> @@ -36,7 +36,7 @@ static void syscon_poweroff(void)
->  	/* Issue the poweroff */
->  	regmap_update_bits(map, offset, mask, value);
-> =20
-> -	mdelay(1000);
-> +	msleep(1000);
-> =20
->  	pr_emerg("Unable to poweroff system\n");
->  }
-> --=20
-> 2.17.0
->=20
-
---juyk23fuxnvgrlxg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHIkMACgkQ2O7X88g7
-+pqQTBAApt7BJKuvQgjBnyZDwc5ndZyjuRXbv13ihfhyl7GTtV7yctPv87Ir6aBK
-ojnngKXZC44L76XDmrI+5tnmm31XQGt1iCN7Egl+XKh4Mj/8STQlIyY24zT6d6iQ
-CsEpPhP/L/CBXojQMa3PipqOKe24Mr+izec74ustbSboacUdesYRvygbreFaS3Fe
-pxqbMBJbKKOhbBIeIvYMcTbHgAAcvj62+pePl5m1H0QQm251UO5FaznZFolE06OF
-g2EWPwgO/adyHm/s7M57jq1DHiNPIQSZd3ZiDmqxYNb/C54baTyRrUJAbhSpgKZ3
-SxKb+iId396CFwWXpR4HVioHTm7nKMCk6BvpcbF2dKwsdI4vUNCapevJuRnne4ll
-ODlfOivzuFsxM5oqeoCMWkdEHJL2tgyIEeQ8QqY7Hvvvr841NHWUtEKlLoKzXKEA
-ecW9teJ2fGMUYP8TRcpHwE+PXLYWUmL3hYcaxTcILoiWaMSlMjxDfuv4rwUGnyHY
-d/LLfs7OeoROV/VXnTkT2L6jhX9tBX63leTgmRF26vRfvYl6aTFyYKdkJKH+JKr9
-CdEeHgeRby2Flqs8ec12mNXfipV6hpti8F3LU4Mg7DRtTm9i8oeFweQI7i8g0VVw
-7y9T1hHM77UCFdB60LFMsiqwiqc7sPVWqJ8TQH2/auohRJh+h8k=
-=u/zi
------END PGP SIGNATURE-----
-
---juyk23fuxnvgrlxg--
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
