@@ -1,138 +1,93 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: ab8500_fg: fix obsolete function
-Date: Thu, 30 Aug 2018 00:33:20 +0200
-Message-ID: <20180829223320.rhfusyuywofjmpx7@earth.universe>
-References: <1535366955-12733-1-git-send-email-dingxiang@cmss.chinamobile.com>
+Subject: Re: [PATCH][V2] power: supply: cros_usbpd: remove unused pointer
+ 'dev'
+Date: Thu, 30 Aug 2018 00:34:34 +0200
+Message-ID: <20180829223434.bzxjrmkkbrywhzsc@earth.universe>
+References: <20180829145106.9847-1-colin.king@canonical.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="37hn7rqsvit6mk4s"
+        protocol="application/pgp-signature"; boundary="jax4wz6scaqxy76c"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1535366955-12733-1-git-send-email-dingxiang@cmss.chinamobile.com>
+In-Reply-To: <20180829145106.9847-1-colin.king@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ding Xiang <dingxiang@cmss.chinamobile.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: Sameer Nanda <snanda@chromium.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---37hn7rqsvit6mk4s
+--jax4wz6scaqxy76c
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Aug 27, 2018 at 06:49:15AM -0400, Ding Xiang wrote:
-> simple_strtoul is obsolete, and use kstrtoint instead
+On Wed, Aug 29, 2018 at 03:51:06PM +0100, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 >=20
-> Signed-off-by: Ding Xiang <dingxiang@cmss.chinamobile.com>
+> Pointer 'dev' is being assigned but is never used hence it is
+> redundant and can be removed.
+>=20
+> Cleans up clang warning:
+> variable 'dev' set but not used [-Wunused-but-set-variable]
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>=20
+> V2: change subject to include 'cros_usbpd' and also send to Sameer.
+>=20
 > ---
 
-Thanks, queued.
+Thanks, queued with 'Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>'
+Please don't forget to carrier over previously received Rb Tags!
 
 -- Sebastian
 
->  drivers/power/supply/ab8500_fg.c | 21 +++++++++++++++------
->  1 file changed, 15 insertions(+), 6 deletions(-)
+>  drivers/power/supply/cros_usbpd-charger.c | 2 --
+>  1 file changed, 2 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab85=
-00_fg.c
-> index 02356f9..2bdadb5 100644
-> --- a/drivers/power/supply/ab8500_fg.c
-> +++ b/drivers/power/supply/ab8500_fg.c
-> @@ -2582,11 +2582,12 @@ static ssize_t ab8505_powercut_flagtime_write(str=
-uct device *dev,
->  				  const char *buf, size_t count)
+> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/su=
+pply/cros_usbpd-charger.c
+> index 688a16bacfbb..f2b8de502b82 100644
+> --- a/drivers/power/supply/cros_usbpd-charger.c
+> +++ b/drivers/power/supply/cros_usbpd-charger.c
+> @@ -378,12 +378,10 @@ static int cros_usbpd_charger_ec_event(struct notif=
+ier_block *nb,
 >  {
->  	int ret;
-> -	long unsigned reg_value;
-> +	int reg_value;
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	struct ab8500_fg *di =3D power_supply_get_drvdata(psy);
+>  	struct cros_ec_device *ec_device;
+>  	struct charger_data *charger;
+> -	struct device *dev;
+>  	u32 host_event;
 > =20
-> -	reg_value =3D simple_strtoul(buf, NULL, 10);
-> +	if (kstrtoint(buf, 10, &reg_value))
-> +		goto fail;
+>  	charger =3D container_of(nb, struct charger_data, notifier);
+>  	ec_device =3D charger->ec_device;
+> -	dev =3D charger->dev;
 > =20
->  	if (reg_value > 0x7F) {
->  		dev_err(dev, "Incorrect parameter, echo 0 (1.98s) - 127 (15.625ms) for=
- flagtime\n");
-> @@ -2636,7 +2637,9 @@ static ssize_t ab8505_powercut_maxtime_write(struct=
- device *dev,
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	struct ab8500_fg *di =3D power_supply_get_drvdata(psy);
-> =20
-> -	reg_value =3D simple_strtoul(buf, NULL, 10);
-> +	if (kstrtoint(buf, 10, &reg_value))
-> +		goto fail;
-> +
->  	if (reg_value > 0x7F) {
->  		dev_err(dev, "Incorrect parameter, echo 0 (0.0s) - 127 (1.98s) for max=
-time\n");
->  		goto fail;
-> @@ -2684,7 +2687,9 @@ static ssize_t ab8505_powercut_restart_write(struct=
- device *dev,
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	struct ab8500_fg *di =3D power_supply_get_drvdata(psy);
-> =20
-> -	reg_value =3D simple_strtoul(buf, NULL, 10);
-> +	if (kstrtoint(buf, 10, &reg_value))
-> +		goto fail;
-> +
->  	if (reg_value > 0xF) {
->  		dev_err(dev, "Incorrect parameter, echo 0 - 15 for number of restart\n=
-");
->  		goto fail;
-> @@ -2777,7 +2782,9 @@ static ssize_t ab8505_powercut_write(struct device =
-*dev,
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	struct ab8500_fg *di =3D power_supply_get_drvdata(psy);
-> =20
-> -	reg_value =3D simple_strtoul(buf, NULL, 10);
-> +	if (kstrtoint(buf, 10, &reg_value))
-> +		goto fail;
-> +
->  	if (reg_value > 0x1) {
->  		dev_err(dev, "Incorrect parameter, echo 0/1 to disable/enable Pcut fea=
-ture\n");
->  		goto fail;
-> @@ -2849,7 +2856,9 @@ static ssize_t ab8505_powercut_debounce_write(struc=
-t device *dev,
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	struct ab8500_fg *di =3D power_supply_get_drvdata(psy);
-> =20
-> -	reg_value =3D simple_strtoul(buf, NULL, 10);
-> +	if (kstrtoint(buf, 10, &reg_value))
-> +		goto fail;
-> +
->  	if (reg_value > 0x7) {
->  		dev_err(dev, "Incorrect parameter, echo 0 to 7 for debounce setting\n"=
-);
->  		goto fail;
+>  	host_event =3D cros_ec_get_host_event(ec_device);
+>  	if (host_event & EC_HOST_EVENT_MASK(EC_HOST_EVENT_PD_MCU)) {
 > --=20
-> 1.8.3.1
->=20
->=20
+> 2.17.1
 >=20
 
---37hn7rqsvit6mk4s
+--jax4wz6scaqxy76c
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHHzAACgkQ2O7X88g7
-+ppnEA//f6e2u3qwcvI1Eh6rrXjU/ST9096xpUNfHttE/gilKC5gQOU3V1qKV1lt
-7L7OOMQGZZRAIdVz0mSPckryW3d/d+Tn3xqzzHO9VpV0SQmo+GcNTxOAIIJ7giPr
-uXU6/YEVTBHm5kt7dkbTqhOJqq7dMGDYMd0dDTXl+aT/PyEAStL0ybGvHmQsFIap
-2xVMzTkpkQWjPw9Ffm5yL4FZEFKc3tdPl0tCgOKRTW8zsO0u2VrDBveF+YFWJUM2
-aiP54r56YbEPMTxsDO4gxY/QKOzwklIW+7BEH4RyGBkYhlJOYg9eGhZQ+Ca4JQ9H
-9+i4yfrqbPgP8HFnPl0/EbuXGBfSjbf1xmu0efPhJZNhgE/mIG3w5qhVf0RgzGHz
-7L5gmyaAGc32s2+jPMDQs8WJxI6TrwkJyRGRsK3r6DrUP/NTqzzW+DCaWFFSe/15
-5P5qAUjxYku5626Em9vrQPRd5appDwCU470WYpHz73wzo9f7IqLXx1Ni8lVf4d3C
-RDr5S90M10xP6M7SDxpNFqnPNZzKxkWV5L6Z3tDBMCxkTuUPsfsZl4tsR0AiTdVt
-25i590tMGlUBEPlaOxd/I7/TuGKa4ERIha5D+PsiS+GDytAqblJ70ok99jUdVSyt
-f3bZMofVrT+9JTRkkXGgBB1xaA1z2fmDqAAFxTJWxHQaudmBsgY=
-=Mvg/
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluHH3oACgkQ2O7X88g7
++ppU+Q/+PO4BfHE1T9MHy7GVhb5SKruKyYRothvpPsYM8qPbljTRUXqRjD1h90Qq
+0k90IgH6/srdHVlgGVUjeWTTWW55AXFeoM90KpjZbjo5DaUVfwKBF48H7fJqQgSC
+sPTvNeQQs5Ysct2C8TFiFbYQKBae7/hU1JGj1d+z6f++QmUZsVF+yTKG2yh+CWw9
+VenmbF8HBMpHqWa9nx74QSSbLPPK8CONLyxFoKCCpqoKp5lyXj6nnqeFPVEqPsWE
+/5BZmYDnXZClxo94Bg+zr/SgbTzAdD03iNhYsZsHm2NwqW3p1pteZlpnl3N/URYJ
+zLPbCrl8Ci/DdVpW7fqvn9vrQG+onnnvoJbZGKTMhg29T3EiO5HO05JIUp85SIDU
+HxXV59vV4UeL4xhakqWIzEMrjzc3/c7Lrd0LYypi3laARcPJqi/GtoHnR/OkfSpu
+7CC94zcaqXjxIxTSII6jganFI4YfvnAqQJ4e1dD1FisrleB7lbXrKIG/sFgzZuU4
+hpmPUQpzk9FvEAcKD8ddVpDR+Wps7DU1Yy9IheCwpsOLdxzgNCWqevsEqDp70mAp
+Qq0yPziwdyZnxzTYvf9wyYCBvyAxg2QvyBLFxYyHhrHs9PN7n+z3iBhqyhAfgjuB
+ZT5WEgUyuFA/vqO5E+VY9Y4irWgYYzx5uh/XUrqXK4F+FkfUYsk=
+=Bmj6
 -----END PGP SIGNATURE-----
 
---37hn7rqsvit6mk4s--
+--jax4wz6scaqxy76c--
