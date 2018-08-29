@@ -1,122 +1,475 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH v3] console: Add console=spcr option
-Date: Wed, 29 Aug 2018 11:56:18 -0400
-Message-ID: <20180829155618.32359-1-prarit@redhat.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 05/14] sched/topology: Reference the Energy Model of
+ CPUs when available
+Date: Wed, 29 Aug 2018 17:22:38 +0100
+Message-ID: <20180829162238.GQ2960@e110439-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-6-quentin.perret@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180820094420.26590-6-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-ACPI may contain an SPCR table that defines a default system console.
-On ARM if the table is present then the SPCR console is enabled by default.
-On x86 the SPCR console is used if 'earlycon' (no parameters) is
-specified as a kernel parameter and is used only as the early console.
-To use the SPCR data as a console a user must boot with 'earlycon',
-grep logs & specify a console= kernel parameter, and then reboot again.
+Hi Quentin,
+likely the organization and naming on this file would require some
+lovely refactoring and cleanup... but of course that's outside of the
+scope of this patch.
 
-Add 'console=spcr' that enables a firmware or hardware console, and on
-x86 enable the SPCR console if 'console=spcr' is specified.
+Still, maybe we can improve a bit its current status according to the
+following comments ?
 
-Tested on systems with and without an ACPI SPCR.  The following kernel
-parameters were also tested:
+On 20-Aug 10:44, Quentin Perret wrote:
+> The existing scheduling domain hierarchy is defined to map to the cache
+> topology of the system. However, Energy Aware Scheduling (EAS) requires
+> more knowledge about the platform, and specifically needs to know about
+> the span of Performance Domains (PD), which do not always align with
+> caches.
+> 
+> To address this issue, use the Energy Model (EM) of the system to extend
+> the scheduler topology code with a representation of the PDs, alongside
+> the scheduling domains. More specifically, a linked list of PDs is
+> attached to each root domain. When multiple root domains are in use,
+> each list contains only the PDs covering the CPUs of its root domain. If
+> a PD spans over CPUs of two different root domains, it will be
+> duplicated in both lists.
+> 
+> The lists are fully maintained by the scheduler from
+> partition_sched_domains() in order to cope with hotplug and cpuset
+> changes. As for scheduling domains, the list are protected by RCU to
+> ensure safe concurrent updates.
+> 
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  kernel/sched/sched.h    |  21 +++++++
+>  kernel/sched/topology.c | 134 ++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 151 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 481e6759441b..97d79429e755 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -44,6 +44,7 @@
+>  #include <linux/ctype.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/delayacct.h>
+> +#include <linux/energy_model.h>
+>  #include <linux/init_task.h>
+>  #include <linux/kprobes.h>
+>  #include <linux/kthread.h>
+> @@ -700,6 +701,12 @@ static inline bool sched_asym_prefer(int a, int b)
+>  	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
+>  }
+>  
+> +struct perf_domain {
+> +	struct em_perf_domain *obj;
+> +	struct perf_domain *next;
+> +	struct rcu_head rcu;
+> +};
+> +
+>  /*
+>   * We add the notion of a root-domain which will be used to define per-domain
+>   * variables. Each exclusive cpuset essentially defines an island domain by
+> @@ -752,6 +759,12 @@ struct root_domain {
+>  	struct cpupri		cpupri;
+>  
+>  	unsigned long		max_cpu_capacity;
+> +
+> +	/*
+> +	 * NULL-terminated list of performance domains intersecting with the
+> +	 * CPUs of the rd. Protected by RCU.
+> +	 */
+> +	struct perf_domain	*pd;
+>  };
+>  
+>  extern struct root_domain def_root_domain;
+> @@ -2228,3 +2241,11 @@ unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned
+>  	return util;
+>  }
+>  #endif
+> +
+> +#ifdef CONFIG_SMP
+> +#ifdef CONFIG_ENERGY_MODEL
+> +#define perf_domain_span(pd) (to_cpumask(((pd)->obj->cpus)))
+> +#else
+> +#define perf_domain_span(pd) NULL
+> +#endif
+> +#endif
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index c4444ed77a55..545e2c7b6e66 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -201,6 +201,116 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+>  	return 1;
+>  }
+>  
+> +#ifdef CONFIG_ENERGY_MODEL
+> +static void free_pd(struct perf_domain *pd)
+> +{
+> +	struct perf_domain *tmp;
+> +
+> +	while (pd) {
+> +		tmp = pd->next;
+> +		kfree(pd);
+> +		pd = tmp;
+> +	}
+> +}
+> +
+> +static struct perf_domain *find_pd(struct perf_domain *pd, int cpu)
+> +{
+> +	while (pd) {
+> +		if (cpumask_test_cpu(cpu, perf_domain_span(pd)))
+> +			return pd;
+> +		pd = pd->next;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+> +static struct perf_domain *pd_init(int cpu)
+> +{
+> +	struct em_perf_domain *obj = em_cpu_get(cpu);
+> +	struct perf_domain *pd;
+> +
+> +	if (!obj) {
+> +		if (sched_debug())
+> +			pr_info("%s: no EM found for CPU%d\n", __func__, cpu);
+> +		return NULL;
+> +	}
+> +
+> +	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+> +	if (!pd)
+> +		return NULL;
+> +	pd->obj = obj;
+> +
+> +	return pd;
+> +}
+> +
+> +
+> +static void perf_domain_debug(const struct cpumask *cpu_map,
+> +						struct perf_domain *pd)
+> +{
+> +	if (!sched_debug() || !pd)
+> +		return;
+> +
+> +	printk(KERN_DEBUG "root_domain %*pbl: ", cpumask_pr_args(cpu_map));
+> +
+> +	while (pd) {
+> +		printk(KERN_CONT " pd%d:{ cpus=%*pbl nr_cstate=%d }",
+> +				cpumask_first(perf_domain_span(pd)),
+> +				cpumask_pr_args(perf_domain_span(pd)),
+> +				em_pd_nr_cap_states(pd->obj));
+> +		pd = pd->next;
+> +	}
+> +
+> +	printk(KERN_CONT "\n");
+> +}
+> +
+> +static void destroy_perf_domain_rcu(struct rcu_head *rp)
+> +{
+> +	struct perf_domain *pd;
+> +
+> +	pd = container_of(rp, struct perf_domain, rcu);
+> +	free_pd(pd);
+> +}
+> +
+> +static void build_perf_domains(const struct cpumask *cpu_map)
+> +{
+> +	struct perf_domain *pd = NULL, *tmp;
+> +	int cpu = cpumask_first(cpu_map);
+> +	struct root_domain *rd = cpu_rq(cpu)->rd;
+> +	int i;
+> +
+> +	for_each_cpu(i, cpu_map) {
+> +		/* Skip already covered CPUs. */
+> +		if (find_pd(pd, i))
+> +			continue;
+> +
+> +		/* Create the new pd and add it to the local list. */
+> +		tmp = pd_init(i);
+> +		if (!tmp)
+> +			goto free;
+> +		tmp->next = pd;
+> +		pd = tmp;
+> +	}
+> +
+> +	perf_domain_debug(cpu_map, pd);
+> +
+> +	/* Attach the new list of performance domains to the root domain. */
+> +	tmp = rd->pd;
+> +	rcu_assign_pointer(rd->pd, pd);
+> +	if (tmp)
+> +		call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
 
-console=ttyS0,115200    		works
-earlycon                		works (early console only)
-console=spcr            		works (full console as expected)
-no console or earlycon arguments	works (no output as expected)
+We have:
 
-v2: Fix prototype.
-v3: Change parameter to "spcr" and add error message to spcr init call.
+  sched_cpu_activate/cpuset_cpu_inactive
+    cpuset_cpu_active/sched_cpu_deactivate
+      partition_sched_domains
+        build_perf_domains
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Mark Salter <msalter@redhat.com>
-Cc: Al Stone <ahs3@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: x86@kernel.org
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
----
- Documentation/admin-guide/kernel-parameters.txt |  1 +
- arch/x86/kernel/acpi/boot.c                     |  9 +++++++++
- include/linux/console.h                         |  1 +
- kernel/printk/printk.c                          | 10 ++++++++++
- 4 files changed, 21 insertions(+)
+thus here we are building new SDs and, specifically, above we are
+attaching the local list "pd" to a _new_ root domain... thus, there
+cannot be already users of this new SDs and root domain at this stage,
+isn't it ?
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 9871e649ffef..f51a32cda90c 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -635,6 +635,7 @@
+Do we really need that rcu_assign_pointer ?
+Is the rcu_assign_pointer there just to "match" the following call_rcu ?
+
+What about this path:
+
+  sched_init_domains
+     partition_sched_domains
+
+in which case we do not call build_perf_domains... is that intended ?
+
+> +
+> +	return;
+> +
+> +free:
+> +	free_pd(pd);
+> +	tmp = rd->pd;
+> +	rcu_assign_pointer(rd->pd, NULL);
+> +	if (tmp)
+> +		call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
+> +}
+
+All the above functions use different naming conventions:
+
+   "_pd" suffix, "pd_" prefix and "perf_domain_" prefix.
+
+and you do it like that because it better matches the corresponding
+call sites following down the file.
+
+However, since we are into a "CONFIG_ENERGY_MODEL" guarded section,
+why not start using a common prefix for all PD related functions?
+
+I very like "perf_domain_" (or "pd_") as a prefix and I would try to
+use it for all the functions you defined above:
+
+   perf_domain_free
+   perf_domain_find
+   perf_domain_debug
+   perf_domain_destroy_rcu
+   perf_domain_build
+
+> +#else
+> +static void free_pd(struct perf_domain *pd) { }
+> +#endif
+
+Maybe better:
+
+  #endif /* CONFIG_ENERGY_MODEL */
+
+> +
+>  static void free_rootdomain(struct rcu_head *rcu)
+>  {
+>  	struct root_domain *rd = container_of(rcu, struct root_domain, rcu);
+> @@ -211,6 +321,7 @@ static void free_rootdomain(struct rcu_head *rcu)
+>  	free_cpumask_var(rd->rto_mask);
+>  	free_cpumask_var(rd->online);
+>  	free_cpumask_var(rd->span);
+> +	free_pd(rd->pd);
+>  	kfree(rd);
+>  }
+>  
+> @@ -1964,8 +2075,8 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+>  	/* Destroy deleted domains: */
+>  	for (i = 0; i < ndoms_cur; i++) {
+>  		for (j = 0; j < n && !new_topology; j++) {
+> -			if (cpumask_equal(doms_cur[i], doms_new[j])
+> -			    && dattrs_equal(dattr_cur, i, dattr_new, j))
+> +			if (cpumask_equal(doms_cur[i], doms_new[j]) &&
+> +			    dattrs_equal(dattr_cur, i, dattr_new, j))
+
+This chunk looks more like a cleanup which is not really changing
+anything: is it intentional?
+
+>  				goto match1;
+>  		}
+>  		/* No match - a current sched domain not in new doms_new[] */
+> @@ -1985,8 +2096,8 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+>  	/* Build new domains: */
+>  	for (i = 0; i < ndoms_new; i++) {
+>  		for (j = 0; j < n && !new_topology; j++) {
+> -			if (cpumask_equal(doms_new[i], doms_cur[j])
+> -			    && dattrs_equal(dattr_new, i, dattr_cur, j))
+> +			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
+> +			    dattrs_equal(dattr_new, i, dattr_cur, j))
+
+
+Same comment for the chunk above
+
+>  				goto match2;
+>  		}
+>  		/* No match - add a new doms_new */
+> @@ -1995,6 +2106,21 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+>  		;
+>  	}
+>  
+> +#ifdef CONFIG_ENERGY_MODEL
+> +	/* Build perf. domains: */
+> +	for (i = 0; i < ndoms_new; i++) {
+> +		for (j = 0; j < n; j++) {
+> +			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
+> +			    cpu_rq(cpumask_first(doms_cur[j]))->rd->pd)
+> +				goto match3;
+> +		}
+> +		/* No match - add perf. domains for a new rd */
+> +		build_perf_domains(doms_new[i]);
+> +match3:
+> +		;
+> +	}
+> +#endif
+> +
+
+
+Since we already have a CONFIG_ENERGY_MODEL guarded section above,
+maybe we can s/build_perf_domains/build_perf_root_domain/ and use
+build_perf_domains to provide an inline function for the chunk above
+in the guarded section at the beginning of the file ?
+
+The #else section will then provide just an empty implementation.
+
+Something like The diff below seems to work and it should do the
+"cleanup" job by also moving at the beginning of the source file the
+definition of the global variables (required by some functions).
+
+Perhaps that's a bit of cleanup code that maintainer can accept...
+but... to be verified. ;)
+
+---8<---
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index 2b6df8edca2a..647667b89180 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -10,6 +10,22 @@ DEFINE_MUTEX(sched_domains_mutex);
+ cpumask_var_t sched_domains_tmpmask;
+ cpumask_var_t sched_domains_tmpmask2;
  
- 		hvc<n>	Use the hypervisor console device <n>. This is for
- 			both Xen and PowerPC hypervisors.
-+		spcr	[X86] Enable ACPI SPCR console
++/* Current sched domains: */
++static cpumask_var_t			*doms_cur;
++
++/* Number of sched domains in 'doms_cur': */
++static int				ndoms_cur;
++
++/* Attribues of custom domains in 'doms_cur' */
++static struct sched_domain_attr		*dattr_cur;
++
++/*
++ * Special case: If a kmalloc() of a doms_cur partition (array of
++ * cpumask) fails, then fallback to a single sched domain,
++ * as determined by the single cpumask fallback_doms.
++ */
++static cpumask_var_t			fallback_doms;
++
+ #ifdef CONFIG_SCHED_DEBUG
  
- 		If the device connected to the port is not a TTY but a braille
- 		device, prepend "brl," before the device type, for instance
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 3b20607d581b..3fed5e9a6b82 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -1771,3 +1771,12 @@ void __init arch_reserve_mem_area(acpi_physical_address addr, size_t size)
- 	e820__range_add(addr, size, E820_TYPE_ACPI);
- 	e820__update_table_print();
+ static int __init sched_debug_setup(char *str)
+@@ -294,7 +310,7 @@ static void destroy_perf_domain_rcu(struct rcu_head *rp)
+ #define EM_MAX_COMPLEXITY 2048
+ 
+ extern struct cpufreq_governor schedutil_gov;
+-static void build_perf_domains(const struct cpumask *cpu_map)
++static void build_perf_root_domain(const struct cpumask *cpu_map)
+ {
+ 	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
+ 	struct perf_domain *pd = NULL, *tmp;
+@@ -395,9 +411,30 @@ static void sched_energy_start(int ndoms_new, cpumask_var_t doms_new[])
+ 		static_branch_enable_cpuslocked(&sched_energy_present);
+ 	}
  }
 +
-+void __init arch_console_setup(void)
++static void build_perf_domains(int ndoms_new, cpumask_var_t doms_new[])
 +{
-+	int ret;
++	int i, j;
 +
-+	ret = acpi_parse_spcr(false, true);
-+	if (ret)
-+		pr_err(PREFIX "ERROR: SPCR console is not enabled (%d)\n", ret);
-+}
-diff --git a/include/linux/console.h b/include/linux/console.h
-index ec9bdb3d7bab..562b825d911c 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -183,6 +183,7 @@ extern int is_console_locked(void);
- extern int braille_register_console(struct console *, int index,
- 		char *console_options, char *braille_options);
- extern int braille_unregister_console(struct console *);
-+void arch_console_setup(void);
- #ifdef CONFIG_TTY
- extern void console_sysfs_notify(void);
- #else
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 924e37fb1620..35859606e714 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -2097,6 +2097,11 @@ static int __init console_msg_format_setup(char *str)
- }
- __setup("console_msg_format=", console_msg_format_setup);
- 
-+void __init __weak arch_console_setup(void)
-+{
-+	return;
-+}
-+
- /*
-  * Set up a console.  Called via do_early_param() in init/main.c
-  * for each "console=" parameter in the boot command line.
-@@ -2107,6 +2112,11 @@ static int __init console_setup(char *str)
- 	char *s, *options, *brl_options = NULL;
- 	int idx;
- 
-+	if (!strcmp(str, "spcr")) {
-+		arch_console_setup();
-+		return 1;
++	/* Build perf. domains: */
++	for (i = 0; i < ndoms_new; i++) {
++		for (j = 0; j < ndoms_cur; j++) {
++			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
++			    cpu_rq(cpumask_first(doms_cur[j]))->rd->pd)
++				goto done;
++		}
++		build_perf_root_domain(doms_new[i]);
++done:
++		;
 +	}
++	sched_energy_start(ndoms_new, doms_new);
++}
 +
- 	if (_braille_console_setup(&str, &brl_options))
- 		return 1;
+ #else
+ static void free_pd(struct perf_domain *pd) { }
+-#endif
++static void build_perf_domains(int ndoms_new, cpumask_var_t doms_new[]) { }
++#endif /* CONFIG_ENERGY_MODEL */
  
+ static void free_rootdomain(struct rcu_head *rcu)
+ {
+@@ -2004,22 +2041,6 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
+ 	return ret;
+ }
+ 
+-/* Current sched domains: */
+-static cpumask_var_t			*doms_cur;
+-
+-/* Number of sched domains in 'doms_cur': */
+-static int				ndoms_cur;
+-
+-/* Attribues of custom domains in 'doms_cur' */
+-static struct sched_domain_attr		*dattr_cur;
+-
+-/*
+- * Special case: If a kmalloc() of a doms_cur partition (array of
+- * cpumask) fails, then fallback to a single sched domain,
+- * as determined by the single cpumask fallback_doms.
+- */
+-static cpumask_var_t			fallback_doms;
+-
+ /*
+  * arch_update_cpu_topology lets virtualized architectures update the
+  * CPU core maps. It is supposed to return 1 if the topology changed
+@@ -2198,21 +2219,7 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+ 		;
+ 	}
+ 
+-#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+-	/* Build perf. domains: */
+-	for (i = 0; i < ndoms_new; i++) {
+-		for (j = 0; j < n && !sched_energy_update; j++) {
+-			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
+-			    cpu_rq(cpumask_first(doms_cur[j]))->rd->pd)
+-				goto match3;
+-		}
+-		/* No match - add perf. domains for a new rd */
+-		build_perf_domains(doms_new[i]);
+-match3:
+-		;
+-	}
+-	sched_energy_start(ndoms_new, doms_new);
+-#endif
++	build_perf_domains(ndoms_new, n, doms_new);
+ 
+ 	/* Remember the new sched domains: */
+ 	if (doms_cur != &fallback_doms)
+---8<---
+
+
+
+>  	/* Remember the new sched domains: */
+>  	if (doms_cur != &fallback_doms)
+>  		free_sched_domains(doms_cur, ndoms_cur);
+> -- 
+> 2.17.1
+> 
+
 -- 
-2.14.4
+#include <best/regards.h>
+
+Patrick Bellasi
