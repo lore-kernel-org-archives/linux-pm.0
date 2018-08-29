@@ -1,97 +1,101 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH v2] console: Add console=auto option
-Date: Wed, 29 Aug 2018 08:54:37 -0400
-Message-ID: <8689f544-c905-3542-5d45-2d817cf86283@redhat.com>
-References: <728a8e68-ea4b-4040-a0fc-217df4f1928d@redhat.com>
- <20180816173902.18971-1-prarit@redhat.com>
- <20180817093828.GA10337@jagdpanzerIV>
- <a530a430-70ce-c1e1-ccba-bf5df107c5ad@redhat.com>
- <20180817105046.GB10337@jagdpanzerIV>
- <9d164aa0-bc61-1bbf-f888-a24aeaf7dec0@redhat.com>
- <20180817125714.yekdxxqflmgajf2s@pathway.suse.cz>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 03/14] PM: Introduce an Energy Model management
+ framework
+Date: Wed, 29 Aug 2018 14:28:13 +0100
+Message-ID: <20180829132811.iacfltcos6kfgp7e@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-4-quentin.perret@arm.com>
+ <20180829100435.GP2960@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180817125714.yekdxxqflmgajf2s@pathway.suse.cz>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20180829100435.GP2960@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, linux-kernel@vger.kernel.org, Mark Salter <msalter@redhat.com>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Kees Cook <keescook@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Patrick,
 
+On Wednesday 29 Aug 2018 at 11:04:35 (+0100), Patrick Bellasi wrote:
+> In the loop above we use smp_store_release() to propagate the pointer
+> setting in a PER_CPU(em_data), which ultimate goal is to protect
+> em_register_perf_domain() from multiple clients registering the same
+> power domain.
+> 
+> I think there are two possible optimizations there:
+> 
+> 1. use of a single memory barrier
+> 
+>    Since we are already em_pd_mutex protected, i.e. there cannot be a
+>    concurrent writers, we can use one single memory barrier after the
+>    loop, i.e.
+> 
+>         for_each_cpu(cpu, span)
+>                 WRITE_ONCE()
+>         smp_wmb()
+> 
+>    which should be just enough to ensure that all other CPUs will see
+>    the pointer set once we release the mutex
 
-On 08/17/2018 08:57 AM, Petr Mladek wrote:
-> On Fri 2018-08-17 07:06:56, Prarit Bhargava wrote:
->> On 08/17/2018 06:50 AM, Sergey Senozhatsky wrote:
->>>> Like I mentioned to Petr, I'd like to know if you (or anyone else) has strong
->>>> feelings about changing the behaviour of earlycon on x86?  I could make it so
->>>> that specifying just earlycon would also initialize the console.
->>>
->>> x86 people and/or scheduler people might have strong opinions on this.
->>> I Cc-ed Peter Zijlstra; he represents both groups and is known to be
->>> a hardcore earlycon user.
->>
->> Thanks, I'm a user of earlycon too, but only moderately.
->>
->> peterz, to give you an overview:  Currently on x86, the SPCR information is only
->> interpreted by the early console code, and can be enabled with kernel parameter
->> "earlycon" (no arguments).  In this patch I'm proposing adding "console=auto"
->> that would enable the console based on the SPCR data.
->>
->> There are two options on the table.  One, we could go with this patch which
->> would make users do "earlycon console=auto" or, I could just change the
->> behaviour of earlycon (no arguments) to also bring up the console.  In the
->> second case the kernel parameter would just be "earlycon".  There is precedent
->> for the second option as arm64 enables both the earlycon and console by default
->> if SPCR is present.  However, on x86, I know many users do not want the console
->> enabled by default so we should keep it on demand.
->>
->> tl;dr: Pick one
->>
->> Option 1: earlycon enables both the early console and console.
-> 
-> I am afraid that this is not acceptable. Users are sensitive
-> when a new kernel suddenly enables different consoles. For example,
-> see:
-> 
-> + commit dac8bbbae1d0ccba9 ("Revert "printk: fix double printing with
->   earlycon")
-> 
-> + commit c6c7d83b9c9e6a8b3 ("Revert "console: don't prefer first
->   registered if DT specifies stdout-path")
-> 
-> 
-> By other words, the new behavior must depend on a new option.
-> 
-> 
->> Option 2: earlycon only enables the early console, and console=auto enables the
->> console.
-> 
-> I suggest:
-> 
-> Option 3: "earlycon" enables early console defined by SPCR
-> 	  "console" enables console defined by SPCR
-> 
-> I mean that "console" without extra options would enable the console
-> defined by ACPI SPCR. It would work the same as "earlycon" without
-> extra options for early consoles.
-> 
-> If you would want to make it explicit than I agree with Sergey
-> and would prefer "console=spcr" instead of "console=auto".
+Right, I'm actually wondering if the memory barrier is needed at all ...
+The mutex lock()/unlock() should already ensure the ordering I want no ?
 
-I'm going with "console=spcr".  FYI.
+WRITE_ONCE() should prevent load/store tearing with concurrent em_cpu_get(),
+and the release/acquire semantics of mutex lock/unlock should be enough to
+serialize the memory accesses of concurrent em_register_perf_domain() calls
+properly ...
 
-P.
+Hmm, let me read memory-barriers.txt again.
 
+> 2. avoid using PER_CPU variables
 > 
-> Note kernel tries to enable some consoles automatically even
-> when "console" parameter is not defined at all. Therefore "auto"
-> is somehow misleading.
+>    Apart from the initialization code, i.e. boot time, the em_data is
+>    expected to be read only, isn't it?
+
+That's right. It's not only read only, it's also not read very often (in
+the use-cases I have in mind at least). The scheduler for example will
+call em_cpu_get() once when sched domains are built, and keep the
+reference instead of calling it again.
+
+>    If that's the case, I think that using PER_CPU variables is not
+>    strictly required while it unnecessarily increases the cache pressure.
 > 
-> Best Regards,
-> Petr
+>    In the worst case we can end up with one cache line for each CPU to
+>    host just an 8B pointer, instead of using that single cache line to host
+>    up to 8 pointers if we use just an array, i.e.
 > 
-> PS: JFYI, I have vacation the following week...
+>         struct em_perf_domain *em_data[NR_CPUS]
+>                 ____cacheline_aligned_in_smp __read_mostly;
 > 
+>    Consider also that: up to 8 pointers in a single cache line means
+>    also that single cache line can be enough to access the EM from all
+>    the CPUs of almost every modern mobile phone SoC.
+> 
+>    Note entirely sure if PER_CPU uses less overall memory in case you
+>    have much less CPUs then the compile time defined NR_CPUS.
+>    But still, if the above makes sense, you still have a 8x gain
+>    factor between number Write allocated .data..percp sections and
+>    the value of NR_CPUS. Meaning that in the worst case we allocate
+>    the same amount of memory using NR_CPUS=64 (the default on arm64)
+>    while running on an 8 CPUs system... but still we should get less
+>    cluster caches pressure at run-time with the array approach, 1
+>    cache line vs 4.
+
+Right, using per_cpu() might cause to bring in cache things you don't
+really care about (other non-related per_cpu stuff), but that shouldn't
+waste memory I think. I mean, if my em_data var is the first in a cache
+line, the rest of the cache line will most likely be used by other
+per_cpu variables anyways ...
+
+As you suggested, the alternative would be to have a simple array. I'm
+fine with this TBH. But I would probably allocate it dynamically using
+nr_cpu_ids instead of using a static NR_CPUS-wide thing though -- the
+registration of perf domains usually happens late enough in the boot
+process.
+
+What do you think ?
+
+Thanks
+Quentin
