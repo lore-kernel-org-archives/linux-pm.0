@@ -1,38 +1,150 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: Re: [PATCH] devfreq: Convert to using %pOFn instead of
- device_node.name
-Date: Wed, 29 Aug 2018 11:10:14 +0900
-Message-ID: <20180829021014epcms1p85b74efd54e73039e5a81629d8079e02e@epcms1p8>
-References: <5B84AE40.50305@samsung.com>
-        <20180828015252.28511-1-robh@kernel.org>
-        <20180828015252.28511-15-robh@kernel.org>
-        <CGME20180828015312epcas2p2fdb2ee1d1b292f212ec773dd8fb4bfc7@epcms1p8>
-Reply-To: myungjoo.ham@samsung.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle: menu: Retain tick when shallow state is selected
+Date: Wed, 29 Aug 2018 06:19:52 +0200
+Message-ID: <1849888.3sQZZ7JY7b@aspire.rjw.lan>
+References: <34910476.pgRhNDWo5t@aspire.rjw.lan> <000701d43bc1$5e0c2c50$1a2484f0$@net> <000001d43d74$306e1b50$914a51f0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5B84AE40.50305@samsung.com>
+In-Reply-To: <000001d43d74$306e1b50$914a51f0$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: Doug Smythies <dsmythies@telus.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>
+Cc: 'Leo Yan' <leo.yan@linaro.org>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Peter Zijlstra' <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-> Dear Rob,
->=20
-> On 2018=EB=85=84=2008=EC=9B=94=2028=EC=9D=BC=2010:52,=20Rob=20Herring=20w=
-rote:=0D=0A>=20>=20In=20preparation=20to=20remove=20the=20node=20name=20poi=
-nter=20from=20struct=20device_node,=0D=0A>=20>=20convert=20printf=20users=
-=20to=20use=20the=20%pOFn=20format=20specifier.=0D=0A>=20>=20=0D=0A>=20>=20=
-Cc:=20Chanwoo=20Choi=20<cw00.choi=40samsung.com>=0D=0A>=20>=20Cc:=20MyungJo=
-o=20Ham=20<myungjoo.ham=40samsung.com>=0D=0A>=20>=20Cc:=20Kyungmin=20Park=
-=20<kyungmin.park=40samsung.com>=0D=0A>=20>=20Cc:=20Kukjin=20Kim=20<kgene=
-=40kernel.org>=0D=0A>=20>=20Cc:=20Krzysztof=20Kozlowski=20<krzk=40kernel.or=
-g>=0D=0A>=20>=20Cc:=20linux-pm=40vger.kernel.org=0D=0A>=20>=20Cc:=20linux-a=
-rm-kernel=40lists.infradead.org=0D=0A>=20>=20Cc:=20linux-samsung-soc=40vger=
-.kernel.org=0D=0A>=20>=20Signed-off-by:=20Rob=20Herring=20<robh=40kernel.or=
-g>=0D=0A>=20>=20---=0D=0A>=20>=20=20drivers/devfreq/event/exynos-ppmu.c=20=
-=7C=204=20++--=0D=0A>=20>=20=201=20file=20changed,=202=20insertions(+),=202=
-=20deletions(-)=0D=0A>=20>=20=0D=0A=5B=5D=0D=0A>=20=0D=0A>=20Acked-by:=20Ch=
-anwoo=20Choi=20<cw00.choi=40samsung.com>=0D=0A=0D=0AAcked-by:=20MyungJoo=20=
-Ham=20<myungjoo.ham=40samsung.com>=0D=0A=0D=0A
+On Sunday, August 26, 2018 9:37:09 PM CEST Doug Smythies wrote:
+> On 2018.08.25 04:22 Rafael J. Wysocki wrote:
+> > On Fri, Aug 24, 2018 at 5:52 PM Doug Smythies <dsmythies@telus.net> wrote:
+> >> On 2018.08.24 02:44 Rafael J. Wysocki wrote:
+> >>> On Tuesday, August 21, 2018 10:44:10 AM CEST Rafael J. Wysocki wrote:
+> >>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>>
+> >>>> The case addressed by commit 5ef499cd571c (cpuidle: menu: Handle
+> >>>> stopped tick more aggressively) in the stopped tick case is present
+> >>>> when the tick has not been stopped yet too.
+> >>
+> >> ... [snip] ...
+> >>
+> >>>> Fixes: 87c9fe6ee495 (cpuidle: menu: Avoid selecting shallow states with stopped tick)
+> >>
+> >> ... [snip] ...
+> >>
+> >>> Due to the lack of objections, I'm inclined to queue this up.
+> >>
+> >> I have been following these threads.
+> >> Recall that I was involved, over a period of months, in the original
+> >> "powernightmare" stuff.
+> >> I have revived my tests (and wish I had left myself better notes), and
+> >> am establishing a baseline before adding and trying this patch.
+> >> My baseline is actually two tests with and without the previous two patches (the ones
+> >> that were just sent a couple of days ago in "More power management updates for v4.19-rc1".
+> >> I might have those results in some presentable form by later today (it looks O.K.)
+> >> Results with this patch will take another couple of days.
+> >
+> > Thanks Doug, much appreciated!
+> 
+> Test 1: A Thomas Ilsche type "powernightmare" test:
+> (forever ((10 times - variable usec sleep) 0.999 seconds sleep) X 40 staggered threads.
+> Where the "variable" was from 0.05 to 5 in steps of 0.05, for the first ~200 minutes of the test.
+> (note: overheads mean that actual loop times are quite different.)
+> And then from 5 to 500 in steps of 1, for the remaining 1000 minutes of the test.
+> Each step ran for 2 minutes. The system was idle for 1 minute at the start, and a few
+> minutes at the end of the graphs.
+> While called "kernel 4.18", the baseline was actually from mainline at head = df2def4,
+> or just after Rafael's linux-pm "pm-4.19-rc1-2" merge.
+> (actually after the next acpi merge).
+> Reference kernel = df2def4 with the two patches reverted.
+> 
+> Test 1.1 compares baseline reference and the two patches added.
+> Summary: Nothing of note.
+> Results: http://fast.smythies.com/linux-pm/k418-pn-sweep.htm 
+> Differences: http://fast.smythies.com/linux-pm/k418-pn-sweep-differences.htm
+> Note: the title in the last graph in each link above is mislabelled.
+> 
+> Test 1.2 compares baseline reference and the three patches added (the two at 
+> df2def4 plus the one of this thread).
+> Summary: Nothing of note.
+> Results: http://fast.smythies.com/linux-pm/k418-pn-sweep-rjw.htm
+> Differences: http://fast.smythies.com/linux-pm/k418-pn-sweep-rjw-differences.htm
+> 
+> Side note: There is an interesting, slight, power bump at about the 
+> 260 minute point of the tests. Perhaps for further investigation some other day.
+> 
+> Test 2: pipe test 2 CPUs, one core. CPU test.
+> 
+> Recall this was one of the more interesting tests with the original "powernightmare"
+> work, and in the end, back then, both energy was saved and performance improved.
+> 
+> The average loop times graph is here:
+> http://fast.smythies.com/linux-pm/k418-rjw-pipe-1core.png
+> with the average loop times:
+> Baseline:		4.83 uSec
+> + 2 rjw patches:	4.69 uSec
+> + 3 rjw patches:	4.80 uSec
+> 
+> The power and idle statistics graphs are here:
+> http://fast.smythies.com/linux-pm/k418-rjw-pipe-1core.htm
+> 
+> Test 3: 100% load on CPU 7 test.
+> 
+> Recall this was another of the more interesting tests last time, but
+> had more to do with idle state 0 than anything else.
+> 
+> The performance seems to stay within a 1% window, with the 3 patches
+> being about 1% faster than the 2 patches and the baseline somewhere
+> in the middle.
+> 
+> The power and idle statistics graphs are here:
+> http://fast.smythies.com/linux-pm/k418-rjw-100.htm
+> 
+> From observing at the test 2 and test 3 results, it looks as
+> though there are indeed "powernightmares" in the baseline kernel.
+> This was not the situation at the end of the original work, 
+> "V9" for anybody that recalls. I don't know when they got
+> re-introduced, and didn't look.
+> 
+> While these don't add up to much extra energy for my processor,
+> they might be more significant for other processors.
+> 
+> I revived my "powernightmare" trace post processor assessment
+> program, and re-did some 100% Single load tests (20 minute trace):
+> (recall that the "is it a 'powernigthmare' or not" threshold
+> is rather arbitrary [1]. However, and for what is being done here,
+> it should be greater than a tick time, which it is for my 1000Hz
+> kernel.)
+> 
+> 1.) Reference or baseline kernel:
+> 
+> Idle State 0: Total Entries: 458 : PowerNightmares: 0 : Not PN time (seconds): 0.016160 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 1: Total Entries: 950 : PowerNightmares: 33 : Not PN time (seconds): 0.084723 : PN time: 3.172124 : Ratio: 37.441120
+> Idle State 2: Total Entries: 456 : PowerNightmares: 3 : Not PN time (seconds): 0.142255 : PN time: 0.396037 : Ratio: 2.783994
+> Idle State 3: Total Entries: 218 : PowerNightmares: 1 : Not PN time (seconds): 0.095584 : PN time: 0.214608 : Ratio: 2.245229
+> 
+> 2.) + 2 rjw patches:
+> 
+> Idle State 0: Total Entries: 481 : PowerNightmares: 0 : Not PN time (seconds): 0.014849 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 1: Total Entries: 734 : PowerNightmares: 0 : Not PN time (seconds): 0.046496 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 2: Total Entries: 534 : PowerNightmares: 0 : Not PN time (seconds): 0.133086 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 3: Total Entries: 145 : PowerNightmares: 0 : Not PN time (seconds): 0.054476 : PN time: 0.000000 : Ratio: 0.000000
+> 
+> 3.) + 3 rjw patches:
+> 
+> Idle State 0: Total Entries: 369 : PowerNightmares: 0 : Not PN time (seconds): 0.010182 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 1: Total Entries: 800 : PowerNightmares: 0 : Not PN time (seconds): 0.122816 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 2: Total Entries: 1041 : PowerNightmares: 0 : Not PN time (seconds): 0.233984 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 3: Total Entries: 269 : PowerNightmares: 0 : Not PN time (seconds): 0.114399 : PN time: 0.000000 : Ratio: 0.000000
+> 
+> 4.) The old kernel 4.16+V9 patch set (sanity check):
+> 
+> Idle State 0: Total Entries: 265 : PowerNightmares: 0 : Not PN time (seconds): 0.009892 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 1: Total Entries: 708 : PowerNightmares: 0 : Not PN time (seconds): 0.091070 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 2: Total Entries: 712 : PowerNightmares: 0 : Not PN time (seconds): 0.212778 : PN time: 0.000000 : Ratio: 0.000000
+> Idle State 3: Total Entries: 421 : PowerNightmares: 0 : Not PN time (seconds): 0.230097 : PN time: 0.000000 : Ratio: 0.000000
+> 
+> [1] https://marc.info/?l=linux-kernel&m=152156611814576&w=2  (formatting a mess)
+
+Thanks a lot for the detailed information!
+
+Cheers,
+Rafael
