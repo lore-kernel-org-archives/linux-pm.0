@@ -1,170 +1,74 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
- static key
-Date: Thu, 30 Aug 2018 10:23:29 +0100
-Message-ID: <20180830092329.GS2960@e110439-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-8-quentin.perret@arm.com>
- <20180829165058.GR2960@e110439-lin>
- <20180829172004.afbe2oukprvptqs2@queper01-lin>
+From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [Patch v15 2/5] iommu/arm-smmu: Invoke pm_runtime
+ during probe, add/remove device
+Date: Thu, 30 Aug 2018 18:33:53 +0900
+Message-ID: <CAAFQd5BrJppNSo8ETT6ywjuLEULk4nAvWDQEuNiMCvdddeUq1A@mail.gmail.com>
+References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
+ <20180827105551.16346-3-vivek.gautam@codeaurora.org>
+ <CAFp+6iGbfHZQjG5oEVKhQ=4rOaaU=5ePykEuwMqYbPTryX6DnA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180829172004.afbe2oukprvptqs2@queper01-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iGbfHZQjG5oEVKhQ=4rOaaU=5ePykEuwMqYbPTryX6DnA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>"list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29-Aug 18:20, Quentin Perret wrote:
-> On Wednesday 29 Aug 2018 at 17:50:58 (+0100), Patrick Bellasi wrote:
-> > > +/*
-> > > + * The complexity of the Energy Model is defined as: nr_pd * (nr_cpus + nr_cs)
-> > > + * with: 'nr_pd' the number of performance domains; 'nr_cpus' the number of
-> > > + * CPUs; and 'nr_cs' the sum of the capacity states numbers of all performance
-> > > + * domains.
-> > > + *
-> > > + * It is generally not a good idea to use such a model in the wake-up path on
-> > > + * very complex platforms because of the associated scheduling overheads. The
-> > > + * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
-> > > + * with per-CPU DVFS and less than 8 capacity states each, for example.
-> > 
-> > According to the formula above, that should give a "complexity value" of:
-> > 
-> >   16 * (16 + 9) = 384
-> > 
-> > while, 2K complexity seems more like a 40xCPUs system with 8 OPPs.
-> > 
-> > Maybe we should update either the example or the constant below ?
-> 
-> Hmm I guess the example isn't really clear. 'nr_cs' is the _sum_ of the
-> number of OPPs of all perf. domains. So, in the example above, if you
-> have 16 CPUs with per-CPU DVFS, and each DVFS island has 8 OPPs, then
-> nr_cs = 16 * 8 = 128.
-> 
-> So if you apply the formula you get C = 16 * (16 + 128) = 2304, which is
-> more than EM_MAX_COMPLEXITY, so EAS cannot start.
-> 
-> If the DVFS island had 7 OPPs instead of 8 (for example) you would get
-> nr_cs = 112, C = 2048, and so EAS could start.
-
-Right, I see now.
-
-> I can try to re-work that comment to explain things a bit better ...
-
-Yes, dunno if it's just me but perhaps a bit of rephrasing could help.
-
-Alternatively, why not having this comment and check after patches
-11 and 12 ?
-
-> > > + */
-> > > +#define EM_MAX_COMPLEXITY 2048
-> > > +
-> > >  static void build_perf_domains(const struct cpumask *cpu_map)
-> > >  {
-> > > +	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
-> > >  	struct perf_domain *pd = NULL, *tmp;
-> > >  	int cpu = cpumask_first(cpu_map);
-> > >  	struct root_domain *rd = cpu_rq(cpu)->rd;
-> > > -	int i;
-> > > +
-> > > +	/* EAS is enabled for asymmetric CPU capacity topologies. */
-> > > +	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
-> > > +		if (sched_debug()) {
-> > > +			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
-> > > +					cpumask_pr_args(cpu_map));
-> > > +		}
-> > > +		goto free;
-> > > +	}
-> > >  
-> > >  	for_each_cpu(i, cpu_map) {
-> > >  		/* Skip already covered CPUs. */
-> > > @@ -288,6 +318,21 @@ static void build_perf_domains(const struct cpumask *cpu_map)
-> > >  			goto free;
-> > >  		tmp->next = pd;
-> > >  		pd = tmp;
-> > > +
-> > > +		/*
-> > > +		 * Count performance domains and capacity states for the
-> > > +		 * complexity check.
-> > > +		 */
-> > > +		nr_pd++;
-> > 
-> > A special case where EAS is not going to be used is for systems where
-> > nr_pd matches the number of online CPUs, isn't it ?
-> 
-> Well, it depends. Say you have only 4 CPUs with 3 OPPs each. Even with
-> per-CPU DVFS the complexity is low enough to start EAS. I don't really
-> see a good reason for not doing so no ?
-
-Right... I was totally confused by the idea that we don't
-run EAS if we just have 1 CPU per PD... my bad!
-
-Although on those systems, since we don't have idle costs, should not
-be a spreading strategy always the best from an energy efficiency
-standpoint ?
-
-> > If that's the case, then, by caching this nr_pd you can probably check
-> > this condition in the sched_energy_start() and bail out even faster by
-> > avoiding to scan all the doms_new's pd ?
-> > 
-> > 
-> > > +		nr_cs += em_pd_nr_cap_states(pd->obj);
-> > > +	}
-> > > +
-> > > +	/* Bail out if the Energy Model complexity is too high. */
-> > > +	if (nr_pd * (nr_cs + nr_cpus) > EM_MAX_COMPLEXITY) {
-> > > +		if (sched_debug())
-> > > +			pr_info("rd %*pbl: EM complexity is too high\n ",
-> > > +						cpumask_pr_args(cpu_map));
-> > > +		goto free;
-> > >  	}
-> > >  
-> > >  	perf_domain_debug(cpu_map, pd);
-> > > @@ -307,6 +352,35 @@ static void build_perf_domains(const struct cpumask *cpu_map)
-> > >  	if (tmp)
-> > >  		call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
-> > >  }
-> > > +
-> > > +static void sched_energy_start(int ndoms_new, cpumask_var_t doms_new[])
-> > > +{
-> > > +	/*
-> > > +	 * The conditions for EAS to start are checked during the creation of
-> > > +	 * root domains. If one of them meets all conditions, it will have a
-> > > +	 * non-null list of performance domains.
-> > > +	 */
-> > > +	while (ndoms_new) {
-> > > +		if (cpu_rq(cpumask_first(doms_new[ndoms_new - 1]))->rd->pd)
-> > > +			goto enable;
-> > > +		ndoms_new--;
-> > > +	}
-> > > +
-> > > +	if (static_branch_unlikely(&sched_energy_present)) {
-> >                           ^^^^^^^^
-> > Is this defined unlikely to reduce overheads on systems which never
-> > satisfy all the conditions above while still rebuild SDs from time to
-> > time ?
-> 
-> Something like that. I just thought that the case where EAS needs to be
-> disabled after being enabled isn't very common. I mean, the most typical
-> use-case is, EAS is enabled at boot and stays enabled forever, or EAS
-> never gets enabled.
-
-Right, if we have EAS compiled in... we are likely to have it enabled.
-
-> Enabling/disabling EAS because of hotplug (for example) can definitely
-> happen, but that shouldn't be the case very often in practice, I think.
-
-Would say yes on sane platform, i.e. where hotplug is not being used
-for power/thermal management... but hopefully EAS should improve on
-that side ;)
-
-> So we can optimize things out a bit I suppose.
-
-Right thanks!
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+T24gVGh1LCBBdWcgMzAsIDIwMTggYXQgNjoyMiBQTSBWaXZlayBHYXV0YW0KPHZpdmVrLmdhdXRh
+bUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4KPiBPbiBNb24sIEF1ZyAyNywgMjAxOCBhdCA0OjI3
+IFBNIFZpdmVrIEdhdXRhbQo+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+
+ID4KPiA+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gPgo+
+ID4gVGhlIHNtbXUgZGV2aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2
+aWNlIGNhbGxiYWNrcwo+ID4gZ2V0cyBjYWxsZWQgd2hlbiB0aGUgc21tdSBpcyBub3QgbGlua2Vk
+IHRvIGl0cyBtYXN0ZXIsIHRoYXQgaXMgd2l0aG91dAo+ID4gdGhlIGNvbnRleHQgb2YgdGhlIG1h
+c3RlciBkZXZpY2UuIFNvIGNhbGxpbmcgcnVudGltZSBhcGlzIGluIHRob3NlIHBsYWNlcwo+ID4g
+c2VwYXJhdGVseS4KPiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFu
+QGNvZGVhdXJvcmEub3JnPgo+ID4gW3ZpdmVrOiBDbGVhbnVwIHBtIHJ1bnRpbWUgY2FsbHNdCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9y
+Zz4KPiA+IFJldmlld2VkLWJ5OiBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0ub3JnPgo+ID4g
+VGVzdGVkLWJ5OiBTcmluaXZhcyBLYW5kYWdhdGxhIDxzcmluaXZhcy5rYW5kYWdhdGxhQGxpbmFy
+by5vcmc+Cj4gPiAtLS0KPiA+Cj4gPiBDaGFuZ2VzIHNpbmNlIHYxNDoKPiA+ICAtIG5vbmUuCj4g
+Pgo+ID4gIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEwMSArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrLS0tLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA5MyBpbnNl
+cnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQo+ID4KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lv
+bW11L2FybS1zbW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiA+IGluZGV4IGE4MTIy
+NGJjNjYzNy4uMjNiNGE2MDE0OWI2IDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy9pb21tdS9hcm0t
+c21tdS5jCj4gPiArKysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPgo+IFtzbmlwXQo+Cj4g
+PiBAQCAtMjEzMSw2ICsyMTg4LDI2IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNlX3Byb2Jl
+KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4gPiAgICAgICAgIGlmIChlcnIpCj4gPiAg
+ICAgICAgICAgICAgICAgcmV0dXJuIGVycjsKPiA+Cj4gPiArICAgICAgIC8qCj4gPiArICAgICAg
+ICAqIFdlIHdhbnQgdG8gYXZvaWQgdG91Y2hpbmcgZGV2LT5wb3dlci5sb2NrIGluIGZhc3RwYXRo
+cyB1bmxlc3MKPiA+ICsgICAgICAgICogaXQncyByZWFsbHkgZ29pbmcgdG8gZG8gc29tZXRoaW5n
+IHVzZWZ1bCAtIHBtX3J1bnRpbWVfZW5hYmxlZCgpCj4gPiArICAgICAgICAqIGNhbiBzZXJ2ZSBh
+cyBhbiBpZGVhbCBwcm94eSBmb3IgdGhhdCBkZWNpc2lvbi4gU28sIGNvbmRpdGlvbmFsbHkKPiA+
+ICsgICAgICAgICogZW5hYmxlIHBtX3J1bnRpbWUuCj4gPiArICAgICAgICAqLwo+ID4gKyAgICAg
+ICBpZiAoZGV2LT5wbV9kb21haW4pCj4gPiArICAgICAgICAgICAgICAgcG1fcnVudGltZV9lbmFi
+bGUoZGV2KTsKPiA+ICsKPiA+ICsgICAgICAgZXJyID0gYXJtX3NtbXVfcnBtX2dldChzbW11KTsK
+Pgo+IFdlIHNob3VsZG4ndCBiZSBkb2luZyBhIHJ1bnRpbWVfZ2V0KCkgeWV0LCBhcyB0aGlzIGV2
+ZW50dWFsbHkgY2FsbHMKPiBhcm1fc21tdV9kZXZpY2VfcmVzZXQoKS4KPiBhcm1fc21tdV9kZXZp
+Y2VfcmVzZXQoKSBzaG91bGQgYmUgY2FsbGVkIG9ubHkgYWZ0ZXIgYXJtX3NtbXVfZGV2aWNlX2Nm
+Z19wcm9iZSgpLgo+IFNvLCBJIHBsYW4gdG8gcmVwbGFjZSB0aGUgcG1fcnVudGltZV9nZXQvcHV0
+KCkgY2FsbHMgaW4gcHJvYmUoKSB3aXRoCj4gc2ltcGxlIGNsa19idWxrX2VuYWJsZSgpCj4gdG8g
+bGV0IHRoZSBkcml2ZXIgaW5pdGlhbGl6ZSBzbW11LCBhbmQgYXQgdGhlIGVuZCBvZiB0aGUgcHJv
+YmUgd2UgY2FuCj4gZGlzYWJsZSB0aGUgY2xvY2tzIGFuZAo+IGVuYWJsZSBydW50aW1lIHBtIG92
+ZXIgdGhlIGRldmljZSB0byBsZXQgaXQgdGFrZSBjYXJlIG9mIHRoZSBkZXZpY2UgZnVydGhlci1v
+bi4KPgoKV2UgY2FuIGF2b2lkIHRoZSBleHBsaWNpdCBjbG9jayBkaXNhYmxlIGJ5IGp1c3QgY2Fs
+bGluZwpwbV9ydW50aW1lX3NldF9hY3RpdmUoKSBiZWZvcmUgcG1fcnVudGltZV9lbmFibGUoKSwg
+YXNzdW1pbmcgdGhhdCB3aGF0CnByb2JlIGRvZXMgaXMgc3ltbWV0cmljYWwgd2l0aCB0aGUgc3Vz
+cGVuZCBjYWxsYmFjaywgd2hpY2ggd291bGQgYmUKY2FsbGVkIGFmdGVyIHRoZSBsYXR0ZXIuCgpC
+ZXN0IHJlZ2FyZHMsClRvbWFzegpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVz
+a3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9m
+cmVlZHJlbm8K
