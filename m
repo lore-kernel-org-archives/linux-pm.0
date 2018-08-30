@@ -1,97 +1,125 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Add new name attribute for sysfs
-Date: Thu, 30 Aug 2018 07:59:43 +0900
-Message-ID: <5B87255F.80207@samsung.com>
-References: <CGME20180829073410epcas1p2f314e6c4c29eacfe3ebd5fb4f7f2f122@epcas1p2.samsung.com>
-        <1535528046-18835-1-git-send-email-cw00.choi@samsung.com>
-        <3263263.FggQa7iA9D@amdc3058>
+From: Karol Herbst <kherbst-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: Rewriting Intel PCI bridge prefetch base address bits
+ solves nvidia graphics issues
+Date: Thu, 30 Aug 2018 02:13:11 +0200
+Message-ID: <CACO55tsY8id344Zs+MeHV7fM0qD7fcU6LZ1VZ=87SGGm7B7jsg@mail.gmail.com>
+References: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
+ <20180824154212.GB8601@al>
+ <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw@mail.gmail.com>
+ <CACO55tsoOYfrA2Wqf38JA6n83yz8YGxzvfLun+kOisWN6pjb8A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <3263263.FggQa7iA9D@amdc3058>
-Sender: stable-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CACO55tsoOYfrA2Wqf38JA6n83yz8YGxzvfLun+kOisWN6pjb8A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bartlomiej,
-
-On 2018년 08월 29일 21:50, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi Chanwoo,
-> 
-> On Wednesday, August 29, 2018 04:34:06 PM Chanwoo Choi wrote:
->> commit 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for
->> sysfs") changed the node name to devfreq(x). After this commit, it is not
->> possible to get the device name through /sys/class/devfreq/devfreq(X)/*.
->>
->> Add new name attribute in order to get device name.
-> 
-> Could you please describe the issue encountered in more detail
-> (what the old device name is needed for)?
-
-You can check it on mail thread[1].
-[1] https://lkml.org/lkml/2018/5/8/1042
-
->  
->> Cc: stable@vger.kernel.org
->> Fixes: 4585fbcb5331 ("PM / devfreq: Modify the device name as devfreq(X) for sysfs")
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/devfreq.c | 11 +++++++++++
->>  include/linux/devfreq.h   |  3 +++
->>  2 files changed, 14 insertions(+)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 4c49bb1330b5..2145563d5ee5 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -620,6 +620,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>  	}
->>  	devfreq->max_freq = devfreq->scaling_max_freq;
->>
->> +	devfreq->name = dev_name(devfreq->dev.parent);
-> 
-> It seems that 'dev' can be used instead of 'devfreq->dev.parent'.
-
-devfreq->dev.parent is same with dev. it doesn't matter.
-
-> 
->> +	if (IS_ERR_OR_NULL(devfreq->name))
-> 
-> Error values are not encoded into pointer returned by dev_name()
-> (drivers/base/ code is only checking for pointer being NULL).
-
-OK. I'll just check whether NULL or not.
-
-> 
->> +		return -EINVAL;
-> 
-> This leaks 'devfreq' object and doesn't encode return value into
-> pointer returned by devfreq_add_device(), it should be replaced by:
-
-Right. I'll fix it.
-
-> 
-> 	err = -EINVAL;
-> 	goto err_dev;
-> 
->>  	dev_set_name(&devfreq->dev, "devfreq%d",
->>  				atomic_inc_return(&devfreq_no));
->>  	err = device_register(&devfreq->dev);
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+b2hoIGFjdHVhbGx5LCBJIHdhcyB0ZXN0aW5nIHdpdGggYSBrZXJuZWwgd2l0aG91dCB0aGlzIHdv
+cmthcm91bmQKYXBwbGllZCwgc28gSSBuZWVkIHRvIHJldGVzdCBpdCBsYXRlci4KCk9uIFdlZCwg
+QXVnIDI5LCAyMDE4IGF0IDI6NDAgUE0sIEthcm9sIEhlcmJzdCA8a2hlcmJzdEByZWRoYXQuY29t
+PiB3cm90ZToKPiBPbiBUdWUsIEF1ZyAyOCwgMjAxOCBhdCA0OjIzIEFNLCBEYW5pZWwgRHJha2Ug
+PGRyYWtlQGVuZGxlc3NtLmNvbT4gd3JvdGU6Cj4+IE9uIEZyaSwgQXVnIDI0LCAyMDE4IGF0IDEx
+OjQyIFBNLCBQZXRlciBXdSA8cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3JvdGU6Cj4+PiBBcmUgdGhl
+c2Ugc3lzdGVtcyBhbHNvIGFmZmVjdGVkIHRocm91Z2ggcnVudGltZSBwb3dlciBtYW5hZ2VtZW50
+PyBGb3IKPj4+IGV4YW1wbGU6Cj4+Pgo+Pj4gICAgIG1vZHByb2JlIG5vdXZlYXUgICAgIyBzaG91
+bGQgZW5hYmxlIHJ1bnRpbWUgUE0KPj4+ICAgICBzbGVlcCA2ICAgICAgICAgICAgICMgd2FpdCBm
+b3IgcnVudGltZSBzdXNwZW5kIHRvIGtpY2sgaW4KPj4+ICAgICBsc3BjaSAtczE6ICAgICAgICAg
+ICMgcnVudGltZSByZXN1bWUgYnkgcmVhZGluZyBQQ0kgY29uZmlnIHNwYWNlCj4+Pgo+Pj4gT24g
+bGFwdG9wcyBmcm9tIGFib3V0IDIwMTUtMjAxNiB3aXRoIGEgR1RYIDl4eE0gdGhpcyBzZXF1ZW5j
+ZSByZXN1bHRzIGluCj4+PiBoYW5ncyBvbiB2YXJpb3VzIGxhcHRvcHMKPj4+IChodHRwczovL2J1
+Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTE1NjM0MSkuCj4+Cj4+IFRoaXMgd29y
+a3MgZmluZSBoZXJlLiBJJ20gZmFjaW5nIGEgZGlmZmVyZW50IGlzc3VlLgo+Pgo+Pj4+IEFmdGVy
+IGEgbG90IG9mIGV4cGVyaW1lbnRhdGlvbiBJIGZvdW5kIGEgd29ya2Fyb3VuZDogZHVyaW5nIHJl
+c3VtZSwKPj4+PiBzZXQgdGhlIHZhbHVlIG9mIFBDSV9QUkVGX0JBU0VfVVBQRVIzMiB0byAwIG9u
+IHRoZSBwYXJlbnQgUENJIGJyaWRnZS4KPj4+PiBFYXNpbHkgZG9uZSBpbiBkcml2ZXJzL3BjaS9x
+dWlya3MuYy4gTm93IGFsbCBudmlkaWEgc3R1ZmYgd29ya3MgZmluZS4KPj4+Cj4+PiBJIGFtIGN1
+cmlvdXMsIGhvdyBkaWQgeW91IGRpc2NvdmVyIHRoaXM/IFdoaWxlIHRoaXMgY291bGQgd29yaywg
+cGVyaGFwcwo+Pj4gdGhlcmUgYXJlIGFsdGVybmF0aXZlIHdvcmthcm91bmRzL2ZpeGVzPwo+Pgo+
+PiBCYXNlZCBvbiB0aGUgb2JzZXJ2YXRpb24gdGhhdCB0aGUgZm9sbG93aW5nIHByb2NlZHVyZSB3
+b3JrcyBmaW5lIChub3RlCj4+IHRoZSBhZGRpdGlvbiBvZiBzdGVwIDMpOgo+Pgo+PiAxLiBCb290
+Cj4+IDIuIFN1c3BlbmQvcmVzdW1lCj4+IDMuIGVjaG8gcmVzY2FuID4gL3N5cy9idXMvcGNpL2Rl
+dmljZXMvMDAwMDowMDoxYy4wL3Jlc2Nhbgo+PiA0LiBMb2FkIG5vdXZlYXUgZHJpdmVyCj4+IDUu
+IFN0YXJ0IFgKPj4KPj4gSSB3b3JrZWQgdGhyb3VnaCB0aGUgcmVzY2FuIGNvZGVwYXRoIHVudGls
+IEkgaGFkIGlzb2xhdGVkIHRoZSBzcGVjaWZpYwo+PiBjb2RlIHdoaWNoIG1hZ2ljYWxseSBtYWtl
+cyB0aGluZ3Mgd29yayAoaW4gcGNpX2JyaWRnZV9jaGVja19yYW5nZXMpLgo+Pgo+PiBIYXZpbmcg
+Zm91bmQgdGhhdCwgc3RlcCAzIGluIHRoZSBhYm92ZSB0ZXN0IHByb2NlZHVyZSBjYW4gYmUgcmVw
+bGFjZWQKPj4gd2l0aCBhIHNpbXBsZToKPj4gICAgc2V0cGNpIC1zIDAwOjFjLjAgMHgyOC5sPTAK
+Pj4KPj4+IFdoZW4geW91IHNheSAicGFyZW50IFBDSSIgYnJpZGdlLCBpcyB0aGF0IGFjdHVhbGx5
+IHRoZSBkZXZpY2UgeW91IHNlZSBpbgo+Pj4gImxzcGNpIC10diI/IE9uIGEgRGVsbCBYUFMgOTU2
+MCwgdGhlIEdQVSBpcyB1bmRlciBhIGRpZmZlcmVudCBkZXZpY2U6Cj4+Pgo+Pj4gICAtWzAwMDA6
+MDBdLSstMDAuMCAgSW50ZWwgQ29ycG9yYXRpb24gWGVvbiBFMy0xMjAwIHY2Lzd0aCBHZW4gQ29y
+ZSBQcm9jZXNzb3IgSG9zdCBCcmlkZ2UvRFJBTSBSZWdpc3RlcnMKPj4+ICAgICAgICAgICAgICAr
+LTAxLjAtWzAxXS0tLS0wMC4wICBOVklESUEgQ29ycG9yYXRpb24gR1AxMDdNIFtHZUZvcmNlIEdU
+WCAxMDUwIE1vYmlsZV0KPj4+Cj4+PiAgMDA6MDEuMCBQQ0kgYnJpZGdlIFswNjA0XTogSW50ZWwg
+Q29ycG9yYXRpb24gWGVvbiBFMy0xMjAwIHY1L0UzLTE1MDAgdjUvNnRoIEdlbiBDb3JlIFByb2Nl
+c3NvciBQQ0llIENvbnRyb2xsZXIgKHgxNikgWzgwODY6MTkwMV0gKHJldiAwNSkKPj4KPj4gWWVz
+LCBpdCdzIHRoZSBwYXJlbnQgYnJpZGdlIHNob3duIGJ5IGxzcGNpLiBUaGUgYWRkcmVzcyBvZiB0
+aGlzIHZhcmllcwo+PiBmcm9tIHN5c3RlbSB0byBzeXN0ZW0uCj4+Cj4+Pj4gMS4gSXMgdGhlIElu
+dGVsIFBDSSBicmlkZ2UgbWlzYmVoYXZpbmcgaGVyZT8gV2h5IGRvZXMgd3JpdGluZyB0aGUgc2Ft
+ZQo+Pj4+IHZhbHVlIG9mIFBDSV9QUkVGX0JBU0VfVVBQRVIzMiBtYWtlIGFueSBkaWZmZXJlbmNl
+IGF0IGFsbD8KPj4+Cj4+PiBBdCB3aGF0IHBvaW50IGluIHRoZSBzdXNwZW5kIGNvZGUgcGF0aCBk
+aWQgeW91IGluc2VydCB0aGlzIHdyaXRlPyBJdCBpcwo+Pj4gcG9zc2libGUgdGhhdCB0aGUgd3Jp
+dGUgc29tZWhvdyBhY3RlZCBhcyBhIGZlbmNlL21lbW9yeSBiYXJyaWVyPwo+Pgo+PiBzdGF0aWMg
+dm9pZCBxdWlya19wcmVmX2Jhc2VfdXBwZXIzMihzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+PiB7Cj4+
+ICAgICAgICB1MzIgcHJlZl9iYXNlX3VwcGVyMzI7Cj4+ICAgICAgICBwY2lfcmVhZF9jb25maWdf
+ZHdvcmQoZGV2LCBQQ0lfUFJFRl9CQVNFX1VQUEVSMzIsICZwcmVmX2Jhc2VfdXBwZXIzMik7Cj4+
+ICAgICAgICBwY2lfd3JpdGVfY29uZmlnX2R3b3JkKGRldiwgUENJX1BSRUZfQkFTRV9VUFBFUjMy
+LCBwcmVmX2Jhc2VfdXBwZXIzMik7Cj4+IH0KPj4gREVDTEFSRV9QQ0lfRklYVVBfUkVTVU1FKFBD
+SV9WRU5ET1JfSURfSU5URUwsICAweDlkMTAsIHF1aXJrX3ByZWZfYmFzZV91cHBlcjMyKTsKPj4K
+Pgo+IHRoaXMgd29ya2Fyb3VuZCBmaXhlcyBydW50aW1lIHN1c3BlbmQvcmVzdW1lIG9uIG15IGxh
+cHRvcCBhcyB3ZWxsLi4uCj4gYnV0IHdoYXQgYmFmZmxlcyBtZSBtb3N0IGlzLCB1bmxvYWRpbmcg
+bm91dmVhdSBkb2VzIGFzIHdlbGwuIEkgd2lsbAo+IHNlZSB3aGF0IGJpdHMgYXJlIGV4YWN0bHkg
+ImZpeGluZyIgaXQgaW4gdGhlIG5vdXZlYXUgdW5sb2FkaW5nIHBhdGgKPiBhbmQgbWF5YmUgd2Ug
+Y2FuIGdldCBhcm91bmQgdGhpcyBpc3N1ZSBpbnNpZGUgbm91dmVhdS4gSXQgd291bGQgYmUKPiBz
+dGlsbCBuaWNlIHRvIGdldCB0byB0aGUgcm9vdCBjYXVzZSBvZiBhbGwgb2YgdGhpcyBhcyB0aGVy
+ZSBhcmUgdGhyZWUKPiBrbm93biB3b3JrYXJvdW5kcyAoYXQgbGVhc3Qgb24gbXkgc3lzdGVtKToK
+PiAxLiB1bmxvYWQgbm91dmVhdQo+IDIuIHNraXAgc2V0dGluZyB0aGUgRDMgcG93ZXIgc3RhdGUg
+dmlhIFBDSSBjb25maWcgc3BhY2UgKGFuZCBzdGlsbCBkbwo+IHRoZSBBQ1BJIGJpdHMpCj4gMy4g
+d3JpdGUgdmFsdWUgb2YgUENJX1BSRUZfQkFTRV9VUFBFUjMyCj4KPj4gSSBkb24ndCB0aGluayBp
+dCdzIGFjdGluZyBhcyBhIGJhcnJpZXIuIEkgdHJpZWQgY2hhbmdpbmcgdGhpcyBjb2RlIHRvCj4+
+IHJld3JpdGUgb3RoZXIgcmVnaXN0ZXJzIHN1Y2ggYXMgUENJX1BSRUZfTUVNT1JZX0JBU0UgYW5k
+IHRoYXQgbWFrZXMKPj4gdGhlIGJ1ZyBjb21lIGJhY2suCj4+Cj4+Pj4gMi4gV2hvIGlzIHJlc3Bv
+bnNpYmxlIGZvciBzYXZpbmcgYW5kIHJlc3RvcmluZyBQQ0kgYnJpZGdlCj4+Pj4gY29uZmlndXJh
+dGlvbiBkdXJpbmcgc3VzcGVuZCBhbmQgcmVzdW1lPyBMaW51eD8gQUNQST8gQklPUz8KPj4+Cj4+
+PiBOb3Qgc3VyZSBhYm91dCBQQ0kgYnJpZGdlcywgYnV0IGF0IGxlYXN0IGZvciB0aGUgUENJIEV4
+cHJlc3MgQ2FwYWJpbGl0eQo+Pj4gcmVnaXN0ZXJzLCBpdCBpcyBpbiBjb250cm9sIG9mIHRoZSBP
+UyB3aGVuIGNvbnRyb2wgaXMgZ3JhbnRlZCB2aWEgdGhlCj4+PiBBQ1BJIF9PU0MgbWV0aG9kLgo+
+Pgo+PiBJIGd1ZXNzIHlvdSBhcmUgcmVmZXJyaW5nIHRvIHBjaV9zYXZlX3BjaWVfc3RhdGUoKS4g
+SSBjYW4ndCBzZWUKPj4gYW55dGhpbmcgZXF1aXZhbGVudCBmb3IgdGhlIGJyaWRnZSByZWdpc3Rl
+cnMuCj4+Cj4+PiBBcyBXaW5kb3dzIGlzIHByb2JhYmx5IG5vdCBhZmZlY3RlZCBieSB0aGlzIGlz
+c3VlLCBhIGNoYW5nZSBtdXN0IGJlCj4+PiBwb3NzaWJsZSB0byBtYWtlIExpbnV4IG1vcmUgY29t
+cGF0aWJsZSB3aXRoIFdpbmRvd3MuIFRob3VnaCBJIGFtIG5vdAo+Pj4gc3VyZSB3aGF0IGNoYW5n
+ZSBpcyBuZWVkZWQuCj4+Cj4+IEkgYWdyZWUuIFRoZXJlJ3MgYSBkZWZpbml0ZSBkaWZmZXJlbmNl
+IHdpdGggV2luZG93cyBoZXJlIGFuZCBpdCB3b3VsZAo+PiBiZSBncmVhdCB0byBmaW5kIGEgZml4
+IGFsb25nIHRob3NlIGxpbmVzLgo+Pgo+Pj4gSSByZWNlbnRseSBjb21wYXJlZCBQQ0kgY29uZmln
+dXJhdGlvbiBzcGFjZSBhY2Nlc3MgYW5kIEFDUEkgbWV0aG9kCj4+PiBpbnZvY2F0aW9uIHVzaW5n
+IFFFTVUgKyBWRklPIHdpdGggTGludXggNC4xOCwgV2luZG93cyA3IGFuZCBXaW5kb3dzIDEwCj4+
+PiAoMTgwMykuIFRoZXJlIHdlcmUgZGlmZmVyZW5jZXMgbGlrZSBkaXNhYmxpbmcgTVNJL2ludGVy
+cnVwdHMgYmVmb3JlCj4+PiBzdXNwZW5kLCBzZXR0aW5nIHRoZSBFbmFibGUgQ2xvY2sgUG93ZXIg
+TWFuYWdlbWVudCBiaXQgaW4gUENJIEV4cHJlc3MKPj4+IExpbmsgQ29udHJvbCBhbmQgbW9yZSwg
+YnV0IGFwcGx5aW5nIHRoZXNlIGNoYW5nZXMgd2VyZSBzbyBmYXIgbm90IHJlYWxseQo+Pj4gc3Vj
+Y2Vzc2Z1bC4KPj4KPj4gSW50ZXJlc3RpbmcuIERvIHlvdSBrbm93IGFueSB3YXkgdGhhdCBJIGNv
+dWxkIHNweSBvbiBXaW5kb3dzJyBhY2Nlc3Nlcwo+PiB0byB0aGUgUENJIGJyaWRnZSByZWdpc3Rl
+cnM/Cj4+IExvb2tpbmcgYXQgYXQgaHR0cHM6Ly93aWtpLmFyY2hsaW51eC5vcmcvaW5kZXgucGhw
+L1BDSV9wYXNzdGhyb3VnaF92aWFfT1ZNRgo+PiBJIHN1c3BlY3QgVkZJTyB3b3VsZCBub3QgaGVs
+cCBtZSBoZXJlLgo+PiBJdCBzYXlzOgo+PiAgICAgTm90ZTogSWYgdGhleSBhcmUgZ3JvdXBlZCB3
+aXRoIG90aGVyIGRldmljZXMgaW4gdGhpcyBtYW5uZXIsIHBjaQo+PiByb290IHBvcnRzIGFuZCBi
+cmlkZ2VzIHNob3VsZCBuZWl0aGVyIGJlIGJvdW5kIHRvIHZmaW8gYXQgYm9vdCwgbm9yIGJlCj4+
+IGFkZGVkIHRvIHRoZSBWTS4KPj4KPj4gVGhhbmtzCj4+IERhbmllbAo+PiBfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+PiBOb3V2ZWF1IG1haWxpbmcgbGlz
+dAo+PiBOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwo+PiBodHRwczovL2xpc3RzLmZyZWVk
+ZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9ub3V2ZWF1Cg==
