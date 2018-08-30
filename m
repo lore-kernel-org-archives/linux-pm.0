@@ -1,71 +1,43 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 05/14] sched/topology: Reference the Energy Model of
- CPUs when available
-Date: Thu, 30 Aug 2018 11:47:21 +0100
-Message-ID: <20180830104718.lvkkhyi3dtwkfjr7@queper01-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-6-quentin.perret@arm.com>
- <20180829162238.GQ2960@e110439-lin>
- <20180829165603.astg32z3ep2qldfu@queper01-lin>
- <20180830100019.GT2960@e110439-lin>
+From: Claudiu Beznea <claudiu.beznea@microchip.com>
+Subject: [PATCH 0/6] shutdown procedure verification for SAMA5D2
+Date: Thu, 30 Aug 2018 14:50:05 +0300
+Message-ID: <1535629811-13403-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180830100019.GT2960@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com, linux@armlinux.org.uk, sre@kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu Beznea <claudiu.beznea@microchip.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 30 Aug 2018 at 11:00:20 (+0100), Patrick Bellasi wrote:
-> Dunno... but, in any case, probably we don't care about using EAS until
-> the boot complete, isn't it?
+Hi,
 
-So, as of now, EAS will typically start soon after CPUFreq. I don't see a
-point in starting before, and I'm not sure if starting it later is
-really what we want either ... It probably makes sense to start the
-DVFS-related features (CPUFreq, EAS, ...) together.
+Patch 1 from this series implement a fix for shutdown procedure
+for SAMA5D2.
 
-> Just to better understand, what is the most common activation path we expect ?
-> 
->   1. system boot
->   2. CPUs online
->   3. CPUFreq initialization
->   4. EM registered
->   X. ???
+The rest of the patch are improvements as follows:
+patch 2 - use only one function for poweroff
+patches 3-6 - cosmetic improvements
 
-X is sort of arch dependent (like the EM registration actually). For
-arm/arm64, the arch topology driver (see drivers/base/arch_topology.c)
-will rebuild the sched_domains once the capacities of CPU are
-discovered. In previous versions, I had a patch that did that explicitly:
+The patches are based on latest sys-reset/for-next [1].
 
-https://lore.kernel.org/lkml/20180724122521.22109-14-quentin.perret@arm.com/
+Thank you,
+Claudiu Beznea
 
-However, I dropped this patch for v6 because I rebased the series on top
-of Morten's automatic flag detection patches, which happen to already do
-that for me. More precisely, Morten's patches will rebuild the sched
-domains if the SD_ASYM_CPUCAPACITY flag needs to be set somewhere in the
-hierarchy. EAS depends on this flag anyway, so I guess it's fine to rely
-on this rebuild to start EAS at the same time.
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git
 
-I have been wondering for a while if such a 'loose' way of starting EAS
-was alright or not. My conclusion was that it should be OK for now,
-because that should suit all the users I can see in the short/medium
-term. An alternative could be to introduce something like a notifier in
-the EM framework in order to let other subsystems know that the EM is
-complete or something along those lines. And then we could register a
-callback on this notifier to rebuild the sched_domains. But that's added
-complexity, which isn't really needed (yet). If that needs to be done to
-accomodate the needs of new users/archs, we can still implement that
-later :-)
+Claudiu Beznea (6):
+  power: reset: at91-poweroff: switch to slow clock before shutdown
+  power: reset: at91-poweroff: use only one poweroff function
+  power: reset: at91-poweroff: make mpddrc_base part of struct shdwc
+  power: reset: at91-poweroff: make sclk part of struct shdwc
+  power: reset: at91-poweroff: rename at91_shdwc_base member of struct
+    shdwc
+  power: reset: at91-poweroff: do not procede if at91_shdwc is allocated
 
->   N. partition_sched_domains
->         build_perf_domains
-> 
-> IOW, who do we expect to call build_perf_domains for the first time ?
+ arch/arm/mach-at91/pm_suspend.S          |   8 +++
+ drivers/power/reset/at91-sama5d2_shdwc.c | 119 +++++++++++++++++++++----------
+ 2 files changed, 88 insertions(+), 39 deletions(-)
 
-On arm/arm64, when the arch_topology driver calls rebuild_sched_domains.
-
-Thanks !
-Quentin
+-- 
+2.7.4
