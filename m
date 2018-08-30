@@ -1,101 +1,170 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [Patch v15 2/5] iommu/arm-smmu: Invoke pm_runtime during probe,
-	add/remove device
-Date: Thu, 30 Aug 2018 14:52:01 +0530
-Message-ID: <CAFp+6iGbfHZQjG5oEVKhQ=4rOaaU=5ePykEuwMqYbPTryX6DnA@mail.gmail.com>
-References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
-	<20180827105551.16346-3-vivek.gautam@codeaurora.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
+ static key
+Date: Thu, 30 Aug 2018 10:23:29 +0100
+Message-ID: <20180830092329.GS2960@e110439-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-8-quentin.perret@arm.com>
+ <20180829165058.GR2960@e110439-lin>
+ <20180829172004.afbe2oukprvptqs2@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <20180827105551.16346-3-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
-	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180829172004.afbe2oukprvptqs2@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 27, 2018 at 4:27 PM Vivek Gautam
-<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
->
-> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->
-> The smmu device probe/remove and add/remove master device callbacks
-> gets called when the smmu is not linked to its master, that is without
-> the context of the master device. So calling runtime apis in those places
-> separately.
->
-> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> [vivek: Cleanup pm runtime calls]
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->
-> Changes since v14:
->  - none.
->
->  drivers/iommu/arm-smmu.c | 101 +++++++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 93 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index a81224bc6637..23b4a60149b6 100644
-> --- a/drivers/iommu/arm-smmu.c
-> +++ b/drivers/iommu/arm-smmu.c
+On 29-Aug 18:20, Quentin Perret wrote:
+> On Wednesday 29 Aug 2018 at 17:50:58 (+0100), Patrick Bellasi wrote:
+> > > +/*
+> > > + * The complexity of the Energy Model is defined as: nr_pd * (nr_cpus + nr_cs)
+> > > + * with: 'nr_pd' the number of performance domains; 'nr_cpus' the number of
+> > > + * CPUs; and 'nr_cs' the sum of the capacity states numbers of all performance
+> > > + * domains.
+> > > + *
+> > > + * It is generally not a good idea to use such a model in the wake-up path on
+> > > + * very complex platforms because of the associated scheduling overheads. The
+> > > + * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
+> > > + * with per-CPU DVFS and less than 8 capacity states each, for example.
+> > 
+> > According to the formula above, that should give a "complexity value" of:
+> > 
+> >   16 * (16 + 9) = 384
+> > 
+> > while, 2K complexity seems more like a 40xCPUs system with 8 OPPs.
+> > 
+> > Maybe we should update either the example or the constant below ?
+> 
+> Hmm I guess the example isn't really clear. 'nr_cs' is the _sum_ of the
+> number of OPPs of all perf. domains. So, in the example above, if you
+> have 16 CPUs with per-CPU DVFS, and each DVFS island has 8 OPPs, then
+> nr_cs = 16 * 8 = 128.
+> 
+> So if you apply the formula you get C = 16 * (16 + 128) = 2304, which is
+> more than EM_MAX_COMPLEXITY, so EAS cannot start.
+> 
+> If the DVFS island had 7 OPPs instead of 8 (for example) you would get
+> nr_cs = 112, C = 2048, and so EAS could start.
 
-[snip]
+Right, I see now.
 
-> @@ -2131,6 +2188,26 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
->         if (err)
->                 return err;
->
-> +       /*
-> +        * We want to avoid touching dev->power.lock in fastpaths unless
-> +        * it's really going to do something useful - pm_runtime_enabled()
-> +        * can serve as an ideal proxy for that decision. So, conditionally
-> +        * enable pm_runtime.
-> +        */
-> +       if (dev->pm_domain)
-> +               pm_runtime_enable(dev);
-> +
-> +       err = arm_smmu_rpm_get(smmu);
+> I can try to re-work that comment to explain things a bit better ...
 
-We shouldn't be doing a runtime_get() yet, as this eventually calls
-arm_smmu_device_reset().
-arm_smmu_device_reset() should be called only after arm_smmu_device_cfg_probe().
-So, I plan to replace the pm_runtime_get/put() calls in probe() with
-simple clk_bulk_enable()
-to let the driver initialize smmu, and at the end of the probe we can
-disable the clocks and
-enable runtime pm over the device to let it take care of the device further-on.
+Yes, dunno if it's just me but perhaps a bit of rephrasing could help.
 
-> +       if (err < 0)
-> +               return err;
-> +
-> +       /* Enable clocks explicitly if runtime PM is disabled */
-> +       if (!pm_runtime_enabled(dev)) {
-> +               err = clk_bulk_enable(smmu->num_clks, smmu->clks);
-> +               if (err)
-> +                       return err;
-> +       }
-> +
->         err = arm_smmu_device_cfg_probe(smmu);
->         if (err)
->                 return err;
+Alternatively, why not having this comment and check after patches
+11 and 12 ?
 
-[snip]
+> > > + */
+> > > +#define EM_MAX_COMPLEXITY 2048
+> > > +
+> > >  static void build_perf_domains(const struct cpumask *cpu_map)
+> > >  {
+> > > +	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
+> > >  	struct perf_domain *pd = NULL, *tmp;
+> > >  	int cpu = cpumask_first(cpu_map);
+> > >  	struct root_domain *rd = cpu_rq(cpu)->rd;
+> > > -	int i;
+> > > +
+> > > +	/* EAS is enabled for asymmetric CPU capacity topologies. */
+> > > +	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
+> > > +		if (sched_debug()) {
+> > > +			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
+> > > +					cpumask_pr_args(cpu_map));
+> > > +		}
+> > > +		goto free;
+> > > +	}
+> > >  
+> > >  	for_each_cpu(i, cpu_map) {
+> > >  		/* Skip already covered CPUs. */
+> > > @@ -288,6 +318,21 @@ static void build_perf_domains(const struct cpumask *cpu_map)
+> > >  			goto free;
+> > >  		tmp->next = pd;
+> > >  		pd = tmp;
+> > > +
+> > > +		/*
+> > > +		 * Count performance domains and capacity states for the
+> > > +		 * complexity check.
+> > > +		 */
+> > > +		nr_pd++;
+> > 
+> > A special case where EAS is not going to be used is for systems where
+> > nr_pd matches the number of online CPUs, isn't it ?
+> 
+> Well, it depends. Say you have only 4 CPUs with 3 OPPs each. Even with
+> per-CPU DVFS the complexity is low enough to start EAS. I don't really
+> see a good reason for not doing so no ?
 
-Best regards
-Vivek
---
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Right... I was totally confused by the idea that we don't
+run EAS if we just have 1 CPU per PD... my bad!
+
+Although on those systems, since we don't have idle costs, should not
+be a spreading strategy always the best from an energy efficiency
+standpoint ?
+
+> > If that's the case, then, by caching this nr_pd you can probably check
+> > this condition in the sched_energy_start() and bail out even faster by
+> > avoiding to scan all the doms_new's pd ?
+> > 
+> > 
+> > > +		nr_cs += em_pd_nr_cap_states(pd->obj);
+> > > +	}
+> > > +
+> > > +	/* Bail out if the Energy Model complexity is too high. */
+> > > +	if (nr_pd * (nr_cs + nr_cpus) > EM_MAX_COMPLEXITY) {
+> > > +		if (sched_debug())
+> > > +			pr_info("rd %*pbl: EM complexity is too high\n ",
+> > > +						cpumask_pr_args(cpu_map));
+> > > +		goto free;
+> > >  	}
+> > >  
+> > >  	perf_domain_debug(cpu_map, pd);
+> > > @@ -307,6 +352,35 @@ static void build_perf_domains(const struct cpumask *cpu_map)
+> > >  	if (tmp)
+> > >  		call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
+> > >  }
+> > > +
+> > > +static void sched_energy_start(int ndoms_new, cpumask_var_t doms_new[])
+> > > +{
+> > > +	/*
+> > > +	 * The conditions for EAS to start are checked during the creation of
+> > > +	 * root domains. If one of them meets all conditions, it will have a
+> > > +	 * non-null list of performance domains.
+> > > +	 */
+> > > +	while (ndoms_new) {
+> > > +		if (cpu_rq(cpumask_first(doms_new[ndoms_new - 1]))->rd->pd)
+> > > +			goto enable;
+> > > +		ndoms_new--;
+> > > +	}
+> > > +
+> > > +	if (static_branch_unlikely(&sched_energy_present)) {
+> >                           ^^^^^^^^
+> > Is this defined unlikely to reduce overheads on systems which never
+> > satisfy all the conditions above while still rebuild SDs from time to
+> > time ?
+> 
+> Something like that. I just thought that the case where EAS needs to be
+> disabled after being enabled isn't very common. I mean, the most typical
+> use-case is, EAS is enabled at boot and stays enabled forever, or EAS
+> never gets enabled.
+
+Right, if we have EAS compiled in... we are likely to have it enabled.
+
+> Enabling/disabling EAS because of hotplug (for example) can definitely
+> happen, but that shouldn't be the case very often in practice, I think.
+
+Would say yes on sane platform, i.e. where hotplug is not being used
+for power/thermal management... but hopefully EAS should improve on
+that side ;)
+
+> So we can optimize things out a bit I suppose.
+
+Right thanks!
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
