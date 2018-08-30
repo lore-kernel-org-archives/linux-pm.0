@@ -1,39 +1,28 @@
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
-Subject: [PATCH 6/6] power: reset: at91-poweroff: do not procede if at91_shdwc is allocated
-Date: Thu, 30 Aug 2018 14:50:11 +0300
-Message-ID: <1535629811-13403-7-git-send-email-claudiu.beznea@microchip.com>
-References: <1535629811-13403-1-git-send-email-claudiu.beznea@microchip.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/3] x86, hibernate: Fix nosave_regions setup for
+ hibernation
+Date: Thu, 30 Aug 2018 14:45:26 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1808301441550.1210@nanos.tec.linutronix.de>
+References: <cover.1535361949.git.kookoo.gu@intel.com> <73b18a8b87a465fc442366cccf5542307c4f1ae9.1535361949.git.kookoo.gu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1535629811-13403-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <73b18a8b87a465fc442366cccf5542307c4f1ae9.1535361949.git.kookoo.gu@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com, linux@armlinux.org.uk, sre@kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Claudiu Beznea <claudiu.beznea@microchip.com>
+To: Gu Zhimin <kookoo.gu@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Yu Chen <yu.c.chen@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There should be only one instance of struct shdwc in the system. This is
-referenced through at91_shdwc. Return in probe if at91_shdwc is already
-allocated.
+On Mon, 27 Aug 2018, Gu Zhimin wrote:
+> 
+> Fix this problem by changing pfn limit from max_low_pfn to max_pfn.
+> This issue should also exist on 64bits systems, if there are reserved
+> regions above 4GB.
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- drivers/power/reset/at91-sama5d2_shdwc.c | 3 +++
- 1 file changed, 3 insertions(+)
+Should? Can we please have facts and not some half baken assumptions? 
 
-diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
-index ad6e2796690a..2b686c55b717 100644
---- a/drivers/power/reset/at91-sama5d2_shdwc.c
-+++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-@@ -255,6 +255,9 @@ static int __init at91_shdwc_probe(struct platform_device *pdev)
- 	if (!pdev->dev.of_node)
- 		return -ENODEV;
- 
-+	if (at91_shdwc)
-+		return -EBUSY;
-+
- 	at91_shdwc = devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL);
- 	if (!at91_shdwc)
- 		return -ENOMEM;
--- 
-2.7.4
+On 64bit max_low_pfn is the same as max_pfn. See init_mem_mapping().
+
+Thanks,
+
+	tglx
