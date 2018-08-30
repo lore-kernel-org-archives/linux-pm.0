@@ -1,76 +1,42 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 08/11] thermal: tsens: Check if the IP is correctly
- enabled by firmware
-Date: Fri, 31 Aug 2018 00:53:48 +0530
-Message-ID: <CAHLCerPF0U22XZ8kEBkXZYJHkL73K8_RFkArs9gXvc0Qmufr-g@mail.gmail.com>
-References: <cover.1535462942.git.amit.kucheria@linaro.org> <35c332750fe1eddfa2eb53750b810256310866bd.1535462942.git.amit.kucheria@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: [PATCH v1 0/5] CPUFREQ OPP's and Tegra30 support by tegra20-cpufreq driver
+Date: Thu, 30 Aug 2018 22:43:51 +0300
+Message-ID: <20180830194356.14059-1-digetx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <35c332750fe1eddfa2eb53750b810256310866bd.1535462942.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 28, 2018 at 7:08 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> The SROT registers are initialised by the secure firmware at boot. We
-> don't have write access to the registers. Check if the block is enabled
-> before continuing.
->
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->
-> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-> index 0b8a793f15f4..d250b757d1f0 100644
-> --- a/drivers/thermal/qcom/tsens-common.c
-> +++ b/drivers/thermal/qcom/tsens-common.c
-> @@ -12,6 +12,11 @@
->  #include <linux/regmap.h>
->  #include "tsens.h"
->
-> +/* SROT */
-> +#define CTRL_OFFSET            0x4
+Hello,
 
-This OFFSET is not constant across the TSENS family and breaks atleast
-one platform in the test below. I have a patch to fix this for all
-platforms, will post it after a bit more testing.
+This series adds support for CPU frequency scaling on Tegra30 and device
+tree support that allows to implement thermal throttling and customize
+available CPU frequencies per-board. The tegra20-cpufreq driver has been
+re-worked to support that all.
 
+Note that Tegra30 support not strictly depends on the clock patches that
+are under review now, CPUFREQ driver will fail to probe until CCLKG clock
+will get exposed by the clock driver. Hence this series can be applied
+independently of the clock patches, CPUFREQ will start to work on Tegra30
+once both patchsets will be applied.
 
-> +#define TSENS_EN               BIT(0)
-> +
-> +/* TM */
->  #define STATUS_OFFSET          0x30
->  #define SN_ADDR_OFFSET         0x4
->  #define SN_ST_TEMP_MASK                0x3ff
-> @@ -119,6 +124,8 @@ int __init init_common(struct tsens_device *tmdev)
->  {
->         void __iomem *tm_base, *srot_base;
->         struct resource *res;
-> +       u32 code;
-> +       int ret;
->         struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
->
->         if (!op)
-> @@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
->         if (IS_ERR(tmdev->tm_map))
->                 return PTR_ERR(tmdev->tm_map);
->
-> +       if (tmdev->srot_map) {
-> +               ret = regmap_read(tmdev->srot_map, CTRL_OFFSET, &code);
-> +               if (ret)
-> +                       return ret;
-> +               if (!(code & TSENS_EN)) {
-> +                       dev_err(tmdev->dev, "tsens device is not enabled\n");
-> +                       return -ENODEV;
-> +               }
-> +       }
-> +
->         return 0;
->  }
-> --
-> 2.17.1
->
+Dmitry Osipenko (5):
+  dt-bindings: cpufreq: Add binding for NVIDIA Tegra20/30
+  cpufreq: tegra20: Support OPP, thermal cooling and Tegra30
+  ARM: tegra: Create tegra20-cpufreq device on Tegra30
+  ARM: dts: tegra20: Add CPU Operating Performance Points
+  ARM: dts: tegra30: Add CPU Operating Performance Points
+
+ .../cpufreq/nvidia,tegra20-cpufreq.txt        |  38 ++
+ arch/arm/boot/dts/tegra20.dtsi                |  58 +++
+ arch/arm/boot/dts/tegra30.dtsi                |  65 ++++
+ arch/arm/mach-tegra/tegra.c                   |   4 +
+ drivers/cpufreq/Kconfig.arm                   |   2 +
+ drivers/cpufreq/cpufreq-dt-platdev.c          |   2 +
+ drivers/cpufreq/tegra20-cpufreq.c             | 334 +++++++++++++-----
+ 7 files changed, 422 insertions(+), 81 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+
+-- 
+2.18.0
