@@ -1,70 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFD] Add debugfs for cpuidle ?
-Date: Thu, 30 Aug 2018 10:24:53 +0200
-Message-ID: <aafd9a8a-9007-fca4-6ef8-a72920513d5c@linaro.org>
-References: <516d8599-8038-7b47-a3f5-640bf13856c2@linaro.org>
- <2682482.uFPN0cxrGI@aspire.rjw.lan>
- <bcdbf067-4213-18ed-6d30-dc0dd2376c02@linaro.org>
- <CAPDyKFrOoJam38Nc05DTo09HbY964bGaw+27GuikYuEz3o=UWw@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH v2] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
+Date: Thu, 30 Aug 2018 09:46:18 +0100
+Message-ID: <87y3co8co5.fsf@e105922-lin.cambridge.arm.com>
+References: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrOoJam38Nc05DTo09HbY964bGaw+27GuikYuEz3o=UWw@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
+        (Vincent Guittot's message of "Wed, 29 Aug 2018 09:08:38 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30/08/2018 10:22, Ulf Hansson wrote:
-> On 24 May 2018 at 10:47, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->> On 24/05/2018 10:28, Rafael J. Wysocki wrote:
->>> On Thursday, May 24, 2018 10:14:31 AM CEST Daniel Lezcano wrote:
->>>>
->>>> Hi all,
->>>
->>> Hi,
->>>
->>>> would it be interesting to add debugfs metrics for cpuidle in order
->>>> to read some statistics from there and investigate the behavior ?
->>>
->>> What exactly would you like to see in there?
->>
->> It could be interesting to have statistics on a per cpu and global basis
->> for:
->>
->> - prediction accuracy:
->>
->> /sys/kernel/debug/cpuidle/prediction/[good|over|under]
->> /sys/kernel/debug/cpuidle/cpu*/state*/prediction/[good|over|under]
->>
->>  - exit latency
->>
->> In addition, it is often the case the idle states values are dropped
->> randomly, it is interesting to see the average exit latency for the
->> states. That could give also an indication the cluster idle state success.
->>
->> /sys/kernel/debug/cpuidle/state*/latency/[min|max|avg|stddev]
->> /sys/kernel/debug/cpuidle/cpu*/state*/prediction/[min|max|avg|stddev]
->>
->> And perhaps more information like the tick stopped stat ?
->>
-> 
-> Daniel,
-> 
-> Any chance that you have some draft version of actual code implementing this?
-> 
-> I would be very interested to try then - or help out to implement
-> this, in case you haven't started yet.
+Hi Vincent,
 
-Yes, I have a draft version, a bit incomplete but easy to fill. I'm just
-not fully convinced about the metrics we need yet.
+Vincent Guittot <vincent.guittot@linaro.org> writes:
 
+> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
+> its usage in the code assumes that unit is uW/MHz/V^2
+>
+> In drivers/thermal/cpu_cooling.c, the code is :
+>
+> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+> do_div(power, 1000000000);
+>
+> which can be summarized as :
+> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
+> or
+> power (mW) = (capacitance * freq_mhz * (voltage_mv/1000)^2) / 1000
+> then
+> power (mW) = power (uW) / 1000
+> so
+> power (uW) = capacitance * freq_mhz * (voltage_mv/1000)^2
+>
+> Furthermore, if we test basic values like :
+> voltage_mv = 1000mV = 1V
+> freq_mhz = 1000Mhz
+>
+> The minimum possible power, when dynamic-power-coefficient equals 1, will
+> be with current unit:
+> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
+> which is not realistic
+>
+> With the unit used by the code, the min power is
+> min power =  1 * 1000 * 1^2 = 1000uW = 1mW which is far more realistic
+>
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Acked-by: Punit Agrawal <punit.agrawal@arm.com>
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks for fixing the mismatch.
+
+> ---
+>  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> index 29e1dc5..71d8cd0 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -274,7 +274,7 @@ described below.
+>  		Usage: optional
+>  		Value type: <prop-encoded-array>
+>  		Definition: A u32 value that represents the running time dynamic
+> -			    power coefficient in units of mW/MHz/uV^2. The
+> +			    power coefficient in units of uW/MHz/V^2. The
+>  			    coefficient can either be calculated from power
+>  			    measurements or derived by analysis.
+>  
+> @@ -285,7 +285,7 @@ described below.
+>  
+>  			    Pdyn = dynamic-power-coefficient * V^2 * f
+>  
+> -			    where voltage is in uV, frequency is in MHz.
+> +			    where voltage is in V, frequency is in MHz.
+>  
+>  Example 1 (dual-cluster big.LITTLE system 32-bit):
