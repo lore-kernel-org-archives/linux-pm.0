@@ -1,85 +1,71 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
- static key
-Date: Thu, 30 Aug 2018 11:18:42 +0100
-Message-ID: <20180830101842.GU2960@e110439-lin>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 05/14] sched/topology: Reference the Energy Model of
+ CPUs when available
+Date: Thu, 30 Aug 2018 11:47:21 +0100
+Message-ID: <20180830104718.lvkkhyi3dtwkfjr7@queper01-lin>
 References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-8-quentin.perret@arm.com>
- <20180829165058.GR2960@e110439-lin>
- <20180829172004.afbe2oukprvptqs2@queper01-lin>
- <20180830092329.GS2960@e110439-lin>
- <20180830095723.4qqbpft7gpbtgkhd@queper01-lin>
+ <20180820094420.26590-6-quentin.perret@arm.com>
+ <20180829162238.GQ2960@e110439-lin>
+ <20180829165603.astg32z3ep2qldfu@queper01-lin>
+ <20180830100019.GT2960@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180830095723.4qqbpft7gpbtgkhd@queper01-lin>
+In-Reply-To: <20180830100019.GT2960@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30-Aug 10:57, Quentin Perret wrote:
-> Hi Patrick,
+On Thursday 30 Aug 2018 at 11:00:20 (+0100), Patrick Bellasi wrote:
+> Dunno... but, in any case, probably we don't care about using EAS until
+> the boot complete, isn't it?
+
+So, as of now, EAS will typically start soon after CPUFreq. I don't see a
+point in starting before, and I'm not sure if starting it later is
+really what we want either ... It probably makes sense to start the
+DVFS-related features (CPUFreq, EAS, ...) together.
+
+> Just to better understand, what is the most common activation path we expect ?
 > 
-> On Thursday 30 Aug 2018 at 10:23:29 (+0100), Patrick Bellasi wrote:
-> > Yes, dunno if it's just me but perhaps a bit of rephrasing could help.
+>   1. system boot
+>   2. CPUs online
+>   3. CPUFreq initialization
+>   4. EM registered
+>   X. ???
+
+X is sort of arch dependent (like the EM registration actually). For
+arm/arm64, the arch topology driver (see drivers/base/arch_topology.c)
+will rebuild the sched_domains once the capacities of CPU are
+discovered. In previous versions, I had a patch that did that explicitly:
+
+https://lore.kernel.org/lkml/20180724122521.22109-14-quentin.perret@arm.com/
+
+However, I dropped this patch for v6 because I rebased the series on top
+of Morten's automatic flag detection patches, which happen to already do
+that for me. More precisely, Morten's patches will rebuild the sched
+domains if the SD_ASYM_CPUCAPACITY flag needs to be set somewhere in the
+hierarchy. EAS depends on this flag anyway, so I guess it's fine to rely
+on this rebuild to start EAS at the same time.
+
+I have been wondering for a while if such a 'loose' way of starting EAS
+was alright or not. My conclusion was that it should be OK for now,
+because that should suit all the users I can see in the short/medium
+term. An alternative could be to introduce something like a notifier in
+the EM framework in order to let other subsystems know that the EM is
+complete or something along those lines. And then we could register a
+callback on this notifier to rebuild the sched_domains. But that's added
+complexity, which isn't really needed (yet). If that needs to be done to
+accomodate the needs of new users/archs, we can still implement that
+later :-)
+
+>   N. partition_sched_domains
+>         build_perf_domains
 > 
-> Ok, so what about something a little bit more explicit like:
-> 
-> /*
->  * The complexity of the Energy Model is defined as:
->  *
->  *		C = nr_pd * (nr_cpus + nr_cs)
->  *
->  * with parameters defined as:
->  *  - nr_pd:	the number of performance domains
->  *  - nr_cpus:	the number of CPUs
->  *  - nr_cs:	the sum of the number of capacity states of all performance
->  *		domains (for example, on a system with 2 performance domains,
->  *		with 10 capacity states each, nr_cs = 2 * 10 = 20).
->  *
->  * It is generally not a good idea to use such a model in the wake-up path on
->  * very complex platforms because of the associated scheduling overheads. The
->  * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
->  * with per-CPU DVFS and less than 8 capacity states each, for example.
->  */
+> IOW, who do we expect to call build_perf_domains for the first time ?
 
-That looks better to me.
+On arm/arm64, when the arch_topology driver calls rebuild_sched_domains.
 
-> > Alternatively, why not having this comment and check after patches
-> > 11 and 12 ?
-> 
-> Oh, you don't like it here ? What's wrong with it :-) ?
-
-Was just saying that since you refer to the complexity of an algo,
-which is effectively introduced by a later patch, it could be easier
-to understand where the magic numbers come from if you keep the
-comment closer to the algo... but it's not really something major.
-At the end, when you look at the full series, you still have all the
-full picture... thus, if the maintainers are ok with it being here:
-it's perfectly fine for me too ;)
-
-> > Right... I was totally confused by the idea that we don't
-> > run EAS if we just have 1 CPU per PD... my bad!
-> > 
-> > Although on those systems, since we don't have idle costs, should not
-> > be a spreading strategy always the best from an energy efficiency
-> > standpoint ?
-> 
-> Even with per-CPU DVFS, if you have big and little CPUs it matters
-> _where_ you execute a task, and you'll still need an Energy Model to
-> make good decisions in a generic way.
-
-Very good point! ;)
-
-> But yes, there is definitely some room for improvement for those
-> platforms. That's something we could improve later on top of this
-> series I suppose.
-
-Cheers Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Thanks !
+Quentin
