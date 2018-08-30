@@ -1,79 +1,101 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2] dt-binding: arm/cpus.txt: fix dynamic-power-coefficient unit
-Date: Thu, 30 Aug 2018 09:46:18 +0100
-Message-ID: <87y3co8co5.fsf@e105922-lin.cambridge.arm.com>
-References: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [Patch v15 2/5] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Thu, 30 Aug 2018 14:52:01 +0530
+Message-ID: <CAFp+6iGbfHZQjG5oEVKhQ=4rOaaU=5ePykEuwMqYbPTryX6DnA@mail.gmail.com>
+References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
+	<20180827105551.16346-3-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
-        (Vincent Guittot's message of "Wed, 29 Aug 2018 09:08:38 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20180827105551.16346-3-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
-
-Vincent Guittot <vincent.guittot@linaro.org> writes:
-
-> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
-> its usage in the code assumes that unit is uW/MHz/V^2
+On Mon, Aug 27, 2018 at 4:27 PM Vivek Gautam
+<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
 >
-> In drivers/thermal/cpu_cooling.c, the code is :
+> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 >
-> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> do_div(power, 1000000000);
+> The smmu device probe/remove and add/remove master device callbacks
+> gets called when the smmu is not linked to its master, that is without
+> the context of the master device. So calling runtime apis in those places
+> separately.
 >
-> which can be summarized as :
-> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
-> or
-> power (mW) = (capacitance * freq_mhz * (voltage_mv/1000)^2) / 1000
-> then
-> power (mW) = power (uW) / 1000
-> so
-> power (uW) = capacitance * freq_mhz * (voltage_mv/1000)^2
->
-> Furthermore, if we test basic values like :
-> voltage_mv = 1000mV = 1V
-> freq_mhz = 1000Mhz
->
-> The minimum possible power, when dynamic-power-coefficient equals 1, will
-> be with current unit:
-> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
-> which is not realistic
->
-> With the unit used by the code, the min power is
-> min power =  1 * 1000 * 1^2 = 1000uW = 1mW which is far more realistic
->
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-
-Acked-by: Punit Agrawal <punit.agrawal@arm.com>
-
-Thanks for fixing the mismatch.
-
+> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> [vivek: Cleanup pm runtime calls]
+> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
->  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-> index 29e1dc5..71d8cd0 100644
-> --- a/Documentation/devicetree/bindings/arm/cpus.txt
-> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
-> @@ -274,7 +274,7 @@ described below.
->  		Usage: optional
->  		Value type: <prop-encoded-array>
->  		Definition: A u32 value that represents the running time dynamic
-> -			    power coefficient in units of mW/MHz/uV^2. The
-> +			    power coefficient in units of uW/MHz/V^2. The
->  			    coefficient can either be calculated from power
->  			    measurements or derived by analysis.
->  
-> @@ -285,7 +285,7 @@ described below.
->  
->  			    Pdyn = dynamic-power-coefficient * V^2 * f
->  
-> -			    where voltage is in uV, frequency is in MHz.
-> +			    where voltage is in V, frequency is in MHz.
->  
->  Example 1 (dual-cluster big.LITTLE system 32-bit):
+> Changes since v14:
+>  - none.
+>
+>  drivers/iommu/arm-smmu.c | 101 +++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 93 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+> index a81224bc6637..23b4a60149b6 100644
+> --- a/drivers/iommu/arm-smmu.c
+> +++ b/drivers/iommu/arm-smmu.c
+
+[snip]
+
+> @@ -2131,6 +2188,26 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+>         if (err)
+>                 return err;
+>
+> +       /*
+> +        * We want to avoid touching dev->power.lock in fastpaths unless
+> +        * it's really going to do something useful - pm_runtime_enabled()
+> +        * can serve as an ideal proxy for that decision. So, conditionally
+> +        * enable pm_runtime.
+> +        */
+> +       if (dev->pm_domain)
+> +               pm_runtime_enable(dev);
+> +
+> +       err = arm_smmu_rpm_get(smmu);
+
+We shouldn't be doing a runtime_get() yet, as this eventually calls
+arm_smmu_device_reset().
+arm_smmu_device_reset() should be called only after arm_smmu_device_cfg_probe().
+So, I plan to replace the pm_runtime_get/put() calls in probe() with
+simple clk_bulk_enable()
+to let the driver initialize smmu, and at the end of the probe we can
+disable the clocks and
+enable runtime pm over the device to let it take care of the device further-on.
+
+> +       if (err < 0)
+> +               return err;
+> +
+> +       /* Enable clocks explicitly if runtime PM is disabled */
+> +       if (!pm_runtime_enabled(dev)) {
+> +               err = clk_bulk_enable(smmu->num_clks, smmu->clks);
+> +               if (err)
+> +                       return err;
+> +       }
+> +
+>         err = arm_smmu_device_cfg_probe(smmu);
+>         if (err)
+>                 return err;
+
+[snip]
+
+Best regards
+Vivek
+--
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
