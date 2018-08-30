@@ -1,105 +1,76 @@
-From: Scott Wood <oss@buserror.net>
-Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Thu, 30 Aug 2018 12:42:41 -0500
-Message-ID: <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
- <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
- <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v2 08/11] thermal: tsens: Check if the IP is correctly
+ enabled by firmware
+Date: Fri, 31 Aug 2018 00:53:48 +0530
+Message-ID: <CAHLCerPF0U22XZ8kEBkXZYJHkL73K8_RFkArs9gXvc0Qmufr-g@mail.gmail.com>
+References: <cover.1535462942.git.amit.kucheria@linaro.org> <35c332750fe1eddfa2eb53750b810256310866bd.1535462942.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, gregkh@lin
-Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <35c332750fe1eddfa2eb53750b810256310866bd.1535462942.git.amit.kucheria@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2018-08-30 at 12:39 -0500, Scott Wood wrote:
-> On Thu, 2018-08-30 at 07:36 +0000, Vabhav Sharma wrote:
-> > > -----Original Message-----
-> > > From: linux-kernel-owner@vger.kernel.org <linux-kernel-
-> > > owner@vger.kernel.org> On Behalf Of Scott Wood
-> > > Sent: Wednesday, August 29, 2018 5:49 AM
-> > > To: Vabhav Sharma <vabhav.sharma@nxp.com>; linux-
-> > > kernel@vger.kernel.org; devicetree@vger.kernel.org; robh+dt@kernel.org;
-> > > mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org; linux-arm-
-> > > kernel@lists.infradead.org; mturquette@baylibre.com; sboyd@kernel.org;
-> > > rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-clk@vger.kernel.org;
-> > > linux-pm@vger.kernel.org; linux-kernel-owner@vger.kernel.org;
-> > > catalin.marinas@arm.com; will.deacon@arm.com;
-> > > gregkh@linuxfoundation.org; arnd@arndb.de;
-> > > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
-> > > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Andy Tang
-> > > <andy.tang@nxp.com>; Udit Kumar <udit.kumar@nxp.com>;
-> > > linux@armlinux.org.uk; Varun Sethi <V.Sethi@nxp.com>
-> > > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
-> > > lx2160a
-> > > 
-> > > On Mon, 2018-08-20 at 12:17 +0530, Vabhav Sharma wrote:
-> > > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > > > 
-> > > > Add clockgen support for lx2160a.
-> > > > Added entry for compat 'fsl,lx2160a-clockgen'.
-> > > > As LX2160A is 16 core, so modified value for NUM_CMUX
-> > > > 
-> > > > Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> > > > Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> > > > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> > > > ---
-> > > >  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
-> > > >  drivers/cpufreq/qoriq-cpufreq.c |  1 +
-> > > >  2 files changed, 14 insertions(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c index
-> > > > 3a1812f..fc6e308 100644
-> > > > --- a/drivers/clk/clk-qoriq.c
-> > > > +++ b/drivers/clk/clk-qoriq.c
-> > > > @@ -60,7 +60,7 @@ struct clockgen_muxinfo {  };
-> > > > 
-> > > >  #define NUM_HWACCEL	5
-> > > > -#define NUM_CMUX	8
-> > > > +#define NUM_CMUX	16
-> > > > 
-> > > >  struct clockgen;
-> > > > 
-> > > > @@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[]
-> > > > =
-> > > > {
-> > > >  		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-> > > >  	},
-> > > >  	{
-> > > > +		.compat = "fsl,lx2160a-clockgen",
-> > > > +		.cmux_groups = {
-> > > > +			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-> > > > +		},
-> > > > +		.cmux_to_group = {
-> > > > +			0, 0, 0, 0, 1, 1, 1, 1, -1
-> > > > +		},
-> > > > +		.pll_mask = 0x37,
-> > > > +		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
-> > > > +	},
-> > > 
-> > > Why are you increasing NUM_CMUX beyond 8 for a chip that only has 8
-> > > entries in cmux_to_group?
-> > 
-> > Configuration is 16 cores,8 cluster with 2 cores in each cluster
-> 
-> So?  This is about cmuxes, not cores.  You're increasing the array without
-> ever using the new size.
+On Tue, Aug 28, 2018 at 7:08 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> The SROT registers are initialised by the secure firmware at boot. We
+> don't have write access to the registers. Check if the block is enabled
+> before continuing.
+>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+>  drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index 0b8a793f15f4..d250b757d1f0 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -12,6 +12,11 @@
+>  #include <linux/regmap.h>
+>  #include "tsens.h"
+>
+> +/* SROT */
+> +#define CTRL_OFFSET            0x4
 
-Oh, and you also broke p4080 which has 8 cmuxes but no -1 terminator, because
-the array was of length 8.  Probably the array should be changed to NUM_CMUX+1
-so every array can be -1 terminated.
+This OFFSET is not constant across the TSENS family and breaks atleast
+one platform in the test below. I have a patch to fix this for all
+platforms, will post it after a bit more testing.
 
--Scott
+
+> +#define TSENS_EN               BIT(0)
+> +
+> +/* TM */
+>  #define STATUS_OFFSET          0x30
+>  #define SN_ADDR_OFFSET         0x4
+>  #define SN_ST_TEMP_MASK                0x3ff
+> @@ -119,6 +124,8 @@ int __init init_common(struct tsens_device *tmdev)
+>  {
+>         void __iomem *tm_base, *srot_base;
+>         struct resource *res;
+> +       u32 code;
+> +       int ret;
+>         struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
+>
+>         if (!op)
+> @@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
+>         if (IS_ERR(tmdev->tm_map))
+>                 return PTR_ERR(tmdev->tm_map);
+>
+> +       if (tmdev->srot_map) {
+> +               ret = regmap_read(tmdev->srot_map, CTRL_OFFSET, &code);
+> +               if (ret)
+> +                       return ret;
+> +               if (!(code & TSENS_EN)) {
+> +                       dev_err(tmdev->dev, "tsens device is not enabled\n");
+> +                       return -ENODEV;
+> +               }
+> +       }
+> +
+>         return 0;
+>  }
+> --
+> 2.17.1
+>
