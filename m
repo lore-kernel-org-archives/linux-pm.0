@@ -1,94 +1,98 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: Convert to using %pOFn instead of
- device_node.name
-Date: Thu, 30 Aug 2018 16:58:16 +0200
-Message-ID: <ac2580ab-e65a-ed54-708b-871bf0a3305d@linaro.org>
-References: <20180828015252.28511-1-robh@kernel.org>
- <20180828015252.28511-45-robh@kernel.org>
+From: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+Date: Thu, 30 Aug 2018 12:39:44 -0500
+Message-ID: <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+ <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828015252.28511-45-robh@kernel.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, gregkh@lin
+Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/08/2018 03:52, Rob Herring wrote:
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
+On Thu, 2018-08-30 at 07:36 +0000, Vabhav Sharma wrote:
+> > -----Original Message-----
+> > From: linux-kernel-owner@vger.kernel.org <linux-kernel-
+> > owner@vger.kernel.org> On Behalf Of Scott Wood
+> > Sent: Wednesday, August 29, 2018 5:49 AM
+> > To: Vabhav Sharma <vabhav.sharma@nxp.com>; linux-
+> > kernel@vger.kernel.org; devicetree@vger.kernel.org; robh+dt@kernel.org;
+> > mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> > kernel@lists.infradead.org; mturquette@baylibre.com; sboyd@kernel.org;
+> > rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-clk@vger.kernel.org;
+> > linux-pm@vger.kernel.org; linux-kernel-owner@vger.kernel.org;
+> > catalin.marinas@arm.com; will.deacon@arm.com;
+> > gregkh@linuxfoundation.org; arnd@arndb.de;
+> > kstewart@linuxfoundation.org; yamada.masahiro@socionext.com
+> > Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Andy Tang
+> > <andy.tang@nxp.com>; Udit Kumar <udit.kumar@nxp.com>;
+> > linux@armlinux.org.uk; Varun Sethi <V.Sethi@nxp.com>
+> > Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
+> > lx2160a
+> > 
+> > On Mon, 2018-08-20 at 12:17 +0530, Vabhav Sharma wrote:
+> > > From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > > 
+> > > Add clockgen support for lx2160a.
+> > > Added entry for compat 'fsl,lx2160a-clockgen'.
+> > > As LX2160A is 16 core, so modified value for NUM_CMUX
+> > > 
+> > > Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> > > Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> > > ---
+> > >  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
+> > >  drivers/cpufreq/qoriq-cpufreq.c |  1 +
+> > >  2 files changed, 14 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c index
+> > > 3a1812f..fc6e308 100644
+> > > --- a/drivers/clk/clk-qoriq.c
+> > > +++ b/drivers/clk/clk-qoriq.c
+> > > @@ -60,7 +60,7 @@ struct clockgen_muxinfo {  };
+> > > 
+> > >  #define NUM_HWACCEL	5
+> > > -#define NUM_CMUX	8
+> > > +#define NUM_CMUX	16
+> > > 
+> > >  struct clockgen;
+> > > 
+> > > @@ -570,6 +570,17 @@ static const struct clockgen_chipinfo chipinfo[] =
+> > > {
+> > >  		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+> > >  	},
+> > >  	{
+> > > +		.compat = "fsl,lx2160a-clockgen",
+> > > +		.cmux_groups = {
+> > > +			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
+> > > +		},
+> > > +		.cmux_to_group = {
+> > > +			0, 0, 0, 0, 1, 1, 1, 1, -1
+> > > +		},
+> > > +		.pll_mask = 0x37,
+> > > +		.flags = CG_VER3 | CG_LITTLE_ENDIAN,
+> > > +	},
+> > 
+> > Why are you increasing NUM_CMUX beyond 8 for a chip that only has 8
+> > entries in cmux_to_group?
 > 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
+> Configuration is 16 cores,8 cluster with 2 cores in each cluster
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+So?  This is about cmuxes, not cores.  You're increasing the array without
+ever using the new size.
 
->  drivers/thermal/of-thermal.c    | 10 +++++-----
->  drivers/thermal/qoriq_thermal.c |  4 ++--
->  2 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 977a8307fbb1..e201ae1c382f 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -483,8 +483,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
->  		if (sensor_specs.args_count >= 1) {
->  			id = sensor_specs.args[0];
->  			WARN(sensor_specs.args_count > 1,
-> -			     "%s: too many cells in sensor specifier %d\n",
-> -			     sensor_specs.np->name, sensor_specs.args_count);
-> +			     "%pOFn: too many cells in sensor specifier %d\n",
-> +			     sensor_specs.np, sensor_specs.args_count);
->  		} else {
->  			id = 0;
->  		}
-> @@ -960,8 +960,8 @@ int __init of_parse_thermal_zones(void)
->  
->  		tz = thermal_of_build_thermal_zone(child);
->  		if (IS_ERR(tz)) {
-> -			pr_err("failed to build thermal zone %s: %ld\n",
-> -			       child->name,
-> +			pr_err("failed to build thermal zone %pOFn: %ld\n",
-> +			       child,
->  			       PTR_ERR(tz));
->  			continue;
->  		}
-> @@ -995,7 +995,7 @@ int __init of_parse_thermal_zones(void)
->  						    tz->passive_delay,
->  						    tz->polling_delay);
->  		if (IS_ERR(zone)) {
-> -			pr_err("Failed to build %s zone %ld\n", child->name,
-> +			pr_err("Failed to build %pOFn zone %ld\n", child,
->  			       PTR_ERR(zone));
->  			kfree(tzp);
->  			kfree(ops);
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index c866cc165960..1fa132fc316b 100644
-> --- a/drivers/thermal/qoriq_thermal.c
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -129,8 +129,8 @@ static int qoriq_tmu_get_sensor_id(void)
->  	if (sensor_specs.args_count >= 1) {
->  		id = sensor_specs.args[0];
->  		WARN(sensor_specs.args_count > 1,
-> -				"%s: too many cells in sensor specifier %d\n",
-> -				sensor_specs.np->name, sensor_specs.args_count);
-> +				"%pOFn: too many cells in sensor specifier %d\n",
-> +				sensor_specs.np, sensor_specs.args_count);
->  	} else {
->  		id = 0;
->  	}
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-Scott
