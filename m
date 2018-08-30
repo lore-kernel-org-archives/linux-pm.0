@@ -1,86 +1,78 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/2] power: supply: Add Spreadtrum SC2731 charger support
-Date: Thu, 30 Aug 2018 23:27:10 +0200
-Message-ID: <20180830212710.jhpxjdyuifjxr6t6@earth.universe>
-References: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
- <e8a3aba289cd2505db4a8891256bf731f32072cd.1535446321.git.baolin.wang@linaro.org>
- <CAJKOXPd48mSp5srOzr4FkEgb2aS-nqkt+egxbuMi6qodtO1JYw@mail.gmail.com>
- <CAMz4kuJGbvKKVvXmGKaEMbu87bY1nQqB+Zvo5UTpv1gwCG41mQ@mail.gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH v4 0/4] Add the BQ25896 charger IC
+Date: Thu, 30 Aug 2018 23:46:30 +0200
+Message-ID: <20180830214630.4mqnqlllnqrv77pu@earth.universe>
+References: <CAJKOXPczJWdNugbHiLRQv1krUFhZH=muix3M9R2LUT5=4zypYA@mail.gmail.com>
+ <20180731174909.9392-1-angus@akkea.ca>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="257puiedckvm2awp"
+        protocol="application/pgp-signature"; boundary="tyhv7vpy24npt4i4"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMz4kuJGbvKKVvXmGKaEMbu87bY1nQqB+Zvo5UTpv1gwCG41mQ@mail.gmail.com>
+In-Reply-To: <20180731174909.9392-1-angus@akkea.ca>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
+To: "Angus Ainslie (Purism)" <angus@akkea.ca>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, angus.ainslie@puri.sm, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---257puiedckvm2awp
+--tyhv7vpy24npt4i4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Aug 30, 2018 at 11:08:59AM +0800, Baolin Wang wrote:
-> >> +static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
-> >> +{
-> >> +       int ret;
-> >> +
-> >> +       /* Enable charger module */
-> >> +       ret =3D regmap_update_bits(info->regmap, SC2731_MODULE_EN1,
-> >> +                                SC2731_CHARGE_EN, SC2731_CHARGE_EN);
-> >> +       if (ret)
-> >> +               return ret;
-> >> +
-> >> +       /* Set default charge termination current to 120 mA */
-> >> +       ret =3D regmap_update_bits(info->regmap, info->base + SC2731_C=
-HG_CFG2,
-> >> +                                SC2731_TERMINATION_CUR_MASK, 0x2);
-> >
-> > Looks like DeviceTree property.
+On Tue, Jul 31, 2018 at 11:49:05AM -0600, Angus Ainslie (Purism) wrote:
+> Changes since v3:
 >=20
-> OK.
+> Corrected reviewed-by tags.
+> Fix typos.
+> Clarify desscriptions of patches.
 >=20
-> >
-> >> +       if (ret)
-> >> +               goto error;
-> >> +
-> >> +       /* Set default charge termination voltage to 4.35V */
-> >
-> > Looks like DeviceTree property.
+> Changes since v2:
 >=20
-> OK. Thanks for your comments.
+> Remove additional un-used table entries.
+> Use the exsisting compitble string for the new part.
+> Voltage now doesn't depend on state "online".
 
-I did not review this in detail, but had quick look at this.
-Please make sure to derive battery specific DT values using
-this:
-
-Documentation/devicetree/bindings/power/supply/battery.txt
+Thanks, queued.
 
 -- Sebastian
 
---257puiedckvm2awp
+> Angus Ainslie (Purism) (4):
+>   power: bq25890_charger.c: Add debugging output of failed
+>     initialization
+>   power: bq25890_charger.c: Remove unused table entries
+>   power: bq25890_charger.c: Add the BQ25896 part
+>   power: bq25890_charger.c: Read back the current battery voltage
+>=20
+>  .../bindings/power/supply/bq25890.txt         |  3 +
+>  drivers/power/supply/bq25890_charger.c        | 62 ++++++++++++++-----
+>  2 files changed, 50 insertions(+), 15 deletions(-)
+>=20
+> --=20
+> 2.17.1
+>=20
+
+--tyhv7vpy24npt4i4
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluIYSsACgkQ2O7X88g7
-+prmbw//VIFs3zlPNH/DpBgYUcd+so+q2u6CvWTnNflbK85M3ywIFczku1VaM6+s
-M2Tm2+tl7FXKU+gVA+F+OT+TNnsHfa11VAwLTZhDdRX+MMq9rBb2Gk+cCMOF2h9E
-V+63QURkEnT7tOoTXZtAic51F0nRfxH6igVz7WKccfMzXNf8sDGST3ZCvr6bgH6d
-VykPh5+TTtVfKnzS3YGbujr34q2VpCjoeZ6J5aK4rY2E40YG4c5cFsnyyEsd54Qa
-CliCkkTHU3h56sH68/LSmwMdCcIFU5i7GRBqIOrJV0wtnPos+9obPn5C2bxlNho5
-5D8c1WI5u1dVWc5VNOLCuS4d/WJdGu4bm46yHuG+nGiVbKXwwPhgzdjdo8mBw+3V
-PvX5eWyX1HODZ7CIrdU96khzW6HEKNfctD6utNfh1tqK4iMoj9hSU76iyGUVQwrQ
-YcTdE5cEwsBY+dDylE0ws47s3MqWYMnuK+zcra016W5I6x8dTvIk2JgIdfTXj96H
-nMiVqa2TSFDJiQQrttlif7ILc56odKsKlC4qmx48FZd6Q37kSgULNF2mA20JU9Tk
-TlMY8f5vJWxAqHfhEZo7YiqHcaipCCpbADob0iqMgBw+3QAl1wjZWEh/hqwxNtSh
-BLK0l61DZb1O5zaEdEorF/i7iQoOJm8Q+6s3dEleLJ5eg3TFI4Y=
-=dCm9
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluIZa4ACgkQ2O7X88g7
++pq9ABAAicydsx1uBq5osJO8Q7prWE3tfvEUsB6oj87fzSanq05A0Yc6diizLv8G
+sQqTnDkFcdgkTgUQ4vvGEpX3cTkvAvpJypWvnmMSipUw7jvEF85Op0OR3SqQDeXX
+spEXWezKcTDM9bW54IscRY0QSZLQq87nSNh267z04ORbEqIanT2/IwxQAr0VkYRo
+1Olc1YkXR5hPRObOiDbWvLPMqqCCMA7qQ9CxY1QDx1kX1LQW76lsZhV5XZLLnV6M
+/Nnqdj6P/g3P+cvAMXlRjg77n37EbRkUvWLj/rSAT8pikFm2+ovvHvIMM+DG7qrx
+K5honNTmOPb1JRl88G1zFZxbMgUBh6HhJCm49Ae4k6QEGbl/BPoHHIXOYmUCu6fM
+rBedPdeUK5DhSZN3k/6curGHB7A9okAtmPuoRr9swL+52j0HXJ/JhzyD9RJELUZz
+0QPdohPhgzrtnQ8Nwk0XszL3+7A5oT5Brscbp7LJmzAwMmzYNlndzUoJn+lKLBC9
+0mJFskFJebSHe1rhPqoXYS1s06RSXPMV7s+9SUYReozHSKc43Yxf87wA73+ES4Jh
+RvJ7qCSZ8TJAOKUq7aGCzlAOBvLfD1oup4SZOfGj9e7h2urQhuoCYnygcC5kloIC
+YrZPx8ERX46qAYZihkUxJhX+TseWN+CvMh4eNshizNHB1iC/Vgk=
+=n10L
 -----END PGP SIGNATURE-----
 
---257puiedckvm2awp--
+--tyhv7vpy24npt4i4--
