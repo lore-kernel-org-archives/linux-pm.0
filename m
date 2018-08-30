@@ -1,173 +1,201 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v16 0/5] iommu/arm-smmu: Add runtime pm/sleep
- support
-Date: Thu, 30 Aug 2018 20:15:36 +0530
-Message-ID: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+Subject: [PATCH v16 1/5] iommu/arm-smmu: Add pm_runtime/sleep ops
+Date: Thu, 30 Aug 2018 20:15:37 +0530
+Message-ID: <20180830144541.17740-2-vivek.gautam@codeaurora.org>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20180830144541.17740-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
 To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhpcyBzZXJpZXMgcHJvdmlkZXMgdGhlIHN1cHBvcnQgZm9yIHR1cm5pbmcgb24gdGhlIGFybS1z
-bW11J3MKY2xvY2tzL3Bvd2VyIGRvbWFpbnMgdXNpbmcgcnVudGltZSBwbS4gVGhpcyBpcyBkb25l
-IHVzaW5nCmRldmljZSBsaW5rcyBiZXR3ZWVuIHNtbXUgYW5kIGNsaWVudCBkZXZpY2VzLiBUaGUg
-ZGV2aWNlIGxpbmsKZnJhbWV3b3JrIGtlZXBzIHRoZSB0d28gZGV2aWNlcyBpbiBjb3JyZWN0IG9y
-ZGVyIGZvciBwb3dlci1jeWNsaW5nCmFjcm9zcyBydW50aW1lIFBNIG9yIGFjcm9zcyBzeXN0ZW0t
-d2lkZSBQTS4KCldpdGggYWRkaXRpb24gb2YgYSBuZXcgZGV2aWNlIGxpbmsgZmxhZyBETF9GTEFH
-X0FVVE9SRU1PVkVfU1VQUExJRVIgWzddLAp0aGUgZGV2aWNlIGxpbmtzIGNyZWF0ZWQgYmV0d2Vl
-biBhcm0tc21tdSBhbmQgaXRzIGNsaWVudHMgd2lsbCBiZQphdXRvbWF0aWNhbGx5IHB1cmdlZCB3
-aGVuIGFybS1zbW11IGRyaXZlciB1bmJpbmRzIGZyb20gaXRzIGRldmljZS4KCkFzIG5vdCBhbGwg
-aW1wbGVtZW50YXRpb25zIHN1cHBvcnQgY2xvY2svcG93ZXIgZ2F0aW5nLCB3ZSBhcmUgY2hlY2tp
-bmcKZm9yIGEgdmFsaWQgJ3NtbXUtPmRldidzIHBtX2RvbWFpbicgdG8gY29uZGl0aW9uYWxseSBl
-bmFibGUgdGhlIHJ1bnRpbWUKcG93ZXIgbWFuYWdlbWVudCBmb3Igc3VjaCBzbW11IGltcGxlbWVu
-dGF0aW9ucyB0aGF0IGNhbiBzdXBwb3J0IGl0LgpPdGhlcndpc2UsIHRoZSBjbG9ja3MgYXJlIHR1
-cm5lZCB0byBiZSBhbHdheXMgb24gaW4gLnByb2JlIHVudGlsIC5yZW1vdmUuCldpdGggY29uZGl0
-aW9uYWwgcnVudGltZSBwbSBub3csIHdlIGF2b2lkIHRvdWNoaW5nIGRldi0+cG93ZXIubG9jawpp
-biBmYXN0cGF0aHMgZm9yIHNtbXUgaW1wbGVtZW50YXRpb25zIHRoYXQgZG9uJ3QgbmVlZCB0byBk
-byBhbnl0aGluZwp1c2VmdWwgd2l0aCBwbV9ydW50aW1lLgpUaGlzIGxldHMgdXMgdG8gdXNlIHRo
-ZSBtdWNoLWFyZ3VlZCBwbV9ydW50aW1lX2dldF9zeW5jL3B1dF9zeW5jKCkKY2FsbHMgaW4gbWFw
-L3VubWFwIGNhbGxiYWNrcyBzbyB0aGF0IHRoZSBjbGllbnRzIGRvIG5vdCBoYXZlIHRvCndvcnJ5
-IGFib3V0IGhhbmRsaW5nIGFueSBvZiB0aGUgYXJtLXNtbXUncyBwb3dlci4KClRoaXMgc2VyaWVz
-IGFsc28gYWRkcyBzdXBwb3J0IGZvciBRY29tJ3MgYXJtLXNtbXUtdjIgdmFyaWFudCB0aGF0Cmhh
-cyBkaWZmZXJlbnQgY2xvY2tzIGFuZCBwb3dlciByZXF1aXJlbWVudHMuCgpQcmV2aW91cyB2ZXJz
-aW9uIG9mIHRoaXMgcGF0Y2ggc2VyaWVzIGlzIEAgWzFdLgoKQnVpbGQgdGVzdGVkIHRoZSBzZXJp
-ZXMgYmFzZWQgb24gNC4xOS1yYzEuCgpbdjE2XSAKICAgKiBBZGRyZXNzZWQgcmV2aWV3IGNvbW1l
-bnRzIGZyb20gUm9iIGFib3V0IHNvYyBzcGVjaWZpYyBjb21wYXRpYmxlcy4KICAgKiBSZW1vdmVk
-IHBtX3J1bnRpbWVfZ2V0L3B1dCBjYWxscyBmcm9tIGFybV9zbW11X2RldmljZV9wcm9iZSgpLCBh
-cwogICAgIGRvaW5nIGEgcnVudGltZV9nZXQoKSBldmVudHVhbGx5IGNhbGxzIGFybV9zbW11X2Rl
-dmljZV9yZXNldCgpLgogICAgIGFybV9zbW11X2RldmljZV9yZXNldCgpIHNob3VsZCBiZSBjYWxs
-ZWQgb25seSBhZnRlcgogICAgIGFybV9zbW11X2RldmljZV9jZmdfcHJvYmUoKS4KICAgICBFbmFi
-bGluZyB0aGUgY2xvY2tzIGJ5IGRlZmF1bHQgaW4gdGhlIHByb2JlLCBhbmQgdXNpbmcKICAgICBw
-bV9ydW50aW1lX3NldF9hY3RpdmUoKSBhcyBzdWdnZXN0ZWQgYnkgVG9tYXN6IHRvIGRpc2FibGUg
-dGhlCiAgICAgY2xvY2tzIHdoZW4gcG1fcnVudGltZSBpcyBlbmFibGVkLgoKW3YxNV0KICAgKiBB
-ZGRlZCBhIGxpc3Qgb2YgdmFsaWQgdmFsdWVzIG9mICc8c29jPicgaW4gInFjb20sPHNvYz4tc21t
-dS12MiIKICAgICBjb21wYXRpYmxlIHN0cmluZyBhcyBwb2ludGVkIG91dCBieSBSb2JpbiwgYW5k
-IFJvYiBpbiB0aGUgdGhyZWFkIFs4XToKICAgKiBBZGRlZCBTcmluaSdzIFRlc3RlZC1ieS4KICAg
-KiBTZXBhcmF0ZWQgb3V0IHRoZSBkdC1iaW5kaW5ncyBjaGFuZ2UgZnJvbSBkcml2ZXIgY2hhbmdl
-IGludG8gYSBuZXcKICAgICBwYXRjaCBhcyBzdWdnZXN0ZWQgYnkgbmV3IGNoZWNrcGF0Y2ggd2Fy
-bmluZy4KCiAgICAgUm9iLCBJIHRvb2sgdGhlIGxpYmVydHkgb2YgcmVtb3ZpbmcgeW91ciBSZXZp
-ZXdlZC1ieSAoZm9yIHlvdXIKICAgICBjb21tZW50IG9uICc8c29jPicpIGZvciB0aGUgbmV3IGR0
-LWJpbmRpbmdzIHBhdGNoIDQvNS4KICAgICBQbGVhc2UgZmVlbCBmcmVlIHRvIHJldmlldyBpdCBh
-Z2Fpbi4gVGhhbmtzIQoKW3YxNF0KICAgKiBNb3ZlZCBhcm1fc21tdV9kZXZpY2VfcmVzZXQoKSBm
-cm9tIGFybV9zbW11X3BtX3Jlc3VtZSgpIHRvCiAgICAgYXJtX3NtbXVfcnVudGltZV9yZXN1bWUo
-KSBzbyB0aGF0IHRoZSBwbV9yZXN1bWUgY2FsbGJhY2sgY2FsbHMKICAgICBvbmx5IHJ1bnRpbWVf
-cmVzdW1lIHRvIHJlc3VtZSB0aGUgZGV2aWNlLgogICAgIFRoaXMgc2hvdWxkIHRha2UgY2FyZSBv
-ZiByZXN0b3JpbmcgdGhlIHN0YXRlIG9mIHNtbXUgaW4gc3lzdGVtcwogICAgIGluIHdoaWNoIHNt
-bXUgbG9zZSByZWdpc3RlciBzdGF0ZSBvbiBwb3dlci1kb21haW4gY29sbGFwc2UuCgpbdjEzXQog
-ICBBZGRyZXNzaW5nIFJhZmFlbCdzIGNvbW1lbnRzOgogICAqIEFkZGVkIC5zdXNwZW5kIHBtIGNh
-bGxiYWNrIHRvIGRpc2FibGUgdGhlIGNsb2NrcyBpbiBzeXN0ZW0gd2lkZSBzdXNwZW5kLgogICAq
-IEFkZGVkIGNvcnJlc3BvbmRpbmcgY2xvY2sgZW5hYmxlIGluIC5yZXN1bWUgcG0gY2FsbGJhY2su
-CiAgICogRXhwbGljaXRseSBlbmFibGluZy9kaXNhYmxpbmcgdGhlIGNsb2NrcyBub3cgd2hlbiBy
-dW50aW1lIFBNIGlzIGRpc2FibGVkLgogICAqIGRldmljZV9saW5rX2FkZCgpIGRvZXNuJ3QgZGVw
-ZW5kIG9uIHBtX3J1bnRpbWVfZW5hYmxlZCgpIGFzIHdlIGNhbgogICAgIHVzZSBkZXZpY2UgbGlu
-a3MgYWNyb3NzIHN5c3RlbSBzdXNwZW5kL3Jlc3VtZSB0b28uCgogICBBZGRyZXNzaW5nIFJvYmlu
-J3MgY29tbWVudHM6CiAgICogTWFraW5nIGRldmljZV9saW5rX2FkZCBmYWlsdXJlcyBhcyBub24t
-ZmF0YWwuCgogICAqIFJlbW92ZWQgSU9NTVVfT0ZfREVDTEFSRSgpIGRlY2xhcmF0aW9uIGFzIHdl
-IGRvbid0IG5lZWQgdGhpcyBhZnRlciBSb2IncwogICAgIHBhdGNoIHRoYXQgcmVtb3ZlZCBhbGwg
-b2YgdGhlc2UgZGVjbGFyYXRpb25zLgoKW3YxMl0KICAgKiBVc2UgbmV3IGRldmljZSBsaW5rJ3Mg
-ZmxhZyBpbnRyb2R1Y2VkIGluIFs3XSAtCiAgICAgRExfRkxBR19BVVRPUkVNT1ZFX1NVUFBMSUVS
-LiBXaXRoIHRoaXMgZGV2aWNlcyBsaW5rcyBhcmUgYXV0b21hdGljYWxseQogICAgIHB1cmdlZCB3
-aGVuIGFybS1zbW11IGRyaXZlciB1bmJpbmRzLgogICAqIFVzaW5nIHBtX3J1bnRpbWVfZm9yY2Vf
-c3VzcGVuZCgpIGluc3RlYWQgb2YgcG1fcnVudGltZV9kaXNhYmxlKCkgdG8KICAgICBhdm9pZCBm
-b2xsb3dpbmcgd2FybmluZyBmcm9tIGFybV9zbW11X2RldmljZV9yZW1vdmUoKQoKICAgICBbMjk1
-NzExLjUzNzUwN10gLS0tLS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tCiAgICAgWzI5
-NTcxMS41NDQyMjZdIFVucHJlcGFyaW5nIGVuYWJsZWQgc21tdV9tZHBfYWhiX2NsawogICAgIFsy
-OTU3MTEuNTQ5MDk5XSBXQVJOSU5HOiBDUFU6IDAgUElEOiAxIGF0IC4uL2RyaXZlcnMvY2xrL2Ns
-ay5jOjY5NwogICAgICAgICAgICAgICAgICAgICBjbGtfY29yZV91bnByZXBhcmUrMHhkOC8weGUw
-CiAgICAgLi4uCiAgICAgWzI5NTcxMS42NzQwNzNdIENhbGwgdHJhY2U6CiAgICAgWzI5NTcxMS42
-Nzk0NTRdICBjbGtfY29yZV91bnByZXBhcmUrMHhkOC8weGUwCiAgICAgWzI5NTcxMS42ODIwNTld
-ICBjbGtfdW5wcmVwYXJlKzB4MjgvMHg0MAogICAgIFsyOTU3MTEuNjg1OTY0XSAgY2xrX2J1bGtf
-dW5wcmVwYXJlKzB4MjgvMHg0MAogICAgIFsyOTU3MTEuNjg5NzAxXSAgYXJtX3NtbXVfZGV2aWNl
-X3JlbW92ZSsweDg4LzB4ZDgKICAgICBbMjk1NzExLjY5MzY5Ml0gIGFybV9zbW11X2RldmljZV9z
-aHV0ZG93bisweGMvMHgxOAogICAgIFsyOTU3MTEuNjk4MTIwXSAgcGxhdGZvcm1fZHJ2X3NodXRk
-b3duKzB4MjAvMHgzMAoKW3YxMV0KICAgKiBTb21lIG1vcmUgY2xlYW51cHMgZm9yIGRldmljZSBs
-aW5rLiBXZSBkb24ndCBuZWVkIGFuIGV4cGxpY2l0CiAgICAgZGVsZXRlIGZvciBkZXZpY2UgbGlu
-ayBmcm9tIHRoZSBkcml2ZXIsIGJ1dCBqdXN0IHNldCB0aGUgZmxhZwogICAgIERMX0ZMQUdfQVVU
-T1JFTU9WRS4KICAgICBkZXZpY2VfbGlua19hZGQoKSBBUEkgZGVzY3JpcHRpb24gc2F5cyAtCiAg
-ICAgIklmIHRoZSBETF9GTEFHX0FVVE9SRU1PVkUgaXMgc2V0LCB0aGUgbGluayB3aWxsIGJlIHJl
-bW92ZWQKICAgICBhdXRvbWF0aWNhbGx5IHdoZW4gdGhlIGNvbnN1bWVyIGRldmljZSBkcml2ZXIg
-dW5iaW5kcy4iCiAgICogQWRkcmVzc2VkIHRoZSBjb21tZW50cyBmb3IgJ3NtbXUnIGluIGFybV9z
-bW11X21hcC91bm1hcCgpLgogICAqIERyb3BwZWQgdGhlIHBhdGNoIFs2XSB0aGF0IGludHJvZHVj
-ZWQgZGV2aWNlX2xpbmtfZGVsX2RldigpIEFQSS4gCgpbdjEwXQogICAqIEludHJvZHVjZSBkZXZp
-Y2VfbGlua19kZWxfZGV2KCkgQVBJIHRvIGRlbGV0ZSB0aGUgbGluayBiZXR3ZWVuCiAgICAgZ2l2
-ZW4gY29uc3VtZXIgYW5kIHN1cHBsaWVyIGRldmljZXMuIFRoZSB1c2VycyBvZiBkZXZpY2UgbGlu
-awogICAgIGRvIG5vdCBuZWVkIHRvIHN0b3JlIGxpbmsgcG9pbnRlciB0byBkZWxldGUgdGhlIGxp
-bmsgbGF0ZXIuCiAgICAgVGhleSBjYW4gc3RyYWlnaHRhd2F5IHVzZSB0aGlzIEFQSSBieSBwYXNz
-aW5nIGNvbnN1bWVyIGFuZAogICAgIHN1cHBsaWVyIGRldmljZXMuCiAgICogTWFkZSBjb3JyZXNw
-b25kaW5nIGNoYW5nZXMgdG8gYXJtLXNtbXUgZHJpdmVyIHBhdGNoIGhhbmRsaW5nIHRoZQogICAg
-IGRldmljZSBsaW5rcy4KICAgKiBEcm9wcGVkIHRoZSBwYXRjaCBbNV0gdGhhdCB3YXMgYWRkaW5n
-IGRldmljZV9saW5rX2ZpbmQoKSBBUEkgdG8KICAgICBkZXZpY2UgY29yZSBsYXllci4gZGV2aWNl
-X2xpbmtfZGVsX2RldigpIHNlcnZlcyB0aGUgcHVycG9zZSB0bwogICAgIGRpcmVjdGx5IGRlbGV0
-ZSB0aGUgbGluayBiZXR3ZWVuIHR3byBnaXZlbiBkZXZpY2VzLgoKW3Y5XQogICAqIFJlbW92ZWQg
-J3JwbV9zdXBwb3J0ZWQnIGZsYWcsIGluc3RlYWQgY2hlY2tpbmcgb24gcG1fZG9tYWluCiAgICAg
-dG8gZW5hYmxlIHJ1bnRpbWUgcG0uCiAgICogQ3JlYXRpbmcgZGV2aWNlIGxpbmsgb25seSB3aGVu
-IHRoZSBydW50aW1lIHBtIGlzIGVuYWJsZWQsIGFzIHdlCiAgICAgZG9uJ3QgbmVlZCBhIGRldmlj
-ZSBsaW5rIGJlc2lkZXMgbWFuYWdpbmcgdGhlIHBvd2VyIGRlcGVuZGVuY3kKICAgICBiZXR3ZWVu
-IHN1cHBsaWVyIGFuZCBjb25zdW1lciBkZXZpY2VzLgogICAqIEludHJvZHVjaW5nIGEgcGF0Y2gg
-dG8gYWRkIGRldmljZV9saW5rX2ZpbmQoKSBBUEkgdGhhdCBmaW5kcwogICAgIGFuZCBleGlzdGlu
-ZyBsaW5rIGJldHdlZW4gc3VwcGxpZXIgYW5kIGNvbnN1bWVyIGRldmljZXMuCiAgICAgQWxzbywg
-bWFkZSBuZWNlc3NhcnkgY2hhbmdlIHRvIGRldmljZV9saW5rX2FkZCgpIHRvIHVzZSB0aGlzIEFQ
-SS4KICAgKiBhcm1fc21tdV9yZW1vdmVfZGV2aWNlKCkgbm93IHVzZXMgdGhpcyBkZXZpY2VfbGlu
-a19maW5kKCkgdG8gZmluZAogICAgIHRoZSBkZXZpY2UgbGluayBiZXR3ZWVuIHNtbXUgZGV2aWNl
-IGFuZCB0aGUgbWFzdGVyIGRldmljZSwgYW5kIHRoZW4KICAgICBkZWxldGUgdGhpcyBsaW5rLgog
-ICAqIERyb3BwZWQgdGhlIGRlc3Ryb3lfZG9tYWluX2NvbnRleHQoKSBmaXggWzRdIGFzIGl0IHdh
-cyByYXRoZXIsCiAgICAgaW50cm9kdWNpbmcgY2F0YXN0cm9waGljYWxseSBiYWQgcHJvYmxlbSBi
-eSBkZXN0cm95aW5nCiAgICAgJ2dvb2QgZGV2J3MgZG9tYWluIGNvbnRleHQuCiAgICogQWRkZWQg
-J1Jldml3ZWQtYnknIHRhZyBmb3IgVG9tYXN6J3MgcmV2aWV3LgoKW3Y4XQogICAqIE1ham9yIGNo
-YW5nZSAtCiAgICAgLSBBZGRlZCBhIGZsYWcgJ3JwbV9zdXBwb3J0ZWQnIHdoaWNoIGVhY2ggcGxh
-dGZvcm0gdGhhdCBzdXBwb3J0cwogICAgICAgcnVudGltZSBwbSwgY2FuIGVuYWJsZSwgYW5kIHdl
-IGVuYWJsZSBydW50aW1lX3BtIG92ZXIgYXJtLXNtbXUKICAgICAgIG9ubHkgd2hlbiB0aGlzIGZs
-YWcgaXMgc2V0LgogICAgIC0gQWRkaW5nIHRoZSBjb25kaXRpb25hbCBwbV9ydW50aW1lX2dldC9w
-dXQoKSBjYWxscyB0byAubWFwLCAudW5tYXAKICAgICAgIGFuZCAuYXR0YWNoX2RldiBvcHMuCiAg
-ICAgLSBEcm9wcGVkIHRoZSBwYXRjaCBbMl0gdGhhdCBleHBvcnRlZCBwbV9ydW50aW1fZ2V0L3B1
-dF9zdXVwbGllcnMoKSwKICAgICAgIGFuZCBhbHNvIGRyb3BwZWQgdGhlIHVzZXIgZHJpdmVyIHBh
-dGNoIFszXSBmb3IgdGhlc2UgQVBJcy4KCiAgICogQ2xvY2sgY29kZSBmdXJ0aGVyIGNsZWFudXAK
-ICAgICAtIGRvaW5nIG9ubHkgY2xrX2J1bGtfZW5hYmxlKCkgYW5kIGNsa19idWxrX2Rpc2FibGUo
-KSBpbiBydW50aW1lIHBtCiAgICAgICBjYWxsYmFja3MuIFdlIHNob3VsZG4ndCBiZSB0YWtpbmcg
-YSBzbG93IHBhdGggKGNsa19wcmVwYXJlL3VucHJlcGFyZSgpKQogICAgICAgZnJvbSB0aGVzZSBy
-dW50aW1lIHBtIGNhbGxiYWNrcy4gVGhlcmVieSwgbW92ZWQgY2xrX2J1bGtfcHJlcGFyZSgpIHRv
-CiAgICAgICBhcm1fc21tdV9kZXZpY2VfcHJvYmUoKSwgYW5kIGNsa19idWxrX3VucHJlcGFyZSgp
-IHRvCiAgICAgICBhcm1fc21tdV9kZXZpY2VfcmVtb3ZlKCkuCiAgICAgLSBjbGsgZGF0YSBmaWxs
-aW5nIHRvIGEgY29tbW9uIG1ldGhvZCBhcm1fc21tdV9maWxsX2Nsa19kYXRhKCkgdGhhdAogICAg
-ICAgZmlsbHMgdGhlIGNsb2NrIGlkcyBhbmQgbnVtYmVyIG9mIGNsb2Nrcy4KCiAgICogQWRkcmVz
-c2VkIG90aGVyIG5pdHMgYW5kIGNvbW1lbnRzCiAgICAgLSBkZXZpY2VfbGlua19hZGQoKSBlcnJv
-ciBwYXRoIGZpeGVkLgogICAgIC0gRml4IGZvciBjaGVja2luZyBuZWdhdGl2ZSBlcnJvciB2YWx1
-ZSBmcm9tIHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS4KICAgICAtIERvY3VtZW50YXRpb24gcmVkby4K
-CiAgICogQWRkZWQgYW5vdGhlciBwYXRjaCBmaXhpbmcgdGhlIGVycm9yIHBhdGggaW4gYXJtX3Nt
-bXVfYXR0YWNoX2RldigpCiAgICAgdG8gZGVzdHJveSBhbGxvY2F0ZWQgZG9tYWluIGNvbnRleHQu
-CgoqKiBDaGFuZ2UgbG9ncyBmb3IgcHJldmlvdXMgdmVyc2lvbnMgaXMgYXZhaWxhYmxlIGluIHBy
-ZXZpb3VzIHNlcmllcyBbOV0uCgpbMV0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9jb3Zl
-ci8xMDU3NjkyMS8KWzJdIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTAyMDQ5
-NDUvClszXSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwMjA0OTI1LwpbNF0g
-aHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDI1NDEwNS8KWzVdIGh0dHBzOi8v
-cGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTAyNzc5NzUvCls2XSBodHRwczovL3BhdGNod29y
-ay5rZXJuZWwub3JnL3BhdGNoLzEwMjgxNjEzLwpbN10gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
-Lm9yZy9wYXRjaC8xMDQ5MTQ4MS8KWzhdIGh0dHBzOi8vbG9yZS5rZXJuZWwub3JnL3BhdGNod29y
-ay9wYXRjaC85NzQxMTYvCls5XSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxOC83LzgvMTI0CgpT
-cmljaGFyYW4gUiAoMyk6CiAgaW9tbXUvYXJtLXNtbXU6IEFkZCBwbV9ydW50aW1lL3NsZWVwIG9w
-cwogIGlvbW11L2FybS1zbW11OiBJbnZva2UgcG1fcnVudGltZSBkdXJpbmcgcHJvYmUsIGFkZC9y
-ZW1vdmUgZGV2aWNlCiAgaW9tbXUvYXJtLXNtbXU6IEFkZCB0aGUgZGV2aWNlX2xpbmsgYmV0d2Vl
-biBtYXN0ZXJzIGFuZCBzbW11CgpWaXZlayBHYXV0YW0gKDIpOgogIGR0LWJpbmRpbmdzOiBhcm0t
-c21tdTogQWRkIGJpbmRpbmdzIGZvciBxY29tLHNtbXUtdjIKICBpb21tdS9hcm0tc21tdTogQWRk
-IHN1cHBvcnQgZm9yIHFjb20sc21tdS12MiB2YXJpYW50CgogLi4uL2RldmljZXRyZWUvYmluZGlu
-Z3MvaW9tbXUvYXJtLHNtbXUudHh0ICAgICAgICAgfCAgMzkgKysrKysKIGRyaXZlcnMvaW9tbXUv
-YXJtLXNtbXUuYyAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMTgwICsrKysrKysrKysrKysr
-KysrKystLQogMiBmaWxlcyBjaGFuZ2VkLCAyMDkgaW5zZXJ0aW9ucygrKSwgMTAgZGVsZXRpb25z
-KC0pCgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9u
-IENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5
-IFRoZSBMaW51eCBGb3VuZGF0aW9uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9mcmVlZHJlbm8K
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+
+The smmu needs to be functional only when the respective
+master's using it are active. The device_link feature
+helps to track such functional dependencies, so that the
+iommu gets powered when the master device enables itself
+using pm_runtime. So by adapting the smmu driver for
+runtime pm, above said dependency can be addressed.
+
+This patch adds the pm runtime/sleep callbacks to the
+driver and also the functions to parse the smmu clocks
+from DT and enable them in resume/suspend.
+
+Also, while we enable the runtime pm add a pm sleep suspend
+callback that pushes devices to low power state by turning
+the clocks off in a system sleep.
+Also add corresponding clock enable path in resume callback.
+
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+[vivek: rework for clock and pm ops]
+Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ drivers/iommu/arm-smmu.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 74 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index fd1b80ef9490..d900e007c3c9 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -48,6 +48,7 @@
+ #include <linux/of_iommu.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ 
+@@ -205,6 +206,8 @@ struct arm_smmu_device {
+ 	u32				num_global_irqs;
+ 	u32				num_context_irqs;
+ 	unsigned int			*irqs;
++	struct clk_bulk_data		*clks;
++	int				num_clks;
+ 
+ 	u32				cavium_id_base; /* Specific to Cavium */
+ 
+@@ -1896,10 +1899,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
+ struct arm_smmu_match_data {
+ 	enum arm_smmu_arch_version version;
+ 	enum arm_smmu_implementation model;
++	const char * const *clks;
++	int num_clks;
+ };
+ 
+ #define ARM_SMMU_MATCH_DATA(name, ver, imp)	\
+-static struct arm_smmu_match_data name = { .version = ver, .model = imp }
++static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
+ 
+ ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
+ ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
+@@ -1918,6 +1923,23 @@ static const struct of_device_id arm_smmu_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+ 
++static void arm_smmu_fill_clk_data(struct arm_smmu_device *smmu,
++				   const char * const *clks)
++{
++	int i;
++
++	if (smmu->num_clks < 1)
++		return;
++
++	smmu->clks = devm_kcalloc(smmu->dev, smmu->num_clks,
++				  sizeof(*smmu->clks), GFP_KERNEL);
++	if (!smmu->clks)
++		return;
++
++	for (i = 0; i < smmu->num_clks; i++)
++		smmu->clks[i].id = clks[i];
++}
++
+ #ifdef CONFIG_ACPI
+ static int acpi_smmu_get_data(u32 model, struct arm_smmu_device *smmu)
+ {
+@@ -2000,6 +2022,9 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
+ 	data = of_device_get_match_data(dev);
+ 	smmu->version = data->version;
+ 	smmu->model = data->model;
++	smmu->num_clks = data->num_clks;
++
++	arm_smmu_fill_clk_data(smmu, data->clks);
+ 
+ 	parse_driver_options(smmu);
+ 
+@@ -2098,6 +2123,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 		smmu->irqs[i] = irq;
+ 	}
+ 
++	err = devm_clk_bulk_get(smmu->dev, smmu->num_clks, smmu->clks);
++	if (err)
++		return err;
++
++	err = clk_bulk_prepare_enable(smmu->num_clks, smmu->clks);
++	if (err)
++		return err;
++
+ 	err = arm_smmu_device_cfg_probe(smmu);
+ 	if (err)
+ 		return err;
+@@ -2184,6 +2217,9 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+ 
+ 	/* Turn the thing off */
+ 	writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
++
++	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clks);
++
+ 	return 0;
+ }
+ 
+@@ -2192,15 +2228,50 @@ static void arm_smmu_device_shutdown(struct platform_device *pdev)
+ 	arm_smmu_device_remove(pdev);
+ }
+ 
+-static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
++static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
+ {
+ 	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++	int ret;
++
++	ret = clk_bulk_enable(smmu->num_clks, smmu->clks);
++	if (ret)
++		return ret;
+ 
+ 	arm_smmu_device_reset(smmu);
++
+ 	return 0;
+ }
+ 
+-static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
++static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
++{
++	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++
++	clk_bulk_disable(smmu->num_clks, smmu->clks);
++
++	return 0;
++}
++
++static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
++{
++	if (pm_runtime_suspended(dev))
++		return 0;
++
++	return arm_smmu_runtime_resume(dev);
++}
++
++static int __maybe_unused arm_smmu_pm_suspend(struct device *dev)
++{
++	if (pm_runtime_suspended(dev))
++		return 0;
++
++	return arm_smmu_runtime_suspend(dev);
++}
++
++static const struct dev_pm_ops arm_smmu_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(arm_smmu_pm_suspend, arm_smmu_pm_resume)
++	SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
++			   arm_smmu_runtime_resume, NULL)
++};
+ 
+ static struct platform_driver arm_smmu_driver = {
+ 	.driver	= {
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
