@@ -1,118 +1,65 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: Rewriting Intel PCI bridge prefetch base address bits
- solves nvidia graphics issues
-Date: Thu, 30 Aug 2018 11:40:16 +0200
-Message-ID: <20180830094016.GA18925@al>
-References: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
- <20180824154212.GB8601@al>
- <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw@mail.gmail.com>
- <20180828095722.GA8820@al>
- <CAD8Lp44Re2menmZfY3GLExZVMDfQANTvG3hWC1wQwrXpQ6WKCA@mail.gmail.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
+ static key
+Date: Thu, 30 Aug 2018 10:57:45 +0100
+Message-ID: <20180830095723.4qqbpft7gpbtgkhd@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-8-quentin.perret@arm.com>
+ <20180829165058.GR2960@e110439-lin>
+ <20180829172004.afbe2oukprvptqs2@queper01-lin>
+ <20180830092329.GS2960@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAD8Lp44Re2menmZfY3GLExZVMDfQANTvG3hWC1wQwrXpQ6WKCA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+In-Reply-To: <20180830092329.GS2960@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBBdWcgMzAsIDIwMTggYXQgMDM6NDE6NDNQTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
-b3RlOgo+IE9uIFR1ZSwgQXVnIDI4LCAyMDE4IGF0IDU6NTcgUE0sIFBldGVyIFd1IDxwZXRlckBs
-ZWtlbnN0ZXluLm5sPiB3cm90ZToKPiA+IEp1c3QgdG8gYmUgc3VyZSwgYWZ0ZXIgInNsZWVwIiwg
-ZG8gYm90aCBkZXZpY2VzIHJlcG9ydCAic3VzcGVuZGVkIiBpbgo+ID4gL3N5cy9idXMvcGNpL2Rl
-dmljZXMvMDAwMDowMDoxYy4wL3Bvd2VyL3J1bnRpbWVfc3RhdHVzCj4gPiAvc3lzL2J1cy9wY2kv
-ZGV2aWNlcy8wMDAwOjAxOjAwLjAvcG93ZXIvcnVudGltZV9zdGF0dXMKPiA+Cj4gPiBhbmQgd2Fz
-IHRoaXMgcmVwcm9kdWNlZCB3aXRoIGEgcmVjZW50IG1haW5saW5lIGtlcm5lbCB3aXRoIG5vIHNw
-ZWNpYWwKPiA+IGNtZGxpbmUgb3B0aW9ucz8gVGhlIGVuZGxlc3NtIGtlcm5lbCBvbiBHaXRodWIg
-c2VlbXMgdG8gaGF2ZSBxdWl0ZSBzb21lCj4gPiBwYXRjaGVzLCBvbmUgb2YgdGhlbSBleHBsaWNp
-dGx5IGRpc2FibGUgcnVudGltZSBQTToKPiA+IGh0dHBzOi8vZ2l0aHViLmNvbS9lbmRsZXNzbS9s
-aW51eC9jb21taXQvOGIxMjhiNTBjZDY3MjVlZWUyYWU5MDI1YTE1MTBhMjIxZDliNDJmMgo+IAo+
-IFllcywgSSBjaGVja2VkIGZvciB0aGlzIGlzc3VlIGluIHRoZSBwYXN0IGFuZCBJJ20gY2VydGFp
-biB0aGF0IG5vdXZlYXUKPiBydW50aW1lIHBtIHdvcmtzIGZpbmUuCj4gCj4gSSBhbHNvIGNoZWNr
-ZWQgYWdhaW4gbm93IG9uIFg1NDJVUSBhbmQgdGhlIHJlc3VsdHMgYXJlIHRoZSBzYW1lLgo+IG5v
-dXZlYXUgY2FuIGRvIHJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgKGNvbmZpcm1lZCBieSByZWFkaW5n
-Cj4gcnVudGltZV9zdGF0dXMpIGFuZCB0aGVuIHJlbmRlciAzRCBncmFwaGljcyBPSy4gbHNwY2kg
-aXMgZmluZSB0b28uIEl0Cj4gaXMganVzdCBTMyBzdXNwZW5kIHRoYXQgaXMgYWZmZWN0ZWQuIFRo
-aXMgd2FzIHRlc3Rpbmcgb24gTGludXggNC4xOAo+IHVubW9kaWZpZWQuIEkgaGFkIHRvIHNldCBu
-b3V2ZWF1IHJ1bnBtIHBhcmFtZXRlciB0byAxIGZvciBpdCB0byB1c2UKPiBydW50aW1lIHBtLgo+
-IAo+IEFsc28gY2hlY2tlZCB3aXRoIEthcm9sJ3MgcGF0Y2gsIHRoZSBTMyBpc3N1ZSBpcyBzdGls
-bCB0aGVyZS4gU2VlbXMKPiBsaWtlIDIgZGlmZmVyZW50IGlzc3Vlcy4KPiAKPiA+IENvdWxkIHlv
-dSBzaGFyZSBzb21lIGRldGFpbHM6Cj4gPiAtIGFjcGlkdW1wCj4gPiAtIGxzcGNpIC1ubnh4eHh2
-dnYKPiA+IC0gQklPUyB2ZXJzaW9uIChmcm9tIC9zeXMvY2xhc3MvZG1pL2lkLykKPiA+IC0ga2Vy
-bmVsIHZlcnNpb24gKG1haW5saW5lPykKPiAKPiBMaW51eCA0LjE4IG1haW5saW5lCj4gQklPUyB2
-ZXJzaW9uOiBYNTQyVVEuMjAyCj4gYWNwaWR1bXA6IGh0dHBzOi8vZ2lzdC5naXRodWJ1c2VyY29u
-dGVudC5jb20vZHNkLzc5MzUyMjg0ZDRhZGNlMTRmMzBkNzBlOTRmYWQ4OWYyL3Jhdy9lZDk0ODBl
-OTI0YmU0MTNmZmY1NjdkYTJlZGQ1YTJhN2E4NjYxOWQwL2dpc3RmaWxlMS50eHQKPiBwY2k6IGh0
-dHBzOi8vZ2lzdC5naXRodWJ1c2VyY29udGVudC5jb20vZHNkLzc5MzUyMjg0ZDRhZGNlMTRmMzBk
-NzBlOTRmYWQ4OWYyL3Jhdy9lZDk0ODBlOTI0YmU0MTNmZmY1NjdkYTJlZGQ1YTJhN2E4NjYxOWQw
-L3BjaQoKVGhhbmtzLCBiYXNlZCBvbiB0aGUgXF9TQi5QQ0kwLkhHT0YgaW1wbGVtZW50YXRpb24s
-IGl0IGxvb2tzIGxpa2UgdGhpcwptb2RlbCB3aWxsIG5vdCBiZSBhZmZlY3RlZCBieSB0aGUgcnVu
-dGltZSBzdXNwZW5kIGlzc3VlIChpdCBzZXRzIHRoZQoiTGluayBEaXNhYmxlIiByZWdpc3RlciB3
-aGljaCBpcyBrbm93biB0byB3b3JrIGZvciBvdGhlciBtb2RlbHMpLgoKQXMgdGhlIEJJT1MgZGF0
-ZSBpcyBub3QgdmlzaWJsZSwgY2FuIHlvdSBhbHNvIGNvbmZpcm0gdGhhdCB0aGlzIG1lc3NhZ2UK
-aXMgdmlzaWJsZSBpbiBkbWVzZz8KCiAgICBub3V2ZWF1OiBkZXRlY3RlZCBQUiBzdXBwb3J0LCB3
-aWxsIG5vdCB1c2UgRFNNCgpGV0lXLCB0aGUgbGF0ZXN0IEJJT1MgdmVyc2lvbiBpcyAzMDUsIHJl
-bGVhc2VkIGF0IDIwMTgvMDgvMDc6Cmh0dHBzOi8vd3d3LmFzdXMuY29tL0xhcHRvcHMvQVNVUy1W
-aXZvQm9vay0xNS1YNTQyVVEvSGVscERlc2tfQklPUy8KCj4gPiBPbmx5IG5vbi1icmlkZ2UgZGV2
-aWNlcyBjYW4gYmUgcGFzc2VkIHRvIGEgZ3Vlc3QsIGJ1dCBwZXJoYXBzIGxvZ2dpbmcKPiA+IGFj
-Y2VzcyB0byB0aGUgZW11bGF0ZWQgYnJpZGdlIGlzIGFscmVhZHkgc3VmZmljaWVudC4gVGhlIFBy
-ZWZldGNoYWJsZQo+ID4gQmFzZSBVcHBlciAzMiBCaXRzIHJlZ2lzdGVyIGlzIGF0IG9mZnNldCAw
-eDI4Lgo+ID4KPiA+IEluIGEgdHJhY2Ugd2hlcmUgdGhlIE52aWRpYSBkZXZpY2UgaXMgZGlzYWJs
-ZWQvZW5hYmxlZCB2aWEgRGV2aWNlCj4gPiBNYW5hZ2VyLCBJIHNlZSB3cml0ZXMgb24gdGhlIGVu
-YWJsZSBwYXRoOgo+ID4KPiA+ICAgICAyNTcxQDE1MzUxMDg5MDQuNTkzMTA3OnJwX3dyaXRlX2Nv
-bmZpZyAoaW9oMzQyMCwgQDB4MjgsIDB4MCwgbGVuPTB4NCkKPiA+Cj4gPiBGb3IgTGludXgsIEkg
-b25seSBzZWUgb25lIHdyaXRlIGF0IHN0YXJ0dXAsIG5vbmUgb24gcnVudGltZSByZXN1bWUuCj4g
-PiBJIGRpZCBub3QgdGVzdCBzeXN0ZW0gc2xlZXAvcmVzdW1lLiAoZGlzYWJsZS9lbmFibGUgaXMg
-YXJndWFibHkgYSBiaXQKPiA+IGRpZmZlcmVudCBmcm9tIHN5c3RlbSBzL3IsIHlvdSBtYXkgd2Fu
-dCB0byBkbyBhZGRpdGlvbmFsIHRlc3RpbmcgaGVyZS4pCj4gCj4gSSBtYW5hZ2VkIHRvIGluc3Rh
-bGwgV2luMTAgSG9tZSB1bmRlciB2aXJ0LW1hbmFnZXIgd2l0aCB0aGUgbnZpZGlhCj4gZGV2aWNl
-IHBhc3NlZCB0aHJvdWdoLgo+IEhvd2V2ZXIgdGhlIG52aWRpYSB3aW5kb3dzIGRyaXZlciBpbnN0
-YWxsZXIgcmVmdXNlcyB0byBpbnN0YWxsLCBzYXlzOgo+ICAgICBUaGUgTlZJRElBIGdyYXBoaWNz
-IGRyaXZlciBpcyBub3QgY29tcGF0aWJsZSB3aXRoIHRoaXMgdmVyc2lvbiBvZiBXaW5kb3dzLgo+
-ICAgICBUaGlzIGdyYXBoaWNzIGRyaXZlciBjb3VsZCBub3QgZmluZCBjb21wYXRpYmxlIGdyYXBo
-aWNzIGhhcmR3YXJlLgo+IAo+IE9uZSB0cmljayBmb3Igc2ltaWxhciBzb3VuZGluZyBwcm9ibGVt
-cyBpcyB0byBjaGFuZ2UgaHlwZXJ2aXNvciB2ZW5kb3IKPiBJRCBidXQgbm8gbHVjayBoZXJlLgoK
-Rm9yIGxhcHRvcHMsIGl0IGFwcGVhcnMgdGhhdCB5b3UgaGF2ZSB0byBkbyBhdCBsZWFzdCB0d28g
-dGhpbmdzOgotIEVuc3VyZSB0aGF0IHRoZSBTdWJzeXN0ZW0gVmVuZG9yL1Byb2R1Y3QgSUQgYXJl
-IHNldC4KLSBFeHBvc2UgYSBfUk9NIEFDUEkgbWV0aG9kIHRoYXQgcHJvdmlkZXMgVkJJT1MuCgpQ
-ZXJoYXBzIHlvdSBhbHNvIG5lZWQgdG8gcHJvdmlkZSBhICJfRFNNIiBtZXRob2QgdGhhdCBlbXVs
-YXRlcyBhdCBsZWFzdAp0aGUgIk9wdGltdXMiIGludGVyZmFjZSBmb3IgR1VJRCBhNDg2ZDhmOC0w
-YmRhLTQ3MWItYTcyYi02MDQyYTZiNWJlZTAuCgpZb3UgcHJvYmFibHkgbG9zdCBpbnRlcmVzdCBo
-ZXJlLCBidXQgaWYgeW91IHdhbnQgdG8gY29udGludWUgYW55d2F5IHRoaXMKaXMgd2hhdCBhbGxv
-d2VkIG1lIHRvIGluc3RhbGwgdGhlIGRyaXZlciBvbiB0aGUgWFBTIDk1NjA6Cmh0dHBzOi8vZ2l0
-aHViLmNvbS9MZWtlbnN0ZXluL2FjcGktc3R1ZmYvYmxvYi9tYXN0ZXIvZDN0ZXN0L2Zha2VkZXYu
-YXNsCgpJZiB5b3UgYWRhcHQgaWYgZm9yIHlvdXIgZW52aXJvbm1lbnQsIG5vdGU6Ci0gSSBoYXZl
-IG9ubHkgdGVzdGVkIHRoaXMgd2l0aCB0aGUgcTM1IG1hY2hpbmUgdHlwZSB3aXRoIGFuIGFkZGl0
-aW9uYWwKICBpb2gzNDIwIHJvb3QgcG9ydC4gU2VlIHRoZSBYUFM5NTYvYm9vdC12bSBzY3JpcHQu
-Ci0gVGhlIFxfU0IuUENJMC5TRTAgZGV2aWNlIHNob3VsZCBtYXRjaCB0aGUgcm9vdCBwb3J0Ogog
-IGNhdCAvc3lzL2J1cy9wY2kvZGV2aWNlcy8wMDAwOjAwOjFjLjAvZmlybXdhcmVfbm9kZS9wYXRo
-CiAgKHRoZSBTRTAgbmFtZSBpcyBjaG9zZW4gYnkgUUVNVS4pCi0gVGhlICJORVQiIChcX1NCLlBD
-STAuU0UwLk5FVCkgZGV2aWNlIG5hbWUgaXMgYXJiaXRyYXJ5IGNob3NlbiBieSBtZSwKICBpdCBj
-dXJyZW50bHkgYXNzdW1lcyBQQ0kgYWRkcmVzcyAwMTowMC4wOgogIE5hbWUgKF9BRFIsIDB4MDAw
-MDAwMDApIC8vIF9BRFI6IEFkZHJlc3MgKGRlditmbiBvbmx5LCAwMTowMC4wKQotIFRoZSBfRFNN
-IG1ldGhvZCBpcyBjb3BpZWQgZnJvbSB0aGUgWFBTIDk1NjAgU1NEVCB3aXRoIGV4dGVybmFsIG1l
-dGhvZAogIHJlZmVyZW5jZXMgcmVtb3ZlZCAoZm9jdXMgb24gdGhlIGNvZGUgd2l0aCAiT1BDSSIg
-dHJ1ZSwgdGhlIG90aGVyIHR3bwogIHdpdGggTkJDSSBhbmQgU0dDSSBhcmUgaXJyZWxldmFudCku
-IE9uZSBvYnZpb3VzIGRpZmZlcmVuY2Ugd2l0aCB5b3VyCiAgU1NEVCBpcyBmdW5jdGlvbiAweDEw
-LCB5b3VyIE9QVksgKCJPcHRpbXVzIFZhbGlkYXRpb24gS2V5IE9iamVjdCIgaXMKICBkaWZmZXJl
-bnQgYW5kIHRoZXJlIGlzIGFub3RoZXIgIk9QRFIiIGNoZWNrIGFmdGVyd2FyZHMuCgo+IEkgd2Fz
-IGdvaW5nIHRvIGNoZWNrIGlmIEkgY2FuIG1vbml0b3IgUENJIGJyaWRnZSBjb25maWcgc3BhY2Ug
-YWNjZXNzCj4gZXZlbiB3aXRob3V0IHRoZSBudmlkaWEgZHJpdmVyIGluc3RhbGxlZCwgYnV0IEkg
-Y2FuJ3QgZmluZCBhIHdheSB0bwo+IG1ha2UgdGhlIHdpbmRvd3MgVk0gc3VzcGVuZCBhbmQgcmVz
-dW1lIC0gdGhlIG9wdGlvbiBpcyBub3QgYXZhaWxhYmxlCj4gaW4gdGhlIFZNLgoKVGhlIHN5c3Rl
-bSBjYW5ub3QgYmUgc3VzcGVuZGVkIGlmIHRoZSBHUFUgZGV2aWNlIGhhcyBubyBkcml2ZXIuCi0t
-IApLaW5kIHJlZ2FyZHMsClBldGVyIFd1Cmh0dHBzOi8vbGVrZW5zdGV5bi5ubApfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlz
-dApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9w
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+Hi Patrick,
+
+On Thursday 30 Aug 2018 at 10:23:29 (+0100), Patrick Bellasi wrote:
+> Yes, dunno if it's just me but perhaps a bit of rephrasing could help.
+
+Ok, so what about something a little bit more explicit like:
+
+/*
+ * The complexity of the Energy Model is defined as:
+ *
+ *		C = nr_pd * (nr_cpus + nr_cs)
+ *
+ * with parameters defined as:
+ *  - nr_pd:	the number of performance domains
+ *  - nr_cpus:	the number of CPUs
+ *  - nr_cs:	the sum of the number of capacity states of all performance
+ *		domains (for example, on a system with 2 performance domains,
+ *		with 10 capacity states each, nr_cs = 2 * 10 = 20).
+ *
+ * It is generally not a good idea to use such a model in the wake-up path on
+ * very complex platforms because of the associated scheduling overheads. The
+ * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
+ * with per-CPU DVFS and less than 8 capacity states each, for example.
+ */
+
+> Alternatively, why not having this comment and check after patches
+> 11 and 12 ?
+
+Oh, you don't like it here ? What's wrong with it :-) ?
+
+> Right... I was totally confused by the idea that we don't
+> run EAS if we just have 1 CPU per PD... my bad!
+> 
+> Although on those systems, since we don't have idle costs, should not
+> be a spreading strategy always the best from an energy efficiency
+> standpoint ?
+
+Even with per-CPU DVFS, if you have big and little CPUs it matters
+_where_ you execute a task, and you'll still need an Energy Model to
+make good decisions in a generic way. But yes, there is definitely some
+room for improvement for those platforms. That's something we could
+improve later on top of this series I suppose.
+
+Thanks for looking at the patches !
+Quentin
