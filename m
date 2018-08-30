@@ -1,51 +1,59 @@
-From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH] thermal: qoriq: add i.mx8mq support
-Date: Thu, 30 Aug 2018 10:14:46 +0800
-Message-ID: <1535595286-18371-1-git-send-email-Anson.Huang@nxp.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 1/2] dt-bindings: power: Add Spreadtrum SC2731 charger documentation
+Date: Thu, 30 Aug 2018 11:03:10 +0800
+Message-ID: <CAMz4kuL8cSkBRb1C779u4gi93TwJ1M0aNV_nkRQoX16=7HK5wA@mail.gmail.com>
+References: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
+ <CAJKOXPd9-aLYFLBHwUyNecneHA6X+VbnZSK4paXsMcmvobnGhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJKOXPd9-aLYFLBHwUyNecneHA6X+VbnZSK4paXsMcmvobnGhA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Linux-imx@nxp.com
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add i.mx8mq specific compatible string.
+Hi Krzysztof,
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
- Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 6 +++---
- drivers/thermal/qoriq_thermal.c                             | 1 +
- 2 files changed, 4 insertions(+), 3 deletions(-)
+On 29 August 2018 at 22:08, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Tue, 28 Aug 2018 at 11:04, Baolin Wang <baolin.wang@linaro.org> wrote:
+>>
+>> This patch adds the binding documentation for Spreadtrum SC2731 charger
+>> device.
+>>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>> ---
+>>  .../bindings/power/supply/sc2731_charger.txt       |   14 ++++++++++++++
+>>  1 file changed, 14 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+>> new file mode 100644
+>> index 0000000..02b616c
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+>> @@ -0,0 +1,14 @@
+>> +Spreadtrum SC2731 PMIC battery charger binding
+>> +
+>> +Required properties:
+>> + - compatible: Should be "sprd,sc2731-charger".
+>> + - reg: Address offset of charger register.
+>> + - phys: Contains a phandle to the USB phy.
+>> +
+>> +Example:
+>> +
+>> +       charger@0 {
+>> +               compatible = "sprd,sc2731-charger";
+>> +               reg = <0x0>;
+>
+> Can you include also few lines of parent node? You use this "reg"
+> later as a base address so probably your parent node requires address
+> mapping. It would be nice to see it in example.
+>
 
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-index 20ca4ef..04cbb90 100644
---- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-@@ -1,9 +1,9 @@
- * Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
- 
- Required properties:
--- compatible : Must include "fsl,qoriq-tmu". The version of the device is
--	determined by the TMU IP Block Revision Register (IPBRR0) at
--	offset 0x0BF8.
-+- compatible : Must include "fsl,qoriq-tmu" or "fsl,imx8mq-tmu". The
-+	version of the device is determined by the TMU IP Block Revision
-+	Register (IPBRR0) at offset 0x0BF8.
- 	Table of correspondences between IPBRR0 values and example  chips:
- 		Value           Device
- 		----------      -----
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index c866cc1..e0e7356 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -305,6 +305,7 @@ static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
- 
- static const struct of_device_id qoriq_tmu_match[] = {
- 	{ .compatible = "fsl,qoriq-tmu", },
-+	{ .compatible = "fsl,imx8mq-tmu", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
+Sorry that I forgot adding the parent node, and will add it in next
+version. Thanks.
+
 -- 
-2.7.4
+Baolin Wang
+Best Regards
