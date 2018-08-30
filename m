@@ -1,62 +1,94 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v16 5/5] iommu/arm-smmu: Add support for qcom,
- smmu-v2 variant
-Date: Thu, 30 Aug 2018 20:15:41 +0530
-Message-ID: <20180830144541.17740-6-vivek.gautam@codeaurora.org>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: Convert to using %pOFn instead of
+ device_node.name
+Date: Thu, 30 Aug 2018 16:58:16 +0200
+Message-ID: <ac2580ab-e65a-ed54-708b-871bf0a3305d@linaro.org>
+References: <20180828015252.28511-1-robh@kernel.org>
+ <20180828015252.28511-45-robh@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180830144541.17740-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180828015252.28511-45-robh@kernel.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-cWNvbSxzbW11LXYyIGlzIGFuIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uIHdpdGggc3BlY2lm
-aWMKY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4KT24gbXNtODk5NiwgbXVsdGlwbGUgY29y
-ZXMsIHZpei4gbWRzcywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKc21tdS4gT24gc2RtODQ1LCB0aGlz
-IHNtbXUgaXMgdXNlZCB3aXRoIGdwdS4KQWRkIGJpbmRpbmdzIGZvciB0aGUgc2FtZS4KClNpZ25l
-ZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgpSZXZp
-ZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4KUmV2aWV3ZWQtYnk6IFRvbWFz
-eiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+ClRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRs
-YSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvaW9tbXUvYXJt
-LXNtbXUuYyB8IDEzICsrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxMyBpbnNlcnRpb25z
-KCspCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJpdmVycy9pb21t
-dS9hcm0tc21tdS5jCmluZGV4IDE2NmM4YzZkYTI0Zi4uNDExZTVhYzU3YzY0IDEwMDY0NAotLS0g
-YS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKKysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-CkBAIC0xMTksNiArMTE5LDcgQEAgZW51bSBhcm1fc21tdV9pbXBsZW1lbnRhdGlvbiB7CiAJR0VO
-RVJJQ19TTU1VLAogCUFSTV9NTVU1MDAsCiAJQ0FWSVVNX1NNTVVWMiwKKwlRQ09NX1NNTVVWMiwK
-IH07CiAKIHN0cnVjdCBhcm1fc21tdV9zMmNyIHsKQEAgLTE5NzAsNiArMTk3MSwxNyBAQCBBUk1f
-U01NVV9NQVRDSF9EQVRBKGFybV9tbXU0MDEsIEFSTV9TTU1VX1YxXzY0SywgR0VORVJJQ19TTU1V
-KTsKIEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTUwMCwgQVJNX1NNTVVfVjIsIEFSTV9NTVU1
-MDApOwogQVJNX1NNTVVfTUFUQ0hfREFUQShjYXZpdW1fc21tdXYyLCBBUk1fU01NVV9WMiwgQ0FW
-SVVNX1NNTVVWMik7CiAKK3N0YXRpYyBjb25zdCBjaGFyICogY29uc3QgcWNvbV9zbW11djJfY2xr
-c1tdID0geworCSJidXMiLCAiaWZhY2UiLAorfTsKKworc3RhdGljIGNvbnN0IHN0cnVjdCBhcm1f
-c21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0geworCS52ZXJzaW9uID0gQVJNX1NNTVVfVjIs
-CisJLm1vZGVsID0gUUNPTV9TTU1VVjIsCisJLmNsa3MgPSBxY29tX3NtbXV2Ml9jbGtzLAorCS5u
-dW1fY2xrcyA9IEFSUkFZX1NJWkUocWNvbV9zbW11djJfY2xrcyksCit9OworCiBzdGF0aWMgY29u
-c3Qgc3RydWN0IG9mX2RldmljZV9pZCBhcm1fc21tdV9vZl9tYXRjaFtdID0gewogCXsgLmNvbXBh
-dGlibGUgPSAiYXJtLHNtbXUtdjEiLCAuZGF0YSA9ICZzbW11X2dlbmVyaWNfdjEgfSwKIAl7IC5j
-b21wYXRpYmxlID0gImFybSxzbW11LXYyIiwgLmRhdGEgPSAmc21tdV9nZW5lcmljX3YyIH0sCkBA
-IC0xOTc3LDYgKzE5ODksNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBhcm1f
-c21tdV9vZl9tYXRjaFtdID0gewogCXsgLmNvbXBhdGlibGUgPSAiYXJtLG1tdS00MDEiLCAuZGF0
-YSA9ICZhcm1fbW11NDAxIH0sCiAJeyAuY29tcGF0aWJsZSA9ICJhcm0sbW11LTUwMCIsIC5kYXRh
-ID0gJmFybV9tbXU1MDAgfSwKIAl7IC5jb21wYXRpYmxlID0gImNhdml1bSxzbW11LXYyIiwgLmRh
-dGEgPSAmY2F2aXVtX3NtbXV2MiB9LAorCXsgLmNvbXBhdGlibGUgPSAicWNvbSxzbW11LXYyIiwg
-LmRhdGEgPSAmcWNvbV9zbW11djIgfSwKIAl7IH0sCiB9OwogTU9EVUxFX0RFVklDRV9UQUJMRShv
-ZiwgYXJtX3NtbXVfb2ZfbWF0Y2gpOwotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBR
-dWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9y
-YSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZy
-ZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+On 28/08/2018 03:52, Rob Herring wrote:
+> In preparation to remove the node name pointer from struct device_node,
+> convert printf users to use the %pOFn format specifier.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+>  drivers/thermal/of-thermal.c    | 10 +++++-----
+>  drivers/thermal/qoriq_thermal.c |  4 ++--
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 977a8307fbb1..e201ae1c382f 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -483,8 +483,8 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
+>  		if (sensor_specs.args_count >= 1) {
+>  			id = sensor_specs.args[0];
+>  			WARN(sensor_specs.args_count > 1,
+> -			     "%s: too many cells in sensor specifier %d\n",
+> -			     sensor_specs.np->name, sensor_specs.args_count);
+> +			     "%pOFn: too many cells in sensor specifier %d\n",
+> +			     sensor_specs.np, sensor_specs.args_count);
+>  		} else {
+>  			id = 0;
+>  		}
+> @@ -960,8 +960,8 @@ int __init of_parse_thermal_zones(void)
+>  
+>  		tz = thermal_of_build_thermal_zone(child);
+>  		if (IS_ERR(tz)) {
+> -			pr_err("failed to build thermal zone %s: %ld\n",
+> -			       child->name,
+> +			pr_err("failed to build thermal zone %pOFn: %ld\n",
+> +			       child,
+>  			       PTR_ERR(tz));
+>  			continue;
+>  		}
+> @@ -995,7 +995,7 @@ int __init of_parse_thermal_zones(void)
+>  						    tz->passive_delay,
+>  						    tz->polling_delay);
+>  		if (IS_ERR(zone)) {
+> -			pr_err("Failed to build %s zone %ld\n", child->name,
+> +			pr_err("Failed to build %pOFn zone %ld\n", child,
+>  			       PTR_ERR(zone));
+>  			kfree(tzp);
+>  			kfree(ops);
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+> index c866cc165960..1fa132fc316b 100644
+> --- a/drivers/thermal/qoriq_thermal.c
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -129,8 +129,8 @@ static int qoriq_tmu_get_sensor_id(void)
+>  	if (sensor_specs.args_count >= 1) {
+>  		id = sensor_specs.args[0];
+>  		WARN(sensor_specs.args_count > 1,
+> -				"%s: too many cells in sensor specifier %d\n",
+> -				sensor_specs.np->name, sensor_specs.args_count);
+> +				"%pOFn: too many cells in sensor specifier %d\n",
+> +				sensor_specs.np, sensor_specs.args_count);
+>  	} else {
+>  		id = 0;
+>  	}
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
