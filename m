@@ -1,90 +1,114 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: stopping the governor before
- device_unregister()
-Date: Fri, 31 Aug 2018 17:52:39 +0900
-Message-ID: <5B8901D7.5040301@samsung.com>
-References: <CGME20180830100409epcas3p266dc05fdd02cd2c086a4355e9a481007@epcas3p2.samsung.com>
-        <1535623320-28281-1-git-send-email-vincent.donnefort@arm.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v6 03/14] PM: Introduce an Energy Model management
+ framework
+Date: Fri, 31 Aug 2018 10:04:42 +0100
+Message-ID: <20180831090442.GA25636@e110439-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-4-quentin.perret@arm.com>
+ <20180829100435.GP2960@e110439-lin>
+ <20180829132811.iacfltcos6kfgp7e@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1535623320-28281-1-git-send-email-vincent.donnefort@arm.com>
+Content-Disposition: inline
+In-Reply-To: <20180829132811.iacfltcos6kfgp7e@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: vincent.donnefort@arm.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: john.reitan@arm.com, beata.michalska@arm.com
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 29-Aug 14:28, Quentin Perret wrote:
+> Hi Patrick,
+> 
+> On Wednesday 29 Aug 2018 at 11:04:35 (+0100), Patrick Bellasi wrote:
+> > In the loop above we use smp_store_release() to propagate the pointer
+> > setting in a PER_CPU(em_data), which ultimate goal is to protect
+> > em_register_perf_domain() from multiple clients registering the same
+> > power domain.
+> > 
+> > I think there are two possible optimizations there:
+> > 
+> > 1. use of a single memory barrier
+> > 
+> >    Since we are already em_pd_mutex protected, i.e. there cannot be a
+> >    concurrent writers, we can use one single memory barrier after the
+> >    loop, i.e.
+> > 
+> >         for_each_cpu(cpu, span)
+> >                 WRITE_ONCE()
+> >         smp_wmb()
+> > 
+> >    which should be just enough to ensure that all other CPUs will see
+> >    the pointer set once we release the mutex
+> 
+> Right, I'm actually wondering if the memory barrier is needed at all ...
+> The mutex lock()/unlock() should already ensure the ordering I want no ?
+> 
+> WRITE_ONCE() should prevent load/store tearing with concurrent em_cpu_get(),
+> and the release/acquire semantics of mutex lock/unlock should be enough to
+> serialize the memory accesses of concurrent em_register_perf_domain() calls
+> properly ...
+> 
+> Hmm, let me read memory-barriers.txt again.
 
-On 2018년 08월 30일 19:02, vincent.donnefort@arm.com wrote:
-> From: Vincent Donnefort <vincent.donnefort@arm.com>
-> 
-> device_release() is freeing the resources before calling the device
-> specific release callback which is, in the case of devfreq, stopping
-> the governor.
-> 
-> It is a problem as some governors are using the device resources. e.g.
-> simpleondemand which is using the devfreq deferrable monitoring work. If it
-> is not stopped before the resources are freed, it might lead to a use after
-> free.
-> 
-> Signed-off-by: Vincent Donnefort <vincent.donnefort@arm.com>
-> Reviewed-by: John Einar Reitan <john.reitan@arm.com>
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 4c49bb1..4e43830 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -534,10 +534,6 @@ static void devfreq_dev_release(struct device *dev)
->  	list_del(&devfreq->node);
->  	mutex_unlock(&devfreq_list_lock);
->  
-> -	if (devfreq->governor)
-> -		devfreq->governor->event_handler(devfreq,
-> -						 DEVFREQ_GOV_STOP, NULL);
-> -
->  	if (devfreq->profile->exit)
->  		devfreq->profile->exit(devfreq->dev.parent);
->  
-> @@ -672,7 +668,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	list_del(&devfreq->node);
->  	mutex_unlock(&devfreq_list_lock);
->  
-> -	device_unregister(&devfreq->dev);
-> +	devfreq_remove_device(devfreq);
->  	devfreq = NULL;
->  err_dev:
->  	if (devfreq)
-> @@ -693,6 +689,9 @@ int devfreq_remove_device(struct devfreq *devfreq)
->  	if (!devfreq)
->  		return -EINVAL;
->  
-> +	if (devfreq->governor)
-> +		devfreq->governor->event_handler(devfreq,
-> +						 DEVFREQ_GOV_STOP, NULL);
->  	device_unregister(&devfreq->dev);
->  
->  	return 0;
-> 
+Yes, I think it should... but better double check.
 
-As description of this patch, if devfreq_wq is executed and then execute
-the 'devfreq->governor->get_target_freq' between step1 and step2
-after already freed the 'dev' related resource, it might happen the problem
-because the registered callback of get_target_freq requires the 'dev' resource.
+> > 2. avoid using PER_CPU variables
+> > 
+> >    Apart from the initialization code, i.e. boot time, the em_data is
+> >    expected to be read only, isn't it?
+> 
+> That's right. It's not only read only, it's also not read very often (in
+> the use-cases I have in mind at least). The scheduler for example will
+> call em_cpu_get() once when sched domains are built, and keep the
+> reference instead of calling it again.
+> 
+> >    If that's the case, I think that using PER_CPU variables is not
+> >    strictly required while it unnecessarily increases the cache pressure.
+> > 
+> >    In the worst case we can end up with one cache line for each CPU to
+> >    host just an 8B pointer, instead of using that single cache line to host
+> >    up to 8 pointers if we use just an array, i.e.
+> > 
+> >         struct em_perf_domain *em_data[NR_CPUS]
+> >                 ____cacheline_aligned_in_smp __read_mostly;
+> > 
+> >    Consider also that: up to 8 pointers in a single cache line means
+> >    also that single cache line can be enough to access the EM from all
+> >    the CPUs of almost every modern mobile phone SoC.
+> > 
+> >    Note entirely sure if PER_CPU uses less overall memory in case you
+> >    have much less CPUs then the compile time defined NR_CPUS.
+> >    But still, if the above makes sense, you still have a 8x gain
+> >    factor between number Write allocated .data..percp sections and
+> >    the value of NR_CPUS. Meaning that in the worst case we allocate
+> >    the same amount of memory using NR_CPUS=64 (the default on arm64)
+> >    while running on an 8 CPUs system... but still we should get less
+> >    cluster caches pressure at run-time with the array approach, 1
+> >    cache line vs 4.
+> 
+> Right, using per_cpu() might cause to bring in cache things you don't
+> really care about (other non-related per_cpu stuff), but that shouldn't
+> waste memory I think. I mean, if my em_data var is the first in a cache
+> line, the rest of the cache line will most likely be used by other
+> per_cpu variables anyways ...
+> 
+> As you suggested, the alternative would be to have a simple array. I'm
+> fine with this TBH. But I would probably allocate it dynamically using
+> nr_cpu_ids instead of using a static NR_CPUS-wide thing though -- the
+> registration of perf domains usually happens late enough in the boot
+> process.
+> 
+> What do you think ?
 
-device_unregister(dev)
-	step 1. device_del(dev)
-		<- if devfreq_wq is executed
-	step 2. put_device(dev)
-		device_release()
-			devfreq_dev_release()
-				stop the governor for specific devfreq instance
+Sound all reasonable to me.
 
-It looks good to me. Stop the governor before calling device_unregister().
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>				
+> Thanks
+> Quentin
+
+Best Patrick
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+#include <best/regards.h>
+
+Patrick Bellasi
