@@ -1,59 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.19-rc2
-Date: Fri, 31 Aug 2018 01:54:54 +0200
-Message-ID: <CAJZ5v0hBmEFyUhhqgUKuvh1DcpuN+FdPkN9_Nf+hUHm9tjtC6Q@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 2/2] power: supply: Add Spreadtrum SC2731 charger support
+Date: Fri, 31 Aug 2018 13:59:11 +0800
+Message-ID: <CAMz4ku+nPOtr_hWLswB=iwC8iCJ_cTCn1EjX8DwzVR97G_mGzQ@mail.gmail.com>
+References: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
+ <e8a3aba289cd2505db4a8891256bf731f32072cd.1535446321.git.baolin.wang@linaro.org>
+ <CAJKOXPd48mSp5srOzr4FkEgb2aS-nqkt+egxbuMi6qodtO1JYw@mail.gmail.com>
+ <CAMz4kuJGbvKKVvXmGKaEMbu87bY1nQqB+Zvo5UTpv1gwCG41mQ@mail.gmail.com> <20180830212710.jhpxjdyuifjxr6t6@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180830212710.jhpxjdyuifjxr6t6@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hi Sebastian,
 
-Please pull from the tag
+On 31 August 2018 at 05:27, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Thu, Aug 30, 2018 at 11:08:59AM +0800, Baolin Wang wrote:
+>> >> +static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
+>> >> +{
+>> >> +       int ret;
+>> >> +
+>> >> +       /* Enable charger module */
+>> >> +       ret = regmap_update_bits(info->regmap, SC2731_MODULE_EN1,
+>> >> +                                SC2731_CHARGE_EN, SC2731_CHARGE_EN);
+>> >> +       if (ret)
+>> >> +               return ret;
+>> >> +
+>> >> +       /* Set default charge termination current to 120 mA */
+>> >> +       ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG2,
+>> >> +                                SC2731_TERMINATION_CUR_MASK, 0x2);
+>> >
+>> > Looks like DeviceTree property.
+>>
+>> OK.
+>>
+>> >
+>> >> +       if (ret)
+>> >> +               goto error;
+>> >> +
+>> >> +       /* Set default charge termination voltage to 4.35V */
+>> >
+>> > Looks like DeviceTree property.
+>>
+>> OK. Thanks for your comments.
+>
+> I did not review this in detail, but had quick look at this.
+> Please make sure to derive battery specific DT values using
+> this:
+>
+> Documentation/devicetree/bindings/power/supply/battery.txt
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.19-rc2
+Sure. Will look at this file. Thanks.
 
-with top-most commit a0b9c4de7bf3dacc32a7e70fff25e158a0bf848f
-
- Merge branch 'pm-core'
-
-on top of commit dfec4a8478e8e81483a94b663f13153bb7796800
-
- Merge tag 'pm-4.19-rc1-2' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-to receive power management fixes for 4.19-rc2.
-
-These address a corner case in the menu cpuidle governor and fix
-error handling in the PM core's generic clock management code.
-
-Specifics:
-
- - Make the menu cpuidle governor avoid stopping the scheduler tick
-   if the predicted idle duration exceeds the tick period length, but
-   the selected idle state is shallow and deeper idle states with
-   high target residencies are available (Rafael Wysocki).
-
- - Make the PM core's generic clock management code use a proper data
-   type for one variable to make error handling work (Dan Carpenter).
-
-Thanks!
-
-
----------------
-
-Dan Carpenter (1):
-      PM / clk: signedness bug in of_pm_clk_add_clks()
-
-Rafael J. Wysocki (1):
-      cpuidle: menu: Retain tick when shallow state is selected
-
----------------
-
- drivers/base/power/clock_ops.c   |  2 +-
- drivers/cpuidle/governors/menu.c | 13 ++++++++++++-
- 2 files changed, 13 insertions(+), 2 deletions(-)
+-- 
+Baolin Wang
+Best Regards
