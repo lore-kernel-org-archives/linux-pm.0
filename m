@@ -1,114 +1,127 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v6 03/14] PM: Introduce an Energy Model management
- framework
-Date: Fri, 31 Aug 2018 10:04:42 +0100
-Message-ID: <20180831090442.GA25636@e110439-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-4-quentin.perret@arm.com>
- <20180829100435.GP2960@e110439-lin>
- <20180829132811.iacfltcos6kfgp7e@queper01-lin>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [Patch v15 4/5] dt-bindings: arm-smmu: Add bindings
+ for qcom, smmu-v2
+Date: Fri, 31 Aug 2018 15:21:49 +0530
+Message-ID: <e5c72d2d-a1a1-40dd-103b-da7147b4e7ae@codeaurora.org>
+References: <20180827105551.16346-1-vivek.gautam@codeaurora.org>
+ <20180827105551.16346-5-vivek.gautam@codeaurora.org>
+ <20180828203418.GA18366@bogus>
+ <a1e31d1e-aaa4-5951-2261-3169033c636a@codeaurora.org>
+ <CAFp+6iGHus-kZv+Zr5aiYRLct07NCFBL3k44bX=c4eW7J24kZg@mail.gmail.com>
+ <CAL_JsqKGHC9wCy583CTvAz8-A_M6zyrAX69yN5RUjv7Kbs1wFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180829132811.iacfltcos6kfgp7e@queper01-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAL_JsqKGHC9wCy583CTvAz8-A_M6zyrAX69yN5RUjv7Kbs1wFQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux IOMMU <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29-Aug 14:28, Quentin Perret wrote:
-> Hi Patrick,
-> 
-> On Wednesday 29 Aug 2018 at 11:04:35 (+0100), Patrick Bellasi wrote:
-> > In the loop above we use smp_store_release() to propagate the pointer
-> > setting in a PER_CPU(em_data), which ultimate goal is to protect
-> > em_register_perf_domain() from multiple clients registering the same
-> > power domain.
-> > 
-> > I think there are two possible optimizations there:
-> > 
-> > 1. use of a single memory barrier
-> > 
-> >    Since we are already em_pd_mutex protected, i.e. there cannot be a
-> >    concurrent writers, we can use one single memory barrier after the
-> >    loop, i.e.
-> > 
-> >         for_each_cpu(cpu, span)
-> >                 WRITE_ONCE()
-> >         smp_wmb()
-> > 
-> >    which should be just enough to ensure that all other CPUs will see
-> >    the pointer set once we release the mutex
-> 
-> Right, I'm actually wondering if the memory barrier is needed at all ...
-> The mutex lock()/unlock() should already ensure the ordering I want no ?
-> 
-> WRITE_ONCE() should prevent load/store tearing with concurrent em_cpu_get(),
-> and the release/acquire semantics of mutex lock/unlock should be enough to
-> serialize the memory accesses of concurrent em_register_perf_domain() calls
-> properly ...
-> 
-> Hmm, let me read memory-barriers.txt again.
-
-Yes, I think it should... but better double check.
-
-> > 2. avoid using PER_CPU variables
-> > 
-> >    Apart from the initialization code, i.e. boot time, the em_data is
-> >    expected to be read only, isn't it?
-> 
-> That's right. It's not only read only, it's also not read very often (in
-> the use-cases I have in mind at least). The scheduler for example will
-> call em_cpu_get() once when sched domains are built, and keep the
-> reference instead of calling it again.
-> 
-> >    If that's the case, I think that using PER_CPU variables is not
-> >    strictly required while it unnecessarily increases the cache pressure.
-> > 
-> >    In the worst case we can end up with one cache line for each CPU to
-> >    host just an 8B pointer, instead of using that single cache line to host
-> >    up to 8 pointers if we use just an array, i.e.
-> > 
-> >         struct em_perf_domain *em_data[NR_CPUS]
-> >                 ____cacheline_aligned_in_smp __read_mostly;
-> > 
-> >    Consider also that: up to 8 pointers in a single cache line means
-> >    also that single cache line can be enough to access the EM from all
-> >    the CPUs of almost every modern mobile phone SoC.
-> > 
-> >    Note entirely sure if PER_CPU uses less overall memory in case you
-> >    have much less CPUs then the compile time defined NR_CPUS.
-> >    But still, if the above makes sense, you still have a 8x gain
-> >    factor between number Write allocated .data..percp sections and
-> >    the value of NR_CPUS. Meaning that in the worst case we allocate
-> >    the same amount of memory using NR_CPUS=64 (the default on arm64)
-> >    while running on an 8 CPUs system... but still we should get less
-> >    cluster caches pressure at run-time with the array approach, 1
-> >    cache line vs 4.
-> 
-> Right, using per_cpu() might cause to bring in cache things you don't
-> really care about (other non-related per_cpu stuff), but that shouldn't
-> waste memory I think. I mean, if my em_data var is the first in a cache
-> line, the rest of the cache line will most likely be used by other
-> per_cpu variables anyways ...
-> 
-> As you suggested, the alternative would be to have a simple array. I'm
-> fine with this TBH. But I would probably allocate it dynamically using
-> nr_cpu_ids instead of using a static NR_CPUS-wide thing though -- the
-> registration of perf domains usually happens late enough in the boot
-> process.
-> 
-> What do you think ?
-
-Sound all reasonable to me.
-
-> Thanks
-> Quentin
-
-Best Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+SGkgUm9iLAoKCk9uIDgvMzAvMjAxOCA2OjEzIEFNLCBSb2IgSGVycmluZyB3cm90ZToKPiBPbiBX
+ZWQsIEF1ZyAyOSwgMjAxOCBhdCA2OjIzIEFNIFZpdmVrIEdhdXRhbQo+IDx2aXZlay5nYXV0YW1A
+Y29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+PiBPbiBXZWQsIEF1ZyAyOSwgMjAxOCBhdCAyOjA1IFBN
+IFZpdmVrIEdhdXRhbQo+PiA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPj4+
+IEhpIFJvYiwKPj4+Cj4+Pgo+Pj4gT24gOC8yOS8yMDE4IDI6MDQgQU0sIFJvYiBIZXJyaW5nIHdy
+b3RlOgo+Pj4+IE9uIE1vbiwgQXVnIDI3LCAyMDE4IGF0IDA0OjI1OjUwUE0gKzA1MzAsIFZpdmVr
+IEdhdXRhbSB3cm90ZToKPj4+Pj4gQWRkIGJpbmRpbmdzIGRvYyBmb3IgUWNvbSdzIHNtbXUtdjIg
+aW1wbGVtZW50YXRpb24uCj4+Pj4+Cj4+Pj4+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8
+dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgo+Pj4+PiBSZXZpZXdlZC1ieTogVG9tYXN6IEZp
+Z2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPj4+Pj4gVGVzdGVkLWJ5OiBTcmluaXZhcyBLYW5kYWdh
+dGxhIDxzcmluaXZhcy5rYW5kYWdhdGxhQGxpbmFyby5vcmc+Cj4+Pj4+IC0tLQo+Pj4+Pgo+Pj4+
+PiBDaGFuZ2VzIHNpbmNlIHYxNDoKPj4+Pj4gICAgLSBUaGlzIGlzIGEgbmV3IHBhdGNoIGFkZGVk
+IGluIHYxNSBhZnRlciBub3RpY2luZyB0aGUgbmV3Cj4+Pj4+ICAgICAgY2hlY2twYXRjaCB3YXJu
+aW5nIGZvciBzZXBhcmF0ZSBkdC1iaW5kaW5ncyBkb2MuCj4+Pj4+ICAgIC0gVGhpcyBwYXRjaCBh
+bHNvIGFkZHJlc3NlcyBjb21tZW50cyBnaXZlbiBieSBSb2IgYW5kIFJvYmluIHRvIGFkZAo+Pj4+
+PiAgICAgIGEgbGlzdCBvZiB2YWxpZCB2YWx1ZXMgb2YgJzxzb2M+JyBpbiAicWNvbSw8c29jPi1z
+bW11LXYyIgo+Pj4+PiAgICAgIGNvbXBhdGlibGUgc3RyaW5nLgo+Pj4+Pgo+Pj4+PiAgICAuLi4v
+ZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQgICAgICAgICB8IDQ3ICsrKysr
+KysrKysrKysrKysrKysrKysKPj4+Pj4gICAgMSBmaWxlIGNoYW5nZWQsIDQ3IGluc2VydGlvbnMo
+KykKPj4+Pj4KPj4+Pj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
+aW5ncy9pb21tdS9hcm0sc21tdS50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvaW9tbXUvYXJtLHNtbXUudHh0Cj4+Pj4+IGluZGV4IDhhNmZmY2UxMmFmNS4uNTIxOThhNTM5
+NjA2IDEwMDY0NAo+Pj4+PiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+aW9tbXUvYXJtLHNtbXUudHh0Cj4+Pj4+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQKPj4+Pj4gQEAgLTE3LDEwICsxNywyNCBAQCBjb25k
+aXRpb25zLgo+Pj4+PiAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYXJtLG1tdS00MDEiCj4+
+Pj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICJhcm0sbW11LTUwMCIKPj4+Pj4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgImNhdml1bSxzbW11LXYyIgo+Pj4+PiArICAgICAgICAgICAg
+ICAgICAgICAgICAgInFjb20sPHNvYz4tc21tdS12MiIsICJxY29tLHNtbXUtdjIiCj4+Pj4gVGhl
+IHYyIGluIHRoZSBjb21wYXRpYmxlIHN0cmluZyBpcyBraW5kIG9mIHJlZHVuZGFudCB1bmxlc3Mg
+dGhlIFNvQyBoYXMKPj4+PiBvdGhlciBTTU1VIHR5cGVzLgo+Pj4gc2RtODQ1IGhhcyBzbW11LXYy
+LCBhbmQgc21tdS01MDAgWzFdLgo+Pj4KPj4+Pj4gICAgICAgICAgICAgICAgICAgICAgZGVwZW5k
+aW5nIG9uIHRoZSBwYXJ0aWN1bGFyIGltcGxlbWVudGF0aW9uIGFuZC9vciB0aGUKPj4+Pj4gICAg
+ICAgICAgICAgICAgICAgICAgdmVyc2lvbiBvZiB0aGUgYXJjaGl0ZWN0dXJlIGltcGxlbWVudGVk
+Lgo+Pj4+Pgo+Pj4+PiArICAgICAgICAgICAgICAgICAgQSBudW1iZXIgb2YgUWNvbSBTb0NzIHVz
+ZSBxY29tLHNtbXUtdjIgdmVyc2lvbiBvZiB0aGUgSVAuCj4+Pj4+ICsgICAgICAgICAgICAgICAg
+ICAicWNvbSw8c29jPi1zbW11LXYyIiByZXByZXNlbnRzIGEgc29jIHNwZWNpZmljIGNvbXBhdGli
+bGUKPj4+Pj4gKyAgICAgICAgICAgICAgICAgIHN0cmluZyB0aGF0IHNob3VsZCBiZSBwcmVzZW50
+IGFsb25nIHdpdGggdGhlICJxY29tLHNtbXUtdjIiCj4+Pj4+ICsgICAgICAgICAgICAgICAgICB0
+byBmYWNpbGl0YXRlIFNvQyBzcGVjaWZpYyBjbG9ja3MvcG93ZXIgY29ubmVjdGlvbnMgYW5kIHRv
+Cj4+Pj4+ICsgICAgICAgICAgICAgICAgICBhZGRyZXNzIHNwZWNpZmljIGJ1ZyBmaXhlcy4KPj4+
+Pj4gKyAgICAgICAgICAgICAgICAgICc8c29jPicgc3RyaW5nIGluICJxY29tLDxzb2M+LXNtbXUt
+djIiIHNob3VsZCBiZSBvbmUgb2YgdGhlCj4+Pj4+ICsgICAgICAgICAgICAgICAgICBmb2xsb3dp
+bmc6Cj4+Pj4+ICsgICAgICAgICAgICAgICAgICBtc204OTk2IC0gZm9yIG1zbTg5OTYgUWNvbSBT
+b0MuCj4+Pj4+ICsgICAgICAgICAgICAgICAgICBzZG04NDUgLSBmb3Igc2RtODQ1IFFjb20gU29j
+Lgo+Pj4+IFJhdGhlciB0aGFuIGFsbCB0aGlzIHByb3NlLCBpdCB3b3VsZCBiZSBzaW1wbGVyIHRv
+IGp1c3QgYWRkIDIgbGluZXMgd2l0aAo+Pj4+IHRoZSBmdWxsIGNvbXBhdGlibGVzIHJhdGhlciB0
+aGFuIDxzb2M+LiBUaGUgPHNvYz4gdGhpbmcgaXMgbm90IGdvaW5nIHRvCj4+Pj4gd29yayB3aGVu
+L2lmIHdlIG1vdmUgYmluZGluZ3MgdG8ganNvbi1zY2hlbWEgYWxzby4KPj4+IHRoZW4gd2Uga2Vl
+cCBhZGRpbmcKPj4+ICAgICAgICAgICAgInFjb20sbXNtODk5Ni1zbW11LXYyIiwgInFjb20sc21t
+dS12MiIKPj4+ICAgICAgICAgICAgInFjb20sbXNtODk5OC1zbW11LXYyIiwgInFjb20sc21tdS12
+MiIKPj4+ICAgICAgICAgICAgInFjb20sc2RtODQ1LXNtbXUtdjIiLCAicWNvbSxzbW11LXYyIiwK
+Pj4+IGFuZCBmcm9tIFsxXQo+Pj4gICAgICAgICAgICAicWNvbSxzZG04NDUtc21tdS01MDAiLCAi
+YXJtLG1tdS01MDAiLCBldGMuCj4+PiBmb3IgZWFjaCBTb0NzPwo+PiBIb3cgYWJvdXQgZm9sbG93
+aW5nIGRpZmYgb24gdG9wIG9mIHRoaXMgcGF0Y2g/Cj4+Cj4+IGRpZmYgLS1naXQgYS9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0Cj4+IGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4dAo+PiBpbmRleCA1
+MjE5OGE1Mzk2MDYuLjVlNmMwNDg3NjUzMyAxMDA2NDQKPj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4dAo+PiArKysgYi9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0Cj4+IEBAIC0xNywyMyAr
+MTcsMTggQEAgY29uZGl0aW9ucy4KPj4gICAgICAgICAgICAgICAgICAgICAgICAgICAiYXJtLG1t
+dS00MDEiCj4+ICAgICAgICAgICAgICAgICAgICAgICAgICAgImFybSxtbXUtNTAwIgo+PiAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICJjYXZpdW0sc21tdS12MiIKPj4gLSAgICAgICAgICAgICAg
+ICAgICAgICAgICJxY29tLDxzb2M+LXNtbXUtdjIiLCAicWNvbSxzbW11LXYyIgo+PiArICAgICAg
+ICAgICAgICAgICAgICAgICAgInFjb20sc21tdS12MiIKPj4KPj4gICAgICAgICAgICAgICAgICAg
+ICBkZXBlbmRpbmcgb24gdGhlIHBhcnRpY3VsYXIgaW1wbGVtZW50YXRpb24gYW5kL29yIHRoZQo+
+PiAgICAgICAgICAgICAgICAgICAgIHZlcnNpb24gb2YgdGhlIGFyY2hpdGVjdHVyZSBpbXBsZW1l
+bnRlZC4KPj4KPj4gLSAgICAgICAgICAgICAgICAgIEEgbnVtYmVyIG9mIFFjb20gU29DcyB1c2Ug
+cWNvbSxzbW11LXYyIHZlcnNpb24gb2YgdGhlIElQLgo+PiAtICAgICAgICAgICAgICAgICAgInFj
+b20sPHNvYz4tc21tdS12MiIgcmVwcmVzZW50cyBhIHNvYyBzcGVjaWZpYyBjb21wYXRpYmxlCj4+
+IC0gICAgICAgICAgICAgICAgICBzdHJpbmcgdGhhdCBzaG91bGQgYmUgcHJlc2VudCBhbG9uZyB3
+aXRoIHRoZSAicWNvbSxzbW11LXYyIgo+PiAtICAgICAgICAgICAgICAgICAgdG8gZmFjaWxpdGF0
+ZSBTb0Mgc3BlY2lmaWMgY2xvY2tzL3Bvd2VyIGNvbm5lY3Rpb25zIGFuZCB0bwo+PiAtICAgICAg
+ICAgICAgICAgICAgYWRkcmVzcyBzcGVjaWZpYyBidWcgZml4ZXMuCj4+IC0gICAgICAgICAgICAg
+ICAgICAnPHNvYz4nIHN0cmluZyBpbiAicWNvbSw8c29jPi1zbW11LXYyIiBzaG91bGQgYmUgb25l
+IG9mIHRoZQo+PiAtICAgICAgICAgICAgICAgICAgZm9sbG93aW5nOgo+PiAtICAgICAgICAgICAg
+ICAgICAgbXNtODk5NiAtIGZvciBtc204OTk2IFFjb20gU29DLgo+PiAtICAgICAgICAgICAgICAg
+ICAgc2RtODQ1IC0gZm9yIHNkbTg0NSBRY29tIFNvYy4KPj4gLQo+PiAtICAgICAgICAgICAgICAg
+ICAgQW4gZXhhbXBsZSBzdHJpbmcgd291bGQgYmUgLQo+PiAtICAgICAgICAgICAgICAgICAgInFj
+b20sbXNtODk5Ni1zbW11LXYyIiwgInFjb20sc21tdS12MiIuCj4+ICsgICAgICAgICAgICAgICAg
+ICBRY29tIFNvQ3MgdXNpbmcgcWNvbSxzbW11LXYyIG11c3QgaGF2ZSBzb2Mgc3BlY2lmaWMKPj4g
+KyAgICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgc3RyaW5nIGF0dGFjaGVkIHRvICJxY29tLHNt
+bXUtdjIiIHRvIHRha2UgY2FyZQo+PiArICAgICAgICAgICAgICAgICAgb2YgU29DIHNwZWNpZmlj
+IGNsb2Nrcy9wb3dlciBjb25uZWN0aW9ucyBhbmQgdG8gYWRkcmVzcwo+PiArICAgICAgICAgICAg
+ICAgICAgc3BlY2lmaWMgYnVnIGZpeGVzLgo+PiArICAgICAgICAgICAgICAgICAgUHJlY2lzZWx5
+LCBpdCBzaG91bGQgYmUgb25lIG9mIHRoZSBmb2xsb3dpbmc6Cj4+ICsgICAgICAgICAgICAgICAg
+ICAicWNvbSxtc204OTk2LXNtbXUtdjIiLCAicWNvbSxzbW11LXYyIiwKPj4gKyAgICAgICAgICAg
+ICAgICAgICJxY29tLHNkbTg0NS1zbW11LXYyIiwgInFjb20sc21tdS12MiIuCj4gV2UgZG9uJ3Qg
+bmVlZCBhbiBleHBsYW5hdGlvbiBvZiB3aHkgd2UgbmVlZCBzcGVjaWZpYyBjb21wYXRpYmxlcyBp
+bgo+IGVhY2ggYmluZGluZyBkb2N1bWVudCAodGhvdWdoIG1heWJlIHdlIG5lZWQgYSBiZXR0ZXIg
+ZXhwbGFuYXRpb24KPiBzb21ld2hlcmUpLiBXZSBqdXN0IG5lZWQgdG8ga25vdyB3aGF0IGFyZSB2
+YWxpZCB2YWx1ZXMgZm9yIGNvbXBhdGlibGVzCj4gYW5kIHRoaXMgaW5jbHVkZXMgYW55IGNvbWJp
+bmF0aW9ucy4gR2VuZXJhbGx5LCB0aGlzIGlzIGp1c3QgYSBsaXN0IG9mCj4gY29tYmluYXRpb25z
+Lgpbc25pcF0KCkZpeGVkIHRoaXMgaW4gdjE2LiBUaGFua3MuCgpCZXN0IHJlZ2FyZHMKVml2ZWsK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5v
+IG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
