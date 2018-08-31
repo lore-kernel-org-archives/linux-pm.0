@@ -1,62 +1,112 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 2/2] power: supply: Add Spreadtrum SC2731 charger support
-Date: Fri, 31 Aug 2018 13:59:11 +0800
-Message-ID: <CAMz4ku+nPOtr_hWLswB=iwC8iCJ_cTCn1EjX8DwzVR97G_mGzQ@mail.gmail.com>
-References: <5fcd93bbbcd55a5c23f1c75effdc3670ce7a811b.1535446321.git.baolin.wang@linaro.org>
- <e8a3aba289cd2505db4a8891256bf731f32072cd.1535446321.git.baolin.wang@linaro.org>
- <CAJKOXPd48mSp5srOzr4FkEgb2aS-nqkt+egxbuMi6qodtO1JYw@mail.gmail.com>
- <CAMz4kuJGbvKKVvXmGKaEMbu87bY1nQqB+Zvo5UTpv1gwCG41mQ@mail.gmail.com> <20180830212710.jhpxjdyuifjxr6t6@earth.universe>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
+Date: Fri, 31 Aug 2018 06:12:23 +0000
+Message-ID: <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
+ <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
+ <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
+ <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
+ <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180830212710.jhpxjdyuifjxr6t6@earth.universe>
+In-Reply-To: <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
+To: Scott Wood <oss@buserror.net>, Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
-
-On 31 August 2018 at 05:27, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Thu, Aug 30, 2018 at 11:08:59AM +0800, Baolin Wang wrote:
->> >> +static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
->> >> +{
->> >> +       int ret;
->> >> +
->> >> +       /* Enable charger module */
->> >> +       ret = regmap_update_bits(info->regmap, SC2731_MODULE_EN1,
->> >> +                                SC2731_CHARGE_EN, SC2731_CHARGE_EN);
->> >> +       if (ret)
->> >> +               return ret;
->> >> +
->> >> +       /* Set default charge termination current to 120 mA */
->> >> +       ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG2,
->> >> +                                SC2731_TERMINATION_CUR_MASK, 0x2);
->> >
->> > Looks like DeviceTree property.
->>
->> OK.
->>
->> >
->> >> +       if (ret)
->> >> +               goto error;
->> >> +
->> >> +       /* Set default charge termination voltage to 4.35V */
->> >
->> > Looks like DeviceTree property.
->>
->> OK. Thanks for your comments.
->
-> I did not review this in detail, but had quick look at this.
-> Please make sure to derive battery specific DT values using
-> this:
->
-> Documentation/devicetree/bindings/power/supply/battery.txt
-
-Sure. Will look at this file. Thanks.
-
--- 
-Baolin Wang
-Best Regards
+SGkgU2NvdHQsDQoNClBsZWFzZSBzZWUgbXkgcmVwbGF5IGlubGluZS4NCg0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1hcm0ta2VybmVsIDxsaW51eC1hcm0ta2Vy
+bmVsLWJvdW5jZXNAbGlzdHMuaW5mcmFkZWFkLm9yZz4NCj4gT24gQmVoYWxmIE9mIFNjb3R0IFdv
+b2QNCj4gU2VudDogMjAxOMTqONTCMzHI1SAxOjQzDQo+IFRvOiBWYWJoYXYgU2hhcm1hIDx2YWJo
+YXYuc2hhcm1hQG54cC5jb20+Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBkZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBtYXJrLnJ1dGxh
+bmRAYXJtLmNvbTsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWFybS1r
+ZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsNCj4gbXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb207IHNi
+b3lkQGtlcm5lbC5vcmc7IHJqd0Byand5c29ja2kubmV0Ow0KPiB2aXJlc2gua3VtYXJAbGluYXJv
+Lm9yZzsgbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgtcG1Admdlci5rZXJuZWwu
+b3JnOyBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOw0KPiBjYXRhbGluLm1hcmlu
+YXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsNCj4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlv
+bi5vcmc7IGFybmRAYXJuZGIuZGU7DQo+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IHlh
+bWFkYS5tYXNhaGlyb0Bzb2Npb25leHQuY29tDQo+IENjOiBZb2dlc2ggTmFyYXlhbiBHYXVyIDx5
+b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT47IEFuZHkgVGFuZw0KPiA8YW5keS50YW5nQG54cC5j
+b20+OyBsaW51eEBhcm1saW51eC5vcmcudWs7IFZhcnVuIFNldGhpDQo+IDxWLlNldGhpQG54cC5j
+b20+OyBVZGl0IEt1bWFyIDx1ZGl0Lmt1bWFyQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggMy81XSBkcml2ZXJzOiBjbGstcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGZvcg0KPiBs
+eDIxNjBhDQo+IA0KPiBPbiBUaHUsIDIwMTgtMDgtMzAgYXQgMTI6MzkgLTA1MDAsIFNjb3R0IFdv
+b2Qgd3JvdGU6DQo+ID4gT24gVGh1LCAyMDE4LTA4LTMwIGF0IDA3OjM2ICswMDAwLCBWYWJoYXYg
+U2hhcm1hIHdyb3RlOg0KPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4g
+PiBGcm9tOiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnIDxsaW51eC1rZXJuZWwt
+DQo+ID4gPiA+IG93bmVyQHZnZXIua2VybmVsLm9yZz4gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QN
+Cj4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIwMTggNTo0OSBBTQ0KPiA+ID4g
+PiBUbzogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPjsgbGludXgtDQo+ID4g
+PiA+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0K
+PiA+ID4gPiByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiA+ID4g
+PiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtYXJtLQ0KPiA+ID4gPiBrZXJu
+ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb207DQo+ID4gPiA+
+IHNib3lkQGtlcm5lbC5vcmc7IHJqd0Byand5c29ja2kubmV0OyB2aXJlc2gua3VtYXJAbGluYXJv
+Lm9yZzsNCj4gPiA+ID4gbGludXgtY2xrQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5r
+ZXJuZWwub3JnOw0KPiA+ID4gPiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOw0K
+PiA+ID4gPiBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsNCj4g
+PiA+ID4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IGFybmRAYXJuZGIuZGU7DQo+ID4gPiA+
+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IHlhbWFkYS5tYXNhaGlyb0Bzb2Npb25leHQu
+Y29tDQo+ID4gPiA+IENjOiBZb2dlc2ggTmFyYXlhbiBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT47IEFuZHkNCj4gVGFuZw0KPiA+ID4gPiA8YW5keS50YW5nQG54cC5jb20+OyBVZGl0
+IEt1bWFyIDx1ZGl0Lmt1bWFyQG54cC5jb20+Ow0KPiA+ID4gPiBsaW51eEBhcm1saW51eC5vcmcu
+dWs7IFZhcnVuIFNldGhpIDxWLlNldGhpQG54cC5jb20+DQo+ID4gPiA+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggMy81XSBkcml2ZXJzOiBjbGstcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0DQo+ID4g
+PiA+IGZvciBseDIxNjBhDQo+ID4gPiA+DQo+ID4gPiA+IE9uIE1vbiwgMjAxOC0wOC0yMCBhdCAx
+MjoxNyArMDUzMCwgVmFiaGF2IFNoYXJtYSB3cm90ZToNCj4gPiA+ID4gPiBGcm9tOiBZb2dlc2gg
+R2F1ciA8eW9nZXNobmFyYXlhbi5nYXVyQG54cC5jb20+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBB
+ZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYwYS4NCj4gPiA+ID4gPiBBZGRlZCBlbnRyeSBm
+b3IgY29tcGF0ICdmc2wsbHgyMTYwYS1jbG9ja2dlbicuDQo+ID4gPiA+ID4gQXMgTFgyMTYwQSBp
+cyAxNiBjb3JlLCBzbyBtb2RpZmllZCB2YWx1ZSBmb3IgTlVNX0NNVVgNCj4gPiA+ID4gPg0KPiA+
+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPGFuZHkudGFuZ0BueHAuY29tPg0K
+PiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFlvZ2VzaCBHYXVyIDx5b2dlc2huYXJheWFuLmdhdXJA
+bnhwLmNvbT4NCj4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBWYWJoYXYgU2hhcm1hIDx2YWJoYXYu
+c2hhcm1hQG54cC5jb20+DQo+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gIGRyaXZlcnMvY2xrL2Ns
+ay1xb3JpcS5jICAgICAgICAgfCAxNCArKysrKysrKysrKysrLQ0KPiA+ID4gPiA+ICBkcml2ZXJz
+L2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIHwgIDEgKw0KPiA+ID4gPiA+ICAyIGZpbGVzIGNoYW5n
+ZWQsIDE0IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gPiA+ID4gPg0KPiA+ID4gPiA+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYyBiL2RyaXZlcnMvY2xrL2Nsay1x
+b3JpcS5jDQo+ID4gPiA+ID4gaW5kZXgNCj4gPiA+ID4gPiAzYTE4MTJmLi5mYzZlMzA4IDEwMDY0
+NA0KPiA+ID4gPiA+IC0tLSBhL2RyaXZlcnMvY2xrL2Nsay1xb3JpcS5jDQo+ID4gPiA+ID4gKysr
+IGIvZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMNCj4gPiA+ID4gPiBAQCAtNjAsNyArNjAsNyBAQCBz
+dHJ1Y3QgY2xvY2tnZW5fbXV4aW5mbyB7ICB9Ow0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gICNkZWZp
+bmUgTlVNX0hXQUNDRUwJNQ0KPiA+ID4gPiA+IC0jZGVmaW5lIE5VTV9DTVVYCTgNCj4gPiA+ID4g
+PiArI2RlZmluZSBOVU1fQ01VWAkxNg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gIHN0cnVjdCBjbG9j
+a2dlbjsNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEBAIC01NzAsNiArNTcwLDE3IEBAIHN0YXRpYyBj
+b25zdCBzdHJ1Y3QgY2xvY2tnZW5fY2hpcGluZm8NCj4gPiA+ID4gPiBjaGlwaW5mb1tdID0gew0K
+PiA+ID4gPiA+ICAJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRUTEVfRU5ESUFOLA0KPiA+ID4g
+PiA+ICAJfSwNCj4gPiA+ID4gPiAgCXsNCj4gPiA+ID4gPiArCQkuY29tcGF0ID0gImZzbCxseDIx
+NjBhLWNsb2NrZ2VuIiwNCj4gPiA+ID4gPiArCQkuY211eF9ncm91cHMgPSB7DQo+ID4gPiA+ID4g
+KwkJCSZjbG9ja2dlbjJfY211eF9jZ2ExMiwgJmNsb2NrZ2VuMl9jbXV4X2NnYg0KPiA+ID4gPiA+
+ICsJCX0sDQo+ID4gPiA+ID4gKwkJLmNtdXhfdG9fZ3JvdXAgPSB7DQo+ID4gPiA+ID4gKwkJCTAs
+IDAsIDAsIDAsIDEsIDEsIDEsIDEsIC0xDQo+ID4gPiA+ID4gKwkJfSwNCj4gPiA+ID4gPiArCQku
+cGxsX21hc2sgPSAweDM3LA0KPiA+ID4gPiA+ICsJCS5mbGFncyA9IENHX1ZFUjMgfCBDR19MSVRU
+TEVfRU5ESUFOLA0KPiA+ID4gPiA+ICsJfSwNCj4gPiA+ID4NCj4gPiA+ID4gV2h5IGFyZSB5b3Ug
+aW5jcmVhc2luZyBOVU1fQ01VWCBiZXlvbmQgOCBmb3IgYSBjaGlwIHRoYXQgb25seQ0KPiBoYXMN
+Cj4gPiA+ID4gOCBlbnRyaWVzIGluIGNtdXhfdG9fZ3JvdXA/DQo+ID4gPg0KPiA+ID4gQ29uZmln
+dXJhdGlvbiBpcyAxNiBjb3Jlcyw4IGNsdXN0ZXIgd2l0aCAyIGNvcmVzIGluIGVhY2ggY2x1c3Rl
+cg0KPiA+DQo+ID4gU28/ICBUaGlzIGlzIGFib3V0IGNtdXhlcywgbm90IGNvcmVzLiAgWW91J3Jl
+IGluY3JlYXNpbmcgdGhlIGFycmF5DQo+ID4gd2l0aG91dCBldmVyIHVzaW5nIHRoZSBuZXcgc2l6
+ZS4NCj4gDQo+IE9oLCBhbmQgeW91IGFsc28gYnJva2UgcDQwODAgd2hpY2ggaGFzIDggY211eGVz
+IGJ1dCBubyAtMSB0ZXJtaW5hdG9yLA0KPiBiZWNhdXNlIHRoZSBhcnJheSB3YXMgb2YgbGVuZ3Ro
+IDguICBQcm9iYWJseSB0aGUgYXJyYXkgc2hvdWxkIGJlIGNoYW5nZWQNCj4gdG8gTlVNX0NNVVgr
+MSBzbyBldmVyeSBhcnJheSBjYW4gYmUgLTEgdGVybWluYXRlZC4NCj4gDQpbQW5keV0gSG93IGFi
+b3V0IHdlIGFkZCAtMSB0ZXJtaW5hdG9yIHRvIHA0MDgwIGFuZCBpbmNyZWFzZSBOVU1fQ01VWCB0
+byAxNj8NCldlIGRvbid0IHdhbnQgdG8gaW5jcmVhc2UgTlVNX0NNVVggZWFjaCB0aW1lIG5ldyBz
+b2Mgd2l0aCBtb3JlIGNtdXhlcyBhZGRlZC4NCg0KQlIsDQpBbmR5IFRhbmcNCg0KPiAtU2NvdHQN
+Cj4gDQo+IA0KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+Xw0KPiBsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdA0KPiBsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcNCj4gaHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24u
+b3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGbGlzdA0KPiBzLmluZnJhZGVhZC5vcmclMkZt
+YWlsbWFuJTJGbGlzdGluZm8lMkZsaW51eC1hcm0ta2VybmVsJmFtcDtkYXRhPTAyDQo+ICU3QzAx
+JTdDYW5keS50YW5nJTQwbnhwLmNvbSU3Qzk2M2QwY2RmNDk5NjQ1MzllYTQ0MDhkNjBlYTA2DQo+
+IDYzYiU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MTI0
+Nw0KPiA5NDE0NTYxMTAxJmFtcDtzZGF0YT1yWlklMkY1SlAwVEJaUkxyJTJCcDZxYUc0b1NRZDhm
+c052aXo5MkFZDQo+IDNJb0xUT3clM0QmYW1wO3Jlc2VydmVkPTANCg==
