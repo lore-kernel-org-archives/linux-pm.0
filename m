@@ -1,7 +1,7 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH v9 4/8] interconnect: Add debugfs support
-Date: Fri, 31 Aug 2018 17:01:47 +0300
-Message-ID: <20180831140151.13972-5-georgi.djakov@linaro.org>
+Subject: [PATCH v9 6/8] dt-bindings: interconnect: Document qcom,msm8916 NoC bindings
+Date: Fri, 31 Aug 2018 17:01:49 +0300
+Message-ID: <20180831140151.13972-7-georgi.djakov@linaro.org>
 References: <20180831140151.13972-1-georgi.djakov@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180831140151.13972-1-georgi.djakov@linaro.org>
@@ -10,126 +10,165 @@ To: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
 Cc: rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a functionality to provide information about the current constraints
-per each node and provider.
+Document the device-tree bindings of the Network-On-Chip interconnect
+hardware found on Qualcomm msm8916 platforms.
 
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-Reviewed-by: Evan Green <evgreen@chromium.org>
 ---
- drivers/interconnect/core.c | 78 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ .../bindings/interconnect/qcom-msm8916.txt    | 41 ++++++++
+ include/dt-bindings/interconnect/qcom.h       | 98 +++++++++++++++++++
+ 2 files changed, 139 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-msm8916.txt
+ create mode 100644 include/dt-bindings/interconnect/qcom.h
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index ed0a6783ffc4..2740f1a441d8 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -6,6 +6,7 @@
-  * Author: Georgi Djakov <georgi.djakov@linaro.org>
-  */
- 
-+#include <linux/debugfs.h>
- #include <linux/device.h>
- #include <linux/idr.h>
- #include <linux/init.h>
-@@ -17,10 +18,12 @@
- #include <linux/slab.h>
- #include <linux/of.h>
- #include <linux/overflow.h>
-+#include <linux/uaccess.h>
- 
- static DEFINE_IDR(icc_idr);
- static LIST_HEAD(icc_provider_list);
- static DEFINE_MUTEX(icc_lock);
-+static struct dentry *icc_debugfs_dir;
- 
- /**
-  * struct icc_req - constraints that are attached to each node
-@@ -49,6 +52,62 @@ struct icc_path {
- 	struct icc_req reqs[];
- };
- 
-+#ifdef CONFIG_DEBUG_FS
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom-msm8916.txt b/Documentation/devicetree/bindings/interconnect/qcom-msm8916.txt
+new file mode 100644
+index 000000000000..744df51df4ed
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom-msm8916.txt
+@@ -0,0 +1,41 @@
++Qualcomm MSM8916 Network-On-Chip interconnect driver binding
++----------------------------------------------------
 +
-+static void icc_summary_show_one(struct seq_file *s, struct icc_node *n)
-+{
-+	if (!n)
-+		return;
++Required properties :
++- compatible : shall contain only one of the following:
++			"qcom,msm8916-bimc"
++			"qcom,msm8916-pnoc"
++			"qcom,msm8916-snoc"
++- #interconnect-cells : should contain 1
++- reg : shall contain base register location and length
 +
-+	seq_printf(s, "%-30s %12d %12d\n",
-+		   n->name, n->avg_bw, n->peak_bw);
-+}
++Optional properties :
++clocks : list of phandles and specifiers to all interconnect bus clocks
++clock-names : clock names should include both "bus_clk" and "bus_a_clk"
 +
-+static int icc_summary_show(struct seq_file *s, void *data)
-+{
-+	struct icc_provider *provider;
++Examples:
 +
-+	seq_puts(s, " node                                   avg         peak\n");
-+	seq_puts(s, "--------------------------------------------------------\n");
++		snoc: snoc@580000 {
++			compatible = "qcom,msm8916-snoc";
++			#interconnect-cells = <1>;
++			reg = <0x580000 0x14000>;
++			clock-names = "bus_clk", "bus_a_clk";
++			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
++				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
++		};
++		bimc: bimc@400000 {
++			compatible = "qcom,msm8916-bimc";
++			#interconnect-cells = <1>;
++			reg = <0x400000 0x62000>;
++			clock-names = "bus_clk", "bus_a_clk";
++			clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
++				 <&rpmcc RPM_SMD_BIMC_A_CLK>;
++		};
++		pnoc: pnoc@500000 {
++			compatible = "qcom,msm8916-pnoc";
++			#interconnect-cells = <1>;
++			reg = <0x500000 0x11000>;
++			clock-names = "bus_clk", "bus_a_clk";
++			clocks = <&rpmcc RPM_SMD_PCNOC_CLK>,
++				 <&rpmcc RPM_SMD_PCNOC_A_CLK>;
++		};
+diff --git a/include/dt-bindings/interconnect/qcom.h b/include/dt-bindings/interconnect/qcom.h
+new file mode 100644
+index 000000000000..48f944b30e5d
+--- /dev/null
++++ b/include/dt-bindings/interconnect/qcom.h
+@@ -0,0 +1,98 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Qualcomm interconnect IDs
++ *
++ * Copyright (c) 2018, Linaro Ltd.
++ * Author: Georgi Djakov <georgi.djakov@linaro.org>
++ */
 +
-+	mutex_lock(&icc_lock);
++#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_H
++#define __DT_BINDINGS_INTERCONNECT_QCOM_H
 +
-+	list_for_each_entry(provider, &icc_provider_list, provider_list) {
-+		struct icc_node *n;
++#define BIMC_SNOC_MAS			1
++#define BIMC_SNOC_SLV			2
++#define MASTER_AMPSS_M0			3
++#define MASTER_BLSP_1			4
++#define MASTER_CRYPTO_CORE0		5
++#define MASTER_DEHR			6
++#define MASTER_GRAPHICS_3D		7
++#define MASTER_JPEG			8
++#define MASTER_LPASS			9
++#define MASTER_MDP_PORT0		10
++#define MASTER_QDSS_BAM			11
++#define MASTER_QDSS_ETR			12
++#define MASTER_SDCC_1			13
++#define MASTER_SDCC_2			14
++#define MASTER_SNOC_CFG			15
++#define MASTER_SPDM			16
++#define MASTER_TCU_0			17
++#define MASTER_TCU_1			18
++#define MASTER_USB_HS			19
++#define MASTER_VFE			20
++#define MASTER_VIDEO_P0			21
++#define PNOC_INT_0			22
++#define PNOC_INT_1			23
++#define PNOC_M_0			24
++#define PNOC_M_1			25
++#define PNOC_SLV_0			26
++#define PNOC_SLV_1			27
++#define PNOC_SLV_2			28
++#define PNOC_SLV_3			29
++#define PNOC_SLV_4			30
++#define PNOC_SLV_8			31
++#define PNOC_SLV_9			32
++#define PNOC_SNOC_MAS			33
++#define PNOC_SNOC_SLV			34
++#define SLAVE_AMPSS_L2			35
++#define SLAVE_BIMC_CFG			36
++#define SLAVE_BLSP_1			37
++#define SLAVE_BOOT_ROM			38
++#define SLAVE_CAMERA_CFG		39
++#define SLAVE_CATS_128			40
++#define SLAVE_CLK_CTL			41
++#define SLAVE_CRYPTO_0_CFG		42
++#define SLAVE_DEHR_CFG			43
++#define SLAVE_DISPLAY_CFG		44
++#define SLAVE_EBI_CH0			45
++#define SLAVE_GRAPHICS_3D_CFG		46
++#define SLAVE_IMEM_CFG			47
++#define SLAVE_LPASS			48
++#define SLAVE_MPM			49
++#define SLAVE_MSM_PDM			50
++#define SLAVE_MSM_TCSR			51
++#define SLAVE_MSS			52
++#define SLAVE_OCMEM_64			53
++#define SLAVE_PMIC_ARB			54
++#define SLAVE_PNOC_CFG			55
++#define SLAVE_PRNG			56
++#define SLAVE_QDSS_CFG			57
++#define SLAVE_QDSS_STM			58
++#define SLAVE_RBCPR_CFG			59
++#define SLAVE_RPM_MSG_RAM		60
++#define SLAVE_SDCC_1			61
++#define SLAVE_SDCC_4			62
++#define SLAVE_SECURITY			63
++#define SLAVE_SERVICE_SNOC		64
++#define SLAVE_SNOC_CFG			65
++#define SLAVE_SPDM			66
++#define SLAVE_SYSTEM_IMEM		67
++#define SLAVE_TLMM			68
++#define SLAVE_USB_HS			69
++#define SLAVE_VENUS_CFG			70
++#define SNOC_BIMC_0_MAS			71
++#define SNOC_BIMC_0_SLV			72
++#define SNOC_BIMC_1_MAS			73
++#define SNOC_BIMC_1_SLV			74
++#define SNOC_INT_0			75
++#define SNOC_INT_1			76
++#define SNOC_INT_BIMC			77
++#define SNOC_MM_INT_0			78
++#define SNOC_MM_INT_1			79
++#define SNOC_MM_INT_2			80
++#define SNOC_MM_INT_BIMC		81
++#define SNOC_PNOC_MAS			82
++#define SNOC_PNOC_SLV			83
++#define SNOC_QDSS_INT			84
++#define SYSTEM_SLAVE_FAB_APPS		85
 +
-+		list_for_each_entry(n, &provider->nodes, node_list) {
-+			struct icc_req *r;
-+
-+			icc_summary_show_one(s, n);
-+			hlist_for_each_entry(r, &n->req_list, req_node) {
-+				if (!r->dev)
-+					continue;
-+
-+				seq_printf(s, "    %-26s %12d %12d\n",
-+					   dev_name(r->dev), r->avg_bw,
-+					   r->peak_bw);
-+			}
-+		}
-+	}
-+
-+	mutex_unlock(&icc_lock);
-+
-+	return 0;
-+}
-+
-+static int icc_summary_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, icc_summary_show, inode->i_private);
-+}
-+
-+static const struct file_operations icc_summary_fops = {
-+	.open		= icc_summary_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
 +#endif
-+
- static struct icc_node *node_find(const int id)
- {
- 	return idr_find(&icc_idr, id);
-@@ -646,6 +705,25 @@ int icc_provider_del(struct icc_provider *provider)
- }
- EXPORT_SYMBOL_GPL(icc_provider_del);
- 
-+static int __init icc_init(void)
-+{
-+#ifdef CONFIG_DEBUG_FS
-+	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
-+	debugfs_create_file("interconnect_summary", 0444,
-+			    icc_debugfs_dir, NULL, &icc_summary_fops);
-+#endif
-+	return 0;
-+}
-+
-+static void __exit icc_exit(void)
-+{
-+#ifdef CONFIG_DEBUG_FS
-+	debugfs_remove_recursive(icc_debugfs_dir);
-+#endif
-+}
-+module_init(icc_init);
-+module_exit(icc_exit);
-+
- MODULE_AUTHOR("Georgi Djakov <georgi.djakov@linaro.org");
- MODULE_DESCRIPTION("Interconnect Driver Core");
- MODULE_LICENSE("GPL v2");
