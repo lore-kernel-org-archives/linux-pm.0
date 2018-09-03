@@ -1,14 +1,14 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v2 09/11] thermal: tsens: Get rid of 'id' field
-Date: Mon, 3 Sep 2018 13:26:47 -0700
-Message-ID: <20180903202647.GR3456@tuxbook-pro>
+Subject: Re: [PATCH v2 07/11] thermal: tsens: Add the SROT address map
+Date: Mon, 3 Sep 2018 13:28:22 -0700
+Message-ID: <20180903202822.GS3456@tuxbook-pro>
 References: <cover.1535462942.git.amit.kucheria@linaro.org>
- <6c23d113e19a9ddf9dc9def18943eaf7f5ad4d79.1535462942.git.amit.kucheria@linaro.org>
+ <d1d2e58288f4d78db924863ac1775c5e2e5c884a.1535462942.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6c23d113e19a9ddf9dc9def18943eaf7f5ad4d79.1535462942.git.amit.kucheria@linaro.org>
+In-Reply-To: <d1d2e58288f4d78db924863ac1775c5e2e5c884a.1535462942.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Amit Kucheria <amit.kucheria@linaro.org>
 Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
@@ -16,15 +16,9 @@ List-Id: linux-pm@vger.kernel.org
 
 On Tue 28 Aug 06:38 PDT 2018, Amit Kucheria wrote:
 
-> The hw_id field in 'struct tsens_sensor' can do the job of tracking
-> unique ids for each sensor connected to each tsens device instance. It
-> also allows hw_ids to be overridden (e.g. 8916) in cases where some
-> sensors in a sequence are disabled on a particular platform.
-> 
-> Use the hw_id field instead of the id field consistently across the
-> tsens code.
-> 
-> While we're at it, document the fields of struct tsens_sensor.
+> On platforms whose device trees specify two address spaces for TSENS, the
+> second one points to the SROT registers. Initialise the SROT map on those
+> platforms.
 > 
 > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
@@ -35,65 +29,55 @@ Regards,
 Bjorn
 
 > ---
->  drivers/thermal/qcom/tsens.c |  5 ++---
->  drivers/thermal/qcom/tsens.h | 10 +++++++++-
->  2 files changed, 11 insertions(+), 4 deletions(-)
+>  drivers/thermal/qcom/tsens-common.c | 14 ++++++++++++--
+>  drivers/thermal/qcom/tsens.h        |  1 +
+>  2 files changed, 13 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 9a8e8f7b4ae1..fb728ec5d77f 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -17,7 +17,7 @@ static int tsens_get_temp(void *data, int *temp)
->  	const struct tsens_sensor *s = data;
->  	struct tsens_device *tmdev = s->tmdev;
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index 0585084630b3..0b8a793f15f4 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -117,16 +117,26 @@ static const struct regmap_config tsens_config = {
 >  
-> -	return tmdev->ops->get_temp(tmdev, s->id, temp);
-> +	return tmdev->ops->get_temp(tmdev, s->hw_id, temp);
->  }
+>  int __init init_common(struct tsens_device *tmdev)
+>  {
+> -	void __iomem *tm_base;
+> +	void __iomem *tm_base, *srot_base;
+>  	struct resource *res;
+>  	struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
 >  
->  static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
-> @@ -26,7 +26,7 @@ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
->  	struct tsens_device *tmdev = s->tmdev;
+>  	if (!op)
+>  		return -EINVAL;
 >  
->  	if (tmdev->ops->get_trend)
-> -		return  tmdev->ops->get_trend(tmdev, s->id, trend);
-> +		return  tmdev->ops->get_trend(tmdev, s->hw_id, trend);
->  
->  	return -ENOTSUPP;
->  }
-> @@ -83,7 +83,6 @@ static int tsens_register(struct tsens_device *tmdev)
->  
->  	for (i = 0;  i < tmdev->num_sensors; i++) {
->  		tmdev->sensor[i].tmdev = tmdev;
-> -		tmdev->sensor[i].id = i;
->  		tzd = devm_thermal_zone_of_sensor_register(tmdev->dev, i,
->  							   &tmdev->sensor[i],
->  							   &tsens_of_ops);
+> -	/* The driver only uses the TM register address space for now */
+>  	if (op->num_resources > 1) {
+> +		/* DT with separate SROT and TM address space */
+>  		tmdev->tm_offset = 0;
+> +		res = platform_get_resource(op, IORESOURCE_MEM, 1);
+> +		srot_base = devm_ioremap_resource(&op->dev, res);
+> +		if (IS_ERR(srot_base))
+> +			return PTR_ERR(srot_base);
+> +
+> +		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
+> +							srot_base, &tsens_config);
+> +		if (IS_ERR(tmdev->srot_map))
+> +			return PTR_ERR(tmdev->srot_map);
+> +
+>  	} else {
+>  		/* old DTs where SROT and TM were in a contiguous 2K block */
+>  		tmdev->tm_offset = 0x1000;
 > diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-> index b9c4bcf255fa..2a3174dfc1a9 100644
+> index 58e98c4d3a8b..b9c4bcf255fa 100644
 > --- a/drivers/thermal/qcom/tsens.h
 > +++ b/drivers/thermal/qcom/tsens.h
-> @@ -14,11 +14,19 @@
->  
->  struct tsens_device;
->  
-> +/**
-> + * struct tsens_sensor - sensor-specific data
-> + * @tmdev: tsens device instance this sensor is connected to
-> + * @tzd: thermal zone corresponding to this sensor
-> + * @offset: offset from calibration data to convert ADC data to degrees
-> + * @hw_id: unique sensor ID for each sensor connected to tsens device instance
-> + * @slope: slope from calibration data to convert ADC data to degrees
-> + * @status: 8960-specific status register addresses
-> + */
->  struct tsens_sensor {
->  	struct tsens_device		*tmdev;
->  	struct thermal_zone_device	*tzd;
->  	int				offset;
-> -	int				id;
->  	int				hw_id;
->  	int				slope;
->  	u32				status;
+> @@ -70,6 +70,7 @@ struct tsens_device {
+>  	struct device			*dev;
+>  	u32				num_sensors;
+>  	struct regmap			*tm_map;
+> +	struct regmap			*srot_map;
+>  	u32				tm_offset;
+>  	struct tsens_context		ctx;
+>  	const struct tsens_ops		*ops;
 > -- 
 > 2.17.1
 > 
