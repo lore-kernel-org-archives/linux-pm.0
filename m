@@ -1,52 +1,33 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH] PCI: add prefetch quirk to work around
- Asus/Nvidia suspend issues
-Date: Mon, 3 Sep 2018 16:56:32 +0800
-Message-ID: <CAD8Lp45CKCHxTg91zF9bWztqbAwLzgAUpNEHQ6ouKu2PkJT8SQ@mail.gmail.com>
-References: <20180831073057.14626-1-drake@endlessm.com>
- <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: power: Add Spreadtrum SC2731 charger documentation
+Date: Mon, 3 Sep 2018 12:14:56 +0200
+Message-ID: <CAJKOXPcx1AC-xp4TPLQrzbwrPmKWK0tB2F+=e+Nb8afviABPHQ@mail.gmail.com>
+References: <a582871f84c4dd588ae1651d1d9192cc80e2b272.1535964281.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180831191225.GA43106-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <a582871f84c4dd588ae1651d1d9192cc80e2b272.1535964281.git.baolin.wang@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: baolin.wang@linaro.org
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBTZXAgMSwgMjAxOCBhdCAzOjEyIEFNLCBCam9ybiBIZWxnYWFzIDxoZWxnYWFzQGtl
-cm5lbC5vcmc+IHdyb3RlOgo+IElmIHRydWUsIHRoaXMgc291bmRzIGxpa2Ugc29tZSBzb3J0IG9m
-IGVycmF0dW0sIHNvIGl0IHdvdWxkIGJlIGdvb2QgdG8KPiBnZXQgc29tZSBpbnB1dCBmcm9tIElu
-dGVsLCBhbmQgSSBjYydkIGEgZmV3IEludGVsIGZvbGtzLgoKWWVzLCBpdCB3b3VsZCBiZSBncmVh
-dCB0byBnZXQgdGhlaXIgaW5wdXQuCgo+IEl0J3MgaW50ZXJlc3RpbmcgdGhhdCBhbGwgdGhlIHN5
-c3RlbXMgYmVsb3cgYXJlIGZyb20gQXN1cy4gIFRoYXQgbWFrZXMKPiBtZSB0aGluayB0aGVyZSdz
-IHNvbWUgQklPUyBvciBTTU0gY29ubmVjdGlvbiwgZS5nLiwgU01NIHRyYXBzIHRoZQo+IHJlZ2lz
-dGVyIHdyaXRlIGFuZCBkb2VzIHNvbWV0aGluZyBtYWdpYy4KCklzIHRoZXJlIGEgd2F5IEkgY2Fu
-IGNoZWNrIGlmIHRoZXJlIGlzIGEgU01NIHRyYXAgYWN0aXZlIGZvciB0aGlzIGFkZHJlc3M/Cgo+
-IERvZXMgdGhpcyBwcm9ibGVtIGhhcHBlbiBhZnRlciBhIGZ1bGwgc3lzdGVtIHN1c3BlbmQvcmVz
-dW1lLCBvciBkb2VzCj4gaXQgaGFwcGVuIGFmdGVyIHJ1bnRpbWUgc3VzcGVuZCBvZiBvbmx5IHRo
-ZSBHUFU/ICBPciBydW50aW1lIHN1c3BlbmQKPiBvZiBvbmx5IHRoZSBHUFUgYW5kIHRoZSB1cHN0
-cmVhbSBicmlkZ2U/CgpydW50aW1lIHN1c3BlbmQvcmVzdW1lIHdvcmtzIGZpbmUuIEl0IG9ubHkg
-aGFwcGVucyBhZnRlciBTMyBzdXNwZW5kLgoKPiBDYW4gd2UgdGVsbCB3aGV0aGVyIFdpbmRvd3Mg
-cmV3cml0ZXMgdGhpcyByZWdpc3RlciB1bmNvbmRpdGlvbmFsbHkgYXQKPiByZXN1bWUtdGltZT8g
-IElmIHNvLCBpdCBtYXkgYmUgbW9yZSByb2J1c3QgZm9yIExpbnV4IHRvIGRvIHRoZSBzYW1lLgo+
-IFRoZSB3aG9sZSB0aGluZyBpcyBibGFjayBtYWdpYywgd2hpY2ggSSBoYXRlLCBidXQgaWYgaXQn
-cyBvdXIgb25seQo+IGNob2ljZSwgaXQgbWF5IGJlIGJldHRlciB0byBoYXZlIHRoaXMgYXBwbGll
-ZCBldmVyeXdoZXJlIHNvIHdlIGRvbid0Cj4ga2VlcCBzdHViYmluZyBvdXIgdG9lcyBvbiBuZXcg
-c3lzdGVtcyB0aGF0IHJlcXVpcmUgdGhlIHF1aXJrLgoKQW55IHN1Z2dlc3Rpb25zIGZvciBob3cg
-dG8gbWFrZSB0aGlzIGhhcHBlbj8gQm9vdGluZyB3aW5kb3dzIGluCnZpcnQtbWFuYWdlciAoaG9w
-aW5nIHRoYXQgSSBjb3VsZCB0aGVuIHNweSBvbiBQQ0kgY29uZmlnIHNwYWNlIHJlZwphY2Nlc3Nl
-cyksIEkgZG9uJ3Qgc2VlIGFuIG9wdGlvbiBmb3IgUzMgc3VzcGVuZCwgYnV0IEknbGwga2VlcCBs
-b29raW5nCmludG8gdGhpcy4KClRoYW5rcwpEYW5pZWwKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0
-cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9ub3V2ZWF1Cg==
+On Mon, 3 Sep 2018 at 10:56, Baolin Wang <baolin.wang@linaro.org> wrote:
+>
+> This patch adds the binding documentation for Spreadtrum SC2731 charger
+> device.
+>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> ---
+> Changes from v1:
+>  - Add parent node.
+>  - Add some battery standard properties.
+> ---
+>  .../bindings/power/supply/sc2731_charger.txt       |   40 ++++++++++++++++++++
+>  1 file changed, 40 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof
