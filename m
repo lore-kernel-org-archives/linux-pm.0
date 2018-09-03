@@ -1,55 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] dt-binding: arm/cpus.txt: fix
- dynamic-power-coefficient unit
-Date: Mon, 3 Sep 2018 12:09:29 +0530
-Message-ID: <20180903063929.oic5rgynzos2a4s2@vireshk-i7>
-References: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v2 1/2] dt-bindings: power: Add Spreadtrum SC2731 charger documentation
+Date: Mon,  3 Sep 2018 16:55:45 +0800
+Message-ID: <a582871f84c4dd588ae1651d1d9192cc80e2b272.1535964281.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, punit.agrawal@arm.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, krzk@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29-08-18, 09:08, Vincent Guittot wrote:
-> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
-> its usage in the code assumes that unit is uW/MHz/V^2
-> 
-> In drivers/thermal/cpu_cooling.c, the code is :
-> 
-> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> do_div(power, 1000000000);
-> 
-> which can be summarized as :
-> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
-> or
-> power (mW) = (capacitance * freq_mhz * (voltage_mv/1000)^2) / 1000
-> then
-> power (mW) = power (uW) / 1000
-> so
-> power (uW) = capacitance * freq_mhz * (voltage_mv/1000)^2
-> 
-> Furthermore, if we test basic values like :
-> voltage_mv = 1000mV = 1V
-> freq_mhz = 1000Mhz
-> 
-> The minimum possible power, when dynamic-power-coefficient equals 1, will
-> be with current unit:
-> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
-> which is not realistic
-> 
-> With the unit used by the code, the min power is
-> min power =  1 * 1000 * 1^2 = 1000uW = 1mW which is far more realistic
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> ---
->  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+This patch adds the binding documentation for Spreadtrum SC2731 charger
+device.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+Changes from v1:
+ - Add parent node.
+ - Add some battery standard properties.
+---
+ .../bindings/power/supply/sc2731_charger.txt       |   40 ++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
 
+diff --git a/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+new file mode 100644
+index 0000000..5266fab
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+@@ -0,0 +1,40 @@
++Spreadtrum SC2731 PMIC battery charger binding
++
++Required properties:
++ - compatible: Should be "sprd,sc2731-charger".
++ - reg: Address offset of charger register.
++ - phys: Contains a phandle to the USB phy.
++
++Optional Properties:
++- monitored-battery: phandle of battery characteristics devicetree node.
++  The charger uses the following battery properties:
++- charge-term-current-microamp: current for charge termination phase.
++- constant-charge-voltage-max-microvolt: maximum constant input voltage.
++  See Documentation/devicetree/bindings/power/supply/battery.txt
++
++Example:
++
++	bat: battery {
++		compatible = "simple-battery";
++		charge-term-current-microamp = <120000>;
++		constant-charge-voltage-max-microvolt = <4350000>;
++		......
++	};
++
++	sc2731_pmic: pmic@0 {
++		compatible = "sprd,sc2731";
++		reg = <0>;
++		spi-max-frequency = <26000000>;
++		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		charger@0 {
++			compatible = "sprd,sc2731-charger";
++			reg = <0x0>;
++			phys = <&ssphy>;
++			monitored-battery = <&bat>;
++		};
++	};
 -- 
-viresh
+1.7.9.5
