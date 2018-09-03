@@ -1,103 +1,49 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Mon, 3 Sep 2018 01:17:55 +0000
-Message-ID: <DB5PR0401MB221332A5ED14C8E14C8D18A1F30C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
- <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
- <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
- <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
- <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
- <f6707cb54c3e6da1b50f45f915c996dfccfeacda.camel@buserror.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v1] thermal: core: Fix use-after-free in
+ thermal_cooling_device_destroy_sysfs
+Date: Mon, 3 Sep 2018 11:53:48 +0530
+Message-ID: <20180903062348.e3qadikukr7d4yi7@vireshk-i7>
+References: <20180813171400.15345-1-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f6707cb54c3e6da1b50f45f915c996dfccfeacda.camel@buserror.net>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180813171400.15345-1-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Scott Wood <oss@buserror.net>, Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Udit Kumar <udit.kumar@nxp.com>, Varun Sethi <V.Sethi@nxp.com>
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgU2NvdHQsDQoNClBsZWFzZSBzZWUgbXkgcmVwbGF5IGluIGxpbmUuDQoNCj4gLS0tLS1Pcmln
-aW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2DQo+IDxsaW51eHBwYy1kZXYt
-Ym91bmNlcytiMjk5ODM9ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxhYnMub3JnPiBPbg0KPiBCZWhh
-bGYgT2YgU2NvdHQgV29vZA0KPiBTZW50OiAyMDE45bm0OeaciDHml6UgNDoyOQ0KPiBUbzogQW5k
-eSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFZhYmhhdiBTaGFybWENCj4gPHZhYmhhdi5zaGFy
-bWFAbnhwLmNvbT47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGRldmljZXRyZWVA
-dmdlci5rZXJuZWwub3JnOyByb2JoK2R0QGtlcm5lbC5vcmc7DQo+IG1hcmsucnV0bGFuZEBhcm0u
-Y29tOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gbGludXgtYXJtLWtlcm5lbEBs
-aXN0cy5pbmZyYWRlYWQub3JnOyBtdHVycXVldHRlQGJheWxpYnJlLmNvbTsNCj4gc2JveWRAa2Vy
-bmVsLm9yZzsgcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOw0KPiBs
-aW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxp
-bnV4LWtlcm5lbC1vd25lckB2Z2VyLmtlcm5lbC5vcmc7IGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29t
-Ow0KPiB3aWxsLmRlYWNvbkBhcm0uY29tOyBncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsgYXJu
-ZEBhcm5kYi5kZTsNCj4ga3N0ZXdhcnRAbGludXhmb3VuZGF0aW9uLm9yZzsgeWFtYWRhLm1hc2Fo
-aXJvQHNvY2lvbmV4dC5jb20NCj4gQ2M6IFlvZ2VzaCBOYXJheWFuIEdhdXIgPHlvZ2VzaG5hcmF5
-YW4uZ2F1ckBueHAuY29tPjsNCj4gbGludXhAYXJtbGludXgub3JnLnVrOyBVZGl0IEt1bWFyIDx1
-ZGl0Lmt1bWFyQG54cC5jb20+OyBWYXJ1biBTZXRoaQ0KPiA8Vi5TZXRoaUBueHAuY29tPg0KPiBT
-dWJqZWN0OiBSZTogW1BBVENIIDMvNV0gZHJpdmVyczogY2xrLXFvcmlxOiBBZGQgY2xvY2tnZW4g
-c3VwcG9ydCBmb3INCj4gbHgyMTYwYQ0KPiANCj4gT24gRnJpLCAyMDE4LTA4LTMxIGF0IDA2OjEy
-ICswMDAwLCBBbmR5IFRhbmcgd3JvdGU6DQo+ID4gSGkgU2NvdHQsDQo+ID4NCj4gPiBQbGVhc2Ug
-c2VlIG15IHJlcGxheSBpbmxpbmUuDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+ID4gPiBGcm9tOiBsaW51eC1hcm0ta2VybmVsDQo+ID4gPiA8bGludXgtYXJtLWtlcm5l
-bC1ib3VuY2VzQGxpc3RzLmluZnJhZGVhZC5vcmc+DQo+ID4gPiBPbiBCZWhhbGYgT2YgU2NvdHQg
-V29vZA0KPiA+ID4gU2VudDogMjAxOOW5tDjmnIgzMeaXpSAxOjQzDQo+ID4gPiBUbzogVmFiaGF2
-IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPjsNCj4gPiA+IGxpbnV4LWtlcm5lbEB2Z2Vy
-Lmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gcm9iaCtkdEBr
-ZXJuZWwub3JnOyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gPiA+IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+ID4g
-PiBtdHVycXVldHRlQGJheWxpYnJlLmNvbTsgc2JveWRAa2VybmVsLm9yZzsgcmp3QHJqd3lzb2Nr
-aS5uZXQ7DQo+ID4gPiB2aXJlc2gua3VtYXJAbGluYXJvLm9yZzsgbGludXgtY2xrQHZnZXIua2Vy
-bmVsLm9yZzsNCj4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsLW93
-bmVyQHZnZXIua2VybmVsLm9yZzsNCj4gPiA+IGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tOyB3aWxs
-LmRlYWNvbkBhcm0uY29tOw0KPiA+ID4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IGFybmRA
-YXJuZGIuZGU7DQo+ID4gPiBrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnOyB5YW1hZGEubWFz
-YWhpcm9Ac29jaW9uZXh0LmNvbQ0KPiA+ID4gQ2M6IFlvZ2VzaCBOYXJheWFuIEdhdXIgPHlvZ2Vz
-aG5hcmF5YW4uZ2F1ckBueHAuY29tPjsgQW5keSBUYW5nDQo+ID4gPiA8YW5keS50YW5nQG54cC5j
-b20+OyBsaW51eEBhcm1saW51eC5vcmcudWs7IFZhcnVuIFNldGhpDQo+ID4gPiA8Vi5TZXRoaUBu
-eHAuY29tPjsgVWRpdCBLdW1hciA8dWRpdC5rdW1hckBueHAuY29tPg0KPiA+ID4gU3ViamVjdDog
-UmU6IFtQQVRDSCAzLzVdIGRyaXZlcnM6IGNsay1xb3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQN
-Cj4gPiA+IGZvciBseDIxNjBhDQo+ID4gPg0KPiA+ID4gT24gVGh1LCAyMDE4LTA4LTMwIGF0IDEy
-OjM5IC0wNTAwLCBTY290dCBXb29kIHdyb3RlOg0KPiA+ID4gPiBPbiBUaHUsIDIwMTgtMDgtMzAg
-YXQgMDc6MzYgKzAwMDAsIFZhYmhhdiBTaGFybWEgd3JvdGU6DQo+ID4gPiA+ID4gPg0KPiA+ID4g
-PiA+ID4gV2h5IGFyZSB5b3UgaW5jcmVhc2luZyBOVU1fQ01VWCBiZXlvbmQgOCBmb3IgYSBjaGlw
-IHRoYXQNCj4gb25seQ0KPiA+ID4NCj4gPiA+IGhhcw0KPiA+ID4gPiA+ID4gOCBlbnRyaWVzIGlu
-IGNtdXhfdG9fZ3JvdXA/DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBDb25maWd1cmF0aW9uIGlzIDE2
-IGNvcmVzLDggY2x1c3RlciB3aXRoIDIgY29yZXMgaW4gZWFjaCBjbHVzdGVyDQo+ID4gPiA+DQo+
-ID4gPiA+IFNvPyAgVGhpcyBpcyBhYm91dCBjbXV4ZXMsIG5vdCBjb3Jlcy4gIFlvdSdyZSBpbmNy
-ZWFzaW5nIHRoZSBhcnJheQ0KPiA+ID4gPiB3aXRob3V0IGV2ZXIgdXNpbmcgdGhlIG5ldyBzaXpl
-Lg0KPiA+ID4NCj4gPiA+IE9oLCBhbmQgeW91IGFsc28gYnJva2UgcDQwODAgd2hpY2ggaGFzIDgg
-Y211eGVzIGJ1dCBubyAtMQ0KPiA+ID4gdGVybWluYXRvciwgYmVjYXVzZSB0aGUgYXJyYXkgd2Fz
-IG9mIGxlbmd0aCA4LiAgUHJvYmFibHkgdGhlIGFycmF5DQo+ID4gPiBzaG91bGQgYmUgY2hhbmdl
-ZCB0byBOVU1fQ01VWCsxIHNvIGV2ZXJ5IGFycmF5IGNhbiBiZSAtMQ0KPiB0ZXJtaW5hdGVkLg0K
-PiA+ID4NCj4gPg0KPiA+IFtBbmR5XSBIb3cgYWJvdXQgd2UgYWRkIC0xIHRlcm1pbmF0b3IgdG8g
-cDQwODAgYW5kIGluY3JlYXNlDQo+IE5VTV9DTVVYIHRvIDE2Pw0KPiANCj4gV2h5IDE2PyAgV2hh
-dCBkb2VzIHN1Y2ggYSBjaGFuZ2UgaGF2ZSB0byBkbyB3aXRoIHRoaXMgY2hpcCwgd2hpY2gNCj4g
-YWNjb3JkaW5nIHRvIHRoZSByZXN0IG9mIHRoZSBwYXRjaCBoYXMgOCBjbXV4ZXM/DQpbQW5keV0g
-TlVNX0NNVVggaXMgYSBsaW1pdGF0aW9uIG51bWJlci4gV2UgYmV0dGVyIGdpdmUgaXQgYW4gZXh0
-cmEgYnVmZmVyLCBub3QgZXhhY3RseSBlcXVhbCB0byB0aGUgbGltaXRhdGlvbi4NCjE2IGlzIHRo
-ZSBsaW1pdGF0aW9uIG51bWJlciB3aXRoIGV4dHJhIGJ1ZmZlci4NCg0KPiANCj4gPiBXZSBkb24n
-dCB3YW50IHRvIGluY3JlYXNlIE5VTV9DTVVYIGVhY2ggdGltZSBuZXcgc29jIHdpdGggbW9yZQ0K
-PiBjbXV4ZXMgYWRkZWQuDQo+IA0KPiBZb3UgZG9uJ3Qgd2FudCB0byBoYXZlIHRvIG1ha2UgYSB0
-cml2aWFsIGNoYW5nZSBlYWNoIHRpbWUgeW91IGV4Y2VlZCBhDQo+IGxpbWl0IHRoYXQgaGFzIHll
-dCB0byBiZSBleGNlZWRlZCBvbmNlIHNpbmNlIE5VTV9DTVVYIHdhcyBhZGRlZD8NCj4gVGhpcyBp
-c24ndCBBQkkgb3IgaW4gYW55IG90aGVyIHdheSBoYXJkIHRvIGNoYW5nZS4gIEl0J3MgcmlnaHQg
-aW4gdGhlIHNhbWUgZmlsZQ0KPiBhcyB0aGUgY2hpcCBkZXNjcmlwdGlvbiB5b3UnZCBiZSBhZGRp
-bmcuDQo+IA0KPiBBbmQgZXZlbiBpZiBhIGNoaXAgZGlkIGNvbWUgYWxvbmcgd2l0aCAxNiBjbXV4
-ZXMsIHlvdSdkIHRoZW4gbmVlZCB0bw0KPiBpbmNyZWFzZSB0aGUgYXJyYXkgdG8gMTcgdG8gaG9s
-ZCB0aGUgLTEgaWYgeW91IGRvbid0IHdhbnQgdG8gbGVhdmUgYSBzaXR1YXRpb24NCj4gbGlrZSB0
-aGUNCj4gcDQwODAgaXMgaW4gbm93LCB3aGVyZSBhIGNoaXAncyBjbXV4IGFycmF5IGNvdWxkIGJl
-IGJyb2tlbiBieSBpbmNyZWFzaW5nDQo+IE5VTV9DTVVYIGZ1cnRoZXIuDQo+IA0KW0FuZHldIEFk
-ZGluZyBidWZmZXIgdG8gYSBsaW1pdGF0aW9uIG51bWJlciBpcyBhbHdheXMgYSBnb29kIGhhYml0
-IHdoZW4gY29kaW5nLiBXZSBvZnRlbiBmb3JnZXQgdG8gaW5jcmVhc2UgdGhpcyB2YWx1ZSB3aGVu
-DQphIG5ldyBjaGlwIHdpdGggbW9yZSBjbXV4ZXMgYWRkZWQuIExpa2UgdGhpcyBwYXRjaCwgd2Ug
-ZGlkbid0IGluY3JlYXNlIHRoaXMgdmFsdWUgYXQgZmlyc3QuIFdlIHNwZW50IGEgbG90IG9mIHRp
-bWUgZmluZGluZyBvdXQgdGhhdCBOVU1fQ01VWCBuZWVkcyB0byBiZSBpbmNyZWFzZWQgdG9vLg0K
-SXQgaXMgYSBwZXJzb25hbCBwcmVmZXJlbmNlIGhvdyB0byBzZXQgdGhpcyB2YWx1ZS4gSSB0aGlu
-ayBpdCBpcyBiZXR0ZXIgdG8gaW5jcmVhc2UgaXQgdG8gMTYsIG5vdCBOVU1fQ01VWCsxIGFzIGxv
-bmcgYXMgd2UgZml4IHRoZSBQNDA4MCBpc3N1ZQ0KZXZlbiB0aG91Z2ggaXQgaXMgYSB0cml2aWFs
-IGNoYW5nZS4gQW5kIEkgYWdyZWUgdGhlIGRlc2NyaXB0aW9uIG5lZWRzIHRvIGJlIHVwZGF0ZWQu
-DQoNCkJSLA0KQW5keQ0KDQo+IC1TY290dA0KDQo=
+On 13-08-18, 20:14, Dmitry Osipenko wrote:
+> This patch fixes use-after-free that was detected by KASAN. The bug is
+> triggered on a CPUFreq driver module unload by freeing 'cdev' on device
+> unregister and then using the freed structure during of the cdev's sysfs
+> data destruction. The solution is to unregister the sysfs at first, then
+> destroy sysfs data and finally release the cooling device.
+> 
+> Cc: <stable@vger.kernel.org> # v4.17+
+> Fixes: 8ea229511e06 ("thermal: Add cooling device's statistics in sysfs")
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/thermal/thermal_core.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 6ab982309e6a..441778100887 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1102,8 +1102,9 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+>  	mutex_unlock(&thermal_list_lock);
+>  
+>  	ida_simple_remove(&thermal_cdev_ida, cdev->id);
+> -	device_unregister(&cdev->device);
+> +	device_del(&cdev->device);
+>  	thermal_cooling_device_destroy_sysfs(cdev);
+> +	put_device(&cdev->device);
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
