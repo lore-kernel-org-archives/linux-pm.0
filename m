@@ -1,49 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Convert to using %pOFn instead of
- device_node.name
-Date: Mon, 3 Sep 2018 12:04:52 +0530
-Message-ID: <20180903063452.mmybo2f7izvqjhci@vireshk-i7>
-References: <20180828015252.28511-1-robh@kernel.org>
- <20180828015252.28511-14-robh@kernel.org>
+Subject: Re: [PATCH v2] dt-binding: arm/cpus.txt: fix
+ dynamic-power-coefficient unit
+Date: Mon, 3 Sep 2018 12:09:29 +0530
+Message-ID: <20180903063929.oic5rgynzos2a4s2@vireshk-i7>
+References: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180828015252.28511-14-robh@kernel.org>
+In-Reply-To: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, punit.agrawal@arm.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 27-08-18, 20:52, Rob Herring wrote:
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
+On 29-08-18, 09:08, Vincent Guittot wrote:
+> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
+> its usage in the code assumes that unit is uW/MHz/V^2
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+> In drivers/thermal/cpu_cooling.c, the code is :
+> 
+> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
+> do_div(power, 1000000000);
+> 
+> which can be summarized as :
+> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
+> or
+> power (mW) = (capacitance * freq_mhz * (voltage_mv/1000)^2) / 1000
+> then
+> power (mW) = power (uW) / 1000
+> so
+> power (uW) = capacitance * freq_mhz * (voltage_mv/1000)^2
+> 
+> Furthermore, if we test basic values like :
+> voltage_mv = 1000mV = 1V
+> freq_mhz = 1000Mhz
+> 
+> The minimum possible power, when dynamic-power-coefficient equals 1, will
+> be with current unit:
+> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
+> which is not realistic
+> 
+> With the unit used by the code, the min power is
+> min power =  1 * 1000 * 1^2 = 1000uW = 1mW which is far more realistic
+> 
+> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 > ---
->  drivers/cpufreq/s5pv210-cpufreq.c | 4 ++--
+>  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
 >  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> index 5d31c2db12a3..dbecd7667db2 100644
-> --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> @@ -611,8 +611,8 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
->  	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
->  		id = of_alias_get_id(np, "dmc");
->  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
-> -			pr_err("%s: failed to get alias of dmc node '%s'\n",
-> -				__func__, np->name);
-> +			pr_err("%s: failed to get alias of dmc node '%pOFn'\n",
-> +				__func__, np);
->  			of_node_put(np);
->  			return id;
->  		}
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
