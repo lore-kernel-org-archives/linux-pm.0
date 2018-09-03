@@ -1,93 +1,90 @@
-From: Scott Wood <oss@buserror.net>
-Subject: Re: [PATCH 3/5] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Mon, 03 Sep 2018 15:33:33 -0500
-Message-ID: <3a4274af2200923875ff05f945888a34d6dccee3.camel@buserror.net>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-4-git-send-email-vabhav.sharma@nxp.com>
- <4a9ea6b451683ec98c92e86a5ae6b91213a6afcf.camel@buserror.net>
- <VI1PR04MB4800E8B1E8541FCA9221A1CFF3080@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <d2cfd49eb33a3ce74f0e78f2b53d3954d2cb3e76.camel@buserror.net>
- <b31ae8e788fb93971167faa9b55b497e838532c4.camel@buserror.net>
- <DB5PR0401MB22130C025AA4CCAD0221781DF30F0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
- <f6707cb54c3e6da1b50f45f915c996dfccfeacda.camel@buserror.net>
- <DB5PR0401MB221332A5ED14C8E14C8D18A1F30C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v2 08/11] thermal: tsens: Check if the IP is correctly
+ enabled by firmware
+Date: Mon, 3 Sep 2018 13:48:55 -0700
+Message-ID: <20180903204855.GB1437@tuxbook-pro>
+References: <cover.1535462942.git.amit.kucheria@linaro.org>
+ <35c332750fe1eddfa2eb53750b810256310866bd.1535462942.git.amit.kucheria@linaro.org>
+ <CAHLCerPF0U22XZ8kEBkXZYJHkL73K8_RFkArs9gXvc0Qmufr-g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <DB5PR0401MB221332A5ED14C8E14C8D18A1F30C0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andy Tang <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <wi>
-Cc: Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAHLCerPF0U22XZ8kEBkXZYJHkL73K8_RFkArs9gXvc0Qmufr-g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCAyMDE4LTA5LTAzIGF0IDAxOjE3ICswMDAwLCBBbmR5IFRhbmcgd3JvdGU6Cj4gSGkg
-U2NvdHQsCj4gCj4gUGxlYXNlIHNlZSBteSByZXBsYXkgaW4gbGluZS4KPiAKPiA+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tCj4gPiBGcm9tOiBMaW51eHBwYy1kZXYKPiA+IDxsaW51eHBwYy1k
-ZXYtYm91bmNlcytiMjk5ODM9ZnJlZXNjYWxlLmNvbUBsaXN0cy5vemxhYnMub3JnPiBPbgo+ID4g
-QmVoYWxmIE9mIFNjb3R0IFdvb2QKPiA+IFNlbnQ6IDIwMTjlubQ55pyIMeaXpSA0OjI5Cj4gPiBU
-bzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFZhYmhhdiBTaGFybWEKPiA+IDx2YWJo
-YXYuc2hhcm1hQG54cC5jb20+OyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOwo+ID4gZGV2
-aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IHJvYmgrZHRAa2VybmVsLm9yZzsKPiA+IG1hcmsucnV0
-bGFuZEBhcm0uY29tOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsKPiA+IGxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb207Cj4g
-PiBzYm95ZEBrZXJuZWwub3JnOyByandAcmp3eXNvY2tpLm5ldDsgdmlyZXNoLmt1bWFyQGxpbmFy
-by5vcmc7Cj4gPiBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5l
-bC5vcmc7Cj4gPiBsaW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOyBjYXRhbGluLm1h
-cmluYXNAYXJtLmNvbTsKPiA+IHdpbGwuZGVhY29uQGFybS5jb207IGdyZWdraEBsaW51eGZvdW5k
-YXRpb24ub3JnOyBhcm5kQGFybmRiLmRlOwo+ID4ga3N0ZXdhcnRAbGludXhmb3VuZGF0aW9uLm9y
-ZzsgeWFtYWRhLm1hc2FoaXJvQHNvY2lvbmV4dC5jb20KPiA+IENjOiBZb2dlc2ggTmFyYXlhbiBH
-YXVyIDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT47Cj4gPiBsaW51eEBhcm1saW51eC5vcmcu
-dWs7IFVkaXQgS3VtYXIgPHVkaXQua3VtYXJAbnhwLmNvbT47IFZhcnVuIFNldGhpCj4gPiA8Vi5T
-ZXRoaUBueHAuY29tPgo+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzVdIGRyaXZlcnM6IGNsay1x
-b3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yCj4gPiBseDIxNjBhCj4gPiAKPiA+IE9uIEZy
-aSwgMjAxOC0wOC0zMSBhdCAwNjoxMiArMDAwMCwgQW5keSBUYW5nIHdyb3RlOgo+ID4gPiBXZSBk
-b24ndCB3YW50IHRvIGluY3JlYXNlIE5VTV9DTVVYIGVhY2ggdGltZSBuZXcgc29jIHdpdGggbW9y
-ZQo+ID4gCj4gPiBjbXV4ZXMgYWRkZWQuCj4gPiAKPiA+IFlvdSBkb24ndCB3YW50IHRvIGhhdmUg
-dG8gbWFrZSBhIHRyaXZpYWwgY2hhbmdlIGVhY2ggdGltZSB5b3UgZXhjZWVkIGEKPiA+IGxpbWl0
-IHRoYXQgaGFzIHlldCB0byBiZSBleGNlZWRlZCBvbmNlIHNpbmNlIE5VTV9DTVVYIHdhcyBhZGRl
-ZD8KPiA+IFRoaXMgaXNuJ3QgQUJJIG9yIGluIGFueSBvdGhlciB3YXkgaGFyZCB0byBjaGFuZ2Uu
-ICBJdCdzIHJpZ2h0IGluIHRoZSBzYW1lCj4gPiBmaWxlCj4gPiBhcyB0aGUgY2hpcCBkZXNjcmlw
-dGlvbiB5b3UnZCBiZSBhZGRpbmcuCj4gPiAKPiA+IEFuZCBldmVuIGlmIGEgY2hpcCBkaWQgY29t
-ZSBhbG9uZyB3aXRoIDE2IGNtdXhlcywgeW91J2QgdGhlbiBuZWVkIHRvCj4gPiBpbmNyZWFzZSB0
-aGUgYXJyYXkgdG8gMTcgdG8gaG9sZCB0aGUgLTEgaWYgeW91IGRvbid0IHdhbnQgdG8gbGVhdmUg
-YQo+ID4gc2l0dWF0aW9uCj4gPiBsaWtlIHRoZQo+ID4gcDQwODAgaXMgaW4gbm93LCB3aGVyZSBh
-IGNoaXAncyBjbXV4IGFycmF5IGNvdWxkIGJlIGJyb2tlbiBieSBpbmNyZWFzaW5nCj4gPiBOVU1f
-Q01VWCBmdXJ0aGVyLgo+ID4gCj4gCj4gW0FuZHldIEFkZGluZyBidWZmZXIgdG8gYSBsaW1pdGF0
-aW9uIG51bWJlciBpcyBhbHdheXMgYSBnb29kIGhhYml0IHdoZW4KPiBjb2RpbmcuIFdlIG9mdGVu
-IGZvcmdldCB0byBpbmNyZWFzZSB0aGlzIHZhbHVlIHdoZW4KPiBhIG5ldyBjaGlwIHdpdGggbW9y
-ZSBjbXV4ZXMgYWRkZWQuIAoKIm9mdGVuIj8gIFRoZXJlIGhhcyBuZXZlciBiZWVuIGEgbmV3IGNo
-aXAgYWRkZWQgd2l0aCBtb3JlIGNtdXhlcyB0aGFuIHA0MDgwJ3MKOCwgYW5kIGlmIG9uZSBkb2Vz
-IGNvbWUgYWxvbmcgYW5kIHlvdSBmb3JnZXQsIHRoZSBjb21waWxlciBzaG91bGQgY29tcGxhaW4K
-YWJvdXQgZXhjZWVkaW5nIHRoZSBhcnJheSBsZW5ndGggd2l0aCBhIHN0YXRpYyBpbml0aWFsaXpl
-ci4gIFRoaXMgaXNuJ3QgbGlrZQphbiBhcnJheSB0aGF0IGlzIGZpbGxlZCB3aXRoIGEgcnVudGlt
-ZS1kZXRlcm1pbmVkIGxlbmd0aC4KCj4gTGlrZSB0aGlzIHBhdGNoLCB3ZSBkaWRuJ3QgaW5jcmVh
-c2UgdGhpcyB2YWx1ZSBhdCBmaXJzdC4gV2Ugc3BlbnQgYSBsb3Qgb2YKPiB0aW1lIGZpbmRpbmcg
-b3V0IHRoYXQgTlVNX0NNVVggbmVlZHMgdG8gYmUgaW5jcmVhc2VkIHRvby4KCkFyZSB5b3UgdGFs
-a2luZyBhYm91dCBzb21lIG90aGVyIGNoaXAgdGhhdCB5b3UgaGF2ZW4ndCBzZW50IGEgcGF0Y2gg
-Zm9yIHlldD8gCk9yIGlzIHRoZSBjbXV4IGFycmF5IGZvciB0aGlzIGNoaXAgd3Jvbmc/ICBXaGF0
-IHNwZWNpZmljYWxseSBkaWQgeW91IHNlZQpoYXBwZW4gImF0IGZpcnN0Ij8KCj4gSXQgaXMgYSBw
-ZXJzb25hbCBwcmVmZXJlbmNlIGhvdyB0byBzZXQgdGhpcyB2YWx1ZS4gSSB0aGluayBpdCBpcyBi
-ZXR0ZXIgdG8KPiBpbmNyZWFzZSBpdCB0byAxNiwgbm90IE5VTV9DTVVYKzEgYXMgbG9uZyBhcyB3
-ZSBmaXggdGhlIFA0MDgwIGlzc3VlCj4gZXZlbiB0aG91Z2ggaXQgaXMgYSB0cml2aWFsIGNoYW5n
-ZS4gQW5kIEkgYWdyZWUgdGhlIGRlc2NyaXB0aW9uIG5lZWRzIHRvIGJlCj4gdXBkYXRlZC4KCkkn
-bSBub3QgdGhlIGNsb2NrIG1haW50YWluZXIsIHNvIGl0J3Mgbm90IHVwIHRvIG1lLCBidXQgSSBk
-b24ndCBzZWUgdGhlIHBvaW50CmluIHNldHRpbmcgaXQgdG8gYW4gYXJiaXRyYXJ5IG51bWJlciwg
-YW5kIEkgZG8gbm90IGFncmVlIHRoYXQgaW5jcmVhc2luZwpOVU1fQ01VWCBpcyBhIHN1aXRhYmxl
-IHJlcGxhY2VtZW50IGZvciBOVU1fQ01VWCsxIGluIGNtdXhfdG9fZ3JvdXBbXSwgYXMgdGhhdAph
-cnJheSBzaG91bGQgYmUgb25lIGxhcmdlciB0aGFuIGNtdXhbXSBpbiBvcmRlciB0byBhbGxvdyBl
-dmVyeSBjaGlwIHRvIGhhdmUgYQotMSB0ZXJtaW5hdG9yLiAgSW4gYW55IGNhc2UsIGFueSBjaGFu
-Z2UgdG8gTlVNX0NNVVggc2hvdWxkIGJlIGEgc2VwYXJhdGUgcGF0Y2gKYmVjYXVzZSBpdCdzIG5v
-dCByZXF1aXJlZCBmb3IgbHgyMTYwYSBzdXBwb3J0IChhc3N1bWluZyBseDIxNjBhIHdhcyBjb3Jy
-ZWN0bHkKZGVzY3JpYmVkIGJ5IHRoaXMgcGF0Y2gpLgoKLVNjb3R0CgoKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGlu
-ZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMu
-aW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Thu 30 Aug 12:23 PDT 2018, Amit Kucheria wrote:
+
+> On Tue, Aug 28, 2018 at 7:08 PM, Amit Kucheria <amit.kucheria@linaro.org> wrote:
+> > The SROT registers are initialised by the secure firmware at boot. We
+> > don't have write access to the registers. Check if the block is enabled
+> > before continuing.
+> >
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> > ---
+> >  drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> >
+> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> > index 0b8a793f15f4..d250b757d1f0 100644
+> > --- a/drivers/thermal/qcom/tsens-common.c
+> > +++ b/drivers/thermal/qcom/tsens-common.c
+> > @@ -12,6 +12,11 @@
+> >  #include <linux/regmap.h>
+> >  #include "tsens.h"
+> >
+> > +/* SROT */
+> > +#define CTRL_OFFSET            0x4
+> 
+> This OFFSET is not constant across the TSENS family and breaks atleast
+> one platform in the test below. I have a patch to fix this for all
+> platforms, will post it after a bit more testing.
+> 
+
+Afaict the other 10 patches can be merged independently of this patch.
+
+So please make the minor updates and resend them as a separate series,
+with the acks/reviews, to make it easier for Eduardo to just pick them.
+
+Regards,
+Bjorn
+
+> 
+> > +#define TSENS_EN               BIT(0)
+> > +
+> > +/* TM */
+> >  #define STATUS_OFFSET          0x30
+> >  #define SN_ADDR_OFFSET         0x4
+> >  #define SN_ST_TEMP_MASK                0x3ff
+> > @@ -119,6 +124,8 @@ int __init init_common(struct tsens_device *tmdev)
+> >  {
+> >         void __iomem *tm_base, *srot_base;
+> >         struct resource *res;
+> > +       u32 code;
+> > +       int ret;
+> >         struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
+> >
+> >         if (!op)
+> > @@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
+> >         if (IS_ERR(tmdev->tm_map))
+> >                 return PTR_ERR(tmdev->tm_map);
+> >
+> > +       if (tmdev->srot_map) {
+> > +               ret = regmap_read(tmdev->srot_map, CTRL_OFFSET, &code);
+> > +               if (ret)
+> > +                       return ret;
+> > +               if (!(code & TSENS_EN)) {
+> > +                       dev_err(tmdev->dev, "tsens device is not enabled\n");
+> > +                       return -ENODEV;
+> > +               }
+> > +       }
+> > +
+> >         return 0;
+> >  }
+> > --
+> > 2.17.1
+> >
