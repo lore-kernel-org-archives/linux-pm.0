@@ -1,50 +1,97 @@
-From: Chunyan Zhang <chunyan.zhang@unisoc.com>
-Subject: [PATCH] thermal: core: using power_efficient_wq for thermal worker
-Date: Tue, 4 Sep 2018 14:37:48 +0800
-Message-ID: <1536043068-11487-1-git-send-email-chunyan.zhang@unisoc.com>
+From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH] PCI: add prefetch quirk to work around
+ Asus/Nvidia suspend issues
+Date: Tue, 4 Sep 2018 09:43:07 +0300
+Message-ID: <20180904064307.GM2283@lahna.fi.intel.com>
+References: <20180831073057.14626-1-drake@endlessm.com>
+ <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
+ <CAD8Lp45CKCHxTg91zF9bWztqbAwLzgAUpNEHQ6ouKu2PkJT8SQ@mail.gmail.com>
+ <20180903121209.GC2283@lahna.fi.intel.com>
+ <CAD8Lp46M-raneN+6bjGakTq_yd6wGjuPiKDyOoqpO8VXyDBrfQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeson Gao <jeson.gao@unisoc.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>, Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAD8Lp46M-raneN+6bjGakTq_yd6wGjuPiKDyOoqpO8VXyDBrfQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jeson Gao <jeson.gao@unisoc.com>
-
-For SMP systems, thermal worker should use power_efficient_wq in power
-saving mode, that will make scheduler more flexible on switching cpu
-on/off for running work handler to avoid keeping work handler always
-running on a single core, that will same some power.
-
-Even if 'power_efficient_wq' relevant configs are disabled
-'system_freezable_power_efficient_wq' is identical to system_freezable_wq,
-behavior is unchanged.
-
-Signed-off-by: Jeson Gao <jeson.gao@unisoc.com>
-Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
----
- drivers/thermal/thermal_core.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6ab9823..99df89f 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -290,10 +290,12 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
- 	if (delay > 1000)
--		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-+		mod_delayed_work(system_freezable_power_efficient_wq,
-+				 &tz->poll_queue,
- 				 round_jiffies(msecs_to_jiffies(delay)));
- 	else if (delay)
--		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-+		mod_delayed_work(system_freezable_power_efficient_wq,
-+				 &tz->poll_queue,
- 				 msecs_to_jiffies(delay));
- 	else
- 		cancel_delayed_work(&tz->poll_queue);
--- 
-2.7.4
+T24gVHVlLCBTZXAgMDQsIDIwMTggYXQgMDk6NTI6MDJBTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
+b3RlOgo+ICMgY2F0IC9wcm9jL210cnIKPiByZWcwMDogYmFzZT0weDBjMDAwMDAwMCAoIDMwNzJN
+QiksIHNpemU9IDEwMjRNQiwgY291bnQ9MTogdW5jYWNoYWJsZQo+IHJlZzAxOiBiYXNlPTB4MGEw
+MDAwMDAwICggMjU2ME1CKSwgc2l6ZT0gIDUxMk1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gcmVn
+MDI6IGJhc2U9MHgwOTAwMDAwMDAgKCAyMzA0TUIpLCBzaXplPSAgMjU2TUIsIGNvdW50PTE6IHVu
+Y2FjaGFibGUKPiByZWcwMzogYmFzZT0weDA4YzAwMDAwMCAoIDIyNDBNQiksIHNpemU9ICAgNjRN
+QiwgY291bnQ9MTogdW5jYWNoYWJsZQo+IHJlZzA0OiBiYXNlPTB4MDhiODAwMDAwICggMjIzMk1C
+KSwgc2l6ZT0gICAgOE1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gCj4gIyBjYXQgL3N5cy9rZXJu
+ZWwvZGVidWcveDg2L3BhdF9tZW10eXBlX2xpc3QKPiBQQVQgbWVtdHlwZSBsaXN0Ogo+IHdyaXRl
+LWJhY2sgQCAweDg0YTIzMDAwLTB4ODRhMjQwMDAKPiB3cml0ZS1iYWNrIEAgMHg4YWQzNDAwMC0w
+eDhhZDYwMDAwCj4gd3JpdGUtYmFjayBAIDB4OGFkNWYwMDAtMHg4YWQ2NjAwMAo+IHdyaXRlLWJh
+Y2sgQCAweDhhZDVmMDAwLTB4OGFkNjAwMDAKPiB3cml0ZS1iYWNrIEAgMHg4YWQ2NTAwMC0weDhh
+ZDZhMDAwCj4gd3JpdGUtYmFjayBAIDB4OGFkNjkwMDAtMHg4YWQ2YjAwMAo+IHdyaXRlLWJhY2sg
+QCAweDhhZDZhMDAwLTB4OGFkNmMwMDAKPiB3cml0ZS1iYWNrIEAgMHg4YWQ2YjAwMC0weDhhZDZl
+MDAwCj4gd3JpdGUtYmFjayBAIDB4OGFkOWMwMDAtMHg4YWQ5ZDAwMAo+IHdyaXRlLWJhY2sgQCAw
+eDhhZGNlMDAwLTB4OGFkY2YwMDAKPiB3cml0ZS1iYWNrIEAgMHg4YWRjZjAwMC0weDhhZGQwMDAw
+Cj4gd3JpdGUtYmFjayBAIDB4OGFkY2YwMDAtMHg4YWRkMjAwMAo+IHdyaXRlLWJhY2sgQCAweDhh
+ZGQzMDAwLTB4OGFkZDQwMDAKPiB3cml0ZS1iYWNrIEAgMHg4YWUwNDAwMC0weDhhZTA1MDAwCj4g
+d3JpdGUtYmFjayBAIDB4OGIyMDgwMDAtMHg4YjIwOTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4
+YzAwMDAwMDAtMHhkMDAwMDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZDAwMDAwMDAtMHhlMDAw
+MDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAwMDAwMDAtMHhlMDA0MDAwMAo+IHdyaXRlLWNv
+bWJpbmluZyBAIDB4ZTAwNDAwMDAtMHhlMDA1MDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAw
+NTAwMDAtMHhlMDA1MTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAwNTEwMDAtMHhlMDE1MTAw
+MAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxNTEwMDAtMHhlMDE5MTAwMAo+IHdyaXRlLWNvbWJp
+bmluZyBAIDB4ZTAxOTEwMDAtMHhlMDFhMTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxYTEw
+MDAtMHhlMDFiMTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxYjEwMDAtMHhlMDFjMTAwMAo+
+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxYzEwMDAtMHhlMDFjMzAwMAo+IHdyaXRlLWNvbWJpbmlu
+ZyBAIDB4ZTAxYzMwMDAtMHhlMDFjNTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxYzUwMDAt
+MHhlMDFjZDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxY2QwMDAtMHhlMDFkNTAwMAo+IHdy
+aXRlLWNvbWJpbmluZyBAIDB4ZTAxZDUwMDAtMHhlMDFkZDAwMAo+IHdyaXRlLWNvbWJpbmluZyBA
+IDB4ZTAxZGQwMDAtMHhlMDFlNTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxZTUwMDAtMHhl
+MDFlZDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAxZWQwMDAtMHhlMDFmNTAwMAo+IHdyaXRl
+LWNvbWJpbmluZyBAIDB4ZTAxZjUwMDAtMHhlMDFmZDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4
+ZTAxZmQwMDAtMHhlMDIwNTAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAyMDUwMDAtMHhlMDIw
+ZDAwMAo+IHdyaXRlLWNvbWJpbmluZyBAIDB4ZTAyMGQwMDAtMHhlMDIxNTAwMAo+IHVuY2FjaGVk
+LW1pbnVzIEAgMHhlZDAwMDAwMC0weGVkMjAwMDAwCj4gd3JpdGUtY29tYmluaW5nIEAgMHhlZDgw
+MDAwMC0weGVlMDAwMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGVlMDAwMDAwLTB4ZWYwMDAwMDAK
+PiB1bmNhY2hlZC1taW51cyBAIDB4ZWYyMDAwMDAtMHhlZjQwMDAwMAo+IHVuY2FjaGVkLW1pbnVz
+IEAgMHhlZjQwMDAwMC0weGVmNDAxMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGVmNDA0MDAwLTB4
+ZWY0MDUwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZWY1MTAwMDAtMHhlZjUyMDAwMAo+IHVuY2Fj
+aGVkLW1pbnVzIEAgMHhlZjUyODAwMC0weGVmNTJjMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGVm
+NTMzMDAwLTB4ZWY1MzQwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZWY1MzMwMDAtMHhlZjUzNDAw
+MAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhlZjUzMzAwMC0weGVmNTM0MDAwCj4gdW5jYWNoZWQtbWlu
+dXMgQCAweGVmNTM0MDAwLTB4ZWY1MzUwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZWY1MzQwMDAt
+MHhlZjUzNTAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhlZjUzNDAwMC0weGVmNTM1MDAwCj4gdW5j
+YWNoZWQtbWludXMgQCAweGVmNTM1MDAwLTB4ZWY1MzYwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4
+ZWY1MzcwMDAtMHhlZjUzODAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhlZjUzODAwMC0weGVmNTM5
+MDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGVmNTM4MDAwLTB4ZWY1MzkwMDAKPiB1bmNhY2hlZC1t
+aW51cyBAIDB4ZWY1MzgwMDAtMHhlZjUzOTAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhlZjUzOTAw
+MC0weGVmNTNhMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGVmNTM5MDAwLTB4ZWY1M2EwMDAKPiB1
+bmNhY2hlZC1taW51cyBAIDB4ZWY1MzkwMDAtMHhlZjUzYTAwMAo+IHVuY2FjaGVkLW1pbnVzIEAg
+MHhlZjUzYTAwMC0weGVmNTNiMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGYwMDAwMDAwLTB4Zjgw
+MDAwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZjAwZTAwMDAtMHhmMDBlMTAwMAo+IHVuY2FjaGVk
+LW1pbnVzIEAgMHhmMDEwMDAwMC0weGYwMTAxMDAwCj4gdW5jYWNoZWQtbWludXMgQCAweGYwMTAx
+MDAwLTB4ZjAxMDIwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZmRhYzAwMDAtMHhmZGFkMDAwMAo+
+IHVuY2FjaGVkLW1pbnVzIEAgMHhmZGFlMDAwMC0weGZkYWYwMDAwCj4gdW5jYWNoZWQtbWludXMg
+QCAweGZkYWYwMDAwLTB4ZmRiMDAwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZmRjNDMwMDAtMHhm
+ZGM0NDAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhmZTAwMDAwMC0weGZlMDAxMDAwCj4gdW5jYWNo
+ZWQtbWludXMgQCAweGZlMDAwMDAwLTB4ZmUwMDEwMDAKPiB1bmNhY2hlZC1taW51cyBAIDB4ZmVk
+MDAwMDAtMHhmZWQwMTAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhmZWQxNTAwMC0weGZlZDE2MDAw
+Cj4gdW5jYWNoZWQtbWludXMgQCAweGZlZDQwMDAwLTB4ZmVkNDEwMDAKPiB1bmNhY2hlZC1taW51
+cyBAIDB4ZmVkOTAwMDAtMHhmZWQ5MTAwMAo+IHVuY2FjaGVkLW1pbnVzIEAgMHhmZWQ5MTAwMC0w
+eGZlZDkyMDAwCj4gCj4gSXMgdGhhdCB0aGUgaW5mbyB5b3Ugd2VyZSBsb29raW5nIGZvcj8KClll
+cywgY2FuIHlvdSBjaGVjayBpZiB0aGUgZmFpbGluZyBkZXZpY2UgQkFSIGlzIGluY2x1ZGVkIGlu
+IGFueSBvZiB0aGUKYWJvdmUgZW50cmllcz8gSWYgbm90IHRoZW4gaXQgaXMgcHJvYmFibHkgbm90
+IHJlbGF0ZWQuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+Ck5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBz
+Oi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
