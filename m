@@ -1,71 +1,68 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
- depend on schedutil
-Date: Tue, 4 Sep 2018 11:59:08 +0100
-Message-ID: <20180904105906.t5i7twyyt2omc45b@queper01-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-14-quentin.perret@arm.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+Date: Tue, 4 Sep 2018 11:41:29 +0100
+Message-ID: <20180904104129.GB12993@sirena.org.uk>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180820094420.26590-14-quentin.perret@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+Content-Type: multipart/mixed; boundary="===============1866576464=="
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Henrik Austad <henrik@austad.us>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>, Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Kandziora <jjj@gmx.de>, Paul Mackerras <paulus@samba.org>, Henrik Austad <haustad@cisco.com>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Evgeniy Polyakov <zbr@ioremap.net>, linux-s390@vger.kernel.org, Ian Kent <raven@themaw.net>, linux-security-module@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Jonathan Corbet <corbet@lwn.net>, Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 20 Aug 2018 at 10:44:19 (+0100), Quentin Perret wrote:
-> Energy Aware Scheduling (EAS) is designed with the assumption that
-> frequencies of CPUs follow their utilization value. When using a CPUFreq
-> governor other than schedutil, the chances of this assumption being true
-> are small, if any. When schedutil is being used, EAS' predictions are at
-> least consistent with the frequency requests. Although those requests
-> have no guarantees to be honored by the hardware, they should at least
-> guide DVFS in the right direction and provide some hope in regards to the
-> EAS model being accurate.
-> 
-> To make sure EAS is only used in a sane configuration, create a strong
-> dependency on schedutil being used. Since having sugov compiled-in does
-> not provide that guarantee, extend the existing CPUFreq policy notifier
-> with a new case on governor changes. That allows the scheduler to
-> register a callback on this notifier to rebuild the scheduling domains
-> when governors are changed, and enable/disable EAS accordingly.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> 
-> ---
-> This patch could probably be squashed into another one, but I kept it
-> separate to ease the review. Also, it's probably optional as not having
-> it will not 'break' things per se.
-> 
-> I went for the smallest possible solution I could find, which has the
-> good side of being simple, but it's definitely not the only one.
-> 
-> Another possibility would be to hook things in sugov_start() and
-> sugov_stop(), but that requires some more work. In this case, it
-> wouldn't be possible to just re-build the sched_domains() from there,
-> because when sugov_stop() is called, the 'governor' field of the policy
-> hasn't been updated yet, so the condition (if gov == schedutil) in
-> build_freq_domains() doesn't work.
-> 
-> To workaround the issue we'll need to find a way to pass a cpumask to
-> the topology code to specifically say 'sugov has been stopped on these
-> CPUs'. That would mean more code to handle that, but that would also
-> mean we don't have to mess around with the CPUFreq notifiers ...
-> 
-> Not sure what's best, so all feedback is more than welcome.
 
-Hi,
+--===============1866576464==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="O5XBE6gyVG5Rl6Rj"
+Content-Disposition: inline
 
-Does anybody have concerns with this patch ? Is it a reasonable option
-to use the CPUFreq notifiers in this case ? If there is anything I can
-do to ease the review please let me know.
 
-Also, is there any hope that the 12 first patches could make it in 4.20
-on their own ? Or is it already too late ?
+--O5XBE6gyVG5Rl6Rj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Quentin
+On Tue, Sep 04, 2018 at 12:15:23AM +0200, Henrik Austad wrote:
+> This is a respin with a wider audience (all that get_maintainer returned)
+> and I know this spams a *lot* of people. Not sure what would be the correct
+> way, so my apologies for ruining your inbox.
+
+Acked-by: Mark Brown <broonie@kernel.org>
+
+--O5XBE6gyVG5Rl6Rj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAluOYVgACgkQJNaLcl1U
+h9AYzQgAhduv2URwLqYje3JPZtGLqtLxGgecyHS/ksa1VCCcPy8kltd2kZ8xOeys
++n8FKms8rzw5bCeyggflQj54NZhlSt+gBMjCKx+A8swUeqcfHp7GmI+MPeF2PUGr
+UhdoTr8/roMv7kA67RzNkzquvenYFSDtFFqDklULYikGBbMs3uACTGyaIxVhyU5x
+tWiVzem5oybY2SwnokmrT7aiM2asAg89X7PvSZytgef09Hb4FtKptTIYr0p5RVS9
+2M90CByKZ7P86IKpAVGn5y9rhDPVEOuMq37XrlDDa57Hr71V5qZbYXCPWyvI0+oo
+U3tAq34v0zey0x1/+mZd3Cl6zUBJng==
+=oJFX
+-----END PGP SIGNATURE-----
+
+--O5XBE6gyVG5Rl6Rj--
+
+--===============1866576464==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVs
+IG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+
+--===============1866576464==--
