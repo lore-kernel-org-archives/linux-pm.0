@@ -1,52 +1,81 @@
-From: Chunyan Zhang <chunyan.zhang@unisoc.com>
-Subject: [PATCH] thermal: core: using power_efficient_wq for thermal worker
-Date: Tue, 4 Sep 2018 15:14:08 +0800
-Message-ID: <1536045248-11677-1-git-send-email-chunyan.zhang@unisoc.com>
-References: <1536043068-11487-1-git-send-email-chunyan.zhang@unisoc.com>
+From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH] PCI: add prefetch quirk to work around
+ Asus/Nvidia suspend issues
+Date: Tue, 4 Sep 2018 12:36:31 +0300
+Message-ID: <20180904093631.GN2283@lahna.fi.intel.com>
+References: <20180831073057.14626-1-drake@endlessm.com>
+ <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
+ <CAD8Lp45CKCHxTg91zF9bWztqbAwLzgAUpNEHQ6ouKu2PkJT8SQ@mail.gmail.com>
+ <20180903121209.GC2283@lahna.fi.intel.com>
+ <CAD8Lp46M-raneN+6bjGakTq_yd6wGjuPiKDyOoqpO8VXyDBrfQ@mail.gmail.com>
+ <20180904064307.GM2283@lahna.fi.intel.com>
+ <CAD8Lp45iPkYRD9-vDi0k61PW6W=i184xD6TEAPoZXh+hnGLW5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536043068-11487-1-git-send-email-chunyan.zhang@unisoc.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeson Gao <jeson.gao@unisoc.com>, Orson Zhai <orson.zhai@unisoc.com>, Chunyan Zhang <zhang.lyra@gmail.com>, Chunyan Zhang <chunyan.zhang@unisoc.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAD8Lp45iPkYRD9-vDi0k61PW6W=i184xD6TEAPoZXh+hnGLW5g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Jeson Gao <jeson.gao@unisoc.com>
-
-For SMP systems, thermal worker should use power_efficient_wq in power
-saving mode, that will make scheduler more flexible on selecting an active
-core for running work handler to avoid keeping work handler always
-running on a single core, that will save some power.
-
-Even if 'power_efficient_wq' relevant configs are disabled
-'system_freezable_power_efficient_wq' is identical to system_freezable_wq,
-behavior is unchanged.
-
-Signed-off-by: Jeson Gao <jeson.gao@unisoc.com>
-Signed-off-by: Chunyan Zhang <chunyan.zhang@unisoc.com>
----
- drivers/thermal/thermal_core.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6ab9823..99df89f 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -290,10 +290,12 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
- 	if (delay > 1000)
--		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-+		mod_delayed_work(system_freezable_power_efficient_wq,
-+				 &tz->poll_queue,
- 				 round_jiffies(msecs_to_jiffies(delay)));
- 	else if (delay)
--		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-+		mod_delayed_work(system_freezable_power_efficient_wq,
-+				 &tz->poll_queue,
- 				 msecs_to_jiffies(delay));
- 	else
- 		cancel_delayed_work(&tz->poll_queue);
--- 
-2.7.4
+T24gVHVlLCBTZXAgMDQsIDIwMTggYXQgMDM6MDc6NTJQTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
+b3RlOgo+IE9uIFR1ZSwgU2VwIDQsIDIwMTggYXQgMjo0MyBQTSwgTWlrYSBXZXN0ZXJiZXJnCj4g
+PG1pa2Eud2VzdGVyYmVyZ0BsaW51eC5pbnRlbC5jb20+IHdyb3RlOgo+ID4gWWVzLCBjYW4geW91
+IGNoZWNrIGlmIHRoZSBmYWlsaW5nIGRldmljZSBCQVIgaXMgaW5jbHVkZWQgaW4gYW55IG9mIHRo
+ZQo+ID4gYWJvdmUgZW50cmllcz8gSWYgbm90IHRoZW4gaXQgaXMgcHJvYmFibHkgbm90IHJlbGF0
+ZWQuCj4gCj4gbXRyciBhZ2FpbiBmb3IgcmVmZXJlbmNlOgo+IHJlZzAwOiBiYXNlPTB4MGMwMDAw
+MDAwICggMzA3Mk1CKSwgc2l6ZT0gMTAyNE1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gcmVnMDE6
+IGJhc2U9MHgwYTAwMDAwMDAgKCAyNTYwTUIpLCBzaXplPSAgNTEyTUIsIGNvdW50PTE6IHVuY2Fj
+aGFibGUKPiByZWcwMjogYmFzZT0weDA5MDAwMDAwMCAoIDIzMDRNQiksIHNpemU9ICAyNTZNQiwg
+Y291bnQ9MTogdW5jYWNoYWJsZQo+IHJlZzAzOiBiYXNlPTB4MDhjMDAwMDAwICggMjI0ME1CKSwg
+c2l6ZT0gICA2NE1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gcmVnMDQ6IGJhc2U9MHgwOGI4MDAw
+MDAgKCAyMjMyTUIpLCBzaXplPSAgICA4TUIsIGNvdW50PTE6IHVuY2FjaGFibGUKPiAKPiAKPiBU
+aGUgUENJIGJyaWRnZSBpczoKPiAwMDoxYy4wIFBDSSBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9u
+IFN1bnJpc2UgUG9pbnQtTFAgUENJIEV4cHJlc3MKPiBSb290IFBvcnQgKHJldiBmMSkgKHByb2ct
+aWYgMDAgW05vcm1hbCBkZWNvZGVdKQo+ICAgICBDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVy
+KyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLQo+IFBhckVyci0gU3RlcHBpbmctIFNFUlIt
+IEZhc3RCMkItIERpc0lOVHgrCj4gICAgIFN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJC
+LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtCj4gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlIt
+IDxQRVJSLSBJTlR4LQo+ICAgICBMYXRlbmN5OiAwLCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVz
+Cj4gICAgIEludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElSUSAxMjIKPiAgICAgQnVzOiBwcmlt
+YXJ5PTAwLCBzZWNvbmRhcnk9MDEsIHN1Ym9yZGluYXRlPTAxLCBzZWMtbGF0ZW5jeT0wCj4gICAg
+IEkvTyBiZWhpbmQgYnJpZGdlOiAwMDAwZTAwMC0wMDAwZWZmZgo+ICAgICBNZW1vcnkgYmVoaW5k
+IGJyaWRnZTogZWUwMDAwMDAtZWYwZmZmZmYKPiAgICAgUHJlZmV0Y2hhYmxlIG1lbW9yeSBiZWhp
+bmQgYnJpZGdlOiAwMDAwMDAwMGQwMDAwMDAwLTAwMDAwMDAwZTFmZmZmZmYKPiAKPiBUaGUgbWVt
+b3J5IGJlaGluZCBicmlkZ2UgYXQgZWUwMDAwMDAgaXMgaW5jbHVkZWQgaW4gdGhlIG10cnIgcmVn
+aW9uCj4gcmVnMDAgd2hpY2ggaXMgMHhjMDAwMDAwMCB0byAweGZmZmZmZmZmLgo+IFNhbWUgZm9y
+IHRoZSBwcmVmZXRjaGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2UuCgpZZWFoIGFuZCBpdCBpcyB1
+bmNhY2hhYmxlIHNvIGl0IHNob3VsZCBiZSBmaW5lLgoKPiBUaGUgbnZpZGlhIEdQVSB3aGljaCBi
+ZWNvbWVzIHVucmVzcG9uc2l2ZSBpczoKPiAKPiAwMTowMC4wIDNEIGNvbnRyb2xsZXI6IE5WSURJ
+QSBDb3Jwb3JhdGlvbiBHTTEwOE0gW0dlRm9yY2UgOTQwTVhdIChyZXYgYTIpCj4gICAgIFN1YnN5
+c3RlbTogQVNVU1RlSyBDb21wdXRlciBJbmMuIEdNMTA4TSBbR2VGb3JjZSA5NDBNWF0KPiAgICAg
+Q29udHJvbDogSS9PKyBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
+cC0KPiBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4Kwo+ICAgICBTdGF0
+dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0
+LQo+IDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KPiAgICAgTGF0ZW5jeTog
+MCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwo+ICAgICBJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRl
+ZCB0byBJUlEgMTMzCj4gICAgIFJlZ2lvbiAwOiBNZW1vcnkgYXQgZWUwMDAwMDAgKDMyLWJpdCwg
+bm9uLXByZWZldGNoYWJsZSkgW3NpemU9MTZNXQo+ICAgICBSZWdpb24gMTogTWVtb3J5IGF0IGQw
+MDAwMDAwICg2NC1iaXQsIHByZWZldGNoYWJsZSkgW3NpemU9MjU2TV0KPiAgICAgUmVnaW9uIDM6
+IE1lbW9yeSBhdCBlMDAwMDAwMCAoNjQtYml0LCBwcmVmZXRjaGFibGUpIFtzaXplPTMyTV0KPiAg
+ICAgUmVnaW9uIDU6IEkvTyBwb3J0cyBhdCBlMDAwIFtzaXplPTEyOF0KPiAgICAgRXhwYW5zaW9u
+IFJPTSBhdCBlZjAwMDAwMCBbZGlzYWJsZWRdIFtzaXplPTUxMktdCj4gCj4gUmVnaW9uIDAsIDEs
+IDMgYW5kIHRoZSBleHBhbnNpb24gUk9NIGFyZSBhbGwgaW5jbHVkZWQgaW4gdGhlIG10cnIgcmVn
+aW9uIHJlZzAwLgo+IAo+IAo+IFRoZSBtYWdpYyByZWdpc3RlciB0aGF0IHdlIHdyaXRlIHRvIHdv
+cmthcm91bmQgdGhlIGlzc3VlIGlzIGluIFBDSQo+IGJyaWRnZSBjb25maWcgc3BhY2UgLSBub3Qg
+aW4gYSBCQVIuCgpPSywgSSBqdXN0IHdhbnRlZCB0byBydWxlIG91dCBNVFJSIG1pc2NvbmZpZ3Vy
+YXRpb24gYnV0IEkgZ3Vlc3MgaXQgaXMKbm90IHRoZSBjYXNlIGhlcmUuCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5v
+dXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+L21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
