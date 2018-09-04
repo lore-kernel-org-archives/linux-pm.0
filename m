@@ -1,81 +1,249 @@
-From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH] PCI: add prefetch quirk to work around
- Asus/Nvidia suspend issues
-Date: Tue, 4 Sep 2018 12:36:31 +0300
-Message-ID: <20180904093631.GN2283@lahna.fi.intel.com>
-References: <20180831073057.14626-1-drake@endlessm.com>
- <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
- <CAD8Lp45CKCHxTg91zF9bWztqbAwLzgAUpNEHQ6ouKu2PkJT8SQ@mail.gmail.com>
- <20180903121209.GC2283@lahna.fi.intel.com>
- <CAD8Lp46M-raneN+6bjGakTq_yd6wGjuPiKDyOoqpO8VXyDBrfQ@mail.gmail.com>
- <20180904064307.GM2283@lahna.fi.intel.com>
- <CAD8Lp45iPkYRD9-vDi0k61PW6W=i184xD6TEAPoZXh+hnGLW5g@mail.gmail.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v9 0/8] Introduce on-chip interconnect API
+Date: Tue, 4 Sep 2018 15:54:27 +0530
+Message-ID: <CAHLCerNd0hrLKgbni95_RSYOtsNufMCVtHbAKa4W+eo8H2cL2A@mail.gmail.com>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAD8Lp45iPkYRD9-vDi0k61PW6W=i184xD6TEAPoZXh+hnGLW5g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180831140151.13972-1-georgi.djakov@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, abailon@baylibre.com, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, Stephen Rothwell <sfr@canb.auug.org.au>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, lakml <linux-ar>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBTZXAgMDQsIDIwMTggYXQgMDM6MDc6NTJQTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
-b3RlOgo+IE9uIFR1ZSwgU2VwIDQsIDIwMTggYXQgMjo0MyBQTSwgTWlrYSBXZXN0ZXJiZXJnCj4g
-PG1pa2Eud2VzdGVyYmVyZ0BsaW51eC5pbnRlbC5jb20+IHdyb3RlOgo+ID4gWWVzLCBjYW4geW91
-IGNoZWNrIGlmIHRoZSBmYWlsaW5nIGRldmljZSBCQVIgaXMgaW5jbHVkZWQgaW4gYW55IG9mIHRo
-ZQo+ID4gYWJvdmUgZW50cmllcz8gSWYgbm90IHRoZW4gaXQgaXMgcHJvYmFibHkgbm90IHJlbGF0
-ZWQuCj4gCj4gbXRyciBhZ2FpbiBmb3IgcmVmZXJlbmNlOgo+IHJlZzAwOiBiYXNlPTB4MGMwMDAw
-MDAwICggMzA3Mk1CKSwgc2l6ZT0gMTAyNE1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gcmVnMDE6
-IGJhc2U9MHgwYTAwMDAwMDAgKCAyNTYwTUIpLCBzaXplPSAgNTEyTUIsIGNvdW50PTE6IHVuY2Fj
-aGFibGUKPiByZWcwMjogYmFzZT0weDA5MDAwMDAwMCAoIDIzMDRNQiksIHNpemU9ICAyNTZNQiwg
-Y291bnQ9MTogdW5jYWNoYWJsZQo+IHJlZzAzOiBiYXNlPTB4MDhjMDAwMDAwICggMjI0ME1CKSwg
-c2l6ZT0gICA2NE1CLCBjb3VudD0xOiB1bmNhY2hhYmxlCj4gcmVnMDQ6IGJhc2U9MHgwOGI4MDAw
-MDAgKCAyMjMyTUIpLCBzaXplPSAgICA4TUIsIGNvdW50PTE6IHVuY2FjaGFibGUKPiAKPiAKPiBU
-aGUgUENJIGJyaWRnZSBpczoKPiAwMDoxYy4wIFBDSSBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9u
-IFN1bnJpc2UgUG9pbnQtTFAgUENJIEV4cHJlc3MKPiBSb290IFBvcnQgKHJldiBmMSkgKHByb2ct
-aWYgMDAgW05vcm1hbCBkZWNvZGVdKQo+ICAgICBDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVy
-KyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLQo+IFBhckVyci0gU3RlcHBpbmctIFNFUlIt
-IEZhc3RCMkItIERpc0lOVHgrCj4gICAgIFN0YXR1czogQ2FwKyA2Nk1Iei0gVURGLSBGYXN0QjJC
-LSBQYXJFcnItIERFVlNFTD1mYXN0ID5UQWJvcnQtCj4gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlIt
-IDxQRVJSLSBJTlR4LQo+ICAgICBMYXRlbmN5OiAwLCBDYWNoZSBMaW5lIFNpemU6IDY0IGJ5dGVz
-Cj4gICAgIEludGVycnVwdDogcGluIEEgcm91dGVkIHRvIElSUSAxMjIKPiAgICAgQnVzOiBwcmlt
-YXJ5PTAwLCBzZWNvbmRhcnk9MDEsIHN1Ym9yZGluYXRlPTAxLCBzZWMtbGF0ZW5jeT0wCj4gICAg
-IEkvTyBiZWhpbmQgYnJpZGdlOiAwMDAwZTAwMC0wMDAwZWZmZgo+ICAgICBNZW1vcnkgYmVoaW5k
-IGJyaWRnZTogZWUwMDAwMDAtZWYwZmZmZmYKPiAgICAgUHJlZmV0Y2hhYmxlIG1lbW9yeSBiZWhp
-bmQgYnJpZGdlOiAwMDAwMDAwMGQwMDAwMDAwLTAwMDAwMDAwZTFmZmZmZmYKPiAKPiBUaGUgbWVt
-b3J5IGJlaGluZCBicmlkZ2UgYXQgZWUwMDAwMDAgaXMgaW5jbHVkZWQgaW4gdGhlIG10cnIgcmVn
-aW9uCj4gcmVnMDAgd2hpY2ggaXMgMHhjMDAwMDAwMCB0byAweGZmZmZmZmZmLgo+IFNhbWUgZm9y
-IHRoZSBwcmVmZXRjaGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2UuCgpZZWFoIGFuZCBpdCBpcyB1
-bmNhY2hhYmxlIHNvIGl0IHNob3VsZCBiZSBmaW5lLgoKPiBUaGUgbnZpZGlhIEdQVSB3aGljaCBi
-ZWNvbWVzIHVucmVzcG9uc2l2ZSBpczoKPiAKPiAwMTowMC4wIDNEIGNvbnRyb2xsZXI6IE5WSURJ
-QSBDb3Jwb3JhdGlvbiBHTTEwOE0gW0dlRm9yY2UgOTQwTVhdIChyZXYgYTIpCj4gICAgIFN1YnN5
-c3RlbTogQVNVU1RlSyBDb21wdXRlciBJbmMuIEdNMTA4TSBbR2VGb3JjZSA5NDBNWF0KPiAgICAg
-Q29udHJvbDogSS9PKyBNZW0rIEJ1c01hc3RlcisgU3BlY0N5Y2xlLSBNZW1XSU5WLSBWR0FTbm9v
-cC0KPiBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4Kwo+ICAgICBTdGF0
-dXM6IENhcCsgNjZNSHotIFVERi0gRmFzdEIyQi0gUGFyRXJyLSBERVZTRUw9ZmFzdCA+VEFib3J0
-LQo+IDxUQWJvcnQtIDxNQWJvcnQtID5TRVJSLSA8UEVSUi0gSU5UeC0KPiAgICAgTGF0ZW5jeTog
-MCwgQ2FjaGUgTGluZSBTaXplOiA2NCBieXRlcwo+ICAgICBJbnRlcnJ1cHQ6IHBpbiBBIHJvdXRl
-ZCB0byBJUlEgMTMzCj4gICAgIFJlZ2lvbiAwOiBNZW1vcnkgYXQgZWUwMDAwMDAgKDMyLWJpdCwg
-bm9uLXByZWZldGNoYWJsZSkgW3NpemU9MTZNXQo+ICAgICBSZWdpb24gMTogTWVtb3J5IGF0IGQw
-MDAwMDAwICg2NC1iaXQsIHByZWZldGNoYWJsZSkgW3NpemU9MjU2TV0KPiAgICAgUmVnaW9uIDM6
-IE1lbW9yeSBhdCBlMDAwMDAwMCAoNjQtYml0LCBwcmVmZXRjaGFibGUpIFtzaXplPTMyTV0KPiAg
-ICAgUmVnaW9uIDU6IEkvTyBwb3J0cyBhdCBlMDAwIFtzaXplPTEyOF0KPiAgICAgRXhwYW5zaW9u
-IFJPTSBhdCBlZjAwMDAwMCBbZGlzYWJsZWRdIFtzaXplPTUxMktdCj4gCj4gUmVnaW9uIDAsIDEs
-IDMgYW5kIHRoZSBleHBhbnNpb24gUk9NIGFyZSBhbGwgaW5jbHVkZWQgaW4gdGhlIG10cnIgcmVn
-aW9uIHJlZzAwLgo+IAo+IAo+IFRoZSBtYWdpYyByZWdpc3RlciB0aGF0IHdlIHdyaXRlIHRvIHdv
-cmthcm91bmQgdGhlIGlzc3VlIGlzIGluIFBDSQo+IGJyaWRnZSBjb25maWcgc3BhY2UgLSBub3Qg
-aW4gYSBCQVIuCgpPSywgSSBqdXN0IHdhbnRlZCB0byBydWxlIG91dCBNVFJSIG1pc2NvbmZpZ3Vy
-YXRpb24gYnV0IEkgZ3Vlc3MgaXQgaXMKbm90IHRoZSBjYXNlIGhlcmUuCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5v
-dXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-L21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+Hi Georgi,
+
+I'm currently reviewing this patchset (long overdue), but considering
+that we haven't added any major new features to the framework for the
+last couple of revisions, can you get this patchset merged into
+linux-next to see how things shake out there? We've had this merged
+branch merged into a CI build on kernelci for a while now w/o any
+major incident so we should increase its exposure.
+
+You could ask Stephen Rothwell if he'll accept the a branch directly
+from you or he needs an upstream maintainer (GregKH?) to carry it.
+
+Regard,
+Amit
+
+On Fri, Aug 31, 2018 at 7:31 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
+> Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+> graphics, modem). These cores are talking to each other and can generate a
+> lot of data flowing through the on-chip interconnects. These interconnect
+> buses could form different topologies such as crossbar, point to point buses,
+> hierarchical buses or use the network-on-chip concept.
+>
+> These buses have been sized usually to handle use cases with high data
+> throughput but it is not necessary all the time and consume a lot of power.
+> Furthermore, the priority between masters can vary depending on the running
+> use case like video playback or CPU intensive tasks.
+>
+> Having an API to control the requirement of the system in terms of bandwidth
+> and QoS, so we can adapt the interconnect configuration to match those by
+> scaling the frequencies, setting link priority and tuning QoS parameters.
+> This configuration can be a static, one-time operation done at boot for some
+> platforms or a dynamic set of operations that happen at run-time.
+>
+> This patchset introduce a new API to get the requirement and configure the
+> interconnect buses across the entire chipset to fit with the current demand.
+> The API is NOT for changing the performance of the endpoint devices, but only
+> the interconnect path in between them.
+>
+> The API is using a consumer/provider-based model, where the providers are
+> the interconnect buses and the consumers could be various drivers.
+> The consumers request interconnect resources (path) to an endpoint and set
+> the desired constraints on this data flow path. The provider(s) receive
+> requests from consumers and aggregate these requests for all master-slave
+> pairs on that path. Then the providers configure each participating in the
+> topology node according to the requested data flow path, physical links and
+> constraints. The topology could be complicated and multi-tiered and is SoC
+> specific.
+>
+> Below is a simplified diagram of a real-world SoC topology. The interconnect
+> providers are the NoCs.
+>
+> +----------------+    +----------------+
+> | HW Accelerator |--->|      M NoC     |<---------------+
+> +----------------+    +----------------+                |
+>                         |      |                    +------------+
+>  +-----+  +-------------+      V       +------+     |            |
+>  | DDR |  |                +--------+  | PCIe |     |            |
+>  +-----+  |                | Slaves |  +------+     |            |
+>    ^ ^    |                +--------+     |         |   C NoC    |
+>    | |    V                               V         |            |
+> +------------------+   +------------------------+   |            |   +-----+
+> |                  |-->|                        |-->|            |-->| CPU |
+> |                  |-->|                        |<--|            |   +-----+
+> |     Mem NoC      |   |         S NoC          |   +------------+
+> |                  |<--|                        |---------+    |
+> |                  |<--|                        |<------+ |    |   +--------+
+> +------------------+   +------------------------+       | |    +-->| Slaves |
+>   ^  ^    ^    ^          ^                             | |        +--------+
+>   |  |    |    |          |                             | V
+> +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+> | CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
+> +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+>           |
+>       +-------+
+>       | Modem |
+>       +-------+
+>
+> TODO:
+> * Create icc_set_extended() to handle parameters such as latency and other
+>   QoS values.
+> * Convert from using global node identifiers to local per provider ids.
+> * Cache the path between the nodes instead of walking the graph on each get().
+> * Sync interconnect requests with the idle state of the device.
+>
+> Changes since patchset v8 (https://lkml.org/lkml/2018/8/10/387)
+> * Fixed the names of the files when built as modules.
+> * Corrected some typos in comments.
+>
+> Changes since patchset v7 (https://lkml.org/lkml/2018/7/31/647)
+> * Addressed comments on kernel-doc and grammar. (Randy)
+> * Picked Reviewed-by: Evan
+> * Squashed consumer and provider DT bindings into single patch. (Rob)
+> * Cleaned-up msm8916 DT bindings docs by removing unused port ids.
+> * Updated documentation for the cases when NULL is returned. (Saravana)
+> * New patch to add myself as maintainer.
+>
+> Changes since patchset v6 (https://lkml.org/lkml/2018/7/9/698)
+> * [patches 1,6]: Move the aggregation within the provider from the framework to
+>   the platform driver's set() callback, as the aggregation point could be SoC
+>   specific.
+> * [patch 1]: Include missing header, reset state only of the traversed nodes,
+>   move more code into path_init(), add more asserts, move misplaced mutex,
+>   simplify icc_link_destroy() (Evan)
+> * [patch 1]: Fix the order of requests to go from source to destination. (Alex)
+> * [patch 7]: Use better wording in the documentation. (Evan)
+> * [patch 6]: Reorder struct members, sort nodes alphabetically, improve naming
+>   of variables , add missing clk_disable_unprepare() in error paths. (Matthias)
+> * [patch 6]: Remove redundant NULL pointer check in msm8916 driver. (Alex)
+> * [patch 6]: Add missing depend on QCOM_SMD_RPM in Kconfig. (Evan)
+> * [patch 3]: Don't check for errors on debugfs calls, remove debugfs directory
+>   when module is unloaded (Greg)
+>
+> Changes since patchset v5 (https://lkml.org/lkml/2018/6/20/453)
+> * Fix the modular build, make rpm-smd driver a module.
+> * Optimize locking and move to higher level. (Evan)
+> * Code cleanups. Fix typos. (Evan, Matthias)
+> * Add the source node to the path. (Evan)
+> * Rename path_allocate() to path_init() with minor refactoring. (Evan)
+> * Rename *_remove() functions to *_destroy().
+> * Return fixed errors in icc_link_destroy(). (Evan)
+> * Fix krealloc() usage in icc_link_destroy(). (Evan)
+> * Add missing kfree() in icc_node_create(). (Matthias)
+> * Make icc_node_add() return void. (Matthias)
+> * Change mutex_init to mutex_lock in icc_provider_add(). (Matthias)
+> * Add new icc_node_del() function to delete nodes from provider.
+> * Fix the header guard to reflect the path in smd-rpm.h. (Evan)
+> * Check for errors returned by qcom_icc_rpm_smd_send(). (Evan)
+> * Propagate the error of icc_provider_del(). (Evan)
+>
+> Changes since patchset v4 (https://lkml.org/lkml/2018/3/9/856)
+> * Simplified locking by using a single global mutex. (Evan)
+> * Changed the aggregation function interface.
+> * Implemented functions for node, link, provider removal. (Evan)
+> * Naming changes on variables and functions, removed redundant code. (Evan)
+> * Fixes and clarifications in the docs. (Matthias, Evan, Amit, Alexandre)
+> * Removed mandatory reg DT property, made interconnect-names optional. (Bjorn)
+> * Made interconnect-cells property required to align with other bindings. (Neil)
+> * Moved msm8916 specific bindings into a separate file and patch. (Bjorn)
+> * Use the names, instead of the hardcoded ids for topology. (Matthias)
+> * Init the node before creating the links. (Evan)
+> * Added icc_units_to_bps macro. (Amit)
+>
+> Changes since patchset v3 (https://lkml.org/lkml/2017/9/8/544)
+> * Refactored the constraints aggregation.
+> * Use the IDR API.
+> * Split the provider and consumer bindings into separate patches and propose
+>   new bindings for consumers, which allows to specify the local source port.
+> * Adopted the icc_ prefix for API functions.
+> * Introduced separate API functions for creating interconnect nodes and links.
+> * Added DT lookup support in addition to platform data.
+> * Dropped the event tracing patch for now.
+> * Added a patch to provide summary via debugfs.
+> * Use macro for the list of topology definitions in the platform driver.
+> * Various minor changes.
+>
+> Changes since patchset v2 (https://lkml.org/lkml/2017/7/20/825)
+> * Split the aggregation into per node and per provider. Cache the
+>   aggregated values.
+> * Various small refactorings and cleanups in the framework.
+> * Added a patch introducing basic tracepoint support for monitoring
+>   the time required to update the interconnect nodes.
+>
+> Changes since patchset v1 (https://lkml.org/lkml/2017/6/27/890)
+> * Updates in the documentation.
+> * Changes in request aggregation, locking.
+> * Dropped the aggregate() callback and use the default as it currently
+>   sufficient for the single vendor driver. Will add it later when needed.
+> * Dropped the dt-bindings draft patch for now.
+>
+> Changes since RFC v2 (https://lkml.org/lkml/2017/6/12/316)
+> * Converted documentation to rst format.
+> * Fixed an incorrect call to mutex_lock. Renamed max_bw to peak_bw.
+>
+> Changes since RFC v1 (https://lkml.org/lkml/2017/5/15/605)
+> * Refactored code into shorter functions.
+> * Added a new aggregate() API function.
+> * Rearranged some structs to reduce padding bytes.
+>
+> Changes since RFC v0 (https://lkml.org/lkml/2017/3/1/599)
+> * Removed DT support and added optional Patch 3 with new bindings proposal.
+> * Converted the topology into internal driver data.
+> * Made the framework modular.
+> * interconnect_get() now takes (src and dst ports as arguments).
+> * Removed public declarations of some structs.
+> * Now passing prev/next nodes to the vendor driver.
+> * Properly remove requests on _put().
+> * Added refcounting.
+> * Updated documentation.
+> * Changed struct interconnect_path to use array instead of linked list.
+>
+> Georgi Djakov (8):
+>   interconnect: Add generic on-chip interconnect API
+>   dt-bindings: Introduce interconnect binding
+>   interconnect: Allow endpoints translation via DT
+>   interconnect: Add debugfs support
+>   interconnect: qcom: Add RPM communication
+>   dt-bindings: interconnect: Document qcom,msm8916 NoC bindings
+>   interconnect: qcom: Add msm8916 interconnect provider driver
+>   MAINTAINERS: add a maintainer for the interconnect API
+>
+>  .../bindings/interconnect/interconnect.txt    |  60 ++
+>  .../bindings/interconnect/qcom-msm8916.txt    |  41 +
+>  .../bindings/interconnect/qcom-smd.txt        |  32 +
+>  Documentation/interconnect/interconnect.rst   |  94 +++
+>  MAINTAINERS                                   |  10 +
+>  drivers/Kconfig                               |   2 +
+>  drivers/Makefile                              |   1 +
+>  drivers/interconnect/Kconfig                  |  15 +
+>  drivers/interconnect/Makefile                 |   6 +
+>  drivers/interconnect/core.c                   | 729 ++++++++++++++++++
+>  drivers/interconnect/qcom/Kconfig             |  22 +
+>  drivers/interconnect/qcom/Makefile            |   7 +
+>  drivers/interconnect/qcom/msm8916.c           | 510 ++++++++++++
+>  drivers/interconnect/qcom/smd-rpm.c           |  91 +++
+>  drivers/interconnect/qcom/smd-rpm.h           |  15 +
+>  include/dt-bindings/interconnect/qcom.h       |  98 +++
+>  include/linux/interconnect-provider.h         | 125 +++
+>  include/linux/interconnect.h                  |  49 ++
+>  18 files changed, 1907 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-msm8916.txt
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom-smd.txt
+>  create mode 100644 Documentation/interconnect/interconnect.rst
+>  create mode 100644 drivers/interconnect/Kconfig
+>  create mode 100644 drivers/interconnect/Makefile
+>  create mode 100644 drivers/interconnect/core.c
+>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>  create mode 100644 drivers/interconnect/qcom/Makefile
+>  create mode 100644 drivers/interconnect/qcom/msm8916.c
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.c
+>  create mode 100644 drivers/interconnect/qcom/smd-rpm.h
+>  create mode 100644 include/dt-bindings/interconnect/qcom.h
+>  create mode 100644 include/linux/interconnect-provider.h
+>  create mode 100644 include/linux/interconnect.h
+>
