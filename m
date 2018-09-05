@@ -1,50 +1,60 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Re: Rewriting Intel PCI bridge prefetch base address bits
- solves nvidia graphics issues
-Date: Wed, 5 Sep 2018 14:26:51 +0800
-Message-ID: <CAD8Lp461TW7KvSv2N-k=_vkg54F-AYixHr+uAsCo+Gh=0zEPNQ@mail.gmail.com>
-References: <CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com>
- <20180824154212.GB8601@al>
- <CAD8Lp45D6=pqsgr_tXS08pE0dbG1XhcwnDB3mGZQ=P3ETxywzw@mail.gmail.com>
- <20180828095722.GA8820@al>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Wed, 5 Sep 2018 12:45:45 +0200
+Message-ID: <20180905104545.GB20267@localhost.localdomain>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180828095722.GA8820@al>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Cc: linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Endless Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180828135324.21976-3-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlLCBBdWcgMjgsIDIwMTggYXQgNTo1NyBQTSwgUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3Rl
-eW4ubmw+IHdyb3RlOgo+IE9ubHkgbm9uLWJyaWRnZSBkZXZpY2VzIGNhbiBiZSBwYXNzZWQgdG8g
-YSBndWVzdCwgYnV0IHBlcmhhcHMgbG9nZ2luZwo+IGFjY2VzcyB0byB0aGUgZW11bGF0ZWQgYnJp
-ZGdlIGlzIGFscmVhZHkgc3VmZmljaWVudC4gVGhlIFByZWZldGNoYWJsZQo+IEJhc2UgVXBwZXIg
-MzIgQml0cyByZWdpc3RlciBpcyBhdCBvZmZzZXQgMHgyOC4KPgo+IEluIGEgdHJhY2Ugd2hlcmUg
-dGhlIE52aWRpYSBkZXZpY2UgaXMgZGlzYWJsZWQvZW5hYmxlZCB2aWEgRGV2aWNlCj4gTWFuYWdl
-ciwgSSBzZWUgd3JpdGVzIG9uIHRoZSBlbmFibGUgcGF0aDoKPgo+ICAgICAyNTcxQDE1MzUxMDg5
-MDQuNTkzMTA3OnJwX3dyaXRlX2NvbmZpZyAoaW9oMzQyMCwgQDB4MjgsIDB4MCwgbGVuPTB4NCkK
-CkRpZCB5b3UgZG8gYW55dGhpbmcgc3BlY2lhbCB0byBnZXQgYW4gZW11bGF0ZWQgYnJpZGdlIGlu
-Y2x1ZGVkIGluIHRoaXMgc2V0dXA/CgpGb2xsbG93aW5nIHRoZSBpbnN0cnVjdGlvbnMgYXQKaHR0
-cHM6Ly93aWtpLmFyY2hsaW51eC5vcmcvaW5kZXgucGhwL1BDSV9wYXNzdGhyb3VnaF92aWFfT1ZN
-RiBJIGNhbgpzdWNjZXNzZnVsbHkgcGFzcyB0aHJvdWdoIGRldmljZXMgdG8gd2luZG93cyBydW5u
-aW5nIHVuZGVyCnZpcnQtbWFuYWdlci4gSW4gdGhlIG52aWRpYSBHUFUgY2FzZSBJIGhhdmVuJ3Qg
-Z290IHBhc3NlZCB0aGUgZHJpdmVyCmluc3RhbGxhdGlvbiBmYWlsdXJlLCBidXQgSSBjYW4gcGFz
-cyB0aHJvdWdoIG90aGVyIGRldmljZXMgT0sgYW5kCmluc3RhbGwgdGhlaXIgZHJpdmVycy4KCkhv
-d2V2ZXIgSSBkbyBub3QgZW5kIHVwIHdpdGggYW55IFBDSS10by1QQ0kgYnJpZGdlcyBpbiB0aGlz
-IHNldHVwLiBUaGUKcGFzc2VkIHRocm91Z2ggZGV2aWNlIHNpdHMgYXQgYWRkcmVzcyAwMDowOC4w
-LCBwYXJlbnQgaXMgdGhlIFBDSSBob3N0CmJyaWRnZSAwMDowMC4wLgoKKEknbSB0cnlpbmcgdG8g
-c3B5IGlmIFdpbmRvd3MgYXBwZWFycyB0byByZXN0b3JlIG9yIHJlc2V0IHRoZSBQQ0kKYnJpZGdl
-IHByZWZldGNoIHJlZ2lzdGVycyB1cG9uIHJlc3VtZSkKClRoYW5rcwpEYW5pZWwKX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxp
-c3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3Rv
-cC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+Hi,
+
+On 28/08/18 14:53, Patrick Bellasi wrote:
+
+[...]
+
+>  static inline int __setscheduler_uclamp(struct task_struct *p,
+>  					const struct sched_attr *attr)
+>  {
+> -	if (attr->sched_util_min > attr->sched_util_max)
+> -		return -EINVAL;
+> -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
+> -		return -EINVAL;
+> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> +	int lower_bound, upper_bound;
+> +	struct uclamp_se *uc_se;
+> +	int result = 0;
+>  
+> -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
+> -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
+> +	mutex_lock(&uclamp_mutex);
+
+This is going to get called from an rcu_read_lock() section, which is a
+no-go for using mutexes:
+
+ sys_sched_setattr ->
+   rcu_read_lock()
+   ...
+   sched_setattr() ->
+     __sched_setscheduler() ->
+       ...
+       __setscheduler_uclamp() ->
+         ...
+	 mutex_lock()
+
+Guess you could fix the issue by getting the task struct after find_
+process_by_pid() in sys_sched_attr() and then calling sched_setattr()
+after rcu_read_lock() (putting the task struct at the end). Peter
+actually suggested this mod to solve a different issue.
+
+Best,
+
+- Juri
