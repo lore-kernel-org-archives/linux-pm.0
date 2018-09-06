@@ -1,40 +1,106 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v6 04/14] PM / EM: Expose the Energy Model in sysfs
-Date: Wed, 5 Sep 2018 23:56:43 -0700
-Message-ID: <c012c934-d861-eba6-0c67-63e8308ae37b@arm.com>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-5-quentin.perret@arm.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Thu, 6 Sep 2018 10:17:28 +0200
+Message-ID: <20180906081728.GB27626@localhost.localdomain>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180820094420.26590-5-quentin.perret@arm.com>
-Content-Language: en-GB
+Content-Disposition: inline
+In-Reply-To: <20180828135324.21976-3-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/20/2018 02:44 AM, Quentin Perret wrote:
-> Expose the Energy Model (read-only) of all performance domains in sysfs
-> for convenience. To do so, add a kobject to the CPU subsystem under the
-> umbrella of which a kobject for each performance domain is attached.
-> 
-> The resulting hierarchy is as follows for a platform with two
-> performance domains for example:
-> 
->     /sys/devices/system/cpu/energy_model
->     ├── pd0
->     │   ├── cost
->     │   ├── cpus
->     │   ├── frequency
->     │   └── power
-
-cpus (cpumask of the perf domain), frequency (OPP's of the perf domain) 
-and power (values at those OPP's) are somehow easy to grasp, cost is 
-definitely not.
-
-You have this nice description in em_pd_energy() what cost actually is. 
-IMHO, might be worth repeating this at least in the patch header here.
+On 28/08/18 14:53, Patrick Bellasi wrote:
 
 [...]
+
+>  static inline int __setscheduler_uclamp(struct task_struct *p,
+>  					const struct sched_attr *attr)
+>  {
+> -	if (attr->sched_util_min > attr->sched_util_max)
+> -		return -EINVAL;
+> -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
+> -		return -EINVAL;
+> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> +	int lower_bound, upper_bound;
+> +	struct uclamp_se *uc_se;
+> +	int result = 0;
+>  
+> -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
+> -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
+> +	mutex_lock(&uclamp_mutex);
+>  
+> -	return 0;
+> +	/* Find a valid group_id for each required clamp value */
+> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> +		upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> +			? attr->sched_util_max
+> +			: p->uclamp[UCLAMP_MAX].value;
+> +
+> +		if (upper_bound == UCLAMP_NOT_VALID)
+> +			upper_bound = SCHED_CAPACITY_SCALE;
+> +		if (attr->sched_util_min > upper_bound) {
+> +			result = -EINVAL;
+> +			goto done;
+> +		}
+> +
+> +		result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
+> +		if (result == -ENOSPC) {
+> +			pr_err(UCLAMP_ENOSPC_FMT, "MIN");
+> +			goto done;
+> +		}
+> +		group_id[UCLAMP_MIN] = result;
+> +	}
+> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> +		lower_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
+> +			? attr->sched_util_min
+> +			: p->uclamp[UCLAMP_MIN].value;
+> +
+> +		if (lower_bound == UCLAMP_NOT_VALID)
+> +			lower_bound = 0;
+> +		if (attr->sched_util_max < lower_bound ||
+> +		    attr->sched_util_max > SCHED_CAPACITY_SCALE) {
+> +			result = -EINVAL;
+> +			goto done;
+> +		}
+> +
+> +		result = uclamp_group_find(UCLAMP_MAX, attr->sched_util_max);
+> +		if (result == -ENOSPC) {
+> +			pr_err(UCLAMP_ENOSPC_FMT, "MAX");
+> +			goto done;
+> +		}
+> +		group_id[UCLAMP_MAX] = result;
+> +	}
+
+Don't you have to reset result to 0 here (it seems what follows cannot
+fail anymore)? Otherwise this function will return latest
+uclamp_group_find return value, which will be interpreted as error if
+not 0.
+
+> +
+> +	/* Update each required clamp group */
+> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> +		uc_se = &p->uclamp[UCLAMP_MIN];
+> +		uclamp_group_get(UCLAMP_MIN, group_id[UCLAMP_MIN],
+> +				 uc_se, attr->sched_util_min);
+> +	}
+> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> +		uc_se = &p->uclamp[UCLAMP_MAX];
+> +		uclamp_group_get(UCLAMP_MAX, group_id[UCLAMP_MAX],
+> +				 uc_se, attr->sched_util_max);
+> +	}
+> +
+> +done:
+> +	mutex_unlock(&uclamp_mutex);
+> +
+> +	return result;
+> +}
+
+Best,
+
+- Juri
