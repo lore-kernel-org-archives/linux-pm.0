@@ -1,127 +1,146 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v16 4/5] dt-bindings: arm-smmu: Add bindings for qcom,
-	smmu-v2
-Date: Thu, 6 Sep 2018 09:22:16 +0530
-Message-ID: <CAFp+6iFstfn1LXh6m_XFZr8LfdUA7Yd3-bx+43-SM4TU3kPqXg@mail.gmail.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
-	<20180830144541.17740-5-vivek.gautam@codeaurora.org>
+From: Francisco Jerez <currojerez@riseup.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
+Date: Wed, 05 Sep 2018 21:20:08 -0700
+Message-ID: <87in3j9s07.fsf@riseup.net>
+References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <1244c5d6-460e-0e0b-b7bf-a46e73327383@intel.com> <8736upda8s.fsf@riseup.net> <b48340f59011bc3d7402b6a811bce4fa861fab7b.camel@linux.intel.com> <8736uobu7w.fsf@riseup.net> <8c56f28c2cc11de37fa3517348559eb040894702.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <20180830144541.17740-5-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
-	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; boundary="==-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8c56f28c2cc11de37fa3517348559eb040894702.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-On Thu, Aug 30, 2018 at 8:16 PM Vivek Gautam
-<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
->
-> Add bindings doc for Qcom's smmu-v2 implementation.
->
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I removed your reviewed-by for this particular patch.
-Can you please consider giving your review if you find the changes okay now.
-Thanks.
+Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
 
-Best regards
-Vivek
+> [...]
+>
+>> > >=20
+>> > > This patch causes a number of statistically significant
+>> > > regressions
+>> > > (with significance of 1%) on the two systems I've tested it
+>> > > on.  On
+>> > > my
+>> >=20
+>> > Sure. These patches are targeted to Atom clients where some of
+>> > these
+>> > server like workload may have some minor regression on few watts
+>> > TDP
+>> > parts.
+>>=20
+>> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
+>> nor
+>> the 10% regression of warsaw qualify as small.  And most of the test
+>> cases on the list of regressions aren't exclusively server-like, if
+>> at
+>> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
+>> benchmarks -- Latency is as important if not more for interactive
+>> workloads than it is for server workloads.  In the case of a conflict
+>> like the one we're dealing with right now between optimizing for
+>> throughput (e.g. for the maximum number of requests per second) and
+>> optimizing for latency (e.g. for the minimum request duration), you
+>> are
+>> more likely to be concerned about the former than about the latter in
+>> a
+>> server setup.
+>
+> Eero,
+> Please add your test results here.
+>
+> No matter which algorithm you do, there will be variations. So you have
+> to look at the platforms which you are targeting. For this platform=20
+> number one item is use of less turbo and hope you know why?
 
->  .../devicetree/bindings/iommu/arm,smmu.txt         | 39 ++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-> index 8a6ffce12af5..a6504b37cc21 100644
-> --- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-> +++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
-> @@ -17,10 +17,16 @@ conditions.
->                          "arm,mmu-401"
->                          "arm,mmu-500"
->                          "cavium,smmu-v2"
-> +                        "qcom,smmu-v2"
->
->                    depending on the particular implementation and/or the
->                    version of the architecture implemented.
->
-> +                  Qcom SoCs must contain, as below, SoC-specific compatibles
-> +                  along with "qcom,smmu-v2":
-> +                  "qcom,msm8996-smmu-v2", "qcom,smmu-v2",
-> +                  "qcom,sdm845-smmu-v2", "qcom,smmu-v2".
-> +
->  - reg           : Base address and size of the SMMU.
->
->  - #global-interrupts : The number of global interrupts exposed by the
-> @@ -71,6 +77,22 @@ conditions.
->                    or using stream matching with #iommu-cells = <2>, and
->                    may be ignored if present in such cases.
->
-> +- clock-names:    List of the names of clocks input to the device. The
-> +                  required list depends on particular implementation and
-> +                  is as follows:
-> +                  - for "qcom,smmu-v2":
-> +                    - "bus": clock required for downstream bus access and
-> +                             for the smmu ptw,
-> +                    - "iface": clock required to access smmu's registers
-> +                               through the TCU's programming interface.
-> +                  - unspecified for other implementations.
-> +
-> +- clocks:         Specifiers for all clocks listed in the clock-names property,
-> +                  as per generic clock bindings.
-> +
-> +- power-domains:  Specifiers for power domains required to be powered on for
-> +                  the SMMU to operate, as per generic power domain bindings.
-> +
->  ** Deprecated properties:
->
->  - mmu-masters (deprecated in favour of the generic "iommus" binding) :
-> @@ -137,3 +159,20 @@ conditions.
->                  iommu-map = <0 &smmu3 0 0x400>;
->                  ...
->          };
-> +
-> +       /* Qcom's arm,smmu-v2 implementation */
-> +       smmu4: iommu@d00000 {
-> +               compatible = "qcom,msm8996-smmu-v2", "qcom,smmu-v2";
-> +               reg = <0xd00000 0x10000>;
-> +
-> +               #global-interrupts = <1>;
-> +               interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
-> +                            <GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
-> +                            <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
-> +               #iommu-cells = <1>;
-> +               power-domains = <&mmcc MDSS_GDSC>;
-> +
-> +               clocks = <&mmcc SMMU_MDP_AXI_CLK>,
-> +                        <&mmcc SMMU_MDP_AHB_CLK>;
-> +               clock-names = "bus", "iface";
-> +       };
-> --
-> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-> of Code Aurora Forum, hosted by The Linux Foundation
->
-> _______________________________________________
-> iommu mailing list
-> iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
+Unfortunately the current controller uses turbo frequently on Atoms for
+TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
+boosting simply exacerbated the pre-existing energy efficiency problem.
 
+> On this platform GFX patch caused this issue as it was submitted after
+> io boost patchset. So rather that should be reverted first before
+> optimizing anything.
+>
+>
+>
+>>=20
+>> > But weighing against reduced TURBO usage (which is enough trigger)
+>> > and
+>> > improvement in tests done by Eero (which was primary complaint to
+>> > us).
+>> >=20
+>> > It is trivial patch. Yes, the patch is not perfect and doesn't
+>> > close
+>> > doors for any improvements.
+>> >=20
+>>=20
+>> It's sort of self-contained because it's awfully incomplete.Don't
+>> agtr
+>
+>>=20
+>> > I see your idea, but how to implement in acceptable way is a
+>> > challenge.
+>>=20
+>> Main challenge was getting the code to work without regressions in
+>> latency-sensitive workloads, which I did, because you told me that it
+>> wasn't acceptable for it to cause any regressions on the Phoronix
+>> daily-system-tracker, whether latency-bound or not.
+> Yes, because your intention was to have a global change not a low power
+> Atom specific,
+>
 
+My intention was to target low-power Atoms only since the first day we
+discussed this problem.  The cover letter of the series I sent and the
+commit messages make this fairly clear.
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+>>   What is left in
+>> order to address Peter's concerns is for the most part plumbing,
+>> that's
+>> guaranteed not to have any functional impact on the heuristic.  The
+>> fact
+>> that we don't expect it to change the performance of the system makes
+>> it
+>> substantially less time-consuming to validate than altering the
+>> performance trade-offs of the heuristic dynamically in order to avoid
+>> regressions (which is what has kept my systems busy most of the time
+>> lately).  Seems like my series, even in its current state without the
+>> changes requested by Peter is closer to being ready for production
+>> than
+>> this patch is.
+>
+> Sorry, Not at all. We call such patches as experimental series.
+
+The numbers speak otherwise.
+
+> You caused 100% regression to idle power. There is no version 2 after
+> that, even if you fixed locally even to look.
+>
+
+I did post a link to a v2 that fixed the idle power issue on the v1
+thread, but I didn't intend to send it for review yet.  I'll send it out
+once I've fully taken into account Peter's feedback.
+
+> Thanks,
+> Srinivas
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCW5Cq+AAKCRCDmTidfVK/
+W6sIAP9TnWh8OPsd2tgmocKMDN8Thrf71op/SrvzRsNvSqoa5gEAjs/8de3OOxYh
+CettM1Ncc4usc8Wh11kvS3PfSAsu+A8=
+=GW9w
+-----END PGP SIGNATURE-----
+--==-=-=--
