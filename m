@@ -1,56 +1,82 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH] PCI: add prefetch quirk to work around
- Asus/Nvidia suspend issues
-Date: Thu, 6 Sep 2018 17:02:39 +0800
-Message-ID: <CAD8Lp45z-rGaZeh8Cu6eMF03RCVtKdz4Z8+L4QQzO1+JX-L1yg@mail.gmail.com>
-References: <20180831073057.14626-1-drake@endlessm.com>
- <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Thu, 6 Sep 2018 11:18:55 +0200
+Message-ID: <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-14-quentin.perret@arm.com> <20180904105906.t5i7twyyt2omc45b@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180831191225.GA43106-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180904105906.t5i7twyyt2omc45b@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2F0LCBTZXAgMSwgMjAxOCBhdCAzOjEyIEFNLCBCam9ybiBIZWxnYWFzIDxoZWxnYWFzQGtl
-cm5lbC5vcmc+IHdyb3RlOgo+IENhbiB3ZSB0ZWxsIHdoZXRoZXIgV2luZG93cyByZXdyaXRlcyB0
-aGlzIHJlZ2lzdGVyIHVuY29uZGl0aW9uYWxseSBhdAo+IHJlc3VtZS10aW1lPyAgSWYgc28sIGl0
-IG1heSBiZSBtb3JlIHJvYnVzdCBmb3IgTGludXggdG8gZG8gdGhlIHNhbWUuCj4gVGhlIHdob2xl
-IHRoaW5nIGlzIGJsYWNrIG1hZ2ljLCB3aGljaCBJIGhhdGUsIGJ1dCBpZiBpdCdzIG91ciBvbmx5
-Cj4gY2hvaWNlLCBpdCBtYXkgYmUgYmV0dGVyIHRvIGhhdmUgdGhpcyBhcHBsaWVkIGV2ZXJ5d2hl
-cmUgc28gd2UgZG9uJ3QKPiBrZWVwIHN0dWJiaW5nIG91ciB0b2VzIG9uIG5ldyBzeXN0ZW1zIHRo
-YXQgcmVxdWlyZSB0aGUgcXVpcmsuCgpDaGVja2VkIHRoaXMgd2l0aCBxZW11IGFkZGluZyBhIFBD
-SS10by1QQ0kgYnJpZGdlIChpb2gzNDIwKS4KCiQgcWVtdS1zeXN0ZW0teDg2XzY0IC1lbmFibGUt
-a3ZtIC1NIHEzNSxhY2NlbD1rdm0gLW0gMkcgLXZnYSBxeGwgLWNwdQpob3N0IC1oZGEgdGVzdGlt
-Zy5pbWcgLWRldmljZQppb2gzNDIwLGlkPXJwMSxidXM9cGNpZS4wLGFkZHI9MWMuMCxwb3J0PTEg
-LXRyYWNlIGV2ZW50cz1ldmVudHMudHh0CgpldmVudHMudHh0IGhhczoKcGNpX2NmZ19yZWFkCnBj
-aV9jZmdfd3JpdGUKCkxvZ2dlZCBjZmcgc3BhY2UgYWNjZXNzZXMgZHVyaW5nIGJvb3Q6Cmh0dHBz
-Oi8vZ2lzdC5naXRodWIuY29tL2RzZC8xMzVmYjI1NWNiMmIyMzc1NjdkOGVhMmQ2YmZjNjkxNyNm
-aWxlLWJvb3QtdHh0CgpTdXNwZW5kOgpodHRwczovL2dpc3QuZ2l0aHViLmNvbS9kc2QvMTM1ZmIy
-NTVjYjJiMjM3NTY3ZDhlYTJkNmJmYzY5MTcjZmlsZS1zdXNwZW5kLXR4dAoKUmVzdW1lOgpodHRw
-czovL2dpc3QuZ2l0aHViLmNvbS9kc2QvMTM1ZmIyNTVjYjJiMjM3NTY3ZDhlYTJkNmJmYzY5MTcj
-ZmlsZS1yZXN1bWUtdHh0CgpOb3RhYmx5IGR1cmluZyByZXN1bWUsIHRoZSBwcmVmZXRjaC1yZWxh
-dGVkIHJlZ2lzdGVycyBnZXQgcmV3cml0dGVuOgogIHBjaV9jZmdfd3JpdGUgaW9oMzQyMCAyODow
-IEAweDI0IDwtIDB4ZmViMGZlYTAKICBwY2lfY2ZnX3dyaXRlIGlvaDM0MjAgMjg6MCBAMHgyOCA8
-LSAweDAKICBwY2lfY2ZnX3dyaXRlIGlvaDM0MjAgMjg6MCBAMHgyYyA8LSAweDAKClRoaXMgaGFw
-cGVuZWQgZXZlbiB0aG91Z2ggdGhlcmUgd2FzIG5vdGhpbmcgYmVoaW5kIHRoZSBicmlkZ2UuCldp
-bmRvd3MgZmFpbGVkIHRvIHJlc3VtZSBpbiB0aGlzIHRlc3QgKGJsYWNrIHNjcmVlbikgYnV0IHRo
-ZSB0cmFjZWQKcmVnaXN0ZXIgd3JpdGVzIHNlZW0gaW5kaWNhdGl2ZSBlbm91Z2guCgpQZXRlciBX
-dSBjb25maXJtcyB0aGUgc2FtZSByZXN1bHRzIGluIGEgc2ltaWxhciBleHBlcmltZW50OgpodHRw
-czovL21hcmMuaW5mby8/bD1saW51eC1wY2kmbT0xNTM2MTYzMzYyMjUzODYmdz0yCgpJJ2xsIGxv
-b2sgaW50byBjcmVhdGluZyBhIG5ldyBwYXRjaCB0aGF0IHVuY29uZGl0aW9uYWxseSByZXByb2dy
-YW1zCnRoZSBQQ0kgYnJpZGdlIHByZWZldGNoIHN0dWZmIG9uIHJlc3VtZS4KClRoYW5rcwpEYW5p
-ZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVh
-dSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+On Tue, Sep 4, 2018 at 12:59 PM Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> On Monday 20 Aug 2018 at 10:44:19 (+0100), Quentin Perret wrote:
+> > Energy Aware Scheduling (EAS) is designed with the assumption that
+> > frequencies of CPUs follow their utilization value. When using a CPUFreq
+> > governor other than schedutil, the chances of this assumption being true
+> > are small, if any. When schedutil is being used, EAS' predictions are at
+> > least consistent with the frequency requests. Although those requests
+> > have no guarantees to be honored by the hardware, they should at least
+> > guide DVFS in the right direction and provide some hope in regards to the
+> > EAS model being accurate.
+> >
+> > To make sure EAS is only used in a sane configuration, create a strong
+> > dependency on schedutil being used. Since having sugov compiled-in does
+> > not provide that guarantee, extend the existing CPUFreq policy notifier
+> > with a new case on governor changes. That allows the scheduler to
+> > register a callback on this notifier to rebuild the scheduling domains
+> > when governors are changed, and enable/disable EAS accordingly.
+> >
+> > cc: Ingo Molnar <mingo@redhat.com>
+> > cc: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> >
+> > ---
+> > This patch could probably be squashed into another one, but I kept it
+> > separate to ease the review. Also, it's probably optional as not having
+> > it will not 'break' things per se.
+> >
+> > I went for the smallest possible solution I could find, which has the
+> > good side of being simple, but it's definitely not the only one.
+> >
+> > Another possibility would be to hook things in sugov_start() and
+> > sugov_stop(), but that requires some more work. In this case, it
+> > wouldn't be possible to just re-build the sched_domains() from there,
+> > because when sugov_stop() is called, the 'governor' field of the policy
+> > hasn't been updated yet, so the condition (if gov == schedutil) in
+> > build_freq_domains() doesn't work.
+> >
+> > To workaround the issue we'll need to find a way to pass a cpumask to
+> > the topology code to specifically say 'sugov has been stopped on these
+> > CPUs'. That would mean more code to handle that, but that would also
+> > mean we don't have to mess around with the CPUFreq notifiers ...
+> >
+> > Not sure what's best, so all feedback is more than welcome.
+>
+> Hi,
+>
+> Does anybody have concerns with this patch ? Is it a reasonable option
+> to use the CPUFreq notifiers in this case ? If there is anything I can
+> do to ease the review please let me know.
+
+I'm not a particular fan of notifiers to be honest and you don't need
+to add an extra chain just in order to be able to register a callback
+from a single user.  That can be achieved with a single callback
+pointer too, but also you could just call a function exported by the
+scheduler directly from where in the cpufreq code it needs to be
+called.
+
+> Also, is there any hope that the 12 first patches could make it in 4.20
+> on their own ? Or is it already too late ?
+
+I'm walking through them right now, albeit somewhat slowly due to
+various distractions, so we'll see.
+
+Thanks,
+Rafael
