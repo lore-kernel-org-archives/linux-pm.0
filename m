@@ -1,54 +1,90 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 04/14] PM / EM: Expose the Energy Model in sysfs
-Date: Thu, 6 Sep 2018 15:09:16 +0100
-Message-ID: <20180906140914.noe3yz7xrb4g5sf4@queper01-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-5-quentin.perret@arm.com>
- <c012c934-d861-eba6-0c67-63e8308ae37b@arm.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Thu, 6 Sep 2018 16:13:03 +0200
+Message-ID: <20180906141303.GE27626@localhost.localdomain>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180905104545.GB20267@localhost.localdomain>
+ <20180906134846.GB25636@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <c012c934-d861-eba6-0c67-63e8308ae37b@arm.com>
+In-Reply-To: <20180906134846.GB25636@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dietmar,
-
-On Wednesday 05 Sep 2018 at 23:56:43 (-0700), Dietmar Eggemann wrote:
-> On 08/20/2018 02:44 AM, Quentin Perret wrote:
-> > Expose the Energy Model (read-only) of all performance domains in sysfs
-> > for convenience. To do so, add a kobject to the CPU subsystem under the
-> > umbrella of which a kobject for each performance domain is attached.
-> > 
-> > The resulting hierarchy is as follows for a platform with two
-> > performance domains for example:
-> > 
-> >     /sys/devices/system/cpu/energy_model
-> >     ├── pd0
-> >     │   ├── cost
-> >     │   ├── cpus
-> >     │   ├── frequency
-> >     │   └── power
+On 06/09/18 14:48, Patrick Bellasi wrote:
+> Hi Juri!
 > 
-> cpus (cpumask of the perf domain), frequency (OPP's of the perf domain) and
-> power (values at those OPP's) are somehow easy to grasp, cost is definitely
-> not.
+> On 05-Sep 12:45, Juri Lelli wrote:
+> > Hi,
+> > 
+> > On 28/08/18 14:53, Patrick Bellasi wrote:
+> > 
+> > [...]
+> > 
+> > >  static inline int __setscheduler_uclamp(struct task_struct *p,
+> > >  					const struct sched_attr *attr)
+> > >  {
+> > > -	if (attr->sched_util_min > attr->sched_util_max)
+> > > -		return -EINVAL;
+> > > -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
+> > > -		return -EINVAL;
+> > > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> > > +	int lower_bound, upper_bound;
+> > > +	struct uclamp_se *uc_se;
+> > > +	int result = 0;
+> > >  
+> > > -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
+> > > -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
+> > > +	mutex_lock(&uclamp_mutex);
+> > 
+> > This is going to get called from an rcu_read_lock() section, which is a
+> > no-go for using mutexes:
+> > 
+> >  sys_sched_setattr ->
+> >    rcu_read_lock()
+> >    ...
+> >    sched_setattr() ->
+> >      __sched_setscheduler() ->
+> >        ...
+> >        __setscheduler_uclamp() ->
+> >          ...
+> > 	 mutex_lock()
 > 
-> You have this nice description in em_pd_energy() what cost actually is.
-> IMHO, might be worth repeating this at least in the patch header here.
+> Rightm, great catch, thanks!
+> 
+> > Guess you could fix the issue by getting the task struct after find_
+> > process_by_pid() in sys_sched_attr() and then calling sched_setattr()
+> > after rcu_read_lock() (putting the task struct at the end). Peter
+> > actually suggested this mod to solve a different issue.
+> 
+> I guess you mean something like this ?
+> 
+> ---8<---
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -5792,10 +5792,15 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
+>         rcu_read_lock();
+>         retval = -ESRCH;
+>         p = find_process_by_pid(pid);
+> -       if (p != NULL)
+> -               retval = sched_setattr(p, &attr);
+> +       if (likely(p))
+> +               get_task_struct(p);
+>         rcu_read_unlock();
+>  
+> +       if (likely(p)) {
+> +               retval = sched_setattr(p, &attr);
+> +               put_task_struct(p);
+> +       }
+> +
+>         return retval;
+>  }
+> ---8<---
 
-Hmm, this patch introduces the sysfs interface, not the 'cost' field
-itself. As long as 'cost' is documented in the patch that introduces it
-we should be good no ? I mean this patch header tells you _where_ the
-fields of the structure are exposed. _What_ the structure is all about
-is a different story.
-
-But yeah, in any case, a reminder shouldn't hurt I guess, if you really
-want one :-)
-
-Thanks,
-Quentin
+This should do the job yes.
