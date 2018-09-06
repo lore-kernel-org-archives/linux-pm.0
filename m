@@ -1,106 +1,56 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Thu, 6 Sep 2018 10:17:28 +0200
-Message-ID: <20180906081728.GB27626@localhost.localdomain>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-3-patrick.bellasi@arm.com>
+From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH] PCI: add prefetch quirk to work around
+ Asus/Nvidia suspend issues
+Date: Thu, 6 Sep 2018 17:02:39 +0800
+Message-ID: <CAD8Lp45z-rGaZeh8Cu6eMF03RCVtKdz4Z8+L4QQzO1+JX-L1yg@mail.gmail.com>
+References: <20180831073057.14626-1-drake@endlessm.com>
+ <20180831191225.GA43106@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180828135324.21976-3-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180831191225.GA43106-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28/08/18 14:53, Patrick Bellasi wrote:
-
-[...]
-
->  static inline int __setscheduler_uclamp(struct task_struct *p,
->  					const struct sched_attr *attr)
->  {
-> -	if (attr->sched_util_min > attr->sched_util_max)
-> -		return -EINVAL;
-> -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
-> -		return -EINVAL;
-> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> +	int lower_bound, upper_bound;
-> +	struct uclamp_se *uc_se;
-> +	int result = 0;
->  
-> -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
-> -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
-> +	mutex_lock(&uclamp_mutex);
->  
-> -	return 0;
-> +	/* Find a valid group_id for each required clamp value */
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> +		upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
-> +			? attr->sched_util_max
-> +			: p->uclamp[UCLAMP_MAX].value;
-> +
-> +		if (upper_bound == UCLAMP_NOT_VALID)
-> +			upper_bound = SCHED_CAPACITY_SCALE;
-> +		if (attr->sched_util_min > upper_bound) {
-> +			result = -EINVAL;
-> +			goto done;
-> +		}
-> +
-> +		result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
-> +		if (result == -ENOSPC) {
-> +			pr_err(UCLAMP_ENOSPC_FMT, "MIN");
-> +			goto done;
-> +		}
-> +		group_id[UCLAMP_MIN] = result;
-> +	}
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> +		lower_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
-> +			? attr->sched_util_min
-> +			: p->uclamp[UCLAMP_MIN].value;
-> +
-> +		if (lower_bound == UCLAMP_NOT_VALID)
-> +			lower_bound = 0;
-> +		if (attr->sched_util_max < lower_bound ||
-> +		    attr->sched_util_max > SCHED_CAPACITY_SCALE) {
-> +			result = -EINVAL;
-> +			goto done;
-> +		}
-> +
-> +		result = uclamp_group_find(UCLAMP_MAX, attr->sched_util_max);
-> +		if (result == -ENOSPC) {
-> +			pr_err(UCLAMP_ENOSPC_FMT, "MAX");
-> +			goto done;
-> +		}
-> +		group_id[UCLAMP_MAX] = result;
-> +	}
-
-Don't you have to reset result to 0 here (it seems what follows cannot
-fail anymore)? Otherwise this function will return latest
-uclamp_group_find return value, which will be interpreted as error if
-not 0.
-
-> +
-> +	/* Update each required clamp group */
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> +		uc_se = &p->uclamp[UCLAMP_MIN];
-> +		uclamp_group_get(UCLAMP_MIN, group_id[UCLAMP_MIN],
-> +				 uc_se, attr->sched_util_min);
-> +	}
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> +		uc_se = &p->uclamp[UCLAMP_MAX];
-> +		uclamp_group_get(UCLAMP_MAX, group_id[UCLAMP_MAX],
-> +				 uc_se, attr->sched_util_max);
-> +	}
-> +
-> +done:
-> +	mutex_unlock(&uclamp_mutex);
-> +
-> +	return result;
-> +}
-
-Best,
-
-- Juri
+T24gU2F0LCBTZXAgMSwgMjAxOCBhdCAzOjEyIEFNLCBCam9ybiBIZWxnYWFzIDxoZWxnYWFzQGtl
+cm5lbC5vcmc+IHdyb3RlOgo+IENhbiB3ZSB0ZWxsIHdoZXRoZXIgV2luZG93cyByZXdyaXRlcyB0
+aGlzIHJlZ2lzdGVyIHVuY29uZGl0aW9uYWxseSBhdAo+IHJlc3VtZS10aW1lPyAgSWYgc28sIGl0
+IG1heSBiZSBtb3JlIHJvYnVzdCBmb3IgTGludXggdG8gZG8gdGhlIHNhbWUuCj4gVGhlIHdob2xl
+IHRoaW5nIGlzIGJsYWNrIG1hZ2ljLCB3aGljaCBJIGhhdGUsIGJ1dCBpZiBpdCdzIG91ciBvbmx5
+Cj4gY2hvaWNlLCBpdCBtYXkgYmUgYmV0dGVyIHRvIGhhdmUgdGhpcyBhcHBsaWVkIGV2ZXJ5d2hl
+cmUgc28gd2UgZG9uJ3QKPiBrZWVwIHN0dWJiaW5nIG91ciB0b2VzIG9uIG5ldyBzeXN0ZW1zIHRo
+YXQgcmVxdWlyZSB0aGUgcXVpcmsuCgpDaGVja2VkIHRoaXMgd2l0aCBxZW11IGFkZGluZyBhIFBD
+SS10by1QQ0kgYnJpZGdlIChpb2gzNDIwKS4KCiQgcWVtdS1zeXN0ZW0teDg2XzY0IC1lbmFibGUt
+a3ZtIC1NIHEzNSxhY2NlbD1rdm0gLW0gMkcgLXZnYSBxeGwgLWNwdQpob3N0IC1oZGEgdGVzdGlt
+Zy5pbWcgLWRldmljZQppb2gzNDIwLGlkPXJwMSxidXM9cGNpZS4wLGFkZHI9MWMuMCxwb3J0PTEg
+LXRyYWNlIGV2ZW50cz1ldmVudHMudHh0CgpldmVudHMudHh0IGhhczoKcGNpX2NmZ19yZWFkCnBj
+aV9jZmdfd3JpdGUKCkxvZ2dlZCBjZmcgc3BhY2UgYWNjZXNzZXMgZHVyaW5nIGJvb3Q6Cmh0dHBz
+Oi8vZ2lzdC5naXRodWIuY29tL2RzZC8xMzVmYjI1NWNiMmIyMzc1NjdkOGVhMmQ2YmZjNjkxNyNm
+aWxlLWJvb3QtdHh0CgpTdXNwZW5kOgpodHRwczovL2dpc3QuZ2l0aHViLmNvbS9kc2QvMTM1ZmIy
+NTVjYjJiMjM3NTY3ZDhlYTJkNmJmYzY5MTcjZmlsZS1zdXNwZW5kLXR4dAoKUmVzdW1lOgpodHRw
+czovL2dpc3QuZ2l0aHViLmNvbS9kc2QvMTM1ZmIyNTVjYjJiMjM3NTY3ZDhlYTJkNmJmYzY5MTcj
+ZmlsZS1yZXN1bWUtdHh0CgpOb3RhYmx5IGR1cmluZyByZXN1bWUsIHRoZSBwcmVmZXRjaC1yZWxh
+dGVkIHJlZ2lzdGVycyBnZXQgcmV3cml0dGVuOgogIHBjaV9jZmdfd3JpdGUgaW9oMzQyMCAyODow
+IEAweDI0IDwtIDB4ZmViMGZlYTAKICBwY2lfY2ZnX3dyaXRlIGlvaDM0MjAgMjg6MCBAMHgyOCA8
+LSAweDAKICBwY2lfY2ZnX3dyaXRlIGlvaDM0MjAgMjg6MCBAMHgyYyA8LSAweDAKClRoaXMgaGFw
+cGVuZWQgZXZlbiB0aG91Z2ggdGhlcmUgd2FzIG5vdGhpbmcgYmVoaW5kIHRoZSBicmlkZ2UuCldp
+bmRvd3MgZmFpbGVkIHRvIHJlc3VtZSBpbiB0aGlzIHRlc3QgKGJsYWNrIHNjcmVlbikgYnV0IHRo
+ZSB0cmFjZWQKcmVnaXN0ZXIgd3JpdGVzIHNlZW0gaW5kaWNhdGl2ZSBlbm91Z2guCgpQZXRlciBX
+dSBjb25maXJtcyB0aGUgc2FtZSByZXN1bHRzIGluIGEgc2ltaWxhciBleHBlcmltZW50OgpodHRw
+czovL21hcmMuaW5mby8/bD1saW51eC1wY2kmbT0xNTM2MTYzMzYyMjUzODYmdz0yCgpJJ2xsIGxv
+b2sgaW50byBjcmVhdGluZyBhIG5ldyBwYXRjaCB0aGF0IHVuY29uZGl0aW9uYWxseSByZXByb2dy
+YW1zCnRoZSBQQ0kgYnJpZGdlIHByZWZldGNoIHN0dWZmIG9uIHJlc3VtZS4KClRoYW5rcwpEYW5p
+ZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVh
+dSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
+cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
