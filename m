@@ -1,90 +1,56 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Thu, 6 Sep 2018 16:13:03 +0200
-Message-ID: <20180906141303.GE27626@localhost.localdomain>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-3-patrick.bellasi@arm.com>
- <20180905104545.GB20267@localhost.localdomain>
- <20180906134846.GB25636@e110439-lin>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Thu, 6 Sep 2018 15:38:44 +0100
+Message-ID: <20180906143842.xlxcg5notwdaflww@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-14-quentin.perret@arm.com>
+ <20180904105906.t5i7twyyt2omc45b@queper01-lin>
+ <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180906134846.GB25636@e110439-lin>
+In-Reply-To: <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/09/18 14:48, Patrick Bellasi wrote:
-> Hi Juri!
-> 
-> On 05-Sep 12:45, Juri Lelli wrote:
-> > Hi,
-> > 
-> > On 28/08/18 14:53, Patrick Bellasi wrote:
-> > 
-> > [...]
-> > 
-> > >  static inline int __setscheduler_uclamp(struct task_struct *p,
-> > >  					const struct sched_attr *attr)
-> > >  {
-> > > -	if (attr->sched_util_min > attr->sched_util_max)
-> > > -		return -EINVAL;
-> > > -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
-> > > -		return -EINVAL;
-> > > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> > > +	int lower_bound, upper_bound;
-> > > +	struct uclamp_se *uc_se;
-> > > +	int result = 0;
-> > >  
-> > > -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
-> > > -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
-> > > +	mutex_lock(&uclamp_mutex);
-> > 
-> > This is going to get called from an rcu_read_lock() section, which is a
-> > no-go for using mutexes:
-> > 
-> >  sys_sched_setattr ->
-> >    rcu_read_lock()
-> >    ...
-> >    sched_setattr() ->
-> >      __sched_setscheduler() ->
-> >        ...
-> >        __setscheduler_uclamp() ->
-> >          ...
-> > 	 mutex_lock()
-> 
-> Rightm, great catch, thanks!
-> 
-> > Guess you could fix the issue by getting the task struct after find_
-> > process_by_pid() in sys_sched_attr() and then calling sched_setattr()
-> > after rcu_read_lock() (putting the task struct at the end). Peter
-> > actually suggested this mod to solve a different issue.
-> 
-> I guess you mean something like this ?
-> 
-> ---8<---
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -5792,10 +5792,15 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
->         rcu_read_lock();
->         retval = -ESRCH;
->         p = find_process_by_pid(pid);
-> -       if (p != NULL)
-> -               retval = sched_setattr(p, &attr);
-> +       if (likely(p))
-> +               get_task_struct(p);
->         rcu_read_unlock();
->  
-> +       if (likely(p)) {
-> +               retval = sched_setattr(p, &attr);
-> +               put_task_struct(p);
-> +       }
-> +
->         return retval;
->  }
-> ---8<---
+Hi Rafael,
 
-This should do the job yes.
+On Thursday 06 Sep 2018 at 11:18:55 (+0200), Rafael J. Wysocki wrote:
+> I'm not a particular fan of notifiers to be honest and you don't need
+> to add an extra chain just in order to be able to register a callback
+> from a single user.
+
+Right. I agree there are alternatives to using notifiers. I used them
+because they're existing infrastructure, and because they let me do what
+I want without too much troubles, which are two important points.
+
+> That can be achieved with a single callback
+> pointer too, but also you could just call a function exported by the
+> scheduler directly from where in the cpufreq code it needs to be
+> called.
+
+Are you thinking about something comparable to what is done in
+cpufreq_add_update_util_hook() (kernel/sched/cpufreq.c) for example ?
+That would probably have the same drawback as my current implementation,
+that is that the scheduler is notified of _all_ governor changes, not
+only changes to/from sugov although this is the only thing we care about
+for EAS.
+
+We could also hook things in sugov_start & sugov_stop directly, and keep
+all changes into the scheduler ... That is slightly harder to implement
+on the scheduler topology side, though.
+
+Thoughts ?
+
+> > Also, is there any hope that the 12 first patches could make it in 4.20
+> > on their own ? Or is it already too late ?
+> 
+> I'm walking through them right now, albeit somewhat slowly due to
+> various distractions, so we'll see.
+
+Thanks !
+Quentin
