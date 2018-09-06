@@ -1,169 +1,146 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
- default
-Date: Thu, 6 Sep 2018 15:40:53 +0100
-Message-ID: <20180906144053.GD25636@e110439-lin>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-15-patrick.bellasi@arm.com>
- <20180904134748.GA4974@localhost.localdomain>
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: RE: [PATCH v2] ACPI: surface3_power: MSHW0011 rev-eng implementation
+Date: Thu, 6 Sep 2018 14:43:32 +0000
+Message-ID: <94F2FBAB4432B54E8AACC7DFDE6C92E3B94F5A63@ORSMSX110.amr.corp.intel.com>
+References: <20170629121009.30234-1-benjamin.tissoires@redhat.com>
+ <CAHp75Vdn1-m0gDSHtZXX2A=Q07xG9j1eBiV8iM4e11Qk=oJfZg@mail.gmail.com>
+ <20170630155706.GL26073@mail.corp.redhat.com>
+ <CAHp75VdLU57x2YuDH+SkB1jR3rSpqcVNszhq5fDUVZZt+sqxyQ@mail.gmail.com>
+ <CAO-hwJ+U+e8a70LskxaSLV_hjWejpqjBWC788mEOOcUg=oxBCw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180904134748.GA4974@localhost.localdomain>
+In-Reply-To: <CAO-hwJ+U+e8a70LskxaSLV_hjWejpqjBWC788mEOOcUg=oxBCw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>, "stephenjust@gmail.com" <stephenjust@gmail.com>, Sebastian Reichel <sre@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "lv.zheng@intel.com" <lv.zheng@intel.com>, "mika.westerberg@linux.intel.com" <mika.westerberg@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04-Sep 15:47, Juri Lelli wrote:
-> Hi,
-> 
-> On 28/08/18 14:53, Patrick Bellasi wrote:
-> > The number of clamp groups supported is limited and defined at compile
-> > time. However, a malicious user can currently ask for many different
-> 
-> Even if not malicious.. :-)
-
-Yeah... I should had write "ambitious" :D
-... I'll get rid of all those geeks in the next respin ;)
-
-> > clamp values thus consuming all the available clamp groups.
-> > 
-> > Since on properly configured systems we expect only a limited set of
-> > different clamp values, the previous problem can be mitigated by
-> > allowing access to clamp groups configuration only to privileged tasks.
-> > This should still allow a System Management Software to properly
-> > pre-configure the system.
-> > 
-> > Let's restrict the tuning of utilization clamp values, by default, to
-> > tasks with CAP_SYS_ADMIN capabilities.
-> > 
-> > Whenever this should be considered too restrictive and/or not required
-> > for a specific platforms, a kernel boot option is provided to change
-> > this default behavior thus allowing non privileged tasks to change their
-> > utilization clamp values.
-> > 
-> > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> > Cc: Ingo Molnar <mingo@redhat.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Paul Turner <pjt@google.com>
-> > Cc: Suren Baghdasaryan <surenb@google.com>
-> > Cc: Todd Kjos <tkjos@google.com>
-> > Cc: Joel Fernandes <joelaf@google.com>
-> > Cc: Steve Muckle <smuckle@google.com>
-> > Cc: Juri Lelli <juri.lelli@redhat.com>
-> > Cc: Quentin Perret <quentin.perret@arm.com>
-> > Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> > Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > 
-> > ---
-> > Changes in v4:
-> >  Others:
-> >  - new patch added in this version
-> >  - rebased on v4.19-rc1
-> > ---
-> >  .../admin-guide/kernel-parameters.txt         |  3 +++
-> >  kernel/sched/core.c                           | 22 ++++++++++++++++---
-> >  2 files changed, 22 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> > index 9871e649ffef..481f8214ea9a 100644
-> > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > @@ -4561,6 +4561,9 @@
-> >  			<port#>,<js1>,<js2>,<js3>,<js4>,<js5>,<js6>,<js7>
-> >  			See also Documentation/input/devices/joystick-parport.rst
-> >  
-> > +	uclamp_user	[KNL] Enable task-specific utilization clamping tuning
-> > +			also from tasks without CAP_SYS_ADMIN capability.
-> > +
-> >  	udbg-immortal	[PPC] When debugging early kernel crashes that
-> >  			happen after console_init() and before a proper
-> >  			console driver takes over, this boot options might
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index 222397edb8a7..8341ce580a9a 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -1510,14 +1510,29 @@ static inline int alloc_uclamp_sched_group(struct task_group *tg,
-> >  static inline void free_uclamp_sched_group(struct task_group *tg) { }
-> >  #endif /* CONFIG_UCLAMP_TASK_GROUP */
-> >  
-> > +static bool uclamp_user_allowed __read_mostly;
-> > +static int __init uclamp_user_allow(char *str)
-> > +{
-> > +	uclamp_user_allowed = true;
-> > +
-> > +	return 0;
-> > +}
-> > +early_param("uclamp_user", uclamp_user_allow);
-> > +
-> >  static inline int __setscheduler_uclamp(struct task_struct *p,
-> > -					const struct sched_attr *attr)
-> > +					const struct sched_attr *attr,
-> > +					bool user)
-> 
-> Wondering if you want to fold the check below inside the
-> 
->  if (user && !capable(CAP_SYS_NICE)) {
->    ...
->  }
-> 
-> block. It would also save you from adding another parameter to the
-> function.
-
-So, there are two reasons for that:
-
-1) _I think_ we don't want to depend on capable(CAP_SYS_NICE) but
-   instead on capable(CAP_SYS_ADMIN)
-
-   Does that make sense ?
-
-   If yes, the I cannot fold it in the block you reported above
-   because we will not check for users with CAP_SYS_NICE.
-
-2) Then we could move it after that block, where there is another
-   set of checks with just:
-
-      if (user) {
-
-   We can potentially add the check there yes... but when uclamp is
-   not enabled we will still perform those checks or we have to add
-   some compiler guards...
-
-3) ... or at least check for:
-
-     if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
-
-   Which is what I'm doing right after the block above (2).
-
-   But, at this point, by passing in the parameter to the
-   __setscheduler_uclamp() call, I get the benefits of:
-
-   a) reducing uclamp specific code in the caller
-   b) avoiding the checks on !CONFIG_UCLAMP_TASK build
-
-> >  {
-> >  	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> >  	int lower_bound, upper_bound;
-> >  	struct uclamp_se *uc_se;
-> >  	int result = 0;
-> >  
-> > +	if (!capable(CAP_SYS_ADMIN) &&
-> > +	    user && !uclamp_user_allowed) {
-> > +		return -EPERM;
-> > +	}
-> > +
-
-Does all the above makes sense ?
-
-Cheers,
-Patrick
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gVGlzc29p
+cmVzIFttYWlsdG86YmVuamFtaW4udGlzc29pcmVzQHJlZGhhdC5jb21dDQo+IFNlbnQ6IEZyaWRh
+eSwgQXVndXN0IDMxLCAyMDE4IDc6NTUgQU0NCj4gVG86IEFuZHkgU2hldmNoZW5rbyA8YW5keS5z
+aGV2Y2hlbmtvQGdtYWlsLmNvbT4NCj4gQ2M6IEhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhh
+dC5jb20+OyBCYXN0aWVuIE5vY2VyYQ0KPiA8aGFkZXNzQGhhZGVzcy5uZXQ+OyBzdGVwaGVuanVz
+dEBnbWFpbC5jb207IFNlYmFzdGlhbiBSZWljaGVsDQo+IDxzcmVAa2VybmVsLm9yZz47IFd5c29j
+a2ksIFJhZmFlbCBKIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT47DQo+IGxlbmJAa2VybmVs
+Lm9yZzsgTW9vcmUsIFJvYmVydCA8cm9iZXJ0Lm1vb3JlQGludGVsLmNvbT47DQo+IGx2LnpoZW5n
+QGludGVsLmNvbTsgbWlrYS53ZXN0ZXJiZXJnQGxpbnV4LmludGVsLmNvbTsgbGludXgtDQo+IGFj
+cGlAdmdlci5rZXJuZWwub3JnOyBkZXZlbEBhY3BpY2Eub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmc7IGxrbWwNCj4gPGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0ggdjJdIEFDUEk6IHN1cmZhY2UzX3Bvd2VyOiBNU0hXMDAxMSByZXYtZW5nDQo+
+IGltcGxlbWVudGF0aW9uDQo+IA0KPiBIaSBBbmR5LA0KPiANCj4gSSBhbSByZXN1cnJlY3Rpbmcg
+dGhpcyB0aHJlYWQgbm93IHRoYXQgQUNQSUNBIHNlZW1lZCB0byBmaW5hbGx5IGhhdmUNCj4gZml4
+ZWQgdGhlIGJ1ZyB0aGF0IHByZXZlbnQgdGhlIGRyaXZlciB0byB3b3JrLg0KPiBUaGUgcGF0Y2gg
+SSBzdWJtaXR0ZWQgd2FzIHJldmVydGVkIHNob3J0bHkgYWZ0ZXIsIHdoaWNoIGxlYWQgbWUgdG8N
+Cj4gaWdub3JlIHRoaXMgcmV2aWV3IHVudGlsIEFDUElDQSB3YXMgZml4ZWQuIEl0IHRvb2sgYSBs
+b3Qgb2YgZWZmb3J0IGZyb20NCj4gSGFucyB0byBoYXZlIGEgZml4IGFjY2VwdGVkLCBzbyBub3cg
+d2UgY2FuIGhvcGUgdG8gdXBzdHJlYW0gdGhpcyBkcml2ZXIuDQo+IA0KW01vb3JlLCBSb2JlcnRd
+IA0KDQpUaGUgd29yc3QgcGFydCBvZiBhbGwgdGhpcyBpcyB0aGF0IHRoZSBBQ1BJIHNwZWNpZmlj
+YXRpb24gaXMgc28gYW1iaWd1b3VzIGluIHRoaXMgYXJlYSwgdGhhdCB3ZSB3ZXJlIGZvcmNlZCB0
+byAqZ3Vlc3MqIGF0IGNlcnRhaW4gZWxlbWVudHMgb2YgdGhlIGltcGxlbWVudGF0aW9uLg0KDQpT
+bywgaWYgYW55b25lIGtub3dzIG9mIGFueSBBU0wvbWFjaGluZXMgdGhhdCB1c2UgdGhlIHNlcmlh
+bCBidXMgc3R1ZmYsIHBsZWFzZSBmb3J3YXJkIHRoZSBjb2RlIHRvIG1lLg0KDQpUaGlzIGluY2x1
+ZGVzOg0KICAgIEdlbmVyaWNTZXJpYWxCdXMNCiAgICBTTUJ1cw0KICAgIElQTUkNCg0KQW5kIG1h
+eWJlOg0KICAgIEdlbmVyYWxQdXJwb3NlSW8NCg0KRm9yIGNvbXBsZXRlbmVzcy4NCg0KDQoNCj4g
+T24gRnJpLCBKdW4gMzAsIDIwMTcgYXQgNjozNyBQTSBBbmR5IFNoZXZjaGVua28NCj4gPGFuZHku
+c2hldmNoZW5rb0BnbWFpbC5jb20+IHdyb3RlOg0KPiA+DQo+ID4gT24gRnJpLCBKdW4gMzAsIDIw
+MTcgYXQgNjo1NyBQTSwgQmVuamFtaW4gVGlzc29pcmVzDQo+ID4gPGJlbmphbWluLnRpc3NvaXJl
+c0ByZWRoYXQuY29tPiB3cm90ZToNCj4gPiA+IE9uIEp1biAyOSAyMDE3IG9yIHRoZXJlYWJvdXRz
+LCBBbmR5IFNoZXZjaGVua28gd3JvdGU6DQo+ID4gPj4gT24gVGh1LCBKdW4gMjksIDIwMTcgYXQg
+MzoxMCBQTSwgQmVuamFtaW4gVGlzc29pcmVzDQo+ID4gPj4gPGJlbmphbWluLnRpc3NvaXJlc0By
+ZWRoYXQuY29tPiB3cm90ZToNCj4gPg0KPiA+ID4+IFdoYXQgZGV2aWNlcyAobGFwdG9wcywgdGFi
+bGV0cykgaGF2ZSBpdD8NCj4gPiA+PiBTdXJmYWNlIDMuIFdoYXQgZWxzZT8NCj4gPiA+DQo+ID4g
+PiBTbyBmYXIsIFN1cmZhY2UgMyBvbmx5LiBJdCdzIGEgTWljcm9zb2Z0IFBOUElkLCBzbyBJIGd1
+ZXNzIHRoZXkNCj4gPiA+IGNvbnRyb2wgd2hpY2ggZGV2aWNlIGhhcyBpdC4gTWF5YmUgdGhlIG1v
+ZGVsIGFmdGVyIHRoZSBTdXJmYWNlIDMNCj4gPiA+IChyZWR1Y2VkDQo+ID4gPiBwbGF0Zm9ybSkg
+d2lsbCBoYXZlIHN1Y2ggY2hpcCwgYnV0IGZvciBub3csIGl0J3MgdW5rbm93bi4NCj4gPg0KPiA+
+IFBsZWFzZSwgZXh0ZW5kIGludHJvZHVjdGlvbiBpbiBjb21taXQgbWVzc2FnZSB0byBzdGF0ZSBh
+Ym92ZS4NCj4gDQo+IE9LLiBPbiB0aGlzIG5vdGUsIEkgaGF2ZSBiZWVuIG1lbnRpb25lZCB0aGF0
+IHRoZSBTdXJmYWNlIFBybyAyMDE3IHVzZXMgYQ0KPiBzaW1pbGFyIG1lY2hhbmlzbSBhcyBpbiBp
+dCdzIGFsc28gdXNpbmcgYW4gb3BlcmF0aW9uIHJlZ2lvbiBoYW5kbGVyLCBidXQNCj4gdGhpcyB0
+aW1lIG92ZXIgVUFSVCwgbm90IEkyQyA6KQ0KPiANCj4gPg0KPiA+ID4+ID4gSSBjb3VsZG4ndCBt
+YW5hZ2UgdG8gZ2V0IHRoZSBJUlEgY29ycmVjdGx5IHRyaWdnZXJlZCwgc28gSSBhbQ0KPiA+ID4+
+ID4gdXNpbmcgYSBnb29kIG9sZCBwb2xsaW5nIHRocmVhZCB0byBjaGVjayBmb3IgY2hhbmdlcy4N
+Cj4gPiA+Pg0KPiA+ID4+IEl0IG1pZ2h0IGJlDQo+ID4NCj4gPiBJdCBzZWVtcyBJIGRpZG4ndCBm
+aW5pc2hlZCB0aGUgc2VudGVuY2UgaGVyZS4NCj4gPg0KPiA+IEkgdGhvdWdoIGl0IG1pZ2h0IGJl
+IGFjdHVhbGx5IEFDUEkgZXZlbnQsIEdQRSBvciBkaXJlY3QgSVJRICh3aGVuIEdQSU8NCj4gPiBj
+aGlwIHNob3VsZCBub3QgZGlzYWJsZSBpdCwgdGhvdWdoIGlmIGl0J3MgdGhlIGNhc2UgaXQgbGlr
+ZWx5IGEgQklPUw0KPiA+IGJ1ZyBmb3IgdGhpcyBoYXJkd2FyZSkuDQo+IA0KPiBJZiB5b3UgZG9u
+J3QgbWluZCwgSSdkIHJhdGhlciBoYXZlIHRoZSBwb2xsaW5nIHZlcnNpb24gdGhhdCBzZWVtcyB0
+byBiZQ0KPiB3b3JraW5nIGZpcnN0LiBJIGhhdmVuJ3QgdG91Y2hlZCB0aGUgbG9ncyBJIGhhZCBm
+cm9tIFdpbmRvd3Mgc2luY2UgbGFzdA0KPiB5ZWFyLCBzbyBJIGFtIGEgbGl0dGxlIGJpdCBydXN0
+eSBvbiBkZWJ1Z2dpbmcgdGhpcy4NCj4gRldJVywgL3Byb2MvaW50ZXJydXB0cyBkb2Vzbid0IGNo
+YW5nZSBhIGJpdCB3aGVuIEkgdW5wbHVnL3JlcGx1ZyB0aGUNCj4gcG93ZXIgY2FibGUuDQo+IA0K
+PiBNeSBndWVzcyBpcyB0aGF0IHRoZSBXaW5kb3dzIGRyaXZlciBpbml0aWFsaXplcyB0aGUgY2hp
+cCBpbiBhIGRpZmZlcmVudA0KPiB3YXkgYW5kIHRoaXMgZW5hYmxlcyB0aGUgY2FibGUgZGV0ZWN0
+aW9uLg0KPiANCj4gPg0KPiA+ID4+ID4gKyAgICAgICBoZWxwDQo+ID4gPj4gPiArICAgICAgICAg
+U2VsZWN0IHRoaXMgb3B0aW9uIHRvIGVuYWJsZSBzdXBwb3J0IGZvciBBQ1BJIG9wZXJhdGlvbg0K
+PiA+ID4+ID4gKyAgICAgICAgIHJlZ2lvbiBvZiB0aGUgU3VyZmFjZSAzIGJhdHRlcnkgcGxhdGZv
+cm0gZHJpdmVyLg0KPiA+ID4+DQo+ID4gPj4gPiArLyoNCj4gPiA+PiA+ICsgKiBTdXBwb3J0cyBm
+b3IgdGhlIHBvd2VyIElDIG9uIHRoZSBTdXJmYWNlIDMgdGFibGV0Lg0KPiA+ID4+DQo+ID4gPj4g
+U2hvdWxkbid0IGl0IGdvIHRvIGRyaXZlcnMvYWNwaS9wbWljIGZvbGRlciA/DQo+ID4gPg0KPiA+
+ID4gQWxyZWFkeSBhbnN3ZXJlZCBsYXRlciBpbiB0aGUgdGhyZWFkLCBzbyB5ZXMsIEknbGwgbW92
+ZSBpdCB0aGVyZS4NCj4gPg0KPiA+IEFjdHVhbGx5IEhhbnMgZGlkIGEgZ29vZCBwb2ludCwgc28s
+IGZlZWwgZnJlZSB0byB1c2UNCj4gZHJpdmVycy9wbGF0Zm9ybS94ODYuDQo+IA0KPiBSb2dlciB0
+aGF0IQ0KPiANCj4gPg0KPiA+ID4+IEFuZCBkaWQgeW91IGNoZWNrIGlmIGl0IGhhdmUgYWN0dWFs
+IGNoaXAgSVAgdmVuZG9yIG5hbWUgYW5kIG1vZGVsPw0KPiA+ID4+IE1vc3QgbGlrZWx5IGl0J3Mg
+YSBUSSAoYmFzZWQ/KSBzb2x1dGlvbi4NCj4gPiA+DQo+ID4gPiBBcyBtZW50aW9uZWQsIEkgaGF2
+ZSBzdHJpY3RseSBubyBpZGVhLiBJIGNhbiBub3QgY3JhY2sgb3BlbiB0aGUNCj4gPiA+IFN1cmZh
+Y2UNCj4gPiA+IDMgd2l0aG91dCBicmVha2luZyB0aGUgd2FycmFudHkgKEkgYWxyZWFkeSBoYWQg
+dG8gcmV0dXJuIGl0IG9uY2UNCj4gPiA+IGJlY2F1c2UgdGhlIGRpc2sgY3Jhc2hlZCkuDQo+ID4N
+Cj4gPiBXZSBoYXZlIG9uZSBpbmRlZWQgY3JhY2tlZCAoc2NyZWVuIGlzIGJyb2tlbiBmb3IgZ29v
+ZCA6LSkgKSwgc28sIEkNCj4gPiB3b3VsZCBjaGVjayB3aGF0IEkgY2FuIGZpbmQgdGhlcmUuDQo+
+ID4NCj4gPiA+IEFuZCBJIGRvIG5vdCBmaW5kIGFueXRoaW5nIGJyYW5kLXJlbGF0ZWQgdW5kZXIg
+V2luZG93cyBlaXRoZXI6DQo+ID4gPiAtIGl0J3MgY2FsbGVkICJTdXJmYWNlIFBsYXRmb3JtIFBv
+d2VyIERyaXZlciINCj4gPiA+IC0gYW5kIHRoZSBkcml2ZXIgaXMgcHJvdmlkZWQgYnkgTWljcm9z
+b2Z0DQo+ID4NCj4gPiBGYWlyIGVub3VnaC4NCj4gPg0KPiA+ID4+ID4gK3N0YXRpYyBpbnQgbXNo
+dzAwMTFfYml4KHN0cnVjdCBtc2h3MDAxMV9kYXRhICpjZGF0YSwgc3RydWN0IGJpeA0KPiA+ID4+
+ID4gKypiaXgpIHsNCj4gPiA+Pg0KPiA+ID4+ID4gKyAgICAgICBtZW1jcHkoYml4LT5zZXJpYWws
+IGJ1ZiArIDcsIDMpOw0KPiA+ID4+ID4gKyAgICAgICBtZW1jcHkoYml4LT5zZXJpYWwgKyAzLCBi
+dWYsIDYpOw0KPiA+ID4+ID4gKyAgICAgICBiaXgtPnNlcmlhbFs5XSA9ICdcMCc7DQo+ID4gPj4N
+Cj4gPiA+PiBzbnByaW50ZigpPw0KPiA+ID4NCj4gPiA+IHByb2JhYmx5IDopDQo+ID4NCj4gPiBJ
+IHdvdWxkIGRvIHRoaXMgdW50aWwgd2UgaGF2ZSBhbiBldmlkZW5jZSB0aGF0IGl0IGNvbnRhaW5z
+DQo+ID4gbm9uLXByaW50YWJsZSBzeW1ib2xzIChvciwgaW4gY2FzZSB5b3Ugd2FudCB0byBmaXgg
+YWhlYWQsIG1ha2UgdGhlDQo+ID4gYnVmZmVyIDQgdGltZXMgYmlnZ2VyIGFuZCB1c2UgJSpwRSkN
+Cj4gDQo+IEkgY2FuJ3QgcmVhbGx5IG1ha2UgdGhlIGJ1ZmZlciA0IHRpbWUgYmlnZ2VyLiBUaGUg
+YnVmZmVyIGlzIHRoZW4gdXNlZCBieQ0KPiB0aGUgRFNEVCB0YWJsZSB0byByZXBvcnQgdGhlIF9C
+SVggc3RhdHVzLCBzbyB0aGUgbGVuZ3RoIG9mIDEwIGlzDQo+IG1hbmRhdG9yeS4NCj4gSXQgZG9l
+c24ndCBzZWVtIHRvIGh1cnQsIGFuZCB3b3JzZSBjYXNlLCB3ZSB3aWxsIGp1c3Qgc3RyaXAgdGhl
+IHNlcmlhbCwNCj4gbm90IGEgYmlnIGRlYWwgSU1PLg0KPiANCj4gPg0KPiA+ID4+ID4gKyAgICAg
+ICBtZW1jcHkoYml4LT5PRU0sIGJ1ZiwgMyk7DQo+ID4gPj4gPiArICAgICAgIGJpeC0+T0VNWzRd
+ID0gJ1wwJzsNCj4gPiA+Pg0KPiA+ID4+IHNucHJpbnRmKCkgPw0KPiA+DQo+ID4gRGl0dG8uDQo+
+ID4NCj4gPiA+PiA+ICsgICAgICAgc25wcmludGYocHJlZml4LCBBUlJBWV9TSVpFKHByZWZpeCks
+ICIlczogIiwgYmF0MC0+bmFtZSk7DQo+ID4gPj4NCj4gPiA+PiA+ICsgICAgICAgcHJlZml4WzEy
+N10gPSAnXDAnOw0KPiA+ID4+DQo+ID4gPj4gV2h5Pw0KPiA+ID4NCj4gPiA+IEp1c3QgbWUgYmVp
+bmcgcGFyYW5vaWQgaW4gY2FzZSB0aGUgY29kZSBkb2Vzbid0IGZvbGxvdyB0aGUgc3BlYy4uLg0K
+PiA+ID4gWWVhaCwgSSdsbCByZW1vdmUgaXQuDQo+ID4NCj4gPiBzbnByaW50ZigpIGRlc3BpdGUg
+biBpbiB0aGUgbmFtZSB0YWtlcyBjYXJlIG9mIHRlcm1pbmF0aW5nIE5VTC4NCj4gPg0KPiA+ID4+
+ID4gK3N0YXRpYyBpbnQgbXNodzAwMTFfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCwN
+Cj4gPiA+PiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgY29uc3Qgc3RydWN0IGkyY19kZXZp
+Y2VfaWQgKmlkKSB7DQo+ID4gPj4NCj4gPiA+PiA+ICsgICAgICAgZGF0YS0+bm90aWZ5X3ZlcnNp
+b24gPSB2ZXJzaW9uID09IE1TSFcwMDExX0VWXzJfNTsNCj4gPiA+Pg0KPiA+ID4+IDB4MWZmIGFz
+IHZlcnNpb24gc291bmRzIGhtbSBzdXNwaWNpb3VzLg0KPiA+ID4NCj4gPiA+IFNvIGFmdGVyIGEg
+bGl0dGxlIGJpdCBvZiBkaWdnaW5nLCBpdCBhcHBlYXJzIHRob3NlIHZhbHVlcyB3ZXJlIHRha2Vu
+DQo+ID4gPiBmcm9tIHRoZSBEU0RUOg0KPiA+ID4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3Jn
+L2F0dGFjaG1lbnQuY2dpP2lkPTE4NzE3MSBsaW5lIDExNjk0Lg0KPiA+ID4NCj4gPiA+IEl0IGFw
+cGVhcnMgMHgzRiBpcyBFViAyLjEgYW5kIGJlZm9yZSwgYW5kIDB4MUZGIGlzIEVWIDIuNSBhbmQg
+YWJvdmUuDQo+ID4gPiBUaGUgcmV0dXJuZWQgdmFsdWUgaXMgbm90IGEgdmVyc2lvbiBvZiB0aGUg
+Y2hpcCwganVzdCBhIGZsYWcgdG8ga25vdw0KPiA+ID4gd2hpY2ggcGF0aCB3ZSBhcmUgdGFraW5n
+IGluIHRoZSBEU00uDQo+ID4gPg0KPiA+ID4gVGhlIG5hbWUgaXMgcHJvYmFibHkgbm90IHRoZSBi
+ZXN0Lg0KPiA+DQo+ID4gNjMgYW5kIDUxMSBsb29rcyB0b28gc3VzcGljaW91cyB0byBiZSBhIHZl
+cnNpb24uIFJhdGhlciBibG9jayBzaXplLCBhDQo+ID4gbWFzayBvciBhbGlrZS4NCj4gDQo+IEkg
+cmVwbGFjZWQgdGhlICd2ZXJzaW9uJyBieSAnbWFzaycgaW4gdjMuIEl0IGRvZXNuJ3QgaHVydCB0
+byBkbyBzby4NCj4gDQo+ID4NCj4gPiA+PiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGkyY19kZXZp
+Y2VfaWQgbXNodzAwMTFfaWRbXSA9IHsNCj4gPiA+PiA+ICsgICAgICAgeyB9DQo+ID4gPj4gPiAr
+fTsNCj4gPiA+PiA+ICtNT0RVTEVfREVWSUNFX1RBQkxFKGkyYywgbXNodzAwMTFfaWQpOw0KPiA+
+ID4+DQo+ID4gPj4gLT5wcm9iZV9uZXcoKSwgcGxlYXNlLg0KPiA+ID4NCj4gPiA+IENvcnJlY3QN
+Cj4gPiA+DQo+ID4gPj4NCj4gPiA+PiBJZiBJMkMgZnJhbWV3b3JrIGlzIF9zdGlsbF8gYnJva2Vu
+IHdlIG5lZWQgdG8gZml4IHRoYXQgcGFydC4NCj4gPiA+DQo+ID4gPiBJIGhhdmVuJ3QgY2hlY2ss
+IHNvIGxldCdzIHNlZSBmb3IgdjMuDQo+ID4NCj4gPiBDYzogV29sZnJhbSBmb3IgdjMgYW5kIGFz
+ayBoaW0gZGlyZWN0bHkuIExhc3QgdGltZSBJIGNoZWNrZWQgaXQgbG9va3MNCj4gPiBsaWtlIEky
+QyBjb3JlIGRvZXNuJ3QgY2FyZSBhYm91dCBBQ1BJIHdoZW4gLT5wcm9iZV9uZXcoKSBpcyB1c2Vk
+Lg0KPiANCj4gTG9va3MgbGlrZSB0aGluZ3MgYXJlIHdvcmtpbmcgZmluZSBub3cuIFNvIEkgY2Fu
+IGp1c3Qgc3VibWl0IHRoZSBkcml2ZXINCj4gd2l0aG91dCBib3RoZXJpbmcgdGhlIEkyQyBjb3Jl
+IHRlYW0gOikNCj4gDQo+IENoZWVycywNCj4gQmVuamFtaW4NCg==
