@@ -1,82 +1,119 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
- depend on schedutil
-Date: Thu, 6 Sep 2018 11:18:55 +0200
-Message-ID: <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-14-quentin.perret@arm.com> <20180904105906.t5i7twyyt2omc45b@queper01-lin>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v2 01/11] arm/arm64: dts: msm8974/msm8916: thermal: Split
+ address space into two
+Date: Thu, 6 Sep 2018 14:54:16 +0530
+Message-ID: <CAP245DX=oiDgi=_ig08yto-RaYQi9FPrKzYK073+=WsBTi83pw@mail.gmail.com>
+References: <cover.1535462942.git.amit.kucheria@linaro.org>
+ <882739b10bd0a3b655baef9b7ee1958680aa0b04.1535462942.git.amit.kucheria@linaro.org>
+ <20180903200255.GL3456@tuxbook-pro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180904105906.t5i7twyyt2omc45b@queper01-lin>
+In-Reply-To: <20180903200255.GL3456@tuxbook-pro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, David Brown <david.brown@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 4, 2018 at 12:59 PM Quentin Perret <quentin.perret@arm.com> wrote:
+On Tue, Sep 4, 2018 at 1:29 AM Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
 >
-> On Monday 20 Aug 2018 at 10:44:19 (+0100), Quentin Perret wrote:
-> > Energy Aware Scheduling (EAS) is designed with the assumption that
-> > frequencies of CPUs follow their utilization value. When using a CPUFreq
-> > governor other than schedutil, the chances of this assumption being true
-> > are small, if any. When schedutil is being used, EAS' predictions are at
-> > least consistent with the frequency requests. Although those requests
-> > have no guarantees to be honored by the hardware, they should at least
-> > guide DVFS in the right direction and provide some hope in regards to the
-> > EAS model being accurate.
+> On Tue 28 Aug 06:38 PDT 2018, Amit Kucheria wrote:
+>
+> > We've earlier added support to split the register address space into TM
+> > and SROT regions.
 > >
-> > To make sure EAS is only used in a sane configuration, create a strong
-> > dependency on schedutil being used. Since having sugov compiled-in does
-> > not provide that guarantee, extend the existing CPUFreq policy notifier
-> > with a new case on governor changes. That allows the scheduler to
-> > register a callback on this notifier to rebuild the scheduling domains
-> > when governors are changed, and enable/disable EAS accordingly.
+> > Split up the regmap address space into two for the remaining platforms
+> > that have a similar register layout and make corresponding changes to
+> > the get_temp_common() function used by these platforms.
 > >
-> > cc: Ingo Molnar <mingo@redhat.com>
-> > cc: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> > Since tsens-common.c/init_common() currently only registers one address
+> > space, the order is important (TM before SROT).  This is OK since the
+> > code doesn't really use the SROT functionality yet.
 > >
+>
+> Having a single patch touching both code and dts will cause merge issues
+> as this patch travel upstream. Even more arm-soc expects arm and arm64
+> dts changes to come in different pull requests.
+
+
+> Please split it so that the three pieces can be picked up by respective
+> maintainer.
+
+Will do.
+
+> > Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
 > > ---
-> > This patch could probably be squashed into another one, but I kept it
-> > separate to ease the review. Also, it's probably optional as not having
-> > it will not 'break' things per se.
+> >  arch/arm/boot/dts/qcom-msm8974.dtsi   | 5 +++--
+> >  arch/arm64/boot/dts/qcom/msm8916.dtsi | 5 +++--
+> >  drivers/thermal/qcom/tsens-common.c   | 5 +++--
+> >  3 files changed, 9 insertions(+), 6 deletions(-)
 > >
-> > I went for the smallest possible solution I could find, which has the
-> > good side of being simple, but it's definitely not the only one.
+> > diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > index d9019a49b292..56dbbf788d15 100644
+> > --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+> > @@ -427,9 +427,10 @@
+> >                       };
+> >               };
 > >
-> > Another possibility would be to hook things in sugov_start() and
-> > sugov_stop(), but that requires some more work. In this case, it
-> > wouldn't be possible to just re-build the sched_domains() from there,
-> > because when sugov_stop() is called, the 'governor' field of the policy
-> > hasn't been updated yet, so the condition (if gov == schedutil) in
-> > build_freq_domains() doesn't work.
+> > -             tsens: thermal-sensor@fc4a8000 {
+> > +             tsens: thermal-sensor@fc4a9000 {
+> >                       compatible = "qcom,msm8974-tsens";
+> > -                     reg = <0xfc4a8000 0x2000>;
+> > +                     reg = <0xfc4a9000 0x1000>, /* TM */
+> > +                           <0xfc4a8000 0x1000>; /* SROT */
+> >                       nvmem-cells = <&tsens_calib>, <&tsens_backup>;
+> >                       nvmem-cell-names = "calib", "calib_backup";
+> >                       #thermal-sensor-cells = <1>;
+> > diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > index 7b32b8990d62..6a277fce3333 100644
+> > --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+> > @@ -761,9 +761,10 @@
+> >                       };
+> >               };
 > >
-> > To workaround the issue we'll need to find a way to pass a cpumask to
-> > the topology code to specifically say 'sugov has been stopped on these
-> > CPUs'. That would mean more code to handle that, but that would also
-> > mean we don't have to mess around with the CPUFreq notifiers ...
+> > -             tsens: thermal-sensor@4a8000 {
+> > +             tsens: thermal-sensor@4a9000 {
+> >                       compatible = "qcom,msm8916-tsens";
+> > -                     reg = <0x4a8000 0x2000>;
+> > +                     reg = <0x4a9000 0x1000>, /* TM */
+> > +                           <0x4a8000 0x1000>; /* SROT */
+> >                       nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+> >                       nvmem-cell-names = "calib", "calib_sel";
+> >                       #thermal-sensor-cells = <1>;
+> > diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> > index 6207d8d92351..478739543bbc 100644
+> > --- a/drivers/thermal/qcom/tsens-common.c
+> > +++ b/drivers/thermal/qcom/tsens-common.c
+> > @@ -21,7 +21,7 @@
+> >  #include <linux/regmap.h>
+> >  #include "tsens.h"
 > >
-> > Not sure what's best, so all feedback is more than welcome.
+> > -#define S0_ST_ADDR           0x1030
+> > +#define STATUS_OFFSET                0x30
+> >  #define SN_ADDR_OFFSET               0x4
+> >  #define SN_ST_TEMP_MASK              0x3ff
+> >  #define CAL_DEGC_PT1         30
+> > @@ -107,8 +107,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+> >       unsigned int status_reg;
+> >       int last_temp = 0, ret;
+> >
+> > -     status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+> > +     status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * SN_ADDR_OFFSET;
 >
-> Hi,
->
-> Does anybody have concerns with this patch ? Is it a reasonable option
-> to use the CPUFreq notifiers in this case ? If there is anything I can
-> do to ease the review please let me know.
+> Wasn't this change part of the previous set that introduced the
+> tm_offset? If not how did we handle the fact that tmdev->map is already
+> indented 0x1000 bytes?
 
-I'm not a particular fan of notifiers to be honest and you don't need
-to add an extra chain just in order to be able to register a callback
-from a single user.  That can be achieved with a single callback
-pointer too, but also you could just call a function exported by the
-scheduler directly from where in the cpufreq code it needs to be
-called.
+It was a similar change 5b1283984fa3 ("thermal: tsens: Add support to
+split up register address space into two") for the get_temp_8996()
+function.
 
-> Also, is there any hope that the 12 first patches could make it in 4.20
-> on their own ? Or is it already too late ?
+This patch converts over the remaining users.
 
-I'm walking through them right now, albeit somewhat slowly due to
-various distractions, so we'll see.
+> Both changes looks good, but I'm worries about the order of things.
 
-Thanks,
-Rafael
+We're OK.
