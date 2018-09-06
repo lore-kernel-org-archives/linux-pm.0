@@ -1,26 +1,22 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Thu, 6 Sep 2018 14:48:46 +0100
-Message-ID: <20180906134846.GB25636@e110439-lin>
+Date: Thu, 6 Sep 2018 15:00:26 +0100
+Message-ID: <20180906140026.GC25636@e110439-lin>
 References: <20180828135324.21976-1-patrick.bellasi@arm.com>
  <20180828135324.21976-3-patrick.bellasi@arm.com>
- <20180905104545.GB20267@localhost.localdomain>
+ <20180906081728.GB27626@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180905104545.GB20267@localhost.localdomain>
+In-Reply-To: <20180906081728.GB27626@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Juri Lelli <juri.lelli@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Juri!
-
-On 05-Sep 12:45, Juri Lelli wrote:
-> Hi,
-> 
+On 06-Sep 10:17, Juri Lelli wrote:
 > On 28/08/18 14:53, Patrick Bellasi wrote:
 > 
 > [...]
@@ -40,53 +36,65 @@ On 05-Sep 12:45, Juri Lelli wrote:
 > > -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
 > > -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
 > > +	mutex_lock(&uclamp_mutex);
+> >  
+> > -	return 0;
+> > +	/* Find a valid group_id for each required clamp value */
+> > +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+> > +		upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> > +			? attr->sched_util_max
+> > +			: p->uclamp[UCLAMP_MAX].value;
+> > +
+> > +		if (upper_bound == UCLAMP_NOT_VALID)
+> > +			upper_bound = SCHED_CAPACITY_SCALE;
+> > +		if (attr->sched_util_min > upper_bound) {
+> > +			result = -EINVAL;
+> > +			goto done;
+> > +		}
+> > +
+> > +		result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
+> > +		if (result == -ENOSPC) {
+> > +			pr_err(UCLAMP_ENOSPC_FMT, "MIN");
+> > +			goto done;
+> > +		}
+> > +		group_id[UCLAMP_MIN] = result;
+> > +	}
+> > +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> > +		lower_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
+> > +			? attr->sched_util_min
+> > +			: p->uclamp[UCLAMP_MIN].value;
+> > +
+> > +		if (lower_bound == UCLAMP_NOT_VALID)
+> > +			lower_bound = 0;
+> > +		if (attr->sched_util_max < lower_bound ||
+> > +		    attr->sched_util_max > SCHED_CAPACITY_SCALE) {
+> > +			result = -EINVAL;
+> > +			goto done;
+> > +		}
+> > +
+> > +		result = uclamp_group_find(UCLAMP_MAX, attr->sched_util_max);
+> > +		if (result == -ENOSPC) {
+> > +			pr_err(UCLAMP_ENOSPC_FMT, "MAX");
+> > +			goto done;
+> > +		}
+> > +		group_id[UCLAMP_MAX] = result;
+> > +	}
 > 
-> This is going to get called from an rcu_read_lock() section, which is a
-> no-go for using mutexes:
-> 
->  sys_sched_setattr ->
->    rcu_read_lock()
->    ...
->    sched_setattr() ->
->      __sched_setscheduler() ->
->        ...
->        __setscheduler_uclamp() ->
->          ...
-> 	 mutex_lock()
+> Don't you have to reset result to 0 here (it seems what follows cannot
+> fail anymore)? Otherwise this function will return latest
+> uclamp_group_find return value, which will be interpreted as error if
+> not 0.
 
-Rightm, great catch, thanks!
+Yes, wired.. it uses to work on my tests just because I return from
+the caller on !0 and:
+ - that's just good enough to set by uclamps
+ - my current rt-app integration does not check the sycall return value
+ - my tests never request the clamp_group mapped on group_id=0
 
-> Guess you could fix the issue by getting the task struct after find_
-> process_by_pid() in sys_sched_attr() and then calling sched_setattr()
-> after rcu_read_lock() (putting the task struct at the end). Peter
-> actually suggested this mod to solve a different issue.
+:(
 
-I guess you mean something like this ?
+Will fix both this and the rt-app integration and the tests !
 
----8<---
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5792,10 +5792,15 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
-        rcu_read_lock();
-        retval = -ESRCH;
-        p = find_process_by_pid(pid);
--       if (p != NULL)
--               retval = sched_setattr(p, &attr);
-+       if (likely(p))
-+               get_task_struct(p);
-        rcu_read_unlock();
- 
-+       if (likely(p)) {
-+               retval = sched_setattr(p, &attr);
-+               put_task_struct(p);
-+       }
-+
-        return retval;
- }
----8<---
-
-Cheers,
-Patrick
+Cheers Patrick
 
 -- 
 #include <best/regards.h>
