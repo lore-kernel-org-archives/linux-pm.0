@@ -1,76 +1,94 @@
-From: Thomas Martitz <kugel-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-Subject: Re: [PATCH] PCI: add prefetch quirk to work around
- Asus/Nvidia suspend issues
-Date: Thu, 6 Sep 2018 15:35:12 +0200
-Message-ID: <2848f50b-d0c6-12ec-8f24-8461209c13b4@rockbox.org>
-References: <20180831073057.14626-1-drake@endlessm.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Thu, 6 Sep 2018 14:48:46 +0100
+Message-ID: <20180906134846.GB25636@e110439-lin>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180905104545.GB20267@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180831073057.14626-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Content-Language: de-AT-frami
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org, alexdeucher-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180905104545.GB20267@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-QW0gMzEuMDguMjAxOCB1bSAwOTozMCBzY2hyaWViIERhbmllbCBEcmFrZToKPiBPbiBvdmVyIDQw
-IEludGVsLWJhc2VkIEFzdXMgcHJvZHVjdHMsIHRoZSBudmlkaWEgR1BVIGJlY29tZXMgdW51c2Fi
-bGUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4gVGhlIGFmZmVjdGVkIHByb2R1Y3RzIGluY2x1
-ZGUgbXVsdGlwbGUKPiBnZW5lcmF0aW9ucyBvZiBudmlkaWEgR1BVcyBhbmQgSW50ZWwgU29Dcy4g
-QWZ0ZXIgcmVzdW1lLCBub3V2ZWF1IGxvZ3MKPiBtYW55IGVycm9ycyBzdWNoIGFzOgo+Cj4gICAg
-ICBmaWZvOiBmYXVsdCAwMCBbUkVBRF0gYXQgMDAwMDAwNTU1NTU1NTAwMCBlbmdpbmUgMDAgW0dS
-XSBjbGllbnQgMDQgW0hVQi9GRV0gcmVhc29uIDRhIFtdIG9uIGNoYW5uZWwgLTEgWzAwN2ZhOTEw
-MDAgdW5rbm93bl0KPiAgICAgIERSTTogZmFpbGVkIHRvIGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4K
-PiBTaW1pbGFybHksIHRoZSBudmlkaWEgcHJvcHJpZXRhcnkgZHJpdmVyIGFsc28gZmFpbHMgYWZ0
-ZXIgcmVzdW1lCj4gKGJsYWNrIHNjcmVlbiwgMTAwJSBDUFUgdXNhZ2UgaW4gWG9yZyBwcm9jZXNz
-KS4gV2Ugc2hpcHBlZCBhIHNhbXBsZQo+IHRvIE52aWRpYSBmb3IgZGlhZ25vc2lzLCBhbmQgdGhl
-aXIgcmVzcG9uc2UgaW5kaWNhdGVkIHRoYXQgaXQncyBhCj4gcHJvYmxlbSB3aXRoIHRoZSBwYXJl
-bnQgUENJIGJyaWRnZSAob24gdGhlIEludGVsIFNvQyksIG5vdCB0aGUgR1BVLgo+Cj4gV2UgZm91
-bmQgYSB3b3JrYXJvdW5kOiBvbiByZXN1bWUsIHJld3JpdGUgdGhlIEludGVsIFBDSSBicmlkZ2UK
-PiAnUHJlZmV0Y2hhYmxlIEJhc2UgVXBwZXIgMzIgQml0cycgcmVnaXN0ZXIuIEluIHRoZSBjYXNl
-cyB0aGF0IEkgY2hlY2tlZCwKPiB0aGlzIHJlZ2lzdGVyIGhhcyB2YWx1ZSAwIGFuZCB3ZSBqdXN0
-IGhhdmUgdG8gcmV3cml0ZSB0aGF0IHZhbHVlLgo+Cj4gSXQncyB2ZXJ5IHN0cmFuZ2UgdGhhdCBy
-ZXdyaXRpbmcgdGhlIGV4YWN0IHNhbWUgcmVnaXN0ZXIgdmFsdWUKPiBtYWtlcyBhIGRpZmZlcmVu
-Y2UsIGJ1dCBpdCBkZWZpbml0ZWx5IG1ha2VzIHRoZSBpc3N1ZSBnbyBhd2F5Lgo+IEl0J3Mgbm90
-IGp1c3QgYWN0aW5nIGFzIHNvbWUga2luZCBvZiBtZW1vcnkgYmFycmllciwgYmVjYXVzZSByZXdy
-aXRpbmcKPiBvdGhlciBicmlkZ2UgcmVnaXN0ZXJzIGRvZXMgbm90IHdvcmsgYXJvdW5kIHRoZSBp
-c3N1ZS4gVGhlcmUncyBzb21ldGhpbmcKPiBtYWdpYyBpbiB0aGlzIHBhcnRpY3VsYXIgcmVnaXN0
-ZXIuCj4KPiBXZSBleGFtaW5lZCBvdXIgZGF0YWJhc2Ugb2YgQXN1cyBoYXJkd2FyZSBhbmQgaWRl
-bnRpZmllZCA0MyBwcm9kdWN0cwo+IHRoYXQgd2UgYmVsaWV2ZSBhcmUgYWZmZWN0ZWQuIENoZWNr
-aW5nIHRoZSBudmlkaWEgR1BVIHBhcmVudCBQQ0kgYnJpZGdlCj4gb24gZWFjaCBvbmUsIGluIHRv
-dGFsIDUgSW50ZWwgUENJIGJyaWRnZXMgbmVlZCBxdWlya2luZyBhcyBiZWxvdy4KPiBUaGUgcXVp
-cmsgd2lsbCBydW4gb24gYnJpZGdlcyBldmVuIHdoZXJlIG5vIG52aWRpYSBHUFUgaXMgY29ubmVj
-dGVkLAo+IGJ1dCBpdCBzaG91bGQgYmUgaGFybWxlc3MsIGFuZCB3ZSBhdCBsZWFzdCBsaW1pdCBp
-dCB0byBvbmx5IHJ1bm5pbmcKPiBvbiBBc3VzIHByb2R1Y3RzLgo+Cj4gVGhpcyBmaXggd2FzIHRl
-c3RlZCBvbiBhbGwgdGhlIGFmZmVjdGVkIG1vZGVscyB0aGF0IHdlIGhhdmUgaW4gaGFuZHMKPiAo
-WDU0MlVRLCBVWDUzM0ZELCBYNTMwVU4sIFYyNzJVTikuCgpIZWxsbywKCnRoaXMgcGF0Y2ggaGVs
-cHMgb24gbXkgSFAgWmJvb2sgMTR1IEc1IHdoaWNoIG90aGVyd2lzZSBmYWlscyB0byByZXN1bWUg
-CnRoZSBkR1BVIGFmdGVyIHN1c3BlbmQuIEluIHRoaXMgY2FzZSBpdCdzIGEgcmFkZW9uIGdwdSAo
-cG9sYXJpcyAxMCkuIE9mIApjb3Vyc2UgSSBoYWQgdG8gcmVtb3ZlIHRoZSBjaGVjayBmb3IgQVNV
-UywgYnV0IG1hZGUgbm8gb3RoZXIgY2hhbmdlcy4KCldpdGggdGhpcyBwYXRjaCBJIGNhbiBzdWNj
-ZXNzZnVsbHkgcnVuICJEUklfUFJJTUU9MSBnbHhpbmZvIHwgZ3JlcCAtaSAKcmVuZGVyZXIiIGFu
-ZCBzZWUgdGhlIHJhZGVvbiwgYXMgd2VsbCBhcyAiRFJJX1BSSU1FPTEgZ2x4Z2VhcnMiLCBhZnRl
-ciAKcmVzdW1pbmcgZnJvbSBzdXNwZW5kLiBBdHRlbXRpbmcgdGhhdCB3aXRob3V0IHRoZSBwYXRj
-aCBtYWtlcyB0aGUgc3lzdGVtIApoYW5nIGZvciBhIGZldyBzZWNvbmRzIGZvbGxvd2VkIGJ5IGxv
-dHMgb2YgcG93ZXJwbGF5IGVycm9ycyBpbiBkbWVzZy4gCmdseGluZm8vZ2VhcnMgc29tZXRpbWVz
-IHVzZSB0aGUgSW50ZWwgZ3JhcGhpY3Mgb3Igc2hvdyBhIGJsYW5rIHdpbmRvdy4KCkZXSVcsIHRo
-aXMgcHJvYmxlbSB3YXMgZGlzY3Vzc2VkIGEgbG90IGluIGJ1ZyAKaHR0cHM6Ly9idWdzLmZyZWVk
-ZXNrdG9wLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTA1NzYwIChpdCdzIGNsb3NlZCBvbmx5IApiZWNh
-dXNlIHRoZSBvcmlnaW5hbCBidWcgY3Jhc2ggaXMgc29sdmVkIGJ1dCB0aGUgcm9vdCBwcm9ibGVt
-IGlzIHN0aWxsIAp1bmZpeGVkKS4gVGhlcmVmb3JlIEkgYWRkIFBldGVyIFd1IGFuZCBBbGV4IERl
-dWNoZXIgd2hvIGF0dGVtcHRlZCB0byAKaGVscCBtZSBvdXQgYWxyZWFkeS4KCkkgdGhpbmsgdGhp
-cyBzdXBwb3J0cyB5b3VyIG90aGVyIG1haWwgd2hlcmUgeW91IHN1Z2dlc3QgaXQgc2hvdWxkIGJl
-IApkb25lIHVuY29uZGl0aW9uYWxseS4KClRoYW5rcyBmb3IgdGhlIHBhdGNoIQoKQmVzdCByZWdh
-cmRzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZl
-YXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+Hi Juri!
+
+On 05-Sep 12:45, Juri Lelli wrote:
+> Hi,
+> 
+> On 28/08/18 14:53, Patrick Bellasi wrote:
+> 
+> [...]
+> 
+> >  static inline int __setscheduler_uclamp(struct task_struct *p,
+> >  					const struct sched_attr *attr)
+> >  {
+> > -	if (attr->sched_util_min > attr->sched_util_max)
+> > -		return -EINVAL;
+> > -	if (attr->sched_util_max > SCHED_CAPACITY_SCALE)
+> > -		return -EINVAL;
+> > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> > +	int lower_bound, upper_bound;
+> > +	struct uclamp_se *uc_se;
+> > +	int result = 0;
+> >  
+> > -	p->uclamp[UCLAMP_MIN] = attr->sched_util_min;
+> > -	p->uclamp[UCLAMP_MAX] = attr->sched_util_max;
+> > +	mutex_lock(&uclamp_mutex);
+> 
+> This is going to get called from an rcu_read_lock() section, which is a
+> no-go for using mutexes:
+> 
+>  sys_sched_setattr ->
+>    rcu_read_lock()
+>    ...
+>    sched_setattr() ->
+>      __sched_setscheduler() ->
+>        ...
+>        __setscheduler_uclamp() ->
+>          ...
+> 	 mutex_lock()
+
+Rightm, great catch, thanks!
+
+> Guess you could fix the issue by getting the task struct after find_
+> process_by_pid() in sys_sched_attr() and then calling sched_setattr()
+> after rcu_read_lock() (putting the task struct at the end). Peter
+> actually suggested this mod to solve a different issue.
+
+I guess you mean something like this ?
+
+---8<---
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5792,10 +5792,15 @@ SYSCALL_DEFINE3(sched_setattr, pid_t, pid, struct sched_attr __user *, uattr,
+        rcu_read_lock();
+        retval = -ESRCH;
+        p = find_process_by_pid(pid);
+-       if (p != NULL)
+-               retval = sched_setattr(p, &attr);
++       if (likely(p))
++               get_task_struct(p);
+        rcu_read_unlock();
+ 
++       if (likely(p)) {
++               retval = sched_setattr(p, &attr);
++               put_task_struct(p);
++       }
++
+        return retval;
+ }
+---8<---
+
+Cheers,
+Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
