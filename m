@@ -1,221 +1,86 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH V12 00/14] Krait clocks + Krait CPUfreq
-Date: Fri, 7 Sep 2018 15:27:34 +0530
-Message-ID: <d682580d-5070-0271-197f-29d988172937@codeaurora.org>
-References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
- <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v16 2/5] iommu/arm-smmu: Invoke pm_runtime
+ during probe, add/remove device
+Date: Fri, 7 Sep 2018 15:52:06 +0530
+Message-ID: <CAFp+6iE3+qn6-gpXEzxfoP5yPMARmUcJNn0AZk-kA2AreTLnng@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-3-vivek.gautam@codeaurora.org>
+ <CAAFQd5B7YR03Jm1upOg2nsaKOb1iDD7-WGo-qx7S8m-nounCvA@mail.gmail.com>
+ <3ccc3690-dc9d-56e7-e2d1-62e73a189bff@codeaurora.org>
+ <CAAFQd5DMDWEeBU=fg6arye3pXnrCqOA4tDtMSGutXk7vSz-EtQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, ctatlor97@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAAFQd5DMDWEeBU=fg6arye3pXnrCqOA4tDtMSGutXk7vSz-EtQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Craig,
-
-
->> [v12]
->>   * Added my signed-off that was missing in some patches.
->>   * Added Bjorn's acked that i missed earlier.
->>
-> 
->   Can you give this a try on your 8974 device and check if the
->   pvs version reporting, scaling for higher frequencies are fine ?
->   Sorry, i could not get hold of a 8974 device. So in-case if you still
->   have the issues with higher frequencies, can you give a quick debug
->   and report. That would be of great help.
-> 
-   Ping on this ..
-
-Regards,
- Sricharan
-
-> Regards,
->  Sricharan
-> 
-> 
->> [v11]
->>   * Dropped patch 13 and 14 from v10 and
->>     merged the qcom-cpufreq-krait driver to the existing qcom-cpufreq-kryo.c
->>   * Rebased on top of clk-next
->>   * Fixed a bug while populating the pvs version for krait.
->>
->> [v10]
->>   * Addressed Stephen's comments to add clocks bindings properties
->>     to the newly introduced nodes.
->>   * Added a change to include opp-supported-hw to qcom-cpufreq.c
->>   * Rebased on top of clk-next
->>   * Although there were minor changes to bindings and the driver
->>     retained the acked-by tags from Rob and Viresh respectively.    
->>
->> [v9]
->>   * Fixed a rebase issue in Makefile and added Tag from Robh.
->>
->> [v8]
->>   * Fixed a bug in path#14 pointed out by Viresh and also added tags.
->>     No change in any other patch.
->>
->> [v7]
->>   * Fixed comments from Viresh for cleaning up the error handling
->>     in qcom-cpufreq.c. Also changed the init function to lateinit
->>     call. This is required because nvmem which gets initialised with
->>     module_init needs to go first.
->>   * Fixed Rob's comments for bindings documentation
->>   * Fixed kbuild build issue in clk-lpc32xx.c
->>   * Rebased on top of clk-next
->>
->> [v6]
->>   * Adrressed comments from Viresh for patch #14 in v5 [5]
->>   * Introduced a new binding operating-points-v2-krait-cpu
->>     as per discussion with Rob
->>   * Added Review tags
->>
->> [v5]
->>   * Addressed comments from Rob for bindings
->>   * Addressed comments from Viresh to use dev_pm_opp_set_prop_name, accordingly
->>     dropped patch #12 and corrected patch #11 from previous patch set in [4]
->>   * Converted to use #spdx tags for newly introduced files
->>
->> Mostly a resend of the v3 posted by Stephen quite some time back [1]
->> except for few changes.
->>   Based on reading some feedback from list,
->>   * Dropped the patch "clk: Add safe switch hook" from v3 [2].
->>     Now this is taken care by patch#10 in this series only for Krait.
->>   * Dropped the path "clk: Avoid sending high rates to downstream
->> 		      clocks during set_rate" from v3 [3].
->>   * Rebased on top of clk-next.
->>   * Dropped the DT update from the series. Will send separately
->>   * Now with cpufreq-dt+opp supporting voltage scaling, registering the
->>     krait cpu supplies in DT should be sufficient. But one issue is,
->>     the qcom-cpufreq drivers reads the efuse and based on that registers
->>     the opp data and then registers the cpufreq-dt device. So when
->>     cpufreq-dt driver probes and registers the regulator to the OPP framework,
->>     it expects that the opp data for the device should not be registered before
->>     the regulator. Will send a RFC patch removing that check, to find out the
->>     right way of doing it.
->>
->> These patches provide cpufreq scaling on devices with Krait CPUs.
->> In Krait CPU designs there's one PLL and two muxes per CPU, allowing
->> us to switch CPU frequencies independently.
->>
->> 				 secondary
->> 	 +-----+                    +
->> 	 | QSB |-------+------------|\
->> 	 +-----+       |            | |-+
->> 		       |    +-------|/  |
->> 		       |    |       +   |
->> 	 +-----+       |    |           |
->> 	 | PLL |----+-------+           |   primary
->> 	 +-----+    |  |                |     +
->> 		    |  |                +-----|\       +------+
->> 	 +-------+  |  |                      | \      |      |
->> 	 | HFPLL |----------+-----------------|  |-----| CPU0 |
->> 	 +-------+  |  |    |                 |  |     |      |
->> 		    |  |    | +-----+         | /      +------+
->> 		    |  |    +-| / 2 |---------|/
->> 		    |  |      +-----+         +
->> 		    |  |         secondary
->> 		    |  |            +
->> 		    |  +------------|\
->> 		    |               | |-+
->> 		    +---------------|/  |   primary
->> 				    +   |     +
->> 					+-----|\       +------+
->> 	 +-------+                            | \      |      |
->> 	 | HFPLL |----------------------------|  |-----| CPU1 |
->> 	 +-------+          |                 |  |     |      |
->> 			    | +-----+         | /      +------+
->> 			    +-| / 2 |---------|/
->> 			      +-----+         +
->>
->> To support this in the common clock framework we model the muxes,
->> dividers, and PLLs as different clocks. CPUfreq only interacts
->> with the primary mux (farthest right in the diagram). When CPUfreq
->> sets a rate, the mux code finds the best parent that can provide the rate.
->> Due to the design, QSB and the top PLL are always a fixed rate and thus
->> only support one frequency each. These sources provide the lowest
->> frequencies for the CPUs. The HFPLLs are where we can make the CPU go
->> faster (GHz range). Sometimes we need to run the HFPLL twice as
->> fast and divide it by two to get a particular frequency.
->>
->> When switching rates we can't leave the CPU clocked by the HFPLL because
->> we need to turn off the output of the PLL when changing its frequency.
->> This means we have to switch over to the secondary mux and use one of the
->> fixed sources. This is why we need something like the safe parent patch.
->>
->> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
->> [2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
->> [3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
->> [4] https://lwn.net/Articles/740994/ 
->> [5] https://lkml.org/lkml/2017/12/19/537
->>
->>
->> Sricharan R (3):
->>   clk: qcom: Add safe switch hook for krait mux clocks
->>   cpufreq: qcom: Re-organise kryo cpufreq to use it for other nvmem
->>     based qcom socs
->>   cpufreq: qcom: Add support for krait based socs
->>
->> Stephen Boyd (11):
->>   ARM: Add Krait L2 register accessor functions
->>   clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
->>   clk: qcom: Add HFPLL driver
->>   dt-bindings: clock: Document qcom,hfpll
->>   clk: qcom: Add MSM8960/APQ8064's HFPLLs
->>   clk: qcom: Add IPQ806X's HFPLLs
->>   clk: qcom: Add support for Krait clocks
->>   clk: qcom: Add KPSS ACC/GCC driver
->>   dt-bindings: arm: Document qcom,kpss-gcc
->>   clk: qcom: Add Krait clock controller driver
->>   dt-bindings: clock: Document qcom,krait-cc
->>
->>  .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  19 +
->>  .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  44 +++
->>  .../devicetree/bindings/clock/qcom,hfpll.txt       |  60 ++++
->>  .../devicetree/bindings/clock/qcom,krait-cc.txt    |  34 ++
->>  .../{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt}   |   7 +-
->>  arch/arm/common/Kconfig                            |   3 +
->>  arch/arm/common/Makefile                           |   1 +
->>  arch/arm/common/krait-l2-accessors.c               |  48 +++
->>  arch/arm/include/asm/krait-l2-accessors.h          |   9 +
->>  drivers/clk/qcom/Kconfig                           |  28 ++
->>  drivers/clk/qcom/Makefile                          |   5 +
->>  drivers/clk/qcom/clk-hfpll.c                       | 244 +++++++++++++
->>  drivers/clk/qcom/clk-hfpll.h                       |  44 +++
->>  drivers/clk/qcom/clk-krait.c                       | 126 +++++++
->>  drivers/clk/qcom/clk-krait.h                       |  40 +++
->>  drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
->>  drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
->>  drivers/clk/qcom/hfpll.c                           |  96 +++++
->>  drivers/clk/qcom/kpss-xcc.c                        |  87 +++++
->>  drivers/clk/qcom/krait-cc.c                        | 397 +++++++++++++++++++++
->>  drivers/cpufreq/Kconfig.arm                        |   6 +-
->>  drivers/cpufreq/Makefile                           |   2 +-
->>  drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
->>  drivers/cpufreq/qcom-cpufreq-kryo.c                | 232 ------------
->>  drivers/cpufreq/qcom-cpufreq-nvmem.c               | 387 ++++++++++++++++++++
->>  include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
->>  26 files changed, 1941 insertions(+), 239 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
->>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
->>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
->>  rename Documentation/devicetree/bindings/opp/{kryo-cpufreq.txt => qcom-nvmem-cpufreq.txt} (98%)
->>  create mode 100644 arch/arm/common/krait-l2-accessors.c
->>  create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
->>  create mode 100644 drivers/clk/qcom/clk-hfpll.c
->>  create mode 100644 drivers/clk/qcom/clk-hfpll.h
->>  create mode 100644 drivers/clk/qcom/clk-krait.c
->>  create mode 100644 drivers/clk/qcom/clk-krait.h
->>  create mode 100644 drivers/clk/qcom/hfpll.c
->>  create mode 100644 drivers/clk/qcom/kpss-xcc.c
->>  create mode 100644 drivers/clk/qcom/krait-cc.c
->>  delete mode 100644 drivers/cpufreq/qcom-cpufreq-kryo.c
->>  create mode 100644 drivers/cpufreq/qcom-cpufreq-nvmem.c
->>
-> 
-
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+T24gRnJpLCBTZXAgNywgMjAxOCBhdCAzOjIyIFBNIFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1
+bS5vcmc+IHdyb3RlOgo+Cj4gT24gRnJpLCBTZXAgNywgMjAxOCBhdCA2OjM4IFBNIFZpdmVrIEdh
+dXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiA+Cj4gPiBIaSBUb21h
+c3osCj4gPgo+ID4KPiA+IE9uIDkvNy8yMDE4IDI6NDYgUE0sIFRvbWFzeiBGaWdhIHdyb3RlOgo+
+ID4gPiBIaSBWaXZlaywKPiA+ID4KPiA+ID4gT24gVGh1LCBBdWcgMzAsIDIwMTggYXQgMTE6NDYg
+UE0gVml2ZWsgR2F1dGFtCj4gPiA+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3Rl
+Ogo+ID4gPj4gRnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiA+
+ID4+Cj4gPiA+PiBUaGUgc21tdSBkZXZpY2UgcHJvYmUvcmVtb3ZlIGFuZCBhZGQvcmVtb3ZlIG1h
+c3RlciBkZXZpY2UgY2FsbGJhY2tzCj4gPiA+PiBnZXRzIGNhbGxlZCB3aGVuIHRoZSBzbW11IGlz
+IG5vdCBsaW5rZWQgdG8gaXRzIG1hc3RlciwgdGhhdCBpcyB3aXRob3V0Cj4gPiA+PiB0aGUgY29u
+dGV4dCBvZiB0aGUgbWFzdGVyIGRldmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhv
+c2UgcGxhY2VzCj4gPiA+PiBzZXBhcmF0ZWx5Lgo+ID4gPj4gR2xvYmFsIGxvY2tzIGFyZSBhbHNv
+IGluaXRpYWxpemVkIGJlZm9yZSBlbmFibGluZyBydW50aW1lIHBtIGFzIHRoZQo+ID4gPj4gcnVu
+dGltZV9yZXN1bWUoKSBjYWxscyBkZXZpY2VfcmVzZXQoKSB3aGljaCBkb2VzIHRsYl9zeW5jX2ds
+b2JhbCgpCj4gPiA+PiB0aGF0IHVsdGltYXRlbHkgcmVxdWlyZXMgbG9ja3MgdG8gYmUgaW5pdGlh
+bGl6ZWQuCj4gPiA+Pgo+ID4gPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJh
+bkBjb2RlYXVyb3JhLm9yZz4KPiA+ID4+IFt2aXZlazogQ2xlYW51cCBwbSBydW50aW1lIGNhbGxz
+XQo+ID4gPj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1
+cm9yYS5vcmc+Cj4gPiA+PiBSZXZpZXdlZC1ieTogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVt
+Lm9yZz4KPiA+ID4+IFRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2Fu
+ZGFnYXRsYUBsaW5hcm8ub3JnPgo+ID4gPj4gLS0tCj4gPiA+PiAgIGRyaXZlcnMvaW9tbXUvYXJt
+LXNtbXUuYyB8IDg5ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKyst
+LS0tLQo+ID4gPj4gICAxIGZpbGUgY2hhbmdlZCwgODEgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlv
+bnMoLSkKPiA+ID4gW3NuaXBdCj4gPiA+PiBAQCAtMjIxNSwxMCArMjI4MSwxNyBAQCBzdGF0aWMg
+aW50IGFybV9zbW11X2RldmljZV9yZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikK
+PiA+ID4+ICAgICAgICAgIGlmICghYml0bWFwX2VtcHR5KHNtbXUtPmNvbnRleHRfbWFwLCBBUk1f
+U01NVV9NQVhfQ0JTKSkKPiA+ID4+ICAgICAgICAgICAgICAgICAgZGV2X2VycigmcGRldi0+ZGV2
+LCAicmVtb3ZpbmcgZGV2aWNlIHdpdGggYWN0aXZlIGRvbWFpbnMhXG4iKTsKPiA+ID4+Cj4gPiA+
+PiArICAgICAgIGFybV9zbW11X3JwbV9nZXQoc21tdSk7Cj4gPiA+PiAgICAgICAgICAvKiBUdXJu
+IHRoZSB0aGluZyBvZmYgKi8KPiA+ID4+ICAgICAgICAgIHdyaXRlbChzQ1IwX0NMSUVOVFBELCBB
+Uk1fU01NVV9HUjBfTlMoc21tdSkgKyBBUk1fU01NVV9HUjBfc0NSMCk7Cj4gPiA+PiArICAgICAg
+IGFybV9zbW11X3JwbV9wdXQoc21tdSk7Cj4gPiA+PiArCj4gPiA+PiArICAgICAgIGlmIChwbV9y
+dW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSkKPiA+ID4+ICsgICAgICAgICAgICAgICBwbV9ydW50
+aW1lX2ZvcmNlX3N1c3BlbmQoc21tdS0+ZGV2KTsKPiA+ID4+ICsgICAgICAgZWxzZQo+ID4gPj4g
+KyAgICAgICAgICAgICAgIGNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNs
+a3MpOwo+ID4gPj4KPiA+ID4+IC0gICAgICAgY2xrX2J1bGtfZGlzYWJsZV91bnByZXBhcmUoc21t
+dS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+ID4gPj4gKyAgICAgICBjbGtfYnVsa191bnByZXBh
+cmUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+ID4gPiBBcmVuJ3Qgd2UgbWlzc2luZyBw
+bV9ydW50aW1lX2Rpc2FibGUoKSBoZXJlPyBXZSdsbCBoYXZlIHRoZSBlbmFibGUKPiA+ID4gY291
+bnQgdW5iYWxhbmNlZCBpZiB0aGUgZHJpdmVyIGlzIHJlbW92ZWQgYW5kIHByb2JlZCBhZ2Fpbi4K
+PiA+Cj4gPiBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKSBkb2VzIGEgcG1fcnVudGltZV9kaXNh
+YmxlKCkgYWxzbyBpZiBpIGFtIG5vdAo+ID4gd3JvbmcuCj4gPiBBbmQsIGFzIG1lbnRpb25lZCBp
+biBhIHByZXZpb3VzIHRocmVhZCBbMV0sIHdlIHdlcmUgc2VlaW5nIGEgd2FybmluZwo+ID4gd2hp
+Y2ggd2UgYXZvaWRlZAo+ID4gYnkga2VlcGluZyBmb3JjZV9zdXNwZW5kKCkuCj4gPgo+ID4gWzFd
+IGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE4LzcvOC8xMjQKPgo+IEkgc2VlLCB0aGFua3MuIEkg
+ZGlkbid0IHJlYWxpemUgdGhhdCBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKQo+IGFscmVhZHkg
+ZGlzYWJsZXMgcnVudGltZSBQTSBpbmRlZWQuIFNvcnJ5IGZvciB0aGUgbm9pc2UuCgpIaSBUb21h
+c3osCk5vIHByb2JsZW0uIFRoYW5rcyBmb3IgbG9va2luZyBiYWNrIGF0IGl0LgoKSGkgUm9iaW4s
+CklmIHlvdSBhcmUgZmluZSB3aXRoIHRoaXMgc2VyaWVzLCB0aGVuIGNhbiB5b3UgcGxlYXNlIGNv
+bnNpZGVyIGdpdmluZwpSZXZpZXdlZC1ieSwgc28gdGhhdCB3ZSBhcmUgY2VydGFpbiB0aGF0IHRo
+aXMgc2VyaWVzIHdpbGwgZ28gaW4gdGhlIG5leHQgbWVyZ2UKd2luZG93LgpUaGFua3MKCkJlc3Qg
+cmVnYXJkcwpWaXZlawoKCgoKLS0gClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVhbGNv
+bW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJvcmEgRm9y
+dW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVu
+b0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFp
+bG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
