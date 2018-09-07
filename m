@@ -1,130 +1,86 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is finished
-Date: Fri, 7 Sep 2018 14:40:00 +0530
-Message-ID: <CAHLCerM21eVkxigVN7vJvSCOfbyc2ow+R16LCA8QJ724b1+9xQ@mail.gmail.com>
-References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
- <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
+From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v16 2/5] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Fri, 7 Sep 2018 18:16:37 +0900
+Message-ID: <CAAFQd5B7YR03Jm1upOg2nsaKOb1iDD7-WGo-qx7S8m-nounCvA@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+	<20180830144541.17740-3-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20180830144541.17740-3-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bartlomiej,
+Hi Vivek,
 
-Do you have an updated version of this patchset on 4.19-rc1 somewhere
-that I can look at? I might be seeing this issue on the QCom TSENS
-driver and would like to verify.
+On Thu, Aug 30, 2018 at 11:46 PM Vivek Gautam
+<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>
+> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>
+> The smmu device probe/remove and add/remove master device callbacks
+> gets called when the smmu is not linked to its master, that is without
+> the context of the master device. So calling runtime apis in those places
+> separately.
+> Global locks are also initialized before enabling runtime pm as the
+> runtime_resume() calls device_reset() which does tlb_sync_global()
+> that ultimately requires locks to be initialized.
+>
+> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> [vivek: Cleanup pm runtime calls]
+> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/iommu/arm-smmu.c | 89 +++++++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 81 insertions(+), 8 deletions(-)
+[snip]
+> @@ -2215,10 +2281,17 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+>         if (!bitmap_empty(smmu->context_map, ARM_SMMU_MAX_CBS))
+>                 dev_err(&pdev->dev, "removing device with active domains!\n");
+>
+> +       arm_smmu_rpm_get(smmu);
+>         /* Turn the thing off */
+>         writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
+> +       arm_smmu_rpm_put(smmu);
+> +
+> +       if (pm_runtime_enabled(smmu->dev))
+> +               pm_runtime_force_suspend(smmu->dev);
+> +       else
+> +               clk_bulk_disable(smmu->num_clks, smmu->clks);
+>
+> -       clk_bulk_disable_unprepare(smmu->num_clks, smmu->clks);
+> +       clk_bulk_unprepare(smmu->num_clks, smmu->clks);
 
-Regards,
-Amit
+Aren't we missing pm_runtime_disable() here? We'll have the enable
+count unbalanced if the driver is removed and probed again.
 
-On Tue, Apr 10, 2018 at 6:11 PM, Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
-> Hi,
->
-> [devm]_thermal_zone_of_sensor_register() is used to register
-> thermal sensor by thermal drivers using DeviceTree. Besides
-> registering sensor this function also immediately enables it
-> (using ->set_mode method) and then checks it with a update call
-> to the thermal core (which ends up using ->get_temp method).
-> For many DT thermal drivers this causes a problem because
-> [devm]_thermal_zone_of_sensor_register() need to be called in
-> order to obtain data about thermal trips which are then used to
-> finish hardware sensor setup (only after which ->get_temp can
-> be used). The issue has been observed when using Samsung Exynos
-> thermal driver and fixed internally in the driver in commit
-> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
-> only when TMU is turned on"). However after this commit there
-> are now following warnings from the thermal core visible:
->
-> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
-> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
-> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
-> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
-> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
->
-> This patchset attempts to directly address the thermal core
-> problem with [devm]_thermal_zone_of_sensor_register() and
-> affected DT thermal drivers. In order to achieve this sensor
-> registration, enable and check operations are separated and
-> corresponding drivers are modified to use the new helpers to
-> enable and check sensor explicitly.
->
-> Tested on Exynos5422 based Odroid-XU3 Lite board (aforementioned
-> warnings from the thermal core are now gone).
->
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->
-> Bartlomiej Zolnierkiewicz (17):
->   thermal: add thermal_zone_device_toggle() helper
->   thermal: separate sensor registration and enable
->   thermal: add thermal_zone_device_check() helper
->   thermal: do sensor checking explicitly in drivers
->   thermal: bcm2835: enable/check sensor after its setup is finished
->   thermal: brcmstb: enable/check sensor after its setup is finished
->   thermal: hisi_thermal: enable/check sensor after its setup is finished
->   thermal: qcom: tsens: enable/check sensor after its setup is finished
->   thermal: qoriq: enable/check sensor after its setup is finished
->   thermal: rcar_gen3_thermal: enable/check sensor after its setup is
->     finished
->   thermal: rockchip_thermal: enable/check sensor after its setup is
->     finished
->   thermal: exynos: enable/check sensor after its setup is finished
->   thermal: tegra: enable/check sensor after its setup is finished
->   thermal: ti-soc-thermal: enable/check sensor after its setup is
->     finished
->   thermal: uniphier: enable/check sensor after its setup is
->     finished
->   thermal: zx2967: enable/check sensor after its setup is finished
->   thermal: warn on attempts to read temperature on disabled sensors
->
->  drivers/acpi/thermal.c                             |  5 ++--
->  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
->  drivers/platform/x86/acerhdf.c                     |  6 +++-
->  drivers/regulator/max8973-regulator.c              |  3 +-
->  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
->  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
->  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
->  drivers/thermal/da9062-thermal.c                   |  7 ++---
->  drivers/thermal/db8500_thermal.c                   |  5 +++-
->  drivers/thermal/hisi_thermal.c                     | 22 ++++----------
->  drivers/thermal/imx_thermal.c                      |  3 +-
->  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
->  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
->  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
->  drivers/thermal/max77620_thermal.c                 |  6 ++--
->  drivers/thermal/mtk_thermal.c                      |  3 ++
->  drivers/thermal/of-thermal.c                       |  6 ++--
->  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 +++-
->  drivers/thermal/qcom/tsens.c                       |  6 ++++
->  drivers/thermal/qoriq_thermal.c                    |  3 ++
->  drivers/thermal/rcar_gen3_thermal.c                |  7 +++--
->  drivers/thermal/rcar_thermal.c                     |  8 +++--
->  drivers/thermal/rockchip_thermal.c                 | 34 ++++++++++------------
->  drivers/thermal/samsung/exynos_tmu.c               |  7 ++++-
->  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
->  drivers/thermal/tango_thermal.c                    |  5 ++++
->  drivers/thermal/tegra/soctherm.c                   |  3 ++
->  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
->  drivers/thermal/thermal-generic-adc.c              |  3 ++
->  drivers/thermal/thermal_core.c                     | 14 ++++-----
->  drivers/thermal/thermal_helpers.c                  | 33 +++++++++++++++++++++
->  drivers/thermal/thermal_sysfs.c                    | 17 +++++++----
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 ++++-
->  drivers/thermal/uniphier_thermal.c                 |  6 +++-
->  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
->  drivers/thermal/zx2967_thermal.c                   |  3 ++
->  include/linux/thermal.h                            |  5 ++++
->  37 files changed, 173 insertions(+), 84 deletions(-)
->
-> --
-> 1.9.1
+Also, if we add pm_runtime_disable(), we can reorder things a bit and
+simplify into:
+
+       arm_smmu_rpm_get(smmu);
+
+       /* Turn the thing off */
+       writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
+
+       if (pm_runtime_enabled())
+               pm_runtime_disable();
+        arm_smmu_rpm_put(smmu);
+
+        clk_bulk_disable_unprepare(smmu->num_clks, smmu->clks);
+
+Best regards,
+Tomasz
