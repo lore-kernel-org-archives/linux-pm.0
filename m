@@ -1,112 +1,117 @@
-From: rishabhb@codeaurora.org
-Subject: Re: [PATCH v1] dd: Invoke one probe retry cycle after some initcall
- levels
-Date: Fri, 07 Sep 2018 13:34:30 -0700
-Message-ID: <1dfc67f3d7ea8aa3cb556c853d29f822@codeaurora.org>
-References: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on resume
+Date: Fri, 7 Sep 2018 16:48:56 -0500
+Message-ID: <20180907214856.GC250890@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180907053614.6540-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
+Content-Disposition: inline
+In-Reply-To: <20180907053614.6540-1-drake@endlessm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, psodagud@codeaurora.org, ckadabi@codeaurora.org, tsoni@codeaurora.org, linux-pm@vger.kernel.org, Vikram Mulukutla <markivx@codeaurora.org>
+To: Daniel Drake <drake@endlessm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, linux@endlessm.com, nouveau@lists.freedesktop.org, linux-pm@vger.kernel.org, peter@lekensteyn.nl, kherbst@redhat.com, andriy.shevchenko@linux.intel.com, rafael.j.wysocki@intel.com, keith.busch@intel.com, mika.westerberg@linux.intel.com, jonathan.derrick@intel.com, kugel@rockbox.org, davem@davemloft.net, hkallweit1@gmail.com, netdev@vger.kernel.org, nic_swsd@realtek.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018-08-13 10:39, Rishabh Bhatnagar wrote:
-> From: Rishabh Bhatnagar <rishabhb@codeaurora.org>
+[+cc LKML]
+
+On Fri, Sep 07, 2018 at 01:36:14PM +0800, Daniel Drake wrote:
+> On 38+ Intel-based Asus products, the nvidia GPU becomes unusable
+> after S3 suspend/resume. The affected products include multiple
+> generations of nvidia GPUs and Intel SoCs. After resume, nouveau logs
+> many errors such as:
 > 
-> Drivers that are registered at an initcall level may have to
-> wait until late_init before the probe deferral mechanism can
-> retry their probe functions. It is possible that their
-> dependencies were resolved much earlier, in some cases even
-> before the next initcall level. Invoke one probe retry cycle
-> at every _sync initcall level after subsys initcall, allowing
-> these drivers to be probed earlier.
-> To give an example many Qualcomm drivers are dependent on the
-> regulator and bus driver. Both the regulator and bus driver
-> are probed in the subsys_initcall level. Now the probe of bus
-> driver requires regulator to be working. If the probe of bus
-> driver happens before regulator, then bus driver's probe will
-> be deferred and all other device's probes which depend on bus
-> driver will also be deferred.
-> The impact of this problem is reduced if we have this patch.
+>     fifo: fault 00 [READ] at 0000005555555000 engine 00 [GR] client 04 [HUB/FE] reason 4a [] on channel -1 [007fa91000 unknown]
+>     DRM: failed to idle channel 0 [DRM]
 > 
-> Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
-> Signed-off-by: Rishabh Bhatnagar <rishabhb@codeaurora.org>
+> Similarly, the nvidia proprietary driver also fails after resume
+> (black screen, 100% CPU usage in Xorg process). We shipped a sample
+> to Nvidia for diagnosis, and their response indicated that it's a
+> problem with the parent PCI bridge (on the Intel SoC), not the GPU.
+> 
+> Runtime suspend/resume works fine, only S3 suspend is affected.
+> 
+> We found a workaround: on resume, rewrite the Intel PCI bridge
+> 'Prefetchable Base Upper 32 Bits' register (PCI_PREF_BASE_UPPER32). In
+> the cases that I checked, this register has value 0 and we just have to
+> rewrite that value.
+> 
+> It's very strange that rewriting the exact same register value
+> makes a difference, but it definitely makes the issue go away.
+> It's not just acting as some kind of memory barrier, because rewriting
+> other bridge registers does not work around the issue. There's something
+> magic in this particular register. We have confirmed this on all
+> the affected models we have in-hands (X542UQ, UX533FD, X530UN, V272UN).
+> 
+> Additionally, this workaround solves an issue where r8169 MSI-X
+> interrupts were broken after S3 suspend/resume on Asus X441UAR. This
+> issue was recently worked around in commit 7bb05b85bc2d ("r8169:
+> don't use MSI-X on RTL8106e"). It also fixes the same issue on
+> RTL6186evl/8111evl on an Aimfor-tech laptop that we had not yet
+> patched. I suspect it will also fix the issue that was worked around in
+> commit 7c53a722459c ("r8169: don't use MSI-X on RTL8168g").
+
+This is crazy.  I would think *lots* of devices, like anything that
+uses prefetchable memory, would be affected by this.
+
+> Thomas Martitz reports that this workaround also solves an issue where
+> the AMD Radeon Polaris 10 GPU on the HP Zbook 14u G5 is unresponsive
+> after S3 suspend/resume.
+> 
+> From our testing, the affected Intel PCI bridges are:
+> Intel Skylake PCIe Controller (x16) [8086:1901] (rev 05)
+> Intel Skylake PCIe Controller (x16) [8086:1901] (rev 07)
+> Intel Device [8086:31d8] (rev f3)
+> Intel Celeron N3350/Pentium N4200/Atom E3900 Series PCI Express Port B #1 [8086:5ad6] (rev fb)
+> Intel Celeron N3350/Pentium N4200/Atom E3900 Series PCI Express Port A #1 [8086:5ad8] (rev fb)
+> Intel Sunrise Point-LP PCI Express Root Port [8086:9d10] (rev f1)
+> Intel Sunrise Point-LP PCI Express Root Port #5 [8086:9d14] (rev f1)
+> Intel Device [8086:9dbc] (rev f0)
+> 
+> On resume, reprogram the PCI bridge prefetch registers, including the
+> magic register mentioned above.
+> 
+> This matches Win10 behaviour, which also rewrites these registers
+> during S3 resume (checked with qemu tracing).
+> 
+> Link: https://marc.info/?i=CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com
+
+Can you use
+
+  https://lkml.kernel.org/r/CAD8Lp46Y2eOR7WE28xToUL8s-aYiqPa0nS=1GSD0AxkddXq6+A@mail.gmail.com
+
+instead, so we don't depend on marc.info?  lkml.kernel.org doesn't have
+linux-pci archives, but it might someday, and it does redirect to other
+archives already.
+
+> Link: https://bugs.freedesktop.org/show_bug.cgi?id=105760
+
+I would really like to have a bugzilla.kernel.org issue with the
+excellent debugging you and Peter did attached.  Then we don't also
+have to depend on github.com, etc., sticking around.
+
+The list of platforms below could also be attached there, since you
+went to a lot of trouble to collect it, but it's probably more than is
+necessary for the changelog.
+
+> Signed-off-by: Daniel Drake <drake@endlessm.com>
 > ---
 > 
-> Changes since v0:
->  * Remove arch_initcall_sync(deferred_probe_initcall) from patch. This 
-> is not
->    really needed as none of the devices are re-probed in 
-> arch_initcall_sync
->    level.
-> 
->  drivers/base/dd.c | 32 ++++++++++++++++++++++++++------
->  1 file changed, 26 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 1435d72..9aa41aa 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -224,23 +224,43 @@ void device_unblock_probing(void)
->  	driver_deferred_probe_trigger();
->  }
-> 
-> +static void enable_trigger_defer_cycle(void)
-> +{
-> +	driver_deferred_probe_enable = true;
-> +	driver_deferred_probe_trigger();
-> +	/*
-> +	 * Sort as many dependencies as possible before the next initcall
-> +	 * level
-> +	 */
-> +	flush_work(&deferred_probe_work);
-> +}
-> +
->  /**
->   * deferred_probe_initcall() - Enable probing of deferred devices
->   *
->   * We don't want to get in the way when the bulk of drivers are 
-> getting probed.
->   * Instead, this initcall makes sure that deferred probing is delayed 
-> until
-> - * late_initcall time.
-> + * all the registered initcall functions at a particular level are 
-> completed.
-> + * This function is invoked at every *_initcall_sync level.
->   */
->  static int deferred_probe_initcall(void)
->  {
-> -	driver_deferred_probe_enable = true;
-> -	driver_deferred_probe_trigger();
-> -	/* Sort as many dependencies as possible before exiting initcalls */
-> -	flush_work(&deferred_probe_work);
-> +	enable_trigger_defer_cycle();
-> +	driver_deferred_probe_enable = false;
-> +	return 0;
-> +}
-> +subsys_initcall_sync(deferred_probe_initcall);
-> +fs_initcall_sync(deferred_probe_initcall);
-> +device_initcall_sync(deferred_probe_initcall);
-> +
-> +static int deferred_probe_enable_fn(void)
-> +{
-> +	/* Enable deferred probing for all time */
-> +	enable_trigger_defer_cycle();
->  	initcalls_done = true;
->  	return 0;
->  }
-> -late_initcall(deferred_probe_initcall);
-> +late_initcall(deferred_probe_enable_fn);
-> 
->  /**
->   * device_is_bound() - Check if device is bound to a driver
-
-Hi Rafael
-Just a reminder about this patch. Let me know if you want me to add/edit 
-anything else.
--Rishabh
+> Notes:
+>     Replaces patch:
+>        PCI: add prefetch quirk to work around Asus/Nvidia suspend issues
+>     
+>     Below is the list of Asus products with Intel/Nvidia that we
+>     believe are affected by the GPU resume issue.
+>     
+>     I revised my counting method from my last patch to eliminate duplicate
+>     platforms that had multiple SKUs with the same DMI/GPU/bridge, that's why
+>     the product count reduced from 43 to 38.
+>     
+>     sys_vendor: ASUSTeK COMPUTER INC.
+>     board_name: FX502VD
+>     product_name: FX502VD
+>     01:00.0 3D controller [0302]: NVIDIA Corporation Device [10de:1c8d] (rev ff) (prog-if ff)
+>     	!!! Unknown header type 7f
+>     00:01.0 PCI bridge [0604]: Intel Corporation Device [8086:1901] (rev 05) (prog-if 00 [Normal decode])
+> ...
