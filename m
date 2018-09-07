@@ -1,114 +1,73 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
- static key
-Date: Thu, 6 Sep 2018 16:49:47 -0700
-Message-ID: <e4e9d572-94ba-9d01-d18a-aa0ddd6fd357@arm.com>
+Subject: Re: [PATCH v6 04/14] PM / EM: Expose the Energy Model in sysfs
+Date: Thu, 6 Sep 2018 17:14:57 -0700
+Message-ID: <fe196eda-5e97-b115-0c24-b484428d2ac2@arm.com>
 References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-8-quentin.perret@arm.com>
- <f206f192-1bbf-f868-c8c6-8215334639db@arm.com>
- <20180906092955.tq27mhzfkovo2ehn@queper01-lin>
+ <20180820094420.26590-5-quentin.perret@arm.com>
+ <c012c934-d861-eba6-0c67-63e8308ae37b@arm.com>
+ <20180906140914.noe3yz7xrb4g5sf4@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180906092955.tq27mhzfkovo2ehn@queper01-lin>
+In-Reply-To: <20180906140914.noe3yz7xrb4g5sf4@queper01-lin>
 Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
 Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/06/2018 02:29 AM, Quentin Perret wrote:
+On 09/06/2018 07:09 AM, Quentin Perret wrote:
 > Hi Dietmar,
 > 
-> On Wednesday 05 Sep 2018 at 23:06:38 (-0700), Dietmar Eggemann wrote:
+> On Wednesday 05 Sep 2018 at 23:56:43 (-0700), Dietmar Eggemann wrote:
 >> On 08/20/2018 02:44 AM, Quentin Perret wrote:
->>> In order to ensure a minimal performance impact on non-energy-aware
->>> systems, introduce a static_key guarding the access to Energy-Aware
->>> Scheduling (EAS) code.
+>>> Expose the Energy Model (read-only) of all performance domains in sysfs
+>>> for convenience. To do so, add a kobject to the CPU subsystem under the
+>>> umbrella of which a kobject for each performance domain is attached.
 >>>
->>> The static key is set iff all the following conditions are met for at
->>> least one root domain:
->>>     1. all online CPUs of the root domain are covered by the Energy
->>>        Model (EM);
->>>     2. the complexity of the root domain's EM is low enough to keep
->>>        scheduling overheads low;
->>>     3. the root domain has an asymmetric CPU capacity topology (detected
->>>        by looking for the SD_ASYM_CPUCAPACITY flag in the sched_domain
->>>        hierarchy).
+>>> The resulting hierarchy is as follows for a platform with two
+>>> performance domains for example:
+>>>
+>>>      /sys/devices/system/cpu/energy_model
+>>>      ├── pd0
+>>>      │   ├── cost
+>>>      │   ├── cpus
+>>>      │   ├── frequency
+>>>      │   └── power
 >>
->> This is pretty much the list (+ is schedutil running) of conditions to set
->> rd->pd != NULL in build_perf_domains().
+>> cpus (cpumask of the perf domain), frequency (OPP's of the perf domain) and
+>> power (values at those OPP's) are somehow easy to grasp, cost is definitely
+>> not.
+>>
+>> You have this nice description in em_pd_energy() what cost actually is.
+>> IMHO, might be worth repeating this at least in the patch header here.
 > 
-> Yes, exactly. I actually loop over the rds to check if one of them has a
-> pd != NULL in order to enable/disable the static key. So the check for
-> those conditions is always done at the rd level.
-> 
->> So when testing 'static_branch_unlikely(&sched_energy_present) &&
->> rcu_dereference(rd->pd)' don't you test two times the same thing?
-> 
-> Well, not exactly. You could have two rds in your system, and only one
-> of the two has an Energy Model. The static key is just a performance
-> optimization for !EAS systems really. But I must admit it sort of lost a
+> Hmm, this patch introduces the sysfs interface, not the 'cost' field
+> itself. As long as 'cost' is documented in the patch that introduces it
+> we should be good no ? I mean this patch header tells you _where_ the
+> fields of the structure are exposed. _What_ the structure is all about
+> is a different story.
 
-Ah, that's correct. But the static key could be exchanged by a sched 
-feature, that's the important bit here.
+Mmmh, so maybe a EAS related documentation file explaining this 
+interface as well, which can be introduced later is the solution here?
 
-> bit of its interest over the versions. I mean, it's not that clear now
-> that a static key is a better option than a sched_feat as you suggest
-> below.
-> 
->> Also, if let's say somebody wants to run another EM user (e.g. a thermal
->> governor, like IPA) but not EAS on a asymmetric CPU capacity system. This
->> can't be achieved with the current static branch approach
-> 
-> I assume you're talking about IPA once migrated to using the EM
-> framework ? In this case, I think you're right, we won't have a single
+I'm just not 100% convinced that those cost values are self-explanatory 
+like the other three items:
 
-Right, in case we will have multiple user of the EM in the future.
+root@h960:~# ls /sys/devices/system/cpu/energy_model/pd0/
+cost
+cpus
+frequency
+power
 
-> tunable left to enable/disable EAS. On a big.LITTLE platform, if you
-> want IPA, EAS will always be enabled by side effect ...
-> 
-> That's a very good point actually. I think some people will not be happy
-> with that. There are big.LITTLE users (not very many of them, but still)
-> who don't care that much about energy, but do about performance. And
-> those guys might want to use IPA without EAS. So I guess we really need
-> a new knob.
+root@h960:~# cat /sys/devices/system/cpu/energy_model/pd0/*
+96 129 163 201 245
+0-3
+533000 999000 1402000 1709000 1844000
+28 70 124 187 245
 
-I guess so too.
+> But yeah, in any case, a reminder shouldn't hurt I guess, if you really
+> want one :-)
 
->> So what about using a (disabled by default ?) sched_feature + rd->pd != NULL
->> instead?
-> 
-> Right, that's an option. I could remove the static key and
-> sched_energy_start() altogether and replace all the
-> "if (static_branch_unlikely(&sched_energy_present))" by
-> "if (sched_feat(ENERGY_AWARE))" for example. That should be equivalent
-> to what I did with the static key from a performance standpoint. But that
-> would mean users have to manually flip switches to get EAS up and
-> running ... I assume it's the price to pay for configurability.
-> 
-> Another option would be a KConfig option + static key. I could keep all
-> of the ifdefery inside an accessor function like the following:
-> 
-> 	static inline bool sched_energy_aware(void)
-> 	{
-> 	#ifdef CONFIG_SCHED_ENERGY
-> 		return static_branch_likely(&sched_energy_present);
-> 	#else
-> 		return false;
-> 	#endif
-> 	}
-> 
-> Now, I understand that scheduler-related KConfig options aren't welcome
-> in general, so I tend to prefer the sched_feat option.
-> 
-> Thoughts ?
-
-I would prefer a sched_feature. I guess it has to be disabled by default 
-so that other systems don't have to check rcu_dereference(rd->pd) in the 
-wakeup path.
-
-But since at the beginning EAS will be the only user of the EM there is 
-no need to change the static key sched_energy_present right now.
+Nothing which should hold this patch-set back though.
