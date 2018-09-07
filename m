@@ -1,45 +1,42 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
- static key
-Date: Fri, 7 Sep 2018 09:24:23 +0100
-Message-ID: <20180907082139.ogsdxambyryhgsu4@queper01-lin>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <20180820094420.26590-8-quentin.perret@arm.com>
- <f206f192-1bbf-f868-c8c6-8215334639db@arm.com>
- <20180906092955.tq27mhzfkovo2ehn@queper01-lin>
- <e4e9d572-94ba-9d01-d18a-aa0ddd6fd357@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling depend on schedutil
+Date: Fri, 07 Sep 2018 10:52:01 +0200
+Message-ID: <1545744.fI5ZvP8FO0@aspire.rjw.lan>
+References: <20180820094420.26590-1-quentin.perret@arm.com> <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com> <20180906143842.xlxcg5notwdaflww@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e4e9d572-94ba-9d01-d18a-aa0ddd6fd357@arm.com>
+In-Reply-To: <20180906143842.xlxcg5notwdaflww@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 06 Sep 2018 at 16:49:47 (-0700), Dietmar Eggemann wrote:
-> I would prefer a sched_feature. I guess it has to be disabled by default so
-> that other systems don't have to check rcu_dereference(rd->pd) in the wakeup
-> path.
+On Thursday, September 6, 2018 4:38:44 PM CEST Quentin Perret wrote:
+> Hi Rafael,
+> 
+> On Thursday 06 Sep 2018 at 11:18:55 (+0200), Rafael J. Wysocki wrote:
+> > I'm not a particular fan of notifiers to be honest and you don't need
+> > to add an extra chain just in order to be able to register a callback
+> > from a single user.
+> 
+> Right. I agree there are alternatives to using notifiers. I used them
+> because they're existing infrastructure, and because they let me do what
+> I want without too much troubles, which are two important points.
+> 
+> > That can be achieved with a single callback
+> > pointer too, but also you could just call a function exported by the
+> > scheduler directly from where in the cpufreq code it needs to be
+> > called.
+> 
+> Are you thinking about something comparable to what is done in
+> cpufreq_add_update_util_hook() (kernel/sched/cpufreq.c) for example ?
+> That would probably have the same drawback as my current implementation,
+> that is that the scheduler is notified of _all_ governor changes, not
+> only changes to/from sugov although this is the only thing we care about
+> for EAS.
 
-Right, this is what I had in mind too. I guess downstream kernels can
-always carry a patch that changes the default if they want it enabled
-without messing around in userspace.
-
-> But since at the beginning EAS will be the only user of the EM there is no
-> need to change the static key sched_energy_present right now.
-
-Indeed, I could add a patch introducing this sched_feat in the series
-that migrates IPA to using the EM framework (to be posted later). It is
-just not required until we have a new user.
-
-However that IPA-related patchset would then change the default
-behaviour for users who used to get EAS enabled automatically, but
-wouldn't after updating their kernel (meaning they'd now have to flip
-switches by hand whereas it used to "just work"). Not sure if that
-qualifies as "breaking users" (cf. Linus' rule #1 of kernel
-development) ...
-
-Thanks,
-Quentin
+Well, why don't you implement it as something like "if the governor changes
+from sugov to something else (or the other way around), call this function
+from the scheduler"?
