@@ -1,68 +1,112 @@
-From: Fieah Lim <kw@fieahl.im>
-Subject: [PATCH] cpuidle: Remove unnecessary wrapper cpuidle_get_last_residency()
-Date: Sat,  8 Sep 2018 04:08:38 +0800
-Message-ID: <20180907200838.4966-1-kw@fieahl.im>
+From: rishabhb@codeaurora.org
+Subject: Re: [PATCH v1] dd: Invoke one probe retry cycle after some initcall
+ levels
+Date: Fri, 07 Sep 2018 13:34:30 -0700
+Message-ID: <1dfc67f3d7ea8aa3cb556c853d29f822@codeaurora.org>
+References: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, open list <linux-kernel@vger.kernel.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>
-Cc: Fieah Lim <kw@fieahl.im>
+To: rafael@kernel.org
+Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, psodagud@codeaurora.org, ckadabi@codeaurora.org, tsoni@codeaurora.org, linux-pm@vger.kernel.org, Vikram Mulukutla <markivx@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-There's no magic inside, let's just make it more intuitive.
+On 2018-08-13 10:39, Rishabh Bhatnagar wrote:
+> From: Rishabh Bhatnagar <rishabhb@codeaurora.org>
+> 
+> Drivers that are registered at an initcall level may have to
+> wait until late_init before the probe deferral mechanism can
+> retry their probe functions. It is possible that their
+> dependencies were resolved much earlier, in some cases even
+> before the next initcall level. Invoke one probe retry cycle
+> at every _sync initcall level after subsys initcall, allowing
+> these drivers to be probed earlier.
+> To give an example many Qualcomm drivers are dependent on the
+> regulator and bus driver. Both the regulator and bus driver
+> are probed in the subsys_initcall level. Now the probe of bus
+> driver requires regulator to be working. If the probe of bus
+> driver happens before regulator, then bus driver's probe will
+> be deferred and all other device's probes which depend on bus
+> driver will also be deferred.
+> The impact of this problem is reduced if we have this patch.
+> 
+> Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
+> Signed-off-by: Rishabh Bhatnagar <rishabhb@codeaurora.org>
+> ---
+> 
+> Changes since v0:
+>  * Remove arch_initcall_sync(deferred_probe_initcall) from patch. This 
+> is not
+>    really needed as none of the devices are re-probed in 
+> arch_initcall_sync
+>    level.
+> 
+>  drivers/base/dd.c | 32 ++++++++++++++++++++++++++------
+>  1 file changed, 26 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 1435d72..9aa41aa 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -224,23 +224,43 @@ void device_unblock_probing(void)
+>  	driver_deferred_probe_trigger();
+>  }
+> 
+> +static void enable_trigger_defer_cycle(void)
+> +{
+> +	driver_deferred_probe_enable = true;
+> +	driver_deferred_probe_trigger();
+> +	/*
+> +	 * Sort as many dependencies as possible before the next initcall
+> +	 * level
+> +	 */
+> +	flush_work(&deferred_probe_work);
+> +}
+> +
+>  /**
+>   * deferred_probe_initcall() - Enable probing of deferred devices
+>   *
+>   * We don't want to get in the way when the bulk of drivers are 
+> getting probed.
+>   * Instead, this initcall makes sure that deferred probing is delayed 
+> until
+> - * late_initcall time.
+> + * all the registered initcall functions at a particular level are 
+> completed.
+> + * This function is invoked at every *_initcall_sync level.
+>   */
+>  static int deferred_probe_initcall(void)
+>  {
+> -	driver_deferred_probe_enable = true;
+> -	driver_deferred_probe_trigger();
+> -	/* Sort as many dependencies as possible before exiting initcalls */
+> -	flush_work(&deferred_probe_work);
+> +	enable_trigger_defer_cycle();
+> +	driver_deferred_probe_enable = false;
+> +	return 0;
+> +}
+> +subsys_initcall_sync(deferred_probe_initcall);
+> +fs_initcall_sync(deferred_probe_initcall);
+> +device_initcall_sync(deferred_probe_initcall);
+> +
+> +static int deferred_probe_enable_fn(void)
+> +{
+> +	/* Enable deferred probing for all time */
+> +	enable_trigger_defer_cycle();
+>  	initcalls_done = true;
+>  	return 0;
+>  }
+> -late_initcall(deferred_probe_initcall);
+> +late_initcall(deferred_probe_enable_fn);
+> 
+>  /**
+>   * device_is_bound() - Check if device is bound to a driver
 
-Signed-off-by: Fieah Lim <kw@fieahl.im>
----
- drivers/cpuidle/governors/ladder.c |  2 +-
- drivers/cpuidle/governors/menu.c   |  2 +-
- include/linux/cpuidle.h            | 10 ----------
- 3 files changed, 2 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 704880a6612a..f0dddc66af26 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 
- 	last_state = &ldev->states[last_idx];
- 
--	last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
-+	last_residency = dev->last_residency - drv->states[last_idx].exit_latency;
- 
- 	/* consider promotion */
- 	if (last_idx < drv->state_count - 1 &&
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 1aef60d160eb..715520e339da 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -492,7 +492,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		measured_us = 9 * MAX_INTERESTING / 10;
- 	} else {
- 		/* measured value */
--		measured_us = cpuidle_get_last_residency(dev);
-+		measured_us = dev->last_residency;
- 
- 		/* Deduct exit latency */
- 		if (measured_us > 2 * target->exit_latency)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 4325d6fdde9b..d262f620890e 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -99,16 +99,6 @@ struct cpuidle_device {
- DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
- DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
- 
--/**
-- * cpuidle_get_last_residency - retrieves the last state's residency time
-- * @dev: the target CPU
-- */
--static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
--{
--	return dev->last_residency;
--}
--
--
- /****************************
-  * CPUIDLE DRIVER INTERFACE *
-  ****************************/
--- 
-2.18.0
+Hi Rafael
+Just a reminder about this patch. Let me know if you want me to add/edit 
+anything else.
+-Rishabh
