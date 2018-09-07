@@ -1,34 +1,23 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Nouveau] [PATCH] PCI: Reprogram bridge prefetch registers on
- resume
-Date: Fri, 7 Sep 2018 07:49:56 +0200
-Message-ID: <20180907054956.kuf4ttqoil5eiykl@wunner.de>
+From: Sinan Kaya <okaya@kernel.org>
+Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on resume
+Date: Thu, 6 Sep 2018 23:40:56 -0700
+Message-ID: <3b37e4fd-c793-bd52-7d70-950f846a7d5a@kernel.org>
 References: <20180907053614.6540-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
 In-Reply-To: <20180907053614.6540-1-drake@endlessm.com>
+Content-Language: en-US
 Sender: netdev-owner@vger.kernel.org
-To: Daniel Drake <drake@endlessm.com>
-Cc: bhelgaas@google.com, mika.westerberg@linux.intel.com, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, rafael.j.wysocki@intel.com, nic_swsd@realtek.com, keith.busch@intel.com, netdev@vger.kernel.org, nouveau@lists.freedesktop.org, andriy.shevchenko@linux.intel.com, linux@endlessm.com, davem@davemloft.net, jonathan.derrick@intel.com, hkallweit1@gmail.com
+To: Daniel Drake <drake@endlessm.com>, bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org, linux@endlessm.com, nouveau@lists.freedesktop.org, linux-pm@vger.kernel.org, peter@lekensteyn.nl, kherbst@redhat.com, andriy.shevchenko@linux.intel.com, rafael.j.wysocki@intel.com, keith.busch@intel.com, mika.westerberg@linux.intel.com, jonathan.derrick@intel.com, kugel@rockbox.org, davem@davemloft.net, hkallweit1@gmail.com, netdev@vger.kernel.org, nic_swsd@realtek.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 07, 2018 at 01:36:14PM +0800, Daniel Drake wrote:
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -934,6 +934,7 @@ struct pci_dev *pci_scan_single_device(struct pci_bus *bus, int devfn);
->  void pci_device_add(struct pci_dev *dev, struct pci_bus *bus);
->  unsigned int pci_scan_child_bus(struct pci_bus *bus);
->  void pci_bus_add_device(struct pci_dev *dev);
-> +void pci_setup_bridge_mmio_pref(struct pci_dev *bridge);
->  void pci_read_bridge_bases(struct pci_bus *child);
->  struct resource *pci_find_parent_resource(const struct pci_dev *dev,
->  					  struct resource *res);
+On 9/6/2018 10:36 PM, Daniel Drake wrote:
+> +	if (pci_dev->class == PCI_CLASS_BRIDGE_PCI << 8)
+> +		pci_setup_bridge_mmio_pref(pci_dev);
 
-Since this is only used internally in the PCI core, the declaration
-can live in drivers/pci/pci.h.
-
-Thanks,
-
-Lukas
+This should probably some kind of a quirk rather than default
+for the listed card as it sounds like you are dealing with
+broken hardware.
