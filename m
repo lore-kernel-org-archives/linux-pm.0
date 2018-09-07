@@ -1,65 +1,45 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on
- resume
-Date: Fri, 7 Sep 2018 16:06:19 +0800
-Message-ID: <CAD8Lp466EffdgL5zVZi-L+s78Yxa9+FryB8ch1=UAwwCPqu9Ag@mail.gmail.com>
-References: <20180907053614.6540-1-drake@endlessm.com>
- <3b37e4fd-c793-bd52-7d70-950f846a7d5a@kernel.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 07/14] sched/topology: Introduce sched_energy_present
+ static key
+Date: Fri, 7 Sep 2018 09:24:23 +0100
+Message-ID: <20180907082139.ogsdxambyryhgsu4@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-8-quentin.perret@arm.com>
+ <f206f192-1bbf-f868-c8c6-8215334639db@arm.com>
+ <20180906092955.tq27mhzfkovo2ehn@queper01-lin>
+ <e4e9d572-94ba-9d01-d18a-aa0ddd6fd357@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <3b37e4fd-c793-bd52-7d70-950f846a7d5a-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Sinan Kaya <okaya-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Wysocki,
- Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <e4e9d572-94ba-9d01-d18a-aa0ddd6fd357@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBTZXAgNywgMjAxOCBhdCAyOjQwIFBNLCBTaW5hbiBLYXlhIDxva2F5YUBrZXJuZWwu
-b3JnPiB3cm90ZToKPiBPbiA5LzYvMjAxOCAxMDozNiBQTSwgRGFuaWVsIERyYWtlIHdyb3RlOgo+
-Pgo+PiArICAgICAgIGlmIChwY2lfZGV2LT5jbGFzcyA9PSBQQ0lfQ0xBU1NfQlJJREdFX1BDSSA8
-PCA4KQo+PiArICAgICAgICAgICAgICAgcGNpX3NldHVwX2JyaWRnZV9tbWlvX3ByZWYocGNpX2Rl
-dik7Cj4KPgo+IFRoaXMgc2hvdWxkIHByb2JhYmx5IHNvbWUga2luZCBvZiBhIHF1aXJrIHJhdGhl
-ciB0aGFuIGRlZmF1bHQKPiBmb3IgdGhlIGxpc3RlZCBjYXJkIGFzIGl0IHNvdW5kcyBsaWtlIHlv
-dSBhcmUgZGVhbGluZyB3aXRoCj4gYnJva2VuIGhhcmR3YXJlLgoKV2l0aCB0aGF0IGFwcHJvYWNo
-IHRoZXJlJ3MgYSBzaXplYWJsZSBsaXN0IHRoYXQgeW91ciBxdWlyayBsaXN0IGlzCmluY29tcGxl
-dGUgb3Igb3V0IG9mIGRhdGUuCgpBbmQgd2hlbiB0aGUgYnVnIGJpdGVzLCBpdCdzIGV4dHJlbWVs
-eSBjcnlwdGljLiBXZSd2ZSBzcGVudCBtb250aHMKd29ya2luZyBvbiB0aGlzIGlzc3VlIGFuZCBv
-bmx5IGZvdW5kIHRoaXMgbWFnaWMgcmVnaXN0ZXIgd3JpdGUgbW9zdGx5CnRocm91Z2ggYSBzdHJv
-a2Ugb2YgZ29vZCBsdWNrLiBTZXBhcmF0ZWx5IHRoZXJlJ3MgYmVlbiBhIGZsdXJyeSBvZgptYWls
-cyBhcm91bmQgdGhlIHI4MTY5IE1TSS1YIHByb2JsZW0gYnV0IGFzIGZhciBhcyBJIGNhbiBzZWUg
-bm9ib2R5CnN1Z2dlc3RlZCBldmVuIGxvb2tpbmcgYXQgdGhlIHZhbHVlcyBvZiB0aGUgcGFyZW50
-IGJyaWRnZSBwcmVmZXRjaApyZWdpc3RlcnMuIEFuZCBldmVuIGlmIHRoZXkgZGlkLCB0aGV5J2Qg
-cHJvYmFibHkgaGF2ZSBzYWlkICJ2YWx1ZXMgYXJlCmZpbmUsIG5vdGhpbmcgdG8gc2VlIGhlcmUi
-IChleGFjdGx5IGFzIHdlIGRpZCA0IG1vbnRocyBhZ28gd2hlbiBOdmlkaWEKbWVudGlvbmVkIHRo
-ZXNlIHJlZ2lzdGVycyBhcyBhIHBvc3NpYmxlIGNhdXNlIC0gb29wcyEpLgoKU28gaGVyZSBJJ20g
-aW5zdGVhZCBmb2xsb3dpbmcgYSBzdWdnZXN0aW9uIGZyb20gQmpvcm4sIGFmdGVyIGFsc28KaGF2
-aW5nIGNvbmZpcm1lZCB0aGUgd2luZG93cyBiZWhhdmlvdXI6CgpodHRwczovL21hcmMuaW5mby8/
-bD1saW51eC1wY2kmbT0xNTM1NzQyNzYxMjY0ODQmdz0yCj4gQ2FuIHdlIHRlbGwgd2hldGhlciBX
-aW5kb3dzIHJld3JpdGVzIHRoaXMgcmVnaXN0ZXIgdW5jb25kaXRpb25hbGx5IGF0Cj4gcmVzdW1l
-LXRpbWU/ICBJZiBzbywgaXQgbWF5IGJlIG1vcmUgcm9idXN0IGZvciBMaW51eCB0byBkbyB0aGUg
-c2FtZS4KPiBUaGUgd2hvbGUgdGhpbmcgaXMgYmxhY2sgbWFnaWMsIHdoaWNoIEkgaGF0ZSwgYnV0
-IGlmIGl0J3Mgb3VyIG9ubHkKPiBjaG9pY2UsIGl0IG1heSBiZSBiZXR0ZXIgdG8gaGF2ZSB0aGlz
-IGFwcGxpZWQgZXZlcnl3aGVyZSBzbyB3ZSBkb24ndAo+IGtlZXAgc3R1YmJpbmcgb3VyIHRvZXMg
-b24gbmV3IHN5c3RlbXMgdGhhdCByZXF1aXJlIHRoZSBxdWlyay4KCkFsc28sIHdlIGp1c3Qgc3Bv
-a2UgdG8gQXN1cyBCSU9TIGVuZ2luZWVycyB3aG8gdG9sZCB1cyB0aGF0IHRoZSBCSU9TCmRvZXMg
-YWxyZWFkeSByZXN0b3JlIHRoZSBQQ0kgYnJpZGdlIHByZWZldGNoIHJlZ2lzdGVycyBvbiByZXN1
-bWUuIEkKZ3Vlc3MgdGhpcyBpcyB3aHkgdGhlIG90aGVyIHJlZ2lzdGVycyBsaWtlIHRoZSAobm9u
-LXplcm8pIHByZWZldGNoCmJhc2UgYWRkcmVzcyBsb3dlciAzMiBiaXRzIGRvIGhhdmUgdGhlIHJp
-Z2h0IHZhbHVlIG9uIHJlc3VtZSBldmVuCmJlZm9yZSBteSBwYXRjaC4gSXQgc291bmRzIGxpa2Ug
-YSBtb3JlIHN1YnRsZSBidWcgcmVsYXRlZCB0byByZWdpc3Rlcgp3cml0ZSB0aW1pbmcgb3Igc2Vx
-dWVuY2UsIGluIHRoYXQgY2FzZSBpdCB3aWxsIGJlIGhhcmRlciB0byBkZWZpbmUgd2hvCmlzIHJl
-c3BvbnNpYmxlIGZvciB0aGUgYnJlYWthZ2UgYW5kIGhlbmNlIHVuZGVyIHdoaWNoIGNvbmRpdGlv
-bnMgdGhlCnF1aXJrIHNob3VsZCBhcHBseS4KCkRhbmllbApfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxp
-c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL25vdXZlYXUK
+On Thursday 06 Sep 2018 at 16:49:47 (-0700), Dietmar Eggemann wrote:
+> I would prefer a sched_feature. I guess it has to be disabled by default so
+> that other systems don't have to check rcu_dereference(rd->pd) in the wakeup
+> path.
+
+Right, this is what I had in mind too. I guess downstream kernels can
+always carry a patch that changes the default if they want it enabled
+without messing around in userspace.
+
+> But since at the beginning EAS will be the only user of the EM there is no
+> need to change the static key sched_energy_present right now.
+
+Indeed, I could add a patch introducing this sched_feat in the series
+that migrates IPA to using the EM framework (to be posted later). It is
+just not required until we have a new user.
+
+However that IPA-related patchset would then change the default
+behaviour for users who used to get EAS enabled automatically, but
+wouldn't after updating their kernel (meaning they'd now have to flip
+switches by hand whereas it used to "just work"). Not sure if that
+qualifies as "breaking users" (cf. Linus' rule #1 of kernel
+development) ...
+
+Thanks,
+Quentin
