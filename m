@@ -1,48 +1,241 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on
- resume
-Date: Fri, 7 Sep 2018 17:05:15 +0200
-Message-ID: <20180907150515.GA28739@al>
-References: <20180907053614.6540-1-drake@endlessm.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Fri, 7 Sep 2018 16:29:25 +0100
+Message-ID: <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
+ <20180906143842.xlxcg5notwdaflww@queper01-lin>
+ <1545744.fI5ZvP8FO0@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180907053614.6540-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+In-Reply-To: <1545744.fI5ZvP8FO0@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBTZXAgMDcsIDIwMTggYXQgMDE6MzY6MTRQTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
-b3RlOgo8Li4+Cj4gVGhvbWFzIE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgd29ya2Fyb3VuZCBh
-bHNvIHNvbHZlcyBhbiBpc3N1ZSB3aGVyZQo+IHRoZSBBTUQgUmFkZW9uIFBvbGFyaXMgMTAgR1BV
-IG9uIHRoZSBIUCBaYm9vayAxNHUgRzUgaXMgdW5yZXNwb25zaXZlCj4gYWZ0ZXIgUzMgc3VzcGVu
-ZC9yZXN1bWUuCgpXaGVyZSB3YXMgdGhpcyBjbGFpbWVkPyBJdCBpcyBub3Qgc3RhdGVkIGluIHRo
-ZSBsaW5rZWQgYnVnOgooaHR0cHM6Ly9idWdzLmZyZWVkZXNrdG9wLm9yZy9zaG93X2J1Zy5jZ2k/
-aWQ9MTA1NzYwCgo+IE9uIHJlc3VtZSwgcmVwcm9ncmFtIHRoZSBQQ0kgYnJpZGdlIHByZWZldGNo
-IHJlZ2lzdGVycywgaW5jbHVkaW5nIHRoZQo+IG1hZ2ljIHJlZ2lzdGVyIG1lbnRpb25lZCBhYm92
-ZS4KPiAKPiBUaGlzIG1hdGNoZXMgV2luMTAgYmVoYXZpb3VyLCB3aGljaCBhbHNvIHJld3JpdGVz
-IHRoZXNlIHJlZ2lzdGVycwo+IGR1cmluZyBTMyByZXN1bWUgKGNoZWNrZWQgd2l0aCBxZW11IHRy
-YWNpbmcpLgoKV2luZG93cyAxMCB1bmNvbmRpdGlvbmFsbHkgcmV3cml0ZXMgdGhlc2UgcmVnaXN0
-ZXJzIChCQVIsIEkvTyBCYXNlICsKTGltaXQsIE1lbW9yeSBCYXNlICsgTGltaXQsIGV0Yy4gZnJv
-bSB0b3AgdG8gYm90dG9tKSwgc2VlIGFubm90YXRpb25zOgpodHRwczovL3d3dy5zcGluaWNzLm5l
-dC9saXN0cy9saW51eC1wY2kvbXNnNzU4NTYuaHRtbAoKTGludXggaGFzIGEgZ2VuZXJpYyAicmVz
-dG9yZSIgb3BlcmF0aW9uIHRoYXQgd29ya3MgYmFja3dhcmRzIGZyb20gdGhlCmVuZCBvZiB0aGUg
-UENJIGNvbmZpZyBzcGFjZSB0byB0aGUgYmVnaW5uaW5nLCBzZWUKcGNpX3Jlc3RvcmVfY29uZmln
-X3NwYWNlLiBEbyB5b3UgaGF2ZSBhIGRtZXNnIHdoZXJlIHlvdSBzZWUgdGhlCiJyZXN0b3Jpbmcg
-Y29uZmlnIHNwYWNlIGF0IG9mZnNldCIgbWVzc2FnZXM/CgpXb3VsZCBpdCBiZSByZWFzb25hYmxl
-IHRvIHVuY29uZGl0aW9uYWxseSB3cml0ZSB0aGVzZSByZWdpc3RlcnMgaW4KcGNpX3Jlc3RvcmVf
-Y29uZmlnX2R3b3JkLCBsaWtlIFdpbmRvd3MgZG9lcz8KCktpbmQgcmVnYXJkcywKUGV0ZXIKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWls
-aW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
-ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+On Friday 07 Sep 2018 at 10:52:01 (+0200), Rafael J. Wysocki wrote:
+> On Thursday, September 6, 2018 4:38:44 PM CEST Quentin Perret wrote:
+> > Hi Rafael,
+> > 
+> > On Thursday 06 Sep 2018 at 11:18:55 (+0200), Rafael J. Wysocki wrote:
+> > > I'm not a particular fan of notifiers to be honest and you don't need
+> > > to add an extra chain just in order to be able to register a callback
+> > > from a single user.
+> > 
+> > Right. I agree there are alternatives to using notifiers. I used them
+> > because they're existing infrastructure, and because they let me do what
+> > I want without too much troubles, which are two important points.
+> > 
+> > > That can be achieved with a single callback
+> > > pointer too, but also you could just call a function exported by the
+> > > scheduler directly from where in the cpufreq code it needs to be
+> > > called.
+> > 
+> > Are you thinking about something comparable to what is done in
+> > cpufreq_add_update_util_hook() (kernel/sched/cpufreq.c) for example ?
+> > That would probably have the same drawback as my current implementation,
+> > that is that the scheduler is notified of _all_ governor changes, not
+> > only changes to/from sugov although this is the only thing we care about
+> > for EAS.
+> 
+> Well, why don't you implement it as something like "if the governor changes
+> from sugov to something else (or the other way around), call this function
+> from the scheduler"?
+
+I just gave it a try and ended up with the diff below. It's basically
+the exact same patch with a direct function call instead of a notifier.
+(I also tried the sugov_start/stop thing I keep mentioning but it is
+more complex, so let's see if the simplest solution could work first).
+
+What do you think ?
+
+----------8<----------
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b0dfd3222013..6300668ac67a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -25,6 +25,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/sched/cpufreq.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+ #include <linux/syscore_ops.h>
+@@ -2271,6 +2272,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 		ret = cpufreq_start_governor(policy);
+ 		if (!ret) {
+ 			pr_debug("cpufreq: governor change\n");
++			sched_governor_change(policy, old_gov);
+ 			return 0;
+ 		}
+ 		cpufreq_exit_governor(policy);
+diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+index afa940cd50dc..33b77eed8a41 100644
+--- a/include/linux/sched/cpufreq.h
++++ b/include/linux/sched/cpufreq.h
+@@ -2,6 +2,7 @@
+ #ifndef _LINUX_SCHED_CPUFREQ_H
+ #define _LINUX_SCHED_CPUFREQ_H
+ 
++#include <linux/cpufreq.h>
+ #include <linux/types.h>
+ 
+ /*
+@@ -28,4 +29,12 @@ static inline unsigned long map_util_freq(unsigned long util,
+ }
+ #endif /* CONFIG_CPU_FREQ */
+ 
++#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
++void sched_governor_change(struct cpufreq_policy *policy,
++			struct cpufreq_governor *old_gov);
++#else
++static inline void sched_governor_change(struct cpufreq_policy *policy,
++			struct cpufreq_governor *old_gov) { }
++#endif
++
+ #endif /* _LINUX_SCHED_CPUFREQ_H */
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 8356cb0072a6..2ff40b2a8ba0 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -632,7 +632,7 @@ static struct kobj_type sugov_tunables_ktype = {
+ 
+ /********************** cpufreq governor interface *********************/
+ 
+-static struct cpufreq_governor schedutil_gov;
++struct cpufreq_governor schedutil_gov;
+ 
+ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
+ {
+@@ -891,7 +891,7 @@ static void sugov_limits(struct cpufreq_policy *policy)
+ 	sg_policy->need_freq_update = true;
+ }
+ 
+-static struct cpufreq_governor schedutil_gov = {
++struct cpufreq_governor schedutil_gov = {
+ 	.name			= "schedutil",
+ 	.owner			= THIS_MODULE,
+ 	.dynamic_switching	= true,
+@@ -914,3 +914,32 @@ static int __init sugov_register(void)
+ 	return cpufreq_register_governor(&schedutil_gov);
+ }
+ fs_initcall(sugov_register);
++
++#ifdef CONFIG_ENERGY_MODEL
++extern bool sched_energy_update;
++static DEFINE_MUTEX(rebuild_sd_mutex);
++
++static void rebuild_sd_workfn(struct work_struct *work)
++{
++	mutex_lock(&rebuild_sd_mutex);
++	sched_energy_update = true;
++	rebuild_sched_domains();
++	sched_energy_update = false;
++	mutex_unlock(&rebuild_sd_mutex);
++}
++static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
++
++/*
++ * EAS shouldn't be attempted without sugov, so rebuild the sched_domains
++ * on governor changes to make sure the scheduler knows about it.
++ */
++void sched_governor_change(struct cpufreq_policy *policy,
++				  struct cpufreq_governor *old_gov)
++{
++	if (old_gov == &schedutil_gov || policy->governor == &schedutil_gov) {
++		/* Sched domains cannot be rebuilt directly from this context */
++		schedule_work(&rebuild_sd_work);
++	}
++
++}
++#endif
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e594a854977f..915766600568 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2265,10 +2265,8 @@ unsigned long scale_irq_capacity(unsigned long util, unsigned long irq, unsigned
+ }
+ #endif
+ 
+-#ifdef CONFIG_SMP
+-#ifdef CONFIG_ENERGY_MODEL
++#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+ #define perf_domain_span(pd) (to_cpumask(((pd)->obj->cpus)))
+ #else
+ #define perf_domain_span(pd) NULL
+ #endif
+-#endif
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index ae329447a082..781f3eba840e 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -209,7 +209,9 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+  */
+ DEFINE_STATIC_KEY_FALSE(sched_energy_present);
+ 
+-#ifdef CONFIG_ENERGY_MODEL
++#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
++bool sched_energy_update;
++
+ static void free_pd(struct perf_domain *pd)
+ {
+ 	struct perf_domain *tmp;
+@@ -297,12 +299,15 @@ static void destroy_perf_domain_rcu(struct rcu_head *rp)
+  */
+ #define EM_MAX_COMPLEXITY 2048
+ 
++extern struct cpufreq_governor schedutil_gov;
+ static void build_perf_domains(const struct cpumask *cpu_map)
+ {
+ 	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
+ 	struct perf_domain *pd = NULL, *tmp;
+ 	int cpu = cpumask_first(cpu_map);
+ 	struct root_domain *rd = cpu_rq(cpu)->rd;
++	struct cpufreq_policy *policy;
++	struct cpufreq_governor *gov;
+ 
+ 	/* EAS is enabled for asymmetric CPU capacity topologies. */
+ 	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
+@@ -318,6 +323,15 @@ static void build_perf_domains(const struct cpumask *cpu_map)
+ 		if (find_pd(pd, i))
+ 			continue;
+ 
++		/* Do not attempt EAS if schedutil is not being used. */
++		policy = cpufreq_cpu_get(i);
++		if (!policy)
++			goto free;
++		gov = policy->governor;
++		cpufreq_cpu_put(policy);
++		if (gov != &schedutil_gov)
++			goto free;
++
+ 		/* Create the new pd and add it to the local list. */
+ 		tmp = pd_init(i);
+ 		if (!tmp)
+@@ -389,7 +403,7 @@ static void sched_energy_start(int ndoms_new, cpumask_var_t doms_new[])
+ }
+ #else
+ static void free_pd(struct perf_domain *pd) { }
+-#endif /* CONFIG_ENERGY_MODEL */
++#endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL*/
+ 
+ static void free_rootdomain(struct rcu_head *rcu)
+ {
+@@ -2190,10 +2204,10 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+ 		;
+ 	}
+ 
+-#ifdef CONFIG_ENERGY_MODEL
++#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+ 	/* Build perf. domains: */
+ 	for (i = 0; i < ndoms_new; i++) {
+-		for (j = 0; j < n; j++) {
++		for (j = 0; j < n && !sched_energy_update; j++) {
+ 			if (cpumask_equal(doms_new[i], doms_cur[j]) &&
+ 			    cpu_rq(cpumask_first(doms_cur[j]))->rd->pd)
+ 				goto match3;
