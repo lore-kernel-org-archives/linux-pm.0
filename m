@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] cpuidle: enter_state: Don't needlessly calculate diff time
-Date: Sun, 9 Sep 2018 21:40:25 +0200
-Message-ID: <CAJZ5v0jwQBWu_Vw=Wmao3BDgCnutsLTq68Niyb46Y9wZ6DZb+A@mail.gmail.com>
+Date: Sun, 9 Sep 2018 21:41:19 +0200
+Message-ID: <CAJZ5v0h7tbyi3vYtQVoWrLS_HJh_3mhvqy_sts73Jiwnr13zdw@mail.gmail.com>
 References: <20180907185448.30987-1-kw@fieahl.im>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
@@ -19,10 +19,6 @@ On Fri, Sep 7, 2018 at 8:55 PM Fieah Lim <kw@fieahl.im> wrote:
 > While at it, fix some coding style as well.
 >
 > Signed-off-by: Fieah Lim <kw@fieahl.im>
-
-Fix your changelog at least to say that you optimize the code without
-changing its functionality.
-
 > ---
 >  drivers/cpuidle/cpuidle.c | 17 ++++++++---------
 >  1 file changed, 8 insertions(+), 9 deletions(-)
@@ -58,6 +54,9 @@ changing its functionality.
 >                 dev->states_usage[entered_state].usage++;
 > -       } else {
 > -               dev->last_residency = 0;
+
+Besides, what's wrong with this branch?
+
 >         }
 >
 >         return entered_state;
