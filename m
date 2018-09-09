@@ -1,77 +1,65 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: Remove unnecessary wrapper cpuidle_get_last_residency()
-Date: Sun, 9 Sep 2018 21:43:09 +0200
-Message-ID: <CAJZ5v0jxKQv9x3wOAg-+XNQJ8LgzGDr0EPF9PcHZG1D4GAJObA@mail.gmail.com>
-References: <20180907200838.4966-1-kw@fieahl.im>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Sun, 9 Sep 2018 22:13:52 +0200
+Message-ID: <CAJZ5v0gs1Fb-Y1FbjmnxLNHQR=CSHFX_=KpDEkqRCYDJ9EJByQ@mail.gmail.com>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
+ <20180906143842.xlxcg5notwdaflww@queper01-lin> <1545744.fI5ZvP8FO0@aspire.rjw.lan>
+ <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180907200838.4966-1-kw@fieahl.im>
+In-Reply-To: <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kw@fieahl.im
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharm
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 7, 2018 at 10:09 PM Fieah Lim <kw@fieahl.im> wrote:
+On Fri, Sep 7, 2018 at 5:29 PM Quentin Perret <quentin.perret@arm.com> wrote:
 >
-> There's no magic inside, let's just make it more intuitive.
+> On Friday 07 Sep 2018 at 10:52:01 (+0200), Rafael J. Wysocki wrote:
+> > On Thursday, September 6, 2018 4:38:44 PM CEST Quentin Perret wrote:
+> > > Hi Rafael,
+> > >
+> > > On Thursday 06 Sep 2018 at 11:18:55 (+0200), Rafael J. Wysocki wrote:
+> > > > I'm not a particular fan of notifiers to be honest and you don't need
+> > > > to add an extra chain just in order to be able to register a callback
+> > > > from a single user.
+> > >
+> > > Right. I agree there are alternatives to using notifiers. I used them
+> > > because they're existing infrastructure, and because they let me do what
+> > > I want without too much troubles, which are two important points.
+> > >
+> > > > That can be achieved with a single callback
+> > > > pointer too, but also you could just call a function exported by the
+> > > > scheduler directly from where in the cpufreq code it needs to be
+> > > > called.
+> > >
+> > > Are you thinking about something comparable to what is done in
+> > > cpufreq_add_update_util_hook() (kernel/sched/cpufreq.c) for example ?
+> > > That would probably have the same drawback as my current implementation,
+> > > that is that the scheduler is notified of _all_ governor changes, not
+> > > only changes to/from sugov although this is the only thing we care about
+> > > for EAS.
+> >
+> > Well, why don't you implement it as something like "if the governor changes
+> > from sugov to something else (or the other way around), call this function
+> > from the scheduler"?
+>
+> I just gave it a try and ended up with the diff below. It's basically
+> the exact same patch with a direct function call instead of a notifier.
+> (I also tried the sugov_start/stop thing I keep mentioning but it is
+> more complex, so let's see if the simplest solution could work first).
+>
+> What do you think ?
 
-Again, please fix the changelog.  It is not useful as is.
+This generally works for me from the cpufreq perspective, but I would
+add "cpufreq" to the name of the new function, that is call it
+something like sched_cpufreq_governor_change().
 
-> Signed-off-by: Fieah Lim <kw@fieahl.im>
-> ---
->  drivers/cpuidle/governors/ladder.c |  2 +-
->  drivers/cpuidle/governors/menu.c   |  2 +-
->  include/linux/cpuidle.h            | 10 ----------
->  3 files changed, 2 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> index 704880a6612a..f0dddc66af26 100644
-> --- a/drivers/cpuidle/governors/ladder.c
-> +++ b/drivers/cpuidle/governors/ladder.c
-> @@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
->
->         last_state = &ldev->states[last_idx];
->
-> -       last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
-> +       last_residency = dev->last_residency - drv->states[last_idx].exit_latency;
->
->         /* consider promotion */
->         if (last_idx < drv->state_count - 1 &&
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index 1aef60d160eb..715520e339da 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -492,7 +492,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->                 measured_us = 9 * MAX_INTERESTING / 10;
->         } else {
->                 /* measured value */
-> -               measured_us = cpuidle_get_last_residency(dev);
-> +               measured_us = dev->last_residency;
->
->                 /* Deduct exit latency */
->                 if (measured_us > 2 * target->exit_latency)
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 4325d6fdde9b..d262f620890e 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -99,16 +99,6 @@ struct cpuidle_device {
->  DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
->  DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
->
-> -/**
-> - * cpuidle_get_last_residency - retrieves the last state's residency time
-> - * @dev: the target CPU
-> - */
-> -static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
-> -{
-> -       return dev->last_residency;
-> -}
-> -
-> -
->  /****************************
->   * CPUIDLE DRIVER INTERFACE *
->   ****************************/
-> --
-> 2.18.0
->
+Also do you really need the extra work item?  Governor changes are
+carried out in process context anyway.
+
+Thanks,
+Rafael
