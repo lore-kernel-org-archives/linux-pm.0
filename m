@@ -1,65 +1,73 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
- depend on schedutil
-Date: Sun, 9 Sep 2018 22:13:52 +0200
-Message-ID: <CAJZ5v0gs1Fb-Y1FbjmnxLNHQR=CSHFX_=KpDEkqRCYDJ9EJByQ@mail.gmail.com>
-References: <20180820094420.26590-1-quentin.perret@arm.com>
- <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
- <20180906143842.xlxcg5notwdaflww@queper01-lin> <1545744.fI5ZvP8FO0@aspire.rjw.lan>
- <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
+Subject: Re: [PATCH v1] dd: Invoke one probe retry cycle after some initcall levels
+Date: Sun, 9 Sep 2018 22:22:35 +0200
+Message-ID: <CAJZ5v0hEFGCu8xv6MvwmVvspOwLveD4sPzU-=ewKfbrV9omzBw@mail.gmail.com>
+References: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
+In-Reply-To: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharm
+To: rishabhb@quicinc.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sodagudi Prasad <psodagud@codeaurora.org>, ckadabi@codeaurora.org, tsoni@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, Rishabh Bhatnagar <rishabhb@codeaurora.org>, Vikram Mulukutla <markivx@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 7, 2018 at 5:29 PM Quentin Perret <quentin.perret@arm.com> wrote:
+On Mon, Aug 13, 2018 at 7:40 PM Rishabh Bhatnagar <rishabhb@quicinc.com> wrote:
 >
-> On Friday 07 Sep 2018 at 10:52:01 (+0200), Rafael J. Wysocki wrote:
-> > On Thursday, September 6, 2018 4:38:44 PM CEST Quentin Perret wrote:
-> > > Hi Rafael,
-> > >
-> > > On Thursday 06 Sep 2018 at 11:18:55 (+0200), Rafael J. Wysocki wrote:
-> > > > I'm not a particular fan of notifiers to be honest and you don't need
-> > > > to add an extra chain just in order to be able to register a callback
-> > > > from a single user.
-> > >
-> > > Right. I agree there are alternatives to using notifiers. I used them
-> > > because they're existing infrastructure, and because they let me do what
-> > > I want without too much troubles, which are two important points.
-> > >
-> > > > That can be achieved with a single callback
-> > > > pointer too, but also you could just call a function exported by the
-> > > > scheduler directly from where in the cpufreq code it needs to be
-> > > > called.
-> > >
-> > > Are you thinking about something comparable to what is done in
-> > > cpufreq_add_update_util_hook() (kernel/sched/cpufreq.c) for example ?
-> > > That would probably have the same drawback as my current implementation,
-> > > that is that the scheduler is notified of _all_ governor changes, not
-> > > only changes to/from sugov although this is the only thing we care about
-> > > for EAS.
-> >
-> > Well, why don't you implement it as something like "if the governor changes
-> > from sugov to something else (or the other way around), call this function
-> > from the scheduler"?
+> From: Rishabh Bhatnagar <rishabhb@codeaurora.org>
 >
-> I just gave it a try and ended up with the diff below. It's basically
-> the exact same patch with a direct function call instead of a notifier.
-> (I also tried the sugov_start/stop thing I keep mentioning but it is
-> more complex, so let's see if the simplest solution could work first).
+> Drivers that are registered at an initcall level may have to
+> wait until late_init before the probe deferral mechanism can
+> retry their probe functions. It is possible that their
+> dependencies were resolved much earlier, in some cases even
+> before the next initcall level. Invoke one probe retry cycle
+> at every _sync initcall level after subsys initcall, allowing
+> these drivers to be probed earlier.
+> To give an example many Qualcomm drivers are dependent on the
+> regulator and bus driver. Both the regulator and bus driver
+> are probed in the subsys_initcall level. Now the probe of bus
+> driver requires regulator to be working. If the probe of bus
+> driver happens before regulator, then bus driver's probe will
+> be deferred and all other device's probes which depend on bus
+> driver will also be deferred.
+> The impact of this problem is reduced if we have this patch.
 >
-> What do you think ?
+> Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
+> Signed-off-by: Rishabh Bhatnagar <rishabhb@codeaurora.org>
+> ---
+>
+> Changes since v0:
+>  * Remove arch_initcall_sync(deferred_probe_initcall) from patch. This is not
+>    really needed as none of the devices are re-probed in arch_initcall_sync
+>    level.
+>
+>  drivers/base/dd.c | 32 ++++++++++++++++++++++++++------
+>  1 file changed, 26 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 1435d72..9aa41aa 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -224,23 +224,43 @@ void device_unblock_probing(void)
+>         driver_deferred_probe_trigger();
+>  }
+>
+> +static void enable_trigger_defer_cycle(void)
+> +{
+> +       driver_deferred_probe_enable = true;
 
-This generally works for me from the cpufreq perspective, but I would
-add "cpufreq" to the name of the new function, that is call it
-something like sched_cpufreq_governor_change().
+Isn't it sufficient to enable it once?
 
-Also do you really need the extra work item?  Governor changes are
-carried out in process context anyway.
+> +       driver_deferred_probe_trigger();
+> +       /*
+> +        * Sort as many dependencies as possible before the next initcall
+> +        * level
+> +        */
+> +       flush_work(&deferred_probe_work);
+> +}
+
+I would call this function driver_deferred_probe_sync() or similar to
+indicate that it is a synchronization point.
 
 Thanks,
 Rafael
