@@ -1,73 +1,35 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v1] dd: Invoke one probe retry cycle after some initcall levels
-Date: Sun, 9 Sep 2018 22:22:35 +0200
-Message-ID: <CAJZ5v0hEFGCu8xv6MvwmVvspOwLveD4sPzU-=ewKfbrV9omzBw@mail.gmail.com>
-References: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
+Date: Sun, 9 Sep 2018 15:12:37 -0600
+Message-ID: <20180909151237.4bc1b3e2@lwn.net>
+References: <1536012923-16275-1-git-send-email-henrik@austad.us>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534181989-22536-1-git-send-email-rishabhb@quicinc.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rishabhb@quicinc.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sodagudi Prasad <psodagud@codeaurora.org>, ckadabi@codeaurora.org, tsoni@codeaurora.org, Linux PM <linux-pm@vger.kernel.org>, Rishabh Bhatnagar <rishabhb@codeaurora.org>, Vikram Mulukutla <markivx@codeaurora.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Henrik Austad <henrik@austad.us>
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, James Hogan <jhogan@kernel.org>, Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org, Masahiro Yamada <yamada.masahiro@socionext.com>, Jan Kandziora <jjj@gmx.de>, Paul Mackerras <paulus@samba.org>, Henrik Austad <haustad@cisco.com>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, Evgeniy Polyakov <zbr@ioremap.net>, linux-s390@vger.kernel.org, Ian Kent <raven@themaw.net>, linux-security-module@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Michael Ellerman <mpe@ellerman.id.au>, Helge Deller <deller@gmx.de>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>, Paul E
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 13, 2018 at 7:40 PM Rishabh Bhatnagar <rishabhb@quicinc.com> wrote:
->
-> From: Rishabh Bhatnagar <rishabhb@codeaurora.org>
->
-> Drivers that are registered at an initcall level may have to
-> wait until late_init before the probe deferral mechanism can
-> retry their probe functions. It is possible that their
-> dependencies were resolved much earlier, in some cases even
-> before the next initcall level. Invoke one probe retry cycle
-> at every _sync initcall level after subsys initcall, allowing
-> these drivers to be probed earlier.
-> To give an example many Qualcomm drivers are dependent on the
-> regulator and bus driver. Both the regulator and bus driver
-> are probed in the subsys_initcall level. Now the probe of bus
-> driver requires regulator to be working. If the probe of bus
-> driver happens before regulator, then bus driver's probe will
-> be deferred and all other device's probes which depend on bus
-> driver will also be deferred.
-> The impact of this problem is reduced if we have this patch.
->
-> Signed-off-by: Vikram Mulukutla <markivx@codeaurora.org>
-> Signed-off-by: Rishabh Bhatnagar <rishabhb@codeaurora.org>
-> ---
->
-> Changes since v0:
->  * Remove arch_initcall_sync(deferred_probe_initcall) from patch. This is not
->    really needed as none of the devices are re-probed in arch_initcall_sync
->    level.
->
->  drivers/base/dd.c | 32 ++++++++++++++++++++++++++------
->  1 file changed, 26 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 1435d72..9aa41aa 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -224,23 +224,43 @@ void device_unblock_probing(void)
->         driver_deferred_probe_trigger();
->  }
->
-> +static void enable_trigger_defer_cycle(void)
-> +{
-> +       driver_deferred_probe_enable = true;
-
-Isn't it sufficient to enable it once?
-
-> +       driver_deferred_probe_trigger();
-> +       /*
-> +        * Sort as many dependencies as possible before the next initcall
-> +        * level
-> +        */
-> +       flush_work(&deferred_probe_work);
-> +}
-
-I would call this function driver_deferred_probe_sync() or similar to
-indicate that it is a synchronization point.
-
-Thanks,
-Rafael
+T24gVHVlLCAgNCBTZXAgMjAxOCAwMDoxNToyMyArMDIwMApIZW5yaWsgQXVzdGFkIDxoZW5yaWtA
+YXVzdGFkLnVzPiB3cm90ZToKCj4gSSBkb24ndCByZWFsbHkgaGF2ZSBhbiBvcGluaW9uIHRvIHdo
+ZXRoZXIgb3Igbm90IHdlIC9zaG91bGQvIGhhdmUgMDAtSU5ERVgsCj4gYnV0IHRoZSBhYm92ZSAw
+MC1JTkRFWCBzaG91bGQgZWl0aGVyIGJlIHJlbW92ZWQgb3IgYmUga2VwdCB1cCB0byBkYXRlLiBJ
+Zgo+IHdlIHNob3VsZCBrZWVwIHRoZSBmaWxlcywgSSBjYW4gdHJ5IHRvIGtlZXAgdGhlbSB1cGRh
+dGVkLCBidXQgSSByYXRoZXIgbm90Cj4gaWYgd2UganVzdCB3YW50IHRvIGRlbGV0ZSB0aGVtIGFu
+eXdheS4KPiAKPiBBcyBhIHN0YXJ0aW5nIHBvaW50LCByZW1vdmUgYWxsIGluZGV4LWZpbGVzIGFu
+ZCByZWZlcmVuY2VzIHRvIDAwLUlOREVYIGFuZAo+IHNlZSB3aGVyZSB0aGUgZGlzY3Vzc2lvbiBp
+cyBnb2luZy4KCkFwcGxpZWQsIHRoYW5rcy4KCmpvbgpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9kcmktZGV2ZWwK
