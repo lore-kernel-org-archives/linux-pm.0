@@ -1,65 +1,77 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpuidle: enter_state: Don't needlessly calculate diff time
-Date: Sun, 9 Sep 2018 21:41:19 +0200
-Message-ID: <CAJZ5v0h7tbyi3vYtQVoWrLS_HJh_3mhvqy_sts73Jiwnr13zdw@mail.gmail.com>
-References: <20180907185448.30987-1-kw@fieahl.im>
+Subject: Re: [PATCH] cpuidle: Remove unnecessary wrapper cpuidle_get_last_residency()
+Date: Sun, 9 Sep 2018 21:43:09 +0200
+Message-ID: <CAJZ5v0jxKQv9x3wOAg-+XNQJ8LgzGDr0EPF9PcHZG1D4GAJObA@mail.gmail.com>
+References: <20180907200838.4966-1-kw@fieahl.im>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180907185448.30987-1-kw@fieahl.im>
+In-Reply-To: <20180907200838.4966-1-kw@fieahl.im>
 Sender: linux-kernel-owner@vger.kernel.org
 To: kw@fieahl.im
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 7, 2018 at 8:55 PM Fieah Lim <kw@fieahl.im> wrote:
+On Fri, Sep 7, 2018 at 10:09 PM Fieah Lim <kw@fieahl.im> wrote:
 >
-> ktime_us_delta() is not that cheap on some platform,
-> and I think this is also the right thing to do.
-> While at it, fix some coding style as well.
->
+> There's no magic inside, let's just make it more intuitive.
+
+Again, please fix the changelog.  It is not useful as is.
+
 > Signed-off-by: Fieah Lim <kw@fieahl.im>
 > ---
->  drivers/cpuidle/cpuidle.c | 17 ++++++++---------
->  1 file changed, 8 insertions(+), 9 deletions(-)
+>  drivers/cpuidle/governors/ladder.c |  2 +-
+>  drivers/cpuidle/governors/menu.c   |  2 +-
+>  include/linux/cpuidle.h            | 10 ----------
+>  3 files changed, 2 insertions(+), 12 deletions(-)
 >
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 6df894d65d9e..5f6b2c9b6555 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -247,21 +247,20 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->         if (!cpuidle_state_is_coupled(drv, index))
->                 local_irq_enable();
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 704880a6612a..f0dddc66af26 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
 >
-> -       diff = ktime_us_delta(time_end, time_start);
-> -       if (diff > INT_MAX)
-> -               diff = INT_MAX;
+>         last_state = &ldev->states[last_idx];
+>
+> -       last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
+> +       last_residency = dev->last_residency - drv->states[last_idx].exit_latency;
+>
+>         /* consider promotion */
+>         if (last_idx < drv->state_count - 1 &&
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 1aef60d160eb..715520e339da 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -492,7 +492,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>                 measured_us = 9 * MAX_INTERESTING / 10;
+>         } else {
+>                 /* measured value */
+> -               measured_us = cpuidle_get_last_residency(dev);
+> +               measured_us = dev->last_residency;
+>
+>                 /* Deduct exit latency */
+>                 if (measured_us > 2 * target->exit_latency)
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 4325d6fdde9b..d262f620890e 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -99,16 +99,6 @@ struct cpuidle_device {
+>  DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+>  DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
+>
+> -/**
+> - * cpuidle_get_last_residency - retrieves the last state's residency time
+> - * @dev: the target CPU
+> - */
+> -static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
+> -{
+> -       return dev->last_residency;
+> -}
 > -
-> -       dev->last_residency = (int) diff;
-> +       dev->last_residency = 0;
->
->         if (entered_state >= 0) {
-> -               /* Update cpuidle counters */
-> -               /* This can be moved to within driver enter routine
-> +               /* Update cpuidle counters
-> +                * This can be moved to within driver enter routine,
->                  * but that results in multiple copies of same code.
->                  */
-> +               diff = ktime_us_delta(time_end, time_start);
-> +               if (diff > INT_MAX)
-> +                       diff = INT_MAX;
-> +
-> +               dev->last_residency = (int)diff;
->                 dev->states_usage[entered_state].time += dev->last_residency;
->                 dev->states_usage[entered_state].usage++;
-> -       } else {
-> -               dev->last_residency = 0;
-
-Besides, what's wrong with this branch?
-
->         }
->
->         return entered_state;
+> -
+>  /****************************
+>   * CPUIDLE DRIVER INTERFACE *
+>   ****************************/
 > --
 > 2.18.0
 >
