@@ -1,64 +1,38 @@
-From: Fieah Lim <kw@fieahl.im>
-Subject: [PATCH v2] cpuidle: enter_state: Don't needlessly calculate diff time
-Date: Tue, 11 Sep 2018 01:39:53 +0800
-Message-ID: <20180910173953.10113-1-kw@fieahl.im>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
-Cc: Fieah Lim <kw@fieahl.im>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v16 4/5] dt-bindings: arm-smmu: Add bindings for
+	qcom,smmu-v2
+Date: Mon, 10 Sep 2018 13:02:24 -0500
+Message-ID: <20180910180224.GA22566@bogus>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+	<20180830144541.17740-5-vivek.gautam@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180830144541.17740-5-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we use ktime_us_delta() to calculate last residency and
-state usage unconditionally, it makes no sense to do this calculation 
-when we fails to enter any idle state.
-It can be optimize by moving the calculation after entered_state >= 0
+On Thu, 30 Aug 2018 20:15:40 +0530, Vivek Gautam wrote:
+> Add bindings doc for Qcom's smmu-v2 implementation.
+> 
+> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  .../devicetree/bindings/iommu/arm,smmu.txt         | 39 ++++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
+> 
 
-While at it, merge those comment blocks into one and remove a
-space between type casting of diff.
-
-This patch has no functional changes.
-
-Signed-off-by: Fieah Lim <kw@fieahl.im>
----
-Changes from v1:
- - Rewrite changelog as Rafael J. Wysocki suggested
----
- drivers/cpuidle/cpuidle.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 6df894d65d9e..5f6b2c9b6555 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -247,21 +247,20 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	if (!cpuidle_state_is_coupled(drv, index))
- 		local_irq_enable();
- 
--	diff = ktime_us_delta(time_end, time_start);
--	if (diff > INT_MAX)
--		diff = INT_MAX;
--
--	dev->last_residency = (int) diff;
-+	dev->last_residency = 0;
- 
- 	if (entered_state >= 0) {
--		/* Update cpuidle counters */
--		/* This can be moved to within driver enter routine
-+		/* Update cpuidle counters
-+		 * This can be moved to within driver enter routine,
- 		 * but that results in multiple copies of same code.
- 		 */
-+		diff = ktime_us_delta(time_end, time_start);
-+		if (diff > INT_MAX)
-+			diff = INT_MAX;
-+
-+		dev->last_residency = (int)diff;
- 		dev->states_usage[entered_state].time += dev->last_residency;
- 		dev->states_usage[entered_state].usage++;
--	} else {
--		dev->last_residency = 0;
- 	}
- 
- 	return entered_state;
--- 
-2.18.0
+Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
