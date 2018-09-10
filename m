@@ -1,398 +1,230 @@
-From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v4 11/16] sched/core: uclamp: add system default clamps
-Date: Mon, 10 Sep 2018 09:20:29 -0700
-Message-ID: <CAJuCfpGSUzo9gxWZABUUKaEEEvxdnvny9d1ErnLVLEKrkYf+eQ@mail.gmail.com>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com> <20180828135324.21976-12-patrick.bellasi@arm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 01/17] thermal: add thermal_zone_device_toggle() helper
+Date: Mon, 10 Sep 2018 10:16:06 -0700
+Message-ID: <20180910171605.GA4196@localhost.localdomain>
+References: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
+ <CGME20180410124248epcas1p453f74df4e183f9d68de255847c093d4e@epcas1p4.samsung.com>
+ <1523364131-31059-2-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828135324.21976-12-patrick.bellasi@arm.com>
+Content-Disposition: inline
+In-Reply-To: <1523364131-31059-2-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 28, 2018 at 6:53 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> Clamp values cannot be tuned at the root cgroup level. Moreover, because
-> of the delegation model requirements and how the parent clamps
-> propagation works, if we want to enable subgroups to set a non null
-> util.min, we need to be able to configure the root group util.min to the
-> allow the maximum utilization (SCHED_CAPACITY_SCALE = 1024).
->
-> Unfortunately this setup will also mean that all tasks running in the
-> root group, will always get a maximum util.min clamp, unless they have a
-> lower task specific clamp which is definitively not a desirable default
-> configuration.
->
-> Let's fix this by explicitly adding a system default configuration
-> (sysctl_sched_uclamp_util_{min,max}) which works as a restrictive clamp
-> for all tasks running on the root group.
->
-> This interface is available independently from cgroups, thus providing a
-> complete solution for system wide utilization clamping configuration.
->
-> Each task has now by default:
->    task_struct::uclamp::value = UCLAMP_NOT_VALID
-> unless:
->  - the task has been forked from a parent with a valid clamp and
->    !SCHED_FLAG_RESET_ON_FORK
->  - the task has got a task-specific value set via sched_setattr()
->
-> A task with a UCLAMP_NOT_VALID clamp value is refcounted considering the
-> system default clamps if either we do not have task group support or
-> they are part of the root_task_group.
-> Tasks without a task specific clamp value in a child task group will be
-> refcounted instead considering the task group clamps.
->
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Paul Turner <pjt@google.com>
-> Cc: Suren Baghdasaryan <surenb@google.com>
-> Cc: Todd Kjos <tkjos@google.com>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Steve Muckle <smuckle@google.com>
-> Cc: Juri Lelli <juri.lelli@redhat.com>
-> Cc: Quentin Perret <quentin.perret@arm.com>
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
->
-> ---
-> Changes in v4:
->  Message-ID: <20180820122728.GM2960@e110439-lin>
->  - fix unwanted reset of clamp values on refcount success
->  Others:
->  - by default all tasks have a UCLAMP_NOT_VALID task specific clamp
->  - always use:
->       p->uclamp[clamp_id].effective.value
->    to track the actual clamp value the task has been refcounted into.
->    This matches with the usage of
->       p->uclamp[clamp_id].effective.group_id
->  - rebased on v4.19-rc1
-> ---
->  include/linux/sched/sysctl.h |  11 +++
->  kernel/sched/core.c          | 147 +++++++++++++++++++++++++++++++++--
->  kernel/sysctl.c              |  16 ++++
->  3 files changed, 168 insertions(+), 6 deletions(-)
->
-> diff --git a/include/linux/sched/sysctl.h b/include/linux/sched/sysctl.h
-> index a9c32daeb9d8..445fb54eaeff 100644
-> --- a/include/linux/sched/sysctl.h
-> +++ b/include/linux/sched/sysctl.h
-> @@ -56,6 +56,11 @@ int sched_proc_update_handler(struct ctl_table *table, int write,
->  extern unsigned int sysctl_sched_rt_period;
->  extern int sysctl_sched_rt_runtime;
->
-> +#ifdef CONFIG_UCLAMP_TASK
-> +extern unsigned int sysctl_sched_uclamp_util_min;
-> +extern unsigned int sysctl_sched_uclamp_util_max;
-> +#endif
-> +
->  #ifdef CONFIG_CFS_BANDWIDTH
->  extern unsigned int sysctl_sched_cfs_bandwidth_slice;
->  #endif
-> @@ -75,6 +80,12 @@ extern int sched_rt_handler(struct ctl_table *table, int write,
->                 void __user *buffer, size_t *lenp,
->                 loff_t *ppos);
->
-> +#ifdef CONFIG_UCLAMP_TASK
-> +extern int sched_uclamp_handler(struct ctl_table *table, int write,
-> +                               void __user *buffer, size_t *lenp,
-> +                               loff_t *ppos);
-> +#endif
-> +
->  extern int sysctl_numa_balancing(struct ctl_table *table, int write,
->                                  void __user *buffer, size_t *lenp,
->                                  loff_t *ppos);
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index da0b3bd41e96..fbc8d9fdfdbb 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -728,6 +728,20 @@ static void set_load_weight(struct task_struct *p, bool update_load)
->   */
->  static DEFINE_MUTEX(uclamp_mutex);
->
-> +/*
-> + * Minimum utilization for tasks in the root cgroup
-> + * default: 0
-> + */
-> +unsigned int sysctl_sched_uclamp_util_min;
-> +
-> +/*
-> + * Maximum utilization for tasks in the root cgroup
-> + * default: 1024
-> + */
-> +unsigned int sysctl_sched_uclamp_util_max = SCHED_CAPACITY_SCALE;
-> +
-> +static struct uclamp_se uclamp_default[UCLAMP_CNT];
-> +
->  /**
->   * uclamp_map: reference counts a utilization "clamp value"
->   * @value:    the utilization "clamp value" required
-> @@ -961,11 +975,16 @@ static inline void uclamp_cpu_update(struct rq *rq, int clamp_id,
->   *
->   * This method returns the effective group index for a task, depending on its
->   * status and a proper aggregation of the clamp values listed above.
-> + * Moreover, it ensures that the task's effective value:
-> + *    task_struct::uclamp::effective::value
-> + * is updated to represent the clamp value corresponding to the taks effective
-> + * group index.
->   */
->  static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
->  {
->         struct uclamp_se *uc_se;
->         int clamp_value;
-> +       bool unclamped;
->         int group_id;
->
->         /* Taks currently accounted into a clamp group */
-> @@ -977,13 +996,40 @@ static inline int uclamp_task_group_id(struct task_struct *p, int clamp_id)
->         clamp_value = uc_se->value;
->         group_id = uc_se->group_id;
->
-> +       unclamped = (clamp_value == UCLAMP_NOT_VALID);
->  #ifdef CONFIG_UCLAMP_TASK_GROUP
-> +       /*
-> +        * Tasks in the root group, which do not have a task specific clamp
-> +        * value, get the system default clamp value.
-> +        */
-> +       if (unclamped && (task_group_is_autogroup(task_group(p)) ||
-> +                         task_group(p) == &root_task_group)) {
-> +               p->uclamp[clamp_id].effective.value =
-> +                       uclamp_default[clamp_id].value;
-> +
-> +               return uclamp_default[clamp_id].group_id;
-> +       }
-> +
->         /* Use TG's clamp value to limit task specific values */
->         uc_se = &task_group(p)->uclamp[clamp_id];
-> -       if (clamp_value > uc_se->effective.value)
-> -               group_id = uc_se->effective.group_id;
-> +       if (unclamped || clamp_value > uc_se->effective.value) {
-> +               p->uclamp[clamp_id].effective.value =
-> +                       uc_se->effective.value;
-> +
-> +               return uc_se->effective.group_id;
-> +       }
-> +#else
-> +       /* By default, all tasks get the system default clamp value */
-> +       if (unclamped) {
-> +               p->uclamp[clamp_id].effective.value =
-> +                       uclamp_default[clamp_id].value;
-> +
-> +               return uclamp_default[clamp_id].group_id;
-> +       }
->  #endif
->
-> +       p->uclamp[clamp_id].effective.value = clamp_value;
-> +
->         return group_id;
->  }
->
-> @@ -999,9 +1045,10 @@ static inline int uclamp_group_value(int clamp_id, int group_id)
->
->  static inline int uclamp_task_value(struct task_struct *p, int clamp_id)
->  {
-> -       int group_id = uclamp_task_group_id(p, clamp_id);
-> +       /* Ensure effective task's clamp value is update */
+On Tue, Apr 10, 2018 at 02:41:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Add thermal_zone_device_toggle() helper. Then update core code and
+> drivers to use it.
 
-typo: is updated
+Cool, but I think it would be good to have some sort of rational here
+at the commit message telling why this helper is being added, 
+don't you agree?
 
-> +       uclamp_task_group_id(p, clamp_id);
->
-> -       return uclamp_group_value(clamp_id, group_id);
-> +       return p->uclamp[clamp_id].effective.value;
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  drivers/thermal/hisi_thermal.c     | 14 ++------------
+>  drivers/thermal/of-thermal.c       |  2 +-
+>  drivers/thermal/rockchip_thermal.c | 22 +++++-----------------
+>  drivers/thermal/thermal_helpers.c  | 15 +++++++++++++++
+>  drivers/thermal/thermal_sysfs.c    |  8 +++++---
+>  include/linux/thermal.h            |  1 +
+>  6 files changed, 29 insertions(+), 33 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 761d055..9428499 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -515,15 +515,6 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+>  };
+>  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
+>  
+> -static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+> -				       bool on)
+> -{
+> -	struct thermal_zone_device *tzd = sensor->tzd;
+> -
+> -	tzd->ops->set_mode(tzd,
+> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> -}
+> -
+>  static int hisi_thermal_probe(struct platform_device *pdev)
+>  {
+>  	struct hisi_thermal_data *data;
+> @@ -571,7 +562,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  		}
+>  	}
+>  
+> -	hisi_thermal_toggle_sensor(&data->sensor, true);
+> +	thermal_zone_device_toggle((&data->sensor)->tzd, true);
+>  
+>  	return 0;
 >  }
->
->  /**
-> @@ -1047,7 +1094,7 @@ static inline void uclamp_cpu_get_id(struct task_struct *p,
->
->         /* Reset clamp holds on idle exit */
->         uc_cpu = &rq->uclamp;
-> -       clamp_value = p->uclamp[clamp_id].value;
-> +       clamp_value = p->uclamp[clamp_id].effective.value;
->         if (unlikely(uc_cpu->flags & UCLAMP_FLAG_IDLE)) {
->                 /*
->                  * This function is called for both UCLAMP_MIN (before) and
-> @@ -1300,6 +1347,77 @@ static inline void uclamp_group_get(struct task_struct *p,
->         uclamp_group_put(clamp_id, prev_group_id);
+> @@ -579,9 +570,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  static int hisi_thermal_remove(struct platform_device *pdev)
+>  {
+>  	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
+> -	struct hisi_thermal_sensor *sensor = &data->sensor;
+>  
+> -	hisi_thermal_toggle_sensor(sensor, false);
+> +	thermal_zone_device_toggle((&data->sensor)->tzd, false);
+>  
+>  	data->disable_sensor(data);
+>  
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index e09f035..f138b78 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -510,7 +510,7 @@ struct thermal_zone_device *
+>  			tzd = thermal_zone_of_add_sensor(child, sensor_np,
+>  							 data, ops);
+>  			if (!IS_ERR(tzd))
+> -				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
+> +				thermal_zone_device_toggle(tzd, true);
+>  
+>  			of_node_put(sensor_specs.np);
+>  			of_node_put(child);
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index f36375d..c191e41 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -1022,15 +1022,6 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>  };
+>  MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
+>  
+> -static void
+> -rockchip_thermal_toggle_sensor(struct rockchip_thermal_sensor *sensor, bool on)
+> -{
+> -	struct thermal_zone_device *tzd = sensor->tzd;
+> -
+> -	tzd->ops->set_mode(tzd,
+> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> -}
+> -
+>  static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+>  {
+>  	struct rockchip_thermal_data *thermal = dev;
+> @@ -1292,7 +1283,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>  	thermal->chip->control(thermal->regs, true);
+>  
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
+>  
+>  	platform_set_drvdata(pdev, thermal);
+>  
+> @@ -1311,11 +1302,8 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
+>  	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+>  	int i;
+>  
+> -	for (i = 0; i < thermal->chip->chn_num; i++) {
+> -		struct rockchip_thermal_sensor *sensor = &thermal->sensors[i];
+> -
+> -		rockchip_thermal_toggle_sensor(sensor, false);
+> -	}
+> +	for (i = 0; i < thermal->chip->chn_num; i++)
+> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
+>  
+>  	thermal->chip->control(thermal->regs, false);
+>  
+> @@ -1332,7 +1320,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+>  	int i;
+>  
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], false);
+> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
+>  
+>  	thermal->chip->control(thermal->regs, false);
+>  
+> @@ -1383,7 +1371,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  	thermal->chip->control(thermal->regs, true);
+>  
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
+>  
+>  	pinctrl_pm_select_default_state(dev);
+>  
+> diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+> index eb03d7e..d5db101 100644
+> --- a/drivers/thermal/thermal_helpers.c
+> +++ b/drivers/thermal/thermal_helpers.c
+> @@ -227,3 +227,18 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz)
+>  	return 0;
 >  }
->
-> +int sched_uclamp_handler(struct ctl_table *table, int write,
-> +                        void __user *buffer, size_t *lenp,
-> +                        loff_t *ppos)
+>  EXPORT_SYMBOL_GPL(thermal_zone_get_offset);
+> +
+> +/**
+> + * thermal_zone_device_toggle() - enables/disables thermal zone device
+> + * @tz: a valid pointer to a struct thermal_zone_device
+> + *
+> + * Enables/Disables thermal zone device.
+> + *
+> + * Return: On success returns 0, an error code otherwise.
+> + */
+> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on)
 > +{
-> +       int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> +       struct uclamp_se *uc_se;
-> +       int old_min, old_max;
-> +       unsigned int value;
-> +       int result;
-> +
-> +       mutex_lock(&uclamp_mutex);
-> +
-> +       old_min = sysctl_sched_uclamp_util_min;
-> +       old_max = sysctl_sched_uclamp_util_max;
-> +
-> +       result = proc_dointvec(table, write, buffer, lenp, ppos);
-> +       if (result)
-> +               goto undo;
-> +       if (!write)
-> +               goto done;
-> +
-> +       result = -EINVAL;
-> +       if (sysctl_sched_uclamp_util_min > sysctl_sched_uclamp_util_max)
-> +               goto undo;
-> +       if (sysctl_sched_uclamp_util_max > SCHED_CAPACITY_SCALE)
-> +               goto undo;
-> +
-> +       /* Find a valid group_id for each required clamp value */
-> +       if (old_min != sysctl_sched_uclamp_util_min) {
-> +               value = sysctl_sched_uclamp_util_min;
-> +               result = uclamp_group_find(UCLAMP_MIN, value);
-> +               if (result == -ENOSPC) {
-> +                       pr_err(UCLAMP_ENOSPC_FMT, "MIN");
-> +                       goto undo;
-> +               }
-> +               group_id[UCLAMP_MIN] = result;
-> +       }
-> +       if (old_max != sysctl_sched_uclamp_util_max) {
-> +               value = sysctl_sched_uclamp_util_max;
-> +               result = uclamp_group_find(UCLAMP_MAX, value);
-> +               if (result == -ENOSPC) {
-> +                       pr_err(UCLAMP_ENOSPC_FMT, "MAX");
-> +                       goto undo;
-> +               }
-> +               group_id[UCLAMP_MAX] = result;
-> +       }
-> +       result = 0;
-> +
-> +       /* Update each required clamp group */
-> +       if (old_min != sysctl_sched_uclamp_util_min) {
-> +               uc_se = &uclamp_default[UCLAMP_MIN];
-> +               uclamp_group_get(NULL, UCLAMP_MIN, group_id[UCLAMP_MIN],
-> +                                uc_se, sysctl_sched_uclamp_util_min);
-> +       }
-> +       if (old_max != sysctl_sched_uclamp_util_max) {
-> +               uc_se = &uclamp_default[UCLAMP_MAX];
-> +               uclamp_group_get(NULL, UCLAMP_MAX, group_id[UCLAMP_MAX],
-> +                                uc_se, sysctl_sched_uclamp_util_max);
-> +       }
-> +       goto done;
-> +
-> +undo:
-> +       sysctl_sched_uclamp_util_min = old_min;
-> +       sysctl_sched_uclamp_util_max = old_max;
-> +
-> +done:
-> +       mutex_unlock(&uclamp_mutex);
-> +
-> +       return result;
+> +	return tz->ops->set_mode(tz,
+> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+
+why not simply getting a mode type (enum thermal_device_mode)?
+
 > +}
-> +
->  #ifdef CONFIG_UCLAMP_TASK_GROUP
->  /**
->   * alloc_uclamp_sched_group: initialize a new TG's for utilization clamping
-> @@ -1468,6 +1586,8 @@ static void uclamp_fork(struct task_struct *p, bool reset)
->                 if (unlikely(reset)) {
->                         next_group_id = 0;
->                         p->uclamp[clamp_id].value = uclamp_none(clamp_id);
-> +                       p->uclamp[clamp_id].effective.value =
-> +                               uclamp_none(clamp_id);
->                 }
->                 /* Forked tasks are not yet enqueued */
->                 p->uclamp[clamp_id].effective.group_id = UCLAMP_NOT_VALID;
-> @@ -1475,6 +1595,10 @@ static void uclamp_fork(struct task_struct *p, bool reset)
->                 p->uclamp[clamp_id].group_id = UCLAMP_NOT_VALID;
->                 uclamp_group_get(NULL, clamp_id, next_group_id, uc_se,
->                                  p->uclamp[clamp_id].value);
-> +
-> +               /* By default we do not want task-specific clamp values */
-> +               if (unlikely(reset))
-> +                       p->uclamp[clamp_id].value = UCLAMP_NOT_VALID;
->         }
->  }
->
-> @@ -1509,12 +1633,17 @@ static void __init init_uclamp(void)
->                 uc_se->group_id = UCLAMP_NOT_VALID;
->                 uclamp_group_get(NULL, clamp_id, 0, uc_se,
->                                  uclamp_none(clamp_id));
-> +               /*
-> +                * By default we do not want task-specific clamp values,
-> +                * so that system default values apply.
-> +                */
-> +               uc_se->value = UCLAMP_NOT_VALID;
->
->  #ifdef CONFIG_UCLAMP_TASK_GROUP
->                 /* Init root TG's clamp group */
->                 uc_se = &root_task_group.uclamp[clamp_id];
->
-> -               uc_se->effective.value = uclamp_none(clamp_id);
-> +               uc_se->effective.value = uclamp_none(UCLAMP_MAX);
+> +EXPORT_SYMBOL_GPL(thermal_zone_device_toggle);
 
-Both clamps are initialized with 1023 because children can go lower
-but can't go higher? Comment might be helpful.
-I saw this pattern of using uclamp_none(UCLAMP_MAX) for both clamps in
-couple places. Maybe would be better to have smth like:
+I know naming is always the hardest part :-), but to me, this function
+is more a thermal_zone_set_mode() than device_toggle(). At least, based
+on what I see in the code, we are not really toggling device per si,
+just setting a mode.
 
-static inline int tg_uclamp_none(int clamp_id) {
-    /* TG's min and max clamps default to SCHED_CAPACITY_SCALE to
-allow children to tighten the restriction */
-    return SCHED_CAPACITY_SCALE;
-}
+> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+> index 23b5e0a..343f52b 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -72,17 +72,19 @@
+>  {
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>  	int result;
+> +	bool on;
+>  
+>  	if (!tz->ops->set_mode)
+>  		return -EPERM;
+>  
+>  	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
+> +		on = true;
+>  	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
+> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
+> +		on = false;
+>  	else
+> -		result = -EINVAL;
+> +		return -EINVAL;
+>  
+> +	result = thermal_zone_device_toggle(tz, on);
+>  	if (result)
+>  		return result;
+>  
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 7834be6..4fbbabe 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -467,6 +467,7 @@ struct thermal_cooling_device *
+>  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+>  int thermal_zone_get_slope(struct thermal_zone_device *tz);
+>  int thermal_zone_get_offset(struct thermal_zone_device *tz);
+> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on);
+>  
 
-and use tg_uclamp_none(clamp_id) instead of uclamp_none(UCLAMP_MAX)?
-Functionally the same but much more readable.
+You missed the #else section of the #if IS_ENABLED(CONFIG_THERMAL),
+didn't you?
 
->                 uc_se->effective.group_id = 0;
->
->                 /*
-> @@ -1526,6 +1655,12 @@ static void __init init_uclamp(void)
->                 uclamp_group_get(NULL, clamp_id, 0, uc_se,
->                                  uclamp_none(UCLAMP_MAX));
->  #endif
-> +
-> +               /* Init system defaul's clamp group */
+We want to have a stub when config thermal is not set.
 
-typo: default
-
-> +               uc_se = &uclamp_default[clamp_id];
-> +               uc_se->group_id = UCLAMP_NOT_VALID;
-> +               uclamp_group_get(NULL, clamp_id, 0, uc_se,
-> +                                uclamp_none(clamp_id));
->         }
->  }
->
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index cc02050fd0c4..378ea57e5fc5 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -445,6 +445,22 @@ static struct ctl_table kern_table[] = {
->                 .mode           = 0644,
->                 .proc_handler   = sched_rr_handler,
->         },
-> +#ifdef CONFIG_UCLAMP_TASK
-> +       {
-> +               .procname       = "sched_uclamp_util_min",
-> +               .data           = &sysctl_sched_uclamp_util_min,
-> +               .maxlen         = sizeof(unsigned int),
-> +               .mode           = 0644,
-> +               .proc_handler   = sched_uclamp_handler,
-> +       },
-> +       {
-> +               .procname       = "sched_uclamp_util_max",
-> +               .data           = &sysctl_sched_uclamp_util_max,
-> +               .maxlen         = sizeof(unsigned int),
-> +               .mode           = 0644,
-> +               .proc_handler   = sched_uclamp_handler,
-> +       },
-> +#endif
->  #ifdef CONFIG_SCHED_AUTOGROUP
->         {
->                 .procname       = "sched_autogroup_enabled",
-> --
-> 2.18.0
->
+>  int get_tz_trend(struct thermal_zone_device *, int);
+>  struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+> -- 
+> 1.9.1
+> 
