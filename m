@@ -1,141 +1,64 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is
- finished
-Date: Mon, 10 Sep 2018 10:37:01 -0700
-Message-ID: <20180910173659.GB4196@localhost.localdomain>
-References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
- <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Fieah Lim <kw@fieahl.im>
+Subject: [PATCH v2] cpuidle: enter_state: Don't needlessly calculate diff time
+Date: Tue, 11 Sep 2018 01:39:53 +0800
+Message-ID: <20180910173953.10113-1-kw@fieahl.im>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Cc: Fieah Lim <kw@fieahl.im>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 10, 2018 at 02:41:54PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> [devm]_thermal_zone_of_sensor_register() is used to register
-> thermal sensor by thermal drivers using DeviceTree. Besides
-> registering sensor this function also immediately enables it
-> (using ->set_mode method) and then checks it with a update call
-> to the thermal core (which ends up using ->get_temp method).
+Currently we use ktime_us_delta() to calculate last residency and
+state usage unconditionally, it makes no sense to do this calculation 
+when we fails to enter any idle state.
+It can be optimize by moving the calculation after entered_state >= 0
 
-Yeah, pretty much the driver needs to be ready to answer to callbacks
-once it calls thermal_*_register() method.
+While at it, merge those comment blocks into one and remove a
+space between type casting of diff.
 
-> For many DT thermal drivers this causes a problem because
+This patch has no functional changes.
 
-Can you be more specific? Are you seeing this problem in samsung driver
-or in other drivers too?
+Signed-off-by: Fieah Lim <kw@fieahl.im>
+---
+Changes from v1:
+ - Rewrite changelog as Rafael J. Wysocki suggested
+---
+ drivers/cpuidle/cpuidle.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-> [devm]_thermal_zone_of_sensor_register() need to be called in
-> order to obtain data about thermal trips which are then used to
-> finish hardware sensor setup (only after which ->get_temp can
-> be used). The issue has been observed when using Samsung Exynos
-
-Oh I see, this is because trip info is read by the of thermal thermal
-then, correct?
-
-> thermal driver and fixed internally in the driver in commit
-> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
-> only when TMU is turned on"). However after this commit there
-> are now following warnings from the thermal core visible:
-> 
-> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
-> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
-> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
-> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
-> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
-> 
-> This patchset attempts to directly address the thermal core
-> problem with [devm]_thermal_zone_of_sensor_register() and
-> affected DT thermal drivers. In order to achieve this sensor
-> registration, enable and check operations are separated and
-> corresponding drivers are modified to use the new helpers to
-> enable and check sensor explicitly.
-> 
-
-Ok. Up to this point I followed that this is a samsung driver issue, not
-we need to change the core to fix adapt to it?
-
-And adapting the core should be fine to fit a new use/fix something,
-as long the issue is well described..
-
-> Tested on Exynos5422 based Odroid-XU3 Lite board (aforementioned
-> warnings from the thermal core are now gone).
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> 
-> Bartlomiej Zolnierkiewicz (17):
->   thermal: add thermal_zone_device_toggle() helper
->   thermal: separate sensor registration and enable
->   thermal: add thermal_zone_device_check() helper
->   thermal: do sensor checking explicitly in drivers
->   thermal: bcm2835: enable/check sensor after its setup is finished
->   thermal: brcmstb: enable/check sensor after its setup is finished
->   thermal: hisi_thermal: enable/check sensor after its setup is finished
->   thermal: qcom: tsens: enable/check sensor after its setup is finished
->   thermal: qoriq: enable/check sensor after its setup is finished
->   thermal: rcar_gen3_thermal: enable/check sensor after its setup is
->     finished
->   thermal: rockchip_thermal: enable/check sensor after its setup is
->     finished
->   thermal: exynos: enable/check sensor after its setup is finished
->   thermal: tegra: enable/check sensor after its setup is finished
->   thermal: ti-soc-thermal: enable/check sensor after its setup is
->     finished
->   thermal: uniphier: enable/check sensor after its setup is
->     finished
->   thermal: zx2967: enable/check sensor after its setup is finished
->   thermal: warn on attempts to read temperature on disabled sensors
-> 
->  drivers/acpi/thermal.c                             |  5 ++--
->  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
->  drivers/platform/x86/acerhdf.c                     |  6 +++-
->  drivers/regulator/max8973-regulator.c              |  3 +-
->  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
->  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
->  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
->  drivers/thermal/da9062-thermal.c                   |  7 ++---
->  drivers/thermal/db8500_thermal.c                   |  5 +++-
->  drivers/thermal/hisi_thermal.c                     | 22 ++++----------
->  drivers/thermal/imx_thermal.c                      |  3 +-
->  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
->  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
->  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
->  drivers/thermal/max77620_thermal.c                 |  6 ++--
->  drivers/thermal/mtk_thermal.c                      |  3 ++
->  drivers/thermal/of-thermal.c                       |  6 ++--
->  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 +++-
->  drivers/thermal/qcom/tsens.c                       |  6 ++++
->  drivers/thermal/qoriq_thermal.c                    |  3 ++
->  drivers/thermal/rcar_gen3_thermal.c                |  7 +++--
->  drivers/thermal/rcar_thermal.c                     |  8 +++--
->  drivers/thermal/rockchip_thermal.c                 | 34 ++++++++++------------
->  drivers/thermal/samsung/exynos_tmu.c               |  7 ++++-
->  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
->  drivers/thermal/tango_thermal.c                    |  5 ++++
->  drivers/thermal/tegra/soctherm.c                   |  3 ++
->  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
->  drivers/thermal/thermal-generic-adc.c              |  3 ++
->  drivers/thermal/thermal_core.c                     | 14 ++++-----
->  drivers/thermal/thermal_helpers.c                  | 33 +++++++++++++++++++++
->  drivers/thermal/thermal_sysfs.c                    | 17 +++++++----
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 ++++-
->  drivers/thermal/uniphier_thermal.c                 |  6 +++-
->  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
->  drivers/thermal/zx2967_thermal.c                   |  3 ++
->  include/linux/thermal.h                            |  5 ++++
->  37 files changed, 173 insertions(+), 84 deletions(-)
-> 
-> -- 
-> 1.9.1
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 6df894d65d9e..5f6b2c9b6555 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -247,21 +247,20 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	if (!cpuidle_state_is_coupled(drv, index))
+ 		local_irq_enable();
+ 
+-	diff = ktime_us_delta(time_end, time_start);
+-	if (diff > INT_MAX)
+-		diff = INT_MAX;
+-
+-	dev->last_residency = (int) diff;
++	dev->last_residency = 0;
+ 
+ 	if (entered_state >= 0) {
+-		/* Update cpuidle counters */
+-		/* This can be moved to within driver enter routine
++		/* Update cpuidle counters
++		 * This can be moved to within driver enter routine,
+ 		 * but that results in multiple copies of same code.
+ 		 */
++		diff = ktime_us_delta(time_end, time_start);
++		if (diff > INT_MAX)
++			diff = INT_MAX;
++
++		dev->last_residency = (int)diff;
+ 		dev->states_usage[entered_state].time += dev->last_residency;
+ 		dev->states_usage[entered_state].usage++;
+-	} else {
+-		dev->last_residency = 0;
+ 	}
+ 
+ 	return entered_state;
+-- 
+2.18.0
