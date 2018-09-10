@@ -1,104 +1,136 @@
 From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v3 1/2] PM / devfreq: Generic CPU frequency to device
- frequency mapping governor
-Date: Tue, 11 Sep 2018 00:15:28 +0530
-Message-ID: <37035cf602bb0f5491240a021af46608@codeaurora.org>
-References: <1533171465-25508-1-git-send-email-skannan@codeaurora.org>
- <CGME20180802005756epcas4p465a12f42a0e36f0af6fd276a3a56957f@epcms1p3>
- <20180802095608epcms1p33fb061543efc9ceb3ec12d5567ceffbc@epcms1p3>
- <45c77ee02536e237c054399cad4c7669@codeaurora.org>
- <35ff3e303f5de9980979b49c89f9a687@codeaurora.org>
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Tue, 11 Sep 2018 00:25:32 +0530
+Message-ID: <904fb7d5f96a0c02bd57f21c50549192@codeaurora.org>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+ <4fcac639-cba9-1a71-9b78-326ebb9242da@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <35ff3e303f5de9980979b49c89f9a687@codeaurora.org>
+In-Reply-To: <4fcac639-cba9-1a71-9b78-326ebb9242da@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: skannan@codeaurora.org
-Cc: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org, viresh.kumar@linaro.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Saravana,
+Hi Georgi,
 
-On 2018-08-07 11:19, skannan@codeaurora.org wrote:
-> On 2018-08-02 14:00, skannan@codeaurora.org wrote:
->> On 2018-08-02 02:56, MyungJoo Ham wrote:
->>>> Many CPU architectures have caches that can scale independent of the 
->>>> CPUs.
->>>> Frequency scaling of the caches is necessary to make sure the cache 
->>>> is not
->>>> a performance bottleneck that leads to poor performance and power. 
->>>> The same
->>>> idea applies for RAM/DDR.
->>>> 
->>>> To achieve this, this patch adds a generic devfreq governor that 
->>>> takes the
->>>> current frequency of each CPU frequency domain and then adjusts the
->>>> frequency of the cache (or any devfreq device) based on the 
->>>> frequency of
->>>> the CPUs. It listens to CPU frequency transition notifiers to keep 
->>>> itself
->>>> up to date on the current CPU frequency.
->>>> 
+This driver uses of_icc_get which is very likely to fail if it probes
+before the interconnect provider. Would it be possible for icc_get to
+return/differentiate both -EPROBE_DEFER and other errors to prevent the
+driver to continually probe defer if the path doesn't actually exist
+or just error out if it probes before the interconnect provider.
 
-With the cpu-freq driver for SDM845 SoC supporting fast_switch and 
-schedutil supporting
-dynamic switching wouldn't this governor be incompatible due to its 
-reliance on transition
-notifiers? Is it planned to be used only with ondemand/performance 
-governors?
-
->>>> To decide the frequency of the device, the governor does one of the
->>>> following:
->>> 
->>> This exactly has the same purpose with "passive" governor except for 
->>> the
->>> single part: passive governor depends on another devfreq driver, not
->>> cpufreq driver.
->>> 
->>> If both governors have many features in common, can you merge them 
->>> into one?
->>> Passive governor also has "get_target_freq", which allows driver 
->>> authors
->>> to define the mapping.
->> 
->> Thanks for the review and pointing me to the passive governor. I agree
->> that at a high level they are both doing the same. I can certainly
->> stuff this CPU freq to dev freq mapping into passive governor, but I
->> think it'll just make one huge set of code that's harder to understand
->> and maintain because it trying to do different things under the hood.
->> 
->> There are also a bunch of complexities and optimizations that come
->> with the cpufreq-map governor that don't fit with the passive
->> governor.
->> 
->> 1. It's not one CPU who's frequency we have to listen to. There are
->> multiple CPUs/policies we have to aggregate across.
->> 2. We have to deal with big vs little having different needs/mappings.
->> 3. Since it's always just CPUfreq, I can optimize the handling in the
->> transition notifiers. If I have 4 different devices that are scaled
->> based on CPU freq, I still use only 1 transition notifier. It becomes
->> a bit harder to do with the passive governor.
->> 4. It requires that the device explicitly support the passive governor
->> and pick a mapping function. With cpufreq-map governor, the device
->> drivers don't need to make any changes. Whoever is making a
->> device/board can choose what devices to scale up base on CPU freq
->> based on their board and their needs. Even an end user can say, scale
->> the GPU based on my CPU based on interpolation if they choose to.
->> 5. If a device has some other use for the private data, it can't work
->> with passive governor, but can work with cpufreq-map governor.
->> 6. I also want to improve cpufreq-map governor to handle hotplug
->> correctly in later patches (needs more discussion) and that'll add
->> more complexity.
->> 
->> I think for these reasons we shouldn't combine these two governors.
->> Let me know what you think.
+On 2018-08-23 18:30, Georgi Djakov wrote:
+> Hi Saravana,
 > 
-> Friendly reminder.
+> On 08/02/2018 03:57 AM, Saravana Kannan wrote:
+>> This driver registers itself as a devfreq device that allows devfreq
+>> governors to make bandwidth votes for an interconnect path. This 
+>> allows
+>> applying various policies for different interconnect paths using 
+>> devfreq
+>> governors.
+>> 
+>> Example uses:
+>> * Use the devfreq performance governor to set the CPU to DDR 
+>> interconnect
+>>   path for maximum performance.
+>> * Use the devfreq performance governor to set the GPU to DDR 
+>> interconnect
+>>   path for maximum performance.
+>> * Use the CPU frequency to device frequency mapping governor to scale 
+>> the
+>>   DDR frequency based on the needs of the CPUs' current frequency.
+> 
+> Usually CPUs and GPUs have dedicated cpufreq/devfreq drivers and i was
+> wondering if the interconnect support could be put into these drivers
+> directly?
+> 
+>> 
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>>  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
+>>  drivers/devfreq/Kconfig                            |  13 +++
+>>  drivers/devfreq/Makefile                           |   1 +
+>>  drivers/devfreq/devfreq_icbw.c                     | 116 
+>> +++++++++++++++++++++
+>>  4 files changed, 151 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
+>>  create mode 100644 drivers/devfreq/devfreq_icbw.c
+>> 
+>> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt 
+>> b/Documentation/devicetree/bindings/devfreq/icbw.txt
+>> new file mode 100644
+>> index 0000000..36cf045
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
+>> @@ -0,0 +1,21 @@
+>> +Interconnect bandwidth device
+>> +
+>> +icbw is a device that represents an interconnect path that connects 
+>> two
+>> +devices. This device is typically used to vote for BW requirements 
+>> between
+>> +two devices. Eg: CPU to DDR, GPU to DDR, etc
+>> +
+>> +Required properties:
+>> +- compatible:		Must be "devfreq-icbw"
+>> +- interconnects:	Pairs of phandles and interconnect provider 
+>> specifier
+>> +			to denote the edge source and destination ports of
+>> +			the interconnect path. See also:
+>> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
+>> +- interconnect-names:	Must have one entry with the name "path".
+>> +
+>> +Example:
+>> +
+>> +	qcom,cpubw {
+>> +		compatible = "devfreq-icbw";
+>> +		interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
+>> +		interconnect-names = "path";
+> 
+> interconnect-names is optional when there is only a single path.
+> 
+>> +	};
+>> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+>> index 3d9ae68..590370e 100644
+>> --- a/drivers/devfreq/Kconfig
+>> +++ b/drivers/devfreq/Kconfig
+>> @@ -121,6 +121,19 @@ config ARM_RK3399_DMC_DEVFREQ
+>>            It sets the frequency for the memory controller and reads 
+>> the usage counts
+>>            from hardware.
+>> 
+>> +config DEVFREQ_ICBW
+>> +	bool "DEVFREQ device for making bandwidth votes on interconnect 
+>> paths"
+> 
+> Can this be a module?
+> 
+>> +	select DEVFREQ_GOV_PERFORMANCE
+>> +	select DEVFREQ_GOV_POWERSAVE
+>> +	select DEVFREQ_GOV_USERSPACE
+>> +	default n
+> 
+> There's no need to specify this default. It is 'n' by default anyway.
+> Also maybe you want to add something like:
+> 	depends on INTERCONNECT=y
 > 
 > Thanks,
-> Saravana
+> Georgi
+> 
+>> +	help
+>> +	  Different devfreq governors use this devfreq device to make
+>> +	  bandwidth votes for interconnect paths between different devices
+>> +	  (Eg: CPU to DDR, GPU to DDR, etc). This driver provides a generic
+>> +	  interface so that the devfreq governors can be shared across SoCs
+>> +	  and architectures.
+>> +
+>>  source "drivers/devfreq/event/Kconfig"
 
 -- 
 -- Sibi Sankar --
