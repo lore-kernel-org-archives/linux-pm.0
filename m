@@ -1,108 +1,80 @@
-From: Thomas Martitz <kugel-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on
- resume
-Date: Mon, 10 Sep 2018 21:57:11 +0200
-Message-ID: <46fe10f6-e778-1808-2a58-663901ed7748@rockbox.org>
-References: <20180907053614.6540-1-drake@endlessm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180907053614.6540-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org
-Cc: nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+From: Fieah Lim <kw@fieahl.im>
+Subject: [PATCH v2] cpuidle: Remove unnecessary wrapper cpuidle_get_last_residency()
+Date: Tue, 11 Sep 2018 03:59:01 +0800
+Message-ID: <20180910195901.15200-1-kw@fieahl.im>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, open list <linux-kernel@vger.kernel.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>
+Cc: Fieah Lim <kw@fieahl.im>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8gRGFuaWVsLAoKQW0gMDcuMDkuMTggdW0gMDc6MzYgc2NocmllYiBEYW5pZWwgRHJha2U6
-Cj4gT24gMzgrIEludGVsLWJhc2VkIEFzdXMgcHJvZHVjdHMsIHRoZSBudmlkaWEgR1BVIGJlY29t
-ZXMgdW51c2FibGUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4gVGhlIGFmZmVjdGVkIHByb2R1
-Y3RzIGluY2x1ZGUgbXVsdGlwbGUKPiBnZW5lcmF0aW9ucyBvZiBudmlkaWEgR1BVcyBhbmQgSW50
-ZWwgU29Dcy4gQWZ0ZXIgcmVzdW1lLCBub3V2ZWF1IGxvZ3MKPiBtYW55IGVycm9ycyBzdWNoIGFz
-Ogo+IAo+ICAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAwMDU1NTU1NTUwMDAgZW5n
-aW5lIDAwIFtHUl0gY2xpZW50IDA0IFtIVUIvRkVdIHJlYXNvbiA0YSBbXSBvbiBjaGFubmVsIC0x
-IFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgICBEUk06IGZhaWxlZCB0byBpZGxlIGNoYW5uZWwg
-MCBbRFJNXQo+IAo+IFNpbWlsYXJseSwgdGhlIG52aWRpYSBwcm9wcmlldGFyeSBkcml2ZXIgYWxz
-byBmYWlscyBhZnRlciByZXN1bWUKPiAoYmxhY2sgc2NyZWVuLCAxMDAlIENQVSB1c2FnZSBpbiBY
-b3JnIHByb2Nlc3MpLiBXZSBzaGlwcGVkIGEgc2FtcGxlCj4gdG8gTnZpZGlhIGZvciBkaWFnbm9z
-aXMsIGFuZCB0aGVpciByZXNwb25zZSBpbmRpY2F0ZWQgdGhhdCBpdCdzIGEKPiBwcm9ibGVtIHdp
-dGggdGhlIHBhcmVudCBQQ0kgYnJpZGdlIChvbiB0aGUgSW50ZWwgU29DKSwgbm90IHRoZSBHUFUu
-Cj4gCj4gUnVudGltZSBzdXNwZW5kL3Jlc3VtZSB3b3JrcyBmaW5lLCBvbmx5IFMzIHN1c3BlbmQg
-aXMgYWZmZWN0ZWQuCj4gCj4gV2UgZm91bmQgYSB3b3JrYXJvdW5kOiBvbiByZXN1bWUsIHJld3Jp
-dGUgdGhlIEludGVsIFBDSSBicmlkZ2UKPiAnUHJlZmV0Y2hhYmxlIEJhc2UgVXBwZXIgMzIgQml0
-cycgcmVnaXN0ZXIgKFBDSV9QUkVGX0JBU0VfVVBQRVIzMikuIEluCj4gdGhlIGNhc2VzIHRoYXQg
-SSBjaGVja2VkLCB0aGlzIHJlZ2lzdGVyIGhhcyB2YWx1ZSAwIGFuZCB3ZSBqdXN0IGhhdmUgdG8K
-PiByZXdyaXRlIHRoYXQgdmFsdWUuCj4gCj4gSXQncyB2ZXJ5IHN0cmFuZ2UgdGhhdCByZXdyaXRp
-bmcgdGhlIGV4YWN0IHNhbWUgcmVnaXN0ZXIgdmFsdWUKPiBtYWtlcyBhIGRpZmZlcmVuY2UsIGJ1
-dCBpdCBkZWZpbml0ZWx5IG1ha2VzIHRoZSBpc3N1ZSBnbyBhd2F5Lgo+IEl0J3Mgbm90IGp1c3Qg
-YWN0aW5nIGFzIHNvbWUga2luZCBvZiBtZW1vcnkgYmFycmllciwgYmVjYXVzZSByZXdyaXRpbmcK
-PiBvdGhlciBicmlkZ2UgcmVnaXN0ZXJzIGRvZXMgbm90IHdvcmsgYXJvdW5kIHRoZSBpc3N1ZS4g
-VGhlcmUncyBzb21ldGhpbmcKPiBtYWdpYyBpbiB0aGlzIHBhcnRpY3VsYXIgcmVnaXN0ZXIuIFdl
-IGhhdmUgY29uZmlybWVkIHRoaXMgb24gYWxsCj4gdGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBoYXZl
-IGluLWhhbmRzIChYNTQyVVEsIFVYNTMzRkQsIFg1MzBVTiwgVjI3MlVOKS4KPiAKPiBBZGRpdGlv
-bmFsbHksIHRoaXMgd29ya2Fyb3VuZCBzb2x2ZXMgYW4gaXNzdWUgd2hlcmUgcjgxNjkgTVNJLVgK
-PiBpbnRlcnJ1cHRzIHdlcmUgYnJva2VuIGFmdGVyIFMzIHN1c3BlbmQvcmVzdW1lIG9uIEFzdXMg
-WDQ0MVVBUi4gVGhpcwo+IGlzc3VlIHdhcyByZWNlbnRseSB3b3JrZWQgYXJvdW5kIGluIGNvbW1p
-dCA3YmIwNWI4NWJjMmQgKCJyODE2OToKPiBkb24ndCB1c2UgTVNJLVggb24gUlRMODEwNmUiKS4g
-SXQgYWxzbyBmaXhlcyB0aGUgc2FtZSBpc3N1ZSBvbgo+IFJUTDYxODZldmwvODExMWV2bCBvbiBh
-biBBaW1mb3ItdGVjaCBsYXB0b3AgdGhhdCB3ZSBoYWQgbm90IHlldAo+IHBhdGNoZWQuIEkgc3Vz
-cGVjdCBpdCB3aWxsIGFsc28gZml4IHRoZSBpc3N1ZSB0aGF0IHdhcyB3b3JrZWQgYXJvdW5kIGlu
-Cj4gY29tbWl0IDdjNTNhNzIyNDU5YyAoInI4MTY5OiBkb24ndCB1c2UgTVNJLVggb24gUlRMODE2
-OGciKS4KPiAKPiBUaG9tYXMgTWFydGl0eiByZXBvcnRzIHRoYXQgdGhpcyB3b3JrYXJvdW5kIGFs
-c28gc29sdmVzIGFuIGlzc3VlIHdoZXJlCj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUg
-b24gdGhlIEhQIFpib29rIDE0dSBHNSBpcyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5k
-L3Jlc3VtZS4KCgpJIGNhbiBjb25maXJtIHRoYXQgdGhpcyBleGFjdCBwYXRjaCBhbHNvIGhlbHBz
-IG9uIG15IEhQIFpib29rLiBUaGFua3MgCmZvciB5b3VyIHdvcmsgb24gdGhpcywgcmVzdW1lIGhh
-cyBiZWVuIGEgcmVhbCBwYWluIHVudGlsIG5vdy4KCgoKPiAKPiAgIGRyaXZlcnMvcGNpL3BjaS1k
-cml2ZXIuYyB8IDE0ICsrKysrKysrKysrKysrCj4gICBkcml2ZXJzL3BjaS9zZXR1cC1idXMuYyAg
-fCAgMiArLQo+ICAgaW5jbHVkZS9saW51eC9wY2kuaCAgICAgIHwgIDEgKwo+ICAgMyBmaWxlcyBj
-aGFuZ2VkLCAxNiBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pCj4gCj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYyBiL2RyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYwo+IGlu
-ZGV4IGJlZjE3YzNmY2E2Ny4uMDM0ZjgxNjU3MGFkIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvcGNp
-L3BjaS1kcml2ZXIuYwo+ICsrKyBiL2RyaXZlcnMvcGNpL3BjaS1kcml2ZXIuYwo+IEBAIC01MjQs
-NiArNTI0LDIwIEBAIHN0YXRpYyB2b2lkIHBjaV9wbV9kZWZhdWx0X3Jlc3VtZV9lYXJseShzdHJ1
-Y3QgcGNpX2RldiAqcGNpX2RldikKPiAgIAlwY2lfcG93ZXJfdXAocGNpX2Rldik7Cj4gICAJcGNp
-X3Jlc3RvcmVfc3RhdGUocGNpX2Rldik7Cj4gICAJcGNpX3BtZV9yZXN0b3JlKHBjaV9kZXYpOwo+
-ICsKPiArCS8qCj4gKwkgKiBSZWRvIHRoZSBQQ0kgYnJpZGdlIHByZWZldGNoIHJlZ2lzdGVyIHNl
-dHVwLgo+ICsJICoKPiArCSAqIFRoaXMgd29ya3MgYXJvdW5kIGFuIEludGVsIFBDSSBicmlkZ2Ug
-aXNzdWUgc2VlbiBvbiBBc3VzIGFuZCBIUAo+ICsJICogbGFwdG9wcywgd2hlcmUgdGhlIEdQVSBp
-cyBub3QgdXNhYmxlIGFmdGVyIFMzIHJlc3VtZS4KPiArCSAqIEV2ZW4gdGhvdWdoIFBDSSBicmlk
-Z2UgcmVnaXN0ZXIgY29udGVudHMgYXBwZWFyIHRvIGJlIGludGFjdAo+ICsJICogYXQgcmVzdW1l
-IHRpbWUsIHJld3JpdGluZyB0aGUgdmFsdWUgb2YgUFJFRl9CQVNFX1VQUEVSMzIgaXMKPiArCSAq
-IHJlcXVpcmVkIHRvIG1ha2UgdGhlIEdQVSB3b3JrLgo+ICsJICogV2luZG93cyAxMCBhbHNvIHJl
-cHJvZ3JhbXMgdGhlc2UgcmVnaXN0ZXJzIGR1cmluZyBTMyByZXN1bWUuCj4gKwkgKi8KPiArCWlm
-IChwY2lfZGV2LT5jbGFzcyA9PSBQQ0lfQ0xBU1NfQlJJREdFX1BDSSA8PCA4KQo+ICsJCXBjaV9z
-ZXR1cF9icmlkZ2VfbW1pb19wcmVmKHBjaV9kZXYpOwo+ICsKPiAgIAlwY2lfZml4dXBfZGV2aWNl
-KHBjaV9maXh1cF9yZXN1bWVfZWFybHksIHBjaV9kZXYpOwo+ICAgfQo+ICAgCj4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvcGNpL3NldHVwLWJ1cy5jIGIvZHJpdmVycy9wY2kvc2V0dXAtYnVzLmMKPiBp
-bmRleCA3OWIxODI0ZTgzYjQuLmNiODgyODhkMmE2OSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3Bj
-aS9zZXR1cC1idXMuYwo+ICsrKyBiL2RyaXZlcnMvcGNpL3NldHVwLWJ1cy5jCj4gQEAgLTYzMCw3
-ICs2MzAsNyBAQCBzdGF0aWMgdm9pZCBwY2lfc2V0dXBfYnJpZGdlX21taW8oc3RydWN0IHBjaV9k
-ZXYgKmJyaWRnZSkKPiAgIAlwY2lfd3JpdGVfY29uZmlnX2R3b3JkKGJyaWRnZSwgUENJX01FTU9S
-WV9CQVNFLCBsKTsKPiAgIH0KPiAgIAo+IC1zdGF0aWMgdm9pZCBwY2lfc2V0dXBfYnJpZGdlX21t
-aW9fcHJlZihzdHJ1Y3QgcGNpX2RldiAqYnJpZGdlKQo+ICt2b2lkIHBjaV9zZXR1cF9icmlkZ2Vf
-bW1pb19wcmVmKHN0cnVjdCBwY2lfZGV2ICpicmlkZ2UpCj4gICB7Cj4gICAJc3RydWN0IHJlc291
-cmNlICpyZXM7Cj4gICAJc3RydWN0IHBjaV9idXNfcmVnaW9uIHJlZ2lvbjsKPiBkaWZmIC0tZ2l0
-IGEvaW5jbHVkZS9saW51eC9wY2kuaCBiL2luY2x1ZGUvbGludXgvcGNpLmgKPiBpbmRleCBlNzJj
-YThkZDYyNDEuLmIxNTgyOGZjMjZhNCAxMDA2NDQKPiAtLS0gYS9pbmNsdWRlL2xpbnV4L3BjaS5o
-Cj4gKysrIGIvaW5jbHVkZS9saW51eC9wY2kuaAo+IEBAIC05MzQsNiArOTM0LDcgQEAgc3RydWN0
-IHBjaV9kZXYgKnBjaV9zY2FuX3NpbmdsZV9kZXZpY2Uoc3RydWN0IHBjaV9idXMgKmJ1cywgaW50
-IGRldmZuKTsKPiAgIHZvaWQgcGNpX2RldmljZV9hZGQoc3RydWN0IHBjaV9kZXYgKmRldiwgc3Ry
-dWN0IHBjaV9idXMgKmJ1cyk7Cj4gICB1bnNpZ25lZCBpbnQgcGNpX3NjYW5fY2hpbGRfYnVzKHN0
-cnVjdCBwY2lfYnVzICpidXMpOwo+ICAgdm9pZCBwY2lfYnVzX2FkZF9kZXZpY2Uoc3RydWN0IHBj
-aV9kZXYgKmRldik7Cj4gK3ZvaWQgcGNpX3NldHVwX2JyaWRnZV9tbWlvX3ByZWYoc3RydWN0IHBj
-aV9kZXYgKmJyaWRnZSk7Cj4gICB2b2lkIHBjaV9yZWFkX2JyaWRnZV9iYXNlcyhzdHJ1Y3QgcGNp
-X2J1cyAqY2hpbGQpOwo+ICAgc3RydWN0IHJlc291cmNlICpwY2lfZmluZF9wYXJlbnRfcmVzb3Vy
-Y2UoY29uc3Qgc3RydWN0IHBjaV9kZXYgKmRldiwKPiAgIAkJCQkJICBzdHJ1Y3QgcmVzb3VyY2Ug
-KnJlcyk7Cj4gCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+cpuidle_get_last_residency() is just a wrapper for retrieves
+device's last_residency, it's also weirdly the only
+wrapper function for accessing cpuidle_* struct member,
+and my best guess is it could be a leftover from v2.x
+
+Anyhow, since the only two users(ladder and menu governor)
+can access dev->last_residency directly, and it's more intuitive,
+let's just get rid of it.
+
+This patch tidies up CPU idle driver a bit without functional changes.
+
+Signed-off-by: Fieah Lim <kw@fieahl.im>
+---
+Changes from v1:
+ - Rewrite changelog as Rafael J. Wysocki suggested
+---
+ drivers/cpuidle/governors/ladder.c |  2 +-
+ drivers/cpuidle/governors/menu.c   |  2 +-
+ include/linux/cpuidle.h            | 10 ----------
+ 3 files changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 704880a6612a..f0dddc66af26 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -80,7 +80,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 
+ 	last_state = &ldev->states[last_idx];
+ 
+-	last_residency = cpuidle_get_last_residency(dev) - drv->states[last_idx].exit_latency;
++	last_residency = dev->last_residency - drv->states[last_idx].exit_latency;
+ 
+ 	/* consider promotion */
+ 	if (last_idx < drv->state_count - 1 &&
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 1aef60d160eb..715520e339da 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -492,7 +492,7 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		measured_us = 9 * MAX_INTERESTING / 10;
+ 	} else {
+ 		/* measured value */
+-		measured_us = cpuidle_get_last_residency(dev);
++		measured_us = dev->last_residency;
+ 
+ 		/* Deduct exit latency */
+ 		if (measured_us > 2 * target->exit_latency)
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 4325d6fdde9b..d262f620890e 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -99,16 +99,6 @@ struct cpuidle_device {
+ DECLARE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
+ DECLARE_PER_CPU(struct cpuidle_device, cpuidle_dev);
+ 
+-/**
+- * cpuidle_get_last_residency - retrieves the last state's residency time
+- * @dev: the target CPU
+- */
+-static inline int cpuidle_get_last_residency(struct cpuidle_device *dev)
+-{
+-	return dev->last_residency;
+-}
+-
+-
+ /****************************
+  * CPUIDLE DRIVER INTERFACE *
+  ****************************/
+-- 
+2.18.0
