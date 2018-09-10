@@ -1,85 +1,239 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
- depend on schedutil
-Date: Mon, 10 Sep 2018 10:55:43 +0200
-Message-ID: <CAJZ5v0jSE2u7DpT6KBiR=zEN0RSBq4cO1Ve=e+pju6cwj8toFQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v6 00/14] Energy Aware Scheduling
+Date: Mon, 10 Sep 2018 11:12:11 +0200
+Message-ID: <2338896.lUgtDMVfv7@aspire.rjw.lan>
 References: <20180820094420.26590-1-quentin.perret@arm.com>
- <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
- <20180906143842.xlxcg5notwdaflww@queper01-lin> <1545744.fI5ZvP8FO0@aspire.rjw.lan>
- <20180907152923.oxsmcqciez4yhmkk@queper01-lin> <CAJZ5v0gs1Fb-Y1FbjmnxLNHQR=CSHFX_=KpDEkqRCYDJ9EJByQ@mail.gmail.com>
- <20180910082411.oyedkqerxs6b7um5@queper01-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180910082411.oyedkqerxs6b7um5@queper01-lin>
+In-Reply-To: <20180820094420.26590-1-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharm
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 10, 2018 at 10:24 AM Quentin Perret <quentin.perret@arm.com> wrote:
->
-> Hi Rafael,
->
-> On Sunday 09 Sep 2018 at 22:13:52 (+0200), Rafael J. Wysocki wrote:
-> > On Fri, Sep 7, 2018 at 5:29 PM Quentin Perret <quentin.perret@arm.com> wrote:
-> > > On Friday 07 Sep 2018 at 10:52:01 (+0200), Rafael J. Wysocki wrote:
-> > > > Well, why don't you implement it as something like "if the governor changes
-> > > > from sugov to something else (or the other way around), call this function
-> > > > from the scheduler"?
-> > >
-> > > I just gave it a try and ended up with the diff below. It's basically
-> > > the exact same patch with a direct function call instead of a notifier.
-> > > (I also tried the sugov_start/stop thing I keep mentioning but it is
-> > > more complex, so let's see if the simplest solution could work first).
-> > >
-> > > What do you think ?
-> >
-> > This generally works for me from the cpufreq perspective, but I would
-> > add "cpufreq" to the name of the new function, that is call it
-> > something like sched_cpufreq_governor_change().
->
-> Ok, no problem.
->
-> > Also do you really need the extra work item?  Governor changes are
-> > carried out in process context anyway.
->
-> Ah, good point, I can remove that. I just tried and got the following
-> lock warning on boot, though:
->
-> [    2.518684] ============================================
-> [    2.523942] WARNING: possible recursive locking detected
-> [    2.529200] 4.18.0-rc6-00086-g940e7a9fd5ec #10 Not tainted
-> [    2.534630] --------------------------------------------
-> [    2.539888] kworker/2:3/1349 is trying to acquire lock:
-> [    2.545059] (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: rebuild_sched_domains_locked+0x2c/0x598
-> [    2.554559]
-> [    2.554559] but task is already holding lock:
-> [    2.560332] (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: cpufreq_register_driver+0x80/0x1d0
-> [    2.569396]
-> [    2.569396] other info that might help us debug this:
-> [    2.575858]  Possible unsafe locking scenario:
-> [    2.575858]
-> [    2.581717]        CPU0
-> [    2.584135]        ----
-> [    2.586553]   lock(cpu_hotplug_lock.rw_sem);
-> [    2.590785]   lock(cpu_hotplug_lock.rw_sem);
-> [    2.595017]
-> [    2.595017]  *** DEADLOCK ***
-> [    2.595017]
-> [    2.600877]  May be due to missing lock nesting notation
->
-> That seems to happen because cpufreq_register_driver() calls
-> cpus_read_lock(), which is then called again by rebuild_sched_domains()
-> down the line. So it might just be a missing lock nesting notation as
-> the warning suggests ?
->
-> I'll have a look.
+On Monday, August 20, 2018 11:44:06 AM CEST Quentin Perret wrote:
+> This patch series introduces Energy Aware Scheduling (EAS) for CFS tasks
+> on platforms with asymmetric CPU topologies (e.g. Arm big.LITTLE).
+> 
+> For more details about the ideas behind it and the overall design,
+> please refer to the cover letter of version 5 [1].
+> 
+> 
+> 1. Version History
+> ------------------
+> 
+> Changes v5[1]->v6:
+> - Rebased on Peter’s sched/core branch (that includes Morten's misfit
+>   patches [2] and the automatic detection of SD_ASYM_CPUCAPACITY [3])
+> - Removed patch 13/14 (not needed with the automatic flag detection)
+> - Added patch creating a dependency between sugov and EAS
+> - Renamed frequency domains to performance domains to avoid creating too
+>   deep assumptions in the code about the HW
+> - Renamed the sd_ea shortcut sd_asym_cpucapacity
+> - Added comment to explain why new tasks are not accounted when
+>   detecting the 'overutilized' flag
+> - Added comment explaining why forkees don’t go in
+>   find_energy_efficient_cpu()
+> 
+> Changes v4[4]->v5:
+> - Removed the RCU protection of the EM tables and the associated
+>   need for em_rescale_cpu_capacity().
+> - Factorized schedutil’s PELT aggregation function with EAS
+> - Improved comments/doc in the EM framework
+> - Added check on the uarch of CPUs in one fd in the EM framework
+> - Reduced CONFIG_ENERGY_MODEL ifdefery in kernel/sched/topology.c
+> - Cleaned-up update_sg_lb_stats parameters
+> - Improved comments in compute_energy() to explain the multi-rd
+>   scenarios
+> 
+> Changes v3[5]->v4:
+> - Replaced spinlock in EM framework by smp_store_release/READ_ONCE
+> - Fixed missing locks to protect rcu_assign_pointer in EM framework
+> - Fixed capacity calculation in EM framework on 32 bits system
+> - Fixed compilation issue for CONFIG_ENERGY_MODEL=n
+> - Removed cpumask from struct em_freq_domain, now dynamically allocated
+> - Power costs of the EM are specified in milliwatts
+> - Added example of CPUFreq driver modification
+> - Added doc/comments in the EM framework and better commit header
+> - Fixed integration issue with util_est in cpu_util_next()
+> - Changed scheduler topology code to have one freq. dom. list per rd
+> - Split sched topology patch in smaller patches
+> - Added doc/comments explaining the heuristic in the wake-up path
+> - Changed energy threshold for migration to from 1.5% to 6%
+> 
+> Changes v2[6]->v3:
+> - Removed the PM_OPP dependency by implementing a new EM framework
+> - Modified the scheduler topology code to take references on the EM data
+>   structures
+> - Simplified the overutilization mechanism into a system-wide flag
+> - Reworked the integration in the wake-up path using the sd_ea shortcut
+> - Rebased on tip/sched/core (247f2f6f3c70 "sched/core: Don't schedule
+>   threads on pre-empted vCPUs")
+> 
+> Changes v1[7]->v2:
+> - Reworked interface between fair.c and energy.[ch] (Remove #ifdef
+>   CONFIG_PM_OPP from energy.c) (Greg KH)
+> - Fixed licence & header issue in energy.[ch] (Greg KH)
+> - Reordered EAS path in select_task_rq_fair() (Joel)
+> - Avoid prev_cpu if not allowed in select_task_rq_fair() (Morten/Joel)
+> - Refactored compute_energy() (Patrick)
+> - Account for RT/IRQ pressure in task_fits() (Patrick)
+> - Use UTIL_EST and DL utilization during OPP estimation (Patrick/Juri)
+> - Optimize selection of CPU candidates in the energy-aware wake-up path
+> - Rebased on top of tip/sched/core (commit b720342849fe “sched/core:
+>   Update Preempt_notifier_key to modern API”)
+> 
+> 
+> 2. Test results
+> ---------------
+> 
+> Two fundamentally different tests were executed. Firstly the energy test
+> case shows the impact on energy consumption this patch-set has using a
+> synthetic set of tasks. Secondly the performance test case provides the
+> conventional hackbench metric numbers.
+> 
+> The tests run on two arm64 big.LITTLE platforms: Hikey960 (4xA73 +
+> 4xA53) and Juno r0 (2xA57 + 4xA53).
+> 
+> Base kernel is tip/sched/core (4.18-rc5), with some Hikey960 and Juno
+> specific patches, the SD_ASYM_CPUCAPACITY flag set at DIE sched domain
+> level for arm64 and schedutil as cpufreq governor [8].
+> 
+> 2.1 Energy test case
+> 
+> 10 iterations of between 10 and 50 periodic rt-app tasks (16ms period,
+> 5% duty-cycle) for 30 seconds with energy measurement. Unit is Joules.
+> The goal is to save energy, so lower is better.
+> 
+> 2.1.1 Hikey960
+> 
+> Energy is measured with an ACME Cape on an instrumented board. Numbers
+> include consumption of big and little CPUs, LPDDR memory, GPU and most
+> of the other small components on the board. They do not include
+> consumption of the radio chip (turned-off anyway) and external
+> connectors.
+> 
+> +----------+-----------------+-------------------------+
+> |          | Without patches | With patches            |
+> +----------+--------+--------+------------------+------+
+> | Tasks nb |  Mean  | RSD*   | Mean             | RSD* |
+> +----------+--------+--------+------------------+------+
+> |       10 |  34.33 |   4.8% |  30.51 (-11.13%) | 6.4% |
+> |       20 |  52.84 |   1.9% |  44.15 (-16.45%) | 2.0% |
+> |       30 |  66.20 |   1.8% |  60.14  (-9.15%) | 4.8% |
+> |       40 |  90.83 |   2.5% |  86.91  (-4.32%) | 2.7% |
+> |       50 | 136.76 |   4.6% | 108.90 (-20.37%) | 4.7% |
+> +----------+--------+--------+------------------+------+
+> 
+> 2.1.2 Juno r0
+> 
+> Energy is measured with the onboard energy meter. Numbers include
+> consumption of big and little CPUs.
+> 
+> +----------+-----------------+------------------------+
+> |          | Without patches | With patches           |
+> +----------+--------+--------+-----------------+------+
+> | Tasks nb |  Mean  | RSD*   | Mean            | RSD* |
+> +----------+--------+--------+-----------------+------+
+> |       10 |  11.48 |   3.2% |  8.09 (-29.53%) | 3.1% |
+> |       20 |  20.84 |   3.4% | 14.38 (-31.00%) | 1.1% |
+> |       30 |  32.94 |   3.2% | 23.97 (-27.23%) | 1.0% |
+> |       40 |  46.05 |   0.5% | 37.82 (-17.87%) | 6.2% |
+> |       50 |  57.25 |   0.5% | 55.30 ( -3.41%) | 0.5% |
+> +----------+--------+--------+-----------------+------+
+> 
+> 
+> 2.2 Performance test case
+> 
+> 30 iterations of perf bench sched messaging --pipe --thread --group G
+> --loop L with G=[1 2 4 8] and L=50000 (Hikey960)/16000 (Juno r0).
+> 
+> 2.2.1 Hikey960
+> 
+> The impact of thermal capping was mitigated thanks to a heatsink, a
+> fan, and a 30 sec delay between two successive executions. IPA is
+> disabled to reduce the stddev.
+> 
+> +----------------+-----------------+------------------------+
+> |                | Without patches | With patches           |
+> +--------+-------+---------+-------+----------------+-------+
+> | Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
+> +--------+-------+---------+-------+----------------+-------+
+> |      1 |    40 |    8.04 | 0.88% |  8.22 (+2.31%) | 1.76% |
+> |      2 |    80 |   14.78 | 0.67% | 14.83 (+0.35%) | 0.59% |
+> |      4 |   160 |   30.92 | 0.57% | 30.95 (+0.09%) | 0.51% |
+> |      8 |   320 |   65.54 | 0.32% | 65.57 (+0.04%) | 0.46% |
+> +--------+-------+---------+-------+----------------+-------+
+> 
+> 2.2.2 Juno r0
+> 
+> +----------------+-----------------+-----------------------+
+> |                | Without patches | With patches          |
+> +--------+-------+---------+-------+---------------+-------+
+> | Groups | Tasks | Mean    | RSD*  | Mean          | RSD*  |
+> +--------+-------+---------+-------+---------------+-------+
+> |      1 |    40 |    7.74 | 0.13% |  7.82 (0.01%) | 0.12% |
+> |      2 |    80 |   14.27 | 0.15% | 14.27 (0.00%) | 0.14% |
+> |      4 |   160 |   27.07 | 0.35% | 26.96 (0.00%) | 0.18% |
+> |      8 |   320 |   55.14 | 1.81% | 55.21 (0.00%) | 1.29% |
+> +--------+-------+---------+-------+---------------+-------+
+> 
+> *RSD: Relative Standard Deviation (std dev / mean)
+> 
+> 
+> [1] https://marc.info/?l=linux-pm&m=153243513908731&w=2
+> [2] https://marc.info/?l=linux-kernel&m=153069968022982&w=2
+> [3] https://marc.info/?l=linux-kernel&m=153209362826476&w=2
+> [4] https://marc.info/?l=linux-kernel&m=153018606728533&w=2
+> [5] https://marc.info/?l=linux-kernel&m=152691273111941&w=2
+> [6] https://marc.info/?l=linux-kernel&m=152302902427143&w=2
+> [7] https://marc.info/?l=linux-kernel&m=152153905805048&w=2
+> [8] http://www.linux-arm.org/git?p=linux-qp.git;a=shortlog;h=refs/heads/upstream/eas_v6
+> 
+> Morten Rasmussen (1):
+>   sched: Add over-utilization/tipping point indicator
+> 
+> Quentin Perret (13):
+>   sched: Relocate arch_scale_cpu_capacity
+>   sched/cpufreq: Factor out utilization to frequency mapping
+>   PM: Introduce an Energy Model management framework
+>   PM / EM: Expose the Energy Model in sysfs
+>   sched/topology: Reference the Energy Model of CPUs when available
+>   sched/topology: Lowest CPU asymmetry sched_domain level pointer
+>   sched/topology: Introduce sched_energy_present static key
+>   sched/fair: Clean-up update_sg_lb_stats parameters
+>   sched/cpufreq: Refactor the utilization aggregation method
+>   sched/fair: Introduce an energy estimation helper function
+>   sched/fair: Select an energy-efficient CPU on task wake-up
+>   sched/topology: Make Energy Aware Scheduling depend on schedutil
+>   OPTIONAL: cpufreq: dt: Register an Energy Model
+> 
+>  drivers/cpufreq/cpufreq-dt.c     |  45 ++++-
+>  drivers/cpufreq/cpufreq.c        |   4 +
+>  include/linux/cpufreq.h          |   1 +
+>  include/linux/energy_model.h     | 162 +++++++++++++++++
+>  include/linux/sched/cpufreq.h    |   6 +
+>  include/linux/sched/topology.h   |  19 ++
+>  kernel/power/Kconfig             |  15 ++
+>  kernel/power/Makefile            |   2 +
+>  kernel/power/energy_model.c      | 289 +++++++++++++++++++++++++++++
+>  kernel/sched/cpufreq_schedutil.c | 136 ++++++++++----
+>  kernel/sched/fair.c              | 301 ++++++++++++++++++++++++++++---
+>  kernel/sched/sched.h             |  65 ++++---
+>  kernel/sched/topology.c          | 231 +++++++++++++++++++++++-
+>  13 files changed, 1195 insertions(+), 81 deletions(-)
+>  create mode 100644 include/linux/energy_model.h
+>  create mode 100644 kernel/power/energy_model.c
 
-It only is nested in the _register_driver() code path, otherwise it may not be.
+I have looked at all of the patches in the series now and I don't really
+have any major objections from the cpufreq (and generally PM) perspective.
 
-Using the work item may be the most straightforward way to deal with
-that, but then I would add a comment to explain what's up.
+There are some points of concern here and there, but they are mostly details
+and things I would do differently, but as a whole this looks mostly OK to me.
+
+I will reply to the individual patches where there are issues in my view.
 
 Thanks,
 Rafael
