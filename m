@@ -1,83 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 02/14] sched/cpufreq: Factor out utilization to frequency mapping
-Date: Mon, 10 Sep 2018 11:29:27 +0200
-Message-ID: <1631407.Oe3rajKQQm@aspire.rjw.lan>
-References: <20180820094420.26590-1-quentin.perret@arm.com> <20180820094420.26590-3-quentin.perret@arm.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Mon, 10 Sep 2018 10:43:01 +0100
+Message-ID: <20180910094255.nzjjsiphjplh7ruk@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <CAJZ5v0jL_k36RPc6e8yUHxAYGXp7HHWK+hLnBZWnu5Oi__7j3w@mail.gmail.com>
+ <20180906143842.xlxcg5notwdaflww@queper01-lin>
+ <1545744.fI5ZvP8FO0@aspire.rjw.lan>
+ <20180907152923.oxsmcqciez4yhmkk@queper01-lin>
+ <CAJZ5v0gs1Fb-Y1FbjmnxLNHQR=CSHFX_=KpDEkqRCYDJ9EJByQ@mail.gmail.com>
+ <20180910082411.oyedkqerxs6b7um5@queper01-lin>
+ <CAJZ5v0jSE2u7DpT6KBiR=zEN0RSBq4cO1Ve=e+pju6cwj8toFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180820094420.26590-3-quentin.perret@arm.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jSE2u7DpT6KBiR=zEN0RSBq4cO1Ve=e+pju6cwj8toFQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 20, 2018 11:44:08 AM CEST Quentin Perret wrote:
-> The schedutil governor maps utilization values to frequencies by applying
-> a 25% margin. Since this sort of mapping mechanism can be needed by other
-> users (i.e. EAS), factor the utilization-to-frequency mapping code out
-> of schedutil and move it to include/linux/sched/cpufreq.h to avoid code
-> duplication. The new map_util_freq() function is inlined to avoid
-> overheads.
-
-There really is more to this change than it seems at the face value IMO,
-because the formula in question represents the policy part of the governor.
-
-Namely, it is roughly equivalent to the assumption that the governor will
-attempt to "stabilize" the "busy" time of the CPU at 80% of its total time
-(if possible for the given "raw" utilization and performance limits).
-If you take that formula into EAS, it will cause EAS to implicitly require
-the cpufreq governor to follow this assumption.
-
-Now, I know that you want to let EAS only work with the schedutil governor,
-which is consistent with the above, but the implicit assumption here should
-at least be documented somehow IMO.
-
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
-> ---
->  include/linux/sched/cpufreq.h    | 6 ++++++
->  kernel/sched/cpufreq_schedutil.c | 3 ++-
->  2 files changed, 8 insertions(+), 1 deletion(-)
+On Monday 10 Sep 2018 at 10:55:43 (+0200), Rafael J. Wysocki wrote:
+> On Mon, Sep 10, 2018 at 10:24 AM Quentin Perret <quentin.perret@arm.com> wrote:
+> >
+> > Hi Rafael,
+> >
+> > On Sunday 09 Sep 2018 at 22:13:52 (+0200), Rafael J. Wysocki wrote:
+> > > On Fri, Sep 7, 2018 at 5:29 PM Quentin Perret <quentin.perret@arm.com> wrote:
+> > > > On Friday 07 Sep 2018 at 10:52:01 (+0200), Rafael J. Wysocki wrote:
+> > > > > Well, why don't you implement it as something like "if the governor changes
+> > > > > from sugov to something else (or the other way around), call this function
+> > > > > from the scheduler"?
+> > > >
+> > > > I just gave it a try and ended up with the diff below. It's basically
+> > > > the exact same patch with a direct function call instead of a notifier.
+> > > > (I also tried the sugov_start/stop thing I keep mentioning but it is
+> > > > more complex, so let's see if the simplest solution could work first).
+> > > >
+> > > > What do you think ?
+> > >
+> > > This generally works for me from the cpufreq perspective, but I would
+> > > add "cpufreq" to the name of the new function, that is call it
+> > > something like sched_cpufreq_governor_change().
+> >
+> > Ok, no problem.
+> >
+> > > Also do you really need the extra work item?  Governor changes are
+> > > carried out in process context anyway.
+> >
+> > Ah, good point, I can remove that. I just tried and got the following
+> > lock warning on boot, though:
+> >
+> > [    2.518684] ============================================
+> > [    2.523942] WARNING: possible recursive locking detected
+> > [    2.529200] 4.18.0-rc6-00086-g940e7a9fd5ec #10 Not tainted
+> > [    2.534630] --------------------------------------------
+> > [    2.539888] kworker/2:3/1349 is trying to acquire lock:
+> > [    2.545059] (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: rebuild_sched_domains_locked+0x2c/0x598
+> > [    2.554559]
+> > [    2.554559] but task is already holding lock:
+> > [    2.560332] (____ptrval____) (cpu_hotplug_lock.rw_sem){++++}, at: cpufreq_register_driver+0x80/0x1d0
+> > [    2.569396]
+> > [    2.569396] other info that might help us debug this:
+> > [    2.575858]  Possible unsafe locking scenario:
+> > [    2.575858]
+> > [    2.581717]        CPU0
+> > [    2.584135]        ----
+> > [    2.586553]   lock(cpu_hotplug_lock.rw_sem);
+> > [    2.590785]   lock(cpu_hotplug_lock.rw_sem);
+> > [    2.595017]
+> > [    2.595017]  *** DEADLOCK ***
+> > [    2.595017]
+> > [    2.600877]  May be due to missing lock nesting notation
+> >
+> > That seems to happen because cpufreq_register_driver() calls
+> > cpus_read_lock(), which is then called again by rebuild_sched_domains()
+> > down the line. So it might just be a missing lock nesting notation as
+> > the warning suggests ?
+> >
+> > I'll have a look.
 > 
-> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-> index 59667444669f..afa940cd50dc 100644
-> --- a/include/linux/sched/cpufreq.h
-> +++ b/include/linux/sched/cpufreq.h
-> @@ -20,6 +20,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
->                         void (*func)(struct update_util_data *data, u64 time,
->  				    unsigned int flags));
->  void cpufreq_remove_update_util_hook(int cpu);
-> +
-> +static inline unsigned long map_util_freq(unsigned long util,
-> +					unsigned long freq, unsigned long cap)
-> +{
-> +	return (freq + (freq >> 2)) * util / cap;
-> +}
->  #endif /* CONFIG_CPU_FREQ */
->  
->  #endif /* _LINUX_SCHED_CPUFREQ_H */
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 3fffad3bc8a8..f5206c950143 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -13,6 +13,7 @@
->  
->  #include "sched.h"
->  
-> +#include <linux/sched/cpufreq.h>
->  #include <trace/events/power.h>
->  
->  struct sugov_tunables {
-> @@ -167,7 +168,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
->  	unsigned int freq = arch_scale_freq_invariant() ?
->  				policy->cpuinfo.max_freq : policy->cur;
->  
-> -	freq = (freq + (freq >> 2)) * util / max;
-> +	freq = map_util_freq(util, freq, max);
->  
->  	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
->  		return sg_policy->next_freq;
-> 
+> It only is nested in the _register_driver() code path, otherwise it may not be.
+
+Right.
+
+> Using the work item may be the most straightforward way to deal with
+> that, but then I would add a comment to explain what's up.
+
+Indeed, rw_sems don't seem to be appropriate for nested locking:
+https://elixir.bootlin.com/linux/latest/source/include/linux/rwsem.h#L156
+
+I'll stick a comment explaining that for now, unless I find a better
+idea than using a work item in the meantime.
+
+Thanks,
+Quentin
