@@ -1,138 +1,231 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
- bandwidth voting
-Date: Tue, 11 Sep 2018 00:25:32 +0530
-Message-ID: <904fb7d5f96a0c02bd57f21c50549192@codeaurora.org>
-References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
- <4fcac639-cba9-1a71-9b78-326ebb9242da@linaro.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Mon, 10 Sep 2018 12:30:16 -0700
+Message-ID: <20180910193016.GG22824@google.com>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4fcac639-cba9-1a71-9b78-326ebb9242da@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Saravana Kannan <skannan@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Amit Nischal <anischal@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Georgi,
+On Tue, Jul 24, 2018 at 04:12:50PM +0530, Taniya Das wrote:
+> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+> for changing the frequency of CPUs. The driver implements the cpufreq
+> driver interface for this hardware engine.
+> 
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm       |  11 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 348 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 360 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 0cd8eb7..93a9d72 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -298,3 +298,14 @@ config ARM_PXA2xx_CPUFREQ
+>  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+> 
+>  	  If in doubt, say N.
+> +
+> +config ARM_QCOM_CPUFREQ_HW
+> +	bool "QCOM CPUFreq HW driver"
+> +	depends on ARCH_QCOM
+> +	help
+> +	 Support for the CPUFreq HW driver.
+> +	 Some QCOM chipsets have a HW engine to offload the steps
+> +	 necessary for changing the frequency of the CPUs. Firmware loaded
+> +	 in this engine exposes a programming interface to the OS.
+> +	 The driver implements the cpufreq interface for this HW engine.
+> +	 Say Y if you want to support CPUFreq HW.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index c1ffeab..ca48a1d 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+>  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
+> 
+> 
+>  ##################################################################################
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> new file mode 100644
+> index 0000000..ea8f7d1
+> --- /dev/null
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -0,0 +1,348 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> + */
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +
+> +#define INIT_RATE			300000000UL
+> +#define LUT_MAX_ENTRIES			40U
+> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
+> +#define LUT_ROW_SIZE			32
+> +
+> +enum {
+> +	REG_ENABLE,
+> +	REG_LUT_TABLE,
+> +	REG_PERF_STATE,
+> +
+> +	REG_ARRAY_SIZE,
+> +};
+> +
+> +struct cpufreq_qcom {
+> +	struct cpufreq_frequency_table *table;
+> +	struct device *dev;
+> +	void __iomem *reg_bases[REG_ARRAY_SIZE];
+> +	cpumask_t related_cpus;
+> +	unsigned int max_cores;
+> +	unsigned long xo_rate;
+> +};
+> +
+> +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
+> +	[REG_ENABLE]		= 0x0,
+> +	[REG_LUT_TABLE]		= 0x110,
+> +	[REG_PERF_STATE]	= 0x920,
+> +};
+> +
+> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
+> +
+> +static int
+> +qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
+> +			     unsigned int index)
+> +{
+> +	struct cpufreq_qcom *c = policy->driver_data;
+> +
+> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
+> +
+> +	return 0;
+> +}
+> +
+> +static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
+> +{
+> +	struct cpufreq_qcom *c;
+> +	struct cpufreq_policy *policy;
+> +	unsigned int index;
+> +
+> +	policy = cpufreq_cpu_get_raw(cpu);
+> +	if (!policy)
+> +		return 0;
+> +
+> +	c = policy->driver_data;
+> +
+> +	index = readl_relaxed(c->reg_bases[REG_PERF_STATE]);
+> +	index = min(index, LUT_MAX_ENTRIES - 1);
+> +
+> +	return policy->freq_table[index].frequency;
+> +}
+> +
+> +static unsigned int
+> +qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+> +			    unsigned int target_freq)
+> +{
+> +	struct cpufreq_qcom *c = policy->driver_data;
+> +	int index;
+> +
+> +	index = policy->cached_resolved_idx;
+> +	if (index < 0)
+> +		return 0;
+> +
+> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
+> +
+> +	return policy->freq_table[index].frequency;
+> +}
+> +
+> +static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +	struct cpufreq_qcom *c;
+> +
+> +	c = qcom_freq_domain_map[policy->cpu];
+> +	if (!c) {
+> +		pr_err("No scaling support for CPU%d\n", policy->cpu);
+> +		return -ENODEV;
+> +	}
+> +
+> +	cpumask_copy(policy->cpus, &c->related_cpus);
+> +
+> +	policy->fast_switch_possible = true;
+> +	policy->freq_table = c->table;
+> +	policy->driver_data = c;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct freq_attr *qcom_cpufreq_hw_attr[] = {
+> +	&cpufreq_freq_attr_scaling_available_freqs,
+> +	&cpufreq_freq_attr_scaling_boost_freqs,
+> +	NULL
+> +};
+> +
+> +static struct cpufreq_driver cpufreq_qcom_hw_driver = {
+> +	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> +			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+> +	.verify		= cpufreq_generic_frequency_table_verify,
+> +	.target_index	= qcom_cpufreq_hw_target_index,
+> +	.get		= qcom_cpufreq_hw_get,
+> +	.init		= qcom_cpufreq_hw_cpu_init,
+> +	.fast_switch    = qcom_cpufreq_hw_fast_switch,
+> +	.name		= "qcom-cpufreq-hw",
+> +	.attr		= qcom_cpufreq_hw_attr,
+> +	.boost_enabled	= true,
+> +};
+> +
+> +static int qcom_cpufreq_hw_read_lut(struct platform_device *pdev,
+> +				    struct cpufreq_qcom *c)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	void __iomem *base;
+> +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
+> +
+> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+> +				sizeof(*c->table), GFP_KERNEL);
+> +	if (!c->table)
+> +		return -ENOMEM;
+> +
+> +	base = c->reg_bases[REG_LUT_TABLE];
+> +
+> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+> +		data = readl_relaxed(base + i * LUT_ROW_SIZE);
+> +		src = (data & GENMASK(31, 30)) >> 30;
+> +		lval = data & GENMASK(7, 0);
+> +		core_count = CORE_COUNT_VAL(data);
+> +
+> +		if (src)
+> +			c->table[i].frequency = c->xo_rate * lval / 1000;
+> +		else
+> +			c->table[i].frequency = INIT_RATE / 1000;
+> +
+> +		cur_freq = c->table[i].frequency;
+> +
+> +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
+> +			i, c->table[i].frequency, core_count);
+> +
+> +		if (core_count != c->max_cores)
+> +			cur_freq = CPUFREQ_ENTRY_INVALID;
+> +
 
-This driver uses of_icc_get which is very likely to fail if it probes
-before the interconnect provider. Would it be possible for icc_get to
-return/differentiate both -EPROBE_DEFER and other errors to prevent the
-driver to continually probe defer if the path doesn't actually exist
-or just error out if it probes before the interconnect provider.
-
-On 2018-08-23 18:30, Georgi Djakov wrote:
-> Hi Saravana,
-> 
-> On 08/02/2018 03:57 AM, Saravana Kannan wrote:
->> This driver registers itself as a devfreq device that allows devfreq
->> governors to make bandwidth votes for an interconnect path. This 
->> allows
->> applying various policies for different interconnect paths using 
->> devfreq
->> governors.
->> 
->> Example uses:
->> * Use the devfreq performance governor to set the CPU to DDR 
->> interconnect
->>   path for maximum performance.
->> * Use the devfreq performance governor to set the GPU to DDR 
->> interconnect
->>   path for maximum performance.
->> * Use the CPU frequency to device frequency mapping governor to scale 
->> the
->>   DDR frequency based on the needs of the CPUs' current frequency.
-> 
-> Usually CPUs and GPUs have dedicated cpufreq/devfreq drivers and i was
-> wondering if the interconnect support could be put into these drivers
-> directly?
-> 
->> 
->> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->> ---
->>  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
->>  drivers/devfreq/Kconfig                            |  13 +++
->>  drivers/devfreq/Makefile                           |   1 +
->>  drivers/devfreq/devfreq_icbw.c                     | 116 
->> +++++++++++++++++++++
->>  4 files changed, 151 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
->>  create mode 100644 drivers/devfreq/devfreq_icbw.c
->> 
->> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt 
->> b/Documentation/devicetree/bindings/devfreq/icbw.txt
->> new file mode 100644
->> index 0000000..36cf045
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
->> @@ -0,0 +1,21 @@
->> +Interconnect bandwidth device
->> +
->> +icbw is a device that represents an interconnect path that connects 
->> two
->> +devices. This device is typically used to vote for BW requirements 
->> between
->> +two devices. Eg: CPU to DDR, GPU to DDR, etc
->> +
->> +Required properties:
->> +- compatible:		Must be "devfreq-icbw"
->> +- interconnects:	Pairs of phandles and interconnect provider 
->> specifier
->> +			to denote the edge source and destination ports of
->> +			the interconnect path. See also:
->> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
->> +- interconnect-names:	Must have one entry with the name "path".
->> +
->> +Example:
->> +
->> +	qcom,cpubw {
->> +		compatible = "devfreq-icbw";
->> +		interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
->> +		interconnect-names = "path";
-> 
-> interconnect-names is optional when there is only a single path.
-> 
->> +	};
->> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
->> index 3d9ae68..590370e 100644
->> --- a/drivers/devfreq/Kconfig
->> +++ b/drivers/devfreq/Kconfig
->> @@ -121,6 +121,19 @@ config ARM_RK3399_DMC_DEVFREQ
->>            It sets the frequency for the memory controller and reads 
->> the usage counts
->>            from hardware.
->> 
->> +config DEVFREQ_ICBW
->> +	bool "DEVFREQ device for making bandwidth votes on interconnect 
->> paths"
-> 
-> Can this be a module?
-> 
->> +	select DEVFREQ_GOV_PERFORMANCE
->> +	select DEVFREQ_GOV_POWERSAVE
->> +	select DEVFREQ_GOV_USERSPACE
->> +	default n
-> 
-> There's no need to specify this default. It is 'n' by default anyway.
-> Also maybe you want to add something like:
-> 	depends on INTERCONNECT=y
-> 
-> Thanks,
-> Georgi
-> 
->> +	help
->> +	  Different devfreq governors use this devfreq device to make
->> +	  bandwidth votes for interconnect paths between different devices
->> +	  (Eg: CPU to DDR, GPU to DDR, etc). This driver provides a generic
->> +	  interface so that the devfreq governors can be shared across SoCs
->> +	  and architectures.
->> +
->>  source "drivers/devfreq/event/Kconfig"
-
--- 
--- Sibi Sankar --
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project.
+I noticed that the 'power_allocator' thermal governor currently can't
+be used with this driver since there is no OPP table with frequency and
+voltage information. Does the LUT contain information about the
+voltage or is there another mechanism to retrieve it?
