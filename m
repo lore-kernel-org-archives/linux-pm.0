@@ -1,61 +1,102 @@
-From: Fieah Lim <kw@fieahl.im>
-Subject: [PATCH v3] cpuidle: enter_state: Don't needlessly calculate diff time
-Date: Tue, 11 Sep 2018 05:47:25 +0800
-Message-ID: <20180910214725.19525-1-kw@fieahl.im>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
-Cc: Fieah Lim <kw@fieahl.im>
+From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH] PCI: Reprogram bridge prefetch registers on
+ resume
+Date: Tue, 11 Sep 2018 11:35:13 +0800
+Message-ID: <CAD8Lp46eDaSF3fNQgYL=3vCXJ5VpV-JkYEu-YTtuh+w4rMU-5w@mail.gmail.com>
+References: <20180907053614.6540-1-drake@endlessm.com>
+ <20180907150515.GA28739@al>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180907150515.GA28739@al>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Cc: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Wysocki,
+ Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we use ktime_us_delta() to calculate last residency and
-state usage unconditionally, it makes no sense to do this calculation
-when we fails to enter any idle state.
-It can be optimize by moving the calculation after entered_state >= 0
-
-While at it, merge those comment blocks into one and remove a
-space between type casting of diff.
-
-This patch has no functional changes.
-
-Signed-off-by: Fieah Lim <kw@fieahl.im>
----
-Changes from v1:
- - Rewrite changelog as Rafael J. Wysocki suggested
-Changes from v2:
- - Minor adjustment
----
- drivers/cpuidle/cpuidle.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 6df894d65d9e..40442c3631ce 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -247,17 +247,16 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	if (!cpuidle_state_is_coupled(drv, index))
- 		local_irq_enable();
- 
--	diff = ktime_us_delta(time_end, time_start);
--	if (diff > INT_MAX)
--		diff = INT_MAX;
--
--	dev->last_residency = (int) diff;
--
- 	if (entered_state >= 0) {
--		/* Update cpuidle counters */
--		/* This can be moved to within driver enter routine
-+		/* Update cpuidle counters
-+		 * This can be moved to within driver enter routine,
- 		 * but that results in multiple copies of same code.
- 		 */
-+		diff = ktime_us_delta(time_end, time_start);
-+		if (diff > INT_MAX)
-+			diff = INT_MAX;
-+
-+		dev->last_residency = (int)diff;
- 		dev->states_usage[entered_state].time += dev->last_residency;
- 		dev->states_usage[entered_state].usage++;
- 	} else {
--- 
-2.18.0
+SSBoYXZlIGNyZWF0ZWQgaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9p
+ZD0yMDEwNjkgdG8KYXJjaGl2ZSB0aGUgcmVzZWFyY2ggZG9uZSBzbyBmYXIuCgpPbiBGcmksIFNl
+cCA3LCAyMDE4IGF0IDExOjA1IFBNLCBQZXRlciBXdSA8cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3Jv
+dGU6Cj4gV2luZG93cyAxMCB1bmNvbmRpdGlvbmFsbHkgcmV3cml0ZXMgdGhlc2UgcmVnaXN0ZXJz
+IChCQVIsIEkvTyBCYXNlICsKPiBMaW1pdCwgTWVtb3J5IEJhc2UgKyBMaW1pdCwgZXRjLiBmcm9t
+IHRvcCB0byBib3R0b20pLCBzZWUgYW5ub3RhdGlvbnM6Cj4gaHR0cHM6Ly93d3cuc3Bpbmljcy5u
+ZXQvbGlzdHMvbGludXgtcGNpL21zZzc1ODU2Lmh0bWwKPgo+IExpbnV4IGhhcyBhIGdlbmVyaWMg
+InJlc3RvcmUiIG9wZXJhdGlvbiB0aGF0IHdvcmtzIGJhY2t3YXJkcyBmcm9tIHRoZQo+IGVuZCBv
+ZiB0aGUgUENJIGNvbmZpZyBzcGFjZSB0byB0aGUgYmVnaW5uaW5nLCBzZWUKPiBwY2lfcmVzdG9y
+ZV9jb25maWdfc3BhY2UuIERvIHlvdSBoYXZlIGEgZG1lc2cgd2hlcmUgeW91IHNlZSB0aGUKPiAi
+cmVzdG9yaW5nIGNvbmZpZyBzcGFjZSBhdCBvZmZzZXQiIG1lc3NhZ2VzPwoKSW50ZXJlc3Rpbmcs
+IEkgaGFkIG5vdCBzcG90dGVkIHRoaXMgY29kZS4gVGhlIGxvZ3MgZm9yIHRoZSBhZmZlY3RlZApi
+cmlkZ2Ugb24gQXN1cyBYNTQyVVE6CgogMDAwMDowMDoxYy4wOiByZXN0b3JpbmcgY29uZmlnIHNw
+YWNlIGF0IG9mZnNldCAweDNjICh3YXMgMHgxMDAsCndyaXRpbmcgMHgxMDAxZmYpCiAwMDAwOjAw
+OjFjLjA6IHJlc3RvcmluZyBjb25maWcgc3BhY2UgYXQgb2Zmc2V0IDB4MjQgKHdhcyAweDEwMDAx
+LAp3cml0aW5nIDB4ZTFmMWQwMDEpCiAwMDAwOjAwOjFjLjA6IHJlc3RvcmluZyBjb25maWcgc3Bh
+Y2UgYXQgb2Zmc2V0IDB4MjAgKHdhcyAweDAsIHdyaXRpbmcKMHhlZjAwZWUwMCkKIDAwMDA6MDA6
+MWMuMDogcmVzdG9yaW5nIGNvbmZpZyBzcGFjZSBhdCBvZmZzZXQgMHhjICh3YXMgMHg4MTAwMDAs
+CndyaXRpbmcgMHg4MTAwMTApCiAwMDAwOjAwOjFjLjA6IHJlc3RvcmluZyBjb25maWcgc3BhY2Ug
+YXQgb2Zmc2V0IDB4NCAod2FzIDB4MTAwMDA3LAp3cml0aW5nIDB4MTAwNDA3KQoKU28gaXQgZGlk
+bid0IHJlc3RvcmUgMHgyOCAodGhlIG1hZ2ljIHJlZ2lzdGVyKSBhbmQgYWxzbyByZWdpc3RlciAw
+eDJjCihwcmVmZXRjaCBsaW1pdCB1cHBlciAzMiBiaXRzKSBiZWNhdXNlIHRoZWlyIHZhbHVlcyB3
+ZXJlIGFscmVhZHkgMCBvbgpyZXN1bWUuCgpodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hv
+d19idWcuY2dpP2lkPTExNjg1MSNjMjMgaGFzIGFuCmFzc2VydGlvbiB0aGF0IEludGVsIHJlY29n
+bmlzZXMgdGhpcyBpc3N1ZSBhbmQgY2FsbHMgZm9yIGFsbCB0aG9zZQpyZWdpc3RlcnMgdG8gYmUg
+cmVzdG9yZWQgb24gcmVzdW1lLgoKSSBwcm9wb3NlIGZvciBMaW51eCA0LjE5IHdlIGFwcGx5IGEg
+bWluaW1hbGx5IGludHJ1c2l2ZSBjaGFuZ2UgdGhhdAoiZm9yY2libHkiIHJlc3RvcmVzIGR3b3Jk
+IHJlZ2lzdGVycyAweDI0LCAweDI4IGFuZCAweDJjIGZvciBQQ0kKYnJpZGdlcyAocmVnYXJkbGVz
+cyBvZiB0aGVpciBjdXJyZW50IHZhbHVlKSwgd2hpbGUgcmV0YWluaW5nIHRoZQpleGlzdGluZyBy
+ZXN0b3JlIG9yZGVyIChoaWdoIHRvIGxvdykgb3ZlciBhbGwgcmVnaXN0ZXJzIGFuZCBkb2luZyB0
+aGUKcmVhZC10aGVuLW1heWJlLXdyaXRlIHRoaW5nIGZvciBhbGwgb2YgdGhlIG90aGVyIHJlZ3Mg
+KHBlciBjdXJyZW50CmJlaGF2aW91cikuCgoKVGhlbiB3ZSBhbHNvIGNvbnNpZGVyIHN3aWZ0bHkg
+YXBwbHlpbmcgYSBmb2xsb3d1cCBwYXRjaCBpbXBsZW1lbnRpbmcgYQptb3JlIHRob3JvdWdoIGFw
+cHJvYWNoIGFuZCB3ZSBnaXZlIGl0IHNvbWUgdGltZSBpbiBsaW51eC1uZXh0IGJlZm9yZQpyZWxl
+YXNpbmcgaW4gTGludXggNC4yMCB3aGljaCBkb2VzIHNvbWV0aGluZyBtb3JlIHRob3JvdWdoLiBJ
+IHRoaW5rCnBlcmhhcHMgbW9yZSBkaXNjdXNzaW9uIGlzIG5lZWRlZCB0aGVyZSwgb3IgYXQgbGVh
+c3Qgc29tZSBtb3JlIGlucHV0CmZyb20gQmpvcm4uIFNlZW1zIGxpa2Ugd2UgaGF2ZSAzIGFwcHJv
+YWNoZXMgdG8gY29uc2lkZXI6CgoxLiBQZXRlciBXdSBzdWdnZXN0cyBmb2xsb3dpbmcgd2hhdCB3
+aW5kb3dzIGRvZXMuIFdpbmRvd3MgYXBwZWFycyB0bwpzdGFydCB3aXRoIGxvdyByZWdpc3RlcnMg
+YW5kIHdvcmtzIGl0cyB3YXkgdXB3YXJkcywgd2hpY2ggbWVhbnMgaXQKd3JpdGVzIEJBUiBhZGRy
+ZXNzZXMsIEkvTyBiYXNlLCBldGMsIGJlZm9yZSB3cml0aW5nIHByZWZldGNoCnJlZ2lzdGVycy4g
+SXQgc2tpcHMgb3ZlciByZWFkLW9ubHkgYW5kIHdyaXRlLXRvLWNsZWFyIHJlZ2lzdGVycyBhbmQK
+YWxzbyBvbmx5IHdyaXRlcyBzb21lIG9mIHRoZSByZWdpc3RlcnMgYXQgdGhlIHZlcnkgZW5kIC0g
+bGlrZSB0aGUKY29tbWFuZCByZWdpc3Rlci4KClRvIGJlIHRob3JvdWdoIGhlcmUgd2Ugd291bGQg
+cHJvYmFibHkgYWxzbyBoYXZlIHRvIHN0dWR5IGFuZCBjb3B5IHdoYXQKV2luZG93cyBkb2VzIGZv
+ciBub24tYnJpZGdlIGRldmljZXMgKG5vdCBzdXJlIGhvdyBtYW55IGRldmljZSBjbGFzc2VzCndl
+IHdvdWxkIHdhbnQgdG8gc3R1ZHkgaGVyZT8pLiBBbHNvIGl0IGlzIGEgYml0IHJpc2t5IGluIHRo
+YXQgQmpvcm4KaGFzIHBvaW50ZWQgb3V0IHRoYXQgTGludXgncyBlYXJsaWVyIGFwcHJvYWNoIHdp
+dGggYSBoaWdoIGxldmVsIG9mCnNpbWlsYXJpdHkgaGVyZSAocmVzdG9yZSByZWdpc3RlcnMgaW4g
+YXNjZW5kaW5nIG9yZGVyLCByZWdhcmRsZXNzIG9mCnRoZWlyIGN1cnJlbnQgdmFsdWUpIGNhdXNl
+ZCBhIGxhcHRvcCB0byBoYW5nIG9uIHJlc3VtZS4KCgoyLiBCam9ybiBzdWdnZXN0ZWQgdHdlYWtp
+bmcgdGhlIGV4aXN0aW5nIGNvZGUgdG8gYWx3YXlzIHdyaXRlIHRoZQpzYXZlZCB2YWx1ZSBldmVu
+IHdoZW4gdGhlIGhhcmR3YXJlIGhhcyB0aGF0IHNhbWUgdmFsdWUuIFRoZQpyZWFkLW1heWJlLXdy
+aXRlIGxvZ2ljIHdhcyBpbnRyb2R1Y2VkIHRvIGF2b2lkIGEgbGFwdG9wIGhhbmcsIGJ1dCBhdAp0
+aGF0IHRpbWUgd2Ugd2VyZSByZXN0b3JpbmcgcmVnaXN0ZXJzIGluIGFzY2VuZGluZyBvcmRlciwg
+bm93IHdlIGFyZQpkZXNjZW5kaW5nIGl0IG1pZ2h0IGJlIHdvcnRoIGdpdmluZyB0aGlzIGFub3Ro
+ZXIgdHJ5LgoKCjMuIERvIG5vdGhpbmcgZWxzZSBiZXlvbmQgdGhlIG1pbmltYWwgY2hhbmdlIHRo
+YXQgSSBwcm9wb3NlIGZvciB2NC4xOT8KTG9va2luZyBhIGJpdCBtb3JlIGludG8gZ2l0IGhpc3Rv
+cnkgdGhpcyBzZWVtcyB0byBiZSBhIHNlbnNpdGl2ZSBhbmQKcHJvYmxlbWF0aWMgYXJlYSwgbW9y
+ZSBjaGFuZ2VzIG1pZ2h0IG1lYW4gbW9yZSB0cm91YmxlLiBGb3IgZXhhbXBsZQpyaWdodCBub3cg
+cGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlKCkgZG9lczoKICAgICAgICBwY2lfcmVzdG9yZV9jb25m
+aWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwLCAwKTsKICAgICAgICAvKiBSZXN0b3JlIEJB
+UnMgYmVmb3JlIHRoZSBjb21tYW5kIHJlZ2lzdGVyLiAqLwogICAgICAgIHBjaV9yZXN0b3JlX2Nv
+bmZpZ19zcGFjZV9yYW5nZShwZGV2LCA0LCA5LCAxMCwgMCk7CiAgICAgICAgcGNpX3Jlc3RvcmVf
+Y29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDMsIDAsIDApOwpidXQgcGNpX3Jlc3RvcmVfY29u
+ZmlnX3NwYWNlX3JhbmdlKCkgYWxyZWFkeSBnb2VzIGluIGRlc2NlbmRpbmcgb3JkZXIsCnNvIHRo
+ZSBhYm92ZSBpcyBhbHJlYWR5IGVxdWl2YWxlbnQgdG8gdGhlIGNvZGUgaW4gdGhlICJlbHNlIiBw
+YXRoIHRoYXQKZm9sbG93czoKICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uo
+cGRldiwgMCwgMTUsIDAsIDApOwoKYW5kIGlmIHlvdSBsb29rIGF0IHRoZSBoaXN0b3J5IGJlaGlu
+ZCB0aGlzICJtaXh1cCIgdGhlcmUncyBzdHVmZiB0aGF0CmdvZXMgYmFjayB0byAyMDEyIGxpa2Ug
+Y29tbWl0IGE2Y2I5ZWU3Y2FiZSAoIlBDSTogUmV0cnkgQkFScwpyZXN0b3JhdGlvbiBmb3IgVHlw
+ZSAwIGhlYWRlcnMgb25seSIpIHdoaWNoIHdhcyBmaXhpbmcgdXAgYW5vdGhlcgpwcm9ibGVtYXRp
+YyBjb21taXQgaW4gdGhpcyBhcmVhLCBldGMuCgpEYW5pZWwKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9ub3V2ZWF1Cg==
