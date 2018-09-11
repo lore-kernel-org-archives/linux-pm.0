@@ -1,135 +1,93 @@
-From: Francisco Jerez <currojerez@riseup.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
-Date: Tue, 11 Sep 2018 10:35:15 -0700
-Message-ID: <87in3c7x9o.fsf@riseup.net>
-References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <8c56f28c2cc11de37fa3517348559eb040894702.camel@linux.intel.com> <87in3j9s07.fsf@riseup.net> <23293649.J1qzPCXian@aspire.rjw.lan>
+From: Suren Baghdasaryan <surenb@google.com>
+Subject: Re: [PATCH v4 11/16] sched/core: uclamp: add system default clamps
+Date: Tue, 11 Sep 2018 12:25:28 -0700
+Message-ID: <CAJuCfpGK0PRt9-=+mjOM=VQqas8DPxT7YPiZojiQQiVuhua7bA@mail.gmail.com>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-12-patrick.bellasi@arm.com> <CAJuCfpGSUzo9gxWZABUUKaEEEvxdnvny9d1ErnLVLEKrkYf+eQ@mail.gmail.com>
+ <20180911164637.GC1413@e110439-lin>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <23293649.J1qzPCXian@aspire.rjw.lan>
+In-Reply-To: <20180911164637.GC1413@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
-
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-
-> On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
->>=20
->> --=3D=3D-=3D-=3D
->> Content-Type: multipart/mixed; boundary=3D"=3D-=3D-=3D"
->>=20
->> --=3D-=3D-=3D
->> Content-Type: text/plain; charset=3Dutf-8
->> Content-Disposition: inline
->> Content-Transfer-Encoding: quoted-printable
->>=20
->> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
->>=20
->> > [...]
+On Tue, Sep 11, 2018 at 9:46 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> On 10-Sep 09:20, Suren Baghdasaryan wrote:
+>> On Tue, Aug 28, 2018 at 6:53 AM, Patrick Bellasi
+>> <patrick.bellasi@arm.com> wrote:
+>
+> [...]
+>
+>> > @@ -1509,12 +1633,17 @@ static void __init init_uclamp(void)
+>> >                 uc_se->group_id = UCLAMP_NOT_VALID;
+>> >                 uclamp_group_get(NULL, clamp_id, 0, uc_se,
+>> >                                  uclamp_none(clamp_id));
+>> > +               /*
+>> > +                * By default we do not want task-specific clamp values,
+>> > +                * so that system default values apply.
+>> > +                */
+>> > +               uc_se->value = UCLAMP_NOT_VALID;
 >> >
->> >> > >=3D20
->> >> > > This patch causes a number of statistically significant
->> >> > > regressions
->> >> > > (with significance of 1%) on the two systems I've tested it
->> >> > > on.  On
->> >> > > my
->> >> >=3D20
->> >> > Sure. These patches are targeted to Atom clients where some of
->> >> > these
->> >> > server like workload may have some minor regression on few watts
->> >> > TDP
->> >> > parts.
->> >>=3D20
->> >> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
->> >> nor
->> >> the 10% regression of warsaw qualify as small.  And most of the test
->> >> cases on the list of regressions aren't exclusively server-like, if
->> >> at
->> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
->> >> benchmarks -- Latency is as important if not more for interactive
->> >> workloads than it is for server workloads.  In the case of a conflict
->> >> like the one we're dealing with right now between optimizing for
->> >> throughput (e.g. for the maximum number of requests per second) and
->> >> optimizing for latency (e.g. for the minimum request duration), you
->> >> are
->> >> more likely to be concerned about the former than about the latter in
->> >> a
->> >> server setup.
+>> >  #ifdef CONFIG_UCLAMP_TASK_GROUP
+>> >                 /* Init root TG's clamp group */
+>> >                 uc_se = &root_task_group.uclamp[clamp_id];
 >> >
->> > Eero,
->> > Please add your test results here.
->> >
->> > No matter which algorithm you do, there will be variations. So you have
->> > to look at the platforms which you are targeting. For this platform=3D=
-20
->> > number one item is use of less turbo and hope you know why?
->>=20
->> Unfortunately the current controller uses turbo frequently on Atoms for
->> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
->> boosting simply exacerbated the pre-existing energy efficiency problem.
+>> > -               uc_se->effective.value = uclamp_none(clamp_id);
+>> > +               uc_se->effective.value = uclamp_none(UCLAMP_MAX);
+>>
+>> Both clamps are initialized with 1023 because children can go lower
+>> but can't go higher? Comment might be helpful.
 >
-> My current understanding of the issue at hand is that using IOWAIT boosti=
-ng
-> on Atoms is a regression relative to the previous behavior.
-
-Not universally.  IOWAIT boosting helps under roughly the same
-conditions on Atom as it does on big core, so applying this patch will
-necessarily cause regressions too (see my reply from Sep. 3 for some
-numbers), and won't completely restore the previous behavior since it
-simply decreases the degree of IOWAIT boosting applied without being
-able to avoid it (c.f. the series I'm working on that does something
-similar to IOWAIT boosting when it's able to determine it's actually
-CPU-bound, which prevents energy inefficient behavior for non-CPU-bound
-workloads that don't benefit from a higher CPU clock frequency anyway).
-
-> That is what Srinivas is trying to address here AFAICS.
+> Yes, that's because with CGroups we set the max allowed value, which
+> is also the one used for a clamp IFF:
+>  - the task is not part of a more restrictive group
+>  - the task has not a more restrictive task specific value
 >
-> Now, you seem to be saying that the overall behavior is suboptimal and the
-> IOWAIT boosting doesn't matter that much,
-
-I was just saying that IOWAIT boosting is less than half of the energy
-efficiency problem, and this patch only partially addresses that half of
-the problem.
-
-> so some deeper changes are needed anyway.  That may be the case, but
-> if there is a meaningful regression, we should first get back to the
-> point where it is not present and then to take care of the more
-> general problems.
+> I'll improve this comment on the next respin.
 >
-> So, I'd like to understand how much of a problem the IOWAIT boosting real=
-ly is
-> in the first place.  If it is significant enough, let's address it first,=
- this
-> way or another, and move on to the other problems subsequently.
+>> I saw this pattern of using uclamp_none(UCLAMP_MAX) for both clamps in
+>> couple places.
 >
+> The other place is to define / initialize "uclamp_default_perf", which
+> is the default clamps used for RT tasks, introduce by the last patch:
+>
+>  https://lore.kernel.org/lkml/20180828135324.21976-17-patrick.bellasi@arm.com/
+>
+> So, RT tasks and root task group are the only two exceptions for
+> which, by default, we want a maximum boosting.
+>
+>> Maybe would be better to have smth like:
+>>
+>> static inline int tg_uclamp_none(int clamp_id) {
+>>     /* TG's min and max clamps default to SCHED_CAPACITY_SCALE to
+>> allow children to tighten the restriction */
+>>     return SCHED_CAPACITY_SCALE;
+>> }
+>>
+>> and use tg_uclamp_none(clamp_id) instead of uclamp_none(UCLAMP_MAX)?
+>> Functionally the same but much more readable.
+>
+> Not entirely convinced, maybe because of the name you suggest: it
+> cannot contain tg, because it applies also to RT tasks when TG are not
+> in use.
+>
+> Maybe something like: uclamp_max_boost(clamp_id) could work instead ?
 
-See the Unigine and Gfxbench numbers I provided in my reply from Sep. 3
-to get an idea of the magnitude of the IOWAIT boosting problem vs. the
-overall energy efficiency problem addressed by my series.
+Sounds good to me.
 
-> Thanks,
-> Rafael
-
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCW5f80wAKCRCDmTidfVK/
-W8S4AP0cnxEpgO73ANrB1TmDP62h0lKLBOPwKFBvHNZfawNlRAD+KZvQAzXBlHCI
-bMismxrY5c/lDO5IqBHRQ7fssIcRLkk=
-=HDCK
------END PGP SIGNATURE-----
---==-=-=--
+>
+> It will make more explicit that the configuration will maps into a:
+>
+>      util.min = util.max = SCHED_CAPACITY_SCALE
+>
+> Cheers,
+> Patrick
+>
+> --
+> #include <best/regards.h>
+>
+> Patrick Bellasi
