@@ -1,89 +1,55 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 11/16] sched/core: uclamp: add system default clamps
-Date: Tue, 11 Sep 2018 17:46:37 +0100
-Message-ID: <20180911164637.GC1413@e110439-lin>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-12-patrick.bellasi@arm.com>
- <CAJuCfpGSUzo9gxWZABUUKaEEEvxdnvny9d1ErnLVLEKrkYf+eQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/4][v2] Fixes hibernation bugs on x86-32 system
+Date: Wed, 12 Sep 2018 01:19:55 +0800
+Message-ID: <cover.1536685746.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJuCfpGSUzo9gxWZABUUKaEEEvxdnvny9d1ErnLVLEKrkYf+eQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Suren Baghdasaryan <surenb@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Rui Zhang <rui.zhang@intel.com>, Chen Yu <yu.chen.surf@gmail.com>, Zhimin Gu <kookoo.gu@intel.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-Sep 09:20, Suren Baghdasaryan wrote:
-> On Tue, Aug 28, 2018 at 6:53 AM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
+Currently there are mainly three bugs in x86-32 system when doing
+hibernation:
+1. The page copy code is not running in safe page, which might
+   cause hang during resume.
+2. There's no text mapping for the final jump address
+   of the original kernel, which might cause the system jumping
+   into illegal address and causes system hang during resume.
+3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
+   rather than the original kernel page table after all the pages
+   been copied back, which might cause invalid virtual-physical
+   mapping issue during resume.
 
-[...]
+To solve these problems:
 
-> > @@ -1509,12 +1633,17 @@ static void __init init_uclamp(void)
-> >                 uc_se->group_id = UCLAMP_NOT_VALID;
-> >                 uclamp_group_get(NULL, clamp_id, 0, uc_se,
-> >                                  uclamp_none(clamp_id));
-> > +               /*
-> > +                * By default we do not want task-specific clamp values,
-> > +                * so that system default values apply.
-> > +                */
-> > +               uc_se->value = UCLAMP_NOT_VALID;
-> >
-> >  #ifdef CONFIG_UCLAMP_TASK_GROUP
-> >                 /* Init root TG's clamp group */
-> >                 uc_se = &root_task_group.uclamp[clamp_id];
-> >
-> > -               uc_se->effective.value = uclamp_none(clamp_id);
-> > +               uc_se->effective.value = uclamp_none(UCLAMP_MAX);
-> 
-> Both clamps are initialized with 1023 because children can go lower
-> but can't go higher? Comment might be helpful.
+1. Copy the code core_restore_code to a safe page, to avoid the instruction
+   code be overwriten when image kernel pages are being copied.
+2. Set up temporary text mapping for the image kernel's jump address, so that
+   after all the pages have been copied back, the system could jump to this address.
+3. Switch to the original kernel page table during resume.
 
-Yes, that's because with CGroups we set the max allowed value, which
-is also the one used for a clamp IFF:
- - the task is not part of a more restrictive group
- - the task has not a more restrictive task specific value
+Furthermore, MD5 hash check for e820 map is also backported from 64bits
 
-I'll improve this comment on the next respin.
+Chen Yu (1):
+  PM / hibernate: Check the success of generating md5 digest before
+    hibernation
 
-> I saw this pattern of using uclamp_none(UCLAMP_MAX) for both clamps in
-> couple places.
+Zhimin Gu (3):
+  x86, hibernate: Fix nosave_regions setup for hibernation
+  x86, hibernate: Extract the common code of 64/32 bit system
+  x86, hibernate: Backport several fixes from 64bits to 32bits
+    hibernation
 
-The other place is to define / initialize "uclamp_default_perf", which
-is the default clamps used for RT tasks, introduce by the last patch:
-
- https://lore.kernel.org/lkml/20180828135324.21976-17-patrick.bellasi@arm.com/
-
-So, RT tasks and root task group are the only two exceptions for
-which, by default, we want a maximum boosting.
-
-> Maybe would be better to have smth like:
-> 
-> static inline int tg_uclamp_none(int clamp_id) {
->     /* TG's min and max clamps default to SCHED_CAPACITY_SCALE to
-> allow children to tighten the restriction */
->     return SCHED_CAPACITY_SCALE;
-> }
-> 
-> and use tg_uclamp_none(clamp_id) instead of uclamp_none(UCLAMP_MAX)?
-> Functionally the same but much more readable.
-
-Not entirely convinced, maybe because of the name you suggest: it
-cannot contain tg, because it applies also to RT tasks when TG are not
-in use.
-
-Maybe something like: uclamp_max_boost(clamp_id) could work instead ?
-
-It will make more explicit that the configuration will maps into a:
-
-     util.min = util.max = SCHED_CAPACITY_SCALE
-
-Cheers,
-Patrick
+ arch/x86/Kconfig                  |   2 +-
+ arch/x86/include/asm/suspend_32.h |   4 +
+ arch/x86/kernel/setup.c           |   2 +-
+ arch/x86/power/hibernate.c        | 263 ++++++++++++++++++++++++++++++
+ arch/x86/power/hibernate_32.c     |  60 ++++---
+ arch/x86/power/hibernate_64.c     | 242 +--------------------------
+ arch/x86/power/hibernate_asm_32.S |  49 +++++-
+ arch/x86/power/hibernate_asm_64.S |   2 +-
+ 8 files changed, 350 insertions(+), 274 deletions(-)
+ create mode 100644 arch/x86/power/hibernate.c
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.17.1
