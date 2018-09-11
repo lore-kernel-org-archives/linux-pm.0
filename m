@@ -1,85 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
-Date: Tue, 11 Sep 2018 13:21:17 +0200
-Message-ID: <23293649.J1qzPCXian@aspire.rjw.lan>
-References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <8c56f28c2cc11de37fa3517348559eb040894702.camel@linux.intel.com> <87in3j9s07.fsf@riseup.net>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v6 03/14] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 11 Sep 2018 13:32:50 +0100
+Message-ID: <20180911123248.mjcaxrycfdelypo2@queper01-lin>
+References: <20180820094420.26590-1-quentin.perret@arm.com>
+ <20180820094420.26590-4-quentin.perret@arm.com>
+ <20180829100435.GP2960@e110439-lin>
+ <20180829132811.iacfltcos6kfgp7e@queper01-lin>
+ <20180911093456.GA27352@andrea>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87in3j9s07.fsf@riseup.net>
+Content-Disposition: inline
+In-Reply-To: <20180911093456.GA27352@andrea>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Francisco Jerez <currojerez@riseup.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrea Parri <andrea.parri@amarulasolutions.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
-> 
-> --==-=-=
-> Content-Type: multipart/mixed; boundary="=-=-="
-> 
-> --=-=-=
-> Content-Type: text/plain; charset=utf-8
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
-> 
-> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
-> 
-> > [...]
-> >
-> >> > >=20
-> >> > > This patch causes a number of statistically significant
-> >> > > regressions
-> >> > > (with significance of 1%) on the two systems I've tested it
-> >> > > on.  On
-> >> > > my
-> >> >=20
-> >> > Sure. These patches are targeted to Atom clients where some of
-> >> > these
-> >> > server like workload may have some minor regression on few watts
-> >> > TDP
-> >> > parts.
-> >>=20
-> >> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
-> >> nor
-> >> the 10% regression of warsaw qualify as small.  And most of the test
-> >> cases on the list of regressions aren't exclusively server-like, if
-> >> at
-> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
-> >> benchmarks -- Latency is as important if not more for interactive
-> >> workloads than it is for server workloads.  In the case of a conflict
-> >> like the one we're dealing with right now between optimizing for
-> >> throughput (e.g. for the maximum number of requests per second) and
-> >> optimizing for latency (e.g. for the minimum request duration), you
-> >> are
-> >> more likely to be concerned about the former than about the latter in
-> >> a
-> >> server setup.
-> >
-> > Eero,
-> > Please add your test results here.
-> >
-> > No matter which algorithm you do, there will be variations. So you have
-> > to look at the platforms which you are targeting. For this platform=20
-> > number one item is use of less turbo and hope you know why?
-> 
-> Unfortunately the current controller uses turbo frequently on Atoms for
-> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
-> boosting simply exacerbated the pre-existing energy efficiency problem.
+Hi Andrea,
 
-My current understanding of the issue at hand is that using IOWAIT boosting
-on Atoms is a regression relative to the previous behavior.  That is what
-Srinivas is trying to address here AFAICS.
+On Tuesday 11 Sep 2018 at 11:34:56 (+0200), Andrea Parri wrote:
+> FYI, the directory "tools/memory-model/" provides an "automated
+> memory-barriers.txt": in short, you encode your "memory ordering
+> questions" into "litmus tests" to be passed to the tool/simulator;
+> the tool will then answer with "Yes/No" (plus other information).
+> 
+> Some preparation is required to set up and learn how to use the
+> LKMM tools, but once there, I expect them to be more "efficient"
+> than reading memory-barriers.txt... ;-)
 
-Now, you seem to be saying that the overall behavior is suboptimal and the
-IOWAIT boosting doesn't matter that much, so some deeper changes are needed
-anyway.  That may be the case, but if there is a meaningful regression, we
-should first get back to the point where it is not present and then to take
-care of the more general problems.
+Thanks for pointing this out, I'll have a look.
 
-So, I'd like to understand how much of a problem the IOWAIT boosting really is
-in the first place.  If it is significant enough, let's address it first, this
-way or another, and move on to the other problems subsequently.
+> Please don't hesitate
+> to contact me/the LKMM maintainers if you need help with this.
+
+And thanks for that too.
+
+> You'd need some info in order to write down a _well-formed litmus
+> test, e.g., matching barrier/synchronization and interested memory
+> accesses on the reader side (IAC, the replacement "store-release
+> -> store-once+smp_wmb" discussed above is suspicious...).
+
+Regarding the disccusion above, I was actually planning on removing the
+smp_wmb entirely and rely on WRITE_ONCE + mutex_{un}lock here. Do you
+see something obviously wrong with that ?
+
+I guess the LKMM tools should give me the yes/no answer I want, but if
+that's a no, I'd also like to understand why ... :-)
 
 Thanks,
-Rafael
+Quentin
