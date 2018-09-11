@@ -1,31 +1,85 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
-Date: Tue, 11 Sep 2018 12:29:19 +0200
-Message-ID: <2115864.0gBFVHkxzn@aspire.rjw.lan>
-References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <1244c5d6-460e-0e0b-b7bf-a46e73327383@intel.com>
+Date: Tue, 11 Sep 2018 13:21:17 +0200
+Message-ID: <23293649.J1qzPCXian@aspire.rjw.lan>
+References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <8c56f28c2cc11de37fa3517348559eb040894702.camel@linux.intel.com> <87in3j9s07.fsf@riseup.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1244c5d6-460e-0e0b-b7bf-a46e73327383@intel.com>
+In-Reply-To: <87in3j9s07.fsf@riseup.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eero Tamminen <eero.t.tamminen@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, currojerez@riseup.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Francisco Jerez <currojerez@riseup.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 3, 2018 5:10:27 PM CEST Eero Tamminen wrote:
-> Hi,
+On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
 > 
-> On 31.08.2018 20:28, Srinivas Pandruvada wrote:
-> ...
-> > As per testing Eero Tamminen, the results are comparable to the patchset
-> > https://patchwork.kernel.org/patch/10312259/
-> > But he has to watch results for several days to check trend.
+> --==-=-=
+> Content-Type: multipart/mixed; boundary="=-=-="
 > 
-> It's close, but there is some gap compared to Francisco's version.
+> --=-=-=
+> Content-Type: text/plain; charset=utf-8
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
+> 
+> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
+> 
+> > [...]
+> >
+> >> > >=20
+> >> > > This patch causes a number of statistically significant
+> >> > > regressions
+> >> > > (with significance of 1%) on the two systems I've tested it
+> >> > > on.  On
+> >> > > my
+> >> >=20
+> >> > Sure. These patches are targeted to Atom clients where some of
+> >> > these
+> >> > server like workload may have some minor regression on few watts
+> >> > TDP
+> >> > parts.
+> >>=20
+> >> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
+> >> nor
+> >> the 10% regression of warsaw qualify as small.  And most of the test
+> >> cases on the list of regressions aren't exclusively server-like, if
+> >> at
+> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
+> >> benchmarks -- Latency is as important if not more for interactive
+> >> workloads than it is for server workloads.  In the case of a conflict
+> >> like the one we're dealing with right now between optimizing for
+> >> throughput (e.g. for the maximum number of requests per second) and
+> >> optimizing for latency (e.g. for the minimum request duration), you
+> >> are
+> >> more likely to be concerned about the former than about the latter in
+> >> a
+> >> server setup.
+> >
+> > Eero,
+> > Please add your test results here.
+> >
+> > No matter which algorithm you do, there will be variations. So you have
+> > to look at the platforms which you are targeting. For this platform=20
+> > number one item is use of less turbo and hope you know why?
+> 
+> Unfortunately the current controller uses turbo frequently on Atoms for
+> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
+> boosting simply exacerbated the pre-existing energy efficiency problem.
 
-It is unclear what exactly you are referring to without a link to the
-patch.
+My current understanding of the issue at hand is that using IOWAIT boosting
+on Atoms is a regression relative to the previous behavior.  That is what
+Srinivas is trying to address here AFAICS.
+
+Now, you seem to be saying that the overall behavior is suboptimal and the
+IOWAIT boosting doesn't matter that much, so some deeper changes are needed
+anyway.  That may be the case, but if there is a meaningful regression, we
+should first get back to the point where it is not present and then to take
+care of the more general problems.
+
+So, I'd like to understand how much of a problem the IOWAIT boosting really is
+in the first place.  If it is significant enough, let's address it first, this
+way or another, and move on to the other problems subsequently.
 
 Thanks,
 Rafael
