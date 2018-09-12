@@ -1,78 +1,209 @@
-From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v4 08/16] sched/core: uclamp: propagate parent clamps
-Date: Wed, 12 Sep 2018 08:56:22 -0700
-Message-ID: <CAJuCfpEVEohpfYCaca_NXkfe+5fhrzLE+mux2ffQD0SMG24mCQ@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Wed, 12 Sep 2018 16:56:19 +0100
+Message-ID: <20180912155619.GG1413@e110439-lin>
 References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-9-patrick.bellasi@arm.com> <CAJuCfpHaqNzgpbPCAUxsv+E4HL6vSDKem+sFh2njK1e9dX5ONA@mail.gmail.com>
- <20180912125133.GE1413@e110439-lin>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180912125133.GE1413@e110439-lin>
+Content-Disposition: inline
+In-Reply-To: <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 12, 2018 at 5:51 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> On 08-Sep 20:02, Suren Baghdasaryan wrote:
->> On Tue, Aug 28, 2018 at 6:53 AM, Patrick Bellasi
->> <patrick.bellasi@arm.com> wrote:
->
-> [...]
->
->> > +  cpu.util.min.effective
->> > +        A read-only single value file which exists on non-root cgroups and
->> > +        reports minimum utilization clamp value currently enforced on a task
->> > +        group.
->> > +
->> > +        The actual minimum utilization in the range [0, 1023].
->> > +
->> > +        This value can be lower then cpu.util.min in case a parent cgroup
->> > +        is enforcing a more restrictive clamping on minimum utilization.
->>
->> IMHO if cpu.util.min=0 means "no restrictions" on UCLAMP_MIN then
->> calling parent's lower cpu.util.min value "more restrictive clamping"
->> is confusing. I would suggest to rephrase this to smth like "...in
->> case a parent cgroup requires lower cpu.util.min clamping."
->
-> Right, it's slightly confusing... still I would like to call out that
-> a parent group can enforce something on its children. What about:
->
->    "... a parent cgroup allows only smaller minimum utilization values."
->
-> Is that less confusing ?
+On 12-Sep 15:49, Peter Zijlstra wrote:
+> On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
+> > +/**
+> > + * Utilization's clamp group
+> > + *
+> > + * A utilization clamp group maps a "clamp value" (value), i.e.
+> > + * util_{min,max}, to a "clamp group index" (group_id).
+> > + */
+> > +struct uclamp_se {
+> > +	unsigned int value;
+> > +	unsigned int group_id;
+> > +};
+> 
+> > +/**
+> > + * uclamp_map: reference counts a utilization "clamp value"
+> > + * @value:    the utilization "clamp value" required
+> > + * @se_count: the number of scheduling entities requiring the "clamp value"
+> > + * @se_lock:  serialize reference count updates by protecting se_count
+> 
+> Why do you have a spinlock to serialize a single value? Don't we have
+> atomics for that?
 
-SGTM.
+There are some code paths where it's used to protect clamp groups
+mapping and initialization, e.g.
 
->
-> Otherwise I think your proposal could work too.
->
-> [...]
->
->> >  #ifdef CONFIG_UCLAMP_TASK_GROUP
->> > +/**
->> > + * cpu_util_update_hier: propagete effective clamp down the hierarchy
->>
->> typo: propagate
->
-> +1
->
-> [...]
->
->> > +                * Skip the whole subtrees if the current effective clamp is
->> > +                * alredy matching the TG's clamp value.
->>
->> typo: already
->
-> +1
->
->
-> Cheers,
-> Patrick
->
-> --
-> #include <best/regards.h>
->
-> Patrick Bellasi
+      uclamp_group_get()
+          spin_lock()
+              // initialize clamp group (if required) and then...
+              se_count += 1
+          spin_unlock()
+
+Almost all these paths are triggered from user-space and protected
+by a global uclamp_mutex, but fork/exit paths.
+
+To serialize these paths I'm using the spinlock above, does it make
+sense ? Can we use the global uclamp_mutex on forks/exit too ?
+
+One additional observations is that, if in the future we want to add a
+kernel space API, (e.g. driver asking for a new clamp value), maybe we
+will need to have a serialized non-sleeping uclamp_group_get() API ?
+
+> > + */
+> > +struct uclamp_map {
+> > +	int value;
+> > +	int se_count;
+> > +	raw_spinlock_t se_lock;
+> > +};
+> > +
+> > +/**
+> > + * uclamp_maps: maps each SEs "clamp value" into a CPUs "clamp group"
+> > + *
+> > + * Since only a limited number of different "clamp values" are supported, we
+> > + * need to map each different clamp value into a "clamp group" (group_id) to
+> > + * be used by the per-CPU accounting in the fast-path, when tasks are
+> > + * enqueued and dequeued.
+> > + * We also support different kind of utilization clamping, min and max
+> > + * utilization for example, each representing what we call a "clamp index"
+> > + * (clamp_id).
+> > + *
+> > + * A matrix is thus required to map "clamp values" to "clamp groups"
+> > + * (group_id), for each "clamp index" (clamp_id), where:
+> > + * - rows are indexed by clamp_id and they collect the clamp groups for a
+> > + *   given clamp index
+> > + * - columns are indexed by group_id and they collect the clamp values which
+> > + *   maps to that clamp group
+> > + *
+> > + * Thus, the column index of a given (clamp_id, value) pair represents the
+> > + * clamp group (group_id) used by the fast-path's per-CPU accounting.
+> > + *
+> > + * NOTE: first clamp group (group_id=0) is reserved for tracking of non
+> > + * clamped tasks.  Thus we allocate one more slot than the value of
+> > + * CONFIG_UCLAMP_GROUPS_COUNT.
+> > + *
+> > + * Here is the map layout and, right below, how entries are accessed by the
+> > + * following code.
+> > + *
+> > + *                          uclamp_maps is a matrix of
+> > + *          +------- UCLAMP_CNT by CONFIG_UCLAMP_GROUPS_COUNT+1 entries
+> > + *          |                                |
+> > + *          |                /---------------+---------------\
+> > + *          |               +------------+       +------------+
+> > + *          |  / UCLAMP_MIN | value      |       | value      |
+> > + *          |  |            | se_count   |...... | se_count   |
+> > + *          |  |            +------------+       +------------+
+> > + *          +--+            +------------+       +------------+
+> > + *             |            | value      |       | value      |
+> > + *             \ UCLAMP_MAX | se_count   |...... | se_count   |
+> > + *                          +-----^------+       +----^-------+
+> > + *                                |                   |
+> > + *                      uc_map =  +                   |
+> > + *                     &uclamp_maps[clamp_id][0]      +
+> > + *                                                clamp_value =
+> > + *                                       uc_map[group_id].value
+> > + */
+> > +static struct uclamp_map uclamp_maps[UCLAMP_CNT]
+> > +				    [CONFIG_UCLAMP_GROUPS_COUNT + 1]
+> > +				    ____cacheline_aligned_in_smp;
+> > +
+> 
+> I'm still completely confused by all this.
+> 
+> sizeof(uclamp_map) = 12
+> 
+> that array is 2*6=12 of those, so the whole thing is 144 bytes. which is
+> more than 2 (64 byte) cachelines.
+
+This data structure is *not* used in the hot-path, that's why I did not
+care about fitting it exactly into few cache lines.
+
+It's used to map a user-space "clamp value" into a kernel-space "clamp
+group" when user-space:
+ - changes a task specific clamp value
+ - changes a cgroup clamp value
+ - a task forks/exits
+
+I assume we can consider all those as "slow" code paths, is that correct ?
+
+At enqueue/dequeue time we use instead struct uclamp_cpu, introduced
+by the next patch:
+
+   [PATCH v4 03/16] sched/core: uclamp: add CPU's clamp groups accounting
+   https://lore.kernel.org/lkml/20180828135324.21976-4-patrick.bellasi@arm.com/
+
+That's where we refcount RUNNABLE tasks and we have to figure out
+the current clamp value for a CPU.
+
+That data structure, with CONFIG_UCLAMP_GROUPS_COUNT=5, is:
+
+   struct uclamp_cpu {
+           struct uclamp_group        group[2][6];          /*     0    96 */
+           /* --- cacheline 1 boundary (64 bytes) was 32 bytes ago --- */
+           int                        value[2];             /*    96     8 */
+           int                        flags;                /*   104     4 */
+
+           /* size: 108, cachelines: 2, members: 3 */
+           /* last cacheline: 44 bytes */
+   };
+
+and we fit into 2 cache lines with this data layout:
+
+   util_min[0..5] | util_max[0..5] | other data
+
+> What's the purpose of that cacheline align statement?
+
+In uclamp_maps, we still need to scan the array when a clamp value is
+changed from user-space, i.e. the cases reported above. Thus, that
+alignment is just to ensure that we minimize the number of cache lines
+used. Does that make sense ?
+
+Maybe that alignment implicitly generated by the compiler ?
+
+> Note that without that apparently superfluous lock, it would be 8*12 =
+> 96 bytes, which is 1.5 lines and would indeed suggest you default to
+> GROUP_COUNT=7 by default to fill 2 lines.
+
+Yes, will check better if we can count on just the uclamp_mutex
+
+> Why are the min and max things torn up like that?  I'm fairly sure I
+> asked some of that last time; but the above comments only try to explain
+> what, not why.
+
+We use that organization to speedup scanning for clamp values of the
+same clamp_id. That's more important in the hot-path than above, where
+we need to scan struct uclamp_cpu when a new aggregated clamp value
+has to be computed. This is done in:
+
+   [PATCH v4 03/16] sched/core: uclamp: add CPU's clamp groups accounting
+   https://lore.kernel.org/lkml/20180828135324.21976-4-patrick.bellasi@arm.com/
+
+Specifically:
+
+   dequeue_task()
+     uclamp_cpu_put()
+       uclamp_cpu_put_id(clamp_id)
+         uclamp_cpu_update(clamp_id)
+            // Here we have an array scan by clamp_id
+
+With the given data layout I reported above, when we update the
+min_clamp value (boost) we have all the data required in a single
+cache line.
+
+If that makes sense, I can certainly improve the comment above to
+justify its layout.
+
+Cheers,
+Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
