@@ -1,125 +1,71 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Wed, 12 Sep 2018 18:35:15 +0100
-Message-ID: <20180912173515.GH1413@e110439-lin>
+Date: Wed, 12 Sep 2018 18:42:09 +0100
+Message-ID: <20180912174209.GI1413@e110439-lin>
 References: <20180828135324.21976-1-patrick.bellasi@arm.com>
  <20180828135324.21976-3-patrick.bellasi@arm.com>
- <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
- <20180912155619.GG1413@e110439-lin>
- <20180912161218.GW24082@hirez.programming.kicks-ass.net>
+ <20180912162427.GA24106@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180912161218.GW24082@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180912162427.GA24106@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-Sep 18:12, Peter Zijlstra wrote:
-> On Wed, Sep 12, 2018 at 04:56:19PM +0100, Patrick Bellasi wrote:
-> > On 12-Sep 15:49, Peter Zijlstra wrote:
-> > > On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
+On 12-Sep 18:24, Peter Zijlstra wrote:
+> On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
+> >  static inline int __setscheduler_uclamp(struct task_struct *p,
+> >  					const struct sched_attr *attr)
 > 
-> > > > +/**
-> > > > + * uclamp_map: reference counts a utilization "clamp value"
-> > > > + * @value:    the utilization "clamp value" required
-> > > > + * @se_count: the number of scheduling entities requiring the "clamp value"
-> > > > + * @se_lock:  serialize reference count updates by protecting se_count
-> > > 
-> > > Why do you have a spinlock to serialize a single value? Don't we have
-> > > atomics for that?
-> > 
-> > There are some code paths where it's used to protect clamp groups
-> > mapping and initialization, e.g.
-> > 
-> >       uclamp_group_get()
-> >           spin_lock()
-> >               // initialize clamp group (if required) and then...
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-               This is actually a couple of function calls
+> But large for inline now.
 
-> >               se_count += 1
-> >           spin_unlock()
-> > 
-> > Almost all these paths are triggered from user-space and protected
-> > by a global uclamp_mutex, but fork/exit paths.
-> > 
-> > To serialize these paths I'm using the spinlock above, does it make
-> > sense ? Can we use the global uclamp_mutex on forks/exit too ?
+Yes, Suren also already pointed that out... already gone in my v5 ;)
+
+> >  {
+> > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> > +	int lower_bound, upper_bound;
+> > +	struct uclamp_se *uc_se;
+> > +	int result = 0;
 > 
-> OK, then your comment is misleading; it serializes both fields.
+> I think the thing would become much more readable if you set
+> lower/upper_bound right here.
 
-Yes... that definitively needs an update.
+Do you mean the bits I've ---8<---ed below ?
 
-> > One additional observations is that, if in the future we want to add a
-> > kernel space API, (e.g. driver asking for a new clamp value), maybe we
-> > will need to have a serialized non-sleeping uclamp_group_get() API ?
+> >
+> > +	mutex_lock(&uclamp_mutex);
+> >
+> > +	/* Find a valid group_id for each required clamp value */
+> > +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
+
+---8<---
+> > +		upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> > +			? attr->sched_util_max
+> > +			: p->uclamp[UCLAMP_MAX].value;
+> > +
+> > +		if (upper_bound == UCLAMP_NOT_VALID)
+> > +			upper_bound = SCHED_CAPACITY_SCALE;
+> > +		if (attr->sched_util_min > upper_bound) {
+> > +			result = -EINVAL;
+> > +			goto done;
+> > +		}
+---8<---
+
+Actually it could also make sense to have them before the mutex ;)
+
+> > +
+> > +		result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
+> > +		if (result == -ENOSPC) {
+> > +			pr_err(UCLAMP_ENOSPC_FMT, "MIN");
 > 
-> No idea; but if you want to go all fancy you can replace he whole
-> uclamp_map thing with something like:
-> 
-> struct uclamp_map {
-> 	union {
-> 		struct {
-> 			unsigned long v : 10;
-> 			unsigned long c : BITS_PER_LONG - 10;
-> 		};
-> 		atomic_long_t s;
-> 	};
-> };
+> AFAICT this is an unpriv part of the syscall; and you can spam the log
+> without limits. Not good.
 
-That sounds really cool and scary at the same time :)
-
-The v:10 requires that we never set SCHED_CAPACITY_SCALE>1024
-or that we use it to track a percentage value (i.e. [0..100]).
-
-One of the last patches introduces percentage values to userspace.
-But, I was considering that in kernel space we should always track
-full scale utilization values.
-
-The c:(BITS_PER_LONG-10) restricts the range of concurrently active
-SE refcounting the same clamp value. Which, for some 32bit systems is
-only 4 milions among tasks and cgroups... maybe still reasonable...
-
-
-> And use uclamp_map::c == 0 as unused (as per normal refcount
-> semantics) and atomic_long_cmpxchg() the whole thing using
-> uclamp_map::s.
-
-Yes... that could work for the uclamp_map updates, but as I noted
-above, I think I have other calls serialized by that lock... will look
-better into what you suggest, thanks!
-
-
-[...]
-
-> > > What's the purpose of that cacheline align statement?
-> > 
-> > In uclamp_maps, we still need to scan the array when a clamp value is
-> > changed from user-space, i.e. the cases reported above. Thus, that
-> > alignment is just to ensure that we minimize the number of cache lines
-> > used. Does that make sense ?
-> > 
-> > Maybe that alignment implicitly generated by the compiler ?
-> 
-> It is not, but if it really is a slow path, we shouldn't care about
-> alignment.
-
-Ok, will remove it.
-
-> > > Note that without that apparently superfluous lock, it would be 8*12 =
-> > > 96 bytes, which is 1.5 lines and would indeed suggest you default to
-> > > GROUP_COUNT=7 by default to fill 2 lines.
-> > 
-> > Yes, will check better if we can count on just the uclamp_mutex
-> 
-> Well, if we don't care about performance (slow path) then keeping he
-> lock is fine, just the comment and alignment are misleading.
-
-Ok
+Good point, will better check this.
 
 [...]
 
