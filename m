@@ -1,172 +1,133 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 11/11] OPP: Pass OPP table to _of_add_opp_table_v{1|2}()
-Date: Wed, 12 Sep 2018 13:58:50 +0530
-Message-ID: <5e869c96ac9fca2986dd7d82669b0593dc15c5c6.1536736872.git.viresh.kumar@linaro.org>
-References: <cover.1536736872.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1536736872.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: niklas.cassel@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2] PCI: Reprogram bridge prefetch registers
+ on resume
+Date: Wed, 12 Sep 2018 11:05:02 +0200
+Message-ID: <CAJZ5v0j6VcFbO_R3fGLi2Ec1DmWsVA-0mzDG3LrA-3D5CrsPbw@mail.gmail.com>
+References: <20180912064523.9599-1-drake@endlessm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180912064523.9599-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rafael Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Both _of_add_opp_table_v1() and _of_add_opp_table_v2() contain similar
-code to get the OPP table and their parent routine also parses the DT to
-find the OPP table's node pointer. This can be simplified by getting the
-OPP table in advance and then passing it as argument to these routines.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/of.c | 68 ++++++++++++++++++++----------------------------
- 1 file changed, 28 insertions(+), 40 deletions(-)
-
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index db3e4d2b969e..c410ecc2c53d 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -399,18 +399,12 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
- }
- 
- /* Initializes OPP tables based on new bindings */
--static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
--				int index)
-+static int _of_add_opp_table_v2(struct device *dev, struct opp_table *opp_table)
- {
- 	struct device_node *np;
--	struct opp_table *opp_table;
- 	int ret, count = 0, pstate_count = 0;
- 	struct dev_pm_opp *opp;
- 
--	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
--	if (!opp_table)
--		return -ENOMEM;
--
- 	/* OPP table is already initialized for the device */
- 	if (opp_table->parsed_static_opps) {
- 		kref_get(&opp_table->list_kref);
-@@ -420,7 +414,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- 	kref_init(&opp_table->list_kref);
- 
- 	/* We have opp-table node now, iterate over it and add OPPs */
--	for_each_available_child_of_node(opp_np, np) {
-+	for_each_available_child_of_node(opp_table->np, np) {
- 		count++;
- 
- 		ret = _opp_add_static_v2(opp_table, dev, np);
-@@ -458,15 +452,13 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- 
- put_list_kref:
- 	_put_opp_list_kref(opp_table);
--	dev_pm_opp_put_opp_table(opp_table);
- 
- 	return ret;
- }
- 
- /* Initializes OPP tables based on old-deprecated bindings */
--static int _of_add_opp_table_v1(struct device *dev)
-+static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
- {
--	struct opp_table *opp_table;
- 	const struct property *prop;
- 	const __be32 *val;
- 	int nr, ret = 0;
-@@ -487,10 +479,6 @@ static int _of_add_opp_table_v1(struct device *dev)
- 		return -EINVAL;
- 	}
- 
--	opp_table = dev_pm_opp_get_opp_table(dev);
--	if (!opp_table)
--		return -ENOMEM;
--
- 	kref_init(&opp_table->list_kref);
- 
- 	val = prop->value;
-@@ -503,7 +491,6 @@ static int _of_add_opp_table_v1(struct device *dev)
- 			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
- 				__func__, freq, ret);
- 			_put_opp_list_kref(opp_table);
--			dev_pm_opp_put_opp_table(opp_table);
- 			return ret;
- 		}
- 		nr -= 2;
-@@ -531,24 +518,24 @@ static int _of_add_opp_table_v1(struct device *dev)
-  */
- int dev_pm_opp_of_add_table(struct device *dev)
- {
--	struct device_node *opp_np;
-+	struct opp_table *opp_table;
- 	int ret;
- 
-+	opp_table = dev_pm_opp_get_opp_table_indexed(dev, 0);
-+	if (!opp_table)
-+		return -ENOMEM;
-+
- 	/*
--	 * OPPs have two version of bindings now. The older one is deprecated,
--	 * try for the new binding first.
-+	 * OPPs have two version of bindings now. Also try the old (v1)
-+	 * bindings for backward compatibility with older dtbs.
- 	 */
--	opp_np = dev_pm_opp_of_get_opp_desc_node(dev);
--	if (!opp_np) {
--		/*
--		 * Try old-deprecated bindings for backward compatibility with
--		 * older dtbs.
--		 */
--		return _of_add_opp_table_v1(dev);
--	}
-+	if (opp_table->np)
-+		ret = _of_add_opp_table_v2(dev, opp_table);
-+	else
-+		ret = _of_add_opp_table_v1(dev, opp_table);
- 
--	ret = _of_add_opp_table_v2(dev, opp_np, 0);
--	of_node_put(opp_np);
-+	if (ret)
-+		dev_pm_opp_put_opp_table(opp_table);
- 
- 	return ret;
- }
-@@ -575,28 +562,29 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table);
-  */
- int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
- {
--	struct device_node *opp_np;
-+	struct opp_table *opp_table;
- 	int ret, count;
- 
--again:
--	opp_np = _opp_of_get_opp_desc_node(dev->of_node, index);
--	if (!opp_np) {
-+	if (index) {
- 		/*
- 		 * If only one phandle is present, then the same OPP table
- 		 * applies for all index requests.
- 		 */
- 		count = of_count_phandle_with_args(dev->of_node,
- 						   "operating-points-v2", NULL);
--		if (count == 1 && index) {
--			index = 0;
--			goto again;
--		}
-+		if (count != 1)
-+			return -ENODEV;
- 
--		return -ENODEV;
-+		index = 0;
- 	}
- 
--	ret = _of_add_opp_table_v2(dev, opp_np, index);
--	of_node_put(opp_np);
-+	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
-+	if (!opp_table)
-+		return -ENOMEM;
-+
-+	ret = _of_add_opp_table_v2(dev, opp_table);
-+	if (ret)
-+		dev_pm_opp_put_opp_table(opp_table);
- 
- 	return ret;
- }
--- 
-2.18.0.rc1.242.g61856ae69a2c
+T24gV2VkLCBTZXAgMTIsIDIwMTggYXQgODo0NSBBTSBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxl
+c3NtLmNvbT4gd3JvdGU6Cj4KPiBPbiAzOCsgSW50ZWwtYmFzZWQgQXN1cyBwcm9kdWN0cywgdGhl
+IG52aWRpYSBHUFUgYmVjb21lcyB1bnVzYWJsZQo+IGFmdGVyIFMzIHN1c3BlbmQvcmVzdW1lLiBU
+aGUgYWZmZWN0ZWQgcHJvZHVjdHMgaW5jbHVkZSBtdWx0aXBsZQo+IGdlbmVyYXRpb25zIG9mIG52
+aWRpYSBHUFVzIGFuZCBJbnRlbCBTb0NzLiBBZnRlciByZXN1bWUsIG5vdXZlYXUgbG9ncwo+IG1h
+bnkgZXJyb3JzIHN1Y2ggYXM6Cj4KPiAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAw
+MDU1NTU1NTUwMDAgZW5naW5lIDAwIFtHUl0gY2xpZW50IDA0IFtIVUIvRkVdIHJlYXNvbiA0YSBb
+XSBvbiBjaGFubmVsIC0xIFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgIERSTTogZmFpbGVkIHRv
+IGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4KPiBTaW1pbGFybHksIHRoZSBudmlkaWEgcHJvcHJpZXRh
+cnkgZHJpdmVyIGFsc28gZmFpbHMgYWZ0ZXIgcmVzdW1lCj4gKGJsYWNrIHNjcmVlbiwgMTAwJSBD
+UFUgdXNhZ2UgaW4gWG9yZyBwcm9jZXNzKS4gV2Ugc2hpcHBlZCBhIHNhbXBsZQo+IHRvIE52aWRp
+YSBmb3IgZGlhZ25vc2lzLCBhbmQgdGhlaXIgcmVzcG9uc2UgaW5kaWNhdGVkIHRoYXQgaXQncyBh
+Cj4gcHJvYmxlbSB3aXRoIHRoZSBwYXJlbnQgUENJIGJyaWRnZSAob24gdGhlIEludGVsIFNvQyks
+IG5vdCB0aGUgR1BVLgo+Cj4gUnVudGltZSBzdXNwZW5kL3Jlc3VtZSB3b3JrcyBmaW5lLCBvbmx5
+IFMzIHN1c3BlbmQgaXMgYWZmZWN0ZWQuCj4KPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9uIHJl
+c3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ICdQcmVmZXRjaGFibGUgQmFzZSBV
+cHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMyKS4gSW4KPiB0aGUg
+Y2FzZXMgdGhhdCBJIGNoZWNrZWQsIHRoaXMgcmVnaXN0ZXIgaGFzIHZhbHVlIDAgYW5kIHdlIGp1
+c3QgaGF2ZSB0bwo+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPgo+IExpbnV4IGFscmVhZHkgc2F2ZXMg
+YW5kIHJlc3RvcmVzIFBDSSBjb25maWcgc3BhY2UgZHVyaW5nIHN1c3BlbmQvcmVzdW1lLAo+IGJ1
+dCB0aGlzIHJlZ2lzdGVyIHdhcyBiZWluZyBza2lwcGVkIGJlY2F1c2UgdXBvbiByZXN1bWUsIGl0
+IGFscmVhZHkKPiBoYXMgdmFsdWUgMCAodGhlIGNvcnJlY3QsIHByZS1zdXNwZW5kIHZhbHVlKS4K
+Pgo+IEludGVsIGFwcGVhciB0byBoYXZlIHByZXZpb3VzbHkgYWNrbm93bGVkZ2VkIHRoaXMgYmVo
+YXZpb3VyIGFuZCB0aGUKPiByZXF1aXJlbWVudCB0byByZXdyaXRlIHRoaXMgcmVnaXN0ZXIuCj4g
+aHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTY4NTEjYzIzCj4K
+PiBCYXNlZCBvbiB0aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3RlciB2YWx1ZXMgZXZl
+biB3aGVuIHRoYXQKPiBhcHBlYXJzIHVubmVjZXNzYXJ5Lgo+Cj4gV2UgaGF2ZSBjb25maXJtZWQg
+dGhpcyBzb2x1dGlvbiBvbiBhbGwgdGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBoYXZlCj4gaW4taGFu
+ZHMgKFg1NDJVUSwgVVg1MzNGRCwgWDUzMFVOLCBWMjcyVU4pLgo+Cj4gQWRkaXRpb25hbGx5LCB0
+aGlzIHNvbHZlcyBhbiBpc3N1ZSB3aGVyZSByODE2OSBNU0ktWCBpbnRlcnJ1cHRzIHdlcmUKPiBi
+cm9rZW4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUgb24gQXN1cyBYNDQxVUFSLiBUaGlzIGlzc3Vl
+IHdhcyByZWNlbnRseQo+IHdvcmtlZCBhcm91bmQgaW4gY29tbWl0IDdiYjA1Yjg1YmMyZCAoInI4
+MTY5OiBkb24ndCB1c2UgTVNJLVggb24KPiBSVEw4MTA2ZSIpLiBJdCBhbHNvIGZpeGVzIHRoZSBz
+YW1lIGlzc3VlIG9uIFJUTDYxODZldmwvODExMWV2bCBvbiBhbgo+IEFpbWZvci10ZWNoIGxhcHRv
+cCB0aGF0IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQuIEkgc3VzcGVjdCBpdCB3aWxsIGFsc28KPiBm
+aXggdGhlIGlzc3VlIHRoYXQgd2FzIHdvcmtlZCBhcm91bmQgaW4gY29tbWl0IDdjNTNhNzIyNDU5
+YyAoInI4MTY5Ogo+IGRvbid0IHVzZSBNU0ktWCBvbiBSVEw4MTY4ZyIpLgo+Cj4gVGhvbWFzIE1h
+cnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlzc3VlIHdoZXJl
+Cj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhlIEhQIFpib29rIDE0dSBHNSBp
+cyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4KPgo+IExpbms6IGh0dHBz
+Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAxMDY5Cj4gU2lnbmVkLW9m
+Zi1ieTogRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRsZXNzbS5jb20+Cj4gLS0tCj4KPiBOb3RlczoK
+PiAgICAgUmVwbGFjZXMgcGF0Y2g6Cj4gICAgICAgIFBDSTogYWRkIHByZWZldGNoIHF1aXJrIHRv
+IHdvcmsgYXJvdW5kIEFzdXMvTnZpZGlhIHN1c3BlbmQgaXNzdWVzCj4KPiAgICAgU29tZSBvZiB0
+aGUgbW9yZSB2ZXJib3NlIGluZm8gd2FzIG1vdmVkIHRvIGJ1Z3ppbGxhOgo+ICAgICBodHRwczov
+L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OQo+Cj4gICAgIFRoaXMg
+cGF0Y2ggaXMgYWltZWQgYXQgdjQuMTkgKGFuZCBtYXliZSB2NC4xOC1zdGFibGUpOyB3ZSBtYXkg
+Zm9sbG93Cj4gICAgIHVwIHdpdGggbW9yZSBpbnRydXNpdmUgaW1wcm92ZW1lbnRzIGZvciB2NC4y
+MCsuCj4KPiAgICAgdjI6IHJlaW1wbGVtZW50IHRoZSByZWdpc3RlciByZXN0b3JlIHdpdGhpbiB0
+aGUgZXhpc3RpbmcKPiAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZSgpIGNvZGUuCj4K
+PiAgZHJpdmVycy9wY2kvcGNpLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0t
+Cj4gIDEgZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMoLSkKPgo+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCj4gaW5k
+ZXggMjlmZjk2MTliNWZhLi5lMTcwNDEwMGU3MmQgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kv
+cGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC0xMjg5LDEzICsxMjg5LDE1IEBA
+IGludCBwY2lfc2F2ZV9zdGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+ICBFWFBPUlRfU1lNQk9M
+KHBjaV9zYXZlX3N0YXRlKTsKPgo+ICBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfZHdv
+cmQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGludCBvZmZzZXQsCj4gLSAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgIHUzMiBzYXZlZF92YWwsIGludCByZXRyeSkKPiArICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgdTMyIHNhdmVkX3ZhbCwgaW50IHJldHJ5LCBib29s
+IGZvcmNlKQo+ICB7Cj4gICAgICAgICB1MzIgdmFsOwo+Cj4gLSAgICAgICBwY2lfcmVhZF9jb25m
+aWdfZHdvcmQocGRldiwgb2Zmc2V0LCAmdmFsKTsKPiAtICAgICAgIGlmICh2YWwgPT0gc2F2ZWRf
+dmFsKQo+IC0gICAgICAgICAgICAgICByZXR1cm47Cj4gKyAgICAgICBpZiAoIWZvcmNlKSB7Cj4g
+KyAgICAgICAgICAgICAgIHBjaV9yZWFkX2NvbmZpZ19kd29yZChwZGV2LCBvZmZzZXQsICZ2YWwp
+Owo+ICsgICAgICAgICAgICAgICBpZiAodmFsID09IHNhdmVkX3ZhbCkKPiArICAgICAgICAgICAg
+ICAgICAgICAgICByZXR1cm47Cj4gKyAgICAgICB9Cj4KPiAgICAgICAgIGZvciAoOzspIHsKPiAg
+ICAgICAgICAgICAgICAgcGNpX2RiZyhwZGV2LCAicmVzdG9yaW5nIGNvbmZpZyBzcGFjZSBhdCBv
+ZmZzZXQgJSN4ICh3YXMgJSN4LCB3cml0aW5nICUjeClcbiIsCj4gQEAgLTEzMTMsMjUgKzEzMTUs
+MzQgQEAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3JkKHN0cnVjdCBwY2lfZGV2
+ICpwZGV2LCBpbnQgb2Zmc2V0LAo+ICB9Cj4KPiAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29u
+ZmlnX3NwYWNlX3JhbmdlKHN0cnVjdCBwY2lfZGV2ICpwZGV2LAo+IC0gICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICBpbnQgc3RhcnQsIGludCBlbmQsIGludCByZXRyeSkK
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW50IHN0YXJ0LCBp
+bnQgZW5kLCBpbnQgcmV0cnksCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIGJvb2wgZm9yY2UpCj4gIHsKPiAgICAgICAgIGludCBpbmRleDsKPgo+ICAgICAgICAg
+Zm9yIChpbmRleCA9IGVuZDsgaW5kZXggPj0gc3RhcnQ7IGluZGV4LS0pCj4gICAgICAgICAgICAg
+ICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19kd29yZChwZGV2LCA0ICogaW5kZXgsCj4gICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBwZGV2LT5zYXZlZF9jb25maWdfc3BhY2Vb
+aW5kZXhdLAo+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0cnkp
+Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0cnksIGZvcmNl
+KTsKPiAgfQo+Cj4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1Y3Qg
+cGNpX2RldiAqcGRldikKPiAgewo+ICAgICAgICAgaWYgKHBkZXYtPmhkcl90eXBlID09IFBDSV9I
+RUFERVJfVFlQRV9OT1JNQUwpIHsKPiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmln
+X3NwYWNlX3JhbmdlKHBkZXYsIDEwLCAxNSwgMCk7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0
+b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAxMCwgMTUsIDAsIGZhbHNlKTsKPiAgICAgICAg
+ICAgICAgICAgLyogUmVzdG9yZSBCQVJzIGJlZm9yZSB0aGUgY29tbWFuZCByZWdpc3Rlci4gKi8K
+PiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDQs
+IDksIDEwKTsKPiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
+KHBkZXYsIDAsIDMsIDApOwo+ICsgICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3Bh
+Y2VfcmFuZ2UocGRldiwgNCwgOSwgMTAsIGZhbHNlKTsKPiArICAgICAgICAgICAgICAgcGNpX3Jl
+c3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDMsIDAsIGZhbHNlKTsKPiArICAgICAg
+IH0gZWxzZSBpZiAocGRldi0+aGRyX3R5cGUgPT0gUENJX0hFQURFUl9UWVBFX0JSSURHRSkgewo+
+ICsgICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTIs
+IDE1LCAwLCBmYWxzZSk7Cj4gKyAgICAgICAgICAgICAgIC8qIEZvcmNlIHJld3JpdGluZyBvZiBw
+cmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiArICAgICAgICAgICAgICAgICogUzMgcmVzdW1l
+IGlzc3VlcyBvbiBJbnRlbCBQQ0kgYnJpZGdlcyB0aGF0IG9jY3VyIHdoZW4KPiArICAgICAgICAg
+ICAgICAgICogdGhlc2UgcmVnaXN0ZXJzIGFyZSBub3QgZXhwbGljaXRseSB3cml0dGVuLgo+ICsg
+ICAgICAgICAgICAgICAgKi8KPiArICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3Nw
+YWNlX3JhbmdlKHBkZXYsIDksIDExLCAwLCB0cnVlKTsKPiArICAgICAgICAgICAgICAgcGNpX3Jl
+c3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDgsIDAsIGZhbHNlKTsKPiAgICAgICAg
+IH0gZWxzZSB7Cj4gLSAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5n
+ZShwZGV2LCAwLCAxNSwgMCk7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19z
+cGFjZV9yYW5nZShwZGV2LCAwLCAxNSwgMCwgZmFsc2UpOwo+ICAgICAgICAgfQo+ICB9Cj4KPiAt
+LQoKUGFzc2luZyB0aGUgZXh0cmEgYm9vbCBhcm91bmQgaXMgc29tZXdoYXQgY2x1bXN5LCBidXQg
+SSBoYXZlbid0IGZvdW5kCmEgY2xlYW5lciB3YXkgdG8gZG8gaXQsIHNvCgpSZXZpZXdlZC1ieTog
+UmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPgpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlz
+dApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9w
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
