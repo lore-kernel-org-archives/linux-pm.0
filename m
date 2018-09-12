@@ -1,143 +1,73 @@
 From: Suren Baghdasaryan <surenb@google.com>
-Subject: Re: [PATCH v4 09/16] sched/core: uclamp: map TG's clamp values into
- CPU's clamp groups
-Date: Wed, 12 Sep 2018 08:53:39 -0700
-Message-ID: <CAJuCfpH9VCZjmXG4vDt7JtExwhnLdNwUJhUpfaz43owm2UrAPg@mail.gmail.com>
+Subject: Re: [PATCH v4 08/16] sched/core: uclamp: propagate parent clamps
+Date: Wed, 12 Sep 2018 08:56:22 -0700
+Message-ID: <CAJuCfpEVEohpfYCaca_NXkfe+5fhrzLE+mux2ffQD0SMG24mCQ@mail.gmail.com>
 References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-10-patrick.bellasi@arm.com> <CAJuCfpEbmW0Gr26FSDmtLB5C1gk0M83AYQihLr_Dz=gXY_-+qA@mail.gmail.com>
- <20180912141923.GF1413@e110439-lin>
+ <20180828135324.21976-9-patrick.bellasi@arm.com> <CAJuCfpHaqNzgpbPCAUxsv+E4HL6vSDKem+sFh2njK1e9dX5ONA@mail.gmail.com>
+ <20180912125133.GE1413@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180912141923.GF1413@e110439-lin>
+In-Reply-To: <20180912125133.GE1413@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 12, 2018 at 7:19 AM, Patrick Bellasi
+On Wed, Sep 12, 2018 at 5:51 AM, Patrick Bellasi
 <patrick.bellasi@arm.com> wrote:
-> On 09-Sep 11:52, Suren Baghdasaryan wrote:
+> On 08-Sep 20:02, Suren Baghdasaryan wrote:
 >> On Tue, Aug 28, 2018 at 6:53 AM, Patrick Bellasi
 >> <patrick.bellasi@arm.com> wrote:
 >
 > [...]
 >
->> > +/**
->> > + * release_uclamp_sched_group: release utilization clamp references of a TG
+>> > +  cpu.util.min.effective
+>> > +        A read-only single value file which exists on non-root cgroups and
+>> > +        reports minimum utilization clamp value currently enforced on a task
+>> > +        group.
+>> > +
+>> > +        The actual minimum utilization in the range [0, 1023].
+>> > +
+>> > +        This value can be lower then cpu.util.min in case a parent cgroup
+>> > +        is enforcing a more restrictive clamping on minimum utilization.
 >>
->> free_uclamp_sched_group
+>> IMHO if cpu.util.min=0 means "no restrictions" on UCLAMP_MIN then
+>> calling parent's lower cpu.util.min value "more restrictive clamping"
+>> is confusing. I would suggest to rephrase this to smth like "...in
+>> case a parent cgroup requires lower cpu.util.min clamping."
 >
-> +1
+> Right, it's slightly confusing... still I would like to call out that
+> a parent group can enforce something on its children. What about:
 >
->> > + * @tg: the task group being removed
->> > + *
->> > + * An empty task group can be removed only when it has no more tasks or child
->> > + * groups. This means that we can also safely release all the reference
->> > + * counting to clamp groups.
->> > + */
->> > +static inline void free_uclamp_sched_group(struct task_group *tg)
->> > +{
+>    "... a parent cgroup allows only smaller minimum utilization values."
+>
+> Is that less confusing ?
+
+SGTM.
+
+>
+> Otherwise I think your proposal could work too.
 >
 > [...]
 >
->> > @@ -1417,9 +1444,18 @@ static void __init init_uclamp(void)
 >> >  #ifdef CONFIG_UCLAMP_TASK_GROUP
->> >                 /* Init root TG's clamp group */
->> >                 uc_se = &root_task_group.uclamp[clamp_id];
->> > +
->> >                 uc_se->effective.value = uclamp_none(clamp_id);
->> > -               uc_se->value = uclamp_none(clamp_id);
->> > -               uc_se->group_id = 0;
->> > +               uc_se->effective.group_id = 0;
->> > +
->> > +               /*
->> > +                * The max utilization is always allowed for both clamps.
->> > +                * This is required to not force a null minimum utiliation on
->> > +                * all child groups.
->> > +                */
->> > +               uc_se->group_id = UCLAMP_NOT_VALID;
->> > +               uclamp_group_get(NULL, clamp_id, 0, uc_se,
->> > +                                uclamp_none(UCLAMP_MAX));
+>> > +/**
+>> > + * cpu_util_update_hier: propagete effective clamp down the hierarchy
 >>
->> I don't quite get why you are using uclamp_none(UCLAMP_MAX) for both
->> UCLAMP_MIN and UCLAMP_MAX clamps. I assume the comment above is to
->> explain this but I'm still unclear why this is done.
+>> typo: propagate
 >
-> That's maybe a bit tricky to get but, this will not happen since for
-> root group tasks we apply the system default values... which however
-> are introduced by one of the following patches 11/16.
+> +1
 >
-> So, my understanding of the "delegation model" is that for cgroups we
-> have to ensure each TG is a "restriction" of its parent. Thus:
+> [...]
 >
->      tg::util_min <= tg_parent::util_min
+>> > +                * Skip the whole subtrees if the current effective clamp is
+>> > +                * alredy matching the TG's clamp value.
+>>
+>> typo: already
 >
-> This is required to ensure that a tg_parent can always restrict
-> resources on its descendants. I guess that's required to have a sane
-> usage of CGroups for VMs where the Host can transparently control its
-> Guests.
+> +1
 >
-> According to the above rule, and considering that root task group
-> cannot be modified, to allow boosting on TG we are forced to set the
-> root group with util_min = SCHED_CAPACITY_SCALE.
->
-> Moreover, Tejun pointed out that if we need tuning at root TG level,
-> it means that we need system wide tunable, which should be available
-> also when CGroups are not in use.
->
-> That's why on patch:
->
->    [PATCH v4 11/16] sched/core: uclamp: add system default clamps
->    https://lore.kernel.org/lkml/20180828135324.21976-12-patrick.bellasi@arm.com/
->
-> we add the concept of system default clamps which are actually
-> initialized with util_min=0, i.e. 0% boost by default.
->
-> These system default clamp values applies to tasks which are running
-> either in the root task group on in an autogroup, which also cannot be
-> tuned at run-time, whenever the task has not a task specific clamp
-> value specified.
->
-> All that considered, the code above is still confusing and I should
-> consider moving to patch 11/16 the initialization to UCLAMP_MAX for
-> util_min...
->
->> Maybe expand the comment to explain the intention?
->
-> ... and add there something like:
->
->         /*
->          * The max utilization is always allowed for both clamps.
->          * This satisfies the "delegation model" required by CGroups
->          * v2, where a child task group cannot have more resources then
->          * its father, thus allowing the creation of child groups with
->          * a non null util_min.
->          * For tasks within the root_task_group we will use the system
->          * default clamp values anyway, thus they will not be boosted
->          * to the max utilization by default.
->          */
->
-> It this more clear ?
-
-Yes, I think so. Thanks for covering that.
-
->
->
->> With this I think all TGs will get boosted by default, won't they?
->
-> You right, at cgroup creation time we clone parent's clamps... thus,
-> all root_task_group's children group will get max boosting at creation
-> time. However, since we don't have task within a newly created task
-> group, the system management software can still refine the clamps
-> before staring to move tasks in there.
->
-> Do you think we should initialize root task group childrens
-> differently ? I would prefer to avoid special cases if not strictly
-> required...
-
-I don't see a problem with the current approach.
-
 >
 > Cheers,
 > Patrick
