@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v3 01/16] thermal: tsens: Prepare 8916 and 8974 tsens to use SROT and TM address space
-Date: Wed, 12 Sep 2018 15:22:46 +0530
-Message-ID: <b136431f98d157a1844fe42dd1b35a0a9e0128d3.1536744310.git.amit.kucheria@linaro.org>
+Subject: [PATCH v3 02/16] thermal: tsens: Add SPDX license identifiers
+Date: Wed, 12 Sep 2018 15:22:47 +0530
+Message-ID: <ca345962eb15e6d9d78606a26524dfb9ee60c81a.1536744310.git.amit.kucheria@linaro.org>
 References: <cover.1536744310.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1536744310.git.amit.kucheria@linaro.org>
@@ -12,44 +12,147 @@ To: linux-kernel@vger.kernel.org
 Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We've already converted over the devicetree of platforms using v2
-version of the TSENS IP to use two address spaces. Now prepare to
-convert over the 8916 and 8974 platforms to use separate SROT and TM
-address spaces.
-
-This patch will work with device trees with one or two address spaces
-because we set the tm_offset in commit 5b1283984fa3 ("thermal: tsens:
-Add support to split up register address space into two").
+The TSENS drivers use a GPL-2.0 license. Replace with equivalent SPDX
+tags and delete the full license text.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/thermal/qcom/tsens-8916.c   | 11 +----------
+ drivers/thermal/qcom/tsens-8960.c   | 11 +----------
+ drivers/thermal/qcom/tsens-8974.c   | 11 +----------
+ drivers/thermal/qcom/tsens-common.c | 11 +----------
+ drivers/thermal/qcom/tsens.c        | 11 +----------
+ drivers/thermal/qcom/tsens.h        | 11 ++---------
+ 6 files changed, 7 insertions(+), 59 deletions(-)
 
+diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
+index fdf561b8b81d..c4955c85e922 100644
+--- a/drivers/thermal/qcom/tsens-8916.c
++++ b/drivers/thermal/qcom/tsens-8916.c
+@@ -1,15 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
+ 
+ #include <linux/platform_device.h>
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
+index 0451277d3a8f..4af76de7dc2e 100644
+--- a/drivers/thermal/qcom/tsens-8960.c
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -1,15 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
+ 
+ #include <linux/platform_device.h>
+diff --git a/drivers/thermal/qcom/tsens-8974.c b/drivers/thermal/qcom/tsens-8974.c
+index 9baf77e8cbe3..7e149edbfeb6 100644
+--- a/drivers/thermal/qcom/tsens-8974.c
++++ b/drivers/thermal/qcom/tsens-8974.c
+@@ -1,15 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
+ 
+ #include <linux/platform_device.h>
 diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 6207d8d92351..478739543bbc 100644
+index 478739543bbc..303e3fdaca98 100644
 --- a/drivers/thermal/qcom/tsens-common.c
 +++ b/drivers/thermal/qcom/tsens-common.c
-@@ -21,7 +21,7 @@
- #include <linux/regmap.h>
- #include "tsens.h"
+@@ -1,15 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
  
--#define S0_ST_ADDR		0x1030
-+#define STATUS_OFFSET		0x30
- #define SN_ADDR_OFFSET		0x4
- #define SN_ST_TEMP_MASK		0x3ff
- #define CAL_DEGC_PT1		30
-@@ -107,8 +107,9 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
- 	unsigned int status_reg;
- 	int last_temp = 0, ret;
+ #include <linux/err.h>
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index a2c9bfae3d86..90bb431cf740 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -1,15 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
  
--	status_reg = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
-+	status_reg = tmdev->tm_offset + STATUS_OFFSET + s->hw_id * SN_ADDR_OFFSET;
- 	ret = regmap_read(tmdev->map, status_reg, &code);
+ #include <linux/err.h>
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 14331eb45a86..8207610f326a 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -1,15 +1,8 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+- *
+- * This software is licensed under the terms of the GNU General Public
+- * License version 2, as published by the Free Software Foundation, and
+- * may be copied, distributed, and modified under those terms.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+  */
 +
- 	if (ret)
- 		return ret;
- 	last_temp = code & SN_ST_TEMP_MASK;
+ #ifndef __QCOM_TSENS_H__
+ #define __QCOM_TSENS_H__
+ 
 -- 
 2.17.1
