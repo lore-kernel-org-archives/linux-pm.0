@@ -1,99 +1,162 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH RFC] kernel/hung_task.c: disable on suspend
-Date: Wed, 12 Sep 2018 18:11:19 +0200
-Message-ID: <20180912161119.2692-1-vkuznets@redhat.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Wed, 12 Sep 2018 18:12:18 +0200
+Message-ID: <20180912161218.GW24082@hirez.programming.kicks-ass.net>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
+ <20180912155619.GG1413@e110439-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180912155619.GG1413@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-It is possible to observe hung_task complaints when system goes to
-suspend-to-idle state:
+On Wed, Sep 12, 2018 at 04:56:19PM +0100, Patrick Bellasi wrote:
+> On 12-Sep 15:49, Peter Zijlstra wrote:
+> > On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
 
- PM: Syncing filesystems ... done.
- Freezing user space processes ... (elapsed 0.001 seconds) done.
- OOM killer disabled.
- Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
- sd 0:0:0:0: [sda] Synchronizing SCSI cache
- INFO: task bash:1569 blocked for more than 120 seconds.
-       Not tainted 4.19.0-rc3_+ #687
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- bash            D    0  1569    604 0x00000000
- Call Trace:
-  ? __schedule+0x1fe/0x7e0
-  schedule+0x28/0x80
-  suspend_devices_and_enter+0x4ac/0x750
-  pm_suspend+0x2c0/0x310
+> > > +/**
+> > > + * uclamp_map: reference counts a utilization "clamp value"
+> > > + * @value:    the utilization "clamp value" required
+> > > + * @se_count: the number of scheduling entities requiring the "clamp value"
+> > > + * @se_lock:  serialize reference count updates by protecting se_count
+> > 
+> > Why do you have a spinlock to serialize a single value? Don't we have
+> > atomics for that?
+> 
+> There are some code paths where it's used to protect clamp groups
+> mapping and initialization, e.g.
+> 
+>       uclamp_group_get()
+>           spin_lock()
+>               // initialize clamp group (if required) and then...
+>               se_count += 1
+>           spin_unlock()
+> 
+> Almost all these paths are triggered from user-space and protected
+> by a global uclamp_mutex, but fork/exit paths.
+> 
+> To serialize these paths I'm using the spinlock above, does it make
+> sense ? Can we use the global uclamp_mutex on forks/exit too ?
 
-Register a PM notifier to disable the detector on suspend and re-enable
-back on wakeup.
+OK, then your comment is misleading; it serializes both fields.
 
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
-RFC: It really makes me wonder why nobody reported this before, makes
- me think I'm missing something.
----
- kernel/hung_task.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+> One additional observations is that, if in the future we want to add a
+> kernel space API, (e.g. driver asking for a new clamp value), maybe we
+> will need to have a serialized non-sleeping uclamp_group_get() API ?
 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index b9132d1269ef..d75f288c016f 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -15,6 +15,7 @@
- #include <linux/lockdep.h>
- #include <linux/export.h>
- #include <linux/sysctl.h>
-+#include <linux/suspend.h>
- #include <linux/utsname.h>
- #include <linux/sched/signal.h>
- #include <linux/sched/debug.h>
-@@ -242,6 +243,24 @@ void reset_hung_task_detector(void)
- }
- EXPORT_SYMBOL_GPL(reset_hung_task_detector);
- 
-+static bool hung_detector_suspended;
-+
-+static int hungtask_pm_notify(struct notifier_block *self,
-+			      unsigned long action, void *hcpu)
-+{
-+	switch (action) {
-+	case PM_SUSPEND_PREPARE:
-+		hung_detector_suspended = true;
-+		break;
-+	case PM_POST_SUSPEND:
-+		hung_detector_suspended = false;
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- /*
-  * kthread which checks for tasks stuck in D state
-  */
-@@ -261,7 +280,8 @@ static int watchdog(void *dummy)
- 		interval = min_t(unsigned long, interval, timeout);
- 		t = hung_timeout_jiffies(hung_last_checked, interval);
- 		if (t <= 0) {
--			if (!atomic_xchg(&reset_hung_task, 0))
-+			if (!atomic_xchg(&reset_hung_task, 0) &&
-+			    !hung_detector_suspended)
- 				check_hung_uninterruptible_tasks(timeout);
- 			hung_last_checked = jiffies;
- 			continue;
-@@ -275,6 +295,10 @@ static int watchdog(void *dummy)
- static int __init hung_task_init(void)
- {
- 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-+
-+	/* Disable hung task detector on suspend */
-+	pm_notifier(hungtask_pm_notify, 0);
-+
- 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
- 
- 	return 0;
--- 
-2.14.4
+No idea; but if you want to go all fancy you can replace he whole
+uclamp_map thing with something like:
+
+struct uclamp_map {
+	union {
+		struct {
+			unsigned long v : 10;
+			unsigned long c : BITS_PER_LONG - 10;
+		};
+		atomic_long_t s;
+	};
+};
+
+And use uclamp_map::c == 0 as unused (as per normal refcount
+semantics) and atomic_long_cmpxchg() the whole thing using
+uclamp_map::s.
+
+> > > + *                          uclamp_maps is a matrix of
+> > > + *          +------- UCLAMP_CNT by CONFIG_UCLAMP_GROUPS_COUNT+1 entries
+> > > + *          |                                |
+> > > + *          |                /---------------+---------------\
+> > > + *          |               +------------+       +------------+
+> > > + *          |  / UCLAMP_MIN | value      |       | value      |
+> > > + *          |  |            | se_count   |...... | se_count   |
+> > > + *          |  |            +------------+       +------------+
+> > > + *          +--+            +------------+       +------------+
+> > > + *             |            | value      |       | value      |
+> > > + *             \ UCLAMP_MAX | se_count   |...... | se_count   |
+> > > + *                          +-----^------+       +----^-------+
+> > > + *                                |                   |
+> > > + *                      uc_map =  +                   |
+> > > + *                     &uclamp_maps[clamp_id][0]      +
+> > > + *                                                clamp_value =
+> > > + *                                       uc_map[group_id].value
+> > > + */
+> > > +static struct uclamp_map uclamp_maps[UCLAMP_CNT]
+> > > +				    [CONFIG_UCLAMP_GROUPS_COUNT + 1]
+> > > +				    ____cacheline_aligned_in_smp;
+> > > +
+> > 
+> > I'm still completely confused by all this.
+> > 
+> > sizeof(uclamp_map) = 12
+> > 
+> > that array is 2*6=12 of those, so the whole thing is 144 bytes. which is
+> > more than 2 (64 byte) cachelines.
+> 
+> This data structure is *not* used in the hot-path, that's why I did not
+> care about fitting it exactly into few cache lines.
+> 
+> It's used to map a user-space "clamp value" into a kernel-space "clamp
+> group" when user-space:
+>  - changes a task specific clamp value
+>  - changes a cgroup clamp value
+>  - a task forks/exits
+> 
+> I assume we can consider all those as "slow" code paths, is that correct ?
+
+Yep.
+
+> > What's the purpose of that cacheline align statement?
+> 
+> In uclamp_maps, we still need to scan the array when a clamp value is
+> changed from user-space, i.e. the cases reported above. Thus, that
+> alignment is just to ensure that we minimize the number of cache lines
+> used. Does that make sense ?
+> 
+> Maybe that alignment implicitly generated by the compiler ?
+
+It is not, but if it really is a slow path, we shouldn't care about
+alignment.
+
+> > Note that without that apparently superfluous lock, it would be 8*12 =
+> > 96 bytes, which is 1.5 lines and would indeed suggest you default to
+> > GROUP_COUNT=7 by default to fill 2 lines.
+> 
+> Yes, will check better if we can count on just the uclamp_mutex
+
+Well, if we don't care about performance (slow path) then keeping he
+lock is fine, just the comment and alignment are misleading.
+
+> > Why are the min and max things torn up like that?  I'm fairly sure I
+> > asked some of that last time; but the above comments only try to explain
+> > what, not why.
+> 
+> We use that organization to speedup scanning for clamp values of the
+> same clamp_id. That's more important in the hot-path than above, where
+> we need to scan struct uclamp_cpu when a new aggregated clamp value
+> has to be computed. This is done in:
+> 
+>    [PATCH v4 03/16] sched/core: uclamp: add CPU's clamp groups accounting
+>    https://lore.kernel.org/lkml/20180828135324.21976-4-patrick.bellasi@arm.com/
+> 
+> Specifically:
+> 
+>    dequeue_task()
+>      uclamp_cpu_put()
+>        uclamp_cpu_put_id(clamp_id)
+>          uclamp_cpu_update(clamp_id)
+>             // Here we have an array scan by clamp_id
+> 
+> With the given data layout I reported above, when we update the
+> min_clamp value (boost) we have all the data required in a single
+> cache line.
+> 
+> If that makes sense, I can certainly improve the comment above to
+> justify its layout.
+
+OK, let me read on.
