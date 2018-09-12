@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v3 05/16] thermal: tsens: Add the SROT address map
-Date: Wed, 12 Sep 2018 15:22:50 +0530
-Message-ID: <2900c1006e7e978403b1b95448f9c959c7ae486a.1536744310.git.amit.kucheria@linaro.org>
+Subject: [PATCH v3 07/16] thermal: tsens: Pass register offsets as private data
+Date: Wed, 12 Sep 2018 15:22:52 +0530
+Message-ID: <dccdcf386d8d5298a77ec31cde699852cc4409c5.1536744310.git.amit.kucheria@linaro.org>
 References: <cover.1536744310.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1536744310.git.amit.kucheria@linaro.org>
@@ -12,62 +12,109 @@ To: linux-kernel@vger.kernel.org
 Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On platforms whose device trees specify two address spaces for TSENS, the
-second one points to the SROT registers. Initialise the SROT map on those
-platforms.
+Registers have moved around across TSENS generations. For example, the
+CTRL register was at offset 0x0 in the SROT region on msm8916 but is at
+offset 0x4 in newer v2 based TSENS HW blocks.
+
+Allow passing offsets of important registers so that we can continue to
+use common functions.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 14 ++++++++++++--
- drivers/thermal/qcom/tsens.h        |  1 +
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ drivers/thermal/qcom/tsens-8916.c | 1 +
+ drivers/thermal/qcom/tsens-8974.c | 1 +
+ drivers/thermal/qcom/tsens-v2.c   | 2 ++
+ drivers/thermal/qcom/tsens.c      | 3 +++
+ drivers/thermal/qcom/tsens.h      | 9 +++++++++
+ 5 files changed, 16 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 0585084630b3..0b8a793f15f4 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -117,16 +117,26 @@ static const struct regmap_config tsens_config = {
+diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
+index c4955c85e922..c6dd620ac029 100644
+--- a/drivers/thermal/qcom/tsens-8916.c
++++ b/drivers/thermal/qcom/tsens-8916.c
+@@ -100,5 +100,6 @@ static const struct tsens_ops ops_8916 = {
+ const struct tsens_data data_8916 = {
+ 	.num_sensors	= 5,
+ 	.ops		= &ops_8916,
++	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x0 },
+ 	.hw_ids		= (unsigned int []){0, 1, 2, 4, 5 },
+ };
+diff --git a/drivers/thermal/qcom/tsens-8974.c b/drivers/thermal/qcom/tsens-8974.c
+index 7e149edbfeb6..3d3fda3d731b 100644
+--- a/drivers/thermal/qcom/tsens-8974.c
++++ b/drivers/thermal/qcom/tsens-8974.c
+@@ -232,4 +232,5 @@ static const struct tsens_ops ops_8974 = {
+ const struct tsens_data data_8974 = {
+ 	.num_sensors	= 11,
+ 	.ops		= &ops_8974,
++	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x0 },
+ };
+diff --git a/drivers/thermal/qcom/tsens-v2.c b/drivers/thermal/qcom/tsens-v2.c
+index 1bdef92e4521..381a212872bf 100644
+--- a/drivers/thermal/qcom/tsens-v2.c
++++ b/drivers/thermal/qcom/tsens-v2.c
+@@ -68,10 +68,12 @@ static const struct tsens_ops ops_generic_v2 = {
  
- int __init init_common(struct tsens_device *tmdev)
- {
--	void __iomem *tm_base;
-+	void __iomem *tm_base, *srot_base;
- 	struct resource *res;
- 	struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
+ const struct tsens_data data_tsens_v2 = {
+ 	.ops            = &ops_generic_v2,
++	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x4 },
+ };
  
- 	if (!op)
+ /* Kept around for backward compatibility with old msm8996.dtsi */
+ const struct tsens_data data_8996 = {
+ 	.num_sensors	= 13,
+ 	.ops		= &ops_generic_v2,
++	.reg_offsets	= { [SROT_CTRL_OFFSET] = 0x4 },
+ };
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 9a8e8f7b4ae1..f1ec9bbe4717 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -144,6 +144,9 @@ static int tsens_probe(struct platform_device *pdev)
+ 		else
+ 			tmdev->sensor[i].hw_id = i;
+ 	}
++	for (i = 0; i < REG_ARRAY_SIZE; i++) {
++		tmdev->reg_offsets[i] = data->reg_offsets[i];
++	}
+ 
+ 	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->get_temp)
  		return -EINVAL;
- 
--	/* The driver only uses the TM register address space for now */
- 	if (op->num_resources > 1) {
-+		/* DT with separate SROT and TM address space */
- 		tmdev->tm_offset = 0;
-+		res = platform_get_resource(op, IORESOURCE_MEM, 1);
-+		srot_base = devm_ioremap_resource(&op->dev, res);
-+		if (IS_ERR(srot_base))
-+			return PTR_ERR(srot_base);
-+
-+		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
-+							srot_base, &tsens_config);
-+		if (IS_ERR(tmdev->srot_map))
-+			return PTR_ERR(tmdev->srot_map);
-+
- 	} else {
- 		/* old DTs where SROT and TM were in a contiguous 2K block */
- 		tmdev->tm_offset = 0x1000;
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 58e98c4d3a8b..b9c4bcf255fa 100644
+index b9c4bcf255fa..7b7feee5dc46 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
-@@ -70,6 +70,7 @@ struct tsens_device {
- 	struct device			*dev;
- 	u32				num_sensors;
+@@ -48,15 +48,23 @@ struct tsens_ops {
+ 	int (*get_trend)(struct tsens_device *, int, enum thermal_trend *);
+ };
+ 
++enum reg_list {
++	SROT_CTRL_OFFSET,
++
++	REG_ARRAY_SIZE,
++};
++
+ /**
+  * struct tsens_data - tsens instance specific data
+  * @num_sensors: Max number of sensors supported by platform
+  * @ops: operations the tsens instance supports
+  * @hw_ids: Subset of sensors ids supported by platform, if not the first n
++ * @reg_offsets: Register offsets for commonly used registers
+  */
+ struct tsens_data {
+ 	const u32		num_sensors;
+ 	const struct tsens_ops	*ops;
++	const u16		reg_offsets[REG_ARRAY_SIZE];
+ 	unsigned int		*hw_ids;
+ };
+ 
+@@ -72,6 +80,7 @@ struct tsens_device {
  	struct regmap			*tm_map;
-+	struct regmap			*srot_map;
+ 	struct regmap			*srot_map;
  	u32				tm_offset;
++	u16				reg_offsets[REG_ARRAY_SIZE];
  	struct tsens_context		ctx;
  	const struct tsens_ops		*ops;
+ 	struct tsens_sensor		sensor[0];
 -- 
 2.17.1
