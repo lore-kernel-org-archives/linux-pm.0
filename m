@@ -1,96 +1,53 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Wed, 12 Sep 2018 18:24:27 +0200
-Message-ID: <20180912162427.GA24106@hirez.programming.kicks-ass.net>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-3-patrick.bellasi@arm.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH 5/5] PM / hibernate: An option to request that snapshot
+ image must be authenticated
+Date: Wed, 12 Sep 2018 09:24:38 -0700
+Message-ID: <0ee402c0-bd0e-ea84-9def-f6355b83b4f5@infradead.org>
+References: <20180912142337.21955-1-jlee@suse.com>
+ <20180912142337.21955-6-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180828135324.21976-3-patrick.bellasi@arm.com>
+In-Reply-To: <20180912142337.21955-6-jlee@suse.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
->  static inline int __setscheduler_uclamp(struct task_struct *p,
->  					const struct sched_attr *attr)
+Hi,
 
-But large for inline now.
-
->  {
-> +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
-> +	int lower_bound, upper_bound;
-> +	struct uclamp_se *uc_se;
-> +	int result = 0;
-
-I think the thing would become much more readable if you set
-lower/upper_bound right here.
+On 9/12/18 7:23 AM, Lee, Chun-Yi wrote:
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 7c5c30149dbc..3c998fd6dc4c 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -90,6 +90,17 @@ config HIBERNATION_ENC_AUTH
+>  	  master key of hibernation. The TPM trusted key depends on TPM. The
+>  	  security of user defined key relies on user space.
 >  
-> +	mutex_lock(&uclamp_mutex);
->  
-> +	/* Find a valid group_id for each required clamp value */
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> +		upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
-> +			? attr->sched_util_max
-> +			: p->uclamp[UCLAMP_MAX].value;
-> +
-> +		if (upper_bound == UCLAMP_NOT_VALID)
-> +			upper_bound = SCHED_CAPACITY_SCALE;
-> +		if (attr->sched_util_min > upper_bound) {
-> +			result = -EINVAL;
-> +			goto done;
-> +		}
-> +
-> +		result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
-> +		if (result == -ENOSPC) {
-> +			pr_err(UCLAMP_ENOSPC_FMT, "MIN");
+> +config HIBERNATION_ENC_AUTH_FORCE
+> +	bool "Require hibernate snapshot image to be validly signed"
+> +	depends on HIBERNATION_ENC_AUTH
+> +	help
+> +	  This option will prevent that a snapshot image without (valid)
+> +	  signature be restored. Without this option, a unauthenticated
 
-AFAICT this is an unpriv part of the syscall; and you can spam the log
-without limits. Not good.
+	                                              an
 
-> +			goto done;
-> +		}
-> +		group_id[UCLAMP_MIN] = result;
-> +	}
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> +		lower_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
-> +			? attr->sched_util_min
-> +			: p->uclamp[UCLAMP_MIN].value;
+> +	  snapshot image can be restored but the restored kernel will be
+> +	  tainted. Which also means that the hibernation can be triggered
+
+s/Which/This/
+
+or like this:
+	  tainted, which also
+
+> +	  without snapshot key but kernel will be tainted without this
+> +	  option.
 > +
-> +		if (lower_bound == UCLAMP_NOT_VALID)
-> +			lower_bound = 0;
-> +		if (attr->sched_util_max < lower_bound ||
-> +		    attr->sched_util_max > SCHED_CAPACITY_SCALE) {
-> +			result = -EINVAL;
-> +			goto done;
-> +		}
-> +
-> +		result = uclamp_group_find(UCLAMP_MAX, attr->sched_util_max);
-> +		if (result == -ENOSPC) {
-> +			pr_err(UCLAMP_ENOSPC_FMT, "MAX");
-> +			goto done;
-> +		}
-> +		group_id[UCLAMP_MAX] = result;
-> +	}
-> +
-> +	/* Update each required clamp group */
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> +		uc_se = &p->uclamp[UCLAMP_MIN];
-> +		uclamp_group_get(UCLAMP_MIN, group_id[UCLAMP_MIN],
-> +				 uc_se, attr->sched_util_min);
-> +	}
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> +		uc_se = &p->uclamp[UCLAMP_MAX];
-> +		uclamp_group_get(UCLAMP_MAX, group_id[UCLAMP_MAX],
-> +				 uc_se, attr->sched_util_max);
-> +	}
-> +
-> +done:
-> +	mutex_unlock(&uclamp_mutex);
-> +
-> +	return result;
-> +}
+
+
+-- 
+~Randy
