@@ -1,133 +1,242 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Wed, 12 Sep 2018 11:05:02 +0200
-Message-ID: <CAJZ5v0j6VcFbO_R3fGLi2Ec1DmWsVA-0mzDG3LrA-3D5CrsPbw@mail.gmail.com>
-References: <20180912064523.9599-1-drake@endlessm.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v7 00/14] Energy Aware Scheduling
+Date: Wed, 12 Sep 2018 10:12:55 +0100
+Message-ID: <20180912091309.7551-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180912064523.9599-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rafael Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBTZXAgMTIsIDIwMTggYXQgODo0NSBBTSBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxl
-c3NtLmNvbT4gd3JvdGU6Cj4KPiBPbiAzOCsgSW50ZWwtYmFzZWQgQXN1cyBwcm9kdWN0cywgdGhl
-IG52aWRpYSBHUFUgYmVjb21lcyB1bnVzYWJsZQo+IGFmdGVyIFMzIHN1c3BlbmQvcmVzdW1lLiBU
-aGUgYWZmZWN0ZWQgcHJvZHVjdHMgaW5jbHVkZSBtdWx0aXBsZQo+IGdlbmVyYXRpb25zIG9mIG52
-aWRpYSBHUFVzIGFuZCBJbnRlbCBTb0NzLiBBZnRlciByZXN1bWUsIG5vdXZlYXUgbG9ncwo+IG1h
-bnkgZXJyb3JzIHN1Y2ggYXM6Cj4KPiAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAw
-MDU1NTU1NTUwMDAgZW5naW5lIDAwIFtHUl0gY2xpZW50IDA0IFtIVUIvRkVdIHJlYXNvbiA0YSBb
-XSBvbiBjaGFubmVsIC0xIFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgIERSTTogZmFpbGVkIHRv
-IGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4KPiBTaW1pbGFybHksIHRoZSBudmlkaWEgcHJvcHJpZXRh
-cnkgZHJpdmVyIGFsc28gZmFpbHMgYWZ0ZXIgcmVzdW1lCj4gKGJsYWNrIHNjcmVlbiwgMTAwJSBD
-UFUgdXNhZ2UgaW4gWG9yZyBwcm9jZXNzKS4gV2Ugc2hpcHBlZCBhIHNhbXBsZQo+IHRvIE52aWRp
-YSBmb3IgZGlhZ25vc2lzLCBhbmQgdGhlaXIgcmVzcG9uc2UgaW5kaWNhdGVkIHRoYXQgaXQncyBh
-Cj4gcHJvYmxlbSB3aXRoIHRoZSBwYXJlbnQgUENJIGJyaWRnZSAob24gdGhlIEludGVsIFNvQyks
-IG5vdCB0aGUgR1BVLgo+Cj4gUnVudGltZSBzdXNwZW5kL3Jlc3VtZSB3b3JrcyBmaW5lLCBvbmx5
-IFMzIHN1c3BlbmQgaXMgYWZmZWN0ZWQuCj4KPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9uIHJl
-c3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ICdQcmVmZXRjaGFibGUgQmFzZSBV
-cHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMyKS4gSW4KPiB0aGUg
-Y2FzZXMgdGhhdCBJIGNoZWNrZWQsIHRoaXMgcmVnaXN0ZXIgaGFzIHZhbHVlIDAgYW5kIHdlIGp1
-c3QgaGF2ZSB0bwo+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPgo+IExpbnV4IGFscmVhZHkgc2F2ZXMg
-YW5kIHJlc3RvcmVzIFBDSSBjb25maWcgc3BhY2UgZHVyaW5nIHN1c3BlbmQvcmVzdW1lLAo+IGJ1
-dCB0aGlzIHJlZ2lzdGVyIHdhcyBiZWluZyBza2lwcGVkIGJlY2F1c2UgdXBvbiByZXN1bWUsIGl0
-IGFscmVhZHkKPiBoYXMgdmFsdWUgMCAodGhlIGNvcnJlY3QsIHByZS1zdXNwZW5kIHZhbHVlKS4K
-Pgo+IEludGVsIGFwcGVhciB0byBoYXZlIHByZXZpb3VzbHkgYWNrbm93bGVkZ2VkIHRoaXMgYmVo
-YXZpb3VyIGFuZCB0aGUKPiByZXF1aXJlbWVudCB0byByZXdyaXRlIHRoaXMgcmVnaXN0ZXIuCj4g
-aHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTY4NTEjYzIzCj4K
-PiBCYXNlZCBvbiB0aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3RlciB2YWx1ZXMgZXZl
-biB3aGVuIHRoYXQKPiBhcHBlYXJzIHVubmVjZXNzYXJ5Lgo+Cj4gV2UgaGF2ZSBjb25maXJtZWQg
-dGhpcyBzb2x1dGlvbiBvbiBhbGwgdGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBoYXZlCj4gaW4taGFu
-ZHMgKFg1NDJVUSwgVVg1MzNGRCwgWDUzMFVOLCBWMjcyVU4pLgo+Cj4gQWRkaXRpb25hbGx5LCB0
-aGlzIHNvbHZlcyBhbiBpc3N1ZSB3aGVyZSByODE2OSBNU0ktWCBpbnRlcnJ1cHRzIHdlcmUKPiBi
-cm9rZW4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUgb24gQXN1cyBYNDQxVUFSLiBUaGlzIGlzc3Vl
-IHdhcyByZWNlbnRseQo+IHdvcmtlZCBhcm91bmQgaW4gY29tbWl0IDdiYjA1Yjg1YmMyZCAoInI4
-MTY5OiBkb24ndCB1c2UgTVNJLVggb24KPiBSVEw4MTA2ZSIpLiBJdCBhbHNvIGZpeGVzIHRoZSBz
-YW1lIGlzc3VlIG9uIFJUTDYxODZldmwvODExMWV2bCBvbiBhbgo+IEFpbWZvci10ZWNoIGxhcHRv
-cCB0aGF0IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQuIEkgc3VzcGVjdCBpdCB3aWxsIGFsc28KPiBm
-aXggdGhlIGlzc3VlIHRoYXQgd2FzIHdvcmtlZCBhcm91bmQgaW4gY29tbWl0IDdjNTNhNzIyNDU5
-YyAoInI4MTY5Ogo+IGRvbid0IHVzZSBNU0ktWCBvbiBSVEw4MTY4ZyIpLgo+Cj4gVGhvbWFzIE1h
-cnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlzc3VlIHdoZXJl
-Cj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhlIEhQIFpib29rIDE0dSBHNSBp
-cyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4KPgo+IExpbms6IGh0dHBz
-Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAxMDY5Cj4gU2lnbmVkLW9m
-Zi1ieTogRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRsZXNzbS5jb20+Cj4gLS0tCj4KPiBOb3RlczoK
-PiAgICAgUmVwbGFjZXMgcGF0Y2g6Cj4gICAgICAgIFBDSTogYWRkIHByZWZldGNoIHF1aXJrIHRv
-IHdvcmsgYXJvdW5kIEFzdXMvTnZpZGlhIHN1c3BlbmQgaXNzdWVzCj4KPiAgICAgU29tZSBvZiB0
-aGUgbW9yZSB2ZXJib3NlIGluZm8gd2FzIG1vdmVkIHRvIGJ1Z3ppbGxhOgo+ICAgICBodHRwczov
-L2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OQo+Cj4gICAgIFRoaXMg
-cGF0Y2ggaXMgYWltZWQgYXQgdjQuMTkgKGFuZCBtYXliZSB2NC4xOC1zdGFibGUpOyB3ZSBtYXkg
-Zm9sbG93Cj4gICAgIHVwIHdpdGggbW9yZSBpbnRydXNpdmUgaW1wcm92ZW1lbnRzIGZvciB2NC4y
-MCsuCj4KPiAgICAgdjI6IHJlaW1wbGVtZW50IHRoZSByZWdpc3RlciByZXN0b3JlIHdpdGhpbiB0
-aGUgZXhpc3RpbmcKPiAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZSgpIGNvZGUuCj4K
-PiAgZHJpdmVycy9wY2kvcGNpLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0t
-Cj4gIDEgZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMoLSkKPgo+
-IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCj4gaW5k
-ZXggMjlmZjk2MTliNWZhLi5lMTcwNDEwMGU3MmQgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9wY2kv
-cGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC0xMjg5LDEzICsxMjg5LDE1IEBA
-IGludCBwY2lfc2F2ZV9zdGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+ICBFWFBPUlRfU1lNQk9M
-KHBjaV9zYXZlX3N0YXRlKTsKPgo+ICBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfZHdv
-cmQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGludCBvZmZzZXQsCj4gLSAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHUzMiBzYXZlZF92YWwsIGludCByZXRyeSkKPiArICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgdTMyIHNhdmVkX3ZhbCwgaW50IHJldHJ5LCBib29s
-IGZvcmNlKQo+ICB7Cj4gICAgICAgICB1MzIgdmFsOwo+Cj4gLSAgICAgICBwY2lfcmVhZF9jb25m
-aWdfZHdvcmQocGRldiwgb2Zmc2V0LCAmdmFsKTsKPiAtICAgICAgIGlmICh2YWwgPT0gc2F2ZWRf
-dmFsKQo+IC0gICAgICAgICAgICAgICByZXR1cm47Cj4gKyAgICAgICBpZiAoIWZvcmNlKSB7Cj4g
-KyAgICAgICAgICAgICAgIHBjaV9yZWFkX2NvbmZpZ19kd29yZChwZGV2LCBvZmZzZXQsICZ2YWwp
-Owo+ICsgICAgICAgICAgICAgICBpZiAodmFsID09IHNhdmVkX3ZhbCkKPiArICAgICAgICAgICAg
-ICAgICAgICAgICByZXR1cm47Cj4gKyAgICAgICB9Cj4KPiAgICAgICAgIGZvciAoOzspIHsKPiAg
-ICAgICAgICAgICAgICAgcGNpX2RiZyhwZGV2LCAicmVzdG9yaW5nIGNvbmZpZyBzcGFjZSBhdCBv
-ZmZzZXQgJSN4ICh3YXMgJSN4LCB3cml0aW5nICUjeClcbiIsCj4gQEAgLTEzMTMsMjUgKzEzMTUs
-MzQgQEAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3JkKHN0cnVjdCBwY2lfZGV2
-ICpwZGV2LCBpbnQgb2Zmc2V0LAo+ICB9Cj4KPiAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29u
-ZmlnX3NwYWNlX3JhbmdlKHN0cnVjdCBwY2lfZGV2ICpwZGV2LAo+IC0gICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBpbnQgc3RhcnQsIGludCBlbmQsIGludCByZXRyeSkK
-PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW50IHN0YXJ0LCBp
-bnQgZW5kLCBpbnQgcmV0cnksCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIGJvb2wgZm9yY2UpCj4gIHsKPiAgICAgICAgIGludCBpbmRleDsKPgo+ICAgICAgICAg
-Zm9yIChpbmRleCA9IGVuZDsgaW5kZXggPj0gc3RhcnQ7IGluZGV4LS0pCj4gICAgICAgICAgICAg
-ICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19kd29yZChwZGV2LCA0ICogaW5kZXgsCj4gICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBwZGV2LT5zYXZlZF9jb25maWdfc3BhY2Vb
-aW5kZXhdLAo+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0cnkp
-Owo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgcmV0cnksIGZvcmNl
-KTsKPiAgfQo+Cj4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1Y3Qg
-cGNpX2RldiAqcGRldikKPiAgewo+ICAgICAgICAgaWYgKHBkZXYtPmhkcl90eXBlID09IFBDSV9I
-RUFERVJfVFlQRV9OT1JNQUwpIHsKPiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmln
-X3NwYWNlX3JhbmdlKHBkZXYsIDEwLCAxNSwgMCk7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0
-b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAxMCwgMTUsIDAsIGZhbHNlKTsKPiAgICAgICAg
-ICAgICAgICAgLyogUmVzdG9yZSBCQVJzIGJlZm9yZSB0aGUgY29tbWFuZCByZWdpc3Rlci4gKi8K
-PiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDQs
-IDksIDEwKTsKPiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
-KHBkZXYsIDAsIDMsIDApOwo+ICsgICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3Bh
-Y2VfcmFuZ2UocGRldiwgNCwgOSwgMTAsIGZhbHNlKTsKPiArICAgICAgICAgICAgICAgcGNpX3Jl
-c3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDMsIDAsIGZhbHNlKTsKPiArICAgICAg
-IH0gZWxzZSBpZiAocGRldi0+aGRyX3R5cGUgPT0gUENJX0hFQURFUl9UWVBFX0JSSURHRSkgewo+
-ICsgICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTIs
-IDE1LCAwLCBmYWxzZSk7Cj4gKyAgICAgICAgICAgICAgIC8qIEZvcmNlIHJld3JpdGluZyBvZiBw
-cmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiArICAgICAgICAgICAgICAgICogUzMgcmVzdW1l
-IGlzc3VlcyBvbiBJbnRlbCBQQ0kgYnJpZGdlcyB0aGF0IG9jY3VyIHdoZW4KPiArICAgICAgICAg
-ICAgICAgICogdGhlc2UgcmVnaXN0ZXJzIGFyZSBub3QgZXhwbGljaXRseSB3cml0dGVuLgo+ICsg
-ICAgICAgICAgICAgICAgKi8KPiArICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3Nw
-YWNlX3JhbmdlKHBkZXYsIDksIDExLCAwLCB0cnVlKTsKPiArICAgICAgICAgICAgICAgcGNpX3Jl
-c3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDgsIDAsIGZhbHNlKTsKPiAgICAgICAg
-IH0gZWxzZSB7Cj4gLSAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5n
-ZShwZGV2LCAwLCAxNSwgMCk7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19z
-cGFjZV9yYW5nZShwZGV2LCAwLCAxNSwgMCwgZmFsc2UpOwo+ICAgICAgICAgfQo+ICB9Cj4KPiAt
-LQoKUGFzc2luZyB0aGUgZXh0cmEgYm9vbCBhcm91bmQgaXMgc29tZXdoYXQgY2x1bXN5LCBidXQg
-SSBoYXZlbid0IGZvdW5kCmEgY2xlYW5lciB3YXkgdG8gZG8gaXQsIHNvCgpSZXZpZXdlZC1ieTog
-UmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlz
-dApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9w
-Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+This patch series introduces Energy Aware Scheduling (EAS) for CFS tasks
+on platforms with asymmetric CPU topologies (e.g. Arm big.LITTLE).
+
+For more details about the ideas behind it and the overall design,
+please refer to the cover letter of version 5 [1].
+
+
+1. Version History
+------------------
+
+Changes v6[2]->v7:
+- Replaced the sched_energy_present static key by a sched_feat
+- Replaced the CPUFreq notifier in the dependency between sugov and EAS
+  by a function call
+- Squashed all sugov-refactoring patches into patch 02
+- Clarified comment in em_fd_energy() to explain the choice of “energy”
+  over “power”
+- Added kerneldoc to structs in include/linux/energy_model.h
+- Removed unnecessary memory barrier from the EM framework
+- Fixed corner case in find_energy_efficient_cpu when prev_cpu is
+  overutilized (and prev_energy = ULONG_MAX)
+
+Changes v5[1]->v6:
+- Rebased on Peter’s sched/core branch (that includes Morten's misfit
+  patches [3] and the automatic detection of SD_ASYM_CPUCAPACITY [4])
+- Removed patch 13/14 (not needed with the automatic flag detection)
+- Added patch creating a dependency between sugov and EAS
+- Renamed frequency domains to performance domains to avoid creating too
+  deep assumptions in the code about the HW
+- Renamed the sd_ea shortcut sd_asym_cpucapacity
+- Added comment to explain why new tasks are not accounted when
+  detecting the 'overutilized' flag
+- Added comment explaining why forkees don’t go in
+  find_energy_efficient_cpu()
+
+Changes v4[5]->v5:
+- Removed the RCU protection of the EM tables and the associated
+  need for em_rescale_cpu_capacity().
+- Factorized schedutil’s PELT aggregation function with EAS
+- Improved comments/doc in the EM framework
+- Added check on the uarch of CPUs in one fd in the EM framework
+- Reduced CONFIG_ENERGY_MODEL ifdefery in kernel/sched/topology.c
+- Cleaned-up update_sg_lb_stats parameters
+- Improved comments in compute_energy() to explain the multi-rd
+  scenarios
+
+Changes v3[6]->v4:
+- Replaced spinlock in EM framework by smp_store_release/READ_ONCE
+- Fixed missing locks to protect rcu_assign_pointer in EM framework
+- Fixed capacity calculation in EM framework on 32 bits system
+- Fixed compilation issue for CONFIG_ENERGY_MODEL=n
+- Removed cpumask from struct em_freq_domain, now dynamically allocated
+- Power costs of the EM are specified in milliwatts
+- Added example of CPUFreq driver modification
+- Added doc/comments in the EM framework and better commit header
+- Fixed integration issue with util_est in cpu_util_next()
+- Changed scheduler topology code to have one freq. dom. list per rd
+- Split sched topology patch in smaller patches
+- Added doc/comments explaining the heuristic in the wake-up path
+- Changed energy threshold for migration to from 1.5% to 6%
+
+Changes v2[7]->v3:
+- Removed the PM_OPP dependency by implementing a new EM framework
+- Modified the scheduler topology code to take references on the EM data
+  structures
+- Simplified the overutilization mechanism into a system-wide flag
+- Reworked the integration in the wake-up path using the sd_ea shortcut
+- Rebased on tip/sched/core (247f2f6f3c70 "sched/core: Don't schedule
+  threads on pre-empted vCPUs")
+
+Changes v1[8]->v2:
+- Reworked interface between fair.c and energy.[ch] (Remove #ifdef
+  CONFIG_PM_OPP from energy.c) (Greg KH)
+- Fixed licence & header issue in energy.[ch] (Greg KH)
+- Reordered EAS path in select_task_rq_fair() (Joel)
+- Avoid prev_cpu if not allowed in select_task_rq_fair() (Morten/Joel)
+- Refactored compute_energy() (Patrick)
+- Account for RT/IRQ pressure in task_fits() (Patrick)
+- Use UTIL_EST and DL utilization during OPP estimation (Patrick/Juri)
+- Optimize selection of CPU candidates in the energy-aware wake-up path
+- Rebased on top of tip/sched/core (commit b720342849fe “sched/core:
+  Update Preempt_notifier_key to modern API”)
+
+
+2. Test results
+---------------
+
+Two fundamentally different tests were executed. Firstly the energy test
+case shows the impact on energy consumption this patch-set has using a
+synthetic set of tasks. Secondly the performance test case provides the
+conventional hackbench metric numbers.
+
+The tests run on two arm64 big.LITTLE platforms: Hikey960 (4xA73 +
+4xA53) and Juno r0 (2xA57 + 4xA53).
+
+Base kernel is 4.18-rc6, with some Hikey960 and Juno specific patches,
+and Morten's patches from tip/sched/core for detecting the
+SD_ASYM_CPUCAPACITY flag [9].
+
+2.1 Energy test case
+
+10 iterations of between 10 and 50 periodic rt-app tasks (16ms period,
+5% duty-cycle) for 30 seconds with energy measurement. Unit is Joules.
+The goal is to save energy, so lower is better.
+
+2.1.1 Hikey960
+
+Energy is measured with an ACME Cape on an instrumented board. Numbers
+include consumption of big and little CPUs, LPDDR memory, GPU and most
+of the other small components on the board. They do not include
+consumption of the radio chip (turned-off anyway) and external
+connectors.
+
++----------+-----------------+-------------------------+
+|          | Without patches | With patches            |
++----------+--------+--------+------------------+------+
+| Tasks nb |  Mean  | RSD*   | Mean             | RSD* |
++----------+--------+--------+------------------+------+
+|       10 |  34.14 |   4.2% |  29.41 (-13.85%) | 2.0% |
+|       20 |  52.83 |   1.5% |  44.57 (-15.64%) | 2.6% |
+|       30 |  66.67 |   1.4% |  60.92  (-8.62%) | 3.7% |
+|       40 |  93.21 |   3.7% |  86.36  (-7.35%) | 6.4% |
+|       50 | 135.52 |   5.0% | 108.36 (-20.04%) | 2.1% |
++----------+--------+--------+------------------+------+
+
+2.1.2 Juno r0
+
+Energy is measured with the onboard energy meter. Numbers include
+consumption of big and little CPUs.
+
++----------+-----------------+------------------------+
+|          | Without patches | With patches           |
++----------+--------+--------+-----------------+------+
+| Tasks nb |  Mean  | RSD*   | Mean            | RSD* |
++----------+--------+--------+-----------------+------+
+|       10 |  10.83 |   6.7% |  7.79 (-28.07%) | 6.4% |
+|       20 |  20.84 |   3.3% | 15.69 (-24.71%) | 4.1% |
+|       30 |  32.41 |   2.8% | 23.85 (-26.41%) | 4.4% |
+|       40 |  43.26 |   1.1% | 33.69 (-22.12%) | 4.1% |
+|       50 |  56.26 |   2.5% | 47.95 (-14.77%) | 6.0% |
++----------+--------+--------+-----------------+------+
+
+
+2.2 Performance test case
+
+30 iterations of perf bench sched messaging --pipe --thread --group G
+--loop L with G=[1 2 4 8] and L=50000 (Hikey960)/16000 (Juno r0).
+
+2.2.1 Hikey960
+
+The impact of thermal capping was mitigated thanks to a heatsink, a
+fan, and a 30 sec delay between two successive executions. IPA is
+disabled to reduce the stddev.
+
++----------------+-----------------+------------------------+
+|                | Without patches | With patches           |
++--------+-------+---------+-------+----------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
++--------+-------+---------+-------+----------------+-------+
+|      1 |    40 |    8.03 | 0.99% |  8.23 (+2.49%) | 1.16% |
+|      2 |    80 |   14.75 | 0.76% | 15.01 (+1.76%) | 1.03% |
+|      4 |   160 |   31.51 | 0.46% | 31.61 (+0.32%) | 0.47% |
+|      8 |   320 |   67.89 | 0.43% | 66.66 (+0.00%) | 0.41% |
++--------+-------+---------+-------+----------------+-------+
+
+2.2.2 Juno r0
+
++----------------+-----------------+------------------------+
+|                | Without patches | With patches           |
++--------+-------+---------+-------+----------------+-------+
+| Groups | Tasks | Mean    | RSD*  | Mean           | RSD*  |
++--------+-------+---------+-------+----------------+-------+
+|      1 |    40 |    8.23 | 1.14% |  8.24 (+0.12%) | 1.60% |
+|      2 |    80 |   15.40 | 0.90% | 15.43 (+1.19%) | 1.23% |
+|      4 |   160 |   29.66 | 1.30% | 29.70 (+0.10%) | 0.89% |
+|      8 |   320 |   60.07 | 1.93% | 60.14 (+0.12%) | 1.70% |
++--------+-------+---------+-------+----------------+-------+
+
+*RSD: Relative Standard Deviation (std dev / mean)
+
+
+[1] https://marc.info/?l=linux-pm&m=153243513908731&w=2
+[2] https://marc.info/?l=linux-kernel&m=153476300928169&w=2
+[3] https://marc.info/?l=linux-kernel&m=153069968022982&w=2
+[4] https://marc.info/?l=linux-kernel&m=153209362826476&w=2
+[5] https://marc.info/?l=linux-kernel&m=153018606728533&w=2
+[6] https://marc.info/?l=linux-kernel&m=152691273111941&w=2
+[7] https://marc.info/?l=linux-kernel&m=152302902427143&w=2
+[8] https://marc.info/?l=linux-kernel&m=152153905805048&w=2
+[9] http://www.linux-arm.org/git?p=linux-qp.git;a=shortlog;h=refs/heads/upstream/eas_v7_04
+
+
+Morten Rasmussen (1):
+  sched: Add over-utilization/tipping point indicator
+
+Quentin Perret (13):
+  sched: Relocate arch_scale_cpu_capacity
+  sched/cpufreq: Prepare schedutil for Energy Aware Scheduling
+  PM: Introduce an Energy Model management framework
+  PM / EM: Expose the Energy Model in sysfs
+  sched: Introduce a sched_feat for Energy Aware Scheduling
+  sched/topology: Reference the Energy Model of CPUs when available
+  sched/topology: Lowest CPU asymmetry sched_domain level pointer
+  sched/topology: Disable EAS on inappropriate platforms
+  sched/fair: Clean-up update_sg_lb_stats parameters
+  sched/fair: Introduce an energy estimation helper function
+  sched/fair: Select an energy-efficient CPU on task wake-up
+  sched/topology: Make Energy Aware Scheduling depend on schedutil
+  OPTIONAL: cpufreq: dt: Register an Energy Model
+
+ drivers/cpufreq/cpufreq-dt.c     |  48 ++++-
+ drivers/cpufreq/cpufreq.c        |   2 +
+ include/linux/energy_model.h     | 187 +++++++++++++++++++
+ include/linux/sched/cpufreq.h    |  15 ++
+ include/linux/sched/topology.h   |  19 ++
+ kernel/power/Kconfig             |  15 ++
+ kernel/power/Makefile            |   2 +
+ kernel/power/energy_model.c      | 285 +++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c | 126 +++++++++----
+ kernel/sched/fair.c              | 302 ++++++++++++++++++++++++++++---
+ kernel/sched/features.h          |   7 +
+ kernel/sched/sched.h             |  64 ++++---
+ kernel/sched/topology.c          | 205 ++++++++++++++++++++-
+ 13 files changed, 1196 insertions(+), 81 deletions(-)
+ create mode 100644 include/linux/energy_model.h
+ create mode 100644 kernel/power/energy_model.c
+
+-- 
+2.18.0
