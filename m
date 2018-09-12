@@ -1,112 +1,82 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2] PCI: Reprogram bridge prefetch registers on
- resume
-Date: Wed, 12 Sep 2018 14:45:23 +0800
-Message-ID: <20180912064523.9599-1-drake@endlessm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH 1/2] dt-bindings: power: Add Spreadtrum SC27XX fuel gauge unit documentation
+Date: Wed, 12 Sep 2018 15:29:38 +0800
+Message-ID: <1b3f165e2a806dd3d4b7712160ee3bda72f7d675.1536736399.git.baolin.wang@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMzgrIEludGVsLWJhc2VkIEFzdXMgcHJvZHVjdHMsIHRoZSBudmlkaWEgR1BVIGJlY29tZXMg
-dW51c2FibGUKYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBwcm9kdWN0cyBp
-bmNsdWRlIG11bHRpcGxlCmdlbmVyYXRpb25zIG9mIG52aWRpYSBHUFVzIGFuZCBJbnRlbCBTb0Nz
-LiBBZnRlciByZXN1bWUsIG5vdXZlYXUgbG9ncwptYW55IGVycm9ycyBzdWNoIGFzOgoKICAgIGZp
-Zm86IGZhdWx0IDAwIFtSRUFEXSBhdCAwMDAwMDA1NTU1NTU1MDAwIGVuZ2luZSAwMCBbR1JdIGNs
-aWVudCAwNCBbSFVCL0ZFXSByZWFzb24gNGEgW10gb24gY2hhbm5lbCAtMSBbMDA3ZmE5MTAwMCB1
-bmtub3duXQogICAgRFJNOiBmYWlsZWQgdG8gaWRsZSBjaGFubmVsIDAgW0RSTV0KClNpbWlsYXJs
-eSwgdGhlIG52aWRpYSBwcm9wcmlldGFyeSBkcml2ZXIgYWxzbyBmYWlscyBhZnRlciByZXN1bWUK
-KGJsYWNrIHNjcmVlbiwgMTAwJSBDUFUgdXNhZ2UgaW4gWG9yZyBwcm9jZXNzKS4gV2Ugc2hpcHBl
-ZCBhIHNhbXBsZQp0byBOdmlkaWEgZm9yIGRpYWdub3NpcywgYW5kIHRoZWlyIHJlc3BvbnNlIGlu
-ZGljYXRlZCB0aGF0IGl0J3MgYQpwcm9ibGVtIHdpdGggdGhlIHBhcmVudCBQQ0kgYnJpZGdlIChv
-biB0aGUgSW50ZWwgU29DKSwgbm90IHRoZSBHUFUuCgpSdW50aW1lIHN1c3BlbmQvcmVzdW1lIHdv
-cmtzIGZpbmUsIG9ubHkgUzMgc3VzcGVuZCBpcyBhZmZlY3RlZC4KCldlIGZvdW5kIGEgd29ya2Fy
-b3VuZDogb24gcmVzdW1lLCByZXdyaXRlIHRoZSBJbnRlbCBQQ0kgYnJpZGdlCidQcmVmZXRjaGFi
-bGUgQmFzZSBVcHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMyKS4g
-SW4KdGhlIGNhc2VzIHRoYXQgSSBjaGVja2VkLCB0aGlzIHJlZ2lzdGVyIGhhcyB2YWx1ZSAwIGFu
-ZCB3ZSBqdXN0IGhhdmUgdG8KcmV3cml0ZSB0aGF0IHZhbHVlLgoKTGludXggYWxyZWFkeSBzYXZl
-cyBhbmQgcmVzdG9yZXMgUENJIGNvbmZpZyBzcGFjZSBkdXJpbmcgc3VzcGVuZC9yZXN1bWUsCmJ1
-dCB0aGlzIHJlZ2lzdGVyIHdhcyBiZWluZyBza2lwcGVkIGJlY2F1c2UgdXBvbiByZXN1bWUsIGl0
-IGFscmVhZHkKaGFzIHZhbHVlIDAgKHRoZSBjb3JyZWN0LCBwcmUtc3VzcGVuZCB2YWx1ZSkuCgpJ
-bnRlbCBhcHBlYXIgdG8gaGF2ZSBwcmV2aW91c2x5IGFja25vd2xlZGdlZCB0aGlzIGJlaGF2aW91
-ciBhbmQgdGhlCnJlcXVpcmVtZW50IHRvIHJld3JpdGUgdGhpcyByZWdpc3Rlci4KaHR0cHM6Ly9i
-dWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMTY4NTEjYzIzCgpCYXNlZCBvbiB0
-aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3RlciB2YWx1ZXMgZXZlbiB3aGVuIHRoYXQK
-YXBwZWFycyB1bm5lY2Vzc2FyeS4KCldlIGhhdmUgY29uZmlybWVkIHRoaXMgc29sdXRpb24gb24g
-YWxsIHRoZSBhZmZlY3RlZCBtb2RlbHMgd2UgaGF2ZQppbi1oYW5kcyAoWDU0MlVRLCBVWDUzM0ZE
-LCBYNTMwVU4sIFYyNzJVTikuCgpBZGRpdGlvbmFsbHksIHRoaXMgc29sdmVzIGFuIGlzc3VlIHdo
-ZXJlIHI4MTY5IE1TSS1YIGludGVycnVwdHMgd2VyZQpicm9rZW4gYWZ0ZXIgUzMgc3VzcGVuZC9y
-ZXN1bWUgb24gQXN1cyBYNDQxVUFSLiBUaGlzIGlzc3VlIHdhcyByZWNlbnRseQp3b3JrZWQgYXJv
-dW5kIGluIGNvbW1pdCA3YmIwNWI4NWJjMmQgKCJyODE2OTogZG9uJ3QgdXNlIE1TSS1YIG9uClJU
-TDgxMDZlIikuIEl0IGFsc28gZml4ZXMgdGhlIHNhbWUgaXNzdWUgb24gUlRMNjE4NmV2bC84MTEx
-ZXZsIG9uIGFuCkFpbWZvci10ZWNoIGxhcHRvcCB0aGF0IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQu
-IEkgc3VzcGVjdCBpdCB3aWxsIGFsc28KZml4IHRoZSBpc3N1ZSB0aGF0IHdhcyB3b3JrZWQgYXJv
-dW5kIGluIGNvbW1pdCA3YzUzYTcyMjQ1OWMgKCJyODE2OToKZG9uJ3QgdXNlIE1TSS1YIG9uIFJU
-TDgxNjhnIikuCgpUaG9tYXMgTWFydGl0eiByZXBvcnRzIHRoYXQgdGhpcyBjaGFuZ2UgYWxzbyBz
-b2x2ZXMgYW4gaXNzdWUgd2hlcmUKdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhl
-IEhQIFpib29rIDE0dSBHNSBpcyB1bnJlc3BvbnNpdmUKYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUu
-CgpMaW5rOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2
-OQpTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxlc3NtLmNvbT4KLS0tCgpO
-b3RlczoKICAgIFJlcGxhY2VzIHBhdGNoOgogICAgICAgUENJOiBhZGQgcHJlZmV0Y2ggcXVpcmsg
-dG8gd29yayBhcm91bmQgQXN1cy9OdmlkaWEgc3VzcGVuZCBpc3N1ZXMKICAgIAogICAgU29tZSBv
-ZiB0aGUgbW9yZSB2ZXJib3NlIGluZm8gd2FzIG1vdmVkIHRvIGJ1Z3ppbGxhOgogICAgaHR0cHM6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0yMDEwNjkKICAgIAogICAgVGhp
-cyBwYXRjaCBpcyBhaW1lZCBhdCB2NC4xOSAoYW5kIG1heWJlIHY0LjE4LXN0YWJsZSk7IHdlIG1h
-eSBmb2xsb3cKICAgIHVwIHdpdGggbW9yZSBpbnRydXNpdmUgaW1wcm92ZW1lbnRzIGZvciB2NC4y
-MCsuCiAgICAKICAgIHYyOiByZWltcGxlbWVudCB0aGUgcmVnaXN0ZXIgcmVzdG9yZSB3aXRoaW4g
-dGhlIGV4aXN0aW5nCiAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlKCkgY29kZS4KCiBk
-cml2ZXJzL3BjaS9wY2kuYyB8IDMxICsrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0KIDEg
-ZmlsZSBjaGFuZ2VkLCAyMSBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMoLSkKCmRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCmluZGV4IDI5ZmY5NjE5
-YjVmYS4uZTE3MDQxMDBlNzJkIDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2kuYworKysgYi9k
-cml2ZXJzL3BjaS9wY2kuYwpAQCAtMTI4OSwxMyArMTI4OSwxNSBAQCBpbnQgcGNpX3NhdmVfc3Rh
-dGUoc3RydWN0IHBjaV9kZXYgKmRldikKIEVYUE9SVF9TWU1CT0wocGNpX3NhdmVfc3RhdGUpOwog
-CiBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQoc3RydWN0IHBjaV9kZXYgKnBk
-ZXYsIGludCBvZmZzZXQsCi0JCQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnkpCisJCQkJ
-ICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnksIGJvb2wgZm9yY2UpCiB7CiAJdTMyIHZhbDsK
-IAotCXBjaV9yZWFkX2NvbmZpZ19kd29yZChwZGV2LCBvZmZzZXQsICZ2YWwpOwotCWlmICh2YWwg
-PT0gc2F2ZWRfdmFsKQotCQlyZXR1cm47CisJaWYgKCFmb3JjZSkgeworCQlwY2lfcmVhZF9jb25m
-aWdfZHdvcmQocGRldiwgb2Zmc2V0LCAmdmFsKTsKKwkJaWYgKHZhbCA9PSBzYXZlZF92YWwpCisJ
-CQlyZXR1cm47CisJfQogCiAJZm9yICg7OykgewogCQlwY2lfZGJnKHBkZXYsICJyZXN0b3Jpbmcg
-Y29uZmlnIHNwYWNlIGF0IG9mZnNldCAlI3ggKHdhcyAlI3gsIHdyaXRpbmcgJSN4KVxuIiwKQEAg
-LTEzMTMsMjUgKzEzMTUsMzQgQEAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3Jk
-KHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBpbnQgb2Zmc2V0LAogfQogCiBzdGF0aWMgdm9pZCBwY2lf
-cmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uoc3RydWN0IHBjaV9kZXYgKnBkZXYsCi0JCQkJCSAg
-IGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5KQorCQkJCQkgICBpbnQgc3RhcnQsIGludCBl
-bmQsIGludCByZXRyeSwKKwkJCQkJICAgYm9vbCBmb3JjZSkKIHsKIAlpbnQgaW5kZXg7CiAKIAlm
-b3IgKGluZGV4ID0gZW5kOyBpbmRleCA+PSBzdGFydDsgaW5kZXgtLSkKIAkJcGNpX3Jlc3RvcmVf
-Y29uZmlnX2R3b3JkKHBkZXYsIDQgKiBpbmRleCwKIAkJCQkJIHBkZXYtPnNhdmVkX2NvbmZpZ19z
-cGFjZVtpbmRleF0sCi0JCQkJCSByZXRyeSk7CisJCQkJCSByZXRyeSwgZm9yY2UpOwogfQogCiBz
-dGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2Uoc3RydWN0IHBjaV9kZXYgKnBkZXYp
-CiB7CiAJaWYgKHBkZXYtPmhkcl90eXBlID09IFBDSV9IRUFERVJfVFlQRV9OT1JNQUwpIHsKLQkJ
-cGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDEwLCAxNSwgMCk7CisJCXBjaV9y
-ZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAxMCwgMTUsIDAsIGZhbHNlKTsKIAkJLyog
-UmVzdG9yZSBCQVJzIGJlZm9yZSB0aGUgY29tbWFuZCByZWdpc3Rlci4gKi8KLQkJcGNpX3Jlc3Rv
-cmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDQsIDksIDEwKTsKLQkJcGNpX3Jlc3RvcmVfY29u
-ZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDMsIDApOworCQlwY2lfcmVzdG9yZV9jb25maWdfc3Bh
-Y2VfcmFuZ2UocGRldiwgNCwgOSwgMTAsIGZhbHNlKTsKKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3Nw
-YWNlX3JhbmdlKHBkZXYsIDAsIDMsIDAsIGZhbHNlKTsKKwl9IGVsc2UgaWYgKHBkZXYtPmhkcl90
-eXBlID09IFBDSV9IRUFERVJfVFlQRV9CUklER0UpIHsKKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3Nw
-YWNlX3JhbmdlKHBkZXYsIDEyLCAxNSwgMCwgZmFsc2UpOworCQkvKiBGb3JjZSByZXdyaXRpbmcg
-b2YgcHJlZmV0Y2ggcmVnaXN0ZXJzIHRvIGF2b2lkCisJCSAqIFMzIHJlc3VtZSBpc3N1ZXMgb24g
-SW50ZWwgUENJIGJyaWRnZXMgdGhhdCBvY2N1ciB3aGVuCisJCSAqIHRoZXNlIHJlZ2lzdGVycyBh
-cmUgbm90IGV4cGxpY2l0bHkgd3JpdHRlbi4KKwkJICovCisJCXBjaV9yZXN0b3JlX2NvbmZpZ19z
-cGFjZV9yYW5nZShwZGV2LCA5LCAxMSwgMCwgdHJ1ZSk7CisJCXBjaV9yZXN0b3JlX2NvbmZpZ19z
-cGFjZV9yYW5nZShwZGV2LCAwLCA4LCAwLCBmYWxzZSk7CiAJfSBlbHNlIHsKLQkJcGNpX3Jlc3Rv
-cmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDE1LCAwKTsKKwkJcGNpX3Jlc3RvcmVfY29u
-ZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDE1LCAwLCBmYWxzZSk7CiAJfQogfQogCi0tIAoyLjE3
-LjEKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZl
-YXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+This patch adds the binding documentation for Spreadtrum SC27XX series PMICs
+fuel gauge unit device, which is used to calculate the battery capacity.
+
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ .../devicetree/bindings/power/supply/sc27xx-fg.txt |   55 ++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+
+diff --git a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+new file mode 100644
+index 0000000..7447bae
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+@@ -0,0 +1,55 @@
++Spreadtrum SC27XX PMICs Fuel Gauge Unit Power Supply Bindings
++
++Required properties:
++- compatible: Should be one of the following:
++  "sprd,sc2720-fgu",
++  "sprd,sc2721-fgu",
++  "sprd,sc2723-fgu",
++  "sprd,sc2730-fgu",
++  "sprd,sc2731-fgu".
++- reg: The address offset of fuel gauge unit.
++- bat-detect-gpio: GPIO for battery detection.
++- io-channels: Specify the IIO ADC channel to get temperature.
++- io-channel-names: Should be "bat-temp".
++- sprd,inner-resist: Specify the the battery inner resistance (mOhm).
++- sprd,ocv-cap-table: Provide the battery capacity percent with corresponding
++  open circuit voltage (ocv) of the battery, which is used to look up current
++  battery capacity according to current baterry ocv values.
++- monitored-battery: Phandle of battery characteristics devicetree node.
++  The fuel gauge uses the following battery properties:
++- charge-full-design-microamp-hours: battery design capacity.
++- constant-charge-voltage-max-microvolt: maximum constant input voltage.
++  See Documentation/devicetree/bindings/power/supply/battery.txt
++
++Example:
++
++	bat: battery {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <1900000>;
++		constant-charge-voltage-max-microvolt = <4350000>;
++		......
++	};
++
++	sc2731_pmic: pmic@0 {
++		compatible = "sprd,sc2731";
++		reg = <0>;
++		spi-max-frequency = <26000000>;
++		interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-controller;
++		#interrupt-cells = <2>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		fgu@a00 {
++			compatible = "sprd,sc2731-fgu";
++			reg = <0xa00>;
++			bat-detect-gpio = <&pmic_eic 9 GPIO_ACTIVE_HIGH>;
++			io-channels = <&pmic_adc 5>;
++			io-channel-names = "bat-temp";
++			sprd,inner-resist = <250>;
++			sprd,ocv-cap-table = <4185 100>, <4113 95>, <4066 90>, <4022 85>, <3983 80>, <3949 75>, <3917 70>,
++				<3889 65>, <3864 60>, <3835 55>, <3805 50>, <3787 45>, <3777 40>, <3773 35>, <3770 30>,
++				<3765 25>, <3752 20>, <3724 15>, <3680 10>, <3605 5>, <3400 0>;
++			monitored-battery = <&bat>;
++		};
++	};
+-- 
+1.7.9.5
