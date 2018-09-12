@@ -1,7 +1,7 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v7 08/14] sched/topology: Disable EAS on inappropriate platforms
-Date: Wed, 12 Sep 2018 10:13:03 +0100
-Message-ID: <20180912091309.7551-9-quentin.perret@arm.com>
+Subject: [PATCH v7 09/14] sched/fair: Clean-up update_sg_lb_stats parameters
+Date: Wed, 12 Sep 2018 10:13:04 +0100
+Message-ID: <20180912091309.7551-10-quentin.perret@arm.com>
 References: <20180912091309.7551-1-quentin.perret@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180912091309.7551-1-quentin.perret@arm.com>
@@ -10,103 +10,123 @@ To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux
 Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Energy Aware Scheduling (EAS) in its current form is most relevant on
-platforms with asymmetric CPU topologies (e.g. Arm big.LITTLE) since
-this is where there is a lot of potential for saving energy through
-scheduling. This is particularly true since the Energy Model only
-includes the active power costs of CPUs, hence not providing enough data
-to compare packing-vs-spreading strategies.
+In preparation for the introduction of a new root domain flag which can
+be set during load balance (the 'overutilized' flag), clean-up the set
+of parameters passed to update_sg_lb_stats(). More specifically, the
+'local_group' and 'local_idx' parameters can be removed since they can
+easily be reconstructed from within the function.
 
-As such, disable EAS on root domains where the SD_ASYM_CPUCAPACITY flag
-is not set. While at it, disable EAS on systems where the complexity of
-the Energy Model is too high since that could lead to unacceptable
-scheduling overhead.
+While at it, transform the 'overload' parameter into a flag stored in
+the 'sg_status' parameter hence facilitating the definition of new flags
+when needed.
 
-All in all, EAS can be used on a root domain if and only if:
-  1. the ENERGY_AWARE sched_feat is enabled;
-  2. the root domain has an asymmetric CPU capacity topology;
-  3. the complexity of the root domain's EM is low enough to keep
-     scheduling overheads low.
-
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Suggested-by: Valentin Schneider <valentin.schneider@arm.com>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
- kernel/sched/topology.c | 50 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 49 insertions(+), 1 deletion(-)
+ kernel/sched/fair.c  | 27 +++++++++++----------------
+ kernel/sched/sched.h |  3 +++
+ 2 files changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index 10e37ffea19a..0d18d69b719c 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -270,12 +270,45 @@ static void destroy_perf_domain_rcu(struct rcu_head *rp)
- 	free_pd(pd);
- }
- 
-+/*
-+ * EAS can be used on a root domain if it meets all the following conditions:
-+ *    1. the ENERGY_AWARE sched_feat is enabled;
-+ *    2. the SD_ASYM_CPUCAPACITY flag is set in the sched_domain hierarchy.
-+ *    3. the EM complexity is low enough to keep scheduling overheads low;
-+ *
-+ * The complexity of the Energy Model is defined as:
-+ *
-+ *              C = nr_pd * (nr_cpus + nr_cs)
-+ *
-+ * with parameters defined as:
-+ *  - nr_pd:    the number of performance domains
-+ *  - nr_cpus:  the number of CPUs
-+ *  - nr_cs:    the sum of the number of capacity states of all performance
-+ *              domains (for example, on a system with 2 performance domains,
-+ *              with 10 capacity states each, nr_cs = 2 * 10 = 20).
-+ *
-+ * It is generally not a good idea to use such a model in the wake-up path on
-+ * very complex platforms because of the associated scheduling overheads. The
-+ * arbitrary constraint below prevents that. It makes EAS usable up to 16 CPUs
-+ * with per-CPU DVFS and less than 8 capacity states each, for example.
-+ */
-+#define EM_MAX_COMPLEXITY 2048
-+
- static void build_perf_domains(const struct cpumask *cpu_map)
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index c28c7adcc7b3..23381feae4ec 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7782,16 +7782,16 @@ static bool update_nohz_stats(struct rq *rq, bool force)
+  * update_sg_lb_stats - Update sched_group's statistics for load balancing.
+  * @env: The load balancing environment.
+  * @group: sched_group whose statistics are to be updated.
+- * @load_idx: Load index of sched_domain of this_cpu for load calc.
+- * @local_group: Does group contain this_cpu.
+  * @sgs: variable to hold the statistics for this group.
+- * @overload: Indicate pullable load (e.g. >1 runnable task).
++ * @sg_status: Holds flag indicating the status of the sched_group
+  */
+ static inline void update_sg_lb_stats(struct lb_env *env,
+-			struct sched_group *group, int load_idx,
+-			int local_group, struct sg_lb_stats *sgs,
+-			bool *overload)
++				      struct sched_group *group,
++				      struct sg_lb_stats *sgs,
++				      int *sg_status)
  {
-+	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
- 	struct perf_domain *pd = NULL, *tmp;
- 	int cpu = cpumask_first(cpu_map);
- 	struct root_domain *rd = cpu_rq(cpu)->rd;
--	int i;
-+
-+	/* EAS is enabled for asymmetric CPU capacity topologies. */
-+	if (!per_cpu(sd_asym_cpucapacity, cpu)) {
-+		if (sched_debug()) {
-+			pr_info("rd %*pbl: CPUs do not have asymmetric capacities\n",
-+					cpumask_pr_args(cpu_map));
-+		}
-+		goto free;
-+	}
++	int local_group = cpumask_test_cpu(env->dst_cpu, sched_group_span(group));
++	int load_idx = get_sd_load_idx(env->sd, env->idle);
+ 	unsigned long load;
+ 	int i, nr_running;
  
- 	for_each_cpu(i, cpu_map) {
- 		/* Skip already covered CPUs. */
-@@ -288,6 +321,21 @@ static void build_perf_domains(const struct cpumask *cpu_map)
- 			goto free;
- 		tmp->next = pd;
- 		pd = tmp;
-+
-+		/*
-+		 * Count performance domains and capacity states for the
-+		 * complexity check.
-+		 */
-+		nr_pd++;
-+		nr_cs += em_pd_nr_cap_states(pd->obj);
-+	}
-+
-+	/* Bail out if the Energy Model complexity is too high. */
-+	if (nr_pd * (nr_cs + nr_cpus) > EM_MAX_COMPLEXITY) {
-+		if (sched_debug())
-+			pr_info("rd %*pbl: EM complexity is too high\n ",
-+						cpumask_pr_args(cpu_map));
-+		goto free;
+@@ -7815,7 +7815,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+ 
+ 		nr_running = rq->nr_running;
+ 		if (nr_running > 1)
+-			*overload = true;
++			*sg_status |= SG_OVERLOAD;
+ 
+ #ifdef CONFIG_NUMA_BALANCING
+ 		sgs->nr_numa_running += rq->nr_numa_running;
+@@ -7831,7 +7831,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
+ 		if (env->sd->flags & SD_ASYM_CPUCAPACITY &&
+ 		    sgs->group_misfit_task_load < rq->misfit_task_load) {
+ 			sgs->group_misfit_task_load = rq->misfit_task_load;
+-			*overload = 1;
++			*sg_status |= SG_OVERLOAD;
+ 		}
  	}
  
- 	perf_domain_debug(cpu_map, pd);
+@@ -7976,17 +7976,14 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 	struct sched_group *sg = env->sd->groups;
+ 	struct sg_lb_stats *local = &sds->local_stat;
+ 	struct sg_lb_stats tmp_sgs;
+-	int load_idx;
+-	bool overload = false;
+ 	bool prefer_sibling = child && child->flags & SD_PREFER_SIBLING;
++	int sg_status = 0;
+ 
+ #ifdef CONFIG_NO_HZ_COMMON
+ 	if (env->idle == CPU_NEWLY_IDLE && READ_ONCE(nohz.has_blocked))
+ 		env->flags |= LBF_NOHZ_STATS;
+ #endif
+ 
+-	load_idx = get_sd_load_idx(env->sd, env->idle);
+-
+ 	do {
+ 		struct sg_lb_stats *sgs = &tmp_sgs;
+ 		int local_group;
+@@ -8001,8 +7998,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 				update_group_capacity(env->sd, env->dst_cpu);
+ 		}
+ 
+-		update_sg_lb_stats(env, sg, load_idx, local_group, sgs,
+-						&overload);
++		update_sg_lb_stats(env, sg, sgs, &sg_status);
+ 
+ 		if (local_group)
+ 			goto next_group;
+@@ -8052,8 +8048,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 
+ 	if (!env->sd->parent) {
+ 		/* update overload indicator if we are at root domain */
+-		if (READ_ONCE(env->dst_rq->rd->overload) != overload)
+-			WRITE_ONCE(env->dst_rq->rd->overload, overload);
++		WRITE_ONCE(env->dst_rq->rd->overload, sg_status & SG_OVERLOAD);
+ 	}
+ }
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 7ced27701454..bee902d46d35 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -707,6 +707,9 @@ struct perf_domain {
+ 	struct rcu_head rcu;
+ };
+ 
++/* Scheduling group status flags */
++#define SG_OVERLOAD		0x1 /* More than one runnable task on a CPU. */
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
 -- 
 2.18.0
