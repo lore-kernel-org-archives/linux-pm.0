@@ -1,53 +1,99 @@
 From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
-Date: Wed, 12 Sep 2018 18:11:01 +0200
-Message-ID: <20180912161101.2634-1-vkuznets@redhat.com>
+Subject: [PATCH RFC] kernel/hung_task.c: disable on suspend
+Date: Wed, 12 Sep 2018 18:11:19 +0200
+Message-ID: <20180912161119.2692-1-vkuznets@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-It makes little sense but still possible to put Hyper-V guests into
-suspend-to-idle state. To wake them up two wakeup sources were registered
-in the past: hyperv-keyboard and hid-hyperv. However, since
-commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
-suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
-to pm_wakeup_hard_event() API as these devices are actually the only
-possible way to wakeup Hyper-V guests.
+It is possible to observe hung_task complaints when system goes to
+suspend-to-idle state:
 
-Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+ PM: Syncing filesystems ... done.
+ Freezing user space processes ... (elapsed 0.001 seconds) done.
+ OOM killer disabled.
+ Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+ sd 0:0:0:0: [sda] Synchronizing SCSI cache
+ INFO: task bash:1569 blocked for more than 120 seconds.
+       Not tainted 4.19.0-rc3_+ #687
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash            D    0  1569    604 0x00000000
+ Call Trace:
+  ? __schedule+0x1fe/0x7e0
+  schedule+0x28/0x80
+  suspend_devices_and_enter+0x4ac/0x750
+  pm_suspend+0x2c0/0x310
+
+Register a PM notifier to disable the detector on suspend and re-enable
+back on wakeup.
+
 Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 ---
- drivers/hid/hid-hyperv.c              | 2 +-
- drivers/input/serio/hyperv-keyboard.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+RFC: It really makes me wonder why nobody reported this before, makes
+ me think I'm missing something.
+---
+ kernel/hung_task.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/hid/hid-hyperv.c b/drivers/hid/hid-hyperv.c
-index b372854cf38d..704049e62d58 100644
---- a/drivers/hid/hid-hyperv.c
-+++ b/drivers/hid/hid-hyperv.c
-@@ -309,7 +309,7 @@ static void mousevsc_on_receive(struct hv_device *device,
- 		hid_input_report(input_dev->hid_device, HID_INPUT_REPORT,
- 				 input_dev->input_buf, len, 1);
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index b9132d1269ef..d75f288c016f 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -15,6 +15,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/export.h>
+ #include <linux/sysctl.h>
++#include <linux/suspend.h>
+ #include <linux/utsname.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/debug.h>
+@@ -242,6 +243,24 @@ void reset_hung_task_detector(void)
+ }
+ EXPORT_SYMBOL_GPL(reset_hung_task_detector);
  
--		pm_wakeup_event(&input_dev->device->device, 0);
-+		pm_wakeup_hard_event(&input_dev->device->device);
++static bool hung_detector_suspended;
++
++static int hungtask_pm_notify(struct notifier_block *self,
++			      unsigned long action, void *hcpu)
++{
++	switch (action) {
++	case PM_SUSPEND_PREPARE:
++		hung_detector_suspended = true;
++		break;
++	case PM_POST_SUSPEND:
++		hung_detector_suspended = false;
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
+ /*
+  * kthread which checks for tasks stuck in D state
+  */
+@@ -261,7 +280,8 @@ static int watchdog(void *dummy)
+ 		interval = min_t(unsigned long, interval, timeout);
+ 		t = hung_timeout_jiffies(hung_last_checked, interval);
+ 		if (t <= 0) {
+-			if (!atomic_xchg(&reset_hung_task, 0))
++			if (!atomic_xchg(&reset_hung_task, 0) &&
++			    !hung_detector_suspended)
+ 				check_hung_uninterruptible_tasks(timeout);
+ 			hung_last_checked = jiffies;
+ 			continue;
+@@ -275,6 +295,10 @@ static int watchdog(void *dummy)
+ static int __init hung_task_init(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++
++	/* Disable hung task detector on suspend */
++	pm_notifier(hungtask_pm_notify, 0);
++
+ 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
  
- 		break;
- 	default:
-diff --git a/drivers/input/serio/hyperv-keyboard.c b/drivers/input/serio/hyperv-keyboard.c
-index 47a0e81a2989..a8b9be3e28db 100644
---- a/drivers/input/serio/hyperv-keyboard.c
-+++ b/drivers/input/serio/hyperv-keyboard.c
-@@ -177,7 +177,7 @@ static void hv_kbd_on_receive(struct hv_device *hv_dev,
- 		 * state because the Enter-UP can trigger a wakeup at once.
- 		 */
- 		if (!(info & IS_BREAK))
--			pm_wakeup_event(&hv_dev->device, 0);
-+			pm_wakeup_hard_event(&hv_dev->device);
- 
- 		break;
- 
+ 	return 0;
 -- 
 2.14.4
