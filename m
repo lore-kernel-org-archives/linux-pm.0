@@ -1,7 +1,7 @@
 From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v3 08/16] thermal: tsens: Check if the IP is correctly enabled by firmware
-Date: Wed, 12 Sep 2018 15:22:53 +0530
-Message-ID: <140b054230a61e13995ae4b685746c8faf068d61.1536744310.git.amit.kucheria@linaro.org>
+Subject: [PATCH v3 13/16] dt-bindings: thermal: Fix a typo in documentation
+Date: Wed, 12 Sep 2018 15:22:58 +0530
+Message-ID: <b55d8da64011d35ca16956feb17f89262b6a33b9.1536744310.git.amit.kucheria@linaro.org>
 References: <cover.1536744310.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1536744310.git.amit.kucheria@linaro.org>
@@ -9,60 +9,31 @@ In-Reply-To: <cover.1536744310.git.amit.kucheria@linaro.org>
 References: <cover.1536744310.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+Cc: rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The SROT registers are initialised by the secure firmware at boot. We
-don't have write access to the registers. Check if the block is enabled
-before continuing.
+c(1) + x(1) was actually meant to be c(1) * x(1).
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
- drivers/thermal/qcom/tsens-common.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ Documentation/devicetree/bindings/thermal/thermal.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 0b8a793f15f4..3be4be2e0465 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -12,6 +12,10 @@
- #include <linux/regmap.h>
- #include "tsens.h"
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index eb7ee91556a5..ca14ba959e0d 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -152,7 +152,7 @@ Optional property:
+   Elem size: one cell	the sensors listed in the thermal-sensors property.
+   Elem type: signed	Coefficients defaults to 1, in case this property
+ 			is not specified. A simple linear polynomial is used:
+-			Z = c0 * x0 + c1 + x1 + ... + c(n-1) * x(n-1) + cn.
++			Z = c0 * x0 + c1 * x1 + ... + c(n-1) * x(n-1) + cn.
  
-+/* SROT */
-+#define TSENS_EN		BIT(0)
-+
-+/* TM */
- #define STATUS_OFFSET		0x30
- #define SN_ADDR_OFFSET		0x4
- #define SN_ST_TEMP_MASK		0x3ff
-@@ -119,7 +123,10 @@ int __init init_common(struct tsens_device *tmdev)
- {
- 	void __iomem *tm_base, *srot_base;
- 	struct resource *res;
-+	u32 code;
-+	int ret;
- 	struct platform_device *op = of_find_device_by_node(tmdev->dev->of_node);
-+	u16 ctrl_offset = tmdev->reg_offsets[SROT_CTRL_OFFSET];
- 
- 	if (!op)
- 		return -EINVAL;
-@@ -151,5 +158,15 @@ int __init init_common(struct tsens_device *tmdev)
- 	if (IS_ERR(tmdev->tm_map))
- 		return PTR_ERR(tmdev->tm_map);
- 
-+	if (tmdev->srot_map) {
-+		ret = regmap_read(tmdev->srot_map, ctrl_offset, &code);
-+		if (ret)
-+			return ret;
-+		if (!(code & TSENS_EN)) {
-+			dev_err(tmdev->dev, "tsens device is not enabled\n");
-+			return -ENODEV;
-+		}
-+	}
-+
- 	return 0;
- }
+ 			The coefficients are ordered and they match with sensors
+ 			by means of sensor ID. Additional coefficients are
 -- 
 2.17.1
