@@ -1,165 +1,102 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Thu, 13 Sep 2018 16:37:27 +0100
-Message-ID: <20180913153727.GB6199@e107981-ln.cambridge.arm.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-8-ulf.hansson@linaro.org>
- <3574880.GjmnMm1lMq@aspire.rjw.lan>
- <10360149.m4MlxDWZY5@aspire.rjw.lan>
- <CAPDyKFonHYSq32WxvB1x5PXissXZvraqazgU_ZyLR=tsyD9vAA@mail.gmail.com>
- <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
- <20180809153925.GA20329@red-moon>
- <CAPDyKFp=AuqEPHKYgi-+DAhejQZSHixmtLORj_Rkn3m8fUoqJw@mail.gmail.com>
- <20180824103828.GA11491@red-moon>
- <CAPDyKFqDHeMwyJ3Xx1kJcj968s=__3juR5bPn-d_3w=bzo-ovA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: [PATCH] kernel/hung_task.c: disable on suspend
+Date: Thu, 13 Sep 2018 18:08:51 +0200
+Message-ID: <20180913160851.18169-1-vkuznets@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFqDHeMwyJ3Xx1kJcj968s=__3juR5bPn-d_3w=bzo-ovA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisb>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 30, 2018 at 03:36:02PM +0200, Ulf Hansson wrote:
-> On 24 August 2018 at 12:38, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> > On Fri, Aug 24, 2018 at 11:26:19AM +0200, Ulf Hansson wrote:
-> >
-> > [...]
-> >
-> >> > That's a good question and it maybe gives a path towards a solution.
-> >> >
-> >> > AFAICS the genPD governor only selects the idle state parameter that
-> >> > determines the idle state at, say, GenPD cpumask level it does not touch
-> >> > the CPUidle decision, that works on a subset of idle states (at cpu
-> >> > level).
-> >> >
-> >> > That's my understanding, which can be wrong so please correct me
-> >> > if that's the case because that's a bit confusing.
-> >> >
-> >> > Let's imagine that we flattened out the list of idle states and feed
-> >> > CPUidle with it (all of them - cpu, cluster, package, system - as it is
-> >> > in the mainline _now_). Then the GenPD governor can run-through the
-> >> > CPUidle selection and _demote_ the idle state if necessary since it
-> >> > understands that some CPUs in the GenPD will wake up shortly and break
-> >> > the target residency hyphothesis the CPUidle governor is expecting.
-> >> >
-> >> > The whole idea about this series is improving CPUidle decision when
-> >> > the target idle state is _shared_ among groups of cpus (again, please
-> >> > do correct me if I am wrong).
-> >>
-> >> Absolutely, this is one of the main reason for the series!
-> >>
-> >> >
-> >> > It is obvious that a GenPD governor must only demote - never promote a
-> >> > CPU idle state selection given that hierarchy implies more power
-> >> > savings and higher target residencies required.
-> >>
-> >> Absolutely. I apologize if I have been using the word "promote"
-> >> wrongly, I realize it may be a bit confusing.
-> >>
-> >> >
-> >> > This whole series would become more generic and won't depend on
-> >> > PSCI OSI at all - actually that would become a hierarchical
-> >> > CPUidle governor.
-> >>
-> >> Well, to me we need a first user of the new infrastructure code in
-> >> genpd and PSCI is probably the easiest one to start with. An option
-> >> would be to start with an old ARM32 platform, but it seems a bit silly
-> >> to me.
-> >
-> > If the code can be structured as described above as a hierarchical
-> > (possibly optional through a Kconfig entry or sysfs tuning) idle
-> > decision you can apply it to _any_ PSCI based platform out there,
-> > provided that the new governor improves power savings.
-> >
-> >> In regards to OS-initiated mode vs platform coordinated mode, let's
-> >> discuss that in details in the other email thread instead.
-> >
-> > I think that's crystal clear by now that IMHO PSCI OS-initiated mode is
-> > a red-herring, it has nothing to do with this series, it is there just
-> > because QC firmware does not support PSCI platform coordinated suspend
-> > mode.
-> 
-> I fully agree that the series isn't specific to PSCI OSI mode. On the
-> other hand, for PSCI OSI mode, that's where I see this series to fit
-> naturally. And in particular for the QCOM 410c board.
-> 
-> When it comes to the PSCI PC mode, it may under certain circumstances
-> be useful to deploy this approach for that as well, and I agree that
-> it seems reasonable to have that configurable as opt-in, somehow.
-> 
-> Although, let's discuss that separately, in a next step. Or at least
-> let's try to keep PSCI related technical discussions to the other
-> thread, as that makes it easier to follow.
-> 
-> >
-> > You can apply the concept in this series to _any_ arch provided
-> > the power domains representation is correct (and again, I would sound
-> > like a broken record but the series must improve power savings over
-> > vanilla CPUidle menu governor).
-> 
-> I agree, but let me elaborate a bit, to hopefully add some clarity,
-> which I may not have been able to communicate earlier.
-> 
-> The goal with the series is to enable platforms to support all its
-> available idlestates, which are shared among a group of CPUs. This is
-> the case for QCOM 410c, for example.
-> 
-> To my knowledge, we have other ARM32 based platforms that currently
-> have disabled some of its cluster idle states. That's because they
-> can't know when it's safe to power off the cluster "coherency domain",
-> in cases when the platform also have other shared resources in it.
-> 
-> The point is, to see improved power savings, additional platform
-> deployment may be needed and that just takes time. For example runtime
-> PM support is needed in those drivers that deals with the "shared
-> resources", a correctly modeled PM domain topology using genpd, etc,
-> etc.
-> 
-> >
-> >> > I still think that PSCI firmware and most certainly mwait() play the
-> >> > role the GenPD governor does since they can detect in FW/HW whether
-> >> > that's worthwhile to switch off a domain, the information is obviously
-> >> > there and the kernel would just add latency to the idle path in that
-> >> > case but let's gloss over this for the sake of this discussion.
-> >>
-> >> Yep, let's discuss that separately.
-> >>
-> >> That said, can I interpret your comments on the series up until this
-> >> change, that you seems rather happy with where the series is going?
-> >
-> > It is something we have been discussing with Daniel since generic idle
-> > was merged for Arm a long while back. I have nothing against describing
-> > idle states with power domains but it must improve idle decisions
-> > against the mainline. As I said before, runtime PM can also be used
-> > to get rid of CPU PM notifiers (because with power domains we KNOW
-> > what devices eg PMU are switched off on idle entry, we do not guess
-> > any longer; replacing CPU PM notifiers is challenging and can be
-> > tackled - if required - in a different series).
-> 
-> Yes, we have be talking about the CPU PM and CPU_CLUSTER_PM notifiers
-> and I fully agree. It's something that we should look into and in
-> future steps.
-> 
-> >
-> > Bottom line (talk is cheap, I know and apologise about that): this
-> > series (up until this change) adds complexity to the idle path and lots
-> > of code; if its usage is made optional and can be switched on on systems
-> > where it saves power that's fine by me as long as we keep PSCI
-> > OS-initiated idle states out of the equation, that's an orthogonal
-> > discussion as, I hope, I managed to convey.
-> >
-> > Thanks,
-> > Lorenzo
-> 
-> Lorenzo, thanks for your feedback!
-> 
-> Please, when you have time, could you also reply to the other thread
-> we started, I would like to understand how I should proceed with this
-> series.
+It is possible to observe hung_task complaints when system goes to
+suspend-to-idle state:
 
-OK, thanks, I will, sorry for the delay in responding.
+ PM: Syncing filesystems ... done.
+ Freezing user space processes ... (elapsed 0.001 seconds) done.
+ OOM killer disabled.
+ Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+ sd 0:0:0:0: [sda] Synchronizing SCSI cache
+ INFO: task bash:1569 blocked for more than 120 seconds.
+       Not tainted 4.19.0-rc3_+ #687
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash            D    0  1569    604 0x00000000
+ Call Trace:
+  ? __schedule+0x1fe/0x7e0
+  schedule+0x28/0x80
+  suspend_devices_and_enter+0x4ac/0x750
+  pm_suspend+0x2c0/0x310
 
-Lorenzo
+Register a PM notifier to disable the detector on suspend and re-enable
+back on wakeup.
+
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+---
+Changes since RFC:
+- Add PM_HIBERNATION_PREPARE/PM_POST_HIBERNATION for consistency
+  [Rafael J. Wysocki]
+---
+ kernel/hung_task.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index b9132d1269ef..41955c5d8427 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -15,6 +15,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/export.h>
+ #include <linux/sysctl.h>
++#include <linux/suspend.h>
+ #include <linux/utsname.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/debug.h>
+@@ -242,6 +243,26 @@ void reset_hung_task_detector(void)
+ }
+ EXPORT_SYMBOL_GPL(reset_hung_task_detector);
+ 
++static bool hung_detector_suspended;
++
++static int hungtask_pm_notify(struct notifier_block *self,
++			      unsigned long action, void *hcpu)
++{
++	switch (action) {
++	case PM_SUSPEND_PREPARE:
++	case PM_HIBERNATION_PREPARE:
++		hung_detector_suspended = true;
++		break;
++	case PM_POST_SUSPEND:
++	case PM_POST_HIBERNATION:
++		hung_detector_suspended = false;
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
+ /*
+  * kthread which checks for tasks stuck in D state
+  */
+@@ -261,7 +282,8 @@ static int watchdog(void *dummy)
+ 		interval = min_t(unsigned long, interval, timeout);
+ 		t = hung_timeout_jiffies(hung_last_checked, interval);
+ 		if (t <= 0) {
+-			if (!atomic_xchg(&reset_hung_task, 0))
++			if (!atomic_xchg(&reset_hung_task, 0) &&
++			    !hung_detector_suspended)
+ 				check_hung_uninterruptible_tasks(timeout);
+ 			hung_last_checked = jiffies;
+ 			continue;
+@@ -275,6 +297,10 @@ static int watchdog(void *dummy)
+ static int __init hung_task_init(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++
++	/* Disable hung task detector on suspend */
++	pm_notifier(hungtask_pm_notify, 0);
++
+ 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
+ 
+ 	return 0;
+-- 
+2.14.4
