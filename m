@@ -1,70 +1,69 @@
-From: Niklas Cassel <niklas.cassel@linaro.org>
-Subject: Re: [PATCH 00/11] OPP: Don't create multiple OPP tables for devices
- sharing OPP table
-Date: Thu, 13 Sep 2018 12:21:13 +0200
-Message-ID: <20180913102113.GA25222@centauri.lan>
-References: <cover.1536736872.git.viresh.kumar@linaro.org>
- <20180912135537.GA9985@centauri.ideon.se>
- <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
+From: KY Srinivasan <kys@microsoft.com>
+Subject: RE: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
+Date: Thu, 13 Sep 2018 12:58:01 +0000
+Message-ID: <MW2PR2101MB1113E44609F4094D7625B52BA01A0@MW2PR2101MB1113.namprd21.prod.outlook.com>
+References: <20180912161101.2634-1-vkuznets@redhat.com>
+ <CAJZ5v0jmNFaH3JUVS9W_1ofXcD=8U8Y9enPi+j+9U=6cBVxfJQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
+In-Reply-To: <CAJZ5v0jmNFaH3JUVS9W_1ofXcD=8U8Y9enPi+j+9U=6cBVxfJQ@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4.18" <stable@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, vkuznets <vkuznets@redhat.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 13, 2018 at 01:18:34PM +0530, Viresh Kumar wrote:
-> On 12 September 2018 at 19:25, Niklas Cassel <niklas.cassel@linaro.org> wrote:
-> > On Wed, Sep 12, 2018 at 01:58:39PM +0530, Viresh Kumar wrote:
-> >> Hello,
-> >>
-> >> Niklas Cassle recently reported some regressions with his Qcom cpufreq
-> >> driver where he was getting some errors while creating the OPPs tables.
-> >>
-> >> After looking into it I realized that the OPP core incorrectly creates
-> >> multiple OPP tables for the devices even if they are sharing the OPP
-> >> table in DT. This happens when the request comes using different CPU
-> >> devices. For example, dev_pm_opp_set_supported_hw() getting called using
-> >> CPU0 and dev_pm_opp_of_add_table() getting called using CPU1.
-> >>
-> >> This series redesigns the internals of the OPP core to fix that. The
-> >> redesign has simplified the core itself though.
-> >>
-> >> @Niklas: Can you please confirm that this series fixes the issues you
-> >> have reported ? I have already tested it on Hikey960.
-> >
-> > Hello Viresh,
-> >
-> > This fixes the OPP error messages that I previously reported.
-> >
-> > However, I also tested to add a duplicate OPP to the opp-table.
-> >
-> > Before this series, I got the first two error prints.
-> > After this series, I get the first two error prints + the use after free splat.
-> 
-> This looks to be an old bug. Can you please try this branch:
-
-Hello Viresh,
-
-You confused me here, since you did hide the fix for this old bug in the
-middle of your new patch series :)
-
-I think that it would have been more obvious to simply paste the fix/diff
-in your reply directly, since that is the most common way to post a
-potential fix. Or, if you are really confident in your fix, post a V2
-directly.
-
-However, your branch works like a charm, so feel free to add:
-Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
-when sending out your branch as a V2.
-
-Kind regards,
-Niklas
-
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/qcom-fix
-> 
-> ?
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgPHJhZmFlbEBrZXJuZWwub3JnPg0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAxMiwg
+MjAxOCAxMTo1NSBQTQ0KPiBUbzogdmt1em5ldHMgPHZrdXpuZXRzQHJlZGhhdC5jb20+DQo+IENj
+OiBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgUmFmYWVsIEouIFd5c29ja2kN
+Cj4gPHJqd0Byand5c29ja2kubmV0PjsgS1kgU3Jpbml2YXNhbiA8a3lzQG1pY3Jvc29mdC5jb20+
+OyBIYWl5YW5nIFpoYW5nDQo+IDxoYWl5YW5nekBtaWNyb3NvZnQuY29tPjsgU3RlcGhlbiBIZW1t
+aW5nZXINCj4gPHN0aGVtbWluQG1pY3Jvc29mdC5jb20+OyBKaXJpIEtvc2luYSA8amlrb3NAa2Vy
+bmVsLm9yZz47IERtaXRyeQ0KPiBUb3Jva2hvdiA8ZG1pdHJ5LnRvcm9raG92QGdtYWlsLmNvbT47
+IGxpbnV4LWlucHV0QHZnZXIua2VybmVsLm9yZzsNCj4gTGludXggS2VybmVsIE1haWxpbmcgTGlz
+dCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0g
+aHlwZXItdjogRml4IHdha2V1cCBmcm9tIHN1c3BlbmQtdG8taWRsZQ0KPiANCj4gT24gV2VkLCBT
+ZXAgMTIsIDIwMTggYXQgNjoxMSBQTSBWaXRhbHkgS3V6bmV0c292IDx2a3V6bmV0c0ByZWRoYXQu
+Y29tPg0KPiB3cm90ZToNCj4gPg0KPiA+IEl0IG1ha2VzIGxpdHRsZSBzZW5zZSBidXQgc3RpbGwg
+cG9zc2libGUgdG8gcHV0IEh5cGVyLVYgZ3Vlc3RzIGludG8NCj4gPiBzdXNwZW5kLXRvLWlkbGUg
+c3RhdGUuIFRvIHdha2UgdGhlbSB1cCB0d28gd2FrZXVwIHNvdXJjZXMgd2VyZQ0KPiByZWdpc3Rl
+cmVkDQo+ID4gaW4gdGhlIHBhc3Q6IGh5cGVydi1rZXlib2FyZCBhbmQgaGlkLWh5cGVydi4gSG93
+ZXZlciwgc2luY2UNCj4gPiBjb21taXQgZWVkNGQ0N2VmZTk1ICgiQUNQSSAvIHNsZWVwOiBJZ25v
+cmUgc3B1cmlvdXMgU0NJIHdha2V1cHMgZnJvbQ0KPiA+IHN1c3BlbmQtdG8taWRsZSIpIHBtX3dh
+a2V1cF9ldmVudCgpIGZyb20gdGhlc2UgZGV2aWNlcyBpcyBpZ25vcmVkLg0KPiBTd2l0Y2gNCj4g
+PiB0byBwbV93YWtldXBfaGFyZF9ldmVudCgpIEFQSSBhcyB0aGVzZSBkZXZpY2VzIGFyZSBhY3R1
+YWxseSB0aGUgb25seQ0KPiA+IHBvc3NpYmxlIHdheSB0byB3YWtldXAgSHlwZXItViBndWVzdHMu
+DQo+ID4NCj4gPiBGaXhlczogZWVkNGQ0N2VmZTk1IChBQ1BJIC8gc2xlZXA6IElnbm9yZSBzcHVy
+aW91cyBTQ0kgd2FrZXVwcyBmcm9tDQo+IHN1c3BlbmQtdG8taWRsZSkNCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBWaXRhbHkgS3V6bmV0c292IDx2a3V6bmV0c0ByZWRoYXQuY29tPg0KPiANCj4gUmV2aWV3
+ZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCkFj
+a2VkLWJ5OiBLLiBZLiBTcmluaXZhc2FuIDxreXNAbWljcm9zb2Z0LmNvbT4NCg0KPiANCj4gPiAt
+LS0NCj4gPiAgZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jICAgICAgICAgICAgICB8IDIgKy0NCj4g
+PiAgZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQuYyB8IDIgKy0NCj4gPiAgMiBm
+aWxlcyBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jIGIvZHJpdmVycy9oaWQvaGlkLWh5
+cGVydi5jDQo+ID4gaW5kZXggYjM3Mjg1NGNmMzhkLi43MDQwNDllNjJkNTggMTAwNjQ0DQo+ID4g
+LS0tIGEvZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jDQo+ID4gKysrIGIvZHJpdmVycy9oaWQvaGlk
+LWh5cGVydi5jDQo+ID4gQEAgLTMwOSw3ICszMDksNyBAQCBzdGF0aWMgdm9pZCBtb3VzZXZzY19v
+bl9yZWNlaXZlKHN0cnVjdCBodl9kZXZpY2UNCj4gKmRldmljZSwNCj4gPiAgICAgICAgICAgICAg
+ICAgaGlkX2lucHV0X3JlcG9ydChpbnB1dF9kZXYtPmhpZF9kZXZpY2UsIEhJRF9JTlBVVF9SRVBP
+UlQsDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5wdXRfZGV2LT5pbnB1
+dF9idWYsIGxlbiwgMSk7DQo+ID4NCj4gPiAtICAgICAgICAgICAgICAgcG1fd2FrZXVwX2V2ZW50
+KCZpbnB1dF9kZXYtPmRldmljZS0+ZGV2aWNlLCAwKTsNCj4gPiArICAgICAgICAgICAgICAgcG1f
+d2FrZXVwX2hhcmRfZXZlbnQoJmlucHV0X2Rldi0+ZGV2aWNlLT5kZXZpY2UpOw0KPiA+DQo+ID4g
+ICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICAgICAgICAgZGVmYXVsdDoNCj4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQuYw0KPiBiL2RyaXZlcnMv
+aW5wdXQvc2VyaW8vaHlwZXJ2LWtleWJvYXJkLmMNCj4gPiBpbmRleCA0N2EwZTgxYTI5ODkuLmE4
+YjliZTNlMjhkYiAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2lucHV0L3NlcmlvL2h5cGVydi1r
+ZXlib2FyZC5jDQo+ID4gKysrIGIvZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQu
+Yw0KPiA+IEBAIC0xNzcsNyArMTc3LDcgQEAgc3RhdGljIHZvaWQgaHZfa2JkX29uX3JlY2VpdmUo
+c3RydWN0IGh2X2RldmljZQ0KPiAqaHZfZGV2LA0KPiA+ICAgICAgICAgICAgICAgICAgKiBzdGF0
+ZSBiZWNhdXNlIHRoZSBFbnRlci1VUCBjYW4gdHJpZ2dlciBhIHdha2V1cCBhdCBvbmNlLg0KPiA+
+ICAgICAgICAgICAgICAgICAgKi8NCj4gPiAgICAgICAgICAgICAgICAgaWYgKCEoaW5mbyAmIElT
+X0JSRUFLKSkNCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBwbV93YWtldXBfZXZlbnQoJmh2
+X2Rldi0+ZGV2aWNlLCAwKTsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBwbV93YWtldXBf
+aGFyZF9ldmVudCgmaHZfZGV2LT5kZXZpY2UpOw0KPiA+DQo+ID4gICAgICAgICAgICAgICAgIGJy
+ZWFrOw0KPiA+DQo+ID4gLS0NCj4gPiAyLjE0LjQNCj4gPg0K
