@@ -1,95 +1,77 @@
-From: =?utf-8?B?UGF3ZcWC?= Chmiel <pawel.mikolaj.chmiel@gmail.com>
-Subject: Re: [PATCH v3 3/3] dt-bindings: mfd: max8998: Add charger subnode binding
-Date: Thu, 13 Sep 2018 16:55:48 +0200
-Message-ID: <24790346.rcfynqLzho@acerlaptop>
-References: <1531843509-3533-1-git-send-email-pawel.mikolaj.chmiel@gmail.com> <1531843509-3533-4-git-send-email-pawel.mikolaj.chmiel@gmail.com> <20180807175741.GA30886@rob-hp-laptop>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH RFC] kernel/hung_task.c: disable on suspend
+Date: Thu, 13 Sep 2018 17:23:07 +0200
+Message-ID: <20180913152307.GA31894@redhat.com>
+References: <20180912161119.2692-1-vkuznets@redhat.com>
+ <CAJZ5v0jeq=PoF10OZgO9ST_nuRW3Z8emPmX=nTrOSsLKYzZuww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180807175741.GA30886@rob-hp-laptop>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jeq=PoF10OZgO9ST_nuRW3Z8emPmX=nTrOSsLKYzZuww@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, sre@kernel.org, lee.jones@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 7, 2018 11:57:42 AM CEST Rob Herring wrote:
-> On Tue, Jul 17, 2018 at 06:05:09PM +0200, Pawe=C5=82 Chmiel wrote:
-> > This patch adds devicetree bindings documentation for
-> > battery charging controller as the subnode of MAX8998 PMIC.
-> >=20
-> > Signed-off-by: Pawe=C5=82 Chmiel <pawel.mikolaj.chmiel@gmail.com>
-> > ---
-> > Changes from v2:
-> >   - Make charge-restart-level-microvolt optional.
-> >   - Make charge-timeout-hours optional.
-> >=20
-> > Changes from v1:
-> >   - Removed unneeded Fixes tag
-> >   - Correct description of all charger values
-> >   - Added missing property unit
-> > ---
-> >  Documentation/devicetree/bindings/mfd/max8998.txt | 25 +++++++++++++++=
-++++++++
-> >  1 file changed, 25 insertions(+)
-> >=20
-> > diff --git a/Documentation/devicetree/bindings/mfd/max8998.txt b/Docume=
-ntation/devicetree/bindings/mfd/max8998.txt
-> > index 23a3650ff2a2..264040f4ad15 100644
-> > --- a/Documentation/devicetree/bindings/mfd/max8998.txt
-> > +++ b/Documentation/devicetree/bindings/mfd/max8998.txt
-> > @@ -50,6 +50,24 @@ Additional properties required if max8998,pmic-buck2=
-=2Ddvs-gpio is defined:
-> >  - max8998,pmic-buck2-dvs-voltage: An array of 2 voltage values in micr=
-ovolts
-> >    for buck2 regulator that can be selected using dvs gpio.
-> > =20
-> > +Charger: Configuration for battery charging controller should be added
-> > +inside a child node named 'charger'.
-> > +  Required properties:
-> > +  - max8998,charge-eoc-percent: Setup End of Charge Level.
->=20
-> This should have a vendor prefix and max8998 is not a vendor. Don't=20
-> continue that pattern even if we already have some properties like that.
->=20
-> These seem like perhaps they should be common charger properties.
-Where i could find such properties (or any other driver which is using thos=
-e as an example) ?
-Looking at few existing drivers, most of them have custom properties (that'=
-s why i've followed the same pattern for max8998).
+On 09/13, Rafael J. Wysocki wrote:
+>
+> On Wed, Sep 12, 2018 at 6:11 PM Vitaly Kuznetsov <vkuznets@redhat.com> wrote:
+> >
+> > It is possible to observe hung_task complaints when system goes to
+> > suspend-to-idle state:
+> >
+> >  PM: Syncing filesystems ... done.
+> >  Freezing user space processes ... (elapsed 0.001 seconds) done.
+> >  OOM killer disabled.
+> >  Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+> >  sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> >  INFO: task bash:1569 blocked for more than 120 seconds.
+> >        Not tainted 4.19.0-rc3_+ #687
+> >  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> >  bash            D    0  1569    604 0x00000000
+> >  Call Trace:
+> >   ? __schedule+0x1fe/0x7e0
+> >   schedule+0x28/0x80
+> >   suspend_devices_and_enter+0x4ac/0x750
+> >   pm_suspend+0x2c0/0x310
+>
+> This actually is a good catch, but the problem is related to what
+> happens to the monotonic clock during suspend to idle.
+>
+> The clock issue needs to be addressed anyway IMO and then this problem
+> will go away automatically.
 
-Thanks
->=20
-> > +    If value equals 0, leave it unchanged.
-> > +    Otherwise it should be value from 10 to 45 by 5 step.
-> > +
-> > +  Optional properties:
-> > +  - max8998,charge-restart-level-microvolt: Setup Charge Restart Level.
-> > +    If property is not present, this will be disabled.
-> > +    If value equals 0, leave it unchanged.
-> > +    Otherwise it should be one of following values: 100, 150, 200.
-> > +
-> > +  - max8998,charge-timeout-hours: Setup Charge Full Timeout.
-> > +    If property is not present, this will be disabled.
-> > +    If value equals 0, leave it unchanged.
-> > +    Otherwise it should be one of following values: 5, 6, 7.
-> > +
-> >  Regulators: All the regulators of MAX8998 to be instantiated shall be
-> >  listed in a child node named 'regulators'. Each regulator is represent=
-ed
-> >  by a child node of the 'regulators' node.
-> > @@ -99,6 +117,13 @@ Example:
-> >  		max8998,pmic-buck2-dvs-gpio =3D <&gpx0 0 3 0 0>; /* SET3 */
-> >  		max8998,pmic-buck2-dvs-voltage =3D <1350000>, <1300000>;
-> > =20
-> > +		/* Charger configuration */
-> > +		charger {
-> > +			max8998,charge-eoc-percent =3D <0>;
-> > +			max8998,charge-restart-level-microvolt =3D <100>;
-> > +			max8998,charge-timeout-hours =3D <7>;
-> > +		};
-> > +
-> >  		/* Regulators to instantiate */
-> >  		regulators {
-> >  			ldo2_reg: LDO2 {
->=20
+I don't understand your discussion with Vitaly, but shouldn't we make
+khungtaskd thread freezable anyway?
+
+Oleg.
+
+--- x/kernel/hung_task.c
++++ x/kernel/hung_task.c
+@@ -185,7 +185,7 @@ static void check_hung_uninterruptible_t
+ 	hung_task_show_lock = false;
+ 	rcu_read_lock();
+ 	for_each_process_thread(g, t) {
+-		if (!max_count--)
++		if (!max_count-- || freezing(current))
+ 			goto unlock;
+ 		if (!--batch_count) {
+ 			batch_count = HUNG_TASK_BATCHING;
+@@ -249,6 +249,7 @@ static int watchdog(void *dummy)
+ {
+ 	unsigned long hung_last_checked = jiffies;
+ 
++	set_freezable();
+ 	set_user_nice(current, 0);
+ 
+ 	for ( ; ; ) {
+@@ -266,7 +267,7 @@ static int watchdog(void *dummy)
+ 			hung_last_checked = jiffies;
+ 			continue;
+ 		}
+-		schedule_timeout_interruptible(t);
++		freezable_schedule_timeout_interruptible(t);
+ 	}
+ 
+ 	return 0;
