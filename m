@@ -1,44 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: remove unnecessary unlikely()
-Date: Fri, 14 Sep 2018 10:31:14 +0200
-Message-ID: <2593189.gyA7ZCrH2V@aspire.rjw.lan>
-References: <20180907160955.23291-1-igor.stoppa@huawei.com>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: [PATCH v2 0/5] arm64: dts: NXP: add basic dts file for LX2160A SoC
+Date: Fri, 14 Sep 2018 02:07:50 +0530
+Message-ID: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180907160955.23291-1-igor.stoppa@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Igor Stoppa <igor.stoppa@gmail.com>
-Cc: "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Igor Stoppa <igor.stoppa@huawei.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
+Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 7, 2018 6:09:55 PM CEST Igor Stoppa wrote:
-> WARN_ON() already contains an unlikely(), so it's not necessary to wrap it
-> into another.
-> 
-> Signed-off-by: Igor Stoppa <igor.stoppa@huawei.com>
-> Cc: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  drivers/cpufreq/cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f53fb41efb7b..7aa3dcad2175 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -403,7 +403,7 @@ EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
->  void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
->  		struct cpufreq_freqs *freqs, int transition_failed)
->  {
-> -	if (unlikely(WARN_ON(!policy->transition_ongoing)))
-> +	if (WARN_ON(!policy->transition_ongoing))
->  		return;
->  
->  	cpufreq_notify_post_transition(policy, freqs, transition_failed);
-> 
+Changes for v2:
+- Modified cmux_to_group array to include -1 terminator
+- Revert NUM_CMUX to original value 8 from 16
+- Remove “As LX2160A is 16 core, so modified value for NUM_CMUX”
+  in patch "[PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
+  lx2160a" description
+- Populated cache properties for L1 and L2 cache in lx2160a device-tree.
+- Removed reboot node from lx2160a device-tree as PSCI is implemented.
+- Removed incorrect comment for timer node interrupt property in
+  lx2160a device-tree.
+- Modified pmu node compatible property from "arm,armv8-pmuv3" to
+  "arm,cortex-a72-pmu" in lx2160a device-tree
+- Non-standard aliases removed in lx2160a rdb board device-tree
+- Updated i2c child nodes to generic name in lx2160a rdb device-tree.
 
-Applied, thanks!
+Changes for v1:
+- Add compatible string for LX2160A clockgen support
+- Add compatible string to initialize LX2160A guts driver
+- Add compatible string for LX2160A support in dt-bindings
+- Add dts file to enable support for LX2160A SoC and LX2160A RDB
+  (Reference design board)
+
+Vabhav Sharma (4):
+  dt-bindings: arm64: add compatible for LX2160A
+  soc/fsl/guts: Add compatible string for LX2160A
+  arm64: dts: add QorIQ LX2160A SoC support
+  arm64: dts: add LX2160ARDB board support
+
+Yogesh Gaur (1):
+  drivers: clk-qoriq: Add clockgen support for lx2160a
+
+ Documentation/devicetree/bindings/arm/fsl.txt     |  12 +
+ arch/arm64/boot/dts/freescale/Makefile            |   1 +
+ arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts |  88 +++
+ arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi    | 693 ++++++++++++++++++++++
+ drivers/clk/clk-qoriq.c                           |  14 +-
+ drivers/cpufreq/qoriq-cpufreq.c                   |   1 +
+ drivers/soc/fsl/guts.c                            |   1 +
+ 7 files changed, 809 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+ create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+
+-- 
+2.7.4
