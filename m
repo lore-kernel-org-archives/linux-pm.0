@@ -1,142 +1,48 @@
-From: Peter Wu <peter@lekensteyn.nl>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers on resume
-Date: Thu, 13 Sep 2018 09:43:28 +0200
-Message-ID: <20180913074328.GA28376@al>
-References: <20180913033745.11178-1-drake@endlessm.com>
- <CAJZ5v0iBt+mYy4K9YNavqyQkivNqwBp3zyK5QmqGR+kWGsRO4g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/11] OPP: Don't create multiple OPP tables for devices
+ sharing OPP table
+Date: Thu, 13 Sep 2018 13:18:34 +0530
+Message-ID: <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
+References: <cover.1536736872.git.viresh.kumar@linaro.org> <20180912135537.GA9985@centauri.ideon.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iBt+mYy4K9YNavqyQkivNqwBp3zyK5QmqGR+kWGsRO4g@mail.gmail.com>
-Sender: netdev-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Drake <drake@endlessm.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, nouveau@lists.freedesktop.org, Linux PM <linux-pm@vger.kernel.org>, kherbst@redhat.com, Rafael Wysocki <rafael.j.wysocki@intel.com>, Keith Busch <keith.busch@intel.com>, jonathan.derrick@intel.com, Thomas Martitz <kugel@rockbox.org>, David Miller <davem@davemloft.net>, Heiner Kallweit <hkallweit1@gmail.com>, netdev <netdev@vger.kernel.org>, nic_swsd@realtek.com, rchang@marvell.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20180912135537.GA9985@centauri.ideon.se>
+Sender: stable-owner@vger.kernel.org
+To: Niklas Cassel <niklas.cassel@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4.18" <stable@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 13, 2018 at 08:52:29AM +0200, Rafael J. Wysocki wrote:
-> On Thu, Sep 13, 2018 at 5:37 AM Daniel Drake <drake@endlessm.com> wrote:
-> >
-> > On 38+ Intel-based Asus products, the nvidia GPU becomes unusable
-> > after S3 suspend/resume. The affected products include multiple
-> > generations of nvidia GPUs and Intel SoCs. After resume, nouveau logs
-> > many errors such as:
-> >
-> >     fifo: fault 00 [READ] at 0000005555555000 engine 00 [GR] client 04
-> >           [HUB/FE] reason 4a [] on channel -1 [007fa91000 unknown]
-> >     DRM: failed to idle channel 0 [DRM]
-> >
-> > Similarly, the nvidia proprietary driver also fails after resume
-> > (black screen, 100% CPU usage in Xorg process). We shipped a sample
-> > to Nvidia for diagnosis, and their response indicated that it's a
-> > problem with the parent PCI bridge (on the Intel SoC), not the GPU.
-> >
-> > Runtime suspend/resume works fine, only S3 suspend is affected.
-> >
-> > We found a workaround: on resume, rewrite the Intel PCI bridge
-> > 'Prefetchable Base Upper 32 Bits' register (PCI_PREF_BASE_UPPER32). In
-> > the cases that I checked, this register has value 0 and we just have to
-> > rewrite that value.
-> >
-> > Linux already saves and restores PCI config space during suspend/resume,
-> > but this register was being skipped because upon resume, it already
-> > has value 0 (the correct, pre-suspend value).
-> >
-> > Intel appear to have previously acknowledged this behaviour and the
-> > requirement to rewrite this register.
-> > https://bugzilla.kernel.org/show_bug.cgi?id=116851#c23
-> >
-> > Based on that, rewrite the prefetch register values even when that
-> > appears unnecessary.
-> >
-> > We have confirmed this solution on all the affected models we have
-> > in-hands (X542UQ, UX533FD, X530UN, V272UN).
-> >
-> > Additionally, this solves an issue where r8169 MSI-X interrupts were
-> > broken after S3 suspend/resume on Asus X441UAR. This issue was recently
-> > worked around in commit 7bb05b85bc2d ("r8169: don't use MSI-X on
-> > RTL8106e"). It also fixes the same issue on RTL6186evl/8111evl on an
-> > Aimfor-tech laptop that we had not yet patched. I suspect it will also
-> > fix the issue that was worked around in commit 7c53a722459c ("r8169:
-> > don't use MSI-X on RTL8168g").
-> >
-> > Thomas Martitz reports that this change also solves an issue where
-> > the AMD Radeon Polaris 10 GPU on the HP Zbook 14u G5 is unresponsive
-> > after S3 suspend/resume.
-> >
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=201069
-> > Signed-off-by: Daniel Drake <drake@endlessm.com>
-> 
-> Still
-> 
-> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 12 September 2018 at 19:25, Niklas Cassel <niklas.cassel@linaro.org> wrote:
+> On Wed, Sep 12, 2018 at 01:58:39PM +0530, Viresh Kumar wrote:
+>> Hello,
+>>
+>> Niklas Cassle recently reported some regressions with his Qcom cpufreq
+>> driver where he was getting some errors while creating the OPPs tables.
+>>
+>> After looking into it I realized that the OPP core incorrectly creates
+>> multiple OPP tables for the devices even if they are sharing the OPP
+>> table in DT. This happens when the request comes using different CPU
+>> devices. For example, dev_pm_opp_set_supported_hw() getting called using
+>> CPU0 and dev_pm_opp_of_add_table() getting called using CPU1.
+>>
+>> This series redesigns the internals of the OPP core to fix that. The
+>> redesign has simplified the core itself though.
+>>
+>> @Niklas: Can you please confirm that this series fixes the issues you
+>> have reported ? I have already tested it on Hikey960.
+>
+> Hello Viresh,
+>
+> This fixes the OPP error messages that I previously reported.
+>
+> However, I also tested to add a duplicate OPP to the opp-table.
+>
+> Before this series, I got the first two error prints.
+> After this series, I get the first two error prints + the use after free splat.
 
-Reviewed-By: Peter Wu <peter@lekensteyn.nl>
+This looks to be an old bug. Can you please try this branch:
 
-> > ---
-> >  drivers/pci/pci.c | 25 +++++++++++++++++--------
-> >  1 file changed, 17 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > index 29ff9619b5fa..5d58220b6997 100644
-> > --- a/drivers/pci/pci.c
-> > +++ b/drivers/pci/pci.c
-> > @@ -1289,12 +1289,12 @@ int pci_save_state(struct pci_dev *dev)
-> >  EXPORT_SYMBOL(pci_save_state);
-> >
-> >  static void pci_restore_config_dword(struct pci_dev *pdev, int offset,
-> > -                                    u32 saved_val, int retry)
-> > +                                    u32 saved_val, int retry, bool force)
-> >  {
-> >         u32 val;
-> >
-> >         pci_read_config_dword(pdev, offset, &val);
-> > -       if (val == saved_val)
-> > +       if (!force && val == saved_val)
-> >                 return;
-> >
-> >         for (;;) {
-> > @@ -1313,25 +1313,34 @@ static void pci_restore_config_dword(struct pci_dev *pdev, int offset,
-> >  }
-> >
-> >  static void pci_restore_config_space_range(struct pci_dev *pdev,
-> > -                                          int start, int end, int retry)
-> > +                                          int start, int end, int retry,
-> > +                                          bool force)
-> >  {
-> >         int index;
-> >
-> >         for (index = end; index >= start; index--)
-> >                 pci_restore_config_dword(pdev, 4 * index,
-> >                                          pdev->saved_config_space[index],
-> > -                                        retry);
-> > +                                        retry, force);
-> >  }
-> >
-> >  static void pci_restore_config_space(struct pci_dev *pdev)
-> >  {
-> >         if (pdev->hdr_type == PCI_HEADER_TYPE_NORMAL) {
-> > -               pci_restore_config_space_range(pdev, 10, 15, 0);
-> > +               pci_restore_config_space_range(pdev, 10, 15, 0, false);
-> >                 /* Restore BARs before the command register. */
-> > -               pci_restore_config_space_range(pdev, 4, 9, 10);
-> > -               pci_restore_config_space_range(pdev, 0, 3, 0);
-> > +               pci_restore_config_space_range(pdev, 4, 9, 10, false);
-> > +               pci_restore_config_space_range(pdev, 0, 3, 0, false);
-> > +       } else if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
-> > +               pci_restore_config_space_range(pdev, 12, 15, 0, false);
-> > +               /* Force rewriting of prefetch registers to avoid
-> > +                * S3 resume issues on Intel PCI bridges that occur when
-> > +                * these registers are not explicitly written.
-> > +                */
-> > +               pci_restore_config_space_range(pdev, 9, 11, 0, true);
-> > +               pci_restore_config_space_range(pdev, 0, 8, 0, false);
-> >         } else {
-> > -               pci_restore_config_space_range(pdev, 0, 15, 0);
-> > +               pci_restore_config_space_range(pdev, 0, 15, 0, false);
-> >         }
-> >  }
-> >
-> > --
-> > 2.17.1
-> >
+git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/qcom-fix
+
+?
