@@ -1,46 +1,102 @@
-From: David Lechner <david@lechnology.com>
-Subject: Re: [PATCH] power_supply: sysfs: ratelimit property read error
- message
-Date: Wed, 12 Sep 2018 19:51:03 -0500
-Message-ID: <fa60b825-cd9e-91d7-c422-ee3b147d68c1@lechnology.com>
-References: <20180913004830.1265-1-david@lechnology.com>
+From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v3] PCI: Reprogram bridge prefetch registers on
+ resume
+Date: Thu, 13 Sep 2018 11:37:45 +0800
+Message-ID: <20180913033745.11178-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180913004830.1265-1-david@lechnology.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org
+Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/12/2018 07:48 PM, David Lechner wrote:
-> This adds ratelimiting to the message that is printed when reading a
-> power supply property via sysfs returns an error. This will prevent
-> userspace applications from unintentionally dDOSing the system by
-> continuosuly reading a property that returns an error.
-
-s/continuosuly/continuously/
-
-> 
-> Signed-off-by: David Lechner <david@lechnology.com>
-> ---
->   drivers/power/supply/power_supply_sysfs.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-> index 6170ed8b6854..dce24f596160 100644
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -131,7 +131,8 @@ static ssize_t power_supply_show_property(struct device *dev,
->   				dev_dbg(dev, "driver has no data for `%s' property\n",
->   					attr->attr.name);
->   			else if (ret != -ENODEV && ret != -EAGAIN)
-> -				dev_err(dev, "driver failed to report `%s' property: %zd\n",
-> +				dev_err_ratelimited(dev,
-> +					"driver failed to report `%s' property: %zd\n",
->   					attr->attr.name, ret);
->   			return ret;
->   		}
-> 
+T24gMzgrIEludGVsLWJhc2VkIEFzdXMgcHJvZHVjdHMsIHRoZSBudmlkaWEgR1BVIGJlY29tZXMg
+dW51c2FibGUKYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBwcm9kdWN0cyBp
+bmNsdWRlIG11bHRpcGxlCmdlbmVyYXRpb25zIG9mIG52aWRpYSBHUFVzIGFuZCBJbnRlbCBTb0Nz
+LiBBZnRlciByZXN1bWUsIG5vdXZlYXUgbG9ncwptYW55IGVycm9ycyBzdWNoIGFzOgoKICAgIGZp
+Zm86IGZhdWx0IDAwIFtSRUFEXSBhdCAwMDAwMDA1NTU1NTU1MDAwIGVuZ2luZSAwMCBbR1JdIGNs
+aWVudCAwNAogICAgICAgICAgW0hVQi9GRV0gcmVhc29uIDRhIFtdIG9uIGNoYW5uZWwgLTEgWzAw
+N2ZhOTEwMDAgdW5rbm93bl0KICAgIERSTTogZmFpbGVkIHRvIGlkbGUgY2hhbm5lbCAwIFtEUk1d
+CgpTaW1pbGFybHksIHRoZSBudmlkaWEgcHJvcHJpZXRhcnkgZHJpdmVyIGFsc28gZmFpbHMgYWZ0
+ZXIgcmVzdW1lCihibGFjayBzY3JlZW4sIDEwMCUgQ1BVIHVzYWdlIGluIFhvcmcgcHJvY2Vzcyku
+IFdlIHNoaXBwZWQgYSBzYW1wbGUKdG8gTnZpZGlhIGZvciBkaWFnbm9zaXMsIGFuZCB0aGVpciBy
+ZXNwb25zZSBpbmRpY2F0ZWQgdGhhdCBpdCdzIGEKcHJvYmxlbSB3aXRoIHRoZSBwYXJlbnQgUENJ
+IGJyaWRnZSAob24gdGhlIEludGVsIFNvQyksIG5vdCB0aGUgR1BVLgoKUnVudGltZSBzdXNwZW5k
+L3Jlc3VtZSB3b3JrcyBmaW5lLCBvbmx5IFMzIHN1c3BlbmQgaXMgYWZmZWN0ZWQuCgpXZSBmb3Vu
+ZCBhIHdvcmthcm91bmQ6IG9uIHJlc3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQon
+UHJlZmV0Y2hhYmxlIEJhc2UgVXBwZXIgMzIgQml0cycgcmVnaXN0ZXIgKFBDSV9QUkVGX0JBU0Vf
+VVBQRVIzMikuIEluCnRoZSBjYXNlcyB0aGF0IEkgY2hlY2tlZCwgdGhpcyByZWdpc3RlciBoYXMg
+dmFsdWUgMCBhbmQgd2UganVzdCBoYXZlIHRvCnJld3JpdGUgdGhhdCB2YWx1ZS4KCkxpbnV4IGFs
+cmVhZHkgc2F2ZXMgYW5kIHJlc3RvcmVzIFBDSSBjb25maWcgc3BhY2UgZHVyaW5nIHN1c3BlbmQv
+cmVzdW1lLApidXQgdGhpcyByZWdpc3RlciB3YXMgYmVpbmcgc2tpcHBlZCBiZWNhdXNlIHVwb24g
+cmVzdW1lLCBpdCBhbHJlYWR5CmhhcyB2YWx1ZSAwICh0aGUgY29ycmVjdCwgcHJlLXN1c3BlbmQg
+dmFsdWUpLgoKSW50ZWwgYXBwZWFyIHRvIGhhdmUgcHJldmlvdXNseSBhY2tub3dsZWRnZWQgdGhp
+cyBiZWhhdmlvdXIgYW5kIHRoZQpyZXF1aXJlbWVudCB0byByZXdyaXRlIHRoaXMgcmVnaXN0ZXIu
+Cmh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTE2ODUxI2MyMwoK
+QmFzZWQgb24gdGhhdCwgcmV3cml0ZSB0aGUgcHJlZmV0Y2ggcmVnaXN0ZXIgdmFsdWVzIGV2ZW4g
+d2hlbiB0aGF0CmFwcGVhcnMgdW5uZWNlc3NhcnkuCgpXZSBoYXZlIGNvbmZpcm1lZCB0aGlzIHNv
+bHV0aW9uIG9uIGFsbCB0aGUgYWZmZWN0ZWQgbW9kZWxzIHdlIGhhdmUKaW4taGFuZHMgKFg1NDJV
+USwgVVg1MzNGRCwgWDUzMFVOLCBWMjcyVU4pLgoKQWRkaXRpb25hbGx5LCB0aGlzIHNvbHZlcyBh
+biBpc3N1ZSB3aGVyZSByODE2OSBNU0ktWCBpbnRlcnJ1cHRzIHdlcmUKYnJva2VuIGFmdGVyIFMz
+IHN1c3BlbmQvcmVzdW1lIG9uIEFzdXMgWDQ0MVVBUi4gVGhpcyBpc3N1ZSB3YXMgcmVjZW50bHkK
+d29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2JiMDViODViYzJkICgicjgxNjk6IGRvbid0IHVzZSBN
+U0ktWCBvbgpSVEw4MTA2ZSIpLiBJdCBhbHNvIGZpeGVzIHRoZSBzYW1lIGlzc3VlIG9uIFJUTDYx
+ODZldmwvODExMWV2bCBvbiBhbgpBaW1mb3ItdGVjaCBsYXB0b3AgdGhhdCB3ZSBoYWQgbm90IHll
+dCBwYXRjaGVkLiBJIHN1c3BlY3QgaXQgd2lsbCBhbHNvCmZpeCB0aGUgaXNzdWUgdGhhdCB3YXMg
+d29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2M1M2E3MjI0NTljICgicjgxNjk6CmRvbid0IHVzZSBN
+U0ktWCBvbiBSVEw4MTY4ZyIpLgoKVGhvbWFzIE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hh
+bmdlIGFsc28gc29sdmVzIGFuIGlzc3VlIHdoZXJlCnRoZSBBTUQgUmFkZW9uIFBvbGFyaXMgMTAg
+R1BVIG9uIHRoZSBIUCBaYm9vayAxNHUgRzUgaXMgdW5yZXNwb25zaXZlCmFmdGVyIFMzIHN1c3Bl
+bmQvcmVzdW1lLgoKTGluazogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNn
+aT9pZD0yMDEwNjkKU2lnbmVkLW9mZi1ieTogRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRsZXNzbS5j
+b20+Ci0tLQogZHJpdmVycy9wY2kvcGNpLmMgfCAyNSArKysrKysrKysrKysrKysrKy0tLS0tLS0t
+CiAxIGZpbGUgY2hhbmdlZCwgMTcgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCmluZGV4IDI5ZmY5
+NjE5YjVmYS4uNWQ1ODIyMGI2OTk3IDEwMDY0NAotLS0gYS9kcml2ZXJzL3BjaS9wY2kuYworKysg
+Yi9kcml2ZXJzL3BjaS9wY2kuYwpAQCAtMTI4OSwxMiArMTI4OSwxMiBAQCBpbnQgcGNpX3NhdmVf
+c3RhdGUoc3RydWN0IHBjaV9kZXYgKmRldikKIEVYUE9SVF9TWU1CT0wocGNpX3NhdmVfc3RhdGUp
+OwogCiBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQoc3RydWN0IHBjaV9kZXYg
+KnBkZXYsIGludCBvZmZzZXQsCi0JCQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnkpCisJ
+CQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnksIGJvb2wgZm9yY2UpCiB7CiAJdTMyIHZh
+bDsKIAogCXBjaV9yZWFkX2NvbmZpZ19kd29yZChwZGV2LCBvZmZzZXQsICZ2YWwpOwotCWlmICh2
+YWwgPT0gc2F2ZWRfdmFsKQorCWlmICghZm9yY2UgJiYgdmFsID09IHNhdmVkX3ZhbCkKIAkJcmV0
+dXJuOwogCiAJZm9yICg7OykgewpAQCAtMTMxMywyNSArMTMxMywzNCBAQCBzdGF0aWMgdm9pZCBw
+Y2lfcmVzdG9yZV9jb25maWdfZHdvcmQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGludCBvZmZzZXQs
+CiB9CiAKIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShzdHJ1Y3Qg
+cGNpX2RldiAqcGRldiwKLQkJCQkJICAgaW50IHN0YXJ0LCBpbnQgZW5kLCBpbnQgcmV0cnkpCisJ
+CQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5LAorCQkJCQkgICBib29sIGZvcmNl
+KQogewogCWludCBpbmRleDsKIAogCWZvciAoaW5kZXggPSBlbmQ7IGluZGV4ID49IHN0YXJ0OyBp
+bmRleC0tKQogCQlwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQocGRldiwgNCAqIGluZGV4LAogCQkJ
+CQkgcGRldi0+c2F2ZWRfY29uZmlnX3NwYWNlW2luZGV4XSwKLQkJCQkJIHJldHJ5KTsKKwkJCQkJ
+IHJldHJ5LCBmb3JjZSk7CiB9CiAKIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFj
+ZShzdHJ1Y3QgcGNpX2RldiAqcGRldikKIHsKIAlpZiAocGRldi0+aGRyX3R5cGUgPT0gUENJX0hF
+QURFUl9UWVBFX05PUk1BTCkgewotCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRl
+diwgMTAsIDE1LCAwKTsKKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDEw
+LCAxNSwgMCwgZmFsc2UpOwogCQkvKiBSZXN0b3JlIEJBUnMgYmVmb3JlIHRoZSBjb21tYW5kIHJl
+Z2lzdGVyLiAqLwotCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgNCwgOSwg
+MTApOwotCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMywgMCk7CisJ
+CXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCA0LCA5LCAxMCwgZmFsc2UpOwor
+CQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwor
+CX0gZWxzZSBpZiAocGRldi0+aGRyX3R5cGUgPT0gUENJX0hFQURFUl9UWVBFX0JSSURHRSkgewor
+CQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTIsIDE1LCAwLCBmYWxzZSk7
+CisJCS8qIEZvcmNlIHJld3JpdGluZyBvZiBwcmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKKwkJ
+ICogUzMgcmVzdW1lIGlzc3VlcyBvbiBJbnRlbCBQQ0kgYnJpZGdlcyB0aGF0IG9jY3VyIHdoZW4K
+KwkJICogdGhlc2UgcmVnaXN0ZXJzIGFyZSBub3QgZXhwbGljaXRseSB3cml0dGVuLgorCQkgKi8K
+KwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDksIDExLCAwLCB0cnVlKTsK
+KwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDgsIDAsIGZhbHNlKTsK
+IAl9IGVsc2UgewotCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMTUs
+IDApOworCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMTUsIDAsIGZh
+bHNlKTsKIAl9CiB9CiAKLS0gCjIuMTcuMQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9ub3V2ZWF1Cg==
