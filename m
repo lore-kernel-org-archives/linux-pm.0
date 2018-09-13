@@ -1,58 +1,36 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Wed, 12 Sep 2018 18:52:02 +0100
-Message-ID: <20180912175202.GK1413@e110439-lin>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-3-patrick.bellasi@arm.com>
- <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
- <20180912155619.GG1413@e110439-lin>
- <20180912161218.GW24082@hirez.programming.kicks-ass.net>
- <20180912173515.GH1413@e110439-lin>
- <20180912174236.GB24106@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Lechner <david@lechnology.com>
+Subject: [PATCH] power_supply: sysfs: ratelimit property read error message
+Date: Wed, 12 Sep 2018 19:48:30 -0500
+Message-ID: <20180913004830.1265-1-david@lechnology.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180912174236.GB24106@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, David Lechner <david@lechnology.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-Sep 19:42, Peter Zijlstra wrote:
-> On Wed, Sep 12, 2018 at 06:35:15PM +0100, Patrick Bellasi wrote:
-> > On 12-Sep 18:12, Peter Zijlstra wrote:
-> 
-> > > No idea; but if you want to go all fancy you can replace he whole
-> > > uclamp_map thing with something like:
-> > > 
-> > > struct uclamp_map {
-> > > 	union {
-> > > 		struct {
-> > > 			unsigned long v : 10;
-> > > 			unsigned long c : BITS_PER_LONG - 10;
-> > > 		};
-> > > 		atomic_long_t s;
-> > > 	};
-> > > };
-> > 
-> > That sounds really cool and scary at the same time :)
-> > 
-> > The v:10 requires that we never set SCHED_CAPACITY_SCALE>1024
-> > or that we use it to track a percentage value (i.e. [0..100]).
-> 
-> Or we pick 11 bits, it seems unlikely that capacity be larger than 2k.
+This adds ratelimiting to the message that is printed when reading a
+power supply property via sysfs returns an error. This will prevent
+userspace applications from unintentionally dDOSing the system by
+continuosuly reading a property that returns an error.
 
-Just remembered a past experience where we had unaligned access traps
-on some machine because... don't you see any potentially issue on
-using bitfleds like you suggest above ?
+Signed-off-by: David Lechner <david@lechnology.com>
+---
+ drivers/power/supply/power_supply_sysfs.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I'm thinking to:
-
-   commit 317d359df95d ("sched/core: Force proper alignment of 'struct util_est'")
-
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 6170ed8b6854..dce24f596160 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -131,7 +131,8 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 				dev_dbg(dev, "driver has no data for `%s' property\n",
+ 					attr->attr.name);
+ 			else if (ret != -ENODEV && ret != -EAGAIN)
+-				dev_err(dev, "driver failed to report `%s' property: %zd\n",
++				dev_err_ratelimited(dev,
++					"driver failed to report `%s' property: %zd\n",
+ 					attr->attr.name, ret);
+ 			return ret;
+ 		}
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.17.1
