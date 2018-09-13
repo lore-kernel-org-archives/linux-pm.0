@@ -1,87 +1,44 @@
-From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH 2/2] thermal: imx: handle error path in one place to save duplicated code
-Date: Thu, 13 Sep 2018 17:13:06 +0800
-Message-ID: <1536829986-23702-2-git-send-email-Anson.Huang@nxp.com>
-References: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH] thermal: qoriq: add i.mx8mq support
+Date: Thu, 13 Sep 2018 09:43:39 +0000
+Message-ID: <DB3PR0402MB3916E21AC0E72E5F1EA0DF4EF51A0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1535595286-18371-1-git-send-email-Anson.Huang@nxp.com>
+ <5b8e8a6d.1c69fb81.cdb61.0b30@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <5b8e8a6d.1c69fb81.cdb61.0b30@mx.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-During probe phase, the error path can be handled in one place and
-use goto method to save many duplicated code.
+Gentle ping...
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
- drivers/thermal/imx_thermal.c | 29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+Anson Huang
+Best Regards!
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 6cfa2a8..1566154 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -762,9 +762,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		if (ret != -EPROBE_DEFER)
- 			dev_err(&pdev->dev,
- 				"failed to get thermal clk: %d\n", ret);
--		cpufreq_cooling_unregister(data->cdev);
--		cpufreq_cpu_put(data->policy);
--		return ret;
-+		goto cpufreq_put;
- 	}
- 
- 	/*
-@@ -777,9 +775,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	ret = clk_prepare_enable(data->thermal_clk);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
--		cpufreq_cooling_unregister(data->cdev);
--		cpufreq_cpu_put(data->policy);
--		return ret;
-+		goto cpufreq_put;
- 	}
- 
- 	data->tz = thermal_zone_device_register("imx_thermal_zone",
-@@ -792,10 +788,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		ret = PTR_ERR(data->tz);
- 		dev_err(&pdev->dev,
- 			"failed to register thermal zone device %d\n", ret);
--		clk_disable_unprepare(data->thermal_clk);
--		cpufreq_cooling_unregister(data->cdev);
--		cpufreq_cpu_put(data->policy);
--		return ret;
-+		goto clk_disable;
- 	}
- 
- 	dev_info(&pdev->dev, "%s CPU temperature grade - max:%dC"
-@@ -827,14 +820,20 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 			0, "imx_thermal", data);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
--		clk_disable_unprepare(data->thermal_clk);
--		thermal_zone_device_unregister(data->tz);
--		cpufreq_cooling_unregister(data->cdev);
--		cpufreq_cpu_put(data->policy);
--		return ret;
-+		goto thermal_zone_unregister;
- 	}
- 
- 	return 0;
-+
-+thermal_zone_unregister:
-+	thermal_zone_device_unregister(data->tz);
-+clk_disable:
-+	clk_disable_unprepare(data->thermal_clk);
-+cpufreq_put:
-+	cpufreq_cooling_unregister(data->cdev);
-+	cpufreq_cpu_put(data->policy);
-+
-+	return ret;
- }
- 
- static int imx_thermal_remove(struct platform_device *pdev)
--- 
-2.7.4
+
+> -----Original Message-----
+> From: Rob Herring <robh@kernel.org>
+> Sent: Tuesday, September 4, 2018 9:18 AM
+> To: Anson Huang <anson.huang@nxp.com>
+> Cc: rui.zhang@intel.com; edubezval@gmail.com; robh+dt@kernel.org;
+> mark.rutland@arm.com; linux-pm@vger.kernel.org;
+> devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; dl-linux-imx
+> <linux-imx@nxp.com>
+> Subject: Re: [PATCH] thermal: qoriq: add i.mx8mq support
+>=20
+> On Thu, 30 Aug 2018 10:14:46 +0800, Anson Huang wrote:
+> > Add i.mx8mq specific compatible string.
+> >
+> > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > ---
+> >  Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 6 +++---
+> >  drivers/thermal/qoriq_thermal.c                             | 1 +
+> >  2 files changed, 4 insertions(+), 3 deletions(-)
+> >
+>=20
+> Reviewed-by: Rob Herring <robh@kernel.org>
