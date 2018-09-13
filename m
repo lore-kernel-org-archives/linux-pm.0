@@ -1,102 +1,67 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH] kernel/hung_task.c: disable on suspend
-Date: Thu, 13 Sep 2018 18:08:51 +0200
-Message-ID: <20180913160851.18169-1-vkuznets@redhat.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v4 03/16] sched/core: uclamp: add CPU's clamp groups
+ accounting
+Date: Thu, 13 Sep 2018 21:12:09 +0200
+Message-ID: <20180913191209.GY24082@hirez.programming.kicks-ass.net>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-4-patrick.bellasi@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180828135324.21976-4-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-It is possible to observe hung_task complaints when system goes to
-suspend-to-idle state:
+On Tue, Aug 28, 2018 at 02:53:11PM +0100, Patrick Bellasi wrote:
+> +static inline void uclamp_cpu_get_id(struct task_struct *p,
+> +				     struct rq *rq, int clamp_id)
+> +{
+> +	struct uclamp_group *uc_grp;
+> +	struct uclamp_cpu *uc_cpu;
+> +	int clamp_value;
+> +	int group_id;
+> +
+> +	/* Every task must reference a clamp group */
+> +	group_id = p->uclamp[clamp_id].group_id;
 
- PM: Syncing filesystems ... done.
- Freezing user space processes ... (elapsed 0.001 seconds) done.
- OOM killer disabled.
- Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
- sd 0:0:0:0: [sda] Synchronizing SCSI cache
- INFO: task bash:1569 blocked for more than 120 seconds.
-       Not tainted 4.19.0-rc3_+ #687
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- bash            D    0  1569    604 0x00000000
- Call Trace:
-  ? __schedule+0x1fe/0x7e0
-  schedule+0x28/0x80
-  suspend_devices_and_enter+0x4ac/0x750
-  pm_suspend+0x2c0/0x310
+> +}
+> +
+> +static inline void uclamp_cpu_put_id(struct task_struct *p,
+> +				     struct rq *rq, int clamp_id)
+> +{
+> +	struct uclamp_group *uc_grp;
+> +	struct uclamp_cpu *uc_cpu;
+> +	unsigned int clamp_value;
+> +	int group_id;
+> +
+> +	/* New tasks don't have a previous clamp group */
+> +	group_id = p->uclamp[clamp_id].group_id;
+> +	if (group_id == UCLAMP_NOT_VALID)
+> +		return;
 
-Register a PM notifier to disable the detector on suspend and re-enable
-back on wakeup.
+*confused*, so on enqueue they must have a group_id, but then on dequeue
+they might no longer have?
 
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
-Changes since RFC:
-- Add PM_HIBERNATION_PREPARE/PM_POST_HIBERNATION for consistency
-  [Rafael J. Wysocki]
----
- kernel/hung_task.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+> +}
 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index b9132d1269ef..41955c5d8427 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -15,6 +15,7 @@
- #include <linux/lockdep.h>
- #include <linux/export.h>
- #include <linux/sysctl.h>
-+#include <linux/suspend.h>
- #include <linux/utsname.h>
- #include <linux/sched/signal.h>
- #include <linux/sched/debug.h>
-@@ -242,6 +243,26 @@ void reset_hung_task_detector(void)
- }
- EXPORT_SYMBOL_GPL(reset_hung_task_detector);
- 
-+static bool hung_detector_suspended;
-+
-+static int hungtask_pm_notify(struct notifier_block *self,
-+			      unsigned long action, void *hcpu)
-+{
-+	switch (action) {
-+	case PM_SUSPEND_PREPARE:
-+	case PM_HIBERNATION_PREPARE:
-+		hung_detector_suspended = true;
-+		break;
-+	case PM_POST_SUSPEND:
-+	case PM_POST_HIBERNATION:
-+		hung_detector_suspended = false;
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- /*
-  * kthread which checks for tasks stuck in D state
-  */
-@@ -261,7 +282,8 @@ static int watchdog(void *dummy)
- 		interval = min_t(unsigned long, interval, timeout);
- 		t = hung_timeout_jiffies(hung_last_checked, interval);
- 		if (t <= 0) {
--			if (!atomic_xchg(&reset_hung_task, 0))
-+			if (!atomic_xchg(&reset_hung_task, 0) &&
-+			    !hung_detector_suspended)
- 				check_hung_uninterruptible_tasks(timeout);
- 			hung_last_checked = jiffies;
- 			continue;
-@@ -275,6 +297,10 @@ static int watchdog(void *dummy)
- static int __init hung_task_init(void)
- {
- 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-+
-+	/* Disable hung task detector on suspend */
-+	pm_notifier(hungtask_pm_notify, 0);
-+
- 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
- 
- 	return 0;
--- 
-2.14.4
+> @@ -1110,6 +1313,7 @@ static inline void enqueue_task(struct rq *rq, struct task_struct *p, int flags)
+>  	if (!(flags & ENQUEUE_RESTORE))
+>  		sched_info_queued(rq, p);
+>  
+> +	uclamp_cpu_get(rq, p);
+>  	p->sched_class->enqueue_task(rq, p, flags);
+>  }
+>  
+> @@ -1121,6 +1325,7 @@ static inline void dequeue_task(struct rq *rq, struct task_struct *p, int flags)
+>  	if (!(flags & DEQUEUE_SAVE))
+>  		sched_info_dequeued(rq, p);
+>  
+> +	uclamp_cpu_put(rq, p);
+>  	p->sched_class->dequeue_task(rq, p, flags);
+>  }
+
+The ordering, is that right? We get while the task isn't enqueued yet,
+which would suggest we put when the task is dequeued.
