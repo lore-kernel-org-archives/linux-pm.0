@@ -1,118 +1,142 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH RFC] kernel/hung_task.c: disable on suspend
-Date: Thu, 13 Sep 2018 09:06:49 +0200
-Message-ID: <CAJZ5v0jeq=PoF10OZgO9ST_nuRW3Z8emPmX=nTrOSsLKYzZuww@mail.gmail.com>
-References: <20180912161119.2692-1-vkuznets@redhat.com>
+From: Peter Wu <peter@lekensteyn.nl>
+Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers on resume
+Date: Thu, 13 Sep 2018 09:43:28 +0200
+Message-ID: <20180913074328.GA28376@al>
+References: <20180913033745.11178-1-drake@endlessm.com>
+ <CAJZ5v0iBt+mYy4K9YNavqyQkivNqwBp3zyK5QmqGR+kWGsRO4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180912161119.2692-1-vkuznets@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vitaly Kuznetsov <vkuznets@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iBt+mYy4K9YNavqyQkivNqwBp3zyK5QmqGR+kWGsRO4g@mail.gmail.com>
+Sender: netdev-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Drake <drake@endlessm.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, nouveau@lists.freedesktop.org, Linux PM <linux-pm@vger.kernel.org>, kherbst@redhat.com, Rafael Wysocki <rafael.j.wysocki@intel.com>, Keith Busch <keith.busch@intel.com>, jonathan.derrick@intel.com, Thomas Martitz <kugel@rockbox.org>, David Miller <davem@davemloft.net>, Heiner Kallweit <hkallweit1@gmail.com>, netdev <netdev@vger.kernel.org>, nic_swsd@realtek.com, rchang@marvell.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 12, 2018 at 6:11 PM Vitaly Kuznetsov <vkuznets@redhat.com> wrote:
->
-> It is possible to observe hung_task complaints when system goes to
-> suspend-to-idle state:
->
->  PM: Syncing filesystems ... done.
->  Freezing user space processes ... (elapsed 0.001 seconds) done.
->  OOM killer disabled.
->  Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
->  sd 0:0:0:0: [sda] Synchronizing SCSI cache
->  INFO: task bash:1569 blocked for more than 120 seconds.
->        Not tainted 4.19.0-rc3_+ #687
->  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->  bash            D    0  1569    604 0x00000000
->  Call Trace:
->   ? __schedule+0x1fe/0x7e0
->   schedule+0x28/0x80
->   suspend_devices_and_enter+0x4ac/0x750
->   pm_suspend+0x2c0/0x310
+On Thu, Sep 13, 2018 at 08:52:29AM +0200, Rafael J. Wysocki wrote:
+> On Thu, Sep 13, 2018 at 5:37 AM Daniel Drake <drake@endlessm.com> wrote:
+> >
+> > On 38+ Intel-based Asus products, the nvidia GPU becomes unusable
+> > after S3 suspend/resume. The affected products include multiple
+> > generations of nvidia GPUs and Intel SoCs. After resume, nouveau logs
+> > many errors such as:
+> >
+> >     fifo: fault 00 [READ] at 0000005555555000 engine 00 [GR] client 04
+> >           [HUB/FE] reason 4a [] on channel -1 [007fa91000 unknown]
+> >     DRM: failed to idle channel 0 [DRM]
+> >
+> > Similarly, the nvidia proprietary driver also fails after resume
+> > (black screen, 100% CPU usage in Xorg process). We shipped a sample
+> > to Nvidia for diagnosis, and their response indicated that it's a
+> > problem with the parent PCI bridge (on the Intel SoC), not the GPU.
+> >
+> > Runtime suspend/resume works fine, only S3 suspend is affected.
+> >
+> > We found a workaround: on resume, rewrite the Intel PCI bridge
+> > 'Prefetchable Base Upper 32 Bits' register (PCI_PREF_BASE_UPPER32). In
+> > the cases that I checked, this register has value 0 and we just have to
+> > rewrite that value.
+> >
+> > Linux already saves and restores PCI config space during suspend/resume,
+> > but this register was being skipped because upon resume, it already
+> > has value 0 (the correct, pre-suspend value).
+> >
+> > Intel appear to have previously acknowledged this behaviour and the
+> > requirement to rewrite this register.
+> > https://bugzilla.kernel.org/show_bug.cgi?id=116851#c23
+> >
+> > Based on that, rewrite the prefetch register values even when that
+> > appears unnecessary.
+> >
+> > We have confirmed this solution on all the affected models we have
+> > in-hands (X542UQ, UX533FD, X530UN, V272UN).
+> >
+> > Additionally, this solves an issue where r8169 MSI-X interrupts were
+> > broken after S3 suspend/resume on Asus X441UAR. This issue was recently
+> > worked around in commit 7bb05b85bc2d ("r8169: don't use MSI-X on
+> > RTL8106e"). It also fixes the same issue on RTL6186evl/8111evl on an
+> > Aimfor-tech laptop that we had not yet patched. I suspect it will also
+> > fix the issue that was worked around in commit 7c53a722459c ("r8169:
+> > don't use MSI-X on RTL8168g").
+> >
+> > Thomas Martitz reports that this change also solves an issue where
+> > the AMD Radeon Polaris 10 GPU on the HP Zbook 14u G5 is unresponsive
+> > after S3 suspend/resume.
+> >
+> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=201069
+> > Signed-off-by: Daniel Drake <drake@endlessm.com>
+> 
+> Still
+> 
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This actually is a good catch, but the problem is related to what
-happens to the monotonic clock during suspend to idle.
+Reviewed-By: Peter Wu <peter@lekensteyn.nl>
 
-The clock issue needs to be addressed anyway IMO and then this problem
-will go away automatically.
-
-> Register a PM notifier to disable the detector on suspend and re-enable
-> back on wakeup.
->
-> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> ---
-> RFC: It really makes me wonder why nobody reported this before, makes
->  me think I'm missing something.
-> ---
->  kernel/hung_task.c | 26 +++++++++++++++++++++++++-
->  1 file changed, 25 insertions(+), 1 deletion(-)
->
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index b9132d1269ef..d75f288c016f 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -15,6 +15,7 @@
->  #include <linux/lockdep.h>
->  #include <linux/export.h>
->  #include <linux/sysctl.h>
-> +#include <linux/suspend.h>
->  #include <linux/utsname.h>
->  #include <linux/sched/signal.h>
->  #include <linux/sched/debug.h>
-> @@ -242,6 +243,24 @@ void reset_hung_task_detector(void)
->  }
->  EXPORT_SYMBOL_GPL(reset_hung_task_detector);
->
-> +static bool hung_detector_suspended;
-> +
-> +static int hungtask_pm_notify(struct notifier_block *self,
-> +                             unsigned long action, void *hcpu)
-> +{
-> +       switch (action) {
-> +       case PM_SUSPEND_PREPARE:
-
-You'd want PM_HIBERNATION_PREPARE here too I think.
-
-> +               hung_detector_suspended = true;
-> +               break;
-> +       case PM_POST_SUSPEND:
-
-And PM_POST_HIBERNATION here for consistency.
-
-> +               hung_detector_suspended = false;
-> +               break;
-> +       default:
-> +               break;
-> +       }
-> +       return NOTIFY_OK;
-> +}
-> +
->  /*
->   * kthread which checks for tasks stuck in D state
->   */
-> @@ -261,7 +280,8 @@ static int watchdog(void *dummy)
->                 interval = min_t(unsigned long, interval, timeout);
->                 t = hung_timeout_jiffies(hung_last_checked, interval);
->                 if (t <= 0) {
-> -                       if (!atomic_xchg(&reset_hung_task, 0))
-> +                       if (!atomic_xchg(&reset_hung_task, 0) &&
-> +                           !hung_detector_suspended)
->                                 check_hung_uninterruptible_tasks(timeout);
->                         hung_last_checked = jiffies;
->                         continue;
-> @@ -275,6 +295,10 @@ static int watchdog(void *dummy)
->  static int __init hung_task_init(void)
->  {
->         atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-> +
-> +       /* Disable hung task detector on suspend */
-> +       pm_notifier(hungtask_pm_notify, 0);
-> +
->         watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
->
->         return 0;
-> --
-> 2.14.4
->
+> > ---
+> >  drivers/pci/pci.c | 25 +++++++++++++++++--------
+> >  1 file changed, 17 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index 29ff9619b5fa..5d58220b6997 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -1289,12 +1289,12 @@ int pci_save_state(struct pci_dev *dev)
+> >  EXPORT_SYMBOL(pci_save_state);
+> >
+> >  static void pci_restore_config_dword(struct pci_dev *pdev, int offset,
+> > -                                    u32 saved_val, int retry)
+> > +                                    u32 saved_val, int retry, bool force)
+> >  {
+> >         u32 val;
+> >
+> >         pci_read_config_dword(pdev, offset, &val);
+> > -       if (val == saved_val)
+> > +       if (!force && val == saved_val)
+> >                 return;
+> >
+> >         for (;;) {
+> > @@ -1313,25 +1313,34 @@ static void pci_restore_config_dword(struct pci_dev *pdev, int offset,
+> >  }
+> >
+> >  static void pci_restore_config_space_range(struct pci_dev *pdev,
+> > -                                          int start, int end, int retry)
+> > +                                          int start, int end, int retry,
+> > +                                          bool force)
+> >  {
+> >         int index;
+> >
+> >         for (index = end; index >= start; index--)
+> >                 pci_restore_config_dword(pdev, 4 * index,
+> >                                          pdev->saved_config_space[index],
+> > -                                        retry);
+> > +                                        retry, force);
+> >  }
+> >
+> >  static void pci_restore_config_space(struct pci_dev *pdev)
+> >  {
+> >         if (pdev->hdr_type == PCI_HEADER_TYPE_NORMAL) {
+> > -               pci_restore_config_space_range(pdev, 10, 15, 0);
+> > +               pci_restore_config_space_range(pdev, 10, 15, 0, false);
+> >                 /* Restore BARs before the command register. */
+> > -               pci_restore_config_space_range(pdev, 4, 9, 10);
+> > -               pci_restore_config_space_range(pdev, 0, 3, 0);
+> > +               pci_restore_config_space_range(pdev, 4, 9, 10, false);
+> > +               pci_restore_config_space_range(pdev, 0, 3, 0, false);
+> > +       } else if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+> > +               pci_restore_config_space_range(pdev, 12, 15, 0, false);
+> > +               /* Force rewriting of prefetch registers to avoid
+> > +                * S3 resume issues on Intel PCI bridges that occur when
+> > +                * these registers are not explicitly written.
+> > +                */
+> > +               pci_restore_config_space_range(pdev, 9, 11, 0, true);
+> > +               pci_restore_config_space_range(pdev, 0, 8, 0, false);
+> >         } else {
+> > -               pci_restore_config_space_range(pdev, 0, 15, 0);
+> > +               pci_restore_config_space_range(pdev, 0, 15, 0, false);
+> >         }
+> >  }
+> >
+> > --
+> > 2.17.1
+> >
