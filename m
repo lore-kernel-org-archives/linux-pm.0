@@ -1,120 +1,63 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Thu, 13 Sep 2018 08:52:29 +0200
-Message-ID: <CAJZ5v0iBt+mYy4K9YNavqyQkivNqwBp3zyK5QmqGR+kWGsRO4g@mail.gmail.com>
-References: <20180913033745.11178-1-drake@endlessm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
+Date: Thu, 13 Sep 2018 08:55:22 +0200
+Message-ID: <CAJZ5v0jmNFaH3JUVS9W_1ofXcD=8U8Y9enPi+j+9U=6cBVxfJQ@mail.gmail.com>
+References: <20180912161101.2634-1-vkuznets@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180913033745.11178-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rafael Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180912161101.2634-1-vkuznets@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBTZXAgMTMsIDIwMTggYXQgNTozNyBBTSBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxl
-c3NtLmNvbT4gd3JvdGU6Cj4KPiBPbiAzOCsgSW50ZWwtYmFzZWQgQXN1cyBwcm9kdWN0cywgdGhl
-IG52aWRpYSBHUFUgYmVjb21lcyB1bnVzYWJsZQo+IGFmdGVyIFMzIHN1c3BlbmQvcmVzdW1lLiBU
-aGUgYWZmZWN0ZWQgcHJvZHVjdHMgaW5jbHVkZSBtdWx0aXBsZQo+IGdlbmVyYXRpb25zIG9mIG52
-aWRpYSBHUFVzIGFuZCBJbnRlbCBTb0NzLiBBZnRlciByZXN1bWUsIG5vdXZlYXUgbG9ncwo+IG1h
-bnkgZXJyb3JzIHN1Y2ggYXM6Cj4KPiAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAw
-MDU1NTU1NTUwMDAgZW5naW5lIDAwIFtHUl0gY2xpZW50IDA0Cj4gICAgICAgICAgIFtIVUIvRkVd
-IHJlYXNvbiA0YSBbXSBvbiBjaGFubmVsIC0xIFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgIERS
-TTogZmFpbGVkIHRvIGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4KPiBTaW1pbGFybHksIHRoZSBudmlk
-aWEgcHJvcHJpZXRhcnkgZHJpdmVyIGFsc28gZmFpbHMgYWZ0ZXIgcmVzdW1lCj4gKGJsYWNrIHNj
-cmVlbiwgMTAwJSBDUFUgdXNhZ2UgaW4gWG9yZyBwcm9jZXNzKS4gV2Ugc2hpcHBlZCBhIHNhbXBs
-ZQo+IHRvIE52aWRpYSBmb3IgZGlhZ25vc2lzLCBhbmQgdGhlaXIgcmVzcG9uc2UgaW5kaWNhdGVk
-IHRoYXQgaXQncyBhCj4gcHJvYmxlbSB3aXRoIHRoZSBwYXJlbnQgUENJIGJyaWRnZSAob24gdGhl
-IEludGVsIFNvQyksIG5vdCB0aGUgR1BVLgo+Cj4gUnVudGltZSBzdXNwZW5kL3Jlc3VtZSB3b3Jr
-cyBmaW5lLCBvbmx5IFMzIHN1c3BlbmQgaXMgYWZmZWN0ZWQuCj4KPiBXZSBmb3VuZCBhIHdvcmth
-cm91bmQ6IG9uIHJlc3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ICdQcmVmZXRj
-aGFibGUgQmFzZSBVcHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMy
-KS4gSW4KPiB0aGUgY2FzZXMgdGhhdCBJIGNoZWNrZWQsIHRoaXMgcmVnaXN0ZXIgaGFzIHZhbHVl
-IDAgYW5kIHdlIGp1c3QgaGF2ZSB0bwo+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPgo+IExpbnV4IGFs
-cmVhZHkgc2F2ZXMgYW5kIHJlc3RvcmVzIFBDSSBjb25maWcgc3BhY2UgZHVyaW5nIHN1c3BlbmQv
-cmVzdW1lLAo+IGJ1dCB0aGlzIHJlZ2lzdGVyIHdhcyBiZWluZyBza2lwcGVkIGJlY2F1c2UgdXBv
-biByZXN1bWUsIGl0IGFscmVhZHkKPiBoYXMgdmFsdWUgMCAodGhlIGNvcnJlY3QsIHByZS1zdXNw
-ZW5kIHZhbHVlKS4KPgo+IEludGVsIGFwcGVhciB0byBoYXZlIHByZXZpb3VzbHkgYWNrbm93bGVk
-Z2VkIHRoaXMgYmVoYXZpb3VyIGFuZCB0aGUKPiByZXF1aXJlbWVudCB0byByZXdyaXRlIHRoaXMg
-cmVnaXN0ZXIuCj4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0x
-MTY4NTEjYzIzCj4KPiBCYXNlZCBvbiB0aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3Rl
-ciB2YWx1ZXMgZXZlbiB3aGVuIHRoYXQKPiBhcHBlYXJzIHVubmVjZXNzYXJ5Lgo+Cj4gV2UgaGF2
-ZSBjb25maXJtZWQgdGhpcyBzb2x1dGlvbiBvbiBhbGwgdGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBo
-YXZlCj4gaW4taGFuZHMgKFg1NDJVUSwgVVg1MzNGRCwgWDUzMFVOLCBWMjcyVU4pLgo+Cj4gQWRk
-aXRpb25hbGx5LCB0aGlzIHNvbHZlcyBhbiBpc3N1ZSB3aGVyZSByODE2OSBNU0ktWCBpbnRlcnJ1
-cHRzIHdlcmUKPiBicm9rZW4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUgb24gQXN1cyBYNDQxVUFS
-LiBUaGlzIGlzc3VlIHdhcyByZWNlbnRseQo+IHdvcmtlZCBhcm91bmQgaW4gY29tbWl0IDdiYjA1
-Yjg1YmMyZCAoInI4MTY5OiBkb24ndCB1c2UgTVNJLVggb24KPiBSVEw4MTA2ZSIpLiBJdCBhbHNv
-IGZpeGVzIHRoZSBzYW1lIGlzc3VlIG9uIFJUTDYxODZldmwvODExMWV2bCBvbiBhbgo+IEFpbWZv
-ci10ZWNoIGxhcHRvcCB0aGF0IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQuIEkgc3VzcGVjdCBpdCB3
-aWxsIGFsc28KPiBmaXggdGhlIGlzc3VlIHRoYXQgd2FzIHdvcmtlZCBhcm91bmQgaW4gY29tbWl0
-IDdjNTNhNzIyNDU5YyAoInI4MTY5Ogo+IGRvbid0IHVzZSBNU0ktWCBvbiBSVEw4MTY4ZyIpLgo+
-Cj4gVGhvbWFzIE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFu
-IGlzc3VlIHdoZXJlCj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhlIEhQIFpi
-b29rIDE0dSBHNSBpcyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4KPgo+
-IExpbms6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAxMDY5
-Cj4gU2lnbmVkLW9mZi1ieTogRGFuaWVsIERyYWtlIDxkcmFrZUBlbmRsZXNzbS5jb20+CgpTdGls
-bAoKUmV2aWV3ZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVs
-LmNvbT4KCj4gLS0tCj4gIGRyaXZlcnMvcGNpL3BjaS5jIHwgMjUgKysrKysrKysrKysrKysrKyst
-LS0tLS0tLQo+ICAxIGZpbGUgY2hhbmdlZCwgMTcgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMo
-LSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5j
-Cj4gaW5kZXggMjlmZjk2MTliNWZhLi41ZDU4MjIwYjY5OTcgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVy
-cy9wY2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC0xMjg5LDEyICsxMjg5
-LDEyIEBAIGludCBwY2lfc2F2ZV9zdGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+ICBFWFBPUlRf
-U1lNQk9MKHBjaV9zYXZlX3N0YXRlKTsKPgo+ICBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25m
-aWdfZHdvcmQoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGludCBvZmZzZXQsCj4gLSAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHUzMiBzYXZlZF92YWwsIGludCByZXRyeSkKPiArICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdTMyIHNhdmVkX3ZhbCwgaW50IHJldHJ5
-LCBib29sIGZvcmNlKQo+ICB7Cj4gICAgICAgICB1MzIgdmFsOwo+Cj4gICAgICAgICBwY2lfcmVh
-ZF9jb25maWdfZHdvcmQocGRldiwgb2Zmc2V0LCAmdmFsKTsKPiAtICAgICAgIGlmICh2YWwgPT0g
-c2F2ZWRfdmFsKQo+ICsgICAgICAgaWYgKCFmb3JjZSAmJiB2YWwgPT0gc2F2ZWRfdmFsKQo+ICAg
-ICAgICAgICAgICAgICByZXR1cm47Cj4KPiAgICAgICAgIGZvciAoOzspIHsKPiBAQCAtMTMxMywy
-NSArMTMxMywzNCBAQCBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQoc3RydWN0
-IHBjaV9kZXYgKnBkZXYsIGludCBvZmZzZXQsCj4gIH0KPgo+ICBzdGF0aWMgdm9pZCBwY2lfcmVz
-dG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uoc3RydWN0IHBjaV9kZXYgKnBkZXYsCj4gLSAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGludCBzdGFydCwgaW50IGVuZCwgaW50
-IHJldHJ5KQo+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBpbnQg
-c3RhcnQsIGludCBlbmQsIGludCByZXRyeSwKPiArICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgYm9vbCBmb3JjZSkKPiAgewo+ICAgICAgICAgaW50IGluZGV4Owo+Cj4g
-ICAgICAgICBmb3IgKGluZGV4ID0gZW5kOyBpbmRleCA+PSBzdGFydDsgaW5kZXgtLSkKPiAgICAg
-ICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3JkKHBkZXYsIDQgKiBpbmRleCwKPiAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHBkZXYtPnNhdmVkX2NvbmZp
-Z19zcGFjZVtpbmRleF0sCj4gLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICByZXRyeSk7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZXRy
-eSwgZm9yY2UpOwo+ICB9Cj4KPiAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNl
-KHN0cnVjdCBwY2lfZGV2ICpwZGV2KQo+ICB7Cj4gICAgICAgICBpZiAocGRldi0+aGRyX3R5cGUg
-PT0gUENJX0hFQURFUl9UWVBFX05PUk1BTCkgewo+IC0gICAgICAgICAgICAgICBwY2lfcmVzdG9y
-ZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwKTsKPiArICAgICAgICAgICAgICAg
-cGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDEwLCAxNSwgMCwgZmFsc2UpOwo+
-ICAgICAgICAgICAgICAgICAvKiBSZXN0b3JlIEJBUnMgYmVmb3JlIHRoZSBjb21tYW5kIHJlZ2lz
-dGVyLiAqLwo+IC0gICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uo
-cGRldiwgNCwgOSwgMTApOwo+IC0gICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9jb25maWdfc3Bh
-Y2VfcmFuZ2UocGRldiwgMCwgMywgMCk7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2Nv
-bmZpZ19zcGFjZV9yYW5nZShwZGV2LCA0LCA5LCAxMCwgZmFsc2UpOwo+ICsgICAgICAgICAgICAg
-ICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwo+
-ICsgICAgICAgfSBlbHNlIGlmIChwZGV2LT5oZHJfdHlwZSA9PSBQQ0lfSEVBREVSX1RZUEVfQlJJ
-REdFKSB7Cj4gKyAgICAgICAgICAgICAgIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShw
-ZGV2LCAxMiwgMTUsIDAsIGZhbHNlKTsKPiArICAgICAgICAgICAgICAgLyogRm9yY2UgcmV3cml0
-aW5nIG9mIHByZWZldGNoIHJlZ2lzdGVycyB0byBhdm9pZAo+ICsgICAgICAgICAgICAgICAgKiBT
-MyByZXN1bWUgaXNzdWVzIG9uIEludGVsIFBDSSBicmlkZ2VzIHRoYXQgb2NjdXIgd2hlbgo+ICsg
-ICAgICAgICAgICAgICAgKiB0aGVzZSByZWdpc3RlcnMgYXJlIG5vdCBleHBsaWNpdGx5IHdyaXR0
-ZW4uCj4gKyAgICAgICAgICAgICAgICAqLwo+ICsgICAgICAgICAgICAgICBwY2lfcmVzdG9yZV9j
-b25maWdfc3BhY2VfcmFuZ2UocGRldiwgOSwgMTEsIDAsIHRydWUpOwo+ICsgICAgICAgICAgICAg
-ICBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgOCwgMCwgZmFsc2UpOwo+
-ICAgICAgICAgfSBlbHNlIHsKPiAtICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVfY29uZmlnX3Nw
-YWNlX3JhbmdlKHBkZXYsIDAsIDE1LCAwKTsKPiArICAgICAgICAgICAgICAgcGNpX3Jlc3RvcmVf
-Y29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDE1LCAwLCBmYWxzZSk7Cj4gICAgICAgICB9Cj4g
-IH0KPgo+IC0tCj4gMi4xNy4xCj4KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3Rv
-cC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2
-ZWF1Cg==
+On Wed, Sep 12, 2018 at 6:11 PM Vitaly Kuznetsov <vkuznets@redhat.com> wrote:
+>
+> It makes little sense but still possible to put Hyper-V guests into
+> suspend-to-idle state. To wake them up two wakeup sources were registered
+> in the past: hyperv-keyboard and hid-hyperv. However, since
+> commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
+> suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
+> to pm_wakeup_hard_event() API as these devices are actually the only
+> possible way to wakeup Hyper-V guests.
+>
+> Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> ---
+>  drivers/hid/hid-hyperv.c              | 2 +-
+>  drivers/input/serio/hyperv-keyboard.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/hid/hid-hyperv.c b/drivers/hid/hid-hyperv.c
+> index b372854cf38d..704049e62d58 100644
+> --- a/drivers/hid/hid-hyperv.c
+> +++ b/drivers/hid/hid-hyperv.c
+> @@ -309,7 +309,7 @@ static void mousevsc_on_receive(struct hv_device *device,
+>                 hid_input_report(input_dev->hid_device, HID_INPUT_REPORT,
+>                                  input_dev->input_buf, len, 1);
+>
+> -               pm_wakeup_event(&input_dev->device->device, 0);
+> +               pm_wakeup_hard_event(&input_dev->device->device);
+>
+>                 break;
+>         default:
+> diff --git a/drivers/input/serio/hyperv-keyboard.c b/drivers/input/serio/hyperv-keyboard.c
+> index 47a0e81a2989..a8b9be3e28db 100644
+> --- a/drivers/input/serio/hyperv-keyboard.c
+> +++ b/drivers/input/serio/hyperv-keyboard.c
+> @@ -177,7 +177,7 @@ static void hv_kbd_on_receive(struct hv_device *hv_dev,
+>                  * state because the Enter-UP can trigger a wakeup at once.
+>                  */
+>                 if (!(info & IS_BREAK))
+> -                       pm_wakeup_event(&hv_dev->device, 0);
+> +                       pm_wakeup_hard_event(&hv_dev->device);
+>
+>                 break;
+>
+> --
+> 2.14.4
+>
