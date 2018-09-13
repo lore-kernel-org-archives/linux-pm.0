@@ -1,69 +1,29 @@
-From: KY Srinivasan <kys@microsoft.com>
-Subject: RE: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
-Date: Thu, 13 Sep 2018 12:58:01 +0000
-Message-ID: <MW2PR2101MB1113E44609F4094D7625B52BA01A0@MW2PR2101MB1113.namprd21.prod.outlook.com>
-References: <20180912161101.2634-1-vkuznets@redhat.com>
- <CAJZ5v0jmNFaH3JUVS9W_1ofXcD=8U8Y9enPi+j+9U=6cBVxfJQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] thermal: imx: improve error message
+Date: Thu, 13 Sep 2018 15:43:28 +0200
+Message-ID: <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
+References: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jmNFaH3JUVS9W_1ofXcD=8U8Y9enPi+j+9U=6cBVxfJQ@mail.gmail.com>
+In-Reply-To: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, vkuznets <vkuznets@redhat.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Anson Huang <Anson.Huang@nxp.com>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgPHJhZmFlbEBrZXJuZWwub3JnPg0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAxMiwg
-MjAxOCAxMTo1NSBQTQ0KPiBUbzogdmt1em5ldHMgPHZrdXpuZXRzQHJlZGhhdC5jb20+DQo+IENj
-OiBMaW51eCBQTSA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgUmFmYWVsIEouIFd5c29ja2kN
-Cj4gPHJqd0Byand5c29ja2kubmV0PjsgS1kgU3Jpbml2YXNhbiA8a3lzQG1pY3Jvc29mdC5jb20+
-OyBIYWl5YW5nIFpoYW5nDQo+IDxoYWl5YW5nekBtaWNyb3NvZnQuY29tPjsgU3RlcGhlbiBIZW1t
-aW5nZXINCj4gPHN0aGVtbWluQG1pY3Jvc29mdC5jb20+OyBKaXJpIEtvc2luYSA8amlrb3NAa2Vy
-bmVsLm9yZz47IERtaXRyeQ0KPiBUb3Jva2hvdiA8ZG1pdHJ5LnRvcm9raG92QGdtYWlsLmNvbT47
-IGxpbnV4LWlucHV0QHZnZXIua2VybmVsLm9yZzsNCj4gTGludXggS2VybmVsIE1haWxpbmcgTGlz
-dCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0g
-aHlwZXItdjogRml4IHdha2V1cCBmcm9tIHN1c3BlbmQtdG8taWRsZQ0KPiANCj4gT24gV2VkLCBT
-ZXAgMTIsIDIwMTggYXQgNjoxMSBQTSBWaXRhbHkgS3V6bmV0c292IDx2a3V6bmV0c0ByZWRoYXQu
-Y29tPg0KPiB3cm90ZToNCj4gPg0KPiA+IEl0IG1ha2VzIGxpdHRsZSBzZW5zZSBidXQgc3RpbGwg
-cG9zc2libGUgdG8gcHV0IEh5cGVyLVYgZ3Vlc3RzIGludG8NCj4gPiBzdXNwZW5kLXRvLWlkbGUg
-c3RhdGUuIFRvIHdha2UgdGhlbSB1cCB0d28gd2FrZXVwIHNvdXJjZXMgd2VyZQ0KPiByZWdpc3Rl
-cmVkDQo+ID4gaW4gdGhlIHBhc3Q6IGh5cGVydi1rZXlib2FyZCBhbmQgaGlkLWh5cGVydi4gSG93
-ZXZlciwgc2luY2UNCj4gPiBjb21taXQgZWVkNGQ0N2VmZTk1ICgiQUNQSSAvIHNsZWVwOiBJZ25v
-cmUgc3B1cmlvdXMgU0NJIHdha2V1cHMgZnJvbQ0KPiA+IHN1c3BlbmQtdG8taWRsZSIpIHBtX3dh
-a2V1cF9ldmVudCgpIGZyb20gdGhlc2UgZGV2aWNlcyBpcyBpZ25vcmVkLg0KPiBTd2l0Y2gNCj4g
-PiB0byBwbV93YWtldXBfaGFyZF9ldmVudCgpIEFQSSBhcyB0aGVzZSBkZXZpY2VzIGFyZSBhY3R1
-YWxseSB0aGUgb25seQ0KPiA+IHBvc3NpYmxlIHdheSB0byB3YWtldXAgSHlwZXItViBndWVzdHMu
-DQo+ID4NCj4gPiBGaXhlczogZWVkNGQ0N2VmZTk1IChBQ1BJIC8gc2xlZXA6IElnbm9yZSBzcHVy
-aW91cyBTQ0kgd2FrZXVwcyBmcm9tDQo+IHN1c3BlbmQtdG8taWRsZSkNCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBWaXRhbHkgS3V6bmV0c292IDx2a3V6bmV0c0ByZWRoYXQuY29tPg0KPiANCj4gUmV2aWV3
-ZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCkFj
-a2VkLWJ5OiBLLiBZLiBTcmluaXZhc2FuIDxreXNAbWljcm9zb2Z0LmNvbT4NCg0KPiANCj4gPiAt
-LS0NCj4gPiAgZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jICAgICAgICAgICAgICB8IDIgKy0NCj4g
-PiAgZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQuYyB8IDIgKy0NCj4gPiAgMiBm
-aWxlcyBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jIGIvZHJpdmVycy9oaWQvaGlkLWh5
-cGVydi5jDQo+ID4gaW5kZXggYjM3Mjg1NGNmMzhkLi43MDQwNDllNjJkNTggMTAwNjQ0DQo+ID4g
-LS0tIGEvZHJpdmVycy9oaWQvaGlkLWh5cGVydi5jDQo+ID4gKysrIGIvZHJpdmVycy9oaWQvaGlk
-LWh5cGVydi5jDQo+ID4gQEAgLTMwOSw3ICszMDksNyBAQCBzdGF0aWMgdm9pZCBtb3VzZXZzY19v
-bl9yZWNlaXZlKHN0cnVjdCBodl9kZXZpY2UNCj4gKmRldmljZSwNCj4gPiAgICAgICAgICAgICAg
-ICAgaGlkX2lucHV0X3JlcG9ydChpbnB1dF9kZXYtPmhpZF9kZXZpY2UsIEhJRF9JTlBVVF9SRVBP
-UlQsDQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgaW5wdXRfZGV2LT5pbnB1
-dF9idWYsIGxlbiwgMSk7DQo+ID4NCj4gPiAtICAgICAgICAgICAgICAgcG1fd2FrZXVwX2V2ZW50
-KCZpbnB1dF9kZXYtPmRldmljZS0+ZGV2aWNlLCAwKTsNCj4gPiArICAgICAgICAgICAgICAgcG1f
-d2FrZXVwX2hhcmRfZXZlbnQoJmlucHV0X2Rldi0+ZGV2aWNlLT5kZXZpY2UpOw0KPiA+DQo+ID4g
-ICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICAgICAgICAgZGVmYXVsdDoNCj4gPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQuYw0KPiBiL2RyaXZlcnMv
-aW5wdXQvc2VyaW8vaHlwZXJ2LWtleWJvYXJkLmMNCj4gPiBpbmRleCA0N2EwZTgxYTI5ODkuLmE4
-YjliZTNlMjhkYiAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2lucHV0L3NlcmlvL2h5cGVydi1r
-ZXlib2FyZC5jDQo+ID4gKysrIGIvZHJpdmVycy9pbnB1dC9zZXJpby9oeXBlcnYta2V5Ym9hcmQu
-Yw0KPiA+IEBAIC0xNzcsNyArMTc3LDcgQEAgc3RhdGljIHZvaWQgaHZfa2JkX29uX3JlY2VpdmUo
-c3RydWN0IGh2X2RldmljZQ0KPiAqaHZfZGV2LA0KPiA+ICAgICAgICAgICAgICAgICAgKiBzdGF0
-ZSBiZWNhdXNlIHRoZSBFbnRlci1VUCBjYW4gdHJpZ2dlciBhIHdha2V1cCBhdCBvbmNlLg0KPiA+
-ICAgICAgICAgICAgICAgICAgKi8NCj4gPiAgICAgICAgICAgICAgICAgaWYgKCEoaW5mbyAmIElT
-X0JSRUFLKSkNCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBwbV93YWtldXBfZXZlbnQoJmh2
-X2Rldi0+ZGV2aWNlLCAwKTsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBwbV93YWtldXBf
-aGFyZF9ldmVudCgmaHZfZGV2LT5kZXZpY2UpOw0KPiA+DQo+ID4gICAgICAgICAgICAgICAgIGJy
-ZWFrOw0KPiA+DQo+ID4gLS0NCj4gPiAyLjE0LjQNCj4gPg0K
+On 13/09/2018 11:13, Anson Huang wrote:
+> Remove the duplicated "from" to improve the error message.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
