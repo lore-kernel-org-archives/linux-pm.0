@@ -1,81 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / suspend: Count extra iterations of s2idle loop as sleep time
-Date: Thu, 13 Sep 2018 12:02:08 +0200
-Message-ID: <2599994.ffBKF6PfAe@aspire.rjw.lan>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: Re: [PATCH 00/11] OPP: Don't create multiple OPP tables for devices
+ sharing OPP table
+Date: Thu, 13 Sep 2018 12:21:13 +0200
+Message-ID: <20180913102113.GA25222@centauri.lan>
+References: <cover.1536736872.git.viresh.kumar@linaro.org>
+ <20180912135537.GA9985@centauri.ideon.se>
+ <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4.18" <stable@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Sep 13, 2018 at 01:18:34PM +0530, Viresh Kumar wrote:
+> On 12 September 2018 at 19:25, Niklas Cassel <niklas.cassel@linaro.org> wrote:
+> > On Wed, Sep 12, 2018 at 01:58:39PM +0530, Viresh Kumar wrote:
+> >> Hello,
+> >>
+> >> Niklas Cassle recently reported some regressions with his Qcom cpufreq
+> >> driver where he was getting some errors while creating the OPPs tables.
+> >>
+> >> After looking into it I realized that the OPP core incorrectly creates
+> >> multiple OPP tables for the devices even if they are sharing the OPP
+> >> table in DT. This happens when the request comes using different CPU
+> >> devices. For example, dev_pm_opp_set_supported_hw() getting called using
+> >> CPU0 and dev_pm_opp_of_add_table() getting called using CPU1.
+> >>
+> >> This series redesigns the internals of the OPP core to fix that. The
+> >> redesign has simplified the core itself though.
+> >>
+> >> @Niklas: Can you please confirm that this series fixes the issues you
+> >> have reported ? I have already tested it on Hikey960.
+> >
+> > Hello Viresh,
+> >
+> > This fixes the OPP error messages that I previously reported.
+> >
+> > However, I also tested to add a duplicate OPP to the opp-table.
+> >
+> > Before this series, I got the first two error prints.
+> > After this series, I get the first two error prints + the use after free splat.
+> 
+> This looks to be an old bug. Can you please try this branch:
 
-There is a difference in behavior between suspend-to-idle and
-suspend-to-RAM in the timekeeping handling that leads to functional
-issues.  Namely, every iteration of the loop in s2idle_loop()
-increases the monotinic clock somewhat, even if timekeeping_suspend()
-and timekeeping_resume() are invoked from s2idle_enter(), and if
-many of them are carried out in a row, the monotonic clock can grow
-significantly while the system is regarded as suspended, which
-doesn't happend during suspend-to-RAM and so it is unexpected and
-leads to confusion and misbehavior in user space (similar to what
-ensued when we tried to combine the boottime and monotonic clocks).
+Hello Viresh,
 
-To avoid that, count all iterations of the loop in s2idle_loop()
-except for the last one as "sleep time" and adjust the clock for
-that on exit from suspend-to-idle.
+You confused me here, since you did hide the fix for this old bug in the
+middle of your new patch series :)
 
-Fixes: 33e4f80ee69b (ACPI / PM: Ignore spurious SCI wakeups from suspend-to-idle)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/suspend.c |   22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+I think that it would have been more obvious to simply paste the fix/diff
+in your reply directly, since that is the most common way to post a
+potential fix. Or, if you are really confident in your fix, post a V2
+directly.
 
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -109,11 +109,16 @@ static void s2idle_enter(void)
- 
- static void s2idle_loop(void)
- {
-+	ktime_t delta = 0;
-+
- 	pm_pr_dbg("suspend-to-idle\n");
- 
- 	for (;;) {
-+		ktime_t before;
- 		int error;
- 
-+		before = ktime_get();
-+
- 		dpm_noirq_begin();
- 
- 		/*
-@@ -148,6 +153,23 @@ static void s2idle_loop(void)
- 			break;
- 
- 		pm_wakeup_clear(false);
-+
-+		/*
-+		 * Count all iterations except for the last one as "sleep time".
-+		 */
-+		delta = ktime_add(delta, ktime_sub(ktime_get(), before));
-+	}
-+
-+	/*
-+	 * If the monotonic clock difference between the start of the loop and
-+	 * this point is too large, user space may get confused about whether or
-+	 * not the system has been suspended and tasks may get killed by
-+	 * watchdogs etc., so compensate for that.
-+	 */
-+	if (ktime_to_ns(delta) > 0) {
-+		struct timespec64 timespec64_delta = ktime_to_timespec64(delta);
-+
-+		timekeeping_inject_sleeptime64(&timespec64_delta);
- 	}
- 
- 	pm_pr_dbg("resume from suspend-to-idle\n");
+However, your branch works like a charm, so feel free to add:
+Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
+when sending out your branch as a V2.
+
+Kind regards,
+Niklas
+
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/qcom-fix
+> 
+> ?
