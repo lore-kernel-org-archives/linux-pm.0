@@ -1,48 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/11] OPP: Don't create multiple OPP tables for devices
- sharing OPP table
-Date: Thu, 13 Sep 2018 13:18:34 +0530
-Message-ID: <CAKohpomVR_U9cA2yFLWjQ0pLdjp_d8=s2C7cvbauacha0Uv8xw@mail.gmail.com>
-References: <cover.1536736872.git.viresh.kumar@linaro.org> <20180912135537.GA9985@centauri.ideon.se>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/4][v2] PM / hibernate: Check the success of generating
+ md5 digest before hibernation
+Date: Thu, 13 Sep 2018 10:26:39 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1809131024500.1473@nanos.tec.linutronix.de>
+References: <cover.1536685746.git.yu.c.chen@intel.com> <afb1c18493fa3fb891a37752161e9f73a46fc2df.1536685746.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20180912135537.GA9985@centauri.ideon.se>
-Sender: stable-owner@vger.kernel.org
-To: Niklas Cassel <niklas.cassel@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4.18" <stable@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <afb1c18493fa3fb891a37752161e9f73a46fc2df.1536685746.git.yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Rui Zhang <rui.zhang@intel.com>, Chen Yu <yu.chen.surf@gmail.com>, Zhimin Gu <kookoo.gu@intel.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12 September 2018 at 19:25, Niklas Cassel <niklas.cassel@linaro.org> wrote:
-> On Wed, Sep 12, 2018 at 01:58:39PM +0530, Viresh Kumar wrote:
->> Hello,
->>
->> Niklas Cassle recently reported some regressions with his Qcom cpufreq
->> driver where he was getting some errors while creating the OPPs tables.
->>
->> After looking into it I realized that the OPP core incorrectly creates
->> multiple OPP tables for the devices even if they are sharing the OPP
->> table in DT. This happens when the request comes using different CPU
->> devices. For example, dev_pm_opp_set_supported_hw() getting called using
->> CPU0 and dev_pm_opp_of_add_table() getting called using CPU1.
->>
->> This series redesigns the internals of the OPP core to fix that. The
->> redesign has simplified the core itself though.
->>
->> @Niklas: Can you please confirm that this series fixes the issues you
->> have reported ? I have already tested it on Hikey960.
->
-> Hello Viresh,
->
-> This fixes the OPP error messages that I previously reported.
->
-> However, I also tested to add a duplicate OPP to the opp-table.
->
-> Before this series, I got the first two error prints.
-> After this series, I get the first two error prints + the use after free splat.
+On Wed, 12 Sep 2018, Chen Yu wrote:
+>  static bool hibernation_e820_mismatch(void *buf)
+> @@ -306,6 +307,7 @@ static bool hibernation_e820_mismatch(void *buf)
+>  int arch_hibernation_header_save(void *addr, unsigned int max_size)
+>  {
+>  	struct restore_data_record *rdr = addr;
+> +	int ret = -EINVAL;
 
-This looks to be an old bug. Can you please try this branch:
+What's the point of initializing ret?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/qcom-fix
+>  	if (max_size < sizeof(struct restore_data_record))
+>  		return -EOVERFLOW;
+> @@ -333,7 +335,9 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+>  
+>  	rdr->magic = RESTORE_MAGIC;
+>  
+> -	hibernation_e820_save(rdr->e820_digest);
+> +	ret = hibernation_e820_save(rdr->e820_digest);
+> +	if (ret)
+> +		return ret;
+>  
+>  	return 0;
 
-?
+And what;s the point of ret at all?
+
+	return hibernation_e820_save();
+
+is effectivly the same.
+
+Thanks,
+
+	tglx
