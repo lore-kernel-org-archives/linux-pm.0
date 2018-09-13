@@ -1,237 +1,171 @@
-From: Jeremy Cline <jcline@redhat.com>
-Subject: Re: [PATCH] cpufreq: governor: Protect cpufreq governor_data
-Date: Thu, 13 Sep 2018 10:29:33 -0400
-Message-ID: <8c3a0da6-5a2b-d20a-fd9f-72c01a65d7b8@redhat.com>
-References: <1534291262-4207-1-git-send-email-henry.willard@oracle.com>
+From: Jann Horn <jannh@google.com>
+Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
+Date: Thu, 13 Sep 2018 16:31:18 +0200
+Message-ID: <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+References: <20180912142337.21955-1-jlee@suse.com> <20180912142337.21955-2-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1534291262-4207-1-git-send-email-henry.willard@oracle.com>
-Content-Language: en-US
+In-Reply-To: <20180912142337.21955-2-jlee@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Henry Willard <henry.willard@oracle.com>, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: joeyli.kernel@gmail.com
+Cc: rjw@rjwysocki.net, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, joeyli <jlee@suse.com>, rafael.j.wysocki@intel.com, yu.c.chen@intel.com, oneukum@suse.com, yu.chen.surf@gmail.com, David Howells <dhowells@redhat.com>, ggherdovich@suse.cz, keyrings@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi folks,
++cc keyrings list
 
-On 08/14/2018 08:01 PM, Henry Willard wrote:
-> If cppc_cpufreq.ko is deleted at the same time that tuned-adm is,
-> changing profiles, there is a small chance that a race can occur
-> between cpufreq_dbs_governor_exit() and cpufreq_dbs_governor_limits()
-> resulting in a system failure when the latter tries to use
-> policy->governor_data that has been freed by the former.
-> 
-> This patch uses gov_dbs_data_mutex to synchronize access.
-> 
-> Signed-off-by: Henry Willard <henry.willard@oracle.com>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 1d50e97d49f1..43416ee55849 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -555,12 +555,20 @@ void cpufreq_dbs_governor_stop(struct cpufreq_policy *policy)
->  
->  void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
->  {
-> -	struct policy_dbs_info *policy_dbs = policy->governor_data;
-> +	struct policy_dbs_info *policy_dbs;
+On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
+> This patch adds a snapshot keys handler for using the key retention
+> service api to create keys for snapshot image encryption and
+> authentication.
+>
+> This handler uses TPM trusted key as the snapshot master key, and the
+> encryption key and authentication key are derived from the snapshot
+> key. The user defined key can also be used as the snapshot master key
+> , but user must be aware that the security of user key relies on user
+> space.
+>
+> The name of snapshot key is fixed to "swsusp-kmk". User should use
+> the keyctl tool to load the key blob to root's user keyring. e.g.
+>
+>  # /bin/keyctl add trusted swsusp-kmk "load `cat swsusp-kmk.blob`" @u
+>
+> or create a new user key. e.g.
+>
+>  # /bin/keyctl add user swsusp-kmk password @u
+>
+> Then the disk_kmk sysfs file can be used to trigger the initialization
+> of snapshot key:
+>
+>  # echo 1 > /sys/power/disk_kmk
+>
+> After the initialization be triggered, the secret in the payload of
+> swsusp-key will be copied by hibernation and be erased. Then user can
+> use keyctl to remove swsusp-kmk key from root's keyring.
+>
+> If user does not trigger the initialization by disk_kmk file after
+> swsusp-kmk be loaded to kernel. Then the snapshot key will be
+> initialled when hibernation be triggered.
+[...]
+> +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
+> +                             const char *buf, size_t n)
+> +{
+> +       int error = 0;
+> +       char *p;
+> +       int len;
 > +
-> +	/* Protect gov->gdbs_data against cpufreq_dbs_governor_exit */
-> +	mutex_lock(&gov_dbs_data_mutex);
-> +	policy_dbs = policy->governor_data;
-> +	if (!policy_dbs)
-> +		goto out;
->  
->  	mutex_lock(&policy_dbs->update_mutex);
->  	cpufreq_policy_apply_limits(policy);
->  	gov_update_sample_delay(policy_dbs, 0);
->  
->  	mutex_unlock(&policy_dbs->update_mutex);
-> +out:
-> +	mutex_unlock(&gov_dbs_data_mutex);
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_limits);
-> 
+> +       if (!capable(CAP_SYS_ADMIN))
+> +               return -EPERM;
 
-Fedora has gotten a report[0] of possible circular locking which looks
-like might have been introduced by this patch.
+This is wrong, you can't use capable() in a write handler. You'd have
+to use file_ns_capable(), and I think sysfs currently doesn't give you
+a pointer to the struct file.
+If you want to do this in a write handler, you'll have to either get
+rid of this check or plumb through the cred struct pointer.
+Alternatively, you could use some interface that doesn't go through a
+write handler.
 
-[0] https://bugzilla.redhat.com/show_bug.cgi?id=1627950
+> +       p = memchr(buf, '\n', n);
+> +       len = p ? p - buf : n;
+> +       if (strncmp(buf, "1", len))
+> +               return -EINVAL;
+> +
+> +       error = snapshot_key_init();
+> +
+> +       return error ? error : n;
+> +}
+> +
+[...]
+> +
+> +static int user_key_init(void)
+> +{
+> +       struct user_key_payload *ukp;
+> +       struct key *key;
+> +       int err = 0;
+> +
+> +       pr_debug("%s\n", __func__);
+> +
+> +       /* find out swsusp-key */
+> +       key = request_key(&key_type_user, skey.key_name, NULL);
 
-User-provided log (attached to the bug report) is:
+request_key() looks at current's keyring. That shouldn't happen in a
+write handler.
 
- ======================================================
- WARNING: possible circular locking dependency detected
- 4.19.0-0.rc2.git3.1.fc30.x86_64 #1 Not tainted
- ------------------------------------------------------
- kworker/0:3/101 is trying to acquire lock:
- 000000003b2babfd ((work_completion)(&wfc.work)){+.+.}, at:
-__flush_work+0x28c/0x320
+> +       if (IS_ERR(key)) {
+> +               pr_err("Request key error: %ld\n", PTR_ERR(key));
+> +               err = PTR_ERR(key);
+> +               return err;
+> +       }
+> +
+> +       down_write(&key->sem);
+> +       ukp = user_key_payload_locked(key);
+> +       if (!ukp) {
+> +               /* key was revoked before we acquired its semaphore */
+> +               err = -EKEYREVOKED;
+> +               goto key_invalid;
+> +       }
+> +       if (invalid_key(ukp->data, ukp->datalen)) {
+> +               err = -EINVAL;
+> +               goto key_invalid;
+> +       }
+> +       skey.key_len = ukp->datalen;
+> +       memcpy(skey.key, ukp->data, ukp->datalen);
+> +       /* burn the original key contents */
+> +       memzero_explicit(ukp->data, ukp->datalen);
 
- but task is already holding lock:
- 0000000084d461de (&policy_dbs->update_mutex){+.+.}, at:
-dbs_work_handler+0x2b/0x70
+You just zero out the contents of the supplied key? That seems very
+unidiomatic for the keys subsystem, and makes me wonder why you're
+using the keys subsystem for this in the first place. It doesn't look
+like normal use of the keys subsystem.
 
- which lock already depends on the new lock.
+> +key_invalid:
+> +       up_write(&key->sem);
+> +       key_put(key);
+> +
+> +       return err;
+> +}
+> +
+> +/* this function may sleeps */
+> +int snapshot_key_init(void)
+> +{
+> +       int err;
+> +
+> +       pr_debug("%s\n", __func__);
+> +
+> +       if (skey.initialized)
+> +               return 0;
+> +
+> +       hash_tfm = crypto_alloc_shash(hash_alg, 0, CRYPTO_ALG_ASYNC);
+> +       if (IS_ERR(hash_tfm)) {
+> +               pr_err("Can't allocate %s transform: %ld\n",
+> +                       hash_alg, PTR_ERR(hash_tfm));
+> +               return PTR_ERR(hash_tfm);
+> +       }
+> +
+> +       err = trusted_key_init();
+> +       if (err)
+> +               err = user_key_init();
+> +       if (err)
+> +               goto key_fail;
+> +
+> +       skey.initialized = true;
 
- the existing dependency chain (in reverse order) is:
+Does this need a memory barrier to prevent reordering of the
+"skey.initialized = true" assignment before the key is fully
+initialized?
 
- -> #5 (&policy_dbs->update_mutex){+.+.}:
-        cpufreq_dbs_governor_limits+0x31/0x80
-        cpufreq_start_governor+0x65/0xa0
-        cpufreq_set_policy+0x2b7/0x330
-        cpufreq_init_policy+0x76/0xe0
-        cpufreq_online+0x535/0x6b0
-        cpufreq_add_dev+0x6b/0x80
-        subsys_interface_register+0xf3/0x150
-        cpufreq_register_driver+0x11e/0x230
-        powernowk8_init+0x134/0x18f [powernow_k8]
-        do_one_initcall+0x5d/0x2be
-        do_init_module+0x5a/0x210
-        load_module+0x2134/0x2400
-        __do_sys_init_module+0x150/0x1a0
-        do_syscall_64+0x60/0x1f0
-        entry_SYSCALL_64_after_hwframe+0x49/0xbe
-
- -> #4 (gov_dbs_data_mutex){+.+.}:
-        cpufreq_dbs_governor_init+0x117/0x240
-        cpufreq_init_governor+0x62/0xe0
-        cpufreq_set_policy+0x1ca/0x330
-        cpufreq_init_policy+0x76/0xe0
-        cpufreq_online+0x535/0x6b0
-        cpufreq_add_dev+0x6b/0x80
-        subsys_interface_register+0xf3/0x150
-        cpufreq_register_driver+0x11e/0x230
-        powernowk8_init+0x134/0x18f [powernow_k8]
-        do_one_initcall+0x5d/0x2be
-        do_init_module+0x5a/0x210
-        load_module+0x2134/0x2400
-        __do_sys_init_module+0x150/0x1a0
-        do_syscall_64+0x60/0x1f0
-        entry_SYSCALL_64_after_hwframe+0x49/0xbe
-
- -> #3 (&policy->rwsem){+.+.}:
-        cpufreq_policy_free+0xba/0x140
-        cpufreq_online+0xec/0x6b0
-        cpufreq_add_dev+0x6b/0x80
-        subsys_interface_register+0xf3/0x150
-        cpufreq_register_driver+0x11e/0x230
-        0xffffffffc05fc25a
-        do_one_initcall+0x5d/0x2be
-        do_init_module+0x5a/0x210
-        load_module+0x2134/0x2400
-        __do_sys_init_module+0x150/0x1a0
-        do_syscall_64+0x60/0x1f0
-        entry_SYSCALL_64_after_hwframe+0x49/0xbe
-
- -> #2 (subsys mutex#7){+.+.}:
-        subsys_interface_register+0x73/0x150
-        cpufreq_register_driver+0x11e/0x230
-        0xffffffffc05fc25a
-        do_one_initcall+0x5d/0x2be
-        do_init_module+0x5a/0x210
-        load_module+0x2134/0x2400
-        __do_sys_init_module+0x150/0x1a0
-        do_syscall_64+0x60/0x1f0
-        entry_SYSCALL_64_after_hwframe+0x49/0xbe
-
- -> #1 (cpu_hotplug_lock.rw_sem){.+.+}:
-        apply_workqueue_attrs+0x12/0x50
-        __alloc_workqueue_key+0x303/0x480
-        scsi_host_alloc+0x3be/0x450
-        ata_scsi_add_hosts+0xc9/0x150
-        ata_host_register+0x120/0x1d0
-        ata_host_activate+0xc1/0x140
-        svia_init_one+0x6c7/0x7f6 [sata_via]
-        local_pci_probe+0x41/0x90
-        work_for_cpu_fn+0x16/0x20
-        process_one_work+0x27d/0x5c0
-        worker_thread+0x3c/0x390
-        kthread+0x120/0x140
-        ret_from_fork+0x3a/0x50
-
- -> #0 ((work_completion)(&wfc.work)){+.+.}:
-        __flush_work+0x2ac/0x320
-        work_on_cpu+0x9b/0xd0
-        powernowk8_target+0x33/0x50 [powernow_k8]
-        __cpufreq_driver_target+0x2d2/0x580
-        od_dbs_update+0xbb/0x190
-        dbs_work_handler+0x3a/0x70
-        process_one_work+0x27d/0x5c0
-        worker_thread+0x3c/0x390
-        kthread+0x120/0x140
-        ret_from_fork+0x3a/0x50
-
- other info that might help us debug this:
- Chain exists of:
-   (work_completion)(&wfc.work) --> gov_dbs_data_mutex -->
-&policy_dbs->update_mutex
-  Possible unsafe locking scenario:
-        CPU0                    CPU1
-        ----                    ----
-   lock(&policy_dbs->update_mutex);
-                                lock(gov_dbs_data_mutex);
-                                lock(&policy_dbs->update_mutex);
-   lock((work_completion)(&wfc.work));
-
-  *** DEADLOCK ***
- 3 locks held by kworker/0:3/101:
-  #0: 000000009eaebf60 ((wq_completion)"events"){+.+.}, at:
-process_one_work+0x1f3/0x5c0
-  #1: 00000000ac2fb241 ((work_completion)(&policy_dbs->work)){+.+.}, at:
-process_one_work+0x1f3/0x5c0
-  #2: 0000000084d461de (&policy_dbs->update_mutex){+.+.}, at:
-dbs_work_handler+0x2b/0x70
-
- stack backtrace:
- CPU: 0 PID: 101 Comm: kworker/0:3 Not tainted
-4.19.0-0.rc2.git3.1.fc30.x86_64 #1
- Hardware name: Acer Aspire T135/K8VM800MAE, BIOS R01-A3 06/27/2005
- Workqueue: events dbs_work_handler
- Call Trace:
-  dump_stack+0x85/0xc0
-  print_circular_bug.isra.36.cold.55+0x15c/0x195
-  __lock_acquire+0x139a/0x16c0
-  ? __lock_acquire+0x112b/0x16c0
-  lock_acquire+0x9e/0x180
-  ? __flush_work+0x28c/0x320
-  __flush_work+0x2ac/0x320
-  ? __flush_work+0x28c/0x320
-  ? native_sched_clock+0x3e/0xa0
-  ? mark_held_locks+0x57/0x80
-  ? queue_work_on+0x5d/0x90
-  ? lockdep_hardirqs_on+0xed/0x180
-  work_on_cpu+0x9b/0xd0
-  ? work_is_static_object+0x10/0x10
-  ? write_new_fid+0xe0/0xe0 [powernow_k8]
-  powernowk8_target+0x33/0x50 [powernow_k8]
-  __cpufreq_driver_target+0x2d2/0x580
-  od_dbs_update+0xbb/0x190
-  dbs_work_handler+0x3a/0x70
-  process_one_work+0x27d/0x5c0
-  worker_thread+0x3c/0x390
-  ? process_one_work+0x5c0/0x5c0
-  kthread+0x120/0x140
-  ? kthread_create_worker_on_cpu+0x70/0x70
-  ret_from_fork+0x3a/0x50
- clocksource: timekeeping watchdog on CPU0: Marking clocksource 'tsc' as
-unstable because the skew is too large:
- clocksource:                       'acpi_pm' wd_now: 61cb7c wd_last:
-5e7744 mask: ffffff
- clocksource:                       'tsc' cs_now: 2b9d83ad41 cs_last:
-299dc3ef91 mask: ffffffffffffffff
- tsc: Marking TSC unstable due to clocksource watchdog
- TSC found unstable after boot, most likely due to broken BIOS. Use
-'tsc=unstable'.
- sched_clock: Marking unstable (55064379271, 12383389)<-(55179340298,
--102501740)
- clocksource: Switched to clocksource acpi_pm
-
-
-Cheers,
-Jeremy
+> +
+> +       pr_info("Snapshot key is initialled.\n");
+> +
+> +       return 0;
+> +
+> +key_fail:
+> +       crypto_free_shash(hash_tfm);
+> +       hash_tfm = NULL;
+> +
+> +       return err;
+> +}
+> --
+> 2.13.6
+>
+>
