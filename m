@@ -1,47 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Convert to using %pOFn instead of device_node.name
-Date: Fri, 14 Sep 2018 10:27:03 +0200
-Message-ID: <2755190.UQhmFvc9f1@aspire.rjw.lan>
-References: <20180828015252.28511-1-robh@kernel.org> <20180828015252.28511-14-robh@kernel.org>
+Subject: Re: [PATCH] cpufreq: remove unnecessary unlikely()
+Date: Fri, 14 Sep 2018 10:31:14 +0200
+Message-ID: <2593189.gyA7ZCrH2V@aspire.rjw.lan>
+References: <20180907160955.23291-1-igor.stoppa@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180828015252.28511-14-robh@kernel.org>
+In-Reply-To: <20180907160955.23291-1-igor.stoppa@huawei.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+To: Igor Stoppa <igor.stoppa@gmail.com>
+Cc: "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Igor Stoppa <igor.stoppa@huawei.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 28, 2018 3:52:15 AM CEST Rob Herring wrote:
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
+On Friday, September 7, 2018 6:09:55 PM CEST Igor Stoppa wrote:
+> WARN_ON() already contains an unlikely(), so it's not necessary to wrap it
+> into another.
 > 
+> Signed-off-by: Igor Stoppa <igor.stoppa@huawei.com>
+> Cc: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-samsung-soc@vger.kernel.org
 > Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: linux-kernel@vger.kernel.org
 > ---
->  drivers/cpufreq/s5pv210-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> index 5d31c2db12a3..dbecd7667db2 100644
-> --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> @@ -611,8 +611,8 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
->  	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
->  		id = of_alias_get_id(np, "dmc");
->  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
-> -			pr_err("%s: failed to get alias of dmc node '%s'\n",
-> -				__func__, np->name);
-> +			pr_err("%s: failed to get alias of dmc node '%pOFn'\n",
-> +				__func__, np);
->  			of_node_put(np);
->  			return id;
->  		}
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index f53fb41efb7b..7aa3dcad2175 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -403,7 +403,7 @@ EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
+>  void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
+>  		struct cpufreq_freqs *freqs, int transition_failed)
+>  {
+> -	if (unlikely(WARN_ON(!policy->transition_ongoing)))
+> +	if (WARN_ON(!policy->transition_ongoing))
+>  		return;
+>  
+>  	cpufreq_notify_post_transition(policy, freqs, transition_failed);
 > 
 
 Applied, thanks!
