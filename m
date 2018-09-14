@@ -1,132 +1,92 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v2 5/5] arm64: dts: add LX2160ARDB board support
-Date: Fri, 14 Sep 2018 02:07:55 +0530
-Message-ID: <1536871075-3732-6-git-send-email-vabhav.sharma@nxp.com>
-References: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Fri, 14 Sep 2018 09:47:04 +0100
+Message-ID: <20180914084704.GL1413@e110439-lin>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180912162427.GA24106@hirez.programming.kicks-ass.net>
+ <20180912174209.GI1413@e110439-lin>
+ <20180913192034.GA24082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <20180913192034.GA24082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Vabhav Sharma <vabhav.sharma@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
+On 13-Sep 21:20, Peter Zijlstra wrote:
+> On Wed, Sep 12, 2018 at 06:42:09PM +0100, Patrick Bellasi wrote:
+> > On 12-Sep 18:24, Peter Zijlstra wrote:
+> > > On Tue, Aug 28, 2018 at 02:53:10PM +0100, Patrick Bellasi wrote:
+> 
+> > > >  {
+> > > > +	int group_id[UCLAMP_CNT] = { UCLAMP_NOT_VALID };
+> > > > +	int lower_bound, upper_bound;
+> > > > +	struct uclamp_se *uc_se;
+> > > > +	int result = 0;
+> > > 
+> > > I think the thing would become much more readable if you set
+> > > lower/upper_bound right here.
+> 
+> > Actually it could also make sense to have them before the mutex ;)
+> 
+> Indeed.
+> 
+> +               upper_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> +                       ? attr->sched_util_max
+> +                       : p->uclamp[UCLAMP_MAX].value;
+> +
+> +               if (upper_bound == UCLAMP_NOT_VALID)
+> +                       upper_bound = SCHED_CAPACITY_SCALE;
+> +               if (attr->sched_util_min > upper_bound) {
+> +                       result = -EINVAL;
+> +                       goto done;
+> +               }
+> +
+> +               result = uclamp_group_find(UCLAMP_MIN, attr->sched_util_min);
+> +               if (result == -ENOSPC) {
+> +                       pr_err(UCLAMP_ENOSPC_FMT, "MIN");
+> +                       goto done;
+> +               }
+> +               group_id[UCLAMP_MIN] = result;
+> +       }
+> +       if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
+> +               lower_bound = (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
+> +                       ? attr->sched_util_min
+> +                       : p->uclamp[UCLAMP_MIN].value;
+> +
+> +               if (lower_bound == UCLAMP_NOT_VALID)
+> +                       lower_bound = 0;
+> +               if (attr->sched_util_max < lower_bound ||
+> +                   attr->sched_util_max > SCHED_CAPACITY_SCALE) {
+> +                       result = -EINVAL;
+> +                       goto done;
+> +               }
+> 
+> That would end up soething like:
+> 
+> 	unsigned int lower_bound = p->uclamp[UCLAMP_MIN].value;
+> 	unsigned int upper_bound = p->uclamp[UCLAMP_MAX].value;
+> 
+> 	if (sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
+> 		lower_bound = attr->sched_util_min;
+> 
+> 	if (sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
+> 		upper_bound = attr->sched_util_max;
+> 
+> 	if (lower_bound > upper_bound ||
+> 	    upper_bound > SCHED_CAPACITY_MAX)
+> 		return -EINVAL;
+> 
+> 	mutex_lock(...);
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
----
- arch/arm64/boot/dts/freescale/Makefile            |  1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 88 +++++++++++++++++++++++
- 2 files changed, 89 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+Yes... much cleaner, thanks.
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..1bbe663
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,88 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
-+
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model = "NXP Layerscape LX2160ARDB";
-+	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+};
-+
-+&uart0 {
-+	status = "okay";
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+	i2c-mux@77 {
-+		compatible = "nxp,pca9547";
-+		reg = <0x77>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x2>;
-+
-+			power-monitor@40 {
-+				compatible = "ti,ina220";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x3>;
-+
-+			temperature-sensor@4c {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4c>;
-+			};
-+
-+			temperature-sensor@4d {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4d>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+
-+	rtc@51 {
-+		compatible = "nxp,pcf2129";
-+		reg = <0x51>;
-+		// IRQ10_B
-+		interrupts = <0 150 0x4>;
-+		};
-+
-+};
-+
-+&usb0 {
-+	status = "okay";
-+};
-+
-+&usb1 {
-+	status = "okay";
-+};
-+
-+&crypto {
-+	status = "okay";
-+};
 -- 
-2.7.4
+#include <best/regards.h>
+
+Patrick Bellasi
