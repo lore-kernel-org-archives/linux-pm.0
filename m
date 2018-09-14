@@ -1,260 +1,191 @@
-From: Sibi Sankar <sibis@codeaurora.org>
-Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
- bandwidth voting
-Date: Fri, 14 Sep 2018 18:23:34 +0530
-Message-ID: <66c67d0b0e551aba11a83ce6a840ad29@codeaurora.org>
-References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 00/17] thermal: enable/check sensor after its setup is
+ finished
+Date: Fri, 14 Sep 2018 15:17:53 +0200
+Message-ID: <20180914131756eucas1p266c09a2e6c6dc8e303acd1174cd38c5a~URqvRKrwN2497224972eucas1p2u@eucas1p2.samsung.com>
+References: <CGME20180410124240epcas2p25c8979583c41f147ac34c49faf30aa14@epcas2p2.samsung.com>
+        <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
+        <20180910173659.GB4196@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
+In-Reply-To: <20180910173659.GB4196@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org, rnayak@codeaurora.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Saravana,
 
-On 2018-08-02 06:27, Saravana Kannan wrote:
-> This driver registers itself as a devfreq device that allows devfreq
-> governors to make bandwidth votes for an interconnect path. This allows
-> applying various policies for different interconnect paths using 
-> devfreq
-> governors.
+On 09/10/2018 07:37 PM, Eduardo Valentin wrote:
+> On Tue, Apr 10, 2018 at 02:41:54PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> Hi,
+>>
+>> [devm]_thermal_zone_of_sensor_register() is used to register
+>> thermal sensor by thermal drivers using DeviceTree. Besides
+>> registering sensor this function also immediately enables it
+>> (using ->set_mode method) and then checks it with a update call
+>> to the thermal core (which ends up using ->get_temp method).
 > 
-> Example uses:
-> * Use the devfreq performance governor to set the CPU to DDR 
-> interconnect
->   path for maximum performance.
-> * Use the devfreq performance governor to set the GPU to DDR 
-> interconnect
->   path for maximum performance.
-> * Use the CPU frequency to device frequency mapping governor to scale 
-> the
->   DDR frequency based on the needs of the CPUs' current frequency.
+> Yeah, pretty much the driver needs to be ready to answer to callbacks
+> once it calls thermal_*_register() method.
 > 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
->  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
->  drivers/devfreq/Kconfig                            |  13 +++
->  drivers/devfreq/Makefile                           |   1 +
->  drivers/devfreq/devfreq_icbw.c                     | 116 
-> +++++++++++++++++++++
->  4 files changed, 151 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
->  create mode 100644 drivers/devfreq/devfreq_icbw.c
+>> For many DT thermal drivers this causes a problem because
 > 
-> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt
-> b/Documentation/devicetree/bindings/devfreq/icbw.txt
-> new file mode 100644
-> index 0000000..36cf045
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
-> @@ -0,0 +1,21 @@
-> +Interconnect bandwidth device
-> +
-> +icbw is a device that represents an interconnect path that connects 
-> two
-> +devices. This device is typically used to vote for BW requirements 
-> between
-> +two devices. Eg: CPU to DDR, GPU to DDR, etc
-> +
-> +Required properties:
-> +- compatible:		Must be "devfreq-icbw"
-> +- interconnects:	Pairs of phandles and interconnect provider specifier
-> +			to denote the edge source and destination ports of
-> +			the interconnect path. See also:
-> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
-> +- interconnect-names:	Must have one entry with the name "path".
-> +
-> +Example:
-> +
-> +	qcom,cpubw {
-> +		compatible = "devfreq-icbw";
-> +		interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
-> +		interconnect-names = "path";
-> +	};
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 3d9ae68..590370e 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -121,6 +121,19 @@ config ARM_RK3399_DMC_DEVFREQ
->            It sets the frequency for the memory controller and reads
-> the usage counts
->            from hardware.
-> 
-> +config DEVFREQ_ICBW
-> +	bool "DEVFREQ device for making bandwidth votes on interconnect 
-> paths"
-> +	select DEVFREQ_GOV_PERFORMANCE
-> +	select DEVFREQ_GOV_POWERSAVE
-> +	select DEVFREQ_GOV_USERSPACE
-> +	default n
-> +	help
-> +	  Different devfreq governors use this devfreq device to make
-> +	  bandwidth votes for interconnect paths between different devices
-> +	  (Eg: CPU to DDR, GPU to DDR, etc). This driver provides a generic
-> +	  interface so that the devfreq governors can be shared across SoCs
-> +	  and architectures.
-> +
->  source "drivers/devfreq/event/Kconfig"
-> 
->  endif # PM_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> index e9dc3e9..b302c5cf 100644
-> --- a/drivers/devfreq/Makefile
-> +++ b/drivers/devfreq/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_DEVFREQ_GOV_CPUFREQ_MAP)	+=
-> governor_cpufreq_map.o
->  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
->  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
->  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
-> +obj-$(CONFIG_DEVFREQ_ICBW)		+= devfreq_icbw.o
-> 
->  # DEVFREQ Event Drivers
->  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
-> diff --git a/drivers/devfreq/devfreq_icbw.c 
-> b/drivers/devfreq/devfreq_icbw.c
-> new file mode 100644
-> index 0000000..231fb21
-> --- /dev/null
-> +++ b/drivers/devfreq/devfreq_icbw.c
-> @@ -0,0 +1,116 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2013-2014, 2018, The Linux Foundation. All rights 
-> reserved.
-> + */
-> +
-> +#define pr_fmt(fmt) "icbw: " fmt
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/err.h>
-> +#include <linux/errno.h>
-> +#include <linux/mutex.h>
-> +#include <linux/devfreq.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/of.h>
-> +#include <linux/interconnect.h>
-> +
-> +struct dev_data {
-> +	struct icc_path *path;
-> +	u32 cur_ab;
-> +	u32 cur_pb;
-> +	unsigned long gov_ab;
-> +	struct devfreq *df;
-> +	struct devfreq_dev_profile dp;
-> +};
-> +
-> +static int icbw_target(struct device *dev, unsigned long *freq, u32 
-> flags)
-> +{
-> +	struct dev_data *d = dev_get_drvdata(dev);
-> +	int ret;
-> +	u32 new_pb = *freq, new_ab = d->gov_ab;
-> +
-> +	if (d->cur_pb == new_pb && d->cur_ab == new_ab)
-> +		return 0;
-> +
-> +	dev_dbg(dev, "BW KBps: AB: %u PB: %u\n", new_ab, new_pb);
-> +
-> +	ret = icc_set(d->path, new_ab, new_pb);
-> +	if (ret) {
-> +		dev_err(dev, "bandwidth request failed (%d)\n", ret);
-> +	} else {
-> +		d->cur_pb = new_pb;
-> +		d->cur_ab = new_ab;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int icbw_get_dev_status(struct device *dev,
-> +				struct devfreq_dev_status *stat)
-> +{
-> +	struct dev_data *d = dev_get_drvdata(dev);
-> +
-> +	stat->private_data = &d->gov_ab;
-> +	return 0;
-> +}
-> +
-> +static int devfreq_icbw_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct dev_data *d;
-> +	struct devfreq_dev_profile *p;
-> +
-> +	d = devm_kzalloc(dev, sizeof(*d), GFP_KERNEL);
-> +	if (!d)
-> +		return -ENOMEM;
-> +	dev_set_drvdata(dev, d);
-> +
-> +	p = &d->dp;
-> +	p->polling_ms = 50;
-> +	p->target = icbw_target;
-> +	p->get_dev_status = icbw_get_dev_status;
-> +
-> +	d->path = of_icc_get(dev, "path");
-> +	if (IS_ERR(d->path)) {
-> +		dev_err(dev, "Unable to register interconnect path\n");
-> +		return -ENODEV;
-> +	}
+> Can you be more specific? Are you seeing this problem in samsung driver
+> or in other drivers too?
 
-The probe fails if the provider is not registered yet. Worked around it 
-using -EPROBE_DEFER
-but this should probably come from of_icc_get itself.
+We were hitting the issue in exynos driver and we have added
+workaround for it in the driver itself (commit 0eb875d88aaa
+"thermal: exynos: Reading temperature makes sense only when TMU
+is turned on").
 
-> +
-> +	d->df = devfreq_add_device(dev, p, "performance", NULL);
-> +	if (IS_ERR(d->df)) {
-> +		icc_put(d->path);
-> +		return PTR_ERR(d->df);
-> +	}
+After that I did the audit of all DT thermal drivers and found
+the issue in majority of them (patches #5-16):
 
-devfreq_add_device will fail with -EINVAL for set_table_freq, 
-find_available_min_freq and
-find_available_max_freq. If you end up working your way around it, I 
-still ended up getting
-multiple errors like "Couldn't update frequency transition information" 
-after probing.
+- bcm2835
+- brcmstb
+- hisi_thermal
+- tsens
+- qoriq
+- rcar_gen3_thermal
+- rockchip_thermal
+- exynos
+- tegra
+- ti-soc-thermal
+- uniphier
+- zx2967
 
-> +
-> +	return 0;
-> +}
-> +
-> +static int devfreq_icbw_remove(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct dev_data *d = dev_get_drvdata(dev);
-> +
-> +	devfreq_remove_device(d->df);
-> +	icc_put(d->path);
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id icbw_match_table[] = {
-> +	{ .compatible = "devfreq-icbw" },
-> +	{}
-> +};
-> +
-> +static struct platform_driver icbw_driver = {
-> +	.probe = devfreq_icbw_probe,
-> +	.remove = devfreq_icbw_remove,
-> +	.driver = {
-> +		.name = "devfreq-icbw",
-> +		.of_match_table = icbw_match_table,
-> +	},
-> +};
-> +
-> +module_platform_driver(icbw_driver);
-> +MODULE_DESCRIPTION("Interconnect bandwidth voting driver");
-> +MODULE_LICENSE("GPL v2");
+>> [devm]_thermal_zone_of_sensor_register() need to be called in
+>> order to obtain data about thermal trips which are then used to
+>> finish hardware sensor setup (only after which ->get_temp can
+>> be used). The issue has been observed when using Samsung Exynos
+> 
+> Oh I see, this is because trip info is read by the of thermal thermal
+> then, correct?
 
--- 
--- Sibi Sankar --
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project.
+Yes, some drivers need trip info for sensor configuration.
+
+There is also related issue for drivers that support IRQ
+(i.e. exynos and rockchip ones):
+
+- sensor should be enabled only after IRQ handler is requested
+  (because otherwise we might get IRQs that we can't handle)
+
+- IRQ handler needs tzd structure which is obtained from
+  [devm_]thermal_zone_of_sensor_register()
+
+- after [devm_]thermal_zone_of_sensor_register() call core
+  thermal code assumes that sensor is enabled and ready to
+  use (the core may call ->get_temp)
+
+>> thermal driver and fixed internally in the driver in commit
+>> d8efad71e5b6 ("thermal: exynos: Reading temperature makes sense
+>> only when TMU is turned on"). However after this commit there
+>> are now following warnings from the thermal core visible:
+>>
+>> [    3.453602] thermal thermal_zone0: failed to read out thermal zone (-22)
+>> [    3.483468] thermal thermal_zone1: failed to read out thermal zone (-22)
+>> [    3.505965] thermal thermal_zone2: failed to read out thermal zone (-22)
+>> [    3.528455] thermal thermal_zone3: failed to read out thermal zone (-22)
+>> [    3.550939] thermal thermal_zone4: failed to read out thermal zone (-22)
+>>
+>> This patchset attempts to directly address the thermal core
+>> problem with [devm]_thermal_zone_of_sensor_register() and
+>> affected DT thermal drivers. In order to achieve this sensor
+>> registration, enable and check operations are separated and
+>> corresponding drivers are modified to use the new helpers to
+>> enable and check sensor explicitly.
+>>
+> 
+> Ok. Up to this point I followed that this is a samsung driver issue, not
+> we need to change the core to fix adapt to it?
+
+Well, we need core changes (patches #2 and #4) for (IMHO) cleaner and
+more straightforward solution (with it the core can have the valid info
+about the sensor state all the time).
+
+Alternatively we can add workarounds (like the one we added in exynos
+driver) to all affected DT thermal drivers (with this solution sensor
+can be disabled while the core will think that it is enabled)..
+
+> And adapting the core should be fine to fit a new use/fix something,
+> as long the issue is well described..
+> 
+>> Tested on Exynos5422 based Odroid-XU3 Lite board (aforementioned
+>> warnings from the thermal core are now gone).
+>>
+>> Best regards,
+>> --
+>> Bartlomiej Zolnierkiewicz
+>> Samsung R&D Institute Poland
+>> Samsung Electronics
+>>
+>>
+>> Bartlomiej Zolnierkiewicz (17):
+>>   thermal: add thermal_zone_device_toggle() helper
+>>   thermal: separate sensor registration and enable
+>>   thermal: add thermal_zone_device_check() helper
+>>   thermal: do sensor checking explicitly in drivers
+>>   thermal: bcm2835: enable/check sensor after its setup is finished
+>>   thermal: brcmstb: enable/check sensor after its setup is finished
+>>   thermal: hisi_thermal: enable/check sensor after its setup is finished
+>>   thermal: qcom: tsens: enable/check sensor after its setup is finished
+>>   thermal: qoriq: enable/check sensor after its setup is finished
+>>   thermal: rcar_gen3_thermal: enable/check sensor after its setup is
+>>     finished
+>>   thermal: rockchip_thermal: enable/check sensor after its setup is
+>>     finished
+>>   thermal: exynos: enable/check sensor after its setup is finished
+>>   thermal: tegra: enable/check sensor after its setup is finished
+>>   thermal: ti-soc-thermal: enable/check sensor after its setup is
+>>     finished
+>>   thermal: uniphier: enable/check sensor after its setup is
+>>     finished
+>>   thermal: zx2967: enable/check sensor after its setup is finished
+>>   thermal: warn on attempts to read temperature on disabled sensors
+>>
+>>  drivers/acpi/thermal.c                             |  5 ++--
+>>  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
+>>  drivers/platform/x86/acerhdf.c                     |  6 +++-
+>>  drivers/regulator/max8973-regulator.c              |  3 +-
+>>  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
+>>  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
+>>  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
+>>  drivers/thermal/da9062-thermal.c                   |  7 ++---
+>>  drivers/thermal/db8500_thermal.c                   |  5 +++-
+>>  drivers/thermal/hisi_thermal.c                     | 22 ++++----------
+>>  drivers/thermal/imx_thermal.c                      |  3 +-
+>>  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
+>>  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
+>>  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
+>>  drivers/thermal/max77620_thermal.c                 |  6 ++--
+>>  drivers/thermal/mtk_thermal.c                      |  3 ++
+>>  drivers/thermal/of-thermal.c                       |  6 ++--
+>>  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 +++-
+>>  drivers/thermal/qcom/tsens.c                       |  6 ++++
+>>  drivers/thermal/qoriq_thermal.c                    |  3 ++
+>>  drivers/thermal/rcar_gen3_thermal.c                |  7 +++--
+>>  drivers/thermal/rcar_thermal.c                     |  8 +++--
+>>  drivers/thermal/rockchip_thermal.c                 | 34 ++++++++++------------
+>>  drivers/thermal/samsung/exynos_tmu.c               |  7 ++++-
+>>  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
+>>  drivers/thermal/tango_thermal.c                    |  5 ++++
+>>  drivers/thermal/tegra/soctherm.c                   |  3 ++
+>>  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
+>>  drivers/thermal/thermal-generic-adc.c              |  3 ++
+>>  drivers/thermal/thermal_core.c                     | 14 ++++-----
+>>  drivers/thermal/thermal_helpers.c                  | 33 +++++++++++++++++++++
+>>  drivers/thermal/thermal_sysfs.c                    | 17 +++++++----
+>>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 ++++-
+>>  drivers/thermal/uniphier_thermal.c                 |  6 +++-
+>>  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
+>>  drivers/thermal/zx2967_thermal.c                   |  3 ++
+>>  include/linux/thermal.h                            |  5 ++++
+>>  37 files changed, 173 insertions(+), 84 deletions(-)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
