@@ -1,103 +1,76 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
-Date: Fri, 14 Sep 2018 10:46:35 +0200
-Message-ID: <1831106.CYv9dyYV15@aspire.rjw.lan>
-References: <9611469.2z7W9akjOQ@aspire.rjw.lan> <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Fri, 14 Sep 2018 09:51:15 +0100
+Message-ID: <20180914085115.GM1413@e110439-lin>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-3-patrick.bellasi@arm.com>
+ <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
+ <20180912155619.GG1413@e110439-lin>
+ <20180912161218.GW24082@hirez.programming.kicks-ass.net>
+ <20180912173515.GH1413@e110439-lin>
+ <20180912174236.GB24106@hirez.programming.kicks-ass.net>
+ <20180912175202.GK1413@e110439-lin>
+ <20180913191422.GZ24082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
+Content-Disposition: inline
+In-Reply-To: <20180913191422.GZ24082@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mika =?ISO-8859-1?Q?Penttil=E4?= <mika.penttila@nextfour.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 14, 2018 10:28:44 AM CEST Mika Penttilä wrote:
-> Hi!
+On 13-Sep 21:14, Peter Zijlstra wrote:
+> On Wed, Sep 12, 2018 at 06:52:02PM +0100, Patrick Bellasi wrote:
+> > On 12-Sep 19:42, Peter Zijlstra wrote:
+> > > On Wed, Sep 12, 2018 at 06:35:15PM +0100, Patrick Bellasi wrote:
+> > > > On 12-Sep 18:12, Peter Zijlstra wrote:
+> > > 
+> > > > > No idea; but if you want to go all fancy you can replace he whole
+> > > > > uclamp_map thing with something like:
+> > > > > 
+> > > > > struct uclamp_map {
+> > > > > 	union {
+> > > > > 		struct {
+> > > > > 			unsigned long v : 10;
+> > > > > 			unsigned long c : BITS_PER_LONG - 10;
+> > > > > 		};
+> > > > > 		atomic_long_t s;
+> > > > > 	};
+> > > > > };
+> > > > 
+> > > > That sounds really cool and scary at the same time :)
+> > > > 
+> > > > The v:10 requires that we never set SCHED_CAPACITY_SCALE>1024
+> > > > or that we use it to track a percentage value (i.e. [0..100]).
+> > > 
+> > > Or we pick 11 bits, it seems unlikely that capacity be larger than 2k.
+> > 
+> > Just remembered a past experience where we had unaligned access traps
+> > on some machine because... don't you see any potentially issue on
+> > using bitfleds like you suggest above ?
+> > 
+> > I'm thinking to:
+> > 
+> >    commit 317d359df95d ("sched/core: Force proper alignment of 'struct util_est'")
 > 
-> 
-> On 09/14/2018 09:59 AM, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > There is a difference in behavior between suspend-to-idle and
-> > suspend-to-RAM in the timekeeping handling that leads to functional
-> > issues.  Namely, every iteration of the loop in s2idle_loop()
-> > increases the monotinic clock somewhat, even if timekeeping_suspend()
-> > and timekeeping_resume() are invoked from s2idle_enter(), and if
-> > many of them are carried out in a row, the monotonic clock can grow
-> > significantly while the system is regarded as suspended, which
-> > doesn't happen during suspend-to-RAM and so it is unexpected and
-> > leads to confusion and misbehavior in user space (similar to what
-> > ensued when we tried to combine the boottime and monotonic clocks).
-> > 
-> > To avoid that, count all iterations of the loop in s2idle_loop()
-> > as "sleep time" and adjust the clock for that on exit from
-> > suspend-to-idle.
-> > 
-> > [That also covers systems on which timekeeping is not suspended
-> >  by by s2idle_enter().]
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> > 
-> > This is a replacement for https://patchwork.kernel.org/patch/10599209/
-> > 
-> > I decided to count the entire loop in s2idle_loop() as "sleep time" as the
-> > patch is then simpler and it also covers systems where timekeeping is not
-> > suspended in the final step of suspend-to-idle.
-> > 
-> > I dropped the "Fixes:" tag, because the monotonic clock delta problem
-> > has been present on the latter since the very introduction of "freeze"
-> > (as suspend-to-idle was referred to previously) and so this doesn't fix
-> > any particular later commits.
-> > 
-> > ---
-> >  kernel/power/suspend.c |   18 ++++++++++++++++++
-> >  1 file changed, 18 insertions(+)
-> > 
-> > Index: linux-pm/kernel/power/suspend.c
-> > ===================================================================
-> > --- linux-pm.orig/kernel/power/suspend.c
-> > +++ linux-pm/kernel/power/suspend.c
-> > @@ -109,8 +109,12 @@ static void s2idle_enter(void)
-> >  
-> >  static void s2idle_loop(void)
-> >  {
-> > +	ktime_t start, delta;
-> > +
-> >  	pm_pr_dbg("suspend-to-idle\n");
-> >  
-> > +	start = ktime_get();
-> > +
-> >  	for (;;) {
-> >  		int error;
-> >  
-> > @@ -150,6 +154,20 @@ static void s2idle_loop(void)
-> >  		pm_wakeup_clear(false);
-> >  	}
-> >  
-> > +	/*
-> > +	 * If the monotonic clock difference between the start of the loop and
-> > +	 * this point is too large, user space may get confused about whether or
-> > +	 * not the system has been suspended and tasks may get killed by
-> > +	 * watchdogs etc., so count the loop as "sleep time" to compensate for
-> > +	 * that.
-> > +	 */
-> > +	delta = ktime_sub(ktime_get(), start);
-> > +	if (ktime_to_ns(delta) > 0) {
-> > +		struct timespec64 timespec64_delta = ktime_to_timespec64(delta);
-> > +
-> > +		timekeeping_inject_sleeptime64(&timespec64_delta);
-> > +	}
-> 
-> But doesn't injecting sleep time here make monotonic clock too large by the amount of sleeptime? 
-> tick_freeze() / tick_unfreeze() already injects the sleeptime (otherwise delta would be 0).
+> There should not be (and I'm still confused by that particular commit
+> you reference). If we access everything through the uclamp_map::s, and
+> only use the bitfields to interpret the results, it all 'works'.
 
-No, it doesn't.
+Yes, the problem above was different... still I was wondering if there
+could be bitfields related alignment issue lurking somewhere.
+But, as you say, if we always R/W atomically via uclamp_map::s there
+should be none.
 
-The delta here is the extra time taken by the loop which hasn't been counted
-as sleep time yet.
+> The tricky thing we did earlier was trying to use u64 accesses for 2
+> u32 variables. And somehow ia64 didn't get the alignment right.
 
-Thanks,
-Rafael
+Right, np... sorry for the noise.
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
