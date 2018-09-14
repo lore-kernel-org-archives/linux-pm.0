@@ -1,164 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Fri, 14 Sep 2018 11:50:15 +0200
-Message-ID: <5398488.CyAMIAYSYI@aspire.rjw.lan>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org> <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com> <20180809153925.GA20329@red-moon>
+From: =?UTF-8?Q?Mika_Penttil=c3=a4?= <mika.penttila@nextfour.com>
+Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
+Date: Fri, 14 Sep 2018 12:53:13 +0300
+Message-ID: <e028742e-cd42-24a7-0da1-4fa12d8c9d7c@nextfour.com>
+References: <9611469.2z7W9akjOQ@aspire.rjw.lan>
+ <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
+ <1831106.CYv9dyYV15@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180809153925.GA20329@red-moon>
+In-Reply-To: <1831106.CYv9dyYV15@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisbec@>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 9, 2018 5:39:25 PM CEST Lorenzo Pieralisi wrote:
-> On Mon, Aug 06, 2018 at 11:20:59AM +0200, Rafael J. Wysocki wrote:
+On 09/14/2018 11:46 AM, Rafael J. Wysocki wrote:
+> On Friday, September 14, 2018 10:28:44 AM CEST Mika Penttilä wrote:
+>> Hi!
+>>
+>>
+>> On 09/14/2018 09:59 AM, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> There is a difference in behavior between suspend-to-idle and
+>>> suspend-to-RAM in the timekeeping handling that leads to functional
+>>> issues.  Namely, every iteration of the loop in s2idle_loop()
+>>> increases the monotinic clock somewhat, even if timekeeping_suspend()
+>>> and timekeeping_resume() are invoked from s2idle_enter(), and if
+>>> many of them are carried out in a row, the monotonic clock can grow
+>>> significantly while the system is regarded as suspended, which
+>>> doesn't happen during suspend-to-RAM and so it is unexpected and
+>>> leads to confusion and misbehavior in user space (similar to what
+>>> ensued when we tried to combine the boottime and monotonic clocks).
+>>>
+>>> To avoid that, count all iterations of the loop in s2idle_loop()
+>>> as "sleep time" and adjust the clock for that on exit from
+>>> suspend-to-idle.
+>>>
+>>> [That also covers systems on which timekeeping is not suspended
+>>>  by by s2idle_enter().]
+>>>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>
+>>> This is a replacement for https://patchwork.kernel.org/patch/10599209/
+>>>
+>>> I decided to count the entire loop in s2idle_loop() as "sleep time" as the
+>>> patch is then simpler and it also covers systems where timekeeping is not
+>>> suspended in the final step of suspend-to-idle.
+>>>
+>>> I dropped the "Fixes:" tag, because the monotonic clock delta problem
+>>> has been present on the latter since the very introduction of "freeze"
+>>> (as suspend-to-idle was referred to previously) and so this doesn't fix
+>>> any particular later commits.
+>>>
+>>> ---
+>>>  kernel/power/suspend.c |   18 ++++++++++++++++++
+>>>  1 file changed, 18 insertions(+)
+>>>
+>>> Index: linux-pm/kernel/power/suspend.c
+>>> ===================================================================
+>>> --- linux-pm.orig/kernel/power/suspend.c
+>>> +++ linux-pm/kernel/power/suspend.c
+>>> @@ -109,8 +109,12 @@ static void s2idle_enter(void)
+>>>  
+>>>  static void s2idle_loop(void)
+>>>  {
+>>> +	ktime_t start, delta;
+>>> +
+>>>  	pm_pr_dbg("suspend-to-idle\n");
+>>>  
+>>> +	start = ktime_get();
+>>> +
+>>>  	for (;;) {
+>>>  		int error;
+>>>  
+>>> @@ -150,6 +154,20 @@ static void s2idle_loop(void)
+>>>  		pm_wakeup_clear(false);
+>>>  	}
+>>>  
+>>> +	/*
+>>> +	 * If the monotonic clock difference between the start of the loop and
+>>> +	 * this point is too large, user space may get confused about whether or
+>>> +	 * not the system has been suspended and tasks may get killed by
+>>> +	 * watchdogs etc., so count the loop as "sleep time" to compensate for
+>>> +	 * that.
+>>> +	 */
+>>> +	delta = ktime_sub(ktime_get(), start);
+>>> +	if (ktime_to_ns(delta) > 0) {
+>>> +		struct timespec64 timespec64_delta = ktime_to_timespec64(delta);
+>>> +
+>>> +		timekeeping_inject_sleeptime64(&timespec64_delta);
+>>> +	}
+>>
+>> But doesn't injecting sleep time here make monotonic clock too large by the amount of sleeptime? 
+>> tick_freeze() / tick_unfreeze() already injects the sleeptime (otherwise delta would be 0).
 > 
-> [...]
+> No, it doesn't.
 > 
-> > >>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
-> > >>> >     return false;
-> > >>> >  }
-> > >>> >
-> > >>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-> > >>> > +{
-> > >>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> > >>> > +   ktime_t domain_wakeup, cpu_wakeup;
-> > >>> > +   s64 idle_duration_ns;
-> > >>> > +   int cpu, i;
-> > >>> > +
-> > >>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-> > >>> > +           return true;
-> > >>> > +
-> > >>> > +   /*
-> > >>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
-> > >>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
-> > >>> > +    * contains a mask of all CPUs from subdomains.
-> > >>> > +    */
-> > >>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> > >>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> > >>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
-> > >>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
-> > >>> > +                   domain_wakeup = cpu_wakeup;
-> > >>> > +   }
-> > >>
-> > >> Here's a concern I have missed before. :-/
-> > >>
-> > >> Say, one of the CPUs you're walking here is woken up in the meantime.
-> > >
-> > > Yes, that can happen - when we miss-predicted "next wakeup".
-> > >
-> > >>
-> > >> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
-> > >> to update domain_wakeup.  We really should just avoid the domain power off in
-> > >> that case at all IMO.
-> > >
-> > > Correct.
-> > >
-> > > However, we also want to avoid locking contentions in the idle path,
-> > > which is what this boils done to.
-> > 
-> > This already is done under genpd_lock() AFAICS, so I'm not quite sure
-> > what exactly you mean.
-> > 
-> > Besides, this is not just about increased latency, which is a concern
-> > by itself but maybe not so much in all environments, but also about
-> > possibility of missing a CPU wakeup, which is a major issue.
-> > 
-> > If one of the CPUs sharing the domain with the current one is woken up
-> > during cpu_power_down_ok() and the wakeup is an edge-triggered
-> > interrupt and the domain is turned off regardless, the wakeup may be
-> > missed entirely if I'm not mistaken.
-> > 
-> > It looks like there needs to be a way for the hardware to prevent a
-> > domain poweroff when there's a pending interrupt or I don't quite see
-> > how this can be handled correctly.
-> > 
-> > >> Sure enough, if the domain power off is already started and one of the CPUs
-> > >> in the domain is woken up then, too bad, it will suffer the latency (but in
-> > >> that case the hardware should be able to help somewhat), but otherwise CPU
-> > >> wakeup should prevent domain power off from being carried out.
-> > >
-> > > The CPU is not prevented from waking up, as we rely on the FW to deal with that.
-> > >
-> > > Even if the above computation turns out to wrongly suggest that the
-> > > cluster can be powered off, the FW shall together with the genpd
-> > > backend driver prevent it.
-> > 
-> > Fine, but then the solution depends on specific FW/HW behavior, so I'm
-> > not sure how generic it really is.  At least, that expectation should
-> > be clearly documented somewhere, preferably in code comments.
-> > 
-> > > To cover this case for PSCI, we also use a per cpu variable for the
-> > > CPU's power off state, as can be seen later in the series.
-> > 
-> > Oh great, but the generic part should be independent on the underlying
-> > implementation of the driver.  If it isn't, then it also is not
-> > generic.
-> > 
-> > > Hope this clarifies your concern, else tell and will to elaborate a bit more.
-> > 
-> > Not really.
-> > 
-> > There also is one more problem and that is the interaction between
-> > this code and the idle governor.
-> > 
-> > Namely, the idle governor may select a shallower state for some
-> > reason, for example due to an additional latency limit derived from
-> > CPU utilization (like in the menu governor), and how does the code in
-> > cpu_power_down_ok() know what state has been selected and how does it
-> > honor the selection made by the idle governor?
+> The delta here is the extra time taken by the loop which hasn't been counted
+> as sleep time yet.
+
+I said incorrectly monotonic clock, but timekeeping_inject_sleeptime64() forwards the wall time, by the amount of delta.
+Why wouldn't some other cpu update xtime when one cpu is in the loop? And if all cpus enter s2idle, tick_unfreeze()
+injects sleeptime. My point is that this extra injection makes wall time wrong, no?
+
 > 
-> That's a good question and it maybe gives a path towards a solution.
+> Thanks,
+> Rafael
 > 
-> AFAICS the genPD governor only selects the idle state parameter that
-> determines the idle state at, say, GenPD cpumask level it does not touch
-> the CPUidle decision, that works on a subset of idle states (at cpu
-> level).
-
-I've deferred responding to this as I wasn't quite sure if I followed you
-at that time, but I'm afraid I'm still not following you now. :-)
-
-The idle governor has to take the total worst-case wakeup latency into
-account.  Not just from the logical CPU itself, but also from whatever
-state the SoC may end up in as a result of this particular logical CPU
-going idle, this way or another.
-
-So for example, if your logical CPU has an idle state A that may trigger an
-idle state X at the cluster level (if the other logical CPUs happen to be in
-the right states and so on), then the worst-case exit latency for that
-is the one of state X.
-
-> That's my understanding, which can be wrong so please correct me
-> if that's the case because that's a bit confusing.
-> 
-> Let's imagine that we flattened out the list of idle states and feed
-> CPUidle with it (all of them - cpu, cluster, package, system - as it is
-> in the mainline _now_). Then the GenPD governor can run-through the
-> CPUidle selection and _demote_ the idle state if necessary since it
-> understands that some CPUs in the GenPD will wake up shortly and break
-> the target residency hyphothesis the CPUidle governor is expecting.
-> 
-> The whole idea about this series is improving CPUidle decision when
-> the target idle state is _shared_ among groups of cpus (again, please
-> do correct me if I am wrong).
-> 
-> It is obvious that a GenPD governor must only demote - never promote a
-> CPU idle state selection given that hierarchy implies more power
-> savings and higher target residencies required.
-
-So I see a problem here, because the way patch 9 in this series is done,
-the genpd governor for CPUs has no idea what states have been selected by
-the idle governor, so how does it know how deep it can go with turning
-off domains?
-
-My point is that the selection made by the idle governor need not be
-based only on timers which is the only thing that the genpd governor
-seems to be looking at.  The genpd governor should rather look at what
-idle states have been selected for each CPU in the domain by the idle
-governor and work within the boundaries of those.
-
-Thanks,
-Rafael
