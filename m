@@ -1,101 +1,47 @@
-From: =?UTF-8?Q?Mika_Penttil=c3=a4?= <mika.penttila@nextfour.com>
-Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
-Date: Fri, 14 Sep 2018 11:28:44 +0300
-Message-ID: <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
-References: <9611469.2z7W9akjOQ@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Convert to using %pOFn instead of device_node.name
+Date: Fri, 14 Sep 2018 10:27:03 +0200
+Message-ID: <2755190.UQhmFvc9f1@aspire.rjw.lan>
+References: <20180828015252.28511-1-robh@kernel.org> <20180828015252.28511-14-robh@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9611469.2z7W9akjOQ@aspire.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <20180828015252.28511-14-robh@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Rob Herring <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
-
-
-On 09/14/2018 09:59 AM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tuesday, August 28, 2018 3:52:15 AM CEST Rob Herring wrote:
+> In preparation to remove the node name pointer from struct device_node,
+> convert printf users to use the %pOFn format specifier.
 > 
-> There is a difference in behavior between suspend-to-idle and
-> suspend-to-RAM in the timekeeping handling that leads to functional
-> issues.  Namely, every iteration of the loop in s2idle_loop()
-> increases the monotinic clock somewhat, even if timekeeping_suspend()
-> and timekeeping_resume() are invoked from s2idle_enter(), and if
-> many of them are carried out in a row, the monotonic clock can grow
-> significantly while the system is regarded as suspended, which
-> doesn't happen during suspend-to-RAM and so it is unexpected and
-> leads to confusion and misbehavior in user space (similar to what
-> ensued when we tried to combine the boottime and monotonic clocks).
-> 
-> To avoid that, count all iterations of the loop in s2idle_loop()
-> as "sleep time" and adjust the clock for that on exit from
-> suspend-to-idle.
-> 
-> [That also covers systems on which timekeeping is not suspended
->  by by s2idle_enter().]
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 > ---
+>  drivers/cpufreq/s5pv210-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> This is a replacement for https://patchwork.kernel.org/patch/10599209/
+> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> index 5d31c2db12a3..dbecd7667db2 100644
+> --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> @@ -611,8 +611,8 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+>  	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
+>  		id = of_alias_get_id(np, "dmc");
+>  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+> -			pr_err("%s: failed to get alias of dmc node '%s'\n",
+> -				__func__, np->name);
+> +			pr_err("%s: failed to get alias of dmc node '%pOFn'\n",
+> +				__func__, np);
+>  			of_node_put(np);
+>  			return id;
+>  		}
 > 
-> I decided to count the entire loop in s2idle_loop() as "sleep time" as the
-> patch is then simpler and it also covers systems where timekeeping is not
-> suspended in the final step of suspend-to-idle.
-> 
-> I dropped the "Fixes:" tag, because the monotonic clock delta problem
-> has been present on the latter since the very introduction of "freeze"
-> (as suspend-to-idle was referred to previously) and so this doesn't fix
-> any particular later commits.
-> 
-> ---
->  kernel/power/suspend.c |   18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> Index: linux-pm/kernel/power/suspend.c
-> ===================================================================
-> --- linux-pm.orig/kernel/power/suspend.c
-> +++ linux-pm/kernel/power/suspend.c
-> @@ -109,8 +109,12 @@ static void s2idle_enter(void)
->  
->  static void s2idle_loop(void)
->  {
-> +	ktime_t start, delta;
-> +
->  	pm_pr_dbg("suspend-to-idle\n");
->  
-> +	start = ktime_get();
-> +
->  	for (;;) {
->  		int error;
->  
-> @@ -150,6 +154,20 @@ static void s2idle_loop(void)
->  		pm_wakeup_clear(false);
->  	}
->  
-> +	/*
-> +	 * If the monotonic clock difference between the start of the loop and
-> +	 * this point is too large, user space may get confused about whether or
-> +	 * not the system has been suspended and tasks may get killed by
-> +	 * watchdogs etc., so count the loop as "sleep time" to compensate for
-> +	 * that.
-> +	 */
-> +	delta = ktime_sub(ktime_get(), start);
-> +	if (ktime_to_ns(delta) > 0) {
-> +		struct timespec64 timespec64_delta = ktime_to_timespec64(delta);
-> +
-> +		timekeeping_inject_sleeptime64(&timespec64_delta);
-> +	}
 
-But doesn't injecting sleep time here make monotonic clock too large by the amount of sleeptime? 
-tick_freeze() / tick_unfreeze() already injects the sleeptime (otherwise delta would be 0).
-
-> +
->  	pm_pr_dbg("resume from suspend-to-idle\n");
->  }
->  
-> 
+Applied, thanks!
