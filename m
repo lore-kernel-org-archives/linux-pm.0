@@ -1,178 +1,252 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
-Date: Fri, 14 Sep 2018 13:34:14 +0200
-Message-ID: <CAJZ5v0j27p9XHsLsJ+Eg9PGh1bbF5CRNFOrVW8qvNx1Am6W-2A@mail.gmail.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
- <20180809153925.GA20329@red-moon> <5398488.CyAMIAYSYI@aspire.rjw.lan> <20180914104431.GA20567@e107981-ln.cambridge.arm.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 01/17] thermal: add thermal_zone_device_toggle() helper
+Date: Fri, 14 Sep 2018 13:40:44 +0200
+Message-ID: <20180914114046eucas1p1e2d1101ec18f0ca090c9fd97c6840e78~UQV5bGFjE0451704517eucas1p17@eucas1p1.samsung.com>
+References: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
+        <CGME20180410124248epcas1p453f74df4e183f9d68de255847c093d4e@epcas1p4.samsung.com>
+        <1523364131-31059-2-git-send-email-b.zolnierkie@samsung.com>
+        <20180910171605.GA4196@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180914104431.GA20567@e107981-ln.cambridge.arm.com>
+In-Reply-To: <20180910171605.GA4196@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.ke>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 14, 2018 at 12:44 PM Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
->
-> On Fri, Sep 14, 2018 at 11:50:15AM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, August 9, 2018 5:39:25 PM CEST Lorenzo Pieralisi wrote:
-> > > On Mon, Aug 06, 2018 at 11:20:59AM +0200, Rafael J. Wysocki wrote:
-> > >
-> > > [...]
-> > >
-> > > > >>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
-> > > > >>> >     return false;
-> > > > >>> >  }
-> > > > >>> >
-> > > > >>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
-> > > > >>> > +{
-> > > > >>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> > > > >>> > +   ktime_t domain_wakeup, cpu_wakeup;
-> > > > >>> > +   s64 idle_duration_ns;
-> > > > >>> > +   int cpu, i;
-> > > > >>> > +
-> > > > >>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
-> > > > >>> > +           return true;
-> > > > >>> > +
-> > > > >>> > +   /*
-> > > > >>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
-> > > > >>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
-> > > > >>> > +    * contains a mask of all CPUs from subdomains.
-> > > > >>> > +    */
-> > > > >>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
-> > > > >>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
-> > > > >>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
-> > > > >>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
-> > > > >>> > +                   domain_wakeup = cpu_wakeup;
-> > > > >>> > +   }
-> > > > >>
-> > > > >> Here's a concern I have missed before. :-/
-> > > > >>
-> > > > >> Say, one of the CPUs you're walking here is woken up in the meantime.
-> > > > >
-> > > > > Yes, that can happen - when we miss-predicted "next wakeup".
-> > > > >
-> > > > >>
-> > > > >> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
-> > > > >> to update domain_wakeup.  We really should just avoid the domain power off in
-> > > > >> that case at all IMO.
-> > > > >
-> > > > > Correct.
-> > > > >
-> > > > > However, we also want to avoid locking contentions in the idle path,
-> > > > > which is what this boils done to.
-> > > >
-> > > > This already is done under genpd_lock() AFAICS, so I'm not quite sure
-> > > > what exactly you mean.
-> > > >
-> > > > Besides, this is not just about increased latency, which is a concern
-> > > > by itself but maybe not so much in all environments, but also about
-> > > > possibility of missing a CPU wakeup, which is a major issue.
-> > > >
-> > > > If one of the CPUs sharing the domain with the current one is woken up
-> > > > during cpu_power_down_ok() and the wakeup is an edge-triggered
-> > > > interrupt and the domain is turned off regardless, the wakeup may be
-> > > > missed entirely if I'm not mistaken.
-> > > >
-> > > > It looks like there needs to be a way for the hardware to prevent a
-> > > > domain poweroff when there's a pending interrupt or I don't quite see
-> > > > how this can be handled correctly.
-> > > >
-> > > > >> Sure enough, if the domain power off is already started and one of the CPUs
-> > > > >> in the domain is woken up then, too bad, it will suffer the latency (but in
-> > > > >> that case the hardware should be able to help somewhat), but otherwise CPU
-> > > > >> wakeup should prevent domain power off from being carried out.
-> > > > >
-> > > > > The CPU is not prevented from waking up, as we rely on the FW to deal with that.
-> > > > >
-> > > > > Even if the above computation turns out to wrongly suggest that the
-> > > > > cluster can be powered off, the FW shall together with the genpd
-> > > > > backend driver prevent it.
-> > > >
-> > > > Fine, but then the solution depends on specific FW/HW behavior, so I'm
-> > > > not sure how generic it really is.  At least, that expectation should
-> > > > be clearly documented somewhere, preferably in code comments.
-> > > >
-> > > > > To cover this case for PSCI, we also use a per cpu variable for the
-> > > > > CPU's power off state, as can be seen later in the series.
-> > > >
-> > > > Oh great, but the generic part should be independent on the underlying
-> > > > implementation of the driver.  If it isn't, then it also is not
-> > > > generic.
-> > > >
-> > > > > Hope this clarifies your concern, else tell and will to elaborate a bit more.
-> > > >
-> > > > Not really.
-> > > >
-> > > > There also is one more problem and that is the interaction between
-> > > > this code and the idle governor.
-> > > >
-> > > > Namely, the idle governor may select a shallower state for some
-> > > > reason, for example due to an additional latency limit derived from
-> > > > CPU utilization (like in the menu governor), and how does the code in
-> > > > cpu_power_down_ok() know what state has been selected and how does it
-> > > > honor the selection made by the idle governor?
-> > >
-> > > That's a good question and it maybe gives a path towards a solution.
-> > >
-> > > AFAICS the genPD governor only selects the idle state parameter that
-> > > determines the idle state at, say, GenPD cpumask level it does not touch
-> > > the CPUidle decision, that works on a subset of idle states (at cpu
-> > > level).
-> >
-> > I've deferred responding to this as I wasn't quite sure if I followed you
-> > at that time, but I'm afraid I'm still not following you now. :-)
-> >
-> > The idle governor has to take the total worst-case wakeup latency into
-> > account.  Not just from the logical CPU itself, but also from whatever
-> > state the SoC may end up in as a result of this particular logical CPU
-> > going idle, this way or another.
-> >
-> > So for example, if your logical CPU has an idle state A that may trigger an
-> > idle state X at the cluster level (if the other logical CPUs happen to be in
-> > the right states and so on), then the worst-case exit latency for that
-> > is the one of state X.
->
-> I will provide an example:
->
-> IDLE STATE A (affects CPU {0,1}): exit latency 1ms, min-residency 1.5ms
->
-> CPU 0 is about to enter IDLE state A since its "next-event" fulfill the
-> residency requirements and exit latency constraints.
->
-> CPU 1 is in idle state A (given that CPU 0 is ON, some of the common
-> logic shared between CPU {0,1} is still ON, but, as soon as CPU 0
-> enters idle state A CPU {0,1} can enter the "full" idle state A
-> power savings mode).
->
-> The current CPUidle governor does not check the "next-event" for CPU 1,
-> that it may wake up in, say, 10us.
 
-Right.
+On 09/10/2018 07:16 PM, Eduardo Valentin wrote:
+> On Tue, Apr 10, 2018 at 02:41:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> Add thermal_zone_device_toggle() helper. Then update core code and
+>> drivers to use it.
+> 
+> Cool, but I think it would be good to have some sort of rational here
+> at the commit message telling why this helper is being added, 
+> don't you agree?
 
-> Requesting IDLE STATE A is a waste of power (if firmware or hardware
-> does not demote it since it does peek at CPU 1 next-event and actually
-> demote CPU 0 request).
+Ok, I will enhance the patch description (the rationale is removing
+code duplication and preparation for changes in the later patches from
+the series).
 
-OK, I see.
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>> ---
+>>  drivers/thermal/hisi_thermal.c     | 14 ++------------
+>>  drivers/thermal/of-thermal.c       |  2 +-
+>>  drivers/thermal/rockchip_thermal.c | 22 +++++-----------------
+>>  drivers/thermal/thermal_helpers.c  | 15 +++++++++++++++
+>>  drivers/thermal/thermal_sysfs.c    |  8 +++++---
+>>  include/linux/thermal.h            |  1 +
+>>  6 files changed, 29 insertions(+), 33 deletions(-)
+>>
+>> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+>> index 761d055..9428499 100644
+>> --- a/drivers/thermal/hisi_thermal.c
+>> +++ b/drivers/thermal/hisi_thermal.c
+>> @@ -515,15 +515,6 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+>>  };
+>>  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
+>>  
+>> -static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+>> -				       bool on)
+>> -{
+>> -	struct thermal_zone_device *tzd = sensor->tzd;
+>> -
+>> -	tzd->ops->set_mode(tzd,
+>> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+>> -}
+>> -
+>>  static int hisi_thermal_probe(struct platform_device *pdev)
+>>  {
+>>  	struct hisi_thermal_data *data;
+>> @@ -571,7 +562,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>>  		}
+>>  	}
+>>  
+>> -	hisi_thermal_toggle_sensor(&data->sensor, true);
+>> +	thermal_zone_device_toggle((&data->sensor)->tzd, true);
+>>  
+>>  	return 0;
+>>  }
+>> @@ -579,9 +570,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>>  static int hisi_thermal_remove(struct platform_device *pdev)
+>>  {
+>>  	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
+>> -	struct hisi_thermal_sensor *sensor = &data->sensor;
+>>  
+>> -	hisi_thermal_toggle_sensor(sensor, false);
+>> +	thermal_zone_device_toggle((&data->sensor)->tzd, false);
+>>  
+>>  	data->disable_sensor(data);
+>>  
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+>> index e09f035..f138b78 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -510,7 +510,7 @@ struct thermal_zone_device *
+>>  			tzd = thermal_zone_of_add_sensor(child, sensor_np,
+>>  							 data, ops);
+>>  			if (!IS_ERR(tzd))
+>> -				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
+>> +				thermal_zone_device_toggle(tzd, true);
+>>  
+>>  			of_node_put(sensor_specs.np);
+>>  			of_node_put(child);
+>> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+>> index f36375d..c191e41 100644
+>> --- a/drivers/thermal/rockchip_thermal.c
+>> +++ b/drivers/thermal/rockchip_thermal.c
+>> @@ -1022,15 +1022,6 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+>>  };
+>>  MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
+>>  
+>> -static void
+>> -rockchip_thermal_toggle_sensor(struct rockchip_thermal_sensor *sensor, bool on)
+>> -{
+>> -	struct thermal_zone_device *tzd = sensor->tzd;
+>> -
+>> -	tzd->ops->set_mode(tzd,
+>> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+>> -}
+>> -
+>>  static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+>>  {
+>>  	struct rockchip_thermal_data *thermal = dev;
+>> @@ -1292,7 +1283,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>>  	thermal->chip->control(thermal->regs, true);
+>>  
+>>  	for (i = 0; i < thermal->chip->chn_num; i++)
+>> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+>> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
+>>  
+>>  	platform_set_drvdata(pdev, thermal);
+>>  
+>> @@ -1311,11 +1302,8 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
+>>  	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+>>  	int i;
+>>  
+>> -	for (i = 0; i < thermal->chip->chn_num; i++) {
+>> -		struct rockchip_thermal_sensor *sensor = &thermal->sensors[i];
+>> -
+>> -		rockchip_thermal_toggle_sensor(sensor, false);
+>> -	}
+>> +	for (i = 0; i < thermal->chip->chn_num; i++)
+>> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
+>>  
+>>  	thermal->chip->control(thermal->regs, false);
+>>  
+>> @@ -1332,7 +1320,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+>>  	int i;
+>>  
+>>  	for (i = 0; i < thermal->chip->chn_num; i++)
+>> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], false);
+>> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
+>>  
+>>  	thermal->chip->control(thermal->regs, false);
+>>  
+>> @@ -1383,7 +1371,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>>  	thermal->chip->control(thermal->regs, true);
+>>  
+>>  	for (i = 0; i < thermal->chip->chn_num; i++)
+>> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+>> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
+>>  
+>>  	pinctrl_pm_select_default_state(dev);
+>>  
+>> diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+>> index eb03d7e..d5db101 100644
+>> --- a/drivers/thermal/thermal_helpers.c
+>> +++ b/drivers/thermal/thermal_helpers.c
+>> @@ -227,3 +227,18 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz)
+>>  	return 0;
+>>  }
+>>  EXPORT_SYMBOL_GPL(thermal_zone_get_offset);
+>> +
+>> +/**
+>> + * thermal_zone_device_toggle() - enables/disables thermal zone device
+>> + * @tz: a valid pointer to a struct thermal_zone_device
+>> + *
+>> + * Enables/Disables thermal zone device.
+>> + *
+>> + * Return: On success returns 0, an error code otherwise.
+>> + */
+>> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on)
+>> +{
+>> +	return tz->ops->set_mode(tz,
+>> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> 
+> why not simply getting a mode type (enum thermal_device_mode)?
 
-That's because the state is "collaborative" so to speak.  But was't
-that supposed to be covered by the "coupled" thing?
+Well, none of open-coded instances that thermal_zone_device_toggle()
+replaces used enum thermal_device_mode. Using bool is simpler and
+this enum looks a bit like over-engineering, though I can use it if
+you insist.
 
-> The current flat list of idle states has no notion of CPUs sharing
-> an idle state request and that's where I think this series kicks in
-> and that's the reason I say that the genPD governor can only demote
-> an idle state request.
->
-> Linking power domains to idle states is the only sensible way I see
-> to define what logical cpus are affected by an idle state entry, this
-> information is missing in the current kernel (whether that's wortwhile
-> adding it that's another question).
+>> +}
+>> +EXPORT_SYMBOL_GPL(thermal_zone_device_toggle);
+> 
+> I know naming is always the hardest part :-), but to me, this function
+> is more a thermal_zone_set_mode() than device_toggle(). At least, based
+> on what I see in the code, we are not really toggling device per si,
+> just setting a mode.
 
-OK, thanks for the clarification!
+Ok, I will change it (the naming was based on existing helpers from
+hisi_thermal.c and rockchip_thermal.c).
 
-Cheers,
-Rafael
+>> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+>> index 23b5e0a..343f52b 100644
+>> --- a/drivers/thermal/thermal_sysfs.c
+>> +++ b/drivers/thermal/thermal_sysfs.c
+>> @@ -72,17 +72,19 @@
+>>  {
+>>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>>  	int result;
+>> +	bool on;
+>>  
+>>  	if (!tz->ops->set_mode)
+>>  		return -EPERM;
+>>  
+>>  	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+>> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
+>> +		on = true;
+>>  	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
+>> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
+>> +		on = false;
+>>  	else
+>> -		result = -EINVAL;
+>> +		return -EINVAL;
+>>  
+>> +	result = thermal_zone_device_toggle(tz, on);
+>>  	if (result)
+>>  		return result;
+>>  
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index 7834be6..4fbbabe 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -467,6 +467,7 @@ struct thermal_cooling_device *
+>>  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
+>>  int thermal_zone_get_slope(struct thermal_zone_device *tz);
+>>  int thermal_zone_get_offset(struct thermal_zone_device *tz);
+>> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on);
+>>  
+> 
+> You missed the #else section of the #if IS_ENABLED(CONFIG_THERMAL),
+> didn't you?
+
+No, this function shouldn't be used outside of CONFIG_THERMAL.
+
+> We want to have a stub when config thermal is not set.
+
+Actually it seems that a lot of these existing stubs don't make sense
+outside of CONFIG_THERMAL and should be cleaned up.
+
+>>  int get_tz_trend(struct thermal_zone_device *, int);
+>>  struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
