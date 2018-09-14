@@ -1,107 +1,46 @@
 From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH 2/2] cpufreq: imx6q: read OCOTP through nvmem for imx6ul/imx6ull
-Date: Fri, 14 Sep 2018 10:59:22 +0800
-Message-ID: <1536893962-11200-2-git-send-email-Anson.Huang@nxp.com>
-References: <1536893962-11200-1-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH 1/2] ARM: dts: imx6ul: use nvmem-cells for cpu speed grading
+Date: Fri, 14 Sep 2018 10:59:21 +0800
+Message-ID: <1536893962-11200-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536893962-11200-1-git-send-email-Anson.Huang@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Linux-imx@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
-On i.MX6UL/i.MX6ULL, accessing OCOTP directly is wrong because
-the ocotp clock needs to be enabled first. Add support for reading
-OCOTP through the nvmem API instead.
+On i.MX6UL, accessing OCOTP directly is wrong because the ocotp clock
+needs to be enabled first, so use the nvmem-cells binding instead.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 39 +++++++++++++++++++--------------------
- 1 file changed, 19 insertions(+), 20 deletions(-)
+ arch/arm/boot/dts/imx6ul.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index b2ff423..4ae6c74 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -12,6 +12,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/err.h>
- #include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/pm_opp.h>
-@@ -290,22 +291,11 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
- #define OCOTP_CFG3_6ULL_SPEED_792MHZ	0x2
- #define OCOTP_CFG3_6ULL_SPEED_900MHZ	0x3
+diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
+index 6dc0b56..c670d8e 100644
+--- a/arch/arm/boot/dts/imx6ul.dtsi
++++ b/arch/arm/boot/dts/imx6ul.dtsi
+@@ -89,6 +89,8 @@
+ 				      "pll1_sys";
+ 			arm-supply = <&reg_arm>;
+ 			soc-supply = <&reg_soc>;
++			nvmem-cells = <&cpu_speed_grade>;
++			nvmem-cell-names = "speed_grade";
+ 		};
+ 	};
  
--static void imx6ul_opp_check_speed_grading(struct device *dev)
-+static int imx6ul_opp_check_speed_grading(struct device *dev)
- {
--	struct device_node *np;
--	void __iomem *base;
-+	int ret;
- 	u32 val;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
--	if (!np)
--		return;
--
--	base = of_iomap(np, 0);
--	if (!base) {
--		dev_err(dev, "failed to map ocotp\n");
--		goto put_node;
--	}
--
- 	/*
- 	 * Speed GRADING[1:0] defines the max speed of ARM:
- 	 * 2b'00: Reserved;
-@@ -314,7 +304,10 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 	 * 2b'11: 900000000Hz on i.MX6ULL only;
- 	 * We need to set the max speed of ARM according to fuse map.
- 	 */
--	val = readl_relaxed(base + OCOTP_CFG3);
-+	ret = nvmem_cell_read_u32(dev, "speed_grade", &val);
-+	if (ret)
-+		return ret;
+@@ -932,6 +934,10 @@
+ 				tempmon_temp_grade: temp-grade@20 {
+ 					reg = <0x20 4>;
+ 				};
 +
- 	val >>= OCOTP_CFG3_SPEED_SHIFT;
- 	val &= 0x3;
++				cpu_speed_grade: speed-grade@10 {
++					reg = <0x10 4>;
++				};
+ 			};
  
-@@ -334,9 +327,7 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 				dev_warn(dev, "failed to disable 900MHz OPP\n");
- 	}
- 
--	iounmap(base);
--put_node:
--	of_node_put(np);
-+	return ret;
- }
- 
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
-@@ -394,10 +385,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
--	    of_machine_is_compatible("fsl,imx6ull"))
--		imx6ul_opp_check_speed_grading(cpu_dev);
--	else
-+	    of_machine_is_compatible("fsl,imx6ull")) {
-+		ret = imx6ul_opp_check_speed_grading(cpu_dev);
-+		if (ret == -EPROBE_DEFER)
-+			return ret;
-+		if (ret) {
-+			dev_err(cpu_dev, "failed to read from nvmem: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
-+	}
- 
- 	/* Because we have added the OPPs here, we must free them */
- 	free_opp = true;
+ 			lcdif: lcdif@21c8000 {
 -- 
 2.7.4
