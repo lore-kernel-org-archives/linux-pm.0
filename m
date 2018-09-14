@@ -1,252 +1,56 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 01/17] thermal: add thermal_zone_device_toggle() helper
-Date: Fri, 14 Sep 2018 13:40:44 +0200
-Message-ID: <20180914114046eucas1p1e2d1101ec18f0ca090c9fd97c6840e78~UQV5bGFjE0451704517eucas1p17@eucas1p1.samsung.com>
-References: <1523364131-31059-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20180410124248epcas1p453f74df4e183f9d68de255847c093d4e@epcas1p4.samsung.com>
-        <1523364131-31059-2-git-send-email-b.zolnierkie@samsung.com>
-        <20180910171605.GA4196@localhost.localdomain>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v4 03/16] sched/core: uclamp: add CPU's clamp groups
+ accounting
+Date: Fri, 14 Sep 2018 13:52:17 +0200
+Message-ID: <20180914115217.GI24124@hirez.programming.kicks-ass.net>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-4-patrick.bellasi@arm.com>
+ <20180913191209.GY24082@hirez.programming.kicks-ass.net>
+ <20180914090751.GN1413@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180910171605.GA4196@localhost.localdomain>
+Content-Disposition: inline
+In-Reply-To: <20180914090751.GN1413@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-On 09/10/2018 07:16 PM, Eduardo Valentin wrote:
-> On Tue, Apr 10, 2018 at 02:41:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
->> Add thermal_zone_device_toggle() helper. Then update core code and
->> drivers to use it.
+On Fri, Sep 14, 2018 at 10:07:51AM +0100, Patrick Bellasi wrote:
+> On 13-Sep 21:12, Peter Zijlstra wrote:
+> > On Tue, Aug 28, 2018 at 02:53:11PM +0100, Patrick Bellasi wrote:
+> > > +static inline void uclamp_cpu_get_id(struct task_struct *p,
+> > > +				     struct rq *rq, int clamp_id)
+> > > +{
+> > > +	struct uclamp_group *uc_grp;
+> > > +	struct uclamp_cpu *uc_cpu;
+> > > +	int clamp_value;
+> > > +	int group_id;
+> > > +
+> > > +	/* Every task must reference a clamp group */
+> > > +	group_id = p->uclamp[clamp_id].group_id;
+> > 
+> > > +}
+> > > +
+> > > +static inline void uclamp_cpu_put_id(struct task_struct *p,
+> > > +				     struct rq *rq, int clamp_id)
+> > > +{
+> > > +	struct uclamp_group *uc_grp;
+> > > +	struct uclamp_cpu *uc_cpu;
+> > > +	unsigned int clamp_value;
+> > > +	int group_id;
+> > > +
+> > > +	/* New tasks don't have a previous clamp group */
+> > > +	group_id = p->uclamp[clamp_id].group_id;
+> > > +	if (group_id == UCLAMP_NOT_VALID)
+> > > +		return;
+> > 
+> > *confused*, so on enqueue they must have a group_id, but then on dequeue
+> > they might no longer have?
 > 
-> Cool, but I think it would be good to have some sort of rational here
-> at the commit message telling why this helper is being added, 
-> don't you agree?
+> Why not ?
 
-Ok, I will enhance the patch description (the rationale is removing
-code duplication and preparation for changes in the later patches from
-the series).
-
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> ---
->>  drivers/thermal/hisi_thermal.c     | 14 ++------------
->>  drivers/thermal/of-thermal.c       |  2 +-
->>  drivers/thermal/rockchip_thermal.c | 22 +++++-----------------
->>  drivers/thermal/thermal_helpers.c  | 15 +++++++++++++++
->>  drivers/thermal/thermal_sysfs.c    |  8 +++++---
->>  include/linux/thermal.h            |  1 +
->>  6 files changed, 29 insertions(+), 33 deletions(-)
->>
->> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
->> index 761d055..9428499 100644
->> --- a/drivers/thermal/hisi_thermal.c
->> +++ b/drivers/thermal/hisi_thermal.c
->> @@ -515,15 +515,6 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
->>  };
->>  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
->>  
->> -static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
->> -				       bool on)
->> -{
->> -	struct thermal_zone_device *tzd = sensor->tzd;
->> -
->> -	tzd->ops->set_mode(tzd,
->> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->> -}
->> -
->>  static int hisi_thermal_probe(struct platform_device *pdev)
->>  {
->>  	struct hisi_thermal_data *data;
->> @@ -571,7 +562,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->>  		}
->>  	}
->>  
->> -	hisi_thermal_toggle_sensor(&data->sensor, true);
->> +	thermal_zone_device_toggle((&data->sensor)->tzd, true);
->>  
->>  	return 0;
->>  }
->> @@ -579,9 +570,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->>  static int hisi_thermal_remove(struct platform_device *pdev)
->>  {
->>  	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
->> -	struct hisi_thermal_sensor *sensor = &data->sensor;
->>  
->> -	hisi_thermal_toggle_sensor(sensor, false);
->> +	thermal_zone_device_toggle((&data->sensor)->tzd, false);
->>  
->>  	data->disable_sensor(data);
->>  
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index e09f035..f138b78 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -510,7 +510,7 @@ struct thermal_zone_device *
->>  			tzd = thermal_zone_of_add_sensor(child, sensor_np,
->>  							 data, ops);
->>  			if (!IS_ERR(tzd))
->> -				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
->> +				thermal_zone_device_toggle(tzd, true);
->>  
->>  			of_node_put(sensor_specs.np);
->>  			of_node_put(child);
->> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
->> index f36375d..c191e41 100644
->> --- a/drivers/thermal/rockchip_thermal.c
->> +++ b/drivers/thermal/rockchip_thermal.c
->> @@ -1022,15 +1022,6 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
->>  };
->>  MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
->>  
->> -static void
->> -rockchip_thermal_toggle_sensor(struct rockchip_thermal_sensor *sensor, bool on)
->> -{
->> -	struct thermal_zone_device *tzd = sensor->tzd;
->> -
->> -	tzd->ops->set_mode(tzd,
->> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->> -}
->> -
->>  static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
->>  {
->>  	struct rockchip_thermal_data *thermal = dev;
->> @@ -1292,7 +1283,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
->>  	thermal->chip->control(thermal->regs, true);
->>  
->>  	for (i = 0; i < thermal->chip->chn_num; i++)
->> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
->> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
->>  
->>  	platform_set_drvdata(pdev, thermal);
->>  
->> @@ -1311,11 +1302,8 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
->>  	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
->>  	int i;
->>  
->> -	for (i = 0; i < thermal->chip->chn_num; i++) {
->> -		struct rockchip_thermal_sensor *sensor = &thermal->sensors[i];
->> -
->> -		rockchip_thermal_toggle_sensor(sensor, false);
->> -	}
->> +	for (i = 0; i < thermal->chip->chn_num; i++)
->> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
->>  
->>  	thermal->chip->control(thermal->regs, false);
->>  
->> @@ -1332,7 +1320,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
->>  	int i;
->>  
->>  	for (i = 0; i < thermal->chip->chn_num; i++)
->> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], false);
->> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, false);
->>  
->>  	thermal->chip->control(thermal->regs, false);
->>  
->> @@ -1383,7 +1371,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
->>  	thermal->chip->control(thermal->regs, true);
->>  
->>  	for (i = 0; i < thermal->chip->chn_num; i++)
->> -		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
->> +		thermal_zone_device_toggle((&thermal->sensors[i])->tzd, true);
->>  
->>  	pinctrl_pm_select_default_state(dev);
->>  
->> diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
->> index eb03d7e..d5db101 100644
->> --- a/drivers/thermal/thermal_helpers.c
->> +++ b/drivers/thermal/thermal_helpers.c
->> @@ -227,3 +227,18 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz)
->>  	return 0;
->>  }
->>  EXPORT_SYMBOL_GPL(thermal_zone_get_offset);
->> +
->> +/**
->> + * thermal_zone_device_toggle() - enables/disables thermal zone device
->> + * @tz: a valid pointer to a struct thermal_zone_device
->> + *
->> + * Enables/Disables thermal zone device.
->> + *
->> + * Return: On success returns 0, an error code otherwise.
->> + */
->> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on)
->> +{
->> +	return tz->ops->set_mode(tz,
->> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-> 
-> why not simply getting a mode type (enum thermal_device_mode)?
-
-Well, none of open-coded instances that thermal_zone_device_toggle()
-replaces used enum thermal_device_mode. Using bool is simpler and
-this enum looks a bit like over-engineering, though I can use it if
-you insist.
-
->> +}
->> +EXPORT_SYMBOL_GPL(thermal_zone_device_toggle);
-> 
-> I know naming is always the hardest part :-), but to me, this function
-> is more a thermal_zone_set_mode() than device_toggle(). At least, based
-> on what I see in the code, we are not really toggling device per si,
-> just setting a mode.
-
-Ok, I will change it (the naming was based on existing helpers from
-hisi_thermal.c and rockchip_thermal.c).
-
->> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
->> index 23b5e0a..343f52b 100644
->> --- a/drivers/thermal/thermal_sysfs.c
->> +++ b/drivers/thermal/thermal_sysfs.c
->> @@ -72,17 +72,19 @@
->>  {
->>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
->>  	int result;
->> +	bool on;
->>  
->>  	if (!tz->ops->set_mode)
->>  		return -EPERM;
->>  
->>  	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
->> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
->> +		on = true;
->>  	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
->> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
->> +		on = false;
->>  	else
->> -		result = -EINVAL;
->> +		return -EINVAL;
->>  
->> +	result = thermal_zone_device_toggle(tz, on);
->>  	if (result)
->>  		return result;
->>  
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index 7834be6..4fbbabe 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -467,6 +467,7 @@ struct thermal_cooling_device *
->>  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp);
->>  int thermal_zone_get_slope(struct thermal_zone_device *tz);
->>  int thermal_zone_get_offset(struct thermal_zone_device *tz);
->> +int thermal_zone_device_toggle(struct thermal_zone_device *tz, bool on);
->>  
-> 
-> You missed the #else section of the #if IS_ENABLED(CONFIG_THERMAL),
-> didn't you?
-
-No, this function shouldn't be used outside of CONFIG_THERMAL.
-
-> We want to have a stub when config thermal is not set.
-
-Actually it seems that a lot of these existing stubs don't make sense
-outside of CONFIG_THERMAL and should be cleaned up.
-
->>  int get_tz_trend(struct thermal_zone_device *, int);
->>  struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+That's what it says on the tin, right? enqueue: "every task must reference clamp
+group" while on dequeue: "new tasks don't have a (previous) clamp group"
+and we check for NOT_VALID.
