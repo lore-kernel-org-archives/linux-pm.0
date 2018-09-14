@@ -1,139 +1,198 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 0/5] CPUFREQ OPP's and Tegra30 support by
- tegra20-cpufreq driver
-Date: Fri, 14 Sep 2018 13:30:13 +0300
-Message-ID: <09451207-ee77-7b4e-54cf-7a7a7ab67400@gmail.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <1536237301.25080.22.camel@toradex.com>
- <6c5b6eb4-f809-1a31-acbc-ea27e5cb891b@gmail.com>
- <1536654470.32292.31.camel@toradex.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v8 07/26] PM / Domains: Add genpd governor for CPUs
+Date: Fri, 14 Sep 2018 11:44:31 +0100
+Message-ID: <20180914104431.GA20567@e107981-ln.cambridge.arm.com>
+References: <20180620172226.15012-1-ulf.hansson@linaro.org>
+ <CAJZ5v0hX3gC0J_z1tMu-KkNBRf3GuJ91tbFC2Z+0D1BnHkY8kg@mail.gmail.com>
+ <20180809153925.GA20329@red-moon>
+ <5398488.CyAMIAYSYI@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536654470.32292.31.camel@toradex.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <5398488.CyAMIAYSYI@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marcel Ziswiler <marcel.ziswiler@toradex.com>, "jonathanh@nvidia.com" <jonathanh@nvidia.com>, "pdeschrijver@nvidia.com" <pdeschrijver@nvidia.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <fweisbec@>
 List-Id: linux-pm@vger.kernel.org
 
-On 9/11/18 11:27 AM, Marcel Ziswiler wrote:
-> On Fri, 2018-09-07 at 19:59 +0300, Dmitry Osipenko wrote:
+On Fri, Sep 14, 2018 at 11:50:15AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, August 9, 2018 5:39:25 PM CEST Lorenzo Pieralisi wrote:
+> > On Mon, Aug 06, 2018 at 11:20:59AM +0200, Rafael J. Wysocki wrote:
+> > 
+> > [...]
+> > 
+> > > >>> > @@ -245,6 +248,56 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+> > > >>> >     return false;
+> > > >>> >  }
+> > > >>> >
+> > > >>> > +static bool cpu_power_down_ok(struct dev_pm_domain *pd)
+> > > >>> > +{
+> > > >>> > +   struct generic_pm_domain *genpd = pd_to_genpd(pd);
+> > > >>> > +   ktime_t domain_wakeup, cpu_wakeup;
+> > > >>> > +   s64 idle_duration_ns;
+> > > >>> > +   int cpu, i;
+> > > >>> > +
+> > > >>> > +   if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
+> > > >>> > +           return true;
+> > > >>> > +
+> > > >>> > +   /*
+> > > >>> > +    * Find the next wakeup for any of the online CPUs within the PM domain
+> > > >>> > +    * and its subdomains. Note, we only need the genpd->cpus, as it already
+> > > >>> > +    * contains a mask of all CPUs from subdomains.
+> > > >>> > +    */
+> > > >>> > +   domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
+> > > >>> > +   for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
+> > > >>> > +           cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
+> > > >>> > +           if (ktime_before(cpu_wakeup, domain_wakeup))
+> > > >>> > +                   domain_wakeup = cpu_wakeup;
+> > > >>> > +   }
+> > > >>
+> > > >> Here's a concern I have missed before. :-/
+> > > >>
+> > > >> Say, one of the CPUs you're walking here is woken up in the meantime.
+> > > >
+> > > > Yes, that can happen - when we miss-predicted "next wakeup".
+> > > >
+> > > >>
+> > > >> I don't think it is valid to evaluate tick_nohz_get_next_wakeup() for it then
+> > > >> to update domain_wakeup.  We really should just avoid the domain power off in
+> > > >> that case at all IMO.
+> > > >
+> > > > Correct.
+> > > >
+> > > > However, we also want to avoid locking contentions in the idle path,
+> > > > which is what this boils done to.
+> > > 
+> > > This already is done under genpd_lock() AFAICS, so I'm not quite sure
+> > > what exactly you mean.
+> > > 
+> > > Besides, this is not just about increased latency, which is a concern
+> > > by itself but maybe not so much in all environments, but also about
+> > > possibility of missing a CPU wakeup, which is a major issue.
+> > > 
+> > > If one of the CPUs sharing the domain with the current one is woken up
+> > > during cpu_power_down_ok() and the wakeup is an edge-triggered
+> > > interrupt and the domain is turned off regardless, the wakeup may be
+> > > missed entirely if I'm not mistaken.
+> > > 
+> > > It looks like there needs to be a way for the hardware to prevent a
+> > > domain poweroff when there's a pending interrupt or I don't quite see
+> > > how this can be handled correctly.
+> > > 
+> > > >> Sure enough, if the domain power off is already started and one of the CPUs
+> > > >> in the domain is woken up then, too bad, it will suffer the latency (but in
+> > > >> that case the hardware should be able to help somewhat), but otherwise CPU
+> > > >> wakeup should prevent domain power off from being carried out.
+> > > >
+> > > > The CPU is not prevented from waking up, as we rely on the FW to deal with that.
+> > > >
+> > > > Even if the above computation turns out to wrongly suggest that the
+> > > > cluster can be powered off, the FW shall together with the genpd
+> > > > backend driver prevent it.
+> > > 
+> > > Fine, but then the solution depends on specific FW/HW behavior, so I'm
+> > > not sure how generic it really is.  At least, that expectation should
+> > > be clearly documented somewhere, preferably in code comments.
+> > > 
+> > > > To cover this case for PSCI, we also use a per cpu variable for the
+> > > > CPU's power off state, as can be seen later in the series.
+> > > 
+> > > Oh great, but the generic part should be independent on the underlying
+> > > implementation of the driver.  If it isn't, then it also is not
+> > > generic.
+> > > 
+> > > > Hope this clarifies your concern, else tell and will to elaborate a bit more.
+> > > 
+> > > Not really.
+> > > 
+> > > There also is one more problem and that is the interaction between
+> > > this code and the idle governor.
+> > > 
+> > > Namely, the idle governor may select a shallower state for some
+> > > reason, for example due to an additional latency limit derived from
+> > > CPU utilization (like in the menu governor), and how does the code in
+> > > cpu_power_down_ok() know what state has been selected and how does it
+> > > honor the selection made by the idle governor?
+> > 
+> > That's a good question and it maybe gives a path towards a solution.
+> > 
+> > AFAICS the genPD governor only selects the idle state parameter that
+> > determines the idle state at, say, GenPD cpumask level it does not touch
+> > the CPUidle decision, that works on a subset of idle states (at cpu
+> > level).
 > 
-> - snip -
+> I've deferred responding to this as I wasn't quite sure if I followed you
+> at that time, but I'm afraid I'm still not following you now. :-)
 > 
->>> - With "cpufreq-info -f" I could only observe like the top 3-4 OPPs
->>> while it does not to go further down even when idling. Why could
->>> that
->>> be resp. what could cause this?
->>
->> What cpufreq governor are you using?
+> The idle governor has to take the total worst-case wakeup latency into
+> account.  Not just from the logical CPU itself, but also from whatever
+> state the SoC may end up in as a result of this particular logical CPU
+> going idle, this way or another.
 > 
-> ondemand
-> 
->> Here is my 'cpufreq-info --stats' output from Tegra30 after a several
->> minutes of idling after boot:
->>
->> 408000:245884, 456000:445, 608000:251, 760000:151, 816000:82,
->> 912000:75, 1000000:163  (561)
->>
->> And full cpufreq-info:
->>
->> cpufrequtils 008: cpufreq-info (C) Dominik Brodowski 2004-2009
->> Report errors and bugs to cpufreq@vger.kernel.org, please.
->> analyzing CPU 0:
->>     driver: tegra
->>     CPUs which run at the same hardware frequency: 0 1 2 3
->>     CPUs which need to have their frequency coordinated by software: 0
->> 1 2 3
->>     maximum transition latency: 50.0 us.
->>     hardware limits: 408 MHz - 1000 MHz
->>     available frequency steps: 408 MHz, 456 MHz, 608 MHz, 760 MHz, 816
->> MHz, 912 MHz, 1000 MHz
->>     available cpufreq governors: conservative, userspace, powersave,
->> ondemand, performance, schedutil
->>     current policy: frequency should be within 408 MHz and 1000 MHz.
->>                     The governor "ondemand" may decide which speed to
->> use
->>                     within this range.
->>     current CPU frequency is 608 MHz (asserted by call to hardware).
->>     cpufreq stats: 408 MHz:99.53%, 456 MHz:0.18%, 608 MHz:0.10%, 760
->> MHz:0.06%, 816 MHz:0.03%, 912 MHz:0.03%, 1000 MHz:0.07%  (563)
->> analyzing CPU 1:
->>     driver: tegra
->>     CPUs which run at the same hardware frequency: 0 1 2 3
->>     CPUs which need to have their frequency coordinated by software: 0
->> 1 2 3
->>     maximum transition latency: 50.0 us.
->>     hardware limits: 408 MHz - 1000 MHz
->>     available frequency steps: 408 MHz, 456 MHz, 608 MHz, 760 MHz, 816
->> MHz, 912 MHz, 1000 MHz
->>     available cpufreq governors: conservative, userspace, powersave,
->> ondemand, performance, schedutil
->>     current policy: frequency should be within 408 MHz and 1000 MHz.
->>                     The governor "ondemand" may decide which speed to
->> use
->>                     within this range.
->>     current CPU frequency is 608 MHz (asserted by call to hardware).
->>     cpufreq stats: 408 MHz:99.53%, 456 MHz:0.18%, 608 MHz:0.10%, 760
->> MHz:0.06%, 816 MHz:0.03%, 912 MHz:0.03%, 1000 MHz:0.07%  (563)
->> analyzing CPU 2:
->>     driver: tegra
->>     CPUs which run at the same hardware frequency: 0 1 2 3
->>     CPUs which need to have their frequency coordinated by software: 0
->> 1 2 3
->>     maximum transition latency: 50.0 us.
->>     hardware limits: 408 MHz - 1000 MHz
->>     available frequency steps: 408 MHz, 456 MHz, 608 MHz, 760 MHz, 816
->> MHz, 912 MHz, 1000 MHz
->>     available cpufreq governors: conservative, userspace, powersave,
->> ondemand, performance, schedutil
->>     current policy: frequency should be within 408 MHz and 1000 MHz.
->>                     The governor "ondemand" may decide which speed to
->> use
->>                     within this range.
->>     current CPU frequency is 608 MHz (asserted by call to hardware).
->>     cpufreq stats: 408 MHz:99.53%, 456 MHz:0.18%, 608 MHz:0.10%, 760
->> MHz:0.06%, 816 MHz:0.03%, 912 MHz:0.03%, 1000 MHz:0.07%  (563)
->> analyzing CPU 3:
->>     driver: tegra
->>     CPUs which run at the same hardware frequency: 0 1 2 3
->>     CPUs which need to have their frequency coordinated by software: 0
->> 1 2 3
->>     maximum transition latency: 50.0 us.
->>     hardware limits: 408 MHz - 1000 MHz
->>     available frequency steps: 408 MHz, 456 MHz, 608 MHz, 760 MHz, 816
->> MHz, 912 MHz, 1000 MHz
->>     available cpufreq governors: conservative, userspace, powersave,
->> ondemand, performance, schedutil
->>     current policy: frequency should be within 408 MHz and 1000 MHz.
->>                     The governor "ondemand" may decide which speed to
->> use
->>                     within this range.
->>     current CPU frequency is 608 MHz (asserted by call to hardware).
->>     cpufreq stats: 408 MHz:99.53%, 456 MHz:0.18%, 608 MHz:0.10%, 760
->> MHz:0.06%, 816 MHz:0.03%, 912 MHz:0.03%, 1000 MHz:0.07%  (563)
->>
->>
->>> - Unfortunately "cpufreq-info --stats" currently does not seem to
->>> output anything. Would that require something special to be
->>> implemented?
->>
->> Make sure that CONFIG_CPU_FREQ_STAT is enabled in the kernels config.
-> 
-> Yes, sorry. That was it, of course. Just wondering why that one isn't
-> enabled in tegra_defconfig...
+> So for example, if your logical CPU has an idle state A that may trigger an
+> idle state X at the cluster level (if the other logical CPUs happen to be in
+> the right states and so on), then the worst-case exit latency for that
+> is the one of state X.
 
-That option isn't essential for the kernel, though usually such useful and 
-low-overhead features are welcome. IIRC, tegra_defconfig misses more important 
-options (like namespaces) that are required by Linux distro's to work properly.
+I will provide an example:
 
->>> Other than that you may add the following to the whole series:
->>>
->>> Tested-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
->>
->> Thank you very much!
+IDLE STATE A (affects CPU {0,1}): exit latency 1ms, min-residency 1.5ms
+
+CPU 0 is about to enter IDLE state A since its "next-event" fulfill the
+residency requirements and exit latency constraints.
+
+CPU 1 is in idle state A (given that CPU 0 is ON, some of the common
+logic shared between CPU {0,1} is still ON, but, as soon as CPU 0
+enters idle state A CPU {0,1} can enter the "full" idle state A
+power savings mode).
+
+The current CPUidle governor does not check the "next-event" for CPU 1,
+that it may wake up in, say, 10us.
+
+Requesting IDLE STATE A is a waste of power (if firmware or hardware
+does not demote it since it does peek at CPU 1 next-event and actually
+demote CPU 0 request).
+
+The current flat list of idle states has no notion of CPUs sharing
+an idle state request and that's where I think this series kicks in
+and that's the reason I say that the genPD governor can only demote
+an idle state request.
+
+Linking power domains to idle states is the only sensible way I see
+to define what logical cpus are affected by an idle state entry, this
+information is missing in the current kernel (whether that's wortwhile
+adding it that's another question).
+
+> > That's my understanding, which can be wrong so please correct me
+> > if that's the case because that's a bit confusing.
+> > 
+> > Let's imagine that we flattened out the list of idle states and feed
+> > CPUidle with it (all of them - cpu, cluster, package, system - as it is
+> > in the mainline _now_). Then the GenPD governor can run-through the
+> > CPUidle selection and _demote_ the idle state if necessary since it
+> > understands that some CPUs in the GenPD will wake up shortly and break
+> > the target residency hyphothesis the CPUidle governor is expecting.
+> > 
+> > The whole idea about this series is improving CPUidle decision when
+> > the target idle state is _shared_ among groups of cpus (again, please
+> > do correct me if I am wrong).
+> > 
+> > It is obvious that a GenPD governor must only demote - never promote a
+> > CPU idle state selection given that hierarchy implies more power
+> > savings and higher target residencies required.
 > 
-> You are very welcome. Thank you!
+> So I see a problem here, because the way patch 9 in this series is done,
+> the genpd governor for CPUs has no idea what states have been selected by
+> the idle governor, so how does it know how deep it can go with turning
+> off domains?
 > 
+> My point is that the selection made by the idle governor need not be
+> based only on timers which is the only thing that the genpd governor
+> seems to be looking at.  The genpd governor should rather look at what
+> idle states have been selected for each CPU in the domain by the idle
+> governor and work within the boundaries of those.
+
+That's agreed.
+
+Lorenzo
