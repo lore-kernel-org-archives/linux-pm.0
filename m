@@ -1,56 +1,260 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
-Date: Fri, 14 Sep 2018 14:41:40 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1809141438560.10480@nanos.tec.linutronix.de>
-References: <9611469.2z7W9akjOQ@aspire.rjw.lan> <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com> <1831106.CYv9dyYV15@aspire.rjw.lan> <e028742e-cd42-24a7-0da1-4fa12d8c9d7c@nextfour.com> <CAJZ5v0gRjfGDSyZXRwGgF9dOBR9OJbfYE8Dbpqdx6oCMN1XUVA@mail.gmail.com>
+From: Sibi Sankar <sibis@codeaurora.org>
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add devfreq driver for interconnect
+ bandwidth voting
+Date: Fri, 14 Sep 2018 18:23:34 +0530
+Message-ID: <66c67d0b0e551aba11a83ce6a840ad29@codeaurora.org>
+References: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323329-1763824608-1536928900=:10480"
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gRjfGDSyZXRwGgF9dOBR9OJbfYE8Dbpqdx6oCMN1XUVA@mail.gmail.com>
+In-Reply-To: <1533171465-25508-2-git-send-email-skannan@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: mika.penttila@nextfour.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, georgi.djakov@linaro.org, vincent.guittot@linaro.org, daidavid1@codeaurora.org, bjorn.andersson@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org, rnayak@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Saravana,
 
---8323329-1763824608-1536928900=:10480
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Fri, 14 Sep 2018, Rafael J. Wysocki wrote:
-> On Fri, Sep 14, 2018 at 11:53 AM Mika Penttilä
-
-> > >> But doesn't injecting sleep time here make monotonic clock too large
-> > >> by the amount of sleeptime?  tick_freeze() / tick_unfreeze() already
-> > >> injects the sleeptime (otherwise delta would be 0).  > > >
-> > >
-> > > No, it doesn't.
-> > >
-> > > The delta here is the extra time taken by the loop which hasn't been counted
-> > > as sleep time yet.
-> >
-
-> > I said incorrectly monotonic clock, but
-> > timekeeping_inject_sleeptime64() forwards the wall time, by the amount
-> > of delta.  Why wouldn't some other cpu update xtime when one cpu is in
-> > the loop? And if all cpus enter s2idle, tick_unfreeze() injects
-> > sleeptime. My point is that this extra injection makes wall time wrong,
-> > no?
->  
-> OK, you're right.  I got that the other way around.
+On 2018-08-02 06:27, Saravana Kannan wrote:
+> This driver registers itself as a devfreq device that allows devfreq
+> governors to make bandwidth votes for an interconnect path. This allows
+> applying various policies for different interconnect paths using 
+> devfreq
+> governors.
 > 
-> So, the patch is withdrawn.
+> Example uses:
+> * Use the devfreq performance governor to set the CPU to DDR 
+> interconnect
+>   path for maximum performance.
+> * Use the devfreq performance governor to set the GPU to DDR 
+> interconnect
+>   path for maximum performance.
+> * Use the CPU frequency to device frequency mapping governor to scale 
+> the
+>   DDR frequency based on the needs of the CPUs' current frequency.
+> 
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> ---
+>  Documentation/devicetree/bindings/devfreq/icbw.txt |  21 ++++
+>  drivers/devfreq/Kconfig                            |  13 +++
+>  drivers/devfreq/Makefile                           |   1 +
+>  drivers/devfreq/devfreq_icbw.c                     | 116 
+> +++++++++++++++++++++
+>  4 files changed, 151 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/icbw.txt
+>  create mode 100644 drivers/devfreq/devfreq_icbw.c
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/icbw.txt
+> b/Documentation/devicetree/bindings/devfreq/icbw.txt
+> new file mode 100644
+> index 0000000..36cf045
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/icbw.txt
+> @@ -0,0 +1,21 @@
+> +Interconnect bandwidth device
+> +
+> +icbw is a device that represents an interconnect path that connects 
+> two
+> +devices. This device is typically used to vote for BW requirements 
+> between
+> +two devices. Eg: CPU to DDR, GPU to DDR, etc
+> +
+> +Required properties:
+> +- compatible:		Must be "devfreq-icbw"
+> +- interconnects:	Pairs of phandles and interconnect provider specifier
+> +			to denote the edge source and destination ports of
+> +			the interconnect path. See also:
+> +		Documentation/devicetree/bindings/interconnect/interconnect.txt
+> +- interconnect-names:	Must have one entry with the name "path".
+> +
+> +Example:
+> +
+> +	qcom,cpubw {
+> +		compatible = "devfreq-icbw";
+> +		interconnects = <&snoc MASTER_APSS_1 &bimc SLAVE_EBI_CH0>;
+> +		interconnect-names = "path";
+> +	};
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 3d9ae68..590370e 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -121,6 +121,19 @@ config ARM_RK3399_DMC_DEVFREQ
+>            It sets the frequency for the memory controller and reads
+> the usage counts
+>            from hardware.
+> 
+> +config DEVFREQ_ICBW
+> +	bool "DEVFREQ device for making bandwidth votes on interconnect 
+> paths"
+> +	select DEVFREQ_GOV_PERFORMANCE
+> +	select DEVFREQ_GOV_POWERSAVE
+> +	select DEVFREQ_GOV_USERSPACE
+> +	default n
+> +	help
+> +	  Different devfreq governors use this devfreq device to make
+> +	  bandwidth votes for interconnect paths between different devices
+> +	  (Eg: CPU to DDR, GPU to DDR, etc). This driver provides a generic
+> +	  interface so that the devfreq governors can be shared across SoCs
+> +	  and architectures.
+> +
+>  source "drivers/devfreq/event/Kconfig"
+> 
+>  endif # PM_DEVFREQ
+> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+> index e9dc3e9..b302c5cf 100644
+> --- a/drivers/devfreq/Makefile
+> +++ b/drivers/devfreq/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_DEVFREQ_GOV_CPUFREQ_MAP)	+=
+> governor_cpufreq_map.o
+>  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
+>  obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+>  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+> +obj-$(CONFIG_DEVFREQ_ICBW)		+= devfreq_icbw.o
+> 
+>  # DEVFREQ Event Drivers
+>  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
+> diff --git a/drivers/devfreq/devfreq_icbw.c 
+> b/drivers/devfreq/devfreq_icbw.c
+> new file mode 100644
+> index 0000000..231fb21
+> --- /dev/null
+> +++ b/drivers/devfreq/devfreq_icbw.c
+> @@ -0,0 +1,116 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2013-2014, 2018, The Linux Foundation. All rights 
+> reserved.
+> + */
+> +
+> +#define pr_fmt(fmt) "icbw: " fmt
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/err.h>
+> +#include <linux/errno.h>
+> +#include <linux/mutex.h>
+> +#include <linux/devfreq.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of.h>
+> +#include <linux/interconnect.h>
+> +
+> +struct dev_data {
+> +	struct icc_path *path;
+> +	u32 cur_ab;
+> +	u32 cur_pb;
+> +	unsigned long gov_ab;
+> +	struct devfreq *df;
+> +	struct devfreq_dev_profile dp;
+> +};
+> +
+> +static int icbw_target(struct device *dev, unsigned long *freq, u32 
+> flags)
+> +{
+> +	struct dev_data *d = dev_get_drvdata(dev);
+> +	int ret;
+> +	u32 new_pb = *freq, new_ab = d->gov_ab;
+> +
+> +	if (d->cur_pb == new_pb && d->cur_ab == new_ab)
+> +		return 0;
+> +
+> +	dev_dbg(dev, "BW KBps: AB: %u PB: %u\n", new_ab, new_pb);
+> +
+> +	ret = icc_set(d->path, new_ab, new_pb);
+> +	if (ret) {
+> +		dev_err(dev, "bandwidth request failed (%d)\n", ret);
+> +	} else {
+> +		d->cur_pb = new_pb;
+> +		d->cur_ab = new_ab;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int icbw_get_dev_status(struct device *dev,
+> +				struct devfreq_dev_status *stat)
+> +{
+> +	struct dev_data *d = dev_get_drvdata(dev);
+> +
+> +	stat->private_data = &d->gov_ab;
+> +	return 0;
+> +}
+> +
+> +static int devfreq_icbw_probe(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct dev_data *d;
+> +	struct devfreq_dev_profile *p;
+> +
+> +	d = devm_kzalloc(dev, sizeof(*d), GFP_KERNEL);
+> +	if (!d)
+> +		return -ENOMEM;
+> +	dev_set_drvdata(dev, d);
+> +
+> +	p = &d->dp;
+> +	p->polling_ms = 50;
+> +	p->target = icbw_target;
+> +	p->get_dev_status = icbw_get_dev_status;
+> +
+> +	d->path = of_icc_get(dev, "path");
+> +	if (IS_ERR(d->path)) {
+> +		dev_err(dev, "Unable to register interconnect path\n");
+> +		return -ENODEV;
+> +	}
 
-I just tried to wrap my brain around that whole thing and utterly
-failed, so I can't give any recommendations right now.
+The probe fails if the provider is not registered yet. Worked around it 
+using -EPROBE_DEFER
+but this should probably come from of_icc_get itself.
 
-Rafael, could you please enable some lightweight instrumentation which lets
-me see the longer sequence of events which are leading to this or tell me
-what I need to do to reproduce that myself?
+> +
+> +	d->df = devfreq_add_device(dev, p, "performance", NULL);
+> +	if (IS_ERR(d->df)) {
+> +		icc_put(d->path);
+> +		return PTR_ERR(d->df);
+> +	}
 
-Thanks,
+devfreq_add_device will fail with -EINVAL for set_table_freq, 
+find_available_min_freq and
+find_available_max_freq. If you end up working your way around it, I 
+still ended up getting
+multiple errors like "Couldn't update frequency transition information" 
+after probing.
 
-	tglx
---8323329-1763824608-1536928900=:10480--
+> +
+> +	return 0;
+> +}
+> +
+> +static int devfreq_icbw_remove(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct dev_data *d = dev_get_drvdata(dev);
+> +
+> +	devfreq_remove_device(d->df);
+> +	icc_put(d->path);
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id icbw_match_table[] = {
+> +	{ .compatible = "devfreq-icbw" },
+> +	{}
+> +};
+> +
+> +static struct platform_driver icbw_driver = {
+> +	.probe = devfreq_icbw_probe,
+> +	.remove = devfreq_icbw_remove,
+> +	.driver = {
+> +		.name = "devfreq-icbw",
+> +		.of_match_table = icbw_match_table,
+> +	},
+> +};
+> +
+> +module_platform_driver(icbw_driver);
+> +MODULE_DESCRIPTION("Interconnect bandwidth voting driver");
+> +MODULE_LICENSE("GPL v2");
+
+-- 
+-- Sibi Sankar --
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project.
