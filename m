@@ -1,76 +1,108 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 02/16] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Fri, 14 Sep 2018 09:51:15 +0100
-Message-ID: <20180914085115.GM1413@e110439-lin>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-3-patrick.bellasi@arm.com>
- <20180912134945.GZ24106@hirez.programming.kicks-ass.net>
- <20180912155619.GG1413@e110439-lin>
- <20180912161218.GW24082@hirez.programming.kicks-ass.net>
- <20180912173515.GH1413@e110439-lin>
- <20180912174236.GB24106@hirez.programming.kicks-ass.net>
- <20180912175202.GK1413@e110439-lin>
- <20180913191422.GZ24082@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
+Date: Fri, 14 Sep 2018 10:58:31 +0200
+Message-ID: <2646540.WJ9HbOajLd@aspire.rjw.lan>
+References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <23293649.J1qzPCXian@aspire.rjw.lan> <87in3c7x9o.fsf@riseup.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180913191422.GZ24082@hirez.programming.kicks-ass.net>
+In-Reply-To: <87in3c7x9o.fsf@riseup.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Francisco Jerez <currojerez@riseup.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Sep 21:14, Peter Zijlstra wrote:
-> On Wed, Sep 12, 2018 at 06:52:02PM +0100, Patrick Bellasi wrote:
-> > On 12-Sep 19:42, Peter Zijlstra wrote:
-> > > On Wed, Sep 12, 2018 at 06:35:15PM +0100, Patrick Bellasi wrote:
-> > > > On 12-Sep 18:12, Peter Zijlstra wrote:
-> > > 
-> > > > > No idea; but if you want to go all fancy you can replace he whole
-> > > > > uclamp_map thing with something like:
-> > > > > 
-> > > > > struct uclamp_map {
-> > > > > 	union {
-> > > > > 		struct {
-> > > > > 			unsigned long v : 10;
-> > > > > 			unsigned long c : BITS_PER_LONG - 10;
-> > > > > 		};
-> > > > > 		atomic_long_t s;
-> > > > > 	};
-> > > > > };
-> > > > 
-> > > > That sounds really cool and scary at the same time :)
-> > > > 
-> > > > The v:10 requires that we never set SCHED_CAPACITY_SCALE>1024
-> > > > or that we use it to track a percentage value (i.e. [0..100]).
-> > > 
-> > > Or we pick 11 bits, it seems unlikely that capacity be larger than 2k.
-> > 
-> > Just remembered a past experience where we had unaligned access traps
-> > on some machine because... don't you see any potentially issue on
-> > using bitfleds like you suggest above ?
-> > 
-> > I'm thinking to:
-> > 
-> >    commit 317d359df95d ("sched/core: Force proper alignment of 'struct util_est'")
+On Tuesday, September 11, 2018 7:35:15 PM CEST Francisco Jerez wrote:
+>
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 > 
-> There should not be (and I'm still confused by that particular commit
-> you reference). If we access everything through the uclamp_map::s, and
-> only use the bitfields to interpret the results, it all 'works'.
+> > On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
+> >
+> >> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
+> >>=20
+> >> > [...]
+> >> >
+> >> >> > >=3D20
+> >> >> > > This patch causes a number of statistically significant
+> >> >> > > regressions
+> >> >> > > (with significance of 1%) on the two systems I've tested it
+> >> >> > > on.  On
+> >> >> > > my
+> >> >> >=3D20
+> >> >> > Sure. These patches are targeted to Atom clients where some of
+> >> >> > these
+> >> >> > server like workload may have some minor regression on few watts
+> >> >> > TDP
+> >> >> > parts.
+> >> >>=3D20
+> >> >> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
+> >> >> nor
+> >> >> the 10% regression of warsaw qualify as small.  And most of the test
+> >> >> cases on the list of regressions aren't exclusively server-like, if
+> >> >> at
+> >> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
+> >> >> benchmarks -- Latency is as important if not more for interactive
+> >> >> workloads than it is for server workloads.  In the case of a conflict
+> >> >> like the one we're dealing with right now between optimizing for
+> >> >> throughput (e.g. for the maximum number of requests per second) and
+> >> >> optimizing for latency (e.g. for the minimum request duration), you
+> >> >> are
+> >> >> more likely to be concerned about the former than about the latter in
+> >> >> a
+> >> >> server setup.
+> >> >
+> >> > Eero,
+> >> > Please add your test results here.
+> >> >
+> >> > No matter which algorithm you do, there will be variations. So you have
+> >> > to look at the platforms which you are targeting. For this platform=3D=
+> 20
+> >> > number one item is use of less turbo and hope you know why?
+> >>=20
+> >> Unfortunately the current controller uses turbo frequently on Atoms for
+> >> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
+> >> boosting simply exacerbated the pre-existing energy efficiency problem.
+> >
+> > My current understanding of the issue at hand is that using IOWAIT boosti=
+> ng
+> > on Atoms is a regression relative to the previous behavior.
+> 
+> Not universally.  IOWAIT boosting helps under roughly the same
+> conditions on Atom as it does on big core, so applying this patch will
+> necessarily cause regressions too (see my reply from Sep. 3 for some
+> numbers), and won't completely restore the previous behavior since it
+> simply decreases the degree of IOWAIT boosting applied without being
+> able to avoid it (c.f. the series I'm working on that does something
+> similar to IOWAIT boosting when it's able to determine it's actually
+> CPU-bound, which prevents energy inefficient behavior for non-CPU-bound
+> workloads that don't benefit from a higher CPU clock frequency anyway).
 
-Yes, the problem above was different... still I was wondering if there
-could be bitfields related alignment issue lurking somewhere.
-But, as you say, if we always R/W atomically via uclamp_map::s there
-should be none.
+Well, OK.  That doesn't seem to be a clear-cut regression situation, then,
+since getting back is not desirable, apparently.
 
-> The tricky thing we did earlier was trying to use u64 accesses for 2
-> u32 variables. And somehow ia64 didn't get the alignment right.
+Or would it restore the previous behavior if we didn't do any IOWAIT
+boosting on Atoms at all?
 
-Right, np... sorry for the noise.
+> > That is what Srinivas is trying to address here AFAICS.
+> >
+> > Now, you seem to be saying that the overall behavior is suboptimal and the
+> > IOWAIT boosting doesn't matter that much,
+> 
+> I was just saying that IOWAIT boosting is less than half of the energy
+> efficiency problem, and this patch only partially addresses that half of
+> the problem.
 
--- 
-#include <best/regards.h>
+Well, fair enough, but there are two things to consider here, the general
+energy-efficiency problem and the difference made by IOWAIT boosting.
 
-Patrick Bellasi
+If the general energy-efficiency problem had existed for a relatively long
+time, but it has got worse recently due to the IOWAIT boosting, it still
+may be desirable to get the IOWAIT boosting out of the picture first
+and then get to the general problem.
+
+I'm not sure if that is the case as my experience with Atoms is limited
+anyway, so please advise.
+
+Thanks,
+Rafael
