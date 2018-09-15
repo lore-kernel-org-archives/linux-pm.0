@@ -1,161 +1,61 @@
-From: Francisco Jerez <currojerez@riseup.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
-Date: Fri, 14 Sep 2018 23:34:05 -0700
-Message-ID: <87pnxf6zhe.fsf@riseup.net>
-References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <23293649.J1qzPCXian@aspire.rjw.lan> <87in3c7x9o.fsf@riseup.net> <2646540.WJ9HbOajLd@aspire.rjw.lan>
+From: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH v2 3/5] drivers: clk-qoriq: Add clockgen support for
+ lx2160a
+Date: Sat, 15 Sep 2018 14:24:21 -0500
+Message-ID: <4fa10f679ad4b1b619daa521a8641c145cf8537e.camel@buserror.net>
+References: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
+ <1536871075-3732-4-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2646540.WJ9HbOajLd@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Eero Tamminen <eero.t.tamminen@intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, mgorman@techsingularity.net, ggherdovich@suse.cz, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1536871075-3732-4-git-send-email-vabhav.sharma@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Vabhav Sharma <vabhav.sharma@nxp.com>, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
+Cc: Tang Yuantian <andy.tang@nxp.com>, udit.kumar@nxp.com, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, linux@armlinux.org.uk, V.Sethi@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
+On Fri, 2018-09-14 at 02:07 +0530, Vabhav Sharma wrote:
+> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> 
+> Add clockgen support for lx2160a.
+> Added entry for compat 'fsl,lx2160a-clockgen'.
+> 
+> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Acked-by: Stephen Boyd <sboyd@kernel.org>
+> ---
+>  drivers/clk/clk-qoriq.c         | 14 +++++++++++++-
+>  drivers/cpufreq/qoriq-cpufreq.c |  1 +
+>  2 files changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+> index 3a1812f..e9ae70b 100644
+> --- a/drivers/clk/clk-qoriq.c
+> +++ b/drivers/clk/clk-qoriq.c
+> @@ -79,7 +79,7 @@ struct clockgen_chipinfo {
+>  	const struct clockgen_muxinfo *cmux_groups[2];
+>  	const struct clockgen_muxinfo *hwaccel[NUM_HWACCEL];
+>  	void (*init_periph)(struct clockgen *cg);
+> -	int cmux_to_group[NUM_CMUX]; /* -1 terminates if fewer than
+> NUM_CMUX */
+> +	int cmux_to_group[NUM_CMUX+1]; /* -1 terminate if fewer to
+> NUM_CMUX+1 */
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You need to add the -1 terminator to p4080, and remove the "if fewer" comment
+since the whole point of this is that every array gets -1 terminated.
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+Why did you change "terminates" to "terminate" and "than" to "to"?
 
-> On Tuesday, September 11, 2018 7:35:15 PM CEST Francisco Jerez wrote:
->>
->> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->>=20
->> > On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
->> >
->> >> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
->> >>=3D20
->> >> > [...]
->> >> >
->> >> >> > >=3D3D20
->> >> >> > > This patch causes a number of statistically significant
->> >> >> > > regressions
->> >> >> > > (with significance of 1%) on the two systems I've tested it
->> >> >> > > on.  On
->> >> >> > > my
->> >> >> >=3D3D20
->> >> >> > Sure. These patches are targeted to Atom clients where some of
->> >> >> > these
->> >> >> > server like workload may have some minor regression on few watts
->> >> >> > TDP
->> >> >> > parts.
->> >> >>=3D3D20
->> >> >> Neither the 36% regression of fs-mark, the 21% regression of sqlit=
-e,
->> >> >> nor
->> >> >> the 10% regression of warsaw qualify as small.  And most of the te=
-st
->> >> >> cases on the list of regressions aren't exclusively server-like, if
->> >> >> at
->> >> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
->> >> >> benchmarks -- Latency is as important if not more for interactive
->> >> >> workloads than it is for server workloads.  In the case of a confl=
-ict
->> >> >> like the one we're dealing with right now between optimizing for
->> >> >> throughput (e.g. for the maximum number of requests per second) and
->> >> >> optimizing for latency (e.g. for the minimum request duration), you
->> >> >> are
->> >> >> more likely to be concerned about the former than about the latter=
- in
->> >> >> a
->> >> >> server setup.
->> >> >
->> >> > Eero,
->> >> > Please add your test results here.
->> >> >
->> >> > No matter which algorithm you do, there will be variations. So you =
-have
->> >> > to look at the platforms which you are targeting. For this platform=
-=3D3D=3D
->> 20
->> >> > number one item is use of less turbo and hope you know why?
->> >>=3D20
->> >> Unfortunately the current controller uses turbo frequently on Atoms f=
-or
->> >> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
->> >> boosting simply exacerbated the pre-existing energy efficiency proble=
-m.
->> >
->> > My current understanding of the issue at hand is that using IOWAIT boo=
-sti=3D
->> ng
->> > on Atoms is a regression relative to the previous behavior.
->>=20
->> Not universally.  IOWAIT boosting helps under roughly the same
->> conditions on Atom as it does on big core, so applying this patch will
->> necessarily cause regressions too (see my reply from Sep. 3 for some
->> numbers), and won't completely restore the previous behavior since it
->> simply decreases the degree of IOWAIT boosting applied without being
->> able to avoid it (c.f. the series I'm working on that does something
->> similar to IOWAIT boosting when it's able to determine it's actually
->> CPU-bound, which prevents energy inefficient behavior for non-CPU-bound
->> workloads that don't benefit from a higher CPU clock frequency anyway).
->
-> Well, OK.  That doesn't seem to be a clear-cut regression situation, then,
-> since getting back is not desirable, apparently.
->
-> Or would it restore the previous behavior if we didn't do any IOWAIT
-> boosting on Atoms at all?
->
->> > That is what Srinivas is trying to address here AFAICS.
->> >
->> > Now, you seem to be saying that the overall behavior is suboptimal and=
- the
->> > IOWAIT boosting doesn't matter that much,
->>=20
->> I was just saying that IOWAIT boosting is less than half of the energy
->> efficiency problem, and this patch only partially addresses that half of
->> the problem.
->
-> Well, fair enough, but there are two things to consider here, the general
-> energy-efficiency problem and the difference made by IOWAIT boosting.
->
-> If the general energy-efficiency problem had existed for a relatively long
-> time, but it has got worse recently due to the IOWAIT boosting, it still
-> may be desirable to get the IOWAIT boosting out of the picture first
-> and then get to the general problem.
->
+This +1 change should be a separate patch from lx2160a support.
 
-IMHO what is needed in order to address the IOWAIT boosting energy
-efficiency problem is roughly the same we need in order to address the
-other energy efficiency problem: A mechanism along the lines of [1]
-allowing us to determine whether the workload is IO-bound or not.  In
-the former case IOWAIT boosting won't be able to improve the performance
-of the workload since the limiting factor is the IO throughput, so it
-will only increase the energy usage, potentially exacerbating the
-bottleneck if the IO device is an integrated GPU.  In the latter case
-where the CPU and IO devices being waited on are both underutilized it
-makes sense to optimize for low latency more aggressively (certainly
-more aggressively than this patch does) which will increase the
-utilization of the IO devices until at least one IO device becomes a
-bottleneck, at which point the throughput of the system becomes roughly
-independent of the CPU frequency and we're back to the former case.
-
-[1] https://patchwork.kernel.org/patch/10312259/
-
-> I'm not sure if that is the case as my experience with Atoms is limited
-> anyway, so please advise.
->
-> Thanks,
-> Rafael
-
-
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCW5yn3QAKCRCDmTidfVK/
-W8JQAP9QOzAynzXxSx+E7LfkWRSa0LOgkCNjBYQxupDQ7duPMgEAjq3orHG3kT4X
-O6vNilCDEFcoKxl7jykxOqazvTp5E3Y=
-=kUFE
------END PGP SIGNATURE-----
---==-=-=--
+-Scott
