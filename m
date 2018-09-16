@@ -1,86 +1,82 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 0/6] shutdown procedure verification for SAMA5D2
-Date: Sun, 16 Sep 2018 12:43:01 +0200
-Message-ID: <20180916104301.dcrm333ydo5kh5bj@earth.universe>
-References: <1535629811-13403-1-git-send-email-claudiu.beznea@microchip.com>
+Subject: Re: [PATCH] power_supply: sysfs: ratelimit property read error
+ message
+Date: Sun, 16 Sep 2018 11:34:18 +0200
+Message-ID: <20180916093418.ysblsx6hm2xjndyr@earth.universe>
+References: <20180913004830.1265-1-david@lechnology.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ajzuh2r3fda6zumn"
+        protocol="application/pgp-signature"; boundary="t5twzgmypjd2fkjq"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1535629811-13403-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <20180913004830.1265-1-david@lechnology.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu Beznea <claudiu.beznea@microchip.com>
-Cc: nicolas.ferre@microchip.com, alexandre.belloni@bootlin.com, linux@armlinux.org.uk, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: David Lechner <david@lechnology.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---ajzuh2r3fda6zumn
+--t5twzgmypjd2fkjq
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Aug 30, 2018 at 02:50:05PM +0300, Claudiu Beznea wrote:
-> Hi,
+On Wed, Sep 12, 2018 at 07:48:30PM -0500, David Lechner wrote:
+> This adds ratelimiting to the message that is printed when reading a
+> power supply property via sysfs returns an error. This will prevent
+> userspace applications from unintentionally dDOSing the system by
+> continuosuly reading a property that returns an error.
 >=20
-> Patch 1 from this series implement a fix for shutdown procedure
-> for SAMA5D2.
->=20
-> The rest of the patch are improvements as follows:
-> patch 2 - use only one function for poweroff
-> patches 3-6 - cosmetic improvements
->=20
-> The patches are based on latest sys-reset/for-next [1].
->=20
-> Thank you,
-> Claudiu Beznea
->=20
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-suppl=
-y.git
+> Signed-off-by: David Lechner <david@lechnology.com>
+> ---
 
 Thanks, queued.
 
 -- Sebastian
 
+>  drivers/power/supply/power_supply_sysfs.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >=20
-> Claudiu Beznea (6):
->   power: reset: at91-poweroff: switch to slow clock before shutdown
->   power: reset: at91-poweroff: use only one poweroff function
->   power: reset: at91-poweroff: make mpddrc_base part of struct shdwc
->   power: reset: at91-poweroff: make sclk part of struct shdwc
->   power: reset: at91-poweroff: rename at91_shdwc_base member of struct
->     shdwc
->   power: reset: at91-poweroff: do not procede if at91_shdwc is allocated
->=20
->  arch/arm/mach-at91/pm_suspend.S          |   8 +++
->  drivers/power/reset/at91-sama5d2_shdwc.c | 119 +++++++++++++++++++++----=
-------
->  2 files changed, 88 insertions(+), 39 deletions(-)
->=20
+> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
+pply/power_supply_sysfs.c
+> index 6170ed8b6854..dce24f596160 100644
+> --- a/drivers/power/supply/power_supply_sysfs.c
+> +++ b/drivers/power/supply/power_supply_sysfs.c
+> @@ -131,7 +131,8 @@ static ssize_t power_supply_show_property(struct devi=
+ce *dev,
+>  				dev_dbg(dev, "driver has no data for `%s' property\n",
+>  					attr->attr.name);
+>  			else if (ret !=3D -ENODEV && ret !=3D -EAGAIN)
+> -				dev_err(dev, "driver failed to report `%s' property: %zd\n",
+> +				dev_err_ratelimited(dev,
+> +					"driver failed to report `%s' property: %zd\n",
+>  					attr->attr.name, ret);
+>  			return ret;
+>  		}
 > --=20
-> 2.7.4
+> 2.17.1
 >=20
 
---ajzuh2r3fda6zumn
+--t5twzgmypjd2fkjq
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlueM7UACgkQ2O7X88g7
-+pqq7BAAgtqyJinnPFBoPoGojnN9x354oOu5o3BN4Z0gMoP4Wv5qjhHA269uimJh
-BtI26ravSSDVFHDmHeQiTvAFYsHUSuXsTMVvdJg95rbFv7M990+hUo7wTMFxU6xL
-XOVXT9cV/acYNC7F0XCedMRKxyUcFdlmTEszMnokgpJuUMtO6kU/5M/jI5rgx8j7
-+JZjRd2CC6U42Ru45OGt4SHbkcTS8aaQL2g1Zsg9XdtJ4MPePWTAhRGl5NxfqRv8
-bxTuabXZ30XgZD0LmFm5LXUFuwlSy1+cn3KTUxwe/78SbBJWsu7bgj9R1h2Ie390
-k8p9jJmBJYJYdibBpNv1itGiACkf/OL8uPRWoVlfIZiFHryET8UQDBA/4T8FTmY8
-jK5u8jiUh8aDi1R5QRBnKLK/WWtaW0qC4BNTG23pSo7dCB+9GTm/AFkelnEjkZel
-DSpVhWuGWAtE190SZomUg0ZvRWR3kJUHE0clgI4mLl+ZqZjTOu3lrZ0kU9L8bFOm
-80E5u4bqjL395AB8SykuEgJ3dnWGR3nQecKqJb0gJsnslf2UKTjk6RrzemMAr3DZ
-tW34Cgdkj53bIXfXc/YJeuWpjQk/tVIwOS6uNspnhYJ/A5Z5GhYhna+LIfES+NNj
-6YHlWldjgTRH1n6s5XR7k4VGvMlZSkrefHiOVCoFcSCguA+GZQM=
-=Twvn
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlueI5cACgkQ2O7X88g7
++ppTNA/8DGN3fiWvUrFzSicgIZG4E/fb1jo065u6FHSK5X1qDJxcXyrHAlN7prLr
+hqVxJI3x6XhkLQAQrk48MnwtYXKQqZn6TIHAveFJ5evnmcnsD2j/HE5R5PNxTGUP
+P9eKSlVfB07YW0LOJW2AYDVonVjG93ZGCLiAcZE92fa+YTs9pkHyCeqpHQSrPIdM
+e7rbu94aSqUtCkrIWtTECyn5uV531O5KvRG3CpC/GGGB2Hi8QNTKFrU9J35V7TXT
+qwbn4o3BA9JW2jxeQVKa1VmvS2sHMw2O8C2sTG0jCYaBcCRVUQGaX/t6wAlajorp
+7jYUuf6nj+zepN02cmNpb2IBkM2NWpXDsihL3e/A8G/S/iUhp1BWkVyKVqO53cyU
+aS7hk4r/j3SyFoK2jKo9fnoUV6zIljaCCvLhKG5aGM1GTZ9sJQS2GgQihs8bzdjE
+uFQNXMUUKo+1hY4xgNB1nAEtn279JQWBB3ypdMh4fIOwyAH1ziO7BLMmcgkJu5lM
+g2edFpeCgMvhE7H4jz16rV5KMK6bxyRhObcI0yZ9UpR2HPRjvmH7K+rK2Ad7hpDo
+dtd62QBSSx8j9cra+DEeozycBK4M2fbJYVXVIXondHcqs8FYvOEhPXWO9AeRIErR
+aFKjrOdVT+YXShaB/gFZOMk3re6QPuZV1Rmlie7NegtUSfUmmeE=
+=bB9D
 -----END PGP SIGNATURE-----
 
---ajzuh2r3fda6zumn--
+--t5twzgmypjd2fkjq--
