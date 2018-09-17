@@ -1,36 +1,59 @@
-From: Andreas Kemnade <andreas@kemnade.info>
-Subject: [PATCH RESEND] twl4030_charger: fix charging current out-of-bounds
-Date: Mon, 17 Sep 2018 07:20:35 +0200
-Message-ID: <20180917052035.12234-1-andreas@kemnade.info>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
+Date: Mon, 17 Sep 2018 10:08:05 +0200
+Message-ID: <CAJZ5v0iw99hWVY6P+uxOwZR4CkJJAbSytKuMr5Qk2-TYvzftCQ@mail.gmail.com>
+References: <9611469.2z7W9akjOQ@aspire.rjw.lan> <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
+ <1831106.CYv9dyYV15@aspire.rjw.lan> <e028742e-cd42-24a7-0da1-4fa12d8c9d7c@nextfour.com>
+ <CAJZ5v0gRjfGDSyZXRwGgF9dOBR9OJbfYE8Dbpqdx6oCMN1XUVA@mail.gmail.com> <alpine.DEB.2.21.1809141438560.10480@nanos.tec.linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.21.1809141438560.10480@nanos.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, linux-kernel@vger.kernel.org
-Cc: Andreas Kemnade <andreas@kemnade.info>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, mika.penttila@nextfour.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-the charging current uses unsigned int variables, if we step back
-if the current is still low, we would run into negative which
-means setting the target to a huge value.
-Better add checks here.
+On Fri, Sep 14, 2018 at 2:41 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> On Fri, 14 Sep 2018, Rafael J. Wysocki wrote:
+> > On Fri, Sep 14, 2018 at 11:53 AM Mika Penttilä
+>
+> > > >> But doesn't injecting sleep time here make monotonic clock too large
+> > > >> by the amount of sleeptime?  tick_freeze() / tick_unfreeze() already
+> > > >> injects the sleeptime (otherwise delta would be 0).  > > >
+> > > >
+> > > > No, it doesn't.
+> > > >
+> > > > The delta here is the extra time taken by the loop which hasn't been counted
+> > > > as sleep time yet.
+> > >
+>
+> > > I said incorrectly monotonic clock, but
+> > > timekeeping_inject_sleeptime64() forwards the wall time, by the amount
+> > > of delta.  Why wouldn't some other cpu update xtime when one cpu is in
+> > > the loop? And if all cpus enter s2idle, tick_unfreeze() injects
+> > > sleeptime. My point is that this extra injection makes wall time wrong,
+> > > no?
+> >
+> > OK, you're right.  I got that the other way around.
+> >
+> > So, the patch is withdrawn.
 
-Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
----
- drivers/power/supply/twl4030_charger.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+[Sorry for the delay, personal life intervened.]
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index b72838663872..c954b7234393 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -421,7 +421,8 @@ static void twl4030_current_worker(struct work_struct *data)
- 
- 	if (v < USB_MIN_VOLT) {
- 		/* Back up and stop adjusting. */
--		bci->usb_cur -= USB_CUR_STEP;
-+		if (bci->usb_cur >= USB_CUR_STEP)
-+			bci->usb_cur -= USB_CUR_STEP;
- 		bci->usb_cur_target = bci->usb_cur;
- 	} else if (bci->usb_cur >= bci->usb_cur_target ||
- 		   bci->usb_cur + USB_CUR_STEP > USB_MAX_CURRENT) {
--- 
-2.11.0
+> I just tried to wrap my brain around that whole thing and utterly
+> failed, so I can't give any recommendations right now.
+
+Thanks for looking into this!
+
+> Rafael, could you please enable some lightweight instrumentation which lets
+> me see the longer sequence of events which are leading to this or tell me
+> what I need to do to reproduce that myself?
+
+I will, when I find out more.  The reported issues may just go away
+after fixing some other bugs.
+
+Cheers,
+Rafael
