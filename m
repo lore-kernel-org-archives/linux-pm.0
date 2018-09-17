@@ -1,572 +1,133 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v3 2/2] power: supply: Add Spreadtrum SC2731 charger support
-Date: Mon, 17 Sep 2018 13:03:31 -0700
-Message-ID: <57bf9920abdcd58b21833105cc7f3a98a3f7d45a.1537214465.git.baolin.wang@linaro.org>
-References: <8a8d31119bc723a0012afa8e517015dbba68fee9.1537214465.git.baolin.wang@linaro.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] power: supply: bq27xxx: Add support for BQ27411
+Date: Mon, 17 Sep 2018 15:37:18 -0500
+Message-ID: <3da8eff1-3d4a-4515-c855-34aececc4d71@ti.com>
+References: <1532266436-20182-1-git-send-email-liu.xiang6@zte.com.cn>
+ <20180916113523.fq4n7nsasigy3wyg@earth.universe>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8a8d31119bc723a0012afa8e517015dbba68fee9.1537214465.git.baolin.wang@linaro.org>
-In-Reply-To: <8a8d31119bc723a0012afa8e517015dbba68fee9.1537214465.git.baolin.wang@linaro.org>
-References: <8a8d31119bc723a0012afa8e517015dbba68fee9.1537214465.git.baolin.wang@linaro.org>
+In-Reply-To: <20180916113523.fq4n7nsasigy3wyg@earth.universe>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, baolin.wang@linaro.org, broonie@kernel.org, yuanjiang.yu@spreadtrum.com, krzk@kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.com>, Liu Xiang <liu.xiang6@zte.com.cn>
+Cc: pali.rohar@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, liuxiang_1999@126.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the SC2731 PMIC switch charger support.
+On 09/16/2018 06:35 AM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Sun, Jul 22, 2018 at 09:33:56PM +0800, Liu Xiang wrote:
+>> According to the datasheet, bq27411 is similar to bq27421.
+>>
+>> Signed-off-by: Liu Xiang <liu.xiang6@zte.com.cn>
+>> ---
+> 
+> Looks good to me. Do you plan to test/review this Andrew, or
+> should I proceed with merging this patch?
+> 
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
----
-Changes from v2:
- - Add reviewed tag from Krzysztof.
- - Change current unit to uA instead of mA.
 
-Changes from v1:
- - Remove some redundant head files.
- - Add one mutex to make sure getting the charger status is correct.
- - Fix some coding style issues.
- - Use standard DT properties.
----
- drivers/power/supply/Kconfig          |   7 +
- drivers/power/supply/Makefile         |   1 +
- drivers/power/supply/sc2731_charger.c | 504 ++++++++++++++++++++++++++++++++++
- 3 files changed, 512 insertions(+)
- create mode 100644 drivers/power/supply/sc2731_charger.c
+I do not have this particular hardware for testing, but the patch does
+look correct,
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index ff6dab0..f27cf07 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -645,4 +645,11 @@ config CHARGER_CROS_USBPD
- 	  what is connected to USB PD ports from the EC and converts
- 	  that into power_supply properties.
- 
-+config CHARGER_SC2731
-+	tristate "Spreadtrum SC2731 charger driver"
-+	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-+	help
-+	 Say Y here to enable support for battery charging with SC2731
-+	 PMIC chips.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index a26b402..767105b 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -85,3 +85,4 @@ obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
- obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
- obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
- obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
-+obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
-diff --git a/drivers/power/supply/sc2731_charger.c b/drivers/power/supply/sc2731_charger.c
-new file mode 100644
-index 0000000..525a820
---- /dev/null
-+++ b/drivers/power/supply/sc2731_charger.c
-@@ -0,0 +1,504 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 Spreadtrum Communications Inc.
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/usb/phy.h>
-+#include <linux/regmap.h>
-+#include <linux/notifier.h>
-+#include <linux/of.h>
-+
-+/* PMIC global registers definition */
-+#define SC2731_CHARGE_STATUS		0xedc
-+#define SC2731_CHARGE_FULL		BIT(4)
-+#define SC2731_MODULE_EN1		0xc0c
-+#define SC2731_CHARGE_EN		BIT(5)
-+
-+/* SC2731 switch charger registers definition */
-+#define SC2731_CHG_CFG0			0x0
-+#define SC2731_CHG_CFG1			0x4
-+#define SC2731_CHG_CFG2			0x8
-+#define SC2731_CHG_CFG3			0xc
-+#define SC2731_CHG_CFG4			0x10
-+#define SC2731_CHG_CFG5			0x28
-+
-+/* SC2731_CHG_CFG0 register definition */
-+#define SC2731_PRECHG_RNG_SHIFT		11
-+#define SC2731_PRECHG_RNG_MASK		GENMASK(12, 11)
-+
-+#define SC2731_TERMINATION_VOL_MASK	GENMASK(2, 1)
-+#define SC2731_TERMINATION_VOL_SHIFT	1
-+#define SC2731_TERMINATION_VOL_CAL_MASK	GENMASK(8, 3)
-+#define SC2731_TERMINATION_VOL_CAL_SHIFT	3
-+#define SC2731_TERMINATION_CUR_MASK	GENMASK(2, 0)
-+
-+#define SC2731_CC_EN			BIT(13)
-+#define SC2731_CHARGER_PD		BIT(0)
-+
-+/* SC2731_CHG_CFG1 register definition */
-+#define SC2731_CUR_MASK			GENMASK(5, 0)
-+
-+/* SC2731_CHG_CFG5 register definition */
-+#define SC2731_CUR_LIMIT_SHIFT		8
-+#define SC2731_CUR_LIMIT_MASK		GENMASK(9, 8)
-+
-+/* Default current definition (unit is mA) */
-+#define SC2731_CURRENT_LIMIT_100	100
-+#define SC2731_CURRENT_LIMIT_500	500
-+#define SC2731_CURRENT_LIMIT_900	900
-+#define SC2731_CURRENT_LIMIT_2000	2000
-+#define SC2731_CURRENT_PRECHG		450
-+#define SC2731_CURRENT_STEP		50
-+
-+struct sc2731_charger_info {
-+	struct device *dev;
-+	struct regmap *regmap;
-+	struct usb_phy *usb_phy;
-+	struct notifier_block usb_notify;
-+	struct power_supply *psy_usb;
-+	struct mutex lock;
-+	bool charging;
-+	u32 base;
-+};
-+
-+static void sc2731_charger_stop_charge(struct sc2731_charger_info *info)
-+{
-+	regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+			   SC2731_CC_EN, 0);
-+
-+	regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+			   SC2731_CHARGER_PD, SC2731_CHARGER_PD);
-+}
-+
-+static int sc2731_charger_start_charge(struct sc2731_charger_info *info)
-+{
-+	int ret;
-+
-+	/* Enable charger constant current mode */
-+	ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+				 SC2731_CC_EN, SC2731_CC_EN);
-+	if (ret)
-+		return ret;
-+
-+	/* Start charging */
-+	return regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+				  SC2731_CHARGER_PD, 0);
-+}
-+
-+static int sc2731_charger_set_current_limit(struct sc2731_charger_info *info,
-+					    u32 limit)
-+{
-+	u32 val;
-+
-+	if (limit <= SC2731_CURRENT_LIMIT_100)
-+		val = 0;
-+	else if (limit <= SC2731_CURRENT_LIMIT_500)
-+		val = 3;
-+	else if (limit <= SC2731_CURRENT_LIMIT_900)
-+		val = 2;
-+	else
-+		val = 1;
-+
-+	return regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG5,
-+				  SC2731_CUR_LIMIT_MASK,
-+				  val << SC2731_CUR_LIMIT_SHIFT);
-+}
-+
-+static int sc2731_charger_set_current(struct sc2731_charger_info *info, u32 cur)
-+{
-+	u32 val;
-+	int ret;
-+
-+	if (cur > SC2731_CURRENT_LIMIT_2000)
-+		cur = SC2731_CURRENT_LIMIT_2000;
-+	else if (cur < SC2731_CURRENT_PRECHG)
-+		cur = SC2731_CURRENT_PRECHG;
-+
-+	/* Calculate the step value, each step is 50 mA */
-+	val = (cur - SC2731_CURRENT_PRECHG) / SC2731_CURRENT_STEP;
-+
-+	/* Set pre-charge current as 450 mA */
-+	ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+				 SC2731_PRECHG_RNG_MASK,
-+				 0x3 << SC2731_PRECHG_RNG_SHIFT);
-+	if (ret)
-+		return ret;
-+
-+	return regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG1,
-+				  SC2731_CUR_MASK, val);
-+}
-+
-+static int sc2731_charger_get_status(struct sc2731_charger_info *info)
-+{
-+	u32 val;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, SC2731_CHARGE_STATUS, &val);
-+	if (ret)
-+		return ret;
-+
-+	if (val & SC2731_CHARGE_FULL)
-+		return POWER_SUPPLY_STATUS_FULL;
-+
-+	return POWER_SUPPLY_STATUS_CHARGING;
-+}
-+
-+static int sc2731_charger_get_current(struct sc2731_charger_info *info,
-+				      u32 *cur)
-+{
-+	int ret;
-+	u32 val;
-+
-+	ret = regmap_read(info->regmap, info->base + SC2731_CHG_CFG1, &val);
-+	if (ret)
-+		return ret;
-+
-+	val &= SC2731_CUR_MASK;
-+	*cur = val * SC2731_CURRENT_STEP + SC2731_CURRENT_PRECHG;
-+
-+	return 0;
-+}
-+
-+static int sc2731_charger_get_current_limit(struct sc2731_charger_info *info,
-+					    u32 *cur)
-+{
-+	int ret;
-+	u32 val;
-+
-+	ret = regmap_read(info->regmap, info->base + SC2731_CHG_CFG5, &val);
-+	if (ret)
-+		return ret;
-+
-+	val = (val & SC2731_CUR_LIMIT_MASK) >> SC2731_CUR_LIMIT_SHIFT;
-+
-+	switch (val) {
-+	case 0:
-+		*cur = SC2731_CURRENT_LIMIT_100;
-+		break;
-+
-+	case 1:
-+		*cur = SC2731_CURRENT_LIMIT_2000;
-+		break;
-+
-+	case 2:
-+		*cur = SC2731_CURRENT_LIMIT_900;
-+		break;
-+
-+	case 3:
-+		*cur = SC2731_CURRENT_LIMIT_500;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int
-+sc2731_charger_usb_set_property(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				const union power_supply_propval *val)
-+{
-+	struct sc2731_charger_info *info = power_supply_get_drvdata(psy);
-+	int ret;
-+
-+	mutex_lock(&info->lock);
-+
-+	if (!info->charging) {
-+		mutex_unlock(&info->lock);
-+		return -ENODEV;
-+	}
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
-+		ret = sc2731_charger_set_current(info, val->intval / 1000);
-+		if (ret < 0)
-+			dev_err(info->dev, "set charge current failed\n");
-+		break;
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		ret = sc2731_charger_set_current_limit(info,
-+						       val->intval / 1000);
-+		if (ret < 0)
-+			dev_err(info->dev, "set input current limit failed\n");
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	mutex_unlock(&info->lock);
-+	return ret;
-+}
-+
-+static int sc2731_charger_usb_get_property(struct power_supply *psy,
-+					   enum power_supply_property psp,
-+					   union power_supply_propval *val)
-+{
-+	struct sc2731_charger_info *info = power_supply_get_drvdata(psy);
-+	int ret = 0;
-+	u32 cur;
-+
-+	mutex_lock(&info->lock);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (info->charging)
-+			val->intval = sc2731_charger_get_status(info);
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
-+		if (!info->charging) {
-+			val->intval = 0;
-+		} else {
-+			ret = sc2731_charger_get_current(info, &cur);
-+			if (ret)
-+				goto out;
-+
-+			val->intval = cur * 1000;
-+		}
-+		break;
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		if (!info->charging) {
-+			val->intval = 0;
-+		} else {
-+			ret = sc2731_charger_get_current_limit(info, &cur);
-+			if (ret)
-+				goto out;
-+
-+			val->intval = cur * 1000;
-+		}
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+out:
-+	mutex_unlock(&info->lock);
-+	return ret;
-+}
-+
-+static int sc2731_charger_property_is_writeable(struct power_supply *psy,
-+						enum power_supply_property psp)
-+{
-+	int ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		ret = 1;
-+		break;
-+
-+	default:
-+		ret = 0;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property sc2731_usb_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+};
-+
-+static const struct power_supply_desc sc2731_charger_desc = {
-+	.name			= "sc2731_charger",
-+	.type			= POWER_SUPPLY_TYPE_USB,
-+	.properties		= sc2731_usb_props,
-+	.num_properties		= ARRAY_SIZE(sc2731_usb_props),
-+	.get_property		= sc2731_charger_usb_get_property,
-+	.set_property		= sc2731_charger_usb_set_property,
-+	.property_is_writeable	= sc2731_charger_property_is_writeable,
-+};
-+
-+static int sc2731_charger_usb_change(struct notifier_block *nb,
-+				     unsigned long limit, void *data)
-+{
-+	struct sc2731_charger_info *info =
-+		container_of(nb, struct sc2731_charger_info, usb_notify);
-+	int ret = 0;
-+
-+	mutex_lock(&info->lock);
-+
-+	if (limit > 0) {
-+		/* set current limitation and start to charge */
-+		ret = sc2731_charger_set_current_limit(info, limit);
-+		if (ret)
-+			goto out;
-+
-+		ret = sc2731_charger_set_current(info, limit);
-+		if (ret)
-+			goto out;
-+
-+		ret = sc2731_charger_start_charge(info);
-+		if (ret)
-+			goto out;
-+
-+		info->charging = true;
-+	} else {
-+		/* Stop charging */
-+		info->charging = false;
-+		sc2731_charger_stop_charge(info);
-+	}
-+
-+out:
-+	mutex_unlock(&info->lock);
-+	return ret;
-+}
-+
-+static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
-+{
-+	struct power_supply_battery_info bat_info = { };
-+	u32 term_currrent, term_voltage, cur_val, vol_val;
-+	int ret;
-+
-+	/* Enable charger module */
-+	ret = regmap_update_bits(info->regmap, SC2731_MODULE_EN1,
-+				 SC2731_CHARGE_EN, SC2731_CHARGE_EN);
-+	if (ret)
-+		return ret;
-+
-+	ret = power_supply_get_battery_info(info->psy_usb, &bat_info);
-+	if (ret) {
-+		dev_warn(info->dev, "no battery information is supplied\n");
-+
-+		/*
-+		 * If no battery information is supplied, we should set
-+		 * default charge termination current to 120 mA, and default
-+		 * charge termination voltage to 4.35V.
-+		 */
-+		cur_val = 0x2;
-+		vol_val = 0x1;
-+	} else {
-+		term_currrent = bat_info.charge_term_current_ua / 1000;
-+
-+		if (term_currrent <= 90)
-+			cur_val = 0;
-+		else if (term_currrent >= 265)
-+			cur_val = 0x7;
-+		else
-+			cur_val = ((term_currrent - 90) / 25) + 1;
-+
-+		term_voltage = bat_info.constant_charge_voltage_max_uv / 1000;
-+
-+		if (term_voltage > 4500)
-+			term_voltage = 4500;
-+
-+		if (term_voltage > 4200)
-+			vol_val = (term_voltage - 4200) / 100;
-+		else
-+			vol_val = 0;
-+	}
-+
-+	/* Set charge termination current */
-+	ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG2,
-+				 SC2731_TERMINATION_CUR_MASK, cur_val);
-+	if (ret)
-+		goto error;
-+
-+	/* Set charge termination voltage */
-+	ret = regmap_update_bits(info->regmap, info->base + SC2731_CHG_CFG0,
-+				 SC2731_TERMINATION_VOL_MASK |
-+				 SC2731_TERMINATION_VOL_CAL_MASK,
-+				 (vol_val << SC2731_TERMINATION_VOL_SHIFT) |
-+				 (0x6 << SC2731_TERMINATION_VOL_CAL_SHIFT));
-+	if (ret)
-+		goto error;
-+
-+	return 0;
-+
-+error:
-+	regmap_update_bits(info->regmap, SC2731_MODULE_EN1, SC2731_CHARGE_EN, 0);
-+	return ret;
-+}
-+
-+static int sc2731_charger_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct sc2731_charger_info *info;
-+	struct power_supply_config charger_cfg = { };
-+	int ret;
-+
-+	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	mutex_init(&info->lock);
-+	info->dev = &pdev->dev;
-+
-+	info->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!info->regmap) {
-+		dev_err(&pdev->dev, "failed to get charger regmap\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = of_property_read_u32(np, "reg", &info->base);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to get register address\n");
-+		return -ENODEV;
-+	}
-+
-+	charger_cfg.drv_data = info;
-+	charger_cfg.of_node = np;
-+	info->psy_usb = devm_power_supply_register(&pdev->dev,
-+						   &sc2731_charger_desc,
-+						   &charger_cfg);
-+	if (IS_ERR(info->psy_usb)) {
-+		dev_err(&pdev->dev, "failed to register power supply\n");
-+		return PTR_ERR(info->psy_usb);
-+	}
-+
-+	ret = sc2731_charger_hw_init(info);
-+	if (ret)
-+		return ret;
-+
-+	info->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev, "phys", 0);
-+	if (IS_ERR(info->usb_phy)) {
-+		dev_err(&pdev->dev, "failed to find USB phy\n");
-+		return PTR_ERR(info->usb_phy);
-+	}
-+
-+	info->usb_notify.notifier_call = sc2731_charger_usb_change;
-+	ret = usb_register_notifier(info->usb_phy, &info->usb_notify);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to register notifier: %d\n", ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int sc2731_charger_remove(struct platform_device *pdev)
-+{
-+	struct sc2731_charger_info *info = platform_get_drvdata(pdev);
-+
-+	usb_unregister_notifier(info->usb_phy, &info->usb_notify);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id sc2731_charger_of_match[] = {
-+	{ .compatible = "sprd,sc2731-charger", },
-+	{ }
-+};
-+
-+static struct platform_driver sc2731_charger_driver = {
-+	.driver = {
-+		.name = "sc2731-charger",
-+		.of_match_table = sc2731_charger_of_match,
-+	},
-+	.probe = sc2731_charger_probe,
-+	.remove = sc2731_charger_remove,
-+};
-+
-+module_platform_driver(sc2731_charger_driver);
-+
-+MODULE_DESCRIPTION("Spreadtrum SC2731 Charger Driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.9.1
+Reviewed-by: Andrew F. Davis <afd@ti.com>
+
+
+> -- Sebastian
+> 
+>>  Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 1 +
+>>  drivers/power/supply/bq27xxx_battery.c                     | 9 +++++++++
+>>  drivers/power/supply/bq27xxx_battery_i2c.c                 | 2 ++
+>>  include/linux/power/bq27xxx_battery.h                      | 1 +
+>>  4 files changed, 13 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> index 37994fd..4fa8e08 100644
+>> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> @@ -23,6 +23,7 @@ Required properties:
+>>   * "ti,bq27546" - BQ27546
+>>   * "ti,bq27742" - BQ27742
+>>   * "ti,bq27545" - BQ27545
+>> + * "ti,bq27411" - BQ27411
+>>   * "ti,bq27421" - BQ27421
+>>   * "ti,bq27425" - BQ27425
+>>   * "ti,bq27426" - BQ27426
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index f022e1b..6dbbe95 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -432,6 +432,7 @@ enum bq27xxx_reg_index {
+>>  		[BQ27XXX_REG_AP] = 0x18,
+>>  		BQ27XXX_DM_REG_ROWS,
+>>  	};
+>> +#define bq27411_regs bq27421_regs
+>>  #define bq27425_regs bq27421_regs
+>>  #define bq27426_regs bq27421_regs
+>>  #define bq27441_regs bq27421_regs
+>> @@ -665,6 +666,7 @@ enum bq27xxx_reg_index {
+>>  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>>  	POWER_SUPPLY_PROP_MANUFACTURER,
+>>  };
+>> +#define bq27411_props bq27421_props
+>>  #define bq27425_props bq27421_props
+>>  #define bq27426_props bq27421_props
+>>  #define bq27441_props bq27421_props
+>> @@ -725,6 +727,12 @@ enum bq27xxx_dm_reg_id {
+>>  #define bq27545_dm_regs 0
+>>  #endif
+>>  
+>> +static struct bq27xxx_dm_reg bq27411_dm_regs[] = {
+>> +	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0, 32767 },
+>> +	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2800,  3700 },
+>> +};
+>> +
+>>  static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>>  	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>>  	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> @@ -802,6 +810,7 @@ enum bq27xxx_dm_reg_id {
+>>  	[BQ27546]   = BQ27XXX_DATA(bq27546,   0         , BQ27XXX_O_OTDC),
+>>  	[BQ27742]   = BQ27XXX_DATA(bq27742,   0         , BQ27XXX_O_OTDC),
+>>  	[BQ27545]   = BQ27XXX_DATA(bq27545,   0x04143672, BQ27XXX_O_OTDC),
+>> +	[BQ27411]   = BQ27XXX_DATA(bq27411,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
+>>  	[BQ27421]   = BQ27XXX_DATA(bq27421,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
+>>  	[BQ27425]   = BQ27XXX_DATA(bq27425,   0x04143672, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP),
+>>  	[BQ27426]   = BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
+>> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> index 4006912..2677c38 100644
+>> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+>> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+>> @@ -247,6 +247,7 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
+>>  	{ "bq27546", BQ27546 },
+>>  	{ "bq27742", BQ27742 },
+>>  	{ "bq27545", BQ27545 },
+>> +	{ "bq27411", BQ27411 },
+>>  	{ "bq27421", BQ27421 },
+>>  	{ "bq27425", BQ27425 },
+>>  	{ "bq27426", BQ27426 },
+>> @@ -279,6 +280,7 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
+>>  	{ .compatible = "ti,bq27546" },
+>>  	{ .compatible = "ti,bq27742" },
+>>  	{ .compatible = "ti,bq27545" },
+>> +	{ .compatible = "ti,bq27411" },
+>>  	{ .compatible = "ti,bq27421" },
+>>  	{ .compatible = "ti,bq27425" },
+>>  	{ .compatible = "ti,bq27426" },
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index d6355f4..507c5e2 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -24,6 +24,7 @@ enum bq27xxx_chip {
+>>  	BQ27546,
+>>  	BQ27742,
+>>  	BQ27545, /* bq27545 */
+>> +	BQ27411,
+>>  	BQ27421, /* bq27421, bq27441, bq27621 */
+>>  	BQ27425,
+>>  	BQ27426,
+>> -- 
+>> 1.9.1
+>>
