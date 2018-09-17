@@ -1,59 +1,88 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / suspend: Count suspend-to-idle loop as sleep time
-Date: Mon, 17 Sep 2018 10:08:05 +0200
-Message-ID: <CAJZ5v0iw99hWVY6P+uxOwZR4CkJJAbSytKuMr5Qk2-TYvzftCQ@mail.gmail.com>
-References: <9611469.2z7W9akjOQ@aspire.rjw.lan> <767e9ec4-cc35-9255-360a-4d12736aa4de@nextfour.com>
- <1831106.CYv9dyYV15@aspire.rjw.lan> <e028742e-cd42-24a7-0da1-4fa12d8c9d7c@nextfour.com>
- <CAJZ5v0gRjfGDSyZXRwGgF9dOBR9OJbfYE8Dbpqdx6oCMN1XUVA@mail.gmail.com> <alpine.DEB.2.21.1809141438560.10480@nanos.tec.linutronix.de>
+Subject: Re: [PATCH] kernel/hung_task.c: disable on suspend
+Date: Mon, 17 Sep 2018 10:25:44 +0200
+Message-ID: <CAJZ5v0jpK-KWE7Pv1fKAWFXweW7jNH26fFDM=sXMPRNPJ96u7g@mail.gmail.com>
+References: <20180913160851.18169-1-vkuznets@redhat.com> <4793718.OcKebjM5bH@aspire.rjw.lan>
+ <87d0tg88l3.fsf@vitty.brq.redhat.com> <20180914162103.GA11171@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.21.1809141438560.10480@nanos.tec.linutronix.de>
+In-Reply-To: <20180914162103.GA11171@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, mika.penttila@nextfour.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 14, 2018 at 2:41 PM Thomas Gleixner <tglx@linutronix.de> wrote:
+On Fri, Sep 14, 2018 at 6:21 PM Oleg Nesterov <oleg@redhat.com> wrote:
 >
-> On Fri, 14 Sep 2018, Rafael J. Wysocki wrote:
-> > On Fri, Sep 14, 2018 at 11:53 AM Mika Penttilä
->
-> > > >> But doesn't injecting sleep time here make monotonic clock too large
-> > > >> by the amount of sleeptime?  tick_freeze() / tick_unfreeze() already
-> > > >> injects the sleeptime (otherwise delta would be 0).  > > >
-> > > >
-> > > > No, it doesn't.
-> > > >
-> > > > The delta here is the extra time taken by the loop which hasn't been counted
-> > > > as sleep time yet.
+> On 09/14, Vitaly Kuznetsov wrote:
+> >
+> > "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> >
+> > > On Thursday, September 13, 2018 6:08:51 PM CEST Vitaly Kuznetsov wrote:
+> > ...
+> >
+> > >> +static int hungtask_pm_notify(struct notifier_block *self,
+> > >> +                        unsigned long action, void *hcpu)
+> > >> +{
+> > >> +  switch (action) {
+> > >> +  case PM_SUSPEND_PREPARE:
+> > >> +  case PM_HIBERNATION_PREPARE:
+> > >> +          hung_detector_suspended = true;
+> > >> +          break;
+> > >> +  case PM_POST_SUSPEND:
+> > >> +  case PM_POST_HIBERNATION:
+> > >> +          hung_detector_suspended = false;
+> > >> +          break;
+> > >> +  default:
+> > >> +          break;
+> > >> +  }
+> > >> +  return NOTIFY_OK;
+> > >> +}
+> > >> +
+> > >>  /*
+> > >>   * kthread which checks for tasks stuck in D state
+> > >>   */
+> > >> @@ -261,7 +282,8 @@ static int watchdog(void *dummy)
+> > >>            interval = min_t(unsigned long, interval, timeout);
+> > >>            t = hung_timeout_jiffies(hung_last_checked, interval);
 > > >
+> > > Since you are adding the notifier anyway, what about designing it to make
+> > > the thread wait on _PREPARE until the notifier kicks it again on exit
+> > > fron suspend/hibernation?
 >
-> > > I said incorrectly monotonic clock, but
-> > > timekeeping_inject_sleeptime64() forwards the wall time, by the amount
-> > > of delta.  Why wouldn't some other cpu update xtime when one cpu is in
-> > > the loop? And if all cpus enter s2idle, tick_unfreeze() injects
-> > > sleeptime. My point is that this extra injection makes wall time wrong,
-> > > no?
-> >
-> > OK, you're right.  I got that the other way around.
-> >
-> > So, the patch is withdrawn.
+> Well. I agree that freezable kthreads are not nice, but it seems you are
+> going to add another questionable interface ;)
 
-[Sorry for the delay, personal life intervened.]
+Why would it be questionable?
 
-> I just tried to wrap my brain around that whole thing and utterly
-> failed, so I can't give any recommendations right now.
+The watchdog needs to be disarmed somehow before tasks are frozen and
+re-armed after they have been thawed or it may report false-positives
+on the way out.  PM notifiers can be used for that.
 
-Thanks for looking into this!
+Or do you mean that the synchronization between it and the freezer
+that's already there should be sufficient?
 
-> Rafael, could you please enable some lightweight instrumentation which lets
-> me see the longer sequence of events which are leading to this or tell me
-> what I need to do to reproduce that myself?
+> Vitaly, could you please update the changelog to explain in details whats
+> going on?
+>
+> Where does the caller of pm_suspend() sleep in D state? Why it sleeps more
+> than 120 seconds?
 
-I will, when I find out more.  The reported issues may just go away
-after fixing some other bugs.
+It need not be sleeping for over 2 minutes, but if suspend-to-idle
+advances the clock sufficiently, the watchdog will regard that as the
+task sleep time.
+
+> And. given that it takes system_transition_mutex anyway, can't it use
+> lock_system_sleep() which marks the caller as PF_FREEZER_SKIP (checked
+> in check_hung_task()) ?
+
+Well, it could, but that would be somewhat confusing and slightly
+abusing the flag IMO.
+
+Also, if the watchdog is stopped before the task freezing kicks in and
+restarted after they have been all thawed, it will not have to
+synchronize with the freezer any more I suppose?
 
 Cheers,
 Rafael
