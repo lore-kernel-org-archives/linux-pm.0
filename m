@@ -1,7 +1,7 @@
 From: Karsten Mueller <mueller.k@efe-gmbh.de>
-Subject: [PATCH 2/3] dt-bindings: power: supply: bq2416x driver
-Date: Mon, 17 Sep 2018 14:37:28 +0200
-Message-ID: <20180917123729.23461-2-mueller.k@efe-gmbh.de>
+Subject: [PATCH 3/3] Add sysfs ABI for bq2416x
+Date: Mon, 17 Sep 2018 14:37:29 +0200
+Message-ID: <20180917123729.23461-3-mueller.k@efe-gmbh.de>
 References: <20180917123729.23461-1-mueller.k@efe-gmbh.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20180917123729.23461-1-mueller.k@efe-gmbh.de>
@@ -12,90 +12,134 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Karsten Mueller <mueller.k@efe-gmbh.de>
 ---
- .../bindings/power/supply/bq2416x.txt         | 75 +++++++++++++++++++
- 1 file changed, 75 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq2416x.txt
+ Documentation/ABI/testing/sysfs-class-power | 118 ++++++++++++++++++++
+ 1 file changed, 118 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2416x.txt b/Documentation/devicetree/bindings/power/supply/bq2416x.txt
-new file mode 100644
-index 000000000..742d41642
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq2416x.txt
-@@ -0,0 +1,75 @@
-+Binding for TI bq2416x Li-Ion Charger
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 5e23e22dc..3881485ca 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -587,3 +587,121 @@ Description:
+ 		Valid values:
+ 		- 1: enabled
+ 		- 0: disabled
 +
-+Required properties:
-+====================
-+- compatible: one of the following:
-+ * "ti,bq24160"
-+ * "ti,bq24160a"
-+ * "ti,bq24161"
-+ * "ti,bq24161b"
-+ * "ti,bq24163"
-+ * "ti,bq24168"
++What:		/sys/class/power_supply/bq2416x-charger/usb_curr_limit
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports and sets the maximum current the "usb" supply can
++		support.
 +
-+- reg:			I2C address of the device.
-+- interrupt-parent:	The IRQ controller (phandle) connected to the INT pin of
-+			the bq2416x
-+- interrupts:		The IRQ number assigned for INT pin.
++		Access: Read, Write
++		Valid values:
++		- 100000, 150000, 500000, 800000, 900000, 1500000 (uA)
 +
-+Optional properties:
-+====================
++What:		/sys/class/power_supply/bq2416x-charger/in_curr_limit
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports and sets the maximum current the "in" (wall) supply can
++		support.
 +
-+- ti,in-current-limit-microamp:	IN source current limit.
-+	Possible values: 1500000 (default), 2500000
++		Access: Read, Write
++		Valid values:
++		- 1500000, 2500000 (uA)
 +
-+- ti,usb-current-limit-microamp: USB source current limit.
-+	If not specified, auto detection of USB (D+/D- based) is used (for
-+	BQ24160/0A/3 only) or settings of default mode are kept (BQ24161/1B/8).
-+	Both pre-select only 100 mA or 1500 mA (refer to datasheet).
-+	Possible values: 100000, 150000, 500000, 800000, 90000, 1500000
++What:		/sys/class/power_supply/bq2416x-charger/in_dpm_voltage
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		This entry configures the "in" (wall) input dynamic power path
++		management voltage of bq2416x-type charger devices. Once the
++		supply drops to the configured voltage, the input current limit
++		is reduced down to prevent the further drop of the supply. When
++		the IC enters this mode, the charge current is lower than the
++		set value.
 +
-+- ti,usb-dpm-voltage-microvolt:	USB threshold for dynamic power path management.
-+	Configures the threshold input voltage (usb input) for the dynamic power
-+	path management. If not specified a default of 4,200,000 (= 4.2V) is
-+	used.
++		Access: Read, Write
++		Valid values:
++		- 4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
++		  4760000 (all uV)
 +
-+- ti,in-dpm-voltage-microvolt: IN threshold for dynamic power path management.
-+	Configures the threshold input voltage (in input) for the dynamic power
-+	path management. If not specified a default of 4,200,000 (= 4.2V) is
-+	used.
++What:		/sys/class/power_supply/bq2416x-charger/usb_dpm_voltage
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		This entry configures the "usb" input dynamic power path
++		management voltage of bq2416x-type charger devices. Once the
++		supply drops to the configured voltage, the input current limit
++		is reduced down to prevent the further drop of the supply. When
++		the IC enters this mode, the charge current is lower than the
++		set value.
 +
-+- monitored-battery: phandle of battery information devicetree node
-+	If not specified, no battery is assumed (charge disable, nobat operation
-+	mode, no NTC check of battery), Vsys output voltage is set to 4.2V. The
-+	charger uses the following battery properties:
-+	+ constant_charge_current_max_microamp: maximum current in fast charge
-+	  mode
-+	+ constant_charge_voltage_max_microvolt: maximum constant charging
-+	  voltage / output voltage (refer to datasheet)
-+	+ charge-term-current-microamp: a charge cycle terminates when the
-+	  battery voltage is above recharge threshold, and the current is below
-+	  this setting (typically 10% of battery capacity). If not specified,
-+	  termination of current detection is disabled (refer to datasheet).
++		Access: Read, Write
++		Valid values:
++		- 4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
++		  4760000 (all uV)
 +
-+Example:
-+========
++What:		/sys/class/power_supply/bq2416x-charger/high_impedance_enable
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		This entry allows enabling the high-impedance mode of
++		bq2416x-type charger devices. If enabled, it places the charger
++		IC into low power standby mode with the switch mode controller
++		disabled. When disabled, the charger operates normally.
 +
-+bat: battery {
-+		compatible = "simple-battery";
-+		charge-term-current-microamp = <128000>;
-+		constant-charge-current-max-microamp = <900000>;
-+		constant-charge-voltage-max-microvolt = <4200000>;
-+	};
++		Access: Read, Write
++		Valid values:
++		- 1: enabled
++		- 0: disabled
 +
-+bq24160@6b {
-+	compatible = "ti,bq24160";
-+	reg = <0x6b>;
++What:		/sys/class/power_supply/bq2416x-charger/dpm_status
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports whether dynamic power management is active, i.e. input
++		current of used source is limited to prevent further drop of
++		voltage.
 +
-+	interrupt-parent = <&gpio5>;
-+	interrupts = <31 IRQ_TYPE_EDGE_RISING>;
++		Valid values:
++		- 0: not active
++		- 1: active
 +
-+	monitored-battery = <&bat>;
-+	ti,in-current-limit-microamp = <1500000>;
-+	ti,usb-current-limit-microamp = <500000>;
-+	ti,usb-dpm-voltage-microvolt = <4300000>;
-+	ti,in-dpm-voltage-microvolt = <4300000>;
-+};
++What:		/sys/class/power_supply/bq2416x-charger/supply_sel
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		This entry configures which input ("in", "usb") should be
++		preferred as input source.
++
++		Valid values:
++		- "in", "usb"
++
++What:		/sys/class/power_supply/bq2416x-charger/ts_fault
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports state of NTC temperature monitor.
++
++		Valid values:
++		- "normal", "cold/hot(charge suspended)",
++		  "cool(half current charge)", "warm(voltage reduced)"
++
++What:		/sys/class/power_supply/bq2416x-charger/in_status
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports state of "in" input source.
++
++		Valid values:
++		- "Normal", "OVP", "Weak source", "Faulty Adapter"
++
++What:		/sys/class/power_supply/bq2416x-charger/usb_status
++Date:		September 2018
++Contact:	Karsten Mueller <mueller.k@efe-gmbh.de>
++Description:
++		Reports state of "usb" input source.
++
++		Valid values:
++		- "Normal", "OVP", "Weak source", "Faulty Adapter"
 -- 
 2.17.1
