@@ -1,60 +1,72 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: next-20180910: boots on thinkpad x60 (32bit machine) but has
- problems during suspend
-Date: Tue, 18 Sep 2018 20:54:02 +0200
-Message-ID: <20180918185402.GA4501@amd>
-References: <20180909214632.GA26303@amd>
- <20180910060533.GA26941@amd>
- <20180910075053.GA26513@amd>
- <alpine.DEB.2.21.1809101457400.1292@nanos.tec.linutronix.de>
- <20180910141654.GA881@amd>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v3 07/16] thermal: tsens: Pass register offsets as
+ private data
+Date: Tue, 18 Sep 2018 12:34:48 -0700
+Message-ID: <20180918193448.GA1367@tuxbook-pro>
+References: <cover.1536744310.git.amit.kucheria@linaro.org>
+ <dccdcf386d8d5298a77ec31cde699852cc4409c5.1536744310.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180910141654.GA881@amd>
+In-Reply-To: <dccdcf386d8d5298a77ec31cde699852cc4409c5.1536744310.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed 12 Sep 02:52 PDT 2018, Amit Kucheria wrote:
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> index 9a8e8f7b4ae1..f1ec9bbe4717 100644
+> --- a/drivers/thermal/qcom/tsens.c
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -144,6 +144,9 @@ static int tsens_probe(struct platform_device *pdev)
+>  		else
+>  			tmdev->sensor[i].hw_id = i;
+>  	}
+> +	for (i = 0; i < REG_ARRAY_SIZE; i++) {
+> +		tmdev->reg_offsets[i] = data->reg_offsets[i];
+> +	}
 
---mP3DRpeJDSE+ciuQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Unnecessary {}
 
-Hi!
+>  
+>  	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->get_temp)
+>  		return -EINVAL;
+> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+> index b9c4bcf255fa..7b7feee5dc46 100644
+> --- a/drivers/thermal/qcom/tsens.h
+> +++ b/drivers/thermal/qcom/tsens.h
+> @@ -48,15 +48,23 @@ struct tsens_ops {
+>  	int (*get_trend)(struct tsens_device *, int, enum thermal_trend *);
+>  };
+>  
+> +enum reg_list {
+> +	SROT_CTRL_OFFSET,
+> +
+> +	REG_ARRAY_SIZE,
+> +};
+> +
+>  /**
+>   * struct tsens_data - tsens instance specific data
+>   * @num_sensors: Max number of sensors supported by platform
+>   * @ops: operations the tsens instance supports
+>   * @hw_ids: Subset of sensors ids supported by platform, if not the first n
+> + * @reg_offsets: Register offsets for commonly used registers
 
-> > > Next -0910 seems to boot ok... but when I hit the power button to
-> > > suspend the machine...  Full dmesg is in the attachment.
-> >=20
-> > Is this a next only issue or is this happening on Linus tree as well?
->=20
-> I believe this only happens in next. I'm pretty sure v4.19-rc1 was
-> ok. Let me check v4.19-rc3... that one is ok.
+Order doesn't match struct.
 
-I tested next-0913, and that seems to have no obvious problems.
+>   */
+>  struct tsens_data {
+>  	const u32		num_sensors;
+>  	const struct tsens_ops	*ops;
+> +	const u16		reg_offsets[REG_ARRAY_SIZE];
+>  	unsigned int		*hw_ids;
+>  };
 
-Best regards,
-									Pavel
+Except of that you have my:
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
---mP3DRpeJDSE+ciuQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAluhSckACgkQMOfwapXb+vIzmwCfU/FzJKP/LM9fNt53iNQUTY/v
-KcwAoL4L1GK9MeDXa+f+NV/rfegjQzH9
-=ywZj
------END PGP SIGNATURE-----
-
---mP3DRpeJDSE+ciuQ--
+Regards,
+Bjorn
