@@ -1,51 +1,101 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 3/4][v2] x86, hibernate: Extract the common code of 64/32
- bit system
-Date: Tue, 18 Sep 2018 21:36:44 +0800
-Message-ID: <20180918133643.GA3120@chenyu-desktop>
-References: <cover.1536685746.git.yu.c.chen@intel.com>
- <7266f9b93000c57edd41fcf2cee0dd4d6252a8ef.1536685746.git.yu.c.chen@intel.com>
- <3135968.eiNgRHp3gn@aspire.rjw.lan>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH v3 00/16] Another round of tsens cleanups
+Date: Tue, 18 Sep 2018 08:01:20 -0700
+Message-ID: <CAHLCerMknG771sdXwPkU4RUg33nuSCNx2HA+1LHmbz_SkzD5Pg@mail.gmail.com>
+References: <cover.1536744310.git.amit.kucheria@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3135968.eiNgRHp3gn@aspire.rjw.lan>
+In-Reply-To: <cover.1536744310.git.amit.kucheria@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Rui Zhang <rui.zhang@intel.com>, Chen Yu <yu.chen.surf@gmail.com>, Zhimin Gu <kookoo.gu@intel.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, smohanad@codeaurora.org, Andy Gross <andy.gross@linaro.org>, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, gregkh@linuxfoundation.org, mchehab+samsung@kernel.org, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Fri, Sep 14, 2018 at 11:21:17AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, September 11, 2018 7:20:46 PM CEST Chen Yu wrote:
-> > From: Zhimin Gu <kookoo.gu@intel.com>
-> > 
-> > Reduce the hibernation code duplication between x86-32 and x86-64
-> > by extracting the common code into hibernate.c.
-> > 
-> > No functional change.
-> > 
-> > +#include "hibernate.c"
-> 
-> I don't particularly like this.
-> 
-> Why excatly do you need to include the C file here?
+Hi Eduardo, Andy,
+
+On Wed, Sep 12, 2018 at 2:53 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
 >
-OK, I've removed this in a new version.
-> Also, the way this change is made makes it quite hard to review, as the
-> new code is not exactly the same as the code being removed, so it is
-> hard to say whether or not there really are no functional changes
-> as claimed.
-I've splitted the patch into several sub-patches and reorganized the
-code to make it more readable on a new version.
-> 
-> This is sensitive code, mind you, and really hard to debug if anything goes
-> wrong.  Please be super-careful about changing it.
-> 
-Ok, will test on several platforms and send out the modification.
-Best,
-Yu
-> Thanks,
-> Rafael
-> 
+> This is another series of tsens cleanups before we add interrupt support. This applies on top of 4.19-rc2.
+>
+> Patches [1-6] can directly be applied by Eduardo.
+> Patches [9-16] can directly be applied by Andy.
+> Patches [7-8] introduce a new check and needs review and can then be
+> applied completely separately by Eduardo.
+>
+> There is a *dependency* however. Patch 1 should be applied to the tree
+> before the DT changes in patches 9 and 10.
+
+To clarify here, it might be easier if Eduardo acks patches 9 and 10
+so that they can be merged through Andy's tree before the rest of the
+DT patches. That would remove the need to create any immutable trees
+or having to worry about the ordering of the patches.
+
+Just a suggestion.
+
+> In this series, I've collected all outstanding tsens patches by combining
+> the patches from the v2 posting with 3 DT patches for sdm845 thermal zones
+> and msm8916 camera and gpu thermal zones. Details are as follows:
+>
+> - splitup 8916 and 8974 register address spaces for SROT and TM
+> - cleanups: move to spdx, dead code removal, removal of id field
+> - Add support to map the SROT address space for DTs that list it separately
+> - Check if TSENS IP is enabled in firmware by querying the SROT space
+> - Add myself as maintainer of tsens
+> - Add one-off patches adding sdm845 thermal zones and msm8916 gpu and
+>   camera thermal zones to this series.
+>
+> Changes since v2:
+> - Split up changes to code and dt and within dt, split into arm and arm64
+>   patches
+> - Rearrange the sequence of patches so that the thermal maintainer can pick
+>   up the first part and the platform maintainer can pick up the latter part
+>   of the series
+> - Drop patch 09/11 because it causes some issues on systems with
+>   non-contiguous enabled sensors e.g. db410c
+> - Drop patch 10/11 because reg-name property isn't encouraged
+> - Fix a bug on msm8916 to check if IP is enabled in firmware. This was due
+>   to the register being at a different offset on msm8916. Fixed by coding
+>   this information as private data.
+>
+> Changes since v1:
+> - Split up changes that split the address space and added qcom,sensors
+>   property into two separate patches
+> - Remove brackets in typo correction patch
+>
+> Amit Kucheria (16):
+>   thermal: tsens: Prepare 8916 and 8974 tsens to use SROT and TM address
+>     space
+>   thermal: tsens: Add SPDX license identifiers
+>   thermal: tsens: Get rid of dead code
+>   thermal: tsens: Rename map field in order to add a second address map
+>   thermal: tsens: Add the SROT address map
+>   MAINTAINERS: Add entry for Qualcomm TSENS thermal drivers
+>   thermal: tsens: Pass register offsets as private data
+>   thermal: tsens: Check if the IP is correctly enabled by firmware
+>   arm: dts: msm8974: thermal: split address space into two
+>   arm64: dts: msm8916: thermal: split address space into two
+>   arm: dts: msm8974: thermal: Add "qcom,sensors" property
+>   arm64: dts: msm8916: thermal: Add "qcom,sensors" property
+>   dt-bindings: thermal: Fix a typo in documentation
+>   arm64: dts: msm8916: Add gpu thermal zone
+>   arm64: dts: msm8916: Add camera thermal zone
+>   arm64: dts: sdm845: enable tsens thermal zones
+>
+>  .../devicetree/bindings/thermal/thermal.txt   |   2 +-
+>  MAINTAINERS                                   |   7 +
+>  arch/arm/boot/dts/qcom-msm8974.dtsi           |   6 +-
+>  arch/arm64/boot/dts/qcom/msm8916.dtsi         |  47 ++++-
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi          | 170 ++++++++++++++++++
+>  drivers/thermal/qcom/tsens-8916.c             |  12 +-
+>  drivers/thermal/qcom/tsens-8960.c             |  41 ++---
+>  drivers/thermal/qcom/tsens-8974.c             |  12 +-
+>  drivers/thermal/qcom/tsens-common.c           |  62 ++++---
+>  drivers/thermal/qcom/tsens-v2.c               |   8 +-
+>  drivers/thermal/qcom/tsens.c                  |  19 +-
+>  drivers/thermal/qcom/tsens.h                  |  23 +--
+>  12 files changed, 309 insertions(+), 100 deletions(-)
+>
+> --
+> 2.17.1
+>
