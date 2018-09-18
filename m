@@ -1,45 +1,51 @@
-From: Matheus Castello <matheus@castello.eng.br>
-Subject: Re: [PATCH 0/4] power: supply: MAX17040: Add IRQ for low level and
- alert SOC changes
-Date: Tue, 18 Sep 2018 00:45:09 -0300
-Message-ID: <473eb21a-d08d-63c2-93c1-7a445e6fd4bc@castello.eng.br>
-References: <20180723040816.19455-1-matheus@castello.eng.br>
- <20180916114520.4375nr2gv3y4ghzv@earth.universe>
- <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 3/4][v2] x86, hibernate: Extract the common code of 64/32
+ bit system
+Date: Tue, 18 Sep 2018 21:36:44 +0800
+Message-ID: <20180918133643.GA3120@chenyu-desktop>
+References: <cover.1536685746.git.yu.c.chen@intel.com>
+ <7266f9b93000c57edd41fcf2cee0dd4d6252a8ef.1536685746.git.yu.c.chen@intel.com>
+ <3135968.eiNgRHp3gn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPfvs=uETF0-xpwCWc5khSpWjpz2zz354Jcx1bVjm9cG2A@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <3135968.eiNgRHp3gn@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, sebastian.reichel@collabora.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, Rui Zhang <rui.zhang@intel.com>, Chen Yu <yu.chen.surf@gmail.com>, Zhimin Gu <kookoo.gu@intel.com>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof and Sebastian,
-
-please forgive me for the delay in working with this patch.
-I've been having some personal issues these months, but leaving the 
-excuses I still intend to send a v2 for this.
-
-Thanks Krzysztof for review and tips I'll work on it.
-
-Best Regards,
-Matheus Castello
-
-On 09/17/2018 08:32 AM, Krzysztof Kozlowski wrote:
-> On Sun, 16 Sep 2018 at 22:03, Sebastian Reichel
-> <sebastian.reichel@collabora.com> wrote:
->>
->> Hi Matheus,
->>
->> Did I miss a v2 of this patchset, that solves the issues
->> found by Krzysztof?
+Hi,
+On Fri, Sep 14, 2018 at 11:21:17AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, September 11, 2018 7:20:46 PM CEST Chen Yu wrote:
+> > From: Zhimin Gu <kookoo.gu@intel.com>
+> > 
+> > Reduce the hibernation code duplication between x86-32 and x86-64
+> > by extracting the common code into hibernate.c.
+> > 
+> > No functional change.
+> > 
+> > +#include "hibernate.c"
 > 
-> I did not see v2. This patchset brings nice feature so it would be a
-> pity if it were discontinued.
+> I don't particularly like this.
 > 
-> Best regards,
-> Krzysztof
+> Why excatly do you need to include the C file here?
+>
+OK, I've removed this in a new version.
+> Also, the way this change is made makes it quite hard to review, as the
+> new code is not exactly the same as the code being removed, so it is
+> hard to say whether or not there really are no functional changes
+> as claimed.
+I've splitted the patch into several sub-patches and reorganized the
+code to make it more readable on a new version.
+> 
+> This is sensitive code, mind you, and really hard to debug if anything goes
+> wrong.  Please be super-careful about changing it.
+> 
+Ok, will test on several platforms and send out the modification.
+Best,
+Yu
+> Thanks,
+> Rafael
 > 
