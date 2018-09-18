@@ -1,112 +1,261 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Tue, 18 Sep 2018 16:32:44 -0500
-Message-ID: <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180913033745.11178-1-drake@endlessm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v7 02/14] sched/cpufreq: Prepare schedutil for Energy
+ Aware Scheduling
+Date: Tue, 18 Sep 2018 23:33:22 +0200
+Message-ID: <CAJZ5v0gL+NurA8UcN5oweqwxfgS10HgO1Zjh_cod4_Sr5nWQHQ@mail.gmail.com>
+References: <20180912091309.7551-1-quentin.perret@arm.com> <20180912091309.7551-3-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20180913033745.11178-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180912091309.7551-3-quentin.perret@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBTZXAgMTMsIDIwMTggYXQgMTE6Mzc6NDVBTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
-b3RlOgo+IE9uIDM4KyBJbnRlbC1iYXNlZCBBc3VzIHByb2R1Y3RzLCB0aGUgbnZpZGlhIEdQVSBi
-ZWNvbWVzIHVudXNhYmxlCj4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBw
-cm9kdWN0cyBpbmNsdWRlIG11bHRpcGxlCj4gZ2VuZXJhdGlvbnMgb2YgbnZpZGlhIEdQVXMgYW5k
-IEludGVsIFNvQ3MuIEFmdGVyIHJlc3VtZSwgbm91dmVhdSBsb2dzCj4gbWFueSBlcnJvcnMgc3Vj
-aCBhczoKPiAKPiAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAwMDU1NTU1NTUwMDAg
-ZW5naW5lIDAwIFtHUl0gY2xpZW50IDA0Cj4gICAgICAgICAgIFtIVUIvRkVdIHJlYXNvbiA0YSBb
-XSBvbiBjaGFubmVsIC0xIFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgIERSTTogZmFpbGVkIHRv
-IGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4gCj4gU2ltaWxhcmx5LCB0aGUgbnZpZGlhIHByb3ByaWV0
-YXJ5IGRyaXZlciBhbHNvIGZhaWxzIGFmdGVyIHJlc3VtZQo+IChibGFjayBzY3JlZW4sIDEwMCUg
-Q1BVIHVzYWdlIGluIFhvcmcgcHJvY2VzcykuIFdlIHNoaXBwZWQgYSBzYW1wbGUKPiB0byBOdmlk
-aWEgZm9yIGRpYWdub3NpcywgYW5kIHRoZWlyIHJlc3BvbnNlIGluZGljYXRlZCB0aGF0IGl0J3Mg
-YQo+IHByb2JsZW0gd2l0aCB0aGUgcGFyZW50IFBDSSBicmlkZ2UgKG9uIHRoZSBJbnRlbCBTb0Mp
-LCBub3QgdGhlIEdQVS4KPiAKPiBSdW50aW1lIHN1c3BlbmQvcmVzdW1lIHdvcmtzIGZpbmUsIG9u
-bHkgUzMgc3VzcGVuZCBpcyBhZmZlY3RlZC4KPiAKPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9u
-IHJlc3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ICdQcmVmZXRjaGFibGUgQmFz
-ZSBVcHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMyKS4gSW4KPiB0
-aGUgY2FzZXMgdGhhdCBJIGNoZWNrZWQsIHRoaXMgcmVnaXN0ZXIgaGFzIHZhbHVlIDAgYW5kIHdl
-IGp1c3QgaGF2ZSB0bwo+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPiAKPiBMaW51eCBhbHJlYWR5IHNh
-dmVzIGFuZCByZXN0b3JlcyBQQ0kgY29uZmlnIHNwYWNlIGR1cmluZyBzdXNwZW5kL3Jlc3VtZSwK
-PiBidXQgdGhpcyByZWdpc3RlciB3YXMgYmVpbmcgc2tpcHBlZCBiZWNhdXNlIHVwb24gcmVzdW1l
-LCBpdCBhbHJlYWR5Cj4gaGFzIHZhbHVlIDAgKHRoZSBjb3JyZWN0LCBwcmUtc3VzcGVuZCB2YWx1
-ZSkuCj4gCj4gSW50ZWwgYXBwZWFyIHRvIGhhdmUgcHJldmlvdXNseSBhY2tub3dsZWRnZWQgdGhp
-cyBiZWhhdmlvdXIgYW5kIHRoZQo+IHJlcXVpcmVtZW50IHRvIHJld3JpdGUgdGhpcyByZWdpc3Rl
-ci4KPiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExNjg1MSNj
-MjMKPiAKPiBCYXNlZCBvbiB0aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3RlciB2YWx1
-ZXMgZXZlbiB3aGVuIHRoYXQKPiBhcHBlYXJzIHVubmVjZXNzYXJ5Lgo+IAo+IFdlIGhhdmUgY29u
-ZmlybWVkIHRoaXMgc29sdXRpb24gb24gYWxsIHRoZSBhZmZlY3RlZCBtb2RlbHMgd2UgaGF2ZQo+
-IGluLWhhbmRzIChYNTQyVVEsIFVYNTMzRkQsIFg1MzBVTiwgVjI3MlVOKS4KPiAKPiBBZGRpdGlv
-bmFsbHksIHRoaXMgc29sdmVzIGFuIGlzc3VlIHdoZXJlIHI4MTY5IE1TSS1YIGludGVycnVwdHMg
-d2VyZQo+IGJyb2tlbiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZSBvbiBBc3VzIFg0NDFVQVIuIFRo
-aXMgaXNzdWUgd2FzIHJlY2VudGx5Cj4gd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2JiMDViODVi
-YzJkICgicjgxNjk6IGRvbid0IHVzZSBNU0ktWCBvbgo+IFJUTDgxMDZlIikuIEl0IGFsc28gZml4
-ZXMgdGhlIHNhbWUgaXNzdWUgb24gUlRMNjE4NmV2bC84MTExZXZsIG9uIGFuCj4gQWltZm9yLXRl
-Y2ggbGFwdG9wIHRoYXQgd2UgaGFkIG5vdCB5ZXQgcGF0Y2hlZC4gSSBzdXNwZWN0IGl0IHdpbGwg
-YWxzbwo+IGZpeCB0aGUgaXNzdWUgdGhhdCB3YXMgd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2M1
-M2E3MjI0NTljICgicjgxNjk6Cj4gZG9uJ3QgdXNlIE1TSS1YIG9uIFJUTDgxNjhnIikuCj4gCj4g
-VGhvbWFzIE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlz
-c3VlIHdoZXJlCj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhlIEhQIFpib29r
-IDE0dSBHNSBpcyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4KPiAKPiBM
-aW5rOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OQo+
-IFNpZ25lZC1vZmYtYnk6IERhbmllbCBEcmFrZSA8ZHJha2VAZW5kbGVzc20uY29tPgoKQXBwbGll
-ZCB3aXRoIFJhZmFlbCdzIGFuZCBQZXRlcidzIHJldmlld2VkLWJ5IHRvIHBjaS9lbnVtZXJhdGlv
-biBmb3IgdjQuMjAuClRoYW5rcyBmb3IgdGhlIHRoZSBodWdlIGludmVzdGlnYXRpdmUgZWZmb3J0
-IQoKPiAtLS0KPiAgZHJpdmVycy9wY2kvcGNpLmMgfCAyNSArKysrKysrKysrKysrKysrKy0tLS0t
-LS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQo+
-IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCj4g
-aW5kZXggMjlmZjk2MTliNWZhLi41ZDU4MjIwYjY5OTcgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9w
-Y2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC0xMjg5LDEyICsxMjg5LDEy
-IEBAIGludCBwY2lfc2F2ZV9zdGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+ICBFWFBPUlRfU1lN
-Qk9MKHBjaV9zYXZlX3N0YXRlKTsKPiAgCj4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZp
-Z19kd29yZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwgaW50IG9mZnNldCwKPiAtCQkJCSAgICAgdTMy
-IHNhdmVkX3ZhbCwgaW50IHJldHJ5KQo+ICsJCQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0
-cnksIGJvb2wgZm9yY2UpCj4gIHsKPiAgCXUzMiB2YWw7Cj4gIAo+ICAJcGNpX3JlYWRfY29uZmln
-X2R3b3JkKHBkZXYsIG9mZnNldCwgJnZhbCk7Cj4gLQlpZiAodmFsID09IHNhdmVkX3ZhbCkKPiAr
-CWlmICghZm9yY2UgJiYgdmFsID09IHNhdmVkX3ZhbCkKPiAgCQlyZXR1cm47Cj4gIAo+ICAJZm9y
-ICg7Oykgewo+IEBAIC0xMzEzLDI1ICsxMzEzLDM0IEBAIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3Jl
-X2NvbmZpZ19kd29yZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwgaW50IG9mZnNldCwKPiAgfQo+ICAK
-PiAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHN0cnVjdCBwY2lf
-ZGV2ICpwZGV2LAo+IC0JCQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5KQo+ICsJ
-CQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5LAo+ICsJCQkJCSAgIGJvb2wgZm9y
-Y2UpCj4gIHsKPiAgCWludCBpbmRleDsKPiAgCj4gIAlmb3IgKGluZGV4ID0gZW5kOyBpbmRleCA+
-PSBzdGFydDsgaW5kZXgtLSkKPiAgCQlwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQocGRldiwgNCAq
-IGluZGV4LAo+ICAJCQkJCSBwZGV2LT5zYXZlZF9jb25maWdfc3BhY2VbaW5kZXhdLAo+IC0JCQkJ
-CSByZXRyeSk7Cj4gKwkJCQkJIHJldHJ5LCBmb3JjZSk7Cj4gIH0KPiAgCj4gIHN0YXRpYyB2b2lk
-IHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1Y3QgcGNpX2RldiAqcGRldikKPiAgewo+ICAJ
-aWYgKHBkZXYtPmhkcl90eXBlID09IFBDSV9IRUFERVJfVFlQRV9OT1JNQUwpIHsKPiAtCQlwY2lf
-cmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwKTsKPiArCQlwY2lfcmVz
-dG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwLCBmYWxzZSk7Cj4gIAkJLyog
-UmVzdG9yZSBCQVJzIGJlZm9yZSB0aGUgY29tbWFuZCByZWdpc3Rlci4gKi8KPiAtCQlwY2lfcmVz
-dG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgNCwgOSwgMTApOwo+IC0JCXBjaV9yZXN0b3Jl
-X2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAwLCAzLCAwKTsKPiArCQlwY2lfcmVzdG9yZV9jb25m
-aWdfc3BhY2VfcmFuZ2UocGRldiwgNCwgOSwgMTAsIGZhbHNlKTsKPiArCQlwY2lfcmVzdG9yZV9j
-b25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwo+ICsJfSBlbHNlIGlmIChw
-ZGV2LT5oZHJfdHlwZSA9PSBQQ0lfSEVBREVSX1RZUEVfQlJJREdFKSB7Cj4gKwkJcGNpX3Jlc3Rv
-cmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDEyLCAxNSwgMCwgZmFsc2UpOwo+ICsJCS8qIEZv
-cmNlIHJld3JpdGluZyBvZiBwcmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiArCQkgKiBTMyBy
-ZXN1bWUgaXNzdWVzIG9uIEludGVsIFBDSSBicmlkZ2VzIHRoYXQgb2NjdXIgd2hlbgo+ICsJCSAq
-IHRoZXNlIHJlZ2lzdGVycyBhcmUgbm90IGV4cGxpY2l0bHkgd3JpdHRlbi4KPiArCQkgKi8KPiAr
-CQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgOSwgMTEsIDAsIHRydWUpOwo+
-ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAwLCA4LCAwLCBmYWxzZSk7
-Cj4gIAl9IGVsc2Ugewo+IC0JCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAw
-LCAxNSwgMCk7Cj4gKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDE1
-LCAwLCBmYWxzZSk7Cj4gIAl9Cj4gIH0KPiAgCj4gLS0gCj4gMi4xNy4xCj4gCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0
-Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
+On Wed, Sep 12, 2018 at 11:14 AM Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Schedutil requests frequency by aggregating utilization signals from
+> the scheduler (CFS, RT, DL, IRQ) and applying and 25% margin on top of
+> them. Since Energy Aware Scheduling (EAS) needs to be able to predict
+> the frequency requests, it needs to forecast the decisions made by the
+> governor.
+>
+> In order to prepare the introduction of EAS, introduce
+> schedutil_freq_util() to centralize the aforementioned signal
+> aggregation and make it available to both schedutil and EAS. Since
+> frequency selection and energy estimation still need to deal with RT and
+> DL signals slightly differently, schedutil_freq_util() is called with a
+> different 'type' parameter in those two contexts, and returns an
+> aggregated utilization signal accordingly. While at it, introduce the
+> map_util_freq() function which is designed to make schedutil's 25%
+> margin usable easily for both sugov and EAS.
+>
+> As EAS will be able to predict schedutil's frequency requests more
+> accurately than any other governor by design, it'd be sensible to make
+> sure EAS cannot be used without schedutil. This will be done later, once
+> EAS has actually been introduced.
+>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+
+While the overall idea is fine by me, I would do a couple of things
+differently (see below).
+
+> ---
+>  include/linux/sched/cpufreq.h    |  6 +++
+>  kernel/sched/cpufreq_schedutil.c | 89 +++++++++++++++++++++-----------
+>  kernel/sched/sched.h             | 14 +++++
+>  3 files changed, 80 insertions(+), 29 deletions(-)
+>
+> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> index 59667444669f..afa940cd50dc 100644
+> --- a/include/linux/sched/cpufreq.h
+> +++ b/include/linux/sched/cpufreq.h
+> @@ -20,6 +20,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+>                         void (*func)(struct update_util_data *data, u64 time,
+>                                     unsigned int flags));
+>  void cpufreq_remove_update_util_hook(int cpu);
+> +
+> +static inline unsigned long map_util_freq(unsigned long util,
+> +                                       unsigned long freq, unsigned long cap)
+> +{
+> +       return (freq + (freq >> 2)) * util / cap;
+> +}
+>  #endif /* CONFIG_CPU_FREQ */
+>
+>  #endif /* _LINUX_SCHED_CPUFREQ_H */
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 3fffad3bc8a8..8356cb0072a6 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -13,6 +13,7 @@
+>
+>  #include "sched.h"
+>
+> +#include <linux/sched/cpufreq.h>
+>  #include <trace/events/power.h>
+>
+>  struct sugov_tunables {
+> @@ -167,7 +168,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>         unsigned int freq = arch_scale_freq_invariant() ?
+>                                 policy->cpuinfo.max_freq : policy->cur;
+>
+> -       freq = (freq + (freq >> 2)) * util / max;
+> +       freq = map_util_freq(util, freq, max);
+>
+>         if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+>                 return sg_policy->next_freq;
+> @@ -197,15 +198,15 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>   * based on the task model parameters and gives the minimal utilization
+>   * required to meet deadlines.
+>   */
+> -static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+> +                                 enum schedutil_type type)
+
+The new "type" argument should be documented.
+
+Also IMO using the special enum for it is quite confusing, because you
+ever only check one value from it directly.  What would be wrong with
+using a plain "bool" instead?
+
+>  {
+> -       struct rq *rq = cpu_rq(sg_cpu->cpu);
+> +       struct rq *rq = cpu_rq(cpu);
+>         unsigned long util, irq, max;
+>
+> -       sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+> -       sg_cpu->bw_dl = cpu_bw_dl(rq);
+> +       max = arch_scale_cpu_capacity(NULL, cpu);
+>
+> -       if (rt_rq_is_runnable(&rq->rt))
+> +       if (type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt))
+>                 return max;
+>
+>         /*
+> @@ -223,20 +224,33 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+>          * utilization (PELT windows are synchronized) we can directly add them
+>          * to obtain the CPU's actual utilization.
+>          */
+> -       util = cpu_util_cfs(rq);
+> +       util = util_cfs;
+>         util += cpu_util_rt(rq);
+>
+> -       /*
+> -        * We do not make cpu_util_dl() a permanent part of this sum because we
+> -        * want to use cpu_bw_dl() later on, but we need to check if the
+> -        * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
+> -        * f_max when there is no idle time.
+> -        *
+> -        * NOTE: numerical errors or stop class might cause us to not quite hit
+> -        * saturation when we should -- something for later.
+> -        */
+> -       if ((util + cpu_util_dl(rq)) >= max)
+> -               return max;
+> +       if (type == FREQUENCY_UTIL) {
+> +               /*
+> +                * For frequency selection we do not make cpu_util_dl() a
+> +                * permanent part of this sum because we want to use
+> +                * cpu_bw_dl() later on, but we need to check if the
+> +                * CFS+RT+DL sum is saturated (ie. no idle time) such
+> +                * that we select f_max when there is no idle time.
+> +                *
+> +                * NOTE: numerical errors or stop class might cause us
+> +                * to not quite hit saturation when we should --
+> +                * something for later.
+> +                */
+> +
+> +               if ((util + cpu_util_dl(rq)) >= max)
+> +                       return max;
+> +       } else {
+> +               /*
+> +                * OTOH, for energy computation we need the estimated
+> +                * running time, so include util_dl and ignore dl_bw.
+> +                */
+> +               util += cpu_util_dl(rq);
+> +               if (util >= max)
+> +                       return max;
+> +       }
+>
+>         /*
+>          * There is still idle time; further improve the number by using the
+> @@ -250,17 +264,34 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+>         util = scale_irq_capacity(util, irq, max);
+>         util += irq;
+>
+> -       /*
+> -        * Bandwidth required by DEADLINE must always be granted while, for
+> -        * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+> -        * to gracefully reduce the frequency when no tasks show up for longer
+> -        * periods of time.
+> -        *
+> -        * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+> -        * bw_dl as requested freq. However, cpufreq is not yet ready for such
+> -        * an interface. So, we only do the latter for now.
+> -        */
+> -       return min(max, util + sg_cpu->bw_dl);
+> +       if (type == FREQUENCY_UTIL) {
+> +               /*
+> +                * Bandwidth required by DEADLINE must always be granted
+> +                * while, for FAIR and RT, we use blocked utilization of
+> +                * IDLE CPUs as a mechanism to gracefully reduce the
+> +                * frequency when no tasks show up for longer periods of
+> +                * time.
+> +                *
+> +                * Ideally we would like to set bw_dl as min/guaranteed
+> +                * freq and util + bw_dl as requested freq. However,
+> +                * cpufreq is not yet ready for such an interface. So,
+> +                * we only do the latter for now.
+> +                */
+> +               util += cpu_bw_dl(rq);
+> +       }
+> +
+> +       return min(max, util);
+> +}
+> +
+> +static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> +{
+> +       struct rq *rq = cpu_rq(sg_cpu->cpu);
+> +       unsigned long util = cpu_util_cfs(rq);
+> +
+> +       sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+> +       sg_cpu->bw_dl = cpu_bw_dl(rq);
+> +
+> +       return schedutil_freq_util(sg_cpu->cpu, util, FREQUENCY_UTIL);
+
+If you add a "max" argument to schedutil_freq_util(), you can avoid
+the second (and arguably redundant) evaluation of
+arch_scale_cpu_capacity() in there.
+
+>  }
+>
+>  /**
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 481e6759441b..d59effb34786 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2172,7 +2172,15 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+>  # define arch_scale_freq_invariant()   false
+>  #endif
+>
+> +enum schedutil_type {
+> +       FREQUENCY_UTIL,
+> +       ENERGY_UTIL,
+> +};
+
+As I said above, I would just use "bool" instead of this new enum (it
+has two values too) or the new type needs to be documented.
+
+> +
+>  #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+> +                                 enum schedutil_type type);
+> +
+>  static inline unsigned long cpu_bw_dl(struct rq *rq)
+>  {
+>         return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
+> @@ -2199,6 +2207,12 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+>  {
+>         return READ_ONCE(rq->avg_rt.util_avg);
+>  }
+> +#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+> +static inline unsigned long schedutil_freq_util(int cpu, unsigned long util,
+> +                                 enum schedutil_type type)
+> +{
+> +       return util;
+> +}
+>  #endif
+
+And I would add a wrapper around schedutil_freq_util(), called say
+schedutil_energy_util(), that would pass a specific value as the
+"type".
+
+>
+>  #ifdef HAVE_SCHED_AVG_IRQ
+> --
+
+Cheers,
+Rafael
