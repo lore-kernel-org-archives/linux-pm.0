@@ -1,72 +1,112 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v3 07/16] thermal: tsens: Pass register offsets as
- private data
-Date: Tue, 18 Sep 2018 12:34:48 -0700
-Message-ID: <20180918193448.GA1367@tuxbook-pro>
-References: <cover.1536744310.git.amit.kucheria@linaro.org>
- <dccdcf386d8d5298a77ec31cde699852cc4409c5.1536744310.git.amit.kucheria@linaro.org>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
+ on resume
+Date: Tue, 18 Sep 2018 16:32:44 -0500
+Message-ID: <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180913033745.11178-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <dccdcf386d8d5298a77ec31cde699852cc4409c5.1536744310.git.amit.kucheria@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: linux-kernel@vger.kernel.org, rnayak@codeaurora.org, linux-arm-msm@vger.kernel.org, edubezval@gmail.com, smohanad@codeaurora.org, andy.gross@linaro.org, dianders@chromium.org, mka@chromium.org, Zhang Rui <rui.zhang@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+In-Reply-To: <20180913033745.11178-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 12 Sep 02:52 PDT 2018, Amit Kucheria wrote:
-> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> index 9a8e8f7b4ae1..f1ec9bbe4717 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -144,6 +144,9 @@ static int tsens_probe(struct platform_device *pdev)
->  		else
->  			tmdev->sensor[i].hw_id = i;
->  	}
-> +	for (i = 0; i < REG_ARRAY_SIZE; i++) {
-> +		tmdev->reg_offsets[i] = data->reg_offsets[i];
-> +	}
-
-Unnecessary {}
-
->  
->  	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->get_temp)
->  		return -EINVAL;
-> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-> index b9c4bcf255fa..7b7feee5dc46 100644
-> --- a/drivers/thermal/qcom/tsens.h
-> +++ b/drivers/thermal/qcom/tsens.h
-> @@ -48,15 +48,23 @@ struct tsens_ops {
->  	int (*get_trend)(struct tsens_device *, int, enum thermal_trend *);
->  };
->  
-> +enum reg_list {
-> +	SROT_CTRL_OFFSET,
-> +
-> +	REG_ARRAY_SIZE,
-> +};
-> +
->  /**
->   * struct tsens_data - tsens instance specific data
->   * @num_sensors: Max number of sensors supported by platform
->   * @ops: operations the tsens instance supports
->   * @hw_ids: Subset of sensors ids supported by platform, if not the first n
-> + * @reg_offsets: Register offsets for commonly used registers
-
-Order doesn't match struct.
-
->   */
->  struct tsens_data {
->  	const u32		num_sensors;
->  	const struct tsens_ops	*ops;
-> +	const u16		reg_offsets[REG_ARRAY_SIZE];
->  	unsigned int		*hw_ids;
->  };
-
-Except of that you have my:
-
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-
-Regards,
-Bjorn
+T24gVGh1LCBTZXAgMTMsIDIwMTggYXQgMTE6Mzc6NDVBTSArMDgwMCwgRGFuaWVsIERyYWtlIHdy
+b3RlOgo+IE9uIDM4KyBJbnRlbC1iYXNlZCBBc3VzIHByb2R1Y3RzLCB0aGUgbnZpZGlhIEdQVSBi
+ZWNvbWVzIHVudXNhYmxlCj4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBw
+cm9kdWN0cyBpbmNsdWRlIG11bHRpcGxlCj4gZ2VuZXJhdGlvbnMgb2YgbnZpZGlhIEdQVXMgYW5k
+IEludGVsIFNvQ3MuIEFmdGVyIHJlc3VtZSwgbm91dmVhdSBsb2dzCj4gbWFueSBlcnJvcnMgc3Vj
+aCBhczoKPiAKPiAgICAgZmlmbzogZmF1bHQgMDAgW1JFQURdIGF0IDAwMDAwMDU1NTU1NTUwMDAg
+ZW5naW5lIDAwIFtHUl0gY2xpZW50IDA0Cj4gICAgICAgICAgIFtIVUIvRkVdIHJlYXNvbiA0YSBb
+XSBvbiBjaGFubmVsIC0xIFswMDdmYTkxMDAwIHVua25vd25dCj4gICAgIERSTTogZmFpbGVkIHRv
+IGlkbGUgY2hhbm5lbCAwIFtEUk1dCj4gCj4gU2ltaWxhcmx5LCB0aGUgbnZpZGlhIHByb3ByaWV0
+YXJ5IGRyaXZlciBhbHNvIGZhaWxzIGFmdGVyIHJlc3VtZQo+IChibGFjayBzY3JlZW4sIDEwMCUg
+Q1BVIHVzYWdlIGluIFhvcmcgcHJvY2VzcykuIFdlIHNoaXBwZWQgYSBzYW1wbGUKPiB0byBOdmlk
+aWEgZm9yIGRpYWdub3NpcywgYW5kIHRoZWlyIHJlc3BvbnNlIGluZGljYXRlZCB0aGF0IGl0J3Mg
+YQo+IHByb2JsZW0gd2l0aCB0aGUgcGFyZW50IFBDSSBicmlkZ2UgKG9uIHRoZSBJbnRlbCBTb0Mp
+LCBub3QgdGhlIEdQVS4KPiAKPiBSdW50aW1lIHN1c3BlbmQvcmVzdW1lIHdvcmtzIGZpbmUsIG9u
+bHkgUzMgc3VzcGVuZCBpcyBhZmZlY3RlZC4KPiAKPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9u
+IHJlc3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ICdQcmVmZXRjaGFibGUgQmFz
+ZSBVcHBlciAzMiBCaXRzJyByZWdpc3RlciAoUENJX1BSRUZfQkFTRV9VUFBFUjMyKS4gSW4KPiB0
+aGUgY2FzZXMgdGhhdCBJIGNoZWNrZWQsIHRoaXMgcmVnaXN0ZXIgaGFzIHZhbHVlIDAgYW5kIHdl
+IGp1c3QgaGF2ZSB0bwo+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPiAKPiBMaW51eCBhbHJlYWR5IHNh
+dmVzIGFuZCByZXN0b3JlcyBQQ0kgY29uZmlnIHNwYWNlIGR1cmluZyBzdXNwZW5kL3Jlc3VtZSwK
+PiBidXQgdGhpcyByZWdpc3RlciB3YXMgYmVpbmcgc2tpcHBlZCBiZWNhdXNlIHVwb24gcmVzdW1l
+LCBpdCBhbHJlYWR5Cj4gaGFzIHZhbHVlIDAgKHRoZSBjb3JyZWN0LCBwcmUtc3VzcGVuZCB2YWx1
+ZSkuCj4gCj4gSW50ZWwgYXBwZWFyIHRvIGhhdmUgcHJldmlvdXNseSBhY2tub3dsZWRnZWQgdGhp
+cyBiZWhhdmlvdXIgYW5kIHRoZQo+IHJlcXVpcmVtZW50IHRvIHJld3JpdGUgdGhpcyByZWdpc3Rl
+ci4KPiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTExNjg1MSNj
+MjMKPiAKPiBCYXNlZCBvbiB0aGF0LCByZXdyaXRlIHRoZSBwcmVmZXRjaCByZWdpc3RlciB2YWx1
+ZXMgZXZlbiB3aGVuIHRoYXQKPiBhcHBlYXJzIHVubmVjZXNzYXJ5Lgo+IAo+IFdlIGhhdmUgY29u
+ZmlybWVkIHRoaXMgc29sdXRpb24gb24gYWxsIHRoZSBhZmZlY3RlZCBtb2RlbHMgd2UgaGF2ZQo+
+IGluLWhhbmRzIChYNTQyVVEsIFVYNTMzRkQsIFg1MzBVTiwgVjI3MlVOKS4KPiAKPiBBZGRpdGlv
+bmFsbHksIHRoaXMgc29sdmVzIGFuIGlzc3VlIHdoZXJlIHI4MTY5IE1TSS1YIGludGVycnVwdHMg
+d2VyZQo+IGJyb2tlbiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZSBvbiBBc3VzIFg0NDFVQVIuIFRo
+aXMgaXNzdWUgd2FzIHJlY2VudGx5Cj4gd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2JiMDViODVi
+YzJkICgicjgxNjk6IGRvbid0IHVzZSBNU0ktWCBvbgo+IFJUTDgxMDZlIikuIEl0IGFsc28gZml4
+ZXMgdGhlIHNhbWUgaXNzdWUgb24gUlRMNjE4NmV2bC84MTExZXZsIG9uIGFuCj4gQWltZm9yLXRl
+Y2ggbGFwdG9wIHRoYXQgd2UgaGFkIG5vdCB5ZXQgcGF0Y2hlZC4gSSBzdXNwZWN0IGl0IHdpbGwg
+YWxzbwo+IGZpeCB0aGUgaXNzdWUgdGhhdCB3YXMgd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2M1
+M2E3MjI0NTljICgicjgxNjk6Cj4gZG9uJ3QgdXNlIE1TSS1YIG9uIFJUTDgxNjhnIikuCj4gCj4g
+VGhvbWFzIE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlz
+c3VlIHdoZXJlCj4gdGhlIEFNRCBSYWRlb24gUG9sYXJpcyAxMCBHUFUgb24gdGhlIEhQIFpib29r
+IDE0dSBHNSBpcyB1bnJlc3BvbnNpdmUKPiBhZnRlciBTMyBzdXNwZW5kL3Jlc3VtZS4KPiAKPiBM
+aW5rOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OQo+
+IFNpZ25lZC1vZmYtYnk6IERhbmllbCBEcmFrZSA8ZHJha2VAZW5kbGVzc20uY29tPgoKQXBwbGll
+ZCB3aXRoIFJhZmFlbCdzIGFuZCBQZXRlcidzIHJldmlld2VkLWJ5IHRvIHBjaS9lbnVtZXJhdGlv
+biBmb3IgdjQuMjAuClRoYW5rcyBmb3IgdGhlIHRoZSBodWdlIGludmVzdGlnYXRpdmUgZWZmb3J0
+IQoKPiAtLS0KPiAgZHJpdmVycy9wY2kvcGNpLmMgfCAyNSArKysrKysrKysrKysrKysrKy0tLS0t
+LS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQo+
+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMvcGNpL3BjaS5jCj4g
+aW5kZXggMjlmZjk2MTliNWZhLi41ZDU4MjIwYjY5OTcgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9w
+Y2kvcGNpLmMKPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+IEBAIC0xMjg5LDEyICsxMjg5LDEy
+IEBAIGludCBwY2lfc2F2ZV9zdGF0ZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQo+ICBFWFBPUlRfU1lN
+Qk9MKHBjaV9zYXZlX3N0YXRlKTsKPiAgCj4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZp
+Z19kd29yZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwgaW50IG9mZnNldCwKPiAtCQkJCSAgICAgdTMy
+IHNhdmVkX3ZhbCwgaW50IHJldHJ5KQo+ICsJCQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0
+cnksIGJvb2wgZm9yY2UpCj4gIHsKPiAgCXUzMiB2YWw7Cj4gIAo+ICAJcGNpX3JlYWRfY29uZmln
+X2R3b3JkKHBkZXYsIG9mZnNldCwgJnZhbCk7Cj4gLQlpZiAodmFsID09IHNhdmVkX3ZhbCkKPiAr
+CWlmICghZm9yY2UgJiYgdmFsID09IHNhdmVkX3ZhbCkKPiAgCQlyZXR1cm47Cj4gIAo+ICAJZm9y
+ICg7Oykgewo+IEBAIC0xMzEzLDI1ICsxMzEzLDM0IEBAIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3Jl
+X2NvbmZpZ19kd29yZChzdHJ1Y3QgcGNpX2RldiAqcGRldiwgaW50IG9mZnNldCwKPiAgfQo+ICAK
+PiAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHN0cnVjdCBwY2lf
+ZGV2ICpwZGV2LAo+IC0JCQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5KQo+ICsJ
+CQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5LAo+ICsJCQkJCSAgIGJvb2wgZm9y
+Y2UpCj4gIHsKPiAgCWludCBpbmRleDsKPiAgCj4gIAlmb3IgKGluZGV4ID0gZW5kOyBpbmRleCA+
+PSBzdGFydDsgaW5kZXgtLSkKPiAgCQlwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQocGRldiwgNCAq
+IGluZGV4LAo+ICAJCQkJCSBwZGV2LT5zYXZlZF9jb25maWdfc3BhY2VbaW5kZXhdLAo+IC0JCQkJ
+CSByZXRyeSk7Cj4gKwkJCQkJIHJldHJ5LCBmb3JjZSk7Cj4gIH0KPiAgCj4gIHN0YXRpYyB2b2lk
+IHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1Y3QgcGNpX2RldiAqcGRldikKPiAgewo+ICAJ
+aWYgKHBkZXYtPmhkcl90eXBlID09IFBDSV9IRUFERVJfVFlQRV9OT1JNQUwpIHsKPiAtCQlwY2lf
+cmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwKTsKPiArCQlwY2lfcmVz
+dG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMTAsIDE1LCAwLCBmYWxzZSk7Cj4gIAkJLyog
+UmVzdG9yZSBCQVJzIGJlZm9yZSB0aGUgY29tbWFuZCByZWdpc3Rlci4gKi8KPiAtCQlwY2lfcmVz
+dG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgNCwgOSwgMTApOwo+IC0JCXBjaV9yZXN0b3Jl
+X2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAwLCAzLCAwKTsKPiArCQlwY2lfcmVzdG9yZV9jb25m
+aWdfc3BhY2VfcmFuZ2UocGRldiwgNCwgOSwgMTAsIGZhbHNlKTsKPiArCQlwY2lfcmVzdG9yZV9j
+b25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwo+ICsJfSBlbHNlIGlmIChw
+ZGV2LT5oZHJfdHlwZSA9PSBQQ0lfSEVBREVSX1RZUEVfQlJJREdFKSB7Cj4gKwkJcGNpX3Jlc3Rv
+cmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDEyLCAxNSwgMCwgZmFsc2UpOwo+ICsJCS8qIEZv
+cmNlIHJld3JpdGluZyBvZiBwcmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiArCQkgKiBTMyBy
+ZXN1bWUgaXNzdWVzIG9uIEludGVsIFBDSSBicmlkZ2VzIHRoYXQgb2NjdXIgd2hlbgo+ICsJCSAq
+IHRoZXNlIHJlZ2lzdGVycyBhcmUgbm90IGV4cGxpY2l0bHkgd3JpdHRlbi4KPiArCQkgKi8KPiAr
+CQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgOSwgMTEsIDAsIHRydWUpOwo+
+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAwLCA4LCAwLCBmYWxzZSk7
+Cj4gIAl9IGVsc2Ugewo+IC0JCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCAw
+LCAxNSwgMCk7Cj4gKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3JhbmdlKHBkZXYsIDAsIDE1
+LCAwLCBmYWxzZSk7Cj4gIAl9Cj4gIH0KPiAgCj4gLS0gCj4gMi4xNy4xCj4gCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0
+Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
