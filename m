@@ -1,171 +1,116 @@
-From: Francisco Jerez <currojerez@riseup.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Optimize IO boost in non HWP mode
-Date: Mon, 17 Sep 2018 14:23:34 -0700
-Message-ID: <87lg7z7r8p.fsf@riseup.net>
-References: <20180831172851.79812-1-srinivas.pandruvada@linux.intel.com> <23293649.J1qzPCXian@aspire.rjw.lan> <87in3c7x9o.fsf@riseup.net> <2646540.WJ9HbOajLd@aspire.rjw.lan> <87pnxf6zhe.fsf@riseup.net> <CAJZ5v0j5TWT-6+PcbQ3ohbfA4rNkJ83PO-YxRG9hK1q61=C4EA@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v16 2/5] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Tue, 18 Sep 2018 08:41:41 +0530
+Message-ID: <CAFp+6iHnHj_PkPFBUSTdJTW57K51wLqSEw6VOMKxAVo7O+ms9g@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+	<20180830144541.17740-3-vivek.gautam@codeaurora.org>
+	<CAAFQd5B7YR03Jm1upOg2nsaKOb1iDD7-WGo-qx7S8m-nounCvA@mail.gmail.com>
+	<3ccc3690-dc9d-56e7-e2d1-62e73a189bff@codeaurora.org>
+	<CAAFQd5DMDWEeBU=fg6arye3pXnrCqOA4tDtMSGutXk7vSz-EtQ@mail.gmail.com>
+	<CAFp+6iE3+qn6-gpXEzxfoP5yPMARmUcJNn0AZk-kA2AreTLnng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j5TWT-6+PcbQ3ohbfA4rNkJ83PO-YxRG9hK1q61=C4EA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, eero.t.tamminen@intel.com, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mel Gorman <mgorman@techsingularity.net>, Giovanni Gherdovich <ggherdovich@suse.cz>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAFp+6iE3+qn6-gpXEzxfoP5yPMARmUcJNn0AZk-kA2AreTLnng-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>,
+	" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
+Hi Robin,
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
-
-> On Sat, Sep 15, 2018 at 8:53 AM Francisco Jerez <currojerez@riseup.net> wrote:
->>
->> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->>
->> > On Tuesday, September 11, 2018 7:35:15 PM CEST Francisco Jerez wrote:
->> >>
->> >> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
->> >>
->> >> > On Thursday, September 6, 2018 6:20:08 AM CEST Francisco Jerez wrote:
->> >> >
->> >> >> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
->> >> >>=20
->> >> >> > [...]
->> >> >> >
->> >> >> >> > >=3D20
->> >> >> >> > > This patch causes a number of statistically significant
->> >> >> >> > > regressions
->> >> >> >> > > (with significance of 1%) on the two systems I've tested it
->> >> >> >> > > on.  On
->> >> >> >> > > my
->> >> >> >> >=3D20
->> >> >> >> > Sure. These patches are targeted to Atom clients where some of
->> >> >> >> > these
->> >> >> >> > server like workload may have some minor regression on few watts
->> >> >> >> > TDP
->> >> >> >> > parts.
->> >> >> >>=3D20
->> >> >> >> Neither the 36% regression of fs-mark, the 21% regression of sqlite,
->> >> >> >> nor
->> >> >> >> the 10% regression of warsaw qualify as small.  And most of the test
->> >> >> >> cases on the list of regressions aren't exclusively server-like, if
->> >> >> >> at
->> >> >> >> all.  Warsaw, gtkperf, jxrendermark and lightsmark are all graphics
->> >> >> >> benchmarks -- Latency is as important if not more for interactive
->> >> >> >> workloads than it is for server workloads.  In the case of a conflict
->> >> >> >> like the one we're dealing with right now between optimizing for
->> >> >> >> throughput (e.g. for the maximum number of requests per second) and
->> >> >> >> optimizing for latency (e.g. for the minimum request duration), you
->> >> >> >> are
->> >> >> >> more likely to be concerned about the former than about the latter in
->> >> >> >> a
->> >> >> >> server setup.
->> >> >> >
->> >> >> > Eero,
->> >> >> > Please add your test results here.
->> >> >> >
->> >> >> > No matter which algorithm you do, there will be variations. So you have
->> >> >> > to look at the platforms which you are targeting. For this platform=3D=
->> >> 20
->> >> >> > number one item is use of less turbo and hope you know why?
->> >> >>=20
->> >> >> Unfortunately the current controller uses turbo frequently on Atoms for
->> >> >> TDP-limited graphics workloads regardless of IOWAIT boosting.  IOWAIT
->> >> >> boosting simply exacerbated the pre-existing energy efficiency problem.
->> >> >
->> >> > My current understanding of the issue at hand is that using IOWAIT boosti=
->> >> ng
->> >> > on Atoms is a regression relative to the previous behavior.
->> >>
->> >> Not universally.  IOWAIT boosting helps under roughly the same
->> >> conditions on Atom as it does on big core, so applying this patch will
->> >> necessarily cause regressions too (see my reply from Sep. 3 for some
->> >> numbers), and won't completely restore the previous behavior since it
->> >> simply decreases the degree of IOWAIT boosting applied without being
->> >> able to avoid it (c.f. the series I'm working on that does something
->> >> similar to IOWAIT boosting when it's able to determine it's actually
->> >> CPU-bound, which prevents energy inefficient behavior for non-CPU-bound
->> >> workloads that don't benefit from a higher CPU clock frequency anyway).
->> >
->> > Well, OK.  That doesn't seem to be a clear-cut regression situation, then,
->> > since getting back is not desirable, apparently.
->> >
->> > Or would it restore the previous behavior if we didn't do any IOWAIT
->> > boosting on Atoms at all?
->> >
->> >> > That is what Srinivas is trying to address here AFAICS.
->> >> >
->> >> > Now, you seem to be saying that the overall behavior is suboptimal and the
->> >> > IOWAIT boosting doesn't matter that much,
->> >>
->> >> I was just saying that IOWAIT boosting is less than half of the energy
->> >> efficiency problem, and this patch only partially addresses that half of
->> >> the problem.
->> >
->> > Well, fair enough, but there are two things to consider here, the general
->> > energy-efficiency problem and the difference made by IOWAIT boosting.
->> >
->> > If the general energy-efficiency problem had existed for a relatively long
->> > time, but it has got worse recently due to the IOWAIT boosting, it still
->> > may be desirable to get the IOWAIT boosting out of the picture first
->> > and then get to the general problem.
->> >
->>
->> IMHO what is needed in order to address the IOWAIT boosting energy
->> efficiency problem is roughly the same we need in order to address the
->> other energy efficiency problem: A mechanism along the lines of [1]
->> allowing us to determine whether the workload is IO-bound or not.  In
->> the former case IOWAIT boosting won't be able to improve the performance
->> of the workload since the limiting factor is the IO throughput, so it
->> will only increase the energy usage, potentially exacerbating the
->> bottleneck if the IO device is an integrated GPU.  In the latter case
->> where the CPU and IO devices being waited on are both underutilized it
->> makes sense to optimize for low latency more aggressively (certainly
->> more aggressively than this patch does) which will increase the
->> utilization of the IO devices until at least one IO device becomes a
->> bottleneck, at which point the throughput of the system becomes roughly
->> independent of the CPU frequency and we're back to the former case.
->>
->> [1] https://patchwork.kernel.org/patch/10312259/
+On Fri, Sep 7, 2018 at 3:52 PM Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
 >
-> I remember your argumentation above from the previous posts and I'm
-> not questioning it.  I don't see much point in repeating arguments
-> that have been given already.
+> On Fri, Sep 7, 2018 at 3:22 PM Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+> >
+> > On Fri, Sep 7, 2018 at 6:38 PM Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+> > >
+> > > Hi Tomasz,
+> > >
+> > >
+> > > On 9/7/2018 2:46 PM, Tomasz Figa wrote:
+> > > > Hi Vivek,
+> > > >
+> > > > On Thu, Aug 30, 2018 at 11:46 PM Vivek Gautam
+> > > > <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+> > > >> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > > >>
+> > > >> The smmu device probe/remove and add/remove master device callbacks
+> > > >> gets called when the smmu is not linked to its master, that is without
+> > > >> the context of the master device. So calling runtime apis in those places
+> > > >> separately.
+> > > >> Global locks are also initialized before enabling runtime pm as the
+> > > >> runtime_resume() calls device_reset() which does tlb_sync_global()
+> > > >> that ultimately requires locks to be initialized.
+> > > >>
+> > > >> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > > >> [vivek: Cleanup pm runtime calls]
+> > > >> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > > >> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> > > >> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > > >> ---
+> > > >>   drivers/iommu/arm-smmu.c | 89 +++++++++++++++++++++++++++++++++++++++++++-----
+> > > >>   1 file changed, 81 insertions(+), 8 deletions(-)
+> > > > [snip]
+> > > >> @@ -2215,10 +2281,17 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+> > > >>          if (!bitmap_empty(smmu->context_map, ARM_SMMU_MAX_CBS))
+> > > >>                  dev_err(&pdev->dev, "removing device with active domains!\n");
+> > > >>
+> > > >> +       arm_smmu_rpm_get(smmu);
+> > > >>          /* Turn the thing off */
+> > > >>          writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
+> > > >> +       arm_smmu_rpm_put(smmu);
+> > > >> +
+> > > >> +       if (pm_runtime_enabled(smmu->dev))
+> > > >> +               pm_runtime_force_suspend(smmu->dev);
+> > > >> +       else
+> > > >> +               clk_bulk_disable(smmu->num_clks, smmu->clks);
+> > > >>
+> > > >> -       clk_bulk_disable_unprepare(smmu->num_clks, smmu->clks);
+> > > >> +       clk_bulk_unprepare(smmu->num_clks, smmu->clks);
+> > > > Aren't we missing pm_runtime_disable() here? We'll have the enable
+> > > > count unbalanced if the driver is removed and probed again.
+> > >
+> > > pm_runtime_force_suspend() does a pm_runtime_disable() also if i am not
+> > > wrong.
+> > > And, as mentioned in a previous thread [1], we were seeing a warning
+> > > which we avoided
+> > > by keeping force_suspend().
+> > >
+> > > [1] https://lkml.org/lkml/2018/7/8/124
+> >
+> > I see, thanks. I didn't realize that pm_runtime_force_suspend()
+> > already disables runtime PM indeed. Sorry for the noise.
 >
-> My question was whether or not there was a regression related
-> specifically to adding the IOWAIT boosting mechanism that needed to be
-> addressed separately.  I gather from the discussion so far that this
-> is not the case.
+> Hi Tomasz,
+> No problem. Thanks for looking back at it.
 >
+> Hi Robin,
+> If you are fine with this series, then can you please consider giving
+> Reviewed-by, so that we are certain that this series will go in the next merge
+> window.
+> Thanks
 
-There possibly was some slight graphics performance regression when i915
-started doing IO waits, but i915 didn't have support for any BXT+
-devices back then, which are the ones most severely hurt by it, so it
-probably didn't cause a significant drop in most available benchmark
-numbers and went unnoticed.
+Gentle ping.
+You ack will be very helpful in letting Will pull this series for 4.20.
+Thanks.
 
-Regardless of whether there was a regression, I don't see the need of
-fixing the IOWAIT issue separately from the other energy efficiency
-issues of the active mode governor, because they both admit a common
-solution...
+Best regards
+Vivek
 
-> Thanks,
-> Rafael
 
---=-=-=--
-
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCW6AbVwAKCRCDmTidfVK/
-Wx0QAP9aC5nZh2ERxmLQSu2/IcJ3jscAwU47UStUkr7ExEeFKAEAktkWngC5xmBP
-m5QoZShVKOp6FoEBHC5Npghxm77g5Co=
-=FLqz
------END PGP SIGNATURE-----
---==-=-=--
+--
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
