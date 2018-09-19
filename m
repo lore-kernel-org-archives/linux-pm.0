@@ -1,45 +1,153 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH 03/12][RFC v3] x86-32/asm/power: Create stack frames in
- hibernate_asm_32.S
-Date: Wed, 19 Sep 2018 16:54:41 +0800
-Message-ID: <20180919085441.GA2335@chenyu-desktop>
-References: <cover.1537275915.git.yu.c.chen@intel.com>
- <19aed6bb376b47f672800b4c59da07efca0f9e5a.1537275915.git.yu.c.chen@intel.com>
- <CAJZ5v0jrodgg_j_dEUDsfPibaSDouXVpt-++UQ3-k_7M41dpTA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 04/12][RFC v3] x86, hibernate: Extract the common code of
+ 64/32 bit system
+Date: Wed, 19 Sep 2018 11:03:19 +0200
+Message-ID: <CAJZ5v0jvB5zF-LqYsB1ughaZbRhZW1RjVSvY87q_W_pNkmqBeQ@mail.gmail.com>
+References: <cover.1537275915.git.yu.c.chen@intel.com> <020db877db6a8d39808dfaef2a5162f541f0853b.1537275915.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jrodgg_j_dEUDsfPibaSDouXVpt-++UQ3-k_7M41dpTA@mail.gmail.com>
+In-Reply-To: <020db877db6a8d39808dfaef2a5162f541f0853b.1537275915.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, kookoo.gu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 19, 2018 at 10:41:16AM +0200, Rafael J. Wysocki wrote:
-> On Wed, Sep 19, 2018 at 9:31 AM Chen Yu <yu.c.chen@intel.com> wrote:
-> >
-> > From: Zhimin Gu <kookoo.gu@intel.com>
-> >
-> > Backport
-> > Commit ef0f3ed5a4ac (x86/asm/power: Create stack frames
-> > in hibernate_asm_64.S)
-> > and
-> > Commit 4ce827b4cc58 (x86/power/64: Fix hibernation return
-> > address corruption)
-> >
-> > And also prepare for relocated code and jump address
-> > mapping.
-> 
-> I don't like the changelog.
-> 
-> It should explain the technical reasons for making the changes in the
-> first place and then mention that analogous changes were made for
-> 64-bit before and by which commits.
+On Wed, Sep 19, 2018 at 9:32 AM Chen Yu <yu.c.chen@intel.com> wrote:
 >
-Ok, will change it in next version.
+> From: Zhimin Gu <kookoo.gu@intel.com>
+>
+> Reduce the hibernation code duplication between x86-32 and x86-64
+> by extracting the common code into hibernate.c.
+>
+> No functional change.
+>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Zhimin Gu <kookoo.gu@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  arch/x86/include/asm/suspend.h |   8 ++
+>  arch/x86/power/Makefile        |   2 +-
+>  arch/x86/power/hibernate.c     | 249 +++++++++++++++++++++++++++++++++
+>  arch/x86/power/hibernate_32.c  |  15 +-
+>  arch/x86/power/hibernate_64.c  | 221 -----------------------------
+>  5 files changed, 259 insertions(+), 236 deletions(-)
+>  create mode 100644 arch/x86/power/hibernate.c
+>
+> diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
+> index ecffe81ff65c..40b02558749f 100644
+> --- a/arch/x86/include/asm/suspend.h
+> +++ b/arch/x86/include/asm/suspend.h
+> @@ -4,3 +4,11 @@
+>  #else
+>  # include <asm/suspend_64.h>
+>  #endif
+> +extern unsigned long restore_jump_address __visible;
+> +extern unsigned long jump_address_phys;
+> +extern unsigned long restore_cr3 __visible;
+> +extern unsigned long temp_level4_pgt __visible;
+> +extern unsigned long relocated_restore_code __visible;
+> +extern int relocate_restore_code(void);
+> +/* Defined in hibernate_asm_32/64.S */
+> +extern asmlinkage __visible int restore_image(void);
+> diff --git a/arch/x86/power/Makefile b/arch/x86/power/Makefile
+> index a4701389562c..37923d715741 100644
+> --- a/arch/x86/power/Makefile
+> +++ b/arch/x86/power/Makefile
+> @@ -7,4 +7,4 @@ nostackp := $(call cc-option, -fno-stack-protector)
+>  CFLAGS_cpu.o   := $(nostackp)
+>
+>  obj-$(CONFIG_PM_SLEEP)         += cpu.o
+> -obj-$(CONFIG_HIBERNATION)      += hibernate_$(BITS).o hibernate_asm_$(BITS).o
+> +obj-$(CONFIG_HIBERNATION)      += hibernate_$(BITS).o hibernate_asm_$(BITS).o hibernate.o
+> diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
+> new file mode 100644
+> index 000000000000..fbde8f0e8fe0
+> --- /dev/null
+> +++ b/arch/x86/power/hibernate.c
+> @@ -0,0 +1,249 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Hibernation support for x86
+> + *
+> + * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+> + * Copyright (c) 2002 Pavel Machek <pavel@ucw.cz>
+> + * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+
+I don't think this "copyright" information has any legal bearing any
+more at this point.
+
+I would just write it as
+
+ * Authors:
+ *  2007 Rafael J. Wysocki <rjw@sisk.pl>
+ *  2002 Pavel Machek <pavel@ucw.cz>
+ *  2001 Patrick Mochel <mochel@osdl.org>
+
+as a matter of credits to the people who originally developed this code.
+
+> + */
+> +
+> +#include <linux/gfp.h>
+> +#include <linux/smp.h>
+> +#include <linux/suspend.h>
+> +#include <linux/scatterlist.h>
+> +#include <linux/kdebug.h>
+> +
+> +#include <crypto/hash.h>
+> +
+> +#include <asm/e820/api.h>
+> +#include <asm/init.h>
+> +#include <asm/proto.h>
+> +#include <asm/page.h>
+> +#include <asm/pgtable.h>
+> +#include <asm/mtrr.h>
+> +#include <asm/sections.h>
+> +#include <asm/suspend.h>
+> +#include <asm/tlbflush.h>
+> +
+> +/*
+> + * Address to jump to in the last phase of restore in order to get to the image
+> + * kernel's text (this value is passed in the image header).
+> + */
+> +unsigned long restore_jump_address __visible;
+> +unsigned long jump_address_phys;
+> +
+> +/*
+> + * Value of the cr3 register from before the hibernation (this value is passed
+> + * in the image header).
+> + */
+> +unsigned long restore_cr3 __visible;
+> +unsigned long temp_level4_pgt __visible;
+> +unsigned long relocated_restore_code __visible;
+> +
+> +#ifdef CONFIG_X86_64
+> +#define RESTORE_MAGIC  0x23456789ABCDEF01UL
+> +#else
+> +#define RESTORE_MAGIC  0x12345678UL
+> +#endif
+> +
+> +/**
+> + *     pfn_is_nosave - check if given pfn is in the 'nosave' section
+> + */
+> +int pfn_is_nosave(unsigned long pfn)
+> +{
+> +       unsigned long nosave_begin_pfn;
+> +       unsigned long nosave_end_pfn;
+> +
+> +       nosave_begin_pfn = __pa_symbol(&__nosave_begin) >> PAGE_SHIFT;
+> +       nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
+> +
+> +       return pfn >= nosave_begin_pfn && pfn < nosave_end_pfn;
+> +}
+> +
+
+Since the majority of the code below in this new file is only going to
+be used on 64-bit to start with, I will put it under #ifdef
+CONFIG_X86_64 at this point and remove the #ifdef in one of the
+subsequent patches when 32-bit actually starts to use it.
 
 Thanks,
-Yu
-> Thanks,
-> Rafael
+Rafael
