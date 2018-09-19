@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 06/12] OPP: Don't take OPP table's kref for static OPPs
-Date: Wed, 19 Sep 2018 15:20:25 -0700
-Message-ID: <0ad8c623907c27f4b8572d36c4ba73ea103e3108.1537394233.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 07/12] OPP: Create separate kref for static OPPs list
+Date: Wed, 19 Sep 2018 15:20:26 -0700
+Message-ID: <d0e8ae6c26da7b9436775dfd9768d7a821ed47b7.1537394233.git.viresh.kumar@linaro.org>
 References: <cover.1537394233.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537394233.git.viresh.kumar@linaro.org>
@@ -12,71 +12,150 @@ To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd 
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The reference count is only required to be incremented for every call
-that may lead to adding the OPP table. For static OPPs the same should
-be done from the parent routine which adds all static OPPs together and
-so only one refcount for all static OPPs.
+The static OPPs don't always get freed with the OPP table, it can happen
+before that as well. For example, if the OPP table is first created
+using helpers like dev_pm_opp_set_supported_hw() and the OPPs are
+created at a later point. Now when the OPPs are removed, the OPP table
+stays until the time dev_pm_opp_put_supported_hw() is called.
 
-Update code to reflect that.
-
-The refcount is incremented every time a dynamic OPP is created (as that
-can lead to creating the OPP table) and the same is dropped when the OPP
-is removed.
+Later patches will streamline the freeing of OPP table and that requires
+the static OPPs to get freed with help of a separate kernel reference.
+This patch prepares for that by creating a separate kref for static OPPs
+list.
 
 Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/opp/core.c | 33 ++++++++++++++++++++++++++++++++-
+ drivers/opp/of.c   |  7 +++++++
+ drivers/opp/opp.h  |  3 +++
+ 3 files changed, 42 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 332748adc262..2a6976265580 100644
+index 2a6976265580..b555121b878b 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -919,7 +919,6 @@ static void _opp_kref_release(struct kref *kref)
- 	kfree(opp);
- 
- 	mutex_unlock(&opp_table->lock);
--	dev_pm_opp_put_opp_table(opp_table);
+@@ -892,6 +892,33 @@ static void _opp_table_kref_release(struct kref *kref)
+ 	mutex_unlock(&opp_table_lock);
  }
  
- void dev_pm_opp_get(struct dev_pm_opp *opp)
-@@ -963,11 +962,15 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
- 
- 	if (found) {
- 		dev_pm_opp_put(opp);
++void _opp_remove_all_static(struct opp_table *opp_table)
++{
++	struct dev_pm_opp *opp, *tmp;
 +
-+		/* Drop the reference taken by dev_pm_opp_add() */
-+		dev_pm_opp_put_opp_table(opp_table);
++	list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
++		if (!opp->dynamic)
++			dev_pm_opp_put(opp);
++	}
++
++	opp_table->parsed_static_opps = false;
++}
++
++static void _opp_table_list_kref_release(struct kref *kref)
++{
++	struct opp_table *opp_table = container_of(kref, struct opp_table,
++						   list_kref);
++
++	_opp_remove_all_static(opp_table);
++	mutex_unlock(&opp_table_lock);
++}
++
++void _put_opp_list_kref(struct opp_table *opp_table)
++{
++	kref_put_mutex(&opp_table->list_kref, _opp_table_list_kref_release,
++		       &opp_table_lock);
++}
++
+ void dev_pm_opp_put_opp_table(struct opp_table *opp_table)
+ {
+ 	kref_put_mutex(&opp_table->kref, _opp_table_kref_release,
+@@ -1746,8 +1773,11 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ 	/* Find if opp_table manages a single device */
+ 	if (list_is_singular(&opp_table->dev_list)) {
+ 		/* Free static OPPs */
++		_put_opp_list_kref(opp_table);
++
++		/* Free dynamic OPPs */
+ 		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
+-			if (remove_all || !opp->dynamic)
++			if (remove_all)
+ 				dev_pm_opp_put(opp);
+ 		}
+ 
+@@ -1758,6 +1788,7 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ 		if (opp_table->genpd_performance_state)
+ 			dev_pm_genpd_set_performance_state(dev, 0);
  	} else {
- 		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
- 			 __func__, freq);
++		_put_opp_list_kref(opp_table);
+ 		_remove_opp_dev(_find_opp_dev(dev, opp_table), opp_table);
  	}
  
-+	/* Drop the reference taken by _find_opp_table() */
- 	dev_pm_opp_put_opp_table(opp_table);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
-@@ -1085,9 +1088,6 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 	new_opp->opp_table = opp_table;
- 	kref_init(&new_opp->kref);
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 4a19f76880d3..aaa4bab69846 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -411,6 +411,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
+ 			ret = -ENOMEM;
+ 		else if (!opp_table->parsed_static_opps)
+ 			goto initialize_static_opps;
++		else
++			kref_get(&opp_table->list_kref);
  
--	/* Get a reference to the OPP table */
--	_get_opp_table_kref(opp_table);
--
- 	ret = opp_debug_create_one(new_opp, opp_table);
- 	if (ret)
- 		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
-@@ -1566,8 +1566,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 		goto put_opp_table;
+ 	}
+@@ -420,6 +422,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
  		return -ENOMEM;
  
- 	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
-+	if (ret)
-+		dev_pm_opp_put_opp_table(opp_table);
+ initialize_static_opps:
++	kref_init(&opp_table->list_kref);
++
+ 	/* We have opp-table node now, iterate over it and add OPPs */
+ 	for_each_available_child_of_node(opp_np, np) {
+ 		count++;
+@@ -437,6 +441,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
+ 	/* There should be one of more OPP defined */
+ 	if (WARN_ON(!count)) {
+ 		ret = -ENOENT;
++		_put_opp_list_kref(opp_table);
+ 		goto put_opp_table;
+ 	}
  
--	dev_pm_opp_put_opp_table(opp_table);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+@@ -491,6 +496,8 @@ static int _of_add_opp_table_v1(struct device *dev)
+ 	if (!opp_table)
+ 		return -ENOMEM;
+ 
++	kref_init(&opp_table->list_kref);
++
+ 	val = prop->value;
+ 	while (nr) {
+ 		unsigned long freq = be32_to_cpup(val++) * 1000;
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index b04c2b511c4d..9274116c90e4 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -126,6 +126,7 @@ enum opp_table_access {
+  * @dev_list:	list of devices that share these OPPs
+  * @opp_list:	table of opps
+  * @kref:	for reference count of the table.
++ * @list_kref:	for reference count of the OPP list.
+  * @lock:	mutex protecting the opp_list and dev_list.
+  * @np:		struct device_node pointer for opp's DT node.
+  * @clock_latency_ns_max: Max clock latency in nanoseconds.
+@@ -157,6 +158,7 @@ struct opp_table {
+ 	struct list_head dev_list;
+ 	struct list_head opp_list;
+ 	struct kref kref;
++	struct kref list_kref;
+ 	struct mutex lock;
+ 
+ 	struct device_node *np;
+@@ -200,6 +202,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *o
+ int _opp_add_v1(struct opp_table *opp_table, struct device *dev, unsigned long freq, long u_volt, bool dynamic);
+ void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of, int last_cpu);
+ struct opp_table *_add_opp_table(struct device *dev);
++void _put_opp_list_kref(struct opp_table *opp_table);
+ 
+ #ifdef CONFIG_OF
+ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index);
 -- 
 2.14.1
