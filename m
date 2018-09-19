@@ -1,60 +1,51 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 05/12][RFC v3] x86-32, hibernate: Enable
- CONFIG_ARCH_HIBERNATION_HEADER set on 32bit system
-Date: Wed, 19 Sep 2018 12:31:42 +0200
-Message-ID: <CAJZ5v0jHZDCqCS=rT2G1Vx4Q1xH52TtJWurH_5Y4mVM=M=BRYQ@mail.gmail.com>
-References: <cover.1537275915.git.yu.c.chen@intel.com> <ec80ac5b3ef0505e4f4786c4ed1e4f88a7770f12.1537275915.git.yu.c.chen@intel.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 04/12][RFC v3] x86, hibernate: Extract the common code of
+ 64/32 bit system
+Date: Wed, 19 Sep 2018 12:34:05 +0200
+Message-ID: <20180919103405.GA19621@gmail.com>
+References: <cover.1537275915.git.yu.c.chen@intel.com>
+ <020db877db6a8d39808dfaef2a5162f541f0853b.1537275915.git.yu.c.chen@intel.com>
+ <CAJZ5v0jvB5zF-LqYsB1ughaZbRhZW1RjVSvY87q_W_pNkmqBeQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ec80ac5b3ef0505e4f4786c4ed1e4f88a7770f12.1537275915.git.yu.c.chen@intel.com>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jvB5zF-LqYsB1ughaZbRhZW1RjVSvY87q_W_pNkmqBeQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, kookoo.gu@intel.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Chen, Yu C" <yu.c.chen@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, kookoo.gu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 19, 2018 at 9:32 AM Chen Yu <yu.c.chen@intel.com> wrote:
->
-> From: Zhimin Gu <kookoo.gu@intel.com>
->
-> Enable CONFIG_ARCH_HIBERNATION_HEADER for 32bit system so that
-> md5 check is enabled and prepare for relocated code executing
-> and jump address mapping.
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Signed-off-by: Zhimin Gu <kookoo.gu@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  arch/x86/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 1a0be022f91d..e8de5de1057f 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -2422,7 +2422,7 @@ menu "Power management and ACPI options"
->
->  config ARCH_HIBERNATION_HEADER
->         def_bool y
-> -       depends on X86_64 && HIBERNATION
-> +       depends on HIBERNATION
->
->  source "kernel/power/Kconfig"
->
-> --
 
-In this patch, in addition to the above, I would start moving the code
-in hibernate.c that you want to be common in the end out of #ifdef
-CONFIG_X86_64 blocks.
+* Rafael J. Wysocki <rafael@kernel.org> wrote:
 
-To start with, that would be the checksum handling code and the parts
-of arch_hibernation_header_save/restore() that refer to it and the
-"magic" value.
+> > index 000000000000..fbde8f0e8fe0
+> > --- /dev/null
+> > +++ b/arch/x86/power/hibernate.c
+> > @@ -0,0 +1,249 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Hibernation support for x86
+> > + *
+> > + * Copyright (c) 2007 Rafael J. Wysocki <rjw@sisk.pl>
+> > + * Copyright (c) 2002 Pavel Machek <pavel@ucw.cz>
+> > + * Copyright (c) 2001 Patrick Mochel <mochel@osdl.org>
+> 
+> I don't think this "copyright" information has any legal bearing any
+> more at this point.
 
-I would continue doing that in the subsequent patches to make it
-easier to follow which pieces of code start to be used on 32-bit after
-each patch.  The impact of each patch would be more clear this way
-IMO.
+I think that's wrong in general, and it's routine for corporate legal
+departments to insist on specific boilerplate copyright notices when
+OSS code is contributed.
+
+Copying code and then removing copyright notices is frowned upon
+independently as well.
+
+While you can probably talk for your own copyright notice, I'm not sure
+it's true of the two other historic copyright notices that were copied.
+
+So I think it's best practice to preserve all copyright notices as-is.
 
 Thanks,
-Rafael
+
+	Ingo
