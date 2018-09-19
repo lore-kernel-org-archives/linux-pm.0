@@ -1,42 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/11] cpufreq: mvebu: Remove OPPs using
- dev_pm_opp_remove()
-Date: Wed, 19 Sep 2018 14:40:58 -0700
-Message-ID: <20180919214058.bp325gyowqyveil2@vireshk-mac-ubuntu>
-References: <cover.1536736872.git.viresh.kumar@linaro.org>
- <b6e58baec5ee4cf56f82c4b14dad7320cf01ce7f.1536736872.git.viresh.kumar@linaro.org>
- <87o9ctjyz3.fsf@bootlin.com>
+From: Nick Desaulniers <ndesaulniers@google.com>
+Subject: Re: [PATCH v2] cpufreq: qcom-kryo: Fix section mismatch warning
+Date: Wed, 19 Sep 2018 14:45:15 -0700
+Message-ID: <CAKwvOdnW8p4Tj2n+Y4XyMMVdD7W90W4NTLkJHKhZ6604ah4fnw@mail.gmail.com>
+References: <20180919182247.1101-1-natechancellor@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87o9ctjyz3.fsf@bootlin.com>
+In-Reply-To: <20180919182247.1101-1-natechancellor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: niklas.cassel@linaro.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Nathan Chancellor <natechancellor@gmail.com>
+Cc: ilia.lin@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-09-18, 17:20, Gregory CLEMENT wrote:
-> Hi Viresh,
->  
->  On mer., sept. 12 2018, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > dev_pm_opp_cpumask_remove_table() is going to change in the next commit
-> > and will not remove dynamic OPPs automatically. They must be removed
-> > with a call to dev_pm_opp_remove().
-> 
-> So now that mean when adding more than 2 OPPs, we should have the list
-> of them available in the driver to be able to remove them, right?
+On Wed, Sep 19, 2018 at 11:22 AM Nathan Chancellor
+<natechancellor@gmail.com> wrote:
+>
+> WARNING: vmlinux.o(.text+0x8aa424): Section mismatch in reference from
+> the function qcom_cpufreq_kryo_probe() to the function
+> .init.text:qcom_cpufreq_kryo_get_msm_id()
+> The function qcom_cpufreq_kryo_probe() references
+> the function __init qcom_cpufreq_kryo_get_msm_id().
+> This is often because qcom_cpufreq_kryo_probe lacks a __init
+> annotation or the annotation of qcom_cpufreq_kryo_get_msm_id is wrong.
+>
+> Add the '__init' annotation to qcom_cpufreq_kryo_probe so that there is
+> no more mismatch warning.
 
-Right. Maybe we will add a separate API to remove all dynamic ones in
-one go but I couldn't find any platform which needs to do it right
-now.
+I wonder why this driver has an exit function marked __init rather
+than __exit? Does that mean it gets cleaned up after kernel init, and
+so on unloading of the driver, the kernel jumps to unmapped memory?
 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Reviewed-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+Does this patch now produce a warning for `qcom_cpufreq_kryo_driver`
+referencing `qcom_cpufreq_kryo_probe`?
 
-Thanks.
+>
+> Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
+> Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> ---
+>
+> v1 -> v2:
+>
+> Add '__init' to qcom_cpufreq_kryo_probe instead of removing it from
+> qcom_cpufreq_kryo_get_msm_id.
+>
+>  drivers/cpufreq/qcom-cpufreq-kryo.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> index a1830fa25fc5..e001ef8ea7de 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> @@ -73,7 +73,7 @@ static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
+>         return version;
+>  }
+>
+> -static int qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+> +static int __init qcom_cpufreq_kryo_probe(struct platform_device *pdev)
+>  {
+>         struct opp_table *opp_tables[NR_CPUS] = {0};
+>         enum _msm8996_version msm8996_version;
+> --
+> 2.19.0
+>
 
--- 
-viresh
+
+--
+Thanks,
+~Nick Desaulniers
