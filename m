@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 11/12] OPP: Prevent creating multiple OPP tables for devices sharing OPP nodes
-Date: Wed, 19 Sep 2018 15:20:30 -0700
-Message-ID: <faf830f8d0612a2fa03144f09c9243f4c292400f.1537394233.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 03/12] OPP: Protect dev_list with opp_table lock
+Date: Wed, 19 Sep 2018 15:20:22 -0700
+Message-ID: <3d2556992a878a2210d3be498416aee39e0c32aa.1537394233.git.viresh.kumar@linaro.org>
 References: <cover.1537394233.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537394233.git.viresh.kumar@linaro.org>
@@ -12,178 +12,128 @@ To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd 
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-When two or more devices are sharing their clock and voltage rails, they
-share the same OPP table. But there are some corner cases where the OPP
-core incorrectly creates separate OPP tables for them.
-
-For example, CPU 0 and 1 share clock/voltage rails. The platform
-specific code calls dev_pm_opp_set_regulators() for CPU0 and the OPP
-core creates an OPP table for it (the individual OPPs aren't initialized
-as of now). The same is repeated for CPU1 then. Because
-_opp_get_opp_table() doesn't compare DT node pointers currently, it
-fails to find the link between CPU0 and CPU1 and so creates a new OPP
-table.
-
-Fix this by calling _managed_opp() from _opp_get_opp_table().
-_managed_opp() gain an additional argument (index) to get the right node
-pointer. This resulted in simplifying code in _of_add_opp_table_v2() as
-well.
+The dev_list needs to be protected with a lock, else we may have
+simultaneous access (addition/removal) to it and that would be racy.
+Extend scope of the opp_table lock to protect dev_list as well.
 
 Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 25 ++++++++++++++++++++++---
- drivers/opp/of.c   | 35 +++++++++++++----------------------
- drivers/opp/opp.h  |  2 ++
- 3 files changed, 37 insertions(+), 25 deletions(-)
+ drivers/opp/core.c | 21 +++++++++++++++++++--
+ drivers/opp/cpu.c  |  2 ++
+ drivers/opp/opp.h  |  2 +-
+ 3 files changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index d3e33fd32694..aaef20cf4df2 100644
+index 31ff03dbeb83..9f8aa31265fe 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -759,8 +759,8 @@ static void _remove_opp_dev(struct opp_device *opp_dev,
- 	kfree(opp_dev);
- }
- 
--struct opp_device *_add_opp_dev(const struct device *dev,
--				struct opp_table *opp_table)
-+struct opp_device *_add_opp_dev_unlocked(const struct device *dev,
-+					 struct opp_table *opp_table)
+@@ -48,9 +48,14 @@ static struct opp_device *_find_opp_dev(const struct device *dev,
+ static struct opp_table *_find_opp_table_unlocked(struct device *dev)
  {
- 	struct opp_device *opp_dev;
- 	int ret;
-@@ -772,7 +772,6 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+ 	struct opp_table *opp_table;
++	bool found;
+ 
+ 	list_for_each_entry(opp_table, &opp_tables, node) {
+-		if (_find_opp_dev(dev, opp_table)) {
++		mutex_lock(&opp_table->lock);
++		found = !!_find_opp_dev(dev, opp_table);
++		mutex_unlock(&opp_table->lock);
++
++		if (found) {
+ 			_get_opp_table_kref(opp_table);
+ 
+ 			return opp_table;
+@@ -766,6 +771,8 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+ 
  	/* Initialize opp-dev */
  	opp_dev->dev = dev;
- 
--	mutex_lock(&opp_table->lock);
++
++	mutex_lock(&opp_table->lock);
  	list_add(&opp_dev->node, &opp_table->dev_list);
  
  	/* Create debugfs entries for the opp_table */
-@@ -780,6 +779,17 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+@@ -773,6 +780,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
  	if (ret)
  		dev_err(dev, "%s: Failed to register opp debugfs (%d)\n",
  			__func__, ret);
-+
-+	return opp_dev;
-+}
-+
-+struct opp_device *_add_opp_dev(const struct device *dev,
-+				struct opp_table *opp_table)
-+{
-+	struct opp_device *opp_dev;
-+
-+	mutex_lock(&opp_table->lock);
-+	opp_dev = _add_opp_dev_unlocked(dev, opp_table);
- 	mutex_unlock(&opp_table->lock);
++	mutex_unlock(&opp_table->lock);
  
  	return opp_dev;
-@@ -844,6 +854,15 @@ static struct opp_table *_opp_get_opp_table(struct device *dev, int index)
- 	if (!IS_ERR(opp_table))
- 		goto unlock;
- 
-+	opp_table = _managed_opp(dev, index);
-+	if (opp_table) {
-+		if (!_add_opp_dev_unlocked(dev, opp_table)) {
-+			dev_pm_opp_put_opp_table(opp_table);
-+			opp_table = NULL;
-+		}
-+		goto unlock;
-+	}
-+
- 	opp_table = _allocate_opp_table(dev, index);
- 
- unlock:
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index ae0436eaa911..1ddef52c27fd 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -41,11 +41,14 @@ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
- 
--static struct opp_table *_managed_opp(const struct device_node *np)
-+struct opp_table *_managed_opp(struct device *dev, int index)
- {
- 	struct opp_table *opp_table, *managed_table = NULL;
-+	struct device_node *np;
- 
--	mutex_lock(&opp_table_lock);
-+	np = _opp_of_get_opp_desc_node(dev->of_node, index);
-+	if (!np)
-+		return NULL;
- 
- 	list_for_each_entry(opp_table, &opp_tables, node) {
- 		if (opp_table->np == np) {
-@@ -65,7 +68,7 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 		}
- 	}
- 
--	mutex_unlock(&opp_table_lock);
-+	of_node_put(np);
- 
- 	return managed_table;
- }
-@@ -401,30 +404,19 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- {
- 	struct device_node *np;
- 	struct opp_table *opp_table;
--	int ret = 0, count = 0, pstate_count = 0;
-+	int ret, count = 0, pstate_count = 0;
- 	struct dev_pm_opp *opp;
- 
--	opp_table = _managed_opp(opp_np);
--	if (opp_table) {
--		/* OPPs are already managed */
--		if (!_add_opp_dev(dev, opp_table)) {
--			ret = -ENOMEM;
--			goto put_opp_table;
--		}
--
--		if (opp_table->parsed_static_opps) {
--			kref_get(&opp_table->list_kref);
--			return 0;
--		}
--
--		goto initialize_static_opps;
--	}
--
- 	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
+@@ -791,6 +799,7 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
  	if (!opp_table)
- 		return -ENOMEM;
+ 		return NULL;
  
--initialize_static_opps:
-+	/* OPP table is already initialized for the device */
-+	if (opp_table->parsed_static_opps) {
-+		kref_get(&opp_table->list_kref);
-+		return 0;
-+	}
++	mutex_init(&opp_table->lock);
+ 	INIT_LIST_HEAD(&opp_table->dev_list);
+ 
+ 	opp_dev = _add_opp_dev(dev, opp_table);
+@@ -812,7 +821,6 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
+ 
+ 	BLOCKING_INIT_NOTIFIER_HEAD(&opp_table->head);
+ 	INIT_LIST_HEAD(&opp_table->opp_list);
+-	mutex_init(&opp_table->lock);
+ 	kref_init(&opp_table->kref);
+ 
+ 	/* Secure the device table modification */
+@@ -854,6 +862,10 @@ static void _opp_table_kref_release(struct kref *kref)
+ 	if (!IS_ERR(opp_table->clk))
+ 		clk_put(opp_table->clk);
+ 
++	/*
++	 * No need to take opp_table->lock here as we are guaranteed that no
++	 * references to the OPP table are taken at this point.
++	 */
+ 	opp_dev = list_first_entry(&opp_table->dev_list, struct opp_device,
+ 				   node);
+ 
+@@ -1716,6 +1728,9 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ {
+ 	struct dev_pm_opp *opp, *tmp;
+ 
++	/* Protect dev_list */
++	mutex_lock(&opp_table->lock);
 +
- 	kref_init(&opp_table->list_kref);
+ 	/* Find if opp_table manages a single device */
+ 	if (list_is_singular(&opp_table->dev_list)) {
+ 		/* Free static OPPs */
+@@ -1733,6 +1748,8 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ 	} else {
+ 		_remove_opp_dev(_find_opp_dev(dev, opp_table), opp_table);
+ 	}
++
++	mutex_unlock(&opp_table->lock);
+ }
  
- 	/* We have opp-table node now, iterate over it and add OPPs */
-@@ -466,7 +458,6 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
+ void _dev_pm_opp_find_and_remove_table(struct device *dev, bool remove_all)
+diff --git a/drivers/opp/cpu.c b/drivers/opp/cpu.c
+index 2eb5e2e7ff66..36586f66cd83 100644
+--- a/drivers/opp/cpu.c
++++ b/drivers/opp/cpu.c
+@@ -226,8 +226,10 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ 	cpumask_clear(cpumask);
  
- put_list_kref:
- 	_put_opp_list_kref(opp_table);
--put_opp_table:
- 	dev_pm_opp_put_opp_table(opp_table);
- 
- 	return ret;
+ 	if (opp_table->shared_opp == OPP_TABLE_ACCESS_SHARED) {
++		mutex_lock(&opp_table->lock);
+ 		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
+ 			cpumask_set_cpu(opp_dev->dev->id, cpumask);
++		mutex_unlock(&opp_table->lock);
+ 	} else {
+ 		cpumask_set_cpu(cpu_dev->id, cpumask);
+ 	}
 diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index f9fbb7553fc4..9c6544b4f4f9 100644
+index a9d22aa534c3..88e9f47aadf1 100644
 --- a/drivers/opp/opp.h
 +++ b/drivers/opp/opp.h
-@@ -206,8 +206,10 @@ void _put_opp_list_kref(struct opp_table *opp_table);
- 
- #ifdef CONFIG_OF
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index);
-+struct opp_table *_managed_opp(struct device *dev, int index);
- #else
- static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index) {}
-+static inline struct opp_table *_managed_opp(struct device *dev, int index) { return NULL; }
- #endif
- 
- #ifdef CONFIG_DEBUG_FS
+@@ -126,7 +126,7 @@ enum opp_table_access {
+  * @dev_list:	list of devices that share these OPPs
+  * @opp_list:	table of opps
+  * @kref:	for reference count of the table.
+- * @lock:	mutex protecting the opp_list.
++ * @lock:	mutex protecting the opp_list and dev_list.
+  * @np:		struct device_node pointer for opp's DT node.
+  * @clock_latency_ns_max: Max clock latency in nanoseconds.
+  * @shared_opp: OPP is shared between multiple devices.
 -- 
 2.14.1
