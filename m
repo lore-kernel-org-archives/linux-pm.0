@@ -1,182 +1,185 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 04/12] OPP: Pass index to _of_init_opp_table()
-Date: Wed, 19 Sep 2018 15:20:23 -0700
-Message-ID: <eb7c8743d6cf489e30091e6656fd4d3306621e9a.1537394233.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 05/12] OPP: Parse OPP table's DT properties from _of_init_opp_table()
+Date: Wed, 19 Sep 2018 15:20:24 -0700
+Message-ID: <f06ed90e7051a3a50c2172001c86ff9645e5c2ba.1537394233.git.viresh.kumar@linaro.org>
 References: <cover.1537394233.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537394233.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1537394233.git.viresh.kumar@linaro.org>
 References: <cover.1537394233.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is a preparatory patch required for the next commit which will
-start using OPP table's node pointer in _of_init_opp_table(), which
-requires the index in order to read the OPP table's phandle.
+Parse the DT properties present in the OPP table from
+_of_init_opp_table(), which is a dedicated routine for DT parsing.
 
-This commit adds the index argument in the call chains in order to get
-it delivered to _of_init_opp_table().
+Minor relocation of helpers is required for this.
+
+It is possible now for _managed_opp() to return a partially initialized
+OPP table if the OPP table is created via the helpers like
+dev_pm_opp_set_supported_hw() and we need another flag to indicate if
+the static OPP are already parsed or not to make sure we don't
+incorrectly skip initializing the static OPPs.
 
 Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c     | 19 +++++++++++++++----
- drivers/opp/of.c       | 12 +++++++-----
- drivers/opp/opp.h      |  4 ++--
- include/linux/pm_opp.h |  6 ++++++
- 4 files changed, 30 insertions(+), 11 deletions(-)
+ drivers/opp/of.c  | 79 +++++++++++++++++++++++++++++++++----------------------
+ drivers/opp/opp.h |  2 ++
+ 2 files changed, 50 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 9f8aa31265fe..332748adc262 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -785,7 +785,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
- 	return opp_dev;
- }
- 
--static struct opp_table *_allocate_opp_table(struct device *dev)
-+static struct opp_table *_allocate_opp_table(struct device *dev, int index)
- {
- 	struct opp_table *opp_table;
- 	struct opp_device *opp_dev;
-@@ -808,7 +808,7 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 		return NULL;
- 	}
- 
--	_of_init_opp_table(opp_table, dev);
-+	_of_init_opp_table(opp_table, dev, index);
- 
- 	/* Find clk for the device */
- 	opp_table->clk = clk_get(dev, NULL);
-@@ -833,7 +833,7 @@ void _get_opp_table_kref(struct opp_table *opp_table)
- 	kref_get(&opp_table->kref);
- }
- 
--struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
-+static struct opp_table *_opp_get_opp_table(struct device *dev, int index)
- {
- 	struct opp_table *opp_table;
- 
-@@ -844,15 +844,26 @@ struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
- 	if (!IS_ERR(opp_table))
- 		goto unlock;
- 
--	opp_table = _allocate_opp_table(dev);
-+	opp_table = _allocate_opp_table(dev, index);
- 
- unlock:
- 	mutex_unlock(&opp_table_lock);
- 
- 	return opp_table;
- }
-+
-+struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
-+{
-+	return _opp_get_opp_table(dev, 0);
-+}
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_opp_table);
- 
-+struct opp_table *dev_pm_opp_get_opp_table_indexed(struct device *dev,
-+						   int index)
-+{
-+	return _opp_get_opp_table(dev, index);
-+}
-+
- static void _opp_table_kref_release(struct kref *kref)
- {
- 	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
 diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 86222586f27b..1a9e1242a2a7 100644
+index 1a9e1242a2a7..4a19f76880d3 100644
 --- a/drivers/opp/of.c
 +++ b/drivers/opp/of.c
-@@ -52,7 +52,8 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 	return managed_table;
+@@ -23,6 +23,24 @@
+ 
+ #include "opp.h"
+ 
++/*
++ * Returns opp descriptor node for a device node, caller must
++ * do of_node_put().
++ */
++static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
++						     int index)
++{
++	/* "operating-points-v2" can be an array for power domain providers */
++	return of_parse_phandle(np, "operating-points-v2", index);
++}
++
++/* Returns opp descriptor node for a device, caller must do of_node_put() */
++struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
++{
++	return _opp_of_get_opp_desc_node(dev->of_node, 0);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
++
+ static struct opp_table *_managed_opp(const struct device_node *np)
+ {
+ 	struct opp_table *opp_table, *managed_table = NULL;
+@@ -55,22 +73,37 @@ static struct opp_table *_managed_opp(const struct device_node *np)
+ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
+ 			int index)
+ {
+-	struct device_node *np;
++	struct device_node *np, *opp_np;
++	u32 val;
+ 
+ 	/*
+ 	 * Only required for backward compatibility with v1 bindings, but isn't
+ 	 * harmful for other cases. And so we do it unconditionally.
+ 	 */
+ 	np = of_node_get(dev->of_node);
+-	if (np) {
+-		u32 val;
+-
+-		if (!of_property_read_u32(np, "clock-latency", &val))
+-			opp_table->clock_latency_ns_max = val;
+-		of_property_read_u32(np, "voltage-tolerance",
+-				     &opp_table->voltage_tolerance_v1);
+-		of_node_put(np);
+-	}
++	if (!np)
++		return;
++
++	if (!of_property_read_u32(np, "clock-latency", &val))
++		opp_table->clock_latency_ns_max = val;
++	of_property_read_u32(np, "voltage-tolerance",
++			     &opp_table->voltage_tolerance_v1);
++
++	/* Get OPP table node */
++	opp_np = _opp_of_get_opp_desc_node(np, index);
++	of_node_put(np);
++
++	if (!opp_np)
++		return;
++
++	if (of_property_read_bool(opp_np, "opp-shared"))
++		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
++	else
++		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
++
++	opp_table->np = opp_np;
++
++	of_node_put(opp_np);
  }
  
--void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
-+void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
-+			int index)
- {
- 	struct device_node *np;
- 
-@@ -378,7 +379,8 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
+ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
+@@ -250,22 +283,6 @@ void dev_pm_opp_of_remove_table(struct device *dev)
  }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
  
- /* Initializes OPP tables based on new bindings */
--static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
-+static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
-+				int index)
- {
- 	struct device_node *np;
- 	struct opp_table *opp_table;
-@@ -393,7 +395,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+-/* Returns opp descriptor node for a device node, caller must
+- * do of_node_put() */
+-static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
+-						     int index)
+-{
+-	/* "operating-points-v2" can be an array for power domain providers */
+-	return of_parse_phandle(np, "operating-points-v2", index);
+-}
+-
+-/* Returns opp descriptor node for a device, caller must do of_node_put() */
+-struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
+-{
+-	return _opp_of_get_opp_desc_node(dev->of_node, 0);
+-}
+-EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
+-
+ /**
+  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
+  * @opp_table:	OPP table
+@@ -392,6 +409,9 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
+ 		/* OPPs are already managed */
+ 		if (!_add_opp_dev(dev, opp_table))
+ 			ret = -ENOMEM;
++		else if (!opp_table->parsed_static_opps)
++			goto initialize_static_opps;
++
  		goto put_opp_table;
  	}
  
--	opp_table = dev_pm_opp_get_opp_table(dev);
-+	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
+@@ -399,6 +419,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
  	if (!opp_table)
  		return -ENOMEM;
  
-@@ -526,7 +528,7 @@ int dev_pm_opp_of_add_table(struct device *dev)
- 		return _of_add_opp_table_v1(dev);
- 	}
++initialize_static_opps:
+ 	/* We have opp-table node now, iterate over it and add OPPs */
+ 	for_each_available_child_of_node(opp_np, np) {
+ 		count++;
+@@ -434,11 +455,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
+ 	if (pstate_count)
+ 		opp_table->genpd_performance_state = true;
  
--	ret = _of_add_opp_table_v2(dev, opp_np);
-+	ret = _of_add_opp_table_v2(dev, opp_np, 0);
- 	of_node_put(opp_np);
+-	opp_table->np = opp_np;
+-	if (of_property_read_bool(opp_np, "opp-shared"))
+-		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
+-	else
+-		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
++	opp_table->parsed_static_opps = true;
  
- 	return ret;
-@@ -574,7 +576,7 @@ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
- 		return -ENODEV;
- 	}
- 
--	ret = _of_add_opp_table_v2(dev, opp_np);
-+	ret = _of_add_opp_table_v2(dev, opp_np, index);
- 	of_node_put(opp_np);
- 
- 	return ret;
+ put_opp_table:
+ 	dev_pm_opp_put_opp_table(opp_table);
 diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 88e9f47aadf1..b235e76fc8cc 100644
+index b235e76fc8cc..b04c2b511c4d 100644
 --- a/drivers/opp/opp.h
 +++ b/drivers/opp/opp.h
-@@ -200,9 +200,9 @@ void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of, in
- struct opp_table *_add_opp_table(struct device *dev);
+@@ -129,6 +129,7 @@ enum opp_table_access {
+  * @lock:	mutex protecting the opp_list and dev_list.
+  * @np:		struct device_node pointer for opp's DT node.
+  * @clock_latency_ns_max: Max clock latency in nanoseconds.
++ * @parsed_static_opps: True if OPPs are initialized from DT.
+  * @shared_opp: OPP is shared between multiple devices.
+  * @suspend_opp: Pointer to OPP to be used during device suspend.
+  * @supported_hw: Array of version number to support.
+@@ -164,6 +165,7 @@ struct opp_table {
+ 	/* For backward compatibility with v1 bindings */
+ 	unsigned int voltage_tolerance_v1;
  
- #ifdef CONFIG_OF
--void _of_init_opp_table(struct opp_table *opp_table, struct device *dev);
-+void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index);
- #else
--static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev) {}
-+static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index) {}
- #endif
++	bool parsed_static_opps;
+ 	enum opp_table_access shared_opp;
+ 	struct dev_pm_opp *suspend_opp;
  
- #ifdef CONFIG_DEBUG_FS
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 099b31960dec..5d399eeef172 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -79,6 +79,7 @@ struct dev_pm_set_opp_data {
- #if defined(CONFIG_PM_OPP)
- 
- struct opp_table *dev_pm_opp_get_opp_table(struct device *dev);
-+struct opp_table *dev_pm_opp_get_opp_table_indexed(struct device *dev, int index);
- void dev_pm_opp_put_opp_table(struct opp_table *opp_table);
- 
- unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
-@@ -136,6 +137,11 @@ static inline struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
- 	return ERR_PTR(-ENOTSUPP);
- }
- 
-+static inline struct opp_table *dev_pm_opp_get_opp_table_indexed(struct device *dev, int index)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
- static inline void dev_pm_opp_put_opp_table(struct opp_table *opp_table) {}
- 
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
 -- 
 2.14.1
