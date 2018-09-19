@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 05/12] OPP: Parse OPP table's DT properties from _of_init_opp_table()
-Date: Wed, 19 Sep 2018 15:20:24 -0700
-Message-ID: <f06ed90e7051a3a50c2172001c86ff9645e5c2ba.1537394233.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 06/12] OPP: Don't take OPP table's kref for static OPPs
+Date: Wed, 19 Sep 2018 15:20:25 -0700
+Message-ID: <0ad8c623907c27f4b8572d36c4ba73ea103e3108.1537394233.git.viresh.kumar@linaro.org>
 References: <cover.1537394233.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537394233.git.viresh.kumar@linaro.org>
@@ -12,174 +12,71 @@ To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd 
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Parse the DT properties present in the OPP table from
-_of_init_opp_table(), which is a dedicated routine for DT parsing.
+The reference count is only required to be incremented for every call
+that may lead to adding the OPP table. For static OPPs the same should
+be done from the parent routine which adds all static OPPs together and
+so only one refcount for all static OPPs.
 
-Minor relocation of helpers is required for this.
+Update code to reflect that.
 
-It is possible now for _managed_opp() to return a partially initialized
-OPP table if the OPP table is created via the helpers like
-dev_pm_opp_set_supported_hw() and we need another flag to indicate if
-the static OPP are already parsed or not to make sure we don't
-incorrectly skip initializing the static OPPs.
+The refcount is incremented every time a dynamic OPP is created (as that
+can lead to creating the OPP table) and the same is dropped when the OPP
+is removed.
 
 Tested-by: Niklas Cassel <niklas.cassel@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/of.c  | 79 +++++++++++++++++++++++++++++++++----------------------
- drivers/opp/opp.h |  2 ++
- 2 files changed, 50 insertions(+), 31 deletions(-)
+ drivers/opp/core.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 1a9e1242a2a7..4a19f76880d3 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -23,6 +23,24 @@
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 332748adc262..2a6976265580 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -919,7 +919,6 @@ static void _opp_kref_release(struct kref *kref)
+ 	kfree(opp);
  
- #include "opp.h"
- 
-+/*
-+ * Returns opp descriptor node for a device node, caller must
-+ * do of_node_put().
-+ */
-+static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
-+						     int index)
-+{
-+	/* "operating-points-v2" can be an array for power domain providers */
-+	return of_parse_phandle(np, "operating-points-v2", index);
-+}
-+
-+/* Returns opp descriptor node for a device, caller must do of_node_put() */
-+struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
-+{
-+	return _opp_of_get_opp_desc_node(dev->of_node, 0);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
-+
- static struct opp_table *_managed_opp(const struct device_node *np)
- {
- 	struct opp_table *opp_table, *managed_table = NULL;
-@@ -55,22 +73,37 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
- 			int index)
- {
--	struct device_node *np;
-+	struct device_node *np, *opp_np;
-+	u32 val;
- 
- 	/*
- 	 * Only required for backward compatibility with v1 bindings, but isn't
- 	 * harmful for other cases. And so we do it unconditionally.
- 	 */
- 	np = of_node_get(dev->of_node);
--	if (np) {
--		u32 val;
--
--		if (!of_property_read_u32(np, "clock-latency", &val))
--			opp_table->clock_latency_ns_max = val;
--		of_property_read_u32(np, "voltage-tolerance",
--				     &opp_table->voltage_tolerance_v1);
--		of_node_put(np);
--	}
-+	if (!np)
-+		return;
-+
-+	if (!of_property_read_u32(np, "clock-latency", &val))
-+		opp_table->clock_latency_ns_max = val;
-+	of_property_read_u32(np, "voltage-tolerance",
-+			     &opp_table->voltage_tolerance_v1);
-+
-+	/* Get OPP table node */
-+	opp_np = _opp_of_get_opp_desc_node(np, index);
-+	of_node_put(np);
-+
-+	if (!opp_np)
-+		return;
-+
-+	if (of_property_read_bool(opp_np, "opp-shared"))
-+		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
-+	else
-+		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
-+
-+	opp_table->np = opp_np;
-+
-+	of_node_put(opp_np);
+ 	mutex_unlock(&opp_table->lock);
+-	dev_pm_opp_put_opp_table(opp_table);
  }
  
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
-@@ -250,22 +283,6 @@ void dev_pm_opp_of_remove_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ void dev_pm_opp_get(struct dev_pm_opp *opp)
+@@ -963,11 +962,15 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
  
--/* Returns opp descriptor node for a device node, caller must
-- * do of_node_put() */
--static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
--						     int index)
--{
--	/* "operating-points-v2" can be an array for power domain providers */
--	return of_parse_phandle(np, "operating-points-v2", index);
--}
--
--/* Returns opp descriptor node for a device, caller must do of_node_put() */
--struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
--{
--	return _opp_of_get_opp_desc_node(dev->of_node, 0);
--}
--EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
--
- /**
-  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
-  * @opp_table:	OPP table
-@@ -392,6 +409,9 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- 		/* OPPs are already managed */
- 		if (!_add_opp_dev(dev, opp_table))
- 			ret = -ENOMEM;
-+		else if (!opp_table->parsed_static_opps)
-+			goto initialize_static_opps;
+ 	if (found) {
+ 		dev_pm_opp_put(opp);
 +
- 		goto put_opp_table;
++		/* Drop the reference taken by dev_pm_opp_add() */
++		dev_pm_opp_put_opp_table(opp_table);
+ 	} else {
+ 		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
+ 			 __func__, freq);
  	}
  
-@@ -399,6 +419,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- 	if (!opp_table)
++	/* Drop the reference taken by _find_opp_table() */
+ 	dev_pm_opp_put_opp_table(opp_table);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+@@ -1085,9 +1088,6 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 	new_opp->opp_table = opp_table;
+ 	kref_init(&new_opp->kref);
+ 
+-	/* Get a reference to the OPP table */
+-	_get_opp_table_kref(opp_table);
+-
+ 	ret = opp_debug_create_one(new_opp, opp_table);
+ 	if (ret)
+ 		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
+@@ -1566,8 +1566,9 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
  		return -ENOMEM;
  
-+initialize_static_opps:
- 	/* We have opp-table node now, iterate over it and add OPPs */
- 	for_each_available_child_of_node(opp_np, np) {
- 		count++;
-@@ -434,11 +455,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np,
- 	if (pstate_count)
- 		opp_table->genpd_performance_state = true;
+ 	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
++	if (ret)
++		dev_pm_opp_put_opp_table(opp_table);
  
--	opp_table->np = opp_np;
--	if (of_property_read_bool(opp_np, "opp-shared"))
--		opp_table->shared_opp = OPP_TABLE_ACCESS_SHARED;
--	else
--		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
-+	opp_table->parsed_static_opps = true;
- 
- put_opp_table:
- 	dev_pm_opp_put_opp_table(opp_table);
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index b235e76fc8cc..b04c2b511c4d 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -129,6 +129,7 @@ enum opp_table_access {
-  * @lock:	mutex protecting the opp_list and dev_list.
-  * @np:		struct device_node pointer for opp's DT node.
-  * @clock_latency_ns_max: Max clock latency in nanoseconds.
-+ * @parsed_static_opps: True if OPPs are initialized from DT.
-  * @shared_opp: OPP is shared between multiple devices.
-  * @suspend_opp: Pointer to OPP to be used during device suspend.
-  * @supported_hw: Array of version number to support.
-@@ -164,6 +165,7 @@ struct opp_table {
- 	/* For backward compatibility with v1 bindings */
- 	unsigned int voltage_tolerance_v1;
- 
-+	bool parsed_static_opps;
- 	enum opp_table_access shared_opp;
- 	struct dev_pm_opp *suspend_opp;
- 
+-	dev_pm_opp_put_opp_table(opp_table);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_add);
 -- 
 2.14.1
