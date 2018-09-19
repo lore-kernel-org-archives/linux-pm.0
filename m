@@ -1,7 +1,7 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 06/12][RFC v3] x86, hibernate: Rename temp_level4_pgt to temp_pgt
-Date: Wed, 19 Sep 2018 15:42:39 +0800
-Message-ID: <5e9003beb492444e98a148dfb9413593e53da51c.1537275915.git.yu.c.chen@intel.com>
+Subject: [PATCH 07/12][RFC v3] x86-32, hibernate: Use temp_pgt as the temporary page table
+Date: Wed, 19 Sep 2018 15:42:48 +0800
+Message-ID: <22b6bfd23d24405194930baf88f0ec3fe76ba807.1537275915.git.yu.c.chen@intel.com>
 References: <cover.1537275915.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537275915.git.yu.c.chen@intel.com>
@@ -12,9 +12,8 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Zhimin Gu <kookoo.gu@intel.com>
 
-As 32bit system is not using 4-level page, rename it
-to temp_pgt so that it can be reused for both 32bit
-and 64bit hibernation.
+This is to reuse the temp_pgt for both 32bit and 64bit
+system.
 
 No functional change.
 
@@ -22,63 +21,36 @@ Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Signed-off-by: Zhimin Gu <kookoo.gu@intel.com>
 Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- arch/x86/include/asm/suspend.h    | 2 +-
- arch/x86/power/hibernate.c        | 2 +-
- arch/x86/power/hibernate_64.c     | 2 +-
- arch/x86/power/hibernate_asm_64.S | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/x86/power/hibernate_32.c     | 2 ++
+ arch/x86/power/hibernate_asm_32.S | 3 +--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
-index 40b02558749f..a892494ca5e4 100644
---- a/arch/x86/include/asm/suspend.h
-+++ b/arch/x86/include/asm/suspend.h
-@@ -7,7 +7,7 @@
- extern unsigned long restore_jump_address __visible;
- extern unsigned long jump_address_phys;
- extern unsigned long restore_cr3 __visible;
--extern unsigned long temp_level4_pgt __visible;
-+extern unsigned long temp_pgt __visible;
- extern unsigned long relocated_restore_code __visible;
- extern int relocate_restore_code(void);
- /* Defined in hibernate_asm_32/64.S */
-diff --git a/arch/x86/power/hibernate.c b/arch/x86/power/hibernate.c
-index fbde8f0e8fe0..b0e586ae947e 100644
---- a/arch/x86/power/hibernate.c
-+++ b/arch/x86/power/hibernate.c
-@@ -37,7 +37,7 @@ unsigned long jump_address_phys;
-  * in the image header).
-  */
- unsigned long restore_cr3 __visible;
--unsigned long temp_level4_pgt __visible;
-+unsigned long temp_pgt __visible;
- unsigned long relocated_restore_code __visible;
+diff --git a/arch/x86/power/hibernate_32.c b/arch/x86/power/hibernate_32.c
+index f82fbd279d08..a44bdada4e4e 100644
+--- a/arch/x86/power/hibernate_32.c
++++ b/arch/x86/power/hibernate_32.c
+@@ -156,6 +156,8 @@ asmlinkage int swsusp_arch_resume(void)
+ 	if (error)
+ 		return error;
  
- #ifdef CONFIG_X86_64
-diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-index 8bc2eb0dc464..239f424ccb29 100644
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -121,7 +121,7 @@ static int set_up_temporary_mappings(void)
- 			return result;
- 	}
- 
--	temp_level4_pgt = __pa(pgd);
-+	temp_pgt = __pa(pgd);
++	temp_pgt = __pa(resume_pg_dir);
++
+ 	/* We have got enough memory and from now on we cannot recover */
+ 	restore_image();
  	return 0;
- }
+diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+index 671d38d0d931..f0627cf30a36 100644
+--- a/arch/x86/power/hibernate_asm_32.S
++++ b/arch/x86/power/hibernate_asm_32.S
+@@ -33,8 +33,7 @@ ENDPROC(swsusp_arch_suspend)
  
-diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
-index fd369a6e9ff8..3008baa2fa95 100644
---- a/arch/x86/power/hibernate_asm_64.S
-+++ b/arch/x86/power/hibernate_asm_64.S
-@@ -59,7 +59,7 @@ ENTRY(restore_image)
- 	movq	restore_cr3(%rip), %r9
+ ENTRY(restore_image)
+ 	movl	mmu_cr4_features, %ecx
+-	movl	resume_pg_dir, %eax
+-	subl	$__PAGE_OFFSET, %eax
++	movl	temp_pgt, %eax
+ 	movl	%eax, %cr3
  
- 	/* prepare to switch to temporary page tables */
--	movq	temp_level4_pgt(%rip), %rax
-+	movq	temp_pgt(%rip), %rax
- 	movq	mmu_cr4_features(%rip), %rbx
- 
- 	/* prepare to copy image data to their original locations */
+ 	jecxz	1f	# cr4 Pentium and higher, skip if zero
 -- 
 2.17.1
