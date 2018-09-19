@@ -1,58 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: qcom-kryo: Fix section mismatch warning
-Date: Wed, 19 Sep 2018 14:54:18 -0700
-Message-ID: <20180919215418.y2jsrsj73vy3dudd@vireshk-mac-ubuntu>
-References: <20180919182247.1101-1-natechancellor@gmail.com>
- <CAKwvOdnW8p4Tj2n+Y4XyMMVdD7W90W4NTLkJHKhZ6604ah4fnw@mail.gmail.com>
- <20180919215039.mb7prmmfs5jek3aj@vireshk-mac-ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180919215039.mb7prmmfs5jek3aj@vireshk-mac-ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Desaulniers <ndesaulniers@google.com>
-Cc: Nathan Chancellor <natechancellor@gmail.com>, ilia.lin@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH V2 00/12] OPP: Don't create multiple OPP tables for devices sharing OPP table
+Date: Wed, 19 Sep 2018 15:20:19 -0700
+Message-ID: <cover.1537394233.git.viresh.kumar@linaro.org>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "4.18" <stable@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Niklas Cassel <niklas.cassel@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-09-18, 14:50, Viresh Kumar wrote:
-> On 19-09-18, 14:45, Nick Desaulniers wrote:
-> > On Wed, Sep 19, 2018 at 11:22 AM Nathan Chancellor
-> > <natechancellor@gmail.com> wrote:
-> > >
-> > > WARNING: vmlinux.o(.text+0x8aa424): Section mismatch in reference from
-> > > the function qcom_cpufreq_kryo_probe() to the function
-> > > .init.text:qcom_cpufreq_kryo_get_msm_id()
-> > > The function qcom_cpufreq_kryo_probe() references
-> > > the function __init qcom_cpufreq_kryo_get_msm_id().
-> > > This is often because qcom_cpufreq_kryo_probe lacks a __init
-> > > annotation or the annotation of qcom_cpufreq_kryo_get_msm_id is wrong.
-> > >
-> > > Add the '__init' annotation to qcom_cpufreq_kryo_probe so that there is
-> > > no more mismatch warning.
-> > 
-> > I wonder why this driver has an exit function marked __init rather
-> > than __exit?
-> 
-> I think it was just a mistake.
-> 
-> > Does that mean it gets cleaned up after kernel init, and
-> > so on unloading of the driver, the kernel jumps to unmapped memory?
-> 
-> The __init/exit sections are only useful when the driver is builtin
-> and so there is no unloading. Yeah, if you would have tried to call
-> shutdown for the kernel, it may have crashed or something. I don't
-> know.
-> 
-> > Does this patch now produce a warning for `qcom_cpufreq_kryo_driver`
-> > referencing `qcom_cpufreq_kryo_probe`?
-> 
-> Why should it ? It doesn't though.
+Hello,
 
-I thought you replied to my commit where I marked the exit routine
-with __exit and realised just now that it wasn't the case. I haven't
-build-tested this thing, but the question still stands. Why should it
-?
+Niklas Cassle recently reported some regressions with his Qcom cpufreq
+driver where he was getting some errors while creating the OPPs tables.
+
+After looking into it I realized that the OPP core incorrectly creates
+multiple OPP tables for the devices even if they are sharing the OPP
+table in DT. This happens when the request comes using different CPU
+devices. For example, dev_pm_opp_set_supported_hw() getting called using
+CPU0 and dev_pm_opp_of_add_table() getting called using CPU1.
+
+This series redesigns the internals of the OPP core to fix that. The
+redesign has simplified the core itself though.
+
+The first three patches are fixes really for the current code and the rest
+of them are making necessary changes to fix the issue defined in
+$subject here.
+
+Nikklas already tested this series and his Tested-by is already applied
+to series here. I would like to get this merged during the 4.20 merge
+window and will push the series to linux-next soon to get more test
+coverage. Please provide comments as soon as possible, else will send it
+as part of the pull request to Rafael for 4.20.
+
+--
+viresh
+
+V1->V2:
+- Nikklas reported another regressions which is fixed by the 2nd commit
+  in this series.
+
+Viresh Kumar (12):
+  OPP: Free OPP table properly on performance state irregularities
+  OPP: Don't try to remove all OPP tables on failure
+  OPP: Protect dev_list with opp_table lock
+  OPP: Pass index to _of_init_opp_table()
+  OPP: Parse OPP table's DT properties from _of_init_opp_table()
+  OPP: Don't take OPP table's kref for static OPPs
+  OPP: Create separate kref for static OPPs list
+  cpufreq: mvebu: Remove OPPs using dev_pm_opp_remove()
+  OPP: Don't remove dynamic OPPs from _dev_pm_opp_remove_table()
+  OPP: Use a single mechanism to free the OPP table
+  OPP: Prevent creating multiple OPP tables for devices sharing OPP
+    nodes
+  OPP: Pass OPP table to _of_add_opp_table_v{1|2}()
+
+ drivers/cpufreq/mvebu-cpufreq.c |   9 +-
+ drivers/opp/core.c              | 147 ++++++++++++++++++++-----------
+ drivers/opp/cpu.c               |  15 ++--
+ drivers/opp/of.c                | 188 +++++++++++++++++++++-------------------
+ drivers/opp/opp.h               |  19 ++--
+ include/linux/pm_opp.h          |   6 ++
+ 6 files changed, 226 insertions(+), 158 deletions(-)
 
 -- 
-viresh
+2.14.1
