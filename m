@@ -1,71 +1,64 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 00/12][RFC v3] Backport several fixes from 64bits to 32bits hibernation
-Date: Wed, 19 Sep 2018 15:37:01 +0800
-Message-ID: <cover.1537275915.git.yu.c.chen@intel.com>
+Subject: [PATCH 02/12][RFC v3] PM / hibernate: Check the success of generating md5 digest before hibernation
+Date: Wed, 19 Sep 2018 15:38:17 +0800
+Message-ID: <f50baa939e550d4c6e09fd15ed2c0ddb0b23b023.1537275915.git.yu.c.chen@intel.com>
+References: <cover.1537275915.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1537275915.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, Yu Chen <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently there are mainly three bugs in 32bits system when doing
-hibernation:
-1. The page copy code is not running in safe page, which might
-   cause hang during resume.
-2. There's no text mapping for the final jump address
-   of the original kernel, which might cause the system jumping
-   into illegal address and causes system hang during resume.
-3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
-   rather than the original kernel page table after all the pages
-   been copied back, which might cause invalid virtual-physical
-   mapping issue during resume.
+Currently if get_e820_md5() fails, then it will hibernate nevertheless.
+Actually the error code should be propagated to upper caller so that
+the hibernation could be aware of the result and terminates the process
+if md5 digest fails.
 
-To solve these problems:
+Suggested-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ arch/x86/power/hibernate_64.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-1. Copy the code core_restore_code to a safe page, to avoid the instruction
-   code been overwritten when image kernel pages are being copied.
-2. Set up temporary text mapping for the image kernel's jump address,
-   so that after all the pages have been copied back, the system could
-   jump to this address.
-3. Switch to the original kernel page table during resume.
-
-Furthermore, MD5 hash check for e820 map is also backported from 64bits
-system.
-
-In order to make this patch set more readable, these fixes are splitted
-into several sub patches.
-
-Chen Yu (1):
-  PM / hibernate: Check the success of generating md5 digest before
-    hibernation
-
-Zhimin Gu (11):
-  x86, hibernate: Fix nosave_regions setup for hibernation
-  x86/asm/power: Create stack frames in hibernate_asm_32.S
-  x86, hibernate: Extract the common code of 64/32 bit system
-  x86, hibernate: Enable CONFIG_ARCH_HIBERNATION_HEADER set on 32bit
-    system
-  x86, hibernate: Rename temp_level4_pgt to temp_pgt
-  x86, hibernate: Use temp_pgt as the temporary page table
-  x86, hibernate: Use the page size macro instead of constant value
-  x86, hibernate: Switch to original page table after resumed
-  x86, hibernate: Switch to relocated restore code during resume on
-    32bit system
-  x86, hibernate: Set up temporary text mapping for 32bit system
-  x86, hibernate: Adjust in_suspend after resumed on 32bit system
-
- arch/x86/Kconfig                  |   2 +-
- arch/x86/include/asm/suspend.h    |   8 +
- arch/x86/include/asm/suspend_32.h |   4 +
- arch/x86/kernel/setup.c           |   2 +-
- arch/x86/power/Makefile           |   2 +-
- arch/x86/power/hibernate.c        | 249 ++++++++++++++++++++++++++++++
- arch/x86/power/hibernate_32.c     |  52 +++++--
- arch/x86/power/hibernate_64.c     | 224 +--------------------------
- arch/x86/power/hibernate_asm_32.S |  37 ++++-
- arch/x86/power/hibernate_asm_64.S |   2 +-
- 10 files changed, 335 insertions(+), 247 deletions(-)
- create mode 100644 arch/x86/power/hibernate.c
-
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index f8e3b668d20b..e0de959ad02d 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -265,9 +265,9 @@ static int get_e820_md5(struct e820_table *table, void *buf)
+ 	return ret;
+ }
+ 
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
+-	get_e820_md5(e820_table_firmware, buf);
++	return get_e820_md5(e820_table_firmware, buf);
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -287,8 +287,9 @@ static bool hibernation_e820_mismatch(void *buf)
+ 	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
+ }
+ #else
+-static void hibernation_e820_save(void *buf)
++static int hibernation_e820_save(void *buf)
+ {
++	return 0;
+ }
+ 
+ static bool hibernation_e820_mismatch(void *buf)
+@@ -333,9 +334,7 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 
+ 	rdr->magic = RESTORE_MAGIC;
+ 
+-	hibernation_e820_save(rdr->e820_digest);
+-
+-	return 0;
++	return hibernation_e820_save(rdr->e820_digest);
+ }
+ 
+ /**
 -- 
 2.17.1
