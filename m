@@ -1,30 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: qcom-kryo: Fix section mismatch warning
-Date: Thu, 20 Sep 2018 09:02:45 -0700
-Message-ID: <20180920160245.f4afwfyyz3nd4xvn@vireshk-mac-ubuntu>
-References: <20180919182247.1101-1-natechancellor@gmail.com>
- <CAKwvOdnW8p4Tj2n+Y4XyMMVdD7W90W4NTLkJHKhZ6604ah4fnw@mail.gmail.com>
- <20180919215039.mb7prmmfs5jek3aj@vireshk-mac-ubuntu>
- <20180919215418.y2jsrsj73vy3dudd@vireshk-mac-ubuntu>
- <CAJZ5v0ipkaudrv7W5VP1_e9LERF6DLZuw+HtTf2Si4p=pbv9bw@mail.gmail.com>
+Subject: Re: [PATCH v3] cpufreq: qcom-kryo: Fix section annotations
+Date: Thu, 20 Sep 2018 09:13:08 -0700
+Message-ID: <20180920161308.bitlceo2czyzomsg@vireshk-mac-ubuntu>
+References: <20180920002220.16644-1-natechancellor@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ipkaudrv7W5VP1_e9LERF6DLZuw+HtTf2Si4p=pbv9bw@mail.gmail.com>
+In-Reply-To: <20180920002220.16644-1-natechancellor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: ndesaulniers@google.com, natechancellor@gmail.com, ilia.lin@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Ilia Lin <ilia.lin@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20-09-18, 00:45, Rafael J. Wysocki wrote:
-> Because __init things go away at one point and calling them from the
-> other sections is a bad idea.  OTOH, __exit things are simply not
-> needed in built-in drivers and they are never there if the driver is
-> built-in, so calling them from the other sections is a bad idea too.
+On 19-09-18, 17:22, Nathan Chancellor wrote:
+> There is currently a warning when building the Kryo cpufreq driver into
+> the kernel image:
+> 
+> WARNING: vmlinux.o(.text+0x8aa424): Section mismatch in reference from
+> the function qcom_cpufreq_kryo_probe() to the function
+> .init.text:qcom_cpufreq_kryo_get_msm_id()
+> The function qcom_cpufreq_kryo_probe() references
+> the function __init qcom_cpufreq_kryo_get_msm_id().
+> This is often because qcom_cpufreq_kryo_probe lacks a __init
+> annotation or the annotation of qcom_cpufreq_kryo_get_msm_id is wrong.
+> 
+> Remove the '__init' annotation from qcom_cpufreq_kryo_get_msm_id
+> so that there is no more mismatch warning.
+> 
+> Additionally, Nick noticed that the remove function was marked as
+> '__init' when it should really be marked as '__exit'.
 
-I assumed that the driver is calling platform_driver_probe() and so probe() can
-be marked __init. But it doesn't do that to make deferred probing work.
+I know Rafael asked to merge the two patches into a single one, but I still
+believe its the best to have two separate patches to fix these two separate
+issues. For example, picking this patch for an earlier kernel may produce
+conflicts because the exit code was written at a later point of time and also
+that the below Fixes tag applies only to the first problem only. And the
+individual patch for the exit problem is already on the list.
+
+> Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
+> Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+
+Anyway I am fine if Rafael wants to pick it up this way only.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
