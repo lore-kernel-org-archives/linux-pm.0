@@ -1,309 +1,180 @@
 From: Craig <ctatlor97@gmail.com>
-Subject: Re: [PATCH V12 00/14] Krait clocks + Krait CPUfreq
-Date: Thu, 20 Sep 2018 15:27:21 +0100
-Message-ID: <132152AA-E8D1-49AF-87C7-3A9ECA0766FA@gmail.com>
-References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org> <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org> <d682580d-5070-0271-197f-29d988172937@codeaurora.org> <D8FC68C0-2572-4A86-81D9-D0099D314A45@gmail.com> <F5A89365-C613-4FE2-AD32-DC0AC6DF380B@gmail.com> <d6d3a76c-43eb-4a37-55eb-a407b5267aa4@codeaurora.org>
+Subject: Re: [PATCH v7 3/4] dt-bindings: power: supply: qcom_bms: Add bindings
+Date: Thu, 20 Sep 2018 15:32:29 +0100
+Message-ID: <4BBA3F28-A769-4F09-86DC-1E3906C53B26@gmail.com>
+References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180614151435.6471-1-ctatlor97@gmail.com> <20180614151435.6471-3-ctatlor97@gmail.com> <20180916121045.aptj6nciwskfg4st@earth.universe>
 Mime-Version: 1.0
 Content-Type: text/plain;
  charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d6d3a76c-43eb-4a37-55eb-a407b5267aa4@codeaurora.org>
+In-Reply-To: <20180916121045.aptj6nciwskfg4st@earth.universe>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>, mark.rutland@arm.com, robh@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux@armlinux.org.uk, thierry.escande@linaro.org, linux-kernel@vger.kernel.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, niklas.cassel@linaro.org
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: linux-arm-msm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Randy Dunlap <rdunlap@infradead.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 20 September 2018 14:01:57 BST, Sricharan R <sricharan@codeaurora=2Eorg=
-> wrote:
+On 16 September 2018 13:10:45 BST, Sebastian Reichel <sebastian=2Ereichel@=
+collabora=2Ecom> wrote:
+>Hi,
 >
+>Sorry for my long delay in reviewing this=2E I like the binding,
+>but the "qcom," specific properties should become common properties
+>in
 >
->On 9/20/2018 1:54 AM, Craig wrote:
->> Yup, this patch seems to have fixed the higher frequencies from the
->quick test I did=2E
+>Documentation/devicetree/bindings/power/supply/battery=2Etxt
+Thanks for the review, what bindings for ocv would you prefer? The spreadt=
+rum ones or mine?
+>and referenced via monitored-battery=2E
+>
+>-- Sebastian
+>
+>On Thu, Jun 14, 2018 at 04:14:16PM +0100, Craig Tatlor wrote:
+>> Add bindings for the Qualcomm Battery Monitoring system=2E
 >>=20
->  Thanks !!=2E Can i take that as Craig Tatlor <ctatlor97@gmail=2Ecom> ?
-Sure, no problem
->
->Regards,
-> Sricharan
->
->       tested-by:=20
->> On 7 September 2018 15:28:53 BST, Craig Tatlor <ctatlor97@gmail=2Ecom>
->wrote:
->>>
->>>
->>> On 7 September 2018 10:57:34 BST, Sricharan R
->>> <sricharan@codeaurora=2Eorg> wrote:
->>>> Hi Craig,
->>>>
->>>>
->>>>>> [v12]
->>>>>>   * Added my signed-off that was missing in some patches=2E
->>>>>>   * Added Bjorn's acked that i missed earlier=2E
->>>>>>
->>>>>
->>>>>   Can you give this a try on your 8974 device and check if the
->>>>>   pvs version reporting, scaling for higher frequencies are fine ?
->>>>>   Sorry, i could not get hold of a 8974 device=2E So in-case if you
->>>> still
->>>>>   have the issues with higher frequencies, can you give a quick
->>> debug
->>>>>   and report=2E That would be of great help=2E
->>>>>
->>>>   Ping on this =2E=2E
->>>
->>> Hi, didn't see your last message,
->>>
->>> Will have a try on mine in the weekend and report back=2E
->>>>
->>>> Regards,
->>>> Sricharan
->>>>
->>>>> Regards,
->>>>>  Sricharan
->>>>>
->>>>>
->>>>>> [v11]
->>>>>>   * Dropped patch 13 and 14 from v10 and
->>>>>>     merged the qcom-cpufreq-krait driver to the existing
->>>> qcom-cpufreq-kryo=2Ec
->>>>>>   * Rebased on top of clk-next
->>>>>>   * Fixed a bug while populating the pvs version for krait=2E
->>>>>>
->>>>>> [v10]
->>>>>>   * Addressed Stephen's comments to add clocks bindings
->properties
->>>>>>     to the newly introduced nodes=2E
->>>>>>   * Added a change to include opp-supported-hw to qcom-cpufreq=2Ec
->>>>>>   * Rebased on top of clk-next
->>>>>>   * Although there were minor changes to bindings and the driver
->>>>>>     retained the acked-by tags from Rob and Viresh respectively=2E=
+>> Signed-off-by: Craig Tatlor <ctatlor97@gmail=2Ecom>
+>> Reviewed-by: Rob Herring <robh@kernel=2Eorg>
+>> ---
+>>=20
+>> * Changes from v6:
+>>   s/celcius/celsius
+>>   change uah to uAh=2E
+>>=20
+>> * Changes from v5:                                                  =20
+>                                                                      =20
+>>   Mentions which values are 8 bit=2E                                  =
 =20
->=20
->>>
->>>>>>
->>>>>> [v9]
->>>>>>   * Fixed a rebase issue in Makefile and added Tag from Robh=2E
->>>>>>
->>>>>> [v8]
->>>>>>   * Fixed a bug in path#14 pointed out by Viresh and also added
->>>> tags=2E
->>>>>>     No change in any other patch=2E
->>>>>>
->>>>>> [v7]
->>>>>>   * Fixed comments from Viresh for cleaning up the error handling
->>>>>>     in qcom-cpufreq=2Ec=2E Also changed the init function to latein=
-it
->>>>>>     call=2E This is required because nvmem which gets initialised
->>> with
->>>>>>     module_init needs to go first=2E
->>>>>>   * Fixed Rob's comments for bindings documentation
->>>>>>   * Fixed kbuild build issue in clk-lpc32xx=2Ec
->>>>>>   * Rebased on top of clk-next
->>>>>>
->>>>>> [v6]
->>>>>>   * Adrressed comments from Viresh for patch #14 in v5 [5]
->>>>>>   * Introduced a new binding operating-points-v2-krait-cpu
->>>>>>     as per discussion with Rob
->>>>>>   * Added Review tags
->>>>>>
->>>>>> [v5]
->>>>>>   * Addressed comments from Rob for bindings
->>>>>>   * Addressed comments from Viresh to use
->dev_pm_opp_set_prop_name,
->>>> accordingly
->>>>>>     dropped patch #12 and corrected patch #11 from previous patch
->>>> set in [4]
->>>>>>   * Converted to use #spdx tags for newly introduced files
->>>>>>
->>>>>> Mostly a resend of the v3 posted by Stephen quite some time back
->>> [1]
->>>>>> except for few changes=2E
->>>>>>   Based on reading some feedback from list,
->>>>>>   * Dropped the patch "clk: Add safe switch hook" from v3 [2]=2E
->>>>>>     Now this is taken care by patch#10 in this series only for
->>>> Krait=2E
->>>>>>   * Dropped the path "clk: Avoid sending high rates to downstream
->>>>>> 		      clocks during set_rate" from v3 [3]=2E
->>>>>>   * Rebased on top of clk-next=2E
->>>>>>   * Dropped the DT update from the series=2E Will send separately
->>>>>>   * Now with cpufreq-dt+opp supporting voltage scaling,
->registering
->>>> the
->>>>>>     krait cpu supplies in DT should be sufficient=2E But one issue
->>> is,
->>>>>>     the qcom-cpufreq drivers reads the efuse and based on that
->>>> registers
->>>>>>     the opp data and then registers the cpufreq-dt device=2E So
->when
->>>>>>     cpufreq-dt driver probes and registers the regulator to the
->OPP
->>>> framework,
->>>>>>     it expects that the opp data for the device should not be
->>>> registered before
->>>>>>     the regulator=2E Will send a RFC patch removing that check, to
->>>> find out the
->>>>>>     right way of doing it=2E
->>>>>>
->>>>>> These patches provide cpufreq scaling on devices with Krait CPUs=2E
->>>>>> In Krait CPU designs there's one PLL and two muxes per CPU,
->>> allowing
->>>>>> us to switch CPU frequencies independently=2E
->>>>>>
->>>>>> 				 secondary
->>>>>> 	 +-----+                    +
->>>>>> 	 | QSB |-------+------------|\
->>>>>> 	 +-----+       |            | |-+
->>>>>> 		       |    +-------|/  |
->>>>>> 		       |    |       +   |
->>>>>> 	 +-----+       |    |           |
->>>>>> 	 | PLL |----+-------+           |   primary
->>>>>> 	 +-----+    |  |                |     +
->>>>>> 		    |  |                +-----|\       +------+
->>>>>> 	 +-------+  |  |                      | \      |      |
->>>>>> 	 | HFPLL |----------+-----------------|  |-----| CPU0 |
->>>>>> 	 +-------+  |  |    |                 |  |     |      |
->>>>>> 		    |  |    | +-----+         | /      +------+
->>>>>> 		    |  |    +-| / 2 |---------|/
->>>>>> 		    |  |      +-----+         +
->>>>>> 		    |  |         secondary
->>>>>> 		    |  |            +
->>>>>> 		    |  +------------|\
->>>>>> 		    |               | |-+
->>>>>> 		    +---------------|/  |   primary
->>>>>> 				    +   |     +
->>>>>> 					+-----|\       +------+
->>>>>> 	 +-------+                            | \      |      |
->>>>>> 	 | HFPLL |----------------------------|  |-----| CPU1 |
->>>>>> 	 +-------+          |                 |  |     |      |
->>>>>> 			    | +-----+         | /      +------+
->>>>>> 			    +-| / 2 |---------|/
->>>>>> 			      +-----+         +
->>>>>>
->>>>>> To support this in the common clock framework we model the muxes,
->>>>>> dividers, and PLLs as different clocks=2E CPUfreq only interacts
->>>>>> with the primary mux (farthest right in the diagram)=2E When
->CPUfreq
->>>>>> sets a rate, the mux code finds the best parent that can provide
->>> the
->>>> rate=2E
->>>>>> Due to the design, QSB and the top PLL are always a fixed rate
->and
->>>> thus
->>>>>> only support one frequency each=2E These sources provide the lowest
->>>>>> frequencies for the CPUs=2E The HFPLLs are where we can make the
->CPU
->>>> go
->>>>>> faster (GHz range)=2E Sometimes we need to run the HFPLL twice as
->>>>>> fast and divide it by two to get a particular frequency=2E
->>>>>>
->>>>>> When switching rates we can't leave the CPU clocked by the HFPLL
->>>> because
->>>>>> we need to turn off the output of the PLL when changing its
->>>> frequency=2E
->>>>>> This means we have to switch over to the secondary mux and use
->one
->>>> of the
->>>>>> fixed sources=2E This is why we need something like the safe parent
->>>> patch=2E
->>>>>>
->>>>>> [1]
->>>>
->http://lists=2Einfradead=2Eorg/pipermail/linux-arm-kernel/2015-March/3326=
-07=2Ehtml
->>>>>> [2]
->>>>
->http://lists=2Einfradead=2Eorg/pipermail/linux-arm-kernel/2015-March/3326=
-15=2Ehtml
->>>>>> [3]
->>>>
->http://lists=2Einfradead=2Eorg/pipermail/linux-arm-kernel/2015-March/3326=
-08=2Ehtml
->>>>>> [4] https://lwn=2Enet/Articles/740994/=20
->>>>>> [5] https://lkml=2Eorg/lkml/2017/12/19/537
->>>>>>
->>>>>>
->>>>>> Sricharan R (3):
->>>>>>   clk: qcom: Add safe switch hook for krait mux clocks
->>>>>>   cpufreq: qcom: Re-organise kryo cpufreq to use it for other
->nvmem
->>>>>>     based qcom socs
->>>>>>   cpufreq: qcom: Add support for krait based socs
->>>>>>
->>>>>> Stephen Boyd (11):
->>>>>>   ARM: Add Krait L2 register accessor functions
->>>>>>   clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
->>>>>>   clk: qcom: Add HFPLL driver
->>>>>>   dt-bindings: clock: Document qcom,hfpll
->>>>>>   clk: qcom: Add MSM8960/APQ8064's HFPLLs
->>>>>>   clk: qcom: Add IPQ806X's HFPLLs
->>>>>>   clk: qcom: Add support for Krait clocks
->>>>>>   clk: qcom: Add KPSS ACC/GCC driver
->>>>>>   dt-bindings: arm: Document qcom,kpss-gcc
->>>>>>   clk: qcom: Add Krait clock controller driver
->>>>>>   dt-bindings: clock: Document qcom,krait-cc
->>>>>>
->>>>>>  =2E=2E=2E/devicetree/bindings/arm/msm/qcom,kpss-acc=2Etxt  |  19 +
->>>>>>  =2E=2E=2E/devicetree/bindings/arm/msm/qcom,kpss-gcc=2Etxt  |  44 +=
-++
->>>>>>  =2E=2E=2E/devicetree/bindings/clock/qcom,hfpll=2Etxt       |  60 +=
-+++
->>>>>>  =2E=2E=2E/devicetree/bindings/clock/qcom,krait-cc=2Etxt    |  34 +=
-+
->>>>>>  =2E=2E=2E/{kryo-cpufreq=2Etxt =3D> qcom-nvmem-cpufreq=2Etxt}   |  =
- 7 +-
->>>>>>  arch/arm/common/Kconfig                            |   3 +
->>>>>>  arch/arm/common/Makefile                           |   1 +
->>>>>>  arch/arm/common/krait-l2-accessors=2Ec               |  48 +++
->>>>>>  arch/arm/include/asm/krait-l2-accessors=2Eh          |   9 +
->>>>>>  drivers/clk/qcom/Kconfig                           |  28 ++
->>>>>>  drivers/clk/qcom/Makefile                          |   5 +
->>>>>>  drivers/clk/qcom/clk-hfpll=2Ec                       | 244
->>>> +++++++++++++
->>>>>>  drivers/clk/qcom/clk-hfpll=2Eh                       |  44 +++
->>>>>>  drivers/clk/qcom/clk-krait=2Ec                       | 126 +++++++
->>>>>>  drivers/clk/qcom/clk-krait=2Eh                       |  40 +++
->>>>>>  drivers/clk/qcom/gcc-ipq806x=2Ec                     |  82 +++++
->>>>>>  drivers/clk/qcom/gcc-msm8960=2Ec                     | 172
->+++++++++
->>>>>>  drivers/clk/qcom/hfpll=2Ec                           |  96 +++++
->>>>>>  drivers/clk/qcom/kpss-xcc=2Ec                        |  87 +++++
->>>>>>  drivers/clk/qcom/krait-cc=2Ec                        | 397
->>>> +++++++++++++++++++++
->>>>>>  drivers/cpufreq/Kconfig=2Earm                        |   6 +-
->>>>>>  drivers/cpufreq/Makefile                           |   2 +-
->>>>>>  drivers/cpufreq/cpufreq-dt-platdev=2Ec               |   5 +
->>>>>>  drivers/cpufreq/qcom-cpufreq-kryo=2Ec                | 232
->>>> ------------
->>>>>>  drivers/cpufreq/qcom-cpufreq-nvmem=2Ec               | 387
->>>> ++++++++++++++++++++
->>>>>>  include/dt-bindings/clock/qcom,gcc-msm8960=2Eh       |   2 +
->>>>>>  26 files changed, 1941 insertions(+), 239 deletions(-)
->>>>>>  create mode 100644
->>>> Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc=2Etxt
->>>>>>  create mode 100644
->>>> Documentation/devicetree/bindings/clock/qcom,hfpll=2Etxt
->>>>>>  create mode 100644
->>>> Documentation/devicetree/bindings/clock/qcom,krait-cc=2Etxt
->>>>>>  rename Documentation/devicetree/bindings/opp/{kryo-cpufreq=2Etxt
->=3D>
->>>> qcom-nvmem-cpufreq=2Etxt} (98%)
->>>>>>  create mode 100644 arch/arm/common/krait-l2-accessors=2Ec
->>>>>>  create mode 100644 arch/arm/include/asm/krait-l2-accessors=2Eh
->>>>>>  create mode 100644 drivers/clk/qcom/clk-hfpll=2Ec
->>>>>>  create mode 100644 drivers/clk/qcom/clk-hfpll=2Eh
->>>>>>  create mode 100644 drivers/clk/qcom/clk-krait=2Ec
->>>>>>  create mode 100644 drivers/clk/qcom/clk-krait=2Eh
->>>>>>  create mode 100644 drivers/clk/qcom/hfpll=2Ec
->>>>>>  create mode 100644 drivers/clk/qcom/kpss-xcc=2Ec
->>>>>>  create mode 100644 drivers/clk/qcom/krait-cc=2Ec
->>>>>>  delete mode 100644 drivers/cpufreq/qcom-cpufreq-kryo=2Ec
->>>>>>  create mode 100644 drivers/cpufreq/qcom-cpufreq-nvmem=2Ec
->>>>>>
->>>>>
+>                                                                      =20
+>>                                                                     =20
+>                                                                      =20
+>> * Changes from v4:                                                  =20
+>                                                                      =20
+>>   Uses proper units and expands some definitions,                   =20
+>                                                                      =20
+>>   along with changing vadc@ to adc@=2E   =20
+>>=20
+>>  =2E=2E=2E/bindings/power/supply/qcom_bms=2Etxt        | 92
+>+++++++++++++++++++
+>>  1 file changed, 92 insertions(+)
+>>  create mode 100644
+>Documentation/devicetree/bindings/power/supply/qcom_bms=2Etxt
+>>=20
+>> diff --git
+>a/Documentation/devicetree/bindings/power/supply/qcom_bms=2Etxt
+>b/Documentation/devicetree/bindings/power/supply/qcom_bms=2Etxt
+>> new file mode 100644
+>> index 000000000000=2E=2Edc0a9ab9aa64
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/qcom_bms=2Etxt
+>> @@ -0,0 +1,92 @@
+>> +Qualcomm Battery Monitoring System
+>> +
+>> +The Qualcomm Battery Monitoring System is found inside of Qualcomm
+>PM8941
+>> +PMICs=2E It provides open circuit voltage (OCV) and coulomb counter
+>registers
+>> +that allow the OS to infer a capacity level=2E
+>> +
+>> +Required properties:
+>> +- compatible:                   Should contain "qcom,pm8941-bms"=2E
+>> +- reg:                          Specifies the SPMI address and
+>length of the
+>> +				controller's registers=2E
+>> +- interrupts:                   OCV threshold interrupt=2E
+>> +- io-channels:                  Should contain IIO channel specifier
+>for the
+>> +				ADC channel that reports battery temperature=2E
+>> +- io-channel-names:             Should contain "temp"=2E
+>> +- qcom,fcc-temp-legend-celsius: An 8 bit array containing the
+>temperature,
+>> +				in degC, for each column of the full charge
+>> +				capacity lookup table=2E
+>> +- qcom,fcc-lut-microamp-hours:  An array of full charge capacity
+>values in uAh,
+>> +				one entry for each temperature defined in in
+>> +				qcom,fcc-temp-legend-celsius=2E
+>> +- qcom,ocv-temp-legend-celsius: An 8 bit array containing the
+>temperature,
+>> +				in degC, for each column of the OCV lookup
+>> +				table=2E
+>> +- qcom,ocv-capacity-legend:     An 8 bit array containing the
+>capacity for each
+>> +				row of the OCV lookup table=2E
+>> +- qcom,ocv-lut-microvolt:       An array of OCV values in uV, one
+>entry for each
+>> +				capacity defined in qcom,ocv-capacity-legend=2E
+>> +
+>> +Example:
+>> +		pm8941_vadc: adc@3100 {
+>> +			compatible =3D "qcom,spmi-vadc";
+>> +			reg =3D <0x3100>;
+>> +			interrupts =3D <0x0 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
+>> +			#address-cells =3D <1>;
+>> +			#size-cells =3D <0>;
+>> +			#io-channel-cells =3D <1>;
+>> +
+>> +			bat_temp {
+>> +				reg =3D <VADC_LR_MUX1_BAT_THERM>;
+>> +			};
+>> +		};
+>> +
+>> +		bms@4000 {
+>> +			compatible =3D "qcom,pm8941-bms";
+>> +			reg =3D <0x4000>;
+>> +			interrupts =3D <0x0 0x40 0x4 IRQ_TYPE_EDGE_RISING>;
+>> +			interrupt-names =3D "ocv_thr";
+>> +
+>> +			io-channels =3D <&pm8941_vadc VADC_LR_MUX1_BAT_THERM>;
+>> +			io-channel-names =3D "temp";
+>> +
+>> +			qcom,fcc-temp-legend-celsius =3D /bits/ 8 <(-10) 0 25 50 65>;
+>> +			qcom,fcc-lut-microamp-hours =3D <3230000 3260000 3380000 3410000
+>3360000>;
+>> +
+>> +			qcom,ocv-capacity-legend =3D /bits/ 8 <100 95 90 85 80 75
+>> +							     70 65 60 55 50 45
+>> +							     40 35 30 25 20 15
+>> +							     10 9 8 7 6 5 4 3 2
+>> +							     1 0>;
+>> +			qcom,ocv-temp-legend-celsius =3D /bits/ 8 <(-10) 0 25 50 65>;
+>> +			qcom,ocv-lut-microvolt =3D <43050000 43050000 43030000 42990000
+>42950000
+>> +						  42770000 42570000 42550000 42510000 42310000
+>> +						  42180000 41980000 41970000 41920000 41720000
+>> +						  41590000 41390000 41450000 41400000 41200000
+>> +						  41010000 40810000 40920000 40890000 40690000
+>> +						  40480000 40280000 40440000 40420000 40220000
+>> +						  40040000 39840000 40010000 39980000 39780000
+>> +						  39620000 39420000 39550000 39560000 39360000
+>> +						  39210000 39010000 39090000 39160000 38960000
+>> +						  38830000 38630000 38740000 38790000 38590000
+>> +						  38550000 38350000 38440000 38430000 38230000
+>> +						  38310000 38110000 38230000 38180000 37980000
+>> +						  38190000 37990000 38040000 38000000 37800000
+>> +						  38060000 37860000 37900000 37840000 37640000
+>> +						  37890000 37690000 37770000 37660000 37460000
+>> +						  37720000 37520000 37560000 37450000 37250000
+>> +						  37480000 37280000 37290000 37250000 37050000
+>> +						  37240000 37040000 37020000 36990000 36790000
+>> +						  37030000 36830000 36730000 36700000 36500000
+>> +						  36940000 36740000 36670000 36640000 36440000
+>> +						  36850000 36650000 36600000 36590000 36390000
+>> +						  36750000 36550000 36520000 36550000 36350000
+>> +						  36690000 36490000 36380000 36400000 36200000
+>> +						  36460000 36260000 36180000 36120000 35920000
+>> +						  36080000 35880000 35680000 35640000 35440000
+>> +						  35510000 35310000 35050000 35020000 34820000
+>> +						  34730000 34530000 34300000 34250000 34050000
+>> +						  33870000 33670000 33040000 32820000 32620000
+>> +						  30000000 30000000 30000000 30000000 30000000>;
+>> +		};
+>> +	};
+>> +};
+>> --=20
+>> 2=2E17=2E0
 >>=20
 
 --=20
-Please, Don't Panic
+Sent from my Android device with K-9 Mail=2E Please excuse my brevity=2E
