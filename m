@@ -1,57 +1,88 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 08/12] cpufreq: mvebu: Remove OPPs using dev_pm_opp_remove()
-Date: Thu, 20 Sep 2018 09:59:25 +0200
-Message-ID: <1645527.R4f0u0jryK@aspire.rjw.lan>
-References: <cover.1537394233.git.viresh.kumar@linaro.org> <883071c4bd9a6e45bf0b5e45575d110eaeb2e6d0.1537394233.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: qcom-kryo: Fix section annotations
+Date: Thu, 20 Sep 2018 10:09:26 +0200
+Message-ID: <109831664.7ckmCUV2ib@aspire.rjw.lan>
+References: <20180920002220.16644-1-natechancellor@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <883071c4bd9a6e45bf0b5e45575d110eaeb2e6d0.1537394233.git.viresh.kumar@linaro.org>
+In-Reply-To: <20180920002220.16644-1-natechancellor@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Ilia Lin <ilia.lin@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 20, 2018 12:20:27 AM CEST Viresh Kumar wrote:
-> dev_pm_opp_cpumask_remove_table() is going to change in the next commit
-> and will not remove dynamic OPPs automatically. They must be removed
-> with a call to dev_pm_opp_remove().
+On Thursday, September 20, 2018 2:22:21 AM CEST Nathan Chancellor wrote:
+> There is currently a warning when building the Kryo cpufreq driver into
+> the kernel image:
 > 
-> Reviewed-by: Gregory CLEMENT <gregory.clement@bootlin.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> WARNING: vmlinux.o(.text+0x8aa424): Section mismatch in reference from
+> the function qcom_cpufreq_kryo_probe() to the function
+> .init.text:qcom_cpufreq_kryo_get_msm_id()
+> The function qcom_cpufreq_kryo_probe() references
+> the function __init qcom_cpufreq_kryo_get_msm_id().
+> This is often because qcom_cpufreq_kryo_probe lacks a __init
+> annotation or the annotation of qcom_cpufreq_kryo_get_msm_id is wrong.
+> 
+> Remove the '__init' annotation from qcom_cpufreq_kryo_get_msm_id
+> so that there is no more mismatch warning.
+> 
+> Additionally, Nick noticed that the remove function was marked as
+> '__init' when it should really be marked as '__exit'.
+> 
+> Fixes: 46e2856b8e18 ("cpufreq: Add Kryo CPU scaling driver")
+> Reported-by: Nick Desaulniers <ndesaulniers@google.com>
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
 > ---
->  drivers/cpufreq/mvebu-cpufreq.c | 9 ++-------
->  1 file changed, 2 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/mvebu-cpufreq.c b/drivers/cpufreq/mvebu-cpufreq.c
-> index 31513bd42705..6d33a639f902 100644
-> --- a/drivers/cpufreq/mvebu-cpufreq.c
-> +++ b/drivers/cpufreq/mvebu-cpufreq.c
-> @@ -84,9 +84,10 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
+> v1 -> v2:
+> 
+> Add '__init' to qcom_cpufreq_kryo_probe instead of removing it from
+> qcom_cpufreq_kryo_get_msm_id.
+> 
+> v2 -> v3:
+> 
+> Go back to removing '__init' from qcom_cpufreq_kryo_get_msm_id instead
+> of adding '__init' to qcom_cpufreq_kryo_probe, which causes another
+> mismatch warning and add the '__init' -> '__exit' conversion noticed by
+> Nick.
+> 
+> The alternative solution is adding '__init' to qcom_cpufreq_kryo_probe,
+> removing the probe definition from qcom_cpufreq_kryo_driver, then
+> changing platform_driver_register to platform_driver_probe in
+> qcom_cpufreq_kryo_init, like [1]. I don't know how that would perform
+> given that I don't have a way to test this device.
+> 
+> [1]: https://lore.kernel.org/lkml/20180919185341.31298-1-natechancellor@gmail.com/
+> 
+>  drivers/cpufreq/qcom-cpufreq-kryo.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/qcom-cpufreq-kryo.c b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> index a1830fa25fc5..2a3675c24032 100644
+> --- a/drivers/cpufreq/qcom-cpufreq-kryo.c
+> +++ b/drivers/cpufreq/qcom-cpufreq-kryo.c
+> @@ -44,7 +44,7 @@ enum _msm8996_version {
 >  
->  		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk) / 2, 0);
->  		if (ret) {
-> +			dev_pm_opp_remove(cpu_dev, clk_get_rate(clk));
->  			clk_put(clk);
->  			dev_err(cpu_dev, "Failed to register OPPs\n");
-> -			goto opp_register_failed;
-> +			return ret;
->  		}
+>  struct platform_device *cpufreq_dt_pdev, *kryo_cpufreq_pdev;
 >  
->  		ret = dev_pm_opp_set_sharing_cpus(cpu_dev,
-> @@ -99,11 +100,5 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
->  
->  	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
->  	return 0;
-> -
-> -opp_register_failed:
-> -	/* As registering has failed remove all the opp for all cpus */
-> -	dev_pm_opp_cpumask_remove_table(cpu_possible_mask);
-> -
-> -	return ret;
+> -static enum _msm8996_version __init qcom_cpufreq_kryo_get_msm_id(void)
+> +static enum _msm8996_version qcom_cpufreq_kryo_get_msm_id(void)
+>  {
+>  	size_t len;
+>  	u32 *msm_id;
+> @@ -222,7 +222,7 @@ static int __init qcom_cpufreq_kryo_init(void)
 >  }
->  device_initcall(armada_xp_pmsu_cpufreq_init);
+>  module_init(qcom_cpufreq_kryo_init);
+>  
+> -static void __init qcom_cpufreq_kryo_exit(void)
+> +static void __exit qcom_cpufreq_kryo_exit(void)
+>  {
+>  	platform_device_unregister(kryo_cpufreq_pdev);
+>  	platform_driver_unregister(&qcom_cpufreq_kryo_driver);
 > 
 
-Please feel free to take this one via OPP.
+OK, thanks!
+
+I'll queue this up for 4.19-rc6 if there are no objections.
