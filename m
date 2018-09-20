@@ -1,62 +1,127 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 2/2] power: supply: Add Spreadtrum SC27XX fuel gauge unit driver
-Date: Thu, 20 Sep 2018 08:40:46 +0800
-Message-ID: <CAMz4kuKboR+QBJ9sQoiSA0SQHGioufpjgv7nKYCugfDewx5PLA@mail.gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: Re: [PATCH 1/2] dt-bindings: power: Add Spreadtrum SC27XX fuel gauge
+ unit documentation
+Date: Thu, 20 Sep 2018 02:46:12 +0200
+Message-ID: <20180920004612.63biirau5qxnbxxo@earth.universe>
 References: <1b3f165e2a806dd3d4b7712160ee3bda72f7d675.1536736399.git.baolin.wang@linaro.org>
- <1295864a38810a6db6c97e298c6663ae2b1350c1.1536736399.git.baolin.wang@linaro.org>
- <20180916143552.3oxjqpo6vravh5cy@earth.universe> <CAMz4kuJcA-Oo1vTtW=gf_oFmZ3TmgNxYPxO5wuWpy0Kcg2LFDw@mail.gmail.com>
- <20180920003630.ygvjnuutmd5n2vre@earth.universe>
+ <20180916135721.rhu3rn4fsrmmgnbf@earth.universe>
+ <CAMz4ku+4pJHivw2FLjtpaBs7yQxgDH-kZ3AgHWWQr5Lb_UcYwg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="xcwdf3hh3w7gnphb"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180920003630.ygvjnuutmd5n2vre@earth.universe>
+Content-Disposition: inline
+In-Reply-To: <CAMz4ku+4pJHivw2FLjtpaBs7yQxgDH-kZ3AgHWWQr5Lb_UcYwg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Craig Tatlor <ctatlor97@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
+
+
+--xcwdf3hh3w7gnphb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On 20 September 2018 at 08:36, Sebastian Reichel
-<sebastian.reichel@collabora.com> wrote:
-> Hi,
->
-> On Mon, Sep 17, 2018 at 12:01:51PM +0800, Baolin Wang wrote:
-> [...]
->> >> +static int sc27xx_fgu_parse_dt(struct sc27xx_fgu_data *data,
->> >> +                            struct device_node *np)
->> >> +{
->> >> +     const __be32 *list;
->> >> +     int i, len, size, ret;
->> >> +
->> >> +     ret = of_property_read_u32(np, "reg", &data->base);
->> >> +     if (ret) {
->> >> +             dev_err(data->dev, "failed to get fgu address\n");
->> >> +             return ret;
->> >> +     }
->> >> +
->> >> +     data->gpiod = devm_gpiod_get_optional(data->dev, "bat-detect", GPIOD_IN);
->> >> +     if (IS_ERR(data->gpiod)) {
->> >> +             dev_err(data->dev, "failed to get battery detection GPIO\n");
->> >> +             return PTR_ERR(data->gpiod);
->> >> +     }
->> >
->> > According to the binding (and the remaining code!) this gpio is not
->> > optional.
->>
->> Yes, they are not optional. If we can not get the detection GPIO, we
->> will return errors. So am I missing something else?
->>
->> Thanks for your comments.
->
-> devm_gpiod_get_optional => devm_gpiod_get
->
-> The _optional variant will return NULL if the GPIO is not specified in DT.
-> The variant without _optional will return an error instead.
+On Mon, Sep 17, 2018 at 11:43:30AM +0800, Baolin Wang wrote:
+> Hi Sebastian,
+>=20
+> On 16 September 2018 at 21:57, Sebastian Reichel
+> <sebastian.reichel@collabora.com> wrote:
+> > Hi,
+> >
+> > On Wed, Sep 12, 2018 at 03:29:38PM +0800, Baolin Wang wrote:
+> >> This patch adds the binding documentation for Spreadtrum SC27XX series=
+ PMICs
+> >> fuel gauge unit device, which is used to calculate the battery capacit=
+y.
+> >>
+> >> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> >> ---
+> >>  .../devicetree/bindings/power/supply/sc27xx-fg.txt |   55 +++++++++++=
++++++++++
+> >>  1 file changed, 55 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/power/supply/sc2=
+7xx-fg.txt
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.=
+txt b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+> >> new file mode 100644
+> >> index 0000000..7447bae
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
+> >> @@ -0,0 +1,55 @@
+> >> +Spreadtrum SC27XX PMICs Fuel Gauge Unit Power Supply Bindings
+> >> +
+> >> +Required properties:
+> >> +- compatible: Should be one of the following:
+> >> +  "sprd,sc2720-fgu",
+> >> +  "sprd,sc2721-fgu",
+> >> +  "sprd,sc2723-fgu",
+> >> +  "sprd,sc2730-fgu",
+> >> +  "sprd,sc2731-fgu".
+> >> +- reg: The address offset of fuel gauge unit.
+> >> +- bat-detect-gpio: GPIO for battery detection.
+> >> +- io-channels: Specify the IIO ADC channel to get temperature.
+> >> +- io-channel-names: Should be "bat-temp".
+> >> +- sprd,inner-resist: Specify the the battery inner resistance (mOhm).
+> >
+> > This should be a property of the battery.without the sprd, prefix.
+>=20
+> Right. But I did not find one proper property of the battery, so I
+> will add one new standard property of battery
 
-Ah, you are definitely correct. I missed _optional and thanks for
-pointing this out.
+Thanks.
 
--- 
-Baolin Wang
-Best Regards
+> named 'inner-resistance-microohm' in next version. Is it OK for you?
+
+The proper suffix is -micro-ohms according to
+Documentation/devicetree/bindings/property-units.txt
+
+Also the proper English term is internal resistance as far
+as I know (and Wikipedia also names it this way), so I
+suggest to name the property 'internal-resistance-micro-ohms'.
+
+> >> +- sprd,ocv-cap-table: Provide the battery capacity percent with corre=
+sponding
+> >> +  open circuit voltage (ocv) of the battery, which is used to look up=
+ current
+> >> +  battery capacity according to current baterry ocv values.
+> >
+> > This should also be part of the battery binding. I just reviewed a
+> > patchset for the Qualcomm Battery Monitoring System, which needs the
+> > same functionality. The Qualcomm binding is more advanced, but
+> > should also support this simpler case. Thus I think it makes sense
+> > to use its description as base for adding support for this feature
+> > to Documentation/devicetree/bindings/power/supply/battery.txt
+>=20
+> That's great. But could you give me the link of Qualcomm binding,
+> which I can change my bindings. Thanks for your comments.
+
+https://patchwork.kernel.org/patch/10464633/
+
+-- Sebastian
+
+--xcwdf3hh3w7gnphb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlui7dQACgkQ2O7X88g7
++pqS/g/9FnEPHKRIBRw/MTICOD5x5VMJlGCPl5dqZfRkxQwLlwPCY3LnhrNjTE5e
+i2xn34dV8o5jIMiZvrnbobBejknjl2w8wbRoXzFZaOurTT+in3ECEqGtL/7y/H6U
+RI75GNgMcST4y+FRH0UCI3+6gg2gDmWKChzoBgLii71BFKTZlVmFzSjInIpr6bjV
+xMbfz8eT5xV8iVdy6/GbDpV4+yHIko/MiMznf8GjaSHjhcF66f/HKegOqGauMXCt
+yBaSC3nLhryGRLkdo08U1H2XYWJ3cD2P55Crix5Qlk8WR5bK/OGHEaHWsQPKqNgD
+L9CBrytcHQP5BjCO/aTudt826n7NiPDAfk1+ACBwKV17yAd2nlWDVhi3X3fzRBts
+IsWpytu2eYvT2Qb7A0AmHcoPV+2yIQ/EolNsf0HgA1cg7CKRg5B2jxWhXsV9w2SP
+67JI3O/7xLh2gpkcxGkmeYhmJf27y1/kvp1Xtqak3IMCFk7oGq6MykKdErn9wBma
+i1n4GNLcAMrgkaTJ1Uk6JFDjipsR0J+Vd2Vwqjau0MLdlefksZP9XdfRIMnBJqR3
+nh/q7hI2bIkv8EY2ZpmAL+8Gibe2l9Y/71yuRy1+JQn5ZmXPNAk+m/XrpfW4l0DT
+JE8YAs+Gzdp2OEdohymSzgaK5A8gogqchRqh/BOC+vc50c1GRH8=
+=aiuD
+-----END PGP SIGNATURE-----
+
+--xcwdf3hh3w7gnphb--
