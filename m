@@ -1,7 +1,7 @@
 From: Sricharan R <sricharan@codeaurora.org>
 Subject: Re: [PATCH V12 00/14] Krait clocks + Krait CPUfreq
-Date: Thu, 20 Sep 2018 18:31:57 +0530
-Message-ID: <d6d3a76c-43eb-4a37-55eb-a407b5267aa4@codeaurora.org>
+Date: Thu, 20 Sep 2018 18:33:31 +0530
+Message-ID: <fb81b8d5-3d24-b413-8d59-33cb70e46f8b@codeaurora.org>
 References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
  <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org>
  <d682580d-5070-0271-197f-29d988172937@codeaurora.org>
@@ -21,13 +21,13 @@ List-Id: linux-pm@vger.kernel.org
 
 On 9/20/2018 1:54 AM, Craig wrote:
 > Yup, this patch seems to have fixed the higher frequencies from the quick test I did.
-> 
-  Thanks !!. Can i take that as Craig Tatlor <ctatlor97@gmail.com> ?
+>
+      Thanks !!. Can i take that as 
+          Tested-by: Craig Tatlor <ctatlor97@gmail.com>  ?
 
 Regards,
  Sricharan
-
-       tested-by: 
+ 
 > On 7 September 2018 15:28:53 BST, Craig Tatlor <ctatlor97@gmail.com> wrote:
 >>
 >>
