@@ -1,118 +1,74 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v7 3/4] dt-bindings: power: supply: qcom_bms: Add bindings
-Date: Fri, 21 Sep 2018 00:13:11 +0200
-Message-ID: <20180920221311.mrynysyh54si4g7f@earth.universe>
-References: <20180407135934.26122-1-ctatlor97@gmail.com>
- <20180614151435.6471-1-ctatlor97@gmail.com>
- <20180614151435.6471-3-ctatlor97@gmail.com>
- <20180916121045.aptj6nciwskfg4st@earth.universe>
- <4BBA3F28-A769-4F09-86DC-1E3906C53B26@gmail.com>
- <20180920165847.6xqzeoqzqkyotshx@earth.universe>
- <CAMz4kuKj1wtUMLLM8kzKSzotA64vHk466f2G7AxRsdWXZVJL_Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6vhc6aw6werrrbl3"
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 00/12][v4] Backport several fixes from 64bits to 32bits hibernation
+Date: Fri, 21 Sep 2018 14:24:46 +0800
+Message-ID: <cover.1537448058.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMz4kuKj1wtUMLLM8kzKSzotA64vHk466f2G7AxRsdWXZVJL_Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Craig <ctatlor97@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-msm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, Chen Yu <yu.c.chen@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Currently there are mainly three bugs in 32bits system when doing
+hibernation:
+1. The page copy code is not running in safe page, which might
+   cause hang during resume.
+2. There's no text mapping for the final jump address
+   of the original kernel, which might cause the system jumping
+   into illegal address and causes system hang during resume.
+3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
+   rather than the original kernel page table after all the pages
+   been copied back, which might cause invalid virtual-physical
+   mapping issue during resume.
 
---6vhc6aw6werrrbl3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To solve these problems:
 
-Hi,
+1. Copy the code core_restore_code to a safe page, to avoid the instruction
+   code been overwritten when image kernel pages are being copied.
+2. Set up temporary text mapping for the image kernel's jump address,
+   so that after all the pages have been copied back, the system could
+   jump to this address.
+3. Switch to the original kernel page table during resume.
 
-On Fri, Sep 21, 2018 at 04:08:28AM +0800, Baolin Wang wrote:
-> Hi Sebastian,
->=20
-> On 21 September 2018 at 00:58, Sebastian Reichel
-> <sebastian.reichel@collabora.com> wrote:
-> > [Dropped a couple of people from CC, added Baolin]
-> >
-> > Hi Craig, Baolin and Rob,
-> >
-> > On Thu, Sep 20, 2018 at 03:32:29PM +0100, Craig wrote:
-> >> On 16 September 2018 13:10:45 BST, Sebastian Reichel <sebastian.reiche=
-l@collabora.com> wrote:
-> >> >Sorry for my long delay in reviewing this. I like the binding,
-> >> >but the "qcom," specific properties should become common properties
-> >> >in
-> >> >
-> >> >Documentation/devicetree/bindings/power/supply/battery.txt
-> >> >and referenced via monitored-battery.
-> >
-> >> Thanks for the review, what bindings for ocv would you prefer? The
-> >> spreadtrum ones or mine?
-> >
-> > Most importantly I want to see only one generic binding supporting
-> > both use cases. As far as I can see there are two major differences:
-> >
-> > 1. Qcom uses legend properties and SC27XX embedds this into data
-> > 2. Qcom supports temperature based mapping
-> >
-> > The second point is easy: Not having temperature information can
-> > be a subset of the data with temperature info. The main thing to
-> > discuss are the legend properties. I suppose we have these
-> > proposals:
-> >
-> > Proposal A (from Qcom BMS binding):
-> >
-> > ocv-capacity-legend =3D /bits/ 8 <100 95 90 85 80 75 70 65 60 55 50 45 =
-=2E..>;
-> > ocv-temp-legend-celsius =3D /bits/ 8 <(-10) 0 25 50 65>;
-> > ocv-lut-microvolt =3D <43050000 43050000 43030000 42990000
-> >
-> > Proposal B (from SC27XX binding):
-> >
-> > ocv-cap-table =3D <4185 100>, <4113 95>, <4066 90>, <4022 85> ...;
-> >
-> > I prefer the second binding (with mV -> uV), but I think it becomes
-> > messy when temperature is added. What do you think about the
-> > following proposal (derived from pinctrl style):
-> >
-> > Proposal C:
-> >
-> > ocv-capacity-table-temperatures =3D <(-10) 0 10>;
-> > ocv-capacity-table-0 =3D <4185000 100>, <4113000 95>, <4066000 90>, ...;
-> > ocv-capacity-table-1 =3D <4200000 100>, <4185000 95>, <4113000 90>, ...;
-> > ocv-capacity-table-2 =3D <4250000 100>, <4200000 95>, <4185000 90>, ...;
->=20
-> For SC27XX, we have no temperatures consideration, but I think
-> Proposal C can be compatible with our case.
+Furthermore, MD5 hash check for e820 map is also backported from 64bits
+system.
 
-Yes. I think for SC27XX proposal C could be used like this:
+In order to make this patch set more readable, these fixes are splitted
+into several sub patches.
 
-ocv-capacity-table-temperatures =3D <20>; /* room temperature */
-ocv-capacity-table-0 =3D <4185000 100>, <4113000 95>, <4066000 90>, ...;
+And use CONFIG_X86_64 to control the common code to be 'activated' for
+32 bit system during each sub-patch for better maintaining.
 
-With only one curve defined it would be used for all temperatures.
+Chen Yu (1):
+  PM / hibernate: Check the success of generating md5 digest before
+    hibernation
 
--- Sebastian
+Zhimin Gu (11):
+  x86, hibernate: Fix nosave_regions setup for hibernation
+  x86-32/asm/power: Create stack frames in hibernate_asm_32.S
+  x86, hibernate: Extract the common code of 64/32 bit system
+  x86-32, hibernate: Enable CONFIG_ARCH_HIBERNATION_HEADER on 32bit
+    system
+  x86, hibernate: Rename temp_level4_pgt to temp_pgt
+  x86-32, hibernate: Use temp_pgt as the temporary page table
+  x86-32, hibernate: Use the page size macro instead of constant value
+  x86-32, hibernate: Switch to original page table after resumed
+  x86-32, hibernate: Switch to relocated restore code during resume on
+    32bit system
+  x86-32, hibernate: Set up temporary text mapping for 32bit system
+  x86-32, hibernate: Adjust in_suspend after resumed on 32bit system
 
---6vhc6aw6werrrbl3
-Content-Type: application/pgp-signature; name="signature.asc"
+ arch/x86/Kconfig                  |   2 +-
+ arch/x86/include/asm/suspend.h    |   8 +
+ arch/x86/include/asm/suspend_32.h |   4 +
+ arch/x86/kernel/setup.c           |   2 +-
+ arch/x86/power/Makefile           |   2 +-
+ arch/x86/power/hibernate.c        | 248 ++++++++++++++++++++++++++++++
+ arch/x86/power/hibernate_32.c     |  52 +++++--
+ arch/x86/power/hibernate_64.c     | 224 +--------------------------
+ arch/x86/power/hibernate_asm_32.S |  37 ++++-
+ arch/x86/power/hibernate_asm_64.S |   2 +-
+ 10 files changed, 334 insertions(+), 247 deletions(-)
+ create mode 100644 arch/x86/power/hibernate.c
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlukG3QACgkQ2O7X88g7
-+pqK8A//UHm+2Hn8GO+wWI7y3JLRVXeF+/dLftzWW/DkPLcH5ZLMa5SssXYPMD6a
-hGMcYMqgVKSmhtSjXOoazRO7t4KzO4YmqMERGajfFq1lEN/5ZkF/exo0rr4tiqZz
-nCCX52eOAPUVkqHKBEVMIb4Zgtg9hrHxavZsD42TkaPm2gatyn5ackJ9DvNtXZ38
-p7bdTi17AqD7gODIIg3ChqUimIUZPgZ494UtJkdWZBDnVyETlrFyaqJEoHNbkU9F
-zNRPcGuFhKs4rxRgC7QpDc9ieO2o8A+B1HI26muyUvSJ78YDjWDmwshWsOCuAiiw
-LOcih1AQNiSVJu+FUn1nP3w/MMzevuh6/Ubbl+VqHH2oln3ptCUsMU3yHvo6Mss9
-cAMc0KsP8Jd7+b+Uq0TnCs/QhzUIbS8H1NnAXJVOvDzD6/7whwDlAuzWseptE2HV
-8XAwHeL6XnAcukY461GkK5Z3h1jx/QdmnrTLeYuvDBHL629rE7WfOe9wQkVZQ4Zi
-WdPV2QVi21DtpTaBQ9ZKxojt9bVtVASt0BZg+OiwuSrRrqpAoizJFMxDsbomJjl5
-LbER0SiVJ4QSCnuwz3bkykQBV8jcluuG6eFs9fUFoYs0ALDNAaIHsp1/IlDxaw0K
-6NlbOguMaQXQEWP0QUt3yIKpGhUD2XbmnqovMBSJK9nkpTfAC2w=
-=RK6h
------END PGP SIGNATURE-----
-
---6vhc6aw6werrrbl3--
+-- 
+2.17.1
