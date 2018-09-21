@@ -1,53 +1,35 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 07/12][v4] x86-32, hibernate: Use temp_pgt as the
- temporary page table
-Date: Fri, 21 Sep 2018 13:21:55 +0200
-Message-ID: <20180921112155.GA7102@amd>
-References: <cover.1537448058.git.yu.c.chen@intel.com>
- <ca2e027db5bd990ffebed9086db3dac335afdf64.1537448058.git.yu.c.chen@intel.com>
+From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+Subject: [PATCH] thermal: power_allocator: remove early break
+Date: Fri, 21 Sep 2018 14:06:09 +0100
+Message-ID: <20180921130609.j3esni6xwhi2ew7d@inc028000032.lancs.ac.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <ca2e027db5bd990ffebed9086db3dac335afdf64.1537448058.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+If a trip of type critical is defined before any trip of passive
+or active type, power_allocator governor will not switch on.
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+---
+ drivers/thermal/power_allocator.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-On Fri 2018-09-21 14:27:51, Chen Yu wrote:
-> From: Zhimin Gu <kookoo.gu@intel.com>
->=20
-> This is to reuse the temp_pgt for both 32bit and 64bit
-> system.
->=20
-> No functional change.
-
-I'd say this is functional change. "No functional change" normally
-means "compiled code has not changed".
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAluk1FMACgkQMOfwapXb+vIcSwCeJW25JAqEIDxy7u9CC6ZvLaGm
-69oAnRbUEkklgJ4bZl85EcgUZeZYlLgh
-=SwTA
------END PGP SIGNATURE-----
-
---azLHFNyN32YCQGCU--
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index 3055f9a12a17..6544b68e3ebf 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -496,8 +496,6 @@ static void get_governor_trips(struct thermal_zone_device *tz,
+ 			}
+ 		} else if (type == THERMAL_TRIP_ACTIVE) {
+ 			last_active = i;
+-		} else {
+-			break;
+ 		}
+ 	}
+ 
+-- 
+2.11.0
