@@ -1,65 +1,95 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 02/12][v4] PM / hibernate: Check the success of generating md5 digest before hibernation
-Date: Fri, 21 Sep 2018 14:26:38 +0800
-Message-ID: <a4fb21d16b59b1d32fec9bf67e1f6fa38d1f061d.1537448058.git.yu.c.chen@intel.com>
+Subject: [PATCH 03/12][v4] x86-32/asm/power: Create stack frames in hibernate_asm_32.S
+Date: Fri, 21 Sep 2018 14:26:47 +0800
+Message-ID: <ff5b57d6f1b76584a19d25c0a8094525618db5ae.1537448058.git.yu.c.chen@intel.com>
 References: <cover.1537448058.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1537448058.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, Chen Yu <yu.c.chen@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, Chen Yu <yu.c.chen@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Currently if get_e820_md5() fails, then it will hibernate nevertheless.
-Actually the error code should be propagated to upper caller so that
-the hibernation could be aware of the result and terminates the process
-if md5 digest fails.
+From: Zhimin Gu <kookoo.gu@intel.com>
 
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+swsusp_arch_suspend() is callable non-leaf function which doesn't
+honor CONFIG_FRAME_POINTER, which can result in bad stack traces.
+Also it's not annotated as ELF callable function which can confuse tooling.
+
+Create a stack frame for it when CONFIG_FRAME_POINTER is enabled and
+give it proper ELF function annotation.
+
+Also in this patch introduces the restore_registers() symbol and
+gives it ELF function annotation, thus to prepare for later register
+restore.
+
+Analogous changes were made for 64bit before in
+Commit ef0f3ed5a4ac (x86/asm/power: Create stack frames
+in hibernate_asm_64.S)
+and
+Commit 4ce827b4cc58 (x86/power/64: Fix hibernation return
+address corruption)
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Zhimin Gu <kookoo.gu@intel.com>
 Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- arch/x86/power/hibernate_64.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/suspend_32.h | 4 ++++
+ arch/x86/power/hibernate_asm_32.S | 9 +++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-index f8e3b668d20b..e0de959ad02d 100644
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -265,9 +265,9 @@ static int get_e820_md5(struct e820_table *table, void *buf)
- 	return ret;
- }
+diff --git a/arch/x86/include/asm/suspend_32.h b/arch/x86/include/asm/suspend_32.h
+index 8be6afb58471..fdbd9d7b7bca 100644
+--- a/arch/x86/include/asm/suspend_32.h
++++ b/arch/x86/include/asm/suspend_32.h
+@@ -32,4 +32,8 @@ struct saved_context {
+ 	unsigned long return_address;
+ } __attribute__((packed));
  
--static void hibernation_e820_save(void *buf)
-+static int hibernation_e820_save(void *buf)
- {
--	get_e820_md5(e820_table_firmware, buf);
-+	return get_e820_md5(e820_table_firmware, buf);
- }
++/* routines for saving/restoring kernel state */
++extern char core_restore_code[];
++extern char restore_registers[];
++
+ #endif /* _ASM_X86_SUSPEND_32_H */
+diff --git a/arch/x86/power/hibernate_asm_32.S b/arch/x86/power/hibernate_asm_32.S
+index 6e56815e13a0..671d38d0d931 100644
+--- a/arch/x86/power/hibernate_asm_32.S
++++ b/arch/x86/power/hibernate_asm_32.S
+@@ -12,6 +12,7 @@
+ #include <asm/page_types.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/processor-flags.h>
++#include <asm/frame.h>
  
- static bool hibernation_e820_mismatch(void *buf)
-@@ -287,8 +287,9 @@ static bool hibernation_e820_mismatch(void *buf)
- 	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
- }
- #else
--static void hibernation_e820_save(void *buf)
-+static int hibernation_e820_save(void *buf)
- {
-+	return 0;
- }
+ .text
  
- static bool hibernation_e820_mismatch(void *buf)
-@@ -333,9 +334,7 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+@@ -24,8 +25,11 @@ ENTRY(swsusp_arch_suspend)
+ 	pushfl
+ 	popl saved_context_eflags
  
- 	rdr->magic = RESTORE_MAGIC;
++	FRAME_BEGIN
+ 	call swsusp_save
++	FRAME_END
+ 	ret
++ENDPROC(swsusp_arch_suspend)
  
--	hibernation_e820_save(rdr->e820_digest);
--
--	return 0;
-+	return hibernation_e820_save(rdr->e820_digest);
- }
+ ENTRY(restore_image)
+ 	movl	mmu_cr4_features, %ecx
+@@ -58,6 +62,10 @@ copy_loop:
+ 	.p2align 4,,7
  
- /**
+ done:
++
++	/* code below belongs to the image kernel */
++	.align PAGE_SIZE
++ENTRY(restore_registers)
+ 	/* go back to the original page tables */
+ 	movl	$swapper_pg_dir, %eax
+ 	subl	$__PAGE_OFFSET, %eax
+@@ -83,3 +91,4 @@ done:
+ 	xorl	%eax, %eax
+ 
+ 	ret
++ENDPROC(restore_registers)
 -- 
 2.17.1
