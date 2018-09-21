@@ -1,39 +1,43 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v7 3/4] dt-bindings: power: supply: qcom_bms: Add bindings
-Date: Fri, 21 Sep 2018 08:40:43 -0700
-Message-ID: <CACRpkda70HAnnQ6a06E-VZwPUveb-OPDYrKYzm+XFAC1LP+rqw@mail.gmail.com>
-References: <20180407135934.26122-1-ctatlor97@gmail.com> <20180614151435.6471-1-ctatlor97@gmail.com>
- <20180614151435.6471-3-ctatlor97@gmail.com> <20180916121045.aptj6nciwskfg4st@earth.universe>
- <4BBA3F28-A769-4F09-86DC-1E3906C53B26@gmail.com> <20180920165847.6xqzeoqzqkyotshx@earth.universe>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH 1/2] MAINTAINERS: add new entries for Armada 8K cpufreq driver
+Date: Fri, 21 Sep 2018 17:43:25 +0200
+Message-ID: <20180921154326.10776-1-gregory.clement@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180920165847.6xqzeoqzqkyotshx@earth.universe>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sebastian.reichel@collabora.com
-Cc: Craig Tatlor <ctatlor97@gmail.com>, Baolin Wang <baolin.wang@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-msm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Omri Itach <omrii@marvell.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Shadi Ammouri <shadi@marvell.com>, Igal Liberman <igall@marvell.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@bootlin.com>, Marcin Wojtas <mw@semihalf.com>, Hanna Hawa <hannah@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 20, 2018 at 9:58 AM Sebastian Reichel
-<sebastian.reichel@collabora.com> wrote:
+This new driver belongs to the mvebu family, update the MAINTAINER file
+to document it.
 
-> I prefer the second binding (with mV -> uV), but I think it becomes
-> messy when temperature is added. What do you think about the
-> following proposal (derived from pinctrl style):
->
-> Proposal C:
->
-> ocv-capacity-table-temperatures = <(-10) 0 10>;
-> ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
-> ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
-> ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
+Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-I think this looks very elegant. It's going to be very
-easy and intuitive for people who need to maintain these
-device trees and it will be easy to handle in centralized code
-for all platforms. Even with the microvolt notation.
-
-If possible could we go with this?
-
-Yours,
-Linus Walleij
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a5b256b25905..7e969fbb3626 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1657,6 +1657,7 @@ F:	arch/arm/configs/mvebu_*_defconfig
+ F:	arch/arm/mach-mvebu/
+ F:	arch/arm64/boot/dts/marvell/armada*
+ F:	drivers/cpufreq/armada-37xx-cpufreq.c
++F!	drivers/cpufreq/armada-8k-cpufreq.c
+ F:	drivers/cpufreq/mvebu-cpufreq.c
+ F:	drivers/irqchip/irq-armada-370-xp.c
+ F:	drivers/irqchip/irq-mvebu-*
+-- 
+2.19.0
