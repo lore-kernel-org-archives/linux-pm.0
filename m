@@ -1,36 +1,70 @@
-From: zhong jiang <zhongjiang@huawei.com>
-Subject: [PATCH] PM / devfreq: remove redundant null pointer check before kfree
-Date: Fri, 21 Sep 2018 21:18:43 +0800
-Message-ID: <1537535923-46240-1-git-send-email-zhongjiang@huawei.com>
+From: John David Anglin <dave.anglin@bell.net>
+Subject: Re: armada-37xx CPU rates are incorrectly set at 1 and 1.2 GHz
+Date: Fri, 21 Sep 2018 10:39:53 -0400
+Message-ID: <5c642e9c-18c5-5c01-03c4-1d3851ba1358@bell.net>
+References: <668ea8e4-7a77-54e3-d9e8-07d21ee31366@bell.net>
+ <87y3bvi1tt.fsf@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <87y3bvi1tt.fsf@bootlin.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@bootlin.com>
+Cc: Ken Ma <make@marvell.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-kfree has taken the null pointer into account. hence it is safe
-to remove the redundant null pointer check before kfree.
-
-Signed-off-by: zhong jiang <zhongjiang@huawei.com>
----
- drivers/devfreq/devfreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4c49bb1..c37021d 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -675,8 +675,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	device_unregister(&devfreq->dev);
- 	devfreq = NULL;
- err_dev:
--	if (devfreq)
--		kfree(devfreq);
-+	kfree(devfreq);
- err_out:
- 	return ERR_PTR(err);
- }
--- 
-1.7.12.4
+T24gMjAxOC0wOS0yMSA2OjI2IEFNLCBHcmVnb3J5IENMRU1FTlQgd3JvdGU6Cj4+IFNlZSBiZW5j
+aG1hcmsgdGhlIHRlc3RpbmcgcmVwb3J0ZWQgaGVyZToKPj4gaHR0cHM6Ly9mb3J1bS5hcm1iaWFu
+LmNvbS90b3BpYy80MDg5LWVzcHJlc3NvYmluLXN1cHBvcnQtZGV2ZWxvcG1lbnQtZWZmb3J0cy8/
+cGFnZT0yMiZ0YWI9Y29tbWVudHMjY29tbWVudC02MDM0OQo+IEkgaGFkIGEgbG9vayBvbiB0aGUg
+Zm9ydW0gYW5kIHRoZSBpc3N1ZSBpcyBub3QgcmVhbGx5IGNsZWFyIGZvciBtZS4KSSBoYXZlIHR3
+byBlc3ByZXNzb2JpbiBjYXJkcyB3aGljaCB3ZSBhcmUgdXNpbmcgdG8gZXZhbHVhdGUgdGhlIE1h
+cnZlbGwgCkNQVSBhbmQgc3dpdGNoIGZvciBhIGRlc2lnbi4KCldoZW4gQ1BVIGZyZXF1ZW5jeSBz
+Y2FsaW5nIGlzIGVuYWJsZWQgKENPTkZJR19BUk1fQVJNQURBXzM3WFhfQ1BVRlJFUSkgCmFuZCB0
+aGUKYm9hcmQgYm9vdHMgYXQgMSBHSHogb3IgMS4yIEdIeiwgdGhlIGVmZmVjdGl2ZSBDUFUgc3Bl
+ZWQgc2hvd24gYnkgdGhlIApzYmMtYmVuY2ggYmVuY2htYXJrCmlzIGp1c3QgdW5kZXIgODAwIE1I
+ei7CoCBUaGUgYmVuY2ggcGVyZm9ybWFuY2UgYXQgMS4yIEdIeiBpcyBhY3R1YWxseSAKc2xpZ2h0
+bHkgd29yc2UgdGhhbiBhdCAxIEdIei4KCklmIG9uZSB0dXJucyBvZmYgQ09ORklHX0FSTV9BUk1B
+REFfMzdYWF9DUFVGUkVRLCB0aGUgZWZmZWN0aXZlIENQVSBzcGVlZCAKYWdyZWVzCndpdGggdGhl
+IHNwZWVkIHNldCBieSB1LWJvb3QuwqAgSSBvbmx5IGNoZWNrZWQgdGhpcyBhdCAxIEdIeiBhcyBJ
+IGRvbid0IApoYXZlIGEgMS4yIEdIeiBib2FyZC4KClRoZXJlIGlzIGFsc28gYSBwcm9ibGVtIHdp
+dGggdGhlIGRpdmlkZXIgc2V0dGluZ3MgYXQgNjAwIE1IejoKLcKgwqDCoMKgwqDCoCB7LmNwdV9m
+cmVxX21heCA9IDYwMCoxMDAwKjEwMDAswqAgLmRpdmlkZXIgPSB7MiwgNCwgNSwgNn0gfSwKK8Kg
+wqDCoMKgwqDCoCB7LmNwdV9mcmVxX21heCA9IDYwMCoxMDAwKjEwMDAswqAgLmRpdmlkZXIgPSB7
+MSwgMSwgMSwgMX0gfSwKVGhlIG1heGltdW0gc3BlZWQgaXMgY3VycmVudGx5IDMwMCBNSHouwqAg
+SSBjaGFuZ2VkIGl0IHRvIDYwMCBNSHogZm9yIGFsbCAKc2V0dGluZ3MuwqAgVGhlIENQVSBkaWRu
+J3QKd2FudCB0byBzaGlmdCBkb3duIGZyb20gNjAwIHRvIDMwMCBvciAyMDAuCgpUaGVyZSBhcmUg
+c29tZSBvdGhlciB0aGluZ3MgdGhhdCBtaWdodCBiZSBjbG9jayByZWxhdGVkLsKgIFdoZW4gcnVu
+bmluZyAKYXQgMSBHSHogZm9yIGEgcGVyaW9kCm9mIHRpbWUsIG50cCBsb3NlcyBsb2NrIG9uIG9u
+ZSBib2FyZCBhbmQgY2FuJ3Qgc3luYy7CoCBUaGUgb3RoZXIgZG9lc24ndCAKbG9zZSBsb2NrIGJ1
+dCBpdCBkZXZlbG9wcwphIGxhcmdlIGppdHRlciAofiAzMCBtcykuwqAgV2hlbiBjb2xkLCB0aGUg
+aml0dGVyIGlzIHVuZGVyIDEgbXMuwqAgSSBwdXQgYSAKaGVhdCBzaW5rIG9uIHRoZSBDUFUgYW5k
+CnJlZHVjZWQgdGhlIHByb2Nlc3NvciBzcGVlZCB0byA2MDAgTUh6LsKgIFRoaXMgZml4ZWQgdGhl
+IG50cCBqaXR0ZXIgCnByb2JsZW0uwqAgVGhpcyBtaWdodCBiZSBhCnRoZXJtYWwgaXNzdWUuwqAg
+TWF5YmUgdGhlIG9zY2lsbGF0b3Igb3IgcGhhc2UgbG9jayBsb29wIGluIHRoZSBDUFUgCmRldmVs
+b3BzIGEgbG90IG9mIGppdHRlcj8KCnB0cDRsIGlzIGxvc2luZyBsb2NrIGJldHdlZW4gdGhlIHR3
+byBjYXJkcy7CoCBJdCdzIGFsc28gbG9zaW5nIHRpbWUgc3RhbXBzLgoKV2l0aCBzb21lIFNEIGNh
+cmRzLCBib2FyZCBtYXkgaGFuZyBhZnRlciBpdCBmaW5pc2hlcyBzaHV0dGluZyBkb3duIGFuZCAK
+bm90IGJvb3QuCklmIGl0IGRvZXMgcmVib290LCB0aGUgU0QgY2FyZCBtYXkgZ2V0IGEgZGF0YSBD
+UkMgZXJyb3IgaW4gdS1ib290LiAKU3RyYW5nZWx5LCB0aGVzZSBlcnJvcnMKbmV2ZXIgb2NjdXIg
+d2hlbiBMaW51eCBpcyBydW5uaW5nLsKgIFJlcG9ydHMgaW5kaWNhdGUgdGhhdCB0aGlzIHByb2Js
+ZW0gCmlzIHByZXNlbnQgZm9yCnNldmVyYWwgYnJhbmRzIG9mIFNEIGNhcmRzLgoKPgo+IENvdWxk
+IHlvdSBmaXJzdCBjb25maXJtIHRoYXQgeW91IHVzZSBhIG1haW5saW5lIGtlcm5lbD8KWWVzLgo+
+IEFsc28gd2hpY2ggdmVyc2lvbiBkbyB5b3UgdXNlPwpkZWJpYW5AZXNwcmVzc29iaW46fiQgdW5h
+bWUgLWEKTGludXggZXNwcmVzc29iaW4gNC4xOS4wLXJjMysgIzEgU01QIFBSRUVNUFQgV2VkIFNl
+cCAxMiAxNDozNDo0OSBFRFQgCjIwMTggYWFyY2g2NCBHTlUvTGludXgKClRoZSBjb25maWcgZmls
+ZSB3YXMgZGVyaXZlZCBmcm9tIHRoYXQgdXNlZCBieSBBcm1iaWFuIHN0cmV0Y2guCgpEYXZlCgot
+LSAKSm9obiBEYXZpZCBBbmdsaW4gIGRhdmUuYW5nbGluQGJlbGwubmV0CgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
