@@ -1,35 +1,61 @@
-From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
-Subject: [PATCH] thermal: power_allocator: remove early break
-Date: Fri, 21 Sep 2018 14:06:09 +0100
-Message-ID: <20180921130609.j3esni6xwhi2ew7d@inc028000032.lancs.ac.uk>
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: Re: [PATCH] kernel/hung_task.c: disable on suspend
+Date: Fri, 21 Sep 2018 15:11:00 +0200
+Message-ID: <87d0t70zdn.fsf@vitty.brq.redhat.com>
+References: <20180913160851.18169-1-vkuznets@redhat.com>
+        <4793718.OcKebjM5bH@aspire.rjw.lan>
+        <87d0tg88l3.fsf@vitty.brq.redhat.com>
+        <20180914162103.GA11171@redhat.com>
+        <CAJZ5v0jpK-KWE7Pv1fKAWFXweW7jNH26fFDM=sXMPRNPJ96u7g@mail.gmail.com>
+        <20180917165518.GA25931@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <20180917165518.GA25931@redhat.com> (Oleg Nesterov's message of
+        "Mon, 17 Sep 2018 18:55:18 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-If a trip of type critical is defined before any trip of passive
-or active type, power_allocator governor will not switch on.
+Oleg Nesterov <oleg@redhat.com> writes:
 
-Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
----
- drivers/thermal/power_allocator.c | 2 --
- 1 file changed, 2 deletions(-)
+> On 09/17, Rafael J. Wysocki wrote:
+>>
+>> On Fri, Sep 14, 2018 at 6:21 PM Oleg Nesterov <oleg@redhat.com> wrote:
+>> >
+>> > > > Since you are adding the notifier anyway, what about designing it to make
+>> > > > the thread wait on _PREPARE until the notifier kicks it again on exit
+>> > > > fron suspend/hibernation?
+>> >
+>> > Well. I agree that freezable kthreads are not nice, but it seems you are
+>> > going to add another questionable interface ;)
+>>
+>> Why would it be questionable?
+>>
+>> The watchdog needs to be disarmed somehow before tasks are frozen and
+>> re-armed after they have been thawed or it may report false-positives
+>> on the way out.  PM notifiers can be used for that.
+>
+> Or watchdog() can simply use set_freezable/freezing interface we already
+> have, without additional complications.
+>
+> Yes, this is not "before tasks are frozen", but probably should work?
+>
+> OK, I won't argue.
 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 3055f9a12a17..6544b68e3ebf 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -496,8 +496,6 @@ static void get_governor_trips(struct thermal_zone_device *tz,
- 			}
- 		} else if (type == THERMAL_TRIP_ACTIVE) {
- 			last_active = i;
--		} else {
--			break;
- 		}
- 	}
- 
+I was hoping you and Rafael will come to an agreement but the discussion
+just died ... so where do we stand on this? I see the following options:
+
+1) The v1 patch is good, no freezing/disabling/parking required.
+2) Make the kthread freezable (btw, I tested your patch and it seems to
+work).
+3) kthread_stop/kthread_run() (as you said 'no parking').
+4) Drop the patch and wait for the root cause (increasing jiffies) to
+dissolve.
+5) ???
+
+Ideas?
+
 -- 
-2.11.0
+  Vitaly
