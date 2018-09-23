@@ -1,146 +1,66 @@
-From: Pu Wen <puwen@hygon.cn>
-Subject: [PATCH v8 00/16] Add support for Hygon Dhyana Family 18h processor
-Date: Sun, 23 Sep 2018 17:30:47 +0800
-Message-ID: <cover.1537533368.git.puwen@hygon.cn>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Sun, 23 Sep 2018 15:05:05 +0530
+Message-ID: <3e6b6874-3560-0ea0-6861-9f47f308e089@codeaurora.org>
+References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
+ <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
+ <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
+ <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
+ <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
+ <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
+ <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
+ <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
+ <153504951102.28926.11593809590549791317@swboyd.mtv.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <153504951102.28926.11593809590549791317@swboyd.mtv.corp.google.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: bp@alien8.de, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, pbonzini@redhat.com, tony.luck@intel.com, rkrcmar@redhat.com, boris.ostrovsky@oracle.com, jgross@suse.com, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org, mchehab@kernel.org, trenn@suse.com, shuah@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-pm@vger.kernel.org, kvm@vger.kernel.org, xen-devel@lists.xenproject.org, Pu Wen <puwen@hygon.cn>
+To: Stephen Boyd <sboyd@kernel.org>, skannan@codeaurora.org
+Cc: Evan Green <evgreen@google.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-As a new x86 CPU Vendor, Chengdu Haiguang IC Design Co., Ltd (Hygon)
-is a Joint Venture between AMD and Haiguang Information Technology Co.,
-Ltd., and aims at providing high performance x86 processor for China
-server market.
-
-The first generation Hygon's processor(Dhyana) originates from AMD
-technology and shares most of the architecture with AMD's family 17h,
-but with different CPU Vendor ID("HygonGenuine")/PCIE Device Vendor ID
-(0x1D94)/Family series number (Family 18h).
-
-To enable the support of Linux kernel to Hygon's CPU, we added a new
-vendor type (X86_VENDOR_HYGON, with value of 9) in arch/x86/include/
-asm/processor.h, and shared most of kernel support codes with AMD
-family 17h.
-
-As Hygon will negotiate with AMD to make sure that only Hygon will
-use family 18h, so try to minimize code modification and share most
-codes with AMD under this consideration.
-
-This patch series have been applied and tested successfully on Hygon
-Dhyana SoC silicon. Also tested on AMD EPYC (Family 17h) processor,
-it works fine and makes no harm to the existing codes.
+Hello Stephen,
 
 
-v7->v8:
-  - Fix the issue that patch x86/pci may cause LKP boot test failure
-    on some Intel platform.
+On 8/24/2018 12:08 AM, Stephen Boyd wrote:
+> Quoting Taniya Das (2018-08-08 03:15:26)
+>>
+>>
+>> On 8/8/2018 11:52 AM, Stephen Boyd wrote:
+>>>>
+>>>> Binding describes hardware controllable by the OS. That's the reality.
+>>>> Let's not add mandatory clock bindings for clocks that the OS can't do
+>>>> anything about.
+>>>>
+>>>
+>>> It seems that you believe clks should only be used to turn on/off and
+>>> control rates. That is not the whole truth. Sometimes clks are there
+>>> just to express the clk frequencies that are present in the design so
+>>> that drivers can figure out what to do.
+>>>
+>>
+>> Stephen,
+>>
+>> As this clock is not configurable by linux clock drivers and we really
+>> do not care the parent src(as mentioned by Saravana) to generate the
+>> 300MHz, would it be good to define a fixed rate clock so as to express
+>> the HW connectivity & frequency?
+>>
+> 
+> As a hack that works great, but why do we need to workaround problems by
+> adding a fixed rate clk to DT for this PLL? The PLL is provided by GCC
+> node so it should be connected to the GCC node.
+> 
 
-v6->v7:
-  - Rebased on 4.19-rc4 and tested against it.
-  - Add Reviewed-by from Borislav Petkov for patches x86/cpu,
-    x86/cpu/mtrr, perf/x86, x86/pci, x86/apic, x86/mce.
-  - Refine the patch descriptions and fix some typos.
-  - Remove unneeded vendor checking for patch x86/apic.
-  - Restore the user-visible pr_err string in patch x86/bugs.
-
-v5->v6:
-  - Rebased on 4.19-rc3 and tested against it.
-  - Add Reviewed-by from Borislav Petkov for cacheinfo, smpboot,
-    alternative and kvm.
-  - Rework the patch subjects and patch descriptions.
-  - Rework vendor checking for some patches to minimize the code
-    modification.
-
-v4->v5:
-  - Rebased on 4.19-rc1 and tested against it.
-  - Add Reviewed-by from Boris Ostrovsky for Xen.
-  - Rework EDAC patch without vendor checking for minimal modification.
-
-v3->v4:
-  - Rebased on 4.18.3 and tested against it.
-  - Merge patches 05/17 perfctr and 10/17 events in v3 to patch 05/16
-    PMU for better patch function group.
-  - Add hygon_get_topology_early() in patch 01/16.
-  - Rework vendor checking and refine coding style.
-  - Add Acked-by from Bjorn Helgaas for pci.
-  - Add Acked-by from Rafael J. Wysocki for cpufreq and acpi.
-
-v2->v3:
-  - Rebased on 4.18-rc8 and tested against it.
-  - Rework vendor checking codes to improve consistency.
-
-v1->v2:
-  - Rebased on 4.18-rc6 and tested against it.
-  - Split the patch set to small series of patches.
-  - Rework patch descriptions.
-  - Create a separated arch/x86/kernel/cpu/hygon.c for Dhyana CPU
-    initialization to reduce long-term maintenance effort.
-
-
-Pu Wen (16):
-  x86/cpu: Create Hygon Dhyana architecture support file
-  x86/cpu: Get cache info and setup cache cpumap for Hygon Dhyana
-  x86/cpu/mtrr: Support TOP_MEM2 and get MTRR number
-  x86/smpboot: SMP init no delay and not flush caches before sleep
-  perf/x86: Add Hygon Dhyana support to PMU infrastructure
-  x86/alternative: Init ideal_nops for Hygon Dhyana
-  x86/pci: Add Hygon Dhyana support to PCI and north bridge
-  x86/apic: Add Hygon Dhyana support to APIC
-  x86/bugs: Add mitigation to spectre and no meltdown for Hygon Dhyana
-  x86/mce: Add Hygon Dhyana support to MCE infrastructure
-  x86/kvm: Add Hygon Dhyana support to KVM infrastructure
-  x86/xen: Add Hygon Dhyana support to Xen
-  ACPI, x86: Add Hygon Dhyana support
-  cpufreq, x86: Add Hygon Dhyana support
-  EDAC, amd64: Add Hygon Dhyana support
-  cpupower, x86: Add Hygon Dhyana support
-
- MAINTAINERS                                        |   6 +
- arch/x86/Kconfig.cpu                               |  14 +
- arch/x86/events/amd/core.c                         |   4 +
- arch/x86/events/amd/uncore.c                       |  20 +-
- arch/x86/events/core.c                             |   4 +
- arch/x86/include/asm/amd_nb.h                      |   3 +
- arch/x86/include/asm/cacheinfo.h                   |   1 +
- arch/x86/include/asm/kvm_emulate.h                 |   4 +
- arch/x86/include/asm/mce.h                         |   2 +
- arch/x86/include/asm/processor.h                   |   3 +-
- arch/x86/include/asm/virtext.h                     |   5 +-
- arch/x86/kernel/alternative.c                      |   4 +
- arch/x86/kernel/amd_nb.c                           |  47 ++-
- arch/x86/kernel/apic/apic.c                        |   7 +
- arch/x86/kernel/apic/probe_32.c                    |   1 +
- arch/x86/kernel/cpu/Makefile                       |   1 +
- arch/x86/kernel/cpu/bugs.c                         |   4 +-
- arch/x86/kernel/cpu/cacheinfo.c                    |  31 +-
- arch/x86/kernel/cpu/common.c                       |   1 +
- arch/x86/kernel/cpu/cpu.h                          |   1 +
- arch/x86/kernel/cpu/hygon.c                        | 411 +++++++++++++++++++++
- arch/x86/kernel/cpu/mcheck/mce-severity.c          |   3 +-
- arch/x86/kernel/cpu/mcheck/mce.c                   |  20 +-
- arch/x86/kernel/cpu/mtrr/cleanup.c                 |   3 +-
- arch/x86/kernel/cpu/mtrr/mtrr.c                    |   2 +-
- arch/x86/kernel/cpu/perfctr-watchdog.c             |   2 +
- arch/x86/kernel/smpboot.c                          |   4 +-
- arch/x86/kvm/emulate.c                             |  11 +-
- arch/x86/pci/amd_bus.c                             |   6 +-
- arch/x86/xen/pmu.c                                 |  12 +-
- drivers/acpi/acpi_pad.c                            |   1 +
- drivers/acpi/processor_idle.c                      |   1 +
- drivers/cpufreq/acpi-cpufreq.c                     |   5 +
- drivers/cpufreq/amd_freq_sensitivity.c             |   9 +-
- drivers/edac/amd64_edac.c                          |   8 +-
- drivers/edac/mce_amd.c                             |   4 +-
- include/linux/pci_ids.h                            |   2 +
- tools/power/cpupower/utils/cpufreq-info.c          |   6 +-
- tools/power/cpupower/utils/helpers/amd.c           |   4 +-
- tools/power/cpupower/utils/helpers/cpuid.c         |   8 +-
- tools/power/cpupower/utils/helpers/helpers.h       |   2 +-
- tools/power/cpupower/utils/helpers/misc.c          |   2 +-
- .../cpupower/utils/idle_monitor/mperf_monitor.c    |   3 +-
- 43 files changed, 644 insertions(+), 48 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/hygon.c
+Please help with review the next patch series which would take the PLL 
+phandle from DT.
 
 -- 
-2.7.4
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
