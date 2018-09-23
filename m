@@ -1,66 +1,86 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v7 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Sun, 23 Sep 2018 15:05:05 +0530
-Message-ID: <3e6b6874-3560-0ea0-6861-9f47f308e089@codeaurora.org>
-References: <1532428970-18122-1-git-send-email-tdas@codeaurora.org>
- <1532428970-18122-3-git-send-email-tdas@codeaurora.org>
- <CAE=gft7_5SZKpU0i9Jbi6UV-eqW8=6Fm7rw4oKVXG6J9Q7_E+g@mail.gmail.com>
- <1ddda4b9e6dcd7ad415235f4d6af2dc7@codeaurora.org>
- <153333504360.10763.8964005567051510823@swboyd.mtv.corp.google.com>
- <4d37a1ee4f2d5b30da3f62cbfca756a8@codeaurora.org>
- <153370933225.220756.12056174025047430491@swboyd.mtv.corp.google.com>
- <c83e4248-aef2-bb40-8d8e-47d9b2918cc7@codeaurora.org>
- <153504951102.28926.11593809590549791317@swboyd.mtv.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Pu Wen <puwen@hygon.cn>
+Subject: [PATCH v8 14/16] cpufreq, x86: Add Hygon Dhyana support
+Date: Sun, 23 Sep 2018 17:37:38 +0800
+Message-ID: <4db6f0f8537a93c172430c446a0297a6ab1c3c2d.1537533369.git.puwen@hygon.cn>
+References: <cover.1537533368.git.puwen@hygon.cn>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <153504951102.28926.11593809590549791317@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+In-Reply-To: <cover.1537533368.git.puwen@hygon.cn>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, skannan@codeaurora.org
-Cc: Evan Green <evgreen@google.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, anischal@codeaurora.org, devicetree@vger.kernel.org, robh@kernel.org, amit.kucheria@linaro.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, bp@alien8.de, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, rafael@kernel.org, rafael.j.wysocki@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, Pu Wen <puwen@hygon.cn>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Stephen,
+The Hygon Dhyana CPU supports ACPI P-States feature, and there is
+SMBus device(PCI device ID 0x790b) on Hygon platform, so add Hygon
+Dhyana support to the cpufreq driver by using the code path of AMD
+family 17h.
 
+Signed-off-by: Pu Wen <puwen@hygon.cn>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c         | 5 +++++
+ drivers/cpufreq/amd_freq_sensitivity.c | 9 +++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-On 8/24/2018 12:08 AM, Stephen Boyd wrote:
-> Quoting Taniya Das (2018-08-08 03:15:26)
->>
->>
->> On 8/8/2018 11:52 AM, Stephen Boyd wrote:
->>>>
->>>> Binding describes hardware controllable by the OS. That's the reality.
->>>> Let's not add mandatory clock bindings for clocks that the OS can't do
->>>> anything about.
->>>>
->>>
->>> It seems that you believe clks should only be used to turn on/off and
->>> control rates. That is not the whole truth. Sometimes clks are there
->>> just to express the clk frequencies that are present in the design so
->>> that drivers can figure out what to do.
->>>
->>
->> Stephen,
->>
->> As this clock is not configurable by linux clock drivers and we really
->> do not care the parent src(as mentioned by Saravana) to generate the
->> 300MHz, would it be good to define a fixed rate clock so as to express
->> the HW connectivity & frequency?
->>
-> 
-> As a hack that works great, but why do we need to workaround problems by
-> adding a fixed rate clk to DT for this PLL? The PLL is provided by GCC
-> node so it should be connected to the GCC node.
-> 
-
-Please help with review the next patch series which would take the PLL 
-phandle from DT.
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index b61f4ec..d62fd37 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -61,6 +61,7 @@ enum {
+ 
+ #define INTEL_MSR_RANGE		(0xffff)
+ #define AMD_MSR_RANGE		(0x7)
++#define HYGON_MSR_RANGE		(0x7)
+ 
+ #define MSR_K7_HWCR_CPB_DIS	(1ULL << 25)
+ 
+@@ -95,6 +96,7 @@ static bool boost_state(unsigned int cpu)
+ 		rdmsr_on_cpu(cpu, MSR_IA32_MISC_ENABLE, &lo, &hi);
+ 		msr = lo | ((u64)hi << 32);
+ 		return !(msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE);
++	case X86_VENDOR_HYGON:
+ 	case X86_VENDOR_AMD:
+ 		rdmsr_on_cpu(cpu, MSR_K7_HWCR, &lo, &hi);
+ 		msr = lo | ((u64)hi << 32);
+@@ -113,6 +115,7 @@ static int boost_set_msr(bool enable)
+ 		msr_addr = MSR_IA32_MISC_ENABLE;
+ 		msr_mask = MSR_IA32_MISC_ENABLE_TURBO_DISABLE;
+ 		break;
++	case X86_VENDOR_HYGON:
+ 	case X86_VENDOR_AMD:
+ 		msr_addr = MSR_K7_HWCR;
+ 		msr_mask = MSR_K7_HWCR_CPB_DIS;
+@@ -225,6 +228,8 @@ static unsigned extract_msr(struct cpufreq_policy *policy, u32 msr)
+ 
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
+ 		msr &= AMD_MSR_RANGE;
++	else if (boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
++		msr &= HYGON_MSR_RANGE;
+ 	else
+ 		msr &= INTEL_MSR_RANGE;
+ 
+diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+index be926d9..4ac7c3c 100644
+--- a/drivers/cpufreq/amd_freq_sensitivity.c
++++ b/drivers/cpufreq/amd_freq_sensitivity.c
+@@ -111,11 +111,16 @@ static int __init amd_freq_sensitivity_init(void)
+ {
+ 	u64 val;
+ 	struct pci_dev *pcidev;
++	unsigned int pci_vendor;
+ 
+-	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
++	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
++		pci_vendor = PCI_VENDOR_ID_AMD;
++	else if (boot_cpu_data.x86_vendor == X86_VENDOR_HYGON)
++		pci_vendor = PCI_VENDOR_ID_HYGON;
++	else
+ 		return -ENODEV;
+ 
+-	pcidev = pci_get_device(PCI_VENDOR_ID_AMD,
++	pcidev = pci_get_device(pci_vendor,
+ 			PCI_DEVICE_ID_AMD_KERNCZ_SMBUS, NULL);
+ 
+ 	if (!pcidev) {
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+2.7.4
