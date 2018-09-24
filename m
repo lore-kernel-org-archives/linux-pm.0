@@ -1,63 +1,64 @@
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: RE: [PATCH v2 3/5] drivers: clk-qoriq: Add clockgen support for
- lx2160a
-Date: Mon, 24 Sep 2018 11:56:08 +0000
-Message-ID: <VI1PR04MB4800CA1AFEB6EB7B56680CBBF3170@VI1PR04MB4800.eurprd04.prod.outlook.com>
-References: <1536871075-3732-1-git-send-email-vabhav.sharma@nxp.com>
-         <1536871075-3732-4-git-send-email-vabhav.sharma@nxp.com>
- <4fa10f679ad4b1b619daa521a8641c145cf8537e.camel@buserror.net>
+Subject: [PATCH v3 0/6]  arm64: dts: NXP: add basic dts file for LX2160A SoC
+Date: Mon, 24 Sep 2018 05:38:55 +0530
+Message-ID: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4fa10f679ad4b1b619daa521a8641c145cf8537e.camel@buserror.net>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Scott Wood <oss@buserror.net>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
-Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>, Andy Tang <andy.tang@nxp.com>
+To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
+Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCA8b3Nz
-QGJ1c2Vycm9yLm5ldD4NCj4gU2VudDogU3VuZGF5LCBTZXB0ZW1iZXIgMTYsIDIwMTggMTI6NTQg
-QU0NCj4gVG86IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT47IHN1ZGVlcC5o
-b2xsYUBhcm0uY29tOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJl
-ZUB2Z2VyLmtlcm5lbC5vcmc7IHJvYmgrZHRAa2VybmVsLm9yZzsNCj4gbWFyay5ydXRsYW5kQGFy
-bS5jb207IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1hcm0tDQo+IGtlcm5l
-bEBsaXN0cy5pbmZyYWRlYWQub3JnOyBtdHVycXVldHRlQGJheWxpYnJlLmNvbTsgc2JveWRAa2Vy
-bmVsLm9yZzsNCj4gcmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOyBs
-aW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBs
-aW51eC1rZXJuZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOw0KPiBjYXRhbGluLm1hcmluYXNAYXJt
-LmNvbTsgd2lsbC5kZWFjb25AYXJtLmNvbTsNCj4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7
-IGFybmRAYXJuZGIuZGU7IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7DQo+IHlhbWFkYS5t
-YXNhaGlyb0Bzb2Npb25leHQuY29tDQo+IENjOiBsaW51eEBhcm1saW51eC5vcmcudWs7IFZhcnVu
-IFNldGhpIDxWLlNldGhpQG54cC5jb20+OyBVZGl0IEt1bWFyDQo+IDx1ZGl0Lmt1bWFyQG54cC5j
-b20+OyBZb2dlc2ggTmFyYXlhbiBHYXVyDQo+IDx5b2dlc2huYXJheWFuLmdhdXJAbnhwLmNvbT47
-IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIg
-My81XSBkcml2ZXJzOiBjbGstcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGZvciBseDIxNjBh
-DQo+IA0KPiBPbiBGcmksIDIwMTgtMDktMTQgYXQgMDI6MDcgKzA1MzAsIFZhYmhhdiBTaGFybWEg
-d3JvdGU6DQo+ID4gRnJvbTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29t
-Pg0KPiA+DQo+ID4gQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGEuDQo+ID4gQWRkZWQg
-ZW50cnkgZm9yIGNvbXBhdCAnZnNsLGx4MjE2MGEtY2xvY2tnZW4nLg0KPiA+DQo+ID4gU2lnbmVk
-LW9mZi1ieTogVGFuZyBZdWFudGlhbiA8YW5keS50YW5nQG54cC5jb20+DQo+ID4gU2lnbmVkLW9m
-Zi1ieTogWW9nZXNoIEdhdXIgPHlvZ2VzaG5hcmF5YW4uZ2F1ckBueHAuY29tPg0KPiA+IFNpZ25l
-ZC1vZmYtYnk6IFZhYmhhdiBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCj4gPiBBY2tl
-ZC1ieTogU3RlcGhlbiBCb3lkIDxzYm95ZEBrZXJuZWwub3JnPg0KPiA+IC0tLQ0KPiA+ICBkcml2
-ZXJzL2Nsay9jbGstcW9yaXEuYyAgICAgICAgIHwgMTQgKysrKysrKysrKysrKy0NCj4gPiAgZHJp
-dmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyB8ICAxICsNCj4gPiAgMiBmaWxlcyBjaGFuZ2Vk
-LCAxNCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYyBpbmRleA0K
-PiA+IDNhMTgxMmYuLmU5YWU3MGIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jbGsvY2xrLXFv
-cmlxLmMNCj4gPiArKysgYi9kcml2ZXJzL2Nsay9jbGstcW9yaXEuYw0KPiA+IEBAIC03OSw3ICs3
-OSw3IEBAIHN0cnVjdCBjbG9ja2dlbl9jaGlwaW5mbyB7DQo+ID4gIAljb25zdCBzdHJ1Y3QgY2xv
-Y2tnZW5fbXV4aW5mbyAqY211eF9ncm91cHNbMl07DQo+ID4gIAljb25zdCBzdHJ1Y3QgY2xvY2tn
-ZW5fbXV4aW5mbyAqaHdhY2NlbFtOVU1fSFdBQ0NFTF07DQo+ID4gIAl2b2lkICgqaW5pdF9wZXJp
-cGgpKHN0cnVjdCBjbG9ja2dlbiAqY2cpOw0KPiA+IC0JaW50IGNtdXhfdG9fZ3JvdXBbTlVNX0NN
-VVhdOyAvKiAtMSB0ZXJtaW5hdGVzIGlmIGZld2VyIHRoYW4NCj4gPiBOVU1fQ01VWCAqLw0KPiA+
-ICsJaW50IGNtdXhfdG9fZ3JvdXBbTlVNX0NNVVgrMV07IC8qIC0xIHRlcm1pbmF0ZSBpZiBmZXdl
-ciB0bw0KPiA+IE5VTV9DTVVYKzEgKi8NCj4gDQo+IFlvdSBuZWVkIHRvIGFkZCB0aGUgLTEgdGVy
-bWluYXRvciB0byBwNDA4MCwgYW5kIHJlbW92ZSB0aGUgImlmIGZld2VyIg0KPiBjb21tZW50IHNp
-bmNlIHRoZSB3aG9sZSBwb2ludCBvZiB0aGlzIGlzIHRoYXQgZXZlcnkgYXJyYXkgZ2V0cyAtMSB0
-ZXJtaW5hdGVkLg0KT2ssIFVwZGF0ZWQNCj4gDQo+IFdoeSBkaWQgeW91IGNoYW5nZSAidGVybWlu
-YXRlcyIgdG8gInRlcm1pbmF0ZSIgYW5kICJ0aGFuIiB0byAidG8iPw0KPiANCj4gVGhpcyArMSBj
-aGFuZ2Ugc2hvdWxkIGJlIGEgc2VwYXJhdGUgcGF0Y2ggZnJvbSBseDIxNjBhIHN1cHBvcnQuDQpT
-dXJlLCBTZW5kaW5nIGFzIHNlcGFyYXRlIHBhdGNoDQo+IA0KPiAtU2NvdHQNCg0K
+Changes for v3:
+-Split clockgen support patch into below two patches:
+- a)Updated array size of cmux_to_group[] with NUM_CMUX+1 to include -1
+ terminator and p4080 cmux_to_group[] array with -1 terminator
+- b)Add clockgen support for lx2160a
+
+Changes for v2:
+- Modified cmux_to_group array to include -1 terminator
+- Revert NUM_CMUX to original value 8 from 16
+- Remove “As LX2160A is 16 core, so modified value for NUM_CMUX”
+  in patch "[PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
+  lx2160a" description
+- Populated cache properties for L1 and L2 cache in lx2160a device-tree.
+- Removed reboot node from lx2160a device-tree as PSCI is implemented.
+- Removed incorrect comment for timer node interrupt property in
+  lx2160a device-tree.
+- Modified pmu node compatible property from "arm,armv8-pmuv3" to
+  "arm,cortex-a72-pmu" in lx2160a device-tree
+- Non-standard aliases removed in lx2160a rdb board device-tree
+- Updated i2c child nodes to generic name in lx2160a rdb device-tree.
+
+Changes for v1:
+- Add compatible string for LX2160A clockgen support
+- Add compatible string to initialize LX2160A guts driver
+- Add compatible string for LX2160A support in dt-bindings
+- Add dts file to enable support for LX2160A SoC and LX2160A RDB
+  (Reference design board)
+
+Vabhav Sharma (4):
+  dt-bindings: arm64: add compatible for LX2160A
+  soc/fsl/guts: Add compatible string for LX2160A
+  arm64: dts: add QorIQ LX2160A SoC support
+  arm64: dts: add LX2160ARDB board support
+
+Yogesh Gaur (2):
+  drivers: clk-qoriq: increase array size of cmux_to_group
+  drivers: clk-qoriq: Add clockgen support for lx2160a
+
+ Documentation/devicetree/bindings/arm/fsl.txt     |  12 +
+ arch/arm64/boot/dts/freescale/Makefile            |   1 +
+ arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts |  88 +++
+ arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi    | 693 ++++++++++++++++++++++
+ drivers/clk/clk-qoriq.c                           |  16 +-
+ drivers/cpufreq/qoriq-cpufreq.c                   |   1 +
+ drivers/soc/fsl/guts.c                            |   1 +
+ 7 files changed, 810 insertions(+), 2 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+ create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+
+-- 
+2.7.4
