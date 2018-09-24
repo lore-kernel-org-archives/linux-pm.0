@@ -1,56 +1,39 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
- default
-Date: Mon, 24 Sep 2018 18:23:51 +0100
-Message-ID: <20180924172351.GV1413@e110439-lin>
-References: <20180828135324.21976-15-patrick.bellasi@arm.com>
- <20180904134748.GA4974@localhost.localdomain>
- <20180906144053.GD25636@e110439-lin>
- <20180914111003.GC24082@hirez.programming.kicks-ass.net>
- <20180914140732.GR1413@e110439-lin>
- <20180914142813.GM24124@hirez.programming.kicks-ass.net>
- <20180917122723.GS1413@e110439-lin>
- <20180921091308.GD24082@hirez.programming.kicks-ass.net>
- <20180924151400.GT1413@e110439-lin>
- <20180924155616.GA7060@hirez.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
+Date: Tue, 25 Sep 2018 00:49:16 +0200
+Message-ID: <CAJZ5v0g10fyZZhvLTz_qSADWQCO==fg=zcFQHD7QLZYwVDOsgA@mail.gmail.com>
+References: <20180912161101.2634-1-vkuznets@redhat.com> <nycvar.YFH.7.76.1809241123040.15880@cbobk.fhfr.pm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180924155616.GA7060@hirez.programming.kicks-ass.net>
+In-Reply-To: <nycvar.YFH.7.76.1809241123040.15880@cbobk.fhfr.pm>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 24-Sep 17:56, Peter Zijlstra wrote:
-> On Mon, Sep 24, 2018 at 04:14:00PM +0100, Patrick Bellasi wrote:
-> > On 21-Sep 11:13, Peter Zijlstra wrote:
-> > > Laptops with active cooling however...
-> > 
-> > How do you see active cooling playing a role ?
-> > 
-> > Are you thinking, for example, at reduced fan noise if we remain below
-> > a certain OPP ?
-> > 
-> > Are you factoring fans power consumptions into the overall P consumption ?
-> 
-> Nothing as fancy as that; I just figured that with a larger cooling
-> capacity, you can push chips higher onto that curve past the optimal
-> IPC/Watt point. Make it go fast etc..
+On Mon, Sep 24, 2018 at 11:24 AM Jiri Kosina <jikos@kernel.org> wrote:
+>
+> On Wed, 12 Sep 2018, Vitaly Kuznetsov wrote:
+>
+> > It makes little sense but still possible to put Hyper-V guests into
+> > suspend-to-idle state. To wake them up two wakeup sources were registered
+> > in the past: hyperv-keyboard and hid-hyperv. However, since
+> > commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
+> > suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
+> > to pm_wakeup_hard_event() API as these devices are actually the only
+> > possible way to wakeup Hyper-V guests.
+> >
+> > Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+> > Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+> > ---
+> >  drivers/hid/hid-hyperv.c              | 2 +-
+>
+>         Acked-by: Jiri Kosina <jkosina@suse.cz>
+>
+> for the above. I guess this'd better go through ACPI tree?
 
-That very concept of "optimal IPC/Watt" point is not something easy to
-define considering a monotonic function and without considering the
-specific optimization goals.
+No problem with that if you prefer.
 
-It really sounds like saying that an LP problem has a unique solution
-independently from the optimization function.
-
-Do you think we should "mandate" an optimization function from kernel
-space? I'm not saying it does not make sense, but I find it at least a
-strong implementation enforcement.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Cheers,
+Rafael
