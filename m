@@ -1,8 +1,8 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
  default
-Date: Mon, 24 Sep 2018 17:56:16 +0200
-Message-ID: <20180924155616.GA7060@hirez.programming.kicks-ass.net>
+Date: Mon, 24 Sep 2018 18:26:40 +0200
+Message-ID: <20180924162640.GB7060@hirez.programming.kicks-ass.net>
 References: <20180828135324.21976-1-patrick.bellasi@arm.com>
  <20180828135324.21976-15-patrick.bellasi@arm.com>
  <20180904134748.GA4974@localhost.localdomain>
@@ -24,16 +24,74 @@ Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@v
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, Sep 24, 2018 at 04:14:00PM +0100, Patrick Bellasi wrote:
-> On 21-Sep 11:13, Peter Zijlstra wrote:
-> > Laptops with active cooling however...
-> 
-> How do you see active cooling playing a role ?
-> 
-> Are you thinking, for example, at reduced fan noise if we remain below
-> a certain OPP ?
-> 
-> Are you factoring fans power consumptions into the overall P consumption ?
 
-Nothing as fancy as that; I just figured that with a larger cooling
-capacity, you can push chips higher onto that curve past the optimal
-IPC/Watt point. Make it go fast etc..
+> ... still it's difficult to give a precise definition of knee point,
+> unless you know about platforms which have a sharp change in energy
+> efficiency.
+> 
+> The only cases we know about are those where:
+> 
+> A) multiple frequencies uses the same voltage, e.g.
+> 
+> 
+>      ^                                     *
+>      | Energy                              O
+>      | efficiency                         O+
+>      |                                   O |
+>      |                                 O*  |
+>      |                              O**    |
+>      |   O**                    O***       |
+>      |   +  O**            O****           |
+>      |   |     O**   O*****                |
+>      |   |        O**                      |
+>      |   |          +                      |
+>      |   |  Same V  |   Increasing V       |
+>      +---+----------+----------------------+----------->
+>          |          |                      | Frequency
+>          L          M                      H
+> 
+> B) there is a big frequency gap between low frequency OPPs and high
+>    frequency OPPs, e.g.
+> 
+>                                        O
+>     ^                                **+
+>     | Energy                       **  |
+>     | efficiency                 **    |
+>     |                          **      |
+>     |                        **        |
+>     |                      **          |
+>     |                    **            |
+>     |                  **              |
+>     |               O**                |
+>     |        O******+                  |
+>     |O*******       |                  |
+>     |               |                  |
+>     ++--------------+------------------+------>
+>      |              |                  |  Frequency
+>      L              M                  H
+> 
+> 
+> In case A, all the OPPs left of M are dominated by M in terms
+> of energy efficiency and normally they should be never used.
+> Unless you are under thermal constraints and you still want to keep
+> your code running even if at a lower rate and energy efficiency.
+> At this point, however, you already invalidated all the OPPs right of
+> M and, on the remaining, you still struggle do define the knee point.
+> 
+> In case B... I'm wondering it such a conf even makes sense ;)
+> Is there really some platform out there with such a "non homogeneously
+> distributed" set of available frequencies ?
+
+Well, the curve is a second or third order polynomial (when V~f -> fV^2
+-> f^3), so it shoots up at some point. There's not really anything you
+can do about that. But if you're willing to put in active cooling and
+lots of energy, you can make it go fast :-)
+
+Therefore I was thinking:
+
+> Maybe we can define a threshold
+> for a "EE derivative ratio", but it will still be quite arbitrary.
+
+Because up until de/df=.5 we gain more performance than we loose ee. But
+I might not have appreciated the fact that when we work with imaginary
+cost units that skews the .5.
