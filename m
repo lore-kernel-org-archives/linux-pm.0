@@ -1,84 +1,92 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
- Tegra20/30
-Date: Wed, 26 Sep 2018 00:57:57 +0300
-Message-ID: <2f060ecc-44a2-9a8f-459e-5ae21990b65e@gmail.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-2-digetx@gmail.com> <20180925165810.GA32430@bogus>
- <074a169d-294b-ad4b-ddbd-6db742278f2a@gmail.com>
- <CAL_JsqLf+_Q8ZQAo=k8yQ4XKMccUHpm8WsQ3z_Q-PMY6gbQbbA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Al Cooper <alcooperx@gmail.com>
+Subject: [PATCH] PM / core: Fix extra pm_runtime_enable on resume
+Date: Tue, 25 Sep 2018 18:10:55 -0400
+Message-ID: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqLf+_Q8ZQAo=k8yQ4XKMccUHpm8WsQ3z_Q-PMY6gbQbbA@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Al Cooper <alcooperx@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 9/25/18 10:36 PM, Rob Herring wrote:
-> On Tue, Sep 25, 2018 at 12:29 PM Dmitry Osipenko <digetx@gmail.com> wrote:
->>
->> On 9/25/18 7:58 PM, Rob Herring wrote:
->>> On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
->>>> Add device-tree binding that describes CPU frequency-scaling hardware
->>>> found on NVIDIA Tegra20/30 SoC's.
->>>>
->>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->>>> ---
->>>>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
->>>>  1 file changed, 38 insertions(+)
->>>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->>>> new file mode 100644
->>>> index 000000000000..2c51f676e958
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->>>> @@ -0,0 +1,38 @@
->>>> +Binding for NVIDIA Tegra20 CPUFreq
->>>> +==================================
->>>> +
->>>> +Required properties:
->>>> +- clocks: Must contain an entry for each entry in clock-names.
->>>> +  See ../clocks/clock-bindings.txt for details.
->>>> +- clock-names: Must include the following entries:
->>>> +  - pll_x: main-parent for CPU clock, must be the first entry
->>>> +  - backup: intermediate-parent for CPU clock
->>>> +  - cpu: the CPU clock
->>>
->>> The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK
->>> is used for the cpu core. You can't just define your own clocks that
->>> you happen to want access to.
->>>
->>> Otherwise, you're not defining anything new here, so a binding document
->>> isn't required.
->>
->> PERIPHCLK is a different thing.
-> 
-> Right, that's what I meant. Only CLK is used.
-> 
->> Here we are defining the CPU clock and
->> its *parent* sources, the PLLX (main) and backup (intermediate clock
->> that is used while PLLX changes its rate). These are not some random
->> clocks "that you happen to want access to", they are essential for the
->> Tegra CPUFreq driver, CPU is running off them.
-> 
-> assigned-clocks is generally how we get parent clocks in this
-> situation. "clocks" is for what physical clocks are attached to a
-> given block. ARM very clearly documents the clocks for their IP
-> blocks.
+Matching pm_runtime_disable/pm_runtime_enable routines should be
+called for "direct_complete" devices during suspend/resume and there
+are cases where the pm_runtime_disable is skipped during suspend but
+pm_runtime_enable is still called during resume. This is a problem
+because the runtime enable state is really a counter and this can
+incorrectly enable pm_runtime when it should not be enabled. This
+happens for any direct_complete device doing an async suspend after
+the global variable "async_error" is set (which is set by any sync
+or async device's suspend error or early wake condition).
 
-Okay, seems I see now what you're meaning. The PLLX is specifically
-dedicated to CPU HW on Tegra, so it shouldn't be questioning to put it
-within the CPU node, unlike the backup.
+This failure is very timing dependent but for testing and debug
+the following changes will make it happen more frequently.
+- Add an msleep(500) as the first line in async_suspend() in
+  drivers/base/power/main.c
+- Modify alarmtimer_suspend in kernel/time/alarmtimer.c to just
+  return -EBUSY
 
-The assigned-clocks are about static clocks configuration, that is
-exactly opposite to what is needed. I'm not sure what you are trying to
-convey.. we don't need to get the parent clock, but set it.
+To see the failure condition that's been fixed with this patch,
+enable dynamic debug for drivers/power/main.c and then run
+"rtcwake -s 2 -m standby" and grep for
+"skipping runtime enable during resume" messages.
 
-How the backup/intermediate clock should be represented then? It is a
-part of HW description which potentially may vary depending on the board
-configuration.
+Signed-off-by: Al Cooper <alcooperx@gmail.com>
+---
+ drivers/base/power/main.c | 21 +++++++++++++++++++--
+ include/linux/pm.h        |  1 +
+ 2 files changed, 20 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3f68e2919dc5..2dc40662aae0 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -945,7 +945,13 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 
+ 	if (dev->power.direct_complete) {
+ 		/* Match the pm_runtime_disable() in __device_suspend(). */
+-		pm_runtime_enable(dev);
++		if (dev->power.pm_runtime_disabled) {
++			pm_runtime_enable(dev);
++			dev->power.pm_runtime_disabled = false;
++		} else {
++			pm_dev_dbg(dev, state,
++				   "skipping runtime enable during ");
++		}
+ 		goto Complete;
+ 	}
+ 
+@@ -1736,8 +1742,19 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->power.direct_complete) {
+ 		if (pm_runtime_status_suspended(dev)) {
+ 			pm_runtime_disable(dev);
+-			if (pm_runtime_status_suspended(dev))
++			if (pm_runtime_status_suspended(dev)) {
++				/*
++				 * If any device's sync or async suspend fails
++				 * and sets async_error, any async suspend for
++				 * direct_complete devices after the failure
++				 * will not execute the pm_runtime_disable
++				 * above. This flag lets the async device's
++				 * resume function (which is always run) know
++				 * if a matching pm_runtime_enable is needed.
++				 */
++				dev->power.pm_runtime_disabled = true;
+ 				goto Complete;
++			}
+ 
+ 			pm_runtime_enable(dev);
+ 		}
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index e723b78d8357..45738ad977fd 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -593,6 +593,7 @@ struct dev_pm_info {
+ 	bool			is_late_suspended:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
+ 	bool			direct_complete:1;	/* Owned by the PM core */
++	unsigned int		pm_runtime_disabled:1;
+ 	u32			driver_flags;
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+-- 
+1.9.0.138.g2de3478
