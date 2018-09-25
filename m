@@ -1,62 +1,112 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH RFC] cpuidle/drivers/menu: Remove get_loadavg in the performance multiplier
-Date: Tue, 25 Sep 2018 11:38:44 +0200
-Message-ID: <1537868328-13405-1-git-send-email-daniel.lezcano@linaro.org>
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: [PATCH v2] kernel/hung_task.c: disable on suspend
+Date: Tue, 25 Sep 2018 14:16:36 +0200
+Message-ID: <20180925121636.592-1-vkuznets@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>, open list <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-The function get_loadavg() returns almost always zero. To be more
-precise, statistically speaking for a total of 1023379 times passing
-to the function, the load is equal to zero 1020728 times, greater than
-100, 610 times, the remaining is between 0 and 5.
+It is possible to observe hung_task complaints when system goes to
+suspend-to-idle state:
 
-I'm putting in question this metric. Is it worth to keep it?
+ PM: Syncing filesystems ... done.
+ Freezing user space processes ... (elapsed 0.001 seconds) done.
+ OOM killer disabled.
+ Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+ sd 0:0:0:0: [sda] Synchronizing SCSI cache
+ INFO: task bash:1569 blocked for more than 120 seconds.
+       Not tainted 4.19.0-rc3_+ #687
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash            D    0  1569    604 0x00000000
+ Call Trace:
+  ? __schedule+0x1fe/0x7e0
+  schedule+0x28/0x80
+  suspend_devices_and_enter+0x4ac/0x750
+  pm_suspend+0x2c0/0x310
 
-Cc: Todd Kjos <tkjos@google.com>
-Cc: Joel Fernandes <joelaf@google.com>
-Cc: Colin Cross <ccross@android.com>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+The root cause of the issue is that under certain circumstances jiffies
+counter keeps advancing, some work to prevent that is currently ongoing.
+However, it seems that it would make sense to disable hung task detector
+on suspend and re-enable it on wakeup regardless.
+
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 ---
- drivers/cpuidle/governors/menu.c | 15 ++++-----------
- 1 file changed, 4 insertions(+), 11 deletions(-)
+Changes since v1:
+- Implement detector disabling by zeroing timeout [Rafael J. Wysocki]
+---
+ kernel/hung_task.c | 36 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 35 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index e26a409..d939b8e 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -173,18 +173,10 @@ static inline int which_bucket(unsigned int duration, unsigned long nr_iowaiters
-  * to be, the higher this multiplier, and thus the higher
-  * the barrier to go to an expensive C state.
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index b9132d1269ef..ac6e8c9306bd 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -15,6 +15,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/export.h>
+ #include <linux/sysctl.h>
++#include <linux/suspend.h>
+ #include <linux/utsname.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/debug.h>
+@@ -242,12 +243,14 @@ void reset_hung_task_detector(void)
+ }
+ EXPORT_SYMBOL_GPL(reset_hung_task_detector);
+ 
++static unsigned long hung_last_checked;
++
+ /*
+  * kthread which checks for tasks stuck in D state
   */
--static inline int performance_multiplier(unsigned long nr_iowaiters, unsigned long load)
-+static inline int performance_multiplier(unsigned long nr_iowaiters)
+ static int watchdog(void *dummy)
  {
--	int mult = 1;
--
--	/* for higher loadavg, we are more reluctant */
--
--	mult += 2 * get_loadavg(load);
--
- 	/* for IO wait tasks (per cpu!) we add 5x each */
--	mult += 10 * nr_iowaiters;
--
--	return mult;
-+	return 1 + 10 * nr_iowaiters;
+-	unsigned long hung_last_checked = jiffies;
++	hung_last_checked = jiffies;
+ 
+ 	set_user_nice(current, 0);
+ 
+@@ -272,9 +275,40 @@ static int watchdog(void *dummy)
+ 	return 0;
  }
  
- static DEFINE_PER_CPU(struct menu_device, menu_devices);
-@@ -359,7 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		 * Use the performance multiplier and the user-configurable
- 		 * latency_req to determine the maximum exit latency.
- 		 */
--		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
-+		interactivity_req = data->predicted_us /
-+			performance_multiplier(nr_iowaiters);
- 		if (latency_req > interactivity_req)
- 			latency_req = interactivity_req;
- 	}
++static int hungtask_pm_notify(struct notifier_block *self,
++			      unsigned long action, void *hcpu)
++{
++	static unsigned long saved_timeout, saved_interval;
++
++	switch (action) {
++	case PM_SUSPEND_PREPARE:
++	case PM_HIBERNATION_PREPARE:
++		saved_timeout = sysctl_hung_task_timeout_secs;
++		saved_interval = sysctl_hung_task_check_interval_secs;
++		sysctl_hung_task_timeout_secs = 0;
++		sysctl_hung_task_check_interval_secs = 0;
++		wake_up_process(watchdog_task);
++		break;
++	case PM_POST_SUSPEND:
++	case PM_POST_HIBERNATION:
++		sysctl_hung_task_timeout_secs = saved_timeout;
++		sysctl_hung_task_check_interval_secs = saved_interval;
++		hung_last_checked = jiffies;
++		wake_up_process(watchdog_task);
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
+ static int __init hung_task_init(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++
++	/* Disable hung task detector on suspend */
++	pm_notifier(hungtask_pm_notify, 0);
++
+ 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
+ 
+ 	return 0;
 -- 
-2.7.4
+2.17.1
