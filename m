@@ -1,141 +1,65 @@
-From: Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH V2 1/2] firmware: imx: add pm svc headfile
-Date: Wed, 26 Sep 2018 00:36:30 +0800
-Message-ID: <1537893391-31084-2-git-send-email-aisheng.dong@nxp.com>
-References: <1537893391-31084-1-git-send-email-aisheng.dong@nxp.com>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
+ Tegra20/30
+Date: Tue, 25 Sep 2018 20:29:24 +0300
+Message-ID: <074a169d-294b-ad4b-ddbd-6db742278f2a@gmail.com>
+References: <20180830194356.14059-1-digetx@gmail.com>
+ <20180830194356.14059-2-digetx@gmail.com> <20180925165810.GA32430@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1537893391-31084-1-git-send-email-aisheng.dong@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, ulf.hansson@linaro.org, dongas86@gmail.com, khilman@kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, shawnguo@kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180925165810.GA32430@bogus>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add SCU PM SVC related protocol definitions which will be used by a number
-of PM functions like Power Domain, Clock, Reset and etc. The detailed
-implementation of each function will put in the individual function drivers.
+On 9/25/18 7:58 PM, Rob Herring wrote:
+> On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
+>> Add device-tree binding that describes CPU frequency-scaling hardware
+>> found on NVIDIA Tegra20/30 SoC's.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
+>>  1 file changed, 38 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>> new file mode 100644
+>> index 000000000000..2c51f676e958
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>> @@ -0,0 +1,38 @@
+>> +Binding for NVIDIA Tegra20 CPUFreq
+>> +==================================
+>> +
+>> +Required properties:
+>> +- clocks: Must contain an entry for each entry in clock-names.
+>> +  See ../clocks/clock-bindings.txt for details.
+>> +- clock-names: Must include the following entries:
+>> +  - pll_x: main-parent for CPU clock, must be the first entry
+>> +  - backup: intermediate-parent for CPU clock
+>> +  - cpu: the CPU clock
+> 
+> The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK 
+> is used for the cpu core. You can't just define your own clocks that 
+> you happen to want access to.
+> 
+> Otherwise, you're not defining anything new here, so a binding document 
+> isn't required.
 
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-v6->v7: new introduced
----
- include/soc/imx/scu/sci.h    |  1 +
- include/soc/imx/scu/svc/pm.h | 85 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 86 insertions(+)
- create mode 100644 include/soc/imx/scu/svc/pm.h
+PERIPHCLK is a different thing. Here we are defining the CPU clock and
+its *parent* sources, the PLLX (main) and backup (intermediate clock
+that is used while PLLX changes its rate). These are not some random
+clocks "that you happen to want access to", they are essential for the
+Tegra CPUFreq driver, CPU is running off them.
 
-diff --git a/include/soc/imx/scu/sci.h b/include/soc/imx/scu/sci.h
-index 4a60d70..b600f7e 100644
---- a/include/soc/imx/scu/sci.h
-+++ b/include/soc/imx/scu/sci.h
-@@ -14,4 +14,5 @@
- #include <soc/imx/scu/types.h>
- 
- #include <soc/imx/scu/svc/misc.h>
-+#include <soc/imx/scu/svc/pm.h>
- #endif /* _SC_SCI_H */
-diff --git a/include/soc/imx/scu/svc/pm.h b/include/soc/imx/scu/svc/pm.h
-new file mode 100644
-index 0000000..f247fce
---- /dev/null
-+++ b/include/soc/imx/scu/svc/pm.h
-@@ -0,0 +1,85 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Copyright 2017~2018 NXP
-+ *
-+ * Header file containing the public API for the System Controller (SC)
-+ * Power Management (PM) function. This includes functions for power state
-+ * control, clock control, reset control, and wake-up event control.
-+ *
-+ * PM_SVC (SVC) Power Management Service
-+ *
-+ * Module for the Power Management (PM) service.
-+ */
-+
-+#ifndef _SC_PM_API_H
-+#define _SC_PM_API_H
-+
-+#include <soc/imx/scu/sci.h>
-+
-+/*
-+ * This type is used to indicate RPC PM function calls.
-+ */
-+enum pm_func_e {
-+	PM_FUNC_UNKNOWN = 0,
-+	PM_FUNC_SET_SYS_POWER_MODE = 19,
-+	PM_FUNC_SET_PARTITION_POWER_MODE = 1,
-+	PM_FUNC_GET_SYS_POWER_MODE = 2,
-+	PM_FUNC_SET_RESOURCE_POWER_MODE = 3,
-+	PM_FUNC_GET_RESOURCE_POWER_MODE = 4,
-+	PM_FUNC_REQ_LOW_POWER_MODE = 16,
-+	PM_FUNC_SET_CPU_RESUME_ADDR = 17,
-+	PM_FUNC_REQ_SYS_IF_POWER_MODE = 18,
-+	PM_FUNC_SET_CLOCK_RATE = 5,
-+	PM_FUNC_GET_CLOCK_RATE = 6,
-+	PM_FUNC_CLOCK_ENABLE = 7,
-+	PM_FUNC_SET_CLOCK_PARENT = 14,
-+	PM_FUNC_GET_CLOCK_PARENT = 15,
-+	PM_FUNC_RESET = 13,
-+	PM_FUNC_RESET_REASON = 10,
-+	PM_FUNC_BOOT = 8,
-+	PM_FUNC_REBOOT = 9,
-+	PM_FUNC_REBOOT_PARTITION = 12,
-+	PM_FUNC_CPU_START = 11,
-+};
-+
-+/*
-+ * Defines for ALL parameters
-+ */
-+#define SC_PM_CLK_ALL		UINT8_MAX	/* All clocks */
-+
-+/*
-+ * Defines for SC PM Power Mode
-+ */
-+#define SC_PM_PW_MODE_OFF	0	/* Power off */
-+#define SC_PM_PW_MODE_STBY	1	/* Power in standby */
-+#define SC_PM_PW_MODE_LP	2	/* Power in low-power */
-+#define SC_PM_PW_MODE_ON	3	/* Power on */
-+
-+/*
-+ * Defines for SC PM CLK
-+ */
-+#define SC_PM_CLK_SLV_BUS	0	/* Slave bus clock */
-+#define SC_PM_CLK_MST_BUS	1	/* Master bus clock */
-+#define SC_PM_CLK_PER		2	/* Peripheral clock */
-+#define SC_PM_CLK_PHY		3	/* Phy clock */
-+#define SC_PM_CLK_MISC		4	/* Misc clock */
-+#define SC_PM_CLK_MISC0		0	/* Misc 0 clock */
-+#define SC_PM_CLK_MISC1		1	/* Misc 1 clock */
-+#define SC_PM_CLK_MISC2		2	/* Misc 2 clock */
-+#define SC_PM_CLK_MISC3		3	/* Misc 3 clock */
-+#define SC_PM_CLK_MISC4		4	/* Misc 4 clock */
-+#define SC_PM_CLK_CPU		2	/* CPU clock */
-+#define SC_PM_CLK_PLL		4	/* PLL */
-+#define SC_PM_CLK_BYPASS	4	/* Bypass clock */
-+
-+/*
-+ * Defines for SC PM CLK Parent
-+ */
-+#define SC_PM_PARENT_XTAL	0	/* Parent is XTAL. */
-+#define SC_PM_PARENT_PLL0	1	/* Parent is PLL0 */
-+#define SC_PM_PARENT_PLL1	2	/* Parent is PLL1 or PLL0/2 */
-+#define SC_PM_PARENT_PLL2	3	/* Parent in PLL2 or PLL0/4 */
-+#define SC_PM_PARENT_BYPS	4	/* Parent is a bypass clock. */
-+
-+#endif /* _SC_PM_API_H */
--- 
-2.7.4
+I assume that PERIPHCLK and other clocks are derived from the "CPU"
+clock and their configuration is hardwired. Probably Peter knows how
+it's implemented in HW.
+
+I'm now working on v2 that will include more Tegra-specific stuff in the
+binding, like custom "opp-supported-hw" property and probably some more.
