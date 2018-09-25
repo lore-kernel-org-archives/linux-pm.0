@@ -1,39 +1,103 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] hyper-v: Fix wakeup from suspend-to-idle
-Date: Tue, 25 Sep 2018 00:49:16 +0200
-Message-ID: <CAJZ5v0g10fyZZhvLTz_qSADWQCO==fg=zcFQHD7QLZYwVDOsgA@mail.gmail.com>
-References: <20180912161101.2634-1-vkuznets@redhat.com> <nycvar.YFH.7.76.1809241123040.15880@cbobk.fhfr.pm>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v16 2/5] iommu/arm-smmu: Invoke pm_runtime
+ during probe, add/remove device
+Date: Tue, 25 Sep 2018 11:26:04 +0530
+Message-ID: <CAFp+6iFvhdSq7upbvsEWgMewhAaaRM91iw9p7qOFPYrUxis0Hg@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-3-vivek.gautam@codeaurora.org>
+ <CAAFQd5B7YR03Jm1upOg2nsaKOb1iDD7-WGo-qx7S8m-nounCvA@mail.gmail.com>
+ <3ccc3690-dc9d-56e7-e2d1-62e73a189bff@codeaurora.org>
+ <CAAFQd5DMDWEeBU=fg6arye3pXnrCqOA4tDtMSGutXk7vSz-EtQ@mail.gmail.com>
+ <CAFp+6iE3+qn6-gpXEzxfoP5yPMARmUcJNn0AZk-kA2AreTLnng@mail.gmail.com>
+ <CAFp+6iHnHj_PkPFBUSTdJTW57K51wLqSEw6VOMKxAVo7O+ms9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <nycvar.YFH.7.76.1809241123040.15880@cbobk.fhfr.pm>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: Vitaly Kuznetsov <vkuznets@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iHnHj_PkPFBUSTdJTW57K51wLqSEw6VOMKxAVo7O+ms9g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 24, 2018 at 11:24 AM Jiri Kosina <jikos@kernel.org> wrote:
->
-> On Wed, 12 Sep 2018, Vitaly Kuznetsov wrote:
->
-> > It makes little sense but still possible to put Hyper-V guests into
-> > suspend-to-idle state. To wake them up two wakeup sources were registered
-> > in the past: hyperv-keyboard and hid-hyperv. However, since
-> > commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
-> > suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
-> > to pm_wakeup_hard_event() API as these devices are actually the only
-> > possible way to wakeup Hyper-V guests.
-> >
-> > Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
-> > Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> > ---
-> >  drivers/hid/hid-hyperv.c              | 2 +-
->
->         Acked-by: Jiri Kosina <jkosina@suse.cz>
->
-> for the above. I guess this'd better go through ACPI tree?
-
-No problem with that if you prefer.
-
-Cheers,
-Rafael
+SGkgUm9iaW4sIFdpbGwsCgpPbiBUdWUsIFNlcCAxOCwgMjAxOCBhdCA4OjQxIEFNIFZpdmVrIEdh
+dXRhbQo8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPgo+IEhpIFJvYmluLAo+
+Cj4gT24gRnJpLCBTZXAgNywgMjAxOCBhdCAzOjUyIFBNIFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1
+dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiA+Cj4gPiBPbiBGcmksIFNlcCA3LCAyMDE4IGF0
+IDM6MjIgUE0gVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6Cj4gPiA+Cj4g
+PiA+IE9uIEZyaSwgU2VwIDcsIDIwMTggYXQgNjozOCBQTSBWaXZlayBHYXV0YW0gPHZpdmVrLmdh
+dXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4gPiA+ID4KPiA+ID4gPiBIaSBUb21hc3osCj4g
+PiA+ID4KPiA+ID4gPgo+ID4gPiA+IE9uIDkvNy8yMDE4IDI6NDYgUE0sIFRvbWFzeiBGaWdhIHdy
+b3RlOgo+ID4gPiA+ID4gSGkgVml2ZWssCj4gPiA+ID4gPgo+ID4gPiA+ID4gT24gVGh1LCBBdWcg
+MzAsIDIwMTggYXQgMTE6NDYgUE0gVml2ZWsgR2F1dGFtCj4gPiA+ID4gPiA8dml2ZWsuZ2F1dGFt
+QGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPiA+ID4gPiA+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3Jp
+Y2hhcmFuQGNvZGVhdXJvcmEub3JnPgo+ID4gPiA+ID4+Cj4gPiA+ID4gPj4gVGhlIHNtbXUgZGV2
+aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2aWNlIGNhbGxiYWNrcwo+
+ID4gPiA+ID4+IGdldHMgY2FsbGVkIHdoZW4gdGhlIHNtbXUgaXMgbm90IGxpbmtlZCB0byBpdHMg
+bWFzdGVyLCB0aGF0IGlzIHdpdGhvdXQKPiA+ID4gPiA+PiB0aGUgY29udGV4dCBvZiB0aGUgbWFz
+dGVyIGRldmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4gPiA+
+ID4gPj4gc2VwYXJhdGVseS4KPiA+ID4gPiA+PiBHbG9iYWwgbG9ja3MgYXJlIGFsc28gaW5pdGlh
+bGl6ZWQgYmVmb3JlIGVuYWJsaW5nIHJ1bnRpbWUgcG0gYXMgdGhlCj4gPiA+ID4gPj4gcnVudGlt
+ZV9yZXN1bWUoKSBjYWxscyBkZXZpY2VfcmVzZXQoKSB3aGljaCBkb2VzIHRsYl9zeW5jX2dsb2Jh
+bCgpCj4gPiA+ID4gPj4gdGhhdCB1bHRpbWF0ZWx5IHJlcXVpcmVzIGxvY2tzIHRvIGJlIGluaXRp
+YWxpemVkLgo+ID4gPiA+ID4+Cj4gPiA+ID4gPj4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIg
+PHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiA+ID4gPiA+PiBbdml2ZWs6IENsZWFudXAgcG0g
+cnVudGltZSBjYWxsc10KPiA+ID4gPiA+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZp
+dmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPiA+ID4gPiA+PiBSZXZpZXdlZC1ieTogVG9tYXN6
+IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPiA+ID4gPiA+PiBUZXN0ZWQtYnk6IFNyaW5pdmFz
+IEthbmRhZ2F0bGEgPHNyaW5pdmFzLmthbmRhZ2F0bGFAbGluYXJvLm9yZz4KPiA+ID4gPiA+PiAt
+LS0KPiA+ID4gPiA+PiAgIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDg5ICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0tLQo+ID4gPiA+ID4+ICAgMSBmaWxl
+IGNoYW5nZWQsIDgxIGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pCj4gPiA+ID4gPiBbc25p
+cF0KPiA+ID4gPiA+PiBAQCAtMjIxNSwxMCArMjI4MSwxNyBAQCBzdGF0aWMgaW50IGFybV9zbW11
+X2RldmljZV9yZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKPiA+ID4gPiA+PiAg
+ICAgICAgICBpZiAoIWJpdG1hcF9lbXB0eShzbW11LT5jb250ZXh0X21hcCwgQVJNX1NNTVVfTUFY
+X0NCUykpCj4gPiA+ID4gPj4gICAgICAgICAgICAgICAgICBkZXZfZXJyKCZwZGV2LT5kZXYsICJy
+ZW1vdmluZyBkZXZpY2Ugd2l0aCBhY3RpdmUgZG9tYWlucyFcbiIpOwo+ID4gPiA+ID4+Cj4gPiA+
+ID4gPj4gKyAgICAgICBhcm1fc21tdV9ycG1fZ2V0KHNtbXUpOwo+ID4gPiA+ID4+ICAgICAgICAg
+IC8qIFR1cm4gdGhlIHRoaW5nIG9mZiAqLwo+ID4gPiA+ID4+ICAgICAgICAgIHdyaXRlbChzQ1Iw
+X0NMSUVOVFBELCBBUk1fU01NVV9HUjBfTlMoc21tdSkgKyBBUk1fU01NVV9HUjBfc0NSMCk7Cj4g
+PiA+ID4gPj4gKyAgICAgICBhcm1fc21tdV9ycG1fcHV0KHNtbXUpOwo+ID4gPiA+ID4+ICsKPiA+
+ID4gPiA+PiArICAgICAgIGlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSkKPiA+ID4g
+PiA+PiArICAgICAgICAgICAgICAgcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKHNtbXUtPmRldik7
+Cj4gPiA+ID4gPj4gKyAgICAgICBlbHNlCj4gPiA+ID4gPj4gKyAgICAgICAgICAgICAgIGNsa19i
+dWxrX2Rpc2FibGUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+ID4gPiA+ID4+Cj4gPiA+
+ID4gPj4gLSAgICAgICBjbGtfYnVsa19kaXNhYmxlX3VucHJlcGFyZShzbW11LT5udW1fY2xrcywg
+c21tdS0+Y2xrcyk7Cj4gPiA+ID4gPj4gKyAgICAgICBjbGtfYnVsa191bnByZXBhcmUoc21tdS0+
+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+ID4gPiA+ID4gQXJlbid0IHdlIG1pc3NpbmcgcG1fcnVu
+dGltZV9kaXNhYmxlKCkgaGVyZT8gV2UnbGwgaGF2ZSB0aGUgZW5hYmxlCj4gPiA+ID4gPiBjb3Vu
+dCB1bmJhbGFuY2VkIGlmIHRoZSBkcml2ZXIgaXMgcmVtb3ZlZCBhbmQgcHJvYmVkIGFnYWluLgo+
+ID4gPiA+Cj4gPiA+ID4gcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKCkgZG9lcyBhIHBtX3J1bnRp
+bWVfZGlzYWJsZSgpIGFsc28gaWYgaSBhbSBub3QKPiA+ID4gPiB3cm9uZy4KPiA+ID4gPiBBbmQs
+IGFzIG1lbnRpb25lZCBpbiBhIHByZXZpb3VzIHRocmVhZCBbMV0sIHdlIHdlcmUgc2VlaW5nIGEg
+d2FybmluZwo+ID4gPiA+IHdoaWNoIHdlIGF2b2lkZWQKPiA+ID4gPiBieSBrZWVwaW5nIGZvcmNl
+X3N1c3BlbmQoKS4KPiA+ID4gPgo+ID4gPiA+IFsxXSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAx
+OC83LzgvMTI0Cj4gPiA+Cj4gPiA+IEkgc2VlLCB0aGFua3MuIEkgZGlkbid0IHJlYWxpemUgdGhh
+dCBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKQo+ID4gPiBhbHJlYWR5IGRpc2FibGVzIHJ1bnRp
+bWUgUE0gaW5kZWVkLiBTb3JyeSBmb3IgdGhlIG5vaXNlLgo+ID4KPiA+IEhpIFRvbWFzeiwKPiA+
+IE5vIHByb2JsZW0uIFRoYW5rcyBmb3IgbG9va2luZyBiYWNrIGF0IGl0Lgo+ID4KPiA+IEhpIFJv
+YmluLAo+ID4gSWYgeW91IGFyZSBmaW5lIHdpdGggdGhpcyBzZXJpZXMsIHRoZW4gY2FuIHlvdSBw
+bGVhc2UgY29uc2lkZXIgZ2l2aW5nCj4gPiBSZXZpZXdlZC1ieSwgc28gdGhhdCB3ZSBhcmUgY2Vy
+dGFpbiB0aGF0IHRoaXMgc2VyaWVzIHdpbGwgZ28gaW4gdGhlIG5leHQgbWVyZ2UKPiA+IHdpbmRv
+dy4KPiA+IFRoYW5rcwo+Cj4gR2VudGxlIHBpbmcuCj4gWW91IGFjayB3aWxsIGJlIHZlcnkgaGVs
+cGZ1bCBpbiBsZXR0aW5nIFdpbGwgcHVsbCB0aGlzIHNlcmllcyBmb3IgNC4yMC4KPiBUaGFua3Mu
+CgpJIHdvdWxkIHJlYWxseSBhcHByZWNpYXRlIGlmIHlvdSBjb3VsZCBwcm92aWRlIHlvdXIgYWNr
+IGZvciB0aGlzIHNlcmllcy4KT3IgaWYgdGhlcmUgYXJlIGFueSBjb25jZXJucywgSSBhbSB3aWxs
+aW5nIHRvIGFkZHJlc3MgdGhlbS4KVGhhbmtzLgoKQmVzdCByZWdhcmRzClZpdmVrCgoKCj4KPiAt
+LQo+IFFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50
+ZXIsIEluYy4gaXMgYSBtZW1iZXIKPiBvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5IFRo
+ZSBMaW51eCBGb3VuZGF0aW9uCgoKCi0tClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2YgUXVh
+bGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJvcmEg
+Rm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVk
+cmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
