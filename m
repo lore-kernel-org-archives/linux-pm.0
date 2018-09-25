@@ -1,52 +1,40 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
- Tegra20/30
-Date: Tue, 25 Sep 2018 11:58:10 -0500
-Message-ID: <20180925165810.GA32430@bogus>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-2-digetx@gmail.com>
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Subject: [PATCH V2 0/2] soc: imx: add scu power domain driver
+Date: Wed, 26 Sep 2018 00:36:29 +0800
+Message-ID: <1537893391-31084-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180830194356.14059-2-digetx@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, ulf.hansson@linaro.org, dongas86@gmail.com, khilman@kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
-> Add device-tree binding that describes CPU frequency-scaling hardware
-> found on NVIDIA Tegra20/30 SoC's.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> new file mode 100644
-> index 000000000000..2c51f676e958
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> @@ -0,0 +1,38 @@
-> +Binding for NVIDIA Tegra20 CPUFreq
-> +==================================
-> +
-> +Required properties:
-> +- clocks: Must contain an entry for each entry in clock-names.
-> +  See ../clocks/clock-bindings.txt for details.
-> +- clock-names: Must include the following entries:
-> +  - pll_x: main-parent for CPU clock, must be the first entry
-> +  - backup: intermediate-parent for CPU clock
-> +  - cpu: the CPU clock
 
-The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK 
-is used for the cpu core. You can't just define your own clocks that 
-you happen to want access to.
+This patch set adds the scu based power domain driver.
+It depends on SCU driver.
 
-Otherwise, you're not defining anything new here, so a binding document 
-isn't required.
+Dong Aisheng (2):
+  firmware: imx: add pm svc headfile
+  firmware: imx: add SCU power domain driver
 
-Rob
+ drivers/firmware/imx/Kconfig  |   6 ++
+ drivers/firmware/imx/Makefile |   3 +-
+ drivers/firmware/imx/scu-pd.c | 175 ++++++++++++++++++++++++++++++++++++++++++
+ include/soc/imx/scu/sci.h     |   1 +
+ include/soc/imx/scu/svc/pm.h  |  85 ++++++++++++++++++++
+ 5 files changed, 269 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/firmware/imx/scu-pd.c
+ create mode 100644 include/soc/imx/scu/svc/pm.h
+
+-- 
+2.7.4
