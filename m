@@ -1,103 +1,76 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v16 2/5] iommu/arm-smmu: Invoke pm_runtime
- during probe, add/remove device
-Date: Tue, 25 Sep 2018 19:55:33 +0100
-Message-ID: <aedf3f32-68ae-566a-3735-ca4ec5c7559a@arm.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
- <20180830144541.17740-3-vivek.gautam@codeaurora.org>
- <CAAFQd5B7YR03Jm1upOg2nsaKOb1iDD7-WGo-qx7S8m-nounCvA@mail.gmail.com>
- <3ccc3690-dc9d-56e7-e2d1-62e73a189bff@codeaurora.org>
- <CAAFQd5DMDWEeBU=fg6arye3pXnrCqOA4tDtMSGutXk7vSz-EtQ@mail.gmail.com>
- <CAFp+6iE3+qn6-gpXEzxfoP5yPMARmUcJNn0AZk-kA2AreTLnng@mail.gmail.com>
- <CAFp+6iHnHj_PkPFBUSTdJTW57K51wLqSEw6VOMKxAVo7O+ms9g@mail.gmail.com>
- <CAFp+6iFvhdSq7upbvsEWgMewhAaaRM91iw9p7qOFPYrUxis0Hg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA Tegra20/30
+Date: Tue, 25 Sep 2018 14:36:44 -0500
+Message-ID: <CAL_JsqLf+_Q8ZQAo=k8yQ4XKMccUHpm8WsQ3z_Q-PMY6gbQbbA@mail.gmail.com>
+References: <20180830194356.14059-1-digetx@gmail.com> <20180830194356.14059-2-digetx@gmail.com>
+ <20180925165810.GA32430@bogus> <074a169d-294b-ad4b-ddbd-6db742278f2a@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAFp+6iFvhdSq7upbvsEWgMewhAaaRM91iw9p7qOFPYrUxis0Hg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-GB
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <074a169d-294b-ad4b-ddbd-6db742278f2a@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVml2ZWssCgpPbiAyMDE4LTA5LTI1IDY6NTYgQU0sIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBI
-aSBSb2JpbiwgV2lsbCwKPiAKPiBPbiBUdWUsIFNlcCAxOCwgMjAxOCBhdCA4OjQxIEFNIFZpdmVr
-IEdhdXRhbQo+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Pgo+PiBIaSBS
-b2JpbiwKPj4KPj4gT24gRnJpLCBTZXAgNywgMjAxOCBhdCAzOjUyIFBNIFZpdmVrIEdhdXRhbSA8
-dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPj4+Cj4+PiBPbiBGcmksIFNlcCA3
-LCAyMDE4IGF0IDM6MjIgUE0gVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4gd3JvdGU6
-Cj4+Pj4KPj4+PiBPbiBGcmksIFNlcCA3LCAyMDE4IGF0IDY6MzggUE0gVml2ZWsgR2F1dGFtIDx2
-aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Pj4+Pgo+Pj4+PiBIaSBUb21hc3os
-Cj4+Pj4+Cj4+Pj4+Cj4+Pj4+IE9uIDkvNy8yMDE4IDI6NDYgUE0sIFRvbWFzeiBGaWdhIHdyb3Rl
-Ogo+Pj4+Pj4gSGkgVml2ZWssCj4+Pj4+Pgo+Pj4+Pj4gT24gVGh1LCBBdWcgMzAsIDIwMTggYXQg
-MTE6NDYgUE0gVml2ZWsgR2F1dGFtCj4+Pj4+PiA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3Jn
-PiB3cm90ZToKPj4+Pj4+PiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEu
-b3JnPgo+Pj4+Pj4+Cj4+Pj4+Pj4gVGhlIHNtbXUgZGV2aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRk
-L3JlbW92ZSBtYXN0ZXIgZGV2aWNlIGNhbGxiYWNrcwo+Pj4+Pj4+IGdldHMgY2FsbGVkIHdoZW4g
-dGhlIHNtbXUgaXMgbm90IGxpbmtlZCB0byBpdHMgbWFzdGVyLCB0aGF0IGlzIHdpdGhvdXQKPj4+
-Pj4+PiB0aGUgY29udGV4dCBvZiB0aGUgbWFzdGVyIGRldmljZS4gU28gY2FsbGluZyBydW50aW1l
-IGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4+Pj4+Pj4gc2VwYXJhdGVseS4KPj4+Pj4+PiBHbG9iYWwg
-bG9ja3MgYXJlIGFsc28gaW5pdGlhbGl6ZWQgYmVmb3JlIGVuYWJsaW5nIHJ1bnRpbWUgcG0gYXMg
-dGhlCj4+Pj4+Pj4gcnVudGltZV9yZXN1bWUoKSBjYWxscyBkZXZpY2VfcmVzZXQoKSB3aGljaCBk
-b2VzIHRsYl9zeW5jX2dsb2JhbCgpCj4+Pj4+Pj4gdGhhdCB1bHRpbWF0ZWx5IHJlcXVpcmVzIGxv
-Y2tzIHRvIGJlIGluaXRpYWxpemVkLgo+Pj4+Pj4+Cj4+Pj4+Pj4gU2lnbmVkLW9mZi1ieTogU3Jp
-Y2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPj4+Pj4+PiBbdml2ZWs6IENsZWFu
-dXAgcG0gcnVudGltZSBjYWxsc10KPj4+Pj4+PiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0g
-PHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4+Pj4+PiBSZXZpZXdlZC1ieTogVG9tYXN6
-IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPj4+Pj4+PiBUZXN0ZWQtYnk6IFNyaW5pdmFzIEth
-bmRhZ2F0bGEgPHNyaW5pdmFzLmthbmRhZ2F0bGFAbGluYXJvLm9yZz4KPj4+Pj4+PiAtLS0KPj4+
-Pj4+PiAgICBkcml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCA4OSArKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0KPj4+Pj4+PiAgICAxIGZpbGUgY2hhbmdlZCwg
-ODEgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKPj4+Pj4+IFtzbmlwXQo+Pj4+Pj4+IEBA
-IC0yMjE1LDEwICsyMjgxLDE3IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNlX3JlbW92ZShz
-dHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQo+Pj4+Pj4+ICAgICAgICAgICBpZiAoIWJpdG1h
-cF9lbXB0eShzbW11LT5jb250ZXh0X21hcCwgQVJNX1NNTVVfTUFYX0NCUykpCj4+Pj4+Pj4gICAg
-ICAgICAgICAgICAgICAgZGV2X2VycigmcGRldi0+ZGV2LCAicmVtb3ZpbmcgZGV2aWNlIHdpdGgg
-YWN0aXZlIGRvbWFpbnMhXG4iKTsKPj4+Pj4+Pgo+Pj4+Pj4+ICsgICAgICAgYXJtX3NtbXVfcnBt
-X2dldChzbW11KTsKPj4+Pj4+PiAgICAgICAgICAgLyogVHVybiB0aGUgdGhpbmcgb2ZmICovCj4+
-Pj4+Pj4gICAgICAgICAgIHdyaXRlbChzQ1IwX0NMSUVOVFBELCBBUk1fU01NVV9HUjBfTlMoc21t
-dSkgKyBBUk1fU01NVV9HUjBfc0NSMCk7Cj4+Pj4+Pj4gKyAgICAgICBhcm1fc21tdV9ycG1fcHV0
-KHNtbXUpOwo+Pj4+Pj4+ICsKPj4+Pj4+PiArICAgICAgIGlmIChwbV9ydW50aW1lX2VuYWJsZWQo
-c21tdS0+ZGV2KSkKPj4+Pj4+PiArICAgICAgICAgICAgICAgcG1fcnVudGltZV9mb3JjZV9zdXNw
-ZW5kKHNtbXUtPmRldik7Cj4+Pj4+Pj4gKyAgICAgICBlbHNlCj4+Pj4+Pj4gKyAgICAgICAgICAg
-ICAgIGNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+Pj4+Pj4+
-Cj4+Pj4+Pj4gLSAgICAgICBjbGtfYnVsa19kaXNhYmxlX3VucHJlcGFyZShzbW11LT5udW1fY2xr
-cywgc21tdS0+Y2xrcyk7Cj4+Pj4+Pj4gKyAgICAgICBjbGtfYnVsa191bnByZXBhcmUoc21tdS0+
-bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwo+Pj4+Pj4gQXJlbid0IHdlIG1pc3NpbmcgcG1fcnVudGlt
-ZV9kaXNhYmxlKCkgaGVyZT8gV2UnbGwgaGF2ZSB0aGUgZW5hYmxlCj4+Pj4+PiBjb3VudCB1bmJh
-bGFuY2VkIGlmIHRoZSBkcml2ZXIgaXMgcmVtb3ZlZCBhbmQgcHJvYmVkIGFnYWluLgo+Pj4+Pgo+
-Pj4+PiBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKSBkb2VzIGEgcG1fcnVudGltZV9kaXNhYmxl
-KCkgYWxzbyBpZiBpIGFtIG5vdAo+Pj4+PiB3cm9uZy4KPj4+Pj4gQW5kLCBhcyBtZW50aW9uZWQg
-aW4gYSBwcmV2aW91cyB0aHJlYWQgWzFdLCB3ZSB3ZXJlIHNlZWluZyBhIHdhcm5pbmcKPj4+Pj4g
-d2hpY2ggd2UgYXZvaWRlZAo+Pj4+PiBieSBrZWVwaW5nIGZvcmNlX3N1c3BlbmQoKS4KPj4+Pj4K
-Pj4+Pj4gWzFdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE4LzcvOC8xMjQKPj4+Pgo+Pj4+IEkg
-c2VlLCB0aGFua3MuIEkgZGlkbid0IHJlYWxpemUgdGhhdCBwbV9ydW50aW1lX2ZvcmNlX3N1c3Bl
-bmQoKQo+Pj4+IGFscmVhZHkgZGlzYWJsZXMgcnVudGltZSBQTSBpbmRlZWQuIFNvcnJ5IGZvciB0
-aGUgbm9pc2UuCj4+Pgo+Pj4gSGkgVG9tYXN6LAo+Pj4gTm8gcHJvYmxlbS4gVGhhbmtzIGZvciBs
-b29raW5nIGJhY2sgYXQgaXQuCj4+Pgo+Pj4gSGkgUm9iaW4sCj4+PiBJZiB5b3UgYXJlIGZpbmUg
-d2l0aCB0aGlzIHNlcmllcywgdGhlbiBjYW4geW91IHBsZWFzZSBjb25zaWRlciBnaXZpbmcKPj4+
-IFJldmlld2VkLWJ5LCBzbyB0aGF0IHdlIGFyZSBjZXJ0YWluIHRoYXQgdGhpcyBzZXJpZXMgd2ls
-bCBnbyBpbiB0aGUgbmV4dCBtZXJnZQo+Pj4gd2luZG93Lgo+Pj4gVGhhbmtzCj4+Cj4+IEdlbnRs
-ZSBwaW5nLgo+PiBZb3UgYWNrIHdpbGwgYmUgdmVyeSBoZWxwZnVsIGluIGxldHRpbmcgV2lsbCBw
-dWxsIHRoaXMgc2VyaWVzIGZvciA0LjIwLgo+PiBUaGFua3MuCj4gCj4gSSB3b3VsZCByZWFsbHkg
-YXBwcmVjaWF0ZSBpZiB5b3UgY291bGQgcHJvdmlkZSB5b3VyIGFjayBmb3IgdGhpcyBzZXJpZXMu
-Cj4gT3IgaWYgdGhlcmUgYXJlIGFueSBjb25jZXJucywgSSBhbSB3aWxsaW5nIHRvIGFkZHJlc3Mg
-dGhlbS4KCkFwb2xvZ2llcywgSSB0aG91Z2h0IEknZCByZXBsaWVkIHRvIHNheSBJJ2QgYmUgZ2V0
-dGluZyB0byB0aGlzIHNob3J0bHksIApidXQgYXBwYXJlbnRseSBub3QgOigKCkZXSVcsICJzaG9y
-dGx5IiBpcyBub3cgdG9tb3Jyb3cgLSBJIGRvbid0ICp0aGluayogdGhlcmUncyBhbnl0aGluZyAK
-b3V0c3RhbmRpbmcsIGJ1dCBnaXZlbiB0aGUgbnVtYmVyIG9mIHN1YnRsZXRpZXMgd2UndmUgdHVy
-bmVkIHVwIHNvIGZhciBJIApkbyBqdXN0IHdhbnQgb25lIGxhc3QgdGhvcm91Z2ggZG91YmxlLWNo
-ZWNrIHRvIG1ha2Ugc3VyZS4KClRoYW5rcywKUm9iaW4uCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5v
-QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+On Tue, Sep 25, 2018 at 12:29 PM Dmitry Osipenko <digetx@gmail.com> wrote:
+>
+> On 9/25/18 7:58 PM, Rob Herring wrote:
+> > On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
+> >> Add device-tree binding that describes CPU frequency-scaling hardware
+> >> found on NVIDIA Tegra20/30 SoC's.
+> >>
+> >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> >> ---
+> >>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
+> >>  1 file changed, 38 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> >> new file mode 100644
+> >> index 000000000000..2c51f676e958
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> >> @@ -0,0 +1,38 @@
+> >> +Binding for NVIDIA Tegra20 CPUFreq
+> >> +==================================
+> >> +
+> >> +Required properties:
+> >> +- clocks: Must contain an entry for each entry in clock-names.
+> >> +  See ../clocks/clock-bindings.txt for details.
+> >> +- clock-names: Must include the following entries:
+> >> +  - pll_x: main-parent for CPU clock, must be the first entry
+> >> +  - backup: intermediate-parent for CPU clock
+> >> +  - cpu: the CPU clock
+> >
+> > The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK
+> > is used for the cpu core. You can't just define your own clocks that
+> > you happen to want access to.
+> >
+> > Otherwise, you're not defining anything new here, so a binding document
+> > isn't required.
+>
+> PERIPHCLK is a different thing.
+
+Right, that's what I meant. Only CLK is used.
+
+> Here we are defining the CPU clock and
+> its *parent* sources, the PLLX (main) and backup (intermediate clock
+> that is used while PLLX changes its rate). These are not some random
+> clocks "that you happen to want access to", they are essential for the
+> Tegra CPUFreq driver, CPU is running off them.
+
+assigned-clocks is generally how we get parent clocks in this
+situation. "clocks" is for what physical clocks are attached to a
+given block. ARM very clearly documents the clocks for their IP
+blocks.
+
+> I assume that PERIPHCLK and other clocks are derived from the "CPU"
+> clock and their configuration is hardwired. Probably Peter knows how
+> it's implemented in HW.
+
+Yes, because PERIPHCLK must be synchronous. In any case, it is
+irrelevant to cpu nodes and applies to timer, SCU, and GIC nodes.
+
+> I'm now working on v2 that will include more Tegra-specific stuff in the
+> binding, like custom "opp-supported-hw" property and probably some more.
