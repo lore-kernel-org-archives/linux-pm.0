@@ -1,62 +1,62 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 14/14] thermal/drivers/hisi: Add the dual clusters sensors for hi3660
-Date: Tue, 25 Sep 2018 11:03:12 +0200
-Message-ID: <1537866192-12320-15-git-send-email-daniel.lezcano@linaro.org>
-References: <1537866192-12320-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH RFC] cpuidle/drivers/menu: Remove get_loadavg in the performance multiplier
+Date: Tue, 25 Sep 2018 11:38:44 +0200
+Message-ID: <1537868328-13405-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1537866192-12320-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, leo.yan@linaro.org, Zhang Rui <rui.zhang@intel.com>
+To: rafael@kernel.org
+Cc: linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The code is ready to support multiple sensors on the hi3660. The DT
-defines a thermal zone per cluster.
+The function get_loadavg() returns almost always zero. To be more
+precise, statistically speaking for a total of 1023379 times passing
+to the function, the load is equal to zero 1020728 times, greater than
+100, 610 times, the remaining is between 0 and 5.
 
-Add the little cluster sensor and let it bind with the thermal zone.
+I'm putting in question this metric. Is it worth to keep it?
 
+Cc: Todd Kjos <tkjos@google.com>
+Cc: Joel Fernandes <joelaf@google.com>
+Cc: Colin Cross <ccross@android.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/cpuidle/governors/menu.c | 15 ++++-----------
+ 1 file changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index ba89cb9..c4111a9 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -424,14 +424,20 @@ static int hi3660_thermal_probe(struct hisi_thermal_data *data)
- 	struct platform_device *pdev = data->pdev;
- 	struct device *dev = &pdev->dev;
- 
--	data->sensor = devm_kzalloc(dev, sizeof(*data->sensor), GFP_KERNEL);
-+	data->nr_sensors = 2;
-+
-+	data->sensor = devm_kzalloc(dev, sizeof(*data->sensor) *
-+				    data->nr_sensors, GFP_KERNEL);
- 	if (!data->sensor)
- 		return -ENOMEM;
- 
- 	data->sensor[0].id = HI3660_BIG_SENSOR;
- 	data->sensor[0].irq_name = "tsensor_a73";
- 	data->sensor[0].data = data;
--	data->nr_sensors = 1;
-+
-+	data->sensor[1].id = HI3660_LITTLE_SENSOR;
-+	data->sensor[1].irq_name = "tsensor_a53";
-+	data->sensor[1].data = data;
- 
- 	return 0;
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index e26a409..d939b8e 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -173,18 +173,10 @@ static inline int which_bucket(unsigned int duration, unsigned long nr_iowaiters
+  * to be, the higher this multiplier, and thus the higher
+  * the barrier to go to an expensive C state.
+  */
+-static inline int performance_multiplier(unsigned long nr_iowaiters, unsigned long load)
++static inline int performance_multiplier(unsigned long nr_iowaiters)
+ {
+-	int mult = 1;
+-
+-	/* for higher loadavg, we are more reluctant */
+-
+-	mult += 2 * get_loadavg(load);
+-
+ 	/* for IO wait tasks (per cpu!) we add 5x each */
+-	mult += 10 * nr_iowaiters;
+-
+-	return mult;
++	return 1 + 10 * nr_iowaiters;
  }
-@@ -443,8 +449,8 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
  
- 	*temp = data->ops->get_temp(sensor);
- 
--	dev_dbg(&data->pdev->dev, "id=%d, temp=%d, thres=%d\n",
--		sensor->id, *temp, sensor->thres_temp);
-+	dev_dbg(&data->pdev->dev, "tzd=%p, id=%d, temp=%d, thres=%d\n",
-+		sensor->tzd, sensor->id, *temp, sensor->thres_temp);
- 
- 	return 0;
- }
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+@@ -359,7 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 		 * Use the performance multiplier and the user-configurable
+ 		 * latency_req to determine the maximum exit latency.
+ 		 */
+-		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
++		interactivity_req = data->predicted_us /
++			performance_multiplier(nr_iowaiters);
+ 		if (latency_req > interactivity_req)
+ 			latency_req = interactivity_req;
+ 	}
 -- 
 2.7.4
