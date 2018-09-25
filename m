@@ -1,54 +1,52 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2] dt-binding: arm/cpus.txt: fix
- dynamic-power-coefficient unit
-Date: Tue, 25 Sep 2018 11:44:41 -0500
-Message-ID: <20180925164441.GA21659@bogus>
-References: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
+Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
+ Tegra20/30
+Date: Tue, 25 Sep 2018 11:58:10 -0500
+Message-ID: <20180925165810.GA32430@bogus>
+References: <20180830194356.14059-1-digetx@gmail.com>
+ <20180830194356.14059-2-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1535526518-29022-1-git-send-email-vincent.guittot@linaro.org>
+In-Reply-To: <20180830194356.14059-2-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, punit.agrawal@arm.com, edubezval@gmail.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 29, 2018 at 09:08:38AM +0200, Vincent Guittot wrote:
-> The unit of dynamic-power-coefficient is described as mW/MHz/uV^2 whereas
-> its usage in the code assumes that unit is uW/MHz/V^2
+On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
+> Add device-tree binding that describes CPU frequency-scaling hardware
+> found on NVIDIA Tegra20/30 SoC's.
 > 
-> In drivers/thermal/cpu_cooling.c, the code is :
-> 
-> power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
-> do_div(power, 1000000000);
-> 
-> which can be summarized as :
-> power (mW) = capacitance * freq_mhz/1000 * (voltage_mv/1000)^2
-> or
-> power (mW) = (capacitance * freq_mhz * (voltage_mv/1000)^2) / 1000
-> then
-> power (mW) = power (uW) / 1000
-> so
-> power (uW) = capacitance * freq_mhz * (voltage_mv/1000)^2
-> 
-> Furthermore, if we test basic values like :
-> voltage_mv = 1000mV = 1V
-> freq_mhz = 1000Mhz
-> 
-> The minimum possible power, when dynamic-power-coefficient equals 1, will
-> be with current unit:
-> min power = 1 * 1000  * (1000000)^2 = 10^15 mW
-> which is not realistic
-> 
-> With the unit used by the code, the min power is
-> min power =  1 * 1000 * 1^2 = 1000uW = 1mW which is far more realistic
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  Documentation/devicetree/bindings/arm/cpus.txt | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> new file mode 100644
+> index 000000000000..2c51f676e958
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+> @@ -0,0 +1,38 @@
+> +Binding for NVIDIA Tegra20 CPUFreq
+> +==================================
+> +
+> +Required properties:
+> +- clocks: Must contain an entry for each entry in clock-names.
+> +  See ../clocks/clock-bindings.txt for details.
+> +- clock-names: Must include the following entries:
+> +  - pll_x: main-parent for CPU clock, must be the first entry
+> +  - backup: intermediate-parent for CPU clock
+> +  - cpu: the CPU clock
 
-Applied, thanks.
+The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK 
+is used for the cpu core. You can't just define your own clocks that 
+you happen to want access to.
+
+Otherwise, you're not defining anything new here, so a binding document 
+isn't required.
 
 Rob
