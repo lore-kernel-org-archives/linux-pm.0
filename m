@@ -1,65 +1,108 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
- Tegra20/30
-Date: Tue, 25 Sep 2018 20:29:24 +0300
-Message-ID: <074a169d-294b-ad4b-ddbd-6db742278f2a@gmail.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-2-digetx@gmail.com> <20180925165810.GA32430@bogus>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Tue, 25 Sep 2018 13:02:15 -0500
+Message-ID: <20180925180215.GA12435@bogus>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180925165810.GA32430@bogus>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20180831140151.13972-3-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 9/25/18 7:58 PM, Rob Herring wrote:
-> On Thu, Aug 30, 2018 at 10:43:52PM +0300, Dmitry Osipenko wrote:
->> Add device-tree binding that describes CPU frequency-scaling hardware
->> found on NVIDIA Tegra20/30 SoC's.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
->>  1 file changed, 38 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->> new file mode 100644
->> index 000000000000..2c51f676e958
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
->> @@ -0,0 +1,38 @@
->> +Binding for NVIDIA Tegra20 CPUFreq
->> +==================================
->> +
->> +Required properties:
->> +- clocks: Must contain an entry for each entry in clock-names.
->> +  See ../clocks/clock-bindings.txt for details.
->> +- clock-names: Must include the following entries:
->> +  - pll_x: main-parent for CPU clock, must be the first entry
->> +  - backup: intermediate-parent for CPU clock
->> +  - cpu: the CPU clock
+On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+> This binding is intended to represent the relations between the interconnect
+> controllers (providers) and consumer device nodes. It will allow creating links
+> between consumers and interconnect paths (exposed by interconnect providers).
+
+As I mentioned in person, I want to see other SoC families using this 
+before accepting. They don't have to be ready for upstream, but WIP 
+patches or even just a "yes, this works for us and we're going to use 
+this binding on X".
+
+Also, I think the QCom GPU use of this should be fully sorted out. Or 
+more generically how this fits into OPP binding which seems to be never 
+ending extended...
+
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  .../bindings/interconnect/interconnect.txt    | 60 +++++++++++++++++++
+>  1 file changed, 60 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
 > 
-> The Cortex A9 has CLK, PERIPHCLK, and PERIPHCLKEN clocks and only CLK 
-> is used for the cpu core. You can't just define your own clocks that 
-> you happen to want access to.
-> 
-> Otherwise, you're not defining anything new here, so a binding document 
-> isn't required.
+> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> new file mode 100644
+> index 000000000000..5cb7d3c8d44d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> @@ -0,0 +1,60 @@
+> +Interconnect Provider Device Tree Bindings
+> +=========================================
+> +
+> +The purpose of this document is to define a common set of generic interconnect
+> +providers/consumers properties.
+> +
+> +
+> += interconnect providers =
+> +
+> +The interconnect provider binding is intended to represent the interconnect
+> +controllers in the system. Each provider registers a set of interconnect
+> +nodes, which expose the interconnect related capabilities of the interconnect
+> +to consumer drivers. These capabilities can be throughput, latency, priority
+> +etc. The consumer drivers set constraints on interconnect path (or endpoints)
+> +depending on the use case. Interconnect providers can also be interconnect
+> +consumers, such as in the case where two network-on-chip fabrics interface
+> +directly
 
-PERIPHCLK is a different thing. Here we are defining the CPU clock and
-its *parent* sources, the PLLX (main) and backup (intermediate clock
-that is used while PLLX changes its rate). These are not some random
-clocks "that you happen to want access to", they are essential for the
-Tegra CPUFreq driver, CPU is running off them.
+missing '.'
 
-I assume that PERIPHCLK and other clocks are derived from the "CPU"
-clock and their configuration is hardwired. Probably Peter knows how
-it's implemented in HW.
+> +
+> +Required properties:
+> +- compatible : contains the interconnect provider compatible string
+> +- #interconnect-cells : number of cells in a interconnect specifier needed to
+> +			encode the interconnect node id
+> +
+> +Example:
+> +
+> +		snoc: snoc@580000 {
+> +			compatible = "qcom,msm8916-snoc";
+> +			#interconnect-cells = <1>;
+> +			reg = <0x580000 0x14000>;
+> +			clock-names = "bus_clk", "bus_a_clk";
+> +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+> +				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
+> +		};
+> +
+> +
+> += interconnect consumers =
+> +
+> +The interconnect consumers are device nodes which dynamically express their
+> +bandwidth requirements along interconnect paths they are connected to. There
+> +can be multiple interconnect providers on a SoC and the consumer may consume
+> +multiple paths from different providers depending on use case and the
+> +components it has to interact with.
+> +
+> +Required properties:
+> +interconnects : Pairs of phandles and interconnect provider specifier to denote
+> +	        the edge source and destination ports of the interconnect path.
+> +
+> +Optional properties:
+> +interconnect-names : List of interconnect path name strings sorted in the same
+> +		     order as the interconnects property. Consumers drivers will use
+> +		     interconnect-names to match interconnect paths with interconnect
+> +		     specifiers.
 
-I'm now working on v2 that will include more Tegra-specific stuff in the
-binding, like custom "opp-supported-hw" property and probably some more.
+specifier pairs.
+
+> +
+> +Example:
+> +
+> +	sdhci@7864000 {
+> +		...
+> +		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
+> +		interconnect-names = "ddr";
+> +	};
