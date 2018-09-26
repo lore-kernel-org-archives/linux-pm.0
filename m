@@ -1,84 +1,59 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
- default
-Date: Wed, 26 Sep 2018 18:51:07 +0100
-Message-ID: <20180926175106.GA22286@e110439-lin>
-References: <20180828135324.21976-1-patrick.bellasi@arm.com>
- <20180828135324.21976-15-patrick.bellasi@arm.com>
- <20180904134748.GA4974@localhost.localdomain>
- <20180906144053.GD25636@e110439-lin>
- <20180914111003.GC24082@hirez.programming.kicks-ass.net>
- <20180914140732.GR1413@e110439-lin>
- <20180914142813.GM24124@hirez.programming.kicks-ass.net>
- <20180917122723.GS1413@e110439-lin>
- <20180921091308.GD24082@hirez.programming.kicks-ass.net>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: [RFC workqueue/driver-core PATCH 0/5] Add NUMA aware async_schedule
+ calls
+Date: Wed, 26 Sep 2018 14:51:32 -0700
+Message-ID: <20180926214433.13512.30289.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180921091308.GD24082@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Peter,
+This patch set provides functionality that will help to improve the
+locality of the async_schedule calls used to provide deferred
+initialization.
 
-On 21-Sep 11:13, Peter Zijlstra wrote:
-> On Mon, Sep 17, 2018 at 01:27:23PM +0100, Patrick Bellasi wrote:
+This patch set originally started out with me focused on just the one call
+to async_schedule_domain in the nvdimm tree that was being used to
+defer the device_add call however after doing some digging I realized the
+scope of this was much broader than I had originally planned. As such I
+went through and reworked the underlying infrastructure down to replacing
+the queue_work call itself with a function of my own and opted to try and
+provide a NUMA aware solution that would work for a broader audience.
 
-[...]
+I am submitting this an RFC to figure out just how far off I am from where
+I need to be on this patch set and to determine which tree I should
+ultimately be submitting this to.
 
-While going back to one of our previous conversation, I noted these
-comments:
+---
 
-> > Thus, the capacity of little CPUs, or the exact capacity of an OPP, is
-> > something we don't care to specify exactly, since:
+Alexander Duyck (5):
+      workqueue: Provide queue_work_near to queue work near a given NUMA node
+      async: Add support for queueing on specific NUMA node
+      driver core: Probe devices asynchronously instead of the driver
+      driver core: Use new async_schedule_dev command
+      nvdimm: Schedule device registration on node local to the device
 
-[...]
 
-> >  - certain platforms don't even expose OPPs, but just "performance
-> >    levels"... which ultimately are a "percentage"
-> 
-> Well, the whole capacity thing is a 'percentage', it's just that 1024 is
-> much nicer to work with (for computers) than 100 is (also it provides a
-> wee bit more resolution).
+ drivers/base/bus.c        |   23 +-------
+ drivers/base/dd.c         |   44 +++++++++++++++
+ drivers/base/power/main.c |   12 ++--
+ drivers/nvdimm/bus.c      |   11 +++-
+ include/linux/async.h     |   27 ++++++++-
+ include/linux/workqueue.h |    2 +
+ kernel/async.c            |   62 ++++++++++++++++------
+ kernel/workqueue.c        |  129 ++++++++++++++++++++++++++++++++++++++++++++-
+ 8 files changed, 258 insertions(+), 52 deletions(-)
 
-Here above I was referring to the Intel's HWP support [1],
-specifically at the:
-
-  Ability of HWP to allow software to set an energy/performance
-  preference hint in the IA32_HWP_REQUEST MSR.
-
-which is detailed in section "14.4.4 Managing HWP".
-
-The {Minimum,Maximum}_Performance registers represent what I consider
-the best semantics for UtilClamp.
-
-In the HWP case we use 256 range values, and thus for UtilClamp as
-well it would make more sense to use a 1024 scale as suggested by
-Peter, even just to have a bit more room, while still considering the
-clamp values _as a percentage_, with just one decimal digit of
-resolution
-
-I think the important bit here is the abstraction between what we
-the user can require and what the platform can provided.
-
-If HWP does not allow the OS to pinpoint a specific frequency, why
-should a user-space interface be designed to pinpoint a specific
-capacity ?
-
-Can we find here a common ground around the idea that UtilClamp values
-represent a 1024 range percentage of minimum/maximum performance
-expected by a task ?
-
-Would be really nice to know what Rafael thing about all that...
-
-Cheers Patrick
-
-[1] https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3b-part-2-manual.pdf
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+--
