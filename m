@@ -1,134 +1,126 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 3/4] dt-bindings: power: Add Spreadtrum SC27XX fuel
- gauge unit documentation
-Date: Wed, 26 Sep 2018 16:14:08 +0200
-Message-ID: <20180926141408.dumlwnjmbue4nkjm@earth.universe>
-References: <358665e3f4f9ec105dc2f8a2dc6dd98dbe761fae.1537930252.git.baolin.wang@linaro.org>
- <b4b36b7b54cc227e6e7f14c314b4617863a205f5.1537930252.git.baolin.wang@linaro.org>
+From: Jordan Crouse <jcrouse@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Wed, 26 Sep 2018 08:34:33 -0600
+Message-ID: <20180926143432.GH10761@jcrouse-lnx.qualcomm.com>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="f23zl5vcp3oae2xk"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <b4b36b7b54cc227e6e7f14c314b4617863a205f5.1537930252.git.baolin.wang@linaro.org>
+In-Reply-To: <20180925180215.GA12435@bogus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
+To: Rob Herring <robh@kernel.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, robdclark@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Sep 25, 2018 at 01:02:15PM -0500, Rob Herring wrote:
+> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+> > This binding is intended to represent the relations between the interconnect
+> > controllers (providers) and consumer device nodes. It will allow creating links
+> > between consumers and interconnect paths (exposed by interconnect providers).
+> 
+> As I mentioned in person, I want to see other SoC families using this 
+> before accepting. They don't have to be ready for upstream, but WIP 
+> patches or even just a "yes, this works for us and we're going to use 
+> this binding on X".
+> 
+> Also, I think the QCom GPU use of this should be fully sorted out. Or 
+> more generically how this fits into OPP binding which seems to be never 
+> ending extended...
 
---f23zl5vcp3oae2xk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is a discussion I wouldn't mind having now.  To jog memories, this is what
+I posted a few weeks ago:
 
-Hi,
+https://patchwork.freedesktop.org/patch/246117/
 
-On Wed, Sep 26, 2018 at 10:59:13AM +0800, Baolin Wang wrote:
-> This patch adds the binding documentation for Spreadtrum SC27XX series PM=
-ICs
-> fuel gauge unit device, which is used to calculate the battery capacity.
->=20
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
+This seems like the easiest way to me to tie the frequency and the bandwidth
+quota together for GPU devfreq scaling but I'm not married to the format and
+I'll happily go a few rounds on the bikeshed if we can get something we can
+be happy with.
 
-Looks good to me.
+Jordan
 
--- Sebastian
+> > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> > ---
+> >  .../bindings/interconnect/interconnect.txt    | 60 +++++++++++++++++++
+> >  1 file changed, 60 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/interconnect/interconnect.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> > new file mode 100644
+> > index 000000000000..5cb7d3c8d44d
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> > @@ -0,0 +1,60 @@
+> > +Interconnect Provider Device Tree Bindings
+> > +=========================================
+> > +
+> > +The purpose of this document is to define a common set of generic interconnect
+> > +providers/consumers properties.
+> > +
+> > +
+> > += interconnect providers =
+> > +
+> > +The interconnect provider binding is intended to represent the interconnect
+> > +controllers in the system. Each provider registers a set of interconnect
+> > +nodes, which expose the interconnect related capabilities of the interconnect
+> > +to consumer drivers. These capabilities can be throughput, latency, priority
+> > +etc. The consumer drivers set constraints on interconnect path (or endpoints)
+> > +depending on the use case. Interconnect providers can also be interconnect
+> > +consumers, such as in the case where two network-on-chip fabrics interface
+> > +directly
+> 
+> missing '.'
+> 
+> > +
+> > +Required properties:
+> > +- compatible : contains the interconnect provider compatible string
+> > +- #interconnect-cells : number of cells in a interconnect specifier needed to
+> > +			encode the interconnect node id
+> > +
+> > +Example:
+> > +
+> > +		snoc: snoc@580000 {
+> > +			compatible = "qcom,msm8916-snoc";
+> > +			#interconnect-cells = <1>;
+> > +			reg = <0x580000 0x14000>;
+> > +			clock-names = "bus_clk", "bus_a_clk";
+> > +			clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
+> > +				 <&rpmcc RPM_SMD_SNOC_A_CLK>;
+> > +		};
+> > +
+> > +
+> > += interconnect consumers =
+> > +
+> > +The interconnect consumers are device nodes which dynamically express their
+> > +bandwidth requirements along interconnect paths they are connected to. There
+> > +can be multiple interconnect providers on a SoC and the consumer may consume
+> > +multiple paths from different providers depending on use case and the
+> > +components it has to interact with.
+> > +
+> > +Required properties:
+> > +interconnects : Pairs of phandles and interconnect provider specifier to denote
+> > +	        the edge source and destination ports of the interconnect path.
+> > +
+> > +Optional properties:
+> > +interconnect-names : List of interconnect path name strings sorted in the same
+> > +		     order as the interconnects property. Consumers drivers will use
+> > +		     interconnect-names to match interconnect paths with interconnect
+> > +		     specifiers.
+> 
+> specifier pairs.
+> 
+> > +
+> > +Example:
+> > +
+> > +	sdhci@7864000 {
+> > +		...
+> > +		interconnects = <&pnoc MASTER_SDCC_1 &bimc SLAVE_EBI_CH0>;
+> > +		interconnect-names = "ddr";
+> > +	};
 
-> Changes from v1:
->  - Renamed GPIO property.
->  - Use standand battery properties instead of 'sprd,inner-resist' and
->    'sprd,ocv-cap-table'.
->  - Remove battery node's description.
-> ---
->  .../devicetree/bindings/power/supply/sc27xx-fg.txt |   52 ++++++++++++++=
-++++++
->  1 file changed, 52 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/sc27xx=
--fg.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt=
- b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
-> new file mode 100644
-> index 0000000..b161468
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt
-> @@ -0,0 +1,52 @@
-> +Spreadtrum SC27XX PMICs Fuel Gauge Unit Power Supply Bindings
-> +
-> +Required properties:
-> +- compatible: Should be one of the following:
-> +  "sprd,sc2720-fgu",
-> +  "sprd,sc2721-fgu",
-> +  "sprd,sc2723-fgu",
-> +  "sprd,sc2730-fgu",
-> +  "sprd,sc2731-fgu".
-> +- reg: The address offset of fuel gauge unit.
-> +- battery-detect-gpios: GPIO for battery detection.
-> +- io-channels: Specify the IIO ADC channel to get temperature.
-> +- io-channel-names: Should be "bat-temp".
-> +- monitored-battery: Phandle of battery characteristics devicetree node.
-> +  See Documentation/devicetree/bindings/power/supply/battery.txt
-> +
-> +Example:
-> +
-> +	bat: battery {
-> +		compatible =3D "simple-battery";
-> +		charge-full-design-microamp-hours =3D <1900000>;
-> +		constant-charge-voltage-max-microvolt =3D <4350000>;
-> +		ocv-capacity-table-temperatures =3D <20>;
-> +		ocv-capacity-table-0 =3D <4185000 100>, <4113000 95>, <4066000 90>,
-> +					<4022000 85>, <3983000 80>, <3949000 75>,
-> +					<3917000 70>, <3889000 65>, <3864000 60>,
-> +					<3835000 55>, <3805000 50>, <3787000 45>,
-> +					<3777000 40>, <3773000 35>, <3770000 30>,
-> +					<3765000 25>, <3752000 20>, <3724000 15>,
-> +					<3680000 10>, <3605000 5>, <3400000 0>;
-> +		......
-> +	};
-> +
-> +	sc2731_pmic: pmic@0 {
-> +		compatible =3D "sprd,sc2731";
-> +		reg =3D <0>;
-> +		spi-max-frequency =3D <26000000>;
-> +		interrupts =3D <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-> +		interrupt-controller;
-> +		#interrupt-cells =3D <2>;
-> +		#address-cells =3D <1>;
-> +		#size-cells =3D <0>;
-> +
-> +		fgu@a00 {
-> +			compatible =3D "sprd,sc2731-fgu";
-> +			reg =3D <0xa00>;
-> +			battery-detect-gpios =3D <&pmic_eic 9 GPIO_ACTIVE_HIGH>;
-> +			io-channels =3D <&pmic_adc 5>;
-> +			io-channel-names =3D "bat-temp";
-> +			monitored-battery =3D <&bat>;
-> +		};
-> +	};
-> --=20
-> 1.7.9.5
->=20
-
---f23zl5vcp3oae2xk
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlurlCsACgkQ2O7X88g7
-+pq5hw/9Fppud7JlWswYwKy8iOl9ahWFL+Ox5Rb4Eld97X30hAWQxTDhmjjYOmdy
-a1758rB+wSH7iCl7j9yhWck/iJ3bFVNNRBeXtlFJ1USU5r7No23cshCgR0BKBbUa
-w8MSvR8ayP1gKiSy3CEA8wC+n6mNNeLkeXrvu4Bqhb3SIwdo1kTmIvUgsnwqRfFv
-wVcMRuPqcO47pVxlwX8xPz226GhNx+KnUvQGx+JDk2u0xke5FcvI6QA4k7V30Ryi
-vL9QVG8pGFdOxwEfYv1F5F8Ucpu3KOyslEG1ih5rXY13AYPD57gRVkLJ4aVQoagp
-oCI1Y21kSrPZxvvjAyY7DcUukL/cVUhVz/zTZc4FEmYMP3yogcc9t4jieP+As4SE
-iCcrSCBP59ejkoHfqz8eVOl4ubbfFlRcBKH8J9K8Wx78fn7l1J2B8o4wkVC25dHu
-adZtZug7UDiuJkg5ydMHy7xXySQwVmlBNeZ4x7uPO8y144M23D05l4hB9192QoeH
-ZpO58Cky2F8Hik9idIhVL4HVbdmbrDofj8BQbPV8GPeoxruit67rvr2BGF/3HJg0
-G+M3jWLVxu3RxVSkmYJ8MV21hmGJ9v57a0u9VGSwk1yYTGFkdbNJ3TVSPjC75GMz
-KVHUZVYf02uKKuX2XKjdpARhppV2TVRjYgNQC3apCHVpL1pgzqU=
-=THfg
------END PGP SIGNATURE-----
-
---f23zl5vcp3oae2xk--
+-- 
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
