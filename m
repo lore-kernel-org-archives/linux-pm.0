@@ -1,8 +1,8 @@
 From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: [RFC workqueue/driver-core PATCH 4/5] driver core: Use new
- async_schedule_dev command
-Date: Wed, 26 Sep 2018 14:51:55 -0700
-Message-ID: <20180926215155.13512.30900.stgit@localhost.localdomain>
+Subject: [RFC workqueue/driver-core PATCH 5/5] nvdimm: Schedule device
+ registration on node local to the device
+Date: Wed, 26 Sep 2018 14:52:01 -0700
+Message-ID: <20180926215201.13512.55945.stgit@localhost.localdomain>
 References: <20180926214433.13512.30289.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,94 +22,48 @@ To: linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, gregkh-hQyY1W1yCW8ekmW
 Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This change makes it so that we use the device specific version of the
-async_schedule commands to defer various tasks related to devices. By doing
-this we should see a slight improvement in performance as any device that
-is sensitive to latency/locality in the setup will now be initializing on
-the node closest to the device.
+This patch is meant to force the device registration for nvdimm devices to
+be closer to the actual device. This is achieved by using either the NUMA
+node ID of the region, or of the parent. By doing this we can have
+everything above the region based on the region, and everything below the
+region based on the nvdimm bus.
+
+By guaranteeing NUMA locality I see an improvement of as high as 25% for
+per-node init of a system with 12TB of persistent memory.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 ---
- drivers/base/dd.c         |    4 ++--
- drivers/base/power/main.c |   12 ++++++------
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/nvdimm/bus.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 5ba366c1cb83..81472dc44a70 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -826,7 +826,7 @@ static int __device_attach(struct device *dev, bool allow_async)
- 			 */
- 			dev_dbg(dev, "scheduling asynchronous probe\n");
- 			get_device(dev);
--			async_schedule(__device_attach_async_helper, dev);
-+			async_schedule_dev(__device_attach_async_helper, dev);
- 		} else {
- 			pm_request_idle(dev);
- 		}
-@@ -927,7 +927,7 @@ static int __driver_attach(struct device *dev, void *data)
- 		if (!dev->driver) {
- 			get_device(dev);
- 			dev_set_drvdata(dev, drv);
--			async_schedule(__driver_attach_async_helper, dev);
-+			async_schedule_dev(__driver_attach_async_helper, dev);
- 		}
- 		device_unlock(dev);
- 		return 0;
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3f68e2919dc5..8495d9b1e9d0 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -726,7 +726,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_noirq, dev);
-+			async_schedule_dev(async_resume_noirq, dev);
- 		}
- 	}
+diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
+index 96154670bf07..f663d6ff524e 100644
+--- a/drivers/nvdimm/bus.c
++++ b/drivers/nvdimm/bus.c
+@@ -23,6 +23,7 @@
+ #include <linux/ndctl.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
++#include <linux/cpu.h>
+ #include <linux/fs.h>
+ #include <linux/io.h>
+ #include <linux/mm.h>
+@@ -513,11 +514,15 @@ void __nd_device_register(struct device *dev)
+ 		set_dev_node(dev, to_nd_region(dev)->numa_node);
  
-@@ -883,7 +883,7 @@ void dpm_resume_early(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_early, dev);
-+			async_schedule_dev(async_resume_early, dev);
- 		}
- 	}
+ 	dev->bus = &nvdimm_bus_type;
+-	if (dev->parent)
++	if (dev->parent) {
+ 		get_device(dev->parent);
++		if (dev_to_node(dev) == NUMA_NO_NODE)
++			set_dev_node(dev, dev_to_node(dev->parent));
++	}
+ 	get_device(dev);
+-	async_schedule_domain(nd_async_device_register, dev,
+-			&nd_async_domain);
++
++	async_schedule_dev_domain(nd_async_device_register, dev,
++				  &nd_async_domain);
+ }
  
-@@ -1047,7 +1047,7 @@ void dpm_resume(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume, dev);
-+			async_schedule_dev(async_resume, dev);
- 		}
- 	}
- 
-@@ -1366,7 +1366,7 @@ static int device_suspend_noirq(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_noirq, dev);
-+		async_schedule_dev(async_suspend_noirq, dev);
- 		return 0;
- 	}
- 	return __device_suspend_noirq(dev, pm_transition, false);
-@@ -1569,7 +1569,7 @@ static int device_suspend_late(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_late, dev);
-+		async_schedule_dev(async_suspend_late, dev);
- 		return 0;
- 	}
- 
-@@ -1830,7 +1830,7 @@ static int device_suspend(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend, dev);
-+		async_schedule_dev(async_suspend, dev);
- 		return 0;
- 	}
+ void nd_device_register(struct device *dev)
