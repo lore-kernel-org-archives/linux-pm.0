@@ -1,54 +1,71 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
- queue_work_near to queue work near a given NUMA node
-Date: Wed, 26 Sep 2018 15:19:21 -0700
-Message-ID: <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
-References: <20180926214433.13512.30289.stgit@localhost.localdomain>
- <20180926215138.13512.33146.stgit@localhost.localdomain>
- <20180926215307.GA270328@devbig004.ftw2.facebook.com>
- <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
- <20180926220957.GB270328@devbig004.ftw2.facebook.com>
+From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+Subject: Re: [PATCH] thermal: power_allocator: remove early break
+Date: Wed, 26 Sep 2018 23:24:39 +0100
+Message-ID: <CACfOrNd=1_YqUqr_sKp4DnKR8DQe8k-e8fKU7ogpi0MgaxXBxA@mail.gmail.com>
+References: <20180921130609.j3esni6xwhi2ew7d@inc028000032.lancs.ac.uk> <20180924164531.GB4988@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180926220957.GB270328@devbig004.ftw2.facebook.com>
-Content-Language: en-US
+In-Reply-To: <20180924164531.GB4988@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-nvdimm@lists.01.org, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, len.brown@intel.com, dave.jiang@intel.com, rafael@kernel.org, vishal.l.verma@intel.com, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com
+To: edubezval@gmail.com
+Cc: rui.zhang@intel.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 9/26/2018 3:09 PM, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Sep 26, 2018 at 03:05:17PM -0700, Alexander Duyck wrote:
->> I am using unbound workqueues. However there isn't an interface that
->> exposes the NUMA bits of them directly. All I am doing with this
->> patch is adding "queue_work_near" which takes a NUMA node as an
->> argument and then copies the logic of "queue_work_on" with the
->> exception that I am doing a check to verify that there is an
->> intersection between wq_unbound_cpumask and the cpumask of the node,
->> and then passing a CPU from that intersection into "__queue_work".
-> 
-> Can it just take a cpu id and not feed that to __queue_work()?  That
-> looks like a lot of extra logic.
-> 
-> Thanks.
+This function is called at initialization when power_allocator
+governor is set, and used to parametrize how the thermal
+manager shoud work.
+By reading its documentation, this function fix a switch_on
+trip point (i.e. first passive trip point seen during a scan of
+all trip points for that thermal_zone_device) and a
+max_desired_temperature trip point (i. e. last seen passive
+or active trip point during the scan). At last, if there is neither
+a passive nor an active trip point, the governor does nothing.
 
-I could just use queue_work_on probably, but is there any issue if I am 
-passing CPU values that are not in the wq_unbound_cpumask? That was 
-mostly my concern. Also for an unbound queue do I need to worry about 
-the hotplug lock? I wasn't sure if that was the case or not as I know it 
-is called out as something to be concerned with using queue_work_on, but 
-in __queue_work the value is just used to determine which node to grab a 
-work queue from.
-
-I forgot to address your question about the advantages. They are pretty 
-significant. The test system I was working with was initializing 3TB of 
-nvdimm memory per node. If the node is aligned it takes something like 
-24 seconds, whereas an unaligned core can take 36 seconds or more.
-
-Thanks.
-
-- Alex
+If a critical trip point is defined before a passive trip point, the
+governor will not work, even if there is a
+passive or active trip point declared after the critical point.
+For instance, on an Odroid-XU3/4 with a Samsung Exynos
+5422 CPU, trip points are set as "active" first, "critical", then
+"passive". https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi?h=linux-4.18.y#n53
+There is no documentation constraining to an order in the
+definition of trip points neither in the thermal manager nor in
+power_allocator.
+Thus, dts contributors could choose any order to define a
+thermal-zones, and set the "critical" trip point first, breaking this
+thermal governor.
+On Mon, 24 Sep 2018 at 17:45, Eduardo Valentin <edubezval@gmail.com> wrote:
+>
+> Hey,
+>
+> On Fri, Sep 21, 2018 at 02:06:09PM +0100, Willy Wolff wrote:
+> > If a trip of type critical is defined before any trip of passive
+> > or active type, power_allocator governor will not switch on.
+>
+>
+> But, if a critical trip is reached, the expectation is to perform a
+> thermal shutdown. Why would you expect to have power allocator
+> to be activated during the process of a shutdown?
+>
+> >
+> > Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+> > ---
+> >  drivers/thermal/power_allocator.c | 2 --
+> >  1 file changed, 2 deletions(-)
+> >
+> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+> > index 3055f9a12a17..6544b68e3ebf 100644
+> > --- a/drivers/thermal/power_allocator.c
+> > +++ b/drivers/thermal/power_allocator.c
+> > @@ -496,8 +496,6 @@ static void get_governor_trips(struct thermal_zone_device *tz,
+> >                       }
+> >               } else if (type == THERMAL_TRIP_ACTIVE) {
+> >                       last_active = i;
+> > -             } else {
+> > -                     break;
+> >               }
+> >       }
+> >
+> > --
+> > 2.11.0
+> >
