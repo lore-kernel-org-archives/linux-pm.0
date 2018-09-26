@@ -1,69 +1,84 @@
-From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v16 5/5] iommu/arm-smmu: Add support for
- qcom, smmu-v2 variant
-Date: Wed, 26 Sep 2018 16:59:09 +0100
-Message-ID: <80f7a7df-9a6d-9de3-4c7c-261d96fb04e4@arm.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
- <20180830144541.17740-6-vivek.gautam@codeaurora.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
+ default
+Date: Wed, 26 Sep 2018 18:51:07 +0100
+Message-ID: <20180926175106.GA22286@e110439-lin>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-15-patrick.bellasi@arm.com>
+ <20180904134748.GA4974@localhost.localdomain>
+ <20180906144053.GD25636@e110439-lin>
+ <20180914111003.GC24082@hirez.programming.kicks-ass.net>
+ <20180914140732.GR1413@e110439-lin>
+ <20180914142813.GM24124@hirez.programming.kicks-ass.net>
+ <20180917122723.GS1413@e110439-lin>
+ <20180921091308.GD24082@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180830144541.17740-6-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-GB
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180921091308.GD24082@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMzAvMDgvMTggMTU6NDUsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBxY29tLHNtbXUtdjIgaXMg
-YW4gYXJtLHNtbXUtdjIgaW1wbGVtZW50YXRpb24gd2l0aCBzcGVjaWZpYwo+IGNsb2NrIGFuZCBw
-b3dlciByZXF1aXJlbWVudHMuCj4gT24gbXNtODk5NiwgbXVsdGlwbGUgY29yZXMsIHZpei4gbWRz
-cywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKPiBzbW11LiBPbiBzZG04NDUsIHRoaXMgc21tdSBpcyB1
-c2VkIHdpdGggZ3B1Lgo+IEFkZCBiaW5kaW5ncyBmb3IgdGhlIHNhbWUuCj4gCj4gU2lnbmVkLW9m
-Zi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4gUmV2aWV3
-ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+Cj4gUmV2aWV3ZWQtYnk6IFRvbWFz
-eiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4gVGVzdGVkLWJ5OiBTcmluaXZhcyBLYW5kYWdh
-dGxhIDxzcmluaXZhcy5rYW5kYWdhdGxhQGxpbmFyby5vcmc+Cj4gLS0tCj4gICBkcml2ZXJzL2lv
-bW11L2FybS1zbW11LmMgfCAxMyArKysrKysrKysrKysrCj4gICAxIGZpbGUgY2hhbmdlZCwgMTMg
-aW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMg
-Yi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiBpbmRleCAxNjZjOGM2ZGEyNGYuLjQxMWU1YWM1
-N2M2NCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiArKysgYi9kcml2
-ZXJzL2lvbW11L2FybS1zbW11LmMKPiBAQCAtMTE5LDYgKzExOSw3IEBAIGVudW0gYXJtX3NtbXVf
-aW1wbGVtZW50YXRpb24gewo+ICAgCUdFTkVSSUNfU01NVSwKPiAgIAlBUk1fTU1VNTAwLAo+ICAg
-CUNBVklVTV9TTU1VVjIsCj4gKwlRQ09NX1NNTVVWMiwKCkhtbSwgaXQgc2VlbXMgd2UgZG9uJ3Qg
-YWN0dWFsbHkgbmVlZCB0aGlzIHJpZ2h0IG5vdywgYnV0IG1heWJlIHRoYXQganVzdCAKbWVhbnMg
-dGhlcmUncyBtb3JlIGltcC1kZWYgcmVnaXN0ZXJzIGFuZC9vciBlcnJhdGEgdG8gY29tZSA7KQoK
-RWl0aGVyIHdheSBJIGd1ZXNzIHRoZXJlJ3Mgbm8gcmVhbCBoYXJtIGluIGhhdmluZyBpdC4KClJl
-dmlld2VkLWJ5OiBSb2JpbiBNdXJwaHkgPHJvYmluLm11cnBoeUBhcm0uY29tPgoKPiAgIH07Cj4g
-ICAKPiAgIHN0cnVjdCBhcm1fc21tdV9zMmNyIHsKPiBAQCAtMTk3MCw2ICsxOTcxLDE3IEBAIEFS
-TV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTQwMSwgQVJNX1NNTVVfVjFfNjRLLCBHRU5FUklDX1NN
-TVUpOwo+ICAgQVJNX1NNTVVfTUFUQ0hfREFUQShhcm1fbW11NTAwLCBBUk1fU01NVV9WMiwgQVJN
-X01NVTUwMCk7Cj4gICBBUk1fU01NVV9NQVRDSF9EQVRBKGNhdml1bV9zbW11djIsIEFSTV9TTU1V
-X1YyLCBDQVZJVU1fU01NVVYyKTsKPiAgIAo+ICtzdGF0aWMgY29uc3QgY2hhciAqIGNvbnN0IHFj
-b21fc21tdXYyX2Nsa3NbXSA9IHsKPiArCSJidXMiLCAiaWZhY2UiLAo+ICt9Owo+ICsKPiArc3Rh
-dGljIGNvbnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0gewo+ICsJ
-LnZlcnNpb24gPSBBUk1fU01NVV9WMiwKPiArCS5tb2RlbCA9IFFDT01fU01NVVYyLAo+ICsJLmNs
-a3MgPSBxY29tX3NtbXV2Ml9jbGtzLAo+ICsJLm51bV9jbGtzID0gQVJSQVlfU0laRShxY29tX3Nt
-bXV2Ml9jbGtzKSwKPiArfTsKPiArCj4gICBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9p
-ZCBhcm1fc21tdV9vZl9tYXRjaFtdID0gewo+ICAgCXsgLmNvbXBhdGlibGUgPSAiYXJtLHNtbXUt
-djEiLCAuZGF0YSA9ICZzbW11X2dlbmVyaWNfdjEgfSwKPiAgIAl7IC5jb21wYXRpYmxlID0gImFy
-bSxzbW11LXYyIiwgLmRhdGEgPSAmc21tdV9nZW5lcmljX3YyIH0sCj4gQEAgLTE5NzcsNiArMTk4
-OSw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGFybV9zbW11X29mX21hdGNo
-W10gPSB7Cj4gICAJeyAuY29tcGF0aWJsZSA9ICJhcm0sbW11LTQwMSIsIC5kYXRhID0gJmFybV9t
-bXU0MDEgfSwKPiAgIAl7IC5jb21wYXRpYmxlID0gImFybSxtbXUtNTAwIiwgLmRhdGEgPSAmYXJt
-X21tdTUwMCB9LAo+ICAgCXsgLmNvbXBhdGlibGUgPSAiY2F2aXVtLHNtbXUtdjIiLCAuZGF0YSA9
-ICZjYXZpdW1fc21tdXYyIH0sCj4gKwl7IC5jb21wYXRpYmxlID0gInFjb20sc21tdS12MiIsIC5k
-YXRhID0gJnFjb21fc21tdXYyIH0sCj4gICAJeyB9LAo+ICAgfTsKPiAgIE1PRFVMRV9ERVZJQ0Vf
-VEFCTEUob2YsIGFybV9zbW11X29mX21hdGNoKTsKPiAKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9A
-bGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxt
-YW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+Hi Peter,
+
+On 21-Sep 11:13, Peter Zijlstra wrote:
+> On Mon, Sep 17, 2018 at 01:27:23PM +0100, Patrick Bellasi wrote:
+
+[...]
+
+While going back to one of our previous conversation, I noted these
+comments:
+
+> > Thus, the capacity of little CPUs, or the exact capacity of an OPP, is
+> > something we don't care to specify exactly, since:
+
+[...]
+
+> >  - certain platforms don't even expose OPPs, but just "performance
+> >    levels"... which ultimately are a "percentage"
+> 
+> Well, the whole capacity thing is a 'percentage', it's just that 1024 is
+> much nicer to work with (for computers) than 100 is (also it provides a
+> wee bit more resolution).
+
+Here above I was referring to the Intel's HWP support [1],
+specifically at the:
+
+  Ability of HWP to allow software to set an energy/performance
+  preference hint in the IA32_HWP_REQUEST MSR.
+
+which is detailed in section "14.4.4 Managing HWP".
+
+The {Minimum,Maximum}_Performance registers represent what I consider
+the best semantics for UtilClamp.
+
+In the HWP case we use 256 range values, and thus for UtilClamp as
+well it would make more sense to use a 1024 scale as suggested by
+Peter, even just to have a bit more room, while still considering the
+clamp values _as a percentage_, with just one decimal digit of
+resolution
+
+I think the important bit here is the abstraction between what we
+the user can require and what the platform can provided.
+
+If HWP does not allow the OS to pinpoint a specific frequency, why
+should a user-space interface be designed to pinpoint a specific
+capacity ?
+
+Can we find here a common ground around the idea that UtilClamp values
+represent a 1024 range percentage of minimum/maximum performance
+expected by a task ?
+
+Would be really nice to know what Rafael thing about all that...
+
+Cheers Patrick
+
+[1] https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-vol-3b-part-2-manual.pdf
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
