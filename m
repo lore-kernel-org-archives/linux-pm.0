@@ -1,59 +1,87 @@
 From: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v16 3/5] iommu/arm-smmu: Add the device_link between
-	masters and smmu
-Date: Wed, 26 Sep 2018 16:44:17 +0100
-Message-ID: <d72decbe-354c-9852-2dbc-d1a393006e25@arm.com>
+Subject: Re: [PATCH v16 4/5] dt-bindings: arm-smmu: Add bindings
+ for qcom, smmu-v2
+Date: Wed, 26 Sep 2018 16:46:56 +0100
+Message-ID: <52cc5a5e-d497-ad24-8dd2-3455707a3eef@arm.com>
 References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
-	<20180830144541.17740-4-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-5-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <20180830144541.17740-4-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180830144541.17740-5-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 Content-Language: en-GB
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30/08/18 15:45, Vivek Gautam wrote:
-> From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> 
-> Finally add the device link between the master device and
-> smmu, so that the smmu gets runtime enabled/disabled only when the
-> master needs it. This is done from add_device callback which gets
-> called once when the master is added to the smmu.
-
-Reviewed-by: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-
-> Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->   drivers/iommu/arm-smmu.c | 3 +++
->   1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> index 1bf542010be7..166c8c6da24f 100644
-> --- a/drivers/iommu/arm-smmu.c
-> +++ b/drivers/iommu/arm-smmu.c
-> @@ -1461,6 +1461,9 @@ static int arm_smmu_add_device(struct device *dev)
->   
->   	iommu_device_link(&smmu->iommu, dev);
->   
-> +	device_link_add(dev, smmu->dev,
-> +			DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_SUPPLIER);
-> +
->   	return 0;
->   
->   out_cfg_free:
-> 
+T24gMzAvMDgvMTggMTU6NDUsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiBBZGQgYmluZGluZ3MgZG9j
+IGZvciBRY29tJ3Mgc21tdS12MiBpbXBsZW1lbnRhdGlvbi4KClJldmlld2VkLWJ5OiBSb2JpbiBN
+dXJwaHkgPHJvYmluLm11cnBoeUBhcm0uY29tPgoKPiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0
+YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPiBSZXZpZXdlZC1ieTogVG9tYXN6IEZp
+Z2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPiBUZXN0ZWQtYnk6IFNyaW5pdmFzIEthbmRhZ2F0bGEg
+PHNyaW5pdmFzLmthbmRhZ2F0bGFAbGluYXJvLm9yZz4KPiAtLS0KPiAgIC4uLi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4dCAgICAgICAgIHwgMzkgKysrKysrKysrKysrKysr
+KysrKysrKwo+ICAgMSBmaWxlIGNoYW5nZWQsIDM5IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0t
+Z2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4
+dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQK
+PiBpbmRleCA4YTZmZmNlMTJhZjUuLmE2NTA0YjM3Y2MyMSAxMDA2NDQKPiAtLS0gYS9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0Cj4gKysrIGIvRG9j
+dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2lvbW11L2FybSxzbW11LnR4dAo+IEBAIC0x
+NywxMCArMTcsMTYgQEAgY29uZGl0aW9ucy4KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICJh
+cm0sbW11LTQwMSIKPiAgICAgICAgICAgICAgICAgICAgICAgICAgICJhcm0sbW11LTUwMCIKPiAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICJjYXZpdW0sc21tdS12MiIKPiArICAgICAgICAgICAg
+ICAgICAgICAgICAgInFjb20sc21tdS12MiIKPiAgIAo+ICAgICAgICAgICAgICAgICAgICAgZGVw
+ZW5kaW5nIG9uIHRoZSBwYXJ0aWN1bGFyIGltcGxlbWVudGF0aW9uIGFuZC9vciB0aGUKPiAgICAg
+ICAgICAgICAgICAgICAgIHZlcnNpb24gb2YgdGhlIGFyY2hpdGVjdHVyZSBpbXBsZW1lbnRlZC4K
+PiAgIAo+ICsgICAgICAgICAgICAgICAgICBRY29tIFNvQ3MgbXVzdCBjb250YWluLCBhcyBiZWxv
+dywgU29DLXNwZWNpZmljIGNvbXBhdGlibGVzCj4gKyAgICAgICAgICAgICAgICAgIGFsb25nIHdp
+dGggInFjb20sc21tdS12MiI6Cj4gKyAgICAgICAgICAgICAgICAgICJxY29tLG1zbTg5OTYtc21t
+dS12MiIsICJxY29tLHNtbXUtdjIiLAo+ICsgICAgICAgICAgICAgICAgICAicWNvbSxzZG04NDUt
+c21tdS12MiIsICJxY29tLHNtbXUtdjIiLgo+ICsKPiAgIC0gcmVnICAgICAgICAgICA6IEJhc2Ug
+YWRkcmVzcyBhbmQgc2l6ZSBvZiB0aGUgU01NVS4KPiAgIAo+ICAgLSAjZ2xvYmFsLWludGVycnVw
+dHMgOiBUaGUgbnVtYmVyIG9mIGdsb2JhbCBpbnRlcnJ1cHRzIGV4cG9zZWQgYnkgdGhlCj4gQEAg
+LTcxLDYgKzc3LDIyIEBAIGNvbmRpdGlvbnMuCj4gICAgICAgICAgICAgICAgICAgICBvciB1c2lu
+ZyBzdHJlYW0gbWF0Y2hpbmcgd2l0aCAjaW9tbXUtY2VsbHMgPSA8Mj4sIGFuZAo+ICAgICAgICAg
+ICAgICAgICAgICAgbWF5IGJlIGlnbm9yZWQgaWYgcHJlc2VudCBpbiBzdWNoIGNhc2VzLgo+ICAg
+Cj4gKy0gY2xvY2stbmFtZXM6ICAgIExpc3Qgb2YgdGhlIG5hbWVzIG9mIGNsb2NrcyBpbnB1dCB0
+byB0aGUgZGV2aWNlLiBUaGUKPiArICAgICAgICAgICAgICAgICAgcmVxdWlyZWQgbGlzdCBkZXBl
+bmRzIG9uIHBhcnRpY3VsYXIgaW1wbGVtZW50YXRpb24gYW5kCj4gKyAgICAgICAgICAgICAgICAg
+IGlzIGFzIGZvbGxvd3M6Cj4gKyAgICAgICAgICAgICAgICAgIC0gZm9yICJxY29tLHNtbXUtdjIi
+Ogo+ICsgICAgICAgICAgICAgICAgICAgIC0gImJ1cyI6IGNsb2NrIHJlcXVpcmVkIGZvciBkb3du
+c3RyZWFtIGJ1cyBhY2Nlc3MgYW5kCj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZm9y
+IHRoZSBzbW11IHB0dywKPiArICAgICAgICAgICAgICAgICAgICAtICJpZmFjZSI6IGNsb2NrIHJl
+cXVpcmVkIHRvIGFjY2VzcyBzbW11J3MgcmVnaXN0ZXJzCj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICB0aHJvdWdoIHRoZSBUQ1UncyBwcm9ncmFtbWluZyBpbnRlcmZhY2UuCj4gKyAg
+ICAgICAgICAgICAgICAgIC0gdW5zcGVjaWZpZWQgZm9yIG90aGVyIGltcGxlbWVudGF0aW9ucy4K
+PiArCj4gKy0gY2xvY2tzOiAgICAgICAgIFNwZWNpZmllcnMgZm9yIGFsbCBjbG9ja3MgbGlzdGVk
+IGluIHRoZSBjbG9jay1uYW1lcyBwcm9wZXJ0eSwKPiArICAgICAgICAgICAgICAgICAgYXMgcGVy
+IGdlbmVyaWMgY2xvY2sgYmluZGluZ3MuCj4gKwo+ICstIHBvd2VyLWRvbWFpbnM6ICBTcGVjaWZp
+ZXJzIGZvciBwb3dlciBkb21haW5zIHJlcXVpcmVkIHRvIGJlIHBvd2VyZWQgb24gZm9yCj4gKyAg
+ICAgICAgICAgICAgICAgIHRoZSBTTU1VIHRvIG9wZXJhdGUsIGFzIHBlciBnZW5lcmljIHBvd2Vy
+IGRvbWFpbiBiaW5kaW5ncy4KPiArCj4gICAqKiBEZXByZWNhdGVkIHByb3BlcnRpZXM6Cj4gICAK
+PiAgIC0gbW11LW1hc3RlcnMgKGRlcHJlY2F0ZWQgaW4gZmF2b3VyIG9mIHRoZSBnZW5lcmljICJp
+b21tdXMiIGJpbmRpbmcpIDoKPiBAQCAtMTM3LDMgKzE1OSwyMCBAQCBjb25kaXRpb25zLgo+ICAg
+ICAgICAgICAgICAgICAgIGlvbW11LW1hcCA9IDwwICZzbW11MyAwIDB4NDAwPjsKPiAgICAgICAg
+ICAgICAgICAgICAuLi4KPiAgICAgICAgICAgfTsKPiArCj4gKwkvKiBRY29tJ3MgYXJtLHNtbXUt
+djIgaW1wbGVtZW50YXRpb24gKi8KPiArCXNtbXU0OiBpb21tdUBkMDAwMDAgewo+ICsJCWNvbXBh
+dGlibGUgPSAicWNvbSxtc204OTk2LXNtbXUtdjIiLCAicWNvbSxzbW11LXYyIjsKPiArCQlyZWcg
+PSA8MHhkMDAwMDAgMHgxMDAwMD47Cj4gKwo+ICsJCSNnbG9iYWwtaW50ZXJydXB0cyA9IDwxPjsK
+PiArCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgNzMgSVJRX1RZUEVfTEVWRUxfSElHSD4sCj4gKwkJ
+CSAgICAgPEdJQ19TUEkgMzIwIElSUV9UWVBFX0xFVkVMX0hJR0g+LAo+ICsJCQkgICAgIDxHSUNf
+U1BJIDMyMSBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKPiArCQkjaW9tbXUtY2VsbHMgPSA8MT47Cj4g
+KwkJcG93ZXItZG9tYWlucyA9IDwmbW1jYyBNRFNTX0dEU0M+Owo+ICsKPiArCQljbG9ja3MgPSA8
+Jm1tY2MgU01NVV9NRFBfQVhJX0NMSz4sCj4gKwkJCSA8Jm1tY2MgU01NVV9NRFBfQUhCX0NMSz47
+Cj4gKwkJY2xvY2stbmFtZXMgPSAiYnVzIiwgImlmYWNlIjsKPiArCX07Cj4gCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxp
+c3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
+dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
