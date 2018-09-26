@@ -1,14 +1,15 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v2 1/4] power: supply: core: Introduce one property to
- present the battery internal resistance
-Date: Wed, 26 Sep 2018 16:30:39 +0800
-Message-ID: <CAMz4ku+H5Z_W5rE0b3GDz2E0YSZshEerufZ41yeh_E5omD6KLA@mail.gmail.com>
+Subject: Re: [PATCH v2 4/4] power: supply: Add Spreadtrum SC27XX fuel gauge
+ unit driver
+Date: Wed, 26 Sep 2018 16:33:36 +0800
+Message-ID: <CAMz4kuLy0inoJFav=hTmpLStMP6Tv4wHy-QQOx91z-omikXYWQ@mail.gmail.com>
 References: <358665e3f4f9ec105dc2f8a2dc6dd98dbe761fae.1537930252.git.baolin.wang@linaro.org>
- <CACRpkdY3YsXsJy0OwGYLuB+x32hbkAHum4w5KQTCGoi-OXt-QA@mail.gmail.com>
+ <707ebff8a188d41de374314414c8bfd927183d33.1537930252.git.baolin.wang@linaro.org>
+ <CACRpkdYxV1OBrr6e29OTzE5QCTgt+-2yJGEuYtNM_Mw=41PSyg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdY3YsXsJy0OwGYLuB+x32hbkAHum4w5KQTCGoi-OXt-QA@mail.gmail.com>
+In-Reply-To: <CACRpkdYxV1OBrr6e29OTzE5QCTgt+-2yJGEuYtNM_Mw=41PSyg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Walleij <linus.walleij@linaro.org>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>
@@ -16,47 +17,43 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
 
-On 26 September 2018 at 16:00, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Wed, Sep 26, 2018 at 4:59 AM Baolin Wang <baolin.wang@linaro.org> wrote:
+On 26 September 2018 at 16:09, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Wed, Sep 26, 2018 at 5:00 AM Baolin Wang <baolin.wang@linaro.org> wrote:
 >
->> Introduce one property to present the battery internal resistance for battery
->> information.
+>> This patch adds the Spreadtrum SC27XX serial PMICs fuel gauge support,
+>> which is used to calculate the battery capacity.
 >>
+>> Original-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
 >> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 >> ---
 >> Changes from v1:
->>  - New patch in v2.
+>>  - Use battery standard properties to get internal resistance and ocv table.
+>>  - Change devm_gpiod_get_optional() to devm_gpiod_get().
+>>  - Add power_supply_changed() when detecting battery present change.
+>>  - Return micro volts for sc27xx_fgu_get_vbat_ocv().
 >
-> I'm a bit confused by the physics in this patch.
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
 >
-> The internal resistance of a battery is not a constant in its life cycle,
-> this varies over the age of the battery, and the reason I thing is
-> chemical residuals accumulating on the anode and cathode inside
-> the battery and the energy storage medium aging. (Plus/minus my
-> ignorance about how batteries actually work.)
+> I see that you need to have the internal resistance as parameter to
+> this equation so it needs to come in. (I guess as factor/typical
+> internal resistance as suggested.)
+>
+> IIUC this reliance on an uncertain internal resistance is the reason
+> why fuel gauges / coloumb counters are seen as crude ways to
+> estimate battery capacity, and their accuracy and reliability worsen
+> over the lifetime of the battery, and this is why safety-critical devices
+> include ways to measure the internal resistance as well.
 
-Yes, you are right. The internal resistance can be affected by
-temperature or battery age or other factors. But our solution just
-uses one constant internal resistance to calculate OCV value to look
-up the capacity table when system boots on, in this case we do not
-need one more accuracy OCV, since we will calculate the battery
-capacity in future. So we just introduce one estimation constant
-internal resistance.
+Yes. Thanks for your reviewing.
 
 >
-> AFAIK the fact that the internal resistance varies is of high
-> importance for people developing algorithms of battery capacity
-> and longevity. Such that some (hardware) capacity monitors go
-> to great lengths to measure with high precision the current
-> internal resistance of the battery for their algorithms.
+> But the hardware is as it is, and probably for some good reasons,
+> like cost.
 >
-> Sorry for making things more complex, but should it be named
-> "factory-internal-resistance-micro-ohms" or
-> "typical-internal-resistance-micro-ohms"?
+> Yours,
+> Linus Walleij
 
-I am fine with this change. If Sebastian also agree with this change,
-I will fix.
-Thanks for your reviewing and comments.
+
 
 -- 
 Baolin Wang
