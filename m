@@ -1,49 +1,65 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v4 14/16] sched/core: uclamp: request CAP_SYS_ADMIN by
- default
-Date: Thu, 27 Sep 2018 11:00:40 +0100
-Message-ID: <20180927100021.kpdyol44qpzassup@queper01-lin>
-References: <20180828135324.21976-15-patrick.bellasi@arm.com>
- <20180904134748.GA4974@localhost.localdomain>
- <20180906144053.GD25636@e110439-lin>
- <20180914111003.GC24082@hirez.programming.kicks-ass.net>
- <20180914140732.GR1413@e110439-lin>
- <20180914142813.GM24124@hirez.programming.kicks-ass.net>
- <20180917122723.GS1413@e110439-lin>
- <20180921091308.GD24082@hirez.programming.kicks-ass.net>
- <20180924151400.GT1413@e110439-lin>
- <20180925154956.GA30146@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH v4 06/16] sched/cpufreq: uclamp: add utilization clamping
+ for FAIR tasks
+Date: Thu, 27 Sep 2018 11:23:00 +0100
+Message-ID: <20180927102258.gxhte2k4li2uktm5@queper01-lin>
+References: <20180828135324.21976-1-patrick.bellasi@arm.com>
+ <20180828135324.21976-7-patrick.bellasi@arm.com>
+ <20180914093240.GB24082@hirez.programming.kicks-ass.net>
+ <20180914131919.GO1413@e110439-lin>
+ <20180914133654.GL24124@hirez.programming.kicks-ass.net>
+ <20180914135712.GQ1413@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180925154956.GA30146@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180914135712.GQ1413@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 25 Sep 2018 at 17:49:56 (+0200), Peter Zijlstra wrote:
-> I really don't see how changing the unit changes anything. Either you
-> want to relate to OPPs and those are exposed in 1/1024 unit capacity
-> through the EAS files, or you don't and then the knob has no meaning.
+On Friday 14 Sep 2018 at 14:57:12 (+0100), Patrick Bellasi wrote:
+> On 14-Sep 15:36, Peter Zijlstra wrote:
+> > On Fri, Sep 14, 2018 at 02:19:19PM +0100, Patrick Bellasi wrote:
+> > > On 14-Sep 11:32, Peter Zijlstra wrote:
+> > 
+> > > > Should that not be:
+> > > > 
+> > > > 	util = clamp_util(rq, cpu_util_cfs(rq));
+> > > > 
+> > > > Because if !util might we not still want to enforce the min clamp?
+> > > 
+> > > If !util CFS tasks should have been gone since a long time
+> > > (proportional to their estimated utilization) and thus it probably
+> > > makes sense to not affect further energy efficiency for tasks of other
+> > > classes.
+> > 
+> > I don't remember what we do for util for new tasks; but weren't we
+> > talking about setting that to 0 recently? IIRC the problem was that if
+> > we start at 1 with util we'll always run new tasks on big cores, or
+> > something along those lines.
 
-FWIW, with the latest versions of the EAS series, we don't expose the
-capacity of the various OPPs directly any more. You have 'frequency',
-'power' and a more abstract thing called 'cost' (which is useful for
-energy computations) in the sysfs files of the EM.
+I guess you're referring to that discussion ?
 
-We decided to remove the 'capacity' file to simplify things quite a bit,
-and because it wasn't helping much. I'm talking about this discussion w/
-Dietmar on v4:
+https://lore.kernel.org/lkml/CAKfTPtDcoySXK0fBkDNy4wp1vsRxmiuAGT3CDZBh6Vnwyep2BA@mail.gmail.com/
 
-https://lore.kernel.org/lkml/20180717141955.GA4496@e108498-lin.cambridge.arm.com/
+If yes, then the outcome was that we'll see later what we do with new
+tasks :-)
 
-But it is also true that we could add back that 'capacity' file if it
-makes sense for uclamp. It's just an additional show() function in
-energy_model.c, so no problem on that side per se.
+Setting the util of new tasks to 0 surely can help power, but that can
+also harm performance pretty badly, I think. You'd be stuck at min freq
+for a while w/ sugov in case of a fork bomb for example.
 
-The only problem is if you want to use uclamp w/o EAS, I guess ...
+> Mmm.. could have been in a recent discussion with Quentin, but I
+> think I've missed it. I know we have something similar on Android for
+> similar reasons.
+
+I don't think PELT is different in Android (we still set the initial
+util of new tasks as half of the spare cap of the CPU), but there are
+other tweaks that influence the first task placement, though. And WALT
+sets the util of new tasks to 0 IIRC (but I'm not sure it's relevant
+since its signal ramps up a lot faster than PELT's).
 
 Thanks,
 Quentin
