@@ -1,122 +1,131 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Thu, 27 Sep 2018 15:52:47 -0500
-Message-ID: <20180927205247.GA18434@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180913033745.11178-1-drake@endlessm.com>
- <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / core: Fix extra pm_runtime_enable on resume
+Date: Thu, 27 Sep 2018 23:46:54 +0200
+Message-ID: <20180927214654.GA17346@amd>
+References: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180918213244.GE13616-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+In-Reply-To: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Al Cooper <alcooperx@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-WytjYyBMS01MXQoKT24gVHVlLCBTZXAgMTgsIDIwMTggYXQgMDQ6MzI6NDRQTSAtMDUwMCwgQmpv
-cm4gSGVsZ2FhcyB3cm90ZToKPiBPbiBUaHUsIFNlcCAxMywgMjAxOCBhdCAxMTozNzo0NUFNICsw
-ODAwLCBEYW5pZWwgRHJha2Ugd3JvdGU6Cj4gPiBPbiAzOCsgSW50ZWwtYmFzZWQgQXN1cyBwcm9k
-dWN0cywgdGhlIG52aWRpYSBHUFUgYmVjb21lcyB1bnVzYWJsZQo+ID4gYWZ0ZXIgUzMgc3VzcGVu
-ZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBwcm9kdWN0cyBpbmNsdWRlIG11bHRpcGxlCj4gPiBnZW5l
-cmF0aW9ucyBvZiBudmlkaWEgR1BVcyBhbmQgSW50ZWwgU29Dcy4gQWZ0ZXIgcmVzdW1lLCBub3V2
-ZWF1IGxvZ3MKPiA+IG1hbnkgZXJyb3JzIHN1Y2ggYXM6Cj4gPiAKPiA+ICAgICBmaWZvOiBmYXVs
-dCAwMCBbUkVBRF0gYXQgMDAwMDAwNTU1NTU1NTAwMCBlbmdpbmUgMDAgW0dSXSBjbGllbnQgMDQK
-PiA+ICAgICAgICAgICBbSFVCL0ZFXSByZWFzb24gNGEgW10gb24gY2hhbm5lbCAtMSBbMDA3ZmE5
-MTAwMCB1bmtub3duXQo+ID4gICAgIERSTTogZmFpbGVkIHRvIGlkbGUgY2hhbm5lbCAwIFtEUk1d
-Cj4gPiAKPiA+IFNpbWlsYXJseSwgdGhlIG52aWRpYSBwcm9wcmlldGFyeSBkcml2ZXIgYWxzbyBm
-YWlscyBhZnRlciByZXN1bWUKPiA+IChibGFjayBzY3JlZW4sIDEwMCUgQ1BVIHVzYWdlIGluIFhv
-cmcgcHJvY2VzcykuIFdlIHNoaXBwZWQgYSBzYW1wbGUKPiA+IHRvIE52aWRpYSBmb3IgZGlhZ25v
-c2lzLCBhbmQgdGhlaXIgcmVzcG9uc2UgaW5kaWNhdGVkIHRoYXQgaXQncyBhCj4gPiBwcm9ibGVt
-IHdpdGggdGhlIHBhcmVudCBQQ0kgYnJpZGdlIChvbiB0aGUgSW50ZWwgU29DKSwgbm90IHRoZSBH
-UFUuCj4gPiAKPiA+IFJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgd29ya3MgZmluZSwgb25seSBTMyBz
-dXNwZW5kIGlzIGFmZmVjdGVkLgo+ID4gCj4gPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9uIHJl
-c3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ID4gJ1ByZWZldGNoYWJsZSBCYXNl
-IFVwcGVyIDMyIEJpdHMnIHJlZ2lzdGVyIChQQ0lfUFJFRl9CQVNFX1VQUEVSMzIpLiBJbgo+ID4g
-dGhlIGNhc2VzIHRoYXQgSSBjaGVja2VkLCB0aGlzIHJlZ2lzdGVyIGhhcyB2YWx1ZSAwIGFuZCB3
-ZSBqdXN0IGhhdmUgdG8KPiA+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPiA+IAo+ID4gTGludXggYWxy
-ZWFkeSBzYXZlcyBhbmQgcmVzdG9yZXMgUENJIGNvbmZpZyBzcGFjZSBkdXJpbmcgc3VzcGVuZC9y
-ZXN1bWUsCj4gPiBidXQgdGhpcyByZWdpc3RlciB3YXMgYmVpbmcgc2tpcHBlZCBiZWNhdXNlIHVw
-b24gcmVzdW1lLCBpdCBhbHJlYWR5Cj4gPiBoYXMgdmFsdWUgMCAodGhlIGNvcnJlY3QsIHByZS1z
-dXNwZW5kIHZhbHVlKS4KPiA+IAo+ID4gSW50ZWwgYXBwZWFyIHRvIGhhdmUgcHJldmlvdXNseSBh
-Y2tub3dsZWRnZWQgdGhpcyBiZWhhdmlvdXIgYW5kIHRoZQo+ID4gcmVxdWlyZW1lbnQgdG8gcmV3
-cml0ZSB0aGlzIHJlZ2lzdGVyLgo+ID4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
-YnVnLmNnaT9pZD0xMTY4NTEjYzIzCj4gPiAKPiA+IEJhc2VkIG9uIHRoYXQsIHJld3JpdGUgdGhl
-IHByZWZldGNoIHJlZ2lzdGVyIHZhbHVlcyBldmVuIHdoZW4gdGhhdAo+ID4gYXBwZWFycyB1bm5l
-Y2Vzc2FyeS4KPiA+IAo+ID4gV2UgaGF2ZSBjb25maXJtZWQgdGhpcyBzb2x1dGlvbiBvbiBhbGwg
-dGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBoYXZlCj4gPiBpbi1oYW5kcyAoWDU0MlVRLCBVWDUzM0ZE
-LCBYNTMwVU4sIFYyNzJVTikuCj4gPiAKPiA+IEFkZGl0aW9uYWxseSwgdGhpcyBzb2x2ZXMgYW4g
-aXNzdWUgd2hlcmUgcjgxNjkgTVNJLVggaW50ZXJydXB0cyB3ZXJlCj4gPiBicm9rZW4gYWZ0ZXIg
-UzMgc3VzcGVuZC9yZXN1bWUgb24gQXN1cyBYNDQxVUFSLiBUaGlzIGlzc3VlIHdhcyByZWNlbnRs
-eQo+ID4gd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2JiMDViODViYzJkICgicjgxNjk6IGRvbid0
-IHVzZSBNU0ktWCBvbgo+ID4gUlRMODEwNmUiKS4gSXQgYWxzbyBmaXhlcyB0aGUgc2FtZSBpc3N1
-ZSBvbiBSVEw2MTg2ZXZsLzgxMTFldmwgb24gYW4KPiA+IEFpbWZvci10ZWNoIGxhcHRvcCB0aGF0
-IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQuIEkgc3VzcGVjdCBpdCB3aWxsIGFsc28KPiA+IGZpeCB0
-aGUgaXNzdWUgdGhhdCB3YXMgd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2M1M2E3MjI0NTljICgi
-cjgxNjk6Cj4gPiBkb24ndCB1c2UgTVNJLVggb24gUlRMODE2OGciKS4KPiA+IAo+ID4gVGhvbWFz
-IE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlzc3VlIHdo
-ZXJlCj4gPiB0aGUgQU1EIFJhZGVvbiBQb2xhcmlzIDEwIEdQVSBvbiB0aGUgSFAgWmJvb2sgMTR1
-IEc1IGlzIHVucmVzcG9uc2l2ZQo+ID4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuCj4gPiAKPiA+
-IExpbms6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAxMDY5
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxlc3NtLmNvbT4KPiAK
-PiBBcHBsaWVkIHdpdGggUmFmYWVsJ3MgYW5kIFBldGVyJ3MgcmV2aWV3ZWQtYnkgdG8gcGNpL2Vu
-dW1lcmF0aW9uIGZvciB2NC4yMC4KPiBUaGFua3MgZm9yIHRoZSB0aGUgaHVnZSBpbnZlc3RpZ2F0
-aXZlIGVmZm9ydCEKClNpbmNlIHRoaXMgbG9va3MgbG93LXJpc2sgYW5kIGZpeGVzIHNldmVyYWwg
-cGFpbmZ1bCBpc3N1ZXMsIEkgdGhpbmsKdGhpcyBtZXJpdHMgYSBzdGFibGUgdGFnIGFuZCBiZWlu
-ZyBpbmNsdWRlZCBpbiB2NC4xOSAoaW5zdGVhZCBvZgp3YWl0aW5nIGZvciB2NC4yMCkuICAKCkkg
-bW92ZWQgaXQgdG8gZm9yLWxpbnVzIGZvciB2NC4xOS4gIExldCBtZSBrbm93IGlmIHlvdSBvYmpl
-Y3QuCgo+ID4gLS0tCj4gPiAgZHJpdmVycy9wY2kvcGNpLmMgfCAyNSArKysrKysrKysrKysrKysr
-Ky0tLS0tLS0tCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKyksIDggZGVsZXRp
-b25zKC0pCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMv
-cGNpL3BjaS5jCj4gPiBpbmRleCAyOWZmOTYxOWI1ZmEuLjVkNTgyMjBiNjk5NyAxMDA2NDQKPiA+
-IC0tLSBhL2RyaXZlcnMvcGNpL3BjaS5jCj4gPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+ID4g
-QEAgLTEyODksMTIgKzEyODksMTIgQEAgaW50IHBjaV9zYXZlX3N0YXRlKHN0cnVjdCBwY2lfZGV2
-ICpkZXYpCj4gPiAgRVhQT1JUX1NZTUJPTChwY2lfc2F2ZV9zdGF0ZSk7Cj4gPiAgCj4gPiAgc3Rh
-dGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3JkKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBp
-bnQgb2Zmc2V0LAo+ID4gLQkJCQkgICAgIHUzMiBzYXZlZF92YWwsIGludCByZXRyeSkKPiA+ICsJ
-CQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnksIGJvb2wgZm9yY2UpCj4gPiAgewo+ID4g
-IAl1MzIgdmFsOwo+ID4gIAo+ID4gIAlwY2lfcmVhZF9jb25maWdfZHdvcmQocGRldiwgb2Zmc2V0
-LCAmdmFsKTsKPiA+IC0JaWYgKHZhbCA9PSBzYXZlZF92YWwpCj4gPiArCWlmICghZm9yY2UgJiYg
-dmFsID09IHNhdmVkX3ZhbCkKPiA+ICAJCXJldHVybjsKPiA+ICAKPiA+ICAJZm9yICg7Oykgewo+
-ID4gQEAgLTEzMTMsMjUgKzEzMTMsMzQgQEAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmln
-X2R3b3JkKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBpbnQgb2Zmc2V0LAo+ID4gIH0KPiA+ICAKPiA+
-ICBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uoc3RydWN0IHBjaV9k
-ZXYgKnBkZXYsCj4gPiAtCQkJCQkgICBpbnQgc3RhcnQsIGludCBlbmQsIGludCByZXRyeSkKPiA+
-ICsJCQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5LAo+ID4gKwkJCQkJICAgYm9v
-bCBmb3JjZSkKPiA+ICB7Cj4gPiAgCWludCBpbmRleDsKPiA+ICAKPiA+ICAJZm9yIChpbmRleCA9
-IGVuZDsgaW5kZXggPj0gc3RhcnQ7IGluZGV4LS0pCj4gPiAgCQlwY2lfcmVzdG9yZV9jb25maWdf
-ZHdvcmQocGRldiwgNCAqIGluZGV4LAo+ID4gIAkJCQkJIHBkZXYtPnNhdmVkX2NvbmZpZ19zcGFj
-ZVtpbmRleF0sCj4gPiAtCQkJCQkgcmV0cnkpOwo+ID4gKwkJCQkJIHJldHJ5LCBmb3JjZSk7Cj4g
-PiAgfQo+ID4gIAo+ID4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1
-Y3QgcGNpX2RldiAqcGRldikKPiA+ICB7Cj4gPiAgCWlmIChwZGV2LT5oZHJfdHlwZSA9PSBQQ0lf
-SEVBREVSX1RZUEVfTk9STUFMKSB7Cj4gPiAtCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFu
-Z2UocGRldiwgMTAsIDE1LCAwKTsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5n
-ZShwZGV2LCAxMCwgMTUsIDAsIGZhbHNlKTsKPiA+ICAJCS8qIFJlc3RvcmUgQkFScyBiZWZvcmUg
-dGhlIGNvbW1hbmQgcmVnaXN0ZXIuICovCj4gPiAtCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2Vf
-cmFuZ2UocGRldiwgNCwgOSwgMTApOwo+ID4gLQkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jh
-bmdlKHBkZXYsIDAsIDMsIDApOwo+ID4gKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
-KHBkZXYsIDQsIDksIDEwLCBmYWxzZSk7Cj4gPiArCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2Vf
-cmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwo+ID4gKwl9IGVsc2UgaWYgKHBkZXYtPmhkcl90
-eXBlID09IFBDSV9IRUFERVJfVFlQRV9CUklER0UpIHsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZp
-Z19zcGFjZV9yYW5nZShwZGV2LCAxMiwgMTUsIDAsIGZhbHNlKTsKPiA+ICsJCS8qIEZvcmNlIHJl
-d3JpdGluZyBvZiBwcmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiA+ICsJCSAqIFMzIHJlc3Vt
-ZSBpc3N1ZXMgb24gSW50ZWwgUENJIGJyaWRnZXMgdGhhdCBvY2N1ciB3aGVuCj4gPiArCQkgKiB0
-aGVzZSByZWdpc3RlcnMgYXJlIG5vdCBleHBsaWNpdGx5IHdyaXR0ZW4uCj4gPiArCQkgKi8KPiA+
-ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCA5LCAxMSwgMCwgdHJ1ZSk7
-Cj4gPiArCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgOCwgMCwgZmFs
-c2UpOwo+ID4gIAl9IGVsc2Ugewo+ID4gLQkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
-KHBkZXYsIDAsIDE1LCAwKTsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShw
-ZGV2LCAwLCAxNSwgMCwgZmFsc2UpOwo+ID4gIAl9Cj4gPiAgfQo+ID4gIAo+ID4gLS0gCj4gPiAy
-LjE3LjEKPiA+IApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue 2018-09-25 18:10:55, Al Cooper wrote:
+> Matching pm_runtime_disable/pm_runtime_enable routines should be
+> called for "direct_complete" devices during suspend/resume and there
+> are cases where the pm_runtime_disable is skipped during suspend but
+> pm_runtime_enable is still called during resume. This is a problem
+> because the runtime enable state is really a counter and this can
+> incorrectly enable pm_runtime when it should not be enabled. This
+> happens for any direct_complete device doing an async suspend after
+> the global variable "async_error" is set (which is set by any sync
+> or async device's suspend error or early wake condition).
+>=20
+> This failure is very timing dependent but for testing and debug
+> the following changes will make it happen more frequently.
+> - Add an msleep(500) as the first line in async_suspend() in
+>   drivers/base/power/main.c
+> - Modify alarmtimer_suspend in kernel/time/alarmtimer.c to just
+>   return -EBUSY
+>=20
+> To see the failure condition that's been fixed with this patch,
+> enable dynamic debug for drivers/power/main.c and then run
+> "rtcwake -s 2 -m standby" and grep for
+> "skipping runtime enable during resume" messages.
+
+Thanks for the patch...
+
+Could / should we add some WARN_ONs to pm_runtime_{disable|enable} to
+catch stuff like this?
+								Pavel
+
+
+> Signed-off-by: Al Cooper <alcooperx@gmail.com>
+> ---
+>  drivers/base/power/main.c | 21 +++++++++++++++++++--
+>  include/linux/pm.h        |  1 +
+>  2 files changed, 20 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 3f68e2919dc5..2dc40662aae0 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -945,7 +945,13 @@ static int device_resume(struct device *dev, pm_mess=
+age_t state, bool async)
+> =20
+>  	if (dev->power.direct_complete) {
+>  		/* Match the pm_runtime_disable() in __device_suspend(). */
+> -		pm_runtime_enable(dev);
+> +		if (dev->power.pm_runtime_disabled) {
+> +			pm_runtime_enable(dev);
+> +			dev->power.pm_runtime_disabled =3D false;
+> +		} else {
+> +			pm_dev_dbg(dev, state,
+> +				   "skipping runtime enable during ");
+> +		}
+>  		goto Complete;
+>  	}
+> =20
+> @@ -1736,8 +1742,19 @@ static int __device_suspend(struct device *dev, pm=
+_message_t state, bool async)
+>  	if (dev->power.direct_complete) {
+>  		if (pm_runtime_status_suspended(dev)) {
+>  			pm_runtime_disable(dev);
+> -			if (pm_runtime_status_suspended(dev))
+> +			if (pm_runtime_status_suspended(dev)) {
+> +				/*
+> +				 * If any device's sync or async suspend fails
+> +				 * and sets async_error, any async suspend for
+> +				 * direct_complete devices after the failure
+> +				 * will not execute the pm_runtime_disable
+> +				 * above. This flag lets the async device's
+> +				 * resume function (which is always run) know
+> +				 * if a matching pm_runtime_enable is needed.
+> +				 */
+> +				dev->power.pm_runtime_disabled =3D true;
+>  				goto Complete;
+> +			}
+> =20
+>  			pm_runtime_enable(dev);
+>  		}
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index e723b78d8357..45738ad977fd 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -593,6 +593,7 @@ struct dev_pm_info {
+>  	bool			is_late_suspended:1;
+>  	bool			early_init:1;	/* Owned by the PM core */
+>  	bool			direct_complete:1;	/* Owned by the PM core */
+> +	unsigned int		pm_runtime_disabled:1;
+>  	u32			driver_flags;
+>  	spinlock_t		lock;
+>  #ifdef CONFIG_PM_SLEEP
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlutT84ACgkQMOfwapXb+vIqNgCfT7SDfqeNpTsJUalVPOQvc9oU
+cxsAoJpouWdyC+H3CrZkG3msOInZp9gc
+=bIof
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
