@@ -1,46 +1,105 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/3] thermal: Fix workqueue-related issues in drivers
-Date: Thu, 27 Sep 2018 13:32:32 +0200
-Message-ID: <20180927113235.30354-1-geert+renesas@glider.be>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v7 02/14] sched/cpufreq: Prepare schedutil for Energy
+ Aware Scheduling
+Date: Thu, 27 Sep 2018 13:17:49 +0100
+Message-ID: <20180927121749.urdqtayq6ll4k7qn@queper01-lin>
+References: <20180912091309.7551-1-quentin.perret@arm.com>
+ <20180912091309.7551-3-quentin.perret@arm.com>
+ <CAJZ5v0gL+NurA8UcN5oweqwxfgS10HgO1Zjh_cod4_Sr5nWQHQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gL+NurA8UcN5oweqwxfgS10HgO1Zjh_cod4_Sr5nWQHQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Support Opensource <support.opensource@diasemi.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
 List-Id: linux-pm@vger.kernel.org
 
-	Hi,
+Hi Rafael,
 
-This patch series fixes workqueue-related issues in the Renesas R-Car
-Thermal and Dialog DA9062/9061 PMIC drivers, where the workqueue may run
-while the device is suspended, or unbound.
-The R-Car Thermal driver fixes have been tested on R-Car M2-W and R-Mobile
-APE6.
-The DA9062/9061 fixes have been compile-tested only.
+Very sorry for the late reply ...
 
-Note: The Intel PowerClamp driver also uses schedule_delayed_work(), but I
-believe that is OK, as the thermal registers are part of the CPU.
+On Tuesday 18 Sep 2018 at 23:33:22 (+0200), Rafael J. Wysocki wrote:
+[...]
+> The new "type" argument should be documented.
+> 
+> Also IMO using the special enum for it is quite confusing, because you
+> ever only check one value from it directly.  What would be wrong with
+> using a plain "bool" instead?
 
-Thanks!
+So, this part of the code was originally proposed by Peter. I basically
+took it from the following message (hence the Suggested-by) which was
+fine by me:
 
-Geert Uytterhoeven (3):
-  thermal: rcar_thermal: Prevent hardware access during system suspend
-  thermal: rcar_thermal: Prevent doing work after unbind
-  thermal: da9062/61: Prevent hardware access during system suspend
+https://lore.kernel.org/lkml/20180709120138.GQ2494@hirez.programming.kicks-ass.net/
 
- drivers/thermal/da9062-thermal.c | 4 ++--
- drivers/thermal/rcar_thermal.c   | 5 +++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
+Also, one of the things that has been mentioned during reviews was that
+other clients (such as cpuidle, IIRC) could potentially be interested
+in a 'global' cpu util value. And since those clients might have
+different needs than EAS or sugov, they might need a new entry in the
+enum.
 
--- 
-2.17.1
+So that's probably the main argument for the enum, it is easy to extend.
 
-Gr{oetje,eeting}s,
+[...]
+> > +static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> > +{
+> > +       struct rq *rq = cpu_rq(sg_cpu->cpu);
+> > +       unsigned long util = cpu_util_cfs(rq);
+> > +
+> > +       sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+> > +       sg_cpu->bw_dl = cpu_bw_dl(rq);
+> > +
+> > +       return schedutil_freq_util(sg_cpu->cpu, util, FREQUENCY_UTIL);
+> 
+> If you add a "max" argument to schedutil_freq_util(), you can avoid
+> the second (and arguably redundant) evaluation of
+> arch_scale_cpu_capacity() in there.
 
-						Geert
+OK
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+[...]
+> > +enum schedutil_type {
+> > +       FREQUENCY_UTIL,
+> > +       ENERGY_UTIL,
+> > +};
+> 
+> As I said above, I would just use "bool" instead of this new enum (it
+> has two values too) or the new type needs to be documented.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+As I said above, the enum has the good side of being easier to extend.
+So, if we care about that, I guess I'd rather add a doc for the new
+type.
+
+> > +
+> >  #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> > +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+> > +                                 enum schedutil_type type);
+> > +
+> >  static inline unsigned long cpu_bw_dl(struct rq *rq)
+> >  {
+> >         return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
+> > @@ -2199,6 +2207,12 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+> >  {
+> >         return READ_ONCE(rq->avg_rt.util_avg);
+> >  }
+> > +#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+> > +static inline unsigned long schedutil_freq_util(int cpu, unsigned long util,
+> > +                                 enum schedutil_type type)
+> > +{
+> > +       return util;
+> > +}
+> >  #endif
+> 
+> And I would add a wrapper around schedutil_freq_util(), called say
+> schedutil_energy_util(), that would pass a specific value as the
+> "type".
+
+OK, that's fine by me.
+
+Other than that, do you think these changes could be done later ? Or do
+you see that as mandatory before the patches can be picked up ?
+
+Thanks,
+Quentin
