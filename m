@@ -1,104 +1,122 @@
-From: Douglas Anderson <dianders@chromium.org>
-Subject: [RFC PATCH] PM / core: skip suspend next time if resume returns an error
-Date: Thu, 27 Sep 2018 13:35:23 -0700
-Message-ID: <20180927203523.60856-1-dianders@chromium.org>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
+ on resume
+Date: Thu, 27 Sep 2018 15:52:47 -0500
+Message-ID: <20180927205247.GA18434@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180913033745.11178-1-drake@endlessm.com>
+ <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: Dilip Kota <dkota@codeaurora.org>, dtor@chromium.org, swboyd@chromium.org, Douglas Anderson <dianders@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180918213244.GE13616-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org, jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-In general Linux doesn't behave super great if you get an error while
-executing a device's resume handler.  Nothing will come along later
-and and try again to resume the device (and all devices that depend on
-it), so pretty much you're left with a non-functioning device and
-that's not good.
-
-However, even though you'll end up with a non-functioning device we
-still don't consider resume failures to be fatal to the system.  We'll
-keep chugging along and just hope that the device that failed to
-resume wasn't too critical.  This establishes the precedent that we
-should at least try our best not to fully bork the system after a
-resume failure.
-
-I will argue that the best way to keep the system in the best shape is
-to assume that if a resume callback failed that it did as close to
-no-op as possible.  Because of this we should consider the device
-still suspended and shouldn't try to suspend the device again next
-time around.  Today that's not what happens.  AKA if you have a device
-that fails resume every other time then you'll see these calls:
-1. suspend
-2. resume (no error)
-3. suspend
-4. resume (fails!)
-5. suspend
-6. resume (no error)
-
-I believe that a more correct thing to do is to remove step #5 from
-the above.  To understand why, let's imagine a hypothetical device.
-In such a device let's say we have a regulator and clock to turn off.
-
-We'll say:
-  hypothetical_suspend(...) {
-    ret = regulator_disable(...);
-    if (ret)
-      return ret;
-    ret = clk_disable(...);
-    if (ret)
-      regulator_enable(...);
-    return ret;
-
-  hypothetical_resume(...) {
-    ret = clk_enable(...);
-    if (ret)
-      return ret;
-    ret = regulator_enable(...);
-    if (ret)
-      clk_disable(...);
-    return ret;
-
-Let's imagine that the regulator_enable() at resume fails sometimes.
-You'll see that on the next call to hypothetical_suspend() we'll try
-to disable a regulator that was never enabled.
-
-...but if we change things to skip the next suspend callback then
-actually we might get the device functioning again after another
-suspend/resume cycle (especially if the resume failure was
-intermittent for some reason).
-
-Obviously this patch is pretty simplistic and certainly doesn't fix
-the world, but perhaps it moves us in the right direction?
-
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
----
-
- drivers/base/power/main.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3f68e2919dc5..27c7d1f76cee 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -999,7 +999,7 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
- 
-  End:
- 	error = dpm_run_callback(callback, dev, state, info);
--	dev->power.is_suspended = false;
-+	dev->power.is_suspended = error;
- 
-  Unlock:
- 	device_unlock(dev);
-@@ -1750,6 +1750,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
-+	if (dev->power.is_suspended)
-+		goto End;
-+
- 	if (dev->pm_domain) {
- 		info = "power domain ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
--- 
-2.19.0.605.g01d371f741-goog
+WytjYyBMS01MXQoKT24gVHVlLCBTZXAgMTgsIDIwMTggYXQgMDQ6MzI6NDRQTSAtMDUwMCwgQmpv
+cm4gSGVsZ2FhcyB3cm90ZToKPiBPbiBUaHUsIFNlcCAxMywgMjAxOCBhdCAxMTozNzo0NUFNICsw
+ODAwLCBEYW5pZWwgRHJha2Ugd3JvdGU6Cj4gPiBPbiAzOCsgSW50ZWwtYmFzZWQgQXN1cyBwcm9k
+dWN0cywgdGhlIG52aWRpYSBHUFUgYmVjb21lcyB1bnVzYWJsZQo+ID4gYWZ0ZXIgUzMgc3VzcGVu
+ZC9yZXN1bWUuIFRoZSBhZmZlY3RlZCBwcm9kdWN0cyBpbmNsdWRlIG11bHRpcGxlCj4gPiBnZW5l
+cmF0aW9ucyBvZiBudmlkaWEgR1BVcyBhbmQgSW50ZWwgU29Dcy4gQWZ0ZXIgcmVzdW1lLCBub3V2
+ZWF1IGxvZ3MKPiA+IG1hbnkgZXJyb3JzIHN1Y2ggYXM6Cj4gPiAKPiA+ICAgICBmaWZvOiBmYXVs
+dCAwMCBbUkVBRF0gYXQgMDAwMDAwNTU1NTU1NTAwMCBlbmdpbmUgMDAgW0dSXSBjbGllbnQgMDQK
+PiA+ICAgICAgICAgICBbSFVCL0ZFXSByZWFzb24gNGEgW10gb24gY2hhbm5lbCAtMSBbMDA3ZmE5
+MTAwMCB1bmtub3duXQo+ID4gICAgIERSTTogZmFpbGVkIHRvIGlkbGUgY2hhbm5lbCAwIFtEUk1d
+Cj4gPiAKPiA+IFNpbWlsYXJseSwgdGhlIG52aWRpYSBwcm9wcmlldGFyeSBkcml2ZXIgYWxzbyBm
+YWlscyBhZnRlciByZXN1bWUKPiA+IChibGFjayBzY3JlZW4sIDEwMCUgQ1BVIHVzYWdlIGluIFhv
+cmcgcHJvY2VzcykuIFdlIHNoaXBwZWQgYSBzYW1wbGUKPiA+IHRvIE52aWRpYSBmb3IgZGlhZ25v
+c2lzLCBhbmQgdGhlaXIgcmVzcG9uc2UgaW5kaWNhdGVkIHRoYXQgaXQncyBhCj4gPiBwcm9ibGVt
+IHdpdGggdGhlIHBhcmVudCBQQ0kgYnJpZGdlIChvbiB0aGUgSW50ZWwgU29DKSwgbm90IHRoZSBH
+UFUuCj4gPiAKPiA+IFJ1bnRpbWUgc3VzcGVuZC9yZXN1bWUgd29ya3MgZmluZSwgb25seSBTMyBz
+dXNwZW5kIGlzIGFmZmVjdGVkLgo+ID4gCj4gPiBXZSBmb3VuZCBhIHdvcmthcm91bmQ6IG9uIHJl
+c3VtZSwgcmV3cml0ZSB0aGUgSW50ZWwgUENJIGJyaWRnZQo+ID4gJ1ByZWZldGNoYWJsZSBCYXNl
+IFVwcGVyIDMyIEJpdHMnIHJlZ2lzdGVyIChQQ0lfUFJFRl9CQVNFX1VQUEVSMzIpLiBJbgo+ID4g
+dGhlIGNhc2VzIHRoYXQgSSBjaGVja2VkLCB0aGlzIHJlZ2lzdGVyIGhhcyB2YWx1ZSAwIGFuZCB3
+ZSBqdXN0IGhhdmUgdG8KPiA+IHJld3JpdGUgdGhhdCB2YWx1ZS4KPiA+IAo+ID4gTGludXggYWxy
+ZWFkeSBzYXZlcyBhbmQgcmVzdG9yZXMgUENJIGNvbmZpZyBzcGFjZSBkdXJpbmcgc3VzcGVuZC9y
+ZXN1bWUsCj4gPiBidXQgdGhpcyByZWdpc3RlciB3YXMgYmVpbmcgc2tpcHBlZCBiZWNhdXNlIHVw
+b24gcmVzdW1lLCBpdCBhbHJlYWR5Cj4gPiBoYXMgdmFsdWUgMCAodGhlIGNvcnJlY3QsIHByZS1z
+dXNwZW5kIHZhbHVlKS4KPiA+IAo+ID4gSW50ZWwgYXBwZWFyIHRvIGhhdmUgcHJldmlvdXNseSBh
+Y2tub3dsZWRnZWQgdGhpcyBiZWhhdmlvdXIgYW5kIHRoZQo+ID4gcmVxdWlyZW1lbnQgdG8gcmV3
+cml0ZSB0aGlzIHJlZ2lzdGVyLgo+ID4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3df
+YnVnLmNnaT9pZD0xMTY4NTEjYzIzCj4gPiAKPiA+IEJhc2VkIG9uIHRoYXQsIHJld3JpdGUgdGhl
+IHByZWZldGNoIHJlZ2lzdGVyIHZhbHVlcyBldmVuIHdoZW4gdGhhdAo+ID4gYXBwZWFycyB1bm5l
+Y2Vzc2FyeS4KPiA+IAo+ID4gV2UgaGF2ZSBjb25maXJtZWQgdGhpcyBzb2x1dGlvbiBvbiBhbGwg
+dGhlIGFmZmVjdGVkIG1vZGVscyB3ZSBoYXZlCj4gPiBpbi1oYW5kcyAoWDU0MlVRLCBVWDUzM0ZE
+LCBYNTMwVU4sIFYyNzJVTikuCj4gPiAKPiA+IEFkZGl0aW9uYWxseSwgdGhpcyBzb2x2ZXMgYW4g
+aXNzdWUgd2hlcmUgcjgxNjkgTVNJLVggaW50ZXJydXB0cyB3ZXJlCj4gPiBicm9rZW4gYWZ0ZXIg
+UzMgc3VzcGVuZC9yZXN1bWUgb24gQXN1cyBYNDQxVUFSLiBUaGlzIGlzc3VlIHdhcyByZWNlbnRs
+eQo+ID4gd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2JiMDViODViYzJkICgicjgxNjk6IGRvbid0
+IHVzZSBNU0ktWCBvbgo+ID4gUlRMODEwNmUiKS4gSXQgYWxzbyBmaXhlcyB0aGUgc2FtZSBpc3N1
+ZSBvbiBSVEw2MTg2ZXZsLzgxMTFldmwgb24gYW4KPiA+IEFpbWZvci10ZWNoIGxhcHRvcCB0aGF0
+IHdlIGhhZCBub3QgeWV0IHBhdGNoZWQuIEkgc3VzcGVjdCBpdCB3aWxsIGFsc28KPiA+IGZpeCB0
+aGUgaXNzdWUgdGhhdCB3YXMgd29ya2VkIGFyb3VuZCBpbiBjb21taXQgN2M1M2E3MjI0NTljICgi
+cjgxNjk6Cj4gPiBkb24ndCB1c2UgTVNJLVggb24gUlRMODE2OGciKS4KPiA+IAo+ID4gVGhvbWFz
+IE1hcnRpdHogcmVwb3J0cyB0aGF0IHRoaXMgY2hhbmdlIGFsc28gc29sdmVzIGFuIGlzc3VlIHdo
+ZXJlCj4gPiB0aGUgQU1EIFJhZGVvbiBQb2xhcmlzIDEwIEdQVSBvbiB0aGUgSFAgWmJvb2sgMTR1
+IEc1IGlzIHVucmVzcG9uc2l2ZQo+ID4gYWZ0ZXIgUzMgc3VzcGVuZC9yZXN1bWUuCj4gPiAKPiA+
+IExpbms6IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MjAxMDY5
+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBEYW5pZWwgRHJha2UgPGRyYWtlQGVuZGxlc3NtLmNvbT4KPiAK
+PiBBcHBsaWVkIHdpdGggUmFmYWVsJ3MgYW5kIFBldGVyJ3MgcmV2aWV3ZWQtYnkgdG8gcGNpL2Vu
+dW1lcmF0aW9uIGZvciB2NC4yMC4KPiBUaGFua3MgZm9yIHRoZSB0aGUgaHVnZSBpbnZlc3RpZ2F0
+aXZlIGVmZm9ydCEKClNpbmNlIHRoaXMgbG9va3MgbG93LXJpc2sgYW5kIGZpeGVzIHNldmVyYWwg
+cGFpbmZ1bCBpc3N1ZXMsIEkgdGhpbmsKdGhpcyBtZXJpdHMgYSBzdGFibGUgdGFnIGFuZCBiZWlu
+ZyBpbmNsdWRlZCBpbiB2NC4xOSAoaW5zdGVhZCBvZgp3YWl0aW5nIGZvciB2NC4yMCkuICAKCkkg
+bW92ZWQgaXQgdG8gZm9yLWxpbnVzIGZvciB2NC4xOS4gIExldCBtZSBrbm93IGlmIHlvdSBvYmpl
+Y3QuCgo+ID4gLS0tCj4gPiAgZHJpdmVycy9wY2kvcGNpLmMgfCAyNSArKysrKysrKysrKysrKysr
+Ky0tLS0tLS0tCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKyksIDggZGVsZXRp
+b25zKC0pCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2kuYyBiL2RyaXZlcnMv
+cGNpL3BjaS5jCj4gPiBpbmRleCAyOWZmOTYxOWI1ZmEuLjVkNTgyMjBiNjk5NyAxMDA2NDQKPiA+
+IC0tLSBhL2RyaXZlcnMvcGNpL3BjaS5jCj4gPiArKysgYi9kcml2ZXJzL3BjaS9wY2kuYwo+ID4g
+QEAgLTEyODksMTIgKzEyODksMTIgQEAgaW50IHBjaV9zYXZlX3N0YXRlKHN0cnVjdCBwY2lfZGV2
+ICpkZXYpCj4gPiAgRVhQT1JUX1NZTUJPTChwY2lfc2F2ZV9zdGF0ZSk7Cj4gPiAgCj4gPiAgc3Rh
+dGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmlnX2R3b3JkKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBp
+bnQgb2Zmc2V0LAo+ID4gLQkJCQkgICAgIHUzMiBzYXZlZF92YWwsIGludCByZXRyeSkKPiA+ICsJ
+CQkJICAgICB1MzIgc2F2ZWRfdmFsLCBpbnQgcmV0cnksIGJvb2wgZm9yY2UpCj4gPiAgewo+ID4g
+IAl1MzIgdmFsOwo+ID4gIAo+ID4gIAlwY2lfcmVhZF9jb25maWdfZHdvcmQocGRldiwgb2Zmc2V0
+LCAmdmFsKTsKPiA+IC0JaWYgKHZhbCA9PSBzYXZlZF92YWwpCj4gPiArCWlmICghZm9yY2UgJiYg
+dmFsID09IHNhdmVkX3ZhbCkKPiA+ICAJCXJldHVybjsKPiA+ICAKPiA+ICAJZm9yICg7Oykgewo+
+ID4gQEAgLTEzMTMsMjUgKzEzMTMsMzQgQEAgc3RhdGljIHZvaWQgcGNpX3Jlc3RvcmVfY29uZmln
+X2R3b3JkKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBpbnQgb2Zmc2V0LAo+ID4gIH0KPiA+ICAKPiA+
+ICBzdGF0aWMgdm9pZCBwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2Uoc3RydWN0IHBjaV9k
+ZXYgKnBkZXYsCj4gPiAtCQkJCQkgICBpbnQgc3RhcnQsIGludCBlbmQsIGludCByZXRyeSkKPiA+
+ICsJCQkJCSAgIGludCBzdGFydCwgaW50IGVuZCwgaW50IHJldHJ5LAo+ID4gKwkJCQkJICAgYm9v
+bCBmb3JjZSkKPiA+ICB7Cj4gPiAgCWludCBpbmRleDsKPiA+ICAKPiA+ICAJZm9yIChpbmRleCA9
+IGVuZDsgaW5kZXggPj0gc3RhcnQ7IGluZGV4LS0pCj4gPiAgCQlwY2lfcmVzdG9yZV9jb25maWdf
+ZHdvcmQocGRldiwgNCAqIGluZGV4LAo+ID4gIAkJCQkJIHBkZXYtPnNhdmVkX2NvbmZpZ19zcGFj
+ZVtpbmRleF0sCj4gPiAtCQkJCQkgcmV0cnkpOwo+ID4gKwkJCQkJIHJldHJ5LCBmb3JjZSk7Cj4g
+PiAgfQo+ID4gIAo+ID4gIHN0YXRpYyB2b2lkIHBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZShzdHJ1
+Y3QgcGNpX2RldiAqcGRldikKPiA+ICB7Cj4gPiAgCWlmIChwZGV2LT5oZHJfdHlwZSA9PSBQQ0lf
+SEVBREVSX1RZUEVfTk9STUFMKSB7Cj4gPiAtCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFu
+Z2UocGRldiwgMTAsIDE1LCAwKTsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5n
+ZShwZGV2LCAxMCwgMTUsIDAsIGZhbHNlKTsKPiA+ICAJCS8qIFJlc3RvcmUgQkFScyBiZWZvcmUg
+dGhlIGNvbW1hbmQgcmVnaXN0ZXIuICovCj4gPiAtCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2Vf
+cmFuZ2UocGRldiwgNCwgOSwgMTApOwo+ID4gLQkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jh
+bmdlKHBkZXYsIDAsIDMsIDApOwo+ID4gKwkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
+KHBkZXYsIDQsIDksIDEwLCBmYWxzZSk7Cj4gPiArCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2Vf
+cmFuZ2UocGRldiwgMCwgMywgMCwgZmFsc2UpOwo+ID4gKwl9IGVsc2UgaWYgKHBkZXYtPmhkcl90
+eXBlID09IFBDSV9IRUFERVJfVFlQRV9CUklER0UpIHsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZp
+Z19zcGFjZV9yYW5nZShwZGV2LCAxMiwgMTUsIDAsIGZhbHNlKTsKPiA+ICsJCS8qIEZvcmNlIHJl
+d3JpdGluZyBvZiBwcmVmZXRjaCByZWdpc3RlcnMgdG8gYXZvaWQKPiA+ICsJCSAqIFMzIHJlc3Vt
+ZSBpc3N1ZXMgb24gSW50ZWwgUENJIGJyaWRnZXMgdGhhdCBvY2N1ciB3aGVuCj4gPiArCQkgKiB0
+aGVzZSByZWdpc3RlcnMgYXJlIG5vdCBleHBsaWNpdGx5IHdyaXR0ZW4uCj4gPiArCQkgKi8KPiA+
+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShwZGV2LCA5LCAxMSwgMCwgdHJ1ZSk7
+Cj4gPiArCQlwY2lfcmVzdG9yZV9jb25maWdfc3BhY2VfcmFuZ2UocGRldiwgMCwgOCwgMCwgZmFs
+c2UpOwo+ID4gIAl9IGVsc2Ugewo+ID4gLQkJcGNpX3Jlc3RvcmVfY29uZmlnX3NwYWNlX3Jhbmdl
+KHBkZXYsIDAsIDE1LCAwKTsKPiA+ICsJCXBjaV9yZXN0b3JlX2NvbmZpZ19zcGFjZV9yYW5nZShw
+ZGV2LCAwLCAxNSwgMCwgZmFsc2UpOwo+ID4gIAl9Cj4gPiAgfQo+ID4gIAo+ID4gLS0gCj4gPiAy
+LjE3LjEKPiA+IApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
+czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
