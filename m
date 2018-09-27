@@ -1,71 +1,98 @@
-From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
-Subject: Re: [PATCH] thermal: power_allocator: remove early break
-Date: Wed, 26 Sep 2018 23:24:39 +0100
-Message-ID: <CACfOrNd=1_YqUqr_sKp4DnKR8DQe8k-e8fKU7ogpi0MgaxXBxA@mail.gmail.com>
-References: <20180921130609.j3esni6xwhi2ew7d@inc028000032.lancs.ac.uk> <20180924164531.GB4988@localhost.localdomain>
+From: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 2/5] async: Add support for
+ queueing on specific NUMA node
+Date: Wed, 26 Sep 2018 17:31:16 -0700
+Message-ID: <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og@mail.gmail.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215143.13512.56522.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180924164531.GB4988@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: rui.zhang@intel.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <20180926215143.13512.56522.stgit-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This function is called at initialization when power_allocator
-governor is set, and used to parametrize how the thermal
-manager shoud work.
-By reading its documentation, this function fix a switch_on
-trip point (i.e. first passive trip point seen during a scan of
-all trip points for that thermal_zone_device) and a
-max_desired_temperature trip point (i. e. last seen passive
-or active trip point during the scan). At last, if there is neither
-a passive nor an active trip point, the governor does nothing.
+On Wed, Sep 26, 2018 at 2:51 PM Alexander Duyck
+<alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+>
+> This patch introduces four new variants of the async_schedule_ functions
+> that allow scheduling on a specific NUMA node.
+>
+> The first two functions are async_schedule_near and
+> async_schedule_near_domain which end up mapping to async_schedule and
+> async_schedule_domain but provide NUMA node specific functionality. They
+> replace the original functions which were moved to inline function
+> definitions that call the new functions while passing NUMA_NO_NODE.
+>
+> The second two functions are async_schedule_dev and
+> async_schedule_dev_domain which provide NUMA specific functionality when
+> passing a device as the data member and that device has a NUMA node other
+> than NUMA_NO_NODE.
+>
+> The main motivation behind this is to address the need to be able to
+> schedule device specific init work on specific NUMA nodes in order to
+> improve performance of memory initialization.
+>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+[..]
+>  /**
+> - * async_schedule - schedule a function for asynchronous execution
+> + * async_schedule_near - schedule a function for asynchronous execution
+>   * @func: function to execute asynchronously
+>   * @data: data pointer to pass to the function
+> + * @node: NUMA node that we want to schedule this on or close to
+>   *
+>   * Returns an async_cookie_t that may be used for checkpointing later.
+>   * Note: This function may be called from atomic or non-atomic contexts.
+>   */
+> -async_cookie_t async_schedule(async_func_t func, void *data)
+> +async_cookie_t async_schedule_near(async_func_t func, void *data, int node)
+>  {
+> -       return __async_schedule(func, data, &async_dfl_domain);
+> +       return async_schedule_near_domain(func, data, node, &async_dfl_domain);
+>  }
+> -EXPORT_SYMBOL_GPL(async_schedule);
+> +EXPORT_SYMBOL_GPL(async_schedule_near);
 
-If a critical trip point is defined before a passive trip point, the
-governor will not work, even if there is a
-passive or active trip point declared after the critical point.
-For instance, on an Odroid-XU3/4 with a Samsung Exynos
-5422 CPU, trip points are set as "active" first, "critical", then
-"passive". https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/tree/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi?h=linux-4.18.y#n53
-There is no documentation constraining to an order in the
-definition of trip points neither in the thermal manager nor in
-power_allocator.
-Thus, dts contributors could choose any order to define a
-thermal-zones, and set the "critical" trip point first, breaking this
-thermal governor.
-On Mon, 24 Sep 2018 at 17:45, Eduardo Valentin <edubezval@gmail.com> wrote:
+Looks good to me. The _near() suffix makes it clear that we're doing a
+best effort hint to the work placement compared to the strict
+expectations of _on routines.
+
 >
-> Hey,
->
-> On Fri, Sep 21, 2018 at 02:06:09PM +0100, Willy Wolff wrote:
-> > If a trip of type critical is defined before any trip of passive
-> > or active type, power_allocator governor will not switch on.
->
->
-> But, if a critical trip is reached, the expectation is to perform a
-> thermal shutdown. Why would you expect to have power allocator
-> to be activated during the process of a shutdown?
->
-> >
-> > Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
-> > ---
-> >  drivers/thermal/power_allocator.c | 2 --
-> >  1 file changed, 2 deletions(-)
-> >
-> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> > index 3055f9a12a17..6544b68e3ebf 100644
-> > --- a/drivers/thermal/power_allocator.c
-> > +++ b/drivers/thermal/power_allocator.c
-> > @@ -496,8 +496,6 @@ static void get_governor_trips(struct thermal_zone_device *tz,
-> >                       }
-> >               } else if (type == THERMAL_TRIP_ACTIVE) {
-> >                       last_active = i;
-> > -             } else {
-> > -                     break;
-> >               }
-> >       }
-> >
-> > --
-> > 2.11.0
-> >
+>  /**
+> - * async_schedule_domain - schedule a function for asynchronous execution within a certain domain
+> + * async_schedule_dev_domain - schedule a function for asynchronous execution within a certain domain
+>   * @func: function to execute asynchronously
+> - * @data: data pointer to pass to the function
+> + * @dev: device that we are scheduling this work for
+>   * @domain: the domain
+>   *
+> - * Returns an async_cookie_t that may be used for checkpointing later.
+> - * @domain may be used in the async_synchronize_*_domain() functions to
+> - * wait within a certain synchronization domain rather than globally.  A
+> - * synchronization domain is specified via @domain.  Note: This function
+> - * may be called from atomic or non-atomic contexts.
+> + * Device specific version of async_schedule_near_domain that provides some
+> + * NUMA awareness based on the device node.
+> + */
+> +async_cookie_t async_schedule_dev_domain(async_func_t func, struct device *dev,
+> +                                        struct async_domain *domain)
+> +{
+> +       return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
+> +}
+> +EXPORT_SYMBOL_GPL(async_schedule_dev_domain);
+
+This seems unnecessary and restrictive. Callers may want to pass
+something other than dev as the parameter to the async function, and
+dev_to_node() is not on onerous burden to place on callers.
