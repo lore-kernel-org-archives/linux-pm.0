@@ -1,211 +1,51 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v8 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
- Firmware bindings
-Date: Thu, 27 Sep 2018 10:31:26 -0500
-Message-ID: <20180927153126.GA17218@bogus>
-References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
- <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [RESEND] dt-bindings: thermal: samsung: Add SPDX license identifier
+Date: Thu, 27 Sep 2018 19:04:40 +0200
+Message-ID: <20180927170440.12985-1-krzk@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Sep 23, 2018 at 04:03:12PM +0530, Taniya Das wrote:
-> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-> SoCs. This is required for managing the cpu frequency transitions which are
-> controlled by the hardware engine.
-> 
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 169 +++++++++++++++++++++
->  1 file changed, 169 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> new file mode 100644
-> index 0000000..c06941c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> @@ -0,0 +1,169 @@
-> +Qualcomm Technologies, Inc. CPUFREQ Bindings
-> +
-> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
-> +SoCs to manage frequency in hardware. It is capable of controlling frequency
-> +for multiple clusters.
-> +
-> +Properties:
-> +- compatible
-> +	Usage:		required
-> +	Value type:	<string>
-> +	Definition:	must be "qcom,cpufreq-hw".
-> +
-> +- clocks
-> +	Usage:		required
-> +	Value type:	<phandle> From common clock binding.
-> +	Definition:	clock handle for XO clock and GPLL0 clock.
-> +
-> +- clock-names
-> +	Usage:		required
-> +	Value type:	<string> From common clock binding.
-> +	Definition:	must be "xo", "cpu_clk".
-> +
-> +- reg
-> +	Usage:		required
-> +	Value type:	<prop-encoded-array>
-> +	Definition:	Addresses and sizes for the memory of the HW bases in
-> +			each frequency domain.
-> +- reg-names
-> +	Usage:		Optional
-> +	Value type:	<string>
-> +	Definition:	Frequency domain name i.e.
-> +			"freq-domain0", "freq-domain1".
-> +
-> +* Property qcom,freq-domain
-> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
-> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
-> +
-> +
-> +Example:
-> +
-> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
-> +DCVS state together.
-> +
-> +/ {
-> +	cpus {
-> +		#address-cells = <2>;
-> +		#size-cells = <0>;
-> +
-> +		CPU0: cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x0>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_0>;
-> +			qcom,freq-domain = <&cpufreq_hw 0>;
-> +			L2_0: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +				L3_0: l3-cache {
-> +				      compatible = "cache";
-> +				};
-> +			};
-> +		};
-> +
-> +		CPU1: cpu@100 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x100>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_100>;
-> +			qcom,freq-domain = <&cpufreq_hw 0>;
-> +			L2_100: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU2: cpu@200 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x200>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_200>;
-> +			qcom,freq-domain = <&cpufreq_hw 0>;
-> +			L2_200: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU3: cpu@300 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x300>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_300>;
-> +			qcom,freq-domain = <&cpufreq_hw 0>;
-> +			L2_300: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU4: cpu@400 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x400>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_400>;
-> +			qcom,freq-domain = <&cpufreq_hw 1>;
-> +			L2_400: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU5: cpu@500 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x500>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_500>;
-> +			qcom,freq-domain = <&cpufreq_hw 1>;
-> +			L2_500: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU6: cpu@600 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x600>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_600>;
-> +			qcom,freq-domain = <&cpufreq_hw 1>;
-> +			L2_600: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +
-> +		CPU7: cpu@700 {
-> +			device_type = "cpu";
-> +			compatible = "qcom,kryo385";
-> +			reg = <0x0 0x700>;
-> +			enable-method = "psci";
-> +			next-level-cache = <&L2_700>;
-> +			qcom,freq-domain = <&cpufreq_hw 1>;
-> +			L2_700: l2-cache {
-> +				compatible = "cache";
-> +				next-level-cache = <&L3_0>;
-> +			};
-> +		};
-> +	};
-> +
-> + soc {
-> +	cpufreq_hw: qcom,cpufreq-hw {
+Replace GPL license statement with SPDX license identifier (GPL-2.0+).
 
-Should have a unit-address and node names should be generic. We don't 
-really have one for this, but let's go with 'cpufreq', so:
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-cpufreq@17d43000
+---
 
-> +		compatible = "qcom,cpufreq-hw";
-> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
-> +		reg-names = "freq-domain0", "freq-domain1";
-> +
-> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-> +		clock-names = "xo", "cpu_clk";
-> +
-> +		#freq-domains-cells = <1>
+We postponed this patch because in previous discussion [1] Bartlomiej
+expressed willingness to change the license... which did not happen
+since July 2018.  In such case let's take this.
 
-Not documented, but I don't think you need this if it is always 1 and 
-because this is not a common binding.
+[1] https://patchwork.kernel.org/patch/10533191/
+---
+ include/dt-bindings/thermal/thermal_exynos.h | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Rob
+diff --git a/include/dt-bindings/thermal/thermal_exynos.h b/include/dt-bindings/thermal/thermal_exynos.h
+index 0646500bca69..642e4e7f4084 100644
+--- a/include/dt-bindings/thermal/thermal_exynos.h
++++ b/include/dt-bindings/thermal/thermal_exynos.h
+@@ -1,19 +1,9 @@
++/* SPDX-License-Identifier: GPL-2.0+ */
+ /*
+  * thermal_exynos.h - Samsung EXYNOS TMU device tree definitions
+  *
+  *  Copyright (C) 2014 Samsung Electronics
+  *  Lukasz Majewski <l.majewski@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  */
+ 
+ #ifndef _EXYNOS_THERMAL_TMU_DT_H
+-- 
+2.17.1
