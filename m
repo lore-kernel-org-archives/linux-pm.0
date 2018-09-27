@@ -1,69 +1,98 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 2/4] power: supply: core: Introduce properties to
- present the battery OCV table
-Date: Thu, 27 Sep 2018 08:40:47 +0200
-Message-ID: <20180927064047.gjxg5ikbrdgbc54u@earth.universe>
-References: <358665e3f4f9ec105dc2f8a2dc6dd98dbe761fae.1537930252.git.baolin.wang@linaro.org>
- <b78ff03ecd251b63430f05b505e02b19e196364e.1537930252.git.baolin.wang@linaro.org>
- <20180926135150.fla2r4ilfco3atws@earth.universe>
- <CAMz4kuK0PGonikK=pH50p=7NFXZHRuMZ+Aq9ZYT+8q8giKZCAQ@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v16 5/5] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+Date: Thu, 27 Sep 2018 12:25:43 +0530
+Message-ID: <CAFp+6iGrvVL-tbD=Mx3NV2BqRQo=7f5qh8raaYNT-oFEav+2Ug@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-6-vivek.gautam@codeaurora.org> <80f7a7df-9a6d-9de3-4c7c-261d96fb04e4@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="k7hcsql7m2t5ho6w"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMz4kuK0PGonikK=pH50p=7NFXZHRuMZ+Aq9ZYT+8q8giKZCAQ@mail.gmail.com>
+In-Reply-To: <80f7a7df-9a6d-9de3-4c7c-261d96fb04e4@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Joerg Roedel <joro@8bytes.org>, robh+dt <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
+        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alex.williamson@redhat.com, linux-arm-msm <linux-arm-msm@vger.kernel.org>, freedreno <freedreno@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Robin,
 
---k7hcsql7m2t5ho6w
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Sep 26, 2018 at 9:29 PM Robin Murphy <robin.murphy@arm.com> wrote:
+>
+> On 30/08/18 15:45, Vivek Gautam wrote:
+> > qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+> > clock and power requirements.
+> > On msm8996, multiple cores, viz. mdss, video, etc. use this
+> > smmu. On sdm845, this smmu is used with gpu.
+> > Add bindings for the same.
+> >
+> > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> > Reviewed-by: Rob Herring <robh@kernel.org>
+> > Reviewed-by: Tomasz Figa <tfiga@chromium.org>
+> > Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+> > ---
+> >   drivers/iommu/arm-smmu.c | 13 +++++++++++++
+> >   1 file changed, 13 insertions(+)
+> >
+> > diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+> > index 166c8c6da24f..411e5ac57c64 100644
+> > --- a/drivers/iommu/arm-smmu.c
+> > +++ b/drivers/iommu/arm-smmu.c
+> > @@ -119,6 +119,7 @@ enum arm_smmu_implementation {
+> >       GENERIC_SMMU,
+> >       ARM_MMU500,
+> >       CAVIUM_SMMUV2,
+> > +     QCOM_SMMUV2,
+>
+> Hmm, it seems we don't actually need this right now, but maybe that just
+> means there's more imp-def registers and/or errata to come ;)
+>
+> Either way I guess there's no real harm in having it.
 
-Hi,
+Thanks for the review.
 
-On Thu, Sep 27, 2018 at 09:10:05AM +0800, Baolin Wang wrote:
-> On 26 September 2018 at 21:51, Sebastian Reichel <sre@kernel.org> wrote:
-> > Looks good to me. Technically this can result in existing users of
-> > power_supply_get_battery_info leaking memory, if they have an OCV
-> > table in DT.
->=20
-> Fortunately existing users did not have an OCV table.
+Best regards
+Vivek
 
-Right. I was just talking about potential memory leak, if the DT
-file of these boards has the OCV table defined. I don't think
-that this will be a problem in real life.
+>
+> Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+>
+> >   };
+> >
+> >   struct arm_smmu_s2cr {
+> > @@ -1970,6 +1971,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
+> >   ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+> >   ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
+> >
+> > +static const char * const qcom_smmuv2_clks[] = {
+> > +     "bus", "iface",
+> > +};
+> > +
+> > +static const struct arm_smmu_match_data qcom_smmuv2 = {
+> > +     .version = ARM_SMMU_V2,
+> > +     .model = QCOM_SMMUV2,
+> > +     .clks = qcom_smmuv2_clks,
+> > +     .num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
+> > +};
+> > +
+> >   static const struct of_device_id arm_smmu_of_match[] = {
+> >       { .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
+> >       { .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
+> > @@ -1977,6 +1989,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
+> >       { .compatible = "arm,mmu-401", .data = &arm_mmu401 },
+> >       { .compatible = "arm,mmu-500", .data = &arm_mmu500 },
+> >       { .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
+> > +     { .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
+> >       { },
+> >   };
+> >   MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+> >
+> _______________________________________________
+> iommu mailing list
+> iommu@lists.linux-foundation.org
+> https://lists.linuxfoundation.org/mailman/listinfo/iommu
 
-> Moreover once this patch merged, I will send patches to add
-> power_supply_put_battery_info() for existing users of battery
-> info.
 
-Thanks.
 
--- Sebastian
-
---k7hcsql7m2t5ho6w
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAluse2wACgkQ2O7X88g7
-+pqfZxAAoPl9aL6sdDCBfxKazPiI9s5153oyEycYk5X1bgX1suAVKe9RLGPCzb0/
-upA/K5pX5tSaDEF8APJA6fI7KCsnRnXKMWbE9Hzuvh970Z0LHzxUi832xfrVNeWy
-YBekJcdfhAhSpMpRviB4dqle9Ng+72UYE3+vVF5B6slN6dcJVX9vQGX1TzWVNJAL
-lIw0E8YuBl0IYFMufi6b79dCWu0RVWjTP3Czn9sHcqVrI6iPczqLYDic5cPx9p/8
-3RjxIIX5f1QttBNDmbaVr5RjnOn/VM1epiDUQRVWhZV+lFZaeUOxjXbn0iV9Dr9/
-kMHlTfmMLXr9DRNplgXpGYBjQyk1BlLfWw5vtlxZEBwhCjQeole6hLQ5CkvUaeH7
-CiXRqGob6EkZ/6SHCd0u2Azkb7s8hhUpdGdwJ4/RwQ5mVIlaIlvul80QgtKvntxM
-3cIS1nJtYElWCiuCsldh9OCyYBUnAm+NJhB7ug2cO0CguvpkNDKY/FhqzJo1awcY
-mH5WDqkdjqmVvMNLUXbTDXhhXdDQjpFn/nXc/UdbLFPhrpEZqEHvIOP+IaEK7F14
-TYBxiwHtFysgLXEd8cluaDwtNgh8ihIP9luRwzy11Ru8sg2DBGQRnoyYVbY9dVfO
-8KNDcuT4nxkpP9s9WgyDgUekYOvJhPaQ7J6BEgvWm6CPI36Q6/A=
-=rqSa
------END PGP SIGNATURE-----
-
---k7hcsql7m2t5ho6w--
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
