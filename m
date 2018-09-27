@@ -1,16 +1,16 @@
 From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [RFC workqueue/driver-core PATCH 2/5] async: Add support for
- queueing on specific NUMA node
-Date: Thu, 27 Sep 2018 08:16:33 -0700
-Message-ID: <d16cabf9-28f7-31e2-c43d-027738185518@linux.intel.com>
+Subject: Re: [RFC workqueue/driver-core PATCH 3/5] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Thu, 27 Sep 2018 08:27:55 -0700
+Message-ID: <021d55fb-9f6a-0b52-3513-e9c5493bd7d7@linux.intel.com>
 References: <20180926214433.13512.30289.stgit@localhost.localdomain>
- <20180926215143.13512.56522.stgit@localhost.localdomain>
- <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og@mail.gmail.com>
+ <20180926215149.13512.51991.stgit@localhost.localdomain>
+ <CAPcyv4h5U4Fph52H80QodBRXK+PjS6Zw_6qK2+DXtr=qZT7Gzw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <CAPcyv4h5U4Fph52H80QodBRXK+PjS6Zw_6qK2+DXtr=qZT7Gzw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 Content-Language: en-US
 List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
  <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
@@ -27,85 +27,74 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 9/26/2018 5:31 PM, Dan Williams wrote:
+On 9/26/2018 5:48 PM, Dan Williams wrote:
 > On Wed, Sep 26, 2018 at 2:51 PM Alexander Duyck
 > <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
 >>
->> This patch introduces four new variants of the async_schedule_ functions
->> that allow scheduling on a specific NUMA node.
+>> This change makes it so that we probe devices asynchronously instead of the
+>> driver. This results in us seeing the same behavior if the device is
+>> registered before the driver or after. This way we can avoid serializing
+>> the initialization should the driver not be loaded until after the devices
+>> have already been added.
 >>
->> The first two functions are async_schedule_near and
->> async_schedule_near_domain which end up mapping to async_schedule and
->> async_schedule_domain but provide NUMA node specific functionality. They
->> replace the original functions which were moved to inline function
->> definitions that call the new functions while passing NUMA_NO_NODE.
+>> The motivation behind this is that if we have a set of devices that
+>> take a significant amount of time to load we can greatly reduce the time to
+>> load by processing them in parallel instead of one at a time. In addition,
+>> each device can exist on a different node so placing a single thread on one
+>> CPU to initialize all of the devices for a given driver can result in poor
+>> performance on a system with multiple nodes.
 >>
->> The second two functions are async_schedule_dev and
->> async_schedule_dev_domain which provide NUMA specific functionality when
->> passing a device as the data member and that device has a NUMA node other
->> than NUMA_NO_NODE.
->>
->> The main motivation behind this is to address the need to be able to
->> schedule device specific init work on specific NUMA nodes in order to
->> improve performance of memory initialization.
+>> One issue I can see with this patch is that I am using the
+>> dev_set/get_drvdata functions to store the driver in the device while I am
+>> waiting on the asynchronous init to complete. For now I am protecting it by
+>> using the lack of a dev->driver and the device lock.
 >>
 >> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 > [..]
->>   /**
->> - * async_schedule - schedule a function for asynchronous execution
->> + * async_schedule_near - schedule a function for asynchronous execution
->>    * @func: function to execute asynchronously
->>    * @data: data pointer to pass to the function
->> + * @node: NUMA node that we want to schedule this on or close to
->>    *
->>    * Returns an async_cookie_t that may be used for checkpointing later.
->>    * Note: This function may be called from atomic or non-atomic contexts.
->>    */
->> -async_cookie_t async_schedule(async_func_t func, void *data)
->> +async_cookie_t async_schedule_near(async_func_t func, void *data, int node)
->>   {
->> -       return __async_schedule(func, data, &async_dfl_domain);
->> +       return async_schedule_near_domain(func, data, node, &async_dfl_domain);
->>   }
->> -EXPORT_SYMBOL_GPL(async_schedule);
->> +EXPORT_SYMBOL_GPL(async_schedule_near);
-> 
-> Looks good to me. The _near() suffix makes it clear that we're doing a
-> best effort hint to the work placement compared to the strict
-> expectations of _on routines.
-> 
+>> @@ -891,6 +914,25 @@ static int __driver_attach(struct device *dev, void *data)
+>>                  return ret;
+>>          } /* ret > 0 means positive match */
 >>
->>   /**
->> - * async_schedule_domain - schedule a function for asynchronous execution within a certain domain
->> + * async_schedule_dev_domain - schedule a function for asynchronous execution within a certain domain
->>    * @func: function to execute asynchronously
->> - * @data: data pointer to pass to the function
->> + * @dev: device that we are scheduling this work for
->>    * @domain: the domain
->>    *
->> - * Returns an async_cookie_t that may be used for checkpointing later.
->> - * @domain may be used in the async_synchronize_*_domain() functions to
->> - * wait within a certain synchronization domain rather than globally.  A
->> - * synchronization domain is specified via @domain.  Note: This function
->> - * may be called from atomic or non-atomic contexts.
->> + * Device specific version of async_schedule_near_domain that provides some
->> + * NUMA awareness based on the device node.
->> + */
->> +async_cookie_t async_schedule_dev_domain(async_func_t func, struct device *dev,
->> +                                        struct async_domain *domain)
->> +{
->> +       return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
->> +}
->> +EXPORT_SYMBOL_GPL(async_schedule_dev_domain);
+>> +       if (driver_allows_async_probing(drv)) {
+>> +               /*
+>> +                * Instead of probing the device synchronously we will
+>> +                * probe it asynchronously to allow for more parallelism.
+>> +                *
+>> +                * We only take the device lock here in order to guarantee
+>> +                * that the dev->driver and driver_data fields are protected
+>> +                */
+>> +               dev_dbg(dev, "scheduling asynchronous probe\n");
+>> +               device_lock(dev);
+>> +               if (!dev->driver) {
+>> +                       get_device(dev);
+>> +                       dev_set_drvdata(dev, drv);
+>> +                       async_schedule(__driver_attach_async_helper, dev);
 > 
-> This seems unnecessary and restrictive. Callers may want to pass
-> something other than dev as the parameter to the async function, and
-> dev_to_node() is not on onerous burden to place on callers.
+> I'm not sure async drivers / sub-systems are ready for their devices
+> to show up in parallel. While userspace should not be relying on
+> kernel device names, people get upset when devices change kernel names
+> from one boot to the next, and I can see this change leading to that
+> scenario.
 
+The thing is the current async behavior already does this if the driver 
+is loaded before the device is added. All I am doing is making the 
+behavior with the driver loaded first the standard instead of letting it 
+work the other way around. This way we get consistent behavior.
 
-That is what async_schedule_near_domain is for, they can call that. The 
-"dev" versions of the calls as just supposed to be helpers since one of 
-the most common parameters to the async_schedule calls is a device, so I 
-thought I would just put together a function that takes care of all this 
-for us so I could drop an argument and avoid having to use dev_to_node 
-everywhere.
+> If a driver / sub-system wants more parallelism than what
+> driver_allows_async_probing() provides it should do it locally, for
+> example, like libata does.
+
+So where I actually saw this was with the pmem legacy setup I had. After 
+doing all the work to parallelize things in the driver it had no effect. 
+That was because the nd_pmem driver wasn't loaded yet so all the 
+device_add calls did is add the device but didn't attach the nd_pmem 
+driver. Then when the driver loaded it serialized the probe calls 
+resulting in it taking twice as long as it needed to in order to 
+initialize the memory.
+
+This seems to affect standard persistent memory as well. The only 
+difference is that instead of probing the device on the first pass we 
+kick it back and reprobe it in nd_pmem_probe/nd_pfn_probe in order to 
+set the correct personality and that in turn allows us to asynchronously 
+reschedule the work on the correct CPU and deserialize it.
