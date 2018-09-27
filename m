@@ -1,98 +1,85 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH v16 5/5] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
-Date: Thu, 27 Sep 2018 12:25:43 +0530
-Message-ID: <CAFp+6iGrvVL-tbD=Mx3NV2BqRQo=7f5qh8raaYNT-oFEav+2Ug@mail.gmail.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
- <20180830144541.17740-6-vivek.gautam@codeaurora.org> <80f7a7df-9a6d-9de3-4c7c-261d96fb04e4@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v3 1/4] power: supply: core: Introduce one property to present the battery internal resistance
+Date: Thu, 27 Sep 2018 15:26:54 +0800
+Message-ID: <2787f18a0366576959557d05112a069dca982269.1538033078.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <80f7a7df-9a6d-9de3-4c7c-261d96fb04e4@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Joerg Roedel <joro@8bytes.org>, robh+dt <robh+dt@kernel.org>, Will Deacon <will.deacon@arm.com>, "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, alex.williamson@redhat.com, linux-arm-msm <linux-arm-msm@vger.kernel.org>, freedreno <freedreno@lists.freedesktop.org>
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Robin,
+The internal resistance of a battery is not a constant in its life cycle,
+this varies over the age of the battery or temperature and so on. But we
+just want use one constant battery internal resistance to estimate the
+battery capacity. Thus this patch introduces one property to present
+the battery factory internal resistance for battery information.
 
-On Wed, Sep 26, 2018 at 9:29 PM Robin Murphy <robin.murphy@arm.com> wrote:
->
-> On 30/08/18 15:45, Vivek Gautam wrote:
-> > qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
-> > clock and power requirements.
-> > On msm8996, multiple cores, viz. mdss, video, etc. use this
-> > smmu. On sdm845, this smmu is used with gpu.
-> > Add bindings for the same.
-> >
-> > Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> > Reviewed-by: Rob Herring <robh@kernel.org>
-> > Reviewed-by: Tomasz Figa <tfiga@chromium.org>
-> > Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-> > ---
-> >   drivers/iommu/arm-smmu.c | 13 +++++++++++++
-> >   1 file changed, 13 insertions(+)
-> >
-> > diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-> > index 166c8c6da24f..411e5ac57c64 100644
-> > --- a/drivers/iommu/arm-smmu.c
-> > +++ b/drivers/iommu/arm-smmu.c
-> > @@ -119,6 +119,7 @@ enum arm_smmu_implementation {
-> >       GENERIC_SMMU,
-> >       ARM_MMU500,
-> >       CAVIUM_SMMUV2,
-> > +     QCOM_SMMUV2,
->
-> Hmm, it seems we don't actually need this right now, but maybe that just
-> means there's more imp-def registers and/or errata to come ;)
->
-> Either way I guess there's no real harm in having it.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+Changes from v2:
+ - Rename the property.
+ - Improve the commit message.
 
-Thanks for the review.
+Changes from v1:
+ - New patch in v2.
+---
+ .../devicetree/bindings/power/supply/battery.txt   |    2 ++
+ drivers/power/supply/power_supply_core.c           |    3 +++
+ include/linux/power_supply.h                       |    1 +
+ 3 files changed, 6 insertions(+)
 
-Best regards
-Vivek
-
->
-> Reviewed-by: Robin Murphy <robin.murphy@arm.com>
->
-> >   };
-> >
-> >   struct arm_smmu_s2cr {
-> > @@ -1970,6 +1971,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
-> >   ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
-> >   ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
-> >
-> > +static const char * const qcom_smmuv2_clks[] = {
-> > +     "bus", "iface",
-> > +};
-> > +
-> > +static const struct arm_smmu_match_data qcom_smmuv2 = {
-> > +     .version = ARM_SMMU_V2,
-> > +     .model = QCOM_SMMUV2,
-> > +     .clks = qcom_smmuv2_clks,
-> > +     .num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
-> > +};
-> > +
-> >   static const struct of_device_id arm_smmu_of_match[] = {
-> >       { .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
-> >       { .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
-> > @@ -1977,6 +1989,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
-> >       { .compatible = "arm,mmu-401", .data = &arm_mmu401 },
-> >       { .compatible = "arm,mmu-500", .data = &arm_mmu500 },
-> >       { .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
-> > +     { .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
-> >       { },
-> >   };
-> >   MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
-> >
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
-
-
-
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+index f4d3b4a..938d027 100644
+--- a/Documentation/devicetree/bindings/power/supply/battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -22,6 +22,7 @@ Optional Properties:
+  - charge-term-current-microamp: current for charge termination phase
+  - constant-charge-current-max-microamp: maximum constant input current
+  - constant-charge-voltage-max-microvolt: maximum constant input voltage
++ - factory-internal-resistance-micro-ohms: battery factory internal resistance
+ 
+ Battery properties are named, where possible, for the corresponding
+ elements in enum power_supply_property, defined in
+@@ -42,6 +43,7 @@ Example:
+ 		charge-term-current-microamp = <128000>;
+ 		constant-charge-current-max-microamp = <900000>;
+ 		constant-charge-voltage-max-microvolt = <4200000>;
++		factory-internal-resistance-micro-ohms = <250000>;
+ 	};
+ 
+ 	charger: charger@11 {
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index e853618..307e0995 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -579,6 +579,7 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 	info->charge_term_current_ua         = -EINVAL;
+ 	info->constant_charge_current_max_ua = -EINVAL;
+ 	info->constant_charge_voltage_max_uv = -EINVAL;
++	info->factory_internal_resistance_uohm  = -EINVAL;
+ 
+ 	if (!psy->of_node) {
+ 		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+@@ -616,6 +617,8 @@ int power_supply_get_battery_info(struct power_supply *psy,
+ 			     &info->constant_charge_current_max_ua);
+ 	of_property_read_u32(battery_np, "constant_charge_voltage_max_microvolt",
+ 			     &info->constant_charge_voltage_max_uv);
++	of_property_read_u32(battery_np, "factory-internal-resistance-micro-ohms",
++			     &info->factory_internal_resistance_uohm);
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index f807691..d089566 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -326,6 +326,7 @@ struct power_supply_battery_info {
+ 	int charge_term_current_ua;	    /* microAmps */
+ 	int constant_charge_current_max_ua; /* microAmps */
+ 	int constant_charge_voltage_max_uv; /* microVolts */
++	int factory_internal_resistance_uohm;   /* microOhms */
+ };
+ 
+ extern struct atomic_notifier_head power_supply_notifier;
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+1.7.9.5
