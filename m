@@ -1,105 +1,111 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 02/14] sched/cpufreq: Prepare schedutil for Energy
- Aware Scheduling
-Date: Thu, 27 Sep 2018 13:17:49 +0100
-Message-ID: <20180927121749.urdqtayq6ll4k7qn@queper01-lin>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-3-quentin.perret@arm.com>
- <CAJZ5v0gL+NurA8UcN5oweqwxfgS10HgO1Zjh_cod4_Sr5nWQHQ@mail.gmail.com>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 2/5] async: Add support for
+ queueing on specific NUMA node
+Date: Thu, 27 Sep 2018 08:16:33 -0700
+Message-ID: <d16cabf9-28f7-31e2-c43d-027738185518@linux.intel.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215143.13512.56522.stgit@localhost.localdomain>
+ <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gL+NurA8UcN5oweqwxfgS10HgO1Zjh_cod4_Sr5nWQHQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, Steve Muckle <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skann>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-Very sorry for the late reply ...
 
-On Tuesday 18 Sep 2018 at 23:33:22 (+0200), Rafael J. Wysocki wrote:
-[...]
-> The new "type" argument should be documented.
+On 9/26/2018 5:31 PM, Dan Williams wrote:
+> On Wed, Sep 26, 2018 at 2:51 PM Alexander Duyck
+> <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+>>
+>> This patch introduces four new variants of the async_schedule_ functions
+>> that allow scheduling on a specific NUMA node.
+>>
+>> The first two functions are async_schedule_near and
+>> async_schedule_near_domain which end up mapping to async_schedule and
+>> async_schedule_domain but provide NUMA node specific functionality. They
+>> replace the original functions which were moved to inline function
+>> definitions that call the new functions while passing NUMA_NO_NODE.
+>>
+>> The second two functions are async_schedule_dev and
+>> async_schedule_dev_domain which provide NUMA specific functionality when
+>> passing a device as the data member and that device has a NUMA node other
+>> than NUMA_NO_NODE.
+>>
+>> The main motivation behind this is to address the need to be able to
+>> schedule device specific init work on specific NUMA nodes in order to
+>> improve performance of memory initialization.
+>>
+>> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> [..]
+>>   /**
+>> - * async_schedule - schedule a function for asynchronous execution
+>> + * async_schedule_near - schedule a function for asynchronous execution
+>>    * @func: function to execute asynchronously
+>>    * @data: data pointer to pass to the function
+>> + * @node: NUMA node that we want to schedule this on or close to
+>>    *
+>>    * Returns an async_cookie_t that may be used for checkpointing later.
+>>    * Note: This function may be called from atomic or non-atomic contexts.
+>>    */
+>> -async_cookie_t async_schedule(async_func_t func, void *data)
+>> +async_cookie_t async_schedule_near(async_func_t func, void *data, int node)
+>>   {
+>> -       return __async_schedule(func, data, &async_dfl_domain);
+>> +       return async_schedule_near_domain(func, data, node, &async_dfl_domain);
+>>   }
+>> -EXPORT_SYMBOL_GPL(async_schedule);
+>> +EXPORT_SYMBOL_GPL(async_schedule_near);
 > 
-> Also IMO using the special enum for it is quite confusing, because you
-> ever only check one value from it directly.  What would be wrong with
-> using a plain "bool" instead?
-
-So, this part of the code was originally proposed by Peter. I basically
-took it from the following message (hence the Suggested-by) which was
-fine by me:
-
-https://lore.kernel.org/lkml/20180709120138.GQ2494@hirez.programming.kicks-ass.net/
-
-Also, one of the things that has been mentioned during reviews was that
-other clients (such as cpuidle, IIRC) could potentially be interested
-in a 'global' cpu util value. And since those clients might have
-different needs than EAS or sugov, they might need a new entry in the
-enum.
-
-So that's probably the main argument for the enum, it is easy to extend.
-
-[...]
-> > +static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-> > +{
-> > +       struct rq *rq = cpu_rq(sg_cpu->cpu);
-> > +       unsigned long util = cpu_util_cfs(rq);
-> > +
-> > +       sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-> > +       sg_cpu->bw_dl = cpu_bw_dl(rq);
-> > +
-> > +       return schedutil_freq_util(sg_cpu->cpu, util, FREQUENCY_UTIL);
+> Looks good to me. The _near() suffix makes it clear that we're doing a
+> best effort hint to the work placement compared to the strict
+> expectations of _on routines.
 > 
-> If you add a "max" argument to schedutil_freq_util(), you can avoid
-> the second (and arguably redundant) evaluation of
-> arch_scale_cpu_capacity() in there.
-
-OK
-
-[...]
-> > +enum schedutil_type {
-> > +       FREQUENCY_UTIL,
-> > +       ENERGY_UTIL,
-> > +};
+>>
+>>   /**
+>> - * async_schedule_domain - schedule a function for asynchronous execution within a certain domain
+>> + * async_schedule_dev_domain - schedule a function for asynchronous execution within a certain domain
+>>    * @func: function to execute asynchronously
+>> - * @data: data pointer to pass to the function
+>> + * @dev: device that we are scheduling this work for
+>>    * @domain: the domain
+>>    *
+>> - * Returns an async_cookie_t that may be used for checkpointing later.
+>> - * @domain may be used in the async_synchronize_*_domain() functions to
+>> - * wait within a certain synchronization domain rather than globally.  A
+>> - * synchronization domain is specified via @domain.  Note: This function
+>> - * may be called from atomic or non-atomic contexts.
+>> + * Device specific version of async_schedule_near_domain that provides some
+>> + * NUMA awareness based on the device node.
+>> + */
+>> +async_cookie_t async_schedule_dev_domain(async_func_t func, struct device *dev,
+>> +                                        struct async_domain *domain)
+>> +{
+>> +       return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
+>> +}
+>> +EXPORT_SYMBOL_GPL(async_schedule_dev_domain);
 > 
-> As I said above, I would just use "bool" instead of this new enum (it
-> has two values too) or the new type needs to be documented.
+> This seems unnecessary and restrictive. Callers may want to pass
+> something other than dev as the parameter to the async function, and
+> dev_to_node() is not on onerous burden to place on callers.
 
-As I said above, the enum has the good side of being easier to extend.
-So, if we care about that, I guess I'd rather add a doc for the new
-type.
 
-> > +
-> >  #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-> > +unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-> > +                                 enum schedutil_type type);
-> > +
-> >  static inline unsigned long cpu_bw_dl(struct rq *rq)
-> >  {
-> >         return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
-> > @@ -2199,6 +2207,12 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
-> >  {
-> >         return READ_ONCE(rq->avg_rt.util_avg);
-> >  }
-> > +#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
-> > +static inline unsigned long schedutil_freq_util(int cpu, unsigned long util,
-> > +                                 enum schedutil_type type)
-> > +{
-> > +       return util;
-> > +}
-> >  #endif
-> 
-> And I would add a wrapper around schedutil_freq_util(), called say
-> schedutil_energy_util(), that would pass a specific value as the
-> "type".
-
-OK, that's fine by me.
-
-Other than that, do you think these changes could be done later ? Or do
-you see that as mandatory before the patches can be picked up ?
-
-Thanks,
-Quentin
+That is what async_schedule_near_domain is for, they can call that. The 
+"dev" versions of the calls as just supposed to be helpers since one of 
+the most common parameters to the async_schedule calls is a device, so I 
+thought I would just put together a function that takes care of all this 
+for us so I could drop an argument and avoid having to use dev_to_node 
+everywhere.
