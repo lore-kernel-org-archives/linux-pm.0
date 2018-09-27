@@ -1,25 +1,52 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/6] dt-bindings: arm64: add compatible for LX2160A
-Date: Thu, 27 Sep 2018 14:32:40 -0500
-Message-ID: <20180927193240.GA29253@bogus>
-References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
- <1537747741-6245-2-git-send-email-vabhav.sharma@nxp.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: Re: [RFC workqueue/driver-core PATCH 2/5] async: Add support for
+ queueing on specific NUMA node
+Date: Thu, 27 Sep 2018 12:48:42 -0700
+Message-ID: <CAPcyv4iJeb-tJZVWRziwHQ-ug2P8Hgov2FSGvaXDOjw337kfMg@mail.gmail.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215143.13512.56522.stgit@localhost.localdomain> <CAPcyv4iJOYiM+rHsM4GPifKNJ=X+AtV2MgWTn+f7u0VBzXb2og@mail.gmail.com>
+ <d16cabf9-28f7-31e2-c43d-027738185518@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1537747741-6245-2-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <d16cabf9-28f7-31e2-c43d-027738185518@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com, udit.kumar@nxp.com, linux@armlinux.org.uk, Vabhav Sharma <vabhav.sharma@nxp.com>, V.Sethi@nxp.com
+To: alexander.h.duyck@linux.intel.com
+Cc: linux-nvdimm <linux-nvdimm@lists.01.org>, Greg KH <gregkh@linuxfoundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, "Brown, Len" <len.brown@intel.com>, Dave Jiang <dave.jiang@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Vishal L Verma <vishal.l.verma@intel.com>, jiangshanlai@gmail.com, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 24 Sep 2018 05:38:56 +0530, Vabhav Sharma wrote:
-> Add compatible for LX2160A SoC,QDS and RDB board
-> 
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> ---
->  Documentation/devicetree/bindings/arm/fsl.txt | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
+On Thu, Sep 27, 2018 at 8:24 AM Alexander Duyck
+<alexander.h.duyck@linux.intel.com> wrote:
+[..]
+> >> - * Returns an async_cookie_t that may be used for checkpointing later.
+> >> - * @domain may be used in the async_synchronize_*_domain() functions to
+> >> - * wait within a certain synchronization domain rather than globally.  A
+> >> - * synchronization domain is specified via @domain.  Note: This function
+> >> - * may be called from atomic or non-atomic contexts.
+> >> + * Device specific version of async_schedule_near_domain that provides some
+> >> + * NUMA awareness based on the device node.
+> >> + */
+> >> +async_cookie_t async_schedule_dev_domain(async_func_t func, struct device *dev,
+> >> +                                        struct async_domain *domain)
+> >> +{
+> >> +       return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
+> >> +}
+> >> +EXPORT_SYMBOL_GPL(async_schedule_dev_domain);
+> >
+> > This seems unnecessary and restrictive. Callers may want to pass
+> > something other than dev as the parameter to the async function, and
+> > dev_to_node() is not on onerous burden to place on callers.
+>
+>
+> That is what async_schedule_near_domain is for, they can call that. The
+> "dev" versions of the calls as just supposed to be helpers since one of
+> the most common parameters to the async_schedule calls is a device, so I
+> thought I would just put together a function that takes care of all this
+> for us so I could drop an argument and avoid having to use dev_to_node
+> everywhere.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Yeah, makes sense, I guess I was reacting to the fact that this
+expands the number of exports unnecessarily. The other async routines
+are exported because they hide internal implementation details of the
+async implementation. The async_schedule_dev* helpers can just be
+static inline wrappers.
