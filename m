@@ -1,100 +1,211 @@
-From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [RFC workqueue/driver-core PATCH 3/5] driver core: Probe devices
- asynchronously instead of the driver
-Date: Thu, 27 Sep 2018 08:27:55 -0700
-Message-ID: <021d55fb-9f6a-0b52-3513-e9c5493bd7d7@linux.intel.com>
-References: <20180926214433.13512.30289.stgit@localhost.localdomain>
- <20180926215149.13512.51991.stgit@localhost.localdomain>
- <CAPcyv4h5U4Fph52H80QodBRXK+PjS6Zw_6qK2+DXtr=qZT7Gzw@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v8 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Thu, 27 Sep 2018 10:31:26 -0500
+Message-ID: <20180927153126.GA17218@bogus>
+References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
+ <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <CAPcyv4h5U4Fph52H80QodBRXK+PjS6Zw_6qK2+DXtr=qZT7Gzw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 9/26/2018 5:48 PM, Dan Williams wrote:
-> On Wed, Sep 26, 2018 at 2:51 PM Alexander Duyck
-> <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
->>
->> This change makes it so that we probe devices asynchronously instead of the
->> driver. This results in us seeing the same behavior if the device is
->> registered before the driver or after. This way we can avoid serializing
->> the initialization should the driver not be loaded until after the devices
->> have already been added.
->>
->> The motivation behind this is that if we have a set of devices that
->> take a significant amount of time to load we can greatly reduce the time to
->> load by processing them in parallel instead of one at a time. In addition,
->> each device can exist on a different node so placing a single thread on one
->> CPU to initialize all of the devices for a given driver can result in poor
->> performance on a system with multiple nodes.
->>
->> One issue I can see with this patch is that I am using the
->> dev_set/get_drvdata functions to store the driver in the device while I am
->> waiting on the asynchronous init to complete. For now I am protecting it by
->> using the lack of a dev->driver and the device lock.
->>
->> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> [..]
->> @@ -891,6 +914,25 @@ static int __driver_attach(struct device *dev, void *data)
->>                  return ret;
->>          } /* ret > 0 means positive match */
->>
->> +       if (driver_allows_async_probing(drv)) {
->> +               /*
->> +                * Instead of probing the device synchronously we will
->> +                * probe it asynchronously to allow for more parallelism.
->> +                *
->> +                * We only take the device lock here in order to guarantee
->> +                * that the dev->driver and driver_data fields are protected
->> +                */
->> +               dev_dbg(dev, "scheduling asynchronous probe\n");
->> +               device_lock(dev);
->> +               if (!dev->driver) {
->> +                       get_device(dev);
->> +                       dev_set_drvdata(dev, drv);
->> +                       async_schedule(__driver_attach_async_helper, dev);
+On Sun, Sep 23, 2018 at 04:03:12PM +0530, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
 > 
-> I'm not sure async drivers / sub-systems are ready for their devices
-> to show up in parallel. While userspace should not be relying on
-> kernel device names, people get upset when devices change kernel names
-> from one boot to the next, and I can see this change leading to that
-> scenario.
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 169 +++++++++++++++++++++
+>  1 file changed, 169 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..c06941c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,169 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +	Usage:		required
+> +	Value type:	<phandle> From common clock binding.
+> +	Definition:	clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +	Usage:		required
+> +	Value type:	<string> From common clock binding.
+> +	Definition:	must be "xo", "cpu_clk".
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the HW bases in
+> +			each frequency domain.
+> +- reg-names
+> +	Usage:		Optional
+> +	Value type:	<string>
+> +	Definition:	Frequency domain name i.e.
+> +			"freq-domain0", "freq-domain1".
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+> +
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +	cpus {
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x0>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_0>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_0: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +				L3_0: l3-cache {
+> +				      compatible = "cache";
+> +				};
+> +			};
+> +		};
+> +
+> +		CPU1: cpu@100 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x100>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_100>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_100: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU2: cpu@200 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x200>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_200>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_200: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU3: cpu@300 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x300>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_300>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_300: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU4: cpu@400 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x400>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_400>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_400: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU5: cpu@500 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x500>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_500>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_500: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU6: cpu@600 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x600>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_600>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_600: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU7: cpu@700 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x700>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_700>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_700: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +	};
+> +
+> + soc {
+> +	cpufreq_hw: qcom,cpufreq-hw {
 
-The thing is the current async behavior already does this if the driver 
-is loaded before the device is added. All I am doing is making the 
-behavior with the driver loaded first the standard instead of letting it 
-work the other way around. This way we get consistent behavior.
+Should have a unit-address and node names should be generic. We don't 
+really have one for this, but let's go with 'cpufreq', so:
 
-> If a driver / sub-system wants more parallelism than what
-> driver_allows_async_probing() provides it should do it locally, for
-> example, like libata does.
+cpufreq@17d43000
 
-So where I actually saw this was with the pmem legacy setup I had. After 
-doing all the work to parallelize things in the driver it had no effect. 
-That was because the nd_pmem driver wasn't loaded yet so all the 
-device_add calls did is add the device but didn't attach the nd_pmem 
-driver. Then when the driver loaded it serialized the probe calls 
-resulting in it taking twice as long as it needed to in order to 
-initialize the memory.
+> +		compatible = "qcom,cpufreq-hw";
+> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+> +		reg-names = "freq-domain0", "freq-domain1";
+> +
+> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+> +		clock-names = "xo", "cpu_clk";
+> +
+> +		#freq-domains-cells = <1>
 
-This seems to affect standard persistent memory as well. The only 
-difference is that instead of probing the device on the first pass we 
-kick it back and reprobe it in nd_pmem_probe/nd_pfn_probe in order to 
-set the correct personality and that in turn allows us to asynchronously 
-reschedule the work on the correct CPU and deserialize it.
+Not documented, but I don't think you need this if it is always 1 and 
+because this is not a common binding.
+
+Rob
