@@ -1,17 +1,17 @@
 From: Niklas =?iso-8859-1?Q?S=F6derlund?=
         <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH 1/3] thermal: rcar_thermal: Prevent hardware access
- during system suspend
-Date: Fri, 28 Sep 2018 10:51:45 +0200
-Message-ID: <20180928085145.GB24305@bigcity.dyn.berto.se>
+Subject: Re: [PATCH 2/3] thermal: rcar_thermal: Prevent doing work after
+ unbind
+Date: Fri, 28 Sep 2018 11:00:53 +0200
+Message-ID: <20180928090053.GC24305@bigcity.dyn.berto.se>
 References: <20180927113235.30354-1-geert+renesas@glider.be>
- <20180927113235.30354-2-geert+renesas@glider.be>
+ <20180927113235.30354-3-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180927113235.30354-2-geert+renesas@glider.be>
+In-Reply-To: <20180927113235.30354-3-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Support Opensource <support.opensource@diasemi.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
@@ -19,18 +19,16 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Geert,
 
-Thanks for your patch.
+Thanks for your work.
 
-On 2018-09-27 13:32:33 +0200, Geert Uytterhoeven wrote:
-> On r8a7791/koelsch, sometimes the following message is printed during
-> system suspend:
+On 2018-09-27 13:32:34 +0200, Geert Uytterhoeven wrote:
+> When testing bind/unbind on r8a7791/koelsch:
 > 
->     rcar_thermal e61f0000.thermal: thermal sensor was broken
+>     WARNING: CPU: 1 PID: 697 at lib/debugobjects.c:329 debug_print_object+0x8c/0xb4
+>     ODEBUG: free active (active state 0) object type: timer_list hint: delayed_work_timer_fn+0x0/0x10
 > 
-> This happens if the workqueue runs while the device is already
-> suspended.  Fix this by using the freezable system workqueue instead,
-> cfr. commit 51e20d0e3a60cf46 ("thermal: Prevent polling from happening
-> during system suspend").
+> This happens if the workqueue runs after the device has been unbound.
+> Fix this by cancelling any queued work during remove.
 > 
 > Fixes: e0a5172e9eec7f0d ("thermal: rcar: add interrupt support")
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
@@ -38,24 +36,21 @@ On 2018-09-27 13:32:33 +0200, Geert Uytterhoeven wrote:
 Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
 > ---
->  drivers/thermal/rcar_thermal.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/thermal/rcar_thermal.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
 > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 78f932822d381c9d..ea132e122b174757 100644
+> index ea132e122b174757..616ba2fccf410d3b 100644
 > --- a/drivers/thermal/rcar_thermal.c
 > +++ b/drivers/thermal/rcar_thermal.c
-> @@ -434,8 +434,8 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
->  	rcar_thermal_for_each_priv(priv, common) {
->  		if (rcar_thermal_had_changed(priv, status)) {
->  			rcar_thermal_irq_disable(priv);
-> -			schedule_delayed_work(&priv->work,
-> -					      msecs_to_jiffies(300));
-> +			queue_delayed_work(system_freezable_wq, &priv->work,
-> +					   msecs_to_jiffies(300));
->  		}
->  	}
+> @@ -453,6 +453,7 @@ static int rcar_thermal_remove(struct platform_device *pdev)
 >  
+>  	rcar_thermal_for_each_priv(priv, common) {
+>  		rcar_thermal_irq_disable(priv);
+> +		cancel_delayed_work_sync(&priv->work);
+>  		if (priv->chip->use_of_thermal)
+>  			thermal_remove_hwmon_sysfs(priv->zone);
+>  		else
 > -- 
 > 2.17.1
 > 
