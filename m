@@ -1,131 +1,120 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / core: Fix extra pm_runtime_enable on resume
-Date: Thu, 27 Sep 2018 23:46:54 +0200
-Message-ID: <20180927214654.GA17346@amd>
-References: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
+From: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 3/5] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Thu, 27 Sep 2018 19:48:42 -0700
+Message-ID: <CAPcyv4hQJo9HvCw70p+Qnpcg40x=mOsnLvsd1asGc0GD8EP6Sg@mail.gmail.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215149.13512.51991.stgit@localhost.localdomain>
+ <CAPcyv4h5U4Fph52H80QodBRXK+PjS6Zw_6qK2+DXtr=qZT7Gzw@mail.gmail.com>
+ <021d55fb-9f6a-0b52-3513-e9c5493bd7d7@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Al Cooper <alcooperx@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <021d55fb-9f6a-0b52-3513-e9c5493bd7d7-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Sep 27, 2018 at 8:31 AM Alexander Duyck
+<alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+>
+>
+>
+> On 9/26/2018 5:48 PM, Dan Williams wrote:
+> > On Wed, Sep 26, 2018 at 2:51 PM Alexander Duyck
+> > <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+> >>
+> >> This change makes it so that we probe devices asynchronously instead of the
+> >> driver. This results in us seeing the same behavior if the device is
+> >> registered before the driver or after. This way we can avoid serializing
+> >> the initialization should the driver not be loaded until after the devices
+> >> have already been added.
+> >>
+> >> The motivation behind this is that if we have a set of devices that
+> >> take a significant amount of time to load we can greatly reduce the time to
+> >> load by processing them in parallel instead of one at a time. In addition,
+> >> each device can exist on a different node so placing a single thread on one
+> >> CPU to initialize all of the devices for a given driver can result in poor
+> >> performance on a system with multiple nodes.
+> >>
+> >> One issue I can see with this patch is that I am using the
+> >> dev_set/get_drvdata functions to store the driver in the device while I am
+> >> waiting on the asynchronous init to complete. For now I am protecting it by
+> >> using the lack of a dev->driver and the device lock.
+> >>
+> >> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> > [..]
+> >> @@ -891,6 +914,25 @@ static int __driver_attach(struct device *dev, void *data)
+> >>                  return ret;
+> >>          } /* ret > 0 means positive match */
+> >>
+> >> +       if (driver_allows_async_probing(drv)) {
+> >> +               /*
+> >> +                * Instead of probing the device synchronously we will
+> >> +                * probe it asynchronously to allow for more parallelism.
+> >> +                *
+> >> +                * We only take the device lock here in order to guarantee
+> >> +                * that the dev->driver and driver_data fields are protected
+> >> +                */
+> >> +               dev_dbg(dev, "scheduling asynchronous probe\n");
+> >> +               device_lock(dev);
+> >> +               if (!dev->driver) {
+> >> +                       get_device(dev);
+> >> +                       dev_set_drvdata(dev, drv);
+> >> +                       async_schedule(__driver_attach_async_helper, dev);
+> >
+> > I'm not sure async drivers / sub-systems are ready for their devices
+> > to show up in parallel. While userspace should not be relying on
+> > kernel device names, people get upset when devices change kernel names
+> > from one boot to the next, and I can see this change leading to that
+> > scenario.
+>
+> The thing is the current async behavior already does this if the driver
+> is loaded before the device is added. All I am doing is making the
+> behavior with the driver loaded first the standard instead of letting it
+> work the other way around. This way we get consistent behavior.
 
---UlVJffcvxoiEqYs2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, I can see the consistency argument. It's still a behavior change
+that needs testing. Configurations that have been living with the
+default of synchronous probing of the devices on the bus for a later
+arriving driver might be surprised.
 
-On Tue 2018-09-25 18:10:55, Al Cooper wrote:
-> Matching pm_runtime_disable/pm_runtime_enable routines should be
-> called for "direct_complete" devices during suspend/resume and there
-> are cases where the pm_runtime_disable is skipped during suspend but
-> pm_runtime_enable is still called during resume. This is a problem
-> because the runtime enable state is really a counter and this can
-> incorrectly enable pm_runtime when it should not be enabled. This
-> happens for any direct_complete device doing an async suspend after
-> the global variable "async_error" is set (which is set by any sync
-> or async device's suspend error or early wake condition).
->=20
-> This failure is very timing dependent but for testing and debug
-> the following changes will make it happen more frequently.
-> - Add an msleep(500) as the first line in async_suspend() in
->   drivers/base/power/main.c
-> - Modify alarmtimer_suspend in kernel/time/alarmtimer.c to just
->   return -EBUSY
->=20
-> To see the failure condition that's been fixed with this patch,
-> enable dynamic debug for drivers/power/main.c and then run
-> "rtcwake -s 2 -m standby" and grep for
-> "skipping runtime enable during resume" messages.
+That said, I was confusing async probing with device registration in
+my thinking, so some of the discovery order / naming concerns may not
+be as bad as I was imagining. Sub-systems that would be broken by this
+behavior change would already be broken if a driver is built-in vs
+module.
 
-Thanks for the patch...
+So, consider this, an Acked-by.
 
-Could / should we add some WARN_ONs to pm_runtime_{disable|enable} to
-catch stuff like this?
-								Pavel
+> > If a driver / sub-system wants more parallelism than what
+> > driver_allows_async_probing() provides it should do it locally, for
+> > example, like libata does.
+>
+> So where I actually saw this was with the pmem legacy setup I had. After
+> doing all the work to parallelize things in the driver it had no effect.
+> That was because the nd_pmem driver wasn't loaded yet so all the
+> device_add calls did is add the device but didn't attach the nd_pmem
+> driver. Then when the driver loaded it serialized the probe calls
+> resulting in it taking twice as long as it needed to in order to
+> initialize the memory.
+>
+> This seems to affect standard persistent memory as well. The only
+> difference is that instead of probing the device on the first pass we
+> kick it back and reprobe it in nd_pmem_probe/nd_pfn_probe in order to
+> set the correct personality and that in turn allows us to asynchronously
+> reschedule the work on the correct CPU and deserialize it.
 
-
-> Signed-off-by: Al Cooper <alcooperx@gmail.com>
-> ---
->  drivers/base/power/main.c | 21 +++++++++++++++++++--
->  include/linux/pm.h        |  1 +
->  2 files changed, 20 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 3f68e2919dc5..2dc40662aae0 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -945,7 +945,13 @@ static int device_resume(struct device *dev, pm_mess=
-age_t state, bool async)
-> =20
->  	if (dev->power.direct_complete) {
->  		/* Match the pm_runtime_disable() in __device_suspend(). */
-> -		pm_runtime_enable(dev);
-> +		if (dev->power.pm_runtime_disabled) {
-> +			pm_runtime_enable(dev);
-> +			dev->power.pm_runtime_disabled =3D false;
-> +		} else {
-> +			pm_dev_dbg(dev, state,
-> +				   "skipping runtime enable during ");
-> +		}
->  		goto Complete;
->  	}
-> =20
-> @@ -1736,8 +1742,19 @@ static int __device_suspend(struct device *dev, pm=
-_message_t state, bool async)
->  	if (dev->power.direct_complete) {
->  		if (pm_runtime_status_suspended(dev)) {
->  			pm_runtime_disable(dev);
-> -			if (pm_runtime_status_suspended(dev))
-> +			if (pm_runtime_status_suspended(dev)) {
-> +				/*
-> +				 * If any device's sync or async suspend fails
-> +				 * and sets async_error, any async suspend for
-> +				 * direct_complete devices after the failure
-> +				 * will not execute the pm_runtime_disable
-> +				 * above. This flag lets the async device's
-> +				 * resume function (which is always run) know
-> +				 * if a matching pm_runtime_enable is needed.
-> +				 */
-> +				dev->power.pm_runtime_disabled =3D true;
->  				goto Complete;
-> +			}
-> =20
->  			pm_runtime_enable(dev);
->  		}
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index e723b78d8357..45738ad977fd 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -593,6 +593,7 @@ struct dev_pm_info {
->  	bool			is_late_suspended:1;
->  	bool			early_init:1;	/* Owned by the PM core */
->  	bool			direct_complete:1;	/* Owned by the PM core */
-> +	unsigned int		pm_runtime_disabled:1;
->  	u32			driver_flags;
->  	spinlock_t		lock;
->  #ifdef CONFIG_PM_SLEEP
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---UlVJffcvxoiEqYs2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlutT84ACgkQMOfwapXb+vIqNgCfT7SDfqeNpTsJUalVPOQvc9oU
-cxsAoJpouWdyC+H3CrZkG3msOInZp9gc
-=bIof
------END PGP SIGNATURE-----
-
---UlVJffcvxoiEqYs2--
+I don't see any problems with this series with the nvdimm unit tests,
+but note those tests do not check for discovery order / naming
+discrepancies.
