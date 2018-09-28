@@ -1,123 +1,61 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v16 1/5] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Fri, 28 Sep 2018 13:59:35 +0200
-Message-ID: <CAPDyKFohpvEMfDoDooYEyxPMeQ+9dU71qz7ZAZxQ1rzyW-w8iA@mail.gmail.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org> <20180830144541.17740-2-vivek.gautam@codeaurora.org>
+From: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v16 0/5] iommu/arm-smmu: Add runtime pm/sleep support
+Date: Fri, 28 Sep 2018 14:57:18 +0100
+Message-ID: <20180928135718.GA1599@brain-police>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180830144541.17740-2-vivek.gautam@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vivek Gautam <vivek.gautam@codeaurora.org>
-Cc: Joerg Roedel <joro@8bytes.org>, Rob Herring <robh+dt@kernel.org>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, iommu@lists.linux-foundation.org, DTML <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alex Williamson <alex.williamson@redhat.com>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, robdclark@gmail.com, Linux PM <linux-pm@vger.kernel.org>, freedreno@lists.freedesktop.org, Stephen Boyd <sboyd@kernel.org>, Tomasz Figa <tfiga@chromium.org>, Jordan Crouse <jcrouse@codeaurora.org>, Sricharan <sricharan@codeaurora.org>, Marek Szyprowski <m.szyprowski@samsung.com>, architt@codeaurora.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180830144541.17740-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30 August 2018 at 16:45, Vivek Gautam <vivek.gautam@codeaurora.org> wrote:
-> From: Sricharan R <sricharan@codeaurora.org>
->
-> The smmu needs to be functional only when the respective
-> master's using it are active. The device_link feature
-> helps to track such functional dependencies, so that the
-> iommu gets powered when the master device enables itself
-> using pm_runtime. So by adapting the smmu driver for
-> runtime pm, above said dependency can be addressed.
->
-> This patch adds the pm runtime/sleep callbacks to the
-> driver and also the functions to parse the smmu clocks
-> from DT and enable them in resume/suspend.
->
-> Also, while we enable the runtime pm add a pm sleep suspend
-> callback that pushes devices to low power state by turning
-> the clocks off in a system sleep.
-> Also add corresponding clock enable path in resume callback.
->
-> Signed-off-by: Sricharan R <sricharan@codeaurora.org>
-> Signed-off-by: Archit Taneja <architt@codeaurora.org>
-> [vivek: rework for clock and pm ops]
-> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> Reviewed-by: Tomasz Figa <tfiga@chromium.org>
-> Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-> ---
->  drivers/iommu/arm-smmu.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 74 insertions(+), 3 deletions(-)
-> diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+Hi Vivek,
 
-[...]
+On Thu, Aug 30, 2018 at 08:15:36PM +0530, Vivek Gautam wrote:
+> This series provides the support for turning on the arm-smmu's
+> clocks/power domains using runtime pm. This is done using
+> device links between smmu and client devices. The device link
+> framework keeps the two devices in correct order for power-cycling
+> across runtime PM or across system-wide PM.
+> 
+> With addition of a new device link flag DL_FLAG_AUTOREMOVE_SUPPLIER [7],
+> the device links created between arm-smmu and its clients will be
+> automatically purged when arm-smmu driver unbinds from its device.
+> 
+> As not all implementations support clock/power gating, we are checking
+> for a valid 'smmu->dev's pm_domain' to conditionally enable the runtime
+> power management for such smmu implementations that can support it.
+> Otherwise, the clocks are turned to be always on in .probe until .remove.
+> With conditional runtime pm now, we avoid touching dev->power.lock
+> in fastpaths for smmu implementations that don't need to do anything
+> useful with pm_runtime.
+> This lets us to use the much-argued pm_runtime_get_sync/put_sync()
+> calls in map/unmap callbacks so that the clients do not have to
+> worry about handling any of the arm-smmu's power.
+> 
+> This series also adds support for Qcom's arm-smmu-v2 variant that
+> has different clocks and power requirements.
+> 
+> Previous version of this patch series is @ [1].
+> 
+> Build tested the series based on 4.19-rc1.
 
-> -static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
-> +static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
->  {
->         struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-> +       int ret;
-> +
-> +       ret = clk_bulk_enable(smmu->num_clks, smmu->clks);
-> +       if (ret)
-> +               return ret;
->
->         arm_smmu_device_reset(smmu);
-> +
->         return 0;
->  }
->
-> -static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
-> +static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
-> +{
-> +       struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-> +
-> +       clk_bulk_disable(smmu->num_clks, smmu->clks);
-> +
-> +       return 0;
-> +}
-> +
-> +static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
-> +{
-> +       if (pm_runtime_suspended(dev))
-> +               return 0;
+I'm going to send my pull request to Joerg early next week (probably
+Monday), but I'm not keen to include this whilst it has outstanding comments
+from Ulf. Your errata workaround patch is in a similar situation, with
+outstanding comments from Robin.
 
-Looks like you should be able use pm_runtime_force_resume(), instead
-of using this local trick. Unless I am missing something, of course.
-
-In other words, just assign the system sleep callbacks for resume, to
-pm_runtime_force_resume(). And vice verse for the system suspend
-callbacks, pm_runtime_force_suspend(), of course.
-
-> +
-> +       return arm_smmu_runtime_resume(dev);
-> +}
-> +
-> +static int __maybe_unused arm_smmu_pm_suspend(struct device *dev)
-> +{
-> +       if (pm_runtime_suspended(dev))
-> +               return 0;
-> +
-> +       return arm_smmu_runtime_suspend(dev);
-> +}
-> +
-> +static const struct dev_pm_ops arm_smmu_pm_ops = {
-> +       SET_SYSTEM_SLEEP_PM_OPS(arm_smmu_pm_suspend, arm_smmu_pm_resume)
-
-I am wondering if using the ->suspend|resume() callback is really
-"late/early" enough in the device suspend phase?
-
-Others is using the noirq phase and some is even using the syscore
-ops. Of course it depends on the behavior of the consumers of iommu
-device, and I guess not everyone is using device links, which for sure
-improves things in this regards as well.
-
-> +       SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
-> +                          arm_smmu_runtime_resume, NULL)
-> +};
->
->  static struct platform_driver arm_smmu_driver = {
->         .driver = {
-> --
-> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-> of Code Aurora Forum, hosted by The Linux Foundation
->
-
-BTW, apologize for very late review comments.
-
-Besides the above comments, the series looks good to me.
-
-Kind regards
-Uffe
+Will
