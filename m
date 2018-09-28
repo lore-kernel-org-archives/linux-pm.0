@@ -1,83 +1,74 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v1 0/2] driver: thermal: Move some drivers into subdirs
-Date: Fri, 28 Sep 2018 22:06:04 +0530
-Message-ID: <cover.1538141538.git.amit.kucheria@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, edubezval@gmail.com, mka@chromium.org, rui.zhang@intel.com, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+From: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 4/5] driver core: Use new
+ async_schedule_dev command
+Date: Fri, 28 Sep 2018 10:42:39 -0700
+Message-ID: <CAPcyv4hZFQ99jnJnWBDDvrpiXq4zSAxo4C870tzfsN7eQ-8Y7Q@mail.gmail.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215155.13512.30900.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <20180926215155.13512.30900.stgit-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Move the various drivers for Intel platforms into their own subdir. Also
-consolidate Qualcomm drivers into the qcom subdir.
+On Wed, Sep 26, 2018 at 2:52 PM Alexander Duyck
+<alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+>
+> This change makes it so that we use the device specific version of the
+> async_schedule commands to defer various tasks related to devices. By doing
+> this we should see a slight improvement in performance as any device that
+> is sensitive to latency/locality in the setup will now be initializing on
+> the node closest to the device.
+>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> ---
+>  drivers/base/dd.c         |    4 ++--
+>  drivers/base/power/main.c |   12 ++++++------
+>  2 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 5ba366c1cb83..81472dc44a70 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -826,7 +826,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+>                          */
+>                         dev_dbg(dev, "scheduling asynchronous probe\n");
+>                         get_device(dev);
+> -                       async_schedule(__device_attach_async_helper, dev);
+> +                       async_schedule_dev(__device_attach_async_helper, dev);
+>                 } else {
+>                         pm_request_idle(dev);
+>                 }
+> @@ -927,7 +927,7 @@ static int __driver_attach(struct device *dev, void *data)
+>                 if (!dev->driver) {
+>                         get_device(dev);
+>                         dev_set_drvdata(dev, drv);
+> -                       async_schedule(__driver_attach_async_helper, dev);
+> +                       async_schedule_dev(__driver_attach_async_helper, dev);
+>                 }
 
-This cleans up the directory making it easier to find things.
+Above looks good to me...
 
-There is no great time to send patches that move files around, but I'm told
-that towards the end is nicer. So here's an attempt to sneak it into 4.20
-after everything else and hoping that these files won't change after
-4.19-rc4. :-) 
+>                 device_unlock(dev);
+>                 return 0;
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 3f68e2919dc5..8495d9b1e9d0 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
 
-This was compile-tested and generated against 4.19-rc4. If you would like
-me to try another time, I'm happy to do so.
-
-Regards,
-Amit
-
-Amit Kucheria (2):
-  drivers: thermal: Move various drivers for intel platforms into a
-    subdir
-  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
-
- drivers/thermal/Kconfig                       | 94 +------------------
- drivers/thermal/Makefile                      | 10 +-
- drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
- drivers/thermal/intel/Makefile                | 12 +++
- .../{ => intel}/int340x_thermal/Kconfig       |  0
- .../{ => intel}/int340x_thermal/Makefile      |  0
- .../int340x_thermal/acpi_thermal_rel.c        |  0
- .../int340x_thermal/acpi_thermal_rel.h        |  0
- .../int340x_thermal/int3400_thermal.c         |  0
- .../int340x_thermal/int3402_thermal.c         |  0
- .../int340x_thermal/int3403_thermal.c         |  0
- .../int340x_thermal/int3406_thermal.c         |  0
- .../int340x_thermal/int340x_thermal_zone.c    |  0
- .../int340x_thermal/int340x_thermal_zone.h    |  0
- .../processor_thermal_device.c                |  0
- .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
- .../thermal/{ => intel}/intel_pch_thermal.c   |  0
- .../thermal/{ => intel}/intel_powerclamp.c    |  0
- .../{ => intel}/intel_quark_dts_thermal.c     |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
- .../{ => intel}/intel_soc_dts_thermal.c       |  0
- .../{ => intel}/x86_pkg_temp_thermal.c        |  0
- drivers/thermal/qcom/Kconfig                  | 11 +++
- drivers/thermal/qcom/Makefile                 |  1 +
- .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  0
- 26 files changed, 107 insertions(+), 98 deletions(-)
- create mode 100644 drivers/thermal/intel/Kconfig
- create mode 100644 drivers/thermal/intel/Makefile
- rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
- rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
- rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
- rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (100%)
-
--- 
-2.17.1
+Let's split these changes into their own patch, just in case it causes
+a suspend regression we can revert it independently of the async
+probing change. It might also be worthwhile to have a positive
+indication that this improves the latency of power transitions.
