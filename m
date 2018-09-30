@@ -1,7 +1,7 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 06/14] power: supply: bq24190_charger: fix race-condition in sysfs registration
-Date: Mon,  1 Oct 2018 00:03:41 +0200
-Message-ID: <20180930220349.10515-7-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 07/14] power: supply: bq24257: fix race-condition in sysfs registration
+Date: Mon,  1 Oct 2018 00:03:42 +0200
+Message-ID: <20180930220349.10515-8-sebastian.reichel@collabora.com>
 References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -19,108 +19,60 @@ not properly registered to udev.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/bq24190_charger.c | 43 +++++---------------------
- 1 file changed, 8 insertions(+), 35 deletions(-)
+ drivers/power/supply/bq24257_charger.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index b58df04d03b3..9d63d4e601cc 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -402,9 +402,7 @@ static struct bq24190_sysfs_field_info bq24190_sysfs_field_tbl[] = {
- static struct attribute *
- 	bq24190_sysfs_attrs[ARRAY_SIZE(bq24190_sysfs_field_tbl) + 1];
+diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
+index 6fc31bdc639b..673c7d6ff1a7 100644
+--- a/drivers/power/supply/bq24257_charger.c
++++ b/drivers/power/supply/bq24257_charger.c
+@@ -845,7 +845,7 @@ static DEVICE_ATTR(high_impedance_enable, S_IWUSR | S_IRUGO,
+ static DEVICE_ATTR(sysoff_enable, S_IWUSR | S_IRUGO,
+ 		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
  
--static const struct attribute_group bq24190_sysfs_attr_group = {
--	.attrs = bq24190_sysfs_attrs,
+-static struct attribute *bq24257_charger_attr[] = {
++static struct attribute *bq24257_charger_sysfs_attrs[] = {
+ 	&dev_attr_ovp_voltage.attr,
+ 	&dev_attr_in_dpm_voltage.attr,
+ 	&dev_attr_high_impedance_enable.attr,
+@@ -853,14 +853,13 @@ static struct attribute *bq24257_charger_attr[] = {
+ 	NULL,
+ };
+ 
+-static const struct attribute_group bq24257_attr_group = {
+-	.attrs = bq24257_charger_attr,
 -};
-+ATTRIBUTE_GROUPS(bq24190_sysfs);
++ATTRIBUTE_GROUPS(bq24257_charger_sysfs);
  
- static void bq24190_sysfs_init_attrs(void)
+ static int bq24257_power_supply_init(struct bq24257_device *bq)
  {
-@@ -491,26 +489,6 @@ static ssize_t bq24190_sysfs_store(struct device *dev,
+ 	struct power_supply_config psy_cfg = { .drv_data = bq, };
  
- 	return count;
- }
--
--static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
--{
--	bq24190_sysfs_init_attrs();
--
--	return sysfs_create_group(&bdi->charger->dev.kobj,
--			&bq24190_sysfs_attr_group);
--}
--
--static void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi)
--{
--	sysfs_remove_group(&bdi->charger->dev.kobj, &bq24190_sysfs_attr_group);
--}
--#else
--static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
--{
--	return 0;
--}
--
--static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
- #endif
++	psy_cfg.attr_grp = bq24257_charger_sysfs_groups;
+ 	psy_cfg.supplied_to = bq24257_charger_supplied_to;
+ 	psy_cfg.num_supplicants = ARRAY_SIZE(bq24257_charger_supplied_to);
  
- #ifdef CONFIG_REGULATOR
-@@ -1736,6 +1714,11 @@ static int bq24190_probe(struct i2c_client *client,
- 		goto out_pmrt;
+@@ -1084,12 +1083,6 @@ static int bq24257_probe(struct i2c_client *client,
+ 		return ret;
  	}
  
-+#ifdef CONFIG_SYSFS
-+	bq24190_sysfs_init_attrs();
-+	charger_cfg.attr_grp = bq24190_sysfs_groups;
-+#endif
-+
- 	charger_cfg.drv_data = bdi;
- 	charger_cfg.of_node = dev->of_node;
- 	charger_cfg.supplied_to = bq24190_charger_supplied_to;
-@@ -1773,12 +1756,6 @@ static int bq24190_probe(struct i2c_client *client,
- 		goto out_charger;
- 	}
- 
--	ret = bq24190_sysfs_create_group(bdi);
+-	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
 -	if (ret < 0) {
 -		dev_err(dev, "Can't create sysfs entries\n");
--		goto out_charger;
+-		return ret;
 -	}
 -
- 	bdi->initialized = true;
+ 	return 0;
+ }
  
- 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
-@@ -1787,12 +1764,12 @@ static int bq24190_probe(struct i2c_client *client,
- 			"bq24190-charger", bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Can't set up irq handler\n");
--		goto out_sysfs;
-+		goto out_charger;
- 	}
+@@ -1100,8 +1093,6 @@ static int bq24257_remove(struct i2c_client *client)
+ 	if (bq->iilimit_autoset_enable)
+ 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
  
- 	ret = bq24190_register_vbus_regulator(bdi);
- 	if (ret < 0)
--		goto out_sysfs;
-+		goto out_charger;
- 
- 	enable_irq_wake(client->irq);
- 
-@@ -1801,9 +1778,6 @@ static int bq24190_probe(struct i2c_client *client,
+-	sysfs_remove_group(&bq->charger->dev.kobj, &bq24257_attr_group);
+-
+ 	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
  
  	return 0;
- 
--out_sysfs:
--	bq24190_sysfs_remove_group(bdi);
--
- out_charger:
- 	if (!IS_ERR_OR_NULL(bdi->battery))
- 		power_supply_unregister(bdi->battery);
-@@ -1828,7 +1802,6 @@ static int bq24190_remove(struct i2c_client *client)
- 	}
- 
- 	bq24190_register_reset(bdi);
--	bq24190_sysfs_remove_group(bdi);
- 	if (bdi->battery)
- 		power_supply_unregister(bdi->battery);
- 	power_supply_unregister(bdi->charger);
 -- 
 2.19.0
