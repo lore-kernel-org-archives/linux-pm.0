@@ -1,75 +1,51 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RESEND] twl4030_charger: fix charging current
- out-of-bounds
-Date: Sun, 30 Sep 2018 22:16:42 +0200
-Message-ID: <20180930201642.GC23554@amd>
-References: <20180917052035.12234-1-andreas@kemnade.info>
+From: Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCHv1 01/14] power: supply: core: add support for custom sysfs attributes
+Date: Mon,  1 Oct 2018 00:03:36 +0200
+Message-ID: <20180930220349.10515-2-sebastian.reichel@collabora.com>
+References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Md/poaVZ8hnGTzuv"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180917052035.12234-1-andreas@kemnade.info>
+In-Reply-To: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Kemnade <andreas@kemnade.info>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Milo Kim <milo.kim@ti.com>, Andreas Dannenberg <dannenberg@ti.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
+Add functionality to setup device specific sysfs attributes
+in a race condition free manner
 
---Md/poaVZ8hnGTzuv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ drivers/power/supply/power_supply_core.c | 1 +
+ include/linux/power_supply.h             | 3 +++
+ 2 files changed, 4 insertions(+)
 
-On Mon 2018-09-17 07:20:35, Andreas Kemnade wrote:
-> the charging current uses unsigned int variables, if we step back
-> if the current is still low, we would run into negative which
-> means setting the target to a huge value.
-> Better add checks here.
-
-Do you expect this to happen in practice? Too high current while
-charging seems bad, right?
-
-Cc: stable?
-								Pavel
-
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> ---
->  drivers/power/supply/twl4030_charger.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/suppl=
-y/twl4030_charger.c
-> index b72838663872..c954b7234393 100644
-> --- a/drivers/power/supply/twl4030_charger.c
-> +++ b/drivers/power/supply/twl4030_charger.c
-> @@ -421,7 +421,8 @@ static void twl4030_current_worker(struct work_struct=
- *data)
-> =20
->  	if (v < USB_MIN_VOLT) {
->  		/* Back up and stop adjusting. */
-> -		bci->usb_cur -=3D USB_CUR_STEP;
-> +		if (bci->usb_cur >=3D USB_CUR_STEP)
-> +			bci->usb_cur -=3D USB_CUR_STEP;
->  		bci->usb_cur_target =3D bci->usb_cur;
->  	} else if (bci->usb_cur >=3D bci->usb_cur_target ||
->  		   bci->usb_cur + USB_CUR_STEP > USB_MAX_CURRENT) {
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---Md/poaVZ8hnGTzuv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAluxLyoACgkQMOfwapXb+vLUdQCcCw2lUChh9QF8KfmJ8mbNNEDq
-JHwAnRlP32MAnHnP4hLLBC0Zrzm5fO4Z
-=G8F0
------END PGP SIGNATURE-----
-
---Md/poaVZ8hnGTzuv--
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index e85361878450..cb7ddced85ed 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -880,6 +880,7 @@ __power_supply_register(struct device *parent,
+ 	dev_set_drvdata(dev, psy);
+ 	psy->desc = desc;
+ 	if (cfg) {
++		dev->groups = cfg->attr_grp;
+ 		psy->drv_data = cfg->drv_data;
+ 		psy->of_node =
+ 			cfg->fwnode ? to_of_node(cfg->fwnode) : cfg->of_node;
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index f80769175c56..410466946890 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -204,6 +204,9 @@ struct power_supply_config {
+ 	/* Driver private data */
+ 	void *drv_data;
+ 
++	/* Device specific sysfs attributes */
++	const struct attribute_group **attr_grp;
++
+ 	char **supplied_to;
+ 	size_t num_supplicants;
+ };
+-- 
+2.19.0
