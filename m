@@ -1,7 +1,7 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 11/14] power: supply: ds2780: fix race-condition in bin attribute registration
-Date: Mon,  1 Oct 2018 00:03:46 +0200
-Message-ID: <20180930220349.10515-12-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 12/14] power: supply: ds2781: fix race-condition in bin attribute registration
+Date: Mon,  1 Oct 2018 00:03:47 +0200
+Message-ID: <20180930220349.10515-13-sebastian.reichel@collabora.com>
 References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -20,78 +20,70 @@ code is further cleaned up.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/ds2780_battery.c | 55 ++++++++++-----------------
- 1 file changed, 20 insertions(+), 35 deletions(-)
+ drivers/power/supply/ds2781_battery.c | 50 ++++++++++-----------------
+ 1 file changed, 19 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/power/supply/ds2780_battery.c b/drivers/power/supply/ds2780_battery.c
-index fa015787d58d..d8be8c236029 100644
---- a/drivers/power/supply/ds2780_battery.c
-+++ b/drivers/power/supply/ds2780_battery.c
-@@ -658,7 +658,7 @@ static ssize_t ds2780_write_param_eeprom_bin(struct file *filp,
+diff --git a/drivers/power/supply/ds2781_battery.c b/drivers/power/supply/ds2781_battery.c
+index 5bfd4c77eb89..ea8c66abf602 100644
+--- a/drivers/power/supply/ds2781_battery.c
++++ b/drivers/power/supply/ds2781_battery.c
+@@ -660,7 +660,7 @@ static ssize_t ds2781_write_param_eeprom_bin(struct file *filp,
  	return count;
  }
  
--static const struct bin_attribute ds2780_param_eeprom_bin_attr = {
-+static struct bin_attribute ds2780_param_eeprom_bin_attr = {
+-static const struct bin_attribute ds2781_param_eeprom_bin_attr = {
++static struct bin_attribute ds2781_param_eeprom_bin_attr = {
  	.attr = {
  		.name = "param_eeprom",
  		.mode = S_IRUGO | S_IWUSR,
-@@ -703,7 +703,7 @@ static ssize_t ds2780_write_user_eeprom_bin(struct file *filp,
+@@ -706,7 +706,7 @@ static ssize_t ds2781_write_user_eeprom_bin(struct file *filp,
  	return count;
  }
  
--static const struct bin_attribute ds2780_user_eeprom_bin_attr = {
-+static struct bin_attribute ds2780_user_eeprom_bin_attr = {
+-static const struct bin_attribute ds2781_user_eeprom_bin_attr = {
++static struct bin_attribute ds2781_user_eeprom_bin_attr = {
  	.attr = {
  		.name = "user_eeprom",
  		.mode = S_IRUGO | S_IWUSR,
-@@ -722,7 +722,6 @@ static DEVICE_ATTR(rsgain_setting, S_IRUGO | S_IWUSR, ds2780_get_rsgain_setting,
- static DEVICE_ATTR(pio_pin, S_IRUGO | S_IWUSR, ds2780_get_pio_pin,
- 	ds2780_set_pio_pin);
+@@ -725,7 +725,6 @@ static DEVICE_ATTR(rsgain_setting, S_IRUGO | S_IWUSR, ds2781_get_rsgain_setting,
+ static DEVICE_ATTR(pio_pin, S_IRUGO | S_IWUSR, ds2781_get_pio_pin,
+ 	ds2781_set_pio_pin);
  
 -
- static struct attribute *ds2780_sysfs_attrs[] = {
+ static struct attribute *ds2781_sysfs_attrs[] = {
  	&dev_attr_pmod_enabled.attr,
  	&dev_attr_sense_resistor_value.attr,
-@@ -731,19 +730,30 @@ static struct attribute *ds2780_sysfs_attrs[] = {
+@@ -734,12 +733,26 @@ static struct attribute *ds2781_sysfs_attrs[] = {
  	NULL
  };
  
--ATTRIBUTE_GROUPS(ds2780_sysfs);
-+static struct bin_attribute *ds2780_sysfs_bin_attrs[] = {
-+	&ds2780_param_eeprom_bin_attr,
-+	&ds2780_user_eeprom_bin_attr,
-+	NULL
+-ATTRIBUTE_GROUPS(ds2781_sysfs);
++static struct bin_attribute *ds2781_sysfs_bin_attrs[] = {
++	&ds2781_param_eeprom_bin_attr,
++	&ds2781_user_eeprom_bin_attr,
++	NULL,
 +};
 +
-+static const struct attribute_group ds2780_sysfs_group = {
-+	.attrs = ds2780_sysfs_attrs,
-+	.bin_attrs = ds2780_sysfs_bin_attrs,
++static const struct attribute_group ds2781_sysfs_group = {
++	.attrs = ds2781_sysfs_attrs,
++	.bin_attrs = ds2781_sysfs_bin_attrs,
++
 +};
 +
-+static const struct attribute_group *ds2780_sysfs_groups[] = {
-+	&ds2780_sysfs_group,
++static const struct attribute_group *ds2781_sysfs_groups[] = {
++	&ds2781_sysfs_group,
 +	NULL,
 +};
  
- static int ds2780_battery_probe(struct platform_device *pdev)
+ static int ds2781_battery_probe(struct platform_device *pdev)
  {
  	struct power_supply_config psy_cfg = {};
 -	int ret = 0;
- 	struct ds2780_device_info *dev_info;
+ 	struct ds2781_device_info *dev_info;
  
  	dev_info = devm_kzalloc(&pdev->dev, sizeof(*dev_info), GFP_KERNEL);
--	if (!dev_info) {
--		ret = -ENOMEM;
--		goto fail;
--	}
-+	if (!dev_info)
-+		return -ENOMEM;
- 
- 	platform_set_drvdata(pdev, dev_info);
- 
-@@ -762,35 +772,10 @@ static int ds2780_battery_probe(struct platform_device *pdev)
- 					      &psy_cfg);
+@@ -763,35 +776,10 @@ static int ds2781_battery_probe(struct platform_device *pdev)
+ 						&psy_cfg);
  	if (IS_ERR(dev_info->bat)) {
  		dev_err(dev_info->dev, "failed to register battery\n");
 -		ret = PTR_ERR(dev_info->bat);
@@ -99,7 +91,7 @@ index fa015787d58d..d8be8c236029 100644
 -	}
 -
 -	ret = sysfs_create_bin_file(&dev_info->bat->dev.kobj,
--					&ds2780_param_eeprom_bin_attr);
+-					&ds2781_param_eeprom_bin_attr);
 -	if (ret) {
 -		dev_err(dev_info->dev,
 -				"failed to create param eeprom bin file");
@@ -107,7 +99,7 @@ index fa015787d58d..d8be8c236029 100644
 -	}
 -
 -	ret = sysfs_create_bin_file(&dev_info->bat->dev.kobj,
--					&ds2780_user_eeprom_bin_attr);
+-					&ds2781_user_eeprom_bin_attr);
 -	if (ret) {
 -		dev_err(dev_info->dev,
 -				"failed to create user eeprom bin file");
@@ -119,13 +111,13 @@ index fa015787d58d..d8be8c236029 100644
 -
 -fail_remove_bin_file:
 -	sysfs_remove_bin_file(&dev_info->bat->dev.kobj,
--				&ds2780_param_eeprom_bin_attr);
+-				&ds2781_param_eeprom_bin_attr);
 -fail_unregister:
 -	power_supply_unregister(dev_info->bat);
 -fail:
 -	return ret;
  }
  
- static int ds2780_battery_remove(struct platform_device *pdev)
+ static int ds2781_battery_remove(struct platform_device *pdev)
 -- 
 2.19.0
