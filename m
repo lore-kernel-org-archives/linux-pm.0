@@ -1,7 +1,7 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 05/14] power: supply: lp8788: fix race-condition in sysfs registration
-Date: Mon,  1 Oct 2018 00:03:40 +0200
-Message-ID: <20180930220349.10515-6-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 06/14] power: supply: bq24190_charger: fix race-condition in sysfs registration
+Date: Mon,  1 Oct 2018 00:03:41 +0200
+Message-ID: <20180930220349.10515-7-sebastian.reichel@collabora.com>
 References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -19,108 +19,108 @@ not properly registered to udev.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/lp8788-charger.c | 62 ++++++++++++---------------
- 1 file changed, 27 insertions(+), 35 deletions(-)
+ drivers/power/supply/bq24190_charger.c | 43 +++++---------------------
+ 1 file changed, 8 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
-index 0f3432795f3c..309e6efbb8ef 100644
---- a/drivers/power/supply/lp8788-charger.c
-+++ b/drivers/power/supply/lp8788-charger.c
-@@ -410,30 +410,6 @@ static const struct power_supply_desc lp8788_psy_battery_desc = {
- 	.get_property	= lp8788_battery_get_property,
- };
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index b58df04d03b3..9d63d4e601cc 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -402,9 +402,7 @@ static struct bq24190_sysfs_field_info bq24190_sysfs_field_tbl[] = {
+ static struct attribute *
+ 	bq24190_sysfs_attrs[ARRAY_SIZE(bq24190_sysfs_field_tbl) + 1];
  
--static int lp8788_psy_register(struct platform_device *pdev,
--				struct lp8788_charger *pchg)
+-static const struct attribute_group bq24190_sysfs_attr_group = {
+-	.attrs = bq24190_sysfs_attrs,
+-};
++ATTRIBUTE_GROUPS(bq24190_sysfs);
+ 
+ static void bq24190_sysfs_init_attrs(void)
+ {
+@@ -491,26 +489,6 @@ static ssize_t bq24190_sysfs_store(struct device *dev,
+ 
+ 	return count;
+ }
+-
+-static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
 -{
--	struct power_supply_config charger_cfg = {};
+-	bq24190_sysfs_init_attrs();
 -
--	charger_cfg.supplied_to = battery_supplied_to;
--	charger_cfg.num_supplicants = ARRAY_SIZE(battery_supplied_to);
+-	return sysfs_create_group(&bdi->charger->dev.kobj,
+-			&bq24190_sysfs_attr_group);
+-}
 -
--	pchg->charger = power_supply_register(&pdev->dev,
--					      &lp8788_psy_charger_desc,
--					      &charger_cfg);
--	if (IS_ERR(pchg->charger))
--		return -EPERM;
--
--	pchg->battery = power_supply_register(&pdev->dev,
--					      &lp8788_psy_battery_desc, NULL);
--	if (IS_ERR(pchg->battery)) {
--		power_supply_unregister(pchg->charger);
--		return -EPERM;
--	}
--
+-static void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi)
+-{
+-	sysfs_remove_group(&bdi->charger->dev.kobj, &bq24190_sysfs_attr_group);
+-}
+-#else
+-static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+-{
 -	return 0;
 -}
 -
- static void lp8788_psy_unregister(struct lp8788_charger *pchg)
- {
- 	power_supply_unregister(pchg->battery);
-@@ -690,16 +666,39 @@ static DEVICE_ATTR(charger_status, S_IRUSR, lp8788_show_charger_status, NULL);
- static DEVICE_ATTR(eoc_time, S_IRUSR, lp8788_show_eoc_time, NULL);
- static DEVICE_ATTR(eoc_level, S_IRUSR, lp8788_show_eoc_level, NULL);
+-static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+ #endif
  
--static struct attribute *lp8788_charger_attr[] = {
-+static struct attribute *lp8788_charger_sysfs_attrs[] = {
- 	&dev_attr_charger_status.attr,
- 	&dev_attr_eoc_time.attr,
- 	&dev_attr_eoc_level.attr,
- 	NULL,
- };
+ #ifdef CONFIG_REGULATOR
+@@ -1736,6 +1714,11 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_pmrt;
+ 	}
  
--static const struct attribute_group lp8788_attr_group = {
--	.attrs = lp8788_charger_attr,
--};
-+ATTRIBUTE_GROUPS(lp8788_charger_sysfs);
++#ifdef CONFIG_SYSFS
++	bq24190_sysfs_init_attrs();
++	charger_cfg.attr_grp = bq24190_sysfs_groups;
++#endif
 +
-+static int lp8788_psy_register(struct platform_device *pdev,
-+				struct lp8788_charger *pchg)
-+{
-+	struct power_supply_config charger_cfg = {};
-+
-+	charger_cfg.attr_grp = lp8788_charger_sysfs_groups;
-+	charger_cfg.supplied_to = battery_supplied_to;
-+	charger_cfg.num_supplicants = ARRAY_SIZE(battery_supplied_to);
-+
-+	pchg->charger = power_supply_register(&pdev->dev,
-+					      &lp8788_psy_charger_desc,
-+					      &charger_cfg);
-+	if (IS_ERR(pchg->charger))
-+		return -EPERM;
-+
-+	pchg->battery = power_supply_register(&pdev->dev,
-+					      &lp8788_psy_battery_desc, NULL);
-+	if (IS_ERR(pchg->battery)) {
-+		power_supply_unregister(pchg->charger);
-+		return -EPERM;
-+	}
-+
-+	return 0;
-+}
+ 	charger_cfg.drv_data = bdi;
+ 	charger_cfg.of_node = dev->of_node;
+ 	charger_cfg.supplied_to = bq24190_charger_supplied_to;
+@@ -1773,12 +1756,6 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_charger;
+ 	}
  
- static int lp8788_charger_probe(struct platform_device *pdev)
- {
-@@ -726,12 +725,6 @@ static int lp8788_charger_probe(struct platform_device *pdev)
- 	if (ret)
- 		return ret;
- 
--	ret = sysfs_create_group(&pdev->dev.kobj, &lp8788_attr_group);
--	if (ret) {
--		lp8788_psy_unregister(pchg);
--		return ret;
+-	ret = bq24190_sysfs_create_group(bdi);
+-	if (ret < 0) {
+-		dev_err(dev, "Can't create sysfs entries\n");
+-		goto out_charger;
 -	}
 -
- 	ret = lp8788_irq_register(pdev, pchg);
- 	if (ret)
- 		dev_warn(dev, "failed to register charger irq: %d\n", ret);
-@@ -745,7 +738,6 @@ static int lp8788_charger_remove(struct platform_device *pdev)
+ 	bdi->initialized = true;
  
- 	flush_work(&pchg->charger_work);
- 	lp8788_irq_unregister(pdev, pchg);
--	sysfs_remove_group(&pdev->dev.kobj, &lp8788_attr_group);
- 	lp8788_psy_unregister(pchg);
- 	lp8788_release_adc_channel(pchg);
+ 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+@@ -1787,12 +1764,12 @@ static int bq24190_probe(struct i2c_client *client,
+ 			"bq24190-charger", bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Can't set up irq handler\n");
+-		goto out_sysfs;
++		goto out_charger;
+ 	}
  
+ 	ret = bq24190_register_vbus_regulator(bdi);
+ 	if (ret < 0)
+-		goto out_sysfs;
++		goto out_charger;
+ 
+ 	enable_irq_wake(client->irq);
+ 
+@@ -1801,9 +1778,6 @@ static int bq24190_probe(struct i2c_client *client,
+ 
+ 	return 0;
+ 
+-out_sysfs:
+-	bq24190_sysfs_remove_group(bdi);
+-
+ out_charger:
+ 	if (!IS_ERR_OR_NULL(bdi->battery))
+ 		power_supply_unregister(bdi->battery);
+@@ -1828,7 +1802,6 @@ static int bq24190_remove(struct i2c_client *client)
+ 	}
+ 
+ 	bq24190_register_reset(bdi);
+-	bq24190_sysfs_remove_group(bdi);
+ 	if (bdi->battery)
+ 		power_supply_unregister(bdi->battery);
+ 	power_supply_unregister(bdi->charger);
 -- 
 2.19.0
