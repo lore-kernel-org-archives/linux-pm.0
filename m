@@ -1,7 +1,7 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 07/14] power: supply: bq24257: fix race-condition in sysfs registration
-Date: Mon,  1 Oct 2018 00:03:42 +0200
-Message-ID: <20180930220349.10515-8-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 08/14] power: supply: charger-manager: simplify generation of sysfs attribute group name
+Date: Mon,  1 Oct 2018 00:03:43 +0200
+Message-ID: <20180930220349.10515-9-sebastian.reichel@collabora.com>
 References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,67 +12,49 @@ To: Sebastian Reichel <sre@kernel.org>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Milo Kim <milo.kim@ti.com>, Andreas Dannenberg <dannenberg@ti.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.com>
 List-Id: linux-pm@vger.kernel.org
 
-This registers custom sysfs properties using the native functionality
-of the power-supply framework, which cleans up the code a bit and
-fixes a race-condition. Before this patch the sysfs attributes were
-not properly registered to udev.
+This is a simple cleanup and there should be no functional changes.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/bq24257_charger.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+ drivers/power/supply/charger-manager.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/power/supply/bq24257_charger.c b/drivers/power/supply/bq24257_charger.c
-index 6fc31bdc639b..673c7d6ff1a7 100644
---- a/drivers/power/supply/bq24257_charger.c
-+++ b/drivers/power/supply/bq24257_charger.c
-@@ -845,7 +845,7 @@ static DEVICE_ATTR(high_impedance_enable, S_IWUSR | S_IRUGO,
- static DEVICE_ATTR(sysoff_enable, S_IWUSR | S_IRUGO,
- 		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index faa1a67cf3d2..7ce0a4a2645c 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1369,8 +1369,7 @@ static int charger_manager_register_sysfs(struct charger_manager *cm)
+ 	struct charger_desc *desc = cm->desc;
+ 	struct charger_regulator *charger;
+ 	int chargers_externally_control = 1;
+-	char buf[11];
+-	char *str;
++	char *name;
+ 	int ret;
+ 	int i;
  
--static struct attribute *bq24257_charger_attr[] = {
-+static struct attribute *bq24257_charger_sysfs_attrs[] = {
- 	&dev_attr_ovp_voltage.attr,
- 	&dev_attr_in_dpm_voltage.attr,
- 	&dev_attr_high_impedance_enable.attr,
-@@ -853,14 +853,13 @@ static struct attribute *bq24257_charger_attr[] = {
- 	NULL,
- };
+@@ -1378,19 +1377,15 @@ static int charger_manager_register_sysfs(struct charger_manager *cm)
+ 	for (i = 0; i < desc->num_charger_regulators; i++) {
+ 		charger = &desc->charger_regulators[i];
  
--static const struct attribute_group bq24257_attr_group = {
--	.attrs = bq24257_charger_attr,
--};
-+ATTRIBUTE_GROUPS(bq24257_charger_sysfs);
+-		snprintf(buf, 10, "charger.%d", i);
+-		str = devm_kzalloc(cm->dev,
+-				strlen(buf) + 1, GFP_KERNEL);
+-		if (!str)
++		name = devm_kasprintf(cm->dev, GFP_KERNEL, "charger.%d", i);
++		if (!name)
+ 			return -ENOMEM;
  
- static int bq24257_power_supply_init(struct bq24257_device *bq)
- {
- 	struct power_supply_config psy_cfg = { .drv_data = bq, };
- 
-+	psy_cfg.attr_grp = bq24257_charger_sysfs_groups;
- 	psy_cfg.supplied_to = bq24257_charger_supplied_to;
- 	psy_cfg.num_supplicants = ARRAY_SIZE(bq24257_charger_supplied_to);
- 
-@@ -1084,12 +1083,6 @@ static int bq24257_probe(struct i2c_client *client,
- 		return ret;
- 	}
- 
--	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
--	if (ret < 0) {
--		dev_err(dev, "Can't create sysfs entries\n");
--		return ret;
--	}
+-		strcpy(str, buf);
 -
- 	return 0;
- }
+ 		charger->attrs[0] = &charger->attr_name.attr;
+ 		charger->attrs[1] = &charger->attr_state.attr;
+ 		charger->attrs[2] = &charger->attr_externally_control.attr;
+ 		charger->attrs[3] = NULL;
+-		charger->attr_g.name = str;
++		charger->attr_g.name = name;
+ 		charger->attr_g.attrs = charger->attrs;
  
-@@ -1100,8 +1093,6 @@ static int bq24257_remove(struct i2c_client *client)
- 	if (bq->iilimit_autoset_enable)
- 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
- 
--	sysfs_remove_group(&bq->charger->dev.kobj, &bq24257_attr_group);
--
- 	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
- 
- 	return 0;
+ 		sysfs_attr_init(&charger->attr_name.attr);
 -- 
 2.19.0
