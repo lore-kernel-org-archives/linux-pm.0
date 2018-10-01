@@ -1,194 +1,102 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
-Date: Mon, 1 Oct 2018 18:47:34 +0800
-Message-ID: <20181001104722.GI23244@linux-l9pv.suse>
-References: <20180912142337.21955-1-jlee@suse.com>
- <20180912142337.21955-2-jlee@suse.com>
- <20180913135832.GA8155@chenyu-desktop>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v16 1/5] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Mon, 1 Oct 2018 14:02:11 +0200
+Message-ID: <CAPDyKFpd4c+Qk5Fm7AdSU=pA4w=u0SE7XO7fc9PM9iHR67U6=A@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-2-vivek.gautam@codeaurora.org>
+ <CAPDyKFohpvEMfDoDooYEyxPMeQ+9dU71qz7ZAZxQ1rzyW-w8iA@mail.gmail.com>
+ <CAFp+6iHZysBmMZj+pZghPocEwDzU7KfR1gLQAQRBui+-gdiSTQ@mail.gmail.com>
+ <CAFp+6iFJbQZ1MrNWD6g+GNp9TOMXuq0oDdzQ9XUMTmY67tNgWg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180913135832.GA8155@chenyu-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.c.chen@intel.com>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Oliver Neukum <oneukum@suse.com>, Ryan Chen <yu.chen.surf@gmail.com>, David Howells <dhowells@redhat.com>, Giovanni Gherdovich <ggherdovich@suse.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iFJbQZ1MrNWD6g+GNp9TOMXuq0oDdzQ9XUMTmY67tNgWg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Yu Chen, 
-
-Thanks for your review and very sorry for my delay!
-
-On Thu, Sep 13, 2018 at 09:58:32PM +0800, Yu Chen wrote:
-> On Wed, Sep 12, 2018 at 10:23:33PM +0800, Lee, Chun-Yi wrote:
-> > This patch adds a snapshot keys handler for using the key retention
-> > service api to create keys for snapshot image encryption and
-> > authentication.
-> > 
-> > This handler uses TPM trusted key as the snapshot master key, and the
-> > encryption key and authentication key are derived from the snapshot
-> > key. The user defined key can also be used as the snapshot master key
-> > , but user must be aware that the security of user key relies on user
-> > space.
-> > 
-> In case the kernel provides mechanism to generate key from passphase,
-> the master key could also be generated in kernel space other than TPM.
-> It seems than snapshot_key_init() is easy to add the interface for that,
-> right?
-
-The user defined key can be used to carry the blob from user space. User
-sapce can use keyctl tool to enroll the blob. We can design a structure of
-blob that it carries the hash of passphase, salt... so on. Then kernel
-parses the blob to generate the key for encryption/authentication.
-
-> > The name of snapshot key is fixed to "swsusp-kmk". User should use
-> > the keyctl tool to load the key blob to root's user keyring. e.g.
-> > 
-> >  # /bin/keyctl add trusted swsusp-kmk "load `cat swsusp-kmk.blob`" @u
-> > 
-> > or create a new user key. e.g.
-> > 
-> >  # /bin/keyctl add user swsusp-kmk password @u
-
-The above password can be a blob. The user defined key can carries the
-blob to kernel. We can design the blob with userland tool later.
-
-> > 
-> > Then the disk_kmk sysfs file can be used to trigger the initialization
-> > of snapshot key:
-> > 
-> >  # echo 1 > /sys/power/disk_kmk
-> > 
-> > After the initialization be triggered, the secret in the payload of
-> > swsusp-key will be copied by hibernation and be erased. Then user can
-> > use keyctl to remove swsusp-kmk key from root's keyring.
-> > 
-> > If user does not trigger the initialization by disk_kmk file after
-> > swsusp-kmk be loaded to kernel. Then the snapshot key will be
-> > initialled when hibernation be triggered.
-> > 
-> > Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Chen Yu <yu.c.chen@intel.com>
-> > Cc: Oliver Neukum <oneukum@suse.com>
-> > Cc: Ryan Chen <yu.chen.surf@gmail.com>
-> > Cc: David Howells <dhowells@redhat.com>
-> > Cc: Giovanni Gherdovich <ggherdovich@suse.cz>
-> > Signed-off-by: "Lee, Chun-Yi" <jlee@suse.com>
-> > ---
-[...snip]
-> > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> > index abef759de7c8..18d13cbf0591 100644
-> > --- a/kernel/power/hibernate.c
-> > +++ b/kernel/power/hibernate.c
-> > @@ -1034,6 +1034,39 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
-> >  
-> >  power_attr(disk);
-> >  
-> > +#ifdef CONFIG_HIBERNATION_ENC_AUTH
-> > +static ssize_t disk_kmk_show(struct kobject *kobj, struct kobj_attribute *attr,
-> > +			     char *buf)
-> > +{
-> > +	if (snapshot_key_initialized())
-> > +		return sprintf(buf, "initialized\n");
-> > +	else
-> > +		return sprintf(buf, "uninitialized\n");
-> > +}
-> > +
-> > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
-> > +			      const char *buf, size_t n)
-> > +{
-> Does kmk mean kernel master key? It might looks unclear from first glance,
-> how about disk_genkey_store()?
-
-Yes, it's the kernel maskter key for disk (hibernate).
-
-The sysfs interfaces is used to load the master key from keyring, then
-kernel parses the encrypted key or user defined key to grab the plaintext
-key. So sysfs triggered the initial process of the master key.
-
-Even user space didn't trigger the process through sysfs, kernel will
-still runs the initial process when hibernation be triggered. Then
-kernel uses the master key to derive encrypte key and authenticate key. 
-
-I prefer to keep the name of sysfs and the function name. 
-
-> > +	int error = 0;
-> > +	char *p;
-> > +	int len;
-> > +
-> > +	if (!capable(CAP_SYS_ADMIN))
-> > +		return -EPERM;
-> > +
-> > +	p = memchr(buf, '\n', n);
-> > +	len = p ? p - buf : n;
-> > +	if (strncmp(buf, "1", len))
-> > +		return -EINVAL;
-> Why user is not allowed to disable(remove) it by
-> echo 0 ?
-
-Similar with evm, this sysfs interface gives user space a chance
-to ask kernel to initial master key. Once the master key be
-initialled and loaded, kernel doesn't want the key to be removed
-because the key is unsealed by TPM. The PCRs may already capped
-then there have no other master key can be unsealed and enrolled.
-
-So, I prefer that do not give user space the function to
-remove an enrolled master key. Once the master key be loaded,
-kernel will use the key to encrypt snapshot image.   
-
-> > +
-> > +	error = snapshot_key_init();
-> > +
-> > +	return error ? error : n;
-> > +}
-> > +
-> > +power_attr(disk_kmk);
-> > +#endif /* !CONFIG_HIBERNATION_ENC_AUTH */
-[...snip]
-> > diff --git a/kernel/power/snapshot_key.c b/kernel/power/snapshot_key.c
-> > new file mode 100644
-> > index 000000000000..091f33929b47
-> > --- /dev/null
-> > +++ b/kernel/power/snapshot_key.c
-[...snip]
-> > +
-> > +static int calc_hash(u8 *digest, const u8 *buf, unsigned int buflen,
-> > +		     bool may_sleep)
-> calc_hash() is used for both signature and encryption,
-> could it be integrated in snapshot_key_init() thus
-> the code could be re-used?
-
-The snapshot_key_init() is used to parse the blob of master key for
-grabbing the plaintext of key. It doesn't relate to encryption
-key and authentication key.
-
-The snapshot_key_init() reuses calc_hash() to calculate the fingerprint
-of master key in 0004 patch. The get_key_fingerprint() is a wrapper of
-calc_hash(). 
-
-> > +{
-> > +	SHASH_DESC_ON_STACK(desc, hash_tfm);
-> Per commit c2cd0b08e1efd9ee58d09049a6c77e5efa0ef627
->  SHASH_DESC_ON_STACK() should not be used.
-
-Thank you for point out! I will avoid to use VLA in next version.
-
-> > +	int err;
-> > +
-> > +	desc->tfm = hash_tfm;
-> > +	desc->flags = may_sleep ? CRYPTO_TFM_REQ_MAY_SLEEP : 0;
-> > +
-> > +	err = crypto_shash_digest(desc, buf, buflen, digest);
-> Check the err?
-
-I will check the err, thanks!
-
-> > +	shash_desc_zero(desc);
-> > +	return err;
-> > +}
-> > +
-[...snip]
-
-Thanks a lot!
-Joey Lee
+T24gMSBPY3RvYmVyIDIwMTggYXQgMTI6MzIsIFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNv
+ZGVhdXJvcmEub3JnPiB3cm90ZToKPiBPbiBNb24sIE9jdCAxLCAyMDE4IGF0IDExOjE5IEFNIFZp
+dmVrIEdhdXRhbQo+IDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+Pgo+PiBI
+SSBVbGYsCj4+Cj4+IE9uIEZyaSwgU2VwIDI4LCAyMDE4IGF0IDU6MzAgUE0gVWxmIEhhbnNzb24g
+PHVsZi5oYW5zc29uQGxpbmFyby5vcmc+IHdyb3RlOgo+PiA+Cj4+ID4gT24gMzAgQXVndXN0IDIw
+MTggYXQgMTY6NDUsIFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3
+cm90ZToKPj4gPiA+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+
+Cj4+ID4gPgo+PiA+ID4gVGhlIHNtbXUgbmVlZHMgdG8gYmUgZnVuY3Rpb25hbCBvbmx5IHdoZW4g
+dGhlIHJlc3BlY3RpdmUKPj4gPiA+IG1hc3RlcidzIHVzaW5nIGl0IGFyZSBhY3RpdmUuIFRoZSBk
+ZXZpY2VfbGluayBmZWF0dXJlCj4+ID4gPiBoZWxwcyB0byB0cmFjayBzdWNoIGZ1bmN0aW9uYWwg
+ZGVwZW5kZW5jaWVzLCBzbyB0aGF0IHRoZQo+PiA+ID4gaW9tbXUgZ2V0cyBwb3dlcmVkIHdoZW4g
+dGhlIG1hc3RlciBkZXZpY2UgZW5hYmxlcyBpdHNlbGYKPj4gPiA+IHVzaW5nIHBtX3J1bnRpbWUu
+IFNvIGJ5IGFkYXB0aW5nIHRoZSBzbW11IGRyaXZlciBmb3IKPj4gPiA+IHJ1bnRpbWUgcG0sIGFi
+b3ZlIHNhaWQgZGVwZW5kZW5jeSBjYW4gYmUgYWRkcmVzc2VkLgo+PiA+ID4KPj4gPiA+IFRoaXMg
+cGF0Y2ggYWRkcyB0aGUgcG0gcnVudGltZS9zbGVlcCBjYWxsYmFja3MgdG8gdGhlCj4+ID4gPiBk
+cml2ZXIgYW5kIGFsc28gdGhlIGZ1bmN0aW9ucyB0byBwYXJzZSB0aGUgc21tdSBjbG9ja3MKPj4g
+PiA+IGZyb20gRFQgYW5kIGVuYWJsZSB0aGVtIGluIHJlc3VtZS9zdXNwZW5kLgo+PiA+ID4KPj4g
+PiA+IEFsc28sIHdoaWxlIHdlIGVuYWJsZSB0aGUgcnVudGltZSBwbSBhZGQgYSBwbSBzbGVlcCBz
+dXNwZW5kCj4+ID4gPiBjYWxsYmFjayB0aGF0IHB1c2hlcyBkZXZpY2VzIHRvIGxvdyBwb3dlciBz
+dGF0ZSBieSB0dXJuaW5nCj4+ID4gPiB0aGUgY2xvY2tzIG9mZiBpbiBhIHN5c3RlbSBzbGVlcC4K
+Pj4gPiA+IEFsc28gYWRkIGNvcnJlc3BvbmRpbmcgY2xvY2sgZW5hYmxlIHBhdGggaW4gcmVzdW1l
+IGNhbGxiYWNrLgo+PiA+ID4KPj4gPiA+IFNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmlj
+aGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4+ID4gPiBTaWduZWQtb2ZmLWJ5OiBBcmNoaXQgVGFuZWph
+IDxhcmNoaXR0QGNvZGVhdXJvcmEub3JnPgo+PiA+ID4gW3ZpdmVrOiByZXdvcmsgZm9yIGNsb2Nr
+IGFuZCBwbSBvcHNdCj4+ID4gPiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdh
+dXRhbUBjb2RlYXVyb3JhLm9yZz4KPj4gPiA+IFJldmlld2VkLWJ5OiBUb21hc3ogRmlnYSA8dGZp
+Z2FAY2hyb21pdW0ub3JnPgo+PiA+ID4gVGVzdGVkLWJ5OiBTcmluaXZhcyBLYW5kYWdhdGxhIDxz
+cmluaXZhcy5rYW5kYWdhdGxhQGxpbmFyby5vcmc+Cj4+ID4gPiAtLS0KPj4gPiA+ICBkcml2ZXJz
+L2lvbW11L2FybS1zbW11LmMgfCA3NyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrLS0KPj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNzQgaW5zZXJ0aW9ucygrKSwg
+MyBkZWxldGlvbnMoLSkKPj4gPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11
+LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPj4gPgo+PiA+IFsuLi5dCj4+ID4KPj4gPiA+
+IC1zdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3BtX3Jlc3VtZShzdHJ1Y3QgZGV2
+aWNlICpkZXYpCj4+ID4gPiArc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50
+aW1lX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+ID4gPiAgewo+PiA+ID4gICAgICAgICBz
+dHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11ID0gZGV2X2dldF9kcnZkYXRhKGRldik7Cj4+ID4g
+PiArICAgICAgIGludCByZXQ7Cj4+ID4gPiArCj4+ID4gPiArICAgICAgIHJldCA9IGNsa19idWxr
+X2VuYWJsZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4+ID4gPiArICAgICAgIGlmIChy
+ZXQpCj4+ID4gPiArICAgICAgICAgICAgICAgcmV0dXJuIHJldDsKPj4gPiA+Cj4+ID4gPiAgICAg
+ICAgIGFybV9zbW11X2RldmljZV9yZXNldChzbW11KTsKPj4gPiA+ICsKPj4gPiA+ICAgICAgICAg
+cmV0dXJuIDA7Cj4+ID4gPiAgfQo+PiA+ID4KPj4gPiA+IC1zdGF0aWMgU0lNUExFX0RFVl9QTV9P
+UFMoYXJtX3NtbXVfcG1fb3BzLCBOVUxMLCBhcm1fc21tdV9wbV9yZXN1bWUpOwo+PiA+ID4gK3N0
+YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcnVudGltZV9zdXNwZW5kKHN0cnVjdCBk
+ZXZpY2UgKmRldikKPj4gPiA+ICt7Cj4+ID4gPiArICAgICAgIHN0cnVjdCBhcm1fc21tdV9kZXZp
+Y2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKPj4gPiA+ICsKPj4gPiA+ICsgICAgICAg
+Y2xrX2J1bGtfZGlzYWJsZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7Cj4+ID4gPiArCj4+
+ID4gPiArICAgICAgIHJldHVybiAwOwo+PiA+ID4gK30KPj4gPiA+ICsKPj4gPiA+ICtzdGF0aWMg
+aW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3BtX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYp
+Cj4+ID4gPiArewo+PiA+ID4gKyAgICAgICBpZiAocG1fcnVudGltZV9zdXNwZW5kZWQoZGV2KSkK
+Pj4gPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsKPj4gPgo+PiA+IExvb2tzIGxpa2UgeW91
+IHNob3VsZCBiZSBhYmxlIHVzZSBwbV9ydW50aW1lX2ZvcmNlX3Jlc3VtZSgpLCBpbnN0ZWFkCj4+
+ID4gb2YgdXNpbmcgdGhpcyBsb2NhbCB0cmljay4gVW5sZXNzIEkgYW0gbWlzc2luZyBzb21ldGhp
+bmcsIG9mIGNvdXJzZS4KPj4gPgo+PiA+IEluIG90aGVyIHdvcmRzLCBqdXN0IGFzc2lnbiB0aGUg
+c3lzdGVtIHNsZWVwIGNhbGxiYWNrcyBmb3IgcmVzdW1lLCB0bwo+PiA+IHBtX3J1bnRpbWVfZm9y
+Y2VfcmVzdW1lKCkuIEFuZCB2aWNlIHZlcnNlIGZvciB0aGUgc3lzdGVtIHN1c3BlbmQKPj4gPiBj
+YWxsYmFja3MsIHBtX3J1bnRpbWVfZm9yY2Vfc3VzcGVuZCgpLCBvZiBjb3Vyc2UuCj4+Cj4+IFRo
+YW5rcyBmb3IgdGhlIHJldmlldy4gSSB3aWxsIGNoYW5nZSB0aGlzIGFzIHN1Z2dlc3RlZC4KPgo+
+IENvbWluZyBiYWNrIGF0IHRoaXMgLSBhY3R1YWxseSBSYWZhZWwgc3VnZ2VzdGVkIF9ub3RfIHRv
+IHVzZQo+IHBtX3J1bnRpbWVfZm9yY2Vfc3VzcGVuZC9yZXN1bWUoKSB3aGVuIE1hcmVrIGhhZCBz
+dWdnZXN0ZWQKPiB0aGUgc2FtZSBbMV0uCgpJIHNlZS4KCj4gSGUgYWxzbyBtZW50aW9uZWQgZmV3
+IGNhdmVhdHMvbGltaXRhdGlvbnMgb2YgdXNpbmcgdGhlc2UgQVBJcwo+IGZvciBzeXN0ZW0gc2xl
+ZXAgb3BzLgo+IExldCBtZSBrbm93IHlvdXIgb3Bpbmlvbi4gVGhhbmtzLgoKPgo+IFsxXSBodHRw
+czovL2xrbWwub3JnL2xrbWwvMjAxOC83LzExLzk3OAo+IFsyXSBodHRwczovL2xrbWwub3JnL2xr
+bWwvMjAxOC83LzIzLzMzNAoKTWUgYW5kIFJhZmFlbCBoYXZlIGJlZW4gZGlzY3Vzc2luZyB0aGVz
+ZSB0b3BpY3MgaGlzdG9yaWNhbGx5IGFzIHdlbGwuCkkgZG9uJ3Qgd2FudCB0byBnZXQgdGhhdCBk
+aXNjdXNzaW9uIHN0YXJ0ZWQgYWdhaW4gaGVyZS4KCklmIHlvdXIgZGV2aWNlIGlzIGF0dGFjaGVk
+IHRvIHRoZSBQQ0kgYnVzIG9yIHRoZSBBQ1BJIFBNIGRvbWFpbiAoYW5kCmFsc28gZ2V0cyBydW50
+aW1lIFBNIGVuYWJsZWQpLCB0aGVuIEkgc3VnZ2VzdCB5b3UgdG8gc3RpY2sgdG8gdGhlCmN1cnJl
+bnRseSBzdWdnZXN0ZWQgYXBwcm9hY2guIE90aGVyd2lzZSBpdCBzaG91bGQgYmUgcGVyZmVjdGx5
+IGZpbmUgdG8Kc3dpdGNoIHRvIHRoZSAqZm9yY2UgaGVscGVycy4KCktpbmQgcmVnYXJkcwpVZmZl
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVu
+byBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xp
+c3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
