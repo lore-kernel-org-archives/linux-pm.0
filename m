@@ -1,32 +1,51 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH v6 16/16] cpupower, x86: Add Hygon Dhyana support
-Date: Mon, 1 Oct 2018 13:38:32 -0600
-Message-ID: <8db5f167-3dec-5342-5430-ade222848c74@kernel.org>
-References: <cover.1536550549.git.puwen@hygon.cn>
- <c26bcce9f41bee8b6921f67e6171a49b17010b8d.1536550550.git.puwen@hygon.cn>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH] cpufreq: dt-platdev: mark RK3399 as having separate policies
+ per cluster
+Date: Mon, 1 Oct 2018 13:21:53 -0700
+Message-ID: <20181001202153.GA240123@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c26bcce9f41bee8b6921f67e6171a49b17010b8d.1536550550.git.puwen@hygon.cn>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pu Wen <puwen@hygon.cn>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, thomas.lendacky@amd.com, bp@alien8.de, pbonzini@redhat.com, trenn@suse.com
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-pm@vger.kernel.org, Shuah Khan <shuah@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Heiko Stuebner <heiko@sntech.de>, Derek Basehore <dbasehore@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/10/2018 07:20 AM, Pu Wen wrote:
-> Tool cpupower is useful to get CPU frequency information and monitor
-> power stats on Hygon Dhyana platforms. So add Hygon Dhyana support to
-> it by checking vendor and family to share the code path of AMD family
-> 17h.
-> 
-> Signed-off-by: Pu Wen <puwen@hygon.cn>
+RK3399 has one cluster with 4 small cores, and another one with 2 big
+cores, with cores in different clusters having different OPPs and thus
+different policies. Let's enable this via "have_governor_per_policy"
+platform data.
 
-Looks good to me. I am assuming it will go into x86 with the rest of the
-series.
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
 
-Acked-by: Shuah Khan (Samsung OSG) <shuah@kernel.org>
+Not tested, but we had a patch unconditionally enabling
+CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag in tree we used to ship devices
+based on RK3399 platform. 
 
-thanks,
--- Shuah
+ drivers/cpufreq/cpufreq-dt-platdev.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index fe14c57de6ca..040ec0f711f9 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -78,7 +78,10 @@ static const struct of_device_id whitelist[] __initconst = {
+ 	{ .compatible = "rockchip,rk3328", },
+ 	{ .compatible = "rockchip,rk3366", },
+ 	{ .compatible = "rockchip,rk3368", },
+-	{ .compatible = "rockchip,rk3399", },
++	{ .compatible = "rockchip,rk3399",
++	  .data = &(struct cpufreq_dt_platform_data)
++		{ .have_governor_per_policy = true, },
++	},
+ 
+ 	{ .compatible = "st-ericsson,u8500", },
+ 	{ .compatible = "st-ericsson,u8540", },
+-- 
+2.19.0.605.g01d371f741-goog
+
+
+-- 
+Dmitry
