@@ -1,76 +1,108 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH v16 0/5] iommu/arm-smmu: Add runtime pm/sleep support
-Date: Mon, 1 Oct 2018 14:36:24 +0530
-Message-ID: <CAFp+6iFzU3vG+HZ-7drNG7fyv6PY-W-9To5-rZeLo7M3p4=2rg@mail.gmail.com>
-References: <20180830144541.17740-1-vivek.gautam@codeaurora.org> <20180928135718.GA1599@brain-police>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v16 1/5] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Mon, 1 Oct 2018 11:38:02 +0200
+Message-ID: <CAPDyKFrCWaeDLbmbrRb23V_mRk8doBjM3u2X9tm0XNXm=-n5vA@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-2-vivek.gautam@codeaurora.org>
+ <CAPDyKFohpvEMfDoDooYEyxPMeQ+9dU71qz7ZAZxQ1rzyW-w8iA@mail.gmail.com>
+ <CAFp+6iHZysBmMZj+pZghPocEwDzU7KfR1gLQAQRBui+-gdiSTQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180928135718.GA1599@brain-police>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, alex.williamson@redhat.com, Linux PM <linux-pm@vger.kernel.org>, sboyd@kernel.org, freedreno <freedreno@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, open list <linux-kernel@vger.kernel.org>, "list@263.net:IOMMU DRIVERS <iommu@lists.linux-foundation.org>, Joerg
-        Roedel <joro@8bytes.org>," <iommu@lists.linux-foundation.org>, robh+dt <robh+dt@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Robin Murphy <robin.murphy@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAFp+6iHZysBmMZj+pZghPocEwDzU7KfR1gLQAQRBui+-gdiSTQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Will,
-
-On Fri, Sep 28, 2018 at 7:27 PM Will Deacon <will.deacon@arm.com> wrote:
->
-> Hi Vivek,
->
-> On Thu, Aug 30, 2018 at 08:15:36PM +0530, Vivek Gautam wrote:
-> > This series provides the support for turning on the arm-smmu's
-> > clocks/power domains using runtime pm. This is done using
-> > device links between smmu and client devices. The device link
-> > framework keeps the two devices in correct order for power-cycling
-> > across runtime PM or across system-wide PM.
-> >
-> > With addition of a new device link flag DL_FLAG_AUTOREMOVE_SUPPLIER [7],
-> > the device links created between arm-smmu and its clients will be
-> > automatically purged when arm-smmu driver unbinds from its device.
-> >
-> > As not all implementations support clock/power gating, we are checking
-> > for a valid 'smmu->dev's pm_domain' to conditionally enable the runtime
-> > power management for such smmu implementations that can support it.
-> > Otherwise, the clocks are turned to be always on in .probe until .remove.
-> > With conditional runtime pm now, we avoid touching dev->power.lock
-> > in fastpaths for smmu implementations that don't need to do anything
-> > useful with pm_runtime.
-> > This lets us to use the much-argued pm_runtime_get_sync/put_sync()
-> > calls in map/unmap callbacks so that the clients do not have to
-> > worry about handling any of the arm-smmu's power.
-> >
-> > This series also adds support for Qcom's arm-smmu-v2 variant that
-> > has different clocks and power requirements.
-> >
-> > Previous version of this patch series is @ [1].
-> >
-> > Build tested the series based on 4.19-rc1.
->
-> I'm going to send my pull request to Joerg early next week (probably
-> Monday), but I'm not keen to include this whilst it has outstanding comments
-> from Ulf. Your errata workaround patch is in a similar situation, with
-> outstanding comments from Robin.
-
-I am going to address Ulf's comments for pm_runtime_force_suspend/resume()
-calls in system sleep callbacks and respin the series unless he has any more
-comments regarding the early/late nature of suspend/resume.
-So will it do if I respin the series today after waiting for Ulf?
-
-The workaround series is going for a discussion now, so i think it can wait.
-Thanks
-
-Best regards
-Vivek
->
-> Will
-> _______________________________________________
-> iommu mailing list
-> iommu@lists.linux-foundation.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
-
-
---
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+T24gMSBPY3RvYmVyIDIwMTggYXQgMDc6NDksIFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNv
+ZGVhdXJvcmEub3JnPiB3cm90ZToKPiBISSBVbGYsCj4KPiBPbiBGcmksIFNlcCAyOCwgMjAxOCBh
+dCA1OjMwIFBNIFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPiB3cm90ZToKPj4K
+Pj4gT24gMzAgQXVndXN0IDIwMTggYXQgMTY6NDUsIFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFt
+QGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPj4gPiBGcm9tOiBTcmljaGFyYW4gUiA8c3JpY2hhcmFu
+QGNvZGVhdXJvcmEub3JnPgo+PiA+Cj4+ID4gVGhlIHNtbXUgbmVlZHMgdG8gYmUgZnVuY3Rpb25h
+bCBvbmx5IHdoZW4gdGhlIHJlc3BlY3RpdmUKPj4gPiBtYXN0ZXIncyB1c2luZyBpdCBhcmUgYWN0
+aXZlLiBUaGUgZGV2aWNlX2xpbmsgZmVhdHVyZQo+PiA+IGhlbHBzIHRvIHRyYWNrIHN1Y2ggZnVu
+Y3Rpb25hbCBkZXBlbmRlbmNpZXMsIHNvIHRoYXQgdGhlCj4+ID4gaW9tbXUgZ2V0cyBwb3dlcmVk
+IHdoZW4gdGhlIG1hc3RlciBkZXZpY2UgZW5hYmxlcyBpdHNlbGYKPj4gPiB1c2luZyBwbV9ydW50
+aW1lLiBTbyBieSBhZGFwdGluZyB0aGUgc21tdSBkcml2ZXIgZm9yCj4+ID4gcnVudGltZSBwbSwg
+YWJvdmUgc2FpZCBkZXBlbmRlbmN5IGNhbiBiZSBhZGRyZXNzZWQuCj4+ID4KPj4gPiBUaGlzIHBh
+dGNoIGFkZHMgdGhlIHBtIHJ1bnRpbWUvc2xlZXAgY2FsbGJhY2tzIHRvIHRoZQo+PiA+IGRyaXZl
+ciBhbmQgYWxzbyB0aGUgZnVuY3Rpb25zIHRvIHBhcnNlIHRoZSBzbW11IGNsb2Nrcwo+PiA+IGZy
+b20gRFQgYW5kIGVuYWJsZSB0aGVtIGluIHJlc3VtZS9zdXNwZW5kLgo+PiA+Cj4+ID4gQWxzbywg
+d2hpbGUgd2UgZW5hYmxlIHRoZSBydW50aW1lIHBtIGFkZCBhIHBtIHNsZWVwIHN1c3BlbmQKPj4g
+PiBjYWxsYmFjayB0aGF0IHB1c2hlcyBkZXZpY2VzIHRvIGxvdyBwb3dlciBzdGF0ZSBieSB0dXJu
+aW5nCj4+ID4gdGhlIGNsb2NrcyBvZmYgaW4gYSBzeXN0ZW0gc2xlZXAuCj4+ID4gQWxzbyBhZGQg
+Y29ycmVzcG9uZGluZyBjbG9jayBlbmFibGUgcGF0aCBpbiByZXN1bWUgY2FsbGJhY2suCj4+ID4K
+Pj4gPiBTaWduZWQtb2ZmLWJ5OiBTcmljaGFyYW4gUiA8c3JpY2hhcmFuQGNvZGVhdXJvcmEub3Jn
+Pgo+PiA+IFNpZ25lZC1vZmYtYnk6IEFyY2hpdCBUYW5lamEgPGFyY2hpdHRAY29kZWF1cm9yYS5v
+cmc+Cj4+ID4gW3ZpdmVrOiByZXdvcmsgZm9yIGNsb2NrIGFuZCBwbSBvcHNdCj4+ID4gU2lnbmVk
+LW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+Cj4+ID4g
+UmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4+ID4gVGVzdGVk
+LWJ5OiBTcmluaXZhcyBLYW5kYWdhdGxhIDxzcmluaXZhcy5rYW5kYWdhdGxhQGxpbmFyby5vcmc+
+Cj4+ID4gLS0tCj4+ID4gIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDc3ICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLQo+PiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgNzQgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKPj4gPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCj4+Cj4+IFsu
+Li5dCj4+Cj4+ID4gLXN0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcG1fcmVzdW1l
+KHN0cnVjdCBkZXZpY2UgKmRldikKPj4gPiArc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1f
+c21tdV9ydW50aW1lX3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+ID4gIHsKPj4gPiAgICAg
+ICAgIHN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsK
+Pj4gPiArICAgICAgIGludCByZXQ7Cj4+ID4gKwo+PiA+ICsgICAgICAgcmV0ID0gY2xrX2J1bGtf
+ZW5hYmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPj4gPiArICAgICAgIGlmIChyZXQp
+Cj4+ID4gKyAgICAgICAgICAgICAgIHJldHVybiByZXQ7Cj4+ID4KPj4gPiAgICAgICAgIGFybV9z
+bW11X2RldmljZV9yZXNldChzbW11KTsKPj4gPiArCj4+ID4gICAgICAgICByZXR1cm4gMDsKPj4g
+PiAgfQo+PiA+Cj4+ID4gLXN0YXRpYyBTSU1QTEVfREVWX1BNX09QUyhhcm1fc21tdV9wbV9vcHMs
+IE5VTEwsIGFybV9zbW11X3BtX3Jlc3VtZSk7Cj4+ID4gK3N0YXRpYyBpbnQgX19tYXliZV91bnVz
+ZWQgYXJtX3NtbXVfcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKPj4gPiArewo+
+PiA+ICsgICAgICAgc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IGRldl9nZXRfZHJ2ZGF0
+YShkZXYpOwo+PiA+ICsKPj4gPiArICAgICAgIGNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVtX2Ns
+a3MsIHNtbXUtPmNsa3MpOwo+PiA+ICsKPj4gPiArICAgICAgIHJldHVybiAwOwo+PiA+ICt9Cj4+
+ID4gKwo+PiA+ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3BtX3Jlc3VtZShz
+dHJ1Y3QgZGV2aWNlICpkZXYpCj4+ID4gK3sKPj4gPiArICAgICAgIGlmIChwbV9ydW50aW1lX3N1
+c3BlbmRlZChkZXYpKQo+PiA+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsKPj4KPj4gTG9va3Mg
+bGlrZSB5b3Ugc2hvdWxkIGJlIGFibGUgdXNlIHBtX3J1bnRpbWVfZm9yY2VfcmVzdW1lKCksIGlu
+c3RlYWQKPj4gb2YgdXNpbmcgdGhpcyBsb2NhbCB0cmljay4gVW5sZXNzIEkgYW0gbWlzc2luZyBz
+b21ldGhpbmcsIG9mIGNvdXJzZS4KPj4KPj4gSW4gb3RoZXIgd29yZHMsIGp1c3QgYXNzaWduIHRo
+ZSBzeXN0ZW0gc2xlZXAgY2FsbGJhY2tzIGZvciByZXN1bWUsIHRvCj4+IHBtX3J1bnRpbWVfZm9y
+Y2VfcmVzdW1lKCkuIEFuZCB2aWNlIHZlcnNlIGZvciB0aGUgc3lzdGVtIHN1c3BlbmQKPj4gY2Fs
+bGJhY2tzLCBwbV9ydW50aW1lX2ZvcmNlX3N1c3BlbmQoKSwgb2YgY291cnNlLgo+Cj4gVGhhbmtz
+IGZvciB0aGUgcmV2aWV3LiBJIHdpbGwgY2hhbmdlIHRoaXMgYXMgc3VnZ2VzdGVkLgo+Cj4+Cj4+
+ID4gKwo+PiA+ICsgICAgICAgcmV0dXJuIGFybV9zbW11X3J1bnRpbWVfcmVzdW1lKGRldik7Cj4+
+ID4gK30KPj4gPiArCj4+ID4gK3N0YXRpYyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcG1f
+c3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYpCj4+ID4gK3sKPj4gPiArICAgICAgIGlmIChwbV9y
+dW50aW1lX3N1c3BlbmRlZChkZXYpKQo+PiA+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsKPj4g
+PiArCj4+ID4gKyAgICAgICByZXR1cm4gYXJtX3NtbXVfcnVudGltZV9zdXNwZW5kKGRldik7Cj4+
+ID4gK30KPj4gPiArCj4+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBhcm1fc21t
+dV9wbV9vcHMgPSB7Cj4+ID4gKyAgICAgICBTRVRfU1lTVEVNX1NMRUVQX1BNX09QUyhhcm1fc21t
+dV9wbV9zdXNwZW5kLCBhcm1fc21tdV9wbV9yZXN1bWUpCj4+Cj4+IEkgYW0gd29uZGVyaW5nIGlm
+IHVzaW5nIHRoZSAtPnN1c3BlbmR8cmVzdW1lKCkgY2FsbGJhY2sgaXMgcmVhbGx5Cj4+ICJsYXRl
+L2Vhcmx5IiBlbm91Z2ggaW4gdGhlIGRldmljZSBzdXNwZW5kIHBoYXNlPwo+Pgo+PiBPdGhlcnMg
+aXMgdXNpbmcgdGhlIG5vaXJxIHBoYXNlIGFuZCBzb21lIGlzIGV2ZW4gdXNpbmcgdGhlIHN5c2Nv
+cmUKPj4gb3BzLiBPZiBjb3Vyc2UgaXQgZGVwZW5kcyBvbiB0aGUgYmVoYXZpb3Igb2YgdGhlIGNv
+bnN1bWVycyBvZiBpb21tdQo+PiBkZXZpY2UsIGFuZCBJIGd1ZXNzIG5vdCBldmVyeW9uZSBpcyB1
+c2luZyBkZXZpY2UgbGlua3MsIHdoaWNoIGZvciBzdXJlCj4+IGltcHJvdmVzIHRoaW5ncyBpbiB0
+aGlzIHJlZ2FyZHMgYXMgd2VsbC4KPgo+IFdlbGwgeWVzLCBhcyB5b3Ugc2FpZCB0aGUgZGV2aWNl
+IGxpbmtzIHNob3VsZCBiZSBhYmxlIHRvIHRha2UgY2FyZSBvZgo+IG1haW50YWluaW5nIHRoZSBj
+b3JyZWN0IHN1c3BlbmQvcmVzdW1lIG9yZGVyIG9mIHNtbXUgYW5kIGl0cyBjbGllbnRzLAo+IG9y
+IGFtIEkgbWlzc2luZyB5b3VyIHBvaW50IGhlcmU/Cj4gTGV0IG1lIGtub3cgYW5kIEkgd2lsbCBi
+ZSBoYXBweSB0byBpbmNvcnBvcmF0ZSBhbnkgc3VnZ2VzdGlvbnMuCj4gVGhhbmtzCgpJZiBpdCB3
+b3JrcyBmaW5lLCB0aGVuIHlvdSBtYXkga2VlcCBpdCBhcyBpcy4KCkp1c3Qgd2FudGVkIHRvIHBv
+aW50IG91dCB0aGF0IGlmIGFueSBjb25zdW1lcnMgcmVsaWVzIG9uIHRoZSBpb21tdSB0bwpvcGVy
+YXRpb25hbCB0byBzYXkgdW50aWwgdGhlIHN1c3BlbmQtbGF0ZSBwaGFzZSwgdGhlbiB0aGlzIGRv
+ZXNuJ3QKcGxheS4gVGhlbiB5b3UgbmVlZCB0byBtb3ZlIHlvdXIgY2FsbGJhY2tzIHRvIHRoZSBj
+b3JyZXNwb25kaW5nIHNhbWUKcGhhc2UuCgpbLi4uXQoKS2luZCByZWdhcmRzClVmZmUKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxp
+bmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
