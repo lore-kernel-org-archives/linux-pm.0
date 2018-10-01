@@ -1,37 +1,98 @@
-From: Rob Herring <robh@kernel.org>
-Subject: [PATCH] power: reset: Convert to using %pOFn instead of device_node.name
-Date: Mon,  1 Oct 2018 16:43:50 -0500
-Message-ID: <20181001214351.13230-3-robh@kernel.org>
-References: <20181001214351.13230-1-robh@kernel.org>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Mon, 1 Oct 2018 14:51:18 -0700
+Message-ID: <d9f3d732-0a70-f823-d8e0-2d1b10d82e00@codeaurora.org>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <20180926143432.GH10761@jcrouse-lnx.qualcomm.com>
+ <1ae0a36a-1178-4db5-1ae9-8f19e561a18b@codeaurora.org>
+ <20181001212608.GF31641@jcrouse-lnx.qualcomm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181001214351.13230-1-robh@kernel.org>
+In-Reply-To: <20181001212608.GF31641@jcrouse-lnx.qualcomm.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, robdclark@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-In preparation to remove the node name pointer from struct device_node,
-convert printf users to use the %pOFn format specifier.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/power/reset/axxia-reset.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
-index 4e4cd1c8fe50..b16013265142 100644
---- a/drivers/power/reset/axxia-reset.c
-+++ b/drivers/power/reset/axxia-reset.c
-@@ -65,7 +65,7 @@ static int axxia_reset_probe(struct platform_device *pdev)
- 
- 	syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
- 	if (IS_ERR(syscon)) {
--		pr_err("%s: syscon lookup failed\n", dev->of_node->name);
-+		pr_err("%pOFn: syscon lookup failed\n", dev->of_node);
- 		return PTR_ERR(syscon);
- 	}
- 
+On 10/01/2018 02:26 PM, Jordan Crouse wrote:
+> On Mon, Oct 01, 2018 at 01:56:32PM -0700, Saravana Kannan wrote:
+>>
+>> On 09/26/2018 07:34 AM, Jordan Crouse wrote:
+>>> On Tue, Sep 25, 2018 at 01:02:15PM -0500, Rob Herring wrote:
+>>>> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+>>>>> This binding is intended to represent the relations between the interconnect
+>>>>> controllers (providers) and consumer device nodes. It will allow creating links
+>>>>> between consumers and interconnect paths (exposed by interconnect providers).
+>>>> As I mentioned in person, I want to see other SoC families using this
+>>>> before accepting. They don't have to be ready for upstream, but WIP
+>>>> patches or even just a "yes, this works for us and we're going to use
+>>>> this binding on X".
+>>>>
+>>>> Also, I think the QCom GPU use of this should be fully sorted out. Or
+>>>> more generically how this fits into OPP binding which seems to be never
+>>>> ending extended...
+>>> This is a discussion I wouldn't mind having now.  To jog memories, this is what
+>>> I posted a few weeks ago:
+>>>
+>>> https://patchwork.freedesktop.org/patch/246117/
+>>>
+>>> This seems like the easiest way to me to tie the frequency and the bandwidth
+>>> quota together for GPU devfreq scaling but I'm not married to the format and
+>>> I'll happily go a few rounds on the bikeshed if we can get something we can
+>>> be happy with.
+>>>
+>>> Jordan
+>> Been meaning to send this out for a while, but caught up with other stuff.
+>>
+>> That GPU BW patch is very specific to device to device mapping and
+>> doesn't work well for different use cases (Eg: those that  can
+>> calculate based on use case, etc).
+>>
+>> Interconnect paths have different BW (bandwidth) operating points
+>> that they can support. For example: 1 GB/s, 1.7 GB/s, 5GB/s, etc.
+>> Having a mapping from GPU or CPU to those are fine/necessary, but we
+>> still need a separate BW OPP table for interconnect paths to list
+>> what they can actually support.
+>>
+>> Two different ways we could represent BW OPP tables for interconnect paths:
+>> 1.  Represent interconnect paths (CPU to DDR, GPU to DDR, etc) as
+>> devices and have OPPs for those devices.
+>>
+>> 2. We can have a "interconnect-opp-tables" DT binding similar to
+>> "interconnects" and "interconnect-names". So if a device GPU or
+>> Video decoder or I2C device needs to vote on an interconnect path,
+>> they can also list the OPP tables that those paths can support.
+>>
+>> I know Rob doesn't like (1). But I'm hoping at least (2) is
+>> acceptable. I'm open to other suggestions too.
+>>
+>> Both (1) and (2) need BW OPP tables similar to frequency OPP tables.
+>> That should be easy to add and Viresh is open to that. I'm open to
+>> other options too, but the fundamental missing part is how to tie a
+>> list of BW OPPs to interconnect paths in DT.
+>>
+>> Once we have one of the above two options, we can use the
+>> required-opps field (already present in kernel) for the mapping
+>> between GPU to a particular BW need (suggested by Viresh during an
+>> in person conversation).
+> Assuming we are willing to maintain the bandwidth OPP tables and the
+> names / phandles needed to describe a 1:1 GPU -> bandwidth mapping
+> I'm okay with required-opps but for the sake of argument how would
+> required-opps work for a device that needs to vote multiple paths
+> for a given OPP?
+
+You can list multiple required-opps per device OPP. It's an array of 
+phandles to OPP entries in other tables.
+
+-Saravana
+
 -- 
-2.17.1
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
