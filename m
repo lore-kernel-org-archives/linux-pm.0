@@ -1,7 +1,7 @@
 From: Brian Masney <masneyb@onstation.org>
-Subject: [PATCH RFC 1/5] dt-bindings: power: supply: bq24190_charger: add bq24192 and usb-otg-vbus
-Date: Mon,  1 Oct 2018 01:30:01 -0400
-Message-ID: <20181001053005.18906-2-masneyb@onstation.org>
+Subject: [PATCH RFC 4/5] power: supply: bq24190_charger: add support for extcon and GPIO for USB OTG support
+Date: Mon,  1 Oct 2018 01:30:04 -0400
+Message-ID: <20181001053005.18906-5-masneyb@onstation.org>
 References: <20181001053005.18906-1-masneyb@onstation.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181001053005.18906-1-masneyb@onstation.org>
@@ -9,38 +9,125 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: andy.gross@linaro.org, sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, david.brown@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, jonathan@marek.ca
 List-Id: linux-pm@vger.kernel.org
 
-Add support for the ti,bq24192 variant and a child node for the
-usb-otg-vbus regulator.
+From: Jonathan Marek <jonathan@marek.ca>
 
+Add extcon support so that we can notify USB drivers of cable state
+changes. This also adds support for an optional GPIO that is changed
+depending on the cable state.
+
+This patch makes the USB OTG work correctly on a LG Nexus 5
+(hammerhead) phone.
+
+Signed-off-by: Jonathan Marek <jonathan@marek.ca>
+[masneyb@onstation.org: Fixed EXTCON cable state and USB networking
+when the cable is unplugged and plugged back in, checkpatch cleanups.]
 Signed-off-by: Brian Masney <masneyb@onstation.org>
+Tested-by: Brian Masney <masneyb@onstation.org>
 ---
- Documentation/devicetree/bindings/power/supply/bq24190.txt | 7 +++++++
- 1 file changed, 7 insertions(+)
+See my cover letter for a question about how I can convert patch #5 over
+to use a gpio-hog.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-index 9e517d307070..8f2560824a97 100644
---- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-@@ -3,6 +3,7 @@ TI BQ24190 Li-Ion Battery Charger
- Required properties:
- - compatible: contains one of the following:
-     * "ti,bq24190"
-+    * "ti,bq24192"
-     * "ti,bq24192i"
- - reg: integer, I2C address of the charger.
- - interrupts[-extended]: configuration for charger INT pin.
-@@ -19,6 +20,12 @@ Optional properties:
- - ti,system-minimum-microvolt: when power is connected and the battery is below
-   minimum system voltage, the system will be regulated above this setting.
+ drivers/power/supply/bq24190_charger.c | 45 +++++++++++++++++++++++++-
+ 1 file changed, 44 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 933d1cded697..36348668e48a 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -21,6 +21,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
++#include <linux/extcon-provider.h>
  
-+child nodes:
-+- usb-otg-vbus:
-+  Usage: optional
-+  Description: Regulator that is used to control the VBUS voltage direction for
-+               either USB host mode or for charging on the OTG port.
+ #define	BQ24190_MANUFACTURER	"Texas Instruments"
+ 
+@@ -159,6 +160,8 @@
+ struct bq24190_dev_info {
+ 	struct i2c_client		*client;
+ 	struct device			*dev;
++	struct extcon_dev		*edev;
++	struct gpio_desc		*gpio_otg;
+ 	struct power_supply		*charger;
+ 	struct power_supply		*battery;
+ 	struct delayed_work		input_current_limit_work;
+@@ -174,6 +177,11 @@ struct bq24190_dev_info {
+ 	u8				watchdog;
+ };
+ 
++static const unsigned int bq24190_usb_extcon_cable[] = {
++	EXTCON_USB,
++	EXTCON_NONE,
++};
 +
- Notes:
- - Some circuit boards wire the chip's "OTG" pin high (enabling 500mA default
-   charge current on USB SDP ports, among other features). To simulate this on
+ /*
+  * The tables below provide a 2-way mapping for the value that goes in
+  * the register field and the real-world value that it represents.
+@@ -1528,6 +1536,23 @@ static const struct power_supply_desc bq24190_battery_desc = {
+ 	.property_is_writeable	= bq24190_battery_property_is_writeable,
+ };
+ 
++static int bq24190_configure_usb_otg(struct bq24190_dev_info *bdi, u8 ss_reg)
++{
++	bool otg_enabled;
++	int ret;
++
++	otg_enabled = !!(ss_reg & BQ24190_REG_SS_VBUS_STAT_MASK);
++	if (bdi->gpio_otg)
++		gpiod_set_value_cansleep(bdi->gpio_otg, !otg_enabled);
++
++	ret = extcon_set_state_sync(bdi->edev, EXTCON_USB, otg_enabled);
++	if (ret < 0)
++		dev_err(bdi->dev, "Can't set extcon state to %d: %d\n",
++			otg_enabled, ret);
++
++	return ret;
++}
++
+ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ {
+ 	const u8 battery_mask_ss = BQ24190_REG_SS_CHRG_STAT_MASK;
+@@ -1597,8 +1622,10 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ 		bdi->ss_reg = ss_reg;
+ 	}
+ 
+-	if (alert_charger || alert_battery)
++	if (alert_charger || alert_battery) {
+ 		power_supply_changed(bdi->charger);
++		bq24190_configure_usb_otg(bdi, ss_reg);
++	}
+ 	if (alert_battery && bdi->battery)
+ 		power_supply_changed(bdi->battery);
+ 
+@@ -1729,6 +1756,18 @@ static int bq24190_probe(struct i2c_client *client,
+ 		return -EINVAL;
+ 	}
+ 
++	bdi->gpio_otg = devm_gpiod_get_optional(dev, "otg-en", GPIOD_OUT_LOW);
++	if (IS_ERR(bdi->gpio_otg))
++		return PTR_ERR(bdi->gpio_otg);
++
++	bdi->edev = devm_extcon_dev_allocate(dev, bq24190_usb_extcon_cable);
++	if (IS_ERR(bdi->edev))
++		return PTR_ERR(bdi->edev);
++
++	ret = devm_extcon_dev_register(dev, bdi->edev);
++	if (ret < 0)
++		return ret;
++
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_use_autosuspend(dev);
+ 	pm_runtime_set_autosuspend_delay(dev, 600);
+@@ -1775,6 +1814,10 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_charger;
+ 	}
+ 
++	ret = bq24190_configure_usb_otg(bdi, bdi->ss_reg);
++	if (ret < 0)
++		goto out_charger;
++
+ 	ret = bq24190_sysfs_create_group(bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Can't create sysfs entries\n");
 -- 
 2.17.1
