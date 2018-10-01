@@ -1,126 +1,119 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: menu: Replace data->predicted_us with local variable
-Date: Mon, 01 Oct 2018 11:56:21 +0200
-Message-ID: <2889908.NE4FqvqlhV@aspire.rjw.lan>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v16 1/5] iommu/arm-smmu: Add
+ pm_runtime/sleep ops
+Date: Mon, 1 Oct 2018 15:51:56 +0530
+Message-ID: <CAFp+6iH3Hby5EnfKDtF6s1wn2FT-s9o=00NF6_bDnP_+qJ3k9w@mail.gmail.com>
+References: <20180830144541.17740-1-vivek.gautam@codeaurora.org>
+ <20180830144541.17740-2-vivek.gautam@codeaurora.org>
+ <CAPDyKFohpvEMfDoDooYEyxPMeQ+9dU71qz7ZAZxQ1rzyW-w8iA@mail.gmail.com>
+ <CAFp+6iHZysBmMZj+pZghPocEwDzU7KfR1gLQAQRBui+-gdiSTQ@mail.gmail.com>
+ <CAPDyKFrCWaeDLbmbrRb23V_mRk8doBjM3u2X9tm0XNXm=-n5vA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <CAPDyKFrCWaeDLbmbrRb23V_mRk8doBjM3u2X9tm0XNXm=-n5vA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-The predicted_us field in struct menu_device is only accessed in
-menu_select(), so replace it with a local variable in that function.
-
-With that, stop using expected_interval instead of predicted_us to
-store the new predicted idle duration value if it is set to the
-selected state's target residency which is quite confusing.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |   23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -124,7 +124,6 @@ struct menu_device {
- 	int             tick_wakeup;
- 
- 	unsigned int	next_timer_us;
--	unsigned int	predicted_us;
- 	unsigned int	bucket;
- 	unsigned int	correction_factor[BUCKETS];
- 	unsigned int	intervals[INTERVALS];
-@@ -290,6 +289,7 @@ static int menu_select(struct cpuidle_dr
- 	int idx;
- 	unsigned int interactivity_req;
- 	unsigned int expected_interval;
-+	unsigned int predicted_us;
- 	unsigned long nr_iowaiters, cpu_load;
- 	ktime_t delta_next;
- 
-@@ -315,7 +315,7 @@ static int menu_select(struct cpuidle_dr
- 	 * operands are 32 bits.
- 	 * Make sure to round up for half microseconds.
- 	 */
--	data->predicted_us = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_us *
-+	predicted_us = DIV_ROUND_CLOSEST_ULL((uint64_t)data->next_timer_us *
- 					 data->correction_factor[data->bucket],
- 					 RESOLUTION * DECAY);
- 
-@@ -341,7 +341,7 @@ static int menu_select(struct cpuidle_dr
- 	/*
- 	 * Use the lowest expected idle interval to pick the idle state.
- 	 */
--	data->predicted_us = min(data->predicted_us, expected_interval);
-+	predicted_us = min(predicted_us, expected_interval);
- 
- 	if (tick_nohz_tick_stopped()) {
- 		/*
-@@ -352,19 +352,18 @@ static int menu_select(struct cpuidle_dr
- 		 * the known time till the closest timer event for the idle
- 		 * state selection.
- 		 */
--		if (data->predicted_us < TICK_USEC)
--			data->predicted_us = ktime_to_us(delta_next);
-+		if (predicted_us < TICK_USEC)
-+			predicted_us = ktime_to_us(delta_next);
- 	} else {
- 		/*
- 		 * Use the performance multiplier and the user-configurable
- 		 * latency_req to determine the maximum exit latency.
- 		 */
--		interactivity_req = data->predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
-+		interactivity_req = predicted_us / performance_multiplier(nr_iowaiters, cpu_load);
- 		if (latency_req > interactivity_req)
- 			latency_req = interactivity_req;
- 	}
- 
--	expected_interval = data->predicted_us;
- 	/*
- 	 * Find the idle state with the lowest power while satisfying
- 	 * our constraints.
-@@ -378,8 +377,8 @@ static int menu_select(struct cpuidle_dr
- 			continue;
- 		if (idx == -1)
- 			idx = i; /* first enabled state */
--		if (s->target_residency > data->predicted_us) {
--			if (data->predicted_us < TICK_USEC)
-+		if (s->target_residency > predicted_us) {
-+			if (predicted_us < TICK_USEC)
- 				break;
- 
- 			if (!tick_nohz_tick_stopped()) {
-@@ -389,7 +388,7 @@ static int menu_select(struct cpuidle_dr
- 				 * tick in that case and let the governor run
- 				 * again in the next iteration of the loop.
- 				 */
--				expected_interval = drv->states[idx].target_residency;
-+				predicted_us = drv->states[idx].target_residency;
- 				break;
- 			}
- 
-@@ -412,7 +411,7 @@ static int menu_select(struct cpuidle_dr
- 			 * expected idle duration so that the tick is retained
- 			 * as long as that target residency is low enough.
- 			 */
--			expected_interval = drv->states[idx].target_residency;
-+			predicted_us = drv->states[idx].target_residency;
- 			break;
- 		}
- 		idx = i;
-@@ -426,7 +425,7 @@ static int menu_select(struct cpuidle_dr
- 	 * expected idle duration is shorter than the tick period length.
- 	 */
- 	if (((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) ||
--	     expected_interval < TICK_USEC) && !tick_nohz_tick_stopped()) {
-+	     predicted_us < TICK_USEC) && !tick_nohz_tick_stopped()) {
- 		unsigned int delta_next_us = ktime_to_us(delta_next);
- 
- 		*stop_tick = false;
+T24gTW9uLCBPY3QgMSwgMjAxOCBhdCAzOjA5IFBNIFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBs
+aW5hcm8ub3JnPiB3cm90ZToKPgo+IE9uIDEgT2N0b2JlciAyMDE4IGF0IDA3OjQ5LCBWaXZlayBH
+YXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4gd3JvdGU6Cj4gPiBISSBVbGYsCj4g
+Pgo+ID4gT24gRnJpLCBTZXAgMjgsIDIwMTggYXQgNTozMCBQTSBVbGYgSGFuc3NvbiA8dWxmLmhh
+bnNzb25AbGluYXJvLm9yZz4gd3JvdGU6Cj4gPj4KPiA+PiBPbiAzMCBBdWd1c3QgMjAxOCBhdCAx
+Njo0NSwgVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+
+ID4+ID4gRnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KPiA+PiA+
+Cj4gPj4gPiBUaGUgc21tdSBuZWVkcyB0byBiZSBmdW5jdGlvbmFsIG9ubHkgd2hlbiB0aGUgcmVz
+cGVjdGl2ZQo+ID4+ID4gbWFzdGVyJ3MgdXNpbmcgaXQgYXJlIGFjdGl2ZS4gVGhlIGRldmljZV9s
+aW5rIGZlYXR1cmUKPiA+PiA+IGhlbHBzIHRvIHRyYWNrIHN1Y2ggZnVuY3Rpb25hbCBkZXBlbmRl
+bmNpZXMsIHNvIHRoYXQgdGhlCj4gPj4gPiBpb21tdSBnZXRzIHBvd2VyZWQgd2hlbiB0aGUgbWFz
+dGVyIGRldmljZSBlbmFibGVzIGl0c2VsZgo+ID4+ID4gdXNpbmcgcG1fcnVudGltZS4gU28gYnkg
+YWRhcHRpbmcgdGhlIHNtbXUgZHJpdmVyIGZvcgo+ID4+ID4gcnVudGltZSBwbSwgYWJvdmUgc2Fp
+ZCBkZXBlbmRlbmN5IGNhbiBiZSBhZGRyZXNzZWQuCj4gPj4gPgo+ID4+ID4gVGhpcyBwYXRjaCBh
+ZGRzIHRoZSBwbSBydW50aW1lL3NsZWVwIGNhbGxiYWNrcyB0byB0aGUKPiA+PiA+IGRyaXZlciBh
+bmQgYWxzbyB0aGUgZnVuY3Rpb25zIHRvIHBhcnNlIHRoZSBzbW11IGNsb2Nrcwo+ID4+ID4gZnJv
+bSBEVCBhbmQgZW5hYmxlIHRoZW0gaW4gcmVzdW1lL3N1c3BlbmQuCj4gPj4gPgo+ID4+ID4gQWxz
+bywgd2hpbGUgd2UgZW5hYmxlIHRoZSBydW50aW1lIHBtIGFkZCBhIHBtIHNsZWVwIHN1c3BlbmQK
+PiA+PiA+IGNhbGxiYWNrIHRoYXQgcHVzaGVzIGRldmljZXMgdG8gbG93IHBvd2VyIHN0YXRlIGJ5
+IHR1cm5pbmcKPiA+PiA+IHRoZSBjbG9ja3Mgb2ZmIGluIGEgc3lzdGVtIHNsZWVwLgo+ID4+ID4g
+QWxzbyBhZGQgY29ycmVzcG9uZGluZyBjbG9jayBlbmFibGUgcGF0aCBpbiByZXN1bWUgY2FsbGJh
+Y2suCj4gPj4gPgo+ID4+ID4gU2lnbmVkLW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBj
+b2RlYXVyb3JhLm9yZz4KPiA+PiA+IFNpZ25lZC1vZmYtYnk6IEFyY2hpdCBUYW5lamEgPGFyY2hp
+dHRAY29kZWF1cm9yYS5vcmc+Cj4gPj4gPiBbdml2ZWs6IHJld29yayBmb3IgY2xvY2sgYW5kIHBt
+IG9wc10KPiA+PiA+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNv
+ZGVhdXJvcmEub3JnPgo+ID4+ID4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJv
+bWl1bS5vcmc+Cj4gPj4gPiBUZXN0ZWQtYnk6IFNyaW5pdmFzIEthbmRhZ2F0bGEgPHNyaW5pdmFz
+LmthbmRhZ2F0bGFAbGluYXJvLm9yZz4KPiA+PiA+IC0tLQo+ID4+ID4gIGRyaXZlcnMvaW9tbXUv
+YXJtLXNtbXUuYyB8IDc3ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKystLQo+ID4+ID4gIDEgZmlsZSBjaGFuZ2VkLCA3NCBpbnNlcnRpb25zKCspLCAzIGRlbGV0
+aW9ucygtKQo+ID4+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBiL2Ry
+aXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+ID4+Cj4gPj4gWy4uLl0KPiA+Pgo+ID4+ID4gLXN0YXRp
+YyBpbnQgX19tYXliZV91bnVzZWQgYXJtX3NtbXVfcG1fcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRl
+dikKPiA+PiA+ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3J1bnRpbWVfcmVz
+dW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPiA+PiA+ICB7Cj4gPj4gPiAgICAgICAgIHN0cnVjdCBh
+cm1fc21tdV9kZXZpY2UgKnNtbXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKPiA+PiA+ICsgICAg
+ICAgaW50IHJldDsKPiA+PiA+ICsKPiA+PiA+ICsgICAgICAgcmV0ID0gY2xrX2J1bGtfZW5hYmxl
+KHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPiA+PiA+ICsgICAgICAgaWYgKHJldCkKPiA+
+PiA+ICsgICAgICAgICAgICAgICByZXR1cm4gcmV0Owo+ID4+ID4KPiA+PiA+ICAgICAgICAgYXJt
+X3NtbXVfZGV2aWNlX3Jlc2V0KHNtbXUpOwo+ID4+ID4gKwo+ID4+ID4gICAgICAgICByZXR1cm4g
+MDsKPiA+PiA+ICB9Cj4gPj4gPgo+ID4+ID4gLXN0YXRpYyBTSU1QTEVfREVWX1BNX09QUyhhcm1f
+c21tdV9wbV9vcHMsIE5VTEwsIGFybV9zbW11X3BtX3Jlc3VtZSk7Cj4gPj4gPiArc3RhdGljIGlu
+dCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50aW1lX3N1c3BlbmQoc3RydWN0IGRldmljZSAq
+ZGV2KQo+ID4+ID4gK3sKPiA+PiA+ICsgICAgICAgc3RydWN0IGFybV9zbW11X2RldmljZSAqc21t
+dSA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOwo+ID4+ID4gKwo+ID4+ID4gKyAgICAgICBjbGtfYnVs
+a19kaXNhYmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKPiA+PiA+ICsKPiA+PiA+ICsg
+ICAgICAgcmV0dXJuIDA7Cj4gPj4gPiArfQo+ID4+ID4gKwo+ID4+ID4gK3N0YXRpYyBpbnQgX19t
+YXliZV91bnVzZWQgYXJtX3NtbXVfcG1fcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPiA+PiA+
+ICt7Cj4gPj4gPiArICAgICAgIGlmIChwbV9ydW50aW1lX3N1c3BlbmRlZChkZXYpKQo+ID4+ID4g
+KyAgICAgICAgICAgICAgIHJldHVybiAwOwo+ID4+Cj4gPj4gTG9va3MgbGlrZSB5b3Ugc2hvdWxk
+IGJlIGFibGUgdXNlIHBtX3J1bnRpbWVfZm9yY2VfcmVzdW1lKCksIGluc3RlYWQKPiA+PiBvZiB1
+c2luZyB0aGlzIGxvY2FsIHRyaWNrLiBVbmxlc3MgSSBhbSBtaXNzaW5nIHNvbWV0aGluZywgb2Yg
+Y291cnNlLgo+ID4+Cj4gPj4gSW4gb3RoZXIgd29yZHMsIGp1c3QgYXNzaWduIHRoZSBzeXN0ZW0g
+c2xlZXAgY2FsbGJhY2tzIGZvciByZXN1bWUsIHRvCj4gPj4gcG1fcnVudGltZV9mb3JjZV9yZXN1
+bWUoKS4gQW5kIHZpY2UgdmVyc2UgZm9yIHRoZSBzeXN0ZW0gc3VzcGVuZAo+ID4+IGNhbGxiYWNr
+cywgcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKCksIG9mIGNvdXJzZS4KPiA+Cj4gPiBUaGFua3Mg
+Zm9yIHRoZSByZXZpZXcuIEkgd2lsbCBjaGFuZ2UgdGhpcyBhcyBzdWdnZXN0ZWQuCj4gPgo+ID4+
+Cj4gPj4gPiArCj4gPj4gPiArICAgICAgIHJldHVybiBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZShk
+ZXYpOwo+ID4+ID4gK30KPiA+PiA+ICsKPiA+PiA+ICtzdGF0aWMgaW50IF9fbWF5YmVfdW51c2Vk
+IGFybV9zbW11X3BtX3N1c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQo+ID4+ID4gK3sKPiA+PiA+
+ICsgICAgICAgaWYgKHBtX3J1bnRpbWVfc3VzcGVuZGVkKGRldikpCj4gPj4gPiArICAgICAgICAg
+ICAgICAgcmV0dXJuIDA7Cj4gPj4gPiArCj4gPj4gPiArICAgICAgIHJldHVybiBhcm1fc21tdV9y
+dW50aW1lX3N1c3BlbmQoZGV2KTsKPiA+PiA+ICt9Cj4gPj4gPiArCj4gPj4gPiArc3RhdGljIGNv
+bnN0IHN0cnVjdCBkZXZfcG1fb3BzIGFybV9zbW11X3BtX29wcyA9IHsKPiA+PiA+ICsgICAgICAg
+U0VUX1NZU1RFTV9TTEVFUF9QTV9PUFMoYXJtX3NtbXVfcG1fc3VzcGVuZCwgYXJtX3NtbXVfcG1f
+cmVzdW1lKQo+ID4+Cj4gPj4gSSBhbSB3b25kZXJpbmcgaWYgdXNpbmcgdGhlIC0+c3VzcGVuZHxy
+ZXN1bWUoKSBjYWxsYmFjayBpcyByZWFsbHkKPiA+PiAibGF0ZS9lYXJseSIgZW5vdWdoIGluIHRo
+ZSBkZXZpY2Ugc3VzcGVuZCBwaGFzZT8KPiA+Pgo+ID4+IE90aGVycyBpcyB1c2luZyB0aGUgbm9p
+cnEgcGhhc2UgYW5kIHNvbWUgaXMgZXZlbiB1c2luZyB0aGUgc3lzY29yZQo+ID4+IG9wcy4gT2Yg
+Y291cnNlIGl0IGRlcGVuZHMgb24gdGhlIGJlaGF2aW9yIG9mIHRoZSBjb25zdW1lcnMgb2YgaW9t
+bXUKPiA+PiBkZXZpY2UsIGFuZCBJIGd1ZXNzIG5vdCBldmVyeW9uZSBpcyB1c2luZyBkZXZpY2Ug
+bGlua3MsIHdoaWNoIGZvciBzdXJlCj4gPj4gaW1wcm92ZXMgdGhpbmdzIGluIHRoaXMgcmVnYXJk
+cyBhcyB3ZWxsLgo+ID4KPiA+IFdlbGwgeWVzLCBhcyB5b3Ugc2FpZCB0aGUgZGV2aWNlIGxpbmtz
+IHNob3VsZCBiZSBhYmxlIHRvIHRha2UgY2FyZSBvZgo+ID4gbWFpbnRhaW5pbmcgdGhlIGNvcnJl
+Y3Qgc3VzcGVuZC9yZXN1bWUgb3JkZXIgb2Ygc21tdSBhbmQgaXRzIGNsaWVudHMsCj4gPiBvciBh
+bSBJIG1pc3NpbmcgeW91ciBwb2ludCBoZXJlPwo+ID4gTGV0IG1lIGtub3cgYW5kIEkgd2lsbCBi
+ZSBoYXBweSB0byBpbmNvcnBvcmF0ZSBhbnkgc3VnZ2VzdGlvbnMuCj4gPiBUaGFua3MKPgo+IElm
+IGl0IHdvcmtzIGZpbmUsIHRoZW4geW91IG1heSBrZWVwIGl0IGFzIGlzLgo+Cj4gSnVzdCB3YW50
+ZWQgdG8gcG9pbnQgb3V0IHRoYXQgaWYgYW55IGNvbnN1bWVycyByZWxpZXMgb24gdGhlIGlvbW11
+IHRvCj4gb3BlcmF0aW9uYWwgdG8gc2F5IHVudGlsIHRoZSBzdXNwZW5kLWxhdGUgcGhhc2UsIHRo
+ZW4gdGhpcyBkb2Vzbid0Cj4gcGxheS4gVGhlbiB5b3UgbmVlZCB0byBtb3ZlIHlvdXIgY2FsbGJh
+Y2tzIHRvIHRoZSBjb3JyZXNwb25kaW5nIHNhbWUKPiBwaGFzZS4KCkFsdGhvdWdoIEkgaGF2ZSBu
+byBtZWFucyB0byB0ZXN0IHRoZSBzdXNwZW5kLWxhdGUgcGhhc2UsIHRlc3RzIHdpdGggZ3JhcGhp
+Y3MKYW5kIGRpc3BsYXkgb24gZGI4MjAgaGF2ZW4ndCBzaG93biBhbnkgYW5vbWFseS4KCltzbmlw
+XQoKQmVzdCByZWdhcmRzClZpdmVrCgotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBR
+dWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9y
+YSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCl9fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJl
+ZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9y
+Zy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
