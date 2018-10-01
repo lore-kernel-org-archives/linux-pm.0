@@ -1,38 +1,99 @@
-From: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Mon, 1 Oct 2018 12:57:11 +0800
-Message-ID: <CAD8Lp47uL3DQTBiVTduO1+Cg8px4CDpv26qVJsgT+RJ4WZx9oA@mail.gmail.com>
-References: <20180913033745.11178-1-drake@endlessm.com>
- <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
- <20180927205247.GA18434@bhelgaas-glaptop.roam.corp.google.com>
- <3f8efcd6-7cd2-b41a-d984-28c9e1740d6c@rockbox.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Refactor counting of added OPPs for v2 to
+ avoid unsupported OPPs
+Date: Mon, 1 Oct 2018 10:49:26 +0530
+Message-ID: <20181001051925.u3lpcg537xomsckp@vireshk-i7>
+References: <20180822031035.6937-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <3f8efcd6-7cd2-b41a-d984-28c9e1740d6c-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Thomas Martitz <kugel-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180822031035.6937-1-d-gerlach@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Tero Kristo <t-kristo@ti.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Keerthy J <j-keerthy@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gU3VuLCBTZXAgMzAsIDIwMTggYXQgNTowNyBBTSBUaG9tYXMgTWFydGl0eiA8a3VnZWxAcm9j
-a2JveC5vcmc+IHdyb3RlOgo+IFRoZSBsYXRlc3QgaXRlcmF0aW9uIGRvZXMgbm90IHdvcmsgb24g
-bXkgSFAgc3lzdGVtLiBUaGUgR1BVIGZhaWxzIHRvCj4gcG93ZXIgdXAganVzdCBsaWtlIHRoZSB1
-bnBhdGNoZWQga2VybmVsLgoKVGhhdCdzIHdlaXJkLCBJIHdvdWxkIG5vdCBleHBlY3QgYSBiZWhh
-dmlvdXIgY2hhbmdlIGluIHRoZSBsYXRlc3QKcGF0Y2guIHBjaV9yZXN0b3JlX2NvbmZpZ19kd29y
-ZCgpIGhhcyBzb21lIGRlYnVnIG1lc3NhZ2VzLCBjb3VsZCB5b3UKcGxlYXNlIG1ha2UgdGhlbSB2
-aXNpYmxlIGFuZCBzaG93IGxvZ3MgYWdhaW4/CkFsc28gcmVtaW5kIHVzIG9mIHRoZSBQQ0kgZGV2
-aWNlIGFkZHJlc3Mgb2YgdGhlIHBhcmVudCBicmlkZ2UgKGxzcGNpIC12dCkKClRoYW5rcwpEYW5p
-ZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVh
-dSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+On 21-08-18, 22:10, Dave Gerlach wrote:
+
+Please ping people back if you haven't received a response for too long. Sorry
+that I missed getting to this at an earlier point of time.
+
+> Currently the _of_add_opp_table_v2 call loops through the OPP nodes in
+> the operating-points-v2 table in the device tree and calls
+> _opp_add_static_v2 for each to add them to the table. It counts each
+> iteration through this loop as an added OPP, however on platforms making
+> use of the opp-supported-hw property, _opp_add_static_v2 does not add
+> OPPs that are not seen as supported on the platform but still returns
+> success, as this is valid. Because of this the count variable will
+> contain the number of OPP nodes in the table in device tree but not
+> necessarily the ones that are supported and actually added.
+> 
+> As this count value is what is checked to determine if there are any
+> valid OPPs, if a platform has an operating-points-v2 table with all OPP
+> nodes containing opp-supported-hw values that are not currently
+> supported then _of_add_opp_table_v2 will fail to abort as it should due
+> to an empty table.
+> 
+> Additionally, since commit 3ba98324e81a ("PM / OPP: Get
+> performance state using genpd helper"), the same count variable is
+> compared against the number of OPPs containing performance states and
+> requires that either all or none have pstates set, however in the case
+> of any opp table that has any entries that do not get added by
+> _opp_add_static_v2 due to incompatible opp-supported-hw fields, these
+> numbers will not match and _of_add_opp_table_v2 will incorrectly fail.
+> 
+> In order to ensure the count variable reflects the number of OPPs
+> actually in the table, increment it during the existing loop which walks
+> the opp table to check if pstate is set and then use that for the
+> aforementioned checks.
+> 
+> Fixes: 3ba98324e81a ("PM / OPP: Get performance state using genpd helper")
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
+>  drivers/opp/of.c | 15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index 7af0ddec936b..f288f83a2e62 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -399,8 +399,6 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+>  
+>  	/* We have opp-table node now, iterate over it and add OPPs */
+>  	for_each_available_child_of_node(opp_np, np) {
+> -		count++;
+> -
+>  		ret = _opp_add_static_v2(opp_table, dev, np);
+>  		if (ret) {
+>  			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+> @@ -411,15 +409,22 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+>  		}
+>  	}
+>  
+> +	/*
+> +	 * Iterate over the list of OPPs that were actually added, as
+> +	 * OPPs not supported by the hardware will be ignored by
+> +	 * _opp_add_static_v2 above.
+> +	 */
+> +	list_for_each_entry(opp, &opp_table->opp_list, node) {
+> +		count++;
+> +		pstate_count += !!opp->pstate;
+> +	}
+
+So the problem is genuine and is still true with the latest code in linux-next,
+but this patch wouldn't fix all cases. What if some OPPs were dynamically added
+using dev_pm_opp_add() and everything failed in this routine? We will still have
+the problem you are trying to fix here.
+
+What needs to be done is to identify the case where the OPP wasn't supported.
+Maybe return the new OPPs pointer from _opp_add_static_v2(), return -ve ERR_PTR
+values on error and NULL for the case where OPP isn't added but that's not an
+error. Apart from your example another case is of duplicate OPPs where we return
+0 without adding the OPP.
+
+Please post patch against linux-next as some updates are already pushed for OPP
+core there.
+
+-- 
+viresh
