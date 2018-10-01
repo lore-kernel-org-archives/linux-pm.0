@@ -1,98 +1,69 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Mon, 1 Oct 2018 14:51:18 -0700
-Message-ID: <d9f3d732-0a70-f823-d8e0-2d1b10d82e00@codeaurora.org>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <20180926143432.GH10761@jcrouse-lnx.qualcomm.com>
- <1ae0a36a-1178-4db5-1ae9-8f19e561a18b@codeaurora.org>
- <20181001212608.GF31641@jcrouse-lnx.qualcomm.com>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
+ queue_work_near to queue work near a given NUMA node
+Date: Mon, 1 Oct 2018 14:54:39 -0700
+Message-ID: <4eebc017-23a2-a26e-095c-66433061a141@linux.intel.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215138.13512.33146.stgit@localhost.localdomain>
+ <20180926215307.GA270328@devbig004.ftw2.facebook.com>
+ <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
+ <20180926220957.GB270328@devbig004.ftw2.facebook.com>
+ <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
+ <20181001160142.GE270328@devbig004.ftw2.facebook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181001212608.GF31641@jcrouse-lnx.qualcomm.com>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <20181001160142.GE270328-LpCCV3molIbIZ9tKgghJQw2O0Ztt9esIQQ4Iyu8u01E@public.gmane.org>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, robdclark@gmail.com
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+On 10/1/2018 9:01 AM, Tejun Heo wrote:
+> Hello,
+> 
+> On Wed, Sep 26, 2018 at 03:19:21PM -0700, Alexander Duyck wrote:
+>> On 9/26/2018 3:09 PM, Tejun Heo wrote:
+>> I could just use queue_work_on probably, but is there any issue if I
+>> am passing CPU values that are not in the wq_unbound_cpumask? That
+> 
+> That should be fine.  If it can't find any available cpu, it'll fall
+> back to round-robin.  We probably can improve it so that it can
+> consider the numa distance when falling back.
+> 
+>> was mostly my concern. Also for an unbound queue do I need to worry
+>> about the hotplug lock? I wasn't sure if that was the case or not as
+> 
+> Issuers don't need to worry about them.
+> 
+>> I know it is called out as something to be concerned with using
+>> queue_work_on, but in __queue_work the value is just used to
+>> determine which node to grab a work queue from.
+> 
+> It might be better to leave queue_work_on() to be used for per-cpu
+> workqueues and introduce queue_work_near() as you suggseted.  I just
+> don't want it to duplicate the node selection code in it.  Would that
+> work?
 
+So if I understand what you are saying correctly we default to 
+round-robin on a given node has no CPUs attached to it. I could probably 
+work with that if that is the default behavior instead of adding much of 
+the complexity I already have.
 
-On 10/01/2018 02:26 PM, Jordan Crouse wrote:
-> On Mon, Oct 01, 2018 at 01:56:32PM -0700, Saravana Kannan wrote:
->>
->> On 09/26/2018 07:34 AM, Jordan Crouse wrote:
->>> On Tue, Sep 25, 2018 at 01:02:15PM -0500, Rob Herring wrote:
->>>> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
->>>>> This binding is intended to represent the relations between the interconnect
->>>>> controllers (providers) and consumer device nodes. It will allow creating links
->>>>> between consumers and interconnect paths (exposed by interconnect providers).
->>>> As I mentioned in person, I want to see other SoC families using this
->>>> before accepting. They don't have to be ready for upstream, but WIP
->>>> patches or even just a "yes, this works for us and we're going to use
->>>> this binding on X".
->>>>
->>>> Also, I think the QCom GPU use of this should be fully sorted out. Or
->>>> more generically how this fits into OPP binding which seems to be never
->>>> ending extended...
->>> This is a discussion I wouldn't mind having now.  To jog memories, this is what
->>> I posted a few weeks ago:
->>>
->>> https://patchwork.freedesktop.org/patch/246117/
->>>
->>> This seems like the easiest way to me to tie the frequency and the bandwidth
->>> quota together for GPU devfreq scaling but I'm not married to the format and
->>> I'll happily go a few rounds on the bikeshed if we can get something we can
->>> be happy with.
->>>
->>> Jordan
->> Been meaning to send this out for a while, but caught up with other stuff.
->>
->> That GPU BW patch is very specific to device to device mapping and
->> doesn't work well for different use cases (Eg: those that  can
->> calculate based on use case, etc).
->>
->> Interconnect paths have different BW (bandwidth) operating points
->> that they can support. For example: 1 GB/s, 1.7 GB/s, 5GB/s, etc.
->> Having a mapping from GPU or CPU to those are fine/necessary, but we
->> still need a separate BW OPP table for interconnect paths to list
->> what they can actually support.
->>
->> Two different ways we could represent BW OPP tables for interconnect paths:
->> 1.  Represent interconnect paths (CPU to DDR, GPU to DDR, etc) as
->> devices and have OPPs for those devices.
->>
->> 2. We can have a "interconnect-opp-tables" DT binding similar to
->> "interconnects" and "interconnect-names". So if a device GPU or
->> Video decoder or I2C device needs to vote on an interconnect path,
->> they can also list the OPP tables that those paths can support.
->>
->> I know Rob doesn't like (1). But I'm hoping at least (2) is
->> acceptable. I'm open to other suggestions too.
->>
->> Both (1) and (2) need BW OPP tables similar to frequency OPP tables.
->> That should be easy to add and Viresh is open to that. I'm open to
->> other options too, but the fundamental missing part is how to tie a
->> list of BW OPPs to interconnect paths in DT.
->>
->> Once we have one of the above two options, we can use the
->> required-opps field (already present in kernel) for the mapping
->> between GPU to a particular BW need (suggested by Viresh during an
->> in person conversation).
-> Assuming we are willing to maintain the bandwidth OPP tables and the
-> names / phandles needed to describe a 1:1 GPU -> bandwidth mapping
-> I'm okay with required-opps but for the sake of argument how would
-> required-opps work for a device that needs to vote multiple paths
-> for a given OPP?
+The question I have then is what should I do about workqueues that 
+aren't WQ_UNBOUND if they attempt to use queue_work_near? In that case I 
+should be looking for some way to go from a node to a CPU shouldn't I? 
+If so should I look at doing something like wq_select_unbound_cpu that 
+uses the node cpumask instead of the wq_unbound_cpumask?
 
-You can list multiple required-opps per device OPP. It's an array of 
-phandles to OPP entries in other tables.
-
--Saravana
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+- Alex
