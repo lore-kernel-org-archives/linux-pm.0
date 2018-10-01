@@ -1,119 +1,94 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH 3/3] ARM: dts: imx6sx: Add DISPLAY power domain support
-Date: Mon,  1 Oct 2018 23:56:18 +0300
-Message-ID: <a55920b698eaf64809440613315f3182374282e6.1538426534.git.leonard.crestez@nxp.com>
-References: <cover.1538426534.git.leonard.crestez@nxp.com>
+From: Jordan Crouse <jcrouse@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Mon, 1 Oct 2018 15:26:08 -0600
+Message-ID: <20181001212608.GF31641@jcrouse-lnx.qualcomm.com>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <20180926143432.GH10761@jcrouse-lnx.qualcomm.com>
+ <1ae0a36a-1178-4db5-1ae9-8f19e561a18b@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1538426534.git.leonard.crestez@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <1ae0a36a-1178-4db5-1ae9-8f19e561a18b@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Ulf Hansson <ulf.hansson@linaro.org>, dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Rob Herring <robh@kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, robdclark@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-This was implemented in the driver but not actually defined and
-referenced in dts. This makes it always on.
+On Mon, Oct 01, 2018 at 01:56:32PM -0700, Saravana Kannan wrote:
+> 
+> 
+> On 09/26/2018 07:34 AM, Jordan Crouse wrote:
+> >On Tue, Sep 25, 2018 at 01:02:15PM -0500, Rob Herring wrote:
+> >>On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+> >>>This binding is intended to represent the relations between the interconnect
+> >>>controllers (providers) and consumer device nodes. It will allow creating links
+> >>>between consumers and interconnect paths (exposed by interconnect providers).
+> >>As I mentioned in person, I want to see other SoC families using this
+> >>before accepting. They don't have to be ready for upstream, but WIP
+> >>patches or even just a "yes, this works for us and we're going to use
+> >>this binding on X".
+> >>
+> >>Also, I think the QCom GPU use of this should be fully sorted out. Or
+> >>more generically how this fits into OPP binding which seems to be never
+> >>ending extended...
+> >This is a discussion I wouldn't mind having now.  To jog memories, this is what
+> >I posted a few weeks ago:
+> >
+> >https://patchwork.freedesktop.org/patch/246117/
+> >
+> >This seems like the easiest way to me to tie the frequency and the bandwidth
+> >quota together for GPU devfreq scaling but I'm not married to the format and
+> >I'll happily go a few rounds on the bikeshed if we can get something we can
+> >be happy with.
+> >
+> >Jordan
+> 
+> Been meaning to send this out for a while, but caught up with other stuff.
+> 
+> That GPU BW patch is very specific to device to device mapping and
+> doesn't work well for different use cases (Eg: those that  can
+> calculate based on use case, etc).
+> 
+> Interconnect paths have different BW (bandwidth) operating points
+> that they can support. For example: 1 GB/s, 1.7 GB/s, 5GB/s, etc.
+> Having a mapping from GPU or CPU to those are fine/necessary, but we
+> still need a separate BW OPP table for interconnect paths to list
+> what they can actually support.
+> 
+> Two different ways we could represent BW OPP tables for interconnect paths:
+> 1.  Represent interconnect paths (CPU to DDR, GPU to DDR, etc) as
+> devices and have OPPs for those devices.
+> 
+> 2. We can have a "interconnect-opp-tables" DT binding similar to
+> "interconnects" and "interconnect-names". So if a device GPU or
+> Video decoder or I2C device needs to vote on an interconnect path,
+> they can also list the OPP tables that those paths can support.
+> 
+> I know Rob doesn't like (1). But I'm hoping at least (2) is
+> acceptable. I'm open to other suggestions too.
+> 
+> Both (1) and (2) need BW OPP tables similar to frequency OPP tables.
+> That should be easy to add and Viresh is open to that. I'm open to
+> other options too, but the fundamental missing part is how to tie a
+> list of BW OPPs to interconnect paths in DT.
+> 
+> Once we have one of the above two options, we can use the
+> required-opps field (already present in kernel) for the mapping
+> between GPU to a particular BW need (suggested by Viresh during an
+> in person conversation).
 
->From reference manual in section "10.4.1.4.1 Power Distribution":
+Assuming we are willing to maintain the bandwidth OPP tables and the
+names / phandles needed to describe a 1:1 GPU -> bandwidth mapping
+I'm okay with required-opps but for the sake of argument how would
+required-opps work for a device that needs to vote multiple paths
+for a given OPP?
 
-"Display domain - The DISPLAY domain contains GIS, CSI, PXP, LCDIF,
-PCIe, DCIC, and LDB. It is supplied by internal regulator."
+Jordan
 
-The current pd_pcie is actually only for PCIE_PHY, the PCIE ip block is
-actually inside the DISPLAY domain. Handle this by adding the pcie node
-in both power domains.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- arch/arm/boot/dts/imx6sx.dtsi | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index 844caa39364f..054d812bcdbc 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -778,10 +778,22 @@
- 						#power-domain-cells = <0>;
- 						power-supply = <&reg_soc>;
- 						clocks = <&clks IMX6SX_CLK_GPU>;
- 					};
- 
-+					pd_disp: power-domain@2 {
-+						reg = <2>;
-+						#power-domain-cells = <0>;
-+						clocks = <&clks IMX6SX_CLK_PXP_AXI>,
-+							 <&clks IMX6SX_CLK_DISPLAY_AXI>,
-+							 <&clks IMX6SX_CLK_LCDIF1_PIX>,
-+							 <&clks IMX6SX_CLK_LCDIF_APB>,
-+							 <&clks IMX6SX_CLK_LCDIF2_PIX>,
-+							 <&clks IMX6SX_CLK_CSI>,
-+							 <&clks IMX6SX_CLK_VADC>;
-+					};
-+
- 					pd_pci: power-domain@3 {
- 						reg = <3>;
- 						#power-domain-cells = <0>;
- 						power-supply = <&reg_pcie>;
- 					};
-@@ -1196,10 +1208,11 @@
- 					reg = <0x02218000 0x4000>;
- 					interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
- 					clocks = <&clks IMX6SX_CLK_PXP_AXI>,
- 						 <&clks IMX6SX_CLK_DISPLAY_AXI>;
- 					clock-names = "pxp-axi", "disp-axi";
-+					power-domains = <&pd_disp>;
- 					status = "disabled";
- 				};
- 
- 				csi2: csi@221c000 {
- 					reg = <0x0221c000 0x4000>;
-@@ -1217,10 +1230,11 @@
- 					interrupts = <GIC_SPI 5 IRQ_TYPE_EDGE_RISING>;
- 					clocks = <&clks IMX6SX_CLK_LCDIF1_PIX>,
- 						 <&clks IMX6SX_CLK_LCDIF_APB>,
- 						 <&clks IMX6SX_CLK_DISPLAY_AXI>;
- 					clock-names = "pix", "axi", "disp_axi";
-+					power-domains = <&pd_disp>;
- 					status = "disabled";
- 				};
- 
- 				lcdif2: lcdif@2224000 {
- 					compatible = "fsl,imx6sx-lcdif", "fsl,imx28-lcdif";
-@@ -1228,19 +1242,21 @@
- 					interrupts = <GIC_SPI 6 IRQ_TYPE_EDGE_RISING>;
- 					clocks = <&clks IMX6SX_CLK_LCDIF2_PIX>,
- 						 <&clks IMX6SX_CLK_LCDIF_APB>,
- 						 <&clks IMX6SX_CLK_DISPLAY_AXI>;
- 					clock-names = "pix", "axi", "disp_axi";
-+					power-domains = <&pd_disp>;
- 					status = "disabled";
- 				};
- 
- 				vadc: vadc@2228000 {
- 					reg = <0x02228000 0x4000>, <0x0222c000 0x4000>;
- 					reg-names = "vadc-vafe", "vadc-vdec";
- 					clocks = <&clks IMX6SX_CLK_VADC>,
- 						 <&clks IMX6SX_CLK_CSI>;
- 					clock-names = "vadc", "csi";
-+					power-domains = <&pd_disp>;
- 					status = "disabled";
- 				};
- 			};
- 
- 			adc1: adc@2280000 {
-@@ -1361,10 +1377,11 @@
- 			clocks = <&clks IMX6SX_CLK_PCIE_AXI>,
- 				 <&clks IMX6SX_CLK_LVDS1_OUT>,
- 				 <&clks IMX6SX_CLK_PCIE_REF_125M>,
- 				 <&clks IMX6SX_CLK_DISPLAY_AXI>;
- 			clock-names = "pcie", "pcie_bus", "pcie_phy", "pcie_inbound_axi";
--			power-domains = <&pd_pci>;
-+			power-domains = <&pd_disp>, <&pd_pci>;
-+			power-domain-names = "pcie", "pcie_phy";
- 			status = "disabled";
- 		};
- 	};
- };
 -- 
-2.17.1
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
