@@ -1,23 +1,66 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v3 4/6] drivers: clk-qoriq: Add clockgen support for lx2160a
-Date: Mon, 01 Oct 2018 15:04:24 -0700
-Message-ID: <153843146463.119890.6551025813220021124@swboyd.mtv.corp.google.com>
-References: <1537747741-6245-1-git-send-email-vabhav.sharma@nxp.com>
- <1537747741-6245-5-git-send-email-vabhav.sharma@nxp.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Mon, 1 Oct 2018 16:49:32 -0700
+Message-ID: <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
+ <20180926144830.GB25838@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1537747741-6245-5-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <20180926144830.GB25838@e107155-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: arnd@arndb.de, catalin.marinas@arm.com, devicetree@vger.kernel.org, gregkh@linuxfoundation.org, kstewart@linuxfoundation.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-kernel-owner@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mark.rutland@arm.com, mturquette@baylibre.com, oss@buserror.net, rjw@rjwysocki.net, robh+dt@kernel.org, sudeep.holla@arm.com, viresh.kumar@linaro.org, will.deacon@arm.com, yamada.masahiro@socionext.com
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Tang Yuantian <andy.tang@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Sudeep Holla <sudeep.holla@arm.com>, Georgi Djakov <georgi.djakov@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Same subject comment.
+On 09/26/2018 07:48 AM, Sudeep Holla wrote:
+> On Wed, Sep 26, 2018 at 05:42:15PM +0300, Georgi Djakov wrote:
+>> Hi Rob,
+>>
+>> Thanks for the comments!
+>>
+>> On 09/25/2018 09:02 PM, Rob Herring wrote:
+>>> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+>>>> This binding is intended to represent the relations between the interconnect
+>>>> controllers (providers) and consumer device nodes. It will allow creating links
+>>>> between consumers and interconnect paths (exposed by interconnect providers).
+>>> As I mentioned in person, I want to see other SoC families using this
+>>> before accepting. They don't have to be ready for upstream, but WIP
+>>> patches or even just a "yes, this works for us and we're going to use
+>>> this binding on X".
+>> Other than the 3 Qualcomm SoCs (msm8916, msm8996, sdm845) that are
+>> currently using this binding, there is ongoing work from at least two
+>> other vendors that would be using this same binding. I will check on
+>> what is their progress so far.
+>>
+>>> Also, I think the QCom GPU use of this should be fully sorted out. Or
+>>> more generically how this fits into OPP binding which seems to be never
+>>> ending extended...
+>> I see this as a further step. It could be OPP binding which include
+>> bandwidth values or some separate DT property. Jordan has already
+>> proposed something, do you have any initial comments on that?
+> I am curious as how this fits into new systems which have firmware driven
+> CPUFreq and other DVFS. I would like to avoid using this in such systems
+> and leave it upto the firmware to scale the bus/interconnect based on the
+> other components that are connected to it and active.
+>
 
-Quoting Vabhav Sharma (2018-09-23 17:08:59)
-> From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> =
+You've made the same point multiple times across different patch sets. 
+Not all FW can do arbitrary functions. A lot of them are very limited in 
+their capabilities. So, as much as you and I would like to let the FW do 
+the work, it's not always possible. So, in those cases, we do need to 
+have support for the kernel scaling the interconnects correctly. 
+Hopefully this clears up your questions about FW capabilities.
 
-> Add clockgen support for lx2160a.
+Thanks,
+Saravana
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
