@@ -1,68 +1,87 @@
-From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
- queue_work_near to queue work near a given NUMA node
-Date: Tue, 2 Oct 2018 11:41:27 -0700
-Message-ID: <20181002184127.GH270328@devbig004.ftw2.facebook.com>
-References: <20180926214433.13512.30289.stgit@localhost.localdomain>
- <20180926215138.13512.33146.stgit@localhost.localdomain>
- <20180926215307.GA270328@devbig004.ftw2.facebook.com>
- <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
- <20180926220957.GB270328@devbig004.ftw2.facebook.com>
- <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
- <20181001160142.GE270328@devbig004.ftw2.facebook.com>
- <4eebc017-23a2-a26e-095c-66433061a141@linux.intel.com>
- <20181002174116.GG270328@devbig004.ftw2.facebook.com>
- <be9081de-f186-b265-934d-78cec2a8792f@linux.intel.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Tue, 2 Oct 2018 11:56:56 -0700
+Message-ID: <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
+ <20180926144830.GB25838@e107155-lin>
+ <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+ <20181002111758.GC1086@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <be9081de-f186-b265-934d-78cec2a8792f-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181002111758.GC1086@e107155-lin>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-On Tue, Oct 02, 2018 at 11:23:26AM -0700, Alexander Duyck wrote:
-> >Yeah, it's all in wq_select_unbound_cpu().  Right now, if the
-> >requested cpu isn't in wq_unbound_cpumask, it falls back to dumb
-> >round-robin.  We can probably do better there and find the nearest
-> >node considering topology.
-> 
-> Well if we could get wq_select_unbound_cpu doing the right thing
-> based on node topology that would be most of my work solved right
-> there. Basically I could just pass WQ_CPU_UNBOUND with the correct
-> node and it would take care of getting to the right CPU.
+On 10/02/2018 04:17 AM, Sudeep Holla wrote:
+> On Mon, Oct 01, 2018 at 04:49:32PM -0700, Saravana Kannan wrote:
+>> On 09/26/2018 07:48 AM, Sudeep Holla wrote:
+>>> On Wed, Sep 26, 2018 at 05:42:15PM +0300, Georgi Djakov wrote:
+>>>> Hi Rob,
+>>>>
+>>>> Thanks for the comments!
+>>>>
+>>>> On 09/25/2018 09:02 PM, Rob Herring wrote:
+>>>>> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
+>>>>>> This binding is intended to represent the relations between the interconnect
+>>>>>> controllers (providers) and consumer device nodes. It will allow creating links
+>>>>>> between consumers and interconnect paths (exposed by interconnect providers).
+>>>>> As I mentioned in person, I want to see other SoC families using this
+>>>>> before accepting. They don't have to be ready for upstream, but WIP
+>>>>> patches or even just a "yes, this works for us and we're going to use
+>>>>> this binding on X".
+>>>> Other than the 3 Qualcomm SoCs (msm8916, msm8996, sdm845) that are
+>>>> currently using this binding, there is ongoing work from at least two
+>>>> other vendors that would be using this same binding. I will check on
+>>>> what is their progress so far.
+>>>>
+>>>>> Also, I think the QCom GPU use of this should be fully sorted out. Or
+>>>>> more generically how this fits into OPP binding which seems to be never
+>>>>> ending extended...
+>>>> I see this as a further step. It could be OPP binding which include
+>>>> bandwidth values or some separate DT property. Jordan has already
+>>>> proposed something, do you have any initial comments on that?
+>>> I am curious as how this fits into new systems which have firmware driven
+>>> CPUFreq and other DVFS. I would like to avoid using this in such systems
+>>> and leave it upto the firmware to scale the bus/interconnect based on the
+>>> other components that are connected to it and active.
+>>>
+>> You've made the same point multiple times across different patch sets. Not
+>> all FW can do arbitrary functions. A lot of them are very limited in their
+>> capabilities. So, as much as you and I would like to let the FW do the work,
+>> it's not always possible. So, in those cases, we do need to have support for
+>> the kernel scaling the interconnects correctly. Hopefully this clears up
+>> your questions about FW capabilities.
+> Yes, I do understand I have made the same point multiple time and it's
+> intentional. We need to get the fragmented f/w support story fixed.
+> Different ARM vendors are doing different things in f/w and ARM sees the
+> same fragmentation story as before. We have come up with new specification
+> and my annoying multiple emails are just to constantly remind the same.
+>
+> I do understand we have existing implementations to consider, but fixing
+> the functionality in arbitrary way is not a good design and it better
+> to get them fixed for future.
 
-Yeah, sth like that.  It might be better to keep the function to take
-cpu for consistency as everything else passes around cpu.
+I believe the fragmentation you are referring to is  in the 
+interface/communication protocol. I see the benefit of standardizing 
+that as long as the standard actually turns out to be good. But that's 
+completely separate from what the FW can/can't do. Asking to standardize 
+what the FW can/can't do doesn't seem realistic as each chip vendor will 
+have different priorities - power, performance, cost, chip area, etc. 
+It's the conflation of these separate topics that doesn't help IMHO.
 
-> >>The question I have then is what should I do about workqueues that
-> >>aren't WQ_UNBOUND if they attempt to use queue_work_near? In that
-> >
-> >Hmm... yeah, let's just use queue_work_on() for now.  We can sort it
-> >out later and users could already do that anyway.
-> 
-> So are you saying I should just return an error for now if somebody
-> tries to use something other than an unbound workqueue with
-> queue_work_near, and expect everyone else to just use queue_work_on
-> for the other workqueue types?
+-Saravana
 
-Oh, I meant that let's not add a new interface for now and just use
-queue_work_on() for your use case too.
-
-Thanks.
 
 -- 
-tejun
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
