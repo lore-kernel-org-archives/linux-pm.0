@@ -1,8 +1,8 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
  framework
-Date: Tue, 2 Oct 2018 14:25:35 +0200
-Message-ID: <20181002122535.GY3439@hirez.programming.kicks-ass.net>
+Date: Tue, 2 Oct 2018 14:30:31 +0200
+Message-ID: <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
 References: <20180912091309.7551-1-quentin.perret@arm.com>
  <20180912091309.7551-4-quentin.perret@arm.com>
 Mime-Version: 1.0
@@ -17,82 +17,81 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, Sep 12, 2018 at 10:12:58AM +0100, Quentin Perret wrote:
 > +/**
-> + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
-> + * @pd		: performance domain for which energy has to be estimated
-> + * @max_util	: highest utilization among CPUs of the domain
-> + * @sum_util	: sum of the utilization of all CPUs in the domain
+> + * em_register_perf_domain() - Register the Energy Model of a performance domain
+> + * @span	: Mask of CPUs in the performance domain
+> + * @nr_states	: Number of capacity states to register
+> + * @cb		: Callback functions providing the data of the Energy Model
 > + *
-> + * Return: the sum of the energy consumed by the CPUs of the domain assuming
-> + * a capacity state satisfying the max utilization of the domain.
+> + * Create Energy Model tables for a performance domain using the callbacks
+> + * defined in cb.
+> + *
+> + * If multiple clients register the same performance domain, all but the first
+> + * registration will be ignored.
+> + *
+> + * Return 0 on success
 > + */
-> +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
-> +				unsigned long max_util, unsigned long sum_util)
+> +int em_register_perf_domain(cpumask_t *span, unsigned int nr_states,
+> +						struct em_data_callback *cb)
 > +{
-> +	unsigned long freq, scale_cpu;
-> +	struct em_cap_state *cs;
-> +	int i, cpu;
+> +	unsigned long cap, prev_cap = 0;
+> +	struct em_perf_domain *pd;
+> +	int cpu, ret = 0;
+> +
+> +	if (!span || !nr_states || !cb)
+> +		return -EINVAL;
 > +
 > +	/*
-> +	 * In order to predict the capacity state, map the utilization of the
-> +	 * most utilized CPU of the performance domain to a requested frequency,
-> +	 * like schedutil.
+> +	 * Use a mutex to serialize the registration of performance domains and
+> +	 * let the driver-defined callback functions sleep.
 > +	 */
-> +	cpu = cpumask_first(to_cpumask(pd->cpus));
-> +	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> +	cs = &pd->table[pd->nr_cap_states - 1];
-> +	freq = map_util_freq(max_util, cs->frequency, scale_cpu);
+> +	mutex_lock(&em_pd_mutex);
 > +
-> +	/*
-> +	 * Find the lowest capacity state of the Energy Model above the
-> +	 * requested frequency.
-> +	 */
-> +	for (i = 0; i < pd->nr_cap_states; i++) {
-> +		cs = &pd->table[i];
-> +		if (cs->frequency >= freq)
-> +			break;
+> +	for_each_cpu(cpu, span) {
+> +		/* Make sure we don't register again an existing domain. */
+> +		if (READ_ONCE(per_cpu(em_data, cpu))) {
+> +			ret = -EEXIST;
+> +			goto unlock;
+> +		}
+> +
+> +		/*
+> +		 * All CPUs of a domain must have the same micro-architecture
+> +		 * since they all share the same table.
+> +		 */
+> +		cap = arch_scale_cpu_capacity(NULL, cpu);
+> +		if (prev_cap && prev_cap != cap) {
+> +			pr_err("CPUs of %*pbl must have the same capacity\n",
+> +							cpumask_pr_args(span));
+> +			ret = -EINVAL;
+> +			goto unlock;
+> +		}
+> +		prev_cap = cap;
 > +	}
 > +
-> +	/*
-> +	 * The capacity of a CPU in the domain at that capacity state (cs)
-> +	 * can be computed as:
-> +	 *
-> +	 *             cs->freq * scale_cpu
-> +	 *   cs->cap = --------------------                          (1)
-> +	 *                 cpu_max_freq
-> +	 *
-> +	 * So, the energy consumed by this CPU at that capacity state is:
-> +	 *
-> +	 *             cs->power * cpu_util
-> +	 *   cpu_nrg = --------------------                          (2)
-> +	 *                   cs->cap
-> +	 *
-> +	 * since 'cpu_util / cs->cap' represents its percentage of busy time.
-> +	 *
-> +	 *   NOTE: Although the result of this computation actually is in
-> +	 *         units of power, it can be manipulated as an energy value
-> +	 *         over a scheduling period, since it is assumed to be
-> +	 *         constant during that interval.
-> +	 *
-> +	 * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
-> +	 * of two terms:
-> +	 *
-> +	 *             cs->power * cpu_max_freq   cpu_util
-> +	 *   cpu_nrg = ------------------------ * ---------          (3)
-> +	 *                    cs->freq            scale_cpu
-> +	 *
-> +	 * The first term is static, and is stored in the em_cap_state struct
-> +	 * as 'cs->cost'.
-> +	 *
-> +	 * Since all CPUs of the domain have the same micro-architecture, they
-> +	 * share the same 'cs->cost', and the same CPU capacity. Hence, the
-> +	 * total energy of the domain (which is the simple sum of the energy of
-> +	 * all of its CPUs) can be factorized as:
-> +	 *
-> +	 *            cs->cost * \Sum cpu_util
-> +	 *   pd_nrg = ------------------------                       (4)
-> +	 *                  scale_cpu
-> +	 */
-> +	return cs->cost * sum_util / scale_cpu;
-> +}
+> +	/* Create the performance domain and add it to the Energy Model. */
+> +	pd = em_create_pd(span, nr_states, cb);
+> +	if (!pd) {
+> +		ret = -EINVAL;
+> +		goto unlock;
+> +	}
+> +
+> +	for_each_cpu(cpu, span)
+> +		WRITE_ONCE(per_cpu(em_data, cpu), pd);
 
-Should we explicitly mention that this ignores idle costs?
+It's not immediately obvious to me why this doesn't need to be
+smp_store_release(). The moment you publish that pointer, it can be
+read, right?
+
+Even if you never again change the pointer value, you want to ensure the
+content of pd is stable before pd itself is observable, right?
+
+> +
+> +	pr_debug("Created perf domain %*pbl\n", cpumask_pr_args(span));
+> +unlock:
+> +	mutex_unlock(&em_pd_mutex);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(em_register_perf_domain);
+> -- 
+> 2.18.0
+> 
