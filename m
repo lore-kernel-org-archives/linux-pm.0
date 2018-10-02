@@ -1,63 +1,77 @@
-From: Nick Desaulniers <ndesaulniers@google.com>
-Subject: Re: [PATCH] cpufreq / CPPC: Mark acpi_ids as used
-Date: Tue, 2 Oct 2018 15:40:19 -0700
-Message-ID: <CAKwvOdnbnw-yciWkuuKMye=57qwpXDX4oPaoNUoeYvbpn-Tavw@mail.gmail.com>
-References: <20181002223457.7564-1-natechancellor@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCHv1 00/14] power: supply: Fix custom sysfs attribute
+ registration
+Date: Tue, 2 Oct 2018 16:00:38 -0700
+Message-ID: <20181002230038.GA11102@kroah.com>
+References: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181002223457.7564-1-natechancellor@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20180930220349.10515-1-sebastian.reichel@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nathan Chancellor <natechancellor@gmail.com>
-Cc: rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Milo Kim <milo.kim@ti.com>, Andreas Dannenberg <dannenberg@ti.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 2, 2018 at 3:35 PM Nathan Chancellor
-<natechancellor@gmail.com> wrote:
->
-> Clang warns:
->
-> drivers/cpufreq/cppc_cpufreq.c:431:36: warning: variable 'cppc_acpi_ids'
-> is not needed and will not be emitted [-Wunneeded-internal-declaration]
-> static const struct acpi_device_id cppc_acpi_ids[] = {
->                                    ^
-> 1 warning generated.
->
-> Mark the definition as used so that Clang understands we don't want this
-> warning while not inhibiting Clang's dead code elimination from removing
-> the unreferenced internal symbol when moving the data it contains to the
-> globally available symbol via MODULE_DEVICE_TABLE.
->
-> $ nm -S drivers/cpufreq/cppc_cpufreq.o | grep acpi | tail -1
-> 0000000000000000 0000000000000040 R __mod_acpi__cppc_acpi_ids_device_table
->
-> Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
-> Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 30f302149730..fd25c21cee72 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -428,7 +428,7 @@ MODULE_LICENSE("GPL");
->
->  late_initcall(cppc_cpufreq_init);
->
-> -static const struct acpi_device_id cppc_acpi_ids[] = {
-> +static const struct acpi_device_id cppc_acpi_ids[] __used = {
->         {ACPI_PROCESSOR_DEVICE_HID, },
->         {}
->  };
-> --
-> 2.19.0
->
+On Mon, Oct 01, 2018 at 12:03:35AM +0200, Sebastian Reichel wrote:
+> Hi,
+> 
+> Udev may not detect sysfs attributes, that have been added
+> after the device has been created. Code doing that is racy [0].
+> The power-supply class properly registers its attributes
+> when the device is created, but some drivers add additional
+> custom attributes in a racy way.
+> 
+> The first patch from this series adds native support for custom
+> sysfs attributes to the power-supply subsystem. This feature
+> allows cleaner code and avoids a race condition preventing udev
+> from noticing the custom properties.
+> 
+> The following patches replace all instances of sysfs_create_*
+> in drivers/power/supply to use the new feature and a couple
+> of small cleanups.
+> 
+> TL;DR: This patchsets replaces all sysfs_create_* in power-supply.
+> 
+> [0] http://kroah.com/log/blog/2013/06/26/how-to-create-a-sysfs-file-correctly/
+> 
+> -- Sebastian
+> 
+> Sebastian Reichel (14):
+>   power: supply: core: add support for custom sysfs attributes
+>   power: supply: bq2415x: fix race-condition in sysfs registration
+>   power: supply: ds2780: fix race-condition in sysfs registration
+>   power: supply: ds2781: fix race-condition in sysfs registration
+>   power: supply: lp8788: fix race-condition in sysfs registration
+>   power: supply: bq24190_charger: fix race-condition in sysfs
+>     registration
+>   power: supply: bq24257: fix race-condition in sysfs registration
+>   power: supply: charger-manager: simplify generation of sysfs attribute
+>     group name
+>   power: supply: charger-manager: fix race-condition in sysfs
+>     registration
+>   power: supply: pcf50633: fix race-condition in sysfs registration
+>   power: supply: ds2780: fix race-condition in bin attribute
+>     registration
+>   power: supply: ds2781: fix race-condition in bin attribute
+>     registration
+>   power: supply: ds2780: switch to devm_power_supply_register
+>   power: supply: ds2781: switch to devm_power_supply_register
+> 
+>  drivers/power/supply/bq2415x_charger.c   | 119 ++++++++++-------------
+>  drivers/power/supply/bq24190_charger.c   |  43 ++------
+>  drivers/power/supply/bq24257_charger.c   |  15 +--
+>  drivers/power/supply/charger-manager.c   |  62 +++++-------
+>  drivers/power/supply/ds2780_battery.c    |  87 +++++------------
+>  drivers/power/supply/ds2781_battery.c    |  82 +++++-----------
+>  drivers/power/supply/lp8788-charger.c    |  62 +++++-------
+>  drivers/power/supply/pcf50633-charger.c  |  17 ++--
+>  drivers/power/supply/power_supply_core.c |   1 +
+>  include/linux/power/charger-manager.h    |   3 +-
+>  include/linux/power_supply.h             |   3 +
+>  11 files changed, 172 insertions(+), 322 deletions(-)
 
-LGTM, thanks Nathan.  For other reviewers,
-https://lkml.org/lkml/2018/9/27/91 might provide more insight into why
-this is the correct fix for this particular bug.
--- 
-Thanks,
-~Nick Desaulniers
+Nice work, and it removes more code than it adds, always a win.
+
+greg k-h
