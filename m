@@ -1,73 +1,98 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Tue, 2 Oct 2018 12:17:58 +0100
-Message-ID: <20181002111758.GC1086@e107155-lin>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
- <20180926144830.GB25838@e107155-lin>
- <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 2 Oct 2018 14:25:35 +0200
+Message-ID: <20181002122535.GY3439@hirez.programming.kicks-ass.net>
+References: <20180912091309.7551-1-quentin.perret@arm.com>
+ <20180912091309.7551-4-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+In-Reply-To: <20180912091309.7551-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 01, 2018 at 04:49:32PM -0700, Saravana Kannan wrote:
-> On 09/26/2018 07:48 AM, Sudeep Holla wrote:
-> > On Wed, Sep 26, 2018 at 05:42:15PM +0300, Georgi Djakov wrote:
-> > > Hi Rob,
-> > > 
-> > > Thanks for the comments!
-> > > 
-> > > On 09/25/2018 09:02 PM, Rob Herring wrote:
-> > > > On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
-> > > > > This binding is intended to represent the relations between the interconnect
-> > > > > controllers (providers) and consumer device nodes. It will allow creating links
-> > > > > between consumers and interconnect paths (exposed by interconnect providers).
-> > > > As I mentioned in person, I want to see other SoC families using this
-> > > > before accepting. They don't have to be ready for upstream, but WIP
-> > > > patches or even just a "yes, this works for us and we're going to use
-> > > > this binding on X".
-> > > Other than the 3 Qualcomm SoCs (msm8916, msm8996, sdm845) that are
-> > > currently using this binding, there is ongoing work from at least two
-> > > other vendors that would be using this same binding. I will check on
-> > > what is their progress so far.
-> > > 
-> > > > Also, I think the QCom GPU use of this should be fully sorted out. Or
-> > > > more generically how this fits into OPP binding which seems to be never
-> > > > ending extended...
-> > > I see this as a further step. It could be OPP binding which include
-> > > bandwidth values or some separate DT property. Jordan has already
-> > > proposed something, do you have any initial comments on that?
-> > I am curious as how this fits into new systems which have firmware driven
-> > CPUFreq and other DVFS. I would like to avoid using this in such systems
-> > and leave it upto the firmware to scale the bus/interconnect based on the
-> > other components that are connected to it and active.
-> > 
-> 
-> You've made the same point multiple times across different patch sets. Not
-> all FW can do arbitrary functions. A lot of them are very limited in their
-> capabilities. So, as much as you and I would like to let the FW do the work,
-> it's not always possible. So, in those cases, we do need to have support for
-> the kernel scaling the interconnects correctly. Hopefully this clears up
-> your questions about FW capabilities.
+On Wed, Sep 12, 2018 at 10:12:58AM +0100, Quentin Perret wrote:
+> +/**
+> + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
+> + * @pd		: performance domain for which energy has to be estimated
+> + * @max_util	: highest utilization among CPUs of the domain
+> + * @sum_util	: sum of the utilization of all CPUs in the domain
+> + *
+> + * Return: the sum of the energy consumed by the CPUs of the domain assuming
+> + * a capacity state satisfying the max utilization of the domain.
+> + */
+> +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
+> +				unsigned long max_util, unsigned long sum_util)
+> +{
+> +	unsigned long freq, scale_cpu;
+> +	struct em_cap_state *cs;
+> +	int i, cpu;
+> +
+> +	/*
+> +	 * In order to predict the capacity state, map the utilization of the
+> +	 * most utilized CPU of the performance domain to a requested frequency,
+> +	 * like schedutil.
+> +	 */
+> +	cpu = cpumask_first(to_cpumask(pd->cpus));
+> +	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> +	cs = &pd->table[pd->nr_cap_states - 1];
+> +	freq = map_util_freq(max_util, cs->frequency, scale_cpu);
+> +
+> +	/*
+> +	 * Find the lowest capacity state of the Energy Model above the
+> +	 * requested frequency.
+> +	 */
+> +	for (i = 0; i < pd->nr_cap_states; i++) {
+> +		cs = &pd->table[i];
+> +		if (cs->frequency >= freq)
+> +			break;
+> +	}
+> +
+> +	/*
+> +	 * The capacity of a CPU in the domain at that capacity state (cs)
+> +	 * can be computed as:
+> +	 *
+> +	 *             cs->freq * scale_cpu
+> +	 *   cs->cap = --------------------                          (1)
+> +	 *                 cpu_max_freq
+> +	 *
+> +	 * So, the energy consumed by this CPU at that capacity state is:
+> +	 *
+> +	 *             cs->power * cpu_util
+> +	 *   cpu_nrg = --------------------                          (2)
+> +	 *                   cs->cap
+> +	 *
+> +	 * since 'cpu_util / cs->cap' represents its percentage of busy time.
+> +	 *
+> +	 *   NOTE: Although the result of this computation actually is in
+> +	 *         units of power, it can be manipulated as an energy value
+> +	 *         over a scheduling period, since it is assumed to be
+> +	 *         constant during that interval.
+> +	 *
+> +	 * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
+> +	 * of two terms:
+> +	 *
+> +	 *             cs->power * cpu_max_freq   cpu_util
+> +	 *   cpu_nrg = ------------------------ * ---------          (3)
+> +	 *                    cs->freq            scale_cpu
+> +	 *
+> +	 * The first term is static, and is stored in the em_cap_state struct
+> +	 * as 'cs->cost'.
+> +	 *
+> +	 * Since all CPUs of the domain have the same micro-architecture, they
+> +	 * share the same 'cs->cost', and the same CPU capacity. Hence, the
+> +	 * total energy of the domain (which is the simple sum of the energy of
+> +	 * all of its CPUs) can be factorized as:
+> +	 *
+> +	 *            cs->cost * \Sum cpu_util
+> +	 *   pd_nrg = ------------------------                       (4)
+> +	 *                  scale_cpu
+> +	 */
+> +	return cs->cost * sum_util / scale_cpu;
+> +}
 
-Yes, I do understand I have made the same point multiple time and it's
-intentional. We need to get the fragmented f/w support story fixed.
-Different ARM vendors are doing different things in f/w and ARM sees the
-same fragmentation story as before. We have come up with new specification
-and my annoying multiple emails are just to constantly remind the same.
-
-I do understand we have existing implementations to consider, but fixing
-the functionality in arbitrary way is not a good design and it better
-to get them fixed for future.
-
---
-Regards,
-Sudeep
+Should we explicitly mention that this ignores idle costs?
