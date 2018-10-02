@@ -1,87 +1,96 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Tue, 2 Oct 2018 11:56:56 -0700
-Message-ID: <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
- <20180926144830.GB25838@e107155-lin>
- <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
- <20181002111758.GC1086@e107155-lin>
+From: Andrea Parri <andrea.parri@amarulasolutions.com>
+Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
+ framework
+Date: Tue, 2 Oct 2018 21:12:17 +0200
+Message-ID: <20181002191217.GA4160@andrea>
+References: <20180912091309.7551-1-quentin.perret@arm.com>
+ <20180912091309.7551-4-quentin.perret@arm.com>
+ <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
+ <20181002125115.245r3ocusvyiexno@queper01-lin>
+ <20181002134857.GE26858@hirez.programming.kicks-ass.net>
+ <20181002140430.fpeiqzblbcaewg6n@queper01-lin>
+ <20181002142924.GI26858@hirez.programming.kicks-ass.net>
+ <20181002144025.wnanxibhdcnl23sf@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181002111758.GC1086@e107155-lin>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181002144025.wnanxibhdcnl23sf@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Oct 02, 2018 at 03:40:28PM +0100, Quentin Perret wrote:
+> On Tuesday 02 Oct 2018 at 16:29:24 (+0200), Peter Zijlstra wrote:
+> > On Tue, Oct 02, 2018 at 03:05:23PM +0100, Quentin Perret wrote:
+> > > On Tuesday 02 Oct 2018 at 15:48:57 (+0200), Peter Zijlstra wrote:
+> > > > +/**
+> > > > + * em_cpu_get() - Return the performance domain for a CPU
+> > > > + * @cpu : CPU to find the performance domain for
+> > > > + *
+> > > > + * Return: the performance domain to which 'cpu' belongs, or NULL if it doesn't
+> > > > + * exist.
+> > > > + */
+> > > > +struct em_perf_domain *em_cpu_get(int cpu)
+> > > > +{
+> > > > +       return READ_ONCE(per_cpu(em_data, cpu));
+> > > > +}
+> > > > +EXPORT_SYMBOL_GPL(em_cpu_get);
+> > > > 
+> > > > But your read side doesn't take, not is required to take em_pd_mutex.
+> > > > 
+> > > > At that point, the mutex_unlock() doesn't guarantee anything.
+> > > > 
+> > > > A CPU observing the em_data store, doesn't need to observe the store
+> > > > that filled the data structure it points to.
+> > > 
+> > > Right but even if I add the smp_store_release(), I can still have a
+> > > CPU observing em_data while another is in the process of updating it.
+> > > So, if smp_store_release() doesn't guarantee that readers will see a
+> > > complete update, do I actually get something interesting from it ?
+> > > (That's not a rhetorical question, I'm actually wondering :-)
+> > 
+> > I thought the update would fail if em_data was already set.
+> > 
+> > That is, you can only set this thing up _once_ and then you'll have to
+> > forever live with it.
+> > 
+> > Or did I read that wrong?
+> 
+> No no, that's correct. em_data is populated once and kept as-is
+> forever.
+> 
+> What I was trying to say is, when em_data is being populated for the
+> first time, nothing prevents a reader from using em_cpu_get()
+> concurrently. And in this case, it doesn't matter if you use
+> smp_store_release() or not, the reader might see the table half-updated.
+> 
+> So, basically, smp_store_release() doesn't guarantee that readers won't
+> see a half-baked em_data. That's the point I'm trying to make at least :-)
 
-On 10/02/2018 04:17 AM, Sudeep Holla wrote:
-> On Mon, Oct 01, 2018 at 04:49:32PM -0700, Saravana Kannan wrote:
->> On 09/26/2018 07:48 AM, Sudeep Holla wrote:
->>> On Wed, Sep 26, 2018 at 05:42:15PM +0300, Georgi Djakov wrote:
->>>> Hi Rob,
->>>>
->>>> Thanks for the comments!
->>>>
->>>> On 09/25/2018 09:02 PM, Rob Herring wrote:
->>>>> On Fri, Aug 31, 2018 at 05:01:45PM +0300, Georgi Djakov wrote:
->>>>>> This binding is intended to represent the relations between the interconnect
->>>>>> controllers (providers) and consumer device nodes. It will allow creating links
->>>>>> between consumers and interconnect paths (exposed by interconnect providers).
->>>>> As I mentioned in person, I want to see other SoC families using this
->>>>> before accepting. They don't have to be ready for upstream, but WIP
->>>>> patches or even just a "yes, this works for us and we're going to use
->>>>> this binding on X".
->>>> Other than the 3 Qualcomm SoCs (msm8916, msm8996, sdm845) that are
->>>> currently using this binding, there is ongoing work from at least two
->>>> other vendors that would be using this same binding. I will check on
->>>> what is their progress so far.
->>>>
->>>>> Also, I think the QCom GPU use of this should be fully sorted out. Or
->>>>> more generically how this fits into OPP binding which seems to be never
->>>>> ending extended...
->>>> I see this as a further step. It could be OPP binding which include
->>>> bandwidth values or some separate DT property. Jordan has already
->>>> proposed something, do you have any initial comments on that?
->>> I am curious as how this fits into new systems which have firmware driven
->>> CPUFreq and other DVFS. I would like to avoid using this in such systems
->>> and leave it upto the firmware to scale the bus/interconnect based on the
->>> other components that are connected to it and active.
->>>
->> You've made the same point multiple times across different patch sets. Not
->> all FW can do arbitrary functions. A lot of them are very limited in their
->> capabilities. So, as much as you and I would like to let the FW do the work,
->> it's not always possible. So, in those cases, we do need to have support for
->> the kernel scaling the interconnects correctly. Hopefully this clears up
->> your questions about FW capabilities.
-> Yes, I do understand I have made the same point multiple time and it's
-> intentional. We need to get the fragmented f/w support story fixed.
-> Different ARM vendors are doing different things in f/w and ARM sees the
-> same fragmentation story as before. We have come up with new specification
-> and my annoying multiple emails are just to constantly remind the same.
->
-> I do understand we have existing implementations to consider, but fixing
-> the functionality in arbitrary way is not a good design and it better
-> to get them fixed for future.
+An example might help clarify this: here is a scenario I can _imagine,
+based on your description.
 
-I believe the fragmentation you are referring to is  in the 
-interface/communication protocol. I see the benefit of standardizing 
-that as long as the standard actually turns out to be good. But that's 
-completely separate from what the FW can/can't do. Asking to standardize 
-what the FW can/can't do doesn't seem realistic as each chip vendor will 
-have different priorities - power, performance, cost, chip area, etc. 
-It's the conflation of these separate topics that doesn't help IMHO.
+CPU0 (em_register_perf_domain())	CPU1 (reader)
 
--Saravana
+[...]					my_pd = READ_ONCE(per_cpu(em_data, 1)); /* em_cpu_get() */
+pd->table = table			if (my_pd)
+WRITE_ONCE(per_cpu(em_data, 1), pd);		my_table = my_pd->table; /* process, dereference, ... my_table */
 
+In this scenario, we'd like CPU1 to see CPU0's store to ->table (as well
+as the stores to table[]) _if CPU1 sees CPU0's store to em_data (that is,
+if my_pd != NULL).
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+This guarantee does not hold with the WRITE_ONCE(), because CPU0 could
+propagate the store to ->table and the store to em_data out-of-order.
+The smp_store_release(), together with the address dependency headed by
+the READ_ONCE(), provides this guarantee (and more...).
+
+(Enclosing the reader into an em_pd_mutex critical section would also
+provide this guarantee, but I can imagine a few arguments for not using
+a mutex... ;-) ).
+
+The question, I guess, is whether you want such a guarantee.
+
+  Andrea
