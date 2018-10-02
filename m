@@ -1,81 +1,128 @@
-From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
- queue_work_near to queue work near a given NUMA node
-Date: Tue, 2 Oct 2018 13:49:22 -0700
-Message-ID: <92d8b57f-db37-e4bf-b69f-3ab5c4440ea0@linux.intel.com>
-References: <20180926214433.13512.30289.stgit@localhost.localdomain>
- <20180926215138.13512.33146.stgit@localhost.localdomain>
- <20180926215307.GA270328@devbig004.ftw2.facebook.com>
- <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
- <20180926220957.GB270328@devbig004.ftw2.facebook.com>
- <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
- <20181001160142.GE270328@devbig004.ftw2.facebook.com>
- <4eebc017-23a2-a26e-095c-66433061a141@linux.intel.com>
- <20181002174116.GG270328@devbig004.ftw2.facebook.com>
- <be9081de-f186-b265-934d-78cec2a8792f@linux.intel.com>
- <20181002184127.GH270328@devbig004.ftw2.facebook.com>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [RFC PATCH] PM / core: skip suspend next time if resume returns
+ an error
+Date: Tue, 2 Oct 2018 14:01:35 -0700
+Message-ID: <CAD=FV=Xi=BmWtzHAmXe0nNU4rBaQzHZDQhqOgbdKi4+dDCrJ8g@mail.gmail.com>
+References: <20180927203523.60856-1-dianders@chromium.org> <20181002080554.GC19677@amd>
+ <CAJZ5v0g13wJrUpshFoQx-FXHMs=MkQ1dStNSESiqXC3zduqJcA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <20181002184127.GH270328-LpCCV3molIbIZ9tKgghJQw2O0Ztt9esIQQ4Iyu8u01E@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0g13wJrUpshFoQx-FXHMs=MkQ1dStNSESiqXC3zduqJcA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rafael@kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dilip Kota <dkota@codeaurora.org>, Dmitry Torokhov <dtor@chromium.org>, Stephen Boyd <swboyd@chromium.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/2/2018 11:41 AM, Tejun Heo wrote:
-> Hello,
-> 
-> On Tue, Oct 02, 2018 at 11:23:26AM -0700, Alexander Duyck wrote:
->>> Yeah, it's all in wq_select_unbound_cpu().  Right now, if the
->>> requested cpu isn't in wq_unbound_cpumask, it falls back to dumb
->>> round-robin.  We can probably do better there and find the nearest
->>> node considering topology.
->>
->> Well if we could get wq_select_unbound_cpu doing the right thing
->> based on node topology that would be most of my work solved right
->> there. Basically I could just pass WQ_CPU_UNBOUND with the correct
->> node and it would take care of getting to the right CPU.
-> 
-> Yeah, sth like that.  It might be better to keep the function to take
-> cpu for consistency as everything else passes around cpu.
-> 
->>>> The question I have then is what should I do about workqueues that
->>>> aren't WQ_UNBOUND if they attempt to use queue_work_near? In that
->>>
->>> Hmm... yeah, let's just use queue_work_on() for now.  We can sort it
->>> out later and users could already do that anyway.
->>
->> So are you saying I should just return an error for now if somebody
->> tries to use something other than an unbound workqueue with
->> queue_work_near, and expect everyone else to just use queue_work_on
->> for the other workqueue types?
-> 
-> Oh, I meant that let's not add a new interface for now and just use
-> queue_work_on() for your use case too.
-> 
-> Thanks.
+Hi,
 
-So the only issue is that I was hoping to get away with not having to 
-add additional preemption. That was the motivation behind doing 
-queue_work_near as I could just wrap it all in the same local_irq_save 
-that way I don't have to worry about the CPU I am on changing.
+On Tue, Oct 2, 2018 at 1:29 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Tue, Oct 2, 2018 at 10:05 AM Pavel Machek <pavel@ucw.cz> wrote:
+> >
+> > Hi!
+> >
+> > > In general Linux doesn't behave super great if you get an error while
+> > > executing a device's resume handler.  Nothing will come along later
+> > > and and try again to resume the device (and all devices that depend on
+> > > it), so pretty much you're left with a non-functioning device and
+> > > that's not good.
+> > >
+> > > However, even though you'll end up with a non-functioning device we
+> > > still don't consider resume failures to be fatal to the system.  We'll
+> > > keep chugging along and just hope that the device that failed to
+> > > resume wasn't too critical.  This establishes the precedent that we
+> > > should at least try our best not to fully bork the system after a
+> > > resume failure.
+> > >
+> > > I will argue that the best way to keep the system in the best shape is
+> > > to assume that if a resume callback failed that it did as close to
+> > > no-op as possible.  Because of this we should consider the device
+> > > still suspended and shouldn't try to suspend the device again next
+> > > time around.  Today that's not what happens.  AKA if you have a
+> > > device
+> >
+> > I don't think there are many guarantees when device resume fail. It
+> > may have done nothing, and it may have resumed the device almost
+> > fully.
 
-What I may look at doing is just greatly reducing the 
-workqueue_select_unbound_cpu_near function to essentially just perform a 
-few tests and then will just use the results from a cpumask_any_and of 
-the cpumask_of_node and the cpu_online_mask. I'll probably rename it 
-while I am at it since I am going to probably be getting away from the 
-"unbound" checks in the logic.
+With today's drivers you're probably right.  I don't think too many
+drivers properly undo everything when they fail in the resume path.
 
-- Alex
+...but it makes sense to have some sort of standard for how drivers
+ought to behave.  IMO the most sane thing to do (and what we do in
+probe--which is why EPROBE_DEFER mostly works) is that if a function
+returns an error then it should try its best to undo everything it
+did.  Then you can always try calling it again later.
+
+
+> > I guess the best option would be to refuse system suspend after some
+> > device failed like that.
+
+Yeah, I thought about that.  I think we sometimes end up in that
+situation today (without my patch) because the suspend callback
+doesn't always work so great if the previous resume failed, so it's
+entirely likely it'll return an error and block suspend...
+
+ ...another thing I thought about was possibly trying to forcibly
+unbind the device.  AKA: it's misbehaving so kick it out of the
+system...  Of course if "resume" failed perhaps "remove" won't be so
+happy...
+
+
+> > That leaves user possibility to debug it...
+
+You mean they wouldn't notice that some peripheral failed to resume
+but they'd notice that their computer doesn't suspend any more?  Maybe
+they'd notice, but it'd probably because they pulled their laptop out
+of their bag and it was hot and had a dead batter.
+
+
+> I guess so.
+>
+> Doing that in all cases is kind of risky IMO, because we haven't taken
+> the return values of the ->resume* callbacks into account so far
+> (except for printing the information that is), so there may be
+> non-lethal cases when that happens and the $subject patch would make
+> them not work any more.
+
+I think you're arguing that the best option is to leave the code / API
+exactly as-is because someone could be relying on the existing
+behavior?  That is certainly the least likely to introduce any new
+bugs.  ;-P
+
+...would you accept a patch adding a comment codifying the existing
+behavior (AKA suspend will be called again even if resume failed) as
+the officially documented behavior?  Then we can start making new
+drivers behave correctly at least.  If nothing else I can add a
+boolean inside my driver data that says "resume failed, ignore the
+next suspend".
+
+...or if the official word is that if your resume fails you're totally
+unrecoverable then I can start simplifying the error handling in
+resume.  AKA instead of:
+
+  hypothetical_resume(...) {
+    ret = clk_enable(...);
+    if (ret)
+      return ret;
+    ret = regulator_enable(...);
+    if (ret)
+      clk_disable(...);
+    return ret;
+
+...I can just change it to:
+
+  hypothetical_resume(...) {
+    ret = clk_enable(...);
+    if (ret)
+      return ret;
+    return regulator_enable(...);
+
+...the above would leave no way to recover the system because if
+hypothetical_resume() returned an error we'd have no idea if the clock
+was left enabled or not.  ...but if we're unrecoverable anyway why not
+save the code?
+
+
+-Doug
