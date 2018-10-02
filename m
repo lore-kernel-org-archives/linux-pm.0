@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/6] cpuidle: menu: Avoid computations for very close timers
-Date: Tue, 02 Oct 2018 23:46:28 +0200
-Message-ID: <2753018.aK9edJ7Dvu@aspire.rjw.lan>
+Subject: [PATCH 2/6] cpuidle: menu: Compute first_idx when latency_req is known
+Date: Tue, 02 Oct 2018 23:42:56 +0200
+Message-ID: <2172591.2D0LTaJpaX@aspire.rjw.lan>
 References: <3510260.hvypppS8Bs@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,40 +15,63 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If the next timer event (with the tick excluded) is closer than the
-target residency of the second state or the PM QoS latency constraint
-is below its exit latency, state[0] will be used regardless of any
-other factors, so skip the computations in menu_select() then and
-return 0 straight away from it.
-
-Still, do that after the bucket has been determined to avoid
-disturbing the wakeup statistics in general.
+Since menu_select() can only set first_idx to 1 if the exit latency
+of the second state is not greater than the latency limit, it should
+first determine that limit.  Thus first_idx should be computed after
+the "interactivity" factor has been taken into account.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/governors/menu.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/cpuidle/governors/menu.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 Index: linux-pm/drivers/cpuidle/governors/menu.c
 ===================================================================
 --- linux-pm.orig/drivers/cpuidle/governors/menu.c
 +++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -309,6 +309,18 @@ static int menu_select(struct cpuidle_dr
- 	get_iowait_load(&nr_iowaiters, &cpu_load);
- 	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
+@@ -322,22 +322,6 @@ static int menu_select(struct cpuidle_dr
+ 	expected_interval = get_typical_interval(data);
+ 	expected_interval = min(expected_interval, data->next_timer_us);
  
-+	if (unlikely(drv->state_count <= 1) ||
-+	    ((data->next_timer_us < drv->states[1].target_residency ||
-+	      latency_req < drv->states[1].exit_latency) &&
-+	     !drv->states[0].disabled && !dev->states_usage[0].disable)) {
+-	first_idx = 0;
+-	if (drv->states[0].flags & CPUIDLE_FLAG_POLLING) {
+-		struct cpuidle_state *s = &drv->states[1];
+-		unsigned int polling_threshold;
+-
+-		/*
+-		 * Default to a physical idle state, not to busy polling, unless
+-		 * a timer is going to trigger really really soon.
+-		 */
+-		polling_threshold = max_t(unsigned int, 20, s->target_residency);
+-		if (data->next_timer_us > polling_threshold &&
+-		    latency_req > s->exit_latency && !s->disabled &&
+-		    !dev->states_usage[1].disable)
+-			first_idx = 1;
+-	}
+-
+ 	/*
+ 	 * Use the lowest expected idle interval to pick the idle state.
+ 	 */
+@@ -364,6 +348,22 @@ static int menu_select(struct cpuidle_dr
+ 			latency_req = interactivity_req;
+ 	}
+ 
++	first_idx = 0;
++	if (drv->states[0].flags & CPUIDLE_FLAG_POLLING) {
++		struct cpuidle_state *s = &drv->states[1];
++		unsigned int polling_threshold;
++
 +		/*
-+		 * In this case state[0] will be used no matter what, so return
-+		 * it right away and keep the tick running.
++		 * Default to a physical idle state, not to busy polling, unless
++		 * a timer is going to trigger really really soon.
 +		 */
-+		*stop_tick = false;
-+		return 0;
++		polling_threshold = max_t(unsigned int, 20, s->target_residency);
++		if (data->next_timer_us > polling_threshold &&
++		    latency_req > s->exit_latency && !s->disabled &&
++		    !dev->states_usage[1].disable)
++			first_idx = 1;
 +	}
 +
  	/*
- 	 * Force the result of multiplication to be 64 bits even if both
- 	 * operands are 32 bits.
+ 	 * Find the idle state with the lowest power while satisfying
+ 	 * our constraints.
