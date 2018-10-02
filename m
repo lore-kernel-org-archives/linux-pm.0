@@ -1,161 +1,56 @@
-From: Jann Horn <jannh@google.com>
-Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
-Date: Tue, 2 Oct 2018 21:36:05 +0200
-Message-ID: <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
-References: <20180912142337.21955-1-jlee@suse.com> <20180912142337.21955-2-jlee@suse.com>
- <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com> <20181002075243.GB6040@linux-l9pv.suse>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
+ on resume
+Date: Tue, 2 Oct 2018 15:03:50 -0500
+Message-ID: <20181002200350.GC120535@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180913033745.11178-1-drake@endlessm.com>
+ <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
+ <20180927205247.GA18434@bhelgaas-glaptop.roam.corp.google.com>
+ <3f8efcd6-7cd2-b41a-d984-28c9e1740d6c@rockbox.org>
+ <CAD8Lp47uL3DQTBiVTduO1+Cg8px4CDpv26qVJsgT+RJ4WZx9oA@mail.gmail.com>
+ <7b0a5388-5b3a-a6e0-347f-94f87fc2e540@rockbox.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181002075243.GB6040@linux-l9pv.suse>
-Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>, Andy Lutomirski <luto@kernel.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>, keyrings@vger.kernel.org, David Howells <dhowells@redhat.com>
-Cc: joeyli.kernel@gmail.com, rjw@rjwysocki.net, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, yu.c.chen@intel.com, oneukum@suse.com, Yu Chen <yu.chen.surf@gmail.com>, ggherdovich@suse.cz
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <7b0a5388-5b3a-a6e0-347f-94f87fc2e540-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Thomas Martitz <kugel-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
+Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-+Andy for opinions on things in write handlers
-+Mimi Zohar as EVM maintainer
-
-On Tue, Oct 2, 2018 at 9:55 AM joeyli <jlee@suse.com> wrote:
-> On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
-> > On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
-> > > This patch adds a snapshot keys handler for using the key retention
-> > > service api to create keys for snapshot image encryption and
-> > > authentication.
-> [...snip]
-> > > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
-> > > +                             const char *buf, size_t n)
-> > > +{
-> > > +       int error = 0;
-> > > +       char *p;
-> > > +       int len;
-> > > +
-> > > +       if (!capable(CAP_SYS_ADMIN))
-> > > +               return -EPERM;
-> >
-> > This is wrong, you can't use capable() in a write handler. You'd have
-> > to use file_ns_capable(), and I think sysfs currently doesn't give you
-> > a pointer to the struct file.
-> > If you want to do this in a write handler, you'll have to either get
-> > rid of this check or plumb through the cred struct pointer.
-> > Alternatively, you could use some interface that doesn't go through a
-> > write handler.
-> >
->
-> Thank you for point out this problem.
->
-> Actually the evm_write_key() is the example for my code. The
-> difference is that evm creates interface file on securityfs, but my
-> implementation is on sysfs:
->
-> security/integrity/evm/evm_secfs.c
->
-> static ssize_t evm_write_key(struct file *file, const char __user *buf,
->                              size_t count, loff_t *ppos)
-> {
->         int i, ret;
->
->         if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP))
->                 return -EPERM;
-> ...
->
-> On the other hand, the writing handler of /sys/power/wake_lock also
-> uses capable() to check the CAP_BLOCK_SUSPEND capability:
->
-> kernel/power/main.c
-> static ssize_t wake_lock_store(struct kobject *kobj,
->                                struct kobj_attribute *attr,
->                                const char *buf, size_t n)
-> {
->         int error = pm_wake_lock(buf);
->         return error ? error : n;
-> }
-> power_attr(wake_lock);
->
-> kernel/power/wakelock.c
-> int pm_wake_lock(const char *buf)
-> {
-> ...
->         if (!capable(CAP_BLOCK_SUSPEND))
->                 return -EPERM;
-> ...
->
->
-> So I confused for when can capable() be used in sysfs interface? Is
-> capable() only allowed in reading handler? Why the writing handler
-> of securityfs can use capable()?
-
-They can't, they're all wrong. :P All of these capable() checks in
-write handlers have to be assumed to be ineffective. But it's not a
-big deal because you still need UID 0 to access these files.
-
-> > > +static int user_key_init(void)
-> > > +{
-> > > +       struct user_key_payload *ukp;
-> > > +       struct key *key;
-> > > +       int err = 0;
-> > > +
-> > > +       pr_debug("%s\n", __func__);
-> > > +
-> > > +       /* find out swsusp-key */
-> > > +       key = request_key(&key_type_user, skey.key_name, NULL);
-> >
-> > request_key() looks at current's keyring. That shouldn't happen in a
-> > write handler.
-> >
->
-> The evm_write_key() also uses request_key() but it's on securityfs. Should
-> I move my sysfs interface to securityfs?
-
-I don't think you should be doing this in the context of any
-filesystem. If EVM does that, EVM is doing it wrong.
-
-> > > +       if (IS_ERR(key)) {
-> > > +               pr_err("Request key error: %ld\n", PTR_ERR(key));
-> > > +               err = PTR_ERR(key);
-> > > +               return err;
-> > > +       }
-> > > +
-> > > +       down_write(&key->sem);
-> > > +       ukp = user_key_payload_locked(key);
-> > > +       if (!ukp) {
-> > > +               /* key was revoked before we acquired its semaphore */
-> > > +               err = -EKEYREVOKED;
-> > > +               goto key_invalid;
-> > > +       }
-> > > +       if (invalid_key(ukp->data, ukp->datalen)) {
-> > > +               err = -EINVAL;
-> > > +               goto key_invalid;
-> > > +       }
-> > > +       skey.key_len = ukp->datalen;
-> > > +       memcpy(skey.key, ukp->data, ukp->datalen);
-> > > +       /* burn the original key contents */
-> > > +       memzero_explicit(ukp->data, ukp->datalen);
-> >
-> > You just zero out the contents of the supplied key? That seems very
-> > unidiomatic for the keys subsystem, and makes me wonder why you're
-> > using the keys subsystem for this in the first place. It doesn't look
-> > like normal use of the keys subsystem.
-> >
->
-> Because I want that only one decrypted key in kernel memory. Then hibernation
-> can handle the key more easy. In evm_init_key(), it also burned the key
-> contents after evm key be initialled:
->
-> security/integrity/evm/evm_crypto.c
-> int evm_init_key(void)
-> {
-> [...snip]
->         /* burn the original key contents */
->         memset(ekp->decrypted_data, 0, ekp->decrypted_datalen);
->         up_read(&evm_key->sem);
->         key_put(evm_key);
->         return rc;
-> }
->
-> The keys subsystem already handles the interactive with userland and TPM.
-> That's the reason for using keys subsystem in hibernation.
-
-How do you guarantee that the user is allowed to overwrite that key? I
-don't understand the keys subsystem very well - could this be a key on
-the trusted keyring, or something like that?
+SGkgVGhvbWFzLAoKT24gTW9uLCBPY3QgMDEsIDIwMTggYXQgMDQ6MjU6MDZQTSArMDIwMCwgVGhv
+bWFzIE1hcnRpdHogd3JvdGU6Cj4gQW0gMDEuMTAuMTggdW0gMDY6NTcgc2NocmllYiBEYW5pZWwg
+RHJha2U6Cj4gPiBPbiBTdW4sIFNlcCAzMCwgMjAxOCBhdCA1OjA3IEFNIFRob21hcyBNYXJ0aXR6
+IDxrdWdlbEByb2NrYm94Lm9yZz4gd3JvdGU6Cj4gPiA+IFRoZSBsYXRlc3QgaXRlcmF0aW9uIGRv
+ZXMgbm90IHdvcmsgb24gbXkgSFAgc3lzdGVtLiBUaGUgR1BVIGZhaWxzIHRvCj4gPiA+IHBvd2Vy
+IHVwIGp1c3QgbGlrZSB0aGUgdW5wYXRjaGVkIGtlcm5lbC4KPiA+IAo+ID4gVGhhdCdzIHdlaXJk
+LCBJIHdvdWxkIG5vdCBleHBlY3QgYSBiZWhhdmlvdXIgY2hhbmdlIGluIHRoZSBsYXRlc3QKPiA+
+IHBhdGNoLiBwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQoKSBoYXMgc29tZSBkZWJ1ZyBtZXNzYWdl
+cywgY291bGQgeW91Cj4gPiBwbGVhc2UgbWFrZSB0aGVtIHZpc2libGUgYW5kIHNob3cgbG9ncyBh
+Z2Fpbj8KPiA+IEFsc28gcmVtaW5kIHVzIG9mIHRoZSBQQ0kgZGV2aWNlIGFkZHJlc3Mgb2YgdGhl
+IHBhcmVudCBicmlkZ2UgKGxzcGNpIC12dCkKPiAKPiBJJ2xsIGZvbGxvdyB1cCB3aXRoIG1vcmUg
+dGhlIHJlcXVlc3RlZCBpbmZvcm1hdGlvbiBvbiBidWd6aWxsYQo+IChMaW5rOiBodHRwczovL2J1
+Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OSkuCj4gCj4gT24gYSBxdWlj
+ayByZS1jaGVjaywgaXQgc2VlbXMgdG8gZGVwZW5kIG9uIGlmIEkgdXNlZCB0aGUgZUdQVSBiZWZv
+cmUKPiB0aGUgaW5pdGlhbCBzdXNwZW5kLiBJZiBJIHJ1biBnbHhnZWFycyAod2l0aCBEUklfUFJJ
+TUU9MSkgYmVmb3JlIHN1c3BlbmQgaXQKPiBzZWVtcyBmaW5lLgoKRG9lcyB0aGUgcGF0Y2ggKFsx
+XSkgbWFrZSB0aGluZ3MgKndvcnNlKiBjb21wYXJlZCB0byB2NC4xOS1yYzU/CgpJZiBzbywgSSds
+bCBkcm9wIHRoZSBwYXRjaCB1bnRpbCB3ZSBmaWd1cmUgdGhpcyBvdXQuICBCdXQgaWYgdGhlIEdQ
+VQpwb3dlciBpc3N1ZSBhbHNvIG9jY3VycyBpbiB2NC4xOS1yYzUsIEkgdGhpbmsgd2UgY2FuIGFz
+c3VtZSBpdCdzIGEKZGlmZmVyZW50IHByb2JsZW0gYW5kIHdlIGNhbiBnbyBhaGVhZCBhbmQgbWVy
+Z2UgWzFdLgoKWzFdIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwv
+Z2l0L2hlbGdhYXMvcGNpLmdpdC9jb21taXQvP2g9Zm9yLWxpbnVzJmlkPTA4Mzg3NDU0OWZkZmVm
+YTYyOWRmYTc1Mjc4NWUyMDQyN2RkZTE1MTEKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9ub3V2ZWF1Cg==
