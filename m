@@ -1,161 +1,198 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v17 2/5] iommu/arm-smmu: Invoke pm_runtime
- during probe, add/remove device
-Date: Tue,  2 Oct 2018 12:42:31 +0530
-Message-ID: <20181002071231.9787-1-vivek.gautam@codeaurora.org>
-References: <CAFp+6iFpm05Uu8HkYCC+O+gYwFwvxirc6=e6oOed+ZJk6QLDPw@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
+Date: Tue, 2 Oct 2018 15:54:39 +0800
+Message-ID: <20181002075243.GB6040@linux-l9pv.suse>
+References: <20180912142337.21955-1-jlee@suse.com>
+ <20180912142337.21955-2-jlee@suse.com>
+ <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <CAFp+6iFpm05Uu8HkYCC+O+gYwFwvxirc6=e6oOed+ZJk6QLDPw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jann Horn <jannh@google.com>
+Cc: joeyli.kernel@gmail.com, rjw@rjwysocki.net, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, yu.c.chen@intel.com, oneukum@suse.com, yu.chen.surf@gmail.com, David Howells <dhowells@redhat.com>, ggherdovich@suse.cz, keyrings@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KClRoZSBzbW11IGRl
-dmljZSBwcm9iZS9yZW1vdmUgYW5kIGFkZC9yZW1vdmUgbWFzdGVyIGRldmljZSBjYWxsYmFja3MK
-Z2V0cyBjYWxsZWQgd2hlbiB0aGUgc21tdSBpcyBub3QgbGlua2VkIHRvIGl0cyBtYXN0ZXIsIHRo
-YXQgaXMgd2l0aG91dAp0aGUgY29udGV4dCBvZiB0aGUgbWFzdGVyIGRldmljZS4gU28gY2FsbGlu
-ZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCnNlcGFyYXRlbHkuCkdsb2JhbCBsb2NrcyBh
-cmUgYWxzbyBpbml0aWFsaXplZCBiZWZvcmUgZW5hYmxpbmcgcnVudGltZSBwbSBhcyB0aGUKcnVu
-dGltZV9yZXN1bWUoKSBjYWxscyBkZXZpY2VfcmVzZXQoKSB3aGljaCBkb2VzIHRsYl9zeW5jX2ds
-b2JhbCgpCnRoYXQgdWx0aW1hdGVseSByZXF1aXJlcyBsb2NrcyB0byBiZSBpbml0aWFsaXplZC4K
-ClNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Clt2
-aXZlazogQ2xlYW51cCBwbSBydW50aW1lIGNhbGxzXQpTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0
-YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdh
-IDx0ZmlnYUBjaHJvbWl1bS5vcmc+ClRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jp
-bml2YXMua2FuZGFnYXRsYUBsaW5hcm8ub3JnPgpSZXZpZXdlZC1ieTogUm9iaW4gTXVycGh5IDxy
-b2Jpbi5tdXJwaHlAYXJtLmNvbT4KLS0tCgpDaGFuZ2VzIHNpbmNlIHYxNjoKIC0gUmViYXNlZCBv
-biBXaWxsJ3MgdHJlZSBmb3IgYXJtLXNtbXUgdXBkYXRlcyBbMV0uCiAtIEFkZGVkIHJwbXtnZXR8
-cHV0fSBjYWxscyB0byAuZmx1c2hfaW90bGJfYWxsLCBhbmQgLmlvdGxiX3N5bmMKICAgY2FsbGJh
-Y2tzIHRvIHRha2UgY2FyZSBvZiBub24tc3RyaWN0IHRsYiBmbHVzaCBxdWV1ZSB1cGRhdGVzLgoK
-IGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEwMSArKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKystLS0tLQogMSBmaWxlIGNoYW5nZWQsIDkxIGluc2VydGlvbnMoKyks
-IDEwIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyBi
-L2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYwppbmRleCA1OWQxNDMwYTlmMmQuLmJmMTA2Njg4YWI3
-YSAxMDA2NDQKLS0tIGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCisrKyBiL2RyaXZlcnMvaW9t
-bXUvYXJtLXNtbXUuYwpAQCAtMjY5LDYgKzI2OSwyMCBAQCBzdGF0aWMgc3RydWN0IGFybV9zbW11
-X29wdGlvbl9wcm9wIGFybV9zbW11X29wdGlvbnNbXSA9IHsKIAl7IDAsIE5VTEx9LAogfTsKIAor
-c3RhdGljIGlubGluZSBpbnQgYXJtX3NtbXVfcnBtX2dldChzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNl
-ICpzbW11KQoreworCWlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSkKKwkJcmV0dXJu
-IHBtX3J1bnRpbWVfZ2V0X3N5bmMoc21tdS0+ZGV2KTsKKworCXJldHVybiAwOworfQorCitzdGF0
-aWMgaW5saW5lIHZvaWQgYXJtX3NtbXVfcnBtX3B1dChzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpz
-bW11KQoreworCWlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+ZGV2KSkKKwkJcG1fcnVudGlt
-ZV9wdXQoc21tdS0+ZGV2KTsKK30KKwogc3RhdGljIHN0cnVjdCBhcm1fc21tdV9kb21haW4gKnRv
-X3NtbXVfZG9tYWluKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbSkKIHsKIAlyZXR1cm4gY29udGFp
-bmVyX29mKGRvbSwgc3RydWN0IGFybV9zbW11X2RvbWFpbiwgZG9tYWluKTsKQEAgLTkyOCwxMSAr
-OTQyLDE1IEBAIHN0YXRpYyB2b2lkIGFybV9zbW11X2Rlc3Ryb3lfZG9tYWluX2NvbnRleHQoc3Ry
-dWN0IGlvbW11X2RvbWFpbiAqZG9tYWluKQogCXN0cnVjdCBhcm1fc21tdV9kb21haW4gKnNtbXVf
-ZG9tYWluID0gdG9fc21tdV9kb21haW4oZG9tYWluKTsKIAlzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNl
-ICpzbW11ID0gc21tdV9kb21haW4tPnNtbXU7CiAJc3RydWN0IGFybV9zbW11X2NmZyAqY2ZnID0g
-JnNtbXVfZG9tYWluLT5jZmc7Ci0JaW50IGlycTsKKwlpbnQgcmV0LCBpcnE7CiAKIAlpZiAoIXNt
-bXUgfHwgZG9tYWluLT50eXBlID09IElPTU1VX0RPTUFJTl9JREVOVElUWSkKIAkJcmV0dXJuOwog
-CisJcmV0ID0gYXJtX3NtbXVfcnBtX2dldChzbW11KTsKKwlpZiAocmV0IDwgMCkKKwkJcmV0dXJu
-OworCiAJLyoKIAkgKiBEaXNhYmxlIHRoZSBjb250ZXh0IGJhbmsgYW5kIGZyZWUgdGhlIHBhZ2Ug
-dGFibGVzIGJlZm9yZSBmcmVlaW5nCiAJICogaXQuCkBAIC05NDcsNiArOTY1LDggQEAgc3RhdGlj
-IHZvaWQgYXJtX3NtbXVfZGVzdHJveV9kb21haW5fY29udGV4dChzdHJ1Y3QgaW9tbXVfZG9tYWlu
-ICpkb21haW4pCiAKIAlmcmVlX2lvX3BndGFibGVfb3BzKHNtbXVfZG9tYWluLT5wZ3RibF9vcHMp
-OwogCV9fYXJtX3NtbXVfZnJlZV9iaXRtYXAoc21tdS0+Y29udGV4dF9tYXAsIGNmZy0+Y2JuZHgp
-OworCisJYXJtX3NtbXVfcnBtX3B1dChzbW11KTsKIH0KIAogc3RhdGljIHN0cnVjdCBpb21tdV9k
-b21haW4gKmFybV9zbW11X2RvbWFpbl9hbGxvYyh1bnNpZ25lZCB0eXBlKQpAQCAtMTIyOCwxMCAr
-MTI0OCwxNSBAQCBzdGF0aWMgaW50IGFybV9zbW11X2F0dGFjaF9kZXYoc3RydWN0IGlvbW11X2Rv
-bWFpbiAqZG9tYWluLCBzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJCXJldHVybiAtRU5PREVWOwogCiAJ
-c21tdSA9IGZ3c3BlY19zbW11KGZ3c3BlYyk7CisKKwlyZXQgPSBhcm1fc21tdV9ycG1fZ2V0KHNt
-bXUpOworCWlmIChyZXQgPCAwKQorCQlyZXR1cm4gcmV0OworCiAJLyogRW5zdXJlIHRoYXQgdGhl
-IGRvbWFpbiBpcyBmaW5hbGlzZWQgKi8KIAlyZXQgPSBhcm1fc21tdV9pbml0X2RvbWFpbl9jb250
-ZXh0KGRvbWFpbiwgc21tdSk7CiAJaWYgKHJldCA8IDApCi0JCXJldHVybiByZXQ7CisJCWdvdG8g
-cnBtX3B1dDsKIAogCS8qCiAJICogU2FuaXR5IGNoZWNrIHRoZSBkb21haW4uIFdlIGRvbid0IHN1
-cHBvcnQgZG9tYWlucyBhY3Jvc3MKQEAgLTEyNDEsNDkgKzEyNjYsNzQgQEAgc3RhdGljIGludCBh
-cm1fc21tdV9hdHRhY2hfZGV2KHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbiwgc3RydWN0IGRl
-dmljZSAqZGV2KQogCQlkZXZfZXJyKGRldiwKIAkJCSJjYW5ub3QgYXR0YWNoIHRvIFNNTVUgJXMg
-d2hpbHN0IGFscmVhZHkgYXR0YWNoZWQgdG8gZG9tYWluIG9uIFNNTVUgJXNcbiIsCiAJCQlkZXZf
-bmFtZShzbW11X2RvbWFpbi0+c21tdS0+ZGV2KSwgZGV2X25hbWUoc21tdS0+ZGV2KSk7Ci0JCXJl
-dHVybiAtRUlOVkFMOworCQlyZXQgPSAtRUlOVkFMOworCQlnb3RvIHJwbV9wdXQ7CiAJfQogCiAJ
-LyogTG9va3Mgb2ssIHNvIGFkZCB0aGUgZGV2aWNlIHRvIHRoZSBkb21haW4gKi8KLQlyZXR1cm4g
-YXJtX3NtbXVfZG9tYWluX2FkZF9tYXN0ZXIoc21tdV9kb21haW4sIGZ3c3BlYyk7CisJcmV0ID0g
-YXJtX3NtbXVfZG9tYWluX2FkZF9tYXN0ZXIoc21tdV9kb21haW4sIGZ3c3BlYyk7CisKK3JwbV9w
-dXQ6CisJYXJtX3NtbXVfcnBtX3B1dChzbW11KTsKKwlyZXR1cm4gcmV0OwogfQogCiBzdGF0aWMg
-aW50IGFybV9zbW11X21hcChzdHJ1Y3QgaW9tbXVfZG9tYWluICpkb21haW4sIHVuc2lnbmVkIGxv
-bmcgaW92YSwKIAkJCXBoeXNfYWRkcl90IHBhZGRyLCBzaXplX3Qgc2l6ZSwgaW50IHByb3QpCiB7
-CiAJc3RydWN0IGlvX3BndGFibGVfb3BzICpvcHMgPSB0b19zbW11X2RvbWFpbihkb21haW4pLT5w
-Z3RibF9vcHM7CisJc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IHRvX3NtbXVfZG9tYWlu
-KGRvbWFpbiktPnNtbXU7CisJaW50IHJldDsKIAogCWlmICghb3BzKQogCQlyZXR1cm4gLUVOT0RF
-VjsKIAotCXJldHVybiBvcHMtPm1hcChvcHMsIGlvdmEsIHBhZGRyLCBzaXplLCBwcm90KTsKKwlh
-cm1fc21tdV9ycG1fZ2V0KHNtbXUpOworCXJldCA9IG9wcy0+bWFwKG9wcywgaW92YSwgcGFkZHIs
-IHNpemUsIHByb3QpOworCWFybV9zbW11X3JwbV9wdXQoc21tdSk7CisKKwlyZXR1cm4gcmV0Owog
-fQogCiBzdGF0aWMgc2l6ZV90IGFybV9zbW11X3VubWFwKHN0cnVjdCBpb21tdV9kb21haW4gKmRv
-bWFpbiwgdW5zaWduZWQgbG9uZyBpb3ZhLAogCQkJICAgICBzaXplX3Qgc2l6ZSkKIHsKIAlzdHJ1
-Y3QgaW9fcGd0YWJsZV9vcHMgKm9wcyA9IHRvX3NtbXVfZG9tYWluKGRvbWFpbiktPnBndGJsX29w
-czsKKwlzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11ID0gdG9fc21tdV9kb21haW4oZG9tYWlu
-KS0+c21tdTsKKwlzaXplX3QgcmV0OwogCiAJaWYgKCFvcHMpCiAJCXJldHVybiAwOwogCi0JcmV0
-dXJuIG9wcy0+dW5tYXAob3BzLCBpb3ZhLCBzaXplKTsKKwlhcm1fc21tdV9ycG1fZ2V0KHNtbXUp
-OworCXJldCA9IG9wcy0+dW5tYXAob3BzLCBpb3ZhLCBzaXplKTsKKwlhcm1fc21tdV9ycG1fcHV0
-KHNtbXUpOworCisJcmV0dXJuIHJldDsKIH0KIAogc3RhdGljIHZvaWQgYXJtX3NtbXVfZmx1c2hf
-aW90bGJfYWxsKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKIHsKIAlzdHJ1Y3QgYXJtX3Nt
-bXVfZG9tYWluICpzbW11X2RvbWFpbiA9IHRvX3NtbXVfZG9tYWluKGRvbWFpbik7CisJc3RydWN0
-IGFybV9zbW11X2RldmljZSAqc21tdSA9IHNtbXVfZG9tYWluLT5zbW11OwogCi0JaWYgKHNtbXVf
-ZG9tYWluLT50bGJfb3BzKQorCWlmIChzbW11X2RvbWFpbi0+dGxiX29wcykgeworCQlhcm1fc21t
-dV9ycG1fZ2V0KHNtbXUpOwogCQlzbW11X2RvbWFpbi0+dGxiX29wcy0+dGxiX2ZsdXNoX2FsbChz
-bW11X2RvbWFpbik7CisJCWFybV9zbW11X3JwbV9wdXQoc21tdSk7CisJfQogfQogCiBzdGF0aWMg
-dm9pZCBhcm1fc21tdV9pb3RsYl9zeW5jKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKIHsK
-IAlzdHJ1Y3QgYXJtX3NtbXVfZG9tYWluICpzbW11X2RvbWFpbiA9IHRvX3NtbXVfZG9tYWluKGRv
-bWFpbik7CisJc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IHNtbXVfZG9tYWluLT5zbW11
-OwogCi0JaWYgKHNtbXVfZG9tYWluLT50bGJfb3BzKQorCWlmIChzbW11X2RvbWFpbi0+dGxiX29w
-cykgeworCQlhcm1fc21tdV9ycG1fZ2V0KHNtbXUpOwogCQlzbW11X2RvbWFpbi0+dGxiX29wcy0+
-dGxiX3N5bmMoc21tdV9kb21haW4pOworCQlhcm1fc21tdV9ycG1fcHV0KHNtbXUpOworCX0KIH0K
-IAogc3RhdGljIHBoeXNfYWRkcl90IGFybV9zbW11X2lvdmFfdG9fcGh5c19oYXJkKHN0cnVjdCBp
-b21tdV9kb21haW4gKmRvbWFpbiwKQEAgLTE0MzAsNyArMTQ4MCwxMyBAQCBzdGF0aWMgaW50IGFy
-bV9zbW11X2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2KQogCXdoaWxlIChpLS0pCiAJCWNm
-Zy0+c21lbmR4W2ldID0gSU5WQUxJRF9TTUVORFg7CiAKKwlyZXQgPSBhcm1fc21tdV9ycG1fZ2V0
-KHNtbXUpOworCWlmIChyZXQgPCAwKQorCQlnb3RvIG91dF9jZmdfZnJlZTsKKwogCXJldCA9IGFy
-bV9zbW11X21hc3Rlcl9hbGxvY19zbWVzKGRldik7CisJYXJtX3NtbXVfcnBtX3B1dChzbW11KTsK
-KwogCWlmIChyZXQpCiAJCWdvdG8gb3V0X2NmZ19mcmVlOwogCkBAIC0xNDUwLDcgKzE1MDYsNyBA
-QCBzdGF0aWMgdm9pZCBhcm1fc21tdV9yZW1vdmVfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldikK
-IAlzdHJ1Y3QgaW9tbXVfZndzcGVjICpmd3NwZWMgPSBkZXYtPmlvbW11X2Z3c3BlYzsKIAlzdHJ1
-Y3QgYXJtX3NtbXVfbWFzdGVyX2NmZyAqY2ZnOwogCXN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNt
-bXU7Ci0KKwlpbnQgcmV0OwogCiAJaWYgKCFmd3NwZWMgfHwgZndzcGVjLT5vcHMgIT0gJmFybV9z
-bW11X29wcykKIAkJcmV0dXJuOwpAQCAtMTQ1OCw4ICsxNTE0LDE1IEBAIHN0YXRpYyB2b2lkIGFy
-bV9zbW11X3JlbW92ZV9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2KQogCWNmZyAgPSBmd3NwZWMt
-PmlvbW11X3ByaXY7CiAJc21tdSA9IGNmZy0+c21tdTsKIAorCXJldCA9IGFybV9zbW11X3JwbV9n
-ZXQoc21tdSk7CisJaWYgKHJldCA8IDApCisJCXJldHVybjsKKwogCWlvbW11X2RldmljZV91bmxp
-bmsoJnNtbXUtPmlvbW11LCBkZXYpOwogCWFybV9zbW11X21hc3Rlcl9mcmVlX3NtZXMoZndzcGVj
-KTsKKworCWFybV9zbW11X3JwbV9wdXQoc21tdSk7CisKIAlpb21tdV9ncm91cF9yZW1vdmVfZGV2
-aWNlKGRldik7CiAJa2ZyZWUoZndzcGVjLT5pb21tdV9wcml2KTsKIAlpb21tdV9md3NwZWNfZnJl
-ZShkZXYpOwpAQCAtMjIyNSw2ICsyMjg4LDE3IEBAIHN0YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNl
-X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpCiAJYXJtX3NtbXVfZGV2aWNlX3Jl
-c2V0KHNtbXUpOwogCWFybV9zbW11X3Rlc3Rfc21yX21hc2tzKHNtbXUpOwogCisJLyoKKwkgKiBX
-ZSB3YW50IHRvIGF2b2lkIHRvdWNoaW5nIGRldi0+cG93ZXIubG9jayBpbiBmYXN0cGF0aHMgdW5s
-ZXNzCisJICogaXQncyByZWFsbHkgZ29pbmcgdG8gZG8gc29tZXRoaW5nIHVzZWZ1bCAtIHBtX3J1
-bnRpbWVfZW5hYmxlZCgpCisJICogY2FuIHNlcnZlIGFzIGFuIGlkZWFsIHByb3h5IGZvciB0aGF0
-IGRlY2lzaW9uLiBTbywgY29uZGl0aW9uYWxseQorCSAqIGVuYWJsZSBwbV9ydW50aW1lLgorCSAq
-LworCWlmIChkZXYtPnBtX2RvbWFpbikgeworCQlwbV9ydW50aW1lX3NldF9hY3RpdmUoZGV2KTsK
-KwkJcG1fcnVudGltZV9lbmFibGUoZGV2KTsKKwl9CisKIAkvKgogCSAqIEZvciBBQ1BJIGFuZCBn
-ZW5lcmljIERUIGJpbmRpbmdzLCBhbiBTTU1VIHdpbGwgYmUgcHJvYmVkIGJlZm9yZQogCSAqIGFu
-eSBkZXZpY2Ugd2hpY2ggbWlnaHQgbmVlZCBpdCwgc28gd2Ugd2FudCB0aGUgYnVzIG9wcyBpbiBw
-bGFjZQpAQCAtMjI2MCwxMCArMjMzNCwxNyBAQCBzdGF0aWMgaW50IGFybV9zbW11X2RldmljZV9y
-ZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAlpZiAoIWJpdG1hcF9lbXB0eShz
-bW11LT5jb250ZXh0X21hcCwgQVJNX1NNTVVfTUFYX0NCUykpCiAJCWRldl9lcnIoJnBkZXYtPmRl
-diwgInJlbW92aW5nIGRldmljZSB3aXRoIGFjdGl2ZSBkb21haW5zIVxuIik7CiAKKwlhcm1fc21t
-dV9ycG1fZ2V0KHNtbXUpOwogCS8qIFR1cm4gdGhlIHRoaW5nIG9mZiAqLwogCXdyaXRlbChzQ1Iw
-X0NMSUVOVFBELCBBUk1fU01NVV9HUjBfTlMoc21tdSkgKyBBUk1fU01NVV9HUjBfc0NSMCk7CisJ
-YXJtX3NtbXVfcnBtX3B1dChzbW11KTsKKworCWlmIChwbV9ydW50aW1lX2VuYWJsZWQoc21tdS0+
-ZGV2KSkKKwkJcG1fcnVudGltZV9mb3JjZV9zdXNwZW5kKHNtbXUtPmRldik7CisJZWxzZQorCQlj
-bGtfYnVsa19kaXNhYmxlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKIAotCWNsa19idWxr
-X2Rpc2FibGVfdW5wcmVwYXJlKHNtbXUtPm51bV9jbGtzLCBzbW11LT5jbGtzKTsKKwljbGtfYnVs
-a191bnByZXBhcmUoc21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOwogCiAJcmV0dXJuIDA7CiB9
-Ci0tIApRVUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRpb24gQ2Vu
-dGVyLCBJbmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQgYnkgVGhl
-IExpbnV4IEZvdW5kYXRpb24KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
-dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
-ZWVkcmVubwo=
+Hi Jann,
+
+Thanks for your review and very sorry for my delay!
+
+On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
+> +cc keyrings list
+> 
+> On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
+> > This patch adds a snapshot keys handler for using the key retention
+> > service api to create keys for snapshot image encryption and
+> > authentication.
+[...snip]
+> > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
+> > +                             const char *buf, size_t n)
+> > +{
+> > +       int error = 0;
+> > +       char *p;
+> > +       int len;
+> > +
+> > +       if (!capable(CAP_SYS_ADMIN))
+> > +               return -EPERM;
+> 
+> This is wrong, you can't use capable() in a write handler. You'd have
+> to use file_ns_capable(), and I think sysfs currently doesn't give you
+> a pointer to the struct file.
+> If you want to do this in a write handler, you'll have to either get
+> rid of this check or plumb through the cred struct pointer.
+> Alternatively, you could use some interface that doesn't go through a
+> write handler.
+>
+
+Thank you for point out this problem.
+
+Actually the evm_write_key() is the example for my code. The
+difference is that evm creates interface file on securityfs, but my
+implementation is on sysfs:
+
+security/integrity/evm/evm_secfs.c
+
+static ssize_t evm_write_key(struct file *file, const char __user *buf,
+			     size_t count, loff_t *ppos)
+{
+	int i, ret;
+
+	if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP)) 
+		return -EPERM;
+...
+
+On the other hand, the writing handler of /sys/power/wake_lock also
+uses capable() to check the CAP_BLOCK_SUSPEND capability: 
+
+kernel/power/main.c     
+static ssize_t wake_lock_store(struct kobject *kobj,
+			       struct kobj_attribute *attr,
+			       const char *buf, size_t n)
+{
+	int error = pm_wake_lock(buf);
+	return error ? error : n;
+}
+power_attr(wake_lock);
+
+kernel/power/wakelock.c
+int pm_wake_lock(const char *buf)
+{
+...
+	if (!capable(CAP_BLOCK_SUSPEND))
+		return -EPERM;
+...
+
+
+So I confused for when can capable() be used in sysfs interface? Is
+capable() only allowed in reading handler? Why the writing handler
+of securityfs can use capable()?
+
+> > +
+> > +static int user_key_init(void)
+> > +{
+> > +       struct user_key_payload *ukp;
+> > +       struct key *key;
+> > +       int err = 0;
+> > +
+> > +       pr_debug("%s\n", __func__);
+> > +
+> > +       /* find out swsusp-key */
+> > +       key = request_key(&key_type_user, skey.key_name, NULL);
+> 
+> request_key() looks at current's keyring. That shouldn't happen in a
+> write handler.
+>
+
+The evm_write_key() also uses request_key() but it's on securityfs. Should
+I move my sysfs interface to securityfs?
+
+> > +       if (IS_ERR(key)) {
+> > +               pr_err("Request key error: %ld\n", PTR_ERR(key));
+> > +               err = PTR_ERR(key);
+> > +               return err;
+> > +       }
+> > +
+> > +       down_write(&key->sem);
+> > +       ukp = user_key_payload_locked(key);
+> > +       if (!ukp) {
+> > +               /* key was revoked before we acquired its semaphore */
+> > +               err = -EKEYREVOKED;
+> > +               goto key_invalid;
+> > +       }
+> > +       if (invalid_key(ukp->data, ukp->datalen)) {
+> > +               err = -EINVAL;
+> > +               goto key_invalid;
+> > +       }
+> > +       skey.key_len = ukp->datalen;
+> > +       memcpy(skey.key, ukp->data, ukp->datalen);
+> > +       /* burn the original key contents */
+> > +       memzero_explicit(ukp->data, ukp->datalen);
+> 
+> You just zero out the contents of the supplied key? That seems very
+> unidiomatic for the keys subsystem, and makes me wonder why you're
+> using the keys subsystem for this in the first place. It doesn't look
+> like normal use of the keys subsystem.
+> 
+
+Because I want that only one decrypted key in kernel memory. Then hibernation
+can handle the key more easy. In evm_init_key(), it also burned the key
+contents after evm key be initialled: 
+
+security/integrity/evm/evm_crypto.c
+int evm_init_key(void)
+{
+[...snip]
+	/* burn the original key contents */
+	memset(ekp->decrypted_data, 0, ekp->decrypted_datalen);
+	up_read(&evm_key->sem);
+	key_put(evm_key);
+	return rc;
+}
+
+The keys subsystem already handles the interactive with userland and TPM.
+That's the reason for using keys subsystem in hibernation. 
+
+> > +key_invalid:
+> > +       up_write(&key->sem);
+> > +       key_put(key);
+> > +
+> > +       return err;
+> > +}
+> > +
+> > +/* this function may sleeps */
+> > +int snapshot_key_init(void)
+> > +{
+> > +       int err;
+> > +
+> > +       pr_debug("%s\n", __func__);
+> > +
+> > +       if (skey.initialized)
+> > +               return 0;
+> > +
+> > +       hash_tfm = crypto_alloc_shash(hash_alg, 0, CRYPTO_ALG_ASYNC);
+> > +       if (IS_ERR(hash_tfm)) {
+> > +               pr_err("Can't allocate %s transform: %ld\n",
+> > +                       hash_alg, PTR_ERR(hash_tfm));
+> > +               return PTR_ERR(hash_tfm);
+> > +       }
+> > +
+> > +       err = trusted_key_init();
+> > +       if (err)
+> > +               err = user_key_init();
+> > +       if (err)
+> > +               goto key_fail;
+> > +
+> > +       skey.initialized = true;
+> 
+> Does this need a memory barrier to prevent reordering of the
+> "skey.initialized = true" assignment before the key is fully
+> initialized?
+>
+
+Thanks for your reminding. I will add memory barrier here.
+
+
+Thank a lot!
+Joey Lee 
