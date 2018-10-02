@@ -1,33 +1,60 @@
-From: Eugeniu Rosca <erosca@de.adit-jv.com>
-Subject: Re: How to remove warn msg "cache: parent cpui should not be
- sleeping" i=1, 2, 3...
-Date: Tue, 2 Oct 2018 19:07:54 +0200
-Message-ID: <20181002170754.GA10240@vmlxhi-102.adit-jv.com>
-References: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
+From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
+ queue_work_near to queue work near a given NUMA node
+Date: Tue, 2 Oct 2018 10:41:16 -0700
+Message-ID: <20181002174116.GG270328@devbig004.ftw2.facebook.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215138.13512.33146.stgit@localhost.localdomain>
+ <20180926215307.GA270328@devbig004.ftw2.facebook.com>
+ <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
+ <20180926220957.GB270328@devbig004.ftw2.facebook.com>
+ <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
+ <20181001160142.GE270328@devbig004.ftw2.facebook.com>
+ <4eebc017-23a2-a26e-095c-66433061a141@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-pm@vger.kernel.org, Eugeniu Rosca <roscaeugeniu@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eugeniu Rosca <erosca@de.adit-jv.com>, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <4eebc017-23a2-a26e-095c-66433061a141-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Sudeep,
+Hello,
 
-I too experience the "cache: parent cpuN should not be sleeping" and
-confirm these are healed with your patch. Would it be possible to have
-the patch submitted for review?
+On Mon, Oct 01, 2018 at 02:54:39PM -0700, Alexander Duyck wrote:
+> >It might be better to leave queue_work_on() to be used for per-cpu
+> >workqueues and introduce queue_work_near() as you suggseted.  I just
+> >don't want it to duplicate the node selection code in it.  Would that
+> >work?
+> 
+> So if I understand what you are saying correctly we default to
+> round-robin on a given node has no CPUs attached to it. I could
+> probably work with that if that is the default behavior instead of
+> adding much of the complexity I already have.
 
-Thank you very much,
-Eugeniu.
+Yeah, it's all in wq_select_unbound_cpu().  Right now, if the
+requested cpu isn't in wq_unbound_cpumask, it falls back to dumb
+round-robin.  We can probably do better there and find the nearest
+node considering topology.
+
+> The question I have then is what should I do about workqueues that
+> aren't WQ_UNBOUND if they attempt to use queue_work_near? In that
+
+Hmm... yeah, let's just use queue_work_on() for now.  We can sort it
+out later and users could already do that anyway.
+
+Thanks.
+
+-- 
+tejun
