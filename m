@@ -1,54 +1,55 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 00/12][v4] Backport several fixes from 64bits to 32bits
- hibernation
-Date: Tue, 2 Oct 2018 11:20:23 +0200 (CEST)
-Message-ID: <alpine.DEB.2.21.1810021119540.32062@nanos.tec.linutronix.de>
-References: <cover.1537448058.git.yu.c.chen@intel.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v9 5/8] interconnect: qcom: Add RPM communication
+Date: Tue, 2 Oct 2018 14:02:42 +0300
+Message-ID: <ab1db6d6-3eff-0fec-6647-3bc1910bc8b2@linaro.org>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-6-georgi.djakov@linaro.org>
+ <20180925181735.GA28385@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1537448058.git.yu.c.chen@intel.com>
+In-Reply-To: <20180925181735.GA28385@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 21 Sep 2018, Chen Yu wrote:
+Hi Rob,
 
-> Currently there are mainly three bugs in 32bits system when doing
-> hibernation:
-> 1. The page copy code is not running in safe page, which might
->    cause hang during resume.
-> 2. There's no text mapping for the final jump address
->    of the original kernel, which might cause the system jumping
->    into illegal address and causes system hang during resume.
-> 3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
->    rather than the original kernel page table after all the pages
->    been copied back, which might cause invalid virtual-physical
->    mapping issue during resume.
+On 09/25/2018 09:17 PM, Rob Herring wrote:
+> On Fri, Aug 31, 2018 at 05:01:48PM +0300, Georgi Djakov wrote:
+>> On some Qualcomm SoCs, there is a remote processor, which controls some of
+>> the Network-On-Chip interconnect resources. Other CPUs express their needs
+>> by communicating with this processor. Add a driver to handle communication
+>> with this remote processor.
 > 
-> To solve these problems:
-> 
-> 1. Copy the code core_restore_code to a safe page, to avoid the instruction
->    code been overwritten when image kernel pages are being copied.
-> 2. Set up temporary text mapping for the image kernel's jump address,
->    so that after all the pages have been copied back, the system could
->    jump to this address.
-> 3. Switch to the original kernel page table during resume.
-> 
-> Furthermore, MD5 hash check for e820 map is also backported from 64bits
-> system.
-> 
-> In order to make this patch set more readable, these fixes are splitted
-> into several sub patches.
-> 
-> And use CONFIG_X86_64 to control the common code to be 'activated' for
-> 32 bit system during each sub-patch for better maintaining.
+> I don't think you should have a binding nor a separate driver for this. 
+> It's not actually an interconnect provider, so it doesn't belong in 
+> bindings/interconnect. And it just looks like abuse of DT to instantiate 
+> some driver.
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+The idea of this binding here is to represent the remote processor, that
+is also in control of some of the shared interconnect paths. The
+bandwidth needs of the DSPs and modem are also reported to this remote
+processor. It also takes over some of the bandwidth management while the
+application CPU is powered down. So yes, it is also a kind of an
+interconnect provider, so IMO it should be in DT.
+We already have similar DT sub-nodes for remote regulator and clock
+resources and this is just adding another sub-node for the interconnect
+bandwidth related subsystem.
 
-Rafael, it's all yours :)
+This, together with each separate NoC hardware block (in patch 6/8) are
+building up the whole topology. The configuration of interconnect paths
+consists of a combination of register writes, clock scaling and sending
+a message to the remote processor.
+
+> All the driver amounts to is a 1 function wrapper for RPM_KEY_BW 
+> messages. Can't this be part of the parent?
+
+I am re-using this part for other SoCs and have separated it to avoid
+duplication.
 
 Thanks,
-
-	tglx
+Georgi
