@@ -1,97 +1,48 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
- framework
-Date: Tue, 2 Oct 2018 14:30:31 +0200
-Message-ID: <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH v7 05/14] sched: Introduce a sched_feat for Energy Aware
+ Scheduling
+Date: Tue, 2 Oct 2018 14:34:16 +0200
+Message-ID: <20181002123416.GA3439@hirez.programming.kicks-ass.net>
 References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-4-quentin.perret@arm.com>
+ <20180912091309.7551-6-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180912091309.7551-4-quentin.perret@arm.com>
+In-Reply-To: <20180912091309.7551-6-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Quentin Perret <quentin.perret@arm.com>
 Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 12, 2018 at 10:12:58AM +0100, Quentin Perret wrote:
-> +/**
-> + * em_register_perf_domain() - Register the Energy Model of a performance domain
-> + * @span	: Mask of CPUs in the performance domain
-> + * @nr_states	: Number of capacity states to register
-> + * @cb		: Callback functions providing the data of the Energy Model
-> + *
-> + * Create Energy Model tables for a performance domain using the callbacks
-> + * defined in cb.
-> + *
-> + * If multiple clients register the same performance domain, all but the first
-> + * registration will be ignored.
-> + *
-> + * Return 0 on success
-> + */
-> +int em_register_perf_domain(cpumask_t *span, unsigned int nr_states,
-> +						struct em_data_callback *cb)
-> +{
-> +	unsigned long cap, prev_cap = 0;
-> +	struct em_perf_domain *pd;
-> +	int cpu, ret = 0;
-> +
-> +	if (!span || !nr_states || !cb)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Use a mutex to serialize the registration of performance domains and
-> +	 * let the driver-defined callback functions sleep.
-> +	 */
-> +	mutex_lock(&em_pd_mutex);
-> +
-> +	for_each_cpu(cpu, span) {
-> +		/* Make sure we don't register again an existing domain. */
-> +		if (READ_ONCE(per_cpu(em_data, cpu))) {
-> +			ret = -EEXIST;
-> +			goto unlock;
-> +		}
-> +
-> +		/*
-> +		 * All CPUs of a domain must have the same micro-architecture
-> +		 * since they all share the same table.
-> +		 */
-> +		cap = arch_scale_cpu_capacity(NULL, cpu);
-> +		if (prev_cap && prev_cap != cap) {
-> +			pr_err("CPUs of %*pbl must have the same capacity\n",
-> +							cpumask_pr_args(span));
-> +			ret = -EINVAL;
-> +			goto unlock;
-> +		}
-> +		prev_cap = cap;
-> +	}
-> +
-> +	/* Create the performance domain and add it to the Energy Model. */
-> +	pd = em_create_pd(span, nr_states, cb);
-> +	if (!pd) {
-> +		ret = -EINVAL;
-> +		goto unlock;
-> +	}
-> +
-> +	for_each_cpu(cpu, span)
-> +		WRITE_ONCE(per_cpu(em_data, cpu), pd);
-
-It's not immediately obvious to me why this doesn't need to be
-smp_store_release(). The moment you publish that pointer, it can be
-read, right?
-
-Even if you never again change the pointer value, you want to ensure the
-content of pd is stable before pd itself is observable, right?
-
-> +
-> +	pr_debug("Created perf domain %*pbl\n", cpumask_pr_args(span));
-> +unlock:
-> +	mutex_unlock(&em_pd_mutex);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(em_register_perf_domain);
-> -- 
-> 2.18.0
+On Wed, Sep 12, 2018 at 10:13:00AM +0100, Quentin Perret wrote:
+> In order to make sure Energy Aware Scheduling (EAS) doesn't hurt
+> systems not using it, add a new sched_feat, called ENERGY_AWARE,
+> guarding the access to EAS code paths.
 > 
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  kernel/sched/features.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/kernel/sched/features.h b/kernel/sched/features.h
+> index 85ae8488039c..26ff6752e492 100644
+> --- a/kernel/sched/features.h
+> +++ b/kernel/sched/features.h
+> @@ -90,3 +90,10 @@ SCHED_FEAT(WA_BIAS, true)
+>   * UtilEstimation. Use estimated CPU utilization.
+>   */
+>  SCHED_FEAT(UTIL_EST, true)
+> +
+> +/*
+> + * Energy-Aware Scheduling. Whether or not tasks will be placed into an
+> + * energy-aware fashion depends on this feature being enabled and on the
+> + * root domain having an Energy Model attached.
+> + */
+> +SCHED_FEAT(ENERGY_AWARE, false)
+
+So these are debug knobs.. I would expect there to be a regular
+static_key that is controlled by the presence of EM data.
+
+Remember, if you compile with SCHED_DEBUG=n, this becomes a compile time
+constant: false, and the compiler gets to do lots of DCE.
