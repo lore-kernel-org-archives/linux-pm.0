@@ -1,198 +1,72 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
-Date: Tue, 2 Oct 2018 15:54:39 +0800
-Message-ID: <20181002075243.GB6040@linux-l9pv.suse>
-References: <20180912142337.21955-1-jlee@suse.com>
- <20180912142337.21955-2-jlee@suse.com>
- <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH] PM / core: skip suspend next time if resume returns
+ an error
+Date: Tue, 2 Oct 2018 10:05:54 +0200
+Message-ID: <20181002080554.GC19677@amd>
+References: <20180927203523.60856-1-dianders@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="f+W+jCU1fRNres8c"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+In-Reply-To: <20180927203523.60856-1-dianders@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jann Horn <jannh@google.com>
-Cc: joeyli.kernel@gmail.com, rjw@rjwysocki.net, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, yu.c.chen@intel.com, oneukum@suse.com, yu.chen.surf@gmail.com, David Howells <dhowells@redhat.com>, ggherdovich@suse.cz, keyrings@vger.kernel.org
+To: Douglas Anderson <dianders@chromium.org>
+Cc: rjw@rjwysocki.net, Dilip Kota <dkota@codeaurora.org>, dtor@chromium.org, swboyd@chromium.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jann,
 
-Thanks for your review and very sorry for my delay!
+--f+W+jCU1fRNres8c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
-> +cc keyrings list
-> 
-> On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
-> > This patch adds a snapshot keys handler for using the key retention
-> > service api to create keys for snapshot image encryption and
-> > authentication.
-[...snip]
-> > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
-> > +                             const char *buf, size_t n)
-> > +{
-> > +       int error = 0;
-> > +       char *p;
-> > +       int len;
-> > +
-> > +       if (!capable(CAP_SYS_ADMIN))
-> > +               return -EPERM;
-> 
-> This is wrong, you can't use capable() in a write handler. You'd have
-> to use file_ns_capable(), and I think sysfs currently doesn't give you
-> a pointer to the struct file.
-> If you want to do this in a write handler, you'll have to either get
-> rid of this check or plumb through the cred struct pointer.
-> Alternatively, you could use some interface that doesn't go through a
-> write handler.
->
+Hi!
 
-Thank you for point out this problem.
+> In general Linux doesn't behave super great if you get an error while
+> executing a device's resume handler.  Nothing will come along later
+> and and try again to resume the device (and all devices that depend on
+> it), so pretty much you're left with a non-functioning device and
+> that's not good.
+>=20
+> However, even though you'll end up with a non-functioning device we
+> still don't consider resume failures to be fatal to the system.  We'll
+> keep chugging along and just hope that the device that failed to
+> resume wasn't too critical.  This establishes the precedent that we
+> should at least try our best not to fully bork the system after a
+> resume failure.
+>=20
+> I will argue that the best way to keep the system in the best shape is
+> to assume that if a resume callback failed that it did as close to
+> no-op as possible.  Because of this we should consider the device
+> still suspended and shouldn't try to suspend the device again next
+> time around.  Today that's not what happens.  AKA if you have a
+> device
 
-Actually the evm_write_key() is the example for my code. The
-difference is that evm creates interface file on securityfs, but my
-implementation is on sysfs:
+I don't think there are many guarantees when device resume fail. It
+may have done nothing, and it may have resumed the device almost
+fully.
 
-security/integrity/evm/evm_secfs.c
+I guess the best option would be to refuse system suspend after some
+device failed like that.
 
-static ssize_t evm_write_key(struct file *file, const char __user *buf,
-			     size_t count, loff_t *ppos)
-{
-	int i, ret;
+That leaves user possibility to debug it...
 
-	if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP)) 
-		return -EPERM;
-...
+								Pavel--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-On the other hand, the writing handler of /sys/power/wake_lock also
-uses capable() to check the CAP_BLOCK_SUSPEND capability: 
+--f+W+jCU1fRNres8c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-kernel/power/main.c     
-static ssize_t wake_lock_store(struct kobject *kobj,
-			       struct kobj_attribute *attr,
-			       const char *buf, size_t n)
-{
-	int error = pm_wake_lock(buf);
-	return error ? error : n;
-}
-power_attr(wake_lock);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-kernel/power/wakelock.c
-int pm_wake_lock(const char *buf)
-{
-...
-	if (!capable(CAP_BLOCK_SUSPEND))
-		return -EPERM;
-...
+iEYEARECAAYFAluzJuIACgkQMOfwapXb+vI5jQCfYeH7EypOPhY6xWmkmVkb96+/
+r0YAoJQjxy0djxFFkgUyLzeVlEmkI7xF
+=5M63
+-----END PGP SIGNATURE-----
 
-
-So I confused for when can capable() be used in sysfs interface? Is
-capable() only allowed in reading handler? Why the writing handler
-of securityfs can use capable()?
-
-> > +
-> > +static int user_key_init(void)
-> > +{
-> > +       struct user_key_payload *ukp;
-> > +       struct key *key;
-> > +       int err = 0;
-> > +
-> > +       pr_debug("%s\n", __func__);
-> > +
-> > +       /* find out swsusp-key */
-> > +       key = request_key(&key_type_user, skey.key_name, NULL);
-> 
-> request_key() looks at current's keyring. That shouldn't happen in a
-> write handler.
->
-
-The evm_write_key() also uses request_key() but it's on securityfs. Should
-I move my sysfs interface to securityfs?
-
-> > +       if (IS_ERR(key)) {
-> > +               pr_err("Request key error: %ld\n", PTR_ERR(key));
-> > +               err = PTR_ERR(key);
-> > +               return err;
-> > +       }
-> > +
-> > +       down_write(&key->sem);
-> > +       ukp = user_key_payload_locked(key);
-> > +       if (!ukp) {
-> > +               /* key was revoked before we acquired its semaphore */
-> > +               err = -EKEYREVOKED;
-> > +               goto key_invalid;
-> > +       }
-> > +       if (invalid_key(ukp->data, ukp->datalen)) {
-> > +               err = -EINVAL;
-> > +               goto key_invalid;
-> > +       }
-> > +       skey.key_len = ukp->datalen;
-> > +       memcpy(skey.key, ukp->data, ukp->datalen);
-> > +       /* burn the original key contents */
-> > +       memzero_explicit(ukp->data, ukp->datalen);
-> 
-> You just zero out the contents of the supplied key? That seems very
-> unidiomatic for the keys subsystem, and makes me wonder why you're
-> using the keys subsystem for this in the first place. It doesn't look
-> like normal use of the keys subsystem.
-> 
-
-Because I want that only one decrypted key in kernel memory. Then hibernation
-can handle the key more easy. In evm_init_key(), it also burned the key
-contents after evm key be initialled: 
-
-security/integrity/evm/evm_crypto.c
-int evm_init_key(void)
-{
-[...snip]
-	/* burn the original key contents */
-	memset(ekp->decrypted_data, 0, ekp->decrypted_datalen);
-	up_read(&evm_key->sem);
-	key_put(evm_key);
-	return rc;
-}
-
-The keys subsystem already handles the interactive with userland and TPM.
-That's the reason for using keys subsystem in hibernation. 
-
-> > +key_invalid:
-> > +       up_write(&key->sem);
-> > +       key_put(key);
-> > +
-> > +       return err;
-> > +}
-> > +
-> > +/* this function may sleeps */
-> > +int snapshot_key_init(void)
-> > +{
-> > +       int err;
-> > +
-> > +       pr_debug("%s\n", __func__);
-> > +
-> > +       if (skey.initialized)
-> > +               return 0;
-> > +
-> > +       hash_tfm = crypto_alloc_shash(hash_alg, 0, CRYPTO_ALG_ASYNC);
-> > +       if (IS_ERR(hash_tfm)) {
-> > +               pr_err("Can't allocate %s transform: %ld\n",
-> > +                       hash_alg, PTR_ERR(hash_tfm));
-> > +               return PTR_ERR(hash_tfm);
-> > +       }
-> > +
-> > +       err = trusted_key_init();
-> > +       if (err)
-> > +               err = user_key_init();
-> > +       if (err)
-> > +               goto key_fail;
-> > +
-> > +       skey.initialized = true;
-> 
-> Does this need a memory barrier to prevent reordering of the
-> "skey.initialized = true" assignment before the key is fully
-> initialized?
->
-
-Thanks for your reminding. I will add memory barrier here.
-
-
-Thank a lot!
-Joey Lee 
+--f+W+jCU1fRNres8c--
