@@ -1,68 +1,33 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
- framework
-Date: Tue, 2 Oct 2018 15:40:28 +0100
-Message-ID: <20181002144025.wnanxibhdcnl23sf@queper01-lin>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-4-quentin.perret@arm.com>
- <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
- <20181002125115.245r3ocusvyiexno@queper01-lin>
- <20181002134857.GE26858@hirez.programming.kicks-ass.net>
- <20181002140430.fpeiqzblbcaewg6n@queper01-lin>
- <20181002142924.GI26858@hirez.programming.kicks-ass.net>
+From: Eugeniu Rosca <erosca@de.adit-jv.com>
+Subject: Re: How to remove warn msg "cache: parent cpui should not be
+ sleeping" i=1, 2, 3...
+Date: Tue, 2 Oct 2018 19:07:54 +0200
+Message-ID: <20181002170754.GA10240@vmlxhi-102.adit-jv.com>
+References: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20181002142924.GI26858@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+In-Reply-To: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Jisheng Zhang <jszhang@marvell.com>, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-pm@vger.kernel.org, Eugeniu Rosca <roscaeugeniu@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eugeniu Rosca <erosca@de.adit-jv.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 02 Oct 2018 at 16:29:24 (+0200), Peter Zijlstra wrote:
-> On Tue, Oct 02, 2018 at 03:05:23PM +0100, Quentin Perret wrote:
-> > On Tuesday 02 Oct 2018 at 15:48:57 (+0200), Peter Zijlstra wrote:
-> > > +/**
-> > > + * em_cpu_get() - Return the performance domain for a CPU
-> > > + * @cpu : CPU to find the performance domain for
-> > > + *
-> > > + * Return: the performance domain to which 'cpu' belongs, or NULL if it doesn't
-> > > + * exist.
-> > > + */
-> > > +struct em_perf_domain *em_cpu_get(int cpu)
-> > > +{
-> > > +       return READ_ONCE(per_cpu(em_data, cpu));
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(em_cpu_get);
-> > > 
-> > > But your read side doesn't take, not is required to take em_pd_mutex.
-> > > 
-> > > At that point, the mutex_unlock() doesn't guarantee anything.
-> > > 
-> > > A CPU observing the em_data store, doesn't need to observe the store
-> > > that filled the data structure it points to.
-> > 
-> > Right but even if I add the smp_store_release(), I can still have a
-> > CPU observing em_data while another is in the process of updating it.
-> > So, if smp_store_release() doesn't guarantee that readers will see a
-> > complete update, do I actually get something interesting from it ?
-> > (That's not a rhetorical question, I'm actually wondering :-)
-> 
-> I thought the update would fail if em_data was already set.
-> 
-> That is, you can only set this thing up _once_ and then you'll have to
-> forever live with it.
-> 
-> Or did I read that wrong?
+Hello Sudeep,
 
-No no, that's correct. em_data is populated once and kept as-is
-forever.
+I too experience the "cache: parent cpuN should not be sleeping" and
+confirm these are healed with your patch. Would it be possible to have
+the patch submitted for review?
 
-What I was trying to say is, when em_data is being populated for the
-first time, nothing prevents a reader from using em_cpu_get()
-concurrently. And in this case, it doesn't matter if you use
-smp_store_release() or not, the reader might see the table half-updated.
-
-So, basically, smp_store_release() doesn't guarantee that readers won't
-see a half-baked em_data. That's the point I'm trying to make at least :-)
+Thank you very much,
+Eugeniu.
