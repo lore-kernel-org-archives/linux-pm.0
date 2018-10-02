@@ -1,108 +1,106 @@
 From: Quentin Perret <quentin.perret@arm.com>
 Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
  framework
-Date: Tue, 2 Oct 2018 13:51:17 +0100
-Message-ID: <20181002125115.245r3ocusvyiexno@queper01-lin>
+Date: Tue, 2 Oct 2018 13:54:17 +0100
+Message-ID: <20181002125414.aufsalllqf25rwsq@queper01-lin>
 References: <20180912091309.7551-1-quentin.perret@arm.com>
  <20180912091309.7551-4-quentin.perret@arm.com>
- <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
+ <20181002122535.GY3439@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
+In-Reply-To: <20181002122535.GY3439@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 02 Oct 2018 at 14:30:31 (+0200), Peter Zijlstra wrote:
+On Tuesday 02 Oct 2018 at 14:25:35 (+0200), Peter Zijlstra wrote:
 > On Wed, Sep 12, 2018 at 10:12:58AM +0100, Quentin Perret wrote:
 > > +/**
-> > + * em_register_perf_domain() - Register the Energy Model of a performance domain
-> > + * @span	: Mask of CPUs in the performance domain
-> > + * @nr_states	: Number of capacity states to register
-> > + * @cb		: Callback functions providing the data of the Energy Model
+> > + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
+> > + * @pd		: performance domain for which energy has to be estimated
+> > + * @max_util	: highest utilization among CPUs of the domain
+> > + * @sum_util	: sum of the utilization of all CPUs in the domain
 > > + *
-> > + * Create Energy Model tables for a performance domain using the callbacks
-> > + * defined in cb.
-> > + *
-> > + * If multiple clients register the same performance domain, all but the first
-> > + * registration will be ignored.
-> > + *
-> > + * Return 0 on success
+> > + * Return: the sum of the energy consumed by the CPUs of the domain assuming
+> > + * a capacity state satisfying the max utilization of the domain.
 > > + */
-> > +int em_register_perf_domain(cpumask_t *span, unsigned int nr_states,
-> > +						struct em_data_callback *cb)
+> > +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
+> > +				unsigned long max_util, unsigned long sum_util)
 > > +{
-> > +	unsigned long cap, prev_cap = 0;
-> > +	struct em_perf_domain *pd;
-> > +	int cpu, ret = 0;
-> > +
-> > +	if (!span || !nr_states || !cb)
-> > +		return -EINVAL;
+> > +	unsigned long freq, scale_cpu;
+> > +	struct em_cap_state *cs;
+> > +	int i, cpu;
 > > +
 > > +	/*
-> > +	 * Use a mutex to serialize the registration of performance domains and
-> > +	 * let the driver-defined callback functions sleep.
+> > +	 * In order to predict the capacity state, map the utilization of the
+> > +	 * most utilized CPU of the performance domain to a requested frequency,
+> > +	 * like schedutil.
 > > +	 */
-> > +	mutex_lock(&em_pd_mutex);
+> > +	cpu = cpumask_first(to_cpumask(pd->cpus));
+> > +	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> > +	cs = &pd->table[pd->nr_cap_states - 1];
+> > +	freq = map_util_freq(max_util, cs->frequency, scale_cpu);
 > > +
-> > +	for_each_cpu(cpu, span) {
-> > +		/* Make sure we don't register again an existing domain. */
-> > +		if (READ_ONCE(per_cpu(em_data, cpu))) {
-> > +			ret = -EEXIST;
-> > +			goto unlock;
-> > +		}
-> > +
-> > +		/*
-> > +		 * All CPUs of a domain must have the same micro-architecture
-> > +		 * since they all share the same table.
-> > +		 */
-> > +		cap = arch_scale_cpu_capacity(NULL, cpu);
-> > +		if (prev_cap && prev_cap != cap) {
-> > +			pr_err("CPUs of %*pbl must have the same capacity\n",
-> > +							cpumask_pr_args(span));
-> > +			ret = -EINVAL;
-> > +			goto unlock;
-> > +		}
-> > +		prev_cap = cap;
+> > +	/*
+> > +	 * Find the lowest capacity state of the Energy Model above the
+> > +	 * requested frequency.
+> > +	 */
+> > +	for (i = 0; i < pd->nr_cap_states; i++) {
+> > +		cs = &pd->table[i];
+> > +		if (cs->frequency >= freq)
+> > +			break;
 > > +	}
 > > +
-> > +	/* Create the performance domain and add it to the Energy Model. */
-> > +	pd = em_create_pd(span, nr_states, cb);
-> > +	if (!pd) {
-> > +		ret = -EINVAL;
-> > +		goto unlock;
-> > +	}
-> > +
-> > +	for_each_cpu(cpu, span)
-> > +		WRITE_ONCE(per_cpu(em_data, cpu), pd);
+> > +	/*
+> > +	 * The capacity of a CPU in the domain at that capacity state (cs)
+> > +	 * can be computed as:
+> > +	 *
+> > +	 *             cs->freq * scale_cpu
+> > +	 *   cs->cap = --------------------                          (1)
+> > +	 *                 cpu_max_freq
+> > +	 *
+> > +	 * So, the energy consumed by this CPU at that capacity state is:
+> > +	 *
+> > +	 *             cs->power * cpu_util
+> > +	 *   cpu_nrg = --------------------                          (2)
+> > +	 *                   cs->cap
+> > +	 *
+> > +	 * since 'cpu_util / cs->cap' represents its percentage of busy time.
+> > +	 *
+> > +	 *   NOTE: Although the result of this computation actually is in
+> > +	 *         units of power, it can be manipulated as an energy value
+> > +	 *         over a scheduling period, since it is assumed to be
+> > +	 *         constant during that interval.
+> > +	 *
+> > +	 * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
+> > +	 * of two terms:
+> > +	 *
+> > +	 *             cs->power * cpu_max_freq   cpu_util
+> > +	 *   cpu_nrg = ------------------------ * ---------          (3)
+> > +	 *                    cs->freq            scale_cpu
+> > +	 *
+> > +	 * The first term is static, and is stored in the em_cap_state struct
+> > +	 * as 'cs->cost'.
+> > +	 *
+> > +	 * Since all CPUs of the domain have the same micro-architecture, they
+> > +	 * share the same 'cs->cost', and the same CPU capacity. Hence, the
+> > +	 * total energy of the domain (which is the simple sum of the energy of
+> > +	 * all of its CPUs) can be factorized as:
+> > +	 *
+> > +	 *            cs->cost * \Sum cpu_util
+> > +	 *   pd_nrg = ------------------------                       (4)
+> > +	 *                  scale_cpu
+> > +	 */
+> > +	return cs->cost * sum_util / scale_cpu;
+> > +}
 > 
-> It's not immediately obvious to me why this doesn't need to be
-> smp_store_release(). The moment you publish that pointer, it can be
-> read, right?
-> 
-> Even if you never again change the pointer value, you want to ensure the
-> content of pd is stable before pd itself is observable, right?
+> Should we explicitly mention that this ignores idle costs?
 
-So, I figured the mutex already gives me some of that. I mean, AFAIU it
-should guarantee that concurrent callers to em_register_perf_domain are
-serialized correctly.
-
-For example, if I have two concurrent calls (let's name them A and B) to
-em_register_perf_domain(), and say A takes the mutex first, then B
-should be guaranteed to always see the totality of the update that A
-made to the per_cpu table. Is that right ?
-
-If the above is correct, then it's pretty much all I can do, I think ...
-In the case of concurrent readers and writers to em_data, the
-smp_store_release() call still doesn't give me the guarantee that the
-per_cpu table is stable since em_cpu_get() is lock-free ...
-
-If I want to be sure the per_cpu thing is stable from em_cpu_get() then
-I can add a mutex_lock/unlock there too, but even then I won't need the
-smp_store_release(), I think. Or maybe I got confused again ?
+More doc shouldn't hurt so I can add a little something if you feel it's
+needed.
 
 Thanks,
 Quentin
