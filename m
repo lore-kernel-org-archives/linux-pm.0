@@ -1,58 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] PM / core: skip suspend next time if resume returns
- an error
-Date: Tue, 2 Oct 2018 10:28:53 +0200
-Message-ID: <CAJZ5v0g13wJrUpshFoQx-FXHMs=MkQ1dStNSESiqXC3zduqJcA@mail.gmail.com>
-References: <20180927203523.60856-1-dianders@chromium.org> <20181002080554.GC19677@amd>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 00/12][v4] Backport several fixes from 64bits to 32bits
+ hibernation
+Date: Tue, 2 Oct 2018 11:20:23 +0200 (CEST)
+Message-ID: <alpine.DEB.2.21.1810021119540.32062@nanos.tec.linutronix.de>
+References: <cover.1537448058.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181002080554.GC19677@amd>
+In-Reply-To: <cover.1537448058.git.yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Doug Anderson <dianders@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, dkota@codeaurora.org, Dmitry Torokhov <dtor@chromium.org>, swboyd@chromium.org, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 2, 2018 at 10:05 AM Pavel Machek <pavel@ucw.cz> wrote:
->
-> Hi!
->
-> > In general Linux doesn't behave super great if you get an error while
-> > executing a device's resume handler.  Nothing will come along later
-> > and and try again to resume the device (and all devices that depend on
-> > it), so pretty much you're left with a non-functioning device and
-> > that's not good.
-> >
-> > However, even though you'll end up with a non-functioning device we
-> > still don't consider resume failures to be fatal to the system.  We'll
-> > keep chugging along and just hope that the device that failed to
-> > resume wasn't too critical.  This establishes the precedent that we
-> > should at least try our best not to fully bork the system after a
-> > resume failure.
-> >
-> > I will argue that the best way to keep the system in the best shape is
-> > to assume that if a resume callback failed that it did as close to
-> > no-op as possible.  Because of this we should consider the device
-> > still suspended and shouldn't try to suspend the device again next
-> > time around.  Today that's not what happens.  AKA if you have a
-> > device
->
-> I don't think there are many guarantees when device resume fail. It
-> may have done nothing, and it may have resumed the device almost
-> fully.
->
-> I guess the best option would be to refuse system suspend after some
-> device failed like that.
->
-> That leaves user possibility to debug it...
+On Fri, 21 Sep 2018, Chen Yu wrote:
 
-I guess so.
+> Currently there are mainly three bugs in 32bits system when doing
+> hibernation:
+> 1. The page copy code is not running in safe page, which might
+>    cause hang during resume.
+> 2. There's no text mapping for the final jump address
+>    of the original kernel, which might cause the system jumping
+>    into illegal address and causes system hang during resume.
+> 3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
+>    rather than the original kernel page table after all the pages
+>    been copied back, which might cause invalid virtual-physical
+>    mapping issue during resume.
+> 
+> To solve these problems:
+> 
+> 1. Copy the code core_restore_code to a safe page, to avoid the instruction
+>    code been overwritten when image kernel pages are being copied.
+> 2. Set up temporary text mapping for the image kernel's jump address,
+>    so that after all the pages have been copied back, the system could
+>    jump to this address.
+> 3. Switch to the original kernel page table during resume.
+> 
+> Furthermore, MD5 hash check for e820 map is also backported from 64bits
+> system.
+> 
+> In order to make this patch set more readable, these fixes are splitted
+> into several sub patches.
+> 
+> And use CONFIG_X86_64 to control the common code to be 'activated' for
+> 32 bit system during each sub-patch for better maintaining.
 
-Doing that in all cases is kind of risky IMO, because we haven't taken
-the return values of the ->resume* callbacks into account so far
-(except for printing the information that is), so there may be
-non-lethal cases when that happens and the $subject patch would make
-them not work any more.
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+
+Rafael, it's all yours :)
 
 Thanks,
-Rafael
+
+	tglx
