@@ -1,56 +1,81 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] PCI: Reprogram bridge prefetch registers
- on resume
-Date: Tue, 2 Oct 2018 15:03:50 -0500
-Message-ID: <20181002200350.GC120535@bhelgaas-glaptop.roam.corp.google.com>
-References: <20180913033745.11178-1-drake@endlessm.com>
- <20180918213244.GE13616@bhelgaas-glaptop.roam.corp.google.com>
- <20180927205247.GA18434@bhelgaas-glaptop.roam.corp.google.com>
- <3f8efcd6-7cd2-b41a-d984-28c9e1740d6c@rockbox.org>
- <CAD8Lp47uL3DQTBiVTduO1+Cg8px4CDpv26qVJsgT+RJ4WZx9oA@mail.gmail.com>
- <7b0a5388-5b3a-a6e0-347f-94f87fc2e540@rockbox.org>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [RFC workqueue/driver-core PATCH 1/5] workqueue: Provide
+ queue_work_near to queue work near a given NUMA node
+Date: Tue, 2 Oct 2018 13:49:22 -0700
+Message-ID: <92d8b57f-db37-e4bf-b69f-3ab5c4440ea0@linux.intel.com>
+References: <20180926214433.13512.30289.stgit@localhost.localdomain>
+ <20180926215138.13512.33146.stgit@localhost.localdomain>
+ <20180926215307.GA270328@devbig004.ftw2.facebook.com>
+ <9b002bbb-3e6d-9e99-d8f9-36df4306093e@linux.intel.com>
+ <20180926220957.GB270328@devbig004.ftw2.facebook.com>
+ <ba72f007-84e2-6fe0-b128-d876dadef5f5@linux.intel.com>
+ <20181001160142.GE270328@devbig004.ftw2.facebook.com>
+ <4eebc017-23a2-a26e-095c-66433061a141@linux.intel.com>
+ <20181002174116.GG270328@devbig004.ftw2.facebook.com>
+ <be9081de-f186-b265-934d-78cec2a8792f@linux.intel.com>
+ <20181002184127.GH270328@devbig004.ftw2.facebook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <7b0a5388-5b3a-a6e0-347f-94f87fc2e540-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Thomas Martitz <kugel-UCKwuKHb1aVAfugRpC6u6w@public.gmane.org>
-Cc: andy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, nic_swsd-Rasf1IRRPZFBDgjK7y7TUQ@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Wysocki, Rafael J" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, Keith Busch <keith.busch-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, netdev <netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, rchang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org, Linux Upstreaming Team <linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>, David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Jon Derrick <jonathan.derrick-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Heiner Kallweit <hkallweit1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <20181002184127.GH270328-LpCCV3molIbIZ9tKgghJQw2O0Ztt9esIQQ4Iyu8u01E@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVGhvbWFzLAoKT24gTW9uLCBPY3QgMDEsIDIwMTggYXQgMDQ6MjU6MDZQTSArMDIwMCwgVGhv
-bWFzIE1hcnRpdHogd3JvdGU6Cj4gQW0gMDEuMTAuMTggdW0gMDY6NTcgc2NocmllYiBEYW5pZWwg
-RHJha2U6Cj4gPiBPbiBTdW4sIFNlcCAzMCwgMjAxOCBhdCA1OjA3IEFNIFRob21hcyBNYXJ0aXR6
-IDxrdWdlbEByb2NrYm94Lm9yZz4gd3JvdGU6Cj4gPiA+IFRoZSBsYXRlc3QgaXRlcmF0aW9uIGRv
-ZXMgbm90IHdvcmsgb24gbXkgSFAgc3lzdGVtLiBUaGUgR1BVIGZhaWxzIHRvCj4gPiA+IHBvd2Vy
-IHVwIGp1c3QgbGlrZSB0aGUgdW5wYXRjaGVkIGtlcm5lbC4KPiA+IAo+ID4gVGhhdCdzIHdlaXJk
-LCBJIHdvdWxkIG5vdCBleHBlY3QgYSBiZWhhdmlvdXIgY2hhbmdlIGluIHRoZSBsYXRlc3QKPiA+
-IHBhdGNoLiBwY2lfcmVzdG9yZV9jb25maWdfZHdvcmQoKSBoYXMgc29tZSBkZWJ1ZyBtZXNzYWdl
-cywgY291bGQgeW91Cj4gPiBwbGVhc2UgbWFrZSB0aGVtIHZpc2libGUgYW5kIHNob3cgbG9ncyBh
-Z2Fpbj8KPiA+IEFsc28gcmVtaW5kIHVzIG9mIHRoZSBQQ0kgZGV2aWNlIGFkZHJlc3Mgb2YgdGhl
-IHBhcmVudCBicmlkZ2UgKGxzcGNpIC12dCkKPiAKPiBJJ2xsIGZvbGxvdyB1cCB3aXRoIG1vcmUg
-dGhlIHJlcXVlc3RlZCBpbmZvcm1hdGlvbiBvbiBidWd6aWxsYQo+IChMaW5rOiBodHRwczovL2J1
-Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTIwMTA2OSkuCj4gCj4gT24gYSBxdWlj
-ayByZS1jaGVjaywgaXQgc2VlbXMgdG8gZGVwZW5kIG9uIGlmIEkgdXNlZCB0aGUgZUdQVSBiZWZv
-cmUKPiB0aGUgaW5pdGlhbCBzdXNwZW5kLiBJZiBJIHJ1biBnbHhnZWFycyAod2l0aCBEUklfUFJJ
-TUU9MSkgYmVmb3JlIHN1c3BlbmQgaXQKPiBzZWVtcyBmaW5lLgoKRG9lcyB0aGUgcGF0Y2ggKFsx
-XSkgbWFrZSB0aGluZ3MgKndvcnNlKiBjb21wYXJlZCB0byB2NC4xOS1yYzU/CgpJZiBzbywgSSds
-bCBkcm9wIHRoZSBwYXRjaCB1bnRpbCB3ZSBmaWd1cmUgdGhpcyBvdXQuICBCdXQgaWYgdGhlIEdQ
-VQpwb3dlciBpc3N1ZSBhbHNvIG9jY3VycyBpbiB2NC4xOS1yYzUsIEkgdGhpbmsgd2UgY2FuIGFz
-c3VtZSBpdCdzIGEKZGlmZmVyZW50IHByb2JsZW0gYW5kIHdlIGNhbiBnbyBhaGVhZCBhbmQgbWVy
-Z2UgWzFdLgoKWzFdIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwv
-Z2l0L2hlbGdhYXMvcGNpLmdpdC9jb21taXQvP2g9Zm9yLWxpbnVzJmlkPTA4Mzg3NDU0OWZkZmVm
-YTYyOWRmYTc1Mjc4NWUyMDQyN2RkZTE1MTEKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVl
-ZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9ub3V2ZWF1Cg==
+On 10/2/2018 11:41 AM, Tejun Heo wrote:
+> Hello,
+> 
+> On Tue, Oct 02, 2018 at 11:23:26AM -0700, Alexander Duyck wrote:
+>>> Yeah, it's all in wq_select_unbound_cpu().  Right now, if the
+>>> requested cpu isn't in wq_unbound_cpumask, it falls back to dumb
+>>> round-robin.  We can probably do better there and find the nearest
+>>> node considering topology.
+>>
+>> Well if we could get wq_select_unbound_cpu doing the right thing
+>> based on node topology that would be most of my work solved right
+>> there. Basically I could just pass WQ_CPU_UNBOUND with the correct
+>> node and it would take care of getting to the right CPU.
+> 
+> Yeah, sth like that.  It might be better to keep the function to take
+> cpu for consistency as everything else passes around cpu.
+> 
+>>>> The question I have then is what should I do about workqueues that
+>>>> aren't WQ_UNBOUND if they attempt to use queue_work_near? In that
+>>>
+>>> Hmm... yeah, let's just use queue_work_on() for now.  We can sort it
+>>> out later and users could already do that anyway.
+>>
+>> So are you saying I should just return an error for now if somebody
+>> tries to use something other than an unbound workqueue with
+>> queue_work_near, and expect everyone else to just use queue_work_on
+>> for the other workqueue types?
+> 
+> Oh, I meant that let's not add a new interface for now and just use
+> queue_work_on() for your use case too.
+> 
+> Thanks.
+
+So the only issue is that I was hoping to get away with not having to 
+add additional preemption. That was the motivation behind doing 
+queue_work_near as I could just wrap it all in the same local_irq_save 
+that way I don't have to worry about the CPU I am on changing.
+
+What I may look at doing is just greatly reducing the 
+workqueue_select_unbound_cpu_near function to essentially just perform a 
+few tests and then will just use the results from a cpumask_any_and of 
+the cpumask_of_node and the cpu_online_mask. I'll probably rename it 
+while I am at it since I am going to probably be getting away from the 
+"unbound" checks in the logic.
+
+- Alex
