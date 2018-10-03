@@ -1,65 +1,68 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Wed, 3 Oct 2018 10:33:46 +0100
-Message-ID: <20181003093346.GA12570@e107155-lin>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
- <20180926144830.GB25838@e107155-lin>
- <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
- <20181002111758.GC1086@e107155-lin>
- <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3] cpuidle: enter_state: Don't needlessly calculate diff time
+Date: Wed, 03 Oct 2018 11:42:56 +0200
+Message-ID: <1604543.39SsmLJHeg@aspire.rjw.lan>
+References: <20180910214725.19525-1-kw@fieahl.im>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
+In-Reply-To: <20180910214725.19525-1-kw@fieahl.im>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+To: Fieah Lim <kw@fieahl.im>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 02, 2018 at 11:56:56AM -0700, Saravana Kannan wrote:
+On Monday, September 10, 2018 11:47:25 PM CEST Fieah Lim wrote:
+> Currently we use ktime_us_delta() to calculate last residency and
+> state usage unconditionally, it makes no sense to do this calculation
+> when we fails to enter any idle state.
+> It can be optimize by moving the calculation after entered_state >= 0
 > 
-> On 10/02/2018 04:17 AM, Sudeep Holla wrote:
-
-[...]
-
-> > Yes, I do understand I have made the same point multiple time and it's
-> > intentional. We need to get the fragmented f/w support story fixed.
-> > Different ARM vendors are doing different things in f/w and ARM sees the
-> > same fragmentation story as before. We have come up with new specification
-> > and my annoying multiple emails are just to constantly remind the same.
-> > 
-> > I do understand we have existing implementations to consider, but fixing
-> > the functionality in arbitrary way is not a good design and it better
-> > to get them fixed for future.
+> While at it, merge those comment blocks into one and remove a
+> space between type casting of diff.
 > 
-> I believe the fragmentation you are referring to is  in the
-> interface/communication protocol. I see the benefit of standardizing that as
-> long as the standard actually turns out to be good. But that's completely
-> separate from what the FW can/can't do. Asking to standardize what the FW
-> can/can't do doesn't seem realistic as each chip vendor will have different
-> priorities - power, performance, cost, chip area, etc. It's the conflation
-> of these separate topics that doesn't help IMHO.
+> This patch has no functional changes.
+> 
+> Signed-off-by: Fieah Lim <kw@fieahl.im>
+> ---
+> Changes from v1:
+>  - Rewrite changelog as Rafael J. Wysocki suggested
+> Changes from v2:
+>  - Minor adjustment
+> ---
+>  drivers/cpuidle/cpuidle.c | 15 +++++++--------
+>  1 file changed, 7 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 6df894d65d9e..40442c3631ce 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -247,17 +247,16 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	if (!cpuidle_state_is_coupled(drv, index))
+>  		local_irq_enable();
+>  
+> -	diff = ktime_us_delta(time_end, time_start);
+> -	if (diff > INT_MAX)
+> -		diff = INT_MAX;
+> -
+> -	dev->last_residency = (int) diff;
+> -
+>  	if (entered_state >= 0) {
+> -		/* Update cpuidle counters */
+> -		/* This can be moved to within driver enter routine
+> +		/* Update cpuidle counters
+> +		 * This can be moved to within driver enter routine,
+>  		 * but that results in multiple copies of same code.
+>  		 */
+> +		diff = ktime_us_delta(time_end, time_start);
+> +		if (diff > INT_MAX)
+> +			diff = INT_MAX;
+> +
+> +		dev->last_residency = (int)diff;
+>  		dev->states_usage[entered_state].time += dev->last_residency;
+>  		dev->states_usage[entered_state].usage++;
+>  	} else {
+> 
 
-I agree on interface/communication protocol fragmentation and firmware
-can implement whatever the vendor wish. What I was also referring was
-the mix-n-match approach which should be avoided.
-
-e.g. Device A and B's PM is managed completely by firmware using OSPM hints
-Suppose Device X's PM is dependent on Device A and B, in which case it's
-simpler and cleaner to leave Device X PM to firmware. Reading the state
-of A and B and using that as hint for X is just overhead which firmware
-can manage better. That was my main concern here: A=CPU and B=some other
-device and X is inter-connect to which A and B are connected.
-
-If CPU OPPs are obtained from f/w and this inter-connect from DT, mapping
-then is a mess and that's what I was concerned. I am sorry if that's not
-the scenario here, I may have mistaken then.
-
---
-Regards,
-Sudeep
+Applied, thanks!
