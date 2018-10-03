@@ -1,91 +1,54 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v9 09/11] drivers: firmware: psci: Split psci_dt_cpu_init_idle()
-Date: Wed,  3 Oct 2018 16:38:22 +0200
-Message-ID: <20181003143824.13059-10-ulf.hansson@linaro.org>
+Subject: [PATCH v9 10/11] drivers: firmware: psci: Support hierarchical CPU idle states
+Date: Wed,  3 Oct 2018 16:38:23 +0200
+Message-ID: <20181003143824.13059-11-ulf.hansson@linaro.org>
 References: <20181003143824.13059-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181003143824.13059-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Let's split psci_dt_cpu_init_idle() function into two functions, as to
-allow following changes to re-use some of the code.
+From: Lina Iyer <lina.iyer@linaro.org>
+
+Currently CPU's idle states are represented in a flattened model, via the
+"cpu-idle-states" binding from within the CPU's device nodes.
+
+Support the hierarchical layout, simply by converting to calling the new OF
+helper, of_get_cpu_state_node().
 
 Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
- 1 file changed, 23 insertions(+), 19 deletions(-)
+ drivers/firmware/psci/psci.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index c80ec1d03274..9788bfc1cf8b 100644
+index 9788bfc1cf8b..256b4edbb20a 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -270,9 +270,26 @@ static int __init psci_features(u32 psci_func_id)
- #ifdef CONFIG_CPU_IDLE
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
- 
-+static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
-+{
-+	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
-+
-+	if (err) {
-+		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
-+		return err;
-+	}
-+
-+	if (!psci_power_state_is_valid(*state)) {
-+		pr_warn("Invalid PSCI power state %#x\n", *state);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- {
--	int i, ret, count = 0;
-+	int i, ret = 0, count = 0;
- 	u32 *psci_states;
+@@ -294,8 +294,7 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
  	struct device_node *state_node;
  
-@@ -291,29 +308,16 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 	/* Count idle states */
+-	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+-					      count))) {
++	while ((state_node = of_get_cpu_state_node(cpu_node, count))) {
+ 		count++;
+ 		of_node_put(state_node);
+ 	}
+@@ -308,7 +307,7 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
  		return -ENOMEM;
  
  	for (i = 0; i < count; i++) {
--		u32 state;
--
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
-+		of_node_put(state_node);
+-		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
++		state_node = of_get_cpu_state_node(cpu_node, i);
+ 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
+ 		of_node_put(state_node);
  
--		ret = of_property_read_u32(state_node,
--					   "arm,psci-suspend-param",
--					   &state);
--		if (ret) {
--			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
--				state_node);
--			of_node_put(state_node);
-+		if (ret)
- 			goto free_mem;
--		}
- 
--		of_node_put(state_node);
--		pr_debug("psci-power-state %#x index %d\n", state, i);
--		if (!psci_power_state_is_valid(state)) {
--			pr_warn("Invalid PSCI power state %#x\n", state);
--			ret = -EINVAL;
--			goto free_mem;
--		}
--		psci_states[i] = state;
-+		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
- 	}
-+
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
 -- 
 2.17.1
