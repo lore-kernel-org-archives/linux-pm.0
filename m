@@ -1,54 +1,198 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v9 02/11] PM / Domains: Deal with multiple states but no governor in genpd
-Date: Wed,  3 Oct 2018 16:38:15 +0200
-Message-ID: <20181003143824.13059-3-ulf.hansson@linaro.org>
+Subject: [PATCH v9 04/11] dt: psci: Update DT bindings to support hierarchical PSCI states
+Date: Wed,  3 Oct 2018 16:38:17 +0200
+Message-ID: <20181003143824.13059-5-ulf.hansson@linaro.org>
 References: <20181003143824.13059-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181003143824.13059-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-A caller of pm_genpd_init() that provides some states for the genpd via the
-->states pointer in the struct generic_pm_domain, should also provide a
-governor. This because it's the job of the governor to pick a state that
-satisfies the constraints.
+From: Lina Iyer <lina.iyer@linaro.org>
 
-Therefore, let's print a warning to inform the user about such bogus
-configuration and avoid to bail out, by instead picking the shallowest
-state before genpd invokes the ->power_off() callback.
+Update DT bindings to represent hierarchical CPU and CPU PM domain idle
+states for PSCI. Also update the PSCI examples to clearly show how
+flattened and hierarchical idle states can be represented in DT.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/base/power/domain.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ .../devicetree/bindings/arm/psci.txt          | 156 ++++++++++++++++++
+ 1 file changed, 156 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e1bbddb02871..7f38a92b444a 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -467,6 +467,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 			return -EAGAIN;
- 	}
+diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+index a2c4f1d52492..17aa3d3a1c8e 100644
+--- a/Documentation/devicetree/bindings/arm/psci.txt
++++ b/Documentation/devicetree/bindings/arm/psci.txt
+@@ -105,7 +105,163 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+ 		...
+ 	};
  
-+	/* Default to shallowest state. */
-+	if (!genpd->gov)
-+		genpd->state_idx = 0;
++ARM systems can have multiple cores sometimes in hierarchical arrangement.
++This often, but not always, maps directly to the processor power topology of
++the system. Individual nodes in a topology have their own specific power states
++and can be better represented in DT hierarchically.
 +
- 	if (genpd->power_off) {
- 		int ret;
- 
-@@ -1687,6 +1691,8 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		ret = genpd_set_default_power_state(genpd);
- 		if (ret)
- 			return ret;
-+	} else if (!gov) {
-+		pr_warn("%s : no governor for states\n", genpd->name);
- 	}
- 
- 	device_initialize(&genpd->dev);
++For these cases, the definitions of the idle states for the CPUs and the CPU
++topology, must conform to the domain idle state specification [3]. The domain
++idle states themselves, must be compatible with the defined 'domain-idle-state'
++binding [1], and also need to specify the arm,psci-suspend-param property for
++each idle state.
++
++DT allows representing CPUs and CPU idle states in two different ways -
++
++The flattened model as given in Example 1, lists CPU's idle states followed by
++the domain idle state that the CPUs may choose. Note that the idle states are
++all compatible with "arm,idle-state".
++
++Example 2 represents the hierarchical model of CPUs and domain idle states.
++CPUs define their domain provider in their psci DT node. The domain controls
++the power to the CPU and possibly other h/w blocks that would enter an idle
++state along with the CPU. The CPU's idle states may therefore be considered as
++the domain's idle states and have the compatible "arm,idle-state". Such domains
++may also be embedded within another domain that may represent common h/w blocks
++between these CPUs. The idle states of the CPU topology shall be represented as
++the domain's idle states.
++
++In PSCI firmware v1.0, the OS-Initiated mode is introduced. In order to use it,
++the hierarchical representation must be used.
++
++Example 1: Flattened representation of CPU and domain idle states
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a53", "arm,armv8";
++			reg = <0x0>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_PWRDN>, <&CLUSTER_RET>,
++					  <&CLUSTER_PWRDN>;
++		};
++
++		CPU1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a57", "arm,armv8";
++			reg = <0x100>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_PWRDN>, <&CLUSTER_RET>,
++					  <&CLUSTER_PWRDN>;
++		};
++
++		idle-states {
++			CPU_PWRDN: cpu-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x000001>;
++				entry-latency-us = <10>;
++				exit-latency-us = <10>;
++				min-residency-us = <100>;
++			};
++
++			CLUSTER_RET: cluster-retention {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000010>;
++				entry-latency-us = <500>;
++				exit-latency-us = <500>;
++				min-residency-us = <2000>;
++			};
++
++			CLUSTER_PWRDN: cluster-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000030>;
++				entry-latency-us = <2000>;
++				exit-latency-us = <2000>;
++				min-residency-us = <6000>;
++			};
++	};
++
++	psci {
++		compatible = "arm,psci-0.2";
++		method = "smc";
++	};
++
++Example 2: Hierarchical representation of CPU and domain idle states
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a53", "arm,armv8";
++			reg = <0x0>;
++			enable-method = "psci";
++			power-domains = <&CPU_PD0>;
++		};
++
++		CPU1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a57", "arm,armv8";
++			reg = <0x100>;
++			enable-method = "psci";
++			power-domains = <&CPU_PD1>;
++		};
++
++		idle-states {
++			CPU_PWRDN: cpu-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x000001>;
++				entry-latency-us = <10>;
++				exit-latency-us = <10>;
++				min-residency-us = <100>;
++			};
++
++			CLUSTER_RET: cluster-retention {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x1000010>;
++				entry-latency-us = <500>;
++				exit-latency-us = <500>;
++				min-residency-us = <2000>;
++			};
++
++			CLUSTER_PWRDN: cluster-power-down {
++				compatible = "domain-idle-state";
++				arm,psci-suspend-param = <0x1000030>;
++				entry-latency-us = <2000>;
++				exit-latency-us = <2000>;
++				min-residency-us = <6000>;
++			};
++		};
++	};
++
++	psci {
++		compatible = "arm,psci-1.0";
++		method = "smc";
++
++		CPU_PD0: cpu-pd0 {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CPU_PWRDN>;
++			power-domains = <&CLUSTER_PD>;
++		};
++
++		CPU_PD1: cpu-pd1 {
++			#power-domain-cells = <0>;
++			domain-idle-states =  <&CPU_PWRDN>;
++			power-domains = <&CLUSTER_PD>;
++		};
++
++		CLUSTER_PD: cluster-pd {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWRDN>;
++		};
++	};
++
+ [1] Kernel documentation - ARM idle states bindings
+     Documentation/devicetree/bindings/arm/idle-states.txt
+ [2] Power State Coordination Interface (PSCI) specification
+     http://infocenter.arm.com/help/topic/com.arm.doc.den0022c/DEN0022C_Power_State_Coordination_Interface.pdf
++[3]. PM Domains description
++    Documentation/devicetree/bindings/power/power_domain.txt
 -- 
 2.17.1
