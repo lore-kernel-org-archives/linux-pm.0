@@ -1,68 +1,39 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v9 03/11] PM / Domains: Document flags for genpd
-Date: Wed,  3 Oct 2018 16:38:16 +0200
-Message-ID: <20181003143824.13059-4-ulf.hansson@linaro.org>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v7 05/14] sched: Introduce a sched_feat for Energy Aware
+ Scheduling
+Date: Wed, 3 Oct 2018 18:24:35 +0200
+Message-ID: <20181003162435.GA19252@hirez.programming.kicks-ass.net>
+References: <20180912091309.7551-1-quentin.perret@arm.com>
+ <20180912091309.7551-6-quentin.perret@arm.com>
+ <20181002123416.GA3439@hirez.programming.kicks-ass.net>
+ <20181002130818.fciw7cmlwggymxrz@queper01-lin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181003143824.13059-1-ulf.hansson@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <20181002130818.fciw7cmlwggymxrz@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The current documented description of the GENPD_FLAG_* flags, are too
-simplified, so let's extend them.
+On Tue, Oct 02, 2018 at 02:08:21PM +0100, Quentin Perret wrote:
+> On Tuesday 02 Oct 2018 at 14:34:16 (+0200), Peter Zijlstra wrote:
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/pm_domain.h | 35 ++++++++++++++++++++++++++++++-----
- 1 file changed, 30 insertions(+), 5 deletions(-)
+> > So these are debug knobs.. I would expect there to be a regular
+> > static_key that is controlled by the presence of EM data.
+> 
+> Right, the issue I'm trying to solve with this is basically that _some_
+> users will want to have an EM for the thermal stuff, but they will want
+> EAS disabled. Some people (not very many that's true, but still) use
+> big.little and don't care much about energy ...
+> 
+> So, there is a need for an EAS knob on the scheduler side. I don't mind
+> it being something else than a sched_feat, but I couldn't see a better
+> option. Another Kconfig (CONFIG_SCHED_ENERGY) ? A sysctl ?
 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 776c546d581a..3b5d7280e52e 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -17,11 +17,36 @@
- #include <linux/notifier.h>
- #include <linux/spinlock.h>
- 
--/* Defines used for the flags field in the struct generic_pm_domain */
--#define GENPD_FLAG_PM_CLK	 (1U << 0) /* PM domain uses PM clk */
--#define GENPD_FLAG_IRQ_SAFE	 (1U << 1) /* PM domain operates in atomic */
--#define GENPD_FLAG_ALWAYS_ON	 (1U << 2) /* PM domain is always powered on */
--#define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3) /* Keep devices active if wakeup */
-+/*
-+ * Flags to control the behaviour of a genpd.
-+ *
-+ * These flags may be set in the struct generic_pm_domain's flags field by a
-+ * genpd backend driver. The flags must be set before it calls pm_genpd_init(),
-+ * which initializes a genpd.
-+ *
-+ * GENPD_FLAG_PM_CLK:		Instructs genpd to use the PM clk framework,
-+ *				while powering on/off attached devices.
-+ *
-+ * GENPD_FLAG_IRQ_SAFE:		This informs genpd that its backend callbacks,
-+ *				->power_on|off(), doesn't sleep. Hence, these
-+ *				can be invoked from within atomic context, which
-+ *				enables genpd to power on/off the PM domain,
-+ *				even when pm_runtime_is_irq_safe() returns true,
-+ *				for any of its attached devices. Note that, a
-+ *				genpd having this flag set, requires its
-+ *				masterdomains to also have it set.
-+ *
-+ * GENPD_FLAG_ALWAYS_ON:	Instructs genpd to always keep the PM domain
-+ *				powered on.
-+ *
-+ * GENPD_FLAG_ACTIVE_WAKEUP:	Instructs genpd to keep the PM domain powered
-+ *				on, in case any of its attached devices is used
-+ *				in the wakeup path to serve system wakeups.
-+ */
-+#define GENPD_FLAG_PM_CLK	 (1U << 0)
-+#define GENPD_FLAG_IRQ_SAFE	 (1U << 1)
-+#define GENPD_FLAG_ALWAYS_ON	 (1U << 2)
-+#define GENPD_FLAG_ACTIVE_WAKEUP (1U << 3)
- 
- enum gpd_status {
- 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
--- 
-2.17.1
+Yeah, sysctl, see for example: sysctl.kernel.numa_balancing and the
+sched_numa_balancing static_key that goes with it.
+
+I would default enable EAS if the EM is there and valid, but allow
+people to disable it.
