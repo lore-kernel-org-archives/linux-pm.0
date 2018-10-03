@@ -1,41 +1,80 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 08/14] sched/topology: Disable EAS on inappropriate
- platforms
-Date: Wed, 3 Oct 2018 18:27:19 +0200
-Message-ID: <20181003162719.GB19252@hirez.programming.kicks-ass.net>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-9-quentin.perret@arm.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Wed, 3 Oct 2018 11:06:45 -0700
+Message-ID: <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
+ <20180926144830.GB25838@e107155-lin>
+ <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+ <20181002111758.GC1086@e107155-lin>
+ <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
+ <20181003093346.GA12570@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180912091309.7551-9-quentin.perret@arm.com>
+In-Reply-To: <20181003093346.GA12570@e107155-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 12, 2018 at 10:13:03AM +0100, Quentin Perret wrote:
-> @@ -288,6 +321,21 @@ static void build_perf_domains(const struct cpumask *cpu_map)
->  			goto free;
->  		tmp->next = pd;
->  		pd = tmp;
-> +
-> +		/*
-> +		 * Count performance domains and capacity states for the
-> +		 * complexity check.
-> +		 */
-> +		nr_pd++;
-> +		nr_cs += em_pd_nr_cap_states(pd->obj);
-> +	}
-> +
-> +	/* Bail out if the Energy Model complexity is too high. */
-> +	if (nr_pd * (nr_cs + nr_cpus) > EM_MAX_COMPLEXITY) {
-> +		if (sched_debug())
-> +			pr_info("rd %*pbl: EM complexity is too high\n ",
-> +						cpumask_pr_args(cpu_map));
-> +		goto free;
->  	}
 
-I would make than an unconditional WARN, we do not really expect that to
-trigger, but then it does, we really don't want to hide it.
+
+On 10/03/2018 02:33 AM, Sudeep Holla wrote:
+> On Tue, Oct 02, 2018 at 11:56:56AM -0700, Saravana Kannan wrote:
+>> On 10/02/2018 04:17 AM, Sudeep Holla wrote:
+> [...]
+>
+>>> Yes, I do understand I have made the same point multiple time and it's
+>>> intentional. We need to get the fragmented f/w support story fixed.
+>>> Different ARM vendors are doing different things in f/w and ARM sees the
+>>> same fragmentation story as before. We have come up with new specification
+>>> and my annoying multiple emails are just to constantly remind the same.
+>>>
+>>> I do understand we have existing implementations to consider, but fixing
+>>> the functionality in arbitrary way is not a good design and it better
+>>> to get them fixed for future.
+>> I believe the fragmentation you are referring to is  in the
+>> interface/communication protocol. I see the benefit of standardizing that as
+>> long as the standard actually turns out to be good. But that's completely
+>> separate from what the FW can/can't do. Asking to standardize what the FW
+>> can/can't do doesn't seem realistic as each chip vendor will have different
+>> priorities - power, performance, cost, chip area, etc. It's the conflation
+>> of these separate topics that doesn't help IMHO.
+> I agree on interface/communication protocol fragmentation and firmware
+> can implement whatever the vendor wish. What I was also referring was
+> the mix-n-match approach which should be avoided.
+>
+> e.g. Device A and B's PM is managed completely by firmware using OSPM hints
+> Suppose Device X's PM is dependent on Device A and B, in which case it's
+> simpler and cleaner to leave Device X PM to firmware. Reading the state
+> of A and B and using that as hint for X is just overhead which firmware
+> can manage better. That was my main concern here: A=CPU and B=some other
+> device and X is inter-connect to which A and B are connected.
+>
+> If CPU OPPs are obtained from f/w and this inter-connect from DT, mapping
+> then is a mess and that's what I was concerned. I am sorry if that's not
+> the scenario here, I may have mistaken then.
+>
+What you are asking would be an ideal case, but this is not an ideal 
+world. There are tons of constraints for each chip vendor. Saying you 
+can't mix and match makes perfect the enemy of the good. Adding FW 
+support for A and B might make them optimal. But adding support for X 
+might not be possible for multiple real world constraints (chip area, 
+cost, time to market, etc). Saying "either do it all or do nothing" is 
+going to hold back a lot progress that can come in increments. Heck, we 
+do the same thing in the kernel. We'll add basic simple features first 
+and then improve on them. Why is it suddenly frowned up if a FW/HW 
+follows the same approach? I'll just have to agree to disagree with you 
+on this view point.
+
+-Saravana
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
