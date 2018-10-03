@@ -1,69 +1,61 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 03/14] PM: Introduce an Energy Model management
- framework
-Date: Wed, 3 Oct 2018 08:48:23 +0100
-Message-ID: <20181003074822.bwlhiowr4upjwunm@queper01-lin>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-4-quentin.perret@arm.com>
- <20181002123031.GZ3439@hirez.programming.kicks-ass.net>
- <20181002125115.245r3ocusvyiexno@queper01-lin>
- <20181002134857.GE26858@hirez.programming.kicks-ass.net>
- <20181002140430.fpeiqzblbcaewg6n@queper01-lin>
- <20181002142924.GI26858@hirez.programming.kicks-ass.net>
- <20181002144025.wnanxibhdcnl23sf@queper01-lin>
- <20181002191217.GA4160@andrea>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / core: Fix extra pm_runtime_enable on resume
+Date: Wed, 03 Oct 2018 10:30:14 +0200
+Message-ID: <16552133.rou2tyfJcz@aspire.rjw.lan>
+References: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181002191217.GA4160@andrea>
+In-Reply-To: <1537913455-43397-1-git-send-email-alcooperx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrea Parri <andrea.parri@amarulasolutions.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Al Cooper <alcooperx@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Andrea,
+On Wednesday, September 26, 2018 12:10:55 AM CEST Al Cooper wrote:
+> Matching pm_runtime_disable/pm_runtime_enable routines should be
+> called for "direct_complete" devices during suspend/resume and there
+> are cases where the pm_runtime_disable is skipped during suspend but
+> pm_runtime_enable is still called during resume. This is a problem
+> because the runtime enable state is really a counter and this can
+> incorrectly enable pm_runtime when it should not be enabled. This
+> happens for any direct_complete device doing an async suspend after
+> the global variable "async_error" is set (which is set by any sync
+> or async device's suspend error or early wake condition).
 
-On Tuesday 02 Oct 2018 at 21:12:17 (+0200), Andrea Parri wrote:
-> An example might help clarify this: here is a scenario I can _imagine,
-> based on your description.
-> 
-> CPU0 (em_register_perf_domain())	CPU1 (reader)
-> 
-> [...]					my_pd = READ_ONCE(per_cpu(em_data, 1)); /* em_cpu_get() */
-> pd->table = table			if (my_pd)
-> WRITE_ONCE(per_cpu(em_data, 1), pd);		my_table = my_pd->table; /* process, dereference, ... my_table */
-> 
-> In this scenario, we'd like CPU1 to see CPU0's store to ->table (as well
-> as the stores to table[]) _if CPU1 sees CPU0's store to em_data (that is,
-> if my_pd != NULL).
-> 
-> This guarantee does not hold with the WRITE_ONCE(), because CPU0 could
-> propagate the store to ->table and the store to em_data out-of-order.
+So the bug is simply that the direct_complete flag is not cleared
+when we are going to bail out of __device_suspend() early due to an
+error or wakeup.
 
-Ah, this is a very good point ... It's fine if a reader sees em_data
-half way through being updated, but it is NOT fine at all if a reader
-gets a pointer onto a half-baked em_perf_domain.
+The patch below should fix it then (without adding extra flags to
+struct dev_pm_info), shouldn't it?
 
-So I agree, there is a problem here.
+---
+ drivers/base/power/main.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-(I also realize now that I totally misunderstood Peter's messages before
-which were basically pointing out this issue :/ ...)
-
-> The smp_store_release(), together with the address dependency headed by
-> the READ_ONCE(), provides this guarantee (and more...).
-> 
-> (Enclosing the reader into an em_pd_mutex critical section would also
-> provide this guarantee, but I can imagine a few arguments for not using
-> a mutex... ;-) ).
-
-Right, using the mutex in em_cpu_get() could work too, although we
-probably don't want to do that. We might very well end up using it in a
-RCU critical section for example (although that's not the case with this
-series, I'm just looking forward a bit).
-
-So using smp_store_release() is the best choice here. I'll fix that up
-for v8.
-
-Thank you very much,
-Quentin
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -1713,8 +1713,10 @@ static int __device_suspend(struct devic
+ 
+ 	dpm_wait_for_subordinate(dev, async);
+ 
+-	if (async_error)
++	if (async_error) {
++		dev->power.direct_complete = false;
+ 		goto Complete;
++	}
+ 
+ 	/*
+ 	 * If a device configured to wake up the system from sleep states
+@@ -1726,6 +1728,7 @@ static int __device_suspend(struct devic
+ 		pm_wakeup_event(dev, 0);
+ 
+ 	if (pm_wakeup_pending()) {
++		dev->power.direct_complete = false;
+ 		async_error = -EBUSY;
+ 		goto Complete;
+ 	}
