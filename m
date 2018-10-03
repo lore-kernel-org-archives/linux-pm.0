@@ -1,80 +1,128 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Wed, 3 Oct 2018 11:06:45 -0700
-Message-ID: <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
- <20180926144830.GB25838@e107155-lin>
- <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
- <20181002111758.GC1086@e107155-lin>
- <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
- <20181003093346.GA12570@e107155-lin>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
+Date: Wed, 3 Oct 2018 15:08:12 -0700
+Message-ID: <CALCETrVriVL1uhm_6wOLzCPZ++c3E+O6Yhp4it53+Cz9xu9o7Q@mail.gmail.com>
+References: <20180912142337.21955-1-jlee@suse.com> <20180912142337.21955-2-jlee@suse.com>
+ <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+ <20181002075243.GB6040@linux-l9pv.suse> <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181003093346.GA12570@e107155-lin>
-Content-Language: en-US
+In-Reply-To: <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org
+To: Jann Horn <jannh@google.com>
+Cc: joeyli <jlee@suse.com>, Andrew Lutomirski <luto@kernel.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>, keyrings@vger.kernel.org, David Howells <dhowells@redhat.com>, joeyli.kernel@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, oneukum@suse.com, yu.chen.surf@gmail.com, ggherdovich@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 10/03/2018 02:33 AM, Sudeep Holla wrote:
-> On Tue, Oct 02, 2018 at 11:56:56AM -0700, Saravana Kannan wrote:
->> On 10/02/2018 04:17 AM, Sudeep Holla wrote:
-> [...]
+On Tue, Oct 2, 2018 at 12:36 PM Jann Horn <jannh@google.com> wrote:
 >
->>> Yes, I do understand I have made the same point multiple time and it's
->>> intentional. We need to get the fragmented f/w support story fixed.
->>> Different ARM vendors are doing different things in f/w and ARM sees the
->>> same fragmentation story as before. We have come up with new specification
->>> and my annoying multiple emails are just to constantly remind the same.
->>>
->>> I do understand we have existing implementations to consider, but fixing
->>> the functionality in arbitrary way is not a good design and it better
->>> to get them fixed for future.
->> I believe the fragmentation you are referring to is  in the
->> interface/communication protocol. I see the benefit of standardizing that as
->> long as the standard actually turns out to be good. But that's completely
->> separate from what the FW can/can't do. Asking to standardize what the FW
->> can/can't do doesn't seem realistic as each chip vendor will have different
->> priorities - power, performance, cost, chip area, etc. It's the conflation
->> of these separate topics that doesn't help IMHO.
-> I agree on interface/communication protocol fragmentation and firmware
-> can implement whatever the vendor wish. What I was also referring was
-> the mix-n-match approach which should be avoided.
+> +Andy for opinions on things in write handlers
+> +Mimi Zohar as EVM maintainer
 >
-> e.g. Device A and B's PM is managed completely by firmware using OSPM hints
-> Suppose Device X's PM is dependent on Device A and B, in which case it's
-> simpler and cleaner to leave Device X PM to firmware. Reading the state
-> of A and B and using that as hint for X is just overhead which firmware
-> can manage better. That was my main concern here: A=CPU and B=some other
-> device and X is inter-connect to which A and B are connected.
->
-> If CPU OPPs are obtained from f/w and this inter-connect from DT, mapping
-> then is a mess and that's what I was concerned. I am sorry if that's not
-> the scenario here, I may have mistaken then.
->
-What you are asking would be an ideal case, but this is not an ideal 
-world. There are tons of constraints for each chip vendor. Saying you 
-can't mix and match makes perfect the enemy of the good. Adding FW 
-support for A and B might make them optimal. But adding support for X 
-might not be possible for multiple real world constraints (chip area, 
-cost, time to market, etc). Saying "either do it all or do nothing" is 
-going to hold back a lot progress that can come in increments. Heck, we 
-do the same thing in the kernel. We'll add basic simple features first 
-and then improve on them. Why is it suddenly frowned up if a FW/HW 
-follows the same approach? I'll just have to agree to disagree with you 
-on this view point.
+> On Tue, Oct 2, 2018 at 9:55 AM joeyli <jlee@suse.com> wrote:
+> > On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
+> > > On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
+> > > > This patch adds a snapshot keys handler for using the key retention
+> > > > service api to create keys for snapshot image encryption and
+> > > > authentication.
+> > [...snip]
+> > > > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
+> > > > +                             const char *buf, size_t n)
+> > > > +{
+> > > > +       int error = 0;
+> > > > +       char *p;
+> > > > +       int len;
+> > > > +
+> > > > +       if (!capable(CAP_SYS_ADMIN))
+> > > > +               return -EPERM;
+> > >
+> > > This is wrong, you can't use capable() in a write handler. You'd have
+> > > to use file_ns_capable(), and I think sysfs currently doesn't give you
+> > > a pointer to the struct file.
+> > > If you want to do this in a write handler, you'll have to either get
+> > > rid of this check or plumb through the cred struct pointer.
+> > > Alternatively, you could use some interface that doesn't go through a
+> > > write handler.
+> > >
+> >
+> > Thank you for point out this problem.
+> >
+> > Actually the evm_write_key() is the example for my code. The
+> > difference is that evm creates interface file on securityfs, but my
+> > implementation is on sysfs:
+> >
+> > security/integrity/evm/evm_secfs.c
+> >
+> > static ssize_t evm_write_key(struct file *file, const char __user *buf,
+> >                              size_t count, loff_t *ppos)
+> > {
+> >         int i, ret;
+> >
+> >         if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP))
+> >                 return -EPERM;
 
--Saravana
+Yeah, that's a bug.
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> > ...
+> >
+> > On the other hand, the writing handler of /sys/power/wake_lock also
+> > uses capable() to check the CAP_BLOCK_SUSPEND capability:
+> >
+> > kernel/power/main.c
+> > static ssize_t wake_lock_store(struct kobject *kobj,
+> >                                struct kobj_attribute *attr,
+> >                                const char *buf, size_t n)
+> > {
+> >         int error = pm_wake_lock(buf);
+> >         return error ? error : n;
+> > }
+> > power_attr(wake_lock);
+> >
+> > kernel/power/wakelock.c
+> > int pm_wake_lock(const char *buf)
+> > {
+> > ...
+> >         if (!capable(CAP_BLOCK_SUSPEND))
+> >                 return -EPERM;
+> > ...
+
+Also a bug.
+
+> >
+> >
+> > So I confused for when can capable() be used in sysfs interface? Is
+> > capable() only allowed in reading handler? Why the writing handler
+> > of securityfs can use capable()?
+>
+> They can't, they're all wrong. :P All of these capable() checks in
+> write handlers have to be assumed to be ineffective. But it's not a
+> big deal because you still need UID 0 to access these files.
+
+Why are there capability checks at all?
+
+>
+> > > > +static int user_key_init(void)
+> > > > +{
+> > > > +       struct user_key_payload *ukp;
+> > > > +       struct key *key;
+> > > > +       int err = 0;
+> > > > +
+> > > > +       pr_debug("%s\n", __func__);
+> > > > +
+> > > > +       /* find out swsusp-key */
+> > > > +       key = request_key(&key_type_user, skey.key_name, NULL);
+> > >
+> > > request_key() looks at current's keyring. That shouldn't happen in a
+> > > write handler.
+> > >
+> >
+> > The evm_write_key() also uses request_key() but it's on securityfs. Should
+> > I move my sysfs interface to securityfs?
+>
+> I don't think you should be doing this in the context of any
+> filesystem. If EVM does that, EVM is doing it wrong.
+
+EVM sounds buggy.
+
+In general if you look at current *at all* in an implementation of
+write() *in any filesystem*, you are doing it wrong.
