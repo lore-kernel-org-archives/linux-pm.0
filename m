@@ -1,196 +1,101 @@
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH v1 2/2] drivers: qcom: rpmh: write PDC data
-Date: Wed,  3 Oct 2018 15:26:35 +0530
-Message-ID: <1538560595-6275-3-git-send-email-rplsssn@codeaurora.org>
-References: <1538560595-6275-1-git-send-email-rplsssn@codeaurora.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH RFC] cpuidle/drivers/menu: Remove get_loadavg in the
+ performance multiplier
+Date: Wed, 3 Oct 2018 12:25:20 +0200
+Message-ID: <ab561a7d-9425-7b04-8d11-ed3e85afe971@linaro.org>
+References: <1537868328-13405-1-git-send-email-daniel.lezcano@linaro.org>
+ <4200780.ZjVhNjpZ67@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1538560595-6275-1-git-send-email-rplsssn@codeaurora.org>
+In-Reply-To: <4200780.ZjVhNjpZ67@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Peter Zijlstra (Intel)" <peterz@infradead.org>
+Cc: linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lina Iyer <ilina@codeaurora.org>
+On 03/10/2018 10:58, Rafael J. Wysocki wrote:
+> On Tuesday, September 25, 2018 11:38:44 AM CEST Daniel Lezcano wrote:
+>> The function get_loadavg() returns almost always zero. To be more
+>> precise, statistically speaking for a total of 1023379 times passing
+>> to the function, the load is equal to zero 1020728 times, greater than
+>> 100, 610 times, the remaining is between 0 and 5.
+>>
+>> I'm putting in question this metric. Is it worth to keep it?
+> 
+> The honest answer is that I'm not sure.
+> 
+> Using the CPU load for driving idle state selection is questionable in general
+> (there need not be any connection between the two in principle) and this
+> particular function is questionable either.  If it really makes no difference
+> in addition to that, then yes it would be good to get rid of it.
+> 
+> That said it looks like that may be quite workload-dependent, so maybe there
+> are workloads where it does make a difference?  Like networking or similar?
 
-The Power Domain Controller can be programmed to wakeup the RSC and
-setup the resources back in the active state, before the processor is
-woken up by a timer interrupt. The wakeup value from the timer hardware
-can be copied to the PDC which has its own timer and is in an always-on
-power domain. Programming the wakeup value is done through a separate
-register on the RSC.
+Perhaps initially the load was not the same:
 
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
----
- drivers/soc/qcom/rpmh-internal.h |  4 +++-
- drivers/soc/qcom/rpmh-rsc.c      | 35 +++++++++++++++++++++++++++++------
- drivers/soc/qcom/rpmh.c          | 28 ++++++++++++++++++++++++++++
- include/soc/qcom/rpmh.h          |  7 +++++++
- 4 files changed, 67 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-index a7bbbb6..8c316b4 100644
---- a/drivers/soc/qcom/rpmh-internal.h
-+++ b/drivers/soc/qcom/rpmh-internal.h
-@@ -85,6 +85,7 @@ struct rpmh_ctrlr {
-  * Resource State Coordinator controller (RSC)
-  *
-  * @name:       controller identifier
-+ * @base:       start address of the RSC's DRV registers
-  * @tcs_base:   start address of the TCS registers in this controller
-  * @id:         instance id in the controller (Direct Resource Voter)
-  * @num_tcs:    number of TCSes in this DRV
-@@ -95,6 +96,7 @@ struct rpmh_ctrlr {
-  */
- struct rsc_drv {
- 	const char *name;
-+	void __iomem *base;
- 	void __iomem *tcs_base;
- 	int id;
- 	int num_tcs;
-@@ -108,7 +110,7 @@ struct rsc_drv {
- int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
- 			     const struct tcs_request *msg);
- int rpmh_rsc_invalidate(struct rsc_drv *drv);
--
-+int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg);
- void rpmh_tx_done(const struct tcs_request *msg, int r);
- 
- #endif /* __RPM_INTERNAL_H__ */
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 6cc7f21..73d5b98 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -61,6 +61,11 @@
- #define CMD_STATUS_ISSUED		BIT(8)
- #define CMD_STATUS_COMPL		BIT(16)
- 
-+/* PDC wakeup */
-+#define RSC_PDC_DATA_SIZE		2
-+#define RSC_PDC_DRV_DATA		0x38
-+#define RSC_PDC_DATA_OFFSET		0x08
-+
- static u32 read_tcs_reg(struct rsc_drv *drv, int reg, int tcs_id, int cmd_id)
- {
- 	return readl_relaxed(drv->tcs_base + reg + RSC_DRV_TCS_OFFSET * tcs_id +
-@@ -552,6 +557,25 @@ int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv, const struct tcs_request *msg)
- 	return tcs_ctrl_write(drv, msg);
- }
- 
-+int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg)
-+{
-+	int i;
-+	void __iomem *addr = drv->base + RSC_PDC_DRV_DATA;
-+
-+	if (!msg || !msg->cmds || msg->num_cmds != RSC_PDC_DATA_SIZE)
-+		return -EINVAL;
-+
-+	for (i = 0; i < msg->num_cmds; i++) {
-+		/* Only data is write capable */
-+		writel_relaxed(msg->cmds[i].data, addr);
-+		trace_rpmh_send_msg(drv, RSC_PDC_DRV_DATA, i, 0,
-+				    &msg->cmds[i]);
-+		addr += RSC_PDC_DATA_OFFSET;
-+	}
-+
-+	return 0;
-+}
-+
- static int rpmh_probe_tcs_config(struct platform_device *pdev,
- 				 struct rsc_drv *drv)
- {
-@@ -564,21 +588,20 @@ static int rpmh_probe_tcs_config(struct platform_device *pdev,
- 	int i, ret, n, st = 0;
- 	struct tcs_group *tcs;
- 	struct resource *res;
--	void __iomem *base;
- 	char drv_id[10] = {0};
- 
- 	snprintf(drv_id, ARRAY_SIZE(drv_id), "drv-%d", drv->id);
- 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, drv_id);
--	base = devm_ioremap_resource(&pdev->dev, res);
--	if (IS_ERR(base))
--		return PTR_ERR(base);
-+	drv->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(drv->base))
-+		return PTR_ERR(drv->base);
- 
- 	ret = of_property_read_u32(dn, "qcom,tcs-offset", &offset);
- 	if (ret)
- 		return ret;
--	drv->tcs_base = base + offset;
-+	drv->tcs_base = drv->base + offset;
- 
--	config = readl_relaxed(base + DRV_PRNT_CHLD_CONFIG);
-+	config = readl_relaxed(drv->base + DRV_PRNT_CHLD_CONFIG);
- 
- 	max_tcs = config;
- 	max_tcs &= DRV_NUM_TCS_MASK << (DRV_NUM_TCS_SHIFT * drv->id);
-diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-index c7beb68..71a76ea 100644
---- a/drivers/soc/qcom/rpmh.c
-+++ b/drivers/soc/qcom/rpmh.c
-@@ -413,6 +413,34 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
- }
- EXPORT_SYMBOL(rpmh_write_batch);
- 
-+/**
-+ * rpmh_write_pdc_data: Write PDC data to the controller
-+ *
-+ * @dev: the device making the request
-+ * @cmd: The payload data
-+ * @n: The number of elements in payload
-+ *
-+ * Write PDC data to the controller. The messages are always sent async.
-+ *
-+ * May be called from atomic contexts.
-+ */
-+int rpmh_write_pdc_data(const struct device *dev,
-+			const struct tcs_cmd *cmd, u32 n)
-+{
-+	DEFINE_RPMH_MSG_ONSTACK(dev, 0, NULL, rpm_msg);
-+	struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
-+
-+	if (!n || n > MAX_RPMH_PAYLOAD)
-+		return -EINVAL;
-+
-+	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
-+	rpm_msg.msg.num_cmds = n;
-+	rpm_msg.msg.wait_for_compl = false;
-+
-+	return rpmh_rsc_write_pdc_data(ctrlr_to_drv(ctrlr), &rpm_msg.msg);
-+}
-+EXPORT_SYMBOL(rpmh_write_pdc_data);
-+
- static int is_req_valid(struct cache_req *req)
- {
- 	return (req->sleep_val != UINT_MAX &&
-diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
-index 619e07c..b05e31a 100644
---- a/include/soc/qcom/rpmh.h
-+++ b/include/soc/qcom/rpmh.h
-@@ -24,6 +24,9 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
- 
- int rpmh_invalidate(const struct device *dev);
- 
-+int rpmh_write_pdc_data(const struct device *dev,
-+			const struct tcs_cmd *cmd, u32 n);
-+
- #else
- 
- static inline int rpmh_write(const struct device *dev, enum rpmh_state state,
-@@ -46,6 +49,10 @@ static inline int rpmh_flush(const struct device *dev)
- static inline int rpmh_invalidate(const struct device *dev)
- { return -ENODEV; }
- 
-+static inline int rpmh_write_pdc_data(const struct device *dev,
-+				      const struct tcs_cmd *cmd, u32 n)
-+{ return -ENODEV; }
-+
- #endif /* CONFIG_QCOM_RPMH */
- 
- #endif /* __SOC_QCOM_RPMH_H__ */
+commit 69d25870f20c4b2563304f2b79c5300dd60a067e
+Author: Arjan van de Ven <arjan@infradead.org>
+Date:   Mon Sep 21 17:04:08 2009 -0700
+
+    cpuidle: fix the menu governor to boost IO performance
+
+
+The function get_loadavg() was:
+
+static int get_loadavg(void)
+{
+       unsigned long this = this_cpu_load();
+
+       return LOAD_INT(this) * 10 + LOAD_FRAC(this) / 10;
+}
+
+With:
+
+unsigned long this_cpu_load(void)
+{
+        struct rq *this = this_rq();
+        return this->cpu_load[0];
+}
+
+
+Now we pass the load we got from get_iowait_load() which is:
+
+void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
+{
+        struct rq *rq = this_rq();
+        *nr_waiters = atomic_read(&rq->nr_iowait);
+        *load = rq->load.weight;
+}
+
+Colin Cross did some measurements a few years ago and concluded it is
+zero most of the time, otherwise the number is so high it has no
+meaning. The get_loadavg() call is removed from Android since 2011 [1].
+
+I can hack my server (bi Xeon - 6 cores), add statistics regarding this
+metric and let it run during several days, sure a lot of different
+workloads will happen on it (compilation, network, throughput computing,
+...) in a real use case manner. That is what I did with an ARM64
+evaluation board.
+
+However I won't be able to do that right now and that will take a bit of
+time. If you think it is really useful, I can plan to do that in the
+next weeks.
+
+ -- Daniel
+
+[1]
+https://android.googlesource.com/kernel/common/+/4dedd9f124703207895777ac6e91dacde0f7cc17
+
+
+
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of the Code Aurora Forum, hosted by The Linux Foundation.
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
