@@ -1,79 +1,38 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / core: Clear the direct_complete flag on errors
-Date: Thu, 4 Oct 2018 15:22:29 +0200
-Message-ID: <CAPDyKFoUdQRUYQ0qb5WM=Bi-F_4Fe8VEPNYZGu2ezMPj_wxoPg@mail.gmail.com>
-References: <61559514.Vym8FNvob2@aspire.rjw.lan>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v9 03/11] PM / Domains: Document flags for genpd
+Date: Thu, 4 Oct 2018 06:48:39 -0700
+Message-ID: <20181004134839.GZ5662@atomide.com>
+References: <20181003143824.13059-1-ulf.hansson@linaro.org>
+ <20181003143824.13059-4-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <61559514.Vym8FNvob2@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20181003143824.13059-4-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Al Cooper <alcooperx@gmail.com>, Pavel Machek <pavel@ucw.cz>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 4 October 2018 at 11:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If __device_suspend() returns early on an error or pending wakeup
-> and the power.direct_complete flag has been set for the device
-> already, the subsequent device_resume() will be confused by it
-> and it will call pm_runtime_enable() incorrectly, as runtime PM
-> has not been disabled for the device by __device_suspend().
+Hi,
 
-I think it would be fair to mention that is related to the async
-suspend path, in dpm_suspend().
+* Ulf Hansson <ulf.hansson@linaro.org> [181003 14:43]:
+> + * GENPD_FLAG_IRQ_SAFE:		This informs genpd that its backend callbacks,
+> + *				->power_on|off(), doesn't sleep. Hence, these
+> + *				can be invoked from within atomic context, which
+> + *				enables genpd to power on/off the PM domain,
+> + *				even when pm_runtime_is_irq_safe() returns true,
+> + *				for any of its attached devices. Note that, a
+> + *				genpd having this flag set, requires its
+> + *				masterdomains to also have it set.
+> + *
 
->
-> To avoid that, clear power.direct_complete if __device_suspend()
-> is not going to disable runtime PM for the device before returning.
+Let's try to avoid adding more irq_safe stuff because of having that
+propagate to the masterdomains..
 
-Overall, by looking at the behavior in dpm_suspend() of async
-suspended devices, it does look a bit fragile to me.
+I think you can just flag the power_on/off in genpd, then have cpu_pm
+callbacks do it.
 
-My worries is that we put asynced suspended devices in the
-dpm_suspended_list, no matter if the device was successfully suspended
-or not. This differs from the no-async path.
+Regards,
 
-In the long run, maybe we should change that instead?
-
->
-> Fixes: aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily)
-> Reported-by: Al Cooper <alcooperx@gmail.com>
-> Cc: 3.16+ <stable@vger.kernel.org> # 3.16+
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
-> ---
->  drivers/base/power/main.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/base/power/main.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/main.c
-> +++ linux-pm/drivers/base/power/main.c
-> @@ -1713,8 +1713,10 @@ static int __device_suspend(struct devic
->
->         dpm_wait_for_subordinate(dev, async);
->
-> -       if (async_error)
-> +       if (async_error) {
-> +               dev->power.direct_complete = false;
->                 goto Complete;
-> +       }
->
->         /*
->          * If a device configured to wake up the system from sleep states
-> @@ -1726,6 +1728,7 @@ static int __device_suspend(struct devic
->                 pm_wakeup_event(dev, 0);
->
->         if (pm_wakeup_pending()) {
-> +               dev->power.direct_complete = false;
->                 async_error = -EBUSY;
->                 goto Complete;
->         }
->
+Tony
