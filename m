@@ -1,380 +1,109 @@
-From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH 4/4] power: supply: add AXP803/AXP813 AC and battery power
- supply support
-Date: Thu,  4 Oct 2018 22:34:10 +0300
-Message-ID: <20181004193410.7265-5-oskari@lemmela.net>
-References: <20181004193410.7265-1-oskari@lemmela.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / core: Clear the direct_complete flag on errors
+Date: Thu, 4 Oct 2018 22:57:08 +0200
+Message-ID: <CAJZ5v0jqb1iScje5PajN7F5EL4SQ0oMd4gFhss+=vYRHnogVhA@mail.gmail.com>
+References: <61559514.Vym8FNvob2@aspire.rjw.lan> <CAPDyKFoUdQRUYQ0qb5WM=Bi-F_4Fe8VEPNYZGu2ezMPj_wxoPg@mail.gmail.com>
+ <CAJZ5v0ih4Hn5W-dTzOayMyMfLMe=djKVhxBcoQ=7oJz6QnpTJQ@mail.gmail.com> <CAPDyKFqMHVvyrjDzoC+QbSLbtdMYcfzDenb+uWTu+Fr-awbU1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181004193410.7265-1-oskari@lemmela.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>, Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
-Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqMHVvyrjDzoC+QbSLbtdMYcfzDenb+uWTu+Fr-awbU1A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, alcooperx@gmail.com, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-AXP803 PMIC is register compatible with AXP813.
+On Thu, Oct 4, 2018 at 8:48 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On 4 October 2018 at 19:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Thu, Oct 4, 2018 at 3:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >>
+> >> On 4 October 2018 at 11:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >
+> >> > If __device_suspend() returns early on an error or pending wakeup
+> >> > and the power.direct_complete flag has been set for the device
+> >> > already, the subsequent device_resume() will be confused by it
+> >> > and it will call pm_runtime_enable() incorrectly, as runtime PM
+> >> > has not been disabled for the device by __device_suspend().
+> >>
+> >> I think it would be fair to mention that is related to the async
+> >> suspend path, in dpm_suspend().
+> >
+> > OK, fair enough.
+> >
+> >> >
+> >> > To avoid that, clear power.direct_complete if __device_suspend()
+> >> > is not going to disable runtime PM for the device before returning.
+> >>
+> >> Overall, by looking at the behavior in dpm_suspend() of async
+> >> suspended devices, it does look a bit fragile to me.
+> >>
+> >> My worries is that we put asynced suspended devices in the
+> >> dpm_suspended_list, no matter if the device was successfully suspended
+> >> or not. This differs from the no-async path.
+> >
+> > That's because this was the most straightforward way to organize that
+> > (otherwise you need to worry about the list locking with respect to
+> > the async suspends etc and you really need to preserve the ordering
+> > there).
+>
+> I understand about the lock, but not sure if that is something to
+> worry about, at least from contention point of view, if that is what
+> you mean?
 
-Added support for AXP803/AXP813 AC power supply.
-AXP8x3 is capable to limit input current and minimum input voltage.
-Both of these register values are writeable.
+The contention may not be a problem, but there would be some extra
+overhead related to the dragging of the lock cache line between CPUs.
 
-Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
----
- drivers/iio/adc/axp20x_adc.c           |   1 +
- drivers/mfd/axp20x.c                   |  22 ++-
- drivers/pinctrl/pinctrl-axp209.c       |   1 +
- drivers/power/supply/axp20x_ac_power.c | 194 +++++++++++++++++++++++++
- drivers/power/supply/axp20x_battery.c  |   3 +
- include/linux/mfd/axp20x.h             |   1 +
- 6 files changed, 221 insertions(+), 1 deletion(-)
+> In regards to the order, is that really problem for async enabled devices?
 
-diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-index 5be789269353..f919a16a8533 100644
---- a/drivers/iio/adc/axp20x_adc.c
-+++ b/drivers/iio/adc/axp20x_adc.c
-@@ -641,6 +641,7 @@ static const struct axp_data axp813_data = {
- static const struct of_device_id axp20x_adc_of_match[] = {
- 	{ .compatible = "x-powers,axp209-adc", .data = (void *)&axp20x_data, },
- 	{ .compatible = "x-powers,axp221-adc", .data = (void *)&axp22x_data, },
-+	{ .compatible = "x-powers,axp803-adc", .data = (void *)&axp813_data, },
- 	{ .compatible = "x-powers,axp813-adc", .data = (void *)&axp813_data, },
- 	{ /* sentinel */ }
- };
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 0be511dd93d0..c540f17549d5 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -731,8 +731,23 @@ static const struct mfd_cell axp803_cells[] = {
- 		.name			= "axp221-pek",
- 		.num_resources		= ARRAY_SIZE(axp803_pek_resources),
- 		.resources		= axp803_pek_resources,
-+	}, {
-+		.name			= "axp20x-regulator"
-+	}, {
-+		.name			= "axp20x-gpio",
-+		.of_compatible		= "x-powers,axp803-gpio",
-+	}, {
-+		.name			= "axp813-adc",
-+		.of_compatible		= "x-powers,axp803-adc",
-+	}, {
-+		.name		= "axp20x-battery-power-supply",
-+		.of_compatible	= "x-powers,axp803-battery-power-supply",
-+	}, {
-+		.name		= "axp20x-ac-power-supply",
-+		.of_compatible	= "x-powers,axp803-ac-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-+		.resources	= axp20x_ac_power_supply_resources,
- 	},
--	{	.name			= "axp20x-regulator" },
- };
- 
- static const struct mfd_cell axp806_self_working_cells[] = {
-@@ -778,6 +793,11 @@ static const struct mfd_cell axp813_cells[] = {
- 	}, {
- 		.name		= "axp20x-battery-power-supply",
- 		.of_compatible	= "x-powers,axp813-battery-power-supply",
-+	}, {
-+		.name		= "axp20x-ac-power-supply",
-+		.of_compatible	= "x-powers,axp813-ac-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-+		.resources	= axp20x_ac_power_supply_resources,
- 	},
- };
- 
-diff --git a/drivers/pinctrl/pinctrl-axp209.c b/drivers/pinctrl/pinctrl-axp209.c
-index afd0b533c40a..21859579e0a2 100644
---- a/drivers/pinctrl/pinctrl-axp209.c
-+++ b/drivers/pinctrl/pinctrl-axp209.c
-@@ -387,6 +387,7 @@ static int axp20x_build_funcs_groups(struct platform_device *pdev)
- 
- static const struct of_device_id axp20x_pctl_match[] = {
- 	{ .compatible = "x-powers,axp209-gpio", .data = &axp20x_data, },
-+	{ .compatible = "x-powers,axp803-gpio", .data = &axp813_data, },
- 	{ .compatible = "x-powers,axp813-gpio", .data = &axp813_data, },
- 	{ }
- };
-diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/supply/axp20x_ac_power.c
-index 0771f951b11f..3247efb81cd1 100644
---- a/drivers/power/supply/axp20x_ac_power.c
-+++ b/drivers/power/supply/axp20x_ac_power.c
-@@ -27,6 +27,23 @@
- #define AXP20X_PWR_STATUS_ACIN_PRESENT	BIT(7)
- #define AXP20X_PWR_STATUS_ACIN_AVAIL	BIT(6)
- 
-+#define AXP8X3_PWR_ACIN_VHOLD		GENMASK(5, 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_0V	(0 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_1V	(1 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_2V	(2 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_3V	(3 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_4V	(4 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_5V	(5 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_6V	(6 << 3)
-+#define AXP8X3_PWR_ACIN_VHOLD_4_7V	(7 << 3)
-+#define AXP8X3_PWR_ACIN_CURR_LIMIT	GENMASK(2, 0)
-+#define AXP8X3_PWR_ACIN_CURR_1_5A	0
-+#define AXP8X3_PWR_ACIN_CURR_2_0A	1
-+#define AXP8X3_PWR_ACIN_CURR_2_5A	2
-+#define AXP8X3_PWR_ACIN_CURR_3_0A	3
-+#define AXP8X3_PWR_ACIN_CURR_3_5A	4
-+#define AXP8X3_PWR_ACIN_CURR_4_0A	5
-+
- #define DRVNAME "axp20x-ac-power-supply"
- 
- struct axp20x_ac_power {
-@@ -102,6 +119,72 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
- 
- 		return 0;
- 
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		ret = regmap_read(power->regmap, AXP803_ACIN_PATH_CTRL, &reg);
-+		if (ret)
-+			return ret;
-+
-+		switch (reg & AXP8X3_PWR_ACIN_VHOLD) {
-+		case AXP8X3_PWR_ACIN_VHOLD_4_0V:
-+			val->intval = 4000000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_1V:
-+			val->intval = 4100000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_2V:
-+			val->intval = 4200000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_3V:
-+			val->intval = 4300000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_4V:
-+			val->intval = 4400000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_5V:
-+			val->intval = 4500000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_6V:
-+			val->intval = 4600000;
-+			break;
-+		case AXP8X3_PWR_ACIN_VHOLD_4_7V:
-+			val->intval = 4700000;
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		ret = regmap_read(power->regmap, AXP803_ACIN_PATH_CTRL, &reg);
-+		if (ret)
-+			return ret;
-+
-+		switch (reg & AXP8X3_PWR_ACIN_CURR_LIMIT) {
-+		case AXP8X3_PWR_ACIN_CURR_1_5A:
-+			val->intval = 1500000;
-+			break;
-+		case AXP8X3_PWR_ACIN_CURR_2_0A:
-+			val->intval = 2000000;
-+			break;
-+		case AXP8X3_PWR_ACIN_CURR_2_5A:
-+			val->intval = 2500000;
-+			break;
-+		case AXP8X3_PWR_ACIN_CURR_3_0A:
-+			val->intval = 3000000;
-+			break;
-+		case AXP8X3_PWR_ACIN_CURR_3_5A:
-+			val->intval = 3500000;
-+			break;
-+		case AXP8X3_PWR_ACIN_CURR_4_0A:
-+			val->intval = 4000000;
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+
-+		return 0;
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -109,6 +192,88 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
- 	return -EINVAL;
- }
- 
-+static int axp20x_ac_power_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct axp20x_ac_power *power = power_supply_get_drvdata(psy);
-+	int setval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		switch (val->intval) {
-+		case 4000000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_0V;
-+			break;
-+		case 4100000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_1V;
-+			break;
-+		case 4200000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_2V;
-+			break;
-+		case 4300000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_3V;
-+			break;
-+		case 4400000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_4V;
-+			break;
-+		case 4500000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_5V;
-+			break;
-+		case 4600000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_6V;
-+			break;
-+		case 4700000:
-+			setval = AXP8X3_PWR_ACIN_VHOLD_4_7V;
-+			break;
-+
-+		default:
-+			return -EINVAL;
-+		}
-+		return regmap_update_bits(power->regmap, AXP803_ACIN_PATH_CTRL,
-+					  AXP8X3_PWR_ACIN_VHOLD, setval);
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+
-+		switch (val->intval) {
-+		case 1500000:
-+			setval = AXP8X3_PWR_ACIN_CURR_1_5A;
-+			break;
-+		case 2000000:
-+			setval = AXP8X3_PWR_ACIN_CURR_2_0A;
-+			break;
-+		case 2500000:
-+			setval = AXP8X3_PWR_ACIN_CURR_2_5A;
-+			break;
-+		case 3000000:
-+			setval = AXP8X3_PWR_ACIN_CURR_3_0A;
-+			break;
-+		case 3500000:
-+			setval = AXP8X3_PWR_ACIN_CURR_3_5A;
-+			break;
-+		case 4000000:
-+			setval = AXP8X3_PWR_ACIN_CURR_4_0A;
-+			break;
-+		default:
-+			return -EINVAL;
-+		}
-+		return regmap_update_bits(power->regmap, AXP803_ACIN_PATH_CTRL,
-+					  AXP8X3_PWR_ACIN_CURR_LIMIT, setval);
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int axp20x_ac_power_prop_writeable(struct power_supply *psy,
-+					  enum power_supply_property psp)
-+{
-+	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
-+	       psp == POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT;
-+}
-+
- static enum power_supply_property axp20x_ac_power_properties[] = {
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -123,6 +288,14 @@ static enum power_supply_property axp22x_ac_power_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- };
- 
-+static enum power_supply_property axp8x3_ac_power_properties[] = {
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN,
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+};
-+
- static const struct power_supply_desc axp20x_ac_power_desc = {
- 	.name = "axp20x-ac",
- 	.type = POWER_SUPPLY_TYPE_MAINS,
-@@ -139,6 +312,16 @@ static const struct power_supply_desc axp22x_ac_power_desc = {
- 	.get_property = axp20x_ac_power_get_property,
- };
- 
-+static const struct power_supply_desc axp8x3_ac_power_desc = {
-+	.name = "axp8x3-ac",
-+	.type = POWER_SUPPLY_TYPE_MAINS,
-+	.properties = axp8x3_ac_power_properties,
-+	.num_properties = ARRAY_SIZE(axp8x3_ac_power_properties),
-+	.property_is_writeable = axp20x_ac_power_prop_writeable,
-+	.get_property = axp20x_ac_power_get_property,
-+	.set_property = axp20x_ac_power_set_property,
-+};
-+
- struct axp_data {
- 	const struct power_supply_desc	*power_desc;
- 	bool				acin_adc;
-@@ -154,6 +337,11 @@ static const struct axp_data axp22x_data = {
- 	.acin_adc = false,
- };
- 
-+static const struct axp_data axp8x3_data = {
-+	.power_desc = &axp8x3_ac_power_desc,
-+	.acin_adc = false,
-+};
-+
- static int axp20x_ac_power_probe(struct platform_device *pdev)
- {
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
-@@ -234,6 +422,12 @@ static const struct of_device_id axp20x_ac_power_match[] = {
- 	}, {
- 		.compatible = "x-powers,axp221-ac-power-supply",
- 		.data = &axp22x_data,
-+	}, {
-+		.compatible = "x-powers,axp803-ac-power-supply",
-+		.data = &axp8x3_data,
-+	}, {
-+		.compatible = "x-powers,axp813-ac-power-supply",
-+		.data = &axp8x3_data,
- 	}, { /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index e84b6e4da14a..932027f4a993 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -537,6 +537,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
- 	}, {
- 		.compatible = "x-powers,axp221-battery-power-supply",
- 		.data = (void *)&axp221_data,
-+	}, {
-+		.compatible = "x-powers,axp803-battery-power-supply",
-+		.data = (void *)&axp813_data,
- 	}, {
- 		.compatible = "x-powers,axp813-battery-power-supply",
- 		.data = (void *)&axp813_data,
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 517e60eecbcb..23d58e243d01 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -266,6 +266,7 @@ enum axp20x_variants {
- #define AXP288_RT_BATT_V_H		0xa0
- #define AXP288_RT_BATT_V_L		0xa1
- 
-+#define AXP803_ACIN_PATH_CTRL		0x3a
- #define AXP813_ADC_RATE			0x85
- 
- /* Fuel Gauge */
--- 
-2.17.1
+You may be underestimating the problem somewhat.
+
+For example, say you have 4 devices, A which is the parent of B and C,
+and D which is a child of C.  Say that D depends on B too, but it
+cannot be a child of it and there's no device link between B and D.
+[For instance, the driver of A has registered both B and C, and the
+driver of C has registered D, but it doesn't know about the dependency
+between D and B.]  Also say that A, B and C are all async, but D is
+sync and all A, B, C are before D in the original list order.
+
+dpm_suspend() will get to A, B and C only after dealing with D.  It
+will then start to suspend B and C almost at the same time and A will
+wait for both of them.  So far so good.
+
+Next, A will resume first, B and C after it, and D after C.  Say that
+B is somewhat faster to resume, but it actually adds itself back to
+the list after C and D (as they don't wait for it).  The resume of C
+and D succeeds (because B is already there physically), but the
+ordering of the list is now A->C->D->B and there will be trouble
+during the next suspend, because B will be suspending in parallel with
+D which depends on it.
+
+In this case you have to guarantee that D and B will not be reordered,
+but it generally is hard without an explicit "link" between them -
+unless the original ordering of the list is preserved entirely.
+
+> >
+> >> In the long run, maybe we should change that instead?
+> >
+> > Is there anything wrong with it really?
+>
+> No, besides complexity. :-)
+
+And how exactly are you measuring the "complexity" here?
+
+> My, point was that we could potentially simplify the code in
+> device_resume() and in __device_suspend(), as the behavior would them
+> becomes more deterministic.
+
+No, it wouldn't be more deterministic.  In fact, it would then become
+less deterministic and provably so if you take consecutive
+suspend-resume cycles into account.  In principle, the order in which
+devices are handled might be different every time then and sorry, but
+I'm failing to see how that can be regarded as "more deterministic".
+
+> device_resume() will never be called unless __device_suspend() has succeeded for the device.
+
+Which doesn't matter.  What matters is that (and which is the case
+already) the resume callbacks will not be invoked without invoking the
+suspend callbacks for the device beforehand.
