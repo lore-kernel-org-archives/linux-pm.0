@@ -1,40 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/4] OPP: Fix more bugs and improve error handling
-Date: Thu,  4 Oct 2018 09:46:19 +0530
-Message-ID: <cover.1538625101.git.viresh.kumar@linaro.org>
+Subject: [PATCH 1/4] OPP: Improve error handling in dev_pm_opp_of_cpumask_add_table()
+Date: Thu,  4 Oct 2018 09:46:20 +0530
+Message-ID: <50b6b87c8484da8bb5dcce00f84ec80aee8fc2bd.1538625101.git.viresh.kumar@linaro.org>
+References: <cover.1538625101.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1538625101.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, d-gerlach@ti.com, linux-kernel@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, d-gerlach@ti.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+The error handling wasn't appropriate in
+dev_pm_opp_of_cpumask_add_table(). For example it returns 0 on success
+and also for the case where cpumask is empty or cpu_device wasn't found
+for any of the CPUs.
 
-Few more bugs have surfaced recently, few of which have been there
-forever but came to light only after the recent changes in OPP core.
+It should really return error on such cases, so that the callers can be
+aware of the outcome.
 
-Dave already sent fix for one of them sometime back and as he isn't
-around for a week, I picked up the patch, modified it and posting V2 of
-it here.
+Fix it.
 
-Niklas already helped testing two of these on Qcom hardware where he
-originally faced the issues.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/of.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
---
-Viresh
-
-Dave Gerlach (1):
-  PM / OPP: _of_add_opp_table_v2(): increment count only if OPP is added
-
-Viresh Kumar (3):
-  OPP: Improve error handling in dev_pm_opp_of_cpumask_add_table()
-  OPP: Return error on error from dev_pm_opp_get_opp_count()
-  cpufreq: dt: Try freeing static OPPs only if we have added them
-
- drivers/cpufreq/cpufreq-dt.c | 34 +++++++++++++-----------
- drivers/opp/core.c           |  2 +-
- drivers/opp/of.c             | 51 ++++++++++++++++++++++--------------
- 3 files changed, 52 insertions(+), 35 deletions(-)
-
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index a71ff3acca0f..67a384c8ead2 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -614,16 +614,18 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_remove_table);
+ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
+ {
+ 	struct device *cpu_dev;
+-	int cpu, ret = 0;
++	int cpu, ret;
+ 
+-	WARN_ON(cpumask_empty(cpumask));
++	if (WARN_ON(cpumask_empty(cpumask)))
++		return -ENODEV;
+ 
+ 	for_each_cpu(cpu, cpumask) {
+ 		cpu_dev = get_cpu_device(cpu);
+ 		if (!cpu_dev) {
+ 			pr_err("%s: failed to get cpu%d device\n", __func__,
+ 			       cpu);
+-			continue;
++			ret = -ENODEV;
++			goto remove_table;
+ 		}
+ 
+ 		ret = dev_pm_opp_of_add_table(cpu_dev);
+@@ -635,12 +637,16 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask)
+ 			pr_debug("%s: couldn't find opp table for cpu:%d, %d\n",
+ 				 __func__, cpu, ret);
+ 
+-			/* Free all other OPPs */
+-			_dev_pm_opp_cpumask_remove_table(cpumask, cpu);
+-			break;
++			goto remove_table;
+ 		}
+ 	}
+ 
++	return 0;
++
++remove_table:
++	/* Free all other OPPs */
++	_dev_pm_opp_cpumask_remove_table(cpumask, cpu);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
 -- 
 2.18.0.rc1.242.g61856ae69a2c
