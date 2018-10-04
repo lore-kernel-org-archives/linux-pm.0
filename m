@@ -1,34 +1,65 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 05/14] sched: Introduce a sched_feat for Energy Aware
- Scheduling
-Date: Thu, 4 Oct 2018 10:57:04 +0100
-Message-ID: <20181004095701.j5zt5guetxswdbi7@queper01-lin>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-6-quentin.perret@arm.com>
- <20181002123416.GA3439@hirez.programming.kicks-ass.net>
- <20181002130818.fciw7cmlwggymxrz@queper01-lin>
- <20181003162435.GA19252@hirez.programming.kicks-ass.net>
+From: "tip-bot for Rafael J. Wysocki" <tipbot@zytor.com>
+Subject: [tip:sched/core] sched/core: Fix comment regarding nr_iowait_cpu()
+ and get_iowait_load()
+Date: Thu, 4 Oct 2018 03:04:45 -0700
+Message-ID: <tip-9c2298aad355d8c1957df3015448fef333526934@git.kernel.org>
+References: <3803514.xkx7zY50tF@aspire.rjw.lan>
+Reply-To: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org,
+          tj@kernel.org, torvalds@linux-foundation.org, hpa@zytor.com,
+          tglx@linutronix.de, linux-kernel@vger.kernel.org,
+          peterz@infradead.org, mingo@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3803514.xkx7zY50tF@aspire.rjw.lan>
 Content-Disposition: inline
-In-Reply-To: <20181003162435.GA19252@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: linux-tip-commits@vger.kernel.org
+Cc: rafael.j.wysocki@intel.com, tj@kernel.org, linux-pm@vger.kernel.org, torvalds@linux-foundation.org, hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, peterz@infradead.org, mingo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 03 Oct 2018 at 18:24:35 (+0200), Peter Zijlstra wrote:
-> Yeah, sysctl, see for example: sysctl.kernel.numa_balancing and the
-> sched_numa_balancing static_key that goes with it.
+Commit-ID:  9c2298aad355d8c1957df3015448fef333526934
+Gitweb:     https://git.kernel.org/tip/9c2298aad355d8c1957df3015448fef333526934
+Author:     Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+AuthorDate: Thu, 4 Oct 2018 11:05:14 +0200
+Committer:  Ingo Molnar <mingo@kernel.org>
+CommitDate: Thu, 4 Oct 2018 11:25:56 +0200
 
-OK, that works for me.
+sched/core: Fix comment regarding nr_iowait_cpu() and get_iowait_load()
 
-> I would default enable EAS if the EM is there and valid, but allow
-> people to disable it.
+The comment related to nr_iowait_cpu() and get_iowait_load() confuses
+cpufreq with cpuidle and is not very useful for this reason, so fix it.
 
-Right, that'd be much nicer than the sched_feat off by default, I
-agree. I'll see what I can do :-)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Fixes: e33a9bba85a8 "sched/core: move IO scheduling accounting from io_schedule_timeout() into scheduler"
+Link: http://lkml.kernel.org/r/3803514.xkx7zY50tF@aspire.rjw.lan
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ kernel/sched/core.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-Thanks,
-Quentin
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 56b3c1781276..fe0223121883 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2916,10 +2916,10 @@ unsigned long nr_iowait(void)
+ }
+ 
+ /*
+- * Consumers of these two interfaces, like for example the cpufreq menu
+- * governor are using nonsensical data. Boosting frequency for a CPU that has
+- * IO-wait which might not even end up running the task when it does become
+- * runnable.
++ * Consumers of these two interfaces, like for example the cpuidle menu
++ * governor, are using nonsensical data. Preferring shallow idle state selection
++ * for a CPU that has IO-wait which might not even end up running the task when
++ * it does become runnable.
+  */
+ 
+ unsigned long nr_iowait_cpu(int cpu)
