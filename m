@@ -1,35 +1,38 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 12/14] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Thu, 4 Oct 2018 11:55:09 +0100
-Message-ID: <20181004105507.ordjpa3hsb6zoelc@queper01-lin>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v7 13/14] sched/topology: Make Energy Aware Scheduling
+ depend on schedutil
+Date: Thu, 4 Oct 2018 12:50:23 +0200
+Message-ID: <20181004105023.GE19252@hirez.programming.kicks-ass.net>
 References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-13-quentin.perret@arm.com>
- <20181004094412.GD19252@hirez.programming.kicks-ass.net>
- <20181004102722.izp7y42cvayq4pqg@queper01-lin>
- <20181004104107.GN19272@hirez.programming.kicks-ass.net>
+ <20180912091309.7551-14-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181004104107.GN19272@hirez.programming.kicks-ass.net>
+In-Reply-To: <20180912091309.7551-14-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: Quentin Perret <quentin.perret@arm.com>
 Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 04 Oct 2018 at 12:41:07 (+0200), Peter Zijlstra wrote:
-> Not sure, see what it looks like ;-) My main concern here was to get rid
-> of that giant blob in select_task_rq_fair().
+On Wed, Sep 12, 2018 at 10:13:08AM +0100, Quentin Perret wrote:
+> Energy Aware Scheduling (EAS) is designed with the assumption that
+> frequencies of CPUs follow their utilization value. When using a CPUFreq
+> governor other than schedutil, the chances of this assumption being true
+> are small, if any. When schedutil is being used, EAS' predictions are at
+> least consistent with the frequency requests. Although those requests
+> have no guarantees to be honored by the hardware, they should at least
+> guide DVFS in the right direction and provide some hope in regards to the
+> EAS model being accurate.
+> 
+> To make sure EAS is only used in a sane configuration, create a strong
+> dependency on schedutil being used. Since having sugov compiled-in does
+> not provide that guarantee, make CPUFreq call a scheduler function on
+> on governor changes hence letting it rebuild the scheduling domains,
+> check the governors of the online CPUs, and enable/disable EAS
+> accordingly.
 
-OK, got it. I'll probably just move the checks into the function and
-merge that large comment into the already massive comment above
-find_energy_efficient_cpu() or something. We'll see :-)
+So this patch disables EAS when we change cpufreq gov. How about we
+force select schedutil and disallow changing it when EAS is enabled?
 
-And do you actually care about the function name ? We've been using
-find_energy_efficient_cpu() for some time in Android now, so that's just
-slightly easier for us if that can be re-used. Not a big deal either,
-though.
-
-Thanks,
-Quentin
+Instead of silently disabling EAS when we frob the governor?
