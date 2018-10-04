@@ -1,67 +1,114 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] cpuidle/drivers/menu: Remove get_loadavg in the
- performance multiplier
-Date: Thu, 4 Oct 2018 10:12:44 +0200
-Message-ID: <e4cf9124-2dbb-45cb-6b45-f0b92a6ac88e@linaro.org>
-References: <1538638927-26846-1-git-send-email-daniel.lezcano@linaro.org>
- <1538638927-26846-2-git-send-email-daniel.lezcano@linaro.org>
- <20181004075703.GG19272@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH 1/6] cpuidle: menu: Fix wakeup statistics updates for
+ polling state
+Date: Thu, 4 Oct 2018 10:19:32 +0200
+Message-ID: <bced15a8-44f2-ea0c-a87c-ac6aae2969ae@linaro.org>
+References: <3510260.hvypppS8Bs@aspire.rjw.lan>
+ <1561295.epLgDtImU0@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181004075703.GG19272@hirez.programming.kicks-ass.net>
+In-Reply-To: <1561295.epLgDtImU0@aspire.rjw.lan>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Mel Gorman <mgorman@suse.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Philippe Ombredanne <pombredanne@nexb.com>, Thomas Gleixner <tglx@linutronix.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-Hi Peter,
-
-On 04/10/2018 09:57, Peter Zijlstra wrote:
-> On Thu, Oct 04, 2018 at 09:42:07AM +0200, Daniel Lezcano wrote:
->> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
->> index b88a145..5605f03 100644
->> --- a/kernel/sched/core.c
->> +++ b/kernel/sched/core.c
->> @@ -2873,25 +2873,12 @@ unsigned long long nr_context_switches(void)
->>  
->>  	return sum;
->>  }
->> -/*
->> - * Consumers of these two interfaces, like for example the cpufreq menu
->> - * governor are using nonsensical data. Boosting frequency for a CPU that has
->> - * IO-wait which might not even end up running the task when it does become
->> - * runnable.
->> - */
->>  
->>  unsigned long nr_iowait_cpu(int cpu)
->  
-> +static
-
-The function is exported in include/linux/sched/stat.h and used by
-drivers/cpuidle/governors/menu.c
-
-Do you want to declare it static inline in the stat.h file ?
-
->>  {
->>  	return atomic_read(&cpu_rq(cpu)->nr_iowait);
->>  }
->>  
->> -void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
->> -{
->> -	struct rq *rq = this_rq();
->> -	*nr_waiters = atomic_read(&rq->nr_iowait);
->> -	*load = rq->load.weight;
->> -}
->> -
->>  /*
->>   * IO-wait accounting, and how its mostly bollocks (on SMP).
->>   *
+On 02/10/2018 23:42, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I'm obviously all for this :-)
+> If the CPU exits the "polling" state due to the time limit in the
+> loop in poll_idle(), this is not a real wakeup and it just means
+> that the "polling" state selection was not adequate.  The governor
+> mispredicted short idle duration, but had a more suitable state been
+> selected, the CPU might have spent more time in it.  In fact, there
+> is no reason to expect that there would have been a wakeup event
+> earlier than the next timer in that case.
+> 
+> Handling such cases as regular wakeups in menu_update() may cause the
+> menu governor to make suboptimal decisions going forward, but ignoring
+> them altogether would not be correct either, because every time
+> menu_select() is invoked, it makes a separate new attempt to predict
+> the idle duration taking distinct time to the closest timer event as
+> input and the outcomes of all those attempts should be recorded.
+> 
+> For this reason, make menu_update() always assume that if the
+> "polling" state was exited due to the time limit, the next proper
+> wakeup event for the CPU would be the next timer event (not
+> including the tick).
+> 
+> Fixes: a37b969a61c1 "cpuidle: poll_state: Add time limit to poll_idle()"
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+
+>  drivers/cpuidle/governors/menu.c |   10 ++++++++++
+>  drivers/cpuidle/poll_state.c     |    6 +++++-
+>  include/linux/cpuidle.h          |    1 +
+>  3 files changed, 16 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> @@ -511,6 +511,16 @@ static void menu_update(struct cpuidle_d
+>  		 * duration predictor do a better job next time.
+>  		 */
+>  		measured_us = 9 * MAX_INTERESTING / 10;
+> +	} else if ((drv->states[last_idx].flags & CPUIDLE_FLAG_POLLING) &&
+> +		   dev->poll_time_limit) {
+> +		/*
+> +		 * The CPU exited the "polling" state due to a time limit, so
+> +		 * the idle duration prediction leading to the selection of that
+> +		 * state was inaccurate.  If a better prediction had been made,
+> +		 * the CPU might have been woken up from idle by the next timer.
+> +		 * Assume that to be the case.
+> +		 */
+> +		measured_us = data->next_timer_us;
+>  	} else {
+>  		/* measured value */
+>  		measured_us = dev->last_residency;
+> Index: linux-pm/include/linux/cpuidle.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/cpuidle.h
+> +++ linux-pm/include/linux/cpuidle.h
+> @@ -81,6 +81,7 @@ struct cpuidle_device {
+>  	unsigned int		registered:1;
+>  	unsigned int		enabled:1;
+>  	unsigned int		use_deepest_state:1;
+> +	unsigned int		poll_time_limit:1;
+>  	unsigned int		cpu;
+>  
+>  	int			last_residency;
+> Index: linux-pm/drivers/cpuidle/poll_state.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/poll_state.c
+> +++ linux-pm/drivers/cpuidle/poll_state.c
+> @@ -17,6 +17,8 @@ static int __cpuidle poll_idle(struct cp
+>  {
+>  	u64 time_start = local_clock();
+>  
+> +	dev->poll_time_limit = false;
+> +
+>  	local_irq_enable();
+>  	if (!current_set_polling_and_test()) {
+>  		unsigned int loop_count = 0;
+> @@ -27,8 +29,10 @@ static int __cpuidle poll_idle(struct cp
+>  				continue;
+>  
+>  			loop_count = 0;
+> -			if (local_clock() - time_start > POLL_IDLE_TIME_LIMIT)
+> +			if (local_clock() - time_start > POLL_IDLE_TIME_LIMIT) {
+> +				dev->poll_time_limit = true;
+>  				break;
+> +			}
+>  		}
+>  	}
+>  	current_clr_polling();
 > 
 
 
