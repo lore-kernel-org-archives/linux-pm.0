@@ -1,481 +1,124 @@
-From: Niklas Cassel <niklas.cassel@linaro.org>
-Subject: Re: [PATCH v8 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Thu, 4 Oct 2018 23:04:07 +0200
-Message-ID: <20181004210407.GB7926@centauri.lan>
-References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
- <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Clear the direct_complete flag on errors
+Date: Thu, 4 Oct 2018 23:26:06 +0200
+Message-ID: <CAPDyKFq0OyXvcCFOOY4+3+_gu+rRnMYkQd5okqx99xoBwBKK2Q@mail.gmail.com>
+References: <61559514.Vym8FNvob2@aspire.rjw.lan> <CAPDyKFoUdQRUYQ0qb5WM=Bi-F_4Fe8VEPNYZGu2ezMPj_wxoPg@mail.gmail.com>
+ <CAJZ5v0ih4Hn5W-dTzOayMyMfLMe=djKVhxBcoQ=7oJz6QnpTJQ@mail.gmail.com>
+ <CAPDyKFqMHVvyrjDzoC+QbSLbtdMYcfzDenb+uWTu+Fr-awbU1A@mail.gmail.com> <CAJZ5v0jqb1iScje5PajN7F5EL4SQ0oMd4gFhss+=vYRHnogVhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
+In-Reply-To: <CAJZ5v0jqb1iScje5PajN7F5EL4SQ0oMd4gFhss+=vYRHnogVhA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Al Cooper <alcooperx@gmail.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Sep 23, 2018 at 04:03:13PM +0530, Taniya Das wrote:
-> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
-> for changing the frequency of CPUs. The driver implements the cpufreq
-> driver interface for this hardware engine.
-> 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> ---
->  drivers/cpufreq/Kconfig.arm       |  11 ++
->  drivers/cpufreq/Makefile          |   1 +
->  drivers/cpufreq/qcom-cpufreq-hw.c | 354 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 366 insertions(+)
->  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 0cd8eb7..93a9d72 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -298,3 +298,14 @@ config ARM_PXA2xx_CPUFREQ
->  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
-> 
->  	  If in doubt, say N.
-> +
-> +config ARM_QCOM_CPUFREQ_HW
-> +	bool "QCOM CPUFreq HW driver"
-> +	depends on ARCH_QCOM
+On 4 October 2018 at 22:57, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Oct 4, 2018 at 8:48 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>
+>> On 4 October 2018 at 19:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> > On Thu, Oct 4, 2018 at 3:23 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> >>
+>> >> On 4 October 2018 at 11:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >> >
+>> >> > If __device_suspend() returns early on an error or pending wakeup
+>> >> > and the power.direct_complete flag has been set for the device
+>> >> > already, the subsequent device_resume() will be confused by it
+>> >> > and it will call pm_runtime_enable() incorrectly, as runtime PM
+>> >> > has not been disabled for the device by __device_suspend().
+>> >>
+>> >> I think it would be fair to mention that is related to the async
+>> >> suspend path, in dpm_suspend().
+>> >
+>> > OK, fair enough.
+>> >
+>> >> >
+>> >> > To avoid that, clear power.direct_complete if __device_suspend()
+>> >> > is not going to disable runtime PM for the device before returning.
+>> >>
+>> >> Overall, by looking at the behavior in dpm_suspend() of async
+>> >> suspended devices, it does look a bit fragile to me.
+>> >>
+>> >> My worries is that we put asynced suspended devices in the
+>> >> dpm_suspended_list, no matter if the device was successfully suspended
+>> >> or not. This differs from the no-async path.
+>> >
+>> > That's because this was the most straightforward way to organize that
+>> > (otherwise you need to worry about the list locking with respect to
+>> > the async suspends etc and you really need to preserve the ordering
+>> > there).
+>>
+>> I understand about the lock, but not sure if that is something to
+>> worry about, at least from contention point of view, if that is what
+>> you mean?
+>
+> The contention may not be a problem, but there would be some extra
+> overhead related to the dragging of the lock cache line between CPUs.
+>
+>> In regards to the order, is that really problem for async enabled devices?
+>
+> You may be underestimating the problem somewhat.
+>
+> For example, say you have 4 devices, A which is the parent of B and C,
+> and D which is a child of C.  Say that D depends on B too, but it
+> cannot be a child of it and there's no device link between B and D.
+> [For instance, the driver of A has registered both B and C, and the
+> driver of C has registered D, but it doesn't know about the dependency
+> between D and B.]  Also say that A, B and C are all async, but D is
+> sync and all A, B, C are before D in the original list order.
+>
+> dpm_suspend() will get to A, B and C only after dealing with D.  It
+> will then start to suspend B and C almost at the same time and A will
+> wait for both of them.  So far so good.
+>
+> Next, A will resume first, B and C after it, and D after C.  Say that
+> B is somewhat faster to resume, but it actually adds itself back to
+> the list after C and D (as they don't wait for it).  The resume of C
+> and D succeeds (because B is already there physically), but the
+> ordering of the list is now A->C->D->B and there will be trouble
+> during the next suspend, because B will be suspending in parallel with
+> D which depends on it.
+>
+> In this case you have to guarantee that D and B will not be reordered,
+> but it generally is hard without an explicit "link" between them -
+> unless the original ordering of the list is preserved entirely.
 
-Hello Taniya,
+Thanks for the detailed description!
 
-It might be a good idea to do depends on ARCH_QCOM || COMPILE_TEST
-to get more build testing.
+My naive approach was simply that these cases should not exist. Those
+drivers that opt-in for the async method, must be very careful when
+doing so. However, you certainly have a point that this may not be the
+case.
 
-> +	help
-> +	 Support for the CPUFreq HW driver.
-> +	 Some QCOM chipsets have a HW engine to offload the steps
-> +	 necessary for changing the frequency of the CPUs. Firmware loaded
-> +	 in this engine exposes a programming interface to the OS.
-> +	 The driver implements the cpufreq interface for this HW engine.
-> +	 Say Y if you want to support CPUFreq HW.
+>
+>> >
+>> >> In the long run, maybe we should change that instead?
+>> >
+>> > Is there anything wrong with it really?
+>>
+>> No, besides complexity. :-)
+>
+> And how exactly are you measuring the "complexity" here?
+>
+>> My, point was that we could potentially simplify the code in
+>> device_resume() and in __device_suspend(), as the behavior would them
+>> becomes more deterministic.
+>
+> No, it wouldn't be more deterministic.  In fact, it would then become
+> less deterministic and provably so if you take consecutive
+> suspend-resume cycles into account.  In principle, the order in which
+> devices are handled might be different every time then and sorry, but
+> I'm failing to see how that can be regarded as "more deterministic".
+>
+>> device_resume() will never be called unless __device_suspend() has succeeded for the device.
+>
+> Which doesn't matter.  What matters is that (and which is the case
+> already) the resume callbacks will not be invoked without invoking the
+> suspend callbacks for the device beforehand.
 
-All other help text has a tab and two spaces, you only have one.
+Right. I rest my case - and sorry for the noise.
 
-Also, why not add this Kconfig right after the existing ARCH_QCOM_CPUFREQ
-driver?
-
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index c1ffeab..ca48a1d 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
->  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
->  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
-
-Why not add this right after the existing ARCH_QCOM_CPUFREQ driver?
-
-> 
-> 
->  ##################################################################################
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> new file mode 100644
-> index 0000000..43107ab
-> --- /dev/null
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -0,0 +1,354 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> + */
-> +
-> +#include <linux/cpufreq.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-
-Since this can't be built as a module, drop module.h, init.h should suffice.
-
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +
-> +#define LUT_MAX_ENTRIES			40U
-> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
-> +#define LUT_ROW_SIZE			32
-> +#define CLK_HW_DIV			2
-> +
-> +enum {
-> +	REG_ENABLE,
-> +	REG_LUT_TABLE,
-> +	REG_PERF_STATE,
-> +
-> +	REG_ARRAY_SIZE,
-> +};
-> +
-> +struct cpufreq_qcom {
-> +	struct cpufreq_frequency_table *table;
-> +	void __iomem *reg_bases[REG_ARRAY_SIZE];
-> +	cpumask_t related_cpus;
-> +	unsigned int max_cores;
-> +	unsigned long xo_rate;
-> +	unsigned long cpu_hw_rate;
-> +};
-> +
-> +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
-> +	[REG_ENABLE]		= 0x0,
-> +	[REG_LUT_TABLE]		= 0x110,
-> +	[REG_PERF_STATE]	= 0x920,
-> +};
-> +
-> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-> +
-> +static int
-> +qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
-> +			     unsigned int index)
-> +{
-> +	struct cpufreq_qcom *c = policy->driver_data;
-> +
-> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
-> +
-> +	return 0;
-> +}
-> +
-> +static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
-> +{
-> +	struct cpufreq_qcom *c;
-> +	struct cpufreq_policy *policy;
-> +	unsigned int index;
-> +
-> +	policy = cpufreq_cpu_get_raw(cpu);
-> +	if (!policy)
-> +		return 0;
-> +
-> +	c = policy->driver_data;
-> +
-> +	index = readl_relaxed(c->reg_bases[REG_PERF_STATE]);
-> +	index = min(index, LUT_MAX_ENTRIES - 1);
-> +
-> +	return policy->freq_table[index].frequency;
-> +}
-> +
-> +static unsigned int
-> +qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
-> +			    unsigned int target_freq)
-> +{
-> +	struct cpufreq_qcom *c = policy->driver_data;
-> +	int index;
-> +
-> +	index = policy->cached_resolved_idx;
-> +	if (index < 0)
-> +		return 0;
-> +
-> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
-> +
-> +	return policy->freq_table[index].frequency;
-> +}
-> +
-> +static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +	struct cpufreq_qcom *c;
-> +
-> +	c = qcom_freq_domain_map[policy->cpu];
-> +	if (!c) {
-> +		pr_err("No scaling support for CPU%d\n", policy->cpu);
-> +		return -ENODEV;
-> +	}
-> +
-> +	cpumask_copy(policy->cpus, &c->related_cpus);
-> +
-> +	policy->fast_switch_possible = true;
-> +	policy->freq_table = c->table;
-> +	policy->driver_data = c;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct freq_attr *qcom_cpufreq_hw_attr[] = {
-> +	&cpufreq_freq_attr_scaling_available_freqs,
-> +	&cpufreq_freq_attr_scaling_boost_freqs,
-> +	NULL
-> +};
-> +
-> +static struct cpufreq_driver cpufreq_qcom_hw_driver = {
-> +	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-> +			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-> +	.verify		= cpufreq_generic_frequency_table_verify,
-> +	.target_index	= qcom_cpufreq_hw_target_index,
-> +	.get		= qcom_cpufreq_hw_get,
-> +	.init		= qcom_cpufreq_hw_cpu_init,
-> +	.fast_switch    = qcom_cpufreq_hw_fast_switch,
-> +	.name		= "qcom-cpufreq-hw",
-> +	.attr		= qcom_cpufreq_hw_attr,
-> +	.boost_enabled	= true,
-> +};
-> +
-> +static int qcom_cpufreq_hw_read_lut(struct platform_device *pdev,
-> +				    struct cpufreq_qcom *c)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	void __iomem *base;
-> +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
-> +
-> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
-> +				sizeof(*c->table), GFP_KERNEL);
-> +	if (!c->table)
-> +		return -ENOMEM;
-> +
-> +	base = c->reg_bases[REG_LUT_TABLE];
-> +
-> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
-> +		data = readl_relaxed(base + i * LUT_ROW_SIZE);
-> +		src = (data & GENMASK(31, 30)) >> 30;
-> +		lval = data & GENMASK(7, 0);
-> +		core_count = CORE_COUNT_VAL(data);
-> +
-> +		if (src)
-> +			c->table[i].frequency = c->xo_rate * lval / 1000;
-> +		else
-> +			c->table[i].frequency = c->cpu_hw_rate / 1000;
-> +
-> +		cur_freq = c->table[i].frequency;
-> +
-> +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
-> +			i, c->table[i].frequency, core_count);
-> +
-> +		if (core_count != c->max_cores)
-> +			cur_freq = CPUFREQ_ENTRY_INVALID;
-> +
-> +		/*
-> +		 * Two of the same frequencies with the same core counts means
-> +		 * end of table.
-> +		 */
-> +		if (i > 0 && c->table[i - 1].frequency ==
-> +		   c->table[i].frequency && prev_cc == core_count) {
-> +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
-> +
-> +			if (prev_freq == CPUFREQ_ENTRY_INVALID)
-> +				prev->flags = CPUFREQ_BOOST_FREQ;
-> +			break;
-> +		}
-> +		prev_cc = core_count;
-> +		prev_freq = cur_freq;
-> +	}
-> +
-> +	c->table[i].frequency = CPUFREQ_TABLE_END;
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_get_related_cpus(int index, struct cpumask *m)
-> +{
-> +	struct device_node *cpu_np;
-> +	struct of_phandle_args args;
-> +	int cpu, ret;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_np = of_cpu_device_node_get(cpu);
-> +		if (!cpu_np)
-> +			continue;
-> +		of_node_put(cpu_np);
-
-Shouldn't of_node_put() be called after you have used the pointer?
-
-> +
-> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-> +				"#freq-domain-cells", 0, &args);
-> +		if (ret < 0)
-> +			continue;
-> +
-> +		if (index == args.args[0])
-> +			cpumask_set_cpu(cpu, m);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_cpu_resources_init(struct platform_device *pdev,
-> +				   unsigned int cpu, int index,
-> +				   unsigned long xo_rate,
-> +				   unsigned long cpu_hw_rate)
-> +{
-> +	struct cpufreq_qcom *c;
-> +	struct resource *res;
-> +	struct device *dev = &pdev->dev;
-> +	const u16 *offsets;
-> +	int ret, i, cpu_r;
-> +	void __iomem *base;
-> +
-> +	if (qcom_freq_domain_map[cpu])
-> +		return 0;
-> +
-> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
-> +	if (!c)
-> +		return -ENOMEM;
-> +
-> +	offsets = of_device_get_match_data(&pdev->dev);
-> +	if (!offsets)
-> +		return -EINVAL;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
-> +	base = devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(base))
-> +		return PTR_ERR(base);
-> +
-> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
-> +		c->reg_bases[i] = base + offsets[i];
-> +
-> +	/* HW should be in enabled state to proceed */
-> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
-> +		dev_err(dev, "Domain-%d cpufreq hardware not enabled\n", index);
-> +		return -ENODEV;
-> +	}
-> +
-> +	ret = qcom_get_related_cpus(index, &c->related_cpus);
-> +	if (ret) {
-> +		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
-> +		return ret;
-> +	}
-> +
-> +	c->max_cores = cpumask_weight(&c->related_cpus);
-> +	if (!c->max_cores)
-> +		return -ENOENT;
-> +
-> +	c->xo_rate = xo_rate;
-> +	c->cpu_hw_rate = cpu_hw_rate;
-> +
-> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
-> +	if (ret) {
-> +		dev_err(dev, "Domain-%d failed to read LUT\n", index);
-> +		return ret;
-> +	}
-> +
-> +	for_each_cpu(cpu_r, &c->related_cpus)
-> +		qcom_freq_domain_map[cpu_r] = c;
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_resources_init(struct platform_device *pdev)
-> +{
-> +	struct device_node *cpu_np;
-> +	struct of_phandle_args args;
-> +	struct clk *clk;
-> +	unsigned int cpu;
-> +	unsigned long xo_rate, cpu_hw_rate;
-> +	int ret;
-> +
-> +	clk = devm_clk_get(&pdev->dev, "xo");
-> +	if (IS_ERR(clk))
-> +		return PTR_ERR(clk);
-> +
-> +	xo_rate = clk_get_rate(clk);
-> +
-> +	devm_clk_put(&pdev->dev, clk);
-> +
-> +	clk = devm_clk_get(&pdev->dev, "cpu_clk");
-> +	if (IS_ERR(clk))
-> +		return PTR_ERR(clk);
-> +
-> +	cpu_hw_rate = clk_get_rate(clk) / CLK_HW_DIV;
-> +
-> +	devm_clk_put(&pdev->dev, clk);
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_np = of_cpu_device_node_get(cpu);
-
-Where is the matching of_node_put?
-
-> +		if (!cpu_np) {
-> +			dev_dbg(&pdev->dev, "Failed to get cpu %d device\n",
-> +				cpu);
-> +			continue;
-> +		}
-> +
-> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-> +				"#freq-domain-cells", 0, &args);
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		ret = qcom_cpu_resources_init(pdev, cpu, args.args[0],
-> +					      xo_rate, cpu_hw_rate);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
-> +{
-> +	int rc;
-> +
-> +	/* Get the bases of cpufreq for domains */
-> +	rc = qcom_resources_init(pdev);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "CPUFreq resource init failed\n");
-> +		return rc;
-> +	}
-> +
-> +	rc = cpufreq_register_driver(&cpufreq_qcom_hw_driver);
-> +	if (rc) {
-> +		dev_err(&pdev->dev, "CPUFreq HW driver failed to register\n");
-> +		return rc;
-> +	}
-> +
-> +	dev_dbg(&pdev->dev, "QCOM CPUFreq HW driver initialized\n");
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id qcom_cpufreq_hw_match[] = {
-> +	{ .compatible = "qcom,cpufreq-hw", .data = &cpufreq_qcom_std_offsets },
-> +	{}
-> +};
-> +
-> +static struct platform_driver qcom_cpufreq_hw_driver = {
-> +	.probe = qcom_cpufreq_hw_driver_probe,
-> +	.driver = {
-> +		.name = "qcom-cpufreq-hw",
-> +		.of_match_table = qcom_cpufreq_hw_match,
-> +	},
-> +};
-> +
-> +static int __init qcom_cpufreq_hw_init(void)
-> +{
-> +	return platform_driver_register(&qcom_cpufreq_hw_driver);
-> +}
-> +subsys_initcall(qcom_cpufreq_hw_init);
-> +
-> +MODULE_DESCRIPTION("QCOM firmware-based CPU Frequency driver");
-
-Since this can't be built as a module, you should drop MODULE_DESCRIPTION.
-
-
-Also, checkpatch --strict gives the following warnings:
-
-WARNING: added, moved or deleted file(s), does MAINTAINERS need updating?
-#103:
-new file mode 100644
-
-cpufreq drivers usually have an entry in MAINTAINERS file.
-
-
-WARNING: Duplicate signature
-#370:
-Signed-off-by: Taniya Das <tdas@codeaurora.org>
-
-If you are more than one author, you can use the Co-Developed-by tag.
-
-
-CHECK: Alignment should match open parenthesis
-#611: FILE: drivers/cpufreq/qcom-cpufreq-hw.c:193:
-+               ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-+                               "#freq-domain-cells", 0, &args);
-
-CHECK: Alignment should match open parenthesis
-#718: FILE: drivers/cpufreq/qcom-cpufreq-hw.c:300:
-+               ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-+                               "#freq-domain-cells", 0, &args);
-
-
-
-
-Kind regards,
-Niklas
+Kind regards
+Uffe
