@@ -1,51 +1,79 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v4 3/6] clk: qoriq: increase array size of cmux_to_group
-Date: Thu,  4 Oct 2018 06:33:48 +0530
-Message-ID: <1538615031-7507-4-git-send-email-vabhav.sharma@nxp.com>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Clear the direct_complete flag on errors
+Date: Thu, 4 Oct 2018 15:22:29 +0200
+Message-ID: <CAPDyKFoUdQRUYQ0qb5WM=Bi-F_4Fe8VEPNYZGu2ezMPj_wxoPg@mail.gmail.com>
+References: <61559514.Vym8FNvob2@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <61559514.Vym8FNvob2@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com, leoyang.li@nxp.com, shawnguo@kernel.org
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, pankaj.bansal@nxp.com, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Al Cooper <alcooperx@gmail.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-From: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+On 4 October 2018 at 11:08, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If __device_suspend() returns early on an error or pending wakeup
+> and the power.direct_complete flag has been set for the device
+> already, the subsequent device_resume() will be confused by it
+> and it will call pm_runtime_enable() incorrectly, as runtime PM
+> has not been disabled for the device by __device_suspend().
 
-Increase size of cmux_to_group array, to accomdate entry of
--1 termination.
+I think it would be fair to mention that is related to the async
+suspend path, in dpm_suspend().
 
-Added -1, terminated, entry for 4080_cmux_grpX.
+>
+> To avoid that, clear power.direct_complete if __device_suspend()
+> is not going to disable runtime PM for the device before returning.
 
-Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
----
- drivers/clk/clk-qoriq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Overall, by looking at the behavior in dpm_suspend() of async
+suspended devices, it does look a bit fragile to me.
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index 3a1812f..e152bfb 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -79,7 +79,7 @@ struct clockgen_chipinfo {
- 	const struct clockgen_muxinfo *cmux_groups[2];
- 	const struct clockgen_muxinfo *hwaccel[NUM_HWACCEL];
- 	void (*init_periph)(struct clockgen *cg);
--	int cmux_to_group[NUM_CMUX]; /* -1 terminates if fewer than NUM_CMUX */
-+	int cmux_to_group[NUM_CMUX+1]; /* array should be -1 terminated */
- 	u32 pll_mask;	/* 1 << n bit set if PLL n is valid */
- 	u32 flags;	/* CG_xxx */
- };
-@@ -601,7 +601,7 @@ static const struct clockgen_chipinfo chipinfo[] = {
- 			&p4080_cmux_grp1, &p4080_cmux_grp2
- 		},
- 		.cmux_to_group = {
--			0, 0, 0, 0, 1, 1, 1, 1
-+			0, 0, 0, 0, 1, 1, 1, 1, -1
- 		},
- 		.pll_mask = 0x1f,
- 	},
--- 
-2.7.4
+My worries is that we put asynced suspended devices in the
+dpm_suspended_list, no matter if the device was successfully suspended
+or not. This differs from the no-async path.
+
+In the long run, maybe we should change that instead?
+
+>
+> Fixes: aae4518b3124 (PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily)
+> Reported-by: Al Cooper <alcooperx@gmail.com>
+> Cc: 3.16+ <stable@vger.kernel.org> # 3.16+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/base/power/main.c |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1713,8 +1713,10 @@ static int __device_suspend(struct devic
+>
+>         dpm_wait_for_subordinate(dev, async);
+>
+> -       if (async_error)
+> +       if (async_error) {
+> +               dev->power.direct_complete = false;
+>                 goto Complete;
+> +       }
+>
+>         /*
+>          * If a device configured to wake up the system from sleep states
+> @@ -1726,6 +1728,7 @@ static int __device_suspend(struct devic
+>                 pm_wakeup_event(dev, 0);
+>
+>         if (pm_wakeup_pending()) {
+> +               dev->power.direct_complete = false;
+>                 async_error = -EBUSY;
+>                 goto Complete;
+>         }
+>
