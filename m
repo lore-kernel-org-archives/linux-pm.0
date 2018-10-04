@@ -1,128 +1,149 @@
-From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
-Date: Wed, 3 Oct 2018 15:08:12 -0700
-Message-ID: <CALCETrVriVL1uhm_6wOLzCPZ++c3E+O6Yhp4it53+Cz9xu9o7Q@mail.gmail.com>
-References: <20180912142337.21955-1-jlee@suse.com> <20180912142337.21955-2-jlee@suse.com>
- <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
- <20181002075243.GB6040@linux-l9pv.suse> <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Pu Wen <puwen@hygon.cn>
+Subject: [RESEND PATCH v8 16/16] cpupower: Add Hygon Dhyana support
+Date: Thu,  4 Oct 2018 09:21:43 +0800
+Message-ID: <5ce86123a7b9dad925ac583d88d2f921040e859b.1538583282.git.puwen@hygon.cn>
+References: <cover.1537533368.git.puwen@hygon.cn> <21c1dbb553c34d895d153cec744c7434cfa5a0f8.1537533369.git.puwen@hygon.cn> <8db5f167-3dec-5342-5430-ade222848c74@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
+In-Reply-To: <8db5f167-3dec-5342-5430-ade222848c74@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jann Horn <jannh@google.com>
-Cc: joeyli <jlee@suse.com>, Andrew Lutomirski <luto@kernel.org>, Mimi Zohar <zohar@linux.vnet.ibm.com>, keyrings@vger.kernel.org, David Howells <dhowells@redhat.com>, joeyli.kernel@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, oneukum@suse.com, yu.chen.surf@gmail.com, ggherdovich@suse.cz
+To: bp@alien8.de, tglx@linutronix.de, trenn@suse.com, shuah@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pu Wen <puwen@hygon.cn>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 2, 2018 at 12:36 PM Jann Horn <jannh@google.com> wrote:
->
-> +Andy for opinions on things in write handlers
-> +Mimi Zohar as EVM maintainer
->
-> On Tue, Oct 2, 2018 at 9:55 AM joeyli <jlee@suse.com> wrote:
-> > On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
-> > > On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
-> > > > This patch adds a snapshot keys handler for using the key retention
-> > > > service api to create keys for snapshot image encryption and
-> > > > authentication.
-> > [...snip]
-> > > > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
-> > > > +                             const char *buf, size_t n)
-> > > > +{
-> > > > +       int error = 0;
-> > > > +       char *p;
-> > > > +       int len;
-> > > > +
-> > > > +       if (!capable(CAP_SYS_ADMIN))
-> > > > +               return -EPERM;
-> > >
-> > > This is wrong, you can't use capable() in a write handler. You'd have
-> > > to use file_ns_capable(), and I think sysfs currently doesn't give you
-> > > a pointer to the struct file.
-> > > If you want to do this in a write handler, you'll have to either get
-> > > rid of this check or plumb through the cred struct pointer.
-> > > Alternatively, you could use some interface that doesn't go through a
-> > > write handler.
-> > >
-> >
-> > Thank you for point out this problem.
-> >
-> > Actually the evm_write_key() is the example for my code. The
-> > difference is that evm creates interface file on securityfs, but my
-> > implementation is on sysfs:
-> >
-> > security/integrity/evm/evm_secfs.c
-> >
-> > static ssize_t evm_write_key(struct file *file, const char __user *buf,
-> >                              size_t count, loff_t *ppos)
-> > {
-> >         int i, ret;
-> >
-> >         if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP))
-> >                 return -EPERM;
+Tool cpupower is useful to get CPU frequency information and monitor
+power stats on Hygon Dhyana platform. So add Hygon Dhyana support to
+it by checking vendor and family to share the code path of AMD family
+17h.
 
-Yeah, that's a bug.
+Signed-off-by: Pu Wen <puwen@hygon.cn>
+Acked-by: Shuah Khan (Samsung OSG) <shuah@kernel.org>
+---
+ tools/power/cpupower/utils/cpufreq-info.c               | 6 ++++--
+ tools/power/cpupower/utils/helpers/amd.c                | 4 ++--
+ tools/power/cpupower/utils/helpers/cpuid.c              | 8 +++++---
+ tools/power/cpupower/utils/helpers/helpers.h            | 2 +-
+ tools/power/cpupower/utils/helpers/misc.c               | 2 +-
+ tools/power/cpupower/utils/idle_monitor/mperf_monitor.c | 3 ++-
+ 6 files changed, 15 insertions(+), 10 deletions(-)
 
-> > ...
-> >
-> > On the other hand, the writing handler of /sys/power/wake_lock also
-> > uses capable() to check the CAP_BLOCK_SUSPEND capability:
-> >
-> > kernel/power/main.c
-> > static ssize_t wake_lock_store(struct kobject *kobj,
-> >                                struct kobj_attribute *attr,
-> >                                const char *buf, size_t n)
-> > {
-> >         int error = pm_wake_lock(buf);
-> >         return error ? error : n;
-> > }
-> > power_attr(wake_lock);
-> >
-> > kernel/power/wakelock.c
-> > int pm_wake_lock(const char *buf)
-> > {
-> > ...
-> >         if (!capable(CAP_BLOCK_SUSPEND))
-> >                 return -EPERM;
-> > ...
-
-Also a bug.
-
-> >
-> >
-> > So I confused for when can capable() be used in sysfs interface? Is
-> > capable() only allowed in reading handler? Why the writing handler
-> > of securityfs can use capable()?
->
-> They can't, they're all wrong. :P All of these capable() checks in
-> write handlers have to be assumed to be ineffective. But it's not a
-> big deal because you still need UID 0 to access these files.
-
-Why are there capability checks at all?
-
->
-> > > > +static int user_key_init(void)
-> > > > +{
-> > > > +       struct user_key_payload *ukp;
-> > > > +       struct key *key;
-> > > > +       int err = 0;
-> > > > +
-> > > > +       pr_debug("%s\n", __func__);
-> > > > +
-> > > > +       /* find out swsusp-key */
-> > > > +       key = request_key(&key_type_user, skey.key_name, NULL);
-> > >
-> > > request_key() looks at current's keyring. That shouldn't happen in a
-> > > write handler.
-> > >
-> >
-> > The evm_write_key() also uses request_key() but it's on securityfs. Should
-> > I move my sysfs interface to securityfs?
->
-> I don't think you should be doing this in the context of any
-> filesystem. If EVM does that, EVM is doing it wrong.
-
-EVM sounds buggy.
-
-In general if you look at current *at all* in an implementation of
-write() *in any filesystem*, you are doing it wrong.
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index df43cd4..56e54ea 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -170,6 +170,7 @@ static int get_boost_mode(unsigned int cpu)
+ 	unsigned long pstates[MAX_HW_PSTATES] = {0,};
+ 
+ 	if (cpupower_cpu_info.vendor != X86_VENDOR_AMD &&
++	    cpupower_cpu_info.vendor != X86_VENDOR_HYGON &&
+ 	    cpupower_cpu_info.vendor != X86_VENDOR_INTEL)
+ 		return 0;
+ 
+@@ -190,8 +191,9 @@ static int get_boost_mode(unsigned int cpu)
+ 	printf(_("    Supported: %s\n"), support ? _("yes") : _("no"));
+ 	printf(_("    Active: %s\n"), active ? _("yes") : _("no"));
+ 
+-	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD &&
+-	    cpupower_cpu_info.family >= 0x10) {
++	if ((cpupower_cpu_info.vendor == X86_VENDOR_AMD &&
++	     cpupower_cpu_info.family >= 0x10) ||
++	     cpupower_cpu_info.vendor == X86_VENDOR_HYGON) {
+ 		ret = decode_pstates(cpu, cpupower_cpu_info.family, b_states,
+ 				     pstates, &pstate_no);
+ 		if (ret)
+diff --git a/tools/power/cpupower/utils/helpers/amd.c b/tools/power/cpupower/utils/helpers/amd.c
+index bb41cdd..65beaee 100644
+--- a/tools/power/cpupower/utils/helpers/amd.c
++++ b/tools/power/cpupower/utils/helpers/amd.c
+@@ -45,7 +45,7 @@ static int get_did(int family, union msr_pstate pstate)
+ 
+ 	if (family == 0x12)
+ 		t = pstate.val & 0xf;
+-	else if (family == 0x17)
++	else if (family == 0x17 || family == 0x18)
+ 		t = pstate.fam17h_bits.did;
+ 	else
+ 		t = pstate.bits.did;
+@@ -59,7 +59,7 @@ static int get_cof(int family, union msr_pstate pstate)
+ 	int fid, did, cof;
+ 
+ 	did = get_did(family, pstate);
+-	if (family == 0x17) {
++	if (family == 0x17 || family == 0x18) {
+ 		fid = pstate.fam17h_bits.fid;
+ 		cof = 200 * fid / did;
+ 	} else {
+diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
+index 732b0b4..5cc39d4 100644
+--- a/tools/power/cpupower/utils/helpers/cpuid.c
++++ b/tools/power/cpupower/utils/helpers/cpuid.c
+@@ -8,7 +8,7 @@
+ #include "helpers/helpers.h"
+ 
+ static const char *cpu_vendor_table[X86_VENDOR_MAX] = {
+-	"Unknown", "GenuineIntel", "AuthenticAMD",
++	"Unknown", "GenuineIntel", "AuthenticAMD", "HygonGenuine",
+ };
+ 
+ #if defined(__i386__) || defined(__x86_64__)
+@@ -109,6 +109,7 @@ int get_cpu_info(struct cpupower_cpu_info *cpu_info)
+ 	fclose(fp);
+ 	/* Get some useful CPU capabilities from cpuid */
+ 	if (cpu_info->vendor != X86_VENDOR_AMD &&
++	    cpu_info->vendor != X86_VENDOR_HYGON &&
+ 	    cpu_info->vendor != X86_VENDOR_INTEL)
+ 		return ret;
+ 
+@@ -124,8 +125,9 @@ int get_cpu_info(struct cpupower_cpu_info *cpu_info)
+ 	if (cpuid_level >= 6 && (cpuid_ecx(6) & 0x1))
+ 		cpu_info->caps |= CPUPOWER_CAP_APERF;
+ 
+-	/* AMD Boost state enable/disable register */
+-	if (cpu_info->vendor == X86_VENDOR_AMD) {
++	/* AMD or Hygon Boost state enable/disable register */
++	if (cpu_info->vendor == X86_VENDOR_AMD ||
++	    cpu_info->vendor == X86_VENDOR_HYGON) {
+ 		if (ext_cpuid_level >= 0x80000007 &&
+ 		    (cpuid_edx(0x80000007) & (1 << 9)))
+ 			cpu_info->caps |= CPUPOWER_CAP_AMD_CBP;
+diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+index 41da392..9021396 100644
+--- a/tools/power/cpupower/utils/helpers/helpers.h
++++ b/tools/power/cpupower/utils/helpers/helpers.h
+@@ -61,7 +61,7 @@ extern int be_verbose;
+ 
+ /* cpuid and cpuinfo helpers  **************************/
+ enum cpupower_cpu_vendor {X86_VENDOR_UNKNOWN = 0, X86_VENDOR_INTEL,
+-			  X86_VENDOR_AMD, X86_VENDOR_MAX};
++			  X86_VENDOR_AMD, X86_VENDOR_HYGON, X86_VENDOR_MAX};
+ 
+ #define CPUPOWER_CAP_INV_TSC		0x00000001
+ #define CPUPOWER_CAP_APERF		0x00000002
+diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
+index 80fdf55..f406adc 100644
+--- a/tools/power/cpupower/utils/helpers/misc.c
++++ b/tools/power/cpupower/utils/helpers/misc.c
+@@ -26,7 +26,7 @@ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active,
+ 		 * has Hardware determined variable increments instead.
+ 		 */
+ 
+-		if (cpu_info.family == 0x17) {
++		if (cpu_info.family == 0x17 || cpu_info.family == 0x18) {
+ 			if (!read_msr(cpu, MSR_AMD_HWCR, &val)) {
+ 				if (!(val & CPUPOWER_AMD_CPBDIS))
+ 					*active = 1;
+diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+index d7c2a6d..f2a7e9c 100644
+--- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+@@ -241,7 +241,8 @@ static int init_maxfreq_mode(void)
+ 	if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_INV_TSC))
+ 		goto use_sysfs;
+ 
+-	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD) {
++	if (cpupower_cpu_info.vendor == X86_VENDOR_AMD ||
++	    cpupower_cpu_info.vendor == X86_VENDOR_HYGON) {
+ 		/* MSR_AMD_HWCR tells us whether TSC runs at P0/mperf
+ 		 * freq.
+ 		 * A test whether hwcr is accessable/available would be:
+-- 
+2.7.4
