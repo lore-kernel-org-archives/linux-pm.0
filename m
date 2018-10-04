@@ -1,84 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 5/6] cpuidle: menu: Avoid computations for very close
- timers
-Date: Thu, 4 Oct 2018 17:50:44 +0200
-Message-ID: <20181004155044.GD1881@mai>
-References: <3510260.hvypppS8Bs@aspire.rjw.lan>
- <2753018.aK9edJ7Dvu@aspire.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v9 00/11] PM / Domains: Support hierarchical CPU
+ arrangement (PSCI/ARM) (a subset)
+Date: Thu, 4 Oct 2018 16:57:55 +0100
+Message-ID: <20181004155755.GD5233@e107981-ln.cambridge.arm.com>
+References: <20181003143824.13059-1-ulf.hansson@linaro.org>
+ <CAJZ5v0h7jvoa4oUeM4FgFizF_jbAonoAgP3m417n_TGqfqNsqg@mail.gmail.com>
+ <CAPDyKFq0GLs2AMA+6b-Khf+4kGxzVCTvtehp-YmwV2h=_SP4=g@mail.gmail.com>
+ <10136406.EY9A7BdqYq@aspire.rjw.lan>
+ <CAJZ5v0iv9OYoaLYHsmdp2xbDuENPgue_mBgFujdmesnBOegRKQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2753018.aK9edJ7Dvu@aspire.rjw.lan>
+In-Reply-To: <CAJZ5v0iv9OYoaLYHsmdp2xbDuENPgue_mBgFujdmesnBOegRKQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 02, 2018 at 11:46:28PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Oct 04, 2018 at 11:32:41AM +0200, Rafael J. Wysocki wrote:
+> On Thu, Oct 4, 2018 at 11:04 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > On Thursday, October 4, 2018 10:58:53 AM CEST Ulf Hansson wrote:
+> > > On 4 October 2018 at 10:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > > On Wed, Oct 3, 2018 at 4:39 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > > >>
+> > > >> I have digested the review comments so far, including a recent offlist chat
+> > > >> with with Lorenzo Pieralisi around the debatable PSCI changes. More or less I
+> > > >> have a plan for how to move forward.
+> > > >>
+> > > >> However, to avoid re-posting non-changed patches over and over again, I decided
+> > > >> to withhold the more debatable part from this v9, hence this is not the complete
+> > > >> series to make things play. In v9, I have just included the trivial changes,
+> > > >> which are either already acked/reviewed or hopefully can be rather soon/easily.
+> > > >>
+> > > >> My hope is to get this queued for v4.20, to move things forward. I know it's
+> > > >> late, but there are more or less nothing new here since v8.
+> > > >
+> > > > I have no problems with the first three patches in this series, so I
+> > > > can apply them right away.  Do you want me to do that?
+> > >
+> > > Yes, please.
+> > >
+> > > >
+> > > > As for the rest, the cpuidle driver patch looks OK to me, but the
+> > > > PSCI-related ones need ACKs.
+> > >
+> > > For some yes, but I think you can go ahead with a few more.
+> > >
+> > > Patch 4, 5 is already acked/reviewed.
+> > >
+> > > Patch 6 should be fine (if you are okay with it else wait for an ack
+> > > from Daniel)
+> >
+> > OK, thanks.
+> >
+> > Do the 4-6 depend on the 1-3?
 > 
-> If the next timer event (with the tick excluded) is closer than the
-> target residency of the second state or the PM QoS latency constraint
-> is below its exit latency, state[0] will be used regardless of any
-> other factors, so skip the computations in menu_select() then and
-> return 0 straight away from it.
-> 
-> Still, do that after the bucket has been determined to avoid
-> disturbing the wakeup statistics in general.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpuidle/governors/menu.c |   12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> Index: linux-pm/drivers/cpuidle/governors/menu.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
-> +++ linux-pm/drivers/cpuidle/governors/menu.c
-> @@ -309,6 +309,18 @@ static int menu_select(struct cpuidle_dr
->  	get_iowait_load(&nr_iowaiters, &cpu_load);
->  	data->bucket = which_bucket(data->next_timer_us, nr_iowaiters);
->  
-> +	if (unlikely(drv->state_count <= 1) ||
+> I don't see any dependency there, so I'll queue up the 1-3 in
+> pm-domains and the 4-6 in pm-cpuidle.
 
-I'm not sure this test is necessary.
+I do not see why we should merge patches 4-6 for v4.20; they add legacy
+(DT bindings and related parsing code) with no user in the kernel; we
+may still want to tweak them, in particular PSCI DT bindings.
 
-If state_count == 0, we don't have to select anything as the cpuidle can't register because of:
+Likewise, it makes no sense to merge patches 7-8 without the rest of
+the PSCI patches.
 
-static int __cpuidle_register_driver(struct cpuidle_driver *drv)
-{
-        int ret;
+Why do not we target v4.20-rc1 for the whole series re-posting and we take
+it from there given that we are at -rc6 tail end ?
 
-        if (!drv || !drv->state_count)
-                return -EINVAL;
-
-	[ ... ]
-}
-
-If state_count == 1, then there is nothing to select, it is always the state 0.
-
-> +	    ((data->next_timer_us < drv->states[1].target_residency ||
-> +	      latency_req < drv->states[1].exit_latency) &&
-> +	     !drv->states[0].disabled && !dev->states_usage[0].disable)) {
-> +		/*
-> +		 * In this case state[0] will be used no matter what, so return
-> +		 * it right away and keep the tick running.
-> +		 */
-> +		*stop_tick = false;
-> +		return 0;
-> +	}
-> +
->  	/*
->  	 * Force the result of multiplication to be 64 bits even if both
->  	 * operands are 32 bits.
-> 
-
--- 
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Lorenzo
