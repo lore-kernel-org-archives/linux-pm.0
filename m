@@ -1,36 +1,64 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 12/14] sched/fair: Select an energy-efficient CPU on
- task wake-up
-Date: Thu, 4 Oct 2018 14:18:07 +0200
-Message-ID: <20181004121807.GO19272@hirez.programming.kicks-ass.net>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-13-quentin.perret@arm.com>
- <20181004094412.GD19252@hirez.programming.kicks-ass.net>
- <20181004102722.izp7y42cvayq4pqg@queper01-lin>
- <20181004104107.GN19272@hirez.programming.kicks-ass.net>
- <20181004105507.ordjpa3hsb6zoelc@queper01-lin>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH V2 2/2] cpuidle/drivers/menu: Remove get_loadavg in the
+ performance multiplier
+Date: Thu, 4 Oct 2018 13:28:44 +0100
+Message-ID: <20181004122844.GA6931@suse.de>
+References: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
+ <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181004105507.ordjpa3hsb6zoelc@queper01-lin>
+In-Reply-To: <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 04, 2018 at 11:55:09AM +0100, Quentin Perret wrote:
-> On Thursday 04 Oct 2018 at 12:41:07 (+0200), Peter Zijlstra wrote:
-> > Not sure, see what it looks like ;-) My main concern here was to get rid
-> > of that giant blob in select_task_rq_fair().
+On Thu, Oct 04, 2018 at 02:04:03PM +0200, Daniel Lezcano wrote:
+> The function get_loadavg() returns almost always zero. To be more
+> precise, statistically speaking for a total of 1023379 times passing
+> in the function, the load is equal to zero 1020728 times, greater than
+> 100, 610 times, the remaining is between 0 and 5.
 > 
-> OK, got it. I'll probably just move the checks into the function and
-> merge that large comment into the already massive comment above
-> find_energy_efficient_cpu() or something. We'll see :-)
+> In 2011, the get_loadavg() was removed from the Android tree because
+> of the above [1]. At this time, the load was:
 > 
-> And do you actually care about the function name ? We've been using
-> find_energy_efficient_cpu() for some time in Android now, so that's just
-> slightly easier for us if that can be re-used. Not a big deal either,
-> though.
+> unsigned long this_cpu_load(void)
+> {
+>         struct rq *this = this_rq();
+>         return this->cpu_load[0];
+> }
+> 
+> In 2014, the code was changed by commit 372ba8cb46b2 (cpuidle: menu: Lookup CPU
+> runqueues less) and the load is:
+> 
+> void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
+> {
+>         struct rq *rq = this_rq();
+>         *nr_waiters = atomic_read(&rq->nr_iowait);
+>         *load = rq->load.weight;
+> }
+> 
+> with the same result.
+> 
+> Both measurements show using the load in this code path does no matter
+> anymore. Removing it.
+> 
+> [1] https://android.googlesource.com/kernel/common/+/4dedd9f124703207895777ac6e91dacde0f7cc17
+> 
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Colin Cross <ccross@android.com>
+> Cc: Ramesh Thomas <ramesh.thomas@intel.com>
+> Cc: Mel Gorman <mgorman@suse.de>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Sure, that's fine I suppose.
+I agree that removing this is the most sensible option so;
+
+Acked-by: Mel Gorman <mgorman@suse.de>
+
+-- 
+Mel Gorman
+SUSE Labs
