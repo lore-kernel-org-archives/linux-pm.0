@@ -1,38 +1,36 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v9 03/11] PM / Domains: Document flags for genpd
-Date: Thu, 4 Oct 2018 06:48:39 -0700
-Message-ID: <20181004134839.GZ5662@atomide.com>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
- <20181003143824.13059-4-ulf.hansson@linaro.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: [PATCH] power: max8925: mark expected switch fall-through
+Date: Thu, 4 Oct 2018 15:56:36 +0200
+Message-ID: <20181004135636.GA15157@embeddedor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181003143824.13059-4-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-* Ulf Hansson <ulf.hansson@linaro.org> [181003 14:43]:
-> + * GENPD_FLAG_IRQ_SAFE:		This informs genpd that its backend callbacks,
-> + *				->power_on|off(), doesn't sleep. Hence, these
-> + *				can be invoked from within atomic context, which
-> + *				enables genpd to power on/off the PM domain,
-> + *				even when pm_runtime_is_irq_safe() returns true,
-> + *				for any of its attached devices. Note that, a
-> + *				genpd having this flag set, requires its
-> + *				masterdomains to also have it set.
-> + *
+Addresses-Coverity-ID: 201510 ("Missing break in switch")
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/power/supply/max8925_power.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Let's try to avoid adding more irq_safe stuff because of having that
-propagate to the masterdomains..
-
-I think you can just flag the power_on/off in genpd, then have cpu_pm
-callbacks do it.
-
-Regards,
-
-Tony
+diff --git a/drivers/power/supply/max8925_power.c b/drivers/power/supply/max8925_power.c
+index 3b94620..39b4d5b 100644
+--- a/drivers/power/supply/max8925_power.c
++++ b/drivers/power/supply/max8925_power.c
+@@ -124,6 +124,7 @@ static irqreturn_t max8925_charger_handler(int irq, void *data)
+ 	case MAX8925_IRQ_VCHG_THM_OK_F:
+ 		/* Battery is not ready yet */
+ 		dev_dbg(chip->dev, "Battery temperature is out of range\n");
++		/* Fall through */
+ 	case MAX8925_IRQ_VCHG_DC_OVP:
+ 		dev_dbg(chip->dev, "Error detection\n");
+ 		__set_charger(info, 0);
+-- 
+2.7.4
