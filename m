@@ -1,85 +1,50 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: [PATCH v2 0/2] driver: thermal: Move some drivers into subdirs
-Date: Thu,  4 Oct 2018 13:22:10 +0530
-Message-ID: <cover.1538638640.git.amit.kucheria@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/6] cpuidle: menu: Get rid of first_idx from menu_select()
+Date: Thu, 4 Oct 2018 09:53:39 +0200
+Message-ID: <CAJZ5v0gvAOz7R8uwXy=37ni=+dz9-gb69S2M2PtZSXc+tUhxrQ@mail.gmail.com>
+References: <3510260.hvypppS8Bs@aspire.rjw.lan> <4130376.2FFt7p4687@aspire.rjw.lan>
+ <20181004074627.GE19272@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181004074627.GE19272@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: mka@chromium.org, rui.zhang@intel.com, edubezval@gmail.com, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Move the various drivers for Intel platforms into their own subdir. Also
-consolidate Qualcomm drivers into the qcom subdir.
+On Thu, Oct 4, 2018 at 9:46 AM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Tue, Oct 02, 2018 at 11:44:06PM +0200, Rafael J. Wysocki wrote:
+> >       idx = -1;
+> > -     for (i = first_idx; i < drv->state_count; i++) {
+> > +     for (i = 0; i < drv->state_count; i++) {
+> >               struct cpuidle_state *s = &drv->states[i];
+> >               struct cpuidle_state_usage *su = &dev->states_usage[i];
+> >
+> >               if (s->disabled || su->disable)
+> >                       continue;
+> > +
+> >               if (idx == -1)
+> >                       idx = i; /* first enabled state */
+> > +
+> >               if (s->target_residency > predicted_us) {
+> > +                     /*
+> > +                      * Use a physical idle state, not busy polling, unless
+> > +                      * a timer is going to trigger really really soon.
+> > +                      */
+> > +                     if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) &&
+> > +                         i == idx + 1 && latency_req > s->exit_latency &&
+> > +                         data->next_timer_us > max_t(unsigned int, 20,
+> > +                                                     s->target_residency)) {
+>
+> Not new in this patch, but this is where I really noticed it; that 20,
+> should that not be something like: POLL_IDLE_TIME_LIMIT / NSEC_PER_USEC
+> ?
 
-This cleans up the directory making it easier to find things.
+The POLL_IDLE_TIME_LIMIT is how much time we allow it to spin in
+idle_poll() and I'm not sure it is related.  Besides, I want it to go
+away actually (https://patchwork.kernel.org/patch/10624117/).
 
-There is no great time to send patches that move files around, but I'm told
-that towards the end of the merge window is nicer. So here's an attempt to
-sneak it into 4.20 after everything else and hoping that these files won't
-change after 4.19-rc6. :-)
-
-This was generated and compile-tested against 4.19-rc6. If you would like
-me to try again a bit later, I'm happy to do so.
-
-Changes since v1:
-- Removed a stray character that snuck into the Makefile
-- Added Acks
-- Rebased to v4.19-rc6
-
-Amit Kucheria (2):
-  drivers: thermal: Move various drivers for intel platforms into a
-    subdir
-  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
-
- drivers/thermal/Kconfig                       | 94 +------------------
- drivers/thermal/Makefile                      | 10 +-
- drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
- drivers/thermal/intel/Makefile                | 12 +++
- .../{ => intel}/int340x_thermal/Kconfig       |  0
- .../{ => intel}/int340x_thermal/Makefile      |  0
- .../int340x_thermal/acpi_thermal_rel.c        |  0
- .../int340x_thermal/acpi_thermal_rel.h        |  0
- .../int340x_thermal/int3400_thermal.c         |  0
- .../int340x_thermal/int3402_thermal.c         |  0
- .../int340x_thermal/int3403_thermal.c         |  0
- .../int340x_thermal/int3406_thermal.c         |  0
- .../int340x_thermal/int340x_thermal_zone.c    |  0
- .../int340x_thermal/int340x_thermal_zone.h    |  0
- .../processor_thermal_device.c                |  0
- .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
- .../thermal/{ => intel}/intel_pch_thermal.c   |  0
- .../thermal/{ => intel}/intel_powerclamp.c    |  0
- .../{ => intel}/intel_quark_dts_thermal.c     |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
- .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
- .../{ => intel}/intel_soc_dts_thermal.c       |  0
- .../{ => intel}/x86_pkg_temp_thermal.c        |  0
- drivers/thermal/qcom/Kconfig                  | 11 +++
- drivers/thermal/qcom/Makefile                 |  1 +
- .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  0
- 26 files changed, 107 insertions(+), 98 deletions(-)
- create mode 100644 drivers/thermal/intel/Kconfig
- create mode 100644 drivers/thermal/intel/Makefile
- rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
- rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
- rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
- rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
- rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
- rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
- rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (100%)
-
--- 
-2.17.1
+I could use a separate symbol for this particular magic number, but it
+has been magic forever and it is used just in this one place, so ...
