@@ -1,61 +1,86 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v7 13/14] sched/topology: Make Energy Aware Scheduling
- depend on schedutil
-Date: Thu, 4 Oct 2018 12:58:41 +0100
-Message-ID: <20181004115839.c5g2fsehszbvwoqq@queper01-lin>
-References: <20180912091309.7551-1-quentin.perret@arm.com>
- <20180912091309.7551-14-quentin.perret@arm.com>
- <20181004105023.GE19252@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2 1/2] sched: Factor out nr_iowait and nr_iowait_cpu
+Date: Thu,  4 Oct 2018 14:04:02 +0200
+Message-ID: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181004105023.GE19252@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: rafael@kernel.org
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "open list:SCHEDULER" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 04 Oct 2018 at 12:50:23 (+0200), Peter Zijlstra wrote:
-> On Wed, Sep 12, 2018 at 10:13:08AM +0100, Quentin Perret wrote:
-> > Energy Aware Scheduling (EAS) is designed with the assumption that
-> > frequencies of CPUs follow their utilization value. When using a CPUFreq
-> > governor other than schedutil, the chances of this assumption being true
-> > are small, if any. When schedutil is being used, EAS' predictions are at
-> > least consistent with the frequency requests. Although those requests
-> > have no guarantees to be honored by the hardware, they should at least
-> > guide DVFS in the right direction and provide some hope in regards to the
-> > EAS model being accurate.
-> > 
-> > To make sure EAS is only used in a sane configuration, create a strong
-> > dependency on schedutil being used. Since having sugov compiled-in does
-> > not provide that guarantee, make CPUFreq call a scheduler function on
-> > on governor changes hence letting it rebuild the scheduling domains,
-> > check the governors of the online CPUs, and enable/disable EAS
-> > accordingly.
-> 
-> So this patch disables EAS when we change cpufreq gov. How about we
-> force select schedutil and disallow changing it when EAS is enabled?
-> 
-> Instead of silently disabling EAS when we frob the governor?
+The function nr_iowait_cpu() can be used directly by nr_iowait() instead
+of duplicating code.
 
-By doing it this way I think we have a better integration with things
-like that exclusive cpusets. In the end, EAS is enabled in a
-per-root_domain basis. So, say you have two root domains, A and B. EAS
-is enabled on A and disabled on B (because it doesn't have
-SD_ASYM_CPUCAPACITY or something). Should you be forced to use sugov on
-the CPUs of B to run EAS on A ? If there is a cpufreq policy covering
-only the CPUs of B, I'd say probably no.
+Call nr_iowait_cpu() from nr_iowait()
 
-Now I get the argument that this is happening silently as-is, so we can
-do better. How about we put a message in dmesg we EAS gets disabled in
-case of governor changes ?
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ kernel/sched/core.c | 41 ++++++++++++++++++++---------------------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
-Also, I'm currently working on a doc patch for EAS ATM (to be posted
-soon), so I can (and will) make it very clear there that you _must_
-use sugov to use EAS.
-
-Would that work ?
-
-Thanks,
-Quentin
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 625bc98..43efb74 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2875,6 +2875,25 @@ unsigned long long nr_context_switches(void)
+ }
+ 
+ /*
++ * Consumers of these two interfaces, like for example the cpufreq menu
++ * governor are using nonsensical data. Boosting frequency for a CPU that has
++ * IO-wait which might not even end up running the task when it does become
++ * runnable.
++ */
++
++unsigned long nr_iowait_cpu(int cpu)
++{
++	return atomic_read(&cpu_rq(cpu)->nr_iowait);
++}
++
++void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
++{
++	struct rq *rq = this_rq();
++	*nr_waiters = atomic_read(&rq->nr_iowait);
++	*load = rq->load.weight;
++}
++
++/*
+  * IO-wait accounting, and how its mostly bollocks (on SMP).
+  *
+  * The idea behind IO-wait account is to account the idle time that we could
+@@ -2909,31 +2928,11 @@ unsigned long nr_iowait(void)
+ 	unsigned long i, sum = 0;
+ 
+ 	for_each_possible_cpu(i)
+-		sum += atomic_read(&cpu_rq(i)->nr_iowait);
++		sum += nr_iowait_cpu(i);
+ 
+ 	return sum;
+ }
+ 
+-/*
+- * Consumers of these two interfaces, like for example the cpufreq menu
+- * governor are using nonsensical data. Boosting frequency for a CPU that has
+- * IO-wait which might not even end up running the task when it does become
+- * runnable.
+- */
+-
+-unsigned long nr_iowait_cpu(int cpu)
+-{
+-	struct rq *this = cpu_rq(cpu);
+-	return atomic_read(&this->nr_iowait);
+-}
+-
+-void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
+-{
+-	struct rq *rq = this_rq();
+-	*nr_waiters = atomic_read(&rq->nr_iowait);
+-	*load = rq->load.weight;
+-}
+-
+ #ifdef CONFIG_SMP
+ 
+ /*
+-- 
+2.7.4
