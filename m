@@ -1,35 +1,85 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/6] cpuidle: menu: Fixes, optimizations and cleanups
-Date: Thu, 4 Oct 2018 09:51:57 +0200
-Message-ID: <20181004075157.GF19272@hirez.programming.kicks-ass.net>
-References: <3510260.hvypppS8Bs@aspire.rjw.lan>
- <CAJZ5v0jYvV_C5AVMf+FhNfqsJuveYDRVOYjuOC8+yi8DPf1N6w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v2 0/2] driver: thermal: Move some drivers into subdirs
+Date: Thu,  4 Oct 2018 13:22:10 +0530
+Message-ID: <cover.1538638640.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jYvV_C5AVMf+FhNfqsJuveYDRVOYjuOC8+yi8DPf1N6w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: mka@chromium.org, rui.zhang@intel.com, edubezval@gmail.com, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 04, 2018 at 08:55:45AM +0200, Rafael J. Wysocki wrote:
-> On Tue, Oct 2, 2018 at 11:51 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > Hi All,
-> >
-> > This series fixes a couple of issues with the menu governor, optimizes it
-> > somewhat and makes a couple of cleanups in it.  Please refer to the
-> > patch changelogs for details.
-> >
-> > All of the changes in the series are straightforward in my view.  The
-> > first two patches are fixes, the rest is optimizations and cleanups.
-> 
-> I'm inclined to take this stuff in for 4.20 if nobody has problems
-> with it, so please have a look if you care (and you should, because
-> the code in question is run on all tickless systems out there).
+Move the various drivers for Intel platforms into their own subdir. Also
+consolidate Qualcomm drivers into the qcom subdir.
 
-Looks ok to me,
+This cleans up the directory making it easier to find things.
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+There is no great time to send patches that move files around, but I'm told
+that towards the end of the merge window is nicer. So here's an attempt to
+sneak it into 4.20 after everything else and hoping that these files won't
+change after 4.19-rc6. :-)
+
+This was generated and compile-tested against 4.19-rc6. If you would like
+me to try again a bit later, I'm happy to do so.
+
+Changes since v1:
+- Removed a stray character that snuck into the Makefile
+- Added Acks
+- Rebased to v4.19-rc6
+
+Amit Kucheria (2):
+  drivers: thermal: Move various drivers for intel platforms into a
+    subdir
+  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
+
+ drivers/thermal/Kconfig                       | 94 +------------------
+ drivers/thermal/Makefile                      | 10 +-
+ drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
+ drivers/thermal/intel/Makefile                | 12 +++
+ .../{ => intel}/int340x_thermal/Kconfig       |  0
+ .../{ => intel}/int340x_thermal/Makefile      |  0
+ .../int340x_thermal/acpi_thermal_rel.c        |  0
+ .../int340x_thermal/acpi_thermal_rel.h        |  0
+ .../int340x_thermal/int3400_thermal.c         |  0
+ .../int340x_thermal/int3402_thermal.c         |  0
+ .../int340x_thermal/int3403_thermal.c         |  0
+ .../int340x_thermal/int3406_thermal.c         |  0
+ .../int340x_thermal/int340x_thermal_zone.c    |  0
+ .../int340x_thermal/int340x_thermal_zone.h    |  0
+ .../processor_thermal_device.c                |  0
+ .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
+ .../thermal/{ => intel}/intel_pch_thermal.c   |  0
+ .../thermal/{ => intel}/intel_powerclamp.c    |  0
+ .../{ => intel}/intel_quark_dts_thermal.c     |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
+ .../{ => intel}/intel_soc_dts_thermal.c       |  0
+ .../{ => intel}/x86_pkg_temp_thermal.c        |  0
+ drivers/thermal/qcom/Kconfig                  | 11 +++
+ drivers/thermal/qcom/Makefile                 |  1 +
+ .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  0
+ 26 files changed, 107 insertions(+), 98 deletions(-)
+ create mode 100644 drivers/thermal/intel/Kconfig
+ create mode 100644 drivers/thermal/intel/Makefile
+ rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
+ rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
+ rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
+ rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (100%)
+
+-- 
+2.17.1
