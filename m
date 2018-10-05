@@ -1,90 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v9 00/11] PM / Domains: Support hierarchical CPU
- arrangement (PSCI/ARM) (a subset)
-Date: Fri, 5 Oct 2018 13:49:00 +0200
-Message-ID: <CAPDyKFquOR91qnTcXU63MBSY6m=uhOw+HpGvy_jiRy6_MO3Lbg@mail.gmail.com>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
- <CAJZ5v0h7jvoa4oUeM4FgFizF_jbAonoAgP3m417n_TGqfqNsqg@mail.gmail.com>
- <CAPDyKFq0GLs2AMA+6b-Khf+4kGxzVCTvtehp-YmwV2h=_SP4=g@mail.gmail.com>
- <10136406.EY9A7BdqYq@aspire.rjw.lan> <CAJZ5v0iv9OYoaLYHsmdp2xbDuENPgue_mBgFujdmesnBOegRKQ@mail.gmail.com>
- <20181004155755.GD5233@e107981-ln.cambridge.arm.com> <CAJZ5v0j+W2CHiqkniXNJgZ3DU9pOpd_83Wj9Egwf+pVkRCjZLg@mail.gmail.com>
- <20181004172109.GA16878@red-moon> <CAPDyKFrWzDU9BsfAnx7uoaXq=gmGg2r46Mn-cJHSWUk-TmyomA@mail.gmail.com>
- <20181005104729.GB25651@red-moon>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 7/9] OPP: Add
+ dev_pm_opp_get_interconnect_bw()
+Date: Fri, 5 Oct 2018 11:13:55 -0600
+Message-ID: <20181005171355.GK31641@jcrouse-lnx.qualcomm.com>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-8-jcrouse@codeaurora.org>
+ <49858ede-66db-b58f-e586-411896efad4b@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181005104729.GB25651@red-moon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <49858ede-66db-b58f-e586-411896efad4b-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Sharat Masetty <smasetty-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 5 October 2018 at 12:47, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> On Thu, Oct 04, 2018 at 08:36:24PM +0200, Ulf Hansson wrote:
->> On 4 October 2018 at 19:21, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
->> > On Thu, Oct 04, 2018 at 07:07:27PM +0200, Rafael J. Wysocki wrote:
->> >
->> > [...]
->> >
->> >> > > I don't see any dependency there, so I'll queue up the 1-3 in
->> >> > > pm-domains and the 4-6 in pm-cpuidle.
->> >> >
->> >> > I do not see why we should merge patches 4-6 for v4.20; they add legacy
->> >> > (DT bindings and related parsing code) with no user in the kernel; we
->> >> > may still want to tweak them, in particular PSCI DT bindings.
->> >>
->> >> My impression was that 4-6 have been agreed on due to the ACKs they
->> >> carry.  I'll drop them if that's not the case.
->> >
->> > I have not expressed myself correctly: they have been agreed (even
->> > though as I said they may require some tweaking) but I see no urgency
->> > of merging them in v4.20 since they have no user. They contain DT
->> > bindings, that create ABI/legacy, I think it is better to have code
->> > that uses them in the kernel before merging them and creating a
->> > dependency that is not needed.
->>
->> There is already code using the new bindings, for the idle states.
->> Please have look at patch 5, 6 and 11.
->
-> I had a look before replying and I reiterate the point, there is
-> no reason to merge those patches without the rest of the series,
-> none. There is already a way to describe idle states in the kernel
-> and it works very well, we will add one when we need it not before.
-
-Okay, let's defer them.
-
->
->> Moreover, you have had plenty on time to look at the series, as those
->> patches haven't changed since a very long time.
->
-> So ?
->
->> May I suggest you do the review instead, so we can move things
->> forward, please. The changes in the v9 series should be trivial to
->> review.
->
-> There is no reason to merge patches [4, 5, 6, 10] stand-alone, they
-> are not solving any problem and they do not provide any benefit
-> other than adding useless ABI/legacy, they make sense when we look
-> at the whole series.
-
-Okay, let's defer them.
-
->
->> >> > Likewise, it makes no sense to merge patches 7-8 without the rest of
->> >> > the PSCI patches.
->>
->> Well, those patches are part of this series, because Mark wanted me to
->> move the files. Is really such a big deal? I think it makes sense, no
->> matter what happens afterwards.
->
-> We can merge patches [7-8] even if there is no urgency at all to do so,
-> usually PSCI patches go via arm-soc whose patches queue is now closed
-> and I do not think that's a problem at all.
-
-Okay, let's defer them.
-
-That said, can please review the patches?
-
-Kind regards
-Uffe
+T24gRnJpLCBPY3QgMDUsIDIwMTggYXQgMTI6MDY6MDZQTSArMDUzMCwgU2hhcmF0IE1hc2V0dHkg
+d3JvdGU6Cj4gCj4gCj4gT24gOC8yNy8yMDE4IDg6NDEgUE0sIEpvcmRhbiBDcm91c2Ugd3JvdGU6
+Cj4gPkFkZCBkZXZfcG1fb3BwX2dldF9pbnRlcmNvbm5lY3RfYncoKSB0byByZWFkIHRoZSBpbnRl
+cmNvbm5lY3QKPiA+YmFuZHdpZHRoIHZhbHVlcyBmb3IgYSBnaXZlbiBPUFAuCj4gPgo+ID5TaWdu
+ZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVhdXJvcmEub3JnPgo+ID4tLS0K
+PiA+ICBkcml2ZXJzL29wcC9vZi5jICAgICAgIHwgMzYgKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrCj4gPiAgaW5jbHVkZS9saW51eC9wbV9vcHAuaCB8ICA3ICsrKysrKysKPiA+
+ICAyIGZpbGVzIGNoYW5nZWQsIDQzIGluc2VydGlvbnMoKykKPiA+Cj4gPmRpZmYgLS1naXQgYS9k
+cml2ZXJzL29wcC9vZi5jIGIvZHJpdmVycy9vcHAvb2YuYwo+ID5pbmRleCA3YWYwZGRlYzkzNmIu
+LjZhNWVlY2FhZjhjMSAxMDA2NDQKPiA+LS0tIGEvZHJpdmVycy9vcHAvb2YuYwo+ID4rKysgYi9k
+cml2ZXJzL29wcC9vZi5jCj4gPkBAIC03NzcsMyArNzc3LDM5IEBAIHN0cnVjdCBkZXZpY2Vfbm9k
+ZSAqZGV2X3BtX29wcF9nZXRfb2Zfbm9kZShzdHJ1Y3QgZGV2X3BtX29wcCAqb3BwKQo+ID4gIAly
+ZXR1cm4gb2Zfbm9kZV9nZXQob3BwLT5ucCk7Cj4gPiAgfQo+ID4gIEVYUE9SVF9TWU1CT0xfR1BM
+KGRldl9wbV9vcHBfZ2V0X29mX25vZGUpOwo+ID4rCj4gPisvKioKPiA+KyAqIGRldl9wbV9vcHBf
+Z2V0X2ludGVyY29ubmVjdF9idygpIC0gR2V0IHRoZSBpbnRlcmNvbm5lY3QgYmFuZHdpZHRoIGZv
+ciB0aGUgb3BwCj4gPisgKiBAb3BwOglvcHAgY29udGFpbmluZyB0aGUgYmFuZHdpZHRoIHZhbHVl
+cwo+ID4rICogQHBhdGhuYW1lOgluYW1lIG9mIHRoZSBpbnRlcmNvbm5lY3QgcGF0aCBmb3IgdGhl
+IGJhbmR3aWR0aCB2YWx1ZXMKPiA+KyAqIEBhdmdidzoJUG9pbnRlciBmb3IgdGhlIHZhbHVlIHRv
+IGhvbGQgdGhlIGF2ZXJhZ2UgQlcgZGVmaW5lZCBmb3IgdGhlIE9QUAo+ID4rICogQHBlYWtidzoJ
+UG9pbnRlciBmb3IgdGhlIHZhbHVlIHRvIGhvbGQgdGhlIHBlYWsgQlcgZGVmaW5lZCBmb3IgdGhl
+IE9QUAo+ID4rICoKPiA+KyAqIFJldHVybjogTmVnYXRpdmUgdmFsdWUgb24gZXJyb3Igb3IgMCBv
+biBzdWNjZXNzCj4gPisgKi8KPiA+K2ludCBkZXZfcG1fb3BwX2dldF9pbnRlcmNvbm5lY3RfYnco
+c3RydWN0IGRldl9wbV9vcHAgKm9wcCwKPiA+KwkJY29uc3QgY2hhciAqcGF0aG5hbWUsIHU2NCAq
+YXZnYncsIHU2NCAqcGVha2J3KQo+ID4rewo+ID4rCWNoYXIgbmFtZVtOQU1FX01BWF07Cj4gPisJ
+c3RydWN0IHByb3BlcnR5ICpwcm9wOwo+ID4rCWludCBjb3VudDsKPiA+Kwo+ID4rCWlmIChJU19F
+UlJfT1JfTlVMTChvcHApKQo+ID4rCQlyZXR1cm4gLUVOT0VOVDsKPiA+Kwo+ID4rCXNucHJpbnRm
+KG5hbWUsIE5BTUVfTUFYLCAib3BwLWludGVyY29ubmVjdC1idy0lcyIsIHBhdGhuYW1lKTsKPiA+
+Kwlwcm9wID0gb2ZfZmluZF9wcm9wZXJ0eShvcHAtPm5wLCBuYW1lLCBOVUxMKTsKPiA+Kwo+ID4r
+CWlmICghcHJvcCkKPiA+KwkJcmV0dXJuIC1FTk9FTlQ7Cj4gPisKPiA+Kwljb3VudCA9IG9mX3By
+b3BlcnR5X2NvdW50X3U2NF9lbGVtcyhvcHAtPm5wLCBuYW1lKTsKPiA+KwlpZiAoY291bnQgIT0g
+MikKPiA+KwkJcmV0dXJuIC1FSU5WQUw7Cj4gPisKPiA+KwlvZl9wcm9wZXJ0eV9yZWFkX3U2NF9p
+bmRleChvcHAtPm5wLCBuYW1lLCAwLCBhdmdidyk7Cj4gPisJb2ZfcHJvcGVydHlfcmVhZF91NjRf
+aW5kZXgob3BwLT5ucCwgbmFtZSwgMCwgcGVha2J3KTsKPiBUaGlzIHNob3VsZCBiZSBpbmRleCAx
+IGZvciBwZWFrIGJhbmR3aWR0aAo+IAlvZl9wcm9wZXJ0eV9yZWFkX3U2NF9pbmRleChvcHAtPm5w
+LCBuYW1lLCAxLCBwZWFrYncpOwo+IEkgdGVzdGVkIHdpdGggdGhpcyBmaXggYW5kIHRoZSBHUFUn
+cyBpbnRlcmNvbm5lY3Qgc3VtbWFyeSBub3cgc2hvd3MKPiBub24gemVybyB2YWx1ZXMgZm9yIHBl
+YWsgYmFuZHdpZHRoLiBDYW4geW91IHBsZWFzZSByYWlzZSBhIG5ld2VyCj4gdmVyc2lvbiBvZiB0
+aGlzIHBhdGNoPyBJIHdpbGwgaGF2ZSBpdCBwdWxsZWQgaW50byBvdXIgZG93bnN0cmVhbQo+IGJ1
+aWxkcy4KCkFoaGghIEkgY2FuIGdlbmVyYXRlIGEgbmV3IG9uZSBidXQgSSB0aGluayB3ZSBzaG91
+bGQgY29tZSB0byBhbiBhZ3JlZW1lbnQgb24gdGhlCmJpbmRpbmdzLgoKSm9yZGFuCgo+ID4rCj4g
+PisJcmV0dXJuIDA7Cj4gPit9Cj4gPitFWFBPUlRfU1lNQk9MX0dQTChkZXZfcG1fb3BwX2dldF9p
+bnRlcmNvbm5lY3RfYncpOwo+ID5kaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9wbV9vcHAuaCBi
+L2luY2x1ZGUvbGludXgvcG1fb3BwLmgKPiA+aW5kZXggMDk5YjMxOTYwZGVjLi43MGU0OWUyNTlk
+MGUgMTAwNjQ0Cj4gPi0tLSBhL2luY2x1ZGUvbGludXgvcG1fb3BwLmgKPiA+KysrIGIvaW5jbHVk
+ZS9saW51eC9wbV9vcHAuaAo+ID5AQCAtMzAxLDYgKzMwMSw3IEBAIGludCBkZXZfcG1fb3BwX29m
+X2dldF9zaGFyaW5nX2NwdXMoc3RydWN0IGRldmljZSAqY3B1X2Rldiwgc3RydWN0IGNwdW1hc2sg
+KmNwdW1hCj4gPiAgc3RydWN0IGRldmljZV9ub2RlICpkZXZfcG1fb3BwX29mX2dldF9vcHBfZGVz
+Y19ub2RlKHN0cnVjdCBkZXZpY2UgKmRldik7Cj4gPiAgc3RydWN0IGRldl9wbV9vcHAgKm9mX2Rl
+dl9wbV9vcHBfZmluZF9yZXF1aXJlZF9vcHAoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2
+aWNlX25vZGUgKm5wKTsKPiA+ICBzdHJ1Y3QgZGV2aWNlX25vZGUgKmRldl9wbV9vcHBfZ2V0X29m
+X25vZGUoc3RydWN0IGRldl9wbV9vcHAgKm9wcCk7Cj4gPitpbnQgZGV2X3BtX29wcF9nZXRfaW50
+ZXJjb25uZWN0X2J3KHN0cnVjdCBkZXZfcG1fb3BwICpvcHAsIGNvbnN0IGNoYXIgKnBhdGhuYW1l
+LCB1NjQgKmF2Z2J3LCB1NjQgKnBlYWtidyk7Cj4gPiAgI2Vsc2UKPiA+ICBzdGF0aWMgaW5saW5l
+IGludCBkZXZfcG1fb3BwX29mX2FkZF90YWJsZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gPiAgewo+
+ID5AQCAtMzQzLDYgKzM0NCwxMiBAQCBzdGF0aWMgaW5saW5lIHN0cnVjdCBkZXZpY2Vfbm9kZSAq
+ZGV2X3BtX29wcF9nZXRfb2Zfbm9kZShzdHJ1Y3QgZGV2X3BtX29wcCAqb3BwKQo+ID4gIHsKPiA+
+ICAJcmV0dXJuIE5VTEw7Cj4gPiAgfQo+ID4rCj4gPitzdGF0aWMgaW5saW5lIGludCBkZXZfcG1f
+b3BwX2dldF9pbnRlcmNvbm5lY3RfYncoc3RydWN0IGRldl9wbV9vcHAgKm9wcCwgY29uc3QgY2hh
+ciAqcGF0aG5hbWUsCj4gPisJCXU2NCAqYXZnYncsIHU2NCAqcGVha2J3KQo+ID4rewo+ID4rCXJl
+dHVybiAtRU5PVFNVUFA7Cj4gPit9Cj4gPiAgI2VuZGlmCj4gPiAgI2VuZGlmCQkvKiBfX0xJTlVY
+X09QUF9IX18gKi8KPiA+Cj4gCj4gLS0gCj4gVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVy
+LCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1cm9yYSBGb3J1bSwKPiBMaW51eCBGb3Vu
+ZGF0aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdAoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9u
+IENlbnRlciwgSW5jLiBpcyBhIG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBG
+b3VuZGF0aW9uIENvbGxhYm9yYXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0Bs
+aXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1h
+bi9saXN0aW5mby9mcmVlZHJlbm8K
