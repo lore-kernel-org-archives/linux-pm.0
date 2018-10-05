@@ -1,58 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq / CPPC: Mark acpi_ids as used
-Date: Fri, 05 Oct 2018 11:51:34 +0200
-Message-ID: <1561369.7cfCgrRCj6@aspire.rjw.lan>
-References: <20181002223457.7564-1-natechancellor@gmail.com> <CAKwvOdnbnw-yciWkuuKMye=57qwpXDX4oPaoNUoeYvbpn-Tavw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.19-rc7
+Date: Fri, 5 Oct 2018 11:59:09 +0200
+Message-ID: <CAJZ5v0jforeFZjY6oTB3e7y_UHyzsixs7PxmW5=O6NQTemAomg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKwvOdnbnw-yciWkuuKMye=57qwpXDX4oPaoNUoeYvbpn-Tavw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Desaulniers <ndesaulniers@google.com>, Nathan Chancellor <natechancellor@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 3, 2018 12:40:19 AM CEST Nick Desaulniers wrote:
-> On Tue, Oct 2, 2018 at 3:35 PM Nathan Chancellor
-> <natechancellor@gmail.com> wrote:
-> >
-> > Clang warns:
-> >
-> > drivers/cpufreq/cppc_cpufreq.c:431:36: warning: variable 'cppc_acpi_ids'
-> > is not needed and will not be emitted [-Wunneeded-internal-declaration]
-> > static const struct acpi_device_id cppc_acpi_ids[] = {
-> >                                    ^
-> > 1 warning generated.
-> >
-> > Mark the definition as used so that Clang understands we don't want this
-> > warning while not inhibiting Clang's dead code elimination from removing
-> > the unreferenced internal symbol when moving the data it contains to the
-> > globally available symbol via MODULE_DEVICE_TABLE.
-> >
-> > $ nm -S drivers/cpufreq/cppc_cpufreq.o | grep acpi | tail -1
-> > 0000000000000000 0000000000000040 R __mod_acpi__cppc_acpi_ids_device_table
-> >
-> > Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
-> > Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
-> > Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
-> > ---
-> >  drivers/cpufreq/cppc_cpufreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> > index 30f302149730..fd25c21cee72 100644
-> > --- a/drivers/cpufreq/cppc_cpufreq.c
-> > +++ b/drivers/cpufreq/cppc_cpufreq.c
-> > @@ -428,7 +428,7 @@ MODULE_LICENSE("GPL");
-> >
-> >  late_initcall(cppc_cpufreq_init);
-> >
-> > -static const struct acpi_device_id cppc_acpi_ids[] = {
-> > +static const struct acpi_device_id cppc_acpi_ids[] __used = {
-> >         {ACPI_PROCESSOR_DEVICE_HID, },
-> >         {}
-> >  };
-> > --
+Hi Greg,
 
-Patch applied, thanks!
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.19-rc7
+
+with top-most commit 69e445ab8b66a9f30519842ef18be555d3ee9b51
+
+ PM / core: Clear the direct_complete flag on errors
+
+on top of commit 17b57b1883c1285f3d0dc2266e8f79286a7bef38
+
+ Linux 4.19-rc6
+
+to receive a power management fix for 4.19-rc7.
+
+This fixes a bug that may cause runtime PM to misbehave for some
+devices after a failing or aborted system suspend which is nasty
+enough for an -rc7 time frame fix.
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (1):
+      PM / core: Clear the direct_complete flag on errors
+
+---------------
+
+ drivers/base/power/main.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
