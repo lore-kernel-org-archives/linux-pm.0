@@ -1,51 +1,130 @@
 From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [workqueue/driver-core PATCH 0/5] Add NUMA aware async_schedule
- calls
-Date: Fri, 05 Oct 2018 11:34:00 -0700
-Message-ID: <20181005183239.8790.28631.stgit@localhost.localdomain>
+Subject: [workqueue/driver-core PATCH 1/5] workqueue: Provide
+ queue_work_near to queue work near a given NUMA node
+Date: Fri, 05 Oct 2018 11:34:07 -0700
+Message-ID: <20181005183406.8790.70621.stgit@localhost.localdomain>
+References: <20181005183239.8790.28631.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181005183239.8790.28631.stgit@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 To: tj@kernel.org, gregkh@linuxfoundation.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch set provides functionality that will help to improve the
-locality of the async_schedule calls used to provide deferred
-initialization.
+This patch provides a new function queue_work_near which is meant to
+schedule work on a "random" CPU of the requested NUMA node. The main
+motivation for this is to help assist asynchronous init to better improve
+boot times for devices that are local to a specific node.
 
-This patch set originally started out with me focused on just the one call
-to async_schedule_domain in the nvdimm tree that was being used to
-defer the device_add call however after doing some digging I realized the
-scope of this was much broader than I had originally planned. As such I
-went through and reworked the underlying infrastructure down to replacing
-the queue_work call itself with a function of my own and opted to try and
-provide a NUMA aware solution that would work for a broader audience.
+For now we just default to the first CPU that is in the intersection of the
+cpumask of the node and the online cpumask. The only exception is if the
+CPU is local to the node we will just use the current CPU. This should work
+for our purposes as we are currently only using this for unbound work so
+the CPU will be translated to a node anyway instead of being directly used.
 
-v2: Dropped nvdimm patch to submit later.
-	It relies on code in libnvdimm development tree.
-    Simplified queue_work_near to just convert node into a CPU.
-    Split up drivers core and PM core patches.
-
+Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
-
-Alexander Duyck (5):
-      workqueue: Provide queue_work_near to queue work near a given NUMA node
-      async: Add support for queueing on specific NUMA node
-      driver core: Probe devices asynchronously instead of the driver
-      driver core: Attach devices on CPU local to device node
-      PM core: Use new async_schedule_dev command
-
-
- drivers/base/bus.c        |   23 ++------------
- drivers/base/dd.c         |   44 +++++++++++++++++++++++++++
- drivers/base/power/main.c |   12 ++++---
- include/linux/async.h     |   36 ++++++++++++++++++++--
  include/linux/workqueue.h |    2 +
- kernel/async.c            |   47 ++++++++++++++---------------
  kernel/workqueue.c        |   73 +++++++++++++++++++++++++++++++++++++++++++++
- 7 files changed, 182 insertions(+), 55 deletions(-)
+ 2 files changed, 75 insertions(+)
 
---
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 60d673e15632..1f9f0a65437b 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -463,6 +463,8 @@ int apply_workqueue_attrs(struct workqueue_struct *wq,
+ 
+ extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
+ 			struct work_struct *work);
++extern bool queue_work_near(int node, struct workqueue_struct *wq,
++			    struct work_struct *work);
+ extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
+ 			struct delayed_work *work, unsigned long delay);
+ extern bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 0280deac392e..1467c052d9f6 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -1492,6 +1492,79 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
+ }
+ EXPORT_SYMBOL(queue_work_on);
+ 
++/**
++ * workqueue_select_cpu_near - Select a CPU based on NUMA node
++ * @node: NUMA node ID that we want to bind a CPU from
++ *
++ * This function will attempt to find a "random" cpu available on a given
++ * node. If there are no CPUs available on the given node it will return
++ * WORK_CPU_UNBOUND indicating that we should just schedule to any
++ * available CPU if we need to schedule this work.
++ */
++static int workqueue_select_cpu_near(int node)
++{
++	int cpu;
++
++	/* No point in doing this if NUMA isn't enabled for workqueues */
++	if (!wq_numa_enabled)
++		return WORK_CPU_UNBOUND;
++
++	/* Delay binding to CPU if node is not valid or online */
++	if (node < 0 || node >= MAX_NUMNODES || !node_online(node))
++		return WORK_CPU_UNBOUND;
++
++	/* Use local node/cpu if we are already there */
++	cpu = raw_smp_processor_id();
++	if (node == cpu_to_node(cpu))
++		return cpu;
++
++	/* Use "random" otherwise know as "first" online CPU of node */
++	cpu = cpumask_any_and(cpumask_of_node(node), cpu_online_mask);
++
++	/* If CPU is valid return that, otherwise just defer */
++	return (cpu < nr_cpu_ids) ? cpu : WORK_CPU_UNBOUND;
++}
++
++/**
++ * queue_work_near - queue work on a "random" cpu for a given NUMA node
++ * @node: NUMA node that we are targeting the work for
++ * @wq: workqueue to use
++ * @work: work to queue
++ *
++ * We queue the work to a "random" CPU within a given NUMA node. The basic
++ * idea here is to provide a way to somehow associate work with a given
++ * NUMA node.
++ *
++ * This function will only make a best effort attempt at getting this onto
++ * the right NUMA node. If no node is requested or the requested node is
++ * offline then we just fall back to standard queue_work behavior.
++ *
++ * Currently the "random" CPU ends up being the first available CPU in the
++ * intersection of cpu_online_mask and the cpumask of the node, unless we
++ * are running on the node. In that case we just use the current CPU.
++ *
++ * Return: %false if @work was already on a queue, %true otherwise.
++ */
++bool queue_work_near(int node, struct workqueue_struct *wq,
++		     struct work_struct *work)
++{
++	unsigned long flags;
++	bool ret = false;
++
++	local_irq_save(flags);
++
++	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
++		int cpu = workqueue_select_cpu_near(node);
++
++		__queue_work(cpu, wq, work);
++		ret = true;
++	}
++
++	local_irq_restore(flags);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(queue_work_near);
++
+ void delayed_work_timer_fn(struct timer_list *t)
+ {
+ 	struct delayed_work *dwork = from_timer(dwork, t, timer);
