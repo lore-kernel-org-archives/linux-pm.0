@@ -1,84 +1,59 @@
 From: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>
-Subject: [PATCH 3/3] ARM: dts: stm32: add thermal sensor support on STM32MP157c
-Date: Fri, 5 Oct 2018 10:08:46 +0000
-Message-ID: <1538734081-26585-4-git-send-email-david.hernandezsanchez@st.com>
+Subject: [PATCH 1/3] dt-bindings: stm32-thermal: add binding documentation
+Date: Fri, 5 Oct 2018 10:08:45 +0000
+Message-ID: <1538734081-26585-2-git-send-email-david.hernandezsanchez@st.com>
 References: <1538734081-26585-1-git-send-email-david.hernandezsanchez@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1538734081-26585-1-git-send-email-david.hernandezsanchez@st.com>
 Content-Language: en-US
-Content-ID: <0932A0602563C245875E65CD0851CD2C@st.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-ID: <E487A1F7C65E5F43AA7A6227DA3D91A0@st.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add configuration on DT for thermal sensor driver
-
-Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
-
-diff --git a/arch/arm/boot/dts/stm32mp157c.dtsi b/arch/arm/boot/dts/stm32mp157c.dtsi
-index 661be94..e90b9f6 100644
---- a/arch/arm/boot/dts/stm32mp157c.dtsi
-+++ b/arch/arm/boot/dts/stm32mp157c.dtsi
-@@ -84,6 +84,31 @@
- 		};
- 	};
-
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&dts>;
-+
-+			trips {
-+				cpu_alert1: cpu-alert1 {
-+					temperature = <85000>;
-+					hysteresis = <0>;
-+					type = "passive";
-+				};
-+
-+				cpu-crit {
-+					temperature = <120000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
-+	};
-+
- 	soc {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
-@@ -908,6 +933,16 @@
- 			status = "disabled";
- 		};
-
-+		dts: thermal@50028000 {
-+			compatible = "st,stm32-thermal";
-+			reg = <0x50028000 0x100>;
-+			interrupts = <GIC_SPI 147 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&rcc TMPSENS>;
-+			clock-names = "pclk";
-+			#thermal-sensor-cells = <0>;
-+			status = "disabled";
-+		};
-+
- 		cryp1: cryp@54001000 {
- 			compatible = "st,stm32mp1-cryp";
- 			reg = <0x54001000 0x400>;
---
-2.7.4
+QWRkIHRoZXJtYWwgYmluZGluZyBkb2N1bWVudGF0aW9uIGZvciBTVE0zMiBEVFMgc2Vuc29yDQoN
+ClNpZ25lZC1vZmYtYnk6IERhdmlkIEhlcm5hbmRleiBTYW5jaGV6IDxkYXZpZC5oZXJuYW5kZXpz
+YW5jaGV6QHN0LmNvbT4NCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy90aGVybWFsL3N0bTMyLXRoZXJtYWwudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL3RoZXJtYWwvc3RtMzItdGhlcm1hbC50eHQNCm5ldyBmaWxlIG1vZGUgMTAw
+NjQ0DQppbmRleCAwMDAwMDAwLi44YzBkNWE0DQotLS0gL2Rldi9udWxsDQorKysgYi9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9zdG0zMi10aGVybWFsLnR4dA0KQEAg
+LTAsMCArMSw2MSBAQA0KK0JpbmRpbmcgZm9yIFRoZXJtYWwgU2Vuc29yIGZvciBTVE1pY3JvZWxl
+Y3Ryb25pY3MgU1RNMzIgc2VyaWVzIG9mIFNvQ3MuDQorDQorT24gU1RNMzIgU29DcywgdGhlIERp
+Z2l0YWwgVGVtcGVyYXR1cmUgU2Vuc29yIChEVFMpIGlzIGluIGNoYXJnZSBvZiBtYW5hZ2luZyBh
+bg0KK2FuYWxvZyBibG9jayB3aGljaCBkZWxpdmVycyBhIGZyZXF1ZW5jeSBkZXBlbmRpbmcgb24g
+dGhlIGludGVybmFsIFNvQydzDQordGVtcGVyYXR1cmUuIEJ5IHVzaW5nIGEgcmVmZXJlbmNlIGZy
+ZXF1ZW5jeSwgRFRTIGlzIGFibGUgdG8gcHJvdmlkZSBhIHNhbXBsZQ0KK251bWJlciB3aGljaCBj
+YW4gYmUgdHJhbnNsYXRlZCBpbnRvIGEgdGVtcGVyYXR1cmUgYnkgdGhlIHVzZXIuDQorDQorRFRT
+IHByb3ZpZGVzIGludGVycnVwdCBub3RpZmljYXRpb24gbWVjaGFuaXNtIGJ5IHRocmVzaG9sZC4g
+VGhpcyBtZWNoYW5pc20NCitvZmZlcnMgdHdvIHRlbXBlcmF0dXJlIHRyaXAgcG9pbnRzOiBwYXNz
+aXZlIGFuZCBjcml0aWNhbC4gVGhlIGZpcnN0IGlzIGludGVuZGVkDQorZm9yIHBhc3NpdmUgY29v
+bGluZyBub3RpZmljYXRpb24gd2hpbGUgdGhlIHNlY29uZCBpcyB1c2VkIGZvciBvdmVyLXRlbXBl
+cmF0dXJlDQorcmVzZXQuDQorDQorUmVxdWlyZWQgcGFyYW1ldGVyczoNCistLS0tLS0tLS0tLS0t
+LS0tLS0tDQorDQorY29tcGF0aWJsZTogCVNob3VsZCBiZSAic3Qsc3RtMzItdGhlcm1hbCINCity
+ZWc6IAkJVGhpcyBzaG91bGQgYmUgdGhlIHBoeXNpY2FsIGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3Ro
+IG9mIHRoZQ0KKwkJc2Vuc29yJ3MgcmVnaXN0ZXJzLg0KK2Nsb2NrczogCVBoYW5kbGUgb2YgdGhl
+IGNsb2NrIHVzZWQgYnkgdGhlIHRoZXJtYWwgc2Vuc29yLg0KKwkJICBTZWU6IERvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jbG9jay1iaW5kaW5ncy50eHQNCitjbG9jay1u
+YW1lczogCVNob3VsZCBiZSAicGNsayIgZm9yIHJlZ2lzdGVyIGFjY2VzcyBjbG9jayBhbmQgcmVm
+ZXJlbmNlIGNsb2NrLg0KKwkJICBTZWU6IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9yZXNvdXJjZS1uYW1lcy50eHQNCisjdGhlcm1hbC1zZW5zb3ItY2VsbHM6IFNob3VsZCBiZSAw
+LiBTZWUgLi90aGVybWFsLnR4dCBmb3IgYSBkZXNjcmlwdGlvbi4NCitpbnRlcnJ1cHRzOglTdGFu
+ZGFyZCB3YXkgdG8gZGVmaW5lIGludGVycnVwdCBudW1iZXIuDQorDQorRXhhbXBsZToNCisNCisJ
+dGhlcm1hbC16b25lcyB7DQorCQljcHVfdGhlcm1hbDogY3B1LXRoZXJtYWwgew0KKwkJCXBvbGxp
+bmctZGVsYXktcGFzc2l2ZSA9IDwwPjsNCisJCQlwb2xsaW5nLWRlbGF5ID0gPDA+Ow0KKw0KKwkJ
+CXRoZXJtYWwtc2Vuc29ycyA9IDwmdGhlcm1hbD47DQorDQorCQkJdHJpcHMgew0KKwkJCQljcHVf
+YWxlcnQxOiBjcHUtYWxlcnQxIHsNCisJCQkJCXRlbXBlcmF0dXJlID0gPDg1MDAwPjsNCisJCQkJ
+CWh5c3RlcmVzaXMgPSA8MD47DQorCQkJCQl0eXBlID0gInBhc3NpdmUiOw0KKwkJCQl9Ow0KKw0K
+KwkJCQljcHUtY3JpdDogY3B1LWNyaXQgew0KKwkJCQkJdGVtcGVyYXR1cmUgPSA8MTIwMDAwPjsN
+CisJCQkJCWh5c3RlcmVzaXMgPSA8MD47DQorCQkJCQl0eXBlID0gImNyaXRpY2FsIjsNCisJCQkJ
+fTsNCisJCQl9Ow0KKw0KKwkJCWNvb2xpbmctbWFwcyB7DQorCQkJfTsNCisJCX07DQorCX07DQor
+DQorCXRoZXJtYWw6IHRoZXJtYWxANTAwMjgwMDAgew0KKwkJY29tcGF0aWJsZSA9ICJzdCxzdG0z
+Mi10aGVybWFsIjsNCisJCXJlZyA9IDwweDUwMDI4MDAwIDB4MTAwPjsNCisJCWNsb2NrcyA9IDwm
+cmNjIFRNUFNFTlM+Ow0KKwkJY2xvY2stbmFtZXMgPSAicGNsayI7DQorCQkjdGhlcm1hbC1zZW5z
+b3ItY2VsbHMgPSA8MD47DQorCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMTQ3IElSUV9UWVBFX0xF
+VkVMX0hJR0g+Ow0KKwl9Ow0KLS0NCjIuNy40DQo=
