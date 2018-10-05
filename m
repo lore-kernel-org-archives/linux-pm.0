@@ -1,13 +1,15 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 0/4] AXP8x3 AC and battery power supply support
-Date: Fri, 5 Oct 2018 11:37:09 +0800
-Message-ID: <CAGb2v666d=aMi8u51t-=1mskCdLhifEw0iN7BWNxmQGod=F77A@mail.gmail.com>
-References: <20181004193410.7265-1-oskari@lemmela.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 4/6] clk: qoriq: Add clockgen support for lx2160a
+Date: Fri, 5 Oct 2018 09:23:32 +0530
+Message-ID: <20181005035332.4ogmxyxiwisok7xs@vireshk-i7>
+References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
+ <1538615031-7507-5-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181004193410.7265-1-oskari@lemmela.net>
+Content-Disposition: inline
+In-Reply-To: <1538615031-7507-5-git-send-email-vabhav.sharma@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,43 +19,25 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: oskari@lemmela.net
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, linux-gpio@vger.kernel.org, Maxime Ripard <maxime.ripard@bootlin.com>, Linus Walleij <linus.walleij@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>, Lee Jones <lee.jones@linaro.org>, Jonathan Cameron <jic23@kernel.org>
+To: Vabhav Sharma <vabhav.sharma@nxp.com>
+Cc: mark.rutland@arm.com, kstewart@linuxfoundation.org, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, mturquette@baylibre.com, will.deacon@arm.com, yamada.masahiro@socionext.com, linux-clk@vger.kernel.org, pankaj.bansal@nxp.com, udit.kumar@nxp.com, linux@armlinux.org.uk, devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, oss@buserror.net, robh+dt@kernel.org, V.Sethi@nxp.com, linux-arm-kernel@lists.infradead.org, Tang Yuantian <andy.tang@nxp.com>, sboyd@kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, sudeep.holla@arm.com, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 5, 2018 at 3:34 AM Oskari Lemmela <oskari@lemmela.net> wrote:
->
-> AXP803 AC and battery power supply support.
-> AXP803/AXP813 AC power supply support with input current and
-> voltage limiting support.
->
-> Oskari Lemmela (4):
->   dt-bindings: add compatibles for AXP803 AC and battery power supplies
->   ARM: dtsi: axp81x: add AC power supply subnode
+On 04-10-18, 06:33, Vabhav Sharma wrote:
+> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> index 3d773f6..83921b7 100644
+> --- a/drivers/cpufreq/qoriq-cpufreq.c
+> +++ b/drivers/cpufreq/qoriq-cpufreq.c
+> @@ -295,6 +295,7 @@ static const struct of_device_id node_matches[] __initconst = {
+>  	{ .compatible = "fsl,ls1046a-clockgen", },
+>  	{ .compatible = "fsl,ls1088a-clockgen", },
+>  	{ .compatible = "fsl,ls2080a-clockgen", },
+> +	{ .compatible = "fsl,lx2160a-clockgen", },
+>  	{ .compatible = "fsl,p4080-clockgen", },
+>  	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+>  	{ .compatible = "fsl,qoriq-clockgen-2.0", },
 
-The prefix should be "ARM: dts: axp81x: "
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
->   arm64: allwinner: a64: add battery and AC power supply support
-
-This should be "arm64: dts: allwinner: a64: <board>: add ..."
-
->   power: supply: add AXP803/AXP813 AC and battery power supply support
->
->  .../devicetree/bindings/gpio/gpio-axp209.txt  |   3 +-
->  .../bindings/iio/adc/axp20x_adc.txt           |   3 +-
->  .../bindings/power/supply/axp20x_ac_power.txt |   4 +
->  .../bindings/power/supply/axp20x_battery.txt  |   1 +
->  arch/arm/boot/dts/axp81x.dtsi                 |   5 +
->  arch/arm64/boot/dts/allwinner/axp803.dtsi     |  31 +++
->  .../allwinner/sun50i-a64-sopine-baseboard.dts |   8 +
->  drivers/iio/adc/axp20x_adc.c                  |   1 +
->  drivers/mfd/axp20x.c                          |  22 +-
->  drivers/pinctrl/pinctrl-axp209.c              |   1 +
->  drivers/power/supply/axp20x_ac_power.c        | 194 ++++++++++++++++++
->  drivers/power/supply/axp20x_battery.c         |   3 +
->  include/linux/mfd/axp20x.h                    |   1 +
->  13 files changed, 274 insertions(+), 3 deletions(-)
->
-> --
-> 2.17.1
->
+-- 
+viresh
