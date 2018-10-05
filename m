@@ -1,43 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 4/6] clk: qoriq: Add clockgen support for lx2160a
-Date: Fri, 5 Oct 2018 09:23:32 +0530
-Message-ID: <20181005035332.4ogmxyxiwisok7xs@vireshk-i7>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
- <1538615031-7507-5-git-send-email-vabhav.sharma@nxp.com>
+From: Sharat Masetty <smasetty-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 7/9] OPP: Add
+ dev_pm_opp_get_interconnect_bw()
+Date: Fri, 5 Oct 2018 12:06:06 +0530
+Message-ID: <49858ede-66db-b58f-e586-411896efad4b@codeaurora.org>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-8-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1538615031-7507-5-git-send-email-vabhav.sharma@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: mark.rutland@arm.com, kstewart@linuxfoundation.org, Yogesh Gaur <yogeshnarayan.gaur@nxp.com>, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, mturquette@baylibre.com, will.deacon@arm.com, yamada.masahiro@socionext.com, linux-clk@vger.kernel.org, pankaj.bansal@nxp.com, udit.kumar@nxp.com, linux@armlinux.org.uk, devicetree@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, oss@buserror.net, robh+dt@kernel.org, V.Sethi@nxp.com, linux-arm-kernel@lists.infradead.org, Tang Yuantian <andy.tang@nxp.com>, sboyd@kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, sudeep.holla@arm.com, shawnguo@kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20180827151112.25211-8-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04-10-18, 06:33, Vabhav Sharma wrote:
-> diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> index 3d773f6..83921b7 100644
-> --- a/drivers/cpufreq/qoriq-cpufreq.c
-> +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> @@ -295,6 +295,7 @@ static const struct of_device_id node_matches[] __initconst = {
->  	{ .compatible = "fsl,ls1046a-clockgen", },
->  	{ .compatible = "fsl,ls1088a-clockgen", },
->  	{ .compatible = "fsl,ls2080a-clockgen", },
-> +	{ .compatible = "fsl,lx2160a-clockgen", },
->  	{ .compatible = "fsl,p4080-clockgen", },
->  	{ .compatible = "fsl,qoriq-clockgen-1.0", },
->  	{ .compatible = "fsl,qoriq-clockgen-2.0", },
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+CgpPbiA4LzI3LzIwMTggODo0MSBQTSwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiBBZGQgZGV2X3Bt
+X29wcF9nZXRfaW50ZXJjb25uZWN0X2J3KCkgdG8gcmVhZCB0aGUgaW50ZXJjb25uZWN0Cj4gYmFu
+ZHdpZHRoIHZhbHVlcyBmb3IgYSBnaXZlbiBPUFAuCj4gCj4gU2lnbmVkLW9mZi1ieTogSm9yZGFu
+IENyb3VzZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgIGRyaXZlcnMvb3BwL29m
+LmMgICAgICAgfCAzNiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKPiAgIGlu
+Y2x1ZGUvbGludXgvcG1fb3BwLmggfCAgNyArKysrKysrCj4gICAyIGZpbGVzIGNoYW5nZWQsIDQz
+IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9vcHAvb2YuYyBiL2RyaXZl
+cnMvb3BwL29mLmMKPiBpbmRleCA3YWYwZGRlYzkzNmIuLjZhNWVlY2FhZjhjMSAxMDA2NDQKPiAt
+LS0gYS9kcml2ZXJzL29wcC9vZi5jCj4gKysrIGIvZHJpdmVycy9vcHAvb2YuYwo+IEBAIC03Nzcs
+MyArNzc3LDM5IEBAIHN0cnVjdCBkZXZpY2Vfbm9kZSAqZGV2X3BtX29wcF9nZXRfb2Zfbm9kZShz
+dHJ1Y3QgZGV2X3BtX29wcCAqb3BwKQo+ICAgCXJldHVybiBvZl9ub2RlX2dldChvcHAtPm5wKTsK
+PiAgIH0KPiAgIEVYUE9SVF9TWU1CT0xfR1BMKGRldl9wbV9vcHBfZ2V0X29mX25vZGUpOwo+ICsK
+PiArLyoqCj4gKyAqIGRldl9wbV9vcHBfZ2V0X2ludGVyY29ubmVjdF9idygpIC0gR2V0IHRoZSBp
+bnRlcmNvbm5lY3QgYmFuZHdpZHRoIGZvciB0aGUgb3BwCj4gKyAqIEBvcHA6CW9wcCBjb250YWlu
+aW5nIHRoZSBiYW5kd2lkdGggdmFsdWVzCj4gKyAqIEBwYXRobmFtZToJbmFtZSBvZiB0aGUgaW50
+ZXJjb25uZWN0IHBhdGggZm9yIHRoZSBiYW5kd2lkdGggdmFsdWVzCj4gKyAqIEBhdmdidzoJUG9p
+bnRlciBmb3IgdGhlIHZhbHVlIHRvIGhvbGQgdGhlIGF2ZXJhZ2UgQlcgZGVmaW5lZCBmb3IgdGhl
+IE9QUAo+ICsgKiBAcGVha2J3OglQb2ludGVyIGZvciB0aGUgdmFsdWUgdG8gaG9sZCB0aGUgcGVh
+ayBCVyBkZWZpbmVkIGZvciB0aGUgT1BQCj4gKyAqCj4gKyAqIFJldHVybjogTmVnYXRpdmUgdmFs
+dWUgb24gZXJyb3Igb3IgMCBvbiBzdWNjZXNzCj4gKyAqLwo+ICtpbnQgZGV2X3BtX29wcF9nZXRf
+aW50ZXJjb25uZWN0X2J3KHN0cnVjdCBkZXZfcG1fb3BwICpvcHAsCj4gKwkJY29uc3QgY2hhciAq
+cGF0aG5hbWUsIHU2NCAqYXZnYncsIHU2NCAqcGVha2J3KQo+ICt7Cj4gKwljaGFyIG5hbWVbTkFN
+RV9NQVhdOwo+ICsJc3RydWN0IHByb3BlcnR5ICpwcm9wOwo+ICsJaW50IGNvdW50Owo+ICsKPiAr
+CWlmIChJU19FUlJfT1JfTlVMTChvcHApKQo+ICsJCXJldHVybiAtRU5PRU5UOwo+ICsKPiArCXNu
+cHJpbnRmKG5hbWUsIE5BTUVfTUFYLCAib3BwLWludGVyY29ubmVjdC1idy0lcyIsIHBhdGhuYW1l
+KTsKPiArCXByb3AgPSBvZl9maW5kX3Byb3BlcnR5KG9wcC0+bnAsIG5hbWUsIE5VTEwpOwo+ICsK
+PiArCWlmICghcHJvcCkKPiArCQlyZXR1cm4gLUVOT0VOVDsKPiArCj4gKwljb3VudCA9IG9mX3By
+b3BlcnR5X2NvdW50X3U2NF9lbGVtcyhvcHAtPm5wLCBuYW1lKTsKPiArCWlmIChjb3VudCAhPSAy
+KQo+ICsJCXJldHVybiAtRUlOVkFMOwo+ICsKPiArCW9mX3Byb3BlcnR5X3JlYWRfdTY0X2luZGV4
+KG9wcC0+bnAsIG5hbWUsIDAsIGF2Z2J3KTsKPiArCW9mX3Byb3BlcnR5X3JlYWRfdTY0X2luZGV4
+KG9wcC0+bnAsIG5hbWUsIDAsIHBlYWtidyk7ClRoaXMgc2hvdWxkIGJlIGluZGV4IDEgZm9yIHBl
+YWsgYmFuZHdpZHRoCglvZl9wcm9wZXJ0eV9yZWFkX3U2NF9pbmRleChvcHAtPm5wLCBuYW1lLCAx
+LCBwZWFrYncpOwpJIHRlc3RlZCB3aXRoIHRoaXMgZml4IGFuZCB0aGUgR1BVJ3MgaW50ZXJjb25u
+ZWN0IHN1bW1hcnkgbm93IHNob3dzCm5vbiB6ZXJvIHZhbHVlcyBmb3IgcGVhayBiYW5kd2lkdGgu
+IENhbiB5b3UgcGxlYXNlIHJhaXNlIGEgbmV3ZXIgdmVyc2lvbiAKb2YgdGhpcyBwYXRjaD8gSSB3
+aWxsIGhhdmUgaXQgcHVsbGVkIGludG8gb3VyIGRvd25zdHJlYW0gYnVpbGRzLgo+ICsKPiArCXJl
+dHVybiAwOwo+ICt9Cj4gK0VYUE9SVF9TWU1CT0xfR1BMKGRldl9wbV9vcHBfZ2V0X2ludGVyY29u
+bmVjdF9idyk7Cj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvcG1fb3BwLmggYi9pbmNsdWRl
+L2xpbnV4L3BtX29wcC5oCj4gaW5kZXggMDk5YjMxOTYwZGVjLi43MGU0OWUyNTlkMGUgMTAwNjQ0
+Cj4gLS0tIGEvaW5jbHVkZS9saW51eC9wbV9vcHAuaAo+ICsrKyBiL2luY2x1ZGUvbGludXgvcG1f
+b3BwLmgKPiBAQCAtMzAxLDYgKzMwMSw3IEBAIGludCBkZXZfcG1fb3BwX29mX2dldF9zaGFyaW5n
+X2NwdXMoc3RydWN0IGRldmljZSAqY3B1X2Rldiwgc3RydWN0IGNwdW1hc2sgKmNwdW1hCj4gICBz
+dHJ1Y3QgZGV2aWNlX25vZGUgKmRldl9wbV9vcHBfb2ZfZ2V0X29wcF9kZXNjX25vZGUoc3RydWN0
+IGRldmljZSAqZGV2KTsKPiAgIHN0cnVjdCBkZXZfcG1fb3BwICpvZl9kZXZfcG1fb3BwX2ZpbmRf
+cmVxdWlyZWRfb3BwKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IGRldmljZV9ub2RlICpucCk7
+Cj4gICBzdHJ1Y3QgZGV2aWNlX25vZGUgKmRldl9wbV9vcHBfZ2V0X29mX25vZGUoc3RydWN0IGRl
+dl9wbV9vcHAgKm9wcCk7Cj4gK2ludCBkZXZfcG1fb3BwX2dldF9pbnRlcmNvbm5lY3RfYncoc3Ry
+dWN0IGRldl9wbV9vcHAgKm9wcCwgY29uc3QgY2hhciAqcGF0aG5hbWUsIHU2NCAqYXZnYncsIHU2
+NCAqcGVha2J3KTsKPiAgICNlbHNlCj4gICBzdGF0aWMgaW5saW5lIGludCBkZXZfcG1fb3BwX29m
+X2FkZF90YWJsZShzdHJ1Y3QgZGV2aWNlICpkZXYpCj4gICB7Cj4gQEAgLTM0Myw2ICszNDQsMTIg
+QEAgc3RhdGljIGlubGluZSBzdHJ1Y3QgZGV2aWNlX25vZGUgKmRldl9wbV9vcHBfZ2V0X29mX25v
+ZGUoc3RydWN0IGRldl9wbV9vcHAgKm9wcCkKPiAgIHsKPiAgIAlyZXR1cm4gTlVMTDsKPiAgIH0K
+PiArCj4gK3N0YXRpYyBpbmxpbmUgaW50IGRldl9wbV9vcHBfZ2V0X2ludGVyY29ubmVjdF9idyhz
+dHJ1Y3QgZGV2X3BtX29wcCAqb3BwLCBjb25zdCBjaGFyICpwYXRobmFtZSwKPiArCQl1NjQgKmF2
+Z2J3LCB1NjQgKnBlYWtidykKPiArewo+ICsJcmV0dXJuIC1FTk9UU1VQUDsKPiArfQo+ICAgI2Vu
+ZGlmCj4gICAKPiAgICNlbmRpZgkJLyogX19MSU5VWF9PUFBfSF9fICovCj4gCgotLSAKVGhlIFF1
+YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIHRoZSBDb2RlIEF1
+cm9yYSBGb3J1bSwKTGludXggRm91bmRhdGlvbiBDb2xsYWJvcmF0aXZlIFByb2plY3QKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxp
+bmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
