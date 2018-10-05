@@ -1,58 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/12][v4] Backport several fixes from 64bits to 32bits hibernation
-Date: Fri, 05 Oct 2018 11:49:51 +0200
-Message-ID: <1776557.eug3UU5KzN@aspire.rjw.lan>
-References: <cover.1537448058.git.yu.c.chen@intel.com> <alpine.DEB.2.21.1810021119540.32062@nanos.tec.linutronix.de>
+Subject: Re: [PATCH] cpufreq / CPPC: Mark acpi_ids as used
+Date: Fri, 05 Oct 2018 11:51:34 +0200
+Message-ID: <1561369.7cfCgrRCj6@aspire.rjw.lan>
+References: <20181002223457.7564-1-natechancellor@gmail.com> <CAKwvOdnbnw-yciWkuuKMye=57qwpXDX4oPaoNUoeYvbpn-Tavw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.21.1810021119540.32062@nanos.tec.linutronix.de>
+In-Reply-To: <CAKwvOdnbnw-yciWkuuKMye=57qwpXDX4oPaoNUoeYvbpn-Tavw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Chen Yu <yu.c.chen@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Zhimin Gu <kookoo.gu@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Nick Desaulniers <ndesaulniers@google.com>, Nathan Chancellor <natechancellor@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 2, 2018 11:20:23 AM CEST Thomas Gleixner wrote:
-> On Fri, 21 Sep 2018, Chen Yu wrote:
-> 
-> > Currently there are mainly three bugs in 32bits system when doing
-> > hibernation:
-> > 1. The page copy code is not running in safe page, which might
-> >    cause hang during resume.
-> > 2. There's no text mapping for the final jump address
-> >    of the original kernel, which might cause the system jumping
-> >    into illegal address and causes system hang during resume.
-> > 3. The restore kernel switches to its own kernel page table(swapper_pg_dir)
-> >    rather than the original kernel page table after all the pages
-> >    been copied back, which might cause invalid virtual-physical
-> >    mapping issue during resume.
-> > 
-> > To solve these problems:
-> > 
-> > 1. Copy the code core_restore_code to a safe page, to avoid the instruction
-> >    code been overwritten when image kernel pages are being copied.
-> > 2. Set up temporary text mapping for the image kernel's jump address,
-> >    so that after all the pages have been copied back, the system could
-> >    jump to this address.
-> > 3. Switch to the original kernel page table during resume.
-> > 
-> > Furthermore, MD5 hash check for e820 map is also backported from 64bits
-> > system.
-> > 
-> > In order to make this patch set more readable, these fixes are splitted
-> > into several sub patches.
-> > 
-> > And use CONFIG_X86_64 to control the common code to be 'activated' for
-> > 32 bit system during each sub-patch for better maintaining.
-> 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> Rafael, it's all yours :)
+On Wednesday, October 3, 2018 12:40:19 AM CEST Nick Desaulniers wrote:
+> On Tue, Oct 2, 2018 at 3:35 PM Nathan Chancellor
+> <natechancellor@gmail.com> wrote:
+> >
+> > Clang warns:
+> >
+> > drivers/cpufreq/cppc_cpufreq.c:431:36: warning: variable 'cppc_acpi_ids'
+> > is not needed and will not be emitted [-Wunneeded-internal-declaration]
+> > static const struct acpi_device_id cppc_acpi_ids[] = {
+> >                                    ^
+> > 1 warning generated.
+> >
+> > Mark the definition as used so that Clang understands we don't want this
+> > warning while not inhibiting Clang's dead code elimination from removing
+> > the unreferenced internal symbol when moving the data it contains to the
+> > globally available symbol via MODULE_DEVICE_TABLE.
+> >
+> > $ nm -S drivers/cpufreq/cppc_cpufreq.o | grep acpi | tail -1
+> > 0000000000000000 0000000000000040 R __mod_acpi__cppc_acpi_ids_device_table
+> >
+> > Suggested-by: Nick Desaulniers <ndesaulniers@google.com>
+> > Reviewed-by: Nick Desaulniers <ndesaulniers@google.com>
+> > Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> > ---
+> >  drivers/cpufreq/cppc_cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> > index 30f302149730..fd25c21cee72 100644
+> > --- a/drivers/cpufreq/cppc_cpufreq.c
+> > +++ b/drivers/cpufreq/cppc_cpufreq.c
+> > @@ -428,7 +428,7 @@ MODULE_LICENSE("GPL");
+> >
+> >  late_initcall(cppc_cpufreq_init);
+> >
+> > -static const struct acpi_device_id cppc_acpi_ids[] = {
+> > +static const struct acpi_device_id cppc_acpi_ids[] __used = {
+> >         {ACPI_PROCESSOR_DEVICE_HID, },
+> >         {}
+> >  };
+> > --
 
-Thank you, I have applied the series.
-
-This was long overdue, many thanks to everyone involved for taking care of it!
-
-Thanks,
-Rafael
+Patch applied, thanks!
