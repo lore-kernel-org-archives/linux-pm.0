@@ -1,92 +1,40 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Subject: [PATCH] PM / AVS: SmartReflex: remove unused function
-Date: Sat,  6 Oct 2018 18:40:59 +0200
-Message-ID: <20181006164059.16106-1-u.kleine-koenig@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, LinAdmin <linadmin@quickline.ch>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Oskari Lemmela <oskari@lemmela.net>
+Subject: [PATCH v2 0/6] AXP8x3 AC and battery power supply support
+Date: Sun,  7 Oct 2018 00:18:30 +0300
+Message-ID: <20181006211836.28253-1-oskari@lemmela.net>
+References: <20181004193410.7265-1-oskari@lemmela.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181004193410.7265-1-oskari@lemmela.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogVXdlIEtsZWluZS1Lw7ZuaWcgPHV3ZUBrbGVpbmUta29lbmlnLm9yZz4KCm9tYXBfc3Jf
-cmVnaXN0ZXJfcG1pYygpIHdhcyBpbnRyb2R1Y2VkIGluIDIwMTAgaW4gY29tbWl0CgoJOTg0YWE2
-ZGJmNGNhICgiT01BUDM6IFBNOiBBZGRpbmcgc21hcnRyZWZsZXggZHJpdmVyIHN1cHBvcnQuIikK
-Ci4gVGhlcmUgd2FzIG5ldmVyIGFueSBjYWxsZXIgb2YgdGhpcyBmdW5jdGlvbiBpbiBtYWlubGlu
-ZSByZXN1bHRpbmcgaW4gYQp3YXJuaW5nCgoJc3JfaW5pdDogTm8gUE1JQyBob29rIHRvIGluaXQg
-c21hcnRyZWZsZXgKCmZvciBlYWNoIG1hY2hpbmUgd2hlcmUgdGhpcyBkcml2ZXIgaXMgZW5hYmxl
-ZC4gU28gcmVtb3ZlIHRoZSB1bnVzZWQKZnVuY3Rpb24gYW5kIHRoZSBwcl93YXJuLgoKU2lnbmVk
-LW9mZi1ieTogVXdlIEtsZWluZS1Lw7ZuaWcgPHV3ZUBrbGVpbmUta29lbmlnLm9yZz4KLS0tCkhl
-bGxvLAoKSSBkaWRuJ3QgdGVzdCB0aGlzIGNoYW5nZSwgZGlkbid0IGV2ZW4gdHJ5IHRvIGNvbXBp
-bGUgaXQuIEp1c3QgcmVhZCBhCnJlcG9ydFsxXSB0aGF0IHRoaXMgd2FybmluZyBpcyBhbm5veWlu
-ZyBvbiBhbiBNYXJ2ZWxsIEFybWFkYSBiYXNlZAptYWNoaW5lIHJ1bm5pbmcgYSBEZWJpYW4ga2Vy
-bmVsLgoKQmVzdCByZWdhcmRzClV3ZQoKWzFdIGh0dHBzOi8vbGlzdHMuZGViaWFuLm9yZy9kNmFi
-ZjlkMS0xNGJmLTg2ZmMtNThhMC0wZjExZmYxYWMzNDVAcXVpY2tsaW5lLmNoCgogZHJpdmVycy9w
-b3dlci9hdnMvc21hcnRyZWZsZXguYyAgIHwgMzEgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLQogaW5jbHVkZS9saW51eC9wb3dlci9zbWFydHJlZmxleC5oIHwgIDUgLS0tLS0KIDIgZmls
-ZXMgY2hhbmdlZCwgMzYgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlci9h
-dnMvc21hcnRyZWZsZXguYyBiL2RyaXZlcnMvcG93ZXIvYXZzL3NtYXJ0cmVmbGV4LmMKaW5kZXgg
-Y2IwMjM3MTQzZGJlLi5kMjliNjMxM2NhZmMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcG93ZXIvYXZz
-L3NtYXJ0cmVmbGV4LmMKKysrIGIvZHJpdmVycy9wb3dlci9hdnMvc21hcnRyZWZsZXguYwpAQCAt
-MzYsNyArMzYsNiBAQAogc3RhdGljIExJU1RfSEVBRChzcl9saXN0KTsKIAogc3RhdGljIHN0cnVj
-dCBvbWFwX3NyX2NsYXNzX2RhdGEgKnNyX2NsYXNzOwotc3RhdGljIHN0cnVjdCBvbWFwX3NyX3Bt
-aWNfZGF0YSAqc3JfcG1pY19kYXRhOwogc3RhdGljIHN0cnVjdCBkZW50cnkJCSpzcl9kYmdfZGly
-OwogCiBzdGF0aWMgaW5saW5lIHZvaWQgc3Jfd3JpdGVfcmVnKHN0cnVjdCBvbWFwX3NyICpzciwg
-dW5zaWduZWQgb2Zmc2V0LCB1MzIgdmFsdWUpCkBAIC03NzksMjUgKzc3OCw2IEBAIHZvaWQgb21h
-cF9zcl9kaXNhYmxlX3Jlc2V0X3ZvbHQoc3RydWN0IHZvbHRhZ2Vkb21haW4gKnZvbHRkbSkKIAlz
-cl9jbGFzcy0+ZGlzYWJsZShzciwgMSk7CiB9CiAKLS8qKgotICogb21hcF9zcl9yZWdpc3Rlcl9w
-bWljKCkgLSBBUEkgdG8gcmVnaXN0ZXIgcG1pYyBzcGVjaWZpYyBpbmZvLgotICogQHBtaWNfZGF0
-YToJVGhlIHN0cnVjdHVyZSBjb250YWluaW5nIHBtaWMgc3BlY2lmaWMgZGF0YS4KLSAqCi0gKiBU
-aGlzIEFQSSBpcyB0byBiZSBjYWxsZWQgZnJvbSB0aGUgUE1JQyBzcGVjaWZpYyBjb2RlIHRvIHJl
-Z2lzdGVyIHdpdGgKLSAqIHNtYXJ0cmVmbGV4IGRyaXZlciBwbWljIHNwZWNpZmljIGluZm8uIEN1
-cnJlbnRseSB0aGUgb25seSBpbmZvIHJlcXVpcmVkCi0gKiBpcyB0aGUgc21hcnRyZWZsZXggaW5p
-dCBvbiB0aGUgUE1JQyBzaWRlLgotICovCi12b2lkIG9tYXBfc3JfcmVnaXN0ZXJfcG1pYyhzdHJ1
-Y3Qgb21hcF9zcl9wbWljX2RhdGEgKnBtaWNfZGF0YSkKLXsKLQlpZiAoIXBtaWNfZGF0YSkgewot
-CQlwcl93YXJuKCIlczogVHJ5aW5nIHRvIHJlZ2lzdGVyIE5VTEwgUE1JQyBkYXRhIHN0cnVjdHVy
-ZSB3aXRoIHNtYXJ0cmVmbGV4XG4iLAotCQkJX19mdW5jX18pOwotCQlyZXR1cm47Ci0JfQotCi0J
-c3JfcG1pY19kYXRhID0gcG1pY19kYXRhOwotfQotCiAvKiBQTSBEZWJ1ZyBGUyBlbnRyaWVzIHRv
-IGVuYWJsZSBhbmQgZGlzYWJsZSBzbWFydHJlZmxleC4gKi8KIHN0YXRpYyBpbnQgb21hcF9zcl9h
-dXRvY29tcF9zaG93KHZvaWQgKmRhdGEsIHU2NCAqdmFsKQogewpAQCAtMTA2NCwxNyArMTA0NCw2
-IEBAIHN0YXRpYyBpbnQgX19pbml0IHNyX2luaXQodm9pZCkKIHsKIAlpbnQgcmV0ID0gMDsKIAot
-CS8qCi0JICogc3JfaW5pdCBpcyBhIGxhdGUgaW5pdC4gSWYgYnkgdGhlbiBhIHBtaWMgc3BlY2lm
-aWMgQVBJIGlzIG5vdAotCSAqIHJlZ2lzdGVyZWQgZWl0aGVyIHRoZXJlIGlzIG5vIG5lZWQgZm9y
-IGFueXRoaW5nIHRvIGJlIGRvbmUgb24KLQkgKiB0aGUgUE1JQyBzaWRlIG9yIHNvbWVib2R5IGhh
-cyBmb3Jnb3R0ZW4gdG8gcmVnaXN0ZXIgYSBQTUlDCi0JICogaGFuZGxlci4gV2FybiBmb3IgdGhl
-IHNlY29uZCBjb25kaXRpb24uCi0JICovCi0JaWYgKHNyX3BtaWNfZGF0YSAmJiBzcl9wbWljX2Rh
-dGEtPnNyX3BtaWNfaW5pdCkKLQkJc3JfcG1pY19kYXRhLT5zcl9wbWljX2luaXQoKTsKLQllbHNl
-Ci0JCXByX3dhcm4oIiVzOiBObyBQTUlDIGhvb2sgdG8gaW5pdCBzbWFydHJlZmxleFxuIiwgX19m
-dW5jX18pOwotCiAJcmV0ID0gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZzbWFydHJlZmxleF9k
-cml2ZXIpOwogCWlmIChyZXQpIHsKIAkJcHJfZXJyKCIlczogcGxhdGZvcm0gZHJpdmVyIHJlZ2lz
-dGVyIGZhaWxlZCBmb3IgU1JcbiIsCmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3Bvd2VyL3Nt
-YXJ0cmVmbGV4LmggYi9pbmNsdWRlL2xpbnV4L3Bvd2VyL3NtYXJ0cmVmbGV4LmgKaW5kZXggN2I4
-MWRhZDcxMmRlLi5hNTg2OTc2ZjQ3ODQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvcG93ZXIv
-c21hcnRyZWZsZXguaAorKysgYi9pbmNsdWRlL2xpbnV4L3Bvd2VyL3NtYXJ0cmVmbGV4LmgKQEAg
-LTMwMyw5ICszMDMsNiBAQCB2b2lkIG9tYXBfc3JfZW5hYmxlKHN0cnVjdCB2b2x0YWdlZG9tYWlu
-ICp2b2x0ZG0pOwogdm9pZCBvbWFwX3NyX2Rpc2FibGUoc3RydWN0IHZvbHRhZ2Vkb21haW4gKnZv
-bHRkbSk7CiB2b2lkIG9tYXBfc3JfZGlzYWJsZV9yZXNldF92b2x0KHN0cnVjdCB2b2x0YWdlZG9t
-YWluICp2b2x0ZG0pOwogCi0vKiBBUEkgdG8gcmVnaXN0ZXIgdGhlIHBtaWMgc3BlY2lmaWMgZGF0
-YSB3aXRoIHRoZSBzbWFydHJlZmxleCBkcml2ZXIuICovCi12b2lkIG9tYXBfc3JfcmVnaXN0ZXJf
-cG1pYyhzdHJ1Y3Qgb21hcF9zcl9wbWljX2RhdGEgKnBtaWNfZGF0YSk7Ci0KIC8qIFNtYXJ0cmVm
-bGV4IGRyaXZlciBob29rcyB0byBiZSBjYWxsZWQgZnJvbSBTbWFydHJlZmxleCBjbGFzcyBkcml2
-ZXIgKi8KIGludCBzcl9lbmFibGUoc3RydWN0IG9tYXBfc3IgKnNyLCB1bnNpZ25lZCBsb25nIHZv
-bHQpOwogdm9pZCBzcl9kaXNhYmxlKHN0cnVjdCBvbWFwX3NyICpzcik7CkBAIC0zMjAsNyArMzE3
-LDUgQEAgc3RhdGljIGlubGluZSB2b2lkIG9tYXBfc3JfZW5hYmxlKHN0cnVjdCB2b2x0YWdlZG9t
-YWluICp2b2x0ZG0pIHt9CiBzdGF0aWMgaW5saW5lIHZvaWQgb21hcF9zcl9kaXNhYmxlKHN0cnVj
-dCB2b2x0YWdlZG9tYWluICp2b2x0ZG0pIHt9CiBzdGF0aWMgaW5saW5lIHZvaWQgb21hcF9zcl9k
-aXNhYmxlX3Jlc2V0X3ZvbHQoCiAJCXN0cnVjdCB2b2x0YWdlZG9tYWluICp2b2x0ZG0pIHt9Ci1z
-dGF0aWMgaW5saW5lIHZvaWQgb21hcF9zcl9yZWdpc3Rlcl9wbWljKAotCQlzdHJ1Y3Qgb21hcF9z
-cl9wbWljX2RhdGEgKnBtaWNfZGF0YSkge30KICNlbmRpZgogI2VuZGlmCi0tIAoyLjE5LjAKCgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
-a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
-bmVsCg==
+AXP813 AC power supply support with input current and
+voltage limiting support.
+
+AXP803 AC and battery power supply support.
+
+Changes in v2:
+* Reuse axp813 compatibles for axp803
+* Refactor axp20x_ac_power.c
+
+Oskari Lemmela (6):
+  dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
+  ARM: dts: axp81x: add AC power supply subnode
+  arm64: dts: allwinner: axp803: add AC and battery power supplies
+  arm64: dts: allwinner: a64: sopine: enable power supplies
+  mfd: axp20x: add support AXP803 AC and battery power supplies
+  power: supply: add AC power supply driver for AXP813
+
+ .../bindings/power/supply/axp20x_ac_power.txt |  3 +
+ arch/arm/boot/dts/axp81x.dtsi                 |  5 +
+ arch/arm64/boot/dts/allwinner/axp803.dtsi     | 31 +++++++
+ .../allwinner/sun50i-a64-sopine-baseboard.dts |  8 ++
+ drivers/mfd/axp20x.c                          | 22 ++++-
+ drivers/power/supply/axp20x_ac_power.c        | 92 +++++++++++++++++++
+ include/linux/mfd/axp20x.h                    |  1 +
+ 7 files changed, 161 insertions(+), 1 deletion(-)
+
+-- 
+2.17.1
