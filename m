@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v2 6/6] power: supply: add AC power supply driver for AXP813
-Date: Sun,  7 Oct 2018 00:18:36 +0300
-Message-ID: <20181006211836.28253-7-oskari@lemmela.net>
+Subject: [PATCH v2 2/6] ARM: dts: axp81x: add AC power supply subnode
+Date: Sun,  7 Oct 2018 00:18:32 +0300
+Message-ID: <20181006211836.28253-3-oskari@lemmela.net>
 References: <20181004193410.7265-1-oskari@lemmela.net>
  <20181006211836.28253-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,160 +11,28 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-AXP813 and AXP803 PMICs can control input current and
-minimum voltage.
-
-Both of these values are configurable.
+Add AC power supply subnode for AXP81X PMIC.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
 ---
- drivers/power/supply/axp20x_ac_power.c | 92 ++++++++++++++++++++++++++
- 1 file changed, 92 insertions(+)
+ arch/arm/boot/dts/axp81x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/supply/axp20x_ac_power.c
-index 0771f951b11f..92a92354f6f0 100644
---- a/drivers/power/supply/axp20x_ac_power.c
-+++ b/drivers/power/supply/axp20x_ac_power.c
-@@ -27,6 +27,16 @@
- #define AXP20X_PWR_STATUS_ACIN_PRESENT	BIT(7)
- #define AXP20X_PWR_STATUS_ACIN_AVAIL	BIT(6)
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index 043c717dcef1..67c17151b584 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -69,6 +69,11 @@
+ 		};
+ 	};
  
-+#define AXP813_VHOLD_MASK		GENMASK(5, 3)
-+#define AXP813_VHOLD_UV_TO_BIT(x)	((((x) / 100000) - 40) << 3)
-+#define AXP813_VHOLD_REG_TO_UV(x)	\
-+	(((((x) & AXP813_VHOLD_MASK) >> 3) + 40) * 100000)
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp813-ac-power-supply";
++		status = "disabled";
++	};
 +
-+#define AXP813_CURR_LIMIT_MASK		GENMASK(2, 0)
-+#define AXP813_CURR_LIMIT_UA_TO_BIT(x)	(((x) / 500000) - 3)
-+#define AXP813_CURR_LIMIT_REG_TO_UA(x)	\
-+	((((x) & AXP813_CURR_LIMIT_MASK) + 3) * 500000)
-+
- #define DRVNAME "axp20x-ac-power-supply"
- 
- struct axp20x_ac_power {
-@@ -102,6 +112,55 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
- 
- 		return 0;
- 
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		ret = regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
-+		if (ret)
-+			return ret;
-+
-+		val->intval = AXP813_VHOLD_REG_TO_UV(reg);
-+
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		ret = regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
-+		if (ret)
-+			return ret;
-+
-+		val->intval = AXP813_CURR_LIMIT_REG_TO_UA(reg);
-+
-+		return 0;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int axp20x_ac_power_set_property(struct power_supply *psy,
-+					enum power_supply_property psp,
-+					const union power_supply_propval *val)
-+{
-+	struct axp20x_ac_power *power = power_supply_get_drvdata(psy);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		if (val->intval < 4000000 || val->intval > 4700000)
-+			return -EINVAL;
-+
-+		return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
-+					  AXP813_VHOLD_MASK,
-+					  AXP813_VHOLD_UV_TO_BIT(val->intval));
-+
-+	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-+		if (val->intval < 1500000 || val->intval > 4000000)
-+			return -EINVAL;
-+
-+		return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
-+					  AXP813_CURR_LIMIT_MASK,
-+					  AXP813_CURR_LIMIT_UA_TO_BIT
-+					  (val->intval));
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -109,6 +168,13 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
- 	return -EINVAL;
- }
- 
-+static int axp813_ac_power_prop_writeable(struct power_supply *psy,
-+					  enum power_supply_property psp)
-+{
-+	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
-+	       psp == POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT;
-+}
-+
- static enum power_supply_property axp20x_ac_power_properties[] = {
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -123,6 +189,14 @@ static enum power_supply_property axp22x_ac_power_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- };
- 
-+static enum power_supply_property axp813_ac_power_properties[] = {
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_MIN,
-+	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+};
-+
- static const struct power_supply_desc axp20x_ac_power_desc = {
- 	.name = "axp20x-ac",
- 	.type = POWER_SUPPLY_TYPE_MAINS,
-@@ -139,6 +213,16 @@ static const struct power_supply_desc axp22x_ac_power_desc = {
- 	.get_property = axp20x_ac_power_get_property,
- };
- 
-+static const struct power_supply_desc axp813_ac_power_desc = {
-+	.name = "axp813-ac",
-+	.type = POWER_SUPPLY_TYPE_MAINS,
-+	.properties = axp813_ac_power_properties,
-+	.num_properties = ARRAY_SIZE(axp813_ac_power_properties),
-+	.property_is_writeable = axp813_ac_power_prop_writeable,
-+	.get_property = axp20x_ac_power_get_property,
-+	.set_property = axp20x_ac_power_set_property,
-+};
-+
- struct axp_data {
- 	const struct power_supply_desc	*power_desc;
- 	bool				acin_adc;
-@@ -154,6 +238,11 @@ static const struct axp_data axp22x_data = {
- 	.acin_adc = false,
- };
- 
-+static const struct axp_data axp813_data = {
-+	.power_desc = &axp813_ac_power_desc,
-+	.acin_adc = false,
-+};
-+
- static int axp20x_ac_power_probe(struct platform_device *pdev)
- {
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
-@@ -234,6 +323,9 @@ static const struct of_device_id axp20x_ac_power_match[] = {
- 	}, {
- 		.compatible = "x-powers,axp221-ac-power-supply",
- 		.data = &axp22x_data,
-+	}, {
-+		.compatible = "x-powers,axp813-ac-power-supply",
-+		.data = &axp813_data,
- 	}, { /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
+ 	battery_power_supply: battery-power-supply {
+ 		compatible = "x-powers,axp813-battery-power-supply";
+ 		status = "disabled";
 -- 
 2.17.1
