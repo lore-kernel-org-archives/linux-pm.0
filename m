@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v2 2/6] ARM: dts: axp81x: add AC power supply subnode
-Date: Sun,  7 Oct 2018 00:18:32 +0300
-Message-ID: <20181006211836.28253-3-oskari@lemmela.net>
+Subject: [PATCH v2 4/6] arm64: dts: allwinner: a64: sopine: enable power supplies
+Date: Sun,  7 Oct 2018 00:18:34 +0300
+Message-ID: <20181006211836.28253-5-oskari@lemmela.net>
 References: <20181004193410.7265-1-oskari@lemmela.net>
  <20181006211836.28253-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,28 +11,31 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add AC power supply subnode for AXP81X PMIC.
+Sopine baseboard have ACIN and battery connectors.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
 ---
- arch/arm/boot/dts/axp81x.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ .../boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts    | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
-index 043c717dcef1..67c17151b584 100644
---- a/arch/arm/boot/dts/axp81x.dtsi
-+++ b/arch/arm/boot/dts/axp81x.dtsi
-@@ -69,6 +69,11 @@
- 		};
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+index c21f2331add6..335cf2263d19 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+@@ -69,6 +69,14 @@
  	};
+ };
  
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp813-ac-power-supply";
-+		status = "disabled";
-+	};
++&ac_power_supply {
++	status = "okay";
++};
 +
- 	battery_power_supply: battery-power-supply {
- 		compatible = "x-powers,axp813-battery-power-supply";
- 		status = "disabled";
++&battery_power_supply {
++	status = "okay";
++};
++
+ &ehci0 {
+ 	status = "okay";
+ };
 -- 
 2.17.1
