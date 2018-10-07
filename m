@@ -1,63 +1,47 @@
-From: Jonas Danielsson <jonas@orbital-systems.com>
-Subject: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
-Date: Sun,  7 Oct 2018 14:57:45 +0200
-Message-ID: <20181007125815.8392-1-jonas@threetimestwo.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Jonas Danielsson <jonas@orbital-systems.com>, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Subject: [PATCH V4 0/2] soc: imx: add scu power domain driver
+Date: Sun,  7 Oct 2018 21:10:05 +0800
+Message-ID: <1538917807-1921-1-git-send-email-aisheng.dong@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, ulf.hansson@linaro.org, dongas86@gmail.com, khilman@kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-imx@nxp.com, kernel@pengutronix.de, fabio.estevam@nxp.com, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Jonas Danielsson <jonas@orbital-systems.com>
+This patch set adds the scu based power domain driver.
+It depends on SCU driver.
 
-This fixes a bug where our embedded system (AT91SAM9260 based) would
-hang at reboot. At the most we managed 16 boot loops without a hang.
+Change Log:
+v3->v4:
+ * only scu headfile path update
 
-With this patch applied the problem has not been observed and the board
-has managed above 250 boot loops.
+v2->v3:
+ * structure and enums name update
+ * api usage update
 
-The AT91SAM9260 datasheet tells us that with the instruction cache
-disabled all instructions are fetched from SDRAM. And we have an errata
-telling us we must power down the SDRAM before issuing cpu reset.
+Dong Aisheng (2):
+  firmware: imx: add pm svc headfile
+  firmware: imx: add SCU power domain driver
 
-This means we need the instruction cache enabled in at91sam9260_reset()
-At the moment it is being disabled in cpu_proc_fin() which is called from
-arch/arm/kernel/reboot.c.
+ drivers/firmware/imx/Kconfig        |   6 ++
+ drivers/firmware/imx/Makefile       |   3 +-
+ drivers/firmware/imx/scu-pd.c       | 167 ++++++++++++++++++++++++++++++++++++
+ include/linux/firmware/imx/sci.h    |   1 +
+ include/linux/firmware/imx/svc/pm.h |  85 ++++++++++++++++++
+ 5 files changed, 261 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/firmware/imx/scu-pd.c
+ create mode 100644 include/linux/firmware/imx/svc/pm.h
 
-Signed-off-by: Jonas Danielsson <jonas@orbital-systems.com>
----
- drivers/power/reset/at91-reset.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index f44a9ffcc2ab..78972bba64df 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -50,14 +50,24 @@ static void __iomem *at91_ramc_base[2], *at91_rstc_base;
- static struct clk *sclk;
- 
- /*
--* unless the SDRAM is cleanly shutdown before we hit the
-+* Errata 43.1.7.1 RSTC: Reset during SDRAM Accesses
-+*
-+* Unless the SDRAM is cleanly shutdown before we hit the
- * reset register it can be left driving the data bus and
- * killing the chance of a subsequent boot from NAND
-+*
-+* Since we are disabling SDRAM need to make sure that the
-+* instruction cache is enabled.
- */
- static int at91sam9260_restart(struct notifier_block *this, unsigned long mode,
- 			       void *cmd)
- {
- 	asm volatile(
-+		/* Enable I-cache */
-+		"mrc	p15, 0, r0, c1, c0, 0\n\t"
-+		"orr	r0, r0, #4096\n\t" /* CR_I (bit 12) */
-+		"mcr	p15, 0, r0, c1, c0, 0\n\t"
-+
- 		/* Align to cache lines */
- 		".balign 32\n\t"
- 
 -- 
-2.14.4
+2.7.4
