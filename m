@@ -1,65 +1,63 @@
-From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v2 3/6] arm64: dts: allwinner: axp803: add AC and battery power supplies
-Date: Sun,  7 Oct 2018 00:18:33 +0300
-Message-ID: <20181006211836.28253-4-oskari@lemmela.net>
-References: <20181004193410.7265-1-oskari@lemmela.net>
- <20181006211836.28253-1-oskari@lemmela.net>
+From: Jonas Danielsson <jonas@orbital-systems.com>
+Subject: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
+Date: Sun,  7 Oct 2018 14:57:45 +0200
+Message-ID: <20181007125815.8392-1-jonas@threetimestwo.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181006211836.28253-1-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: Jonas Danielsson <jonas@orbital-systems.com>, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-AXP803 is compatible with AXP813. Add DT nodes ADC, GPIO,
-AC and battery power supplies.
+From: Jonas Danielsson <jonas@orbital-systems.com>
 
-Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+This fixes a bug where our embedded system (AT91SAM9260 based) would
+hang at reboot. At the most we managed 16 boot loops without a hang.
+
+With this patch applied the problem has not been observed and the board
+has managed above 250 boot loops.
+
+The AT91SAM9260 datasheet tells us that with the instruction cache
+disabled all instructions are fetched from SDRAM. And we have an errata
+telling us we must power down the SDRAM before issuing cpu reset.
+
+This means we need the instruction cache enabled in at91sam9260_reset()
+At the moment it is being disabled in cpu_proc_fin() which is called from
+arch/arm/kernel/reboot.c.
+
+Signed-off-by: Jonas Danielsson <jonas@orbital-systems.com>
 ---
- arch/arm64/boot/dts/allwinner/axp803.dtsi | 31 +++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ drivers/power/reset/at91-reset.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/allwinner/axp803.dtsi b/arch/arm64/boot/dts/allwinner/axp803.dtsi
-index e5eae8bafc42..533987b2fe7a 100644
---- a/arch/arm64/boot/dts/allwinner/axp803.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/axp803.dtsi
-@@ -49,6 +49,37 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index f44a9ffcc2ab..78972bba64df 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -50,14 +50,24 @@ static void __iomem *at91_ramc_base[2], *at91_rstc_base;
+ static struct clk *sclk;
  
-+	axp_adc: adc {
-+		compatible = "x-powers,axp813-adc";
-+		#io-channel-cells = <1>;
-+	};
+ /*
+-* unless the SDRAM is cleanly shutdown before we hit the
++* Errata 43.1.7.1 RSTC: Reset during SDRAM Accesses
++*
++* Unless the SDRAM is cleanly shutdown before we hit the
+ * reset register it can be left driving the data bus and
+ * killing the chance of a subsequent boot from NAND
++*
++* Since we are disabling SDRAM need to make sure that the
++* instruction cache is enabled.
+ */
+ static int at91sam9260_restart(struct notifier_block *this, unsigned long mode,
+ 			       void *cmd)
+ {
+ 	asm volatile(
++		/* Enable I-cache */
++		"mrc	p15, 0, r0, c1, c0, 0\n\t"
++		"orr	r0, r0, #4096\n\t" /* CR_I (bit 12) */
++		"mcr	p15, 0, r0, c1, c0, 0\n\t"
 +
-+	axp_gpio: gpio {
-+		compatible = "x-powers,axp813-gpio";
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio0_ldo: gpio0-ldo {
-+			pins = "GPIO0";
-+			function = "ldo";
-+		};
-+
-+		gpio1_ldo: gpio1-ldo {
-+			pins = "GPIO1";
-+			function = "ldo";
-+		};
-+	};
-+
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp813-ac-power-supply";
-+		status = "disabled";
-+	};
-+
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp813-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
+ 		/* Align to cache lines */
+ 		".balign 32\n\t"
+ 
 -- 
-2.17.1
+2.14.4
