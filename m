@@ -1,123 +1,40 @@
-From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH V3] cpufreq: imx6q: read OCOTP through nvmem for imx6ul/imx6ull
-Date: Mon,  8 Oct 2018 09:10:00 +0800
-Message-ID: <1538961000-2109-1-git-send-email-Anson.Huang@nxp.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 2/3] PCI: imx: Add multi-pd support
+Date: Mon, 8 Oct 2018 11:26:59 +0800
+Message-ID: <20181008032657.GF3587@dragon>
+References: <cover.1538426534.git.leonard.crestez@nxp.com>
+ <5832128f3b1822839a0f0bbd1cf8313cf586f15f.1538426534.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5832128f3b1822839a0f0bbd1cf8313cf586f15f.1538426534.git.leonard.crestez@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Linux-imx@nxp.com
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Ulf Hansson <ulf.hansson@linaro.org>, dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-imx@nxp.com, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On i.MX6UL/i.MX6ULL, accessing OCOTP directly is wrong because
-the ocotp clock needs to be enabled first. Add support for reading
-OCOTP through the nvmem API, and keep the old method there to
-support old dtb.
+On Mon, Oct 01, 2018 at 11:56:17PM +0300, Leonard Crestez wrote:
+> On some chips the PCIE and PCIE_PHY blocks are in separate power domains
+> which can be power-gated independently. The driver needs to handle this
+> by keeping both domain active.
+> 
+> This is intended for imx6sx where PCIE is in DISPMIX and PCIE_PHY in
+> it's own domain. Defining the DISPMIX domain requires a way for pcie to
+> keep it active or it will break when displays are off.
+> 
+> The power-domains on imx6sx are meant to look like this:
+> 	power-domains = <&pd_disp>, <&pd_pci>;
+> 	power-domain-names = "pcie", "pcie_phy";
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> ---
+>  drivers/pci/controller/dwc/pci-imx6.c | 48 +++++++++++++++++++++++++++
+>  1 file changed, 48 insertions(+)
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-changes since V2:
-	Add put node when reading ocotp register done.
- drivers/cpufreq/imx6q-cpufreq.c | 53 ++++++++++++++++++++++++++++-------------
- 1 file changed, 36 insertions(+), 17 deletions(-)
+Bindings document fsl,imx6q-pcie.txt should probably be updated for the
+new power domain support.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index b2ff423..38b67f8 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -12,6 +12,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/err.h>
- #include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/pm_opp.h>
-@@ -290,20 +291,33 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
- #define OCOTP_CFG3_6ULL_SPEED_792MHZ	0x2
- #define OCOTP_CFG3_6ULL_SPEED_900MHZ	0x3
- 
--static void imx6ul_opp_check_speed_grading(struct device *dev)
-+static int imx6ul_opp_check_speed_grading(struct device *dev)
- {
--	struct device_node *np;
--	void __iomem *base;
- 	u32 val;
-+	int ret = 0;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
--	if (!np)
--		return;
-+	if (of_find_property(dev->of_node, "nvmem-cells", NULL)) {
-+		ret = nvmem_cell_read_u32(dev, "speed_grade", &val);
-+		if (ret)
-+			return ret;
-+	} else {
-+		struct device_node *np;
-+		void __iomem *base;
-+
-+		np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
-+		if (!np)
-+			return -ENOENT;
-+
-+		base = of_iomap(np, 0);
-+		if (!base) {
-+			dev_err(dev, "failed to map ocotp\n");
-+			of_node_put(np);
-+			return -EFAULT;
-+		}
- 
--	base = of_iomap(np, 0);
--	if (!base) {
--		dev_err(dev, "failed to map ocotp\n");
--		goto put_node;
-+		val = readl_relaxed(base + OCOTP_CFG3);
-+		iounmap(base);
-+		of_node_put(np);
- 	}
- 
- 	/*
-@@ -314,7 +328,6 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 	 * 2b'11: 900000000Hz on i.MX6ULL only;
- 	 * We need to set the max speed of ARM according to fuse map.
- 	 */
--	val = readl_relaxed(base + OCOTP_CFG3);
- 	val >>= OCOTP_CFG3_SPEED_SHIFT;
- 	val &= 0x3;
- 
-@@ -334,9 +347,7 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 				dev_warn(dev, "failed to disable 900MHz OPP\n");
- 	}
- 
--	iounmap(base);
--put_node:
--	of_node_put(np);
-+	return ret;
- }
- 
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
-@@ -394,10 +405,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
--	    of_machine_is_compatible("fsl,imx6ull"))
--		imx6ul_opp_check_speed_grading(cpu_dev);
--	else
-+	    of_machine_is_compatible("fsl,imx6ull")) {
-+		ret = imx6ul_opp_check_speed_grading(cpu_dev);
-+		if (ret == -EPROBE_DEFER)
-+			return ret;
-+		if (ret) {
-+			dev_err(cpu_dev, "failed to read ocotp: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
-+	}
- 
- 	/* Because we have added the OPPs here, we must free them */
- 	free_opp = true;
--- 
-2.7.4
+Shawn
