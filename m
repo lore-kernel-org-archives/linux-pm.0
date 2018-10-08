@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v3 4/7] arm64: dts: allwinner: a64: sopine: enable power supplies
-Date: Mon,  8 Oct 2018 21:19:05 +0300
-Message-ID: <20181008181908.9456-5-oskari@lemmela.net>
+Subject: [PATCH v3 6/7] mfd: axp20x: Add AC power supply cell for AXP813
+Date: Mon,  8 Oct 2018 21:19:07 +0300
+Message-ID: <20181008181908.9456-7-oskari@lemmela.net>
 References: <20181008181908.9456-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181008181908.9456-1-oskari@lemmela.net>
@@ -10,31 +10,28 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Sopine baseboard have ACIN and battery connectors.
+As axp20x-ac-power-supply now supports AXP813, add a cell for it.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
 ---
- .../boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts    | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/mfd/axp20x.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-index c21f2331add6..335cf2263d19 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-@@ -69,6 +69,14 @@
- 	};
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 0be511dd93d0..1508d9113126 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -778,6 +778,11 @@ static const struct mfd_cell axp813_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-battery-power-supply",
+ 		.of_compatible	= "x-powers,axp813-battery-power-supply",
++	}, {
++		.name           = "axp20x-ac-power-supply",
++		.of_compatible  = "x-powers,axp813-ac-power-supply",
++		.num_resources  = ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources      = axp20x_ac_power_supply_resources,
+ 	},
  };
  
-+&ac_power_supply {
-+	status = "okay";
-+};
-+
-+&battery_power_supply {
-+	status = "okay";
-+};
-+
- &ehci0 {
- 	status = "okay";
- };
 -- 
 2.17.1
