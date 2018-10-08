@@ -1,122 +1,64 @@
-From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH V4] cpufreq: imx6q: read OCOTP through nvmem for imx6ul/imx6ull
-Date: Mon,  8 Oct 2018 14:07:34 +0800
-Message-ID: <1538978854-9678-1-git-send-email-Anson.Huang@nxp.com>
+From: Quentin Schulz <quentin.schulz@bootlin.com>
+Subject: Re: [PATCH v2 0/6] AXP8x3 AC and battery power supply support
+Date: Mon, 8 Oct 2018 09:11:48 +0200
+Message-ID: <20181008071148.ownj4qcnhcfomoxq@qschulz>
+References: <20181004193410.7265-1-oskari@lemmela.net>
+ <20181006211836.28253-1-oskari@lemmela.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="i44lbaa3bc7msglc"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181006211836.28253-1-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Linux-imx@nxp.com
+To: Oskari Lemmela <oskari@lemmela.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On i.MX6UL/i.MX6ULL, accessing OCOTP directly is wrong because
-the ocotp clock needs to be enabled first. Add support for reading
-OCOTP through the nvmem API, and keep the old method there to
-support old dtb.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-changes since V3:
-	put node earlier to save one line code.
- drivers/cpufreq/imx6q-cpufreq.c | 52 +++++++++++++++++++++++++++--------------
- 1 file changed, 35 insertions(+), 17 deletions(-)
+--i44lbaa3bc7msglc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index b2ff423..8cfee0a 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -12,6 +12,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/err.h>
- #include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/pm_opp.h>
-@@ -290,20 +291,32 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
- #define OCOTP_CFG3_6ULL_SPEED_792MHZ	0x2
- #define OCOTP_CFG3_6ULL_SPEED_900MHZ	0x3
- 
--static void imx6ul_opp_check_speed_grading(struct device *dev)
-+static int imx6ul_opp_check_speed_grading(struct device *dev)
- {
--	struct device_node *np;
--	void __iomem *base;
- 	u32 val;
-+	int ret = 0;
- 
--	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
--	if (!np)
--		return;
-+	if (of_find_property(dev->of_node, "nvmem-cells", NULL)) {
-+		ret = nvmem_cell_read_u32(dev, "speed_grade", &val);
-+		if (ret)
-+			return ret;
-+	} else {
-+		struct device_node *np;
-+		void __iomem *base;
-+
-+		np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
-+		if (!np)
-+			return -ENOENT;
-+
-+		base = of_iomap(np, 0);
-+		of_node_put(np);
-+		if (!base) {
-+			dev_err(dev, "failed to map ocotp\n");
-+			return -EFAULT;
-+		}
- 
--	base = of_iomap(np, 0);
--	if (!base) {
--		dev_err(dev, "failed to map ocotp\n");
--		goto put_node;
-+		val = readl_relaxed(base + OCOTP_CFG3);
-+		iounmap(base);
- 	}
- 
- 	/*
-@@ -314,7 +327,6 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 	 * 2b'11: 900000000Hz on i.MX6ULL only;
- 	 * We need to set the max speed of ARM according to fuse map.
- 	 */
--	val = readl_relaxed(base + OCOTP_CFG3);
- 	val >>= OCOTP_CFG3_SPEED_SHIFT;
- 	val &= 0x3;
- 
-@@ -334,9 +346,7 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
- 				dev_warn(dev, "failed to disable 900MHz OPP\n");
- 	}
- 
--	iounmap(base);
--put_node:
--	of_node_put(np);
-+	return ret;
- }
- 
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
-@@ -394,10 +404,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
--	    of_machine_is_compatible("fsl,imx6ull"))
--		imx6ul_opp_check_speed_grading(cpu_dev);
--	else
-+	    of_machine_is_compatible("fsl,imx6ull")) {
-+		ret = imx6ul_opp_check_speed_grading(cpu_dev);
-+		if (ret == -EPROBE_DEFER)
-+			return ret;
-+		if (ret) {
-+			dev_err(cpu_dev, "failed to read ocotp: %d\n",
-+				ret);
-+			return ret;
-+		}
-+	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
-+	}
- 
- 	/* Because we have added the OPPs here, we must free them */
- 	free_opp = true;
--- 
-2.7.4
+Hi Oskari,
+
+On Sun, Oct 07, 2018 at 12:18:30AM +0300, Oskari Lemmela wrote:
+> AXP813 AC power supply support with input current and
+> voltage limiting support.
+>=20
+> AXP803 AC and battery power supply support.
+>=20
+
+Great to see a new developer taking interest in those PMICs :)
+
+I received the v2 patch series as answers of the v1 patch series, you
+would want to fix that by sending a separate patch series. Using the
+name of the cover letter of the patch series and the author, it's
+usually good enough to find previous versions if we need to, you don't
+need to send the new patch series as answers of the first patch series.
+
+Thanks,
+Quentin
+
+--i44lbaa3bc7msglc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlu7AzQACgkQhLiadT7g
+8aOYRhAAm3kvNqnB7Dtx1+jtEmkzB/mNr45+kkOD62HL7NFOVGG2MujW5tUx0coQ
+d/ixFpzfZJSnqVLV+sEIX/DCA0DkfED7biIeHvjkfcc3btYx2BFOdAeZLoiMpkDz
+mfz4rVNvci+U2LmCNpi24Zq75+xATt50i91M5ZIeeLDc0Wmi5Ttw56thmOY9mZ75
+MBKdp9yXVZFq9S1TBVOeZbXJwUETfkJ6Bo32AKcZMMu3S5bAxSyLYmmxAllL1biB
+k5unczXza3ZbzJ+FLj5JVPPkMyGonkyveo/3/zEGD9qmQpqNfmkfXV0mIodfbmP4
+AjSL3rgF/8AUQl0t/TKSY/T7Q9JQgTvCZrQR4CxsbBnhEy2XyHZwsDmKSORGxKIo
+hAH2SWFaGX1EsU/H66bLqxi7YP+D1J6uSjA0bgQDmq6Wlct2lii6gvUibDzS1AhA
+0f+tGQgUnxM1t0qWffAQ7u3F75dhj2osGPLbjd3MYnHfRY9nglGcISCEe6/9Z0eD
+m7rg/VRIqpu5Q832dfBPAvp9ysNxltRgGXtIEGHJ3b+sAPSLBmngUxBTVwuR5fZy
+Bdr06Iw+zrdc3lgfC2Zeprb82W8QQCUYx/8dT3DymMo7uBN0cgl73eC3ooh+4tqs
+55uoYqy0opzYDaGERBiYvJELt63w7oSEdY1Z9+Qcaz+DoxFBYBc=
+=dhIy
+-----END PGP SIGNATURE-----
+
+--i44lbaa3bc7msglc--
