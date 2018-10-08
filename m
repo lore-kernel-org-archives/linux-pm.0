@@ -1,167 +1,55 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v4 6/6] arm64: dts: add LX2160ARDB board support
-Date: Mon, 8 Oct 2018 13:52:01 +0800
-Message-ID: <20181008055159.GH3587@dragon>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
- <1538615031-7507-7-git-send-email-vabhav.sharma@nxp.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: dt-platdev: allow RK3399 to have separate
+ tunables per cluster
+Date: Mon, 8 Oct 2018 11:25:47 +0530
+Message-ID: <20181008055547.umpyi4zcmcmjlxn2@vireshk-i7>
+References: <20181005190058.GA234868@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1538615031-7507-7-git-send-email-vabhav.sharma@nxp.com>
+In-Reply-To: <20181005190058.GA234868@dtor-ws>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com, leoyang.li@nxp.com, linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com, pankaj.bansal@nxp.com, Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Heiko Stuebner <heiko@sntech.de>, Derek Basehore <dbasehore@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 04, 2018 at 06:33:51AM +0530, Vabhav Sharma wrote:
-> LX2160A reference design board (RDB) is a high-performance
-> computing, evaluation, and development platform with LX2160A
-> SoC.
+On 05-10-18, 12:00, Dmitry Torokhov wrote:
+> RK3899 has one cluster with 4 small cores, and another one with 2 big
+> cores, with cores in different clusters having different OPPs and thus
+> needing separate set of tunables. Let's enable this via
+> "have_governor_per_policy" platform data.
 > 
-> Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 > ---
->  arch/arm64/boot/dts/freescale/Makefile            |   1 +
->  arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 100 ++++++++++++++++++++++
->  2 files changed, 101 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
 > 
-> diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-> index 86e18ad..445b72b 100644
-> --- a/arch/arm64/boot/dts/freescale/Makefile
-> +++ b/arch/arm64/boot/dts/freescale/Makefile
-> @@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-> +dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-> new file mode 100644
-> index 0000000..1483071
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-> @@ -0,0 +1,100 @@
-> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-> +//
-> +// Device Tree file for LX2160ARDB
-> +//
-> +// Copyright 2018 NXP
-> +
-> +/dts-v1/;
-> +
-> +#include "fsl-lx2160a.dtsi"
-> +
-> +/ {
-> +	model = "NXP Layerscape LX2160ARDB";
-> +	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-> +
-> +	chosen {
-> +		stdout-path = "serial0:115200n8";
-> +	};
-> +
-> +	sb_3v3: regulator-fixed {
-
-The node name should probably be named like regulator-sb3v3 or
-something, so that the pattern can be followed when we have another
-fixed regulator to be added.
-
-> +		compatible = "regulator-fixed";
-> +		regulator-name = "fixed-3.3V";
-
-The name should be something we can find on board schematics.
-
-> +		regulator-min-microvolt = <3300000>;
-> +		regulator-max-microvolt = <3300000>;
-> +		regulator-boot-on;
-> +		regulator-always-on;
-> +	};
-> +
-> +};
-> +
-> +&uart0 {
-> +	status = "okay";
-> +};
-> +
-> +&uart1 {
-> +	status = "okay";
-> +};
-> +
-> +&i2c0 {
-
-Please keep these labeled nodes sorted alphabetically.
-
-> +	status = "okay";
-
-Have a newline between properties and child node.
-
-> +	i2c-mux@77 {
-> +		compatible = "nxp,pca9547";
-> +		reg = <0x77>;
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		i2c@2 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x2>;
-> +
-> +			power-monitor@40 {
-> +				compatible = "ti,ina220";
-> +				reg = <0x40>;
-> +				shunt-resistor = <1000>;
-> +			};
-> +		};
-> +
-> +		i2c@3 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			reg = <0x3>;
-> +
-> +			temperature-sensor@4c {
-> +				compatible = "nxp,sa56004";
-> +				reg = <0x4c>;
-> +				vcc-supply = <&sb_3v3>;
-> +			};
-> +
-> +			temperature-sensor@4d {
-> +				compatible = "nxp,sa56004";
-> +				reg = <0x4d>;
-> +				vcc-supply = <&sb_3v3>;
-> +			};
-> +		};
-> +	};
-> +};
-> +
-> +&i2c4 {
-> +	status = "okay";
-> +
-> +	rtc@51 {
-> +		compatible = "nxp,pcf2129";
-> +		reg = <0x51>;
-> +		// IRQ10_B
-> +		interrupts = <0 150 0x4>;
-> +		};
-
-Bad indentation.
-
-Shawn
-
-> +
-> +};
-> +
-> +&usb0 {
-> +	status = "okay";
-> +};
-> +
-> +&usb1 {
-> +	status = "okay";
-> +};
-> +
-> +&crypto {
-> +	status = "okay";
-> +};
-> -- 
-> 2.7.4
+> v2 changes: commit message updated.
 > 
+> Not tested, but we had a patch unconditionally enabling
+> CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag in tree we used to ship devices
+> based on RK3399 platform.
+> 
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index fe14c57de6ca..040ec0f711f9 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -78,7 +78,10 @@ static const struct of_device_id whitelist[] __initconst = {
+>  	{ .compatible = "rockchip,rk3328", },
+>  	{ .compatible = "rockchip,rk3366", },
+>  	{ .compatible = "rockchip,rk3368", },
+> -	{ .compatible = "rockchip,rk3399", },
+> +	{ .compatible = "rockchip,rk3399",
+> +	  .data = &(struct cpufreq_dt_platform_data)
+> +		{ .have_governor_per_policy = true, },
+> +	},
+>  
+>  	{ .compatible = "st-ericsson,u8500", },
+>  	{ .compatible = "st-ericsson,u8540", },
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
