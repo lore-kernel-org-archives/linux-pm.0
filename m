@@ -1,64 +1,76 @@
 From: Quentin Schulz <quentin.schulz@bootlin.com>
-Subject: Re: [PATCH v2 0/6] AXP8x3 AC and battery power supply support
-Date: Mon, 8 Oct 2018 09:11:48 +0200
-Message-ID: <20181008071148.ownj4qcnhcfomoxq@qschulz>
+Subject: Re: [PATCH v2 2/6] ARM: dts: axp81x: add AC power supply subnode
+Date: Mon, 8 Oct 2018 09:27:43 +0200
+Message-ID: <20181008072743.ecjb75nixm6wbp6b@qschulz>
 References: <20181004193410.7265-1-oskari@lemmela.net>
  <20181006211836.28253-1-oskari@lemmela.net>
+ <20181006211836.28253-3-oskari@lemmela.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="i44lbaa3bc7msglc"
+        protocol="application/pgp-signature"; boundary="o6zad24q5tl26anv"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181006211836.28253-1-oskari@lemmela.net>
+In-Reply-To: <20181006211836.28253-3-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Oskari Lemmela <oskari@lemmela.net>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---i44lbaa3bc7msglc
+--o6zad24q5tl26anv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Oskari,
 
-On Sun, Oct 07, 2018 at 12:18:30AM +0300, Oskari Lemmela wrote:
-> AXP813 AC power supply support with input current and
-> voltage limiting support.
+On Sun, Oct 07, 2018 at 12:18:32AM +0300, Oskari Lemmela wrote:
+> Add AC power supply subnode for AXP81X PMIC.
 >=20
-> AXP803 AC and battery power supply support.
+> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+> ---
+>  arch/arm/boot/dts/axp81x.dtsi | 5 +++++
+>  1 file changed, 5 insertions(+)
 >=20
+> diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+> index 043c717dcef1..67c17151b584 100644
+> --- a/arch/arm/boot/dts/axp81x.dtsi
+> +++ b/arch/arm/boot/dts/axp81x.dtsi
+> @@ -69,6 +69,11 @@
+>  		};
+>  	};
+> =20
+> +	ac_power_supply: ac-power-supply {
+> +		compatible =3D "x-powers,axp813-ac-power-supply";
+> +		status =3D "disabled";
+> +	};
+> +
 
-Great to see a new developer taking interest in those PMICs :)
-
-I received the v2 patch series as answers of the v1 patch series, you
-would want to fix that by sending a separate patch series. Using the
-name of the cover letter of the patch series and the author, it's
-usually good enough to find previous versions if we need to, you don't
-need to send the new patch series as answers of the first patch series.
+IIRC, when it's a DT node of something that has no address (register or
+bus address), we order alphabetically the DT nodes within the same
+parent node. So here, we would put it before axp_adc.
 
 Thanks,
 Quentin
 
---i44lbaa3bc7msglc
+--o6zad24q5tl26anv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlu7AzQACgkQhLiadT7g
-8aOYRhAAm3kvNqnB7Dtx1+jtEmkzB/mNr45+kkOD62HL7NFOVGG2MujW5tUx0coQ
-d/ixFpzfZJSnqVLV+sEIX/DCA0DkfED7biIeHvjkfcc3btYx2BFOdAeZLoiMpkDz
-mfz4rVNvci+U2LmCNpi24Zq75+xATt50i91M5ZIeeLDc0Wmi5Ttw56thmOY9mZ75
-MBKdp9yXVZFq9S1TBVOeZbXJwUETfkJ6Bo32AKcZMMu3S5bAxSyLYmmxAllL1biB
-k5unczXza3ZbzJ+FLj5JVPPkMyGonkyveo/3/zEGD9qmQpqNfmkfXV0mIodfbmP4
-AjSL3rgF/8AUQl0t/TKSY/T7Q9JQgTvCZrQR4CxsbBnhEy2XyHZwsDmKSORGxKIo
-hAH2SWFaGX1EsU/H66bLqxi7YP+D1J6uSjA0bgQDmq6Wlct2lii6gvUibDzS1AhA
-0f+tGQgUnxM1t0qWffAQ7u3F75dhj2osGPLbjd3MYnHfRY9nglGcISCEe6/9Z0eD
-m7rg/VRIqpu5Q832dfBPAvp9ysNxltRgGXtIEGHJ3b+sAPSLBmngUxBTVwuR5fZy
-Bdr06Iw+zrdc3lgfC2Zeprb82W8QQCUYx/8dT3DymMo7uBN0cgl73eC3ooh+4tqs
-55uoYqy0opzYDaGERBiYvJELt63w7oSEdY1Z9+Qcaz+DoxFBYBc=
-=dhIy
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlu7Bu8ACgkQhLiadT7g
+8aO0OQ/9FWgY8uN6zoKN9UanALsJ/+9n3RmGFLqiGqbd9f57OdkHld0j05yYUiqx
+TkOUZKUCj09zQvdy7MxszTTifEGMauZi3R5Rzo4MGp0HtBTn6RSUucHKbRJ6wE0r
+BnqvtokMrK9qE9EThw65+mntSOWkHCPCLQ321lV8C1nZJyh7LKp8LetXmLSpALgY
+EUCasx/gq2BULVuTsgOKfo7UbsyZYs4Oc4YA/jmiNH4rlV6c/RHrWPwSgaKzKoeT
+pxcyPfxG22UZ2n8ghbF4U0PDvcqIxN9P50j18Ibo+LIOlu6CGmlmiAmqtaNR7U1J
+LgKjQvvsOEsL70CVUbwX9WUC78PwyCXC4B3y7KdWaw7ZXRNRJgRxa8mY09XMUINE
+2T412OFvQRb431d88fS3FilO9/MvsM/3iC32dnEOCbgIG0YTWybf+a06EDb3NSU2
+uzLYwqjqwNJhXsN2neHsuqY9j3hG/GxKamAZIUqBLO7ZPVcUgUHG76XqlFGmF6Pr
+IuKhyv+YSE2VZDz0CW6TBxeFo2t3d7CJKe25vdD5wVl5TmCUhHqebSRBUtMwk7IX
+PRpGR2zZMiOrNS0SRq8bo7HNTP5peQke1ohJHtK68jE/0kv2Ex9Cy7+dCToQ8YBv
+Fc1rg5yKe+zO1lKW/4SXy/tXXsrm9LF96socFleCKsViwjGuSdc=
+=a6NW
 -----END PGP SIGNATURE-----
 
---i44lbaa3bc7msglc--
+--o6zad24q5tl26anv--
