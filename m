@@ -1,299 +1,438 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/6] cpuidle: menu: Fixes, optimizations and cleanups
-Date: Mon, 8 Oct 2018 09:51:16 +0200
-Message-ID: <CAJZ5v0hKtOqnRvWq_BfjKRPcu17V5ekJyXoE6V15dW2DJJuZ6A@mail.gmail.com>
-References: <000301d45ecb$4f002a90$ed007fb0$@net>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: Re: [PATCH v8 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Mon, 8 Oct 2018 10:40:12 +0200
+Message-ID: <20181008084012.GA23693@centauri.lan>
+References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
+ <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000301d45ecb$4f002a90$ed007fb0$@net>
+Content-Disposition: inline
+In-Reply-To: <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Doug,
+On Sun, Sep 23, 2018 at 04:03:13PM +0530, Taniya Das wrote:
+> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
+> for changing the frequency of CPUs. The driver implements the cpufreq
+> driver interface for this hardware engine.
+> 
+> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm       |  11 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/qcom-cpufreq-hw.c | 354 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 366 insertions(+)
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 0cd8eb7..93a9d72 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -298,3 +298,14 @@ config ARM_PXA2xx_CPUFREQ
+>  	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+> 
+>  	  If in doubt, say N.
+> +
+> +config ARM_QCOM_CPUFREQ_HW
+> +	bool "QCOM CPUFreq HW driver"
+> +	depends on ARCH_QCOM
+> +	help
+> +	 Support for the CPUFreq HW driver.
+> +	 Some QCOM chipsets have a HW engine to offload the steps
+> +	 necessary for changing the frequency of the CPUs. Firmware loaded
+> +	 in this engine exposes a programming interface to the OS.
+> +	 The driver implements the cpufreq interface for this HW engine.
+> +	 Say Y if you want to support CPUFreq HW.
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index c1ffeab..ca48a1d 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -85,6 +85,7 @@ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA186_CPUFREQ)	+= tegra186-cpufreq.o
+>  obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
+> 
+> 
+>  ##################################################################################
+> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+> new file mode 100644
+> index 0000000..43107ab
+> --- /dev/null
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> @@ -0,0 +1,354 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+> + */
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +
+> +#define LUT_MAX_ENTRIES			40U
+> +#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
+> +#define LUT_ROW_SIZE			32
+> +#define CLK_HW_DIV			2
+> +
+> +enum {
+> +	REG_ENABLE,
+> +	REG_LUT_TABLE,
+> +	REG_PERF_STATE,
+> +
+> +	REG_ARRAY_SIZE,
+> +};
+> +
+> +struct cpufreq_qcom {
+> +	struct cpufreq_frequency_table *table;
+> +	void __iomem *reg_bases[REG_ARRAY_SIZE];
+> +	cpumask_t related_cpus;
+> +	unsigned int max_cores;
+> +	unsigned long xo_rate;
+> +	unsigned long cpu_hw_rate;
+> +};
+> +
+> +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
+> +	[REG_ENABLE]		= 0x0,
+> +	[REG_LUT_TABLE]		= 0x110,
+> +	[REG_PERF_STATE]	= 0x920,
+> +};
+> +
+> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
+> +
+> +static int
+> +qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
+> +			     unsigned int index)
+> +{
+> +	struct cpufreq_qcom *c = policy->driver_data;
+> +
+> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
+> +
+> +	return 0;
+> +}
+> +
+> +static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
+> +{
+> +	struct cpufreq_qcom *c;
+> +	struct cpufreq_policy *policy;
+> +	unsigned int index;
+> +
+> +	policy = cpufreq_cpu_get_raw(cpu);
+> +	if (!policy)
+> +		return 0;
+> +
+> +	c = policy->driver_data;
+> +
+> +	index = readl_relaxed(c->reg_bases[REG_PERF_STATE]);
+> +	index = min(index, LUT_MAX_ENTRIES - 1);
+> +
+> +	return policy->freq_table[index].frequency;
+> +}
+> +
+> +static unsigned int
+> +qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
+> +			    unsigned int target_freq)
+> +{
+> +	struct cpufreq_qcom *c = policy->driver_data;
+> +	int index;
+> +
+> +	index = policy->cached_resolved_idx;
+> +	if (index < 0)
+> +		return 0;
+> +
+> +	writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
+> +
+> +	return policy->freq_table[index].frequency;
+> +}
+> +
+> +static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+> +{
+> +	struct cpufreq_qcom *c;
+> +
+> +	c = qcom_freq_domain_map[policy->cpu];
+> +	if (!c) {
+> +		pr_err("No scaling support for CPU%d\n", policy->cpu);
+> +		return -ENODEV;
+> +	}
+> +
+> +	cpumask_copy(policy->cpus, &c->related_cpus);
+> +
+> +	policy->fast_switch_possible = true;
+> +	policy->freq_table = c->table;
+> +	policy->driver_data = c;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct freq_attr *qcom_cpufreq_hw_attr[] = {
+> +	&cpufreq_freq_attr_scaling_available_freqs,
+> +	&cpufreq_freq_attr_scaling_boost_freqs,
+> +	NULL
+> +};
+> +
+> +static struct cpufreq_driver cpufreq_qcom_hw_driver = {
+> +	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
+> +			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
+> +	.verify		= cpufreq_generic_frequency_table_verify,
+> +	.target_index	= qcom_cpufreq_hw_target_index,
+> +	.get		= qcom_cpufreq_hw_get,
+> +	.init		= qcom_cpufreq_hw_cpu_init,
+> +	.fast_switch    = qcom_cpufreq_hw_fast_switch,
+> +	.name		= "qcom-cpufreq-hw",
+> +	.attr		= qcom_cpufreq_hw_attr,
+> +	.boost_enabled	= true,
+> +};
+> +
+> +static int qcom_cpufreq_hw_read_lut(struct platform_device *pdev,
+> +				    struct cpufreq_qcom *c)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	void __iomem *base;
+> +	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
+> +
+> +	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
+> +				sizeof(*c->table), GFP_KERNEL);
+> +	if (!c->table)
+> +		return -ENOMEM;
+> +
+> +	base = c->reg_bases[REG_LUT_TABLE];
+> +
+> +	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
+> +		data = readl_relaxed(base + i * LUT_ROW_SIZE);
+> +		src = (data & GENMASK(31, 30)) >> 30;
+> +		lval = data & GENMASK(7, 0);
+> +		core_count = CORE_COUNT_VAL(data);
+> +
+> +		if (src)
+> +			c->table[i].frequency = c->xo_rate * lval / 1000;
+> +		else
+> +			c->table[i].frequency = c->cpu_hw_rate / 1000;
+> +
+> +		cur_freq = c->table[i].frequency;
+> +
+> +		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
+> +			i, c->table[i].frequency, core_count);
+> +
+> +		if (core_count != c->max_cores)
+> +			cur_freq = CPUFREQ_ENTRY_INVALID;
+> +
+> +		/*
+> +		 * Two of the same frequencies with the same core counts means
+> +		 * end of table.
+> +		 */
+> +		if (i > 0 && c->table[i - 1].frequency ==
+> +		   c->table[i].frequency && prev_cc == core_count) {
+> +			struct cpufreq_frequency_table *prev = &c->table[i - 1];
+> +
+> +			if (prev_freq == CPUFREQ_ENTRY_INVALID)
+> +				prev->flags = CPUFREQ_BOOST_FREQ;
+> +			break;
+> +		}
+> +		prev_cc = core_count;
+> +		prev_freq = cur_freq;
+> +	}
+> +
+> +	c->table[i].frequency = CPUFREQ_TABLE_END;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_get_related_cpus(int index, struct cpumask *m)
+> +{
+> +	struct device_node *cpu_np;
+> +	struct of_phandle_args args;
+> +	int cpu, ret;
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		cpu_np = of_cpu_device_node_get(cpu);
+> +		if (!cpu_np)
+> +			continue;
+> +		of_node_put(cpu_np);
+> +
+> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
+> +				"#freq-domain-cells", 0, &args);
 
-On Mon, Oct 8, 2018 at 8:02 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> On 2018.10.03 23:56 Rafael J. Wysocki wrote:
-> > On Tue, Oct 2, 2018 at 11:51 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>
-> >> Hi All,
-> >>
-> >> This series fixes a couple of issues with the menu governor, optimizes it
-> >> somewhat and makes a couple of cleanups in it.  Please refer to the
-> >> patch changelogs for details.
-> >>
-> >> All of the changes in the series are straightforward in my view.  The
-> >> first two patches are fixes, the rest is optimizations and cleanups.
-> >
-> > I'm inclined to take this stuff in for 4.20 if nobody has problems
-> > with it, so please have a look if you care (and you should, because
-> > the code in question is run on all tickless systems out there).
->
-> Hi Rafael,
->
-> I did tests with kernel 4.19-rc6 as a baseline reference and then
-> with 8 of your patches (&8patches in the graphs legend):
->
-> cpuidle: menu: Replace data->predicted_us with local variable
->   . as required to get this set of 6 to then apply.
-> This set of 6 patches.
-> cpuidle: poll_state: Revise loop termination condition
->
-> Recall I also did some testing in late August [1], with
-> a kernel that was just a few hundred commits before 4.19-rc1.
-> The baseline is now way different. While I don't know why,
-> I bisected the kernel and either made a mistake, or it was:
->
-> first bad commit: [06e386a1db54ab6a671e103e929b590f7a88f0e3]
-> Merge tag 'fbdev-v4.19' of https://github.com/bzolnier/linux
->
-> Anyway, and for reference, included on some of the graphs
-> is the old data from late August (legend name "4.18+3rjw
-> (Aug test)")
->
-> Test 1: A Thomas Ilsche type "powernightmare" test:
-> (forever ((10 times - variable usec sleep) 0.999 seconds sleep) X 40 staggered threads.
-> Where the "variable" was from 0.05 to 5 in steps of 0.05, for the first ~200 minutes of the test.
-> (note: overheads mean that actual loop times are quite different.)
-> And then from 5 to 50 in steps of 1, for the remaining 100 minutes of the test.
-> (Shortened by 900 minutes from the way the test was done in August.)
-> Each step ran for 2 minutes. The system was idle for 1 minute at the start, and a few
-> minutes at the end of the graphs.
->
-> The power and idle statistics graphs are here:
-> http://fast.smythies.com/linux-pm/k419/k419-pn-sweep-rjw.htm
->
-> Observations:
->
-> While the graphs are pretty and such, the only significant
-> difference is the idle state 0 percentages go down a lot
-> with the 8 patches. However the number of idle state 0
-> entries per minute goes up. To present the same information
-> in a different way a trace was done (at 9 Gigabytes in
-> 2 minutes):
+Hello Taniya,
 
-The difference in the idle state 0 usage is a consequence of the "poll
-idle" patch and is expected.
+in your DT binding, you use
 
-> &8patches
-> Idle State 0: Total Entries: 10091412 : time (seconds): 49.447025
-> Idle State 1: Total Entries: 49332297 : time (seconds): 375.943064
-> Idle State 2: Total Entries: 311810 : time (seconds): 2.626403
->
-> k4.19-rc6
-> Idle State 0: Total Entries: 9162465 : time (seconds): 70.650566
-> Idle State 1: Total Entries: 47592671 : time (seconds): 373.625083
-> Idle State 2: Total Entries: 266212 : time (seconds): 2.278159
->
-> Conclusions: Behaves as expected.
+#freq-domains-cells = <1>
 
-Right. :-)
+Yet here you parse for "#freq-domain-cells".
 
-> Test 2: pipe test 2 CPUs, one core. CPU test:
->
-> The average loop times graph is here:
-> http://fast.smythies.com/linux-pm/k419/k419-rjw-pipe-1core.png
->
-> The power and idle statistics graphs are here:
-> http://fast.smythies.com/linux-pm/k419/k419-rjw-pipe-1core.htm
->
-> Conclusions:
->
-> Better performance at the cost of more power with
-> the patch set, but late August had both better performance
-> and less power.
->
-> Overall idle entries and exits are about the same, but way
-> way more idle state 0 entries and exits with the patch set.
+Kind regards,
+Niklas
 
-Same as above (and expected too).
-
-> Supporting: trace summary (note: such a heavy load on the trace
-> system (~6 gigabytes in 2 minutes) costs about 25% in performance):
->
-> k4.16-rc6 pipe
-> Idle State 0: Total Entries: 76638 : time (seconds): 0.193166
-> Idle State 1: Total Entries: 37825999 : time (seconds): 23.886772
-> Idle State 2: Total Entries: 49 : time (seconds): 0.007908
->
-> &8patches
-> Idle State 0: Total Entries: 37632104 : time (seconds): 26.097220
-> Idle State 1: Total Entries: 397 : time (seconds): 0.020021
-> Idle State 2: Total Entries: 208 : time (seconds): 0.031052
->
-> With rjw 8 patch set (1st col is usecs duration, 2nd col
-> is number of occurrences in 2 minutes):
->
-> Idle State: 0  Summary:
-> 0 24401500
-> 1 13153259
-> 2 19807
-> 3 32731
-> 4 802
-> 5 346
-> 6 1554
-> 7 20087
-> 8 1849
-> 9 150
-> 10 9
-> 11 10
->
-> Idle State: 1  Summary:
-> 0 29
-> 1 44
-> 2 15
-> 3 45
-> 4 5
-> 5 26
-> 6 2
-> 7 24
-> 8 4
-> 9 21
-> 10 6
-> 11 39
-> 12 15
-> 13 38
-> 14 14
-> 15 27
-> 16 10
-> 17 12
-> 18 1
-> 35 1
-> 89 1
-> 135 1
-> 678 1
-> 991 2
-> 995 3
-> 996 1
-> 997 8
-> 998 1
-> 999 1
->
-> Kernel 4.19-rc6 reference:
->
-> Idle State: 0  Summary:
-> 0 17212
-> 1 7516
-> 2 34737
-> 3 14763
-> 4 2312
-> 5 74
-> 6 3
-> 7 3
-> 8 3
-> 9 4
-> 10 5
-> 11 5
-> 40 1
->
-> Idle State: 1  Summary:
-> 0 36073601
-> 1 1662728
-> 2 67985
-> 3 106
-> 4 22
-> 5 8
-> 6 2214
-> 7 11037
-> 8 7110
-> 9 1156
-> 10 1
-> 11 1
-> 13 2
-> 23 1
-> 29 1
-> 99 1
-> 554 1
-> 620 1
-> 846 1
-> 870 1
-> 936 1
-> 944 1
-> 963 1
-> 972 1
-> 989 1
-> 991 1
-> 993 1
-> 994 1
-> 995 2
-> 996 2
-> 997 6
-> 998 3
->
-> Test 3: iperf test:
->
-> Method: Be an iperf client to 3 servers at once.
-> Packets are small on purpose, we want the highest
-> frequency of packets, not fastest payload delivery.
->
-> Performance:
->
-> Kernel 4.19: 79.9 + 23.5 + 32.8 = 136.2 Mbits/Sec.
-> &8patches:   78.6 + 23.2 + 33.0 = 134.8 Mbits/Sec.
->
-> Kernel 4.19 average processor package power: 12.73 watts.
-> &8patches average processor package power: 12.99 watts.
->
-> The power and idle statistics graphs are here:
-> http://fast.smythies.com/linux-pm/k419/k419-iperf.htm
->
-> Conclusion:
->
-> Marginally less performance and marginally more power
-> used with the 8 patch set.
->
-> Test 4: long idle test
->
-> Just under 8 hours of at idle.
-> (no pretty graphs)
->
-> Averages (per minute):
->
-> Kernel 4.19:
-> % time in idle state 0: 1.76811E-05
-> % time in idle state 1: 0.001501241
-> % time in idle state 2: 0.002349672
-> % time in idle state 3: 0.000432757
-> % time in idle state 4: 100.0047484
-> Idle state 0 entries: 2.470715835
-> Idle state 1 entries: 27.84164859
-> Idle state 2 entries: 26.02169197
-> Idle state 3 entries: 4.600867679
-> Idle state 4 entries: 1487.260304
-> Processor package power: 3.668
->
-> &8patches:
-> % time in idle state 0: 4.76854E-06
-> % time in idle state 1: 0.000752083
-> % time in idle state 2: 0.001242119
-> % time in idle state 3: 0.000408944
-> % time in idle state 4: 100.0065453
-> Idle state 0 entries: 4.213483146
-> Idle state 1 entries: 16.42696629
-> Idle state 2 entries: 16.75730337
-> Idle state 3 entries: 4.541573034
-> Idle state 4 entries: 1464.083146
-> Processor package power: 3.667
->
-> Conclusion: O.K.
->
-> Test 5: intel-cpufreq schedutil specific test:
->
-> Recall previously there were some significant
-> improvements with this governor and the idle changes
-> earlier this year.
-> (no pretty graphs)
->
-> Conclusion: No detectable differences.
->
-> (sorry for the lack of detail here.)
->
-> [1] https://marc.info/?l=linux-pm&m=153531591826719&w=2
-
-Thanks a lot for the data and analysis, much appreciated!
-
-Cheers,
-Rafael
+> +		if (ret < 0)
+> +			continue;
+> +
+> +		if (index == args.args[0])
+> +			cpumask_set_cpu(cpu, m);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_cpu_resources_init(struct platform_device *pdev,
+> +				   unsigned int cpu, int index,
+> +				   unsigned long xo_rate,
+> +				   unsigned long cpu_hw_rate)
+> +{
+> +	struct cpufreq_qcom *c;
+> +	struct resource *res;
+> +	struct device *dev = &pdev->dev;
+> +	const u16 *offsets;
+> +	int ret, i, cpu_r;
+> +	void __iomem *base;
+> +
+> +	if (qcom_freq_domain_map[cpu])
+> +		return 0;
+> +
+> +	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
+> +	if (!c)
+> +		return -ENOMEM;
+> +
+> +	offsets = of_device_get_match_data(&pdev->dev);
+> +	if (!offsets)
+> +		return -EINVAL;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
+> +	base = devm_ioremap_resource(dev, res);
+> +	if (IS_ERR(base))
+> +		return PTR_ERR(base);
+> +
+> +	for (i = REG_ENABLE; i < REG_ARRAY_SIZE; i++)
+> +		c->reg_bases[i] = base + offsets[i];
+> +
+> +	/* HW should be in enabled state to proceed */
+> +	if (!(readl_relaxed(c->reg_bases[REG_ENABLE]) & 0x1)) {
+> +		dev_err(dev, "Domain-%d cpufreq hardware not enabled\n", index);
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = qcom_get_related_cpus(index, &c->related_cpus);
+> +	if (ret) {
+> +		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
+> +		return ret;
+> +	}
+> +
+> +	c->max_cores = cpumask_weight(&c->related_cpus);
+> +	if (!c->max_cores)
+> +		return -ENOENT;
+> +
+> +	c->xo_rate = xo_rate;
+> +	c->cpu_hw_rate = cpu_hw_rate;
+> +
+> +	ret = qcom_cpufreq_hw_read_lut(pdev, c);
+> +	if (ret) {
+> +		dev_err(dev, "Domain-%d failed to read LUT\n", index);
+> +		return ret;
+> +	}
+> +
+> +	for_each_cpu(cpu_r, &c->related_cpus)
+> +		qcom_freq_domain_map[cpu_r] = c;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_resources_init(struct platform_device *pdev)
+> +{
+> +	struct device_node *cpu_np;
+> +	struct of_phandle_args args;
+> +	struct clk *clk;
+> +	unsigned int cpu;
+> +	unsigned long xo_rate, cpu_hw_rate;
+> +	int ret;
+> +
+> +	clk = devm_clk_get(&pdev->dev, "xo");
+> +	if (IS_ERR(clk))
+> +		return PTR_ERR(clk);
+> +
+> +	xo_rate = clk_get_rate(clk);
+> +
+> +	devm_clk_put(&pdev->dev, clk);
+> +
+> +	clk = devm_clk_get(&pdev->dev, "cpu_clk");
+> +	if (IS_ERR(clk))
+> +		return PTR_ERR(clk);
+> +
+> +	cpu_hw_rate = clk_get_rate(clk) / CLK_HW_DIV;
+> +
+> +	devm_clk_put(&pdev->dev, clk);
+> +
+> +	for_each_possible_cpu(cpu) {
+> +		cpu_np = of_cpu_device_node_get(cpu);
+> +		if (!cpu_np) {
+> +			dev_dbg(&pdev->dev, "Failed to get cpu %d device\n",
+> +				cpu);
+> +			continue;
+> +		}
+> +
+> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
+> +				"#freq-domain-cells", 0, &args);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		ret = qcom_cpu_resources_init(pdev, cpu, args.args[0],
+> +					      xo_rate, cpu_hw_rate);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
+> +{
+> +	int rc;
+> +
+> +	/* Get the bases of cpufreq for domains */
+> +	rc = qcom_resources_init(pdev);
+> +	if (rc) {
+> +		dev_err(&pdev->dev, "CPUFreq resource init failed\n");
+> +		return rc;
+> +	}
+> +
+> +	rc = cpufreq_register_driver(&cpufreq_qcom_hw_driver);
+> +	if (rc) {
+> +		dev_err(&pdev->dev, "CPUFreq HW driver failed to register\n");
+> +		return rc;
+> +	}
+> +
+> +	dev_dbg(&pdev->dev, "QCOM CPUFreq HW driver initialized\n");
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id qcom_cpufreq_hw_match[] = {
+> +	{ .compatible = "qcom,cpufreq-hw", .data = &cpufreq_qcom_std_offsets },
+> +	{}
+> +};
+> +
+> +static struct platform_driver qcom_cpufreq_hw_driver = {
+> +	.probe = qcom_cpufreq_hw_driver_probe,
+> +	.driver = {
+> +		.name = "qcom-cpufreq-hw",
+> +		.of_match_table = qcom_cpufreq_hw_match,
+> +	},
+> +};
+> +
+> +static int __init qcom_cpufreq_hw_init(void)
+> +{
+> +	return platform_driver_register(&qcom_cpufreq_hw_driver);
+> +}
+> +subsys_initcall(qcom_cpufreq_hw_init);
+> +
+> +MODULE_DESCRIPTION("QCOM firmware-based CPU Frequency driver");
+> --
+> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+> of the Code Aurora Forum, hosted by the  Linux Foundation.
+> 
