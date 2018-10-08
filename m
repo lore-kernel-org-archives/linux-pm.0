@@ -1,123 +1,128 @@
 From: Quentin Schulz <quentin.schulz@bootlin.com>
-Subject: Re: [PATCH v2 5/6] mfd: axp20x: add support AXP803 AC and battery
- power supplies
-Date: Mon, 8 Oct 2018 09:33:12 +0200
-Message-ID: <20181008073312.otdz25ttvew6fzk2@qschulz>
+Subject: Re: [PATCH v2 6/6] power: supply: add AC power supply driver for
+ AXP813
+Date: Mon, 8 Oct 2018 09:44:09 +0200
+Message-ID: <20181008074409.5g73zrfm6nbn6vpp@qschulz>
 References: <20181004193410.7265-1-oskari@lemmela.net>
  <20181006211836.28253-1-oskari@lemmela.net>
- <20181006211836.28253-6-oskari@lemmela.net>
+ <20181006211836.28253-7-oskari@lemmela.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ac4srxfaa53qexuc"
+        protocol="application/pgp-signature"; boundary="m6savxunrnv5uhcs"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181006211836.28253-6-oskari@lemmela.net>
+In-Reply-To: <20181006211836.28253-7-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Oskari Lemmela <oskari@lemmela.net>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---ac4srxfaa53qexuc
+--m6savxunrnv5uhcs
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Oskari,
 
-On Sun, Oct 07, 2018 at 12:18:35AM +0300, Oskari Lemmela wrote:
-> AXP803 is compatible with AXP813.
-> Adding needed cells for AC and battery power supplies.
+On Sun, Oct 07, 2018 at 12:18:36AM +0300, Oskari Lemmela wrote:
+> AXP813 and AXP803 PMICs can control input current and
+> minimum voltage.
 >=20
-> AXP813 AC power supply cell added.
+> Both of these values are configurable.
 >=20
 > Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
 > ---
->  drivers/mfd/axp20x.c       | 22 +++++++++++++++++++++-
->  include/linux/mfd/axp20x.h |  1 +
->  2 files changed, 22 insertions(+), 1 deletion(-)
+>  drivers/power/supply/axp20x_ac_power.c | 92 ++++++++++++++++++++++++++
+>  1 file changed, 92 insertions(+)
 >=20
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index 0be511dd93d0..215f0b009728 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -731,8 +731,23 @@ static const struct mfd_cell axp803_cells[] =3D {
->  		.name			=3D "axp221-pek",
->  		.num_resources		=3D ARRAY_SIZE(axp803_pek_resources),
->  		.resources		=3D axp803_pek_resources,
-> +	}, {
-> +		.name			=3D "axp20x-regulator"
-> +	}, {
-> +		.name			=3D "axp20x-gpio",
-> +		.of_compatible		=3D "x-powers,axp813-gpio",
-> +	}, {
-> +		.name			=3D "axp813-adc",
-> +		.of_compatible		=3D "x-powers,axp813-adc",
-> +	}, {
-> +		.name		=3D "axp20x-battery-power-supply",
-> +		.of_compatible	=3D "x-powers,axp813-battery-power-supply",
-> +	}, {
-> +		.name           =3D "axp20x-ac-power-supply",
-> +		.of_compatible  =3D "x-powers,axp813-ac-power-supply",
-> +		.num_resources  =3D ARRAY_SIZE(axp20x_ac_power_supply_resources),
-> +		.resources      =3D axp20x_ac_power_supply_resources,
->  	},
-> -	{	.name			=3D "axp20x-regulator" },
->  };
+> diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/suppl=
+y/axp20x_ac_power.c
+> index 0771f951b11f..92a92354f6f0 100644
+> --- a/drivers/power/supply/axp20x_ac_power.c
+> +++ b/drivers/power/supply/axp20x_ac_power.c
+> @@ -27,6 +27,16 @@
+>  #define AXP20X_PWR_STATUS_ACIN_PRESENT	BIT(7)
+>  #define AXP20X_PWR_STATUS_ACIN_AVAIL	BIT(6)
 > =20
->  static const struct mfd_cell axp806_self_working_cells[] =3D {
-> @@ -778,6 +793,11 @@ static const struct mfd_cell axp813_cells[] =3D {
->  	}, {
->  		.name		=3D "axp20x-battery-power-supply",
->  		.of_compatible	=3D "x-powers,axp813-battery-power-supply",
-> +	}, {
-> +		.name           =3D "axp20x-ac-power-supply",
-> +		.of_compatible  =3D "x-powers,axp813-ac-power-supply",
-> +		.num_resources  =3D ARRAY_SIZE(axp20x_ac_power_supply_resources),
-> +		.resources      =3D axp20x_ac_power_supply_resources,
-
-I'll let Maxime or Chen-Yu tell you what they want but I think we could
-have two different commits, one for AXP803 and one for AXP813. I don't
-think we care about having one commit per added resource for the axp803
-though.
-
->  	},
->  };
+> +#define AXP813_VHOLD_MASK		GENMASK(5, 3)
+> +#define AXP813_VHOLD_UV_TO_BIT(x)	((((x) / 100000) - 40) << 3)
+> +#define AXP813_VHOLD_REG_TO_UV(x)	\
+> +	(((((x) & AXP813_VHOLD_MASK) >> 3) + 40) * 100000)
+> +
+> +#define AXP813_CURR_LIMIT_MASK		GENMASK(2, 0)
+> +#define AXP813_CURR_LIMIT_UA_TO_BIT(x)	(((x) / 500000) - 3)
+> +#define AXP813_CURR_LIMIT_REG_TO_UA(x)	\
+> +	((((x) & AXP813_CURR_LIMIT_MASK) + 3) * 500000)
+> +
+>  #define DRVNAME "axp20x-ac-power-supply"
 > =20
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 517e60eecbcb..2302b620d238 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -266,6 +266,7 @@ enum axp20x_variants {
->  #define AXP288_RT_BATT_V_H		0xa0
->  #define AXP288_RT_BATT_V_L		0xa1
+>  struct axp20x_ac_power {
+> @@ -102,6 +112,55 @@ static int axp20x_ac_power_get_property(struct power=
+_supply *psy,
 > =20
-> +#define AXP813_ACIN_PATH_CTRL		0x3a
+>  		return 0;
+> =20
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+> +		ret =3D regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val->intval =3D AXP813_VHOLD_REG_TO_UV(reg);
+> +
+> +		return 0;
+> +
+> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +		ret =3D regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val->intval =3D AXP813_CURR_LIMIT_REG_TO_UA(reg);
+> +
+> +		return 0;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static int axp20x_ac_power_set_property(struct power_supply *psy,
+> +					enum power_supply_property psp,
+> +					const union power_supply_propval *val)
+> +{
 
-You're not using it in this patch, please keep this change in the commit
-where its use is introduced.
+Argh, missed this one in the first version. Since you're introducing it
+with the AXP813 and it isn't used with the AXP20X, I'd name it
+axp813_ac_power_set_property. I'll let Maxime or Chen-Yu confirm though.
 
-Thanks,
+With the modification in the header from the previous patch in this
+patch,
+
+Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
+
+Thanks!
 Quentin
 
---ac4srxfaa53qexuc
+--m6savxunrnv5uhcs
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlu7CDgACgkQhLiadT7g
-8aONSBAAi2HPN7CMO899PLLTO6W9d7cyN+OY8PIJwaX+tDqUMDRupJJi84cblIVX
-aVfOh1Hl6ZtpKxicWr+jXlpXQEhM9XfvaVkrEM5H95eudhawYoac3xr0Z8wtG9Sa
-KzvrLG4j0uTflgo3CRcHJQUNkkWeC5pV3mHQxw3EUllDW3kbYjtjgVLGKyN7DvLJ
-eZippTGKvBovwGBRqz+rx86YiUZ9A5kAz87QBJARvGKEE0a3rXkfj/UTvgVZF9M9
-IZ56Nl+Gvtrend5MsM502byvAAx2u+WNpFruMXvjv7EnQAOuCIRFk7b5JLnARBfz
-OCJBncAKQe199Q3pK2CI6ZqAHqZb7EJ/8ceVhbkFHEg2FIXVnZaKTQyaKuflwXnL
-lK2MENvXmaL7Dd71rCCi5XIlvCYuA8MR+gDD6SpzxQSTaoqpJ4l68RpDZt/YUCTP
-WYk0ia/Koj/DdYT2ZtVx6J1w8eDUJNVyRa08amxEogt8Ud2LwyPEVWdszV0spio0
-OI9gkTNNukq8jkqfm00Se4YXkNaEVSTC1k76VcqVFDCGvvTI1Cito22b4B6bni9e
-XoRjD8wvS14L/+ug2lJhaEjkH1FmeHnLODDX6/i3eje3D2EJStevTIRPkhR+WMho
-vRul+8J36mw/QijgEpU0aakVWdWEsKWPOUaUQSvpoFDVP0BBwCY=
-=Ay4+
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlu7CskACgkQhLiadT7g
+8aMUHg//RrUQjS7a+hWMfDiWAHIllZpaZuXftDgKPQr21NFxcVm152TCsfgf8Wqr
+nykx2jmJ5uooczCqTJLnFOsT2sUwHOc4mSNbSXYg/RXzm/GYPudOnxFW8OTaz+tf
+dZ22pXikUJg7DsedEQstG1gwD/13kfJCXkJUyMSm3zqLrngCTibViCL/elhqD/FA
+PIuayVMWmscuDcTS5ISoygk9L7XYKQWCRuN5Nb/slxgfeUiaWFnx8s6kXwIDPst+
+xffUc3U5s3eWyK0U5U/qiJIhJscquDHYfnGa8XpsZREwqVwNoC0RZg4kpUMRVHXV
+Ha6pc6+a/4xZvbC33BuoI/DES0ZiYcv+CidqZdGLAGaeUVIualxxl0Tu3F9tZDJC
+OGjvCW1BeLG3s7+SHcnaRm9DRQqIGeHbWmikyTJTjo+F82Uy+WFvz/RGjycTpUkl
+OGFP6+g9JWu5/3Fr/urJmA26ZxHflEpw6t1stXcSGnnrG5ov58odYIxWkuH9SnQ8
+uWc6u7VIjuEiEi6O2JTJImQLOhb7MUj3M3du+RhsSAg7Q2wZa5ngHx6VvGH9EX+j
+Hi2Iy5O6lu2LjXPpaZzG8W0gxACOyYqHKgVIlCvCGilyO/QwCETbS1oFmUC9t4fP
+2I0gEnM9rEB7Dhpiw5TBgQ/Su9eZijD4rlP8w4Ge8D3u4xmGMFA=
+=pnaj
 -----END PGP SIGNATURE-----
 
---ac4srxfaa53qexuc--
+--m6savxunrnv5uhcs--
