@@ -1,58 +1,143 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v8 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Mon, 8 Oct 2018 16:29:10 +0530
-Message-ID: <52643019-07d9-0055-ecd3-24c1a7863481@codeaurora.org>
-References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
- <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
- <20181008084012.GA23693@centauri.lan>
- <20181008095952.gl7di2tnuv3jwew6@vireshk-i7>
- <20181008103856.GA10890@centauri.lan>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH 1/5] PM / hibernate: Create snapshot keys handler
+Date: Mon, 8 Oct 2018 21:29:45 +0800
+Message-ID: <20181008132945.GV3831@linux-l9pv.suse>
+References: <20180912142337.21955-1-jlee@suse.com>
+ <20180912142337.21955-2-jlee@suse.com>
+ <CAG48ez2pRwpv0V0MNbeBN26isW2peebf+S3cqLxUgdUfARfhiw@mail.gmail.com>
+ <20181002075243.GB6040@linux-l9pv.suse>
+ <CAG48ez3=mpJu8gaAZ4-N3pnB-E7d0WkKG8iyD1J=QL4eLwftSQ@mail.gmail.com>
+ <CALCETrVriVL1uhm_6wOLzCPZ++c3E+O6Yhp4it53+Cz9xu9o7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181008103856.GA10890@centauri.lan>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CALCETrVriVL1uhm_6wOLzCPZ++c3E+O6Yhp4it53+Cz9xu9o7Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Niklas Cassel <niklas.cassel@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Jann Horn <jannh@google.com>, Mimi Zohar <zohar@linux.vnet.ibm.com>, keyrings@vger.kernel.org, David Howells <dhowells@redhat.com>, joeyli.kernel@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>, oneukum@suse.com, yu.chen.surf@gmail.com, ggherdovich@suse.cz
 List-Id: linux-pm@vger.kernel.org
 
+Hi Any, Jann,
 
+On Wed, Oct 03, 2018 at 03:08:12PM -0700, Andy Lutomirski wrote:
+> On Tue, Oct 2, 2018 at 12:36 PM Jann Horn <jannh@google.com> wrote:
+> >
+> > +Andy for opinions on things in write handlers
+> > +Mimi Zohar as EVM maintainer
+> >
+> > On Tue, Oct 2, 2018 at 9:55 AM joeyli <jlee@suse.com> wrote:
+> > > On Thu, Sep 13, 2018 at 04:31:18PM +0200, Jann Horn wrote:
+> > > > On Thu, Sep 13, 2018 at 4:08 PM Lee, Chun-Yi <joeyli.kernel@gmail.com> wrote:
+> > > > > This patch adds a snapshot keys handler for using the key retention
+> > > > > service api to create keys for snapshot image encryption and
+> > > > > authentication.
+> > > [...snip]
+> > > > > +static ssize_t disk_kmk_store(struct kobject *kobj, struct kobj_attribute *attr,
+> > > > > +                             const char *buf, size_t n)
+> > > > > +{
+> > > > > +       int error = 0;
+> > > > > +       char *p;
+> > > > > +       int len;
+> > > > > +
+> > > > > +       if (!capable(CAP_SYS_ADMIN))
+> > > > > +               return -EPERM;
+> > > >
+> > > > This is wrong, you can't use capable() in a write handler. You'd have
+> > > > to use file_ns_capable(), and I think sysfs currently doesn't give you
+> > > > a pointer to the struct file.
+> > > > If you want to do this in a write handler, you'll have to either get
+> > > > rid of this check or plumb through the cred struct pointer.
+> > > > Alternatively, you could use some interface that doesn't go through a
+> > > > write handler.
+> > > >
+> > >
+> > > Thank you for point out this problem.
+> > >
+> > > Actually the evm_write_key() is the example for my code. The
+> > > difference is that evm creates interface file on securityfs, but my
+> > > implementation is on sysfs:
+> > >
+> > > security/integrity/evm/evm_secfs.c
+> > >
+> > > static ssize_t evm_write_key(struct file *file, const char __user *buf,
+> > >                              size_t count, loff_t *ppos)
+> > > {
+> > >         int i, ret;
+> > >
+> > >         if (!capable(CAP_SYS_ADMIN) || (evm_initialized & EVM_SETUP))
+> > >                 return -EPERM;
+> 
+> Yeah, that's a bug.
+> 
+> > > ...
+> > >
+> > > On the other hand, the writing handler of /sys/power/wake_lock also
+> > > uses capable() to check the CAP_BLOCK_SUSPEND capability:
+> > >
+> > > kernel/power/main.c
+> > > static ssize_t wake_lock_store(struct kobject *kobj,
+> > >                                struct kobj_attribute *attr,
+> > >                                const char *buf, size_t n)
+> > > {
+> > >         int error = pm_wake_lock(buf);
+> > >         return error ? error : n;
+> > > }
+> > > power_attr(wake_lock);
+> > >
+> > > kernel/power/wakelock.c
+> > > int pm_wake_lock(const char *buf)
+> > > {
+> > > ...
+> > >         if (!capable(CAP_BLOCK_SUSPEND))
+> > >                 return -EPERM;
+> > > ...
+> 
+> Also a bug.
+> 
+> > >
+> > >
+> > > So I confused for when can capable() be used in sysfs interface? Is
+> > > capable() only allowed in reading handler? Why the writing handler
+> > > of securityfs can use capable()?
+> >
+> > They can't, they're all wrong. :P All of these capable() checks in
+> > write handlers have to be assumed to be ineffective. But it's not a
+> > big deal because you still need UID 0 to access these files.
+> 
+> Why are there capability checks at all?
+> 
+> >
+> > > > > +static int user_key_init(void)
+> > > > > +{
+> > > > > +       struct user_key_payload *ukp;
+> > > > > +       struct key *key;
+> > > > > +       int err = 0;
+> > > > > +
+> > > > > +       pr_debug("%s\n", __func__);
+> > > > > +
+> > > > > +       /* find out swsusp-key */
+> > > > > +       key = request_key(&key_type_user, skey.key_name, NULL);
+> > > >
+> > > > request_key() looks at current's keyring. That shouldn't happen in a
+> > > > write handler.
+> > > >
+> > >
+> > > The evm_write_key() also uses request_key() but it's on securityfs. Should
+> > > I move my sysfs interface to securityfs?
+> >
+> > I don't think you should be doing this in the context of any
+> > filesystem. If EVM does that, EVM is doing it wrong.
+> 
+> EVM sounds buggy.
+> 
+> In general if you look at current *at all* in an implementation of
+> write() *in any filesystem*, you are doing it wrong.
 
-On 10/8/2018 4:08 PM, Niklas Cassel wrote:
-> On Mon, Oct 08, 2018 at 03:29:52PM +0530, Viresh Kumar wrote:
->> On 08-10-18, 10:40, Niklas Cassel wrote:
->>>> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
->>>> +				"#freq-domain-cells", 0, &args);
->>>
->>> Hello Taniya,
->>>
->>> in your DT binding, you use
->>>
->>> #freq-domains-cells = <1>
->>>
->>> Yet here you parse for "#freq-domain-cells".
->>
->> And what is the problem with that ? Or are you suggesting her to call
->> of_parse_phandle_with_fixed_args() ?
-> 
-> Hello Viresh,
-> 
-> #freq-domain-cells != #freq-domains-cells
-> 
-> The code should parse for the exact same property name as stated in the
-> DT binding.
-> 
-> Kind regards,
-> Niklas
-> 
+I have read CVE-2013-1959... Thanks for Jann and Andy's review.
 
-The extra 's' was a typo, would fix it in the next patch.
+I will create the sysfs interface through other way, then using 
+file_ns_capable() for capability checking in next version.
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Thanks a lot!
+Joey Lee
