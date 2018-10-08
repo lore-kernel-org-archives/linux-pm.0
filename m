@@ -1,83 +1,106 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: [PATCH] cpufreq: conservative: Fix requested_freq handling
-Date: Mon,  8 Oct 2018 17:09:00 +0200
-Message-ID: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RESEND][PATCH] ACPI / CPPC: Add support for guaranteed performance
+Date: Mon,  8 Oct 2018 09:51:36 -0700
+Message-ID: <20181008165136.9288-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org, robert.moore@intel.com, erik.schmauss@intel.com
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, pprakash@codeaurora.org, george.cherian@cavium.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+The Continuous Performance Control Package can have guaranteed performance
+field. Add support to read guaranteed performance.
 
-The governor updates dbs_info->requested_freq only after increasing or
-decreasing frequency. There is, however, an use case when this is not
-sufficient.
-
-Imagine, external module constraining cpufreq policy in a way that policy->max
-= policy->min = max_available_freq (eg. 1Ghz). CPUfreq will set freq to
-max_freq and conservative gov will not try downscale/upscale due to the
-limits. It will just exit instead
-
-    if (requested_freq > policy->max || requested_freq < policy->min)
-            //max=min=1Ghz -> requested_freq=cur=1Ghz
-            requested_freq = policy->cur;
-    [...]
-    if (requested_freq == policy->max)
-             goto out;
-
-In a result, dbs_info->requested_freq is not updated with newly calculated
-requested_freq=1Ghz. Next, execution of update routine will use again
-previously stored requested_freq (in my case it was min_available_freq)
-
-    [...]
-    unsigned int requested_freq = dbs_info->requested_freq;
-    [....]
-
-Now, when external module returns to previous policy limits that is
-policy->min = min_available_freq and policy->max = max_available_freq,
-conservative governor is not able to decrease frequency because stored
-requested_freq is still or rather already set to min_available_freq so
-the check (for decreasing)
-
-    [...]
-    if (load < cs_tuners->down_threshold) {
-    [....]
-           if (requested_freq == policy->min)
-                   goto out;
-    [...]
-
-returns from routine before it does any freq change. To fix that just update
-dbs_info->requested_freq every time we go out from the update routine.
-
-Signed-off-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/cpufreq_conservative.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+No changes. But adding CC to mailing lists.
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index f20f20a..7f90f6e 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -113,7 +113,6 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
- 			requested_freq = policy->max;
+ Documentation/acpi/cppc_sysfs.txt |  2 ++
+ drivers/acpi/cppc_acpi.c          | 10 ++++++++--
+ include/acpi/cppc_acpi.h          |  1 +
+ 3 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/acpi/cppc_sysfs.txt b/Documentation/acpi/cppc_sysfs.txt
+index f20fb445135d..812574d30717 100644
+--- a/Documentation/acpi/cppc_sysfs.txt
++++ b/Documentation/acpi/cppc_sysfs.txt
+@@ -22,6 +22,7 @@ $ ls -lR  /sys/devices/system/cpu/cpu0/acpi_cppc/
+ /sys/devices/system/cpu/cpu0/acpi_cppc/:
+ total 0
+ -r--r--r-- 1 root root 65536 Mar  5 19:38 feedback_ctrs
++-r--r--r-- 1 root root 65536 Mar  5 19:38 guaranteed_perf
+ -r--r--r-- 1 root root 65536 Mar  5 19:38 highest_perf
+ -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_freq
+ -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_nonlinear_perf
+@@ -33,6 +34,7 @@ total 0
  
- 		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_H);
--		dbs_info->requested_freq = requested_freq;
- 		goto out;
- 	}
+ --------------------------------------------------------------------------------
  
-@@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
- 			requested_freq = policy->min;
++* guaranteed_perf : Guaranteed performance of this processor (abstract scale).
+ * highest_perf : Highest performance of this processor (abstract scale).
+ * nominal_perf : Highest sustained performance of this processor (abstract scale).
+ * lowest_nonlinear_perf : Lowest performance of this processor with nonlinear
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index d9ce4b162e2c..5babb9402f11 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -153,6 +153,7 @@ __ATTR(_name, 0444, show_##_name, NULL)
+ 	}								\
+ 	define_one_cppc_ro(member_name)
  
- 		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
--		dbs_info->requested_freq = requested_freq;
- 	}
++show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, guaranteed_perf);
+ show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, highest_perf);
+ show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, lowest_perf);
+ show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, nominal_perf);
+@@ -189,6 +190,7 @@ static struct attribute *cppc_attrs[] = {
+ 	&nominal_perf.attr,
+ 	&nominal_freq.attr,
+ 	&lowest_freq.attr,
++	&guaranteed_perf.attr,
+ 	NULL
+ };
  
-  out:
-+	dbs_info->requested_freq = requested_freq;
- 	return dbs_data->sampling_rate;
- }
+@@ -1061,9 +1063,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ {
+ 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+ 	struct cpc_register_resource *highest_reg, *lowest_reg,
+-		*lowest_non_linear_reg, *nominal_reg,
++		*lowest_non_linear_reg, *nominal_reg, *guaranteed_reg,
+ 		*low_freq_reg = NULL, *nom_freq_reg = NULL;
+-	u64 high, low, nom, min_nonlinear, low_f = 0, nom_f = 0;
++	u64 high, low, guaranteed, nom, min_nonlinear, low_f = 0, nom_f = 0;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
+ 	int ret = 0, regs_in_pcc = 0;
+@@ -1079,6 +1081,7 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	nominal_reg = &cpc_desc->cpc_regs[NOMINAL_PERF];
+ 	low_freq_reg = &cpc_desc->cpc_regs[LOWEST_FREQ];
+ 	nom_freq_reg = &cpc_desc->cpc_regs[NOMINAL_FREQ];
++	guaranteed_reg = &cpc_desc->cpc_regs[GUARANTEED_PERF];
  
+ 	/* Are any of the regs PCC ?*/
+ 	if (CPC_IN_PCC(highest_reg) || CPC_IN_PCC(lowest_reg) ||
+@@ -1107,6 +1110,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	cpc_read(cpunum, nominal_reg, &nom);
+ 	perf_caps->nominal_perf = nom;
+ 
++	cpc_read(cpunum, guaranteed_reg, &guaranteed);
++	perf_caps->guaranteed_perf = guaranteed;
++
+ 	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
+ 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
+ 
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 8e0b8250a139..cf59e6210d27 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -104,6 +104,7 @@ enum cppc_regs {
+  * today.
+  */
+ struct cppc_perf_caps {
++	u32 guaranteed_perf;
+ 	u32 highest_perf;
+ 	u32 nominal_perf;
+ 	u32 lowest_perf;
 -- 
-2.10.1
+2.17.1
