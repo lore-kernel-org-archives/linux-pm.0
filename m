@@ -1,99 +1,144 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/6] cpuidle: menu: Fixes, optimizations and cleanups
-Date: Tue, 09 Oct 2018 12:42:38 +0200
-Message-ID: <32751210.eVKMK0JPWn@aspire.rjw.lan>
-References: <000301d45ecb$4f002a90$ed007fb0$@net> <003801d45f54$3d9b0c50$b8d124f0$@net> <CAJZ5v0h4sVoen++nF1cYvqQeY3qN0B1aP42e8A4SZwxzBV3NVA@mail.gmail.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
+Date: Tue, 9 Oct 2018 10:48:54 +0000
+Message-ID: <AM0PR04MB42118ACA68B91B0C7D51C0C780E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <1538917807-1921-1-git-send-email-aisheng.dong@nxp.com>
+ <1538917807-1921-3-git-send-email-aisheng.dong@nxp.com>
+ <20181009103510.nsnfkx67djuvois6@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h4sVoen++nF1cYvqQeY3qN0B1aP42e8A4SZwxzBV3NVA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181009103510.nsnfkx67djuvois6@pengutronix.de>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 9, 2018 12:26:48 AM CEST Rafael J. Wysocki wrote:
-> On Tue, Oct 9, 2018 at 12:14 AM Doug Smythies <dsmythies@telus.net> wrote:
+
+> -----Original Message-----
+> From: Sascha Hauer [mailto:s.hauer@pengutronix.de]
+> Sent: Tuesday, October 9, 2018 6:35 PM
+> To: A.s. Dong <aisheng.dong@nxp.com>
+> Cc: linux-arm-kernel@lists.infradead.org; ulf.hansson@linaro.org;
+> dongas86@gmail.com; khilman@kernel.org; linux-pm@vger.kernel.org;
+> rjw@rjwysocki.net; dl-linux-imx <linux-imx@nxp.com>;
+> kernel@pengutronix.de; Fabio Estevam <fabio.estevam@nxp.com>;
+> shawnguo@kernel.org
+> Subject: Re: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
+> 
+> Hi Dong,
+> 
+> Looks mostly ok to me, some minor comments inside.
+> 
+> On Sun, Oct 07, 2018 at 09:10:07PM +0800, Dong Aisheng wrote:
+> > Some i.MX SoCs contain a system controller that is responsible for
+> > controlling the state of the IPs that are present. Communication
+> > between the host processor running an OS and the system controller
+> > happens through a SCU protocol. This patch adds SCU protocol based
+> > power domains drivers.
 > >
-> > On 2018.10.08 00:51 Rafael J. Wysocki wrote:
-> > > On Mon, Oct 8, 2018 at 8:02 AM Doug Smythies <dsmythies@telus.net> wrote:
-> > >>
-> > >> On 2018.10.03 23:56 Rafael J. Wysocki wrote:
-> > >>> On Tue, Oct 2, 2018 at 11:51 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > Cc: Shawn Guo <shawnguo@kernel.org>
+> > Cc: Sascha Hauer <kernel@pengutronix.de>
+> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Kevin Hilman <khilman@kernel.org>
+> > Cc: linux-pm@vger.kernel.org
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> > ---
+> > +static struct generic_pm_domain *imx_sc_pm_add_one_domain(
+> > +					struct device_node *np,
+> > +					struct generic_pm_domain *genpd_parent) {
+> > +	struct imx_sc_pm_domain *imx_sc_pd;
+> > +	u32 rsrc_id;
+> > +	int ret;
+> > +
+> > +	imx_sc_pd = kzalloc(sizeof(*imx_sc_pd), GFP_KERNEL);
+> > +	if (!imx_sc_pd)
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	if (!of_property_read_u32(np, "reg", &rsrc_id)) {
+> > +		if (rsrc_id > IMX_SC_R_LAST) {
 > 
-> [cut]
+> Should this be >= instead?
 > 
-> > >> Test 2: pipe test 2 CPUs, one core. CPU test:
-> > >>
-> > >> The average loop times graph is here:
-> > >> http://fast.smythies.com/linux-pm/k419/k419-rjw-pipe-1core.png
-> > >>
-> > >> The power and idle statistics graphs are here:
-> > >> http://fast.smythies.com/linux-pm/k419/k419-rjw-pipe-1core.htm
-> > >>
-> > >> Conclusions:
-> > >>
-> > >> Better performance at the cost of more power with
-> > >> the patch set, but late August had both better performance
-> > >> and less power.
-> > >>
-> > >> Overall idle entries and exits are about the same, but way
-> > >> way more idle state 0 entries and exits with the patch set.
-> > >
-> > >Same as above (and expected too).
-> >
-> > I Disagree. The significant transfer of idle entries from
-> > idle state 1 with kernel 4.19-rc6 to idle state 0 with the
-> > additional 8 patch set is virtually entirely due to this patch:
-> >
-> > "[PATCH 2/6] cpuidle: menu: Compute first_idx when latency_req is known"
-> 
-> OK
-> 
-> > As far as I can determine from all of this data, in particular the
-> > histogram data below, it seems to me that it now is selecting
-> > idle state 0 whereas before it was selecting idle state 1
-> > is the correct decision for those very short duration idle states
-> > (well, for my processor (older i7-2600K) at least).
-> 
-> At least, that's a matter of consistency IMO.
-> 
-> State 1 should not be selected if the final latency limit is below its
-> exit latency and that's what happens in that situation.
-> 
-> > Note: I did test my above assertion with kernels compiled with only
-> > the first 2 and then 3 of the 8 patch set.
-> 
-> I see.
 
-While at it, could you test the appended patch (on top of the previous 8)
-for me please?
+You're right. 
 
-I think that this code can be simplified now.
+> > +			pr_warn("%pOF: invalid rsrc id %d found", np, rsrc_id);
+> > +			ret = -EINVAL;
+> > +			goto err;
+> > +		}
+> > +		imx_sc_pd->rsrc_id = rsrc_id;
+> > +	} else {
+> > +		imx_sc_pd->rsrc_id = IMX_SC_R_LAST;
+> > +	}
+> > +
+> > +	if (imx_sc_pd->rsrc_id != IMX_SC_R_LAST) {
+> > +		imx_sc_pd->pd.power_off = imx_sc_pd_power_off;
+> > +		imx_sc_pd->pd.power_on = imx_sc_pd_power_on;
+> > +	}
+> 
+> Can be moved into the property exists test above.
+> 
 
----
- drivers/cpuidle/governors/menu.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Good suggestion
 
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -371,12 +371,12 @@ static int menu_select(struct cpuidle_dr
- 		if (s->target_residency > predicted_us) {
- 			/*
- 			 * Use a physical idle state, not busy polling, unless
--			 * a timer is going to trigger really really soon.
-+			 * a timer is going to trigger soon enough.
- 			 */
- 			if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) &&
--			    i == idx + 1 && latency_req > s->exit_latency &&
--			    data->next_timer_us > max_t(unsigned int, 20,
--							s->target_residency)) {
-+			    s->exit_latency <= latency_req &&
-+			    s->target_residency <= data->next_timer_us) {
-+				predicted_us = s->target_residency;
- 				idx = i;
- 				break;
- 			}
+> > +
+> > +	imx_sc_pd->pd.name = np->name;
+> > +
+> > +	ret = pm_genpd_init(&imx_sc_pd->pd, NULL, true);
+> > +	if (ret < 0)
+> > +		goto err;
+> > +
+> > +	if (genpd_parent) {
+> > +		ret = pm_genpd_add_subdomain(genpd_parent, &imx_sc_pd->pd);
+> > +		if (ret)
+> > +			goto err;
+> > +	}
+> > +
+> > +	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
+> > +	if (!ret)
+> > +		return &imx_sc_pd->pd;
+> > +
+> > +	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
+> > +
+> > +err:
+> > +	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
+> 
+> You have a struct device *, you should use dev_* functions.
+
+Good suggestion.
+
+Will update and resend a new version.
+Thanks for the carefully review.
+
+Regards
+Dong Aisheng
+
+> 
+> Sascha
+> 
+> --
+> Pengutronix e.K.                           |
+> |
+> Industrial Linux Solutions                 |
+> https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2Fwww.
+> pengutronix.de%2F&amp;data=02%7C01%7Caisheng.dong%40nxp.com%7C49
+> 9fbc118b8948ed075908d62dd2e6b1%7C686ea1d3bc2b4c6fa92cd99c5c3016
+> 35%7C0%7C0%7C636746781171494898&amp;sdata=MwU9%2BAzpX8Tmwd
+> pYch7ztNZXRo4aqifxbbtALjuW9lo%3D&amp;reserved=0  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0
+> |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:
+> +49-5121-206917-5555 |
