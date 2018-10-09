@@ -1,255 +1,298 @@
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH v3 3/3] drivers: qcom: rpmh: disallow active requests in solver mode
-Date: Tue,  9 Oct 2018 07:38:32 +0530
-Message-ID: <1539050912-25749-4-git-send-email-rplsssn@codeaurora.org>
-References: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
+Date: Tue, 9 Oct 2018 02:48:10 +0000
+Message-ID: <AM0PR04MB4211DA481116D36C864CEDE980E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <1538917807-1921-1-git-send-email-aisheng.dong@nxp.com>
+ <1538917807-1921-3-git-send-email-aisheng.dong@nxp.com>
+ <20181009005342.GX3587@dragon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181009005342.GX3587@dragon>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lina Iyer <ilina@codeaurora.org>
+> -----Original Message-----
+> From: Shawn Guo [mailto:shawnguo@kernel.org]
+> Sent: Tuesday, October 9, 2018 8:54 AM
+> To: A.s. Dong <aisheng.dong@nxp.com>
+> Cc: linux-arm-kernel@lists.infradead.org; ulf.hansson@linaro.org;
+> dongas86@gmail.com; khilman@kernel.org; linux-pm@vger.kernel.org;
+> rjw@rjwysocki.net; dl-linux-imx <linux-imx@nxp.com>;
+> kernel@pengutronix.de; Fabio Estevam <fabio.estevam@nxp.com>; Sascha
+> Hauer <s.hauer@pengutronix.de>
+> Subject: Re: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
+> 
+> On Sun, Oct 07, 2018 at 09:10:07PM +0800, Dong Aisheng wrote:
+> > Some i.MX SoCs contain a system controller that is responsible for
+> > controlling the state of the IPs that are present. Communication
+> > between the host processor running an OS and the system controller
+> > happens through a SCU protocol. This patch adds SCU protocol based
+> > power domains drivers.
+> >
+> > Cc: Shawn Guo <shawnguo@kernel.org>
+> > Cc: Sascha Hauer <kernel@pengutronix.de>
+> > Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Kevin Hilman <khilman@kernel.org>
+> > Cc: linux-pm@vger.kernel.org
+> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> 
+> @Sascha, are you okay with this?
+> 
 
-Controllers may be in 'solver' state, where they could be in autonomous
-mode executing low power modes for their hardware and as such are not
-available for sending active votes. Device driver may notify RPMH API
-that the controller is in solver mode and when in such mode, disallow
-requests from platform drivers for state change using the RSC.
+Yes, it would be good if we can have Sasha's sign offs.
 
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
----
-Chanages in v3
- - Add functionality to set solver mode for RSC controller
- - return -EINVAL if active requests are sent in solver mode
----
- drivers/soc/qcom/rpmh-internal.h |  5 ++++
- drivers/soc/qcom/rpmh-rsc.c      | 31 ++++++++++++++++++++++++
- drivers/soc/qcom/rpmh.c          | 51 ++++++++++++++++++++++++++++++++++++++++
- include/soc/qcom/rpmh.h          |  5 ++++
- 4 files changed, 92 insertions(+)
+> > ---
+> > ChangeLog:
+> > v3->v4:
+> >  * update firmware headfile patch from include/soc/imx to
+> >    include/linux/firmware/imx
+> > v2->v3:
+> >  * name of structures/enums updated with imx_sc prefix
+> > v1->v2:
+> >  * move into drivers/firmware/imx
+> >  * Implement sc_pm_set_resource_power_mode() API in the driver instead
+> >    of call it via SCU API according to Sascha's suggestion
+> > ---
+> >  drivers/firmware/imx/Kconfig  |   6 ++
+> >  drivers/firmware/imx/Makefile |   3 +-
+> >  drivers/firmware/imx/scu-pd.c | 167
+> > ++++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 175 insertions(+), 1 deletion(-)  create mode 100644
+> > drivers/firmware/imx/scu-pd.c
+> >
+> > diff --git a/drivers/firmware/imx/Kconfig
+> > b/drivers/firmware/imx/Kconfig index b170c28..6a7a7c2 100644
+> > --- a/drivers/firmware/imx/Kconfig
+> > +++ b/drivers/firmware/imx/Kconfig
+> > @@ -9,3 +9,9 @@ config IMX_SCU
+> >
+> >  	  This driver manages the IPC interface between host CPU and the
+> >  	  SCU firmware running on M4.
+> > +
+> > +config IMX_SCU_PD
+> > +	bool "IMX SCU Power Domain driver"
+> > +	depends on IMX_SCU
+> > +	help
+> > +	  The System Controller Firmware (SCFW) based power domain driver.
+> > diff --git a/drivers/firmware/imx/Makefile
+> > b/drivers/firmware/imx/Makefile index 0ac04df..1b2e15b 100644
+> > --- a/drivers/firmware/imx/Makefile
+> > +++ b/drivers/firmware/imx/Makefile
+> > @@ -1,2 +1,3 @@
+> >  # SPDX-License-Identifier: GPL-2.0
+> > -obj-$(CONFIG_IMX_SCU)	+= imx-scu.o misc.o
+> > +obj-$(CONFIG_IMX_SCU)		+= imx-scu.o misc.o
+> > +obj-$(CONFIG_IMX_SCU_PD)	+= scu-pd.o
+> > diff --git a/drivers/firmware/imx/scu-pd.c
+> > b/drivers/firmware/imx/scu-pd.c new file mode 100644 index
+> > 0000000..af5b9e4
+> > --- /dev/null
+> > +++ b/drivers/firmware/imx/scu-pd.c
+> > @@ -0,0 +1,167 @@
+> > +// SPDX-License-Identifier: GPL-2.0+
+> > +/*
+> > + * Copyright (C) 2016 Freescale Semiconductor, Inc.
+> > + * Copyright 2017~2018 NXP
+> > + *	Dong Aisheng <aisheng.dong@nxp.com>
+> > + *
+> > + * Implementation of the SCU based Power Domains  */
+> > +
+> > +#define pr_fmt(fmt) "scu_pd: " fmt
+> > +
+> > +#include <linux/firmware/imx/sci.h>
+> > +#include <linux/io.h>
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/of_platform.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/pm.h>
+> > +#include <linux/pm_domain.h>
+> > +#include <linux/slab.h>
+> > +
+> > +struct imx_sc_pm_domain {
+> > +	struct generic_pm_domain pd;
+> > +	u32 rsrc_id;
+> > +};
+> > +
+> > +static struct imx_sc_ipc *pm_ipc_handle;
+> > +
+> > +/* SCU Power Mode Protocol definition */ struct
+> > +imx_sc_msg_req_set_resource_power_mode {
+> > +	struct imx_sc_rpc_msg hdr;
+> > +	u16 resource;
+> > +	u8 mode;
+> > +} __packed;
+> > +
+> > +static int imx_sc_pd_power(struct generic_pm_domain *domain, bool
+> > +power_on) {
+> > +	struct imx_sc_msg_req_set_resource_power_mode msg;
+> > +	struct imx_sc_rpc_msg *hdr = &msg.hdr;
+> > +	struct imx_sc_pm_domain *pd;
+> > +	int ret;
+> > +
+> > +	pd = container_of(domain, struct imx_sc_pm_domain, pd);
+> > +
+> > +	hdr->ver = IMX_SC_RPC_VERSION;
+> > +	hdr->svc = (uint8_t)IMX_SC_RPC_SVC_PM;
+> > +	hdr->func = (uint8_t)IMX_SC_PM_FUNC_SET_RESOURCE_POWER_MODE;
+> > +	hdr->size = 2;
+> > +
+> > +	msg.resource = pd->rsrc_id;
+> > +	msg.mode = power_on ? IMX_SC_PM_PW_MODE_ON :
+> IMX_SC_PM_PW_MODE_LP;
+> > +
+> > +	ret = imx_scu_call_rpc(pm_ipc_handle, &msg, true);
+> > +	if (ret)
+> > +		pr_err("failed to power %s resource %d ret %d\n",
+> > +			power_on ? "up" : "off", pd->rsrc_id, ret);
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static int imx_sc_pd_power_on(struct generic_pm_domain *domain) {
+> > +	return imx_sc_pd_power(domain, true); }
+> > +
+> > +static int imx_sc_pd_power_off(struct generic_pm_domain *domain) {
+> > +	return imx_sc_pd_power(domain, false); }
+> > +
+> > +static struct generic_pm_domain *imx_sc_pm_add_one_domain(
+> > +					struct device_node *np,
+> > +					struct generic_pm_domain *genpd_parent) {
+> > +	struct imx_sc_pm_domain *imx_sc_pd;
+> > +	u32 rsrc_id;
+> > +	int ret;
+> > +
+> > +	imx_sc_pd = kzalloc(sizeof(*imx_sc_pd), GFP_KERNEL);
+> > +	if (!imx_sc_pd)
+> > +		return ERR_PTR(-ENOMEM);
+> > +
+> > +	if (!of_property_read_u32(np, "reg", &rsrc_id)) {
+> > +		if (rsrc_id > IMX_SC_R_LAST) {
+> > +			pr_warn("%pOF: invalid rsrc id %d found", np, rsrc_id);
+> > +			ret = -EINVAL;
+> > +			goto err;
+> > +		}
+> > +		imx_sc_pd->rsrc_id = rsrc_id;
+> > +	} else {
+> > +		imx_sc_pd->rsrc_id = IMX_SC_R_LAST;
+> > +	}
+> > +
+> > +	if (imx_sc_pd->rsrc_id != IMX_SC_R_LAST) {
+> > +		imx_sc_pd->pd.power_off = imx_sc_pd_power_off;
+> > +		imx_sc_pd->pd.power_on = imx_sc_pd_power_on;
+> > +	}
+> > +
+> > +	imx_sc_pd->pd.name = np->name;
+> > +
+> > +	ret = pm_genpd_init(&imx_sc_pd->pd, NULL, true);
+> > +	if (ret < 0)
+> > +		goto err;
+> > +
+> > +	if (genpd_parent) {
+> > +		ret = pm_genpd_add_subdomain(genpd_parent, &imx_sc_pd->pd);
+> > +		if (ret)
+> > +			goto err;
+> > +	}
+> > +
+> > +	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
+> > +	if (!ret)
+> > +		return &imx_sc_pd->pd;
+> > +
+> > +	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
+> > +
+> > +err:
+> > +	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
+> > +	kfree(imx_sc_pd);
+> > +	return ERR_PTR(ret);
+> > +}
+> > +
+> > +static void imx_sc_pm_add_pm_domains(struct device_node *parent,
+> > +				     struct generic_pm_domain *genpd_parent) {
+> > +	struct generic_pm_domain *pd;
+> > +	struct device_node *np;
+> > +
+> > +	for_each_child_of_node(parent, np) {
+> > +		pd = imx_sc_pm_add_one_domain(np, genpd_parent);
+> > +		if (!IS_ERR(pd))
+> > +			imx_sc_pm_add_pm_domains(np, pd);
+> > +	}
+> > +}
+> > +
+> > +static int imx_sc_pd_probe(struct platform_device *pdev) {
+> > +	struct device_node *np = pdev->dev.of_node;
+> > +	int ret;
+> > +
+> > +	ret = imx_scu_get_handle(&pm_ipc_handle);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	imx_sc_pm_add_pm_domains(np, NULL);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static const struct of_device_id imx_sc_pd_match[] = {
+> > +	{ .compatible = "fsl,scu-pd", },
+> 
+> Has the compatible been documented?  We used to encode a soc name in the
+> compatible to specify the programming model of particular hardware block.
+> Is this power domain block generic enough with no need of doing so?
+> 
 
-diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
-index 4b891c23..0923c45 100644
---- a/drivers/soc/qcom/rpmh-internal.h
-+++ b/drivers/soc/qcom/rpmh-internal.h
-@@ -70,12 +70,14 @@ struct rpmh_request {
-  * @cache_lock: synchronize access to the cache data
-  * @dirty: was the cache updated since flush
-  * @batch_cache: Cache sleep and wake requests sent as batch
-+ * @in_solver_mode: Controller is busy in solver mode
-  */
- struct rpmh_ctrlr {
- 	struct list_head cache;
- 	spinlock_t cache_lock;
- 	bool dirty;
- 	struct list_head batch_cache;
-+	bool in_solver_mode;
- };
- 
- /**
-@@ -86,6 +88,7 @@ struct rpmh_ctrlr {
-  * @base:       start address of the RSC's DRV registers
-  * @tcs_base:   start address of the TCS registers in this controller
-  * @id:         instance id in the controller (Direct Resource Voter)
-+ * @in_solver_mode: Controller is in solver mode
-  * @num_tcs:    number of TCSes in this DRV
-  * @tcs:        TCS groups
-  * @tcs_in_use: s/w state of the TCS
-@@ -97,6 +100,7 @@ struct rsc_drv {
- 	void __iomem *base;
- 	void __iomem *tcs_base;
- 	int id;
-+	bool in_solver_mode;
- 	int num_tcs;
- 	struct tcs_group tcs[TCS_TYPE_NR];
- 	DECLARE_BITMAP(tcs_in_use, MAX_TCS_NR);
-@@ -107,6 +111,7 @@ struct rsc_drv {
- int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg);
- int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
- 			     const struct tcs_request *msg);
-+void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable);
- int rpmh_rsc_invalidate(struct rsc_drv *drv);
- int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg);
- bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv);
-diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
-index 9cc303e..17126be 100644
---- a/drivers/soc/qcom/rpmh-rsc.c
-+++ b/drivers/soc/qcom/rpmh-rsc.c
-@@ -386,6 +386,11 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
- 		return PTR_ERR(tcs);
- 
- 	spin_lock(&drv->lock);
-+
-+	if (msg->state == RPMH_ACTIVE_ONLY_STATE && drv->in_solver_mode) {
-+		ret = -EINVAL;
-+		goto done_write;
-+	}
- 	/*
- 	 * The h/w does not like if we send a request to the same address,
- 	 * when one is already in-flight or being processed.
-@@ -525,6 +530,31 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
- }
- 
- /**
-+ *  rpmh_rsc_mode_solver_set: Enable/disable solver mode
-+ *
-+ *  @drv: The controller
-+ *
-+ *  enable: boolean state to be set - true/false
-+ */
-+void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable)
-+{
-+	int m;
-+	struct tcs_group *tcs = get_tcs_of_type(drv, ACTIVE_TCS);
-+
-+again:
-+	spin_lock(&drv->lock);
-+	for (m = tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
-+		if (!tcs_is_free(drv, m)) {
-+			spin_unlock(&drv->lock);
-+			goto again;
-+		}
-+	}
-+	drv->in_solver_mode = enable;
-+	spin_unlock(&drv->lock);
-+
-+}
-+
-+/**
-  *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
-  *
-  *  @drv: The controller
-@@ -718,6 +748,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
- 		return ret;
- 
- 	spin_lock_init(&drv->lock);
-+	drv->in_solver_mode = false;
- 	bitmap_zero(drv->tcs_in_use, MAX_TCS_NR);
- 
- 	irq = platform_get_irq(pdev, drv->id);
-diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
-index 43eb981..e6e98d4 100644
---- a/drivers/soc/qcom/rpmh.c
-+++ b/drivers/soc/qcom/rpmh.c
-@@ -5,6 +5,7 @@
- 
- #include <linux/atomic.h>
- #include <linux/bug.h>
-+#include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/jiffies.h>
- #include <linux/kernel.h>
-@@ -75,6 +76,42 @@ static struct rpmh_ctrlr *get_rpmh_ctrlr(const struct device *dev)
- 	return &drv->client;
- }
- 
-+static int check_ctrlr_state(struct rpmh_ctrlr *ctrlr, enum rpmh_state state)
-+{
-+	int ret = 0;
-+
-+	/* Do not allow setting active votes when in solver mode */
-+	spin_lock(&ctrlr->cache_lock);
-+	if (ctrlr->in_solver_mode && state == RPMH_ACTIVE_ONLY_STATE)
-+		ret = -EBUSY;
-+	spin_unlock(&ctrlr->cache_lock);
-+
-+	return ret;
-+}
-+
-+/**
-+ * rpmh_mode_solver_set: Indicate that the RSC controller hardware has
-+ * been configured to be in solver mode
-+ *
-+ * @dev: the device making the request
-+ * @enable: Boolean value indicating if the controller is in solver mode.
-+ *
-+ * When solver mode is enabled, passthru API will not be able to send wake
-+ * votes, just awake and active votes.
-+ */
-+int rpmh_mode_solver_set(const struct device *dev, bool enable)
-+{
-+	struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
-+
-+	spin_lock(&ctrlr->cache_lock);
-+	rpmh_rsc_mode_solver_set(ctrlr_to_drv(ctrlr), enable);
-+	ctrlr->in_solver_mode = enable;
-+	spin_unlock(&ctrlr->cache_lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(rpmh_mode_solver_set);
-+
- void rpmh_tx_done(const struct tcs_request *msg, int r)
- {
- 	struct rpmh_request *rpm_msg = container_of(msg, struct rpmh_request,
-@@ -230,8 +267,13 @@ int rpmh_write_async(const struct device *dev, enum rpmh_state state,
- 		     const struct tcs_cmd *cmd, u32 n)
- {
- 	struct rpmh_request *rpm_msg;
-+	struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
- 	int ret;
- 
-+	ret = check_ctrlr_state(ctrlr, state);
-+	if (ret)
-+		return ret;
-+
- 	rpm_msg = kzalloc(sizeof(*rpm_msg), GFP_ATOMIC);
- 	if (!rpm_msg)
- 		return -ENOMEM;
-@@ -262,11 +304,16 @@ int rpmh_write(const struct device *dev, enum rpmh_state state,
- {
- 	DECLARE_COMPLETION_ONSTACK(compl);
- 	DEFINE_RPMH_MSG_ONSTACK(dev, state, &compl, rpm_msg);
-+	struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
- 	int ret;
- 
- 	if (!cmd || !n || n > MAX_RPMH_PAYLOAD)
- 		return -EINVAL;
- 
-+	ret = check_ctrlr_state(ctrlr, state);
-+	if (ret)
-+		return ret;
-+
- 	memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
- 	rpm_msg.msg.num_cmds = n;
- 
-@@ -353,6 +400,10 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
- 	if (!cmd || !n)
- 		return -EINVAL;
- 
-+	ret = check_ctrlr_state(ctrlr, state);
-+	if (ret)
-+		return ret;
-+
- 	while (n[count] > 0)
- 		count++;
- 	if (!count)
-diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
-index 4c4b013..e8356b6 100644
---- a/include/soc/qcom/rpmh.h
-+++ b/include/soc/qcom/rpmh.h
-@@ -29,6 +29,8 @@ int rpmh_write_pdc_data(const struct device *dev,
- 
- int rpmh_ctrlr_idle(const struct device *dev);
- 
-+int rpmh_mode_solver_set(const struct device *dev, bool enable);
-+
- #else
- 
- static inline int rpmh_write(const struct device *dev, enum rpmh_state state,
-@@ -58,6 +60,9 @@ static inline int rpmh_write_pdc_data(const struct device *dev,
- static inline int rpmh_ctrlr_idle(const struct device *dev)
- { return -ENODEV; }
- 
-+static inline int rpmh_mode_solver_set(const struct device *dev, bool enable)
-+{ return -ENODEV; }
-+
- #endif /* CONFIG_QCOM_RPMH */
- 
- #endif /* __SOC_QCOM_RPMH_H__ */
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of the Code Aurora Forum, hosted by The Linux Foundation.
+Yes, it's a generic binding and has been documented in SCU binding doc.
+See:
+https://www.spinics.net/lists/arm-kernel/msg680738.html
+
+Regards
+Dong Aisheng
+
+> Shawn
+> 
+> > +	{ /* sentinel */ }
+> > +};
+> > +
+> > +static struct platform_driver imx_sc_pd_driver = {
+> > +	.driver = {
+> > +		.name = "imx-scu-pd",
+> > +		.of_match_table = imx_sc_pd_match,
+> > +	},
+> > +	.probe = imx_sc_pd_probe,
+> > +};
+> > +builtin_platform_driver(imx_sc_pd_driver);
+> > +
+> > +MODULE_AUTHOR("Dong Aisheng <aisheng.dong@nxp.com>");
+> > +MODULE_DESCRIPTION("IMX SCU Power Domain driver");
+> > +MODULE_LICENSE("GPL v2");
+> > --
+> > 2.7.4
+> >
+> >
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2Flist
+> >
+> s.infradead.org%2Fmailman%2Flistinfo%2Flinux-arm-kernel&amp;data=02%7C
+> >
+> 01%7Caisheng.dong%40nxp.com%7Ce7cc7fda44ad4f62bc3d08d62d81c3e2%
+> 7C686ea
+> >
+> 1d3bc2b4c6fa92cd99c5c301635%7C0%7C0%7C636746432705451877&amp;
+> sdata=30j
+> > 5I%2Fek2U5vujNu2Yzj1Wbsh0BvbxriRFcXUjDOeg4%3D&amp;reserved=0
