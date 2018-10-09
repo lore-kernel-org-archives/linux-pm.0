@@ -1,74 +1,128 @@
 From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Tue,  9 Oct 2018 12:24:55 -0400
-Message-ID: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+Subject: [RFC PATCH 1/7] sched/pelt.c: Add option to make load and util calculations frequency invariant
+Date: Tue,  9 Oct 2018 12:24:56 -0400
+Message-ID: <1539102302-9057-2-git-send-email-thara.gopinath@linaro.org>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com
 Cc: gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Thermal governors can respond to an overheat event for a cpu by
-capping the cpu's maximum possible frequency. This in turn
-means that the maximum available compute capacity of the
-cpu is restricted. But today in linux kernel, in event of maximum
-frequency capping of a cpu, the maximum available compute
-capacity of the cpu is not adjusted at all. In other words, scheduler
-is unware maximum cpu capacity restrictions placed due to thermal
-activity. This patch series attempts to address this issue.
-The benefits identified are better task placement among available
-cpus in event of overheating which in turn leads to better
-performance numbers.
+Add an additional parametr in accumulate_sum to allow optional
+frequency adjustment of load and utilization. When considering
+rt/dl load/util, it is correct to scale it to the current cpu
+frequency. On the other hand, thermal pressure(max capped frequency)
+is frequency invariant.
 
-The delta between the maximum possible capacity of a cpu and
-maximum available capacity of a cpu due to thermal event can
-be considered as thermal pressure. Instantaneous thermal pressure
-is hard to record and can sometime be erroneous as there can be mismatch
-between the actual capping of capacity and scheduler recording it.
-Thus solution is to have a weighted average per cpu value for thermal
-pressure over time. The weight reflects the amount of time the cpu has
-spent at a capped maximum frequency. To accumulate, average and
-appropriately decay thermal pressure, this patch series uses pelt
-signals and reuses the available framework that does a similar
-bookkeeping of rt/dl task utilization.
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+---
+ kernel/sched/pelt.c | 26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
 
-Regarding testing, basic build, boot and sanity testing have been
-performed on hikey960 mainline kernel with debian file system.
-Further aobench (An occlusion renderer for benchmarking realworld
-floating point performance) showed the following results on hikey960
-with debain.
-
-                                        Result          Standard        Standard
-                                        (Time secs)     Error           Deviation
-Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
-Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
-
-Thara Gopinath (7):
-  sched/pelt: Add option to make load and util calculations frequency
-    invariant
-  sched/pelt.c: Add support to track thermal pressure
-  sched: Add infrastructure to store and update instantaneous thermal
-    pressure
-  sched: Initialize per cpu thermal pressure structure
-  sched/fair: Enable CFS periodic tick to update thermal pressure
-  sched/fair: update cpu_capcity to reflect thermal pressure
-  thermal/cpu-cooling: Update thermal pressure in case of a maximum
-    frequency capping
-
- drivers/base/arch_topology.c  |  1 +
- drivers/thermal/cpu_cooling.c | 20 ++++++++++++-
- include/linux/sched.h         | 14 +++++++++
- kernel/sched/Makefile         |  2 +-
- kernel/sched/core.c           |  2 ++
- kernel/sched/fair.c           |  4 +++
- kernel/sched/pelt.c           | 40 ++++++++++++++++++--------
- kernel/sched/pelt.h           |  7 +++++
- kernel/sched/sched.h          |  1 +
- kernel/sched/thermal.c        | 66 +++++++++++++++++++++++++++++++++++++++++++
- kernel/sched/thermal.h        | 13 +++++++++
- 11 files changed, 157 insertions(+), 13 deletions(-)
- create mode 100644 kernel/sched/thermal.c
- create mode 100644 kernel/sched/thermal.h
-
+diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
+index 35475c0..05b8798 100644
+--- a/kernel/sched/pelt.c
++++ b/kernel/sched/pelt.c
+@@ -107,7 +107,8 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
+  */
+ static __always_inline u32
+ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+-	       unsigned long load, unsigned long runnable, int running)
++	       unsigned long load, unsigned long runnable, int running,
++		int freq_adjusted)
+ {
+ 	unsigned long scale_freq, scale_cpu;
+ 	u32 contrib = (u32)delta; /* p == 0 -> delta < 1024 */
+@@ -137,7 +138,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+ 	}
+ 	sa->period_contrib = delta;
+ 
+-	contrib = cap_scale(contrib, scale_freq);
++	if (freq_adjusted)
++		contrib = cap_scale(contrib, scale_freq);
+ 	if (load)
+ 		sa->load_sum += load * contrib;
+ 	if (runnable)
+@@ -178,7 +180,8 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+  */
+ static __always_inline int
+ ___update_load_sum(u64 now, int cpu, struct sched_avg *sa,
+-		  unsigned long load, unsigned long runnable, int running)
++		  unsigned long load, unsigned long runnable, int running,
++			int freq_adjusted)
+ {
+ 	u64 delta;
+ 
+@@ -221,7 +224,8 @@ ___update_load_sum(u64 now, int cpu, struct sched_avg *sa,
+ 	 * Step 1: accumulate *_sum since last_update_time. If we haven't
+ 	 * crossed period boundaries, finish.
+ 	 */
+-	if (!accumulate_sum(delta, cpu, sa, load, runnable, running))
++	if (!accumulate_sum(delta, cpu, sa, load, runnable, running,
++						freq_adjusted))
+ 		return 0;
+ 
+ 	return 1;
+@@ -272,7 +276,7 @@ int __update_load_avg_blocked_se(u64 now, int cpu, struct sched_entity *se)
+ 	if (entity_is_task(se))
+ 		se->runnable_weight = se->load.weight;
+ 
+-	if (___update_load_sum(now, cpu, &se->avg, 0, 0, 0)) {
++	if (___update_load_sum(now, cpu, &se->avg, 0, 0, 0, 1)) {
+ 		___update_load_avg(&se->avg, se_weight(se), se_runnable(se));
+ 		return 1;
+ 	}
+@@ -286,7 +290,7 @@ int __update_load_avg_se(u64 now, int cpu, struct cfs_rq *cfs_rq, struct sched_e
+ 		se->runnable_weight = se->load.weight;
+ 
+ 	if (___update_load_sum(now, cpu, &se->avg, !!se->on_rq, !!se->on_rq,
+-				cfs_rq->curr == se)) {
++				cfs_rq->curr == se, 1)) {
+ 
+ 		___update_load_avg(&se->avg, se_weight(se), se_runnable(se));
+ 		cfs_se_util_change(&se->avg);
+@@ -301,7 +305,7 @@ int __update_load_avg_cfs_rq(u64 now, int cpu, struct cfs_rq *cfs_rq)
+ 	if (___update_load_sum(now, cpu, &cfs_rq->avg,
+ 				scale_load_down(cfs_rq->load.weight),
+ 				scale_load_down(cfs_rq->runnable_weight),
+-				cfs_rq->curr != NULL)) {
++				cfs_rq->curr != NULL, 1)) {
+ 
+ 		___update_load_avg(&cfs_rq->avg, 1, 1);
+ 		return 1;
+@@ -326,7 +330,7 @@ int update_rt_rq_load_avg(u64 now, struct rq *rq, int running)
+ 	if (___update_load_sum(now, rq->cpu, &rq->avg_rt,
+ 				running,
+ 				running,
+-				running)) {
++				running, 1)) {
+ 
+ 		___update_load_avg(&rq->avg_rt, 1, 1);
+ 		return 1;
+@@ -349,7 +353,7 @@ int update_dl_rq_load_avg(u64 now, struct rq *rq, int running)
+ 	if (___update_load_sum(now, rq->cpu, &rq->avg_dl,
+ 				running,
+ 				running,
+-				running)) {
++				running, 1)) {
+ 
+ 		___update_load_avg(&rq->avg_dl, 1, 1);
+ 		return 1;
+@@ -385,11 +389,11 @@ int update_irq_load_avg(struct rq *rq, u64 running)
+ 	ret = ___update_load_sum(rq->clock - running, rq->cpu, &rq->avg_irq,
+ 				0,
+ 				0,
+-				0);
++				0, 1);
+ 	ret += ___update_load_sum(rq->clock, rq->cpu, &rq->avg_irq,
+ 				1,
+ 				1,
+-				1);
++				1, 1);
+ 
+ 	if (ret)
+ 		___update_load_avg(&rq->avg_irq, 1, 1);
 -- 
 2.1.4
