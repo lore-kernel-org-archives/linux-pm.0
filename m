@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 1/2] ACPI / CPPC: Add support for guaranteed performance
-Date: Tue,  9 Oct 2018 14:46:32 -0700
-Message-ID: <20181009214633.16390-2-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 2/2] cpufreq: intel_pstate: Add base_frequency attribute
+Date: Tue,  9 Oct 2018 14:46:33 -0700
+Message-ID: <20181009214633.16390-3-srinivas.pandruvada@linux.intel.com>
 References: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
@@ -10,60 +10,83 @@ To: rjw@rjwysocki.net, lenb@kernel.org, robert.moore@intel.com, erik.schmauss@in
 Cc: pprakash@codeaurora.org, george.cherian@cavium.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, devel@acpica.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The Continuous Performance Control Package can have guaranteed performance
-field. Add support to read guaranteed performance.
+Present base_frequency to user space via cpufreq sysfs when HWP is in
+use.
+
+This HWP base frequency is read from HWP Capabilities MSR, if platform
+doesn't have ACPI _CPC object. On most of the HWP platforms the _CPC
+object will point to the HWP Capabilities MSR using address space id as
+"Functional Fixed Hardware". But the address space id can be simply
+ACPI_TYPE_INTEGER, where the platform firmware can modify this value
+based on the system constraints.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/cppc_acpi.c | 8 ++++++--
- include/acpi/cppc_acpi.h | 1 +
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 38 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index d9ce4b162e2c..217a782c3e55 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -1061,9 +1061,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- {
- 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
- 	struct cpc_register_resource *highest_reg, *lowest_reg,
--		*lowest_non_linear_reg, *nominal_reg,
-+		*lowest_non_linear_reg, *nominal_reg, *guaranteed_reg,
- 		*low_freq_reg = NULL, *nom_freq_reg = NULL;
--	u64 high, low, nom, min_nonlinear, low_f = 0, nom_f = 0;
-+	u64 high, low, guaranteed, nom, min_nonlinear, low_f = 0, nom_f = 0;
- 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
- 	struct cppc_pcc_data *pcc_ss_data = NULL;
- 	int ret = 0, regs_in_pcc = 0;
-@@ -1079,6 +1079,7 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 	nominal_reg = &cpc_desc->cpc_regs[NOMINAL_PERF];
- 	low_freq_reg = &cpc_desc->cpc_regs[LOWEST_FREQ];
- 	nom_freq_reg = &cpc_desc->cpc_regs[NOMINAL_FREQ];
-+	guaranteed_reg = &cpc_desc->cpc_regs[GUARANTEED_PERF];
- 
- 	/* Are any of the regs PCC ?*/
- 	if (CPC_IN_PCC(highest_reg) || CPC_IN_PCC(lowest_reg) ||
-@@ -1107,6 +1108,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 	cpc_read(cpunum, nominal_reg, &nom);
- 	perf_caps->nominal_perf = nom;
- 
-+	cpc_read(cpunum, guaranteed_reg, &guaranteed);
-+	perf_caps->guaranteed_perf = guaranteed;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index b6a1aadaff9f..2a99e2fd9412 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -373,10 +373,28 @@ static void intel_pstate_set_itmt_prio(int cpu)
+ 		}
+ 	}
+ }
 +
- 	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
- 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
++static int intel_pstate_get_cppc_guranteed(int cpu)
++{
++	struct cppc_perf_caps cppc_perf;
++	int ret;
++
++	ret = cppc_get_perf_caps(cpu, &cppc_perf);
++	if (ret)
++		return ret;
++
++	return cppc_perf.guaranteed_perf;
++}
++
+ #else
+ static void intel_pstate_set_itmt_prio(int cpu)
+ {
+ }
++
++static int intel_pstate_get_cppc_guranteed(int cpu)
++{
++	return -ENOTSUPP;
++}
+ #endif
  
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 8e0b8250a139..cf59e6210d27 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -104,6 +104,7 @@ enum cppc_regs {
-  * today.
-  */
- struct cppc_perf_caps {
-+	u32 guaranteed_perf;
- 	u32 highest_perf;
- 	u32 nominal_perf;
- 	u32 lowest_perf;
+ static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
+@@ -699,9 +717,29 @@ static ssize_t show_energy_performance_preference(
+ 
+ cpufreq_freq_attr_rw(energy_performance_preference);
+ 
++static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
++{
++	struct cpudata *cpu;
++	u64 cap;
++	int ratio;
++
++	ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
++	if (ratio <= 0) {
++		rdmsrl_on_cpu(policy->cpu, MSR_HWP_CAPABILITIES, &cap);
++		ratio = HWP_GUARANTEED_PERF(cap);
++	}
++
++	cpu = all_cpu_data[policy->cpu];
++
++	return sprintf(buf, "%d\n", ratio * cpu->pstate.scaling);
++}
++
++cpufreq_freq_attr_ro(base_frequency);
++
+ static struct freq_attr *hwp_cpufreq_attrs[] = {
+ 	&energy_performance_preference,
+ 	&energy_performance_available_preferences,
++	&base_frequency,
+ 	NULL,
+ };
+ 
 -- 
 2.17.1
