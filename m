@@ -1,93 +1,160 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: [RFC PATCH 2/7] sched/pelt.c: Add support to track thermal pressure
-Date: Tue,  9 Oct 2018 12:24:57 -0400
-Message-ID: <1539102302-9057-3-git-send-email-thara.gopinath@linaro.org>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RESEND][PATCH] ACPI / CPPC: Add support for guaranteed
+ performance
+Date: Tue, 09 Oct 2018 13:41:57 -0700
+Message-ID: <e534dafea0a138777e46f41b8c33618148a79d57.camel@linux.intel.com>
+References: <20181008165136.9288-1-srinivas.pandruvada@linux.intel.com>
+         <CAJZ5v0h1ir+vU7xzQ15edSO6uNwXzmqXRFkbhPGpUY8gSz+gVg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+In-Reply-To: <CAJZ5v0h1ir+vU7xzQ15edSO6uNwXzmqXRFkbhPGpUY8gSz+gVg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@acpica.org, Linux PM <linux-pm@vger.kernel.org>, Prashanth Prakash <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>
 List-Id: linux-pm@vger.kernel.org
 
-Extrapolating on the exisitng framework to track rt/dl utilization using
-pelt signals, add a similar mechanism to track thermal pressue. The
-difference here from rt/dl utilization tracking is that, instead of
-tracking time spent by a cpu running a rt/dl task through util_avg,
-the average thermal pressure is tracked through load_avg.
-In order to track average thermal pressure, a new sched_avg variable
-avg_thermal is introduced. Function update_thermal_avg can be called
-to do the periodic bookeeping (accumulate, decay and average)
-of the thermal pressure.
+On Tue, 2018-10-09 at 09:35 +0200, Rafael J. Wysocki wrote:
+> On Mon, Oct 8, 2018 at 6:55 PM Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > The Continuous Performance Control Package can have guaranteed
+> > performance
+> > field. Add support to read guaranteed performance.
+> 
+> The spec says that it is optional, but you seem to assume that it
+> always will be there.
+> 
+Even if there is some missing optional field, the place will not be
+filled by the next mandatory field as the order of fields is _CPC is
+fixed.
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
- kernel/sched/pelt.c  | 14 ++++++++++++++
- kernel/sched/pelt.h  |  7 +++++++
- kernel/sched/sched.h |  1 +
- 3 files changed, 22 insertions(+)
+"Optional _CPC package fields that are not supported by the platform
+should be encoded as follows:
+• Integer fields: Integer 0
+• Register fields: the following NULL register descriptor should be
+used:
+ResourceTemplate() {Register {(SystemMemory, 0, 0, 0, 0)}}
+"
 
-diff --git a/kernel/sched/pelt.c b/kernel/sched/pelt.c
-index 05b8798..7034ede 100644
---- a/kernel/sched/pelt.c
-+++ b/kernel/sched/pelt.c
-@@ -362,6 +362,20 @@ int update_dl_rq_load_avg(u64 now, struct rq *rq, int running)
- 	return 0;
- }
- 
-+int update_thermal_avg(u64 now, struct rq *rq, u64 capacity)
-+{
-+	if (___update_load_sum(now, rq->cpu, &rq->avg_thermal,
-+				capacity,
-+				capacity,
-+				capacity, 0)) {
-+
-+		___update_load_avg(&rq->avg_thermal, 1, 1);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
- #if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING)
- /*
-  * irq:
-diff --git a/kernel/sched/pelt.h b/kernel/sched/pelt.h
-index d2894db..cc5a3ad 100644
---- a/kernel/sched/pelt.h
-+++ b/kernel/sched/pelt.h
-@@ -5,6 +5,7 @@ int __update_load_avg_se(u64 now, int cpu, struct cfs_rq *cfs_rq, struct sched_e
- int __update_load_avg_cfs_rq(u64 now, int cpu, struct cfs_rq *cfs_rq);
- int update_rt_rq_load_avg(u64 now, struct rq *rq, int running);
- int update_dl_rq_load_avg(u64 now, struct rq *rq, int running);
-+int update_thermal_avg(u64 now, struct rq *rq, u64 capacity);
- 
- #if defined(CONFIG_IRQ_TIME_ACCOUNTING) || defined(CONFIG_PARAVIRT_TIME_ACCOUNTING)
- int update_irq_load_avg(struct rq *rq, u64 running);
-@@ -67,6 +68,12 @@ update_irq_load_avg(struct rq *rq, u64 running)
- {
- 	return 0;
- }
-+
-+static inline int
-+update_thermal_avg(u64 now, struct rq *rq, u64 capacity)
-+{
-+	return 0;
-+}
- #endif
- 
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 4a2e8ca..30b40a5 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -859,6 +859,7 @@ struct rq {
- #define HAVE_SCHED_AVG_IRQ
- 	struct sched_avg	avg_irq;
- #endif
-+	struct sched_avg	avg_thermal;
- 	u64			idle_stamp;
- 	u64			avg_idle;
- 
--- 
-2.1.4
+> What happens if it is not there?
+Will see 0 acpi_cppc sysfs.
+
+But this may confuse users, so better not to add guaranteed attribute
+to acpi_cppc sysfs.
+
+I will submit v2 of patch series.
+
+Thanks,
+Srinivas
+
+> 
+> > Signed-off-by: Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com>
+> > ---
+> > No changes. But adding CC to mailing lists.
+> > 
+> >  Documentation/acpi/cppc_sysfs.txt |  2 ++
+> >  drivers/acpi/cppc_acpi.c          | 10 ++++++++--
+> >  include/acpi/cppc_acpi.h          |  1 +
+> >  3 files changed, 11 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Documentation/acpi/cppc_sysfs.txt
+> > b/Documentation/acpi/cppc_sysfs.txt
+> > index f20fb445135d..812574d30717 100644
+> > --- a/Documentation/acpi/cppc_sysfs.txt
+> > +++ b/Documentation/acpi/cppc_sysfs.txt
+> > @@ -22,6 +22,7 @@ $ ls -lR  /sys/devices/system/cpu/cpu0/acpi_cppc/
+> >  /sys/devices/system/cpu/cpu0/acpi_cppc/:
+> >  total 0
+> >  -r--r--r-- 1 root root 65536 Mar  5 19:38 feedback_ctrs
+> > +-r--r--r-- 1 root root 65536 Mar  5 19:38 guaranteed_perf
+> >  -r--r--r-- 1 root root 65536 Mar  5 19:38 highest_perf
+> >  -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_freq
+> >  -r--r--r-- 1 root root 65536 Mar  5 19:38 lowest_nonlinear_perf
+> > @@ -33,6 +34,7 @@ total 0
+> > 
+> >  ----------------------------------------------------------------
+> > ----------------
+> > 
+> > +* guaranteed_perf : Guaranteed performance of this processor
+> > (abstract scale).
+> >  * highest_perf : Highest performance of this processor (abstract
+> > scale).
+> >  * nominal_perf : Highest sustained performance of this processor
+> > (abstract scale).
+> >  * lowest_nonlinear_perf : Lowest performance of this processor
+> > with nonlinear
+> > diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> > index d9ce4b162e2c..5babb9402f11 100644
+> > --- a/drivers/acpi/cppc_acpi.c
+> > +++ b/drivers/acpi/cppc_acpi.c
+> > @@ -153,6 +153,7 @@ __ATTR(_name, 0444, show_##_name, NULL)
+> >         }                                                          
+> >      \
+> >         define_one_cppc_ro(member_name)
+> > 
+> > +show_cppc_data(cppc_get_perf_caps, cppc_perf_caps,
+> > guaranteed_perf);
+> >  show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, highest_perf);
+> >  show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, lowest_perf);
+> >  show_cppc_data(cppc_get_perf_caps, cppc_perf_caps, nominal_perf);
+> > @@ -189,6 +190,7 @@ static struct attribute *cppc_attrs[] = {
+> >         &nominal_perf.attr,
+> >         &nominal_freq.attr,
+> >         &lowest_freq.attr,
+> > +       &guaranteed_perf.attr,
+> >         NULL
+> >  };
+> > 
+> > @@ -1061,9 +1063,9 @@ int cppc_get_perf_caps(int cpunum, struct
+> > cppc_perf_caps *perf_caps)
+> >  {
+> >         struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+> >         struct cpc_register_resource *highest_reg, *lowest_reg,
+> > -               *lowest_non_linear_reg, *nominal_reg,
+> > +               *lowest_non_linear_reg, *nominal_reg,
+> > *guaranteed_reg,
+> >                 *low_freq_reg = NULL, *nom_freq_reg = NULL;
+> > -       u64 high, low, nom, min_nonlinear, low_f = 0, nom_f = 0;
+> > +       u64 high, low, guaranteed, nom, min_nonlinear, low_f = 0,
+> > nom_f = 0;
+> >         int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+> >         struct cppc_pcc_data *pcc_ss_data = NULL;
+> >         int ret = 0, regs_in_pcc = 0;
+> > @@ -1079,6 +1081,7 @@ int cppc_get_perf_caps(int cpunum, struct
+> > cppc_perf_caps *perf_caps)
+> >         nominal_reg = &cpc_desc->cpc_regs[NOMINAL_PERF];
+> >         low_freq_reg = &cpc_desc->cpc_regs[LOWEST_FREQ];
+> >         nom_freq_reg = &cpc_desc->cpc_regs[NOMINAL_FREQ];
+> > +       guaranteed_reg = &cpc_desc->cpc_regs[GUARANTEED_PERF];
+> > 
+> >         /* Are any of the regs PCC ?*/
+> >         if (CPC_IN_PCC(highest_reg) || CPC_IN_PCC(lowest_reg) ||
+> > @@ -1107,6 +1110,9 @@ int cppc_get_perf_caps(int cpunum, struct
+> > cppc_perf_caps *perf_caps)
+> >         cpc_read(cpunum, nominal_reg, &nom);
+> >         perf_caps->nominal_perf = nom;
+> > 
+> > +       cpc_read(cpunum, guaranteed_reg, &guaranteed);
+> > +       perf_caps->guaranteed_perf = guaranteed;
+> > +
+> >         cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
+> >         perf_caps->lowest_nonlinear_perf = min_nonlinear;
+> > 
+> > diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+> > index 8e0b8250a139..cf59e6210d27 100644
+> > --- a/include/acpi/cppc_acpi.h
+> > +++ b/include/acpi/cppc_acpi.h
+> > @@ -104,6 +104,7 @@ enum cppc_regs {
+> >   * today.
+> >   */
+> >  struct cppc_perf_caps {
+> > +       u32 guaranteed_perf;
+> >         u32 highest_perf;
+> >         u32 nominal_perf;
+> >         u32 lowest_perf;
+> > --
+> > 2.17.1
+> > 
