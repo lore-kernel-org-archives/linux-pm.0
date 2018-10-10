@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH 10/15] dt-bindings: olpc_battery: Add XO-1.5 battery
-Date: Wed, 10 Oct 2018 19:22:55 +0200
-Message-ID: <20181010172300.317643-11-lkundrak@v3.sk>
+Subject: [PATCH 07/15] Platform: OLPC: Avoid a warning if the EC didn't register yet
+Date: Wed, 10 Oct 2018 19:22:52 +0200
+Message-ID: <20181010172300.317643-8-lkundrak@v3.sk>
 References: <20181010172300.317643-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,24 +12,33 @@ To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-The XO-1 and XO-1.5 batteries apparently differ in an ability to report
-ambient temperature.
+Just return ENODEV, so that whoever attempted to use the EC call can
+defer their work.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 ---
- Documentation/devicetree/bindings/power/supply/olpc_battery.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/platform/olpc/olpc-ec.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/olpc_battery.=
-txt b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-index c8901b3992d9..8d87d6b35a98 100644
---- a/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-@@ -2,4 +2,4 @@ OLPC battery
- ~~~~~~~~~~~~
+diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
+-ec.c
+index 35a21c66cd0d..342f5bb7f7a8 100644
+--- a/drivers/platform/olpc/olpc-ec.c
++++ b/drivers/platform/olpc/olpc-ec.c
+@@ -116,8 +116,11 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 =
+*outbuf, size_t outlen)
+ 	struct olpc_ec_priv *ec =3D ec_priv;
+ 	struct ec_cmd_desc desc;
 =20
- Required properties:
--  - compatible : "olpc,xo1-battery"
-+  - compatible : "olpc,xo1-battery" or "olpc,xo1.5-battery"
+-	/* Ensure a driver and ec hook have been registered */
+-	if (WARN_ON(!ec_driver || !ec_driver->ec_cmd))
++	/* Driver not yet registered. */
++	if (!ec_driver)
++		return -ENODEV;
++
++	if (WARN_ON(!ec_driver->ec_cmd))
+ 		return -ENODEV;
+=20
+ 	if (!ec)
 --=20
 2.19.0
