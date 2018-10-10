@@ -1,92 +1,60 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 2/2] cpufreq: intel_pstate: Add base_frequency attribute
-Date: Tue,  9 Oct 2018 14:46:33 -0700
-Message-ID: <20181009214633.16390-3-srinivas.pandruvada@linux.intel.com>
-References: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 0/6] cpuidle: menu: Fixes, optimizations and cleanups
+Date: Tue, 9 Oct 2018 17:02:36 -0700
+Message-ID: <003d01d4602c$905b5840$b11208c0$@net>
+References: <000301d45ecb$4f002a90$ed007fb0$@net> <003801d45f54$3d9b0c50$b8d124f0$@net> <CAJZ5v0h4sVoen++nF1cYvqQeY3qN0B1aP42e8A4SZwxzBV3NVA@mail.gmail.com> 9pWMgRJJQ3psd9pWRgA8E4
+Mime-Version: 1.0
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: 9pWMgRJJQ3psd9pWRgA8E4
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org, robert.moore@intel.com, erik.schmauss@intel.com, viresh.kumar@linaro.org
-Cc: pprakash@codeaurora.org, george.cherian@cavium.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, devel@acpica.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-Present base_frequency to user space via cpufreq sysfs when HWP is in
-use.
+On 2018.10.09 03:43 Rafael J. Wysocki wrote:
 
-This HWP base frequency is read from HWP Capabilities MSR, if platform
-doesn't have ACPI _CPC object. On most of the HWP platforms the _CPC
-object will point to the HWP Capabilities MSR using address space id as
-"Functional Fixed Hardware". But the address space id can be simply
-ACPI_TYPE_INTEGER, where the platform firmware can modify this value
-based on the system constraints.
+...[snip]...
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 38 ++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+> While at it, could you test the appended patch
+> (on top of the previous 8) for me please?
+>
+> I think that this code can be simplified now.
+>
+> ---
+> drivers/cpuidle/governors/menu.c |    8 ++++----
+> 1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> @@ -371,12 +371,12 @@ static int menu_select(struct cpuidle_dr
+> 		if (s->target_residency > predicted_us) {
+> 			/*
+> 			 * Use a physical idle state, not busy polling, unless
+> -			 * a timer is going to trigger really really soon.
+> +			 * a timer is going to trigger soon enough.
+> 			 */
+> 			if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) &&
+> -			    i == idx + 1 && latency_req > s->exit_latency &&
+> -			    data->next_timer_us > max_t(unsigned int, 20,
+> -							s->target_residency)) {
+> +			    s->exit_latency <= latency_req &&
+> +			    s->target_residency <= data->next_timer_us) {
+> +				predicted_us = s->target_residency;
+> 				idx = i;
+> 				break;
+> 			}
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index b6a1aadaff9f..2a99e2fd9412 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -373,10 +373,28 @@ static void intel_pstate_set_itmt_prio(int cpu)
- 		}
- 	}
- }
-+
-+static int intel_pstate_get_cppc_guranteed(int cpu)
-+{
-+	struct cppc_perf_caps cppc_perf;
-+	int ret;
-+
-+	ret = cppc_get_perf_caps(cpu, &cppc_perf);
-+	if (ret)
-+		return ret;
-+
-+	return cppc_perf.guaranteed_perf;
-+}
-+
- #else
- static void intel_pstate_set_itmt_prio(int cpu)
- {
- }
-+
-+static int intel_pstate_get_cppc_guranteed(int cpu)
-+{
-+	return -ENOTSUPP;
-+}
- #endif
- 
- static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
-@@ -699,9 +717,29 @@ static ssize_t show_energy_performance_preference(
- 
- cpufreq_freq_attr_rw(energy_performance_preference);
- 
-+static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
-+{
-+	struct cpudata *cpu;
-+	u64 cap;
-+	int ratio;
-+
-+	ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
-+	if (ratio <= 0) {
-+		rdmsrl_on_cpu(policy->cpu, MSR_HWP_CAPABILITIES, &cap);
-+		ratio = HWP_GUARANTEED_PERF(cap);
-+	}
-+
-+	cpu = all_cpu_data[policy->cpu];
-+
-+	return sprintf(buf, "%d\n", ratio * cpu->pstate.scaling);
-+}
-+
-+cpufreq_freq_attr_ro(base_frequency);
-+
- static struct freq_attr *hwp_cpufreq_attrs[] = {
- 	&energy_performance_preference,
- 	&energy_performance_available_preferences,
-+	&base_frequency,
- 	NULL,
- };
- 
--- 
-2.17.1
+It seems to work fine.
+I was unable to detect any difference between the 8 patch set and with
+this additional patch for any of the tests that I ran. (at least beyond
+noise and/or experimental error.)
+
+Note: I didn't publish any of the pretty graphs.
+
+... Doug
