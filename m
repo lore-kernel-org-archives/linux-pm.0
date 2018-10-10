@@ -1,7 +1,7 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH 14/15] power: supply: olpc_battery: Avoid using platform_info
-Date: Wed, 10 Oct 2018 19:22:59 +0200
-Message-ID: <20181010172300.317643-15-lkundrak@v3.sk>
+Subject: [PATCH 11/15] x86, olpc: Use a correct version when making up a battery node
+Date: Wed, 10 Oct 2018 19:22:56 +0200
+Message-ID: <20181010172300.317643-12-lkundrak@v3.sk>
 References: <20181010172300.317643-1-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
@@ -12,103 +12,120 @@ To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
-n
-directly from the EC driver instead.
-
-This makes the driver no longer x86 specific.
+The XO-1 and XO-1.5 batteries apparently differ in an ability to report
+ambient temperature. Add a different compatible string to the 1.5
+battery.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 ---
- drivers/power/supply/Kconfig        |  2 +-
- drivers/power/supply/olpc_battery.c | 35 +++++++++++++++++++++--------
- 2 files changed, 27 insertions(+), 10 deletions(-)
+ arch/x86/platform/olpc/olpc_dt.c | 59 +++++++++++++++++++++++---------
+ 1 file changed, 42 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index ff6dab0bf0dd..f0361e4dd457 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -151,7 +151,7 @@ config BATTERY_PMU
+diff --git a/arch/x86/platform/olpc/olpc_dt.c b/arch/x86/platform/olpc/ol=
+pc_dt.c
+index d6ee92986920..6e54e116b0c5 100644
+--- a/arch/x86/platform/olpc/olpc_dt.c
++++ b/arch/x86/platform/olpc/olpc_dt.c
+@@ -218,10 +218,28 @@ static u32 __init olpc_dt_get_board_revision(void)
+ 	return be32_to_cpu(rev);
+ }
 =20
- config BATTERY_OLPC
- 	tristate "One Laptop Per Child battery"
--	depends on X86_32 && OLPC
-+	depends on OLPC
- 	help
- 	  Say Y to enable support for the battery on the OLPC laptop.
-=20
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-index 2a2d7cc995f0..dde9863e5c4a 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -20,8 +20,6 @@
- #include <linux/sched.h>
- #include <linux/olpc-ec.h>
- #include <linux/of.h>
--#include <asm/olpc.h>
--
-=20
- #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
- #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
-@@ -57,6 +55,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_ac;
- 	struct power_supply *olpc_bat;
- 	char bat_serial[17];
-+	int new_proto;
- };
-=20
- /*********************************************************************
-@@ -100,7 +99,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
+-void __init olpc_dt_fixup(void)
++int olpc_dt_compatible_match(phandle node, const char *compat)
  {
- static int olpc_bat_get_status(struct olpc_battery_data *data,
- 		union power_supply_propval *val, uint8_t ec_byte)
- {
--	if (olpc_platform_info.ecver > 0x44) {
-+	if (data->new_proto) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
- 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
- 		else if (ec_byte & BAT_STAT_DISCHARGING)
-@@ -608,14 +607,32 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 	struct power_supply_config psy_cfg =3D {};
- 	struct olpc_battery_data *data;
- 	uint8_t status;
-+	unsigned char ecver[1];
-+	int ret;
+-	int r;
+ 	char buf[64];
++	int plen;
++	char *p;
++	int len;
 +
-+	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+	platform_set_drvdata(pdev, data);
++	plen =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
++	if (plen <=3D 0)
++		return 0;
 +
-+	/* See if the EC is already there and get the EC revision */
-+	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, ecver, ARRAY_SIZE(ecver))=
-;
-+	if (ret) {
-+		if (ret =3D=3D -ENODEV)
-+			return -EPROBE_DEFER;
-+		return ret;
++	len =3D strlen(compat);
++	for (p =3D buf; p < buf + plen; p +=3D strlen(p) + 1) {
++		if (strcmp(p, compat) =3D=3D 0)
++			return 1;
 +	}
++
++	return 0;
++}
++
++void __init olpc_dt_fixup(void)
++{
+ 	phandle node;
+ 	u32 board_rev;
+=20
+@@ -229,32 +247,33 @@ void __init olpc_dt_fixup(void)
+ 	if (!node)
+ 		return;
 =20
 -	/*
--	 * We've seen a number of EC protocol changes; this driver requires
--	 * the latest EC protocol, supported by 0x44 and above.
+-	 * If the battery node has a compatible property, we are running a new
+-	 * enough firmware and don't have fixups to make.
 -	 */
--	if (olpc_platform_info.ecver < 0x44) {
-+	if (ecver[0] > 0x44) {
-+		/* XO 1 or 1.5 with a new EC firmware. */
-+		data->new_proto =3D 1;
-+	} else if (ecver[0] < 0x44) {
-+		/*
-+		 * We've seen a number of EC protocol changes; this driver
-+		 * requires the latest EC protocol, supported by 0x44 and above.
-+		 */
- 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
--			"battery driver.\n", olpc_platform_info.ecver);
-+			"battery driver.\n", ecver[0]);
- 		return -ENXIO;
- 	}
+-	r =3D olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
+-	if (r > 0)
+-		return;
+-
+-	pr_info("PROM DT: Old firmware detected, applying fixes\n");
+-
+-	/* Add olpc,xo1-battery compatible marker to battery node */
+-	olpc_dt_interpret("\" /battery@0\" find-device"
+-		" \" olpc,xo1-battery\" +compatible"
+-		" device-end");
+-
+ 	board_rev =3D olpc_dt_get_board_revision();
+ 	if (!board_rev)
+ 		return;
 =20
+ 	if (board_rev >=3D olpc_board_pre(0xd0)) {
++		if (olpc_dt_compatible_match(node, "olpc,xo1.5-battery"))
++			return;
++
++		/* Add olpc,xo1.5-battery compatible marker to battery node */
++		olpc_dt_interpret("\" /battery@0\" find-device"
++			" \" olpc,xo1.5-battery\" +compatible"
++			" device-end");
++
++		/* We're running a very old firmware if this is missing. */
++		if (olpc_dt_compatible_match(node, "olpc,xo1-battery"))
++			return;
++
+ 		/* XO-1.5: add dcon device */
+ 		olpc_dt_interpret("\" /pci/display@1\" find-device"
+ 			" new-device"
+ 			" \" dcon\" device-name \" olpc,xo1-dcon\" +compatible"
+ 			" finish-device device-end");
+ 	} else {
++		/* We're running a very old firmware if this is missing. */
++		if (olpc_dt_compatible_match(node, "olpc,xo1-battery"))
++			return;
++
+ 		/* XO-1: add dcon device, mark RTC as olpc,xo1-rtc */
+ 		olpc_dt_interpret("\" /pci/display@1,1\" find-device"
+ 			" new-device"
+@@ -264,6 +283,11 @@ void __init olpc_dt_fixup(void)
+ 			" \" olpc,xo1-rtc\" +compatible"
+ 			" device-end");
+ 	}
++
++	/* Add olpc,xo1-battery compatible marker to battery node */
++	olpc_dt_interpret("\" /battery@0\" find-device"
++		" \" olpc,xo1-battery\" +compatible"
++		" device-end");
+ }
+=20
+ void __init olpc_dt_build_devicetree(void)
+@@ -289,6 +313,7 @@ void __init olpc_dt_build_devicetree(void)
+ /* A list of DT node/bus matches that we want to expose as platform devi=
+ces */
+ static struct of_device_id __initdata of_ids[] =3D {
+ 	{ .compatible =3D "olpc,xo1-battery" },
++	{ .compatible =3D "olpc,xo1.5-battery" },
+ 	{ .compatible =3D "olpc,xo1-dcon" },
+ 	{ .compatible =3D "olpc,xo1-rtc" },
+ 	{},
 --=20
 2.19.0
