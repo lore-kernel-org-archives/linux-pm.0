@@ -1,60 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: menu: Simplify checks related to the polling state
-Date: Wed, 10 Oct 2018 14:16:38 +0200
-Message-ID: <1902472.jET4SC7PGT@aspire.rjw.lan>
+From: Juri Lelli <juri.lelli@gmail.com>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Wed, 10 Oct 2018 14:23:48 +0200
+Message-ID: <20181010122348.GL9130@localhost.localdomain>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com>
+ <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin>
+ <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+ <20181010103623.ttjexasymdpi66lu@queper01-lin>
+ <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Quentin Perret <quentin.perret@arm.com>, Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 10/10/18 14:04, Vincent Guittot wrote:
 
-After some recent menu governor changes, the promotion of the
-"polling" state to a physical one is mostly controlled by the
-latency limit (resulting from the "interactivity" factor) and
-not by the time to the closest timer event, so it should be
-sufficient to check the exit latency of that state for this
-purpose (of course, its target residency still needs to be
-within the next timer event range for energy-efficiency).
+[...]
 
-Also, the physical state the "polling" one is promoted to need not
-be the next one in principle (in case the next state is disabled,
-for example).
+> The problem was the same with RT, the cfs utilization was lower than
+> reality because RT steals soem cycle to CFS
+> So schedutil was selecting a lower frequency when cfs was running
+> whereas the CPU was fully used.
+> The same can happen with thermal:
+> cap the max freq because of thermal
+> the utilization with decrease.
+> remove the cap
+> the utilization is still low and you will select a low OPP because you
+> don't take into account cycle stolen by thermal like with RT
 
-For these reasons, simplify the checks made to decide whether or
-not to promote the "polling" state to a physical one and update
-the target idle duration when it is promoted in case the residency
-of the new state turns out to be above the tick boundary (in which
-case there is no reason to stop the tick).
-
-Tested-by: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -371,12 +371,12 @@ static int menu_select(struct cpuidle_dr
- 		if (s->target_residency > predicted_us) {
- 			/*
- 			 * Use a physical idle state, not busy polling, unless
--			 * a timer is going to trigger really really soon.
-+			 * a timer is going to trigger soon enough.
- 			 */
- 			if ((drv->states[idx].flags & CPUIDLE_FLAG_POLLING) &&
--			    i == idx + 1 && latency_req > s->exit_latency &&
--			    data->next_timer_us > max_t(unsigned int, 20,
--							s->target_residency)) {
-+			    s->exit_latency <= latency_req &&
-+			    s->target_residency <= data->next_timer_us) {
-+				predicted_us = s->target_residency;
- 				idx = i;
- 				break;
- 			}
+What if we scale frequency component considering the capped temporary
+max?
