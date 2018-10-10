@@ -1,60 +1,68 @@
-From: Matthew Garrett <matthewgarrett@google.com>
-Subject: [PATCH 1/2] thermal/int340x_thermal: Add additional UUIDs
-Date: Wed, 10 Oct 2018 01:30:06 -0700
-Message-ID: <20181010083007.239938-2-matthewgarrett@google.com>
-References: <20181010083007.239938-1-matthewgarrett@google.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
+Date: Wed, 10 Oct 2018 08:42:58 +0000
+Message-ID: <VI1PR04MB4222A73357E1FE6F6394C9EA80E00@VI1PR04MB4222.eurprd04.prod.outlook.com>
+References: <1538917807-1921-1-git-send-email-aisheng.dong@nxp.com>
+ <1538917807-1921-3-git-send-email-aisheng.dong@nxp.com>
+ <20181009103510.nsnfkx67djuvois6@pengutronix.de>
+ <AM0PR04MB42118ACA68B91B0C7D51C0C780E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+ <AM0PR04MB4211AEE1258E2813B635D05A80E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010083007.239938-1-matthewgarrett@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Matthew Garrett <matthewgarrett@google.com>, Matthew Garrett <mjg59@google.com>, Zhang Rui <rui.zhang@intel.com>, Nisha Aram <nisha.aram@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <AM0PR04MB4211AEE1258E2813B635D05A80E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Platforms support more DPTF policies than the driver currently exposes.
-Add them. This effectively reverts
-31908f45a583e8f21db37f402b6e8d5739945afd which removed several UUIDs
-without explaining why.
+Hi Sascha,
 
-Signed-off-by: Matthew Garrett <mjg59@google.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Nisha Aram <nisha.aram@intel.com>
----
- drivers/thermal/int340x_thermal/int3400_thermal.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+> Hi Sascha,
+> 
+> > > > +
+> > > > +	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
+> > > > +	if (!ret)
+> > > > +		return &imx_sc_pd->pd;
+> > > > +
+> > > > +	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
+> > > > +
+> > > > +err:
+> > > > +	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
+> > >
+> > > You have a struct device *, you should use dev_* functions.
+> >
+> > Good suggestion.
+> >
+> 
+> A bit more thinking of it.
+> 
+> It may be not quite suitable to use dev_* here for print functions as we need
+> pass in a pointer of struct device for debug purpose only.
+> And we need change other two places as well which are in the same situation.
+> 
+> In current patch, we already define the print format at the top of the file.
+> #define pr_fmt(fmt) "scu_pd: " fmt
+> As SCU PD has only one device, it may does not help too much to use dev_*
+> functions.
+> 
+> Do you think it's reasonable?
+> 
+> If you're okay with this, I will drop this change and resend with other things
+> updated according to your suggestions.
+> 
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index e26b01c05e82..51c9097eaf7a 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
- 	INT3400_THERMAL_PASSIVE_1,
- 	INT3400_THERMAL_ACTIVE,
- 	INT3400_THERMAL_CRITICAL,
-+	INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
-+	INT3400_THERMAL_EMERGENCY_CALL_MODE,
-+	INT3400_THERMAL_PASSIVE_2,
-+	INT3400_THERMAL_POWER_BOSS,
-+	INT3400_THERMAL_VIRTUAL_SENSOR,
-+	INT3400_THERMAL_COOLING_MODE,
-+	INT3400_THERMAL_HARDWARE_DUTY_CYCLING,
- 	INT3400_THERMAL_MAXIMUM_UUID,
- };
- 
-@@ -29,6 +36,13 @@ static char *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
- 	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
- 	"3A95C389-E4B8-4629-A526-C52C88626BAE",
- 	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
-+	"63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
-+	"5349962F-71E6-431D-9AE8-0A635B710AEE",
-+	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
-+	"F5A35014-C209-46A4-993A-EB56DE7530A1",
-+	"6ED722A7-9240-48A5-B479-31EEF723D7CF",
-+	"16CAF1B7-DD38-40ED-B1C1-1B8A1913D531",
-+	"BE84BABF-C4D4-403D-B495-3128FD44dAC1",
- };
- 
- struct int3400_thermal_priv {
--- 
-2.19.0.605.g01d371f741-goog
+Are you okay with this?
+
+Regards
+Dong Aisheng
