@@ -1,60 +1,82 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Wed, 10 Oct 2018 09:10:06 -0600
-Message-ID: <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-6-jcrouse@codeaurora.org>
- <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
- <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
- <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
- <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
- <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Wed, 10 Oct 2018 17:19:38 +0200
+Message-ID: <CAKfTPtAjS+D7L9ckDw4bYayPf29EEkFLAzx1SeEa6Ue_V+iPyg@mail.gmail.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com> <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin> <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+ <20181010103623.ttjexasymdpi66lu@queper01-lin> <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
+ <20181010130549.hzpkaskvlgifbdrp@queper01-lin> <CAKfTPtA=GYaiKcJ9N5zEnzxJTKBATG41c0xDjhbA21G-Cv6LvA@mail.gmail.com>
+ <20181010134755.jrigtogbxwaz2izb@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181010134755.jrigtogbxwaz2izb@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBPY3QgMTAsIDIwMTggYXQgMDg6MjE6MzlQTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
-b3RlOgo+IE9uIDEwLTEwLTE4LCAwODo0OCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IHFjb20s
-bGV2ZWwgY29tZXMgc3RyYWlnaHQgZnJvbToKPiA+IAo+ID4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5v
-cmcvbGttbC8yMDE4MDYyNzA0NTIzNC4yNzQwMy0yLXJuYXlha0Bjb2RlYXVyb3JhLm9yZy8KPiA+
-IAo+ID4gQnV0IGluIHRoaXMgY2FzZSBpbnN0ZWFkIG9mIHVzaW5nIHRoZSBDUFUgdG8gcHJvZ3Jh
-bSB0aGUgUlBNaCB3ZSBhcmUgcGFzc2luZwo+ID4gdGhlIHZhbHVlIHRvIGEgbWljcm9wcm9jZXNz
-b3IgKHRoZSBHTVUpIGFuZCB0aGF0IHdpbGwgZG8gdGhlIHZvdGUgb24gb3VyIGJlaGFsZgo+ID4g
-KFRlY2huaWNhbGx5IHdlIHVzZSB0aGUgdmFsdWUgdG8gbG9vayB1cCB0aGUgdm90ZSBpbiB0aGUg
-Y21kLWRiIGRhdGFiYXNlIGFuZAo+ID4gcGFzcyB0aGF0IHRvIHRoZSBHTVUpCj4gPiAKPiA+IFRo
-aXMgaXMgd2h5IHRoZSBxY29tLGxldmVsIHdhcyBhZGRlZCBpbiB0aGUgZmlyc3QgcGxhY2Ugc28g
-d2UgY291bGQgYXQgbGVhc3QKPiA+IHNoYXJlIHRoZSBub21lbmNsYXR1cmUgd2l0aCB0aGUgcnBt
-aGQgaWYgbm90IHRoZSBpbXBsZW1lbnRhdGlvbi4KPiAKPiBIb3cgeW91IGFjdHVhbGx5IHBhc3Mg
-dGhlIHZvdGUgdG8gdGhlIHVuZGVybHlpbmcgaGFyZHdhcmUsIFJQTWggb3IKPiBHTVUsIGlzIGly
-cmVsZXZhbnQgdG8gdGhlIHdob2xlIHRoaW5nLiBXaGF0IGlzIGltcG9ydGFudCBpcyBob3cgd2UK
-PiBkZXNjcmliZSB0aGF0IGluIERUIGFuZCBob3cgd2UgcmVwcmVzZW50IHRoZSB3aG9sZSB0aGlu
-Zy4KPiAKPiBXZSBoYXZlIGNob3NlbiBnZW5wZCArIE9QUCB0byBkbyB0aGlzIGFuZCBzYW1lIHNo
-b3VsZCBiZSB1c2VkIGJ5IHlvdQo+IGFzIHdlbGwuIEFub3RoZXIgYmVuZWZpdCBpcyB0aGF0IHRo
-ZSBnZW5wZCBjb3JlIHdpbGwgZG8gdm90ZQo+IGFnZ3JlZ2F0aW9uIGZvciB5b3UgaGVyZS4KCkkn
-bSBub3Qgc3VyZSB3aGF0IHlvdSBhcmUgc3VnZ2VzdGluZz8gVGhlIHZvdGUgaXMgcmVwcmVzZW50
-ZWQgaW4gRFQgZXhhY3RseSBhcwpkZXNjcmliZWQgaW4gdGhlIGJpbmRpbmdzLiAKCkpvcmRhbgoK
-PiAtLSAKPiB2aXJlc2gKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwo+IEZyZWVkcmVubyBtYWlsaW5nIGxpc3QKPiBGcmVlZHJlbm9AbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnCj4gaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
-by9mcmVlZHJlbm8KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMg
-YSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJv
-cmF0aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRy
-ZW5vCg==
+On Wed, 10 Oct 2018 at 15:48, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> On Wednesday 10 Oct 2018 at 15:27:57 (+0200), Vincent Guittot wrote:
+> > On Wed, 10 Oct 2018 at 15:05, Quentin Perret <quentin.perret@arm.com> wrote:
+> > >
+> > > On Wednesday 10 Oct 2018 at 14:04:40 (+0200), Vincent Guittot wrote:
+> > > > This patchset doesn't touch cpu_capacity_orig and doesn't need to  as
+> > > > it assume that the max capacity is unchanged but some capacity is
+> > > > momentary stolen by thermal.
+> > > >  If you want to reflect immediately all thermal capping change, you
+> > > > have to update this field and all related fields and struct around
+> > >
+> > > I don't follow you here. I never said I wanted to change
+> > > cpu_capacity_orig. I don't think we should do that actually. Changing
+> > > capacity_of (which is updated during LB IIRC) is just fine. The question
+> > > is about what you want to do there: reflect an averaged value or the
+> > > instantaneous one.
+> >
+> > Sorry I though your were speaking about updating this cpu_capacity_orig.
+>
+> N/p, communication via email can easily become confusing :-)
+>
+> > With using instantaneous max  value in capacity_of(), we are back to
+> > the problem raised by Thara that  the value will most probably not
+> > reflect the current capping value when it is used in LB, because LB
+> > period can quite long on busy CPU (default max value is 32*sd_weight
+> > ms)
+>
+> But averaging the capping value over time doesn't make LB happen more
+> often ... That will help you account for capping that happened in the
+
+But you know what happens in average between 2 LB
+
+> past, but it's not obvious this is actually a good thing. Probably not
+> all the time anyway.
+>
+> Say a CPU was capped at 50% of it's capacity, then the cap is removed.
+> At that point it'll take 100ms+ for the thermal signal to decay and let
+> the scheduler know about the newly available capacity. That can probably
+
+But the point is that you don't know:
+- if the capping will not happen soon. If the pressure has reached the
+50%,  it means that it already happened quite often in the past 100ms.
+- if there is really available capacity as the current sum of
+utilization reflects what was available for tasks and not what the
+tasks really wants to use
+
+
+> be a performance hit in some use cases ... And the other way around, it
+> can also take forever for the scheduler to notice that a CPU has a
+
+What do you mean by forever ?
+
+> reduced capacity before reacting to it.
+>
+> If you want to filter out very short transient capping events to avoid
+> over-reacting in the scheduler (is this actually happening ?), then
+> maybe the average should be done on the cooling device side or something
+> like that ?
+>
+> Thanks,
+> Quentin
