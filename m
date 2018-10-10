@@ -1,68 +1,118 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: RE: [PATCH V4 2/2] firmware: imx: add SCU power domain driver
-Date: Wed, 10 Oct 2018 08:42:58 +0000
-Message-ID: <VI1PR04MB4222A73357E1FE6F6394C9EA80E00@VI1PR04MB4222.eurprd04.prod.outlook.com>
-References: <1538917807-1921-1-git-send-email-aisheng.dong@nxp.com>
- <1538917807-1921-3-git-send-email-aisheng.dong@nxp.com>
- <20181009103510.nsnfkx67djuvois6@pengutronix.de>
- <AM0PR04MB42118ACA68B91B0C7D51C0C780E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
- <AM0PR04MB4211AEE1258E2813B635D05A80E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Wed, 10 Oct 2018 10:50:05 +0200
+Message-ID: <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com> <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <AM0PR04MB4211AEE1258E2813B635D05A80E70@AM0PR04MB4211.eurprd04.prod.outlook.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sascha,
-
-> Hi Sascha,
-> 
-> > > > +
-> > > > +	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
-> > > > +	if (!ret)
-> > > > +		return &imx_sc_pd->pd;
-> > > > +
-> > > > +	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
-> > > > +
-> > > > +err:
-> > > > +	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
+On Wed, 10 Oct 2018 at 10:29, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Hi Thara,
+>
+> On Wednesday 10 Oct 2018 at 08:17:51 (+0200), Ingo Molnar wrote:
+> >
+> > * Thara Gopinath <thara.gopinath@linaro.org> wrote:
+> >
+> > > Thermal governors can respond to an overheat event for a cpu by
+> > > capping the cpu's maximum possible frequency. This in turn
+> > > means that the maximum available compute capacity of the
+> > > cpu is restricted. But today in linux kernel, in event of maximum
+> > > frequency capping of a cpu, the maximum available compute
+> > > capacity of the cpu is not adjusted at all. In other words, scheduler
+> > > is unware maximum cpu capacity restrictions placed due to thermal
+> > > activity. This patch series attempts to address this issue.
+> > > The benefits identified are better task placement among available
+> > > cpus in event of overheating which in turn leads to better
+> > > performance numbers.
 > > >
-> > > You have a struct device *, you should use dev_* functions.
+> > > The delta between the maximum possible capacity of a cpu and
+> > > maximum available capacity of a cpu due to thermal event can
+> > > be considered as thermal pressure. Instantaneous thermal pressure
+> > > is hard to record and can sometime be erroneous as there can be mismatch
+> > > between the actual capping of capacity and scheduler recording it.
+> > > Thus solution is to have a weighted average per cpu value for thermal
+> > > pressure over time. The weight reflects the amount of time the cpu has
+> > > spent at a capped maximum frequency. To accumulate, average and
+> > > appropriately decay thermal pressure, this patch series uses pelt
+> > > signals and reuses the available framework that does a similar
+> > > bookkeeping of rt/dl task utilization.
+> > >
+> > > Regarding testing, basic build, boot and sanity testing have been
+> > > performed on hikey960 mainline kernel with debian file system.
+> > > Further aobench (An occlusion renderer for benchmarking realworld
+> > > floating point performance) showed the following results on hikey960
+> > > with debain.
+> > >
+> > >                                         Result          Standard        Standard
+> > >                                         (Time secs)     Error           Deviation
+> > > Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
+> > > Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
 > >
-> > Good suggestion.
+> > Wow, +13% speedup, impressive! We definitely want this outcome.
 > >
-> 
-> A bit more thinking of it.
-> 
-> It may be not quite suitable to use dev_* here for print functions as we need
-> pass in a pointer of struct device for debug purpose only.
-> And we need change other two places as well which are in the same situation.
-> 
-> In current patch, we already define the print format at the top of the file.
-> #define pr_fmt(fmt) "scu_pd: " fmt
-> As SCU PD has only one device, it may does not help too much to use dev_*
-> functions.
-> 
-> Do you think it's reasonable?
-> 
-> If you're okay with this, I will drop this change and resend with other things
-> updated according to your suggestions.
-> 
+> > I'm wondering what happens if we do not track and decay the thermal load at all at the PELT
+> > level, but instantaneously decrease/increase effective CPU capacity in reaction to thermal
+> > events we receive from the CPU.
+>
+> +1, it's not that obvious (to me at least) that averaging the thermal
+> pressure over time is necessarily what we want. Say the thermal governor
+> caps a CPU and 'removes' 70% of its capacity, it will take forever for
+> the PELT signal to ramp-up to that level before the scheduler can react.
+> And the other way around, if you release the cap, it'll take a while
+> before we actually start using the newly available capacity. I can also
+> imagine how reacting too fast can be counter-productive, but I guess
+> having numbers and/or use-cases to show that would be great :-)
 
-Are you okay with this?
+The problem with reflecting directly the capping is that it happens
+far more often than the pace at which cpu_capacity_orig is updated in
+the scheduler. This means that at the moment when scheduler uses the
+value, it might not be correct anymore. Then, this value are also used
+when building the sched_domain and setting max_cpu_capacity which
+would also implies the rebuilt the sched_domain topology ...
 
-Regards
-Dong Aisheng
+The pace of changing the capping is to fast to reflect that in the
+whole scheduler topology
+
+>
+> Thara, have you tried to experiment with a simpler implementation as
+> suggested by Ingo ?
+>
+> Also, assuming that we do want to average things, do we actually want to
+> tie the thermal ramp-up time to the PELT half life ? That provides
+> nice maths properties wrt the other signals, but it's not obvious to me
+> that this thermal 'constant' should be the same on all platforms. Or
+> maybe it should ?
+
+The main interest of using PELT signal is that thermal pressure will
+evolve at the same pace as other signals used in the scheduler. With
+thermal pressure, we have the exact same problem as with RT tasks. The
+thermal will cap the max frequency which will cap the utilization of
+the tasks running on the CPU
+
+>
+> Thanks,
+> Quentin
+>
+> >
+> > You describe the averaging as:
+> >
+> > > Instantaneous thermal pressure is hard to record and can sometime be erroneous as there can
+> > > be mismatch between the actual capping of capacity and scheduler recording it.
+> >
+> > Not sure I follow the argument here: are there bogus thermal throttling events? If so then
+> > they are hopefully not frequent enough and should average out over time even if we follow
+> > it instantly.
+> >
+> > I.e. what is 'can sometimes be erroneous', exactly?
+> >
+> > Thanks,
+> >
+> >       Ingo
