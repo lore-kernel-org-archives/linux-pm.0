@@ -1,99 +1,46 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 09:29:35 +0100
-Message-ID: <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com>
+From: Matthew Garrett <matthewgarrett@google.com>
+Subject: Expose all known Intel DPTF policies
+Date: Wed, 10 Oct 2018 01:30:05 -0700
+Message-ID: <20181010083007.239938-1-matthewgarrett@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181010061751.GA37224@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, ionela.voinescu@arm.com, vincent.guittot@linaro.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Thara,
+Intel's Dynamic Platform and Thermal Framework is a combination
+firmware/OS framework for allowing userland to implement more complex
+thermal policies in conjunction with the platform firmware. The rough
+gist is that the firmware exposes a set of information describing the
+relationships between various heat generating and heat removing
+components in the system, the OS makes a reasonable decision about what
+sort of policy will work best given the constraints the system is
+currently operating under and passes that decision back to the firmware,
+and the firmware does some magic (potentially including reprogramming
+various CPU MSRs) to match the OS policy. Depending on the policy, the
+OS may then be responsible for ensuring that the system stays within the
+appropriate thermal envelope.
 
-On Wednesday 10 Oct 2018 at 08:17:51 (+0200), Ingo Molnar wrote:
-> 
-> * Thara Gopinath <thara.gopinath@linaro.org> wrote:
-> 
-> > Thermal governors can respond to an overheat event for a cpu by
-> > capping the cpu's maximum possible frequency. This in turn
-> > means that the maximum available compute capacity of the
-> > cpu is restricted. But today in linux kernel, in event of maximum
-> > frequency capping of a cpu, the maximum available compute
-> > capacity of the cpu is not adjusted at all. In other words, scheduler
-> > is unware maximum cpu capacity restrictions placed due to thermal
-> > activity. This patch series attempts to address this issue.
-> > The benefits identified are better task placement among available
-> > cpus in event of overheating which in turn leads to better
-> > performance numbers.
-> > 
-> > The delta between the maximum possible capacity of a cpu and
-> > maximum available capacity of a cpu due to thermal event can
-> > be considered as thermal pressure. Instantaneous thermal pressure
-> > is hard to record and can sometime be erroneous as there can be mismatch
-> > between the actual capping of capacity and scheduler recording it.
-> > Thus solution is to have a weighted average per cpu value for thermal
-> > pressure over time. The weight reflects the amount of time the cpu has
-> > spent at a capped maximum frequency. To accumulate, average and
-> > appropriately decay thermal pressure, this patch series uses pelt
-> > signals and reuses the available framework that does a similar
-> > bookkeeping of rt/dl task utilization.
-> > 
-> > Regarding testing, basic build, boot and sanity testing have been
-> > performed on hikey960 mainline kernel with debian file system.
-> > Further aobench (An occlusion renderer for benchmarking realworld
-> > floating point performance) showed the following results on hikey960
-> > with debain.
-> > 
-> >                                         Result          Standard        Standard
-> >                                         (Time secs)     Error           Deviation
-> > Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
-> > Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
-> 
-> Wow, +13% speedup, impressive! We definitely want this outcome.
-> 
-> I'm wondering what happens if we do not track and decay the thermal load at all at the PELT 
-> level, but instantaneously decrease/increase effective CPU capacity in reaction to thermal 
-> events we receive from the CPU.
+Linux already has a driver that exposes the firmware interface for
+setting the policy, but it's somewhat broken - it only exposes a very
+small subset of the defined policies, and most new systems don't
+intersect with the exposed ones (strangely, support for some policies
+was actively removed in 31908f45a583e8f21db37f402b6e8d5739945afd). It
+also doesn't actually /work/ on any new systems, since the PASSIVE_1
+policy seems to have been replaced by the PASSIVE_2 policy and therefore
+it's impossible to actually trigger a new UUID write.
 
-+1, it's not that obvious (to me at least) that averaging the thermal
-pressure over time is necessarily what we want. Say the thermal governor
-caps a CPU and 'removes' 70% of its capacity, it will take forever for
-the PELT signal to ramp-up to that level before the scheduler can react.
-And the other way around, if you release the cap, it'll take a while
-before we actually start using the newly available capacity. I can also
-imagine how reacting too fast can be counter-productive, but I guess
-having numbers and/or use-cases to show that would be great :-)
-
-Thara, have you tried to experiment with a simpler implementation as
-suggested by Ingo ?
-
-Also, assuming that we do want to average things, do we actually want to
-tie the thermal ramp-up time to the PELT half life ? That provides
-nice maths properties wrt the other signals, but it's not obvious to me
-that this thermal 'constant' should be the same on all platforms. Or
-maybe it should ?
-
-Thanks,
-Quentin
-
-> 
-> You describe the averaging as:
-> 
-> > Instantaneous thermal pressure is hard to record and can sometime be erroneous as there can 
-> > be mismatch between the actual capping of capacity and scheduler recording it.
-> 
-> Not sure I follow the argument here: are there bogus thermal throttling events? If so then
-> they are hopefully not frequent enough and should average out over time even if we follow
-> it instantly.
-> 
-> I.e. what is 'can sometimes be erroneous', exactly?
-> 
-> Thanks,
-> 
-> 	Ingo
+The consequence of this right now is that various new systems (such as
+most current Thinkpads) default to a safe policy that throttles the CPU
+at a low temperature, dramatically reducing system performance. Since
+Linux provides no mechanism to set any of the other policies the
+platform supports, users are stuck. This patchset adds all the UUIDs
+I've been able to find from scraping various ACPI tables, and fixes the
+mode setting in order to make it possible to actually set the new modes.
+It should be noted that this is nowhere near an actual solution - doing
+this properly requires appropriate userspace management tooling, and
+Intel haven't documented most of the ACPI information required to make
+it possible to write such tooling. However, this is a first step in
+making it possible to do that work.
