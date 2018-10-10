@@ -1,132 +1,52 @@
-From: Quentin Perret <quentin.perret@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
 Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 14:05:51 +0100
-Message-ID: <20181010130549.hzpkaskvlgifbdrp@queper01-lin>
+Date: Wed, 10 Oct 2018 15:08:52 +0200
+Message-ID: <CAKfTPtAL5b0ZAOY_85ajskOX+thLf3j3M-xJ+Pt_NrM+N8udPw@mail.gmail.com>
 References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com>
- <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <20181010061751.GA37224@gmail.com> <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
  <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
- <20181010095459.orw2gse75klpwosx@queper01-lin>
- <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
- <20181010103623.ttjexasymdpi66lu@queper01-lin>
- <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin> <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+ <20181010103623.ttjexasymdpi66lu@queper01-lin> <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
+ <20181010122348.GL9130@localhost.localdomain> <CAKfTPtCVryjWWT_M1zEZfJUjGkt2JPUiBK6vt0YiJTK4qVoqbA@mail.gmail.com>
+ <20181010125033.GP9130@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
+In-Reply-To: <20181010125033.GP9130@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
+To: Juri Lelli <juri.lelli@gmail.com>
+Cc: Quentin Perret <quentin.perret@arm.com>, Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 10 Oct 2018 at 14:04:40 (+0200), Vincent Guittot wrote:
-> This patchset doesn't touch cpu_capacity_orig and doesn't need to  as
-> it assume that the max capacity is unchanged but some capacity is
-> momentary stolen by thermal.
->  If you want to reflect immediately all thermal capping change, you
-> have to update this field and all related fields and struct around
-
-I don't follow you here. I never said I wanted to change
-cpu_capacity_orig. I don't think we should do that actually. Changing
-capacity_of (which is updated during LB	IIRC) is just fine. The question
-is about what you want to do there: reflect an averaged value or the
-instantaneous one.
-
-It's not obvious (to me) that the complex one (the averaged value) is
-better than the other, simpler, one. All I'm saying from the beginning
-is that it'd be nice to have numbers and use cases to discuss the pros
-and cons of both approaches.
-
-> > > > Hmm, let me have a closer look at the patches, I must have missed
-> > > > something ...
-> > > >
-> > > > > The pace of changing the capping is to fast to reflect that in the
-> > > > > whole scheduler topology
-> > > >
-> > > > That's probably true in some cases, but it'd be cool to have numbers to
-> > > > back up that statement, I think.
-> > > >
-> > > > Now, if you do need to rebuild the sched domain topology every time you
-> > > > update the thermal pressure, I think the PELT HL is _way_ too short for
-> > > > that ... You can't rebuild the whole thing every 32ms or so. Or am I
-> > > > misunderstanding something ?
-> > > >
-> > > > > > Thara, have you tried to experiment with a simpler implementation as
-> > > > > > suggested by Ingo ?
-> > > > > >
-> > > > > > Also, assuming that we do want to average things, do we actually want to
-> > > > > > tie the thermal ramp-up time to the PELT half life ? That provides
-> > > > > > nice maths properties wrt the other signals, but it's not obvious to me
-> > > > > > that this thermal 'constant' should be the same on all platforms. Or
-> > > > > > maybe it should ?
-> > > > >
-> > > > > The main interest of using PELT signal is that thermal pressure will
-> > > > > evolve at the same pace as other signals used in the scheduler.
-> > > >
-> > > > Right, I think this is a nice property too (assuming that we actually
-> > > > want to average things out).
-> > > >
-> > > > > With
-> > > > > thermal pressure, we have the exact same problem as with RT tasks. The
-> > > > > thermal will cap the max frequency which will cap the utilization of
-> > > > > the tasks running on the CPU
-> > > >
-> > > > Well, the nature of the signal is slightly different IMO. Yes it's
-> > > > capacity, but you're no actually measuring time spent on the CPU. All
-> > > > other PELT signals are based on time, this thermal thing isn't, so it is
-> > > > kinda different in a way. And I'm still wondering if it could be helpful
+On Wed, 10 Oct 2018 at 14:50, Juri Lelli <juri.lelli@gmail.com> wrote:
+>
+> On 10/10/18 14:34, Vincent Guittot wrote:
+> > Hi  Juri,
+> >
+> > On Wed, 10 Oct 2018 at 14:23, Juri Lelli <juri.lelli@gmail.com> wrote:
 > > >
-> > > hmmm ... it is based on time too.
-> >
-> > You're not actually measuring the time spent on the CPU by the 'thermal
-> > task'. There is no such thing as a 'thermal task'. You're just trying to
-> > model things like that, but the thermal stuff isn't actually
-> > interrupting running tasks to eat CPU cycles. It just makes thing run
-> > slower, which isn't exactly the same thing IMO.
-> >
-> > But maybe that's a detail.
-> >
-> > > Both signals (current ones and thermal one) are really close. The main
-> > > difference with other utilization signal is that instead of providing
-> > > a running/not running boolean that is then weighted by the current
-> > > capacity, the signal uses direclty the capped max capacity to reflect
-> > > the amount of cycle that is stolen by thermal mitigation.
+> > > On 10/10/18 14:04, Vincent Guittot wrote:
 > > >
-> > > > to be able to have a different HL for that thermal signal. That would
-> > > > 'break' the nice maths properties we have, yes, but is it a problem or is
-> > > > it actually helpful to cope with the thermal characteristics of
-> > > > different platforms ?
+> > > [...]
 > > >
-> > > If you don't use the sign kind of signal with the same responsiveness,
-> > > you will start to see some OPP toggles as an example when the thermal
-> > > state change because one metrics will change faster than the other one
-> > > and you can't have a correct view of the system. Same problem was
-> > > happening with rt task.
+> > > > The problem was the same with RT, the cfs utilization was lower than
+> > > > reality because RT steals soem cycle to CFS
+> > > > So schedutil was selecting a lower frequency when cfs was running
+> > > > whereas the CPU was fully used.
+> > > > The same can happen with thermal:
+> > > > cap the max freq because of thermal
+> > > > the utilization with decrease.
+> > > > remove the cap
+> > > > the utilization is still low and you will select a low OPP because you
+> > > > don't take into account cycle stolen by thermal like with RT
+> > >
+> > > What if we scale frequency component considering the capped temporary
+> > > max?
 > >
-> > Well, that wasn't the problem with rt tasks. The problem with RT tasks
-> > was that the time they spend on the CPU wasn't accounted _at all_ when
-> > selecting frequency for CFS, not that the accounting was at a different
-> > pace ...
-> 
-> The problem was the same with RT, the cfs utilization was lower than
-> reality because RT steals soem cycle to CFS
-> So schedutil was selecting a lower frequency when cfs was running
-> whereas the CPU was fully used.
-> The same can happen with thermal:
-> cap the max freq because of thermal
-> the utilization with decrease.
-> remove the cap
-> the utilization is still low and you will select a low OPP because you
-> don't take into account cycle stolen by thermal like with RT
+> > Do you mean using a kind of scale_thermal_capacity in accumulate_sum
+> > when computing utilization ?
+>
+> Yeah, something like that I guess. So that we account for temporary
+> "fake" 1024..
 
-I'm not arguing with the fact that we need to reflect the thermal
-pressure in the scheduler to see that a CPU is fully busy. I agree with
-that.
-
-I'm saying you don't necessarily have to update the thermal stuff and
-the existing PELT signals *at the same pace*, because different
-platforms have different thermal characteristics.
-
-Thanks,*
-Quentin
+But the utilization will not be invariant anymore across the system
