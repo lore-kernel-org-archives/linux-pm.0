@@ -1,8 +1,8 @@
 From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [workqueue/driver-core PATCH v2 4/5] driver core: Attach devices on
- CPU local to device node
-Date: Wed, 10 Oct 2018 16:08:40 -0700
-Message-ID: <20181010230836.10609.73485.stgit@localhost.localdomain>
+Subject: [workqueue/driver-core PATCH v2 5/5] PM core: Use new
+ async_schedule_dev command
+Date: Wed, 10 Oct 2018 16:08:59 -0700
+Message-ID: <20181010230846.10609.48506.stgit@localhost.localdomain>
 References: <20181010230435.10609.77825.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,35 +14,72 @@ To: tj@kernel.org, gregkh@linuxfoundation.org, akpm@linux-foundation.org, linux-
 Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-This change makes it so that we call the asynchronous probe routines on a
-CPU local to the device node. By doing this we should be able to improve
-our initialization time significantly as we can avoid having to access the
-device from a remote node which may introduce higher latency.
+This change makes it so that we use the device specific version of the
+async_schedule commands to defer various tasks related to power management.
+By doing this we should see a slight improvement in performance as any
+device that is sensitive to latency/locality in the setup will now be
+initializing on the node closest to the device.
 
 Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
- drivers/base/dd.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/base/power/main.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 5ba366c1cb83..81472dc44a70 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -826,7 +826,7 @@ static int __device_attach(struct device *dev, bool allow_async)
- 			 */
- 			dev_dbg(dev, "scheduling asynchronous probe\n");
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index a690fd400260..ebb8b61b52e9 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -726,7 +726,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
  			get_device(dev);
--			async_schedule(__device_attach_async_helper, dev);
-+			async_schedule_dev(__device_attach_async_helper, dev);
- 		} else {
- 			pm_request_idle(dev);
+-			async_schedule(async_resume_noirq, dev);
++			async_schedule_dev(async_resume_noirq, dev);
  		}
-@@ -927,7 +927,7 @@ static int __driver_attach(struct device *dev, void *data)
- 		if (!dev->driver) {
+ 	}
+ 
+@@ -883,7 +883,7 @@ void dpm_resume_early(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
  			get_device(dev);
- 			dev_set_drvdata(dev, drv);
--			async_schedule(__driver_attach_async_helper, dev);
-+			async_schedule_dev(__driver_attach_async_helper, dev);
+-			async_schedule(async_resume_early, dev);
++			async_schedule_dev(async_resume_early, dev);
  		}
- 		device_unlock(dev);
+ 	}
+ 
+@@ -1047,7 +1047,7 @@ void dpm_resume(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume, dev);
++			async_schedule_dev(async_resume, dev);
+ 		}
+ 	}
+ 
+@@ -1366,7 +1366,7 @@ static int device_suspend_noirq(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_noirq, dev);
++		async_schedule_dev(async_suspend_noirq, dev);
  		return 0;
+ 	}
+ 	return __device_suspend_noirq(dev, pm_transition, false);
+@@ -1569,7 +1569,7 @@ static int device_suspend_late(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_late, dev);
++		async_schedule_dev(async_suspend_late, dev);
+ 		return 0;
+ 	}
+ 
+@@ -1833,7 +1833,7 @@ static int device_suspend(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend, dev);
++		async_schedule_dev(async_suspend, dev);
+ 		return 0;
+ 	}
+ 
