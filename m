@@ -1,115 +1,44 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 13:30:57 -0400
-Message-ID: <5BBE3751.7000908@linaro.org>
-References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
- <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH 0/15] Add support for OLPC XO 1.75 Embedded Controller
+Date: Wed, 10 Oct 2018 14:26:39 -0500
+Message-ID: <CAL_Jsq+MYBrkZ=OEv3avxC_NZ+q3+stOF8CsHeXUsomKZD9+AA@mail.gmail.com>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+In-Reply-To: <20181010172300.317643-1-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Lukasz,
+On Wed, Oct 10, 2018 at 12:23 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
+>
+> Hi.
+>
+> This patchset adds support for the Embedded Controller on an OLPC XO
+> 1.75 machine. OLPC XO 1.75 is a MMP2 based ARM laptop. It plugs into
+> the existing OLPC platform infrastructure, currently used by the x86
+> based models.
+>
+> The EC operates in SPI master mode, meaning the SOC is the SPI slave. It
+> uses extra handshake signal to signal readiness of SOC to accept data
+> from EC and to initiate a transaction if SOC wishes to submit data.
+>
+> The SPI slave support for MMP2 was submitted separately:
+> https://lore.kernel.org/lkml/20181010170936.316862-1-lkundrak@v3.sk/T/#t
+>
+> THe "power: supply: olpc_battery: correct the temperature" patch was
+> already sent out separately, but I'm including it because the last
+> commit of the set depends on it.
+>
+> Tested to work on an OLPC XO 1.75 and also tested not to break x86
+> support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
+> unlikely this breaks it when XO 1 works.
 
-On 10/10/2018 11:35 AM, Lukasz Luba wrote:
-> Hi Thara,
-> 
-> I have run it on Exynos5433 mainline.
-> When it is enabled with step_wise thermal governor,
-> some of my tests are showing ~30-50% regression (i.e. hackbench),
-> dhrystone ~10%.
+I asked this on the OLPC devel list recently, but I don't think my
+message ever got past the moderator. Could you generate a DT dump from
+/proc/device-tree of an XO 1 and send to me? I have some DT changes
+planned and need to see if they'd be okay for x86 OLPC.
 
-That is interesting. If I understand correctly, dhrystone spawns 16
-threads or so and floods the system. In "theory", such a test should not
-see any performance improvement and degradation. What is the thermal
-activity like in your system? I will try running one of these tests on
-hikey960.
-> 
-> Could you tell me which thermal governor was used in your case?
-> Please also share the name of that benchmark, i will give it a try.
-> Is it single threaded compute-intensive?
-
-Step-wise governor.
-I use aobench which is part of phoronix-test-suite.
-
-Regards
-Thara
-
-> 
-> Regards,
-> Lukasz
-> 
-> On 10/09/2018 06:24 PM, Thara Gopinath wrote:
->> Thermal governors can respond to an overheat event for a cpu by
->> capping the cpu's maximum possible frequency. This in turn
->> means that the maximum available compute capacity of the
->> cpu is restricted. But today in linux kernel, in event of maximum
->> frequency capping of a cpu, the maximum available compute
->> capacity of the cpu is not adjusted at all. In other words, scheduler
->> is unware maximum cpu capacity restrictions placed due to thermal
->> activity. This patch series attempts to address this issue.
->> The benefits identified are better task placement among available
->> cpus in event of overheating which in turn leads to better
->> performance numbers.
->>
->> The delta between the maximum possible capacity of a cpu and
->> maximum available capacity of a cpu due to thermal event can
->> be considered as thermal pressure. Instantaneous thermal pressure
->> is hard to record and can sometime be erroneous as there can be mismatch
->> between the actual capping of capacity and scheduler recording it.
->> Thus solution is to have a weighted average per cpu value for thermal
->> pressure over time. The weight reflects the amount of time the cpu has
->> spent at a capped maximum frequency. To accumulate, average and
->> appropriately decay thermal pressure, this patch series uses pelt
->> signals and reuses the available framework that does a similar
->> bookkeeping of rt/dl task utilization.
->>
->> Regarding testing, basic build, boot and sanity testing have been
->> performed on hikey960 mainline kernel with debian file system.
->> Further aobench (An occlusion renderer for benchmarking realworld
->> floating point performance) showed the following results on hikey960
->> with debain.
->>
->>                                          Result          Standard        Standard
->>                                          (Time secs)     Error           Deviation
->> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
->> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
->>
->> Thara Gopinath (7):
->>    sched/pelt: Add option to make load and util calculations frequency
->>      invariant
->>    sched/pelt.c: Add support to track thermal pressure
->>    sched: Add infrastructure to store and update instantaneous thermal
->>      pressure
->>    sched: Initialize per cpu thermal pressure structure
->>    sched/fair: Enable CFS periodic tick to update thermal pressure
->>    sched/fair: update cpu_capcity to reflect thermal pressure
->>    thermal/cpu-cooling: Update thermal pressure in case of a maximum
->>      frequency capping
->>
->>   drivers/base/arch_topology.c  |  1 +
->>   drivers/thermal/cpu_cooling.c | 20 ++++++++++++-
->>   include/linux/sched.h         | 14 +++++++++
->>   kernel/sched/Makefile         |  2 +-
->>   kernel/sched/core.c           |  2 ++
->>   kernel/sched/fair.c           |  4 +++
->>   kernel/sched/pelt.c           | 40 ++++++++++++++++++--------
->>   kernel/sched/pelt.h           |  7 +++++
->>   kernel/sched/sched.h          |  1 +
->>   kernel/sched/thermal.c        | 66 +++++++++++++++++++++++++++++++++++++++++++
->>   kernel/sched/thermal.h        | 13 +++++++++
->>   11 files changed, 157 insertions(+), 13 deletions(-)
->>   create mode 100644 kernel/sched/thermal.c
->>   create mode 100644 kernel/sched/thermal.h
->>
-
-
--- 
-Regards
-Thara
+Rob
