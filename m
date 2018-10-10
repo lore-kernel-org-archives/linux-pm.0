@@ -1,54 +1,60 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v9 06/11] cpuidle: dt: Support hierarchical CPU idle
- states
-Date: Wed, 10 Oct 2018 16:03:44 +0100
-Message-ID: <20181010150344.GC4844@e107155-lin>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
- <20181003143824.13059-7-ulf.hansson@linaro.org>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Wed, 10 Oct 2018 09:10:06 -0600
+Message-ID: <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-6-jcrouse@codeaurora.org>
+ <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
+ <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
+ <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
+ <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
+ <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20181003143824.13059-7-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+In-Reply-To: <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 03, 2018 at 04:38:19PM +0200, Ulf Hansson wrote:
-> From: Lina Iyer <lina.iyer@linaro.org>
-> 
-> Currently CPU's idle states are represented in a flattened model, via the
-> "cpu-idle-states" binding from within the CPU's device nodes.
-> 
-> Support the hierarchical layout during parsing and validating of the CPU's
-> idle states. This is simply done by calling the new OF helper,
-> of_get_cpu_state_node().
-> 
-> Cc: Lina Iyer <ilina@codeaurora.org>
-> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/cpuidle/dt_idle_states.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-> index 53342b7f1010..13f9b7cd32d1 100644
-> --- a/drivers/cpuidle/dt_idle_states.c
-> +++ b/drivers/cpuidle/dt_idle_states.c
-> @@ -118,8 +118,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
->  	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
->  	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
->  		cpu_node = of_cpu_device_node_get(cpu);
-
-We can get rid of above and the of_node_put below if we move this into
-of_get_cpu_state_node as suggested in earlier patch.
-
-Apart from these, I don't see any issues with the subset unless there
-are users for these. I will dig the v8 and comment.
-
--- 
-Regards,
-Sudeep
+T24gV2VkLCBPY3QgMTAsIDIwMTggYXQgMDg6MjE6MzlQTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
+b3RlOgo+IE9uIDEwLTEwLTE4LCAwODo0OCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IHFjb20s
+bGV2ZWwgY29tZXMgc3RyYWlnaHQgZnJvbToKPiA+IAo+ID4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5v
+cmcvbGttbC8yMDE4MDYyNzA0NTIzNC4yNzQwMy0yLXJuYXlha0Bjb2RlYXVyb3JhLm9yZy8KPiA+
+IAo+ID4gQnV0IGluIHRoaXMgY2FzZSBpbnN0ZWFkIG9mIHVzaW5nIHRoZSBDUFUgdG8gcHJvZ3Jh
+bSB0aGUgUlBNaCB3ZSBhcmUgcGFzc2luZwo+ID4gdGhlIHZhbHVlIHRvIGEgbWljcm9wcm9jZXNz
+b3IgKHRoZSBHTVUpIGFuZCB0aGF0IHdpbGwgZG8gdGhlIHZvdGUgb24gb3VyIGJlaGFsZgo+ID4g
+KFRlY2huaWNhbGx5IHdlIHVzZSB0aGUgdmFsdWUgdG8gbG9vayB1cCB0aGUgdm90ZSBpbiB0aGUg
+Y21kLWRiIGRhdGFiYXNlIGFuZAo+ID4gcGFzcyB0aGF0IHRvIHRoZSBHTVUpCj4gPiAKPiA+IFRo
+aXMgaXMgd2h5IHRoZSBxY29tLGxldmVsIHdhcyBhZGRlZCBpbiB0aGUgZmlyc3QgcGxhY2Ugc28g
+d2UgY291bGQgYXQgbGVhc3QKPiA+IHNoYXJlIHRoZSBub21lbmNsYXR1cmUgd2l0aCB0aGUgcnBt
+aGQgaWYgbm90IHRoZSBpbXBsZW1lbnRhdGlvbi4KPiAKPiBIb3cgeW91IGFjdHVhbGx5IHBhc3Mg
+dGhlIHZvdGUgdG8gdGhlIHVuZGVybHlpbmcgaGFyZHdhcmUsIFJQTWggb3IKPiBHTVUsIGlzIGly
+cmVsZXZhbnQgdG8gdGhlIHdob2xlIHRoaW5nLiBXaGF0IGlzIGltcG9ydGFudCBpcyBob3cgd2UK
+PiBkZXNjcmliZSB0aGF0IGluIERUIGFuZCBob3cgd2UgcmVwcmVzZW50IHRoZSB3aG9sZSB0aGlu
+Zy4KPiAKPiBXZSBoYXZlIGNob3NlbiBnZW5wZCArIE9QUCB0byBkbyB0aGlzIGFuZCBzYW1lIHNo
+b3VsZCBiZSB1c2VkIGJ5IHlvdQo+IGFzIHdlbGwuIEFub3RoZXIgYmVuZWZpdCBpcyB0aGF0IHRo
+ZSBnZW5wZCBjb3JlIHdpbGwgZG8gdm90ZQo+IGFnZ3JlZ2F0aW9uIGZvciB5b3UgaGVyZS4KCkkn
+bSBub3Qgc3VyZSB3aGF0IHlvdSBhcmUgc3VnZ2VzdGluZz8gVGhlIHZvdGUgaXMgcmVwcmVzZW50
+ZWQgaW4gRFQgZXhhY3RseSBhcwpkZXNjcmliZWQgaW4gdGhlIGJpbmRpbmdzLiAKCkpvcmRhbgoK
+PiAtLSAKPiB2aXJlc2gKPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwo+IEZyZWVkcmVubyBtYWlsaW5nIGxpc3QKPiBGcmVlZHJlbm9AbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCj4gaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9mcmVlZHJlbm8KCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMg
+YSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBDb2xsYWJv
+cmF0aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRy
+ZW5vCg==
