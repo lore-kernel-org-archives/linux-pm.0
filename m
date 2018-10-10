@@ -1,49 +1,99 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Wed, 10 Oct 2018 20:21:39 +0530
-Message-ID: <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-6-jcrouse@codeaurora.org>
- <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
- <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
- <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
- <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
+Date: Wed, 10 Oct 2018 16:02:24 +0100
+Message-ID: <20181010150224.GA3583@e107155-lin>
+References: <20180831140151.13972-1-georgi.djakov@linaro.org>
+ <20180831140151.13972-3-georgi.djakov@linaro.org>
+ <20180925180215.GA12435@bogus>
+ <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
+ <20180926144830.GB25838@e107155-lin>
+ <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
+ <20181002111758.GC1086@e107155-lin>
+ <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
+ <20181003093346.GA12570@e107155-lin>
+ <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181010144856.GC9977-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+In-Reply-To: <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTAtMTAtMTgsIDA4OjQ4LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IHFjb20sbGV2ZWwgY29t
-ZXMgc3RyYWlnaHQgZnJvbToKPiAKPiBodHRwczovL2xvcmUua2VybmVsLm9yZy9sa21sLzIwMTgw
-NjI3MDQ1MjM0LjI3NDAzLTItcm5heWFrQGNvZGVhdXJvcmEub3JnLwo+IAo+IEJ1dCBpbiB0aGlz
-IGNhc2UgaW5zdGVhZCBvZiB1c2luZyB0aGUgQ1BVIHRvIHByb2dyYW0gdGhlIFJQTWggd2UgYXJl
-IHBhc3NpbmcKPiB0aGUgdmFsdWUgdG8gYSBtaWNyb3Byb2Nlc3NvciAodGhlIEdNVSkgYW5kIHRo
-YXQgd2lsbCBkbyB0aGUgdm90ZSBvbiBvdXIgYmVoYWxmCj4gKFRlY2huaWNhbGx5IHdlIHVzZSB0
-aGUgdmFsdWUgdG8gbG9vayB1cCB0aGUgdm90ZSBpbiB0aGUgY21kLWRiIGRhdGFiYXNlIGFuZAo+
-IHBhc3MgdGhhdCB0byB0aGUgR01VKQo+IAo+IFRoaXMgaXMgd2h5IHRoZSBxY29tLGxldmVsIHdh
-cyBhZGRlZCBpbiB0aGUgZmlyc3QgcGxhY2Ugc28gd2UgY291bGQgYXQgbGVhc3QKPiBzaGFyZSB0
-aGUgbm9tZW5jbGF0dXJlIHdpdGggdGhlIHJwbWhkIGlmIG5vdCB0aGUgaW1wbGVtZW50YXRpb24u
-CgpIb3cgeW91IGFjdHVhbGx5IHBhc3MgdGhlIHZvdGUgdG8gdGhlIHVuZGVybHlpbmcgaGFyZHdh
-cmUsIFJQTWggb3IKR01VLCBpcyBpcnJlbGV2YW50IHRvIHRoZSB3aG9sZSB0aGluZy4gV2hhdCBp
-cyBpbXBvcnRhbnQgaXMgaG93IHdlCmRlc2NyaWJlIHRoYXQgaW4gRFQgYW5kIGhvdyB3ZSByZXBy
-ZXNlbnQgdGhlIHdob2xlIHRoaW5nLgoKV2UgaGF2ZSBjaG9zZW4gZ2VucGQgKyBPUFAgdG8gZG8g
-dGhpcyBhbmQgc2FtZSBzaG91bGQgYmUgdXNlZCBieSB5b3UKYXMgd2VsbC4gQW5vdGhlciBiZW5l
-Zml0IGlzIHRoYXQgdGhlIGdlbnBkIGNvcmUgd2lsbCBkbyB2b3RlCmFnZ3JlZ2F0aW9uIGZvciB5
-b3UgaGVyZS4KCi0tIAp2aXJlc2gKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
-ZnJlZWRyZW5vCg==
+On Wed, Oct 03, 2018 at 11:06:45AM -0700, Saravana Kannan wrote:
+> 
+> 
+> On 10/03/2018 02:33 AM, Sudeep Holla wrote:
+> > On Tue, Oct 02, 2018 at 11:56:56AM -0700, Saravana Kannan wrote:
+> > > On 10/02/2018 04:17 AM, Sudeep Holla wrote:
+> > [...]
+> > 
+> > > > Yes, I do understand I have made the same point multiple time and it's
+> > > > intentional. We need to get the fragmented f/w support story fixed.
+> > > > Different ARM vendors are doing different things in f/w and ARM sees the
+> > > > same fragmentation story as before. We have come up with new specification
+> > > > and my annoying multiple emails are just to constantly remind the same.
+> > > > 
+> > > > I do understand we have existing implementations to consider, but fixing
+> > > > the functionality in arbitrary way is not a good design and it better
+> > > > to get them fixed for future.
+> > > I believe the fragmentation you are referring to is  in the
+> > > interface/communication protocol. I see the benefit of standardizing that as
+> > > long as the standard actually turns out to be good. But that's completely
+> > > separate from what the FW can/can't do. Asking to standardize what the FW
+> > > can/can't do doesn't seem realistic as each chip vendor will have different
+> > > priorities - power, performance, cost, chip area, etc. It's the conflation
+> > > of these separate topics that doesn't help IMHO.
+> > I agree on interface/communication protocol fragmentation and firmware
+> > can implement whatever the vendor wish. What I was also referring was
+> > the mix-n-match approach which should be avoided.
+> > 
+> > e.g. Device A and B's PM is managed completely by firmware using OSPM hints
+> > Suppose Device X's PM is dependent on Device A and B, in which case it's
+> > simpler and cleaner to leave Device X PM to firmware. Reading the state
+> > of A and B and using that as hint for X is just overhead which firmware
+> > can manage better. That was my main concern here: A=CPU and B=some other
+> > device and X is inter-connect to which A and B are connected.
+> > 
+> > If CPU OPPs are obtained from f/w and this inter-connect from DT, mapping
+> > then is a mess and that's what I was concerned. I am sorry if that's not
+> > the scenario here, I may have mistaken then.
+> > 
+> What you are asking would be an ideal case, but this is not an ideal world.
+
+Agreed.
+
+> There are tons of constraints for each chip vendor. Saying you can't mix and
+> match makes perfect the enemy of the good.
+
+We can have endless debate on that.
+
+> Adding FW support for A and B might make them optimal.
+
+OK...
+
+> But adding support for X might not be possible for
+> multiple real world constraints (chip area, cost, time to market, etc).
+
+but is not a good design though. If f/w blindly changes DVFS for X based
+on OS request, then there's possibility for clkscrew kind of exploits
+still though moving A/B to f/w was to avoid it. The chances are low but
+not zero.
+
+> Saying "either do it all or do nothing" is going to hold back a lot progress
+> that can come in increments. Heck, we do the same thing in the kernel. We'll
+> add basic simple features first and then improve on them. Why is it suddenly
+> frowned up if a FW/HW follows the same approach? I'll just have to agree to
+> disagree with you on this view point.
+>
+
+I agree on adding basic and then improve on that policy. But it's not
+fair to compare this mix-'n'-match approach to that. Sorry but I
+disagree with the comparison here.
+
+--
+Regards,
+Sudeep
