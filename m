@@ -1,98 +1,85 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v9 2/8] dt-bindings: Introduce interconnect binding
-Date: Wed, 10 Oct 2018 16:02:24 +0100
-Message-ID: <20181010150224.GA3583@e107155-lin>
-References: <20180831140151.13972-1-georgi.djakov@linaro.org>
- <20180831140151.13972-3-georgi.djakov@linaro.org>
- <20180925180215.GA12435@bogus>
- <b67253fb-d86d-2ddd-6c30-0833d6ed62ad@linaro.org>
- <20180926144830.GB25838@e107155-lin>
- <fa74c24f-1f22-f11f-60fe-5a4489d9c7c2@codeaurora.org>
- <20181002111758.GC1086@e107155-lin>
- <c17450ce-fc25-e792-b91b-51106f032542@codeaurora.org>
- <20181003093346.GA12570@e107155-lin>
- <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
+Subject: Re: [PATCH v9 04/11] dt: psci: Update DT bindings to support
+ hierarchical PSCI states
+Date: Wed, 10 Oct 2018 16:03:12 +0100
+Message-ID: <20181010150312.GA4844@e107155-lin>
+References: <20181003143824.13059-1-ulf.hansson@linaro.org>
+ <20181003143824.13059-5-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <0a276103-15fb-807c-5379-1a35de789290@codeaurora.org>
+In-Reply-To: <20181003143824.13059-5-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Georgi Djakov <georgi.djakov@linaro.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 03, 2018 at 11:06:45AM -0700, Saravana Kannan wrote:
+On Wed, Oct 03, 2018 at 04:38:17PM +0200, Ulf Hansson wrote:
+> From: Lina Iyer <lina.iyer@linaro.org>
 > 
+> Update DT bindings to represent hierarchical CPU and CPU PM domain idle
+> states for PSCI. Also update the PSCI examples to clearly show how
+> flattened and hierarchical idle states can be represented in DT.
 > 
-> On 10/03/2018 02:33 AM, Sudeep Holla wrote:
-> > On Tue, Oct 02, 2018 at 11:56:56AM -0700, Saravana Kannan wrote:
-> > > On 10/02/2018 04:17 AM, Sudeep Holla wrote:
-> > [...]
-> > 
-> > > > Yes, I do understand I have made the same point multiple time and it's
-> > > > intentional. We need to get the fragmented f/w support story fixed.
-> > > > Different ARM vendors are doing different things in f/w and ARM sees the
-> > > > same fragmentation story as before. We have come up with new specification
-> > > > and my annoying multiple emails are just to constantly remind the same.
-> > > > 
-> > > > I do understand we have existing implementations to consider, but fixing
-> > > > the functionality in arbitrary way is not a good design and it better
-> > > > to get them fixed for future.
-> > > I believe the fragmentation you are referring to is  in the
-> > > interface/communication protocol. I see the benefit of standardizing that as
-> > > long as the standard actually turns out to be good. But that's completely
-> > > separate from what the FW can/can't do. Asking to standardize what the FW
-> > > can/can't do doesn't seem realistic as each chip vendor will have different
-> > > priorities - power, performance, cost, chip area, etc. It's the conflation
-> > > of these separate topics that doesn't help IMHO.
-> > I agree on interface/communication protocol fragmentation and firmware
-> > can implement whatever the vendor wish. What I was also referring was
-> > the mix-n-match approach which should be avoided.
-> > 
-> > e.g. Device A and B's PM is managed completely by firmware using OSPM hints
-> > Suppose Device X's PM is dependent on Device A and B, in which case it's
-> > simpler and cleaner to leave Device X PM to firmware. Reading the state
-> > of A and B and using that as hint for X is just overhead which firmware
-> > can manage better. That was my main concern here: A=CPU and B=some other
-> > device and X is inter-connect to which A and B are connected.
-> > 
-> > If CPU OPPs are obtained from f/w and this inter-connect from DT, mapping
-> > then is a mess and that's what I was concerned. I am sorry if that's not
-> > the scenario here, I may have mistaken then.
-> > 
-> What you are asking would be an ideal case, but this is not an ideal world.
+> Cc: Lina Iyer <ilina@codeaurora.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  .../devicetree/bindings/arm/psci.txt          | 156 ++++++++++++++++++
+>  1 file changed, 156 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+> index a2c4f1d52492..17aa3d3a1c8e 100644
+> --- a/Documentation/devicetree/bindings/arm/psci.txt
+> +++ b/Documentation/devicetree/bindings/arm/psci.txt
+> @@ -105,7 +105,163 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+>  		...
+>  	};
+>  
+> +ARM systems can have multiple cores sometimes in hierarchical arrangement.
+> +This often, but not always, maps directly to the processor power topology of
+> +the system. Individual nodes in a topology have their own specific power states
+> +and can be better represented in DT hierarchically.
+> +
+> +For these cases, the definitions of the idle states for the CPUs and the CPU
+> +topology, must conform to the domain idle state specification [3]. The domain
+> +idle states themselves, must be compatible with the defined 'domain-idle-state'
+> +binding [1], and also need to specify the arm,psci-suspend-param property for
+> +each idle state.
+> +
+> +DT allows representing CPUs and CPU idle states in two different ways -
+> +
+> +The flattened model as given in Example 1, lists CPU's idle states followed by
+> +the domain idle state that the CPUs may choose. Note that the idle states are
+> +all compatible with "arm,idle-state".
+> +
+> +Example 2 represents the hierarchical model of CPUs and domain idle states.
+> +CPUs define their domain provider in their psci DT node. The domain controls
+> +the power to the CPU and possibly other h/w blocks that would enter an idle
+> +state along with the CPU. The CPU's idle states may therefore be considered as
+> +the domain's idle states and have the compatible "arm,idle-state". Such domains
+> +may also be embedded within another domain that may represent common h/w blocks
+> +between these CPUs. The idle states of the CPU topology shall be represented as
+> +the domain's idle states.
+> +
+> +In PSCI firmware v1.0, the OS-Initiated mode is introduced. In order to use it,
+> +the hierarchical representation must be used.
+> +
+> +Example 1: Flattened representation of CPU and domain idle states
 
-Agreed.
+[...]
 
-> There are tons of constraints for each chip vendor. Saying you can't mix and
-> match makes perfect the enemy of the good.
+> +Example 2: Hierarchical representation of CPU and domain idle states
 
-We can have endless debate on that.
-
-> Adding FW support for A and B might make them optimal.
-
-OK...
-
-> But adding support for X might not be possible for
-> multiple real world constraints (chip area, cost, time to market, etc).
-
-but is not a good design though. If f/w blindly changes DVFS for X based
-on OS request, then there's possibility for clkscrew kind of exploits
-still though moving A/B to f/w was to avoid it. The chances are low but
-not zero.
-
-> Saying "either do it all or do nothing" is going to hold back a lot progress
-> that can come in increments. Heck, we do the same thing in the kernel. We'll
-> add basic simple features first and then improve on them. Why is it suddenly
-> frowned up if a FW/HW follows the same approach? I'll just have to agree to
-> disagree with you on this view point.
->
-
-I agree on adding basic and then improve on that policy. But it's not
-fair to compare this mix-'n'-match approach to that. Sorry but I
-disagree with the comparison here.
+I understand that this may not be of interest for this series, but do
+we need to add any suggestions on how to arrive Flattened representation
+of CPU idle states from its hierarchical representation. If the DT has
+latter and PSCI call returns as PC mode only for idle. We need to deal
+with that case.
 
 --
 Regards,
