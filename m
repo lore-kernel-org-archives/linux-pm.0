@@ -1,87 +1,114 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 6/9] PM / OPP: dt-bindings: Add
- opp-interconnect-bw
-Date: Wed, 10 Oct 2018 15:29:51 +0530
-Message-ID: <20181010095951.hgeiy7yxsqi6behd@vireshk-i7>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-7-jcrouse@codeaurora.org>
- <0998a374-6cb0-9218-d2e3-92f8ee9861ed@linaro.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Wed, 10 Oct 2018 12:14:32 +0200
+Message-ID: <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com> <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com> <20181010095459.orw2gse75klpwosx@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <0998a374-6cb0-9218-d2e3-92f8ee9861ed-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181010095459.orw2gse75klpwosx@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjctMDktMTgsIDExOjIzLCBHZW9yZ2kgRGpha292IHdyb3RlOgo+IE9uIDA4LzI3LzIwMTgg
-MDY6MTEgUE0sIEpvcmRhbiBDcm91c2Ugd3JvdGU6Cj4gPiBBZGQgdGhlICJvcHAtaW50ZXJjb25u
-ZWN0LWJ3IiBwcm9wZXJ0eSB0byBzcGVjaWZ5IHRoZQo+ID4gYXZlcmFnZSBhbmQgcGVhayBiYW5k
-d2lkdGggZm9yIGFuIGludGVyY29ubmVjdCBwYXRoIGZvcgo+ID4gYSBzcGVjaWZpYyBvcGVyYXRp
-bmcgcG93ZXIgcG9pbnQuIEEgc2VwYXJhdGUgYmFuZHdpZHRoCj4gPiBwYWlyIGNhbiBiZSBzcGVj
-aWZpZWQgZm9yIGVhY2ggb2YgdGhlIGludGVyY29ubmVjdHMKPiA+IGRlZmluZWQgZm9yIHRoZSBk
-ZXZpY2UgYnkgYXBwZW5kaW5nIHRoZSBpbnRlcmNvbm5lY3QKPiA+IG5hbWUgdG8gdGhlIHByb3Bl
-cnR5Lgo+ID4gCj4gPiBTaWduZWQtb2ZmLWJ5OiBKb3JkYW4gQ3JvdXNlIDxqY3JvdXNlQGNvZGVh
-dXJvcmEub3JnPgo+ID4gLS0tCj4gPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
-L29wcC9vcHAudHh0IHwgMzYgKysrKysrKysrKysrKysrKysrKwo+ID4gIDEgZmlsZSBjaGFuZ2Vk
-LCAzNiBpbnNlcnRpb25zKCspCj4gPiAKPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3Mvb3BwL29wcC50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
-YmluZGluZ3Mvb3BwL29wcC50eHQKPiA+IGluZGV4IGMzOTZjNGMwYWY5Mi4uZDcxNGMwODRmMzZk
-IDEwMDY0NAo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL29wcC9v
-cHAudHh0Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL29w
-cC50eHQKPiA+IEBAIC0xNzAsNiArMTcwLDExIEBAIE9wdGlvbmFsIHByb3BlcnRpZXM6Cj4gPiAg
-ICBmdW5jdGlvbmluZyBvZiB0aGUgY3VycmVudCBkZXZpY2UgYXQgdGhlIGN1cnJlbnQgT1BQICh3
-aGVyZSB0aGlzIHByb3BlcnR5IGlzCj4gPiAgICBwcmVzZW50KS4KPiA+ICAKPiA+ICstIG9wcC1p
-bnRlcmNvbm5lY3QtYnctPG5hbWU+OiBUaGlzIGlzIGFuIGFycmF5IG9mIHBhaXJzIHNwZWNpZnlp
-bmcgdGhlIGF2ZXJhZ2UKPiA+ICsgIGFuZCBwZWFrIGJhbmR3aWR0aCBpbiBieXRlcyBwZXIgc2Vj
-b25kIGZvciB0aGUgaW50ZXJjb25uZWN0IHBhdGgga25vd24gYnkKPiA+ICsgICduYW1lJy4gIFRo
-aXMgc2hvdWxkIG1hdGNoIHRoZSBuYW1lKHMpIHNwZWNpZmllZCBieSBpbnRlcmNvbm5lY3QtbmFt
-ZXMgaW4gdGhlCj4gPiArICBkZXZpY2UgZGVmaW5pdGlvbi4KPiA+ICsKPiA+ICBFeGFtcGxlIDE6
-IFNpbmdsZSBjbHVzdGVyIER1YWwtY29yZSBBUk0gY29ydGV4IEE5LCBzd2l0Y2ggRFZGUyBzdGF0
-ZXMgdG9nZXRoZXIuCj4gPiAgCj4gPiAgLyB7Cj4gPiBAQCAtNTQzLDMgKzU0OCwzNCBAQCBFeGFt
-cGxlIDY6IG9wcC1taWNyb3ZvbHQtPG5hbWU+LCBvcHAtbWljcm9hbXAtPG5hbWU+Ogo+ID4gIAkJ
-fTsKPiA+ICAJfTsKPiA+ICB9Owo+ID4gKwo+ID4gK0V4YW1wbGUgNzogb3BwLWludGVyY29ubmVj
-dC1idzoKPiA+ICsoZXhhbXBsZTogbGVhZiBkZXZpY2Ugd2l0aCBmcmVxdWVuY3kgYW5kIEJXIHF1
-b3RhcykKPiA+ICsKPiA+ICsvIHsKPiA+ICsJc29jIHsKPiA+ICsJCWdwdUA1MDAwMDAwIHsKPiA+
-ICsJCQkuLi4KPiA+ICsJCQlpbnRlcmNvbm5lY3RzID0gPCZxbm9jIDI2ICZxbm9jIDUxMj47Cj4g
-PiArCQkJaW50ZXJjb25uZWN0LW5hbWVzID0gInBvcnQwIjsKPiA+ICsJCQkuLi4KPiA+ICsJCQlv
-cGVyYXRpbmctcG9pbnRzLXYyID0gPCZncHVfb3BwX3RhYmxlPjsKPiA+ICsJCX07Cj4gPiArCX07
-Cj4gPiArCj4gPiArCWdwdV9vcHBfdGFibGU6IG9wcF90YWJsZTAgewo+ID4gKwkJY29tcGF0aWJs
-ZSA9ICJvcGVyYXRpbmctcG9pbnRzLXYyIjsKPiA+ICsKPiA+ICsJCW9wcC03MTAwMDAwMDAgewo+
-ID4gKwkJCW9wLWh6ID0gL2JpdHMvIDY0IDw3MTAwMDAwMDA+Owo+ID4gKwkJCS8qIFNldCBwZWFr
-IGJhbmR3aWR0aCBAIDcyMTYwMDAgS0IvcyAqLwo+ID4gKwkJCW9wcC1pbnRlcmNvbm5lY3QtYnct
-cG9ydDAgPSAvYml0cy8gNjQgPDAgNzIxNjAwMDAwMD47Cj4gCj4gVGhpcyBzZWVtcyBhIGJpdCBs
-b25nLiBJIHdvdWxkIHN1Z2dlc3QgdGhlIGZvbGxvd2luZyBpbnN0ZWFkLgo+IElmIHRoZXJlIGlz
-IG9ubHkgb25lIHBhdGg6Cj4gCS8qIGF2ZXJhZ2UgYmFuZHdpZHRoID0gMCBLQi9zLCAgcGVhayBi
-YW5kd2lkdGggPSA3MjE2MDAwIEtCL3MgKi8KPiAJb3BwLWJ3LUtCcHMgPSA8MCA3MjE2MDAwPjsK
-PiBvciAJCj4gCW9wcC1idy1NQnBzID0gPDAgNzIxNj47Cj4gCj4gSWYgdGhlcmUgYXJlIG11bHRp
-cGxlIHBhdGhzOgo+IAlvcHAtYnctS0Jwcy1wb3J0MCA9IDwwIDcyMTYwMDA+Owo+IAlvcHAtYnct
-S0Jwcy1wb3J0MSA9IDwwIDEwMDAwMDA+Owo+IAo+IFRoZSBhYm92ZSBmb2xsb3dzIGEgY29udmVu
-dGlvbiBzaW1pbGFyIHRvIG9wcC1taWNyb3ZvbHQsIHdoZXJlIGF0Cj4gcnVudGltZSB0aGUgcGxh
-dGZvcm0gY2FuIHBpY2sgYSA8bmFtZT4gYW5kIGEgbWF0Y2hpbmcgb3BwLWJ3LUtCcHMtPG5hbWU+
-Cj4gcHJvcGVydHkuIElmIHRoZSBwbGF0Zm9ybSBkb2Vzbid0IHBpY2sgYSBzcGVjaWZpYyA8bmFt
-ZT4gb3IgPG5hbWU+IGRvZXMKPiBub3QgbWF0Y2ggd2l0aCBhbnkgb2YgdGhlIG9wcC1idy1LQnBz
-LTxuYW1lPiBwcm9wZXJ0aWVzLCB0aGVuCj4gb3BwLWJ3LUtCcHMgc2hhbGwgYmUgdXNlZCBpZiBw
-cmVzZW50Lgo+IEZvciBub3cgc3VwcG9ydGluZyBvbmx5IEtCcHMgdmFsdWVzIHNlZW1zIGVub3Vn
-aCB0byBjb3ZlciBhbGwgcHJlc2VudAo+IHBsYXRmb3Jtcywgc28gd2UgY2FuIHN0YXJ0IHdpdGgg
-dGhpcyBhbmQgYmFzZWQgb24gdGhlIHJlcXVpcmVtZW50cyBvZgo+IGZ1dHVyZSBwbGF0Zm9ybXMg
-d2UgY2FuIGFkZCBNQnBzIGV0Yy4KCisxCgpBbmQgeWVzIEkgYW0gZmluZSB3aXRoIHN1Y2ggYmlu
-ZGluZ3MgZ2V0dGluZyBpbnRyb2R1Y2VkIHRvIHRoZSBPUFAKY29yZS4KCkkgYW0gbm90IHN1cmUg
-aWYgdGhpcyB3b3VsZCBmaXQgd2VsbCwgYnV0IGhhdmUgYSBsb29rIGF0CiJyZXF1aXJlZC1vcHBz
-IiBwcm9wZXJ0eSBpbiBPUFAgYmluZGluZ3MgYW5kIHNlZSBpZiB0aGF0IGNhbiBiZSB1c2VkCmlu
-c3RlYWQgb2YgYWRkaW5nIG5ldyBiaW5kaW5ncyBoZXJlLiBBZ2FpbiwgSSBhbSBub3Qgc3VyZSBp
-ZiB0aGF0CnNob3VsZCBiZSBkb25lIDopCgotLSAKdmlyZXNoCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRy
-ZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+On Wed, 10 Oct 2018 at 11:55, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Hi Vincent,
+>
+> On Wednesday 10 Oct 2018 at 10:50:05 (+0200), Vincent Guittot wrote:
+> > The problem with reflecting directly the capping is that it happens
+> > far more often than the pace at which cpu_capacity_orig is updated in
+> > the scheduler.
+>
+> Hmm, how can you be so sure ? That most likely depends on the workload,
+> the platform and the thermal governor. Some platforms heat up slowly,
+> some quickly. The pace at which the thermal governor will change things
+> should depend on that I assume.
+>
+> > This means that at the moment when scheduler uses the
+> > value, it might not be correct anymore.
+>
+> And OTOH, when you remove a cap for example, it will take time before
+> the scheduler can see the newly available capacity if you need to wait
+> for the signal to decay. So you are using a wrong information too in
+> that scenario.
+
+But we stay consistant with all other metrics. The same happen when a
+task decide to stay idle for a long time after some activity... You
+will have to wait for the signal to decay
+
+>
+> > Then, this value are also used
+> > when building the sched_domain and setting max_cpu_capacity which
+> > would also implies the rebuilt the sched_domain topology ...
+>
+> Wait what ? I thought the thermal cap was reflected in capacity_of, not
+> capacity_orig_of ... You need to rebuild the sched_domain in case of
+> thermal pressure ?
+>
+> Hmm, let me have a closer look at the patches, I must have missed
+> something ...
+>
+> > The pace of changing the capping is to fast to reflect that in the
+> > whole scheduler topology
+>
+> That's probably true in some cases, but it'd be cool to have numbers to
+> back up that statement, I think.
+>
+> Now, if you do need to rebuild the sched domain topology every time you
+> update the thermal pressure, I think the PELT HL is _way_ too short for
+> that ... You can't rebuild the whole thing every 32ms or so. Or am I
+> misunderstanding something ?
+>
+> > > Thara, have you tried to experiment with a simpler implementation as
+> > > suggested by Ingo ?
+> > >
+> > > Also, assuming that we do want to average things, do we actually want to
+> > > tie the thermal ramp-up time to the PELT half life ? That provides
+> > > nice maths properties wrt the other signals, but it's not obvious to me
+> > > that this thermal 'constant' should be the same on all platforms. Or
+> > > maybe it should ?
+> >
+> > The main interest of using PELT signal is that thermal pressure will
+> > evolve at the same pace as other signals used in the scheduler.
+>
+> Right, I think this is a nice property too (assuming that we actually
+> want to average things out).
+>
+> > With
+> > thermal pressure, we have the exact same problem as with RT tasks. The
+> > thermal will cap the max frequency which will cap the utilization of
+> > the tasks running on the CPU
+>
+> Well, the nature of the signal is slightly different IMO. Yes it's
+> capacity, but you're no actually measuring time spent on the CPU. All
+> other PELT signals are based on time, this thermal thing isn't, so it is
+> kinda different in a way. And I'm still wondering if it could be helpful
+
+hmmm ... it is based on time too.
+Both signals (current ones and thermal one) are really close. The main
+difference with other utilization signal is that instead of providing
+a running/not running boolean that is then weighted by the current
+capacity, the signal uses direclty the capped max capacity to reflect
+the amount of cycle that is stolen by thermal mitigation.
+
+> to be able to have a different HL for that thermal signal. That would
+> 'break' the nice maths properties we have, yes, but is it a problem or is
+> it actually helpful to cope with the thermal characteristics of
+> different platforms ?
+
+If you don't use the sign kind of signal with the same responsiveness,
+you will start to see some OPP toggles as an example when the thermal
+state change because one metrics will change faster than the other one
+and you can't have a correct view of the system. Same problem was
+happening with rt task.
+
+I take the example of RT task because it quite similar in the effect
+except that RT task steal all cycles when it runs whereas thermal
+mitigation steal only some by capping the frequency
+>
+> Thanks,
+> Quentin
