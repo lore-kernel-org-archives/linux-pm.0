@@ -1,114 +1,54 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 12:14:32 +0200
-Message-ID: <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com> <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
- <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com> <20181010095459.orw2gse75klpwosx@queper01-lin>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: [PATCH V5 0/2] soc: imx: add scu power domain driver
+Date: Wed, 10 Oct 2018 10:32:40 +0000
+Message-ID: <1539166644-29215-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010095459.orw2gse75klpwosx@queper01-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 10 Oct 2018 at 11:55, Quentin Perret <quentin.perret@arm.com> wrote:
->
-> Hi Vincent,
->
-> On Wednesday 10 Oct 2018 at 10:50:05 (+0200), Vincent Guittot wrote:
-> > The problem with reflecting directly the capping is that it happens
-> > far more often than the pace at which cpu_capacity_orig is updated in
-> > the scheduler.
->
-> Hmm, how can you be so sure ? That most likely depends on the workload,
-> the platform and the thermal governor. Some platforms heat up slowly,
-> some quickly. The pace at which the thermal governor will change things
-> should depend on that I assume.
->
-> > This means that at the moment when scheduler uses the
-> > value, it might not be correct anymore.
->
-> And OTOH, when you remove a cap for example, it will take time before
-> the scheduler can see the newly available capacity if you need to wait
-> for the signal to decay. So you are using a wrong information too in
-> that scenario.
+This patch set adds the scu based power domain driver.
+It depends on SCU driver.
 
-But we stay consistant with all other metrics. The same happen when a
-task decide to stay idle for a long time after some activity... You
-will have to wait for the signal to decay
+Change Log:
+v4->v5:
+ * some minor improvements according to Sascha's suggestion
+   Note: did not use dev_* print functions due to we already have proper
+         prefix by redefining pr_fmt. So it seems not quite neccesary
+	 to pass in a struct device * pointer for debug purpose only in
+	 each functions.
+v3->v4:
+ * only scu headfile path update
 
->
-> > Then, this value are also used
-> > when building the sched_domain and setting max_cpu_capacity which
-> > would also implies the rebuilt the sched_domain topology ...
->
-> Wait what ? I thought the thermal cap was reflected in capacity_of, not
-> capacity_orig_of ... You need to rebuild the sched_domain in case of
-> thermal pressure ?
->
-> Hmm, let me have a closer look at the patches, I must have missed
-> something ...
->
-> > The pace of changing the capping is to fast to reflect that in the
-> > whole scheduler topology
->
-> That's probably true in some cases, but it'd be cool to have numbers to
-> back up that statement, I think.
->
-> Now, if you do need to rebuild the sched domain topology every time you
-> update the thermal pressure, I think the PELT HL is _way_ too short for
-> that ... You can't rebuild the whole thing every 32ms or so. Or am I
-> misunderstanding something ?
->
-> > > Thara, have you tried to experiment with a simpler implementation as
-> > > suggested by Ingo ?
-> > >
-> > > Also, assuming that we do want to average things, do we actually want to
-> > > tie the thermal ramp-up time to the PELT half life ? That provides
-> > > nice maths properties wrt the other signals, but it's not obvious to me
-> > > that this thermal 'constant' should be the same on all platforms. Or
-> > > maybe it should ?
-> >
-> > The main interest of using PELT signal is that thermal pressure will
-> > evolve at the same pace as other signals used in the scheduler.
->
-> Right, I think this is a nice property too (assuming that we actually
-> want to average things out).
->
-> > With
-> > thermal pressure, we have the exact same problem as with RT tasks. The
-> > thermal will cap the max frequency which will cap the utilization of
-> > the tasks running on the CPU
->
-> Well, the nature of the signal is slightly different IMO. Yes it's
-> capacity, but you're no actually measuring time spent on the CPU. All
-> other PELT signals are based on time, this thermal thing isn't, so it is
-> kinda different in a way. And I'm still wondering if it could be helpful
+v2->v3:
+ * structure and enums name update
+ * api usage update
 
-hmmm ... it is based on time too.
-Both signals (current ones and thermal one) are really close. The main
-difference with other utilization signal is that instead of providing
-a running/not running boolean that is then weighted by the current
-capacity, the signal uses direclty the capped max capacity to reflect
-the amount of cycle that is stolen by thermal mitigation.
+Dong Aisheng (2):
+  firmware: imx: add pm svc headfile
+  firmware: imx: add SCU power domain driver
 
-> to be able to have a different HL for that thermal signal. That would
-> 'break' the nice maths properties we have, yes, but is it a problem or is
-> it actually helpful to cope with the thermal characteristics of
-> different platforms ?
+ drivers/firmware/imx/Kconfig        |   6 ++
+ drivers/firmware/imx/Makefile       |   3 +-
+ drivers/firmware/imx/scu-pd.c       | 164 ++++++++++++++++++++++++++++++++++++
+ include/linux/firmware/imx/sci.h    |   1 +
+ include/linux/firmware/imx/svc/pm.h |  85 +++++++++++++++++++
+ 5 files changed, 258 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/firmware/imx/scu-pd.c
+ create mode 100644 include/linux/firmware/imx/svc/pm.h
 
-If you don't use the sign kind of signal with the same responsiveness,
-you will start to see some OPP toggles as an example when the thermal
-state change because one metrics will change faster than the other one
-and you can't have a correct view of the system. Same problem was
-happening with rt task.
-
-I take the example of RT task because it quite similar in the effect
-except that RT task steal all cycles when it runs whereas thermal
-mitigation steal only some by capping the frequency
->
-> Thanks,
-> Quentin
+-- 
+2.7.4
