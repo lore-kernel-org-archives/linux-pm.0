@@ -1,124 +1,114 @@
-From: Thara Gopinath <thara.gopinath@linaro.org>
+From: Ionela Voinescu <ionela.voinescu@arm.com>
 Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 11:43:27 -0400
-Message-ID: <5BBE1E1F.3030308@linaro.org>
+Date: Wed, 10 Oct 2018 17:15:01 +0100
+Message-ID: <ad3492f2-f5a9-97ea-8068-d4df2d9288ce@arm.com>
 References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
  <20181010061751.GA37224@gmail.com>
+ <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin>
+ <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+ <20181010103623.ttjexasymdpi66lu@queper01-lin>
+ <CAKfTPtBM24F99OhtjWU-cx4DdFFpvUMMDYuqZH_vaJg9HEpPTw@mail.gmail.com>
+ <20181010130549.hzpkaskvlgifbdrp@queper01-lin>
+ <CAKfTPtA=GYaiKcJ9N5zEnzxJTKBATG41c0xDjhbA21G-Cv6LvA@mail.gmail.com>
+ <20181010134755.jrigtogbxwaz2izb@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010061751.GA37224@gmail.com>
+In-Reply-To: <20181010134755.jrigtogbxwaz2izb@queper01-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
+To: Quentin Perret <quentin.perret@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Ingo,
-Thank you for the review.
+Hi guys,
 
-On 10/10/2018 02:17 AM, Ingo Molnar wrote:
-> 
-> * Thara Gopinath <thara.gopinath@linaro.org> wrote:
-> 
->> Thermal governors can respond to an overheat event for a cpu by
->> capping the cpu's maximum possible frequency. This in turn
->> means that the maximum available compute capacity of the
->> cpu is restricted. But today in linux kernel, in event of maximum
->> frequency capping of a cpu, the maximum available compute
->> capacity of the cpu is not adjusted at all. In other words, scheduler
->> is unware maximum cpu capacity restrictions placed due to thermal
->> activity. This patch series attempts to address this issue.
->> The benefits identif
-
-ied are better task placement among available
->> cpus in event of overheating which in turn leads to better
->> performance numbers.
+On 10/10/18 14:47, Quentin Perret wrote:
+> On Wednesday 10 Oct 2018 at 15:27:57 (+0200), Vincent Guittot wrote:
+>> On Wed, 10 Oct 2018 at 15:05, Quentin Perret <quentin.perret@arm.com> wrote:
+>>>
+>>> On Wednesday 10 Oct 2018 at 14:04:40 (+0200), Vincent Guittot wrote:
+>>>> This patchset doesn't touch cpu_capacity_orig and doesn't need to  as
+>>>> it assume that the max capacity is unchanged but some capacity is
+>>>> momentary stolen by thermal.
+>>>>  If you want to reflect immediately all thermal capping change, you
+>>>> have to update this field and all related fields and struct around
+>>>
+>>> I don't follow you here. I never said I wanted to change
+>>> cpu_capacity_orig. I don't think we should do that actually. Changing
+>>> capacity_of (which is updated during LB IIRC) is just fine. The question
+>>> is about what you want to do there: reflect an averaged value or the
+>>> instantaneous one.
 >>
->> The delta between the maximum possible capacity of a cpu and
->> maximum available capacity of a cpu due to thermal event can
->> be considered as thermal pressure. Instantaneous thermal pressure
->> is hard to record and can sometime be erroneous as there can be mismatch
->> between the actual capping of capacity and scheduler recording it.
->> Thus solution is to have a weighted average per cpu value for thermal
->> pressure over time. The weight reflects the amount of time the cpu has
->> spent at a capped maximum frequency. To accumulate, average and
->> appropriately decay thermal pressure, this patch series uses pelt
->> signals and reuses the available framework that does a similar
->> bookkeeping of rt/dl task utilization.
->>
->> Regarding testing, basic build, boot and sanity testing have been
->> performed on hikey960 mainline kernel with debian file system.
->> Further aobench (An occlusion renderer for benchmarking realworld
->> floating point performance) showed the following results on hikey960
->> with debain.
->>
->>                                         Result          Standard        Standard
->>                                         (Time secs)     Error           Deviation
->> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
->> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
+>> Sorry I though your were speaking about updating this cpu_capacity_orig.
 > 
-> Wow, +13% speedup, impressive! We definitely want this outcome.
+> N/p, communication via email can easily become confusing :-)
 > 
-> I'm wondering what happens if we do not track and decay the thermal load at all at the PELT 
-> level, but instantaneously decrease/increase effective CPU capacity in reaction to thermal 
-> events we receive from the CPU.
-
-The problem with instantaneous update is that sometimes thermal events
-happen at a much faster pace than cpu_capacity is updated in
-the scheduler. This means that at the moment when scheduler uses the
-value, it might not be correct anymore.
-
-Having said that, today Android common kernel has a solution which
-instantaneously updates cpu_capacity in case of a thermal event.
-To give a bit of background on the evolution of the solution I have
-proposed, below is a time line of analysis I have done.
-
-1.  I started this activity by analyzing the existing framework on
-android common kernel. I ran android benchmark tests (Jankbench,
-Vellamo, Geekbench) with and without the existing instantaneous update
-mechanism. I found that there is no real performance difference to be
-observed with an instantaneous updated of cpu_capacity at least in my
-test scenarios.
-2. Then I developed an algorithm to track, accumulate and decay the
-capacity capping i.e an algorithm without using the pelt signals(this
-was prior to the new pelt framework in mainline). With this android
-benchmarks showed performance improvements. At this point I also ported
-the solution to mainline kernel and ran the aobench analysis which again
-showed a performance improvement.
-3. Finally with the new pelt framework in place, I replaced my algorithm
-with the one used for rt and dl utilization tracking which is the
-current patch series. I have not been able to run tests with this on
-Android yet.
-
-All tests were performed on hikey960.
-I have a Google spreadsheet, documenting results at various stages of
-analysis. I am not sure how to share it with the group here.
-
-
+>> With using instantaneous max  value in capacity_of(), we are back to
+>> the problem raised by Thara that  the value will most probably not
+>> reflect the current capping value when it is used in LB, because LB
+>> period can quite long on busy CPU (default max value is 32*sd_weight
+>> ms)
 > 
-> You describe the averaging as:
+> But averaging the capping value over time doesn't make LB happen more
+> often ... That will help you account for capping that happened in the
+> past, but it's not obvious this is actually a good thing. Probably not
+> all the time anyway.
 > 
->> Instantaneous thermal pressure is hard to record and can sometime be erroneous as there can 
->> be mismatch between the actual capping of capacity and scheduler recording it.
+> Say a CPU was capped at 50% of it's capacity, then the cap is removed.
+> At that point it'll take 100ms+ for the thermal signal to decay and let
+> the scheduler know about the newly available capacity. That can probably
+> be a performance hit in some use cases ... And the other way around, it
+> can also take forever for the scheduler to notice that a CPU has a
+> reduced capacity before reacting to it.
 > 
-> Not sure I follow the argument here: are there bogus thermal throttling events? If so then
-> they are hopefully not frequent enough and should average out over time even if we follow
-> it instantly.
+> If you want to filter out very short transient capping events to avoid
+> over-reacting in the scheduler (is this actually happening ?), then
+> maybe the average should be done on the cooling device side or something
+> like that ?
+> 
 
-No bogus events. It is more like sometimes capping happens at a much
-faster rate than cpu_capacity is updated and the scheduler looses these
-events.
+I think there isn't just the issue of the *occasional* overreaction of a
+thermal governor due to noise in the temperature sensors or some spike
+in environmental temperature that determines a delayed reaction in the
+scheduler due to when capacity is updated.
 
-> 
-> I.e. what is 'can sometimes be erroneous', exactly?
-> 
+I'm seeing a bigger issue for *sustained* high temperatures that are not
+treated effectively by governors. Depending on the platform, heat can
+be dissipated over longer or shorter periods of time. This can determine
+a seesaw effect on the maximum frequency: it determines the temperature
+is over a threshold and it starts capping, but heat is not dissipated
+quickly enough for that to reflect in the value of the temperature sensor,
+so it continues to cap; when the temperature gets to normal, capping
+is lifted, which in turn results access to higher OPPs and a return to
+high temperatures, etc.
+
+What will happen is that, *depending on platform* and the moment when
+capacity is updated, you can see either a CPU with a capacity of 1024, or
+let's say 800, or (on hikey960 :)) around 500, and back and forth
+between them.
+
+Because of these I tend to think that a regulated (averaged) value of
+thermal pressure is better than an instantaneous one. Thermal mitigation
+measures are there for the well-being and safety of a device, not for
+optimizations so it can and should be allowed to overreact, or have a
+delayed reaction. But ping-pong-ing tasks back and forth between CPUs
+due to changes in CPU capacity is harmful for performance. What would be
+awesome to achieve with this is (close to) optimal use of restricted
+capacities of CPUs, and I tend to believe instantaneous and most probably
+out of date capacity values would not lead to this.
+
+But this is almost a gut feeling and of course it should be validated on
+devices with different thermal characteristics. Given the high variation
+between devices with regards to this I'd be reluctant to tie it to the
+PELT half life.
+
+Regards,
+Ionela.
+
 > Thanks,
+> Quentin
 > 
-> 	Ingo
-> 
-
-
--- 
-Regards
-Thara
