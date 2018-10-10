@@ -1,253 +1,142 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: [PATCH V5 2/2] firmware: imx: add SCU power domain driver
-Date: Wed, 10 Oct 2018 10:32:50 +0000
-Message-ID: <1539166644-29215-3-git-send-email-aisheng.dong@nxp.com>
-References: <1539166644-29215-1-git-send-email-aisheng.dong@nxp.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Wed, 10 Oct 2018 11:36:25 +0100
+Message-ID: <20181010103623.ttjexasymdpi66lu@queper01-lin>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com>
+ <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin>
+ <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1539166644-29215-1-git-send-email-aisheng.dong@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtA+FWrMnerQhrNQhvmvVSK_S86da=8shpdET-807zZgVg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some i.MX SoCs contain a system controller that is responsible for
-controlling the state of the IPs that are present. Communication
-between the host processor running an OS and the system controller
-happens through a SCU protocol. This patch adds SCU protocol based
-power domains drivers.
+On Wednesday 10 Oct 2018 at 12:14:32 (+0200), Vincent Guittot wrote:
+> On Wed, 10 Oct 2018 at 11:55, Quentin Perret <quentin.perret@arm.com> wrote:
+> >
+> > Hi Vincent,
+> >
+> > On Wednesday 10 Oct 2018 at 10:50:05 (+0200), Vincent Guittot wrote:
+> > > The problem with reflecting directly the capping is that it happens
+> > > far more often than the pace at which cpu_capacity_orig is updated in
+> > > the scheduler.
+> >
+> > Hmm, how can you be so sure ? That most likely depends on the workload,
+> > the platform and the thermal governor. Some platforms heat up slowly,
+> > some quickly. The pace at which the thermal governor will change things
+> > should depend on that I assume.
+> >
+> > > This means that at the moment when scheduler uses the
+> > > value, it might not be correct anymore.
+> >
+> > And OTOH, when you remove a cap for example, it will take time before
+> > the scheduler can see the newly available capacity if you need to wait
+> > for the signal to decay. So you are using a wrong information too in
+> > that scenario.
+> 
+> But we stay consistant with all other metrics. The same happen when a
+> task decide to stay idle for a long time after some activity... You
+> will have to wait for the signal to decay
 
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-ChangeLog:
-v4->v5:
- * minor improvements according to Sascha's suggestions
-v3->v4:
- * update firmware headfile patch from include/soc/imx to
-   include/linux/firmware/imx
-v2->v3:
- * name of structures/enums updated with imx_sc prefix
-v1->v2:
- * move into drivers/firmware/imx
- * Implement sc_pm_set_resource_power_mode() API in the driver instead
-   of call it via SCU API according to Sascha's suggestion
----
- drivers/firmware/imx/Kconfig  |   6 ++
- drivers/firmware/imx/Makefile |   3 +-
- drivers/firmware/imx/scu-pd.c | 164 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 172 insertions(+), 1 deletion(-)
- create mode 100644 drivers/firmware/imx/scu-pd.c
+Because you see that as a task going idle. You could also say that
+removing the cap from a CPU is equivalent to migrating a task off that
+CPU. In this case you should see the newly available cap pretty much
+immediately.
 
-diff --git a/drivers/firmware/imx/Kconfig b/drivers/firmware/imx/Kconfig
-index b170c28..6a7a7c2 100644
---- a/drivers/firmware/imx/Kconfig
-+++ b/drivers/firmware/imx/Kconfig
-@@ -9,3 +9,9 @@ config IMX_SCU
- 
- 	  This driver manages the IPC interface between host CPU and the
- 	  SCU firmware running on M4.
-+
-+config IMX_SCU_PD
-+	bool "IMX SCU Power Domain driver"
-+	depends on IMX_SCU
-+	help
-+	  The System Controller Firmware (SCFW) based power domain driver.
-diff --git a/drivers/firmware/imx/Makefile b/drivers/firmware/imx/Makefile
-index 0ac04df..1b2e15b 100644
---- a/drivers/firmware/imx/Makefile
-+++ b/drivers/firmware/imx/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_IMX_SCU)	+= imx-scu.o misc.o
-+obj-$(CONFIG_IMX_SCU)		+= imx-scu.o misc.o
-+obj-$(CONFIG_IMX_SCU_PD)	+= scu-pd.o
-diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
-new file mode 100644
-index 0000000..fe0a093
---- /dev/null
-+++ b/drivers/firmware/imx/scu-pd.c
-@@ -0,0 +1,164 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Copyright 2017~2018 NXP
-+ *	Dong Aisheng <aisheng.dong@nxp.com>
-+ *
-+ * Implementation of the SCU based Power Domains
-+ */
-+
-+#define pr_fmt(fmt) "scu_pd: " fmt
-+
-+#include <linux/firmware/imx/sci.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/pm_domain.h>
-+#include <linux/slab.h>
-+
-+struct imx_sc_pm_domain {
-+	struct generic_pm_domain pd;
-+	u32 rsrc_id;
-+};
-+
-+static struct imx_sc_ipc *pm_ipc_handle;
-+
-+/* SCU Power Mode Protocol definition */
-+struct imx_sc_msg_req_set_resource_power_mode {
-+	struct imx_sc_rpc_msg hdr;
-+	u16 resource;
-+	u8 mode;
-+} __packed;
-+
-+static int imx_sc_pd_power(struct generic_pm_domain *domain, bool power_on)
-+{
-+	struct imx_sc_msg_req_set_resource_power_mode msg;
-+	struct imx_sc_rpc_msg *hdr = &msg.hdr;
-+	struct imx_sc_pm_domain *pd;
-+	int ret;
-+
-+	pd = container_of(domain, struct imx_sc_pm_domain, pd);
-+
-+	hdr->ver = IMX_SC_RPC_VERSION;
-+	hdr->svc = (uint8_t)IMX_SC_RPC_SVC_PM;
-+	hdr->func = (uint8_t)IMX_SC_PM_FUNC_SET_RESOURCE_POWER_MODE;
-+	hdr->size = 2;
-+
-+	msg.resource = pd->rsrc_id;
-+	msg.mode = power_on ? IMX_SC_PM_PW_MODE_ON : IMX_SC_PM_PW_MODE_LP;
-+
-+	ret = imx_scu_call_rpc(pm_ipc_handle, &msg, true);
-+	if (ret)
-+		pr_err("failed to power %s resource %d ret %d\n",
-+			power_on ? "up" : "off", pd->rsrc_id, ret);
-+
-+	return ret;
-+}
-+
-+static int imx_sc_pd_power_on(struct generic_pm_domain *domain)
-+{
-+	return imx_sc_pd_power(domain, true);
-+}
-+
-+static int imx_sc_pd_power_off(struct generic_pm_domain *domain)
-+{
-+	return imx_sc_pd_power(domain, false);
-+}
-+
-+static struct generic_pm_domain *imx_sc_pm_add_one_domain(
-+					struct device_node *np,
-+					struct generic_pm_domain *genpd_parent)
-+{
-+	struct imx_sc_pm_domain *imx_sc_pd;
-+	u32 rsrc_id;
-+	int ret;
-+
-+	imx_sc_pd = kzalloc(sizeof(*imx_sc_pd), GFP_KERNEL);
-+	if (!imx_sc_pd)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (!of_property_read_u32(np, "reg", &rsrc_id)) {
-+		if (rsrc_id >= IMX_SC_R_LAST) {
-+			pr_warn("%pOF: invalid rsrc id %d found", np, rsrc_id);
-+			ret = -EINVAL;
-+			goto err;
-+		}
-+		imx_sc_pd->rsrc_id = rsrc_id;
-+		imx_sc_pd->pd.power_off = imx_sc_pd_power_off;
-+		imx_sc_pd->pd.power_on = imx_sc_pd_power_on;
-+	} else {
-+		imx_sc_pd->rsrc_id = IMX_SC_R_LAST;
-+	}
-+
-+	imx_sc_pd->pd.name = np->name;
-+
-+	ret = pm_genpd_init(&imx_sc_pd->pd, NULL, true);
-+	if (ret < 0)
-+		goto err;
-+
-+	if (genpd_parent) {
-+		ret = pm_genpd_add_subdomain(genpd_parent, &imx_sc_pd->pd);
-+		if (ret)
-+			goto err;
-+	}
-+
-+	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
-+	if (!ret)
-+		return &imx_sc_pd->pd;
-+
-+	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
-+
-+err:
-+	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
-+	kfree(imx_sc_pd);
-+	return ERR_PTR(ret);
-+}
-+
-+static void imx_sc_pm_add_pm_domains(struct device_node *parent,
-+				     struct generic_pm_domain *genpd_parent)
-+{
-+	struct generic_pm_domain *pd;
-+	struct device_node *np;
-+
-+	for_each_child_of_node(parent, np) {
-+		pd = imx_sc_pm_add_one_domain(np, genpd_parent);
-+		if (!IS_ERR(pd))
-+			imx_sc_pm_add_pm_domains(np, pd);
-+	}
-+}
-+
-+static int imx_sc_pd_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	ret = imx_scu_get_handle(&pm_ipc_handle);
-+	if (ret)
-+		return ret;
-+
-+	imx_sc_pm_add_pm_domains(np, NULL);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_sc_pd_match[] = {
-+	{ .compatible = "fsl,scu-pd", },
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver imx_sc_pd_driver = {
-+	.driver = {
-+		.name = "imx-scu-pd",
-+		.of_match_table = imx_sc_pd_match,
-+	},
-+	.probe = imx_sc_pd_probe,
-+};
-+builtin_platform_driver(imx_sc_pd_driver);
-+
-+MODULE_AUTHOR("Dong Aisheng <aisheng.dong@nxp.com>");
-+MODULE_DESCRIPTION("IMX SCU Power Domain driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+Also, I feel like the whole thermal capping story could interest the
+Intel folks who, IIRC, were discussing how to represent their 'boosted'
+OPPs in the scheduler some time ago. You can see the Intel boost thing
+as a cap I think -- some OPPs can be inaccessible in some case. I'd be
+interested to see what's their take on this.
+
+> > > Then, this value are also used
+> > > when building the sched_domain and setting max_cpu_capacity which
+> > > would also implies the rebuilt the sched_domain topology ...
+> >
+> > Wait what ? I thought the thermal cap was reflected in capacity_of, not
+> > capacity_orig_of ... You need to rebuild the sched_domain in case of
+> > thermal pressure ?
+
+I can't locate where you need to do this in the series. Do you actually
+need to rebuild the sd hierarchy ?
+
+> > Hmm, let me have a closer look at the patches, I must have missed
+> > something ...
+> >
+> > > The pace of changing the capping is to fast to reflect that in the
+> > > whole scheduler topology
+> >
+> > That's probably true in some cases, but it'd be cool to have numbers to
+> > back up that statement, I think.
+> >
+> > Now, if you do need to rebuild the sched domain topology every time you
+> > update the thermal pressure, I think the PELT HL is _way_ too short for
+> > that ... You can't rebuild the whole thing every 32ms or so. Or am I
+> > misunderstanding something ?
+> >
+> > > > Thara, have you tried to experiment with a simpler implementation as
+> > > > suggested by Ingo ?
+> > > >
+> > > > Also, assuming that we do want to average things, do we actually want to
+> > > > tie the thermal ramp-up time to the PELT half life ? That provides
+> > > > nice maths properties wrt the other signals, but it's not obvious to me
+> > > > that this thermal 'constant' should be the same on all platforms. Or
+> > > > maybe it should ?
+> > >
+> > > The main interest of using PELT signal is that thermal pressure will
+> > > evolve at the same pace as other signals used in the scheduler.
+> >
+> > Right, I think this is a nice property too (assuming that we actually
+> > want to average things out).
+> >
+> > > With
+> > > thermal pressure, we have the exact same problem as with RT tasks. The
+> > > thermal will cap the max frequency which will cap the utilization of
+> > > the tasks running on the CPU
+> >
+> > Well, the nature of the signal is slightly different IMO. Yes it's
+> > capacity, but you're no actually measuring time spent on the CPU. All
+> > other PELT signals are based on time, this thermal thing isn't, so it is
+> > kinda different in a way. And I'm still wondering if it could be helpful
+> 
+> hmmm ... it is based on time too.
+
+You're not actually measuring the time spent on the CPU by the 'thermal
+task'. There is no such thing as a 'thermal task'. You're just trying to
+model things like that, but the thermal stuff isn't actually
+interrupting running tasks to eat CPU cycles. It just makes thing run
+slower, which isn't exactly the same thing IMO.
+
+But maybe that's a detail.
+
+> Both signals (current ones and thermal one) are really close. The main
+> difference with other utilization signal is that instead of providing
+> a running/not running boolean that is then weighted by the current
+> capacity, the signal uses direclty the capped max capacity to reflect
+> the amount of cycle that is stolen by thermal mitigation.
+> 
+> > to be able to have a different HL for that thermal signal. That would
+> > 'break' the nice maths properties we have, yes, but is it a problem or is
+> > it actually helpful to cope with the thermal characteristics of
+> > different platforms ?
+> 
+> If you don't use the sign kind of signal with the same responsiveness,
+> you will start to see some OPP toggles as an example when the thermal
+> state change because one metrics will change faster than the other one
+> and you can't have a correct view of the system. Same problem was
+> happening with rt task.
+
+Well, that wasn't the problem with rt tasks. The problem with RT tasks
+was that the time they spend on the CPU wasn't accounted _at all_ when
+selecting frequency for CFS, not that the accounting was at a different
+pace ...
+
+Thanks,
+Quentin
