@@ -1,106 +1,122 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: Thara Gopinath <thara.gopinath@linaro.org>
 Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 10 Oct 2018 18:54:32 +0200
-Message-ID: <e2091e7e-b6e6-950d-ebab-18ba2de9264f@linaro.org>
-References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
- <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+Date: Wed, 10 Oct 2018 13:03:44 -0400
+Message-ID: <5BBE30F0.5080304@linaro.org>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com>
+ <20181010082933.4ful4dzk7rkijcwu@queper01-lin>
+ <CAKfTPtA1sgf77xLUPr74iEEb+W8PGCMCkgu+Kw8xM_Jxx7_hjQ@mail.gmail.com>
+ <20181010095459.orw2gse75klpwosx@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
-Content-Language: en-US
+In-Reply-To: <20181010095459.orw2gse75klpwosx@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Quentin Perret <quentin.perret@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Ingo Molnar <mingo@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/10/2018 17:35, Lukasz Luba wrote:
-> Hi Thara,
+Hello Quentin,
+On 10/10/2018 05:55 AM, Quentin Perret wrote:
+> Hi Vincent,
 > 
-> I have run it on Exynos5433 mainline.
-> When it is enabled with step_wise thermal governor,
-> some of my tests are showing ~30-50% regression (i.e. hackbench),
-> dhrystone ~10%.
+> On Wednesday 10 Oct 2018 at 10:50:05 (+0200), Vincent Guittot wrote:
+>> The problem with reflecting directly the capping is that it happens
+>> far more often than the pace at which cpu_capacity_orig is updated in
+>> the scheduler.
 > 
-> Could you tell me which thermal governor was used in your case?
-> Please also share the name of that benchmark, i will give it a try.
-> Is it single threaded compute-intensive?
+> Hmm, how can you be so sure ? That most likely depends on the workload,
+> the platform and the thermal governor. Some platforms heat up slowly,
+> some quickly. The pace at which the thermal governor will change things
+> should depend on that I assume.
 
-aobench AFAICT
+Yes I agree. How often a thermal event occurs is indeed dependent on
+workload, platform and governors. For e.g. hikey960  the same workload
+displays different behavior with and without a fan. What we want is a
+generic solution that will work across "spiky" events and more spread
+out events. An instantaneous update of cpu_capacity most certainly does
+not capture spiky events. Also it can lead to cpu_capacity swinging
+wildly from the original value to a much lower value and back again.
+Averaging of thermal capacity limitation (Across any pre-determined
+duration i.e using Pelt signals or without) takes care of smoothening
+the effect of thermal capping and making sure that capping events are
+not entirely missed.  For me it is a much more elegant solution than an
+instantaneous solution.
+Having said that, like you mentioned below, when the thermal capping
+goes away, it is not reflected as an instantaneous availability of spare
+capacity. It is slowly increased. But it is not necessarily wrong
+information. All it tells the scheduler is that during the last
+"pre-determined" duration on an average "X" was the capacity available
+for a CFS task on this cpu.
 
-It would be interesting if you can share the thermal profile of your board.
+> 
+>> This means that at the moment when scheduler uses the
+>> value, it might not be correct anymore.
+> 
+> And OTOH, when you remove a cap for example, it will take time before
+> the scheduler can see the newly available capacity if you need to wait
+> for the signal to decay. So you are using a wrong information too in
+> that scenario.
+> 
+>> Then, this value are also used
+>> when building the sched_domain and setting max_cpu_capacity which
+>> would also implies the rebuilt the sched_domain topology ...
+> 
+> Wait what ? I thought the thermal cap was reflected in capacity_of, not
+> capacity_orig_of ... You need to rebuild the sched_domain in case of
+> thermal pressure ?
+> 
+> Hmm, let me have a closer look at the patches, I must have missed
+> something ...
+> 
+>> The pace of changing the capping is to fast to reflect that in the
+>> whole scheduler topology
+> 
+> That's probably true in some cases, but it'd be cool to have numbers to
+> back up that statement, I think.
+> 
+> Now, if you do need to rebuild the sched domain topology every time you
+> update the thermal pressure, I think the PELT HL is _way_ too short for
+> that ... You can't rebuild the whole thing every 32ms or so. Or am I
+> misunderstanding something ?
+> 
+>>> Thara, have you tried to experiment with a simpler implementation as
+>>> suggested by Ingo ?
+>>>
+>>> Also, assuming that we do want to average things, do we actually want to
+>>> tie the thermal ramp-up time to the PELT half life ? That provides
+>>> nice maths properties wrt the other signals, but it's not obvious to me
+>>> that this thermal 'constant' should be the same on all platforms. Or
+>>> maybe it should ?
+>>
+>> The main interest of using PELT signal is that thermal pressure will
+>> evolve at the same pace as other signals used in the scheduler.
+> 
+> Right, I think this is a nice property too (assuming that we actually
+> want to average things out).
+> 
+>> With
+>> thermal pressure, we have the exact same problem as with RT tasks. The
+>> thermal will cap the max frequency which will cap the utilization of
+>> the tasks running on the CPU
+> 
+> Well, the nature of the signal is slightly different IMO. Yes it's
+> capacity, but you're no actually measuring time spent on the CPU. All
+> other PELT signals are based on time, this thermal thing isn't, so it is
+> kinda different in a way. And I'm still wondering if it could be helpful
+> to be able to have a different HL for that thermal signal. That would
+> 'break' the nice maths properties we have, yes, but is it a problem or is
+> it actually helpful to cope with the thermal characteristics of
+> different platforms ?
 
 
-> On 10/09/2018 06:24 PM, Thara Gopinath wrote:
->> Thermal governors can respond to an overheat event for a cpu by
->> capping the cpu's maximum possible frequency. This in turn
->> means that the maximum available compute capacity of the
->> cpu is restricted. But today in linux kernel, in event of maximum
->> frequency capping of a cpu, the maximum available compute
->> capacity of the cpu is not adjusted at all. In other words, scheduler
->> is unware maximum cpu capacity restrictions placed due to thermal
->> activity. This patch series attempts to address this issue.
->> The benefits identified are better task placement among available
->> cpus in event of overheating which in turn leads to better
->> performance numbers.
->>
->> The delta between the maximum possible capacity of a cpu and
->> maximum available capacity of a cpu due to thermal event can
->> be considered as thermal pressure. Instantaneous thermal pressure
->> is hard to record and can sometime be erroneous as there can be mismatch
->> between the actual capping of capacity and scheduler recording it.
->> Thus solution is to have a weighted average per cpu value for thermal
->> pressure over time. The weight reflects the amount of time the cpu has
->> spent at a capped maximum frequency. To accumulate, average and
->> appropriately decay thermal pressure, this patch series uses pelt
->> signals and reuses the available framework that does a similar
->> bookkeeping of rt/dl task utilization.
->>
->> Regarding testing, basic build, boot and sanity testing have been
->> performed on hikey960 mainline kernel with debian file system.
->> Further aobench (An occlusion renderer for benchmarking realworld
->> floating point performance) showed the following results on hikey960
->> with debain.
->>
->>                                          Result          Standard        Standard
->>                                          (Time secs)     Error           Deviation
->> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
->> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
->>
->> Thara Gopinath (7):
->>    sched/pelt: Add option to make load and util calculations frequency
->>      invariant
->>    sched/pelt.c: Add support to track thermal pressure
->>    sched: Add infrastructure to store and update instantaneous thermal
->>      pressure
->>    sched: Initialize per cpu thermal pressure structure
->>    sched/fair: Enable CFS periodic tick to update thermal pressure
->>    sched/fair: update cpu_capcity to reflect thermal pressure
->>    thermal/cpu-cooling: Update thermal pressure in case of a maximum
->>      frequency capping
->>
->>   drivers/base/arch_topology.c  |  1 +
->>   drivers/thermal/cpu_cooling.c | 20 ++++++++++++-
->>   include/linux/sched.h         | 14 +++++++++
->>   kernel/sched/Makefile         |  2 +-
->>   kernel/sched/core.c           |  2 ++
->>   kernel/sched/fair.c           |  4 +++
->>   kernel/sched/pelt.c           | 40 ++++++++++++++++++--------
->>   kernel/sched/pelt.h           |  7 +++++
->>   kernel/sched/sched.h          |  1 +
->>   kernel/sched/thermal.c        | 66 +++++++++++++++++++++++++++++++++++++++++++
->>   kernel/sched/thermal.h        | 13 +++++++++
->>   11 files changed, 157 insertions(+), 13 deletions(-)
->>   create mode 100644 kernel/sched/thermal.c
->>   create mode 100644 kernel/sched/thermal.h
->>
+> 
+> Thanks,
+> Quentin
+> 
 
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards
+Thara
