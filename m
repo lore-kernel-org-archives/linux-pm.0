@@ -1,85 +1,58 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [workqueue/driver-core PATCH v2 5/5] PM core: Use new
- async_schedule_dev command
-Date: Wed, 10 Oct 2018 16:08:59 -0700
-Message-ID: <20181010230846.10609.48506.stgit@localhost.localdomain>
-References: <20181010230435.10609.77825.stgit@localhost.localdomain>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Thu, 11 Oct 2018 10:32:16 +0530
+Message-ID: <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-6-jcrouse@codeaurora.org>
+ <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
+ <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
+ <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
+ <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
+ <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
+ <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010230435.10609.77825.stgit@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tj@kernel.org, gregkh@linuxfoundation.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, alexander.h.duyck@linux.intel.com
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20181010151006.GD9977-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This change makes it so that we use the device specific version of the
-async_schedule commands to defer various tasks related to power management.
-By doing this we should see a slight improvement in performance as any
-device that is sensitive to latency/locality in the setup will now be
-initializing on the node closest to the device.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
----
- drivers/base/power/main.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index a690fd400260..ebb8b61b52e9 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -726,7 +726,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_noirq, dev);
-+			async_schedule_dev(async_resume_noirq, dev);
- 		}
- 	}
- 
-@@ -883,7 +883,7 @@ void dpm_resume_early(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_early, dev);
-+			async_schedule_dev(async_resume_early, dev);
- 		}
- 	}
- 
-@@ -1047,7 +1047,7 @@ void dpm_resume(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume, dev);
-+			async_schedule_dev(async_resume, dev);
- 		}
- 	}
- 
-@@ -1366,7 +1366,7 @@ static int device_suspend_noirq(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_noirq, dev);
-+		async_schedule_dev(async_suspend_noirq, dev);
- 		return 0;
- 	}
- 	return __device_suspend_noirq(dev, pm_transition, false);
-@@ -1569,7 +1569,7 @@ static int device_suspend_late(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_late, dev);
-+		async_schedule_dev(async_suspend_late, dev);
- 		return 0;
- 	}
- 
-@@ -1833,7 +1833,7 @@ static int device_suspend(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend, dev);
-+		async_schedule_dev(async_suspend, dev);
- 		return 0;
- 	}
- 
+T24gMTAtMTAtMTgsIDA5OjEwLCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IE9uIFdlZCwgT2N0IDEw
+LCAyMDE4IGF0IDA4OjIxOjM5UE0gKzA1MzAsIFZpcmVzaCBLdW1hciB3cm90ZToKPiA+IE9uIDEw
+LTEwLTE4LCAwODo0OCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+ID4gcWNvbSxsZXZlbCBjb21l
+cyBzdHJhaWdodCBmcm9tOgo+ID4gPiAKPiA+ID4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGtt
+bC8yMDE4MDYyNzA0NTIzNC4yNzQwMy0yLXJuYXlha0Bjb2RlYXVyb3JhLm9yZy8KPiA+ID4gCj4g
+PiA+IEJ1dCBpbiB0aGlzIGNhc2UgaW5zdGVhZCBvZiB1c2luZyB0aGUgQ1BVIHRvIHByb2dyYW0g
+dGhlIFJQTWggd2UgYXJlIHBhc3NpbmcKPiA+ID4gdGhlIHZhbHVlIHRvIGEgbWljcm9wcm9jZXNz
+b3IgKHRoZSBHTVUpIGFuZCB0aGF0IHdpbGwgZG8gdGhlIHZvdGUgb24gb3VyIGJlaGFsZgo+ID4g
+PiAoVGVjaG5pY2FsbHkgd2UgdXNlIHRoZSB2YWx1ZSB0byBsb29rIHVwIHRoZSB2b3RlIGluIHRo
+ZSBjbWQtZGIgZGF0YWJhc2UgYW5kCj4gPiA+IHBhc3MgdGhhdCB0byB0aGUgR01VKQo+ID4gPiAK
+PiA+ID4gVGhpcyBpcyB3aHkgdGhlIHFjb20sbGV2ZWwgd2FzIGFkZGVkIGluIHRoZSBmaXJzdCBw
+bGFjZSBzbyB3ZSBjb3VsZCBhdCBsZWFzdAo+ID4gPiBzaGFyZSB0aGUgbm9tZW5jbGF0dXJlIHdp
+dGggdGhlIHJwbWhkIGlmIG5vdCB0aGUgaW1wbGVtZW50YXRpb24uCj4gPiAKPiA+IEhvdyB5b3Ug
+YWN0dWFsbHkgcGFzcyB0aGUgdm90ZSB0byB0aGUgdW5kZXJseWluZyBoYXJkd2FyZSwgUlBNaCBv
+cgo+ID4gR01VLCBpcyBpcnJlbGV2YW50IHRvIHRoZSB3aG9sZSB0aGluZy4gV2hhdCBpcyBpbXBv
+cnRhbnQgaXMgaG93IHdlCj4gPiBkZXNjcmliZSB0aGF0IGluIERUIGFuZCBob3cgd2UgcmVwcmVz
+ZW50IHRoZSB3aG9sZSB0aGluZy4KPiA+IAo+ID4gV2UgaGF2ZSBjaG9zZW4gZ2VucGQgKyBPUFAg
+dG8gZG8gdGhpcyBhbmQgc2FtZSBzaG91bGQgYmUgdXNlZCBieSB5b3UKPiA+IGFzIHdlbGwuIEFu
+b3RoZXIgYmVuZWZpdCBpcyB0aGF0IHRoZSBnZW5wZCBjb3JlIHdpbGwgZG8gdm90ZQo+ID4gYWdn
+cmVnYXRpb24gZm9yIHlvdSBoZXJlLgo+IAo+IEknbSBub3Qgc3VyZSB3aGF0IHlvdSBhcmUgc3Vn
+Z2VzdGluZz8gVGhlIHZvdGUgaXMgcmVwcmVzZW50ZWQgaW4gRFQgZXhhY3RseSBhcwo+IGRlc2Ny
+aWJlZCBpbiB0aGUgYmluZGluZ3MuIAoKTG9vayBhdCBob3cgUmFqZW5kcmEgaGFzIGRvbmUgaXQg
+dG8gc2VlIHRoZSBkaWZmZXJlbmNlLgoKaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGttbC8yMDE4
+MDYyNzA0NTIzNC4yNzQwMy0zLXJuYXlha0Bjb2RlYXVyb3JhLm9yZy8KCi0tIAp2aXJlc2gKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1h
+aWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMu
+ZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
