@@ -1,136 +1,70 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH] thermal: qoriq: add multiple sensors support
-Date: Thu, 11 Oct 2018 08:07:15 +0000
-Message-ID: <VI1PR0401MB222469D81006CCD5CA3369C3F3E10@VI1PR0401MB2224.eurprd04.prod.outlook.com>
-References: <20180927024204.17314-1-andy.tang@nxp.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v3 7/7] mfd: axp20x: Add supported cells for AXP803
+Date: Thu, 11 Oct 2018 16:10:12 +0800
+Message-ID: <CAGb2v64i4a_yBkJE5pTmx_tKOVGKJNGvqAY0Hnw=Wr17VDSTfQ@mail.gmail.com>
+References: <20181008181908.9456-1-oskari@lemmela.net> <20181008181908.9456-8-oskari@lemmela.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180927024204.17314-1-andy.tang@nxp.com>
-Content-Language: en-US
+In-Reply-To: <20181008181908.9456-8-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: oskari@lemmela.net
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUnVpLA0KDQpBcHByZWNpYXRlIGlmIHlvdSBjYW4gZ2l2ZSBpdCBhIHJldmlldy4NCg0KQlIs
-DQpBbmR5DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogYW5keS50YW5n
-QG54cC5jb20gPGFuZHkudGFuZ0BueHAuY29tPg0KPiBTZW50OiAyMDE4xOo51MIyN8jVIDEwOjQy
-DQo+IFRvOiBydWkuemhhbmdAaW50ZWwuY29tDQo+IENjOiBlZHViZXp2YWxAZ21haWwuY29tOyBk
-YW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOw0KPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEFuZHkgVGFuZw0KPiA8YW5keS50YW5nQG54cC5j
-b20+DQo+IFN1YmplY3Q6IFtQQVRDSF0gdGhlcm1hbDogcW9yaXE6IGFkZCBtdWx0aXBsZSBzZW5z
-b3JzIHN1cHBvcnQNCj4gDQo+IEZyb206IFl1YW50aWFuIFRhbmcgPGFuZHkudGFuZ0BueHAuY29t
-Pg0KPiANCj4gVGhlcmUgaXMgb25seSBvbmUgc2Vuc29yIHN1cHBvcnRlZCBpbiBjdXJyZW50IGRy
-aXZlci4NCj4gTXVsdGlwbGUgc2Vuc29ycyBhcmUgZXhpc3Rpbmcgb24gTGF5c2NhcGUgc29jcy4g
-VG8gc3VwcG9ydCB0aGVtLCBjb3ZlcnQNCj4gdGhpcyBkcml2ZXIgdG8gc3VwcG9ydCBtdWx0aXBs
-ZSBzZW5zb3JzLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogVGFuZyBZdWFudGlhbiA8YW5keS50YW5n
-QG54cC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYyB8ICAx
-MTcNCj4gKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tDQo+ICAxIGZpbGVz
-IGNoYW5nZWQsIDcwIGluc2VydGlvbnMoKyksIDQ3IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAt
-LWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gYi9kcml2ZXJzL3RoZXJt
-YWwvcW9yaXFfdGhlcm1hbC5jIGluZGV4IGM4NjZjYzEuLjdjMWU4OGEgMTAwNjQ0DQo+IC0tLSBh
-L2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gKysrIGIvZHJpdmVycy90aGVybWFs
-L3FvcmlxX3RoZXJtYWwuYw0KPiBAQCAtNjksMTQgKzY5LDIxIEBAIHN0cnVjdCBxb3JpcV90bXVf
-cmVncyB7DQo+ICAJdTMyIHR0cjNjcjsJCS8qIFRlbXBlcmF0dXJlIFJhbmdlIDMgQ29udHJvbCBS
-ZWdpc3RlciAqLw0KPiAgfTsNCj4gDQo+ICtzdHJ1Y3QgcW9yaXFfdG11X2RhdGE7DQo+ICsNCj4g
-IC8qDQo+ICAgKiBUaGVybWFsIHpvbmUgZGF0YQ0KPiAgICovDQo+ICtzdHJ1Y3QgcW9yaXFfc2Vu
-c29yIHsNCj4gKwlzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZQkqdHpkOw0KPiArCXN0cnVjdCBx
-b3JpcV90bXVfZGF0YQkJKnFkYXRhOw0KPiArCWludAkJCQlpZDsNCj4gK307DQo+ICsNCj4gIHN0
-cnVjdCBxb3JpcV90bXVfZGF0YSB7DQo+IC0Jc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6
-Ow0KPiAgCXN0cnVjdCBxb3JpcV90bXVfcmVncyBfX2lvbWVtICpyZWdzOw0KPiAtCWludCBzZW5z
-b3JfaWQ7DQo+ICAJYm9vbCBsaXR0bGVfZW5kaWFuOw0KPiArCXN0cnVjdCBxb3JpcV9zZW5zb3IJ
-KnNlbnNvcltTSVRFU19NQVhdOw0KPiAgfTsNCj4gDQo+ICBzdGF0aWMgdm9pZCB0bXVfd3JpdGUo
-c3RydWN0IHFvcmlxX3RtdV9kYXRhICpwLCB1MzIgdmFsLCB2b2lkIF9faW9tZW0NCj4gKmFkZHIp
-IEBAIC05Nyw0OCArMTA0LDgzIEBAIHN0YXRpYyB1MzIgdG11X3JlYWQoc3RydWN0DQo+IHFvcmlx
-X3RtdV9kYXRhICpwLCB2b2lkIF9faW9tZW0gKmFkZHIpDQo+IA0KPiAgc3RhdGljIGludCB0bXVf
-Z2V0X3RlbXAodm9pZCAqcCwgaW50ICp0ZW1wKSAgew0KPiArCXN0cnVjdCBxb3JpcV9zZW5zb3Ig
-KnFzZW5zb3IgPSBwOw0KPiArCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqcWRhdGEgPSBxc2Vuc29y
-LT5xZGF0YTsNCj4gIAl1MzIgdmFsOw0KPiAtCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9
-IHA7DQo+IA0KPiAtCXZhbCA9IHRtdV9yZWFkKGRhdGEsICZkYXRhLT5yZWdzLT5zaXRlW2RhdGEt
-PnNlbnNvcl9pZF0udHJpdHNyKTsNCj4gKwl2YWwgPSB0bXVfcmVhZChxZGF0YSwgJnFkYXRhLT5y
-ZWdzLT5zaXRlW3FzZW5zb3ItPmlkXS50cml0c3IpOw0KPiAgCSp0ZW1wID0gKHZhbCAmIDB4ZmYp
-ICogMTAwMDsNCj4gDQo+ICAJcmV0dXJuIDA7DQo+ICB9DQo+IA0KPiAtc3RhdGljIGludCBxb3Jp
-cV90bXVfZ2V0X3NlbnNvcl9pZCh2b2lkKQ0KPiArc3RhdGljIGNvbnN0IHN0cnVjdCB0aGVybWFs
-X3pvbmVfb2ZfZGV2aWNlX29wcyB0bXVfdHpfb3BzID0gew0KPiArCS5nZXRfdGVtcCA9IHRtdV9n
-ZXRfdGVtcCwNCj4gK307DQo+ICsNCj4gK3N0YXRpYyBpbnQgcW9yaXFfdG11X3JlZ2lzdGVyX3Rt
-dV96b25lKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICB7DQo+IC0JaW50IHJldCwg
-aWQ7DQo+ICsJc3RydWN0IHFvcmlxX3RtdV9kYXRhICpxZGF0YSA9IHBsYXRmb3JtX2dldF9kcnZk
-YXRhKHBkZXYpOw0KPiAgCXN0cnVjdCBvZl9waGFuZGxlX2FyZ3Mgc2Vuc29yX3NwZWNzOw0KPiAg
-CXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsICpzZW5zb3JfbnA7DQo+ICsJaW50IHJldCwgaWQsIHNp
-dGVzID0gMDsNCj4gDQo+ICAJbnAgPSBvZl9maW5kX25vZGVfYnlfbmFtZShOVUxMLCAidGhlcm1h
-bC16b25lcyIpOw0KPiAgCWlmICghbnApDQo+ICAJCXJldHVybiAtRU5PREVWOw0KPiANCj4gLQlz
-ZW5zb3JfbnAgPSBvZl9nZXRfbmV4dF9jaGlsZChucCwgTlVMTCk7DQo+IC0JcmV0ID0gb2ZfcGFy
-c2VfcGhhbmRsZV93aXRoX2FyZ3Moc2Vuc29yX25wLCAidGhlcm1hbC1zZW5zb3JzIiwNCj4gLQkJ
-CSIjdGhlcm1hbC1zZW5zb3ItY2VsbHMiLA0KPiAtCQkJMCwgJnNlbnNvcl9zcGVjcyk7DQo+IC0J
-aWYgKHJldCkgew0KPiArCWZvcl9lYWNoX2F2YWlsYWJsZV9jaGlsZF9vZl9ub2RlKG5wLCBzZW5z
-b3JfbnApIHsNCj4gKwkJcmV0ID0gb2ZfcGFyc2VfcGhhbmRsZV93aXRoX2FyZ3Moc2Vuc29yX25w
-LA0KPiAidGhlcm1hbC1zZW5zb3JzIiwNCj4gKwkJCQkiI3RoZXJtYWwtc2Vuc29yLWNlbGxzIiwN
-Cj4gKwkJCQkwLCAmc2Vuc29yX3NwZWNzKTsNCj4gKwkJaWYgKHJldCkgew0KPiArCQkJb2Zfbm9k
-ZV9wdXQobnApOw0KPiArCQkJb2Zfbm9kZV9wdXQoc2Vuc29yX25wKTsNCj4gKwkJCXJldHVybiBy
-ZXQ7DQo+ICsJCX0NCj4gKw0KPiArCQlpZiAoc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQgPj0gMSkg
-ew0KPiArCQkJaWQgPSBzZW5zb3Jfc3BlY3MuYXJnc1swXTsNCj4gKwkJCVdBUk4oc2Vuc29yX3Nw
-ZWNzLmFyZ3NfY291bnQgPiAxLA0KPiArCQkJCQkiJXM6IHRvbyBtYW55IGNlbGxzIGluIHNlbnNv
-ciBzcGVjaWZpZXIgJWRcbiIsDQo+ICsJCQkJCXNlbnNvcl9zcGVjcy5ucC0+bmFtZSwNCj4gKwkJ
-CQkJc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQpOw0KPiArCQl9IGVsc2Ugew0KPiArCQkJaWQgPSAw
-Ow0KPiArCQl9DQo+ICsNCj4gIAkJb2Zfbm9kZV9wdXQobnApOw0KPiAgCQlvZl9ub2RlX3B1dChz
-ZW5zb3JfbnApOw0KPiAtCQlyZXR1cm4gcmV0Ow0KPiAtCX0NCj4gDQo+IC0JaWYgKHNlbnNvcl9z
-cGVjcy5hcmdzX2NvdW50ID49IDEpIHsNCj4gLQkJaWQgPSBzZW5zb3Jfc3BlY3MuYXJnc1swXTsN
-Cj4gLQkJV0FSTihzZW5zb3Jfc3BlY3MuYXJnc19jb3VudCA+IDEsDQo+IC0JCQkJIiVzOiB0b28g
-bWFueSBjZWxscyBpbiBzZW5zb3Igc3BlY2lmaWVyICVkXG4iLA0KPiAtCQkJCXNlbnNvcl9zcGVj
-cy5ucC0+bmFtZSwgc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQpOw0KPiAtCX0gZWxzZSB7DQo+IC0J
-CWlkID0gMDsNCj4gKwkJaWYgKGlkID4gU0lURVNfTUFYKQ0KPiArCQkJcmV0dXJuIC1FSU5WQUw7
-DQo+ICsNCj4gKwkJcWRhdGEtPnNlbnNvcltpZF0gPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwN
-Cj4gKwkJCQlzaXplb2Yoc3RydWN0IHFvcmlxX3NlbnNvciksIEdGUF9LRVJORUwpOw0KPiArCQlp
-ZiAoIXFkYXRhLT5zZW5zb3JbaWRdKQ0KPiArCQkJcmV0dXJuIC1FTk9NRU07DQo+ICsNCj4gKwkJ
-cWRhdGEtPnNlbnNvcltpZF0tPmlkID0gaWQ7DQo+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT5xZGF0
-YSA9IHFkYXRhOw0KPiArDQo+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT50emQgPQ0KPiBkZXZtX3Ro
-ZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoDQo+ICsJCQkJJnBkZXYtPmRldiwgaWQsIHFk
-YXRhLT5zZW5zb3JbaWRdLCAmdG11X3R6X29wcyk7DQo+ICsNCj4gKwkJaWYgKElTX0VSUihxZGF0
-YS0+c2Vuc29yW2lkXS0+dHpkKSkgew0KPiArCQkJcmV0ID0gUFRSX0VSUihxZGF0YS0+c2Vuc29y
-W2lkXS0+dHpkKTsNCj4gKwkJCWRldl9lcnIoJnBkZXYtPmRldiwNCj4gKwkJCQkiRmFpbGVkIHRv
-IHJlZ2lzdGVyIHRoZXJtYWwgem9uZSBkZXZpY2UuXG4iKTsNCj4gKwkJCXJldHVybiAtRU5PREVW
-Ow0KPiArCQl9DQo+ICsNCj4gKwkJc2l0ZXMgfD0gMHgxIDw8ICgxNSAtIGlkKTsNCj4gIAl9DQo+
-IA0KPiAtCW9mX25vZGVfcHV0KG5wKTsNCj4gLQlvZl9ub2RlX3B1dChzZW5zb3JfbnApOw0KPiAr
-CS8qIEVuYWJsZSBtb25pdG9yaW5nICovDQo+ICsJaWYgKHNpdGVzICE9IDApDQo+ICsJCXRtdV93
-cml0ZShxZGF0YSwgc2l0ZXMgfCBUTVJfTUUgfCBUTVJfQUxQRiwNCj4gJnFkYXRhLT5yZWdzLT50
-bXIpOw0KPiANCj4gLQlyZXR1cm4gaWQ7DQo+ICsJcmV0dXJuIDA7DQo+ICB9DQo+IA0KPiAgc3Rh
-dGljIGludCBxb3JpcV90bXVfY2FsaWJyYXRpb24oc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRl
-dikgQEANCj4gLTE4OCwxNiArMjMwLDExIEBAIHN0YXRpYyB2b2lkIHFvcmlxX3RtdV9pbml0X2Rl
-dmljZShzdHJ1Y3QNCj4gcW9yaXFfdG11X2RhdGEgKmRhdGEpDQo+ICAJdG11X3dyaXRlKGRhdGEs
-IFRNUl9ESVNBQkxFLCAmZGF0YS0+cmVncy0+dG1yKTsgIH0NCj4gDQo+IC1zdGF0aWMgY29uc3Qg
-c3RydWN0IHRoZXJtYWxfem9uZV9vZl9kZXZpY2Vfb3BzIHRtdV90el9vcHMgPSB7DQo+IC0JLmdl
-dF90ZW1wID0gdG11X2dldF90ZW1wLA0KPiAtfTsNCj4gLQ0KPiAgc3RhdGljIGludCBxb3JpcV90
-bXVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgIHsNCj4gIAlpbnQgcmV0Ow0K
-PiAgCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YTsNCj4gIAlzdHJ1Y3QgZGV2aWNlX25vZGUg
-Km5wID0gcGRldi0+ZGV2Lm9mX25vZGU7DQo+IC0JdTMyIHNpdGUgPSAwOw0KPiANCj4gIAlpZiAo
-IW5wKSB7DQo+ICAJCWRldl9lcnIoJnBkZXYtPmRldiwgIkRldmljZSBPRi1Ob2RlIGlzIE5VTEwi
-KTsgQEAgLTIxMywxMw0KPiArMjUwLDYgQEAgc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gDQo+ICAJZGF0YS0+bGl0dGxlX2VuZGlhbiA9
-IG9mX3Byb3BlcnR5X3JlYWRfYm9vbChucCwgImxpdHRsZS1lbmRpYW4iKTsNCj4gDQo+IC0JZGF0
-YS0+c2Vuc29yX2lkID0gcW9yaXFfdG11X2dldF9zZW5zb3JfaWQoKTsNCj4gLQlpZiAoZGF0YS0+
-c2Vuc29yX2lkIDwgMCkgew0KPiAtCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJGYWlsZWQgdG8gZ2V0
-IHNlbnNvciBpZFxuIik7DQo+IC0JCXJldCA9IC1FTk9ERVY7DQo+IC0JCWdvdG8gZXJyX2lvbWFw
-Ow0KPiAtCX0NCj4gLQ0KPiAgCWRhdGEtPnJlZ3MgPSBvZl9pb21hcChucCwgMCk7DQo+ICAJaWYg
-KCFkYXRhLT5yZWdzKSB7DQo+ICAJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byBnZXQg
-bWVtb3J5IHJlZ2lvblxuIik7IEBADQo+IC0yMzMsMTggKzI2MywxMyBAQCBzdGF0aWMgaW50IHFv
-cmlxX3RtdV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlDQo+ICpwZGV2KQ0KPiAgCWlmIChy
-ZXQgPCAwKQ0KPiAgCQlnb3RvIGVycl90bXU7DQo+IA0KPiAtCWRhdGEtPnR6ID0gdGhlcm1hbF96
-b25lX29mX3NlbnNvcl9yZWdpc3RlcigmcGRldi0+ZGV2LA0KPiBkYXRhLT5zZW5zb3JfaWQsDQo+
-IC0JCQkJZGF0YSwgJnRtdV90el9vcHMpOw0KPiAtCWlmIChJU19FUlIoZGF0YS0+dHopKSB7DQo+
-IC0JCXJldCA9IFBUUl9FUlIoZGF0YS0+dHopOw0KPiAtCQlkZXZfZXJyKCZwZGV2LT5kZXYsDQo+
-IC0JCQkiRmFpbGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwgem9uZSBkZXZpY2UgJWRcbiIsIHJldCk7
-DQo+IC0JCWdvdG8gZXJyX3RtdTsNCj4gKwlyZXQgPSBxb3JpcV90bXVfcmVnaXN0ZXJfdG11X3pv
-bmUocGRldik7DQo+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJZGV2X2VycigmcGRldi0+ZGV2LCAi
-RmFpbGVkIHRvIHJlZ2lzdGVyIHNlbnNvcnNcbiIpOw0KPiArCQlyZXQgPSAtRU5PREVWOw0KPiAr
-CQlnb3RvIGVycl9pb21hcDsNCj4gIAl9DQo+IA0KPiAtCS8qIEVuYWJsZSBtb25pdG9yaW5nICov
-DQo+IC0Jc2l0ZSB8PSAweDEgPDwgKDE1IC0gZGF0YS0+c2Vuc29yX2lkKTsNCj4gLQl0bXVfd3Jp
-dGUoZGF0YSwgc2l0ZSB8IFRNUl9NRSB8IFRNUl9BTFBGLCAmZGF0YS0+cmVncy0+dG1yKTsNCj4g
-DQo+ICAJcmV0dXJuIDA7DQo+IA0KPiBAQCAtMjYxLDggKzI4Niw2IEBAIHN0YXRpYyBpbnQgcW9y
-aXFfdG11X3JlbW92ZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAgew0KPiAgCXN0
-cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IHBsYXRmb3JtX2dldF9kcnZkYXRhKHBkZXYpOw0K
-PiANCj4gLQl0aGVybWFsX3pvbmVfb2Zfc2Vuc29yX3VucmVnaXN0ZXIoJnBkZXYtPmRldiwgZGF0
-YS0+dHopOw0KPiAtDQo+ICAJLyogRGlzYWJsZSBtb25pdG9yaW5nICovDQo+ICAJdG11X3dyaXRl
-KGRhdGEsIFRNUl9ESVNBQkxFLCAmZGF0YS0+cmVncy0+dG1yKTsNCj4gDQo+IC0tDQo+IDEuNy4x
-DQoNCg==
+On Tue, Oct 9, 2018 at 2:20 AM Oskari Lemmela <oskari@lemmela.net> wrote:
+>
+> AXP803 is compatible with AXP813.
+> Adding cells for GPIO, ADC, AC and battery power supplies.
+>
+> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+> ---
+>  drivers/mfd/axp20x.c | 17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 1508d9113126..4befe474b165 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -731,8 +731,23 @@ static const struct mfd_cell axp803_cells[] = {
+>                 .name                   = "axp221-pek",
+>                 .num_resources          = ARRAY_SIZE(axp803_pek_resources),
+>                 .resources              = axp803_pek_resources,
+> +       }, {
+> +               .name                   = "axp20x-regulator",
+
+Please keep this as one line as before. This was requested by the MFD
+maintainer.
+
+> +       }, {
+> +               .name                   = "axp20x-gpio",
+> +               .of_compatible          = "x-powers,axp813-gpio",
+
+You might want to put the GPIO cell near the top of the list, so any other
+users, such as the ADC and regulator cells, will probe after it.
+
+> +       }, {
+> +               .name                   = "axp813-adc",
+> +               .of_compatible          = "x-powers,axp813-adc",
+> +       }, {
+> +               .name           = "axp20x-battery-power-supply",
+> +               .of_compatible  = "x-powers,axp813-battery-power-supply",
+> +       }, {
+> +               .name           = "axp20x-ac-power-supply",
+> +               .of_compatible  = "x-powers,axp813-ac-power-supply",
+> +               .num_resources  = ARRAY_SIZE(axp20x_ac_power_supply_resources),
+> +               .resources      = axp20x_ac_power_supply_resources,
+
+Please use the same indentation.
+
+Regards
+ChenYu
+
+>         },
+> -       {       .name                   = "axp20x-regulator" },
+>  };
+>
+>  static const struct mfd_cell axp806_self_working_cells[] = {
+> --
+> 2.17.1
+>
