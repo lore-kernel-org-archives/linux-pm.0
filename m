@@ -1,122 +1,82 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v9 04/11] dt: psci: Update DT bindings to support
- hierarchical PSCI states
-Date: Thu, 11 Oct 2018 16:44:07 +0200
-Message-ID: <CAPDyKFqP3wbd+5rvLcscNf1LUSZDROLqafsLq0Kyh0KziRJrZQ@mail.gmail.com>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
- <20181003143824.13059-5-ulf.hansson@linaro.org> <20181010150312.GA4844@e107155-lin>
+From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Thu, 11 Oct 2018 08:54:56 -0600
+Message-ID: <20181011145456.GG9977@jcrouse-lnx.qualcomm.com>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-6-jcrouse@codeaurora.org>
+ <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
+ <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
+ <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
+ <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
+ <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
+ <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
+ <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010150312.GA4844@e107155-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-+Raju
-
-On 10 October 2018 at 17:03, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> On Wed, Oct 03, 2018 at 04:38:17PM +0200, Ulf Hansson wrote:
->> From: Lina Iyer <lina.iyer@linaro.org>
->>
->> Update DT bindings to represent hierarchical CPU and CPU PM domain idle
->> states for PSCI. Also update the PSCI examples to clearly show how
->> flattened and hierarchical idle states can be represented in DT.
->>
->> Cc: Lina Iyer <ilina@codeaurora.org>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Reviewed-by: Rob Herring <robh@kernel.org>
->> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  .../devicetree/bindings/arm/psci.txt          | 156 ++++++++++++++++++
->>  1 file changed, 156 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
->> index a2c4f1d52492..17aa3d3a1c8e 100644
->> --- a/Documentation/devicetree/bindings/arm/psci.txt
->> +++ b/Documentation/devicetree/bindings/arm/psci.txt
->> @@ -105,7 +105,163 @@ Case 3: PSCI v0.2 and PSCI v0.1.
->>               ...
->>       };
->>
->> +ARM systems can have multiple cores sometimes in hierarchical arrangement.
->> +This often, but not always, maps directly to the processor power topology of
->> +the system. Individual nodes in a topology have their own specific power states
->> +and can be better represented in DT hierarchically.
->> +
->> +For these cases, the definitions of the idle states for the CPUs and the CPU
->> +topology, must conform to the domain idle state specification [3]. The domain
->> +idle states themselves, must be compatible with the defined 'domain-idle-state'
->> +binding [1], and also need to specify the arm,psci-suspend-param property for
->> +each idle state.
->> +
->> +DT allows representing CPUs and CPU idle states in two different ways -
->> +
->> +The flattened model as given in Example 1, lists CPU's idle states followed by
->> +the domain idle state that the CPUs may choose. Note that the idle states are
->> +all compatible with "arm,idle-state".
->> +
->> +Example 2 represents the hierarchical model of CPUs and domain idle states.
->> +CPUs define their domain provider in their psci DT node. The domain controls
->> +the power to the CPU and possibly other h/w blocks that would enter an idle
->> +state along with the CPU. The CPU's idle states may therefore be considered as
->> +the domain's idle states and have the compatible "arm,idle-state". Such domains
->> +may also be embedded within another domain that may represent common h/w blocks
->> +between these CPUs. The idle states of the CPU topology shall be represented as
->> +the domain's idle states.
->> +
->> +In PSCI firmware v1.0, the OS-Initiated mode is introduced. In order to use it,
->> +the hierarchical representation must be used.
->> +
->> +Example 1: Flattened representation of CPU and domain idle states
->
-> [...]
->
->> +Example 2: Hierarchical representation of CPU and domain idle states
->
-> I understand that this may not be of interest for this series, but do
-> we need to add any suggestions on how to arrive Flattened representation
-> of CPU idle states from its hierarchical representation. If the DT has
-> latter and PSCI call returns as PC mode only for idle. We need to deal
-> with that case.
-
-For sure, I think this is valid comment for this series (or at least
-v8 which contains the hole set).
-
-The approach I have taken, so far, is to closely tie the support for
-PSCI OSI mode to the hierarchical representation in DT of the idle
-states. Simply because of changing as little as possible, in a first
-step, then build on top.
-
-However, in the offlist discussion I had with Lorenzo, he raised a
-concern, very similar to what you are bringing up here. There are
-indeed platform configurations, using PSCI PC mode, which would
-benefit from the using the hierarchical representation. BTW, that is
-kind of what Raju just tried to get working for QCOM SDM845 [1], but
-let's discuss that separately.
-
-The conclusion I made, is that no matter of we are using the PC mode
-or the OSI mode, the hierarchical representation shall just work.
-
-To me, this means that I have to re-work the series, such that the
-PSCI driver (and cpuidle), dynamically in runtime, can agree on which
-of the idle states that are "shared among a group of CPUs" and which
-are CPU specific. Exactly how, I am still exploring a few different
-approaches on.
-
-Does it make sense?
-
-So, when it comes to the updated DT bindings in regards to $subject
-patch, I think it's good as is. Or do you think there is something
-that needs to be clarified?
-
-Thanks for reviewing!
-
-Kind regards
-Uffe
-
-[1]
-https://lkml.org/lkml/2018/10/11/28
+T24gVGh1LCBPY3QgMTEsIDIwMTggYXQgMTA6MzI6MTZBTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
+b3RlOgo+IE9uIDEwLTEwLTE4LCAwOToxMCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiA+IE9uIFdl
+ZCwgT2N0IDEwLCAyMDE4IGF0IDA4OjIxOjM5UE0gKzA1MzAsIFZpcmVzaCBLdW1hciB3cm90ZToK
+PiA+ID4gT24gMTAtMTAtMTgsIDA4OjQ4LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+ID4gPiA+IHFj
+b20sbGV2ZWwgY29tZXMgc3RyYWlnaHQgZnJvbToKPiA+ID4gPiAKPiA+ID4gPiBodHRwczovL2xv
+cmUua2VybmVsLm9yZy9sa21sLzIwMTgwNjI3MDQ1MjM0LjI3NDAzLTItcm5heWFrQGNvZGVhdXJv
+cmEub3JnLwo+ID4gPiA+IAo+ID4gPiA+IEJ1dCBpbiB0aGlzIGNhc2UgaW5zdGVhZCBvZiB1c2lu
+ZyB0aGUgQ1BVIHRvIHByb2dyYW0gdGhlIFJQTWggd2UgYXJlIHBhc3NpbmcKPiA+ID4gPiB0aGUg
+dmFsdWUgdG8gYSBtaWNyb3Byb2Nlc3NvciAodGhlIEdNVSkgYW5kIHRoYXQgd2lsbCBkbyB0aGUg
+dm90ZSBvbiBvdXIgYmVoYWxmCj4gPiA+ID4gKFRlY2huaWNhbGx5IHdlIHVzZSB0aGUgdmFsdWUg
+dG8gbG9vayB1cCB0aGUgdm90ZSBpbiB0aGUgY21kLWRiIGRhdGFiYXNlIGFuZAo+ID4gPiA+IHBh
+c3MgdGhhdCB0byB0aGUgR01VKQo+ID4gPiA+IAo+ID4gPiA+IFRoaXMgaXMgd2h5IHRoZSBxY29t
+LGxldmVsIHdhcyBhZGRlZCBpbiB0aGUgZmlyc3QgcGxhY2Ugc28gd2UgY291bGQgYXQgbGVhc3QK
+PiA+ID4gPiBzaGFyZSB0aGUgbm9tZW5jbGF0dXJlIHdpdGggdGhlIHJwbWhkIGlmIG5vdCB0aGUg
+aW1wbGVtZW50YXRpb24uCj4gPiA+IAo+ID4gPiBIb3cgeW91IGFjdHVhbGx5IHBhc3MgdGhlIHZv
+dGUgdG8gdGhlIHVuZGVybHlpbmcgaGFyZHdhcmUsIFJQTWggb3IKPiA+ID4gR01VLCBpcyBpcnJl
+bGV2YW50IHRvIHRoZSB3aG9sZSB0aGluZy4gV2hhdCBpcyBpbXBvcnRhbnQgaXMgaG93IHdlCj4g
+PiA+IGRlc2NyaWJlIHRoYXQgaW4gRFQgYW5kIGhvdyB3ZSByZXByZXNlbnQgdGhlIHdob2xlIHRo
+aW5nLgo+ID4gPiAKPiA+ID4gV2UgaGF2ZSBjaG9zZW4gZ2VucGQgKyBPUFAgdG8gZG8gdGhpcyBh
+bmQgc2FtZSBzaG91bGQgYmUgdXNlZCBieSB5b3UKPiA+ID4gYXMgd2VsbC4gQW5vdGhlciBiZW5l
+Zml0IGlzIHRoYXQgdGhlIGdlbnBkIGNvcmUgd2lsbCBkbyB2b3RlCj4gPiA+IGFnZ3JlZ2F0aW9u
+IGZvciB5b3UgaGVyZS4KPiA+IAo+ID4gSSdtIG5vdCBzdXJlIHdoYXQgeW91IGFyZSBzdWdnZXN0
+aW5nPyBUaGUgdm90ZSBpcyByZXByZXNlbnRlZCBpbiBEVCBleGFjdGx5IGFzCj4gPiBkZXNjcmli
+ZWQgaW4gdGhlIGJpbmRpbmdzLiAKPiAKPiBMb29rIGF0IGhvdyBSYWplbmRyYSBoYXMgZG9uZSBp
+dCB0byBzZWUgdGhlIGRpZmZlcmVuY2UuCj4gCj4gaHR0cHM6Ly9sb3JlLmtlcm5lbC5vcmcvbGtt
+bC8yMDE4MDYyNzA0NTIzNC4yNzQwMy0zLXJuYXlha0Bjb2RlYXVyb3JhLm9yZy8KClRoZSBHUFUg
+ZG9tYWluIGlzIGNvbXBsZXRlbHkgY29udHJvbGxlZCBieSB0aGUgR01VIGhhcmR3YXJlIGFuZCBp
+cyBwb3dlcmVkCmluZGVwZW5kZW50bHkgb2YgdGhlIENQVS4gRm9yIHZhcmlvdXMgcmVhc29ucyB0
+aGUgR01VIGNhbid0IGNvbWUgdXAgd2l0aAp0aGUgdm90ZSBpdHNlbGYgc28gd2UgbmVlZCB0byBj
+b25zdHJ1Y3QgYSB2b3RlIGFuZCBzZW5kIGl0IGR1cmluZwppbml0aWFsaXphdGlvbi4gRm9yIHRo
+aXMgd2UgZHVwbGljYXRlIHRoZSBjb2RlIHRoYXQgcm1waGQgZG9lcyB0byBxdWVyeSB0aGUKY21k
+LWRiIGFuZCBidWlsZCB0aGUgdmFsdWVzIHVzaW5nIHFjb20sbGV2ZWwgYXMgYSBndWlkZS4gVGhp
+cyBpcyBuZWNlc3NhcnkKY29weXBhc3RhIGFzIHRoZSBhbHRlcm5hdGl2ZSB3b3VsZCBiZSB0byBh
+ZGQgdGhlIGhvb2tzIGludG8gZ2VucGQgb3IgYWRkIGEKc2lkZSBob29rIGludG8gdGhlIHJwbWhk
+IHRvIGdldCB0aGUgdmFsdWVzIHdlIG5lZWQgYW5kIG5vbmUgb2YgdGhhdCBpcyB3b3J0aAppdCBm
+b3IgYSBmZXcgbGluZXMgb2Ygd2Fsa2luZyBhbiBhcnJheS4KCnFjb20sbGV2ZWwgc2VydmVzIHRo
+ZSBwdXJwb3NlIGZvciB1cyBpbiB0aGlzIGNhc2UgYmVjYXVzZSB3ZSBjYW4gZ2V0IHRoZSB2YWx1
+ZQp3ZSBuZWVkIGFuZCBjb25zdHJ1Y3QgdGhlIHZvdGUuIElmIHdlIG1vdmUgdG8gdXNpbmcgcmVx
+dWlyZWQtb3BwLCB0aGF0cyBqdXN0CmFub3RoZXIgc3RlcCBvZiBwYXJzaW5nIGZvciB0aGUgZHJp
+dmVyIGFuZCBpdCBlc3RhYmxpc2hlcyBhIHJlbGF0aW9uc2hpcCB3aXRoCnJtcGhkIG9uIHRoZSBD
+UFUgdGhhdCBzaG91bGRuJ3QgZXhpc3QuCgpJIGRvIHNlZSBhIGdvb2QgYXJndW1lbnQgZm9yIHVz
+aW5nIHRoZSBzeW1ib2xpYyBiaW5kaW5ncyAoaS5lLgpSUE1IX1JFR1VMQVRPUl9MRVZFTF9UVVJC
+T19MMSkgYW5kIHdlIGNhbiBkbyB0aGF0IGVhc2lseSBidXQgYmV5b25kIHRoYXQgSQpkb24ndCB0
+aGluayB0aGF0IHdlIG5lZWQgdGhlIGV4dHJhIHBhcnNpbmcgc3RlcC4KClRoYW5rcywKSm9yZGFu
+CgotLSAKVGhlIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9m
+IENvZGUgQXVyb3JhIEZvcnVtLAphIExpbnV4IEZvdW5kYXRpb24gQ29sbGFib3JhdGl2ZSBQcm9q
+ZWN0Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVk
+cmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
+L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
