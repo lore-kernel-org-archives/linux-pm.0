@@ -1,103 +1,69 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [workqueue/driver-core PATCH v2 2/5] async: Add support for
- queueing on specific NUMA node
-Date: Thu, 11 Oct 2018 12:47:40 +0200
-Message-ID: <20181011104740.GB30183@kroah.com>
-References: <20181010230435.10609.77825.stgit@localhost.localdomain>
- <20181010230747.10609.15866.stgit@localhost.localdomain>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH RFC v1 5/8] dt-bindings: introduce cpu power domain
+ bindings for Qualcomm SoCs
+Date: Thu, 11 Oct 2018 12:08:49 +0100
+Message-ID: <20181011110849.GA32752@e107155-lin>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-6-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181010230747.10609.15866.stgit@localhost.localdomain>
+In-Reply-To: <1539206455-29342-6-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: tj@kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org
+To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Cc: andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 10, 2018 at 04:08:21PM -0700, Alexander Duyck wrote:
-> This patch introduces four new variants of the async_schedule_ functions
-> that allow scheduling on a specific NUMA node.
-> 
-> The first two functions are async_schedule_near and
-> async_schedule_near_domain which end up mapping to async_schedule and
-> async_schedule_domain but provide NUMA node specific functionality. They
-> replace the original functions which were moved to inline function
-> definitions that call the new functions while passing NUMA_NO_NODE.
-> 
-> The second two functions are async_schedule_dev and
-> async_schedule_dev_domain which provide NUMA specific functionality when
-> passing a device as the data member and that device has a NUMA node other
-> than NUMA_NO_NODE.
-> 
-> The main motivation behind this is to address the need to be able to
-> schedule device specific init work on specific NUMA nodes in order to
-> improve performance of memory initialization.
-> 
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+On Thu, Oct 11, 2018 at 02:50:52AM +0530, Raju P.L.S.S.S.N wrote:
+> Add device binding documentation for Qualcomm Technology Inc's cpu
+> domain driver. The driver is used for managing system sleep activities
+> that are required when application processor is going to deepest low
+> power mode.
+>
+
+So either we are not using PSCI or the binding is not so clear on
+how this co-exist with PSCI power domains. Could you provide details ?
+
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
 > ---
+>  .../bindings/soc/qcom/cpu_power_domain.txt         | 39 ++++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/qcom/cpu_power_domain.txt
 > 
-> v1->v2:
->     Replaced call to queue_work_near with call to queue_work_node
-> 
->  include/linux/async.h |   36 +++++++++++++++++++++++++++++++++---
->  kernel/async.c        |   47 ++++++++++++++++++++++-------------------------
->  2 files changed, 55 insertions(+), 28 deletions(-)
-> 
-> diff --git a/include/linux/async.h b/include/linux/async.h
-> index 6b0226bdaadc..1f6cb0d50263 100644
-> --- a/include/linux/async.h
-> +++ b/include/linux/async.h
-> @@ -14,6 +14,8 @@
->  
->  #include <linux/types.h>
->  #include <linux/list.h>
-> +#include <linux/numa.h>
-> +#include <linux/device.h>
->  
->  typedef u64 async_cookie_t;
->  typedef void (*async_func_t) (void *data, async_cookie_t cookie);
-> @@ -37,9 +39,37 @@ struct async_domain {
->  	struct async_domain _name = { .pending = LIST_HEAD_INIT(_name.pending), \
->  				      .registered = 0 }
->  
-> -extern async_cookie_t async_schedule(async_func_t func, void *data);
-> -extern async_cookie_t async_schedule_domain(async_func_t func, void *data,
-> -					    struct async_domain *domain);
-> +async_cookie_t async_schedule_near(async_func_t func, void *data,
-> +				   int node);
-> +async_cookie_t async_schedule_near_domain(async_func_t func, void *data,
-> +					  int node,
-> +					  struct async_domain *domain);
+> diff --git a/Documentation/devicetree/bindings/soc/qcom/cpu_power_domain.txt b/Documentation/devicetree/bindings/soc/qcom/cpu_power_domain.txt
+> new file mode 100644
+> index 0000000..1c8fe69
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/qcom/cpu_power_domain.txt
+> @@ -0,0 +1,39 @@
+> +Qualcomm Technologies cpu power domain
+> +-----------------------------------------
 > +
-> +static inline async_cookie_t async_schedule(async_func_t func, void *data)
-> +{
-> +	return async_schedule_near(func, data, NUMA_NO_NODE);
-> +}
+> +CPU power domain handles the tasks that need to be performed during
+> +application processor deeper low power mode entry for QCOM SoCs which
+> +have hardened IP blocks combinedly called as RPMH (Resource Power Manager
+> +Hardened) for shared resource management. Flushing the buffered requests
+> +to TCS (Triggered Command Set) in RSC (Resource State Coordinator) and
+> +programming the wakeup timer in PDC (Power Domain Controller) for timer
+> +based wakeup are handled as part of domain power down.
 > +
-> +static inline async_cookie_t
-> +async_schedule_domain(async_func_t func, void *data,
-> +		      struct async_domain *domain)
-> +{
-> +	return async_schedule_near_domain(func, data, NUMA_NO_NODE, domain);
-> +}
-> +
-> +static inline async_cookie_t
-> +async_schedule_dev(async_func_t func, struct device *dev)
-> +{
-> +	return async_schedule_near(func, dev, dev_to_node(dev));
-> +}
-> +
-> +static inline async_cookie_t
-> +async_schedule_dev_domain(async_func_t func, struct device *dev,
-> +			  struct async_domain *domain)
-> +{
-> +	return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
-> +}
 
-No kerneldoc for these functions?  We lost it for
-async_schedule_domain() which used to be documented before this patch :(
+And which is this not hidden as part of PSCI CPU_SUSPEND ?
 
-thanks,
+> +The bindings for cpu power domain is specified in the RSC section in
+> +devicetree.
+> +
+> +Properties:
+> +- compatible:
+> +	Usage: required
+> +	Value type: <string>
+> +	Definition: must be "qcom,cpu-pm-domain".
+> +
 
-greg k-h
+NACK until details on how this can co-exist with PSCI is provided.
+
+--
+Regards,
+Sudeep
