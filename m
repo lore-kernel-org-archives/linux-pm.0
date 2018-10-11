@@ -1,112 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
-Date: Thu, 11 Oct 2018 23:06:58 +0200
-Message-ID: <2671493.AgiGORq3CZ@aspire.rjw.lan>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com> <CAJZ5v0j0GLHgKS9+mafm3eoFMuNEo6VPa3LhRthg+H5OKHhFqA@mail.gmail.com> <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH RFC v1 2/8] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Thu, 11 Oct 2018 16:08:42 -0600
+Message-ID: <20181011220842.GE2371@codeaurora.org>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-3-git-send-email-rplsssn@codeaurora.org>
+ <8161939.SRDo8Qx48D@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <8161939.SRDo8Qx48D@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
-> On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
-> > <waldemar.rymarkiewicz@gmail.com> wrote:
-> > >
-> > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> > >
-> > > The governor updates dbs_info->requested_freq only after increasing or
-> > > decreasing frequency. There is, however, an use case when this is not
-> > > sufficient.
-> > >
-> > > Imagine, external module constraining cpufreq policy in a way that policy->max
-> >
-> > Is the "external module" here a utility or a demon running in user space?
-> 
-> No, this is a driver that communicates with a firmware and makes sure
-> CPU is running at the highest rate in specific time.
-> It uses verify_within_limits  and update_policy, a standard way to
-> constraint cpufreq policy limits.
-> 
-> > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> > >                         requested_freq = policy->min;
-> > >
-> > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
-> > > -               dbs_info->requested_freq = requested_freq;
-> > >         }
-> > >
-> > >   out:
-> > > +       dbs_info->requested_freq = requested_freq;
-> >
-> > This will have a side effect when requested_freq is updated before the
-> > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
-> > check.
-> >
-> > Shouldn't that be avoided?
-> 
-> I would say we should.
-> 
-> A hardware design I use is running 4.9 kernel where the check does not
-> exist yet, so there is not a problem.
-> Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
-> requested_freq  either to requested_freq = policy->min or
-> requested_freq -= freq_steps;. The first case will not change anything
-> for us as policy->max=min=cur. The second, however, will force to
-> update freq which is definitely not expected when limits are set to
-> min=max. Simply it will not go out  here:
-> 
-> if (load < cs_tuners->down_threshold) {
->       if (requested_freq == policy->min)
->            goto out;   <---
-> ...
-> }
-> 
-> Am I right here? If so, shouldn't we check explicitly
-> 
-> /*
-> * If requested_freq is out of range, it is likely that the limits
-> * changed in the meantime, so fall back to current frequency in that
-> * case.
-> */
-> if (requested_freq > policy->max || requested_freq < policy->min)
->        requested_freq = policy->cur;
-> 
-> +/*
-> +* If the the new limits min,max are equal, there is no point to process further
-> +*/
-> +
-> +if (requested_freq == policy->max  &&  requested_freq == policy->min)
-> +     goto out;
+On Thu, Oct 11 2018 at 14:56 -0600, Rafael J. Wysocki wrote:
+>On Wednesday, October 10, 2018 11:20:49 PM CEST Raju P.L.S.S.S.N wrote:
+>> From: Ulf Hansson <ulf.hansson@linaro.org>
+>>
+>> To allow CPUs being power managed by PM domains, let's deploy support for
+>> runtime PM for the CPU's corresponding struct device.
+>>
+>> More precisely, at the point when the CPU is about to enter an idle state,
+>> decrease the runtime PM usage count for its corresponding struct device,
+>> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
+>> resumes from idle, let's increase the runtime PM usage count, via calling
+>> pm_runtime_get_sync().
+>>
+>> Cc: Lina Iyer <ilina@codeaurora.org>
+>> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+>> (am from https://patchwork.kernel.org/patch/10478153/)
+>> ---
+>>  kernel/cpu_pm.c | 11 +++++++++++
+>>  1 file changed, 11 insertions(+)
+>>
+>> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+>> index 67b02e1..492d4a8 100644
+>> --- a/kernel/cpu_pm.c
+>> +++ b/kernel/cpu_pm.c
+>> @@ -16,9 +16,11 @@
+>>   */
+>>
+>>  #include <linux/kernel.h>
+>> +#include <linux/cpu.h>
+>>  #include <linux/cpu_pm.h>
+>>  #include <linux/module.h>
+>>  #include <linux/notifier.h>
+>> +#include <linux/pm_runtime.h>
+>>  #include <linux/spinlock.h>
+>>  #include <linux/syscore_ops.h>
+>>
+>> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
+>>  {
+>>  	int nr_calls;
+>>  	int ret = 0;
+>> +	struct device *dev = get_cpu_device(smp_processor_id());
+>>
+>>  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+>>  	if (ret)
+>> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
+>>  		 */
+>>  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+>>
+>> +	if (!ret && dev && dev->pm_domain)
+>> +		pm_runtime_put_sync_suspend(dev);
+>
+>This may cause a power domain to go off, but if it goes off, then the idle
+>governor has already selected idle states for all of the CPUs in that domain.
+>
+>Is there any way to ensure that turning the domain off (and later on) will
+>no cause the target residency and exit latency expectations for those idle
+>states to be exceeded?
+>
+Good point.
 
-If my understanding of the problem is correct, it would be better to simply
-update dbs_info->requested_freq along with requested_freq when that is found
-to be out of range.  IOW, something like the appended patch (untested).
+The cluster states should account for that additional latency. Just the
+CPU's power down states need not care about that.
 
-Wouldn't that address the problem at hand?
+But, it would be nice if the PM domain governor could be cognizant of
+the idle state chosen for each CPU, that way we dont configure the
+domain to be powered off when the CPUs have just chosen to power down
+(not chosen a cluster state). I think that is a whole different topic to
+discuss.
 
----
- drivers/cpufreq/cpufreq_conservative.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+-- Lina
 
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
- 	 * changed in the meantime, so fall back to current frequency in that
- 	 * case.
- 	 */
--	if (requested_freq > policy->max || requested_freq < policy->min)
-+	if (requested_freq > policy->max || requested_freq < policy->min) {
- 		requested_freq = policy->cur;
-+		dbs_info->requested_freq = requested_freq;
-+	}
- 
- 	freq_step = get_freq_step(cs_tuners, policy);
- 
+>> +
+>>  	return ret;
+>>  }
+>>  EXPORT_SYMBOL_GPL(cpu_pm_enter);
+>> @@ -118,6 +124,11 @@ int cpu_pm_enter(void)
+>>   */
+>>  int cpu_pm_exit(void)
+>>  {
+>> +	struct device *dev = get_cpu_device(smp_processor_id());
+>> +
+>> +	if (dev && dev->pm_domain)
+>> +		pm_runtime_get_sync(dev);
+>> +
+>>  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+>>  }
+>>  EXPORT_SYMBOL_GPL(cpu_pm_exit);
+>>
+>
+>
