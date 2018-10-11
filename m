@@ -1,110 +1,65 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH RFC v1 2/8] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Thu, 11 Oct 2018 16:08:42 -0600
-Message-ID: <20181011220842.GE2371@codeaurora.org>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-3-git-send-email-rplsssn@codeaurora.org>
- <8161939.SRDo8Qx48D@aspire.rjw.lan>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: [driver-core PATCH v3 0/5] Add NUMA aware async_schedule calls
+Date: Thu, 11 Oct 2018 15:09:16 -0700
+Message-ID: <20181011220134.1408.63391.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8161939.SRDo8Qx48D@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
+To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
+Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 11 2018 at 14:56 -0600, Rafael J. Wysocki wrote:
->On Wednesday, October 10, 2018 11:20:49 PM CEST Raju P.L.S.S.S.N wrote:
->> From: Ulf Hansson <ulf.hansson@linaro.org>
->>
->> To allow CPUs being power managed by PM domains, let's deploy support for
->> runtime PM for the CPU's corresponding struct device.
->>
->> More precisely, at the point when the CPU is about to enter an idle state,
->> decrease the runtime PM usage count for its corresponding struct device,
->> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
->> resumes from idle, let's increase the runtime PM usage count, via calling
->> pm_runtime_get_sync().
->>
->> Cc: Lina Iyer <ilina@codeaurora.org>
->> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
->> (am from https://patchwork.kernel.org/patch/10478153/)
->> ---
->>  kernel/cpu_pm.c | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->>
->> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
->> index 67b02e1..492d4a8 100644
->> --- a/kernel/cpu_pm.c
->> +++ b/kernel/cpu_pm.c
->> @@ -16,9 +16,11 @@
->>   */
->>
->>  #include <linux/kernel.h>
->> +#include <linux/cpu.h>
->>  #include <linux/cpu_pm.h>
->>  #include <linux/module.h>
->>  #include <linux/notifier.h>
->> +#include <linux/pm_runtime.h>
->>  #include <linux/spinlock.h>
->>  #include <linux/syscore_ops.h>
->>
->> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
->>  {
->>  	int nr_calls;
->>  	int ret = 0;
->> +	struct device *dev = get_cpu_device(smp_processor_id());
->>
->>  	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
->>  	if (ret)
->> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
->>  		 */
->>  		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
->>
->> +	if (!ret && dev && dev->pm_domain)
->> +		pm_runtime_put_sync_suspend(dev);
->
->This may cause a power domain to go off, but if it goes off, then the idle
->governor has already selected idle states for all of the CPUs in that domain.
->
->Is there any way to ensure that turning the domain off (and later on) will
->no cause the target residency and exit latency expectations for those idle
->states to be exceeded?
->
-Good point.
+This patch set provides functionality that will help to improve the
+locality of the async_schedule calls used to provide deferred
+initialization.
 
-The cluster states should account for that additional latency. Just the
-CPU's power down states need not care about that.
+This patch set originally started out with me focused on just the one call
+to async_schedule_domain in the nvdimm tree that was being used to
+defer the device_add call however after doing some digging I realized the
+scope of this was much broader than I had originally planned. As such I
+went through and reworked the underlying infrastructure down to replacing
+the queue_work call itself with a function of my own and opted to try and
+provide a NUMA aware solution that would work for a broader audience.
 
-But, it would be nice if the PM domain governor could be cognizant of
-the idle state chosen for each CPU, that way we dont configure the
-domain to be powered off when the CPUs have just chosen to power down
-(not chosen a cluster state). I think that is a whole different topic to
-discuss.
+Ideally this solution should be agnostic enough that it can be used for any
+given device type. So ideally we shouldn't need to implement one-off
+solutions for each bus as has already kind of happened in the PCI tree with
+pci_call_probe.
 
--- Lina
+RFC->v1:
+    Dropped nvdimm patch to submit later.
+		It relies on code in libnvdimm development tree.
+    Simplified queue_work_near to just convert node into a CPU.
+    Split up drivers core and PM core patches.
+v1->v2:
+    Renamed queue_work_near to queue_work_node
+    Added WARN_ON_ONCE if we use queue_work_node with per-cpu workqueue
+v2->v3:
+    Added Acked-by for queue_work_node patch
+    Continued rename from _near to _node for consistency with queue_work_node
+        Renamed async_schedule_near_domain to async_schedule_node_domain
+        Renamed async_schedule_near to async_schedule_node
+    Added kerneldoc for new async_schedule_XXX functions
+    Added nvdimm boot time improvement data to description of patch 4
+---
 
->> +
->>  	return ret;
->>  }
->>  EXPORT_SYMBOL_GPL(cpu_pm_enter);
->> @@ -118,6 +124,11 @@ int cpu_pm_enter(void)
->>   */
->>  int cpu_pm_exit(void)
->>  {
->> +	struct device *dev = get_cpu_device(smp_processor_id());
->> +
->> +	if (dev && dev->pm_domain)
->> +		pm_runtime_get_sync(dev);
->> +
->>  	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
->>  }
->>  EXPORT_SYMBOL_GPL(cpu_pm_exit);
->>
->
->
+Alexander Duyck (5):
+      workqueue: Provide queue_work_node to queue work near a given NUMA node
+      async: Add support for queueing on specific NUMA node
+      driver core: Probe devices asynchronously instead of the driver
+      driver core: Attach devices on CPU local to device node
+      PM core: Use new async_schedule_dev command
+
+
+ drivers/base/bus.c        |   23 ++----------
+ drivers/base/dd.c         |   44 +++++++++++++++++++++++-
+ drivers/base/power/main.c |   12 +++---
+ include/linux/async.h     |   84 +++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/workqueue.h |    2 +
+ kernel/async.c            |   53 ++++++++++++++++------------
+ kernel/workqueue.c        |   84 +++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 248 insertions(+), 54 deletions(-)
+
+--
