@@ -1,62 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
- support using genpd
-Date: Thu, 11 Oct 2018 17:27:59 +0200
-Message-ID: <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org> <20181011111306.GB32752@e107155-lin>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: Re: [workqueue/driver-core PATCH v2 4/5] driver core: Attach devices
+ on CPU local to device node
+Date: Thu, 11 Oct 2018 08:50:29 -0700
+Message-ID: <e2c37263-ccbd-f3e1-243d-f5c6867fa251@linux.intel.com>
+References: <20181010230435.10609.77825.stgit@localhost.localdomain>
+ <20181010230836.10609.73485.stgit@localhost.localdomain>
+ <20181011104501.GA30183@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011111306.GB32752@e107155-lin>
+In-Reply-To: <20181011104501.GA30183@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: tj@kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11 October 2018 at 13:13, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
->> RPMH based targets require that the sleep and wake state request votes
->> be sent during system low power mode entry. The votes help reduce the
->> power consumption when the AP is not using them. The votes sent by the
->> clients are cached in RPMH controller and needs to be flushed when the
->> last cpu enters low power mode. So add cpu power domain using Linux
->> generic power domain infrastructure to perform necessary tasks as part
->> of domain power down.
->>
->
-> You seem to have either randomly chosen just 3 patches from Lina/Ulf's
-> CPU genpd series or this series doesn't entirely depend on it ?
 
-Yep, it not easy to follow. But I do understand what you are trying to do here.
 
->
-> If latter, how does this work with PSCI CPU_SUSPEND operations ?
->
-> And why this can be part of PSCI firmware implementation. Only PSCI
-> firmware needs if RPMH votes need to be flushed or not. So, honestly
-> I don't see the need for this in Linux.
+On 10/11/2018 3:45 AM, Greg KH wrote:
+> On Wed, Oct 10, 2018 at 04:08:40PM -0700, Alexander Duyck wrote:
+>> This change makes it so that we call the asynchronous probe routines on a
+>> CPU local to the device node. By doing this we should be able to improve
+>> our initialization time significantly as we can avoid having to access the
+>> device from a remote node which may introduce higher latency.
+> 
+> This is nice in theory, but what kind of real numbers does this show?
+> There's a lot of added complexity here, and what is the benifit?
+> 
+> Benchmarks or bootcharts that we can see would be great to have, thanks.
+> 
+> greg k-h
+> 
 
-I do think there is clear need for this in Linux. More precisely,
-since the PSCI firmware have knowledge solely about CPUs (and clusters
-of CPUs), but not about other shared resources/devices present on the
-SoC.
+In the case of persistent memory init the cost for getting the wrong 
+node is pretty significant. On my test system with 3TB per node just 
+getting the initialization node matched up to the memory node dropped 
+initialization time per node from 39 seconds down to about 26 seconds 
+per node.
 
-What Raju is trying to do here, is to manage those resources which
-needs special treatment, before and after the CPU (likely cluster) is
-going idle and returns from idle.
+We are already starting to see code like this pop up in subsystems 
+anyway. For example the PCI code already has logic similar to what I am 
+adding here floating around in it[1]. I'm hoping that by placing this 
+change in the core device code we could start consolidating it so we 
+don't have all the individual drivers or subsystems implementing their 
+own NUMA specific init logic.
 
-One question here though, what particular idle state is relevant for
-the QCOM SoC to take last-man-actions for? I assume it's only cluster
-idle states, and not about cpu idle states, no? Raju, can you please
-clarify?
+This is likely going to become more of an issue in the future as we now 
+have CPUs like the AMD Ryzen Threadripper out there that have people 
+starting to discuss NUMA in the consumer space.
 
-Historically, the typical solution have been to use the
-cpu_cluster_pm_enter|exit() notifiers. Those could potentially be
-replaced by instead building a hierarchical topology, using
-master/subdomain of genpd/"power-domains", along the lines of what
-Raju is doing. However, I am not sure if that is the correct approach,
-at least we need to make sure it models the HW in DT correctly.
+- Alex
 
-Kind regards
-Uffe
+[1] 
+https://elixir.bootlin.com/linux/v4.19-rc7/source/drivers/pci/pci-driver.c#L331
