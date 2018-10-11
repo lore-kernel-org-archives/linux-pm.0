@@ -1,231 +1,74 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v8 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
- Firmware bindings
-Date: Thu, 11 Oct 2018 16:01:57 +0530
-Message-ID: <2578568d-e1b8-b7b5-beeb-ad485a971f2d@codeaurora.org>
-References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
- <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
- <20180927153126.GA17218@bogus>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: Re: [PATCH 0/15] Add support for OLPC XO 1.75 Embedded Controller
+Date: Thu, 11 Oct 2018 12:42:24 +0200
+Message-ID: <40e6a8575d4bdc43cc069e561e12f404983c5567.camel@v3.sk>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+ <CAL_Jsq+MYBrkZ=OEv3avxC_NZ+q3+stOF8CsHeXUsomKZD9+AA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180927153126.GA17218@bogus>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <CAL_Jsq+MYBrkZ=OEv3avxC_NZ+q3+stOF8CsHeXUsomKZD9+AA@mail.gmail.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, Geert Uytterhoeven <geert+renesas@glider.be>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-spi <linux-spi@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Daniel Mack <daniel@zonque.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Andy Shevchenko <andy@infradead.org>, "moderated
+ list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Rob,
-
-Thanks for your review comments.
-
-On 9/27/2018 9:01 PM, Rob Herring wrote:
-> On Sun, Sep 23, 2018 at 04:03:12PM +0530, Taniya Das wrote:
->> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
->> SoCs. This is required for managing the cpu frequency transitions which are
->> controlled by the hardware engine.
->>
->> Signed-off-by: Taniya Das <tdas@codeaurora.org>
->> ---
->>   .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 169 +++++++++++++++++++++
->>   1 file changed, 169 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
->> new file mode 100644
->> index 0000000..c06941c
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
->> @@ -0,0 +1,169 @@
->> +Qualcomm Technologies, Inc. CPUFREQ Bindings
->> +
->> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
->> +SoCs to manage frequency in hardware. It is capable of controlling frequency
->> +for multiple clusters.
->> +
->> +Properties:
->> +- compatible
->> +	Usage:		required
->> +	Value type:	<string>
->> +	Definition:	must be "qcom,cpufreq-hw".
->> +
->> +- clocks
->> +	Usage:		required
->> +	Value type:	<phandle> From common clock binding.
->> +	Definition:	clock handle for XO clock and GPLL0 clock.
->> +
->> +- clock-names
->> +	Usage:		required
->> +	Value type:	<string> From common clock binding.
->> +	Definition:	must be "xo", "cpu_clk".
->> +
->> +- reg
->> +	Usage:		required
->> +	Value type:	<prop-encoded-array>
->> +	Definition:	Addresses and sizes for the memory of the HW bases in
->> +			each frequency domain.
->> +- reg-names
->> +	Usage:		Optional
->> +	Value type:	<string>
->> +	Definition:	Frequency domain name i.e.
->> +			"freq-domain0", "freq-domain1".
->> +
->> +* Property qcom,freq-domain
->> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
->> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
->> +
->> +
->> +Example:
->> +
->> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
->> +DCVS state together.
->> +
->> +/ {
->> +	cpus {
->> +		#address-cells = <2>;
->> +		#size-cells = <0>;
->> +
->> +		CPU0: cpu@0 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x0>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_0>;
->> +			qcom,freq-domain = <&cpufreq_hw 0>;
->> +			L2_0: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +				L3_0: l3-cache {
->> +				      compatible = "cache";
->> +				};
->> +			};
->> +		};
->> +
->> +		CPU1: cpu@100 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x100>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_100>;
->> +			qcom,freq-domain = <&cpufreq_hw 0>;
->> +			L2_100: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU2: cpu@200 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x200>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_200>;
->> +			qcom,freq-domain = <&cpufreq_hw 0>;
->> +			L2_200: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU3: cpu@300 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x300>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_300>;
->> +			qcom,freq-domain = <&cpufreq_hw 0>;
->> +			L2_300: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU4: cpu@400 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x400>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_400>;
->> +			qcom,freq-domain = <&cpufreq_hw 1>;
->> +			L2_400: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU5: cpu@500 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x500>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_500>;
->> +			qcom,freq-domain = <&cpufreq_hw 1>;
->> +			L2_500: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU6: cpu@600 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x600>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_600>;
->> +			qcom,freq-domain = <&cpufreq_hw 1>;
->> +			L2_600: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +
->> +		CPU7: cpu@700 {
->> +			device_type = "cpu";
->> +			compatible = "qcom,kryo385";
->> +			reg = <0x0 0x700>;
->> +			enable-method = "psci";
->> +			next-level-cache = <&L2_700>;
->> +			qcom,freq-domain = <&cpufreq_hw 1>;
->> +			L2_700: l2-cache {
->> +				compatible = "cache";
->> +				next-level-cache = <&L3_0>;
->> +			};
->> +		};
->> +	};
->> +
->> + soc {
->> +	cpufreq_hw: qcom,cpufreq-hw {
+On Wed, 2018-10-10 at 14:26 -0500, Rob Herring wrote:
+> On Wed, Oct 10, 2018 at 12:23 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
+> > Hi.
+> > 
+> > This patchset adds support for the Embedded Controller on an OLPC XO
+> > 1.75 machine. OLPC XO 1.75 is a MMP2 based ARM laptop. It plugs into
+> > the existing OLPC platform infrastructure, currently used by the x86
+> > based models.
+> > 
+> > The EC operates in SPI master mode, meaning the SOC is the SPI slave. It
+> > uses extra handshake signal to signal readiness of SOC to accept data
+> > from EC and to initiate a transaction if SOC wishes to submit data.
+> > 
+> > The SPI slave support for MMP2 was submitted separately:
+> > https://lore.kernel.org/lkml/20181010170936.316862-1-lkundrak@v3.sk/T/#t
+> > 
+> > THe "power: supply: olpc_battery: correct the temperature" patch was
+> > already sent out separately, but I'm including it because the last
+> > commit of the set depends on it.
+> > 
+> > Tested to work on an OLPC XO 1.75 and also tested not to break x86
+> > support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
+> > unlikely this breaks it when XO 1 works.
 > 
-> Should have a unit-address and node names should be generic. We don't
-> really have one for this, but let's go with 'cpufreq', so:
-> 
-> cpufreq@17d43000
-> 
+> I asked this on the OLPC devel list recently, but I don't think my
+> message ever got past the moderator. Could you generate a DT dump from
+> /proc/device-tree of an XO 1 and send to me? I have some DT changes
+> planned and need to see if they'd be okay for x86 OLPC.
 
-Thanks Rob, will update in the next patch.
+The /proc/device-tree tarball: http://v3.sk/~lkundrak/olpc/xo1.tar
+(Mirror: https://people.freedesktop.org/~lkundrak/olpc/xo1.tar)
 
->> +		compatible = "qcom,cpufreq-hw";
->> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
->> +		reg-names = "freq-domain0", "freq-domain1";
->> +
->> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
->> +		clock-names = "xo", "cpu_clk";
->> +
->> +		#freq-domains-cells = <1>
+My distro's dtc crashes with this (could be related to your recent dtc
+fixes), the git tip needs -f to work around some funny property names.
+I figure a raw data as opposed to a dts/dtb dump would be a better
+idea.
+
+Also, there's no phandles, so it's of rather limited use. If you need
+those, then I can share a dump directly from ofw instead or patch the
+kernel to fabricate and expose the phandle properties.
+
+This is with the latest firmware. I guess the exact version is
+somewhere within the device tree.
+
 > 
-> Not documented, but I don't think you need this if it is always 1 and
-> because this is not a common binding.
-> 
-
-I would add it in the next patch just to keep it documented.
-
 > Rob
-> 
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Cheers
+Lubo
