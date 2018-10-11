@@ -1,99 +1,62 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v9 05/11] of: base: Add of_get_cpu_state_node() to get
- idle states for a CPU node
-Date: Thu, 11 Oct 2018 17:05:07 +0200
-Message-ID: <CAPDyKFq7bNJM5Y4y78tnOEvg7ntmYFtJoDvFH8uR2yUUK9o4HA@mail.gmail.com>
-References: <20181003143824.13059-1-ulf.hansson@linaro.org>
- <20181003143824.13059-6-ulf.hansson@linaro.org> <20181010150331.GB4844@e107155-lin>
+Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
+ support using genpd
+Date: Thu, 11 Oct 2018 17:27:59 +0200
+Message-ID: <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org> <20181011111306.GB32752@e107155-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010150331.GB4844@e107155-lin>
+In-Reply-To: <20181011111306.GB32752@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>
+To: Sudeep Holla <sudeep.holla@arm.com>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10 October 2018 at 17:03, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> On Wed, Oct 03, 2018 at 04:38:18PM +0200, Ulf Hansson wrote:
->> The CPU's idle state nodes are currently parsed at the common cpuidle DT
->> library, but also when initializing back-end data for the arch specific CPU
->> operations, as in the PSCI driver case.
+On 11 October 2018 at 13:13, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
+>> RPMH based targets require that the sleep and wake state request votes
+>> be sent during system low power mode entry. The votes help reduce the
+>> power consumption when the AP is not using them. The votes sent by the
+>> clients are cached in RPMH controller and needs to be flushed when the
+>> last cpu enters low power mode. So add cpu power domain using Linux
+>> generic power domain infrastructure to perform necessary tasks as part
+>> of domain power down.
 >>
->> To avoid open-coding, let's introduce of_get_cpu_state_node(), which takes
->> the device node for the CPU and the index to the requested idle state node,
->> as in-parameters. In case a corresponding idle state node is found, it
->> returns the node with the refcount incremented for it, else it returns
->> NULL.
->>
->> Moreover, for ARM, there are two generic methods, to describe the CPU's
->> idle states, either via the flattened description through the
->> "cpu-idle-states" binding [1] or via the hierarchical layout, using the
->> "power-domains" and the "domain-idle-states" bindings [2]. Hence, let's
->> take both options into account.
->>
->> [1]
->> Documentation/devicetree/bindings/arm/idle-states.txt
->> [2]
->> Documentation/devicetree/bindings/arm/psci.txt
->>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: devicetree@vger.kernel.org
->> Cc: Lina Iyer <ilina@codeaurora.org>
->> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
->> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Reviewed-by: Rob Herring <robh@kernel.org>
->> ---
->>  drivers/of/base.c  | 35 +++++++++++++++++++++++++++++++++++
->>  include/linux/of.h |  8 ++++++++
->>  2 files changed, 43 insertions(+)
->>
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index 74eaedd5b860..bf1d5fa34899 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -424,6 +424,41 @@ int of_cpu_node_to_id(struct device_node *cpu_node)
->>  }
->>  EXPORT_SYMBOL(of_cpu_node_to_id);
->>
->> +/**
->> + * of_get_cpu_state_node - Get CPU's idle state node at the given index
->> + *
->> + * @cpu_node: The device node for the CPU
->> + * @index: The index in the list of the idle states
->> + *
->> + * Two generic methods can be used to describe a CPU's idle states, either via
->> + * a flattened description through the "cpu-idle-states" binding or via the
->> + * hierarchical layout, using the "power-domains" and the "domain-idle-states"
->> + * bindings. This function check for both and returns the idle state node for
->> + * the requested index.
->> + *
->> + * In case and idle state node is found at index, the refcount incremented for
->> + * it, so call of_node_put() on it when done. Returns NULL if not found.
->> + */
->> +struct device_node *of_get_cpu_state_node(struct device_node *cpu_node,
 >
-> No strong opinion but I am wondering if it makes sense to get cpu
-> logical index and fetch the cpu of_node here to contain the refcount on
-> it within this function while we are trying to consolidate. I do see
-> that may not be so useful in psci.c but keeping refcount for cpu of_node
-> here keeps the user free from that.
+> You seem to have either randomly chosen just 3 patches from Lina/Ulf's
+> CPU genpd series or this series doesn't entirely depend on it ?
 
-I see your point.
-
-However, I am hesitating doing that change, as it would be a waste for
-the psci case, but I also think that it may becomes a bit less
-straight forward to use this helper function.
-
-Although, no strong opinions from my side either, but since Rob is
-happy with this, there is no need to change it, I think.
+Yep, it not easy to follow. But I do understand what you are trying to do here.
 
 >
-> I am fine as it is if there are reasons not to do that.
+> If latter, how does this work with PSCI CPU_SUSPEND operations ?
 >
+> And why this can be part of PSCI firmware implementation. Only PSCI
+> firmware needs if RPMH votes need to be flushed or not. So, honestly
+> I don't see the need for this in Linux.
 
-Right.
+I do think there is clear need for this in Linux. More precisely,
+since the PSCI firmware have knowledge solely about CPUs (and clusters
+of CPUs), but not about other shared resources/devices present on the
+SoC.
+
+What Raju is trying to do here, is to manage those resources which
+needs special treatment, before and after the CPU (likely cluster) is
+going idle and returns from idle.
+
+One question here though, what particular idle state is relevant for
+the QCOM SoC to take last-man-actions for? I assume it's only cluster
+idle states, and not about cpu idle states, no? Raju, can you please
+clarify?
+
+Historically, the typical solution have been to use the
+cpu_cluster_pm_enter|exit() notifiers. Those could potentially be
+replaced by instead building a hierarchical topology, using
+master/subdomain of genpd/"power-domains", along the lines of what
+Raju is doing. However, I am not sure if that is the correct approach,
+at least we need to make sure it models the HW in DT correctly.
 
 Kind regards
 Uffe
