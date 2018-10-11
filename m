@@ -1,57 +1,115 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: Re: [workqueue/driver-core PATCH v2 1/5] workqueue: Provide
- queue_work_node to queue work near a given NUMA node
-Date: Thu, 11 Oct 2018 09:49:59 -0700
-Message-ID: <6f91e26d-00e5-10ba-b0ee-2b9f8d50934b@linux.intel.com>
-References: <20181010230435.10609.77825.stgit@localhost.localdomain>
- <20181010230715.10609.83647.stgit@localhost.localdomain>
- <20181011150417.GO270328@devbig004.ftw2.facebook.com>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
+ the domain
+Date: Thu, 11 Oct 2018 10:58:22 -0600
+Message-ID: <20181011165822.GB2371@codeaurora.org>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
+ <20181011112013.GC32752@e107155-lin>
+ <20181011160053.GA2371@codeaurora.org>
+ <20181011161927.GC28583@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011150417.GO270328@devbig004.ftw2.facebook.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181011161927.GC28583@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: gregkh@linuxfoundation.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 10/11/2018 8:04 AM, Tejun Heo wrote:
-> On Wed, Oct 10, 2018 at 04:07:42PM -0700, Alexander Duyck wrote:
->> This patch provides a new function queue_work_node which is meant to
->> schedule work on a "random" CPU of the requested NUMA node. The main
->> motivation for this is to help assist asynchronous init to better improve
->> boot times for devices that are local to a specific node.
+On Thu, Oct 11 2018 at 10:19 -0600, Sudeep Holla wrote:
+>On Thu, Oct 11, 2018 at 10:00:53AM -0600, Lina Iyer wrote:
+>> Sudeep,
 >>
->> For now we just default to the first CPU that is in the intersection of the
->> cpumask of the node and the online cpumask. The only exception is if the
->> CPU is local to the node we will just use the current CPU. This should work
->> for our purposes as we are currently only using this for unbound work so
->> the CPU will be translated to a node anyway instead of being directly used.
+>> The CPU PD does not power off the domain from Linux. That is done from
+>> PSCI firmware (ATF). These patches are doing the part that Linux has do,
+>> when powering off the CPUs, to achieve a low standby power consumption.
 >>
->> As we are only using the first CPU to represent the NUMA node for now I am
->> limiting the scope of the function so that it can only be used with unbound
->> workqueues.
+>
+>I don't understand why Linux *has do* this part as PSCI manages CPU PM.
+>
+If we don't do this, then we leave a lot of power saving on the table,
+when the CPU powered off. Why should the DDR and the shared busses and
+clocks be idling at high power, when not needed ? PSCI has no clue to
+what resource requests was made my Linux and its Linux's responsibility
+to relinquish them when not needed. Therefore has to done from Linux.
+
+>> On Thu, Oct 11 2018 at 05:20 -0600, Sudeep Holla wrote:
+>> > On Thu, Oct 11, 2018 at 02:50:54AM +0530, Raju P.L.S.S.S.N wrote:
+>> > > Use cpu hotplug callback mechanism to attach/dettach the cpu in
+>> > > the cpu power domain. During cpu hotplug callback registration,
+>> > > the starting callback is invoked on all online cpus. So there is
+>> > > no need to attach from device probe.
+>> > >
+>> >
+>> > To be more explicit, NACK to this series(patches 4-8 to be more specific)
+>> > unless you provide details on:
+>> >
+>> > 1. Why this is not in PSCI implementation ?
+>> This is a linux activity and there is no provision in ATF or QC firmware
+>> to do this activity. The task of physically powering down the domain,
+>> still is a firmware decision and is done through PSCI platform
+>> coordinated in the firmware.
 >>
->> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> 
-> Please let me know how you wanna route the patch.
-> 
-> Thanks.
+>
+>Yes that was my understanding. So the addon question here is: if PSCI
+>decides to abort entering the idle state, the Linux doing the RPMH
+>request is of no use which can be prevented if done once PSCI f/w is
+>about to enter the state. I know it may be corner case, but we have
+>whole OSI mode based on such corner cases.
+>
+Yes, it is a possibility and worth the chance taken. On an SoC, there
+are other processors that may vote against powering down the shared
+resources even when Linux has shutdown and it is a very likely
+possibility. Ex., when you are on a phone call, the CPU subsystem could
+be powered off and the flush of RPMH requests is a 'waste', but it is a
+chance we need to take. The alternate is a synchronization nightmare.
 
-I would be good with routing the patches through you if that works. I 
-had included you, Greg, and Andrew as I wasn't sure how you guys had 
-wanted this routed since this affected both the workqueue and device trees.
+Even with all the unnecessary flushing it is totally worth it. OSI helps
+alleviates this a bit because it embodies the same CPU PD concepts at
+its core. Imagine if you didn't have CPU PM domain, the every CPU would
+be flushing RPMH request, whenever they power down, because you never know
+when all CPUs are going to be powered down at the same time. That is the
+biggest benefit of OSI over PC mode in PSCI.
 
-I'll update the patches to resolve the lack of kerneldoc for the new 
-"async_" functions and add some comments to the patch descriptions on 
-the gains seen related to some of the specific patches for v3.
+>> > 2. If PSCI is used on this platform, how does it work/co-exist ?
+>> Yes PSCI is used in this platform. ATF is the firmware and that supports
+>> only Platform Coordinated. This SoC uses cpuidle and the regular PSCI
+>> methods to power off the domain from the firmware. However, Linux has
+>> responsibilities that it needs to complete before the power down can be
+>> beneficial.
+>>
+>
+>I understand the need to inform RPMH. So I take only reason to do that
+>in Linux is TF-A doesn't have any support to talk to RPMH ?
+>
+It may or may not, depending on which firmware you talk to. But consider
+this, if the firmware votes for lowering resource state, it is doing it
+for its exception level and not for Linux. So Linux has to take care of
+its own.
 
-Thanks.
+>Now that we have some platform with PC, it's good to compare PC vs OSI
+>which we always lacked. Thanks for letting us know this platform is PC
+>based.
+>
+Can I take that you are okay with the OSI idea and this one, then :)
+Yes, we are close to having a platform have both, possibly.
 
-- Alex
+>> Isn't sharing ideas a key aspect of working with the community? This
+>> series just goes to say that the idea of CPU PM domains are useful,
+>> whether PSCI uses it or not. If you still need clarifications, Raju and
+>> I will be happy to set up a meeting and go over the idea.
+>>
+>Ah OK, so this platform will have flattened cpu-idle-states list ? That's
+>absolutely fine. But what if we want to represent hierarchical PSCI based
+>PM domains and this power domain for some platform. That's the main
+>concern I raised. For me, the power-domains in DT introduced in this
+>is just to deal with RPMH though the actual work is done by PSCI.
+>That just doesn't look that good for me.
+>
+What problem do you see with that? It would help if you could clarify
+your concern.
+
+Thanks,
+Lina
