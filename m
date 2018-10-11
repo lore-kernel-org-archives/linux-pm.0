@@ -1,70 +1,98 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v3 7/7] mfd: axp20x: Add supported cells for AXP803
-Date: Thu, 11 Oct 2018 16:10:12 +0800
-Message-ID: <CAGb2v64i4a_yBkJE5pTmx_tKOVGKJNGvqAY0Hnw=Wr17VDSTfQ@mail.gmail.com>
-References: <20181008181908.9456-1-oskari@lemmela.net> <20181008181908.9456-8-oskari@lemmela.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Thu, 11 Oct 2018 10:23:14 +0200
+Message-ID: <f099ded8-e074-da18-2eac-e07a5a99af18@linaro.org>
+References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
+ <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+ <e2091e7e-b6e6-950d-ebab-18ba2de9264f@linaro.org>
+ <20181011073510eucas1p100bfadd6055a523cd1e92b07bfacfc10~cfaLHcbIo1401014010eucas1p1d@eucas1p1.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181008181908.9456-8-oskari@lemmela.net>
+In-Reply-To: <20181011073510eucas1p100bfadd6055a523cd1e92b07bfacfc10~cfaLHcbIo1401014010eucas1p1d@eucas1p1.samsung.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: oskari@lemmela.net
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: Lukasz Luba <l.luba@partner.samsung.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel@vger.kernel.org
+Cc: mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 9, 2018 at 2:20 AM Oskari Lemmela <oskari@lemmela.net> wrote:
->
-> AXP803 is compatible with AXP813.
-> Adding cells for GPIO, ADC, AC and battery power supplies.
->
-> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> ---
->  drivers/mfd/axp20x.c | 17 ++++++++++++++++-
->  1 file changed, 16 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index 1508d9113126..4befe474b165 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -731,8 +731,23 @@ static const struct mfd_cell axp803_cells[] = {
->                 .name                   = "axp221-pek",
->                 .num_resources          = ARRAY_SIZE(axp803_pek_resources),
->                 .resources              = axp803_pek_resources,
-> +       }, {
-> +               .name                   = "axp20x-regulator",
+On 11/10/2018 09:35, Lukasz Luba wrote:
+> Hi Daniel,
+> 
+> On 10/10/2018 06:54 PM, Daniel Lezcano wrote:
+>> On 10/10/2018 17:35, Lukasz Luba wrote:
+>>> Hi Thara,
+>>>
+>>> I have run it on Exynos5433 mainline.
+>>> When it is enabled with step_wise thermal governor,
+>>> some of my tests are showing ~30-50% regression (i.e. hackbench),
+>>> dhrystone ~10%.
+>>>
+>>> Could you tell me which thermal governor was used in your case?
+>>> Please also share the name of that benchmark, i will give it a try.
+>>> Is it single threaded compute-intensive?
+>>
+>> aobench AFAICT
+>>
+>> It would be interesting if you can share the thermal profile of your board.
+>>
+> Thanks for the benchmark name.
+> It was tested on Samsung TM2 device with Exynos 5433 with debian.
+> Thermal stuff you can find in mainline:
+> arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
 
-Please keep this as one line as before. This was requested by the MFD
-maintainer.
+By thermal profile, I was meaning a figure with the temperature
+regulation (temperature idle, then workload, then temperature increase,
+mitigated temperature, end of workload, temperature decrease).
 
-> +       }, {
-> +               .name                   = "axp20x-gpio",
-> +               .of_compatible          = "x-powers,axp813-gpio",
+The thermal description looks wrong in the DT. I suggest to experiment
+the series with the DT fixed.
 
-You might want to put the GPIO cell near the top of the list, so any other
-users, such as the ADC and regulator cells, will probe after it.
+eg. from hi6220.dtsi
 
-> +       }, {
-> +               .name                   = "axp813-adc",
-> +               .of_compatible          = "x-powers,axp813-adc",
-> +       }, {
-> +               .name           = "axp20x-battery-power-supply",
-> +               .of_compatible  = "x-powers,axp813-battery-power-supply",
-> +       }, {
-> +               .name           = "axp20x-ac-power-supply",
-> +               .of_compatible  = "x-powers,axp813-ac-power-supply",
-> +               .num_resources  = ARRAY_SIZE(axp20x_ac_power_supply_resources),
-> +               .resources      = axp20x_ac_power_supply_resources,
 
-Please use the same indentation.
+                thermal-zones {
 
-Regards
-ChenYu
+                        cls0: cls0 {
+                                polling-delay = <1000>;
+                                polling-delay-passive = <100>;
+                                sustainable-power = <3326>;
 
->         },
-> -       {       .name                   = "axp20x-regulator" },
->  };
->
->  static const struct mfd_cell axp806_self_working_cells[] = {
-> --
-> 2.17.1
->
+                                /* sensor ID */
+                                thermal-sensors = <&tsensor 2>;
+
+                                trips {
+                                        threshold: trip-point@0 {
+                                                temperature = <65000>;
+                                                hysteresis = <0>;
+                                                type = "passive";
+                                        };
+
+                                        target: trip-point@1 {
+                                                temperature = <75000>;
+                                                hysteresis = <0>;
+                                                type = "passive";
+                                        };
+                                };
+
+                                cooling-maps {
+                                        map0 {
+                                                trip = <&target>;
+                                                cooling-device = <&cpu0
+THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+                                        };
+                                };
+                        };
+                };
+
+Note the cooling devices are *passive*
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
