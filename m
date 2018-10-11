@@ -1,28 +1,28 @@
 From: Taniya Das <tdas@codeaurora.org>
 Subject: Re: [PATCH v8 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
  driver
-Date: Thu, 11 Oct 2018 16:45:25 +0530
-Message-ID: <40719973-21a0-120d-7193-8e6287cbbd18@codeaurora.org>
+Date: Thu, 11 Oct 2018 16:49:24 +0530
+Message-ID: <14e5ca05-0388-2414-0a56-d73fc23ab4cc@codeaurora.org>
 References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
  <1537698793-15285-3-git-send-email-tdas@codeaurora.org>
- <20181004210407.GB7926@centauri.lan>
+ <20181005105506.neri7niyelz2ahc5@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181004210407.GB7926@centauri.lan>
+In-Reply-To: <20181005105506.neri7niyelz2ahc5@vireshk-i7>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Niklas Cassel <niklas.cassel@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello Niklas,
+Hello Viresh,
 
 Thanks for your review comments.
 
-On 10/5/2018 2:34 AM, Niklas Cassel wrote:
-> On Sun, Sep 23, 2018 at 04:03:13PM +0530, Taniya Das wrote:
+On 10/5/2018 4:25 PM, Viresh Kumar wrote:
+> On 23-09-18, 16:03, Taniya Das wrote:
 >> The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
 >> for changing the frequency of CPUs. The driver implements the cpufreq
 >> driver interface for this hardware engine.
@@ -48,15 +48,6 @@ On 10/5/2018 2:34 AM, Niklas Cassel wrote:
 >> +config ARM_QCOM_CPUFREQ_HW
 >> +	bool "QCOM CPUFreq HW driver"
 >> +	depends on ARCH_QCOM
-> 
-> Hello Taniya,
-> 
-> It might be a good idea to do depends on ARCH_QCOM || COMPILE_TEST
-> to get more build testing.
-> 
-
-Would add it in the next patch.
-
 >> +	help
 >> +	 Support for the CPUFreq HW driver.
 >> +	 Some QCOM chipsets have a HW engine to offload the steps
@@ -64,15 +55,6 @@ Would add it in the next patch.
 >> +	 in this engine exposes a programming interface to the OS.
 >> +	 The driver implements the cpufreq interface for this HW engine.
 >> +	 Say Y if you want to support CPUFreq HW.
-> 
-> All other help text has a tab and two spaces, you only have one.
-> 
-> Also, why not add this Kconfig right after the existing ARCH_QCOM_CPUFREQ
-> driver?
-> 
-
-Would update the same in the next patch.
-
 >> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
 >> index c1ffeab..ca48a1d 100644
 >> --- a/drivers/cpufreq/Makefile
@@ -82,12 +64,6 @@ Would update the same in the next patch.
 >>   obj-$(CONFIG_ARM_TI_CPUFREQ)		+= ti-cpufreq.o
 >>   obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
 >> +obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
-> 
-> Why not add this right after the existing ARCH_QCOM_CPUFREQ driver?
-> 
-
-Would update in the next patch.
-
 >>
 >>
 >>   ##################################################################################
@@ -106,12 +82,6 @@ Would update in the next patch.
 >> +#include <linux/init.h>
 >> +#include <linux/kernel.h>
 >> +#include <linux/module.h>
-> 
-> Since this can't be built as a module, drop module.h, init.h should suffice.
-> 
-
-Would clean it up.
-
 >> +#include <linux/of_address.h>
 >> +#include <linux/of_platform.h>
 >> +
@@ -276,6 +246,13 @@ Would clean it up.
 >> +		prev_cc = core_count;
 >> +		prev_freq = cur_freq;
 >> +	}
+> 
+> The logic here always surprises me, why does the firmware keeps the
+> table this way instead of simplifying it  ?
+> 
+
+Unfortunately that is the only way to identify.
+
 >> +
 >> +	c->table[i].frequency = CPUFREQ_TABLE_END;
 >> +
@@ -294,13 +271,19 @@ Would clean it up.
 >> +			continue;
 >> +		of_node_put(cpu_np);
 > 
-> Shouldn't of_node_put() be called after you have used the pointer?
+> Heh, you can't do that here :)
 > 
 
-Yes, it would be moved.
+Yes, I would take care to put it in the right place.
 
 >> +
 >> +		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
+> 
+> As this code still needs to use the same pointer. It is possible that
+> the memory associated with cpu_np gets freed as soon as you call
+> of_node_put() on that. You should call of_node_put() anytime after
+> this routine is called.
+> 
 >> +				"#freq-domain-cells", 0, &args);
 >> +		if (ret < 0)
 >> +			continue;
@@ -390,7 +373,12 @@ Yes, it would be moved.
 >> +	xo_rate = clk_get_rate(clk);
 >> +
 >> +	devm_clk_put(&pdev->dev, clk);
->> +
+> 
+> Why use devm_ variants if you want to put the clock anyway ?
+> 
+
+Would move to non devm_ variants.
+
 >> +	clk = devm_clk_get(&pdev->dev, "cpu_clk");
 >> +	if (IS_ERR(clk))
 >> +		return PTR_ERR(clk);
@@ -398,15 +386,15 @@ Yes, it would be moved.
 >> +	cpu_hw_rate = clk_get_rate(clk) / CLK_HW_DIV;
 >> +
 >> +	devm_clk_put(&pdev->dev, clk);
+> 
+> same here.
+> 
 >> +
 >> +	for_each_possible_cpu(cpu) {
 >> +		cpu_np = of_cpu_device_node_get(cpu);
 > 
-> Where is the matching of_node_put?
+> Where is the of_node_put() corresponding to this ?
 > 
-
-Yes, missed adding it.
-
 >> +		if (!cpu_np) {
 >> +			dev_dbg(&pdev->dev, "Failed to get cpu %d device\n",
 >> +				cpu);
@@ -469,47 +457,9 @@ Yes, missed adding it.
 >> +subsys_initcall(qcom_cpufreq_hw_init);
 >> +
 >> +MODULE_DESCRIPTION("QCOM firmware-based CPU Frequency driver");
-> 
-> Since this can't be built as a module, you should drop MODULE_DESCRIPTION.
-> 
-> 
-> Also, checkpatch --strict gives the following warnings:
-> 
-> WARNING: added, moved or deleted file(s), does MAINTAINERS need updating?
-> #103:
-> new file mode 100644
-> 
-> cpufreq drivers usually have an entry in MAINTAINERS file.
-> 
-> 
-> WARNING: Duplicate signature
-> #370:
-> Signed-off-by: Taniya Das <tdas@codeaurora.org>
-> 
-> If you are more than one author, you can use the Co-Developed-by tag.
-> 
-
-Hmm, I do see multiple SOBs being used and merged.
-
-> 
-> CHECK: Alignment should match open parenthesis
-> #611: FILE: drivers/cpufreq/qcom-cpufreq-hw.c:193:
-> +               ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-> +                               "#freq-domain-cells", 0, &args);
-> 
-> CHECK: Alignment should match open parenthesis
-> #718: FILE: drivers/cpufreq/qcom-cpufreq-hw.c:300:
-> +               ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-> +                               "#freq-domain-cells", 0, &args);
-> 
-> 
-
-Would fix the same.
-
-> 
-> 
-> Kind regards,
-> Niklas
+>> --
+>> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+>> of the Code Aurora Forum, hosted by the  Linux Foundation.
 > 
 
 -- 
