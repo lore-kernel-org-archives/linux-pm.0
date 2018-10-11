@@ -1,97 +1,259 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Thu, 11 Oct 2018 10:23:14 +0200
-Message-ID: <f099ded8-e074-da18-2eac-e07a5a99af18@linaro.org>
-References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
- <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
- <e2091e7e-b6e6-950d-ebab-18ba2de9264f@linaro.org>
- <20181011073510eucas1p100bfadd6055a523cd1e92b07bfacfc10~cfaLHcbIo1401014010eucas1p1d@eucas1p1.samsung.com>
+Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
+Date: Thu, 11 Oct 2018 10:56:54 +0200
+Message-ID: <d43575c0-d9c1-f17b-73b8-40b4303599b6@linaro.org>
+References: <20180927024204.17314-1-andy.tang@nxp.com>
+ <VI1PR0401MB222469D81006CCD5CA3369C3F3E10@VI1PR0401MB2224.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=gbk
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011073510eucas1p100bfadd6055a523cd1e92b07bfacfc10~cfaLHcbIo1401014010eucas1p1d@eucas1p1.samsung.com>
+In-Reply-To: <VI1PR0401MB222469D81006CCD5CA3369C3F3E10@VI1PR0401MB2224.eurprd04.prod.outlook.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/10/2018 09:35, Lukasz Luba wrote:
-> Hi Daniel,
+On 11/10/2018 10:07, Andy Tang wrote:
+> Hi Rui,
 > 
-> On 10/10/2018 06:54 PM, Daniel Lezcano wrote:
->> On 10/10/2018 17:35, Lukasz Luba wrote:
->>> Hi Thara,
->>>
->>> I have run it on Exynos5433 mainline.
->>> When it is enabled with step_wise thermal governor,
->>> some of my tests are showing ~30-50% regression (i.e. hackbench),
->>> dhrystone ~10%.
->>>
->>> Could you tell me which thermal governor was used in your case?
->>> Please also share the name of that benchmark, i will give it a try.
->>> Is it single threaded compute-intensive?
+> Appreciate if you can give it a review.
+
+Thanks for the heads up. I'll take care of that.
+
+  -- Daniel
+
+
+>> -----Original Message-----
+>> From: andy.tang@nxp.com <andy.tang@nxp.com>
+>> Sent: 2018Äê9ÔÂ27ÈÕ 10:42
+>> To: rui.zhang@intel.com
+>> Cc: edubezval@gmail.com; daniel.lezcano@linaro.org;
+>> linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Andy Tang
+>> <andy.tang@nxp.com>
+>> Subject: [PATCH] thermal: qoriq: add multiple sensors support
 >>
->> aobench AFAICT
+>> From: Yuantian Tang <andy.tang@nxp.com>
 >>
->> It would be interesting if you can share the thermal profile of your board.
+>> There is only one sensor supported in current driver.
+>> Multiple sensors are existing on Layscape socs. To support them, covert
+>> this driver to support multiple sensors.
 >>
-> Thanks for the benchmark name.
-> It was tested on Samsung TM2 device with Exynos 5433 with debian.
-> Thermal stuff you can find in mainline:
-> arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
-
-By thermal profile, I was meaning a figure with the temperature
-regulation (temperature idle, then workload, then temperature increase,
-mitigated temperature, end of workload, temperature decrease).
-
-The thermal description looks wrong in the DT. I suggest to experiment
-the series with the DT fixed.
-
-eg. from hi6220.dtsi
-
-
-                thermal-zones {
-
-                        cls0: cls0 {
-                                polling-delay = <1000>;
-                                polling-delay-passive = <100>;
-                                sustainable-power = <3326>;
-
-                                /* sensor ID */
-                                thermal-sensors = <&tsensor 2>;
-
-                                trips {
-                                        threshold: trip-point@0 {
-                                                temperature = <65000>;
-                                                hysteresis = <0>;
-                                                type = "passive";
-                                        };
-
-                                        target: trip-point@1 {
-                                                temperature = <75000>;
-                                                hysteresis = <0>;
-                                                type = "passive";
-                                        };
-                                };
-
-                                cooling-maps {
-                                        map0 {
-                                                trip = <&target>;
-                                                cooling-device = <&cpu0
-THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-                                        };
-                                };
-                        };
-                };
-
-Note the cooling devices are *passive*
+>> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+>> ---
+>>  drivers/thermal/qoriq_thermal.c |  117
+>> +++++++++++++++++++++++----------------
+>>  1 files changed, 70 insertions(+), 47 deletions(-)
+>>
+>> diff --git a/drivers/thermal/qoriq_thermal.c
+>> b/drivers/thermal/qoriq_thermal.c index c866cc1..7c1e88a 100644
+>> --- a/drivers/thermal/qoriq_thermal.c
+>> +++ b/drivers/thermal/qoriq_thermal.c
+>> @@ -69,14 +69,21 @@ struct qoriq_tmu_regs {
+>>  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+>>  };
+>>
+>> +struct qoriq_tmu_data;
+>> +
+>>  /*
+>>   * Thermal zone data
+>>   */
+>> +struct qoriq_sensor {
+>> +	struct thermal_zone_device	*tzd;
+>> +	struct qoriq_tmu_data		*qdata;
+>> +	int				id;
+>> +};
+>> +
+>>  struct qoriq_tmu_data {
+>> -	struct thermal_zone_device *tz;
+>>  	struct qoriq_tmu_regs __iomem *regs;
+>> -	int sensor_id;
+>>  	bool little_endian;
+>> +	struct qoriq_sensor	*sensor[SITES_MAX];
+>>  };
+>>
+>>  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem
+>> *addr) @@ -97,48 +104,83 @@ static u32 tmu_read(struct
+>> qoriq_tmu_data *p, void __iomem *addr)
+>>
+>>  static int tmu_get_temp(void *p, int *temp)  {
+>> +	struct qoriq_sensor *qsensor = p;
+>> +	struct qoriq_tmu_data *qdata = qsensor->qdata;
+>>  	u32 val;
+>> -	struct qoriq_tmu_data *data = p;
+>>
+>> -	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
+>> +	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+>>  	*temp = (val & 0xff) * 1000;
+>>
+>>  	return 0;
+>>  }
+>>
+>> -static int qoriq_tmu_get_sensor_id(void)
+>> +static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+>> +	.get_temp = tmu_get_temp,
+>> +};
+>> +
+>> +static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+>>  {
+>> -	int ret, id;
+>> +	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
+>>  	struct of_phandle_args sensor_specs;
+>>  	struct device_node *np, *sensor_np;
+>> +	int ret, id, sites = 0;
+>>
+>>  	np = of_find_node_by_name(NULL, "thermal-zones");
+>>  	if (!np)
+>>  		return -ENODEV;
+>>
+>> -	sensor_np = of_get_next_child(np, NULL);
+>> -	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+>> -			"#thermal-sensor-cells",
+>> -			0, &sensor_specs);
+>> -	if (ret) {
+>> +	for_each_available_child_of_node(np, sensor_np) {
+>> +		ret = of_parse_phandle_with_args(sensor_np,
+>> "thermal-sensors",
+>> +				"#thermal-sensor-cells",
+>> +				0, &sensor_specs);
+>> +		if (ret) {
+>> +			of_node_put(np);
+>> +			of_node_put(sensor_np);
+>> +			return ret;
+>> +		}
+>> +
+>> +		if (sensor_specs.args_count >= 1) {
+>> +			id = sensor_specs.args[0];
+>> +			WARN(sensor_specs.args_count > 1,
+>> +					"%s: too many cells in sensor specifier %d\n",
+>> +					sensor_specs.np->name,
+>> +					sensor_specs.args_count);
+>> +		} else {
+>> +			id = 0;
+>> +		}
+>> +
+>>  		of_node_put(np);
+>>  		of_node_put(sensor_np);
+>> -		return ret;
+>> -	}
+>>
+>> -	if (sensor_specs.args_count >= 1) {
+>> -		id = sensor_specs.args[0];
+>> -		WARN(sensor_specs.args_count > 1,
+>> -				"%s: too many cells in sensor specifier %d\n",
+>> -				sensor_specs.np->name, sensor_specs.args_count);
+>> -	} else {
+>> -		id = 0;
+>> +		if (id > SITES_MAX)
+>> +			return -EINVAL;
+>> +
+>> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+>> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
+>> +		if (!qdata->sensor[id])
+>> +			return -ENOMEM;
+>> +
+>> +		qdata->sensor[id]->id = id;
+>> +		qdata->sensor[id]->qdata = qdata;
+>> +
+>> +		qdata->sensor[id]->tzd =
+>> devm_thermal_zone_of_sensor_register(
+>> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
+>> +
+>> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
+>> +			ret = PTR_ERR(qdata->sensor[id]->tzd);
+>> +			dev_err(&pdev->dev,
+>> +				"Failed to register thermal zone device.\n");
+>> +			return -ENODEV;
+>> +		}
+>> +
+>> +		sites |= 0x1 << (15 - id);
+>>  	}
+>>
+>> -	of_node_put(np);
+>> -	of_node_put(sensor_np);
+>> +	/* Enable monitoring */
+>> +	if (sites != 0)
+>> +		tmu_write(qdata, sites | TMR_ME | TMR_ALPF,
+>> &qdata->regs->tmr);
+>>
+>> -	return id;
+>> +	return 0;
+>>  }
+>>
+>>  static int qoriq_tmu_calibration(struct platform_device *pdev) @@
+>> -188,16 +230,11 @@ static void qoriq_tmu_init_device(struct
+>> qoriq_tmu_data *data)
+>>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);  }
+>>
+>> -static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+>> -	.get_temp = tmu_get_temp,
+>> -};
+>> -
+>>  static int qoriq_tmu_probe(struct platform_device *pdev)  {
+>>  	int ret;
+>>  	struct qoriq_tmu_data *data;
+>>  	struct device_node *np = pdev->dev.of_node;
+>> -	u32 site = 0;
+>>
+>>  	if (!np) {
+>>  		dev_err(&pdev->dev, "Device OF-Node is NULL"); @@ -213,13
+>> +250,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+>>
+>>  	data->little_endian = of_property_read_bool(np, "little-endian");
+>>
+>> -	data->sensor_id = qoriq_tmu_get_sensor_id();
+>> -	if (data->sensor_id < 0) {
+>> -		dev_err(&pdev->dev, "Failed to get sensor id\n");
+>> -		ret = -ENODEV;
+>> -		goto err_iomap;
+>> -	}
+>> -
+>>  	data->regs = of_iomap(np, 0);
+>>  	if (!data->regs) {
+>>  		dev_err(&pdev->dev, "Failed to get memory region\n"); @@
+>> -233,18 +263,13 @@ static int qoriq_tmu_probe(struct platform_device
+>> *pdev)
+>>  	if (ret < 0)
+>>  		goto err_tmu;
+>>
+>> -	data->tz = thermal_zone_of_sensor_register(&pdev->dev,
+>> data->sensor_id,
+>> -				data, &tmu_tz_ops);
+>> -	if (IS_ERR(data->tz)) {
+>> -		ret = PTR_ERR(data->tz);
+>> -		dev_err(&pdev->dev,
+>> -			"Failed to register thermal zone device %d\n", ret);
+>> -		goto err_tmu;
+>> +	ret = qoriq_tmu_register_tmu_zone(pdev);
+>> +	if (ret < 0) {
+>> +		dev_err(&pdev->dev, "Failed to register sensors\n");
+>> +		ret = -ENODEV;
+>> +		goto err_iomap;
+>>  	}
+>>
+>> -	/* Enable monitoring */
+>> -	site |= 0x1 << (15 - data->sensor_id);
+>> -	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
+>>
+>>  	return 0;
+>>
+>> @@ -261,8 +286,6 @@ static int qoriq_tmu_remove(struct
+>> platform_device *pdev)  {
+>>  	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+>>
+>> -	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
+>> -
+>>  	/* Disable monitoring */
+>>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+>>
+>> --
+>> 1.7.1
+> 
 
 
 -- 
- <http://www.linaro.org/> Linaro.org â”‚ Open source software for ARM SoCs
+ <http://www.linaro.org/> Linaro.org ©¦ Open source software for ARM SoCs
 
 Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
