@@ -1,8 +1,8 @@
 From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [driver-core PATCH v3 1/5] workqueue: Provide queue_work_node to
- queue work near a given NUMA node
-Date: Thu, 11 Oct 2018 15:09:21 -0700
-Message-ID: <20181011220921.1408.81354.stgit@localhost.localdomain>
+Subject: [driver-core PATCH v3 3/5] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Thu, 11 Oct 2018 15:09:33 -0700
+Message-ID: <20181011220933.1408.6882.stgit@localhost.localdomain>
 References: <20181011220134.1408.63391.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -14,133 +14,128 @@ To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
 Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch provides a new function queue_work_node which is meant to
-schedule work on a "random" CPU of the requested NUMA node. The main
-motivation for this is to help assist asynchronous init to better improve
-boot times for devices that are local to a specific node.
+This change makes it so that we probe devices asynchronously instead of the
+driver. This results in us seeing the same behavior if the device is
+registered before the driver or after. This way we can avoid serializing
+the initialization should the driver not be loaded until after the devices
+have already been added.
 
-For now we just default to the first CPU that is in the intersection of the
-cpumask of the node and the online cpumask. The only exception is if the
-CPU is local to the node we will just use the current CPU. This should work
-for our purposes as we are currently only using this for unbound work so
-the CPU will be translated to a node anyway instead of being directly used.
+The motivation behind this is that if we have a set of devices that
+take a significant amount of time to load we can greatly reduce the time to
+load by processing them in parallel instead of one at a time. In addition,
+each device can exist on a different node so placing a single thread on one
+CPU to initialize all of the devices for a given driver can result in poor
+performance on a system with multiple nodes.
 
-As we are only using the first CPU to represent the NUMA node for now I am
-limiting the scope of the function so that it can only be used with unbound
-workqueues.
+One issue I can see with this patch is that I am using the
+dev_set/get_drvdata functions to store the driver in the device while I am
+waiting on the asynchronous init to complete. For now I am protecting it by
+using the lack of a dev->driver and the device lock.
 
-Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
- include/linux/workqueue.h |    2 +
- kernel/workqueue.c        |   84 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 86 insertions(+)
+ drivers/base/bus.c |   23 +++--------------------
+ drivers/base/dd.c  |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 20 deletions(-)
 
-diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-index 60d673e15632..1f50c1e586e7 100644
---- a/include/linux/workqueue.h
-+++ b/include/linux/workqueue.h
-@@ -463,6 +463,8 @@ int apply_workqueue_attrs(struct workqueue_struct *wq,
- 
- extern bool queue_work_on(int cpu, struct workqueue_struct *wq,
- 			struct work_struct *work);
-+extern bool queue_work_node(int node, struct workqueue_struct *wq,
-+			    struct work_struct *work);
- extern bool queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
- 			struct delayed_work *work, unsigned long delay);
- extern bool mod_delayed_work_on(int cpu, struct workqueue_struct *wq,
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
-index 0280deac392e..6ed7c2eb84b0 100644
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -1492,6 +1492,90 @@ bool queue_work_on(int cpu, struct workqueue_struct *wq,
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 8bfd27ec73d6..2a17bed657ec 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -616,17 +616,6 @@ static ssize_t uevent_store(struct device_driver *drv, const char *buf,
  }
- EXPORT_SYMBOL(queue_work_on);
+ static DRIVER_ATTR_WO(uevent);
  
-+/**
-+ * workqueue_select_cpu_near - Select a CPU based on NUMA node
-+ * @node: NUMA node ID that we want to bind a CPU from
-+ *
-+ * This function will attempt to find a "random" cpu available on a given
-+ * node. If there are no CPUs available on the given node it will return
-+ * WORK_CPU_UNBOUND indicating that we should just schedule to any
-+ * available CPU if we need to schedule this work.
-+ */
-+static int workqueue_select_cpu_near(int node)
+-static void driver_attach_async(void *_drv, async_cookie_t cookie)
+-{
+-	struct device_driver *drv = _drv;
+-	int ret;
+-
+-	ret = driver_attach(drv);
+-
+-	pr_debug("bus: '%s': driver %s async attach completed: %d\n",
+-		 drv->bus->name, drv->name, ret);
+-}
+-
+ /**
+  * bus_add_driver - Add a driver to the bus.
+  * @drv: driver.
+@@ -659,15 +648,9 @@ int bus_add_driver(struct device_driver *drv)
+ 
+ 	klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
+ 	if (drv->bus->p->drivers_autoprobe) {
+-		if (driver_allows_async_probing(drv)) {
+-			pr_debug("bus: '%s': probing driver %s asynchronously\n",
+-				drv->bus->name, drv->name);
+-			async_schedule(driver_attach_async, drv);
+-		} else {
+-			error = driver_attach(drv);
+-			if (error)
+-				goto out_unregister;
+-		}
++		error = driver_attach(drv);
++		if (error)
++			goto out_unregister;
+ 	}
+ 	module_add_driver(drv->owner, drv);
+ 
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 169412ee4ae8..5ba366c1cb83 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -864,6 +864,29 @@ void device_initial_probe(struct device *dev)
+ 	__device_attach(dev, true);
+ }
+ 
++static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
 +{
-+	int cpu;
++	struct device *dev = _dev;
 +
-+	/* No point in doing this if NUMA isn't enabled for workqueues */
-+	if (!wq_numa_enabled)
-+		return WORK_CPU_UNBOUND;
++	if (dev->parent && dev->bus->need_parent_lock)
++		device_lock(dev->parent);
++	device_lock(dev);
 +
-+	/* Delay binding to CPU if node is not valid or online */
-+	if (node < 0 || node >= MAX_NUMNODES || !node_online(node))
-+		return WORK_CPU_UNBOUND;
++	if (!dev->driver) {
++		struct device_driver *drv = dev_get_drvdata(dev);
 +
-+	/* Use local node/cpu if we are already there */
-+	cpu = raw_smp_processor_id();
-+	if (node == cpu_to_node(cpu))
-+		return cpu;
-+
-+	/* Use "random" otherwise know as "first" online CPU of node */
-+	cpu = cpumask_any_and(cpumask_of_node(node), cpu_online_mask);
-+
-+	/* If CPU is valid return that, otherwise just defer */
-+	return (cpu < nr_cpu_ids) ? cpu : WORK_CPU_UNBOUND;
-+}
-+
-+/**
-+ * queue_work_node - queue work on a "random" cpu for a given NUMA node
-+ * @node: NUMA node that we are targeting the work for
-+ * @wq: workqueue to use
-+ * @work: work to queue
-+ *
-+ * We queue the work to a "random" CPU within a given NUMA node. The basic
-+ * idea here is to provide a way to somehow associate work with a given
-+ * NUMA node.
-+ *
-+ * This function will only make a best effort attempt at getting this onto
-+ * the right NUMA node. If no node is requested or the requested node is
-+ * offline then we just fall back to standard queue_work behavior.
-+ *
-+ * Currently the "random" CPU ends up being the first available CPU in the
-+ * intersection of cpu_online_mask and the cpumask of the node, unless we
-+ * are running on the node. In that case we just use the current CPU.
-+ *
-+ * Return: %false if @work was already on a queue, %true otherwise.
-+ */
-+bool queue_work_node(int node, struct workqueue_struct *wq,
-+		     struct work_struct *work)
-+{
-+	unsigned long flags;
-+	bool ret = false;
-+
-+	/*
-+	 * This current implementation is specific to unbound workqueues.
-+	 * Specifically we only return the first available CPU for a given
-+	 * node instead of cycling through individual CPUs within the node.
-+	 *
-+	 * If this is used with a per-cpu workqueue then the logic in
-+	 * workqueue_select_cpu_near would need to be updated to allow for
-+	 * some round robin type logic.
-+	 */
-+	WARN_ON_ONCE(!(wq->flags & WQ_UNBOUND));
-+
-+	local_irq_save(flags);
-+
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
-+		int cpu = workqueue_select_cpu_near(node);
-+
-+		__queue_work(cpu, wq, work);
-+		ret = true;
++		driver_probe_device(drv, dev);
 +	}
 +
-+	local_irq_restore(flags);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(queue_work_node);
++	dev_dbg(dev, "async probe completed\n");
 +
- void delayed_work_timer_fn(struct timer_list *t)
++	device_unlock(dev);
++	if (dev->parent && dev->bus->need_parent_lock)
++		device_unlock(dev->parent);
++
++	put_device(dev);
++}
++
+ static int __driver_attach(struct device *dev, void *data)
  {
- 	struct delayed_work *dwork = from_timer(dwork, t, timer);
+ 	struct device_driver *drv = data;
+@@ -891,6 +914,25 @@ static int __driver_attach(struct device *dev, void *data)
+ 		return ret;
+ 	} /* ret > 0 means positive match */
+ 
++	if (driver_allows_async_probing(drv)) {
++		/*
++		 * Instead of probing the device synchronously we will
++		 * probe it asynchronously to allow for more parallelism.
++		 *
++		 * We only take the device lock here in order to guarantee
++		 * that the dev->driver and driver_data fields are protected
++		 */
++		dev_dbg(dev, "scheduling asynchronous probe\n");
++		device_lock(dev);
++		if (!dev->driver) {
++			get_device(dev);
++			dev_set_drvdata(dev, drv);
++			async_schedule(__driver_attach_async_helper, dev);
++		}
++		device_unlock(dev);
++		return 0;
++	}
++
+ 	if (dev->parent && dev->bus->need_parent_lock)
+ 		device_lock(dev->parent);
+ 	device_lock(dev);
