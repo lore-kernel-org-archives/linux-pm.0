@@ -1,260 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
-Date: Thu, 11 Oct 2018 10:56:54 +0200
-Message-ID: <d43575c0-d9c1-f17b-73b8-40b4303599b6@linaro.org>
-References: <20180927024204.17314-1-andy.tang@nxp.com>
- <VI1PR0401MB222469D81006CCD5CA3369C3F3E10@VI1PR0401MB2224.eurprd04.prod.outlook.com>
+From: Horia Geanta <horia.geanta@nxp.com>
+Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
+Date: Thu, 11 Oct 2018 10:04:31 +0000
+Message-ID: <VI1PR0402MB34852BFA7E8E44E9B867D76F98E10@VI1PR0402MB3485.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
+ <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
+ <1dd3074eabb496155c4d1abb83c82c52529a656a.camel@buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <VI1PR0401MB222469D81006CCD5CA3369C3F3E10@VI1PR0401MB2224.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Kate Stewart <kstewart@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Will Deacon <will.deacon@arm.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Sriram Dash <sriram.dash@nxp.com>, linux-clk <linux-clk@vger.kernel.org>, Udit Kumar <udit.kumar@nxp.com>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "open
+ list:THERMAL" <linux-pm@vger.kernel.org>, Varun Sethi <V.Sethi@nxp.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@kernel.org>, Priyanka Jain <priyanka.jain@nxp.com>, "Rafael J. Wysocki" <rjw@rjwy>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/10/2018 10:07, Andy Tang wrote:
-> Hi Rui,
+On 8/29/2018 3:31 AM, Scott Wood wrote:
+> On Tue, 2018-08-21 at 15:45 -0500, Rob Herring wrote:
+>> On Mon, Aug 20, 2018 at 1:52 PM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
+>>> +/ {
+>>> +       model = "NXP Layerscape LX2160ARDB";
+>>> +       compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
+>>> +
+>>> +       aliases {
+>>> +               crypto = &crypto;
+>>
+>> Drop this. Aliases should be numbered, and this is not a standard
+>> alias name either.
 > 
-> Appreciate if you can give it a review.
-
-Thanks for the heads up. I'll take care of that.
-
-  -- Daniel
-
-
->> -----Original Message-----
->> From: andy.tang@nxp.com <andy.tang@nxp.com>
->> Sent: 2018Äê9ÔÂ27ÈÕ 10:42
->> To: rui.zhang@intel.com
->> Cc: edubezval@gmail.com; daniel.lezcano@linaro.org;
->> linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Andy Tang
->> <andy.tang@nxp.com>
->> Subject: [PATCH] thermal: qoriq: add multiple sensors support
->>
->> From: Yuantian Tang <andy.tang@nxp.com>
->>
->> There is only one sensor supported in current driver.
->> Multiple sensors are existing on Layscape socs. To support them, covert
->> this driver to support multiple sensors.
->>
->> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
->> ---
->>  drivers/thermal/qoriq_thermal.c |  117
->> +++++++++++++++++++++++----------------
->>  1 files changed, 70 insertions(+), 47 deletions(-)
->>
->> diff --git a/drivers/thermal/qoriq_thermal.c
->> b/drivers/thermal/qoriq_thermal.c index c866cc1..7c1e88a 100644
->> --- a/drivers/thermal/qoriq_thermal.c
->> +++ b/drivers/thermal/qoriq_thermal.c
->> @@ -69,14 +69,21 @@ struct qoriq_tmu_regs {
->>  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
->>  };
->>
->> +struct qoriq_tmu_data;
->> +
->>  /*
->>   * Thermal zone data
->>   */
->> +struct qoriq_sensor {
->> +	struct thermal_zone_device	*tzd;
->> +	struct qoriq_tmu_data		*qdata;
->> +	int				id;
->> +};
->> +
->>  struct qoriq_tmu_data {
->> -	struct thermal_zone_device *tz;
->>  	struct qoriq_tmu_regs __iomem *regs;
->> -	int sensor_id;
->>  	bool little_endian;
->> +	struct qoriq_sensor	*sensor[SITES_MAX];
->>  };
->>
->>  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem
->> *addr) @@ -97,48 +104,83 @@ static u32 tmu_read(struct
->> qoriq_tmu_data *p, void __iomem *addr)
->>
->>  static int tmu_get_temp(void *p, int *temp)  {
->> +	struct qoriq_sensor *qsensor = p;
->> +	struct qoriq_tmu_data *qdata = qsensor->qdata;
->>  	u32 val;
->> -	struct qoriq_tmu_data *data = p;
->>
->> -	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
->> +	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
->>  	*temp = (val & 0xff) * 1000;
->>
->>  	return 0;
->>  }
->>
->> -static int qoriq_tmu_get_sensor_id(void)
->> +static const struct thermal_zone_of_device_ops tmu_tz_ops = {
->> +	.get_temp = tmu_get_temp,
->> +};
->> +
->> +static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
->>  {
->> -	int ret, id;
->> +	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
->>  	struct of_phandle_args sensor_specs;
->>  	struct device_node *np, *sensor_np;
->> +	int ret, id, sites = 0;
->>
->>  	np = of_find_node_by_name(NULL, "thermal-zones");
->>  	if (!np)
->>  		return -ENODEV;
->>
->> -	sensor_np = of_get_next_child(np, NULL);
->> -	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
->> -			"#thermal-sensor-cells",
->> -			0, &sensor_specs);
->> -	if (ret) {
->> +	for_each_available_child_of_node(np, sensor_np) {
->> +		ret = of_parse_phandle_with_args(sensor_np,
->> "thermal-sensors",
->> +				"#thermal-sensor-cells",
->> +				0, &sensor_specs);
->> +		if (ret) {
->> +			of_node_put(np);
->> +			of_node_put(sensor_np);
->> +			return ret;
->> +		}
->> +
->> +		if (sensor_specs.args_count >= 1) {
->> +			id = sensor_specs.args[0];
->> +			WARN(sensor_specs.args_count > 1,
->> +					"%s: too many cells in sensor specifier %d\n",
->> +					sensor_specs.np->name,
->> +					sensor_specs.args_count);
->> +		} else {
->> +			id = 0;
->> +		}
->> +
->>  		of_node_put(np);
->>  		of_node_put(sensor_np);
->> -		return ret;
->> -	}
->>
->> -	if (sensor_specs.args_count >= 1) {
->> -		id = sensor_specs.args[0];
->> -		WARN(sensor_specs.args_count > 1,
->> -				"%s: too many cells in sensor specifier %d\n",
->> -				sensor_specs.np->name, sensor_specs.args_count);
->> -	} else {
->> -		id = 0;
->> +		if (id > SITES_MAX)
->> +			return -EINVAL;
->> +
->> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
->> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
->> +		if (!qdata->sensor[id])
->> +			return -ENOMEM;
->> +
->> +		qdata->sensor[id]->id = id;
->> +		qdata->sensor[id]->qdata = qdata;
->> +
->> +		qdata->sensor[id]->tzd =
->> devm_thermal_zone_of_sensor_register(
->> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
->> +
->> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
->> +			ret = PTR_ERR(qdata->sensor[id]->tzd);
->> +			dev_err(&pdev->dev,
->> +				"Failed to register thermal zone device.\n");
->> +			return -ENODEV;
->> +		}
->> +
->> +		sites |= 0x1 << (15 - id);
->>  	}
->>
->> -	of_node_put(np);
->> -	of_node_put(sensor_np);
->> +	/* Enable monitoring */
->> +	if (sites != 0)
->> +		tmu_write(qdata, sites | TMR_ME | TMR_ALPF,
->> &qdata->regs->tmr);
->>
->> -	return id;
->> +	return 0;
->>  }
->>
->>  static int qoriq_tmu_calibration(struct platform_device *pdev) @@
->> -188,16 +230,11 @@ static void qoriq_tmu_init_device(struct
->> qoriq_tmu_data *data)
->>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);  }
->>
->> -static const struct thermal_zone_of_device_ops tmu_tz_ops = {
->> -	.get_temp = tmu_get_temp,
->> -};
->> -
->>  static int qoriq_tmu_probe(struct platform_device *pdev)  {
->>  	int ret;
->>  	struct qoriq_tmu_data *data;
->>  	struct device_node *np = pdev->dev.of_node;
->> -	u32 site = 0;
->>
->>  	if (!np) {
->>  		dev_err(&pdev->dev, "Device OF-Node is NULL"); @@ -213,13
->> +250,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->>
->>  	data->little_endian = of_property_read_bool(np, "little-endian");
->>
->> -	data->sensor_id = qoriq_tmu_get_sensor_id();
->> -	if (data->sensor_id < 0) {
->> -		dev_err(&pdev->dev, "Failed to get sensor id\n");
->> -		ret = -ENODEV;
->> -		goto err_iomap;
->> -	}
->> -
->>  	data->regs = of_iomap(np, 0);
->>  	if (!data->regs) {
->>  		dev_err(&pdev->dev, "Failed to get memory region\n"); @@
->> -233,18 +263,13 @@ static int qoriq_tmu_probe(struct platform_device
->> *pdev)
->>  	if (ret < 0)
->>  		goto err_tmu;
->>
->> -	data->tz = thermal_zone_of_sensor_register(&pdev->dev,
->> data->sensor_id,
->> -				data, &tmu_tz_ops);
->> -	if (IS_ERR(data->tz)) {
->> -		ret = PTR_ERR(data->tz);
->> -		dev_err(&pdev->dev,
->> -			"Failed to register thermal zone device %d\n", ret);
->> -		goto err_tmu;
->> +	ret = qoriq_tmu_register_tmu_zone(pdev);
->> +	if (ret < 0) {
->> +		dev_err(&pdev->dev, "Failed to register sensors\n");
->> +		ret = -ENODEV;
->> +		goto err_iomap;
->>  	}
->>
->> -	/* Enable monitoring */
->> -	site |= 0x1 << (15 - data->sensor_id);
->> -	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
->>
->>  	return 0;
->>
->> @@ -261,8 +286,6 @@ static int qoriq_tmu_remove(struct
->> platform_device *pdev)  {
->>  	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
->>
->> -	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
->> -
->>  	/* Disable monitoring */
->>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
->>
->> --
->> 1.7.1
+> Is this a new rule?  In any case, U-Boot looks for a "crypto" alias.
 > 
+(Replying here, I did not see a follow-up).
 
+Indeed, U-boot relies on the "crypto" alias.
+This is true for all SoCs with CAAM crypto engine, a pretty lengthy list.
 
--- 
- <http://www.linaro.org/> Linaro.org ©¦ Open source software for ARM SoCs
+Could you please clarify?
+Also: Is numbering needed even when there is a single instance of the block?
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Looking at a recent discussion
+https://lore.kernel.org/patchwork/patch/991718
+I see the proposal is for the ID to be optional:
+> Alias names are often suffixed with a numeric ID, especially when there may
+> be multiple instances of the same type. The ID typically corresponds to the
+[...]
+
+Thanks,
+Horia
