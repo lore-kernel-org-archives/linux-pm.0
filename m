@@ -1,16 +1,16 @@
 From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: Re: [workqueue/driver-core PATCH v2 4/5] driver core: Attach devices
- on CPU local to device node
-Date: Thu, 11 Oct 2018 08:50:29 -0700
-Message-ID: <e2c37263-ccbd-f3e1-243d-f5c6867fa251@linux.intel.com>
+Subject: Re: [workqueue/driver-core PATCH v2 2/5] async: Add support for
+ queueing on specific NUMA node
+Date: Thu, 11 Oct 2018 08:51:16 -0700
+Message-ID: <d9d75577-6663-aa1c-7f15-03dc07922212@linux.intel.com>
 References: <20181010230435.10609.77825.stgit@localhost.localdomain>
- <20181010230836.10609.73485.stgit@localhost.localdomain>
- <20181011104501.GA30183@kroah.com>
+ <20181010230747.10609.15866.stgit@localhost.localdomain>
+ <20181011104740.GB30183@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011104501.GA30183@kroah.com>
+In-Reply-To: <20181011104740.GB30183@kroah.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Greg KH <gregkh@linuxfoundation.org>
@@ -19,39 +19,97 @@ List-Id: linux-pm@vger.kernel.org
 
 
 
-On 10/11/2018 3:45 AM, Greg KH wrote:
-> On Wed, Oct 10, 2018 at 04:08:40PM -0700, Alexander Duyck wrote:
->> This change makes it so that we call the asynchronous probe routines on a
->> CPU local to the device node. By doing this we should be able to improve
->> our initialization time significantly as we can avoid having to access the
->> device from a remote node which may introduce higher latency.
+On 10/11/2018 3:47 AM, Greg KH wrote:
+> On Wed, Oct 10, 2018 at 04:08:21PM -0700, Alexander Duyck wrote:
+>> This patch introduces four new variants of the async_schedule_ functions
+>> that allow scheduling on a specific NUMA node.
+>>
+>> The first two functions are async_schedule_near and
+>> async_schedule_near_domain which end up mapping to async_schedule and
+>> async_schedule_domain but provide NUMA node specific functionality. They
+>> replace the original functions which were moved to inline function
+>> definitions that call the new functions while passing NUMA_NO_NODE.
+>>
+>> The second two functions are async_schedule_dev and
+>> async_schedule_dev_domain which provide NUMA specific functionality when
+>> passing a device as the data member and that device has a NUMA node other
+>> than NUMA_NO_NODE.
+>>
+>> The main motivation behind this is to address the need to be able to
+>> schedule device specific init work on specific NUMA nodes in order to
+>> improve performance of memory initialization.
+>>
+>> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+>> ---
+>>
+>> v1->v2:
+>>      Replaced call to queue_work_near with call to queue_work_node
+>>
+>>   include/linux/async.h |   36 +++++++++++++++++++++++++++++++++---
+>>   kernel/async.c        |   47 ++++++++++++++++++++++-------------------------
+>>   2 files changed, 55 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/include/linux/async.h b/include/linux/async.h
+>> index 6b0226bdaadc..1f6cb0d50263 100644
+>> --- a/include/linux/async.h
+>> +++ b/include/linux/async.h
+>> @@ -14,6 +14,8 @@
+>>   
+>>   #include <linux/types.h>
+>>   #include <linux/list.h>
+>> +#include <linux/numa.h>
+>> +#include <linux/device.h>
+>>   
+>>   typedef u64 async_cookie_t;
+>>   typedef void (*async_func_t) (void *data, async_cookie_t cookie);
+>> @@ -37,9 +39,37 @@ struct async_domain {
+>>   	struct async_domain _name = { .pending = LIST_HEAD_INIT(_name.pending), \
+>>   				      .registered = 0 }
+>>   
+>> -extern async_cookie_t async_schedule(async_func_t func, void *data);
+>> -extern async_cookie_t async_schedule_domain(async_func_t func, void *data,
+>> -					    struct async_domain *domain);
+>> +async_cookie_t async_schedule_near(async_func_t func, void *data,
+>> +				   int node);
+>> +async_cookie_t async_schedule_near_domain(async_func_t func, void *data,
+>> +					  int node,
+>> +					  struct async_domain *domain);
+>> +
+>> +static inline async_cookie_t async_schedule(async_func_t func, void *data)
+>> +{
+>> +	return async_schedule_near(func, data, NUMA_NO_NODE);
+>> +}
+>> +
+>> +static inline async_cookie_t
+>> +async_schedule_domain(async_func_t func, void *data,
+>> +		      struct async_domain *domain)
+>> +{
+>> +	return async_schedule_near_domain(func, data, NUMA_NO_NODE, domain);
+>> +}
+>> +
+>> +static inline async_cookie_t
+>> +async_schedule_dev(async_func_t func, struct device *dev)
+>> +{
+>> +	return async_schedule_near(func, dev, dev_to_node(dev));
+>> +}
+>> +
+>> +static inline async_cookie_t
+>> +async_schedule_dev_domain(async_func_t func, struct device *dev,
+>> +			  struct async_domain *domain)
+>> +{
+>> +	return async_schedule_near_domain(func, dev, dev_to_node(dev), domain);
+>> +}
 > 
-> This is nice in theory, but what kind of real numbers does this show?
-> There's a lot of added complexity here, and what is the benifit?
+> No kerneldoc for these functions?  We lost it for
+> async_schedule_domain() which used to be documented before this patch :(
 > 
-> Benchmarks or bootcharts that we can see would be great to have, thanks.
+> thanks,
 > 
 > greg k-h
 > 
 
-In the case of persistent memory init the cost for getting the wrong 
-node is pretty significant. On my test system with 3TB per node just 
-getting the initialization node matched up to the memory node dropped 
-initialization time per node from 39 seconds down to about 26 seconds 
-per node.
+I will add it for v3.
 
-We are already starting to see code like this pop up in subsystems 
-anyway. For example the PCI code already has logic similar to what I am 
-adding here floating around in it[1]. I'm hoping that by placing this 
-change in the core device code we could start consolidating it so we 
-don't have all the individual drivers or subsystems implementing their 
-own NUMA specific init logic.
-
-This is likely going to become more of an issue in the future as we now 
-have CPUs like the AMD Ryzen Threadripper out there that have people 
-starting to discuss NUMA in the consumer space.
+Thanks.
 
 - Alex
-
-[1] 
-https://elixir.bootlin.com/linux/v4.19-rc7/source/drivers/pci/pci-driver.c#L331
