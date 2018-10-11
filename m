@@ -1,85 +1,81 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
- support using genpd
-Date: Thu, 11 Oct 2018 16:59:56 +0100
-Message-ID: <20181011155956.GA28583@e107155-lin>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
+ the domain
+Date: Thu, 11 Oct 2018 10:00:53 -0600
+Message-ID: <20181011160053.GA2371@codeaurora.org>
 References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
- <20181011111306.GB32752@e107155-lin>
- <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
+ <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
+ <20181011112013.GC32752@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
+In-Reply-To: <20181011112013.GC32752@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 11, 2018 at 05:27:59PM +0200, Ulf Hansson wrote:
-> On 11 October 2018 at 13:13, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
-> >> RPMH based targets require that the sleep and wake state request votes
-> >> be sent during system low power mode entry. The votes help reduce the
-> >> power consumption when the AP is not using them. The votes sent by the
-> >> clients are cached in RPMH controller and needs to be flushed when the
-> >> last cpu enters low power mode. So add cpu power domain using Linux
-> >> generic power domain infrastructure to perform necessary tasks as part
-> >> of domain power down.
-> >>
-> >
-> > You seem to have either randomly chosen just 3 patches from Lina/Ulf's
-> > CPU genpd series or this series doesn't entirely depend on it ?
-> 
-> Yep, it not easy to follow. But I do understand what you are trying to do here.
-> 
-> >
-> > If latter, how does this work with PSCI CPU_SUSPEND operations ?
-> >
-> > And why this can be part of PSCI firmware implementation. Only PSCI
-> > firmware needs if RPMH votes need to be flushed or not. So, honestly
-> > I don't see the need for this in Linux.
-> 
-> I do think there is clear need for this in Linux. More precisely,
-> since the PSCI firmware have knowledge solely about CPUs (and clusters
-> of CPUs), but not about other shared resources/devices present on the
-> SoC.
+Sudeep,
+
+This is idea is based on GenPD/PM Domains, but solves for the CPU domain
+activities that need to be done from Linux when the CPU domain could be
+powered off. In that, it shares the same ideas from the series posted by
+Ulf. But this has no bearing on PSCI. The 845 SoC that Raju is working
+on, uses Platform-coordinated and so is largely deficient in meeting the
+power benefits achievable on this SoC, from Linux.
+
+If you have looked at the patches, you probably know by now, there are
+two things this patch does when the CPUs are powered off -
+- Flush RPMH requests to the controller (shared resource state requests
+  after the CPU is powered off and resume to the current state before
+  the CPU wakes up).
+- Setup the wakeup time for the CPUs in the hardware registers such that
+  the hardware blocks are awake before a CPU is powered back on. This is
+  like a back-off time for handling timer wakeups faster.
+
+The CPU PD does not power off the domain from Linux. That is done from
+PSCI firmware (ATF). These patches are doing the part that Linux has do,
+when powering off the CPUs, to achieve a low standby power consumption.
+
+On Thu, Oct 11 2018 at 05:20 -0600, Sudeep Holla wrote:
+>On Thu, Oct 11, 2018 at 02:50:54AM +0530, Raju P.L.S.S.S.N wrote:
+>> Use cpu hotplug callback mechanism to attach/dettach the cpu in
+>> the cpu power domain. During cpu hotplug callback registration,
+>> the starting callback is invoked on all online cpus. So there is
+>> no need to attach from device probe.
+>>
 >
-
-I disagree. Even with OSI, you indicate the cluster power off though
-PSCI CPU_SUSPEND call. If for any async wakeup reasons, firmware decides
-not to enter cluster OFF, then it may skip flushing RPMH vote. So doing
-it in PSCI is more correct and elegant to avoid such corner cases.
-
-> What Raju is trying to do here, is to manage those resources which
-> needs special treatment, before and after the CPU (likely cluster) is
-> going idle and returns from idle.
+>To be more explicit, NACK to this series(patches 4-8 to be more specific)
+>unless you provide details on:
 >
+>1. Why this is not in PSCI implementation ?
+This is a linux activity and there is no provision in ATF or QC firmware
+to do this activity. The task of physically powering down the domain,
+still is a firmware decision and is done through PSCI platform
+coordinated in the firmware.
 
-OK I get that, but why is Linux better than PSCI. I have my reasoning
-above.
+>2. If PSCI is used on this platform, how does it work/co-exist ?
+Yes PSCI is used in this platform. ATF is the firmware and that supports
+only Platform Coordinated. This SoC uses cpuidle and the regular PSCI
+methods to power off the domain from the firmware. However, Linux has
+responsibilities that it needs to complete before the power down can be
+beneficial.
 
-> One question here though, what particular idle state is relevant for
-> the QCOM SoC to take last-man-actions for? I assume it's only cluster
-> idle states, and not about cpu idle states, no? Raju, can you please
-> clarify?
+>3. Is this a shortcut approached taken to bypass the CPU genpd attempts
+>   from Lina/Ulf ?
 >
+This is an incorrect interpretation and an unwarranted accusation. There
+is no need to bypass CPU genpd attempts. That series stands on its own
+merits. (Thank you, Ulf). Raju has mentioned in the cover letter
+explicitly, that Ulf's patches posted here are for completeness of the
+concept, as that series is a dependency. But it will merged as part of
+Ulf's efforts.
 
-I assume so. I did see some comment or commit message to indicate the
-same.
+Isn't sharing ideas a key aspect of working with the community? This
+series just goes to say that the idea of CPU PM domains are useful,
+whether PSCI uses it or not. If you still need clarifications, Raju and
+I will be happy to set up a meeting and go over the idea.
 
-> Historically, the typical solution have been to use the
-> cpu_cluster_pm_enter|exit() notifiers. Those could potentially be
-> replaced by instead building a hierarchical topology, using
-> master/subdomain of genpd/"power-domains", along the lines of what
-> Raju is doing. However, I am not sure if that is the correct approach,
-> at least we need to make sure it models the HW in DT correctly.
->
-
-Indeed. I am not sure how to represent both PSCI and this power domains ?
-Though I believe the latter is not required at all.
-
---
-Regards,
-Sudeep
+Thanks,
+Lina
