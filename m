@@ -1,119 +1,143 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
- the domain
-Date: Thu, 11 Oct 2018 17:19:27 +0100
-Message-ID: <20181011161927.GC28583@e107155-lin>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
- <20181011112013.GC32752@e107155-lin>
- <20181011160053.GA2371@codeaurora.org>
+Subject: Re: [PATCH v9 04/11] dt: psci: Update DT bindings to support
+ hierarchical PSCI states
+Date: Thu, 11 Oct 2018 17:41:26 +0100
+Message-ID: <20181011164126.GD28583@e107155-lin>
+References: <20181003143824.13059-1-ulf.hansson@linaro.org>
+ <20181003143824.13059-5-ulf.hansson@linaro.org>
+ <20181010150312.GA4844@e107155-lin>
+ <CAPDyKFqP3wbd+5rvLcscNf1LUSZDROLqafsLq0Kyh0KziRJrZQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181011160053.GA2371@codeaurora.org>
+In-Reply-To: <CAPDyKFqP3wbd+5rvLcscNf1LUSZDROLqafsLq0Kyh0KziRJrZQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 11, 2018 at 10:00:53AM -0600, Lina Iyer wrote:
-> Sudeep,
+On Thu, Oct 11, 2018 at 04:44:07PM +0200, Ulf Hansson wrote:
+> +Raju
 >
-> This is idea is based on GenPD/PM Domains, but solves for the CPU domain
-> activities that need to be done from Linux when the CPU domain could be
-> powered off. In that, it shares the same ideas from the series posted by
-> Ulf. But this has no bearing on PSCI. The 845 SoC that Raju is working
-> on, uses Platform-coordinated and so is largely deficient in meeting the
-> power benefits achievable on this SoC, from Linux.
->
-
-Interesting to know we have some QCOM part with PC mode.
-
-> If you have looked at the patches, you probably know by now, there are
-> two things this patch does when the CPUs are powered off -
-> - Flush RPMH requests to the controller (shared resource state requests
->  after the CPU is powered off and resume to the current state before
->  the CPU wakes up).
-> - Setup the wakeup time for the CPUs in the hardware registers such that
->  the hardware blocks are awake before a CPU is powered back on. This is
->  like a back-off time for handling timer wakeups faster.
->
-
-Yes I understand these.
-
-> The CPU PD does not power off the domain from Linux. That is done from
-> PSCI firmware (ATF). These patches are doing the part that Linux has do,
-> when powering off the CPUs, to achieve a low standby power consumption.
->
-
-I don't understand why Linux *has do* this part as PSCI manages CPU PM.
-
-> On Thu, Oct 11 2018 at 05:20 -0600, Sudeep Holla wrote:
-> > On Thu, Oct 11, 2018 at 02:50:54AM +0530, Raju P.L.S.S.S.N wrote:
-> > > Use cpu hotplug callback mechanism to attach/dettach the cpu in
-> > > the cpu power domain. During cpu hotplug callback registration,
-> > > the starting callback is invoked on all online cpus. So there is
-> > > no need to attach from device probe.
-> > >
+> On 10 October 2018 at 17:03, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > On Wed, Oct 03, 2018 at 04:38:17PM +0200, Ulf Hansson wrote:
+> >> From: Lina Iyer <lina.iyer@linaro.org>
+> >>
+> >> Update DT bindings to represent hierarchical CPU and CPU PM domain idle
+> >> states for PSCI. Also update the PSCI examples to clearly show how
+> >> flattened and hierarchical idle states can be represented in DT.
+> >>
+> >> Cc: Lina Iyer <ilina@codeaurora.org>
+> >> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> >> Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> Reviewed-by: Rob Herring <robh@kernel.org>
+> >> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> >> ---
+> >>  .../devicetree/bindings/arm/psci.txt          | 156 ++++++++++++++++++
+> >>  1 file changed, 156 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+> >> index a2c4f1d52492..17aa3d3a1c8e 100644
+> >> --- a/Documentation/devicetree/bindings/arm/psci.txt
+> >> +++ b/Documentation/devicetree/bindings/arm/psci.txt
+> >> @@ -105,7 +105,163 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+> >>               ...
+> >>       };
+> >>
+> >> +ARM systems can have multiple cores sometimes in hierarchical arrangement.
+> >> +This often, but not always, maps directly to the processor power topology of
+> >> +the system. Individual nodes in a topology have their own specific power states
+> >> +and can be better represented in DT hierarchically.
+> >> +
+> >> +For these cases, the definitions of the idle states for the CPUs and the CPU
+> >> +topology, must conform to the domain idle state specification [3]. The domain
+> >> +idle states themselves, must be compatible with the defined 'domain-idle-state'
+> >> +binding [1], and also need to specify the arm,psci-suspend-param property for
+> >> +each idle state.
+> >> +
+> >> +DT allows representing CPUs and CPU idle states in two different ways -
+> >> +
+> >> +The flattened model as given in Example 1, lists CPU's idle states followed by
+> >> +the domain idle state that the CPUs may choose. Note that the idle states are
+> >> +all compatible with "arm,idle-state".
+> >> +
+> >> +Example 2 represents the hierarchical model of CPUs and domain idle states.
+> >> +CPUs define their domain provider in their psci DT node. The domain controls
+> >> +the power to the CPU and possibly other h/w blocks that would enter an idle
+> >> +state along with the CPU. The CPU's idle states may therefore be considered as
+> >> +the domain's idle states and have the compatible "arm,idle-state". Such domains
+> >> +may also be embedded within another domain that may represent common h/w blocks
+> >> +between these CPUs. The idle states of the CPU topology shall be represented as
+> >> +the domain's idle states.
+> >> +
+> >> +In PSCI firmware v1.0, the OS-Initiated mode is introduced. In order to use it,
+> >> +the hierarchical representation must be used.
+> >> +
+> >> +Example 1: Flattened representation of CPU and domain idle states
 > >
-> > To be more explicit, NACK to this series(patches 4-8 to be more specific)
-> > unless you provide details on:
+> > [...]
 > >
-> > 1. Why this is not in PSCI implementation ?
-> This is a linux activity and there is no provision in ATF or QC firmware
-> to do this activity. The task of physically powering down the domain,
-> still is a firmware decision and is done through PSCI platform
-> coordinated in the firmware.
->
-
-Yes that was my understanding. So the addon question here is: if PSCI
-decides to abort entering the idle state, the Linux doing the RPMH
-request is of no use which can be prevented if done once PSCI f/w is
-about to enter the state. I know it may be corner case, but we have
-whole OSI mode based on such corner cases.
-
-> > 2. If PSCI is used on this platform, how does it work/co-exist ?
-> Yes PSCI is used in this platform. ATF is the firmware and that supports
-> only Platform Coordinated. This SoC uses cpuidle and the regular PSCI
-> methods to power off the domain from the firmware. However, Linux has
-> responsibilities that it needs to complete before the power down can be
-> beneficial.
->
-
-I understand the need to inform RPMH. So I take only reason to do that
-in Linux is TF-A doesn't have any support to talk to RPMH ?
-
-> > 3. Is this a shortcut approached taken to bypass the CPU genpd attempts
-> >   from Lina/Ulf ?
+> >> +Example 2: Hierarchical representation of CPU and domain idle states
 > >
-> This is an incorrect interpretation and an unwarranted accusation. There
-> is no need to bypass CPU genpd attempts. That series stands on its own
-> merits. (Thank you, Ulf). Raju has mentioned in the cover letter
-> explicitly, that Ulf's patches posted here are for completeness of the
-> concept, as that series is a dependency. But it will merged as part of
-> Ulf's efforts.
+> > I understand that this may not be of interest for this series, but do
+> > we need to add any suggestions on how to arrive Flattened representation
+> > of CPU idle states from its hierarchical representation. If the DT has
+> > latter and PSCI call returns as PC mode only for idle. We need to deal
+> > with that case.
+>
+> For sure, I think this is valid comment for this series (or at least
+> v8 which contains the hole set).
 >
 
-Sorry if it sounded like accusation. I didn't mean to. I was checking
-if this was alternative solution. I do understand the need to deal with
-product pressures.
+Thanks.
 
-Now that we have some platform with PC, it's good to compare PC vs OSI
-which we always lacked. Thanks for letting us know this platform is PC
-based.
-
-> Isn't sharing ideas a key aspect of working with the community? This
-> series just goes to say that the idea of CPU PM domains are useful,
-> whether PSCI uses it or not. If you still need clarifications, Raju and
-> I will be happy to set up a meeting and go over the idea.
+> The approach I have taken, so far, is to closely tie the support for
+> PSCI OSI mode to the hierarchical representation in DT of the idle
+> states. Simply because of changing as little as possible, in a first
+> step, then build on top.
 >
-Ah OK, so this platform will have flattened cpu-idle-states list ? That's
-absolutely fine. But what if we want to represent hierarchical PSCI based
-PM domains and this power domain for some platform. That's the main
-concern I raised. For me, the power-domains in DT introduced in this
-is just to deal with RPMH though the actual work is done by PSCI.
-That just doesn't look that good for me.
+
+That's fine. I just want a note in the bindings to state that we can use
+the hierarchical representation and generate flattened list for PC.
+
+> However, in the offlist discussion I had with Lorenzo, he raised a
+> concern, very similar to what you are bringing up here. There are
+> indeed platform configurations, using PSCI PC mode, which would
+> benefit from the using the hierarchical representation. BTW, that is
+> kind of what Raju just tried to get working for QCOM SDM845 [1], but
+> let's discuss that separately.
+>
+
+OK, we can discuss details in that thread, but I don't even see the PSCI
+domains there.
+
+> The conclusion I made, is that no matter of we are using the PC mode
+> or the OSI mode, the hierarchical representation shall just work.
+>
+
+Indeed.
+
+> To me, this means that I have to re-work the series, such that the
+> PSCI driver (and cpuidle), dynamically in runtime, can agree on which
+> of the idle states that are "shared among a group of CPUs" and which
+> are CPU specific. Exactly how, I am still exploring a few different
+> approaches on.
+>
+> Does it make sense?
+>
+
+Yes
+
+> So, when it comes to the updated DT bindings in regards to $subject
+> patch, I think it's good as is. Or do you think there is something
+> that needs to be clarified?
+>
+
+Yes, nearly there. Just thought good to add a note that the representation
+has no affinity towards any PSCI idle state mechanism(PC or OSI). So
+that it's never assumed or misunderstood.
 
 --
 Regards,
