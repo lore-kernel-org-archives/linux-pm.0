@@ -1,59 +1,231 @@
-From: Horia Geanta <horia.geanta@nxp.com>
-Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
-Date: Thu, 11 Oct 2018 10:04:31 +0000
-Message-ID: <VI1PR0402MB34852BFA7E8E44E9B867D76F98E10@VI1PR0402MB3485.eurprd04.prod.outlook.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
- <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
- <1dd3074eabb496155c4d1abb83c82c52529a656a.camel@buserror.net>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v8 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Thu, 11 Oct 2018 16:01:57 +0530
+Message-ID: <2578568d-e1b8-b7b5-beeb-ad485a971f2d@codeaurora.org>
+References: <1537698793-15285-1-git-send-email-tdas@codeaurora.org>
+ <1537698793-15285-2-git-send-email-tdas@codeaurora.org>
+ <20180927153126.GA17218@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180927153126.GA17218@bogus>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Scott Wood <oss@buserror.net>, Rob Herring <robh+dt@kernel.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Kate Stewart <kstewart@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Will Deacon <will.deacon@arm.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Sriram Dash <sriram.dash@nxp.com>, linux-clk <linux-clk@vger.kernel.org>, Udit Kumar <udit.kumar@nxp.com>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "open
- list:THERMAL" <linux-pm@vger.kernel.org>, Varun Sethi <V.Sethi@nxp.com>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@kernel.org>, Priyanka Jain <priyanka.jain@nxp.com>, "Rafael J. Wysocki" <rjw@rjwy>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On 8/29/2018 3:31 AM, Scott Wood wrote:
-> On Tue, 2018-08-21 at 15:45 -0500, Rob Herring wrote:
->> On Mon, Aug 20, 2018 at 1:52 PM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
->>> +/ {
->>> +       model = "NXP Layerscape LX2160ARDB";
->>> +       compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
->>> +
->>> +       aliases {
->>> +               crypto = &crypto;
+Hello Rob,
+
+Thanks for your review comments.
+
+On 9/27/2018 9:01 PM, Rob Herring wrote:
+> On Sun, Sep 23, 2018 at 04:03:12PM +0530, Taniya Das wrote:
+>> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+>> SoCs. This is required for managing the cpu frequency transitions which are
+>> controlled by the hardware engine.
 >>
->> Drop this. Aliases should be numbered, and this is not a standard
->> alias name either.
+>> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+>> ---
+>>   .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 169 +++++++++++++++++++++
+>>   1 file changed, 169 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> new file mode 100644
+>> index 0000000..c06941c
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>> @@ -0,0 +1,169 @@
+>> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+>> +
+>> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+>> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+>> +for multiple clusters.
+>> +
+>> +Properties:
+>> +- compatible
+>> +	Usage:		required
+>> +	Value type:	<string>
+>> +	Definition:	must be "qcom,cpufreq-hw".
+>> +
+>> +- clocks
+>> +	Usage:		required
+>> +	Value type:	<phandle> From common clock binding.
+>> +	Definition:	clock handle for XO clock and GPLL0 clock.
+>> +
+>> +- clock-names
+>> +	Usage:		required
+>> +	Value type:	<string> From common clock binding.
+>> +	Definition:	must be "xo", "cpu_clk".
+>> +
+>> +- reg
+>> +	Usage:		required
+>> +	Value type:	<prop-encoded-array>
+>> +	Definition:	Addresses and sizes for the memory of the HW bases in
+>> +			each frequency domain.
+>> +- reg-names
+>> +	Usage:		Optional
+>> +	Value type:	<string>
+>> +	Definition:	Frequency domain name i.e.
+>> +			"freq-domain0", "freq-domain1".
+>> +
+>> +* Property qcom,freq-domain
+>> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+>> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+>> +
+>> +
+>> +Example:
+>> +
+>> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+>> +DCVS state together.
+>> +
+>> +/ {
+>> +	cpus {
+>> +		#address-cells = <2>;
+>> +		#size-cells = <0>;
+>> +
+>> +		CPU0: cpu@0 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x0>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_0>;
+>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>> +			L2_0: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +				L3_0: l3-cache {
+>> +				      compatible = "cache";
+>> +				};
+>> +			};
+>> +		};
+>> +
+>> +		CPU1: cpu@100 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x100>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_100>;
+>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>> +			L2_100: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU2: cpu@200 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x200>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_200>;
+>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>> +			L2_200: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU3: cpu@300 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x300>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_300>;
+>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>> +			L2_300: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU4: cpu@400 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x400>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_400>;
+>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>> +			L2_400: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU5: cpu@500 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x500>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_500>;
+>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>> +			L2_500: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU6: cpu@600 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x600>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_600>;
+>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>> +			L2_600: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +
+>> +		CPU7: cpu@700 {
+>> +			device_type = "cpu";
+>> +			compatible = "qcom,kryo385";
+>> +			reg = <0x0 0x700>;
+>> +			enable-method = "psci";
+>> +			next-level-cache = <&L2_700>;
+>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>> +			L2_700: l2-cache {
+>> +				compatible = "cache";
+>> +				next-level-cache = <&L3_0>;
+>> +			};
+>> +		};
+>> +	};
+>> +
+>> + soc {
+>> +	cpufreq_hw: qcom,cpufreq-hw {
 > 
-> Is this a new rule?  In any case, U-Boot looks for a "crypto" alias.
+> Should have a unit-address and node names should be generic. We don't
+> really have one for this, but let's go with 'cpufreq', so:
 > 
-(Replying here, I did not see a follow-up).
+> cpufreq@17d43000
+> 
 
-Indeed, U-boot relies on the "crypto" alias.
-This is true for all SoCs with CAAM crypto engine, a pretty lengthy list.
+Thanks Rob, will update in the next patch.
 
-Could you please clarify?
-Also: Is numbering needed even when there is a single instance of the block?
+>> +		compatible = "qcom,cpufreq-hw";
+>> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+>> +		reg-names = "freq-domain0", "freq-domain1";
+>> +
+>> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+>> +		clock-names = "xo", "cpu_clk";
+>> +
+>> +		#freq-domains-cells = <1>
+> 
+> Not documented, but I don't think you need this if it is always 1 and
+> because this is not a common binding.
+> 
 
-Looking at a recent discussion
-https://lore.kernel.org/patchwork/patch/991718
-I see the proposal is for the ID to be optional:
-> Alias names are often suffixed with a numeric ID, especially when there may
-> be multiple instances of the same type. The ID typically corresponds to the
-[...]
+I would add it in the next patch just to keep it documented.
 
-Thanks,
-Horia
+> Rob
+> 
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
