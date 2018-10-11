@@ -1,101 +1,112 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
- the domain
-Date: Thu, 11 Oct 2018 15:06:09 -0600
-Message-ID: <20181011210609.GD2371@codeaurora.org>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
- <20181011112013.GC32752@e107155-lin>
- <20181011160053.GA2371@codeaurora.org>
- <20181011161927.GC28583@e107155-lin>
- <20181011165822.GB2371@codeaurora.org>
- <20181011173733.GA26447@e107155-lin>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
+Date: Thu, 11 Oct 2018 23:06:58 +0200
+Message-ID: <2671493.AgiGORq3CZ@aspire.rjw.lan>
+References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com> <CAJZ5v0j0GLHgKS9+mafm3eoFMuNEo6VPa3LhRthg+H5OKHhFqA@mail.gmail.com> <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181011173733.GA26447@e107155-lin>
+In-Reply-To: <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 11 2018 at 11:37 -0600, Sudeep Holla wrote:
->On Thu, Oct 11, 2018 at 10:58:22AM -0600, Lina Iyer wrote:
->> On Thu, Oct 11 2018 at 10:19 -0600, Sudeep Holla wrote:
->> > On Thu, Oct 11, 2018 at 10:00:53AM -0600, Lina Iyer wrote:
->> > > Sudeep,
->> > >
->> > > The CPU PD does not power off the domain from Linux. That is done from
->> > > PSCI firmware (ATF). These patches are doing the part that Linux has do,
->> > > when powering off the CPUs, to achieve a low standby power consumption.
->> > >
->> >
->> > I don't understand why Linux *has do* this part as PSCI manages CPU PM.
->> >
->> If we don't do this, then we leave a lot of power saving on the table,
->> when the CPU powered off. Why should the DDR and the shared busses and
->> clocks be idling at high power, when not needed ? PSCI has no clue to
->> what resource requests was made my Linux and its Linux's responsibility
->> to relinquish them when not needed. Therefore has to done from Linux.
->>
->
->Is DDR managed by Linux ? I assumed it was handled by higher exception
->levels. Can you give examples of resources used by CPU in this context.
->When CPU can be powered on or woken up without Linux intervention, the
->same holds true for CPU power down or sleep states. I still see no reason
->other than the firmware has no support to talk to RPMH.
->
-DDR, shared clocks, regulators etc. Imagine you are running something on
-the screen and CPUs enter low power mode, while the CPUs were active,
-there was a need for bunch of display resources, and things the app may
-have requested resources, while the CPU powered down the requests may
-not be needed the full extent as when the CPU was running, so they can
-voted down to a lower state of in some cases turn off the resources
-completely. What the driver voted for is dependent on the runtime state
-and the usecase currently active. The 'sleep' state value is also
-determined by the driver/framework.
+On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
+> On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
+> > <waldemar.rymarkiewicz@gmail.com> wrote:
+> > >
+> > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+> > >
+> > > The governor updates dbs_info->requested_freq only after increasing or
+> > > decreasing frequency. There is, however, an use case when this is not
+> > > sufficient.
+> > >
+> > > Imagine, external module constraining cpufreq policy in a way that policy->max
+> >
+> > Is the "external module" here a utility or a demon running in user space?
+> 
+> No, this is a driver that communicates with a firmware and makes sure
+> CPU is running at the highest rate in specific time.
+> It uses verify_within_limits  and update_policy, a standard way to
+> constraint cpufreq policy limits.
+> 
+> > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+> > >                         requested_freq = policy->min;
+> > >
+> > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
+> > > -               dbs_info->requested_freq = requested_freq;
+> > >         }
+> > >
+> > >   out:
+> > > +       dbs_info->requested_freq = requested_freq;
+> >
+> > This will have a side effect when requested_freq is updated before the
+> > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
+> > check.
+> >
+> > Shouldn't that be avoided?
+> 
+> I would say we should.
+> 
+> A hardware design I use is running 4.9 kernel where the check does not
+> exist yet, so there is not a problem.
+> Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
+> requested_freq  either to requested_freq = policy->min or
+> requested_freq -= freq_steps;. The first case will not change anything
+> for us as policy->max=min=cur. The second, however, will force to
+> update freq which is definitely not expected when limits are set to
+> min=max. Simply it will not go out  here:
+> 
+> if (load < cs_tuners->down_threshold) {
+>       if (requested_freq == policy->min)
+>            goto out;   <---
+> ...
+> }
+> 
+> Am I right here? If so, shouldn't we check explicitly
+> 
+> /*
+> * If requested_freq is out of range, it is likely that the limits
+> * changed in the meantime, so fall back to current frequency in that
+> * case.
+> */
+> if (requested_freq > policy->max || requested_freq < policy->min)
+>        requested_freq = policy->cur;
+> 
+> +/*
+> +* If the the new limits min,max are equal, there is no point to process further
+> +*/
+> +
+> +if (requested_freq == policy->max  &&  requested_freq == policy->min)
+> +     goto out;
 
->> Even with all the unnecessary flushing it is totally worth it. OSI helps
->> alleviates this a bit because it embodies the same CPU PD concepts at
->> its core. Imagine if you didn't have CPU PM domain, the every CPU would
->> be flushing RPMH request, whenever they power down, because you never know
->> when all CPUs are going to be powered down at the same time. That is the
->> biggest benefit of OSI over PC mode in PSCI.
->>
->
->I am not saying every CPU needs to do that, last CPU can do that in PSCI.
->
-Yes, the last CPU is what we are getting to with this series.. Now this
-can't be done from PSCI. I will explain below.
+If my understanding of the problem is correct, it would be better to simply
+update dbs_info->requested_freq along with requested_freq when that is found
+to be out of range.  IOW, something like the appended patch (untested).
 
->Oh interesting, wasn't aware RPMH really needs to care about exception
->level. For me, we know CPU is powering down, so it needs to release all
->the resource. RPMH needs to know that and any exception level can let
->RPMH know that. Sorry may be I don't have enough knowledge on SDM SoC.
->
-Some resources are secure resources used in secure environments. They
-cannot be requested from non-secure. Hence secure levels are voters of
-their own accord.
+Wouldn't that address the problem at hand?
 
-Now, since we are considering linux and secure (infact linux,hyp,secure)
-as separate voters they have to each request their votes and release
-their votes separately. PSCI cannot release a request made from Linux.
-This is how the SoC is designed. All exception levels will abide by
-that.
+---
+ drivers/cpufreq/cpufreq_conservative.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
->> Yes, we are close to having a platform have both, possibly.
->>
->
->Comparison numbers please :)
->
-We are far from it, for that, atleast now. But we will get there.
-
->Having to adapt DT to the firmware though the feature is fully discoverable
->is not at all good IMO. So the DT in this series *should work* with OSI
->mode if the firmware has the support for it, it's as simple as that.
->
-The firmware is ATF and does not support OSI.
-
-Thanks,
-Lina
+Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
++++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
+@@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
+ 	 * changed in the meantime, so fall back to current frequency in that
+ 	 * case.
+ 	 */
+-	if (requested_freq > policy->max || requested_freq < policy->min)
++	if (requested_freq > policy->max || requested_freq < policy->min) {
+ 		requested_freq = policy->cur;
++		dbs_info->requested_freq = requested_freq;
++	}
+ 
+ 	freq_step = get_freq_step(cs_tuners, policy);
+ 
