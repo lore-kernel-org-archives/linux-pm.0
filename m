@@ -1,135 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 5/9] PM / Domains: Add genpd_opp_to_performance_state()
-Date: Fri, 12 Oct 2018 21:10:51 +0530
-Message-ID: <CAKohpon+ZV5cc14nL56QgK3-8whM9_5MzTR4v6VpjXxhrwEygg@mail.gmail.com>
-References: <cover.1539341929.git.viresh.kumar@linaro.org> <ec154fa205967507c7352a2d0088346aba562ff2.1539341929.git.viresh.kumar@linaro.org>
- <CAPDyKFpTbSdyqkKUY0HrkOo_YHcRJZ25FrJxVtzPOJ_aHRaE8Q@mail.gmail.com>
+Subject: Re: [PATCH V2 6/9] OPP: Add dev_pm_opp_{set|put}_genpd_device() helper
+Date: Fri, 12 Oct 2018 21:13:15 +0530
+Message-ID: <CAKohpont9Jn0QiZ3yG++xR87ttUAbAL4CAwAmvVL+jMOqVRGdg@mail.gmail.com>
+References: <cover.1539341929.git.viresh.kumar@linaro.org> <110c9e13d8d44dfb59577256b1309dddf2ceda12.1539341929.git.viresh.kumar@linaro.org>
+ <CAPDyKFojOdmGbAzDMrO8EVJYrEYwYi6PT8YG55J9svGT61a1Cg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpTbSdyqkKUY0HrkOo_YHcRJZ25FrJxVtzPOJ_aHRaE8Q@mail.gmail.com>
+In-Reply-To: <CAPDyKFojOdmGbAzDMrO8EVJYrEYwYi6PT8YG55J9svGT61a1Cg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Niklas Cassel <niklas.cassel@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Niklas Cassel <niklas.cassel@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12 October 2018 at 20:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+On 12 October 2018 at 20:16, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 > On 12 October 2018 at 13:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> The OPP core currently stores the performance state in the consumer
->> device's OPP table, but that is going to change going forward and
->> performance state will rather be set directly in the genpd's OPP table.
+>> Multiple generic power domains for a consumer device are supported with
+>> the help of virtual devices, which are created for each consumer device
+>> - genpd pair. These are the device structures which are attached to the
+>> power domain and are required by the OPP core to set the performance
+>> state of the genpd.
 >>
->> For that we need to get the performance state for genpd's device
->> structure instead of the consumer device's structure. Add a new helper
->> to do that.
->
-> I guess what puzzles me a bit here is that we are using a struct
-> device, while we actually should be talking about an OPP cookie
-> instead, right?
-
-The OPP cookie wouldn't get us to the platform specific conversion
-handler, for that we need something from the genpd itself and so its
-structure.
-
-> So the "genpd's device structure" here is not the same as the virtual
-> devices created by genpd to support multiple PM domains, right? Or is
-> it?
-
-You already found that I believe, it is genpd->dev.
-
+>> The helpers added by this commit are required to be called once for each
+>> of these virtual devices. These are required only if multiple domains
+>> are available for a device, otherwise the actual device structure will
+>> be used instead by the OPP core.
 >>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/base/power/domain.c | 39 +++++++++++++++++++++++++++++++++++++
->>  include/linux/pm_domain.h   |  8 ++++++++
->>  2 files changed, 47 insertions(+)
+>> The new helpers also support the complex cases where the consumer device
+>> wouldn't always require all the domains. For example, a camera may
+>> require only one power domain during normal operations but two during
+>> high resolution operations. The consumer driver can call
+>> dev_pm_opp_put_genpd_device(high_resolution_genpd_dev) if it is
+>> currently operating in the normal mode and doesn't have any performance
+>> requirements from the genpd which manages high resolution power
+>> requirements. The consumer driver can later call
+>> dev_pm_opp_set_genpd_device(high_resolution_genpd_dev) once it switches
+>> back to the high resolution mode.
 >>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 4b5714199490..2c82194d2a30 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -2508,6 +2508,45 @@ int of_genpd_parse_idle_states(struct device_node *dn,
->>  }
->>  EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
->>
->> +/**
->> + * genpd_opp_to_performance_state- Gets performance state of the genpd from its OPP node.
+>> The new helpers differ from other OPP set/put helpers as the new ones
+>> can be called with OPPs initialized for the table as we may need to call
+>> them on the fly because of the complex case explained above. For this
+>> reason it is possible that the genpd_device structure may be used in
 >
-> Please rename to:
+> This is a bit unclear. What is really the genpd_device structure?
+> Could you please clarify that here?
+
+It is the virtual device structures created by genpd.
+
+>> parallel while the new helpers are running and a new mutex is added to
+>> protect against that. We didn't use the existing opp_table->lock mutex
+>> as that is widely used in the OPP core and we will need a lock in the
+>> hotpath now, i.e.  while changing OPP and we need to make sure there is
+>> not much contention while doing that.
 >
-> pm_genpd_opp_to_perfromance_state().
-
-Ok.
-
->> + *
->> + * @genpd_dev: Genpd's device for which the performance-state needs to be found.
+> I not sure this needs to be considered as hotpath. I would be
+> surprised if changing genpd virtual devices for OPP, is something that
+> is going to be done frequently. Rather, this is more depending on the
+> use case, like the camera case you describe above.
 >
-> Maybe "genpd_dev" is the correct name to use here, as I understand
-> it's actually the device representing the genpd. However, in other
-> patches in this series you are also using "genpd_dev", while those
-> instead corresponds to the virtual created devices by genpd.
+> In other words, do you really need a new lock?
 
-Naming is a mess because I tried to follow the names you followed in
-your multiple domain support. You used genpd_dev for the virtual device :)
+My bad. I didn't explain it well. If you see a later patch where we started
+configuring the required OPPs, we use genpd_dev or virt-dev within
+opp_set_rate() which also needs this lock. And that is the hot path.
 
-> I would appreciate if we could make that more clear in the code.
->
-> Maybe distinguish them as:
->
-> genpd_dev
-> genpd_virt_dev
-> or just:
->
-> dev
-> virt_dev
-
-Maybe, perhaps we should change domain.c with same naming for the internal
-coding handling multiple domains as well ? I will send the patch for
-that if you agree.
-
->> + * @opp: struct dev_pm_opp of the OPP for which we need to find performance
->> + *     state.
->> + *
->> + * Returns performance state encoded in the OPP of the genpd. This calls
->> + * platform specific genpd->opp_to_performance_state() callback to translate
->> + * power domain OPP to performance state.
->> + *
->> + * Returns performance state on success and 0 on failure.
->> + */
->> +unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
->> +                                           struct dev_pm_opp *opp)
->> +{
->> +       struct generic_pm_domain *genpd = NULL, *temp;
->> +       int state;
->> +
->> +       lockdep_assert_held(&gpd_list_lock);
->
-> What's this?
-
-Don't we need to protect with a lock while traversing the below list?
-Above is just a check to make sure lock is taken.
-
->> +
->> +       list_for_each_entry(temp, &gpd_list, gpd_list_node) {
->> +               if (&temp->dev == genpd_dev) {
->> +                       genpd = temp;
->> +                       break;
->> +               }
->> +       }
->
-> I think we can do better than this.
-
-I really want to :)
-
-> We really don't want to walk the list of genpds while doing this. The
-> caller should already know (if not now, we should fix it) that the
-> struct device is used to represent a genpd.
-
-Caller knows that genpd_dev here is genpd->dev really. But it doesn't
-have pointer of the genpd itself.
-
-> In other words, I am thinking using a container_of() or a finding a
-> function pointer through the struct device, in any case, it would be
-> better.
-
-I am stupid. Container-of will work just fine I belive.
+--
+viresh
