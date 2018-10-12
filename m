@@ -1,53 +1,108 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH 1/2] thermal: imx: improve error message
-Date: Fri, 12 Oct 2018 06:42:05 +0000
-Message-ID: <DB3PR0402MB3916867EF2740736050170CAF5E20@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
- <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RFC v1 2/8] kernel/cpu_pm: Manage runtime PM in the idle
+ path for CPUs
+Date: Fri, 12 Oct 2018 09:43:31 +0200
+Message-ID: <CAJZ5v0hXM9krdacL09kJSn30AL_5kN+4U3d02rZX7-V2DWg_VQ@mail.gmail.com>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-3-git-send-email-rplsssn@codeaurora.org>
+ <8161939.SRDo8Qx48D@aspire.rjw.lan> <20181011220842.GE2371@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
-Content-Language: en-US
+In-Reply-To: <20181011220842.GE2371@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, rplsssn@codeaurora.org, Andy Gross <andy.gross@linaro.org>, david.brown@linaro.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, "Nayak, Rajendra" <rnayak@codeaurora.org>, bjorn.andersson@linaro.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, evgreen@chromium.org, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-R2VudGxlIHBpbmcgdGhpcyBwYXRjaCBzZXQuLi4uDQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2Fy
-ZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBEYW5pZWwgTGV6
-Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4NCj4gU2VudDogVGh1cnNkYXksIFNlcHRl
-bWJlciAxMywgMjAxOCA5OjQzIFBNDQo+IFRvOiBBbnNvbiBIdWFuZyA8YW5zb24uaHVhbmdAbnhw
-LmNvbT47IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+IGVkdWJlenZhbEBnbWFpbC5jb207IGxpbnV4
-LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBT
-dWJqZWN0OiBSZTogW1BBVENIIDEvMl0gdGhlcm1hbDogaW14OiBpbXByb3ZlIGVycm9yIG1lc3Nh
-Z2UNCj4gDQo+IE9uIDEzLzA5LzIwMTggMTE6MTMsIEFuc29uIEh1YW5nIHdyb3RlOg0KPiA+IFJl
-bW92ZSB0aGUgZHVwbGljYXRlZCAiZnJvbSIgdG8gaW1wcm92ZSB0aGUgZXJyb3IgbWVzc2FnZS4N
-Cj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29t
-Pg0KPiA+IC0tLQ0KPiANCj4gUmV2aWV3ZWQtYnk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6
-Y2Fub0BsaW5hcm8ub3JnPg0KPiANCj4gLS0NCj4gDQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlu
-a3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmxpbmFy
-by5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhwLmNvbSU3Qzc0YjBl
-Mw0KPiA2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5
-YzVjMzAxNjM1JTdDDQo+IDAlN0MwJTdDNjM2NzI0NDMwMTI5Nzg5MDEzJmFtcDtzZGF0YT1DOWw4
-UUZ0NThZSlZvNXBydndITnFTaU9QNQ0KPiA0b3BVTVBHT2Z6eVY0UFpGQSUzRCZhbXA7cmVzZXJ2
-ZWQ9MD4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2UNCj4gc29mdHdhcmUgZm9yIEFSTSBTb0Nz
-DQo+IA0KPiBGb2xsb3cgTGluYXJvOg0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3Rl
-Y3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5mYWNlYm9vay5jb20l
-MkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDQW5zb24uSHVhbmclNDANCj4gbnhw
-LmNvbSU3Qzc0YjBlMzY5ZGVhNDQyY2QyM2NhMDhkNjE5N2VlNTE4JTdDNjg2ZWExZDNiYzJiNGM2
-ZmE5Mg0KPiBjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1wO3Nk
-YXRhPVNxZkdmNmE0bg0KPiBNUXZPNWR2QWpoWFBreEpSS3habTklMkZPMzdMTHg4bkJtSjQlM0Qm
-YW1wO3Jlc2VydmVkPTA+DQo+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5r
-cy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aXR0DQo+IGVyLmNv
-bSUyRiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhw
-LmMNCj4gb20lN0M3NGIwZTM2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMy
-YjRjNmZhOTJjZDk5DQo+IGM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzI0NDMwMTI5Nzg5MDEzJmFt
-cDtzZGF0YT1lT2YybnZDZEpFcm1WDQo+IHJhMTJ1eGxaNDJMRmpqcnlIQTN1NEJxbUVGaEFwRSUz
-RCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3Mu
-cHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmxpbmFyby5v
-cmclMkZsaW5hcm8tYmxvZyUyRiZhbXA7ZGF0YT0wMiU3QzAxJTdDQW5zb24uSHVhbmclNDBueHAu
-Yw0KPiBvbSU3Qzc0YjBlMzY5ZGVhNDQyY2QyM2NhMDhkNjE5N2VlNTE4JTdDNjg2ZWExZDNiYzJi
-NGM2ZmE5MmNkOTkNCj4gYzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1w
-O3NkYXRhPVZjcTJDWjNXdXR6NloNCj4geFE3N3Rwb3czMFgydyUyRlZzbWo0M3lsMU01M0djV1Ul
-M0QmYW1wO3Jlc2VydmVkPTA+IEJsb2cNCg0K
+On Fri, Oct 12, 2018 at 12:08 AM Lina Iyer <ilina@codeaurora.org> wrote:
+>
+> On Thu, Oct 11 2018 at 14:56 -0600, Rafael J. Wysocki wrote:
+> >On Wednesday, October 10, 2018 11:20:49 PM CEST Raju P.L.S.S.S.N wrote:
+> >> From: Ulf Hansson <ulf.hansson@linaro.org>
+> >>
+> >> To allow CPUs being power managed by PM domains, let's deploy support for
+> >> runtime PM for the CPU's corresponding struct device.
+> >>
+> >> More precisely, at the point when the CPU is about to enter an idle state,
+> >> decrease the runtime PM usage count for its corresponding struct device,
+> >> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
+> >> resumes from idle, let's increase the runtime PM usage count, via calling
+> >> pm_runtime_get_sync().
+> >>
+> >> Cc: Lina Iyer <ilina@codeaurora.org>
+> >> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> >> (am from https://patchwork.kernel.org/patch/10478153/)
+> >> ---
+> >>  kernel/cpu_pm.c | 11 +++++++++++
+> >>  1 file changed, 11 insertions(+)
+> >>
+> >> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+> >> index 67b02e1..492d4a8 100644
+> >> --- a/kernel/cpu_pm.c
+> >> +++ b/kernel/cpu_pm.c
+> >> @@ -16,9 +16,11 @@
+> >>   */
+> >>
+> >>  #include <linux/kernel.h>
+> >> +#include <linux/cpu.h>
+> >>  #include <linux/cpu_pm.h>
+> >>  #include <linux/module.h>
+> >>  #include <linux/notifier.h>
+> >> +#include <linux/pm_runtime.h>
+> >>  #include <linux/spinlock.h>
+> >>  #include <linux/syscore_ops.h>
+> >>
+> >> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
+> >>  {
+> >>      int nr_calls;
+> >>      int ret = 0;
+> >> +    struct device *dev = get_cpu_device(smp_processor_id());
+> >>
+> >>      ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+> >>      if (ret)
+> >> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
+> >>               */
+> >>              cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+> >>
+> >> +    if (!ret && dev && dev->pm_domain)
+> >> +            pm_runtime_put_sync_suspend(dev);
+> >
+> >This may cause a power domain to go off, but if it goes off, then the idle
+> >governor has already selected idle states for all of the CPUs in that domain.
+> >
+> >Is there any way to ensure that turning the domain off (and later on) will
+> >no cause the target residency and exit latency expectations for those idle
+> >states to be exceeded?
+> >
+> Good point.
+>
+> The cluster states should account for that additional latency.
+
+But even then, you need to be sure that the idle governor selected
+"cluster" states for all of the CPUs in the cluster.  It might select
+WFI for one of them for reasons unrelated to the distance to the next
+timer (so to speak), for example.
+
+> Just the CPU's power down states need not care about that.
+
+The meaning of this sentence isn't particularly clear to me. :-)
+
+> But, it would be nice if the PM domain governor could be cognizant of
+> the idle state chosen for each CPU, that way we dont configure the
+> domain to be powered off when the CPUs have just chosen to power down
+> (not chosen a cluster state). I think that is a whole different topic to
+> discuss.
+
+This needs to be sorted out before the approach becomes viable, though.
+
+Basically, the domain governor needs to track what the idle governor
+did for all of the CPUs in the domain and only let the domain go off
+if the latency matches all of the states selected by the idle
+governor.  Otherwise the idle governor's assumptions would be violated
+and it would become essentially useless overhead.
+
+Thanks,
+Rafael
