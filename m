@@ -1,26 +1,88 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v3 1/7] dt-bindings: power: supply: axp20x: add AXP813 AC
- power DT binding
-Date: Fri, 12 Oct 2018 10:44:54 -0500
-Message-ID: <20181012154454.GA15048@bogus>
-References: <20181008181908.9456-1-oskari@lemmela.net>
- <20181008181908.9456-2-oskari@lemmela.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
+ the domain
+Date: Fri, 12 Oct 2018 17:46:13 +0200
+Message-ID: <CAPDyKFpNuTMav__wTvuMbxU65QpiQPftH_OXkEwztcPAG9FbTw@mail.gmail.com>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
+ <20181011112013.GC32752@e107155-lin> <20181011160053.GA2371@codeaurora.org>
+ <20181011161927.GC28583@e107155-lin> <20181011165822.GB2371@codeaurora.org>
+ <20181011173733.GA26447@e107155-lin> <20181011210609.GD2371@codeaurora.org> <20181012150429.GH3401@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181008181908.9456-2-oskari@lemmela.net>
+In-Reply-To: <20181012150429.GH3401@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <ilina@codeaurora.org>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon,  8 Oct 2018 21:19:02 +0300, Oskari Lemmela wrote:
-> The AXP803/AXP813 AC power supply can limit input current and voltage.
-> 
-> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> ---
->  .../devicetree/bindings/power/supply/axp20x_ac_power.txt       | 3 +++
->  1 file changed, 3 insertions(+)
-> 
+On 12 October 2018 at 17:04, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On Thu, Oct 11, 2018 at 03:06:09PM -0600, Lina Iyer wrote:
+>> On Thu, Oct 11 2018 at 11:37 -0600, Sudeep Holla wrote:
+> [...]
+>
+>> >
+>> > Is DDR managed by Linux ? I assumed it was handled by higher exception
+>> > levels. Can you give examples of resources used by CPU in this context.
+>> > When CPU can be powered on or woken up without Linux intervention, the
+>> > same holds true for CPU power down or sleep states. I still see no reason
+>> > other than the firmware has no support to talk to RPMH.
+>> >
+>> DDR, shared clocks, regulators etc. Imagine you are running something on
+>> the screen and CPUs enter low power mode, while the CPUs were active,
+>> there was a need for bunch of display resources, and things the app may
+>> have requested resources, while the CPU powered down the requests may
+>> not be needed the full extent as when the CPU was running, so they can
+>> voted down to a lower state of in some cases turn off the resources
+>> completely. What the driver voted for is dependent on the runtime state
+>> and the usecase currently active. The 'sleep' state value is also
+>> determined by the driver/framework.
+>>
+>
+> Why does CPU going down says that another (screen - supposedly shared)
+> resource needs to be relinquished ? Shouldn't display decide that on it's
+> own ? I have no idea why screen/display is brought into this discussion.
+> CPU can just say: hey I am going down and I don't need my resource.
+> How can it say: hey I am going down and display or screen also doesn't
+> need the resource. On a multi-cluster, how will the last CPU on one know
+> that it needs to act on behalf of the shared resource instead of another
+> cluster.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Apologize for sidetracking the discussion, just want to fold in a few comments.
+
+This is becoming a complicated story. May I suggest we pick the GIC as
+an example instead?
+
+Let's assume the simple case, we have one cluster and when the cluster
+becomes powered off, the GIC needs to be re-configured and wakeups
+must be routed through some "always on" external logic.
+
+The PSCI spec mentions nothing about how to manage this and not the
+rest of the SoC topology for that matter. Hence if the GIC is managed
+by Linux - then Linux also needs to take actions before cluster power
+down and after cluster power up. So, if PSCI FW can't deal with GIC,
+how would manage it?
+
+>
+> I think we are mixing the system sleep states with CPU idle here.
+> If it's system sleeps states, the we need to deal it in some system ops
+> when it's the last CPU in the system and not the cluster/power domain.
+
+What is really a system sleep state? One could consider it just being
+another idles state, having heaver residency targets and greater
+enter/exit latency values, couldn't you?
+
+In the end, there is no reason to keep things powered on, unless they
+are being in used (or soon to be used), that is main point.
+
+We are also working on S2I at Linaro. We strive towards being able to
+show the same power numbers as for S2R, but then we need to get these
+cluster-idle things right.
+
+[...]
+
+Have a nice weekend!
+
+Kind regards
+Uffe
