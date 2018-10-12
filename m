@@ -1,85 +1,53 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [driver-core PATCH v3 5/5] PM core: Use new async_schedule_dev
- command
-Date: Thu, 11 Oct 2018 15:09:44 -0700
-Message-ID: <20181011220944.1408.39823.stgit@localhost.localdomain>
-References: <20181011220134.1408.63391.stgit@localhost.localdomain>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH 1/2] thermal: imx: improve error message
+Date: Fri, 12 Oct 2018 06:42:05 +0000
+Message-ID: <DB3PR0402MB3916867EF2740736050170CAF5E20@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
+ <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011220134.1408.63391.stgit@localhost.localdomain>
+In-Reply-To: <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
-Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org, alexander.h.duyck@linux.intel.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This change makes it so that we use the device specific version of the
-async_schedule commands to defer various tasks related to power management.
-By doing this we should see a slight improvement in performance as any
-device that is sensitive to latency/locality in the setup will now be
-initializing on the node closest to the device.
-
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
----
- drivers/base/power/main.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index a690fd400260..ebb8b61b52e9 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -726,7 +726,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_noirq, dev);
-+			async_schedule_dev(async_resume_noirq, dev);
- 		}
- 	}
- 
-@@ -883,7 +883,7 @@ void dpm_resume_early(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume_early, dev);
-+			async_schedule_dev(async_resume_early, dev);
- 		}
- 	}
- 
-@@ -1047,7 +1047,7 @@ void dpm_resume(pm_message_t state)
- 		reinit_completion(&dev->power.completion);
- 		if (is_async(dev)) {
- 			get_device(dev);
--			async_schedule(async_resume, dev);
-+			async_schedule_dev(async_resume, dev);
- 		}
- 	}
- 
-@@ -1366,7 +1366,7 @@ static int device_suspend_noirq(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_noirq, dev);
-+		async_schedule_dev(async_suspend_noirq, dev);
- 		return 0;
- 	}
- 	return __device_suspend_noirq(dev, pm_transition, false);
-@@ -1569,7 +1569,7 @@ static int device_suspend_late(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend_late, dev);
-+		async_schedule_dev(async_suspend_late, dev);
- 		return 0;
- 	}
- 
-@@ -1833,7 +1833,7 @@ static int device_suspend(struct device *dev)
- 
- 	if (is_async(dev)) {
- 		get_device(dev);
--		async_schedule(async_suspend, dev);
-+		async_schedule_dev(async_suspend, dev);
- 		return 0;
- 	}
- 
+R2VudGxlIHBpbmcgdGhpcyBwYXRjaCBzZXQuLi4uDQoNCkFuc29uIEh1YW5nDQpCZXN0IFJlZ2Fy
+ZHMhDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBEYW5pZWwgTGV6
+Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4NCj4gU2VudDogVGh1cnNkYXksIFNlcHRl
+bWJlciAxMywgMjAxOCA5OjQzIFBNDQo+IFRvOiBBbnNvbiBIdWFuZyA8YW5zb24uaHVhbmdAbnhw
+LmNvbT47IHJ1aS56aGFuZ0BpbnRlbC5jb207DQo+IGVkdWJlenZhbEBnbWFpbC5jb207IGxpbnV4
+LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBT
+dWJqZWN0OiBSZTogW1BBVENIIDEvMl0gdGhlcm1hbDogaW14OiBpbXByb3ZlIGVycm9yIG1lc3Nh
+Z2UNCj4gDQo+IE9uIDEzLzA5LzIwMTggMTE6MTMsIEFuc29uIEh1YW5nIHdyb3RlOg0KPiA+IFJl
+bW92ZSB0aGUgZHVwbGljYXRlZCAiZnJvbSIgdG8gaW1wcm92ZSB0aGUgZXJyb3IgbWVzc2FnZS4N
+Cj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29t
+Pg0KPiA+IC0tLQ0KPiANCj4gUmV2aWV3ZWQtYnk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6
+Y2Fub0BsaW5hcm8ub3JnPg0KPiANCj4gLS0NCj4gDQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlu
+a3MucHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmxpbmFy
+by5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhwLmNvbSU3Qzc0YjBl
+Mw0KPiA2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5
+YzVjMzAxNjM1JTdDDQo+IDAlN0MwJTdDNjM2NzI0NDMwMTI5Nzg5MDEzJmFtcDtzZGF0YT1DOWw4
+UUZ0NThZSlZvNXBydndITnFTaU9QNQ0KPiA0b3BVTVBHT2Z6eVY0UFpGQSUzRCZhbXA7cmVzZXJ2
+ZWQ9MD4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2UNCj4gc29mdHdhcmUgZm9yIEFSTSBTb0Nz
+DQo+IA0KPiBGb2xsb3cgTGluYXJvOg0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3Rl
+Y3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5mYWNlYm9vay5jb20l
+MkZwYWdlcyUyRkxpbmFybyZhbXA7ZGF0YT0wMiU3QzAxJTdDQW5zb24uSHVhbmclNDANCj4gbnhw
+LmNvbSU3Qzc0YjBlMzY5ZGVhNDQyY2QyM2NhMDhkNjE5N2VlNTE4JTdDNjg2ZWExZDNiYzJiNGM2
+ZmE5Mg0KPiBjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1wO3Nk
+YXRhPVNxZkdmNmE0bg0KPiBNUXZPNWR2QWpoWFBreEpSS3habTklMkZPMzdMTHg4bkJtSjQlM0Qm
+YW1wO3Jlc2VydmVkPTA+DQo+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5r
+cy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aXR0DQo+IGVyLmNv
+bSUyRiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhw
+LmMNCj4gb20lN0M3NGIwZTM2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMy
+YjRjNmZhOTJjZDk5DQo+IGM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzI0NDMwMTI5Nzg5MDEzJmFt
+cDtzZGF0YT1lT2YybnZDZEpFcm1WDQo+IHJhMTJ1eGxaNDJMRmpqcnlIQTN1NEJxbUVGaEFwRSUz
+RCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3Mu
+cHJvdGVjdGlvbi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmxpbmFyby5v
+cmclMkZsaW5hcm8tYmxvZyUyRiZhbXA7ZGF0YT0wMiU3QzAxJTdDQW5zb24uSHVhbmclNDBueHAu
+Yw0KPiBvbSU3Qzc0YjBlMzY5ZGVhNDQyY2QyM2NhMDhkNjE5N2VlNTE4JTdDNjg2ZWExZDNiYzJi
+NGM2ZmE5MmNkOTkNCj4gYzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1w
+O3NkYXRhPVZjcTJDWjNXdXR6NloNCj4geFE3N3Rwb3czMFgydyUyRlZzbWo0M3lsMU01M0djV1Ul
+M0QmYW1wO3Jlc2VydmVkPTA+IEJsb2cNCg0K
