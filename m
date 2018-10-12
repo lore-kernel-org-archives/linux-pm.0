@@ -1,106 +1,116 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
- support using genpd
-Date: Fri, 12 Oct 2018 11:23:10 +0200
-Message-ID: <CAPDyKFoVv99HN080p_pV_Qbmrk9Jeq3kgYBrpTToP6jwuaUo5A@mail.gmail.com>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
- <20181011111306.GB32752@e107155-lin> <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
- <20181011155956.GA28583@e107155-lin>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Fri, 12 Oct 2018 11:37:39 +0200
+Message-ID: <20181012093741eucas1p26a54ad3091e4ba2468f61083c64749db~c0ubdFqkD3034330343eucas1p2R@eucas1p2.samsung.com>
+References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
+        <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+        <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+        <e2091e7e-b6e6-950d-ebab-18ba2de9264f@linaro.org>
+        <20181011073510eucas1p100bfadd6055a523cd1e92b07bfacfc10~cfaLHcbIo1401014010eucas1p1d@eucas1p1.samsung.com>
+        <f099ded8-e074-da18-2eac-e07a5a99af18@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011155956.GA28583@e107155-lin>
+In-Reply-To: <f099ded8-e074-da18-2eac-e07a5a99af18@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org
+Cc: Thara Gopinath <thara.gopinath@linaro.org>, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11 October 2018 at 17:59, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> On Thu, Oct 11, 2018 at 05:27:59PM +0200, Ulf Hansson wrote:
->> On 11 October 2018 at 13:13, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> > On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
->> >> RPMH based targets require that the sleep and wake state request votes
->> >> be sent during system low power mode entry. The votes help reduce the
->> >> power consumption when the AP is not using them. The votes sent by the
->> >> clients are cached in RPMH controller and needs to be flushed when the
->> >> last cpu enters low power mode. So add cpu power domain using Linux
->> >> generic power domain infrastructure to perform necessary tasks as part
->> >> of domain power down.
->> >>
->> >
->> > You seem to have either randomly chosen just 3 patches from Lina/Ulf's
->> > CPU genpd series or this series doesn't entirely depend on it ?
->>
->> Yep, it not easy to follow. But I do understand what you are trying to do here.
->>
->> >
->> > If latter, how does this work with PSCI CPU_SUSPEND operations ?
->> >
->> > And why this can be part of PSCI firmware implementation. Only PSCI
->> > firmware needs if RPMH votes need to be flushed or not. So, honestly
->> > I don't see the need for this in Linux.
->>
->> I do think there is clear need for this in Linux. More precisely,
->> since the PSCI firmware have knowledge solely about CPUs (and clusters
->> of CPUs), but not about other shared resources/devices present on the
->> SoC.
->>
->
-> I disagree. Even with OSI, you indicate the cluster power off though
-> PSCI CPU_SUSPEND call. If for any async wakeup reasons, firmware decides
-> not to enter cluster OFF, then it may skip flushing RPMH vote. So doing
-> it in PSCI is more correct and elegant to avoid such corner cases.
->
->> What Raju is trying to do here, is to manage those resources which
->> needs special treatment, before and after the CPU (likely cluster) is
->> going idle and returns from idle.
->>
->
-> OK I get that, but why is Linux better than PSCI. I have my reasoning
-> above.
 
-I assume Lina, in the other thread from Raju, have provided you the
-details why PSCI is not the place to do this and why Linux need to be
-involved. In any case, let's continue that discussion in that thread
-rather than here.
-
->
->> One question here though, what particular idle state is relevant for
->> the QCOM SoC to take last-man-actions for? I assume it's only cluster
->> idle states, and not about cpu idle states, no? Raju, can you please
->> clarify?
+On 10/11/2018 10:23 AM, Daniel Lezcano wrote:
+> On 11/10/2018 09:35, Lukasz Luba wrote:
+>> Hi Daniel,
 >>
+>> On 10/10/2018 06:54 PM, Daniel Lezcano wrote:
+>>> On 10/10/2018 17:35, Lukasz Luba wrote:
+>>>> Hi Thara,
+>>>>
+>>>> I have run it on Exynos5433 mainline.
+>>>> When it is enabled with step_wise thermal governor,
+>>>> some of my tests are showing ~30-50% regression (i.e. hackbench),
+>>>> dhrystone ~10%.
+>>>>
+>>>> Could you tell me which thermal governor was used in your case?
+>>>> Please also share the name of that benchmark, i will give it a try.
+>>>> Is it single threaded compute-intensive?
+>>>
+>>> aobench AFAICT
+>>>
+>>> It would be interesting if you can share the thermal profile of your board.
+>>>
+>> Thanks for the benchmark name.
+>> It was tested on Samsung TM2 device with Exynos 5433 with debian.
+>> Thermal stuff you can find in mainline:
+>> arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
+> 
+> By thermal profile, I was meaning a figure with the temperature
+> regulation (temperature idle, then workload, then temperature increase,
+> mitigated temperature, end of workload, temperature decrease).
+Currently, I cannot share these data.
+> 
+> The thermal description looks wrong in the DT. I suggest to experiment
+> the series with the DT fixed.
+
+Could you tell more what looks wrong or maybe send a draft/patch?
+> eg. from hi6220.dtsi
+> 
+> 
+>                  thermal-zones {
+> 
+>                          cls0: cls0 {
+>                                  polling-delay = <1000>;
+>                                  polling-delay-passive = <100>;
+>                                  sustainable-power = <3326>;
+> 
+>                                  /* sensor ID */
+>                                  thermal-sensors = <&tsensor 2>;
+> 
+>                                  trips {
+>                                          threshold: trip-point@0 {
+>                                                  temperature = <65000>;
+>                                                  hysteresis = <0>;
+>                                                  type = "passive";
+>                                          };
+> 
+>                                          target: trip-point@1 {
+>                                                  temperature = <75000>;
+>                                                  hysteresis = <0>;
+>                                                  type = "passive";
+>                                          };
+>                                  };
+> 
+>                                  cooling-maps {
+>                                          map0 {
+>                                                  trip = <&target>;
+>                                                  cooling-device = <&cpu0
+> THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+>                                          };
+>                                  };
+>                          };
+>                  };
+> 
+> Note the cooling devices are *passive*
+> 
 >
-> I assume so. I did see some comment or commit message to indicate the
-> same.
->
->> Historically, the typical solution have been to use the
->> cpu_cluster_pm_enter|exit() notifiers. Those could potentially be
->> replaced by instead building a hierarchical topology, using
->> master/subdomain of genpd/"power-domains", along the lines of what
->> Raju is doing. However, I am not sure if that is the correct approach,
->> at least we need to make sure it models the HW in DT correctly.
->>
->
-> Indeed. I am not sure how to represent both PSCI and this power domains ?
-> Though I believe the latter is not required at all.
+For me this DT looks like it is copied from ARM Juno board for IPA,
+where AFAIR there were no interrupts for the temperature sensor
+(due to some psci/scpi/firmware lack of support).
+The cooling map is also short. I am not sure if it would work efficient
+with step-wise, with IPA it will work.
 
-After my re-work of the PSCI power domain series, I believe the
-power-domain that Raju is adding, should then be modeled as the master
-power-domain of the PSCI *cluster* power domain. But, as stated, I am
-not sure if it's the correct way to model the HW/topology. Maybe it
-is.
+The DT configuration for Exynos has been working OK for years.
+Exynos5433 supports 8 trip points, Exynos5422 has 4.
+So if you have more trip points you need to start 'polling'.
+Therefore, for Exynos there is no need to run queued work
+in thermal framework every 1s or 100ms just to
+read the current temperature.
+The exynos-tmu driver gets irq and calls thermal framework
+when such trip point is crossed. Then there is 'monitoring
+window' for the trip point...
+Long story short: 'active' is used for that reason.
 
-The other option is to explore the cpu_cluster_pm_enter|exit(), which
-today is the only viable solution in the kernel. In principle we then
-need to call cpu_cluster_pm_enter() from the PSCI's cluster PM domain
-genpd ->power_off() callback, and cpu_cluster_pm_exit() from the
-->power_on() callback.
-
-Or maybe we simply need something entirely new, like genpd PM
-domain-on/off notifiers, which may scale better. It has even been
-suggested on the mailing list, long time ago.
-
-Kind regards
-Uffe
+Regards,
+Lukasz
