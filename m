@@ -1,69 +1,56 @@
-From: Raju P L S S S N <rplsssn@codeaurora.org>
-Subject: Re: [PATCH RFC v1 7/8] drivers: qcom: cpu_pd: Handle cpu hotplug in
- the domain
-Date: Fri, 12 Oct 2018 23:40:05 +0530
-Message-ID: <f3452af3-a180-8700-43c7-b20dbaa2549e@codeaurora.org>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-8-git-send-email-rplsssn@codeaurora.org>
- <20181012142503.GF3401@e107155-lin>
+From: Quentin Schulz <quentin.schulz@bootlin.com>
+Subject: Re: [PATCH v3 1/7] dt-bindings: power: supply: axp20x: add AXP813 AC
+ power DT binding
+Date: Fri, 12 Oct 2018 21:32:08 +0200
+Message-ID: <20181012193208.7rq4ukonobqkgrlk@qschulz>
+References: <20181008181908.9456-1-oskari@lemmela.net>
+ <20181008181908.9456-2-oskari@lemmela.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rlkcrtl66eibmebk"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181012142503.GF3401@e107155-lin>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181008181908.9456-2-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org
+To: Oskari Lemmela <oskari@lemmela.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
+--rlkcrtl66eibmebk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 10/12/2018 7:55 PM, Sudeep Holla wrote:
-> On Thu, Oct 11, 2018 at 02:50:54AM +0530, Raju P.L.S.S.S.N wrote:
->> Use cpu hotplug callback mechanism to attach/dettach the cpu in
->> the cpu power domain. During cpu hotplug callback registration,
->> the starting callback is invoked on all online cpus. So there is
->> no need to attach from device probe.
->>
->> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
->> ---
->>   drivers/soc/qcom/cpu_pd.c  | 33 +++++++++++++++++++++++++--------
->>   include/linux/cpuhotplug.h |  1 +
->>   2 files changed, 26 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/soc/qcom/cpu_pd.c b/drivers/soc/qcom/cpu_pd.c
->> index 242eced..bf2d95d 100644
->> --- a/drivers/soc/qcom/cpu_pd.c
->> +++ b/drivers/soc/qcom/cpu_pd.c
->> @@ -3,6 +3,7 @@
->>    * Copyright (c) 2018, The Linux Foundation. All rights reserved.
->>    */
->>   
->> +#include <linux/cpuhotplug.h>
->>   #include <linux/ktime.h>
->>   #include <linux/of_platform.h>
->>   #include <linux/pm_domain.h>
->> @@ -85,12 +86,26 @@ static int cpu_pd_power_off(struct generic_pm_domain *domain)
->>   	return 0;
->>   }
->>   
->> +static int cpu_pd_starting(unsigned int cpu)
->> +{
->> +	if (!suspend && of_genpd_attach_cpu(cpu))
->> +		pr_err("%s: genpd_attach_cpu fail\n", __func__);
-> 
-> If it's that serious, return proper error code and drop the message which
-> could be annoying if you are running some hotplug test loop.
+Hi Oskari,
 
-Sure will do that.
+On Mon, Oct 08, 2018 at 09:19:02PM +0300, Oskari Lemmela wrote:
+> The AXP803/AXP813 AC power supply can limit input current and voltage.
+>=20
 
-Thanks Sudeep.
+Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
 
-- Raju
+Thanks,
+Quentin
 
-> 
-> --
-> Regards,
-> Sudeep
-> 
+--rlkcrtl66eibmebk
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlvA9rgACgkQhLiadT7g
+8aN3WRAAimDQafFjFU+84EnrqfVeTLrvSoS6mkpsGFJHwtpdgvALLHhfU2uTgVOs
+/Mplrj6/CGEAszLLv3cioYkDiu9RX7JUwthEgFyUcl6wd8BzZk/AWRqYOQKjGlb4
+RuEvHe5G98WO9wAE8TbqAWPnzTDYgg9eOA0ThYX0EbvGafXAArXxtHs/bWuIhkPv
+lssEBG3t7D+ujXA4iQjU1GZtHJ/XRPIejhfL0QTIPjYI3A7wn72Z66vhVPt9OfLj
+gULQGjbWknKMnhZ8nYxXu8OpzWQEWIoYwXHoSEX4tK52CT5Bc7yrOq0kjt/HrPMJ
+AzqrR52/y5T/oS/AUHiAWJpUqLuTTNrHrnKPU7IvW6Vdawc8EGzUTlONIreIu91N
+Nxk5RNKTgkg5kNoeSwLPmhzrt8PPyZ+SZrTi8UsAdabrR4PAnI7uZU9mUerr8vYO
+qOC6svTgRNktoYQ7SEVLj80RysHLe2WQzD/p/tTFcFrvXyx7vyVjNGeUuXem8tam
+fM8umpPwRIl45ECGKZG+HuRwb2rLlETwk37NxdzRh2NdeL2+AfmcLEUvCccEYP/3
++dpjkb2pSrwt02pN6HbL0B895A0NDDYd71SgxDKDQhBiIF3dWxkO5u4xjh8EFP4g
+fSgL8SUiTa0FuMwZLjAfYmStFz7u8Vcl0Tzh0a1iqrJm/ZwEfDg=
+=B93E
+-----END PGP SIGNATURE-----
+
+--rlkcrtl66eibmebk--
