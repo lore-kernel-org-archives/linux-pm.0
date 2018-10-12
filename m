@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/9] OPP: Separate out custom OPP handler specific code
-Date: Fri, 12 Oct 2018 16:41:10 +0530
-Message-ID: <8e654324f879a04eb0c93493402520f024d2bc17.1539341929.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 3/9] OPP: Populate required opp tables from "required-opps" property
+Date: Fri, 12 Oct 2018 16:41:11 +0530
+Message-ID: <55853fb39ed5c7c01ec8dfb78f53a32b5dc98966.1539341929.git.viresh.kumar@linaro.org>
 References: <cover.1539341929.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1539341929.git.viresh.kumar@linaro.org>
@@ -10,112 +10,237 @@ To: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <n
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Create a separate routine to take care of custom set_opp() handler
-specific stuff.
+The current implementation works only for the case where a single
+phandle is present in the "required-opps" property, while DT allows
+multiple phandles to be present there.
+
+This patch adds new infrastructure to parse all the phandles present in
+"required-opps" property and save pointers of the required OPP's OPP
+tables. These will be used by later commits.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 67 +++++++++++++++++++++++++++-------------------
- 1 file changed, 40 insertions(+), 27 deletions(-)
+ drivers/opp/core.c |   2 +
+ drivers/opp/of.c   | 147 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/opp/opp.h  |   8 +++
+ 3 files changed, 157 insertions(+)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 2c2df4e4fc14..ebb3b648e0fd 100644
+index ebb3b648e0fd..85174a5c4850 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -635,6 +635,34 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 	return ret;
+@@ -901,6 +901,8 @@ static void _opp_table_kref_release(struct kref *kref)
+ 	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
+ 	struct opp_device *opp_dev, *temp;
+ 
++	_of_clear_opp_table(opp_table);
++
+ 	/* Release clk */
+ 	if (!IS_ERR(opp_table->clk))
+ 		clk_put(opp_table->clk);
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 5f114cd3d88c..b5605196122a 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -73,6 +73,147 @@ struct opp_table *_managed_opp(struct device *dev, int index)
+ 	return managed_table;
  }
  
-+static int _set_opp_custom(const struct opp_table *opp_table,
-+			   struct device *dev, unsigned long old_freq,
-+			   unsigned long freq,
-+			   struct dev_pm_opp_supply *old_supply,
-+			   struct dev_pm_opp_supply *new_supply)
++/* The caller must call dev_pm_opp_put() after the OPP is used */
++static struct dev_pm_opp *_find_opp_of_np(struct opp_table *opp_table,
++					  struct device_node *opp_np)
 +{
-+	struct dev_pm_set_opp_data *data;
-+	int size;
++	struct dev_pm_opp *opp;
 +
-+	data = opp_table->set_opp_data;
-+	data->regulators = opp_table->regulators;
-+	data->regulator_count = opp_table->regulator_count;
-+	data->clk = opp_table->clk;
-+	data->dev = dev;
++	lockdep_assert_held(&opp_table_lock);
 +
-+	data->old_opp.rate = old_freq;
-+	size = sizeof(*old_supply) * opp_table->regulator_count;
-+	if (IS_ERR(old_supply))
-+		memset(data->old_opp.supplies, 0, size);
-+	else
-+		memcpy(data->old_opp.supplies, old_supply, size);
++	mutex_lock(&opp_table->lock);
 +
-+	data->new_opp.rate = freq;
-+	memcpy(data->new_opp.supplies, new_supply, size);
++	list_for_each_entry(opp, &opp_table->opp_list, node) {
++		if (opp->np == opp_np) {
++			dev_pm_opp_get(opp);
++			mutex_unlock(&opp_table->lock);
++			return opp;
++		}
++	}
 +
-+	return opp_table->set_opp(data);
++	mutex_unlock(&opp_table->lock);
++
++	return NULL;
 +}
 +
- /**
-  * dev_pm_opp_set_rate() - Configure new OPP based on frequency
-  * @dev:	 device for which we do this operation
-@@ -649,7 +677,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	unsigned long freq, old_freq;
- 	struct dev_pm_opp *old_opp, *opp;
- 	struct clk *clk;
--	int ret, size;
-+	int ret;
- 
- 	if (unlikely(!target_freq)) {
- 		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
-@@ -702,8 +730,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
- 		old_freq, freq);
- 
--	/* Only frequency scaling */
--	if (!opp_table->regulators) {
-+	if (opp_table->set_opp) {
-+		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
-+				      IS_ERR(old_opp) ? NULL : old_opp->supplies,
-+				      opp->supplies);
-+	} else if (opp_table->regulators) {
-+		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
-+						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
-+						 opp->supplies);
-+	} else {
-+		/* Only frequency scaling */
++static struct device_node *of_parse_required_opp(struct device_node *np,
++						 int index)
++{
++	struct device_node *required_np;
 +
- 		/*
- 		 * We don't support devices with both regulator and
- 		 * domain performance-state for now.
-@@ -714,30 +751,6 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 						      opp->pstate);
- 		else
- 			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
--	} else if (!opp_table->set_opp) {
--		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
--						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
--						 opp->supplies);
--	} else {
--		struct dev_pm_set_opp_data *data;
--
--		data = opp_table->set_opp_data;
--		data->regulators = opp_table->regulators;
--		data->regulator_count = opp_table->regulator_count;
--		data->clk = clk;
--		data->dev = dev;
--
--		data->old_opp.rate = old_freq;
--		size = sizeof(*opp->supplies) * opp_table->regulator_count;
--		if (IS_ERR(old_opp))
--			memset(data->old_opp.supplies, 0, size);
--		else
--			memcpy(data->old_opp.supplies, old_opp->supplies, size);
--
--		data->new_opp.rate = freq;
--		memcpy(data->new_opp.supplies, opp->supplies, size);
--
--		ret = opp_table->set_opp(data);
- 	}
++	required_np = of_parse_phandle(np, "required-opps", index);
++	if (unlikely(!required_np)) {
++		pr_err("%s: Unable to parse required-opps: %pOF, index: %d\n",
++		       __func__, np, index);
++	}
++
++	return required_np;
++}
++
++/* The caller must call dev_pm_opp_put_opp_table() after the table is used */
++static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
++{
++	struct opp_table *opp_table;
++	struct dev_pm_opp *opp;
++
++	lockdep_assert_held(&opp_table_lock);
++
++	list_for_each_entry(opp_table, &opp_tables, node) {
++		opp = _find_opp_of_np(opp_table, opp_np);
++		if (opp) {
++			dev_pm_opp_put(opp);
++			_get_opp_table_kref(opp_table);
++			return opp_table;
++		}
++	}
++
++	return ERR_PTR(-ENODEV);
++}
++
++/* Free resources previously acquired by _opp_table_alloc_required_tables() */
++static void _opp_table_free_required_tables(struct opp_table *opp_table)
++{
++	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
++	int i;
++
++	if (!required_opp_tables)
++		return;
++
++	for (i = 0; i < opp_table->required_opp_count; i++) {
++		if (IS_ERR_OR_NULL(required_opp_tables[i]))
++			break;
++
++		dev_pm_opp_put_opp_table(required_opp_tables[i]);
++	}
++
++	kfree(required_opp_tables);
++
++	opp_table->required_opp_count = 0;
++	opp_table->required_opp_tables = NULL;
++}
++
++/*
++ * Populate all devices and opp tables which are part of "required-opps" list.
++ * Checking only the first OPP node should be enough.
++ */
++static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
++					     struct device *dev,
++					     struct device_node *opp_np)
++{
++	struct opp_table **required_opp_tables;
++	struct device_node *required_np, *np;
++	int count, i;
++
++	/* Traversing the first OPP node is all we need */
++	np = of_get_next_available_child(opp_np, NULL);
++	if (!np) {
++		dev_err(dev, "Empty OPP table\n");
++		return;
++	}
++
++	count = of_count_phandle_with_args(np, "required-opps", NULL);
++	if (!count)
++		goto put_np;
++
++	required_opp_tables = kcalloc(count, sizeof(*required_opp_tables),
++				      GFP_KERNEL);
++	if (!required_opp_tables)
++		goto put_np;
++
++	opp_table->required_opp_tables = required_opp_tables;
++	opp_table->required_opp_count = count;
++
++	for (i = 0; i < count; i++) {
++		required_np = of_parse_required_opp(np, i);
++		if (!required_np)
++			goto free_required_tables;
++
++		required_opp_tables[i] = _find_table_of_opp_np(required_np);
++		of_node_put(required_np);
++
++		if (IS_ERR(required_opp_tables[i]))
++			goto free_required_tables;
++
++		/*
++		 * We only support genpd's OPPs in the "required-opps" for now,
++		 * as we don't know how much about other cases. Error out if the
++		 * required OPP doesn't belong to a genpd.
++		 */
++		if (!required_opp_tables[i]->is_genpd) {
++			dev_err(dev, "required-opp doesn't belong to genpd: %pOF\n",
++				required_np);
++			goto free_required_tables;
++		}
++	}
++
++	goto put_np;
++
++free_required_tables:
++	_opp_table_free_required_tables(opp_table);
++put_np:
++	of_node_put(np);
++}
++
+ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
+ 			int index)
+ {
+@@ -109,9 +250,15 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
  
- 	dev_pm_opp_put(opp);
+ 	opp_table->np = opp_np;
+ 
++	_opp_table_alloc_required_tables(opp_table, dev, opp_np);
+ 	of_node_put(opp_np);
+ }
+ 
++void _of_clear_opp_table(struct opp_table *opp_table)
++{
++	_opp_table_free_required_tables(opp_table);
++}
++
+ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
+ 			      struct device_node *np)
+ {
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index cdb0c2b095e2..024e1be23d37 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -133,6 +133,9 @@ enum opp_table_access {
+  * @parsed_static_opps: True if OPPs are initialized from DT.
+  * @shared_opp: OPP is shared between multiple devices.
+  * @suspend_opp: Pointer to OPP to be used during device suspend.
++ * @required_opp_tables: List of device OPP tables that are required by OPPs in
++ *		this table.
++ * @required_opp_count: Number of required devices.
+  * @supported_hw: Array of version number to support.
+  * @supported_hw_count: Number of elements in supported_hw array.
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
+@@ -172,6 +175,9 @@ struct opp_table {
+ 	enum opp_table_access shared_opp;
+ 	struct dev_pm_opp *suspend_opp;
+ 
++	struct opp_table **required_opp_tables;
++	unsigned int required_opp_count;
++
+ 	unsigned int *supported_hw;
+ 	unsigned int supported_hw_count;
+ 	const char *prop_name;
+@@ -208,9 +214,11 @@ void _put_opp_list_kref(struct opp_table *opp_table);
+ 
+ #ifdef CONFIG_OF
+ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index);
++void _of_clear_opp_table(struct opp_table *opp_table);
+ struct opp_table *_managed_opp(struct device *dev, int index);
+ #else
+ static inline void _of_init_opp_table(struct opp_table *opp_table, struct device *dev, int index) {}
++static inline void _of_clear_opp_table(struct opp_table *opp_table) {}
+ static inline struct opp_table *_managed_opp(struct device *dev, int index) { return NULL; }
+ #endif
+ 
 -- 
 2.18.0.rc1.242.g61856ae69a2c
