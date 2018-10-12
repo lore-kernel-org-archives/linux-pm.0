@@ -1,25 +1,58 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V2 1/2] sched: Factor out nr_iowait and nr_iowait_cpu
-Date: Fri, 12 Oct 2018 10:28:12 +0200
-Message-ID: <20181012082812.GO9848@hirez.programming.kicks-ass.net>
+Subject: Re: [PATCH V2 2/2] cpuidle/drivers/menu: Remove get_loadavg in the
+ performance multiplier
+Date: Fri, 12 Oct 2018 10:28:26 +0200
+Message-ID: <20181012082826.GP9848@hirez.programming.kicks-ass.net>
 References: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
+ <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "open list:SCHEDULER" <linux-kernel@vger.kernel.org>
+Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Mel Gorman <mgorman@suse.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 04, 2018 at 02:04:02PM +0200, Daniel Lezcano wrote:
-> The function nr_iowait_cpu() can be used directly by nr_iowait() instead
-> of duplicating code.
+On Thu, Oct 04, 2018 at 02:04:03PM +0200, Daniel Lezcano wrote:
+> The function get_loadavg() returns almost always zero. To be more
+> precise, statistically speaking for a total of 1023379 times passing
+> in the function, the load is equal to zero 1020728 times, greater than
+> 100, 610 times, the remaining is between 0 and 5.
 > 
-> Call nr_iowait_cpu() from nr_iowait()
+> In 2011, the get_loadavg() was removed from the Android tree because
+> of the above [1]. At this time, the load was:
 > 
-> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> unsigned long this_cpu_load(void)
+> {
+>         struct rq *this = this_rq();
+>         return this->cpu_load[0];
+> }
+> 
+> In 2014, the code was changed by commit 372ba8cb46b2 (cpuidle: menu: Lookup CPU
+> runqueues less) and the load is:
+> 
+> void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
+> {
+>         struct rq *rq = this_rq();
+>         *nr_waiters = atomic_read(&rq->nr_iowait);
+>         *load = rq->load.weight;
+> }
+> 
+> with the same result.
+> 
+> Both measurements show using the load in this code path does no matter
+> anymore. Removing it.
+> 
+> [1] https://android.googlesource.com/kernel/common/+/4dedd9f124703207895777ac6e91dacde0f7cc17
+> 
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Joel Fernandes <joelaf@google.com>
+> Cc: Colin Cross <ccross@android.com>
+> Cc: Ramesh Thomas <ramesh.thomas@intel.com>
+> Cc: Mel Gorman <mgorman@suse.de>
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
