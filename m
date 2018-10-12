@@ -1,31 +1,30 @@
 From: Quentin Schulz <quentin.schulz@bootlin.com>
-Subject: Re: [PATCH v3 1/7] dt-bindings: power: supply: axp20x: add AXP813 AC
- power DT binding
-Date: Fri, 12 Oct 2018 21:32:08 +0200
-Message-ID: <20181012193208.7rq4ukonobqkgrlk@qschulz>
+Subject: Re: [PATCH v3 2/7] ARM: dts: axp81x: add AC power supply subnode
+Date: Fri, 12 Oct 2018 21:32:32 +0200
+Message-ID: <20181012193232.6qak2xwzean5hgk7@qschulz>
 References: <20181008181908.9456-1-oskari@lemmela.net>
- <20181008181908.9456-2-oskari@lemmela.net>
+ <20181008181908.9456-3-oskari@lemmela.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rlkcrtl66eibmebk"
+        protocol="application/pgp-signature"; boundary="itk5j53i7elyqnsr"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181008181908.9456-2-oskari@lemmela.net>
+In-Reply-To: <20181008181908.9456-3-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Oskari Lemmela <oskari@lemmela.net>
 Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---rlkcrtl66eibmebk
+--itk5j53i7elyqnsr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Oskari,
 
-On Mon, Oct 08, 2018 at 09:19:02PM +0300, Oskari Lemmela wrote:
-> The AXP803/AXP813 AC power supply can limit input current and voltage.
+On Mon, Oct 08, 2018 at 09:19:03PM +0300, Oskari Lemmela wrote:
+> Add AC power supply subnode for AXP81X PMIC.
 >=20
 
 Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
@@ -33,24 +32,24 @@ Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
 Thanks,
 Quentin
 
---rlkcrtl66eibmebk
+--itk5j53i7elyqnsr
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlvA9rgACgkQhLiadT7g
-8aN3WRAAimDQafFjFU+84EnrqfVeTLrvSoS6mkpsGFJHwtpdgvALLHhfU2uTgVOs
-/Mplrj6/CGEAszLLv3cioYkDiu9RX7JUwthEgFyUcl6wd8BzZk/AWRqYOQKjGlb4
-RuEvHe5G98WO9wAE8TbqAWPnzTDYgg9eOA0ThYX0EbvGafXAArXxtHs/bWuIhkPv
-lssEBG3t7D+ujXA4iQjU1GZtHJ/XRPIejhfL0QTIPjYI3A7wn72Z66vhVPt9OfLj
-gULQGjbWknKMnhZ8nYxXu8OpzWQEWIoYwXHoSEX4tK52CT5Bc7yrOq0kjt/HrPMJ
-AzqrR52/y5T/oS/AUHiAWJpUqLuTTNrHrnKPU7IvW6Vdawc8EGzUTlONIreIu91N
-Nxk5RNKTgkg5kNoeSwLPmhzrt8PPyZ+SZrTi8UsAdabrR4PAnI7uZU9mUerr8vYO
-qOC6svTgRNktoYQ7SEVLj80RysHLe2WQzD/p/tTFcFrvXyx7vyVjNGeUuXem8tam
-fM8umpPwRIl45ECGKZG+HuRwb2rLlETwk37NxdzRh2NdeL2+AfmcLEUvCccEYP/3
-+dpjkb2pSrwt02pN6HbL0B895A0NDDYd71SgxDKDQhBiIF3dWxkO5u4xjh8EFP4g
-fSgL8SUiTa0FuMwZLjAfYmStFz7u8Vcl0Tzh0a1iqrJm/ZwEfDg=
-=B93E
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlvA9tAACgkQhLiadT7g
+8aOpIA/9HZOGqf/73TrFfVqVJ4tP3l4mNyVT3oFAxyIXUPinI95nimvCR0Jjzo60
+O1QWQNbKZFeYJeN/jdsCQWvIGWTPFAHEeUyDLTBPESBMnM9FfEzYj2dsUJEF+Uda
+I0bC/Uk6bQFpFsa3+OoWUT+aQxXA7CRhu777knj0Zj0uSex7ZvGrC9BAjzJCzdbD
+z7HqgtIoC2ba0OThXNeHjqQEdyQYkaxRfXVBgFLspeJV/rA+Ok/Gf622tXm2dAcy
+LyoD7GLc2beRi3lejVHLQjmcleXcgXcSztKq9CInacLUFLOyX6ySVKmPlLVCUOud
+G7iJsyBH2ERhVSXHPUqVgzYcgxA2sEyA1ULqFpCFAJEN3I2Z5HT1C2QzUSQLw3U0
+vjoDGSenLt07BndDhkRks8WEUsTY2JcgQZZzOcTgqsM/ocKqZDv04W2UPa1/K713
+YWMyEyfzI9MhJXKHJV/B+Jlt2kg4TrV19MvnzqRIioTYjhR8JojEn7no0twntulb
+kyAO2kdCa905JnLZ95+avFFYXJf0EhMdpIfqOz1ynQ6OfTyjVSqGtr6z0bCrwEs+
+kl+oP4sWIEh1Gztr5TUbSFBtIUMPn8pyUZs553D5owwwxC+g4MEDggRLPKQJSe3a
+x4Ea0SBVE0ACQtS2OHX2cRIiIbEUbZIc5olMp/lyoxuX7F01Fo4=
+=ak0X
 -----END PGP SIGNATURE-----
 
---rlkcrtl66eibmebk--
+--itk5j53i7elyqnsr--
