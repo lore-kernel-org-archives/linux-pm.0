@@ -1,108 +1,151 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH RFC v1 2/8] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Fri, 12 Oct 2018 09:43:31 +0200
-Message-ID: <CAJZ5v0hXM9krdacL09kJSn30AL_5kN+4U3d02rZX7-V2DWg_VQ@mail.gmail.com>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-3-git-send-email-rplsssn@codeaurora.org>
- <8161939.SRDo8Qx48D@aspire.rjw.lan> <20181011220842.GE2371@codeaurora.org>
+Subject: Re: [driver-core PATCH v3 3/5] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Fri, 12 Oct 2018 09:52:12 +0200
+Message-ID: <CAJZ5v0gEssyHx-Ao+PfopHziBQ=WnU2cspSPpvEN=B_E-EVDPA@mail.gmail.com>
+References: <20181011220134.1408.63391.stgit@localhost.localdomain> <20181011220933.1408.6882.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011220842.GE2371@codeaurora.org>
+In-Reply-To: <20181011220933.1408.6882.stgit@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, rplsssn@codeaurora.org, Andy Gross <andy.gross@linaro.org>, david.brown@linaro.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, "Nayak, Rajendra" <rnayak@codeaurora.org>, bjorn.andersson@linaro.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, evgreen@chromium.org, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: alexander.h.duyck@linux.intel.com
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 12, 2018 at 12:08 AM Lina Iyer <ilina@codeaurora.org> wrote:
+On Fri, Oct 12, 2018 at 12:10 AM Alexander Duyck
+<alexander.h.duyck@linux.intel.com> wrote:
 >
-> On Thu, Oct 11 2018 at 14:56 -0600, Rafael J. Wysocki wrote:
-> >On Wednesday, October 10, 2018 11:20:49 PM CEST Raju P.L.S.S.S.N wrote:
-> >> From: Ulf Hansson <ulf.hansson@linaro.org>
-> >>
-> >> To allow CPUs being power managed by PM domains, let's deploy support for
-> >> runtime PM for the CPU's corresponding struct device.
-> >>
-> >> More precisely, at the point when the CPU is about to enter an idle state,
-> >> decrease the runtime PM usage count for its corresponding struct device,
-> >> via calling pm_runtime_put_sync_suspend(). Then, at the point when the CPU
-> >> resumes from idle, let's increase the runtime PM usage count, via calling
-> >> pm_runtime_get_sync().
-> >>
-> >> Cc: Lina Iyer <ilina@codeaurora.org>
-> >> Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-> >> (am from https://patchwork.kernel.org/patch/10478153/)
-> >> ---
-> >>  kernel/cpu_pm.c | 11 +++++++++++
-> >>  1 file changed, 11 insertions(+)
-> >>
-> >> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-> >> index 67b02e1..492d4a8 100644
-> >> --- a/kernel/cpu_pm.c
-> >> +++ b/kernel/cpu_pm.c
-> >> @@ -16,9 +16,11 @@
-> >>   */
-> >>
-> >>  #include <linux/kernel.h>
-> >> +#include <linux/cpu.h>
-> >>  #include <linux/cpu_pm.h>
-> >>  #include <linux/module.h>
-> >>  #include <linux/notifier.h>
-> >> +#include <linux/pm_runtime.h>
-> >>  #include <linux/spinlock.h>
-> >>  #include <linux/syscore_ops.h>
-> >>
-> >> @@ -91,6 +93,7 @@ int cpu_pm_enter(void)
-> >>  {
-> >>      int nr_calls;
-> >>      int ret = 0;
-> >> +    struct device *dev = get_cpu_device(smp_processor_id());
-> >>
-> >>      ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
-> >>      if (ret)
-> >> @@ -100,6 +103,9 @@ int cpu_pm_enter(void)
-> >>               */
-> >>              cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
-> >>
-> >> +    if (!ret && dev && dev->pm_domain)
-> >> +            pm_runtime_put_sync_suspend(dev);
-> >
-> >This may cause a power domain to go off, but if it goes off, then the idle
-> >governor has already selected idle states for all of the CPUs in that domain.
-> >
-> >Is there any way to ensure that turning the domain off (and later on) will
-> >no cause the target residency and exit latency expectations for those idle
-> >states to be exceeded?
-> >
-> Good point.
+> This change makes it so that we probe devices asynchronously instead of the
+> driver. This results in us seeing the same behavior if the device is
+> registered before the driver or after. This way we can avoid serializing
+> the initialization should the driver not be loaded until after the devices
+> have already been added.
 >
-> The cluster states should account for that additional latency.
+> The motivation behind this is that if we have a set of devices that
+> take a significant amount of time to load we can greatly reduce the time to
+> load by processing them in parallel instead of one at a time. In addition,
+> each device can exist on a different node so placing a single thread on one
+> CPU to initialize all of the devices for a given driver can result in poor
+> performance on a system with multiple nodes.
+>
+> One issue I can see with this patch is that I am using the
+> dev_set/get_drvdata functions to store the driver in the device while I am
+> waiting on the asynchronous init to complete. For now I am protecting it by
+> using the lack of a dev->driver and the device lock.
+>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> ---
+>  drivers/base/bus.c |   23 +++--------------------
+>  drivers/base/dd.c  |   42 ++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 45 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+> index 8bfd27ec73d6..2a17bed657ec 100644
+> --- a/drivers/base/bus.c
+> +++ b/drivers/base/bus.c
+> @@ -616,17 +616,6 @@ static ssize_t uevent_store(struct device_driver *drv, const char *buf,
+>  }
+>  static DRIVER_ATTR_WO(uevent);
+>
+> -static void driver_attach_async(void *_drv, async_cookie_t cookie)
+> -{
+> -       struct device_driver *drv = _drv;
+> -       int ret;
+> -
+> -       ret = driver_attach(drv);
+> -
+> -       pr_debug("bus: '%s': driver %s async attach completed: %d\n",
+> -                drv->bus->name, drv->name, ret);
+> -}
+> -
+>  /**
+>   * bus_add_driver - Add a driver to the bus.
+>   * @drv: driver.
+> @@ -659,15 +648,9 @@ int bus_add_driver(struct device_driver *drv)
+>
+>         klist_add_tail(&priv->knode_bus, &bus->p->klist_drivers);
+>         if (drv->bus->p->drivers_autoprobe) {
+> -               if (driver_allows_async_probing(drv)) {
+> -                       pr_debug("bus: '%s': probing driver %s asynchronously\n",
+> -                               drv->bus->name, drv->name);
+> -                       async_schedule(driver_attach_async, drv);
+> -               } else {
+> -                       error = driver_attach(drv);
+> -                       if (error)
+> -                               goto out_unregister;
+> -               }
+> +               error = driver_attach(drv);
+> +               if (error)
+> +                       goto out_unregister;
+>         }
+>         module_add_driver(drv->owner, drv);
+>
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 169412ee4ae8..5ba366c1cb83 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -864,6 +864,29 @@ void device_initial_probe(struct device *dev)
+>         __device_attach(dev, true);
+>  }
+>
+> +static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
+> +{
+> +       struct device *dev = _dev;
+> +
+> +       if (dev->parent && dev->bus->need_parent_lock)
+> +               device_lock(dev->parent);
+> +       device_lock(dev);
+> +
+> +       if (!dev->driver) {
+> +               struct device_driver *drv = dev_get_drvdata(dev);
+> +
+> +               driver_probe_device(drv, dev);
+> +       }
+> +
+> +       dev_dbg(dev, "async probe completed\n");
+> +
+> +       device_unlock(dev);
+> +       if (dev->parent && dev->bus->need_parent_lock)
+> +               device_unlock(dev->parent);
 
-But even then, you need to be sure that the idle governor selected
-"cluster" states for all of the CPUs in the cluster.  It might select
-WFI for one of them for reasons unrelated to the distance to the next
-timer (so to speak), for example.
+The above duplicates some code from __driver_attach().
 
-> Just the CPU's power down states need not care about that.
+You could avoid that by adding one more function to call directly from
+__driver_attach() in the "sync" case and from here, along the lines of
+what the PM code does.
 
-The meaning of this sentence isn't particularly clear to me. :-)
-
-> But, it would be nice if the PM domain governor could be cognizant of
-> the idle state chosen for each CPU, that way we dont configure the
-> domain to be powered off when the CPUs have just chosen to power down
-> (not chosen a cluster state). I think that is a whole different topic to
-> discuss.
-
-This needs to be sorted out before the approach becomes viable, though.
-
-Basically, the domain governor needs to track what the idle governor
-did for all of the CPUs in the domain and only let the domain go off
-if the latency matches all of the states selected by the idle
-governor.  Otherwise the idle governor's assumptions would be violated
-and it would become essentially useless overhead.
-
-Thanks,
-Rafael
+> +
+> +       put_device(dev);
+> +}
+> +
+>  static int __driver_attach(struct device *dev, void *data)
+>  {
+>         struct device_driver *drv = data;
+> @@ -891,6 +914,25 @@ static int __driver_attach(struct device *dev, void *data)
+>                 return ret;
+>         } /* ret > 0 means positive match */
+>
+> +       if (driver_allows_async_probing(drv)) {
+> +               /*
+> +                * Instead of probing the device synchronously we will
+> +                * probe it asynchronously to allow for more parallelism.
+> +                *
+> +                * We only take the device lock here in order to guarantee
+> +                * that the dev->driver and driver_data fields are protected
+> +                */
+> +               dev_dbg(dev, "scheduling asynchronous probe\n");
+> +               device_lock(dev);
+> +               if (!dev->driver) {
+> +                       get_device(dev);
+> +                       dev_set_drvdata(dev, drv);
+> +                       async_schedule(__driver_attach_async_helper, dev);
+> +               }
+> +               device_unlock(dev);
+> +               return 0;
+> +       }
+> +
+>         if (dev->parent && dev->bus->need_parent_lock)
+>                 device_lock(dev->parent);
+>         device_lock(dev);
+>
