@@ -1,161 +1,85 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
- support using genpd
-Date: Fri, 12 Oct 2018 15:33:50 +0100
-Message-ID: <20181012143350.GG3401@e107155-lin>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 2/4] power: supply: core: Introduce properties to
+ present the battery OCV capacity table
+Date: Fri, 12 Oct 2018 09:35:30 -0500
+Message-ID: <20181012143530.GA28145@bogus>
+References: <2787f18a0366576959557d05112a069dca982269.1538033078.git.baolin.wang@linaro.org>
+ <7dccec1694a05a524710e59a63859974b4cdae89.1538033078.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
+In-Reply-To: <7dccec1694a05a524710e59a63859974b4cdae89.1538033078.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: sre@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
-> RPMH based targets require that the sleep and wake state request votes
-> be sent during system low power mode entry. The votes help reduce the
-> power consumption when the AP is not using them. The votes sent by the
-> clients are cached in RPMH controller and needs to be flushed when the
-> last cpu enters low power mode. So add cpu power domain using Linux
-> generic power domain infrastructure to perform necessary tasks as part
-> of domain power down.
->
-> Suggested-by: Lina Iyer <ilina@codeaurora.org>
-> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+On Thu, Sep 27, 2018 at 03:26:55PM +0800, Baolin Wang wrote:
+> Some battery driver will use the open circuit voltage (OCV) value to look
+> up the corresponding battery capacity percent in one certain degree Celsius.
+> Thus this patch provides some battery properties to present the OCV table
+> temperatures and OCV capacity table values. Moreover it also provides some
+> helper functions to use the OCV capacity table for users.
+> 
+> Suggested-by: Sebastian Reichel <sre@kernel.org>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 > ---
->  drivers/soc/qcom/Kconfig  |   9 ++++
->  drivers/soc/qcom/Makefile |   1 +
->  drivers/soc/qcom/cpu_pd.c | 104 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 114 insertions(+)
->  create mode 100644 drivers/soc/qcom/cpu_pd.c
->
-> diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
-> index ba79b60..91e8b3b 100644
-> --- a/drivers/soc/qcom/Kconfig
-> +++ b/drivers/soc/qcom/Kconfig
-> @@ -95,6 +95,7 @@ config QCOM_RMTFS_MEM
->  config QCOM_RPMH
->  	bool "Qualcomm RPM-Hardened (RPMH) Communication"
->  	depends on ARCH_QCOM && ARM64 && OF || COMPILE_TEST
-> +	select QCOM_CPU_PD
->  	help
->  	  Support for communication with the hardened-RPM blocks in
->  	  Qualcomm Technologies Inc (QTI) SoCs. RPMH communication uses an
-> @@ -102,6 +103,14 @@ config QCOM_RPMH
->  	  of hardware components aggregate requests for these resources and
->  	  help apply the aggregated state on the resource.
->
-> +config QCOM_CPU_PD
-> +    bool "Qualcomm cpu power domain driver"
-> +    depends on QCOM_RPMH && PM_GENERIC_DOMAINS || COMPILE_TEST
-> +    help
-> +	  Support for QCOM platform cpu power management to perform tasks
-> +	  necessary while application processor votes for deeper modes so that
-> +	  the firmware can enter SoC level low power modes to save power.
-> +
->  config QCOM_SMEM
->  	tristate "Qualcomm Shared Memory Manager (SMEM)"
->  	depends on ARCH_QCOM
-> diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-> index f25b54c..57a1b0e 100644
-> --- a/drivers/soc/qcom/Makefile
-> +++ b/drivers/soc/qcom/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_QCOM_RMTFS_MEM)	+= rmtfs_mem.o
->  obj-$(CONFIG_QCOM_RPMH)		+= qcom_rpmh.o
->  qcom_rpmh-y			+= rpmh-rsc.o
->  qcom_rpmh-y			+= rpmh.o
-> +obj-$(CONFIG_QCOM_CPU_PD) += cpu_pd.o
->  obj-$(CONFIG_QCOM_SMD_RPM)	+= smd-rpm.o
->  obj-$(CONFIG_QCOM_SMEM) +=	smem.o
->  obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
-> diff --git a/drivers/soc/qcom/cpu_pd.c b/drivers/soc/qcom/cpu_pd.c
-> new file mode 100644
-> index 0000000..565c510
-> --- /dev/null
-> +++ b/drivers/soc/qcom/cpu_pd.c
-> @@ -0,0 +1,104 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> + */
-> +
-> +#include <linux/of_platform.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/slab.h>
-> +
-> +#include <soc/qcom/rpmh.h>
-> +
-> +static struct device *cpu_pd_dev;
-> +
+> Changes from v2:
+>  - Use type __be32 to calculate the table length.
+>  - Update error messages.
+>  - Add some helper functions.
+> 
+> Changes from v1:
+>  - New patch in v2.
+> ---
+>  .../devicetree/bindings/power/supply/battery.txt   |   14 +++
 
-This doesn't scale if you have 2 instances.
+Please split binding patches.
 
-> +static int cpu_pd_power_off(struct generic_pm_domain *domain)
-> +{
-> +	if (rpmh_ctrlr_idle(cpu_pd_dev)) {
+>  drivers/power/supply/power_supply_core.c           |  125 +++++++++++++++++++-
+>  include/linux/power_supply.h                       |   19 +++
+>  3 files changed, 157 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+> index 938d027..cad38df 100644
+> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+> @@ -23,6 +23,16 @@ Optional Properties:
+>   - constant-charge-current-max-microamp: maximum constant input current
+>   - constant-charge-voltage-max-microvolt: maximum constant input voltage
+>   - factory-internal-resistance-micro-ohms: battery factory internal resistance
+> + - ocv-capacity-table-0: An array providing the battery capacity percent
+> +   with corresponding open circuit voltage (OCV) of the battery, which
+> +   is used to look up battery capacity according to current OCV value.
+> + - ocv-capacity-table-1: Same as ocv-capacity-table-0
+> + ......
+> + - ocv-capacity-table-n: Same as ocv-capacity-table-0
 
-How is this expected to compile ? I couldn't find any instance of this.
+So it is tubles of (percent, voltage)? What's the units for voltage?
 
-> +		/* Flush the sleep/wake sets */
-> +		rpmh_flush(cpu_pd_dev);
+What determines the # of entries for each table? Do all tables have the 
+same number of entries?
 
-So it's just flushing the pending requests on the controller. The function
-implementation carries a note that it's assumed to be called only from
-system PM and we may call it in cpu idle path here. Is that fine ?
-If so, may be the comment needs to be dropped.
+> + - ocv-capacity-table-temperatures: An array containing the temperature
+> +   in degree Celsius, for each of the battery capacity lookup table.
+> +   The first temperature value specifies the OCV table 0, and the second
+> +   temperature value specifies the OCV table 1, and so on.
 
-Also, where exactly this voting for CPU is happening in this path ?
+This should have unit suffix. Perhaps just "ocv-capacity-celsius" to 
+avoid being too long.
 
-> +	} else {
-> +		pr_debug("rpmh controller is busy\n");
-> +		return -EBUSY;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int cpu_pm_domain_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = dev->of_node;
-> +	struct generic_pm_domain *cpu_pd;
-> +	int ret = -EINVAL, cpu;
-> +
-> +	if (!np) {
-> +		dev_err(dev, "device tree node not found\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	if (!of_find_property(np, "#power-domain-cells", NULL)) {
-> +		pr_err("power-domain-cells not found\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	cpu_pd_dev = &pdev->dev;
-> +	if (IS_ERR_OR_NULL(cpu_pd_dev))
-
-Isn't this too late to check ? You would have crashed on dev->of_node.
-So sounds pretty useless
-
-> +		return PTR_ERR(cpu_pd_dev);
-> +
-> +	cpu_pd = devm_kzalloc(dev, sizeof(*cpu_pd), GFP_KERNEL);
-> +	if (!cpu_pd)
-> +		return -ENOMEM;
-> +
-> +	cpu_pd->name = kasprintf(GFP_KERNEL, "%s", np->name);
-> +	if (!cpu_pd->name)
-> +		goto free_cpu_pd;
-> +	cpu_pd->name = kbasename(cpu_pd->name);
-> +	cpu_pd->power_off = cpu_pd_power_off;
-
-If some kind of voting is done in off, why is there nothing to take care
-of that in pd_power_on  if it's per EL(linux/hyp/secure).
-
---
-Regards,
-Sudeep
+>  Battery properties are named, where possible, for the corresponding
+>  elements in enum power_supply_property, defined in
+> @@ -44,6 +54,10 @@ Example:
+>  		constant-charge-current-max-microamp = <900000>;
+>  		constant-charge-voltage-max-microvolt = <4200000>;
+>  		factory-internal-resistance-micro-ohms = <250000>;
+> +		ocv-capacity-table-temperatures = <(-10) 0 10>;
+> +		ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
+> +		ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
+> +		ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
+>  	};
+>  
+>  	charger: charger@11 {
