@@ -1,121 +1,212 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH RFC v1 8/8] arm64: dtsi: sdm845: Add cpu power domain
- support
-Date: Fri, 12 Oct 2018 11:52:55 -0600
-Message-ID: <20181012175255.GJ2371@codeaurora.org>
+From: Raju P L S S S N <rplsssn@codeaurora.org>
+Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
+ support using genpd
+Date: Fri, 12 Oct 2018 23:31:44 +0530
+Message-ID: <e56b6fd6-dc48-9eb0-83b2-4621b2e14f44@codeaurora.org>
 References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-9-git-send-email-rplsssn@codeaurora.org>
- <20181012173500.GB23170@e107155-lin>
+ <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
+ <20181012143350.GG3401@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181012173500.GB23170@e107155-lin>
+In-Reply-To: <20181012143350.GG3401@e107155-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
+Cc: andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 12 2018 at 11:35 -0600, Sudeep Holla wrote:
->On Thu, Oct 11, 2018 at 02:50:55AM +0530, Raju P.L.S.S.S.N wrote:
->> Add cpu power domain support
+
+
+On 10/12/2018 8:03 PM, Sudeep Holla wrote:
+> On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
+>> RPMH based targets require that the sleep and wake state request votes
+>> be sent during system low power mode entry. The votes help reduce the
+>> power consumption when the AP is not using them. The votes sent by the
+>> clients are cached in RPMH controller and needs to be flushed when the
+>> last cpu enters low power mode. So add cpu power domain using Linux
+>> generic power domain infrastructure to perform necessary tasks as part
+>> of domain power down.
 >>
+>> Suggested-by: Lina Iyer <ilina@codeaurora.org>
 >> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
 >> ---
->>  arch/arm64/boot/dts/qcom/sdm845.dtsi | 13 +++++++++++++
->>  1 file changed, 13 insertions(+)
+>>   drivers/soc/qcom/Kconfig  |   9 ++++
+>>   drivers/soc/qcom/Makefile |   1 +
+>>   drivers/soc/qcom/cpu_pd.c | 104 ++++++++++++++++++++++++++++++++++++++++++++++
+>>   3 files changed, 114 insertions(+)
+>>   create mode 100644 drivers/soc/qcom/cpu_pd.c
 >>
->> diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> index d3662a8..aadaa20 100644
->> --- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> +++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->> @@ -96,6 +96,7 @@
->>  			reg = <0x0 0x0>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_0>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_0: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -111,6 +112,7 @@
->>  			reg = <0x0 0x100>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_100>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_100: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -123,6 +125,7 @@
->>  			reg = <0x0 0x200>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_200>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_200: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -135,6 +138,7 @@
->>  			reg = <0x0 0x300>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_300>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_300: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -147,6 +151,7 @@
->>  			reg = <0x0 0x400>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_400>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_400: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -159,6 +164,7 @@
->>  			reg = <0x0 0x500>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_500>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_500: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -171,6 +177,7 @@
->>  			reg = <0x0 0x600>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_600>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_600: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -183,6 +190,7 @@
->>  			reg = <0x0 0x700>;
->>  			enable-method = "psci";
->>  			next-level-cache = <&L2_700>;
->> +			power-domains = <&cpu_pd>;
->>  			L2_700: l2-cache {
->>  				compatible = "cache";
->>  				next-level-cache = <&L3_0>;
->> @@ -1170,6 +1178,11 @@
->>  					  <WAKE_TCS    3>,
->>  					  <CONTROL_TCS 1>;
+>> diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+>> index ba79b60..91e8b3b 100644
+>> --- a/drivers/soc/qcom/Kconfig
+>> +++ b/drivers/soc/qcom/Kconfig
+>> @@ -95,6 +95,7 @@ config QCOM_RMTFS_MEM
+>>   config QCOM_RPMH
+>>   	bool "Qualcomm RPM-Hardened (RPMH) Communication"
+>>   	depends on ARCH_QCOM && ARM64 && OF || COMPILE_TEST
+>> +	select QCOM_CPU_PD
+>>   	help
+>>   	  Support for communication with the hardened-RPM blocks in
+>>   	  Qualcomm Technologies Inc (QTI) SoCs. RPMH communication uses an
+>> @@ -102,6 +103,14 @@ config QCOM_RPMH
+>>   	  of hardware components aggregate requests for these resources and
+>>   	  help apply the aggregated state on the resource.
 >>
->> +			cpu_pd: power-domain-controller {
->> +				compatible = "qcom,cpu-pm-domain";
->> +				#power-domain-cells = <0>;
->> +			};
+>> +config QCOM_CPU_PD
+>> +    bool "Qualcomm cpu power domain driver"
+>> +    depends on QCOM_RPMH && PM_GENERIC_DOMAINS || COMPILE_TEST
+>> +    help
+>> +	  Support for QCOM platform cpu power management to perform tasks
+>> +	  necessary while application processor votes for deeper modes so that
+>> +	  the firmware can enter SoC level low power modes to save power.
 >> +
->
->After all the discussions, I see this power domain actually influence
->not just CPUs but other devices. So this should be top most power domain
->in the system with lots of devices or their power domains pointing to it.
->Why is this just pointing to cpus ?
->
-The domain powers off even when devices remains powered on. The devices
-themselves are not part of this domain, they have their own rails,
-clocks and domains. Those domains will get powered off when the devices
-are suspended or the device are not in use.
+>>   config QCOM_SMEM
+>>   	tristate "Qualcomm Shared Memory Manager (SMEM)"
+>>   	depends on ARCH_QCOM
+>> diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+>> index f25b54c..57a1b0e 100644
+>> --- a/drivers/soc/qcom/Makefile
+>> +++ b/drivers/soc/qcom/Makefile
+>> @@ -12,6 +12,7 @@ obj-$(CONFIG_QCOM_RMTFS_MEM)	+= rmtfs_mem.o
+>>   obj-$(CONFIG_QCOM_RPMH)		+= qcom_rpmh.o
+>>   qcom_rpmh-y			+= rpmh-rsc.o
+>>   qcom_rpmh-y			+= rpmh.o
+>> +obj-$(CONFIG_QCOM_CPU_PD) += cpu_pd.o
+>>   obj-$(CONFIG_QCOM_SMD_RPM)	+= smd-rpm.o
+>>   obj-$(CONFIG_QCOM_SMEM) +=	smem.o
+>>   obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
+>> diff --git a/drivers/soc/qcom/cpu_pd.c b/drivers/soc/qcom/cpu_pd.c
+>> new file mode 100644
+>> index 0000000..565c510
+>> --- /dev/null
+>> +++ b/drivers/soc/qcom/cpu_pd.c
+>> @@ -0,0 +1,104 @@
+>> +// SPDX-License-Identifier: GPL-2.0
+>> +/*
+>> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
+>> + */
+>> +
+>> +#include <linux/of_platform.h>
+>> +#include <linux/pm_domain.h>
+>> +#include <linux/slab.h>
+>> +
+>> +#include <soc/qcom/rpmh.h>
+>> +
+>> +static struct device *cpu_pd_dev;
+>> +
+> 
+> This doesn't scale if you have 2 instances.
 
-This CPU domain is responsible for setting the domain controller to
-enter a low power state and in addition help lower the state of the
-shared resources that are used by the devices even when the devices
-themselves are powered on.
+There would be one instance of this driver for this platform.
+This platform has single cluster & single power domain which includes 
+all the cpus. Even if there are more than one cluster (lets say, later 
+on) the top level grouping of all the clusters will be considered as a 
+domain. In this case, if hierarchical topological representation is 
+needed, the driver probe needs to be modified. The naming might have led 
+to the confusion. Should I change it to something like top_level_pd_dev 
+? Another way is to define the compatible flag as SoC specific like 
+"qcom,cpu-pm-domain-sdm845" but then there will be multiple SoCs based 
+on single cluster. For each of them, compatible flag needs to be added.
 
--- Lina
+
+
+
+> 
+>> +static int cpu_pd_power_off(struct generic_pm_domain *domain)
+>> +{
+>> +	if (rpmh_ctrlr_idle(cpu_pd_dev)) {
+> 
+> How is this expected to compile ? I couldn't find any instance of this.
+> 
+>> +		/* Flush the sleep/wake sets */
+>> +		rpmh_flush(cpu_pd_dev);
+> 
+> So it's just flushing the pending requests on the controller. The function
+> implementation carries a note that it's assumed to be called only from
+> system PM and we may call it in cpu idle path here. Is that fine ?
+> If so, may be the comment needs to be dropped.
+
+Sure. we will change the comment.
+When RPMh driver was being developed, it named the top level power 
+domain which includes all the cpus as system PM.
+
+
+> 
+> Also, where exactly this voting for CPU is happening in this path ?
+> 
+
+This SoC uses PC mode and we are not voting for CPU's idle state here.. 
+We are just doing power domain activities that are needed when all the 
+cpus are down.
+
+
+
+>> +	} else {
+>> +		pr_debug("rpmh controller is busy\n");
+>> +		return -EBUSY;
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int cpu_pm_domain_probe(struct platform_device *pdev)
+>> +{
+>> +	struct device *dev = &pdev->dev;
+>> +	struct device_node *np = dev->of_node;
+>> +	struct generic_pm_domain *cpu_pd;
+>> +	int ret = -EINVAL, cpu;
+>> +
+>> +	if (!np) {
+>> +		dev_err(dev, "device tree node not found\n");
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	if (!of_find_property(np, "#power-domain-cells", NULL)) {
+>> +		pr_err("power-domain-cells not found\n");
+>> +		return -ENODEV;
+>> +	}
+>> +
+>> +	cpu_pd_dev = &pdev->dev;
+>> +	if (IS_ERR_OR_NULL(cpu_pd_dev))
+> 
+> Isn't this too late to check ? You would have crashed on dev->of_node.
+> So sounds pretty useless
+
+Agree. I will change this.
+
+
+> 
+>> +		return PTR_ERR(cpu_pd_dev);
+>> +
+>> +	cpu_pd = devm_kzalloc(dev, sizeof(*cpu_pd), GFP_KERNEL);
+>> +	if (!cpu_pd)
+>> +		return -ENOMEM;
+>> +
+>> +	cpu_pd->name = kasprintf(GFP_KERNEL, "%s", np->name);
+>> +	if (!cpu_pd->name)
+>> +		goto free_cpu_pd;
+>> +	cpu_pd->name = kbasename(cpu_pd->name);
+>> +	cpu_pd->power_off = cpu_pd_power_off;
+> 
+> If some kind of voting is done in off, why is there nothing to take care
+> of that in pd_power_on  if it's per EL(linux/hyp/secure).
+Both sleep state votes (which would be applied while powering down)and 
+wake state votes (which would be applied while powering on) are applied 
+in hardware. Software is expected to write both these types of votes to 
+RPM while powering down only. As hardware takes care of applying the 
+votes, no need for any pd_power_on operations.
+
+
+Thanks a lot for your time & review Sudeep. Happy weekend.
+
+- Raju.
+
+
+
+> 
+> --
+> Regards,
+> Sudeep
+> 
