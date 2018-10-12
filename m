@@ -1,90 +1,29 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [driver-core PATCH v3 5/5] PM core: Use new async_schedule_dev command
-Date: Fri, 12 Oct 2018 09:53:00 +0200
-Message-ID: <CAJZ5v0ioPTXP6L6TXvRHvHdTQFu-v74izHUYSDoc3b9gYS7wog@mail.gmail.com>
-References: <20181011220134.1408.63391.stgit@localhost.localdomain> <20181011220944.1408.39823.stgit@localhost.localdomain>
+Subject: Re: [PATCH v2 0/2] cpufreq: intel_pstate: Base frequency attribute
+Date: Fri, 12 Oct 2018 10:20:13 +0200
+Message-ID: <CAJZ5v0i3_2pxX48iZOwm+AyuU12E2g-bEnxNEaFURUsXyJpX3w@mail.gmail.com>
+References: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011220944.1408.39823.stgit@localhost.localdomain>
+In-Reply-To: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: alexander.h.duyck@linux.intel.com
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Prashanth Prakash <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, devel@acpica.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 12, 2018 at 12:10 AM Alexander Duyck
-<alexander.h.duyck@linux.intel.com> wrote:
+On Tue, Oct 9, 2018 at 11:46 PM Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
 >
-> This change makes it so that we use the device specific version of the
-> async_schedule commands to defer various tasks related to power management.
-> By doing this we should see a slight improvement in performance as any
-> device that is sensitive to latency/locality in the setup will now be
-> initializing on the node closest to the device.
+> This series presents base frequency to cpufreq sysfs when intel_pstate
+> is in use in HWP mode.
 >
-> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> Changes:
+> v2
+> - Removed guaranteed attribute addition to acpi_cppc sysfs
+> - Using the cppc_acpi interface to get base frequency and present
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The code changes are fine by me, but what about documenting the new sysfs attr?
 
-> ---
->  drivers/base/power/main.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index a690fd400260..ebb8b61b52e9 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -726,7 +726,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
->                 reinit_completion(&dev->power.completion);
->                 if (is_async(dev)) {
->                         get_device(dev);
-> -                       async_schedule(async_resume_noirq, dev);
-> +                       async_schedule_dev(async_resume_noirq, dev);
->                 }
->         }
->
-> @@ -883,7 +883,7 @@ void dpm_resume_early(pm_message_t state)
->                 reinit_completion(&dev->power.completion);
->                 if (is_async(dev)) {
->                         get_device(dev);
-> -                       async_schedule(async_resume_early, dev);
-> +                       async_schedule_dev(async_resume_early, dev);
->                 }
->         }
->
-> @@ -1047,7 +1047,7 @@ void dpm_resume(pm_message_t state)
->                 reinit_completion(&dev->power.completion);
->                 if (is_async(dev)) {
->                         get_device(dev);
-> -                       async_schedule(async_resume, dev);
-> +                       async_schedule_dev(async_resume, dev);
->                 }
->         }
->
-> @@ -1366,7 +1366,7 @@ static int device_suspend_noirq(struct device *dev)
->
->         if (is_async(dev)) {
->                 get_device(dev);
-> -               async_schedule(async_suspend_noirq, dev);
-> +               async_schedule_dev(async_suspend_noirq, dev);
->                 return 0;
->         }
->         return __device_suspend_noirq(dev, pm_transition, false);
-> @@ -1569,7 +1569,7 @@ static int device_suspend_late(struct device *dev)
->
->         if (is_async(dev)) {
->                 get_device(dev);
-> -               async_schedule(async_suspend_late, dev);
-> +               async_schedule_dev(async_suspend_late, dev);
->                 return 0;
->         }
->
-> @@ -1833,7 +1833,7 @@ static int device_suspend(struct device *dev)
->
->         if (is_async(dev)) {
->                 get_device(dev);
-> -               async_schedule(async_suspend, dev);
-> +               async_schedule_dev(async_suspend, dev);
->                 return 0;
->         }
->
->
+Thanks,
+Rafael
