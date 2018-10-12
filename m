@@ -1,58 +1,106 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V2 2/2] cpuidle/drivers/menu: Remove get_loadavg in the
- performance multiplier
-Date: Fri, 12 Oct 2018 10:28:26 +0200
-Message-ID: <20181012082826.GP9848@hirez.programming.kicks-ass.net>
-References: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
- <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC v1 4/8] drivers: qcom: cpu_pd: add cpu power domain
+ support using genpd
+Date: Fri, 12 Oct 2018 11:23:10 +0200
+Message-ID: <CAPDyKFoVv99HN080p_pV_Qbmrk9Jeq3kgYBrpTToP6jwuaUo5A@mail.gmail.com>
+References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
+ <1539206455-29342-5-git-send-email-rplsssn@codeaurora.org>
+ <20181011111306.GB32752@e107155-lin> <CAPDyKFpXJ4MbqFOmDboBuR_1sziyuDi3qgKVvhokaAnQQ+kzjA@mail.gmail.com>
+ <20181011155956.GA28583@e107155-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1538654644-32705-2-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20181011155956.GA28583@e107155-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Colin Cross <ccross@android.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Mel Gorman <mgorman@suse.de>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Philippe Ombredanne <pombredanne@nexb.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 04, 2018 at 02:04:03PM +0200, Daniel Lezcano wrote:
-> The function get_loadavg() returns almost always zero. To be more
-> precise, statistically speaking for a total of 1023379 times passing
-> in the function, the load is equal to zero 1020728 times, greater than
-> 100, 610 times, the remaining is between 0 and 5.
-> 
-> In 2011, the get_loadavg() was removed from the Android tree because
-> of the above [1]. At this time, the load was:
-> 
-> unsigned long this_cpu_load(void)
-> {
->         struct rq *this = this_rq();
->         return this->cpu_load[0];
-> }
-> 
-> In 2014, the code was changed by commit 372ba8cb46b2 (cpuidle: menu: Lookup CPU
-> runqueues less) and the load is:
-> 
-> void get_iowait_load(unsigned long *nr_waiters, unsigned long *load)
-> {
->         struct rq *rq = this_rq();
->         *nr_waiters = atomic_read(&rq->nr_iowait);
->         *load = rq->load.weight;
-> }
-> 
-> with the same result.
-> 
-> Both measurements show using the load in this code path does no matter
-> anymore. Removing it.
-> 
-> [1] https://android.googlesource.com/kernel/common/+/4dedd9f124703207895777ac6e91dacde0f7cc17
-> 
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Todd Kjos <tkjos@google.com>
-> Cc: Joel Fernandes <joelaf@google.com>
-> Cc: Colin Cross <ccross@android.com>
-> Cc: Ramesh Thomas <ramesh.thomas@intel.com>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 11 October 2018 at 17:59, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On Thu, Oct 11, 2018 at 05:27:59PM +0200, Ulf Hansson wrote:
+>> On 11 October 2018 at 13:13, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> > On Thu, Oct 11, 2018 at 02:50:51AM +0530, Raju P.L.S.S.S.N wrote:
+>> >> RPMH based targets require that the sleep and wake state request votes
+>> >> be sent during system low power mode entry. The votes help reduce the
+>> >> power consumption when the AP is not using them. The votes sent by the
+>> >> clients are cached in RPMH controller and needs to be flushed when the
+>> >> last cpu enters low power mode. So add cpu power domain using Linux
+>> >> generic power domain infrastructure to perform necessary tasks as part
+>> >> of domain power down.
+>> >>
+>> >
+>> > You seem to have either randomly chosen just 3 patches from Lina/Ulf's
+>> > CPU genpd series or this series doesn't entirely depend on it ?
+>>
+>> Yep, it not easy to follow. But I do understand what you are trying to do here.
+>>
+>> >
+>> > If latter, how does this work with PSCI CPU_SUSPEND operations ?
+>> >
+>> > And why this can be part of PSCI firmware implementation. Only PSCI
+>> > firmware needs if RPMH votes need to be flushed or not. So, honestly
+>> > I don't see the need for this in Linux.
+>>
+>> I do think there is clear need for this in Linux. More precisely,
+>> since the PSCI firmware have knowledge solely about CPUs (and clusters
+>> of CPUs), but not about other shared resources/devices present on the
+>> SoC.
+>>
+>
+> I disagree. Even with OSI, you indicate the cluster power off though
+> PSCI CPU_SUSPEND call. If for any async wakeup reasons, firmware decides
+> not to enter cluster OFF, then it may skip flushing RPMH vote. So doing
+> it in PSCI is more correct and elegant to avoid such corner cases.
+>
+>> What Raju is trying to do here, is to manage those resources which
+>> needs special treatment, before and after the CPU (likely cluster) is
+>> going idle and returns from idle.
+>>
+>
+> OK I get that, but why is Linux better than PSCI. I have my reasoning
+> above.
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+I assume Lina, in the other thread from Raju, have provided you the
+details why PSCI is not the place to do this and why Linux need to be
+involved. In any case, let's continue that discussion in that thread
+rather than here.
+
+>
+>> One question here though, what particular idle state is relevant for
+>> the QCOM SoC to take last-man-actions for? I assume it's only cluster
+>> idle states, and not about cpu idle states, no? Raju, can you please
+>> clarify?
+>>
+>
+> I assume so. I did see some comment or commit message to indicate the
+> same.
+>
+>> Historically, the typical solution have been to use the
+>> cpu_cluster_pm_enter|exit() notifiers. Those could potentially be
+>> replaced by instead building a hierarchical topology, using
+>> master/subdomain of genpd/"power-domains", along the lines of what
+>> Raju is doing. However, I am not sure if that is the correct approach,
+>> at least we need to make sure it models the HW in DT correctly.
+>>
+>
+> Indeed. I am not sure how to represent both PSCI and this power domains ?
+> Though I believe the latter is not required at all.
+
+After my re-work of the PSCI power domain series, I believe the
+power-domain that Raju is adding, should then be modeled as the master
+power-domain of the PSCI *cluster* power domain. But, as stated, I am
+not sure if it's the correct way to model the HW/topology. Maybe it
+is.
+
+The other option is to explore the cpu_cluster_pm_enter|exit(), which
+today is the only viable solution in the kernel. In principle we then
+need to call cpu_cluster_pm_enter() from the PSCI's cluster PM domain
+genpd ->power_off() callback, and cpu_cluster_pm_exit() from the
+->power_on() callback.
+
+Or maybe we simply need something entirely new, like genpd PM
+domain-on/off notifiers, which may scale better. It has even been
+suggested on the mailing list, long time ago.
+
+Kind regards
+Uffe
