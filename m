@@ -1,79 +1,135 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH RFC v1 2/8] kernel/cpu_pm: Manage runtime PM in the idle
- path for CPUs
-Date: Fri, 12 Oct 2018 09:20:19 -0600
-Message-ID: <20181012152019.GF2371@codeaurora.org>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org>
- <1539206455-29342-3-git-send-email-rplsssn@codeaurora.org>
- <8161939.SRDo8Qx48D@aspire.rjw.lan>
- <20181011220842.GE2371@codeaurora.org>
- <CAJZ5v0hXM9krdacL09kJSn30AL_5kN+4U3d02rZX7-V2DWg_VQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 5/9] PM / Domains: Add genpd_opp_to_performance_state()
+Date: Fri, 12 Oct 2018 21:10:51 +0530
+Message-ID: <CAKohpon+ZV5cc14nL56QgK3-8whM9_5MzTR4v6VpjXxhrwEygg@mail.gmail.com>
+References: <cover.1539341929.git.viresh.kumar@linaro.org> <ec154fa205967507c7352a2d0088346aba562ff2.1539341929.git.viresh.kumar@linaro.org>
+ <CAPDyKFpTbSdyqkKUY0HrkOo_YHcRJZ25FrJxVtzPOJ_aHRaE8Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hXM9krdacL09kJSn30AL_5kN+4U3d02rZX7-V2DWg_VQ@mail.gmail.com>
+In-Reply-To: <CAPDyKFpTbSdyqkKUY0HrkOo_YHcRJZ25FrJxVtzPOJ_aHRaE8Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, rplsssn@codeaurora.org, Andy Gross <andy.gross@linaro.org>, david.brown@linaro.org, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, linux-soc@vger.kernel.org, "Nayak, Rajendra" <rnayak@codeaurora.org>, bjorn.andersson@linaro.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, evgreen@chromium.org, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, Niklas Cassel <niklas.cassel@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 12 2018 at 01:43 -0600, Rafael J. Wysocki wrote:
->On Fri, Oct 12, 2018 at 12:08 AM Lina Iyer <ilina@codeaurora.org> wrote:
->> On Thu, Oct 11 2018 at 14:56 -0600, Rafael J. Wysocki wrote:
->> >On Wednesday, October 10, 2018 11:20:49 PM CEST Raju P.L.S.S.S.N wrote:
->> >> From: Ulf Hansson <ulf.hansson@linaro.org>
+On 12 October 2018 at 20:37, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 12 October 2018 at 13:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> The OPP core currently stores the performance state in the consumer
+>> device's OPP table, but that is going to change going forward and
+>> performance state will rather be set directly in the genpd's OPP table.
+>>
+>> For that we need to get the performance state for genpd's device
+>> structure instead of the consumer device's structure. Add a new helper
+>> to do that.
+>
+> I guess what puzzles me a bit here is that we are using a struct
+> device, while we actually should be talking about an OPP cookie
+> instead, right?
 
->> The cluster states should account for that additional latency.
->
->But even then, you need to be sure that the idle governor selected
->"cluster" states for all of the CPUs in the cluster.  It might select
->WFI for one of them for reasons unrelated to the distance to the next
->timer (so to speak), for example.
->
-Well, if cpuidle chooses WFI, cpu_pm_enter() will not be called. So for
-that case we are okay with this approach.
+The OPP cookie wouldn't get us to the platform specific conversion
+handler, for that we need something from the genpd itself and so its
+structure.
 
->> Just the CPU's power down states need not care about that.
->
->The meaning of this sentence isn't particularly clear to me. :-)
->
-What I meant to say is that if cpuidle chooses a CPU only power down
-state, then, atleast in ARM architecture, we would not choose to power
-down the cluster in the firmware. To power down the cluster in the
-firmware, all CPUs need to choose a cluster state, which would account
-the additional latency of powering off and on the domain.
+> So the "genpd's device structure" here is not the same as the virtual
+> devices created by genpd to support multiple PM domains, right? Or is
+> it?
 
-How I ever thought that I could convey this point in that line is beyond
-me now. Sorry!
+You already found that I believe, it is genpd->dev.
 
->> But, it would be nice if the PM domain governor could be cognizant of
->> the idle state chosen for each CPU, that way we dont configure the
->> domain to be powered off when the CPUs have just chosen to power down
->> (not chosen a cluster state). I think that is a whole different topic to
->> discuss.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/base/power/domain.c | 39 +++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  8 ++++++++
+>>  2 files changed, 47 insertions(+)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 4b5714199490..2c82194d2a30 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -2508,6 +2508,45 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+>>  }
+>>  EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
+>>
+>> +/**
+>> + * genpd_opp_to_performance_state- Gets performance state of the genpd from its OPP node.
 >
->This needs to be sorted out before the approach becomes viable, though.
+> Please rename to:
 >
-We embarked on that discussion a few years ago, but realized that there
-is a lot more complexity involved in specifying that especially with DT.
-I believe ACPI has a way to specify this. But DT and driver code
-currently don't have a nice way to propagate this requirement to the
-domain governor. So we shelved it for the future.
+> pm_genpd_opp_to_perfromance_state().
 
->Basically, the domain governor needs to track what the idle governor
->did for all of the CPUs in the domain and only let the domain go off
->if the latency matches all of the states selected by the idle
->governor.  Otherwise the idle governor's assumptions would be violated
->and it would become essentially useless overhead.
->
-Well, we kinda do that in the CPU PM domain governor. By looking at the
-next wakeup and the latency/QoS requirement of each CPU in the domain,
-we determine if the domain can be powered off. But, if we were to do
-this by correlating domain idle states to that of the required CPU idle
-state, then a lot needs to plumbed in to the cpuidle and driver model.
-The current approach is rather simple while meeting most of the
-requirement.
+Ok.
 
-Thanks,
-Lina
+>> + *
+>> + * @genpd_dev: Genpd's device for which the performance-state needs to be found.
+>
+> Maybe "genpd_dev" is the correct name to use here, as I understand
+> it's actually the device representing the genpd. However, in other
+> patches in this series you are also using "genpd_dev", while those
+> instead corresponds to the virtual created devices by genpd.
+
+Naming is a mess because I tried to follow the names you followed in
+your multiple domain support. You used genpd_dev for the virtual device :)
+
+> I would appreciate if we could make that more clear in the code.
+>
+> Maybe distinguish them as:
+>
+> genpd_dev
+> genpd_virt_dev
+> or just:
+>
+> dev
+> virt_dev
+
+Maybe, perhaps we should change domain.c with same naming for the internal
+coding handling multiple domains as well ? I will send the patch for
+that if you agree.
+
+>> + * @opp: struct dev_pm_opp of the OPP for which we need to find performance
+>> + *     state.
+>> + *
+>> + * Returns performance state encoded in the OPP of the genpd. This calls
+>> + * platform specific genpd->opp_to_performance_state() callback to translate
+>> + * power domain OPP to performance state.
+>> + *
+>> + * Returns performance state on success and 0 on failure.
+>> + */
+>> +unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
+>> +                                           struct dev_pm_opp *opp)
+>> +{
+>> +       struct generic_pm_domain *genpd = NULL, *temp;
+>> +       int state;
+>> +
+>> +       lockdep_assert_held(&gpd_list_lock);
+>
+> What's this?
+
+Don't we need to protect with a lock while traversing the below list?
+Above is just a check to make sure lock is taken.
+
+>> +
+>> +       list_for_each_entry(temp, &gpd_list, gpd_list_node) {
+>> +               if (&temp->dev == genpd_dev) {
+>> +                       genpd = temp;
+>> +                       break;
+>> +               }
+>> +       }
+>
+> I think we can do better than this.
+
+I really want to :)
+
+> We really don't want to walk the list of genpds while doing this. The
+> caller should already know (if not now, we should fix it) that the
+> struct device is used to represent a genpd.
+
+Caller knows that genpd_dev here is genpd->dev really. But it doesn't
+have pointer of the genpd itself.
+
+> In other words, I am thinking using a container_of() or a finding a
+> function pointer through the struct device, in any case, it would be
+> better.
+
+I am stupid. Container-of will work just fine I belive.
