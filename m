@@ -1,195 +1,110 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 8/9] OPP: Rename and relocate of_genpd_opp_to_performance_state()
-Date: Fri, 12 Oct 2018 16:41:16 +0530
-Message-ID: <e0289455803131d73765c22dee2b455866c25380.1539341929.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 9/9] OPP: Remove of_dev_pm_opp_find_required_opp()
+Date: Fri, 12 Oct 2018 16:41:17 +0530
+Message-ID: <c4104405e6a84cbf58f427f65fbc041d3c880544.1539341929.git.viresh.kumar@linaro.org>
 References: <cover.1539341929.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1539341929.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+To: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The OPP core already has the performance state values for each of the
-genpd's OPPs and there is no need to call the genpd callback again to
-get the performance state for the case where the end device doesn't have
-an OPP table and has the "required-opps" property directly in its node.
-
-This commit renames of_genpd_opp_to_performance_state() as
-of_get_required_opp_performance_state() and moves it to the OPP core, as
-it is all about OPP stuff now.
+This isn't used anymore, remove it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 48 -------------------------------------
- drivers/opp/of.c            | 44 ++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  9 -------
- include/linux/pm_opp.h      |  5 ++++
- 4 files changed, 49 insertions(+), 57 deletions(-)
+ drivers/opp/of.c       | 54 ------------------------------------------
+ include/linux/pm_opp.h |  5 ----
+ 2 files changed, 59 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2c82194d2a30..55f3a172f6b4 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2547,54 +2547,6 @@ unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
- }
- EXPORT_SYMBOL_GPL(genpd_opp_to_performance_state);
- 
--/**
-- * of_genpd_opp_to_performance_state- Gets performance state of device's
-- * power domain corresponding to a DT node's "required-opps" property.
-- *
-- * @dev: Device for which the performance-state needs to be found.
-- * @np: DT node where the "required-opps" property is present. This can be
-- *	the device node itself (if it doesn't have an OPP table) or a node
-- *	within the OPP table of a device (if device has an OPP table).
-- *
-- * Returns performance state corresponding to the "required-opps" property of
-- * a DT node. This calls platform specific genpd->opp_to_performance_state()
-- * callback to translate power domain OPP to performance state.
-- *
-- * Returns performance state on success and 0 on failure.
-- */
--unsigned int of_genpd_opp_to_performance_state(struct device *dev,
--					       struct device_node *np)
--{
--	struct generic_pm_domain *genpd;
--	struct dev_pm_opp *opp;
--	int state = 0;
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return 0;
--
--	if (unlikely(!genpd->set_performance_state))
--		return 0;
--
--	genpd_lock(genpd);
--
--	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
--	if (IS_ERR(opp)) {
--		dev_err(dev, "Failed to find required OPP: %ld\n",
--			PTR_ERR(opp));
--		goto unlock;
--	}
--
--	state = genpd->opp_to_performance_state(genpd, opp);
--	dev_pm_opp_put(opp);
--
--unlock:
--	genpd_unlock(genpd);
--
--	return state;
--}
--EXPORT_SYMBOL_GPL(of_genpd_opp_to_performance_state);
--
- static int __init genpd_bus_init(void)
- {
- 	return bus_register(&genpd_bus_type);
 diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index f4e8895542ca..b059d833f920 100644
+index b059d833f920..623f651f9e11 100644
 --- a/drivers/opp/of.c
 +++ b/drivers/opp/of.c
-@@ -969,6 +969,50 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+@@ -1013,60 +1013,6 @@ unsigned int of_get_required_opp_performance_state(struct device_node *np,
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
+ EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
  
-+/**
-+ * of_get_required_opp_performance_state() - Search for required OPP and return its performance state.
-+ * @np: Node that contains the "required-opps" property.
-+ * @index: Index of the phandle to parse.
-+ *
-+ * Returns the performance state of the OPP pointed out by the "required-opps"
-+ * property at @index in @np.
-+ *
-+ * Return: Positive performance state on success, otherwise 0 on errors.
-+ */
-+unsigned int of_get_required_opp_performance_state(struct device_node *np,
-+						   int index)
-+{
-+	struct dev_pm_opp *opp;
-+	struct device_node *required_np;
-+	struct opp_table *opp_table;
-+	unsigned int pstate = 0;
-+
-+	required_np = of_parse_required_opp(np, index);
-+	if (!required_np)
-+		return -ENODEV;
-+
-+	opp_table = _find_table_of_opp_np(required_np);
-+	if (IS_ERR(opp_table)) {
-+		pr_err("%s: Failed to find required OPP table %pOF: %ld\n",
-+		       __func__, np, PTR_ERR(opp_table));
-+		goto put_required_np;
-+	}
-+
-+	opp = _find_opp_of_np(opp_table, required_np);
-+	if (opp) {
-+		pstate = opp->pstate;
-+		dev_pm_opp_put(opp);
-+	}
-+
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+put_required_np:
-+	of_node_put(required_np);
-+
-+	return pstate;
-+}
-+EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
-+
- /**
-  * of_dev_pm_opp_find_required_opp() - Search for required OPP.
-  * @dev: The device whose OPP node is referenced by the 'np' DT node.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index e03f300f7468..80672bcb1216 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -235,8 +235,6 @@ int of_genpd_parse_idle_states(struct device_node *dn,
- 			       struct genpd_power_state **states, int *n);
- unsigned int genpd_opp_to_performance_state(struct device *genpd_dev,
- 					    struct dev_pm_opp *opp);
--unsigned int of_genpd_opp_to_performance_state(struct device *dev,
--				struct device_node *np);
- 
- int genpd_dev_pm_attach(struct device *dev);
- struct device *genpd_dev_pm_attach_by_id(struct device *dev,
-@@ -282,13 +280,6 @@ genpd_opp_to_performance_state(struct device *genpd_dev, struct dev_pm_opp *opp)
- 	return 0;
- }
- 
--static inline unsigned int
--of_genpd_opp_to_performance_state(struct device *dev,
--				  struct device_node *np)
+-/**
+- * of_dev_pm_opp_find_required_opp() - Search for required OPP.
+- * @dev: The device whose OPP node is referenced by the 'np' DT node.
+- * @np: Node that contains the "required-opps" property.
+- *
+- * Returns the OPP of the device 'dev', whose phandle is present in the "np"
+- * node. Although the "required-opps" property supports having multiple
+- * phandles, this helper routine only parses the very first phandle in the list.
+- *
+- * Return: Matching opp, else returns ERR_PTR in case of error and should be
+- * handled using IS_ERR.
+- *
+- * The callers are required to call dev_pm_opp_put() for the returned OPP after
+- * use.
+- */
+-struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev,
+-						   struct device_node *np)
 -{
--	return 0;
--}
+-	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ENODEV);
+-	struct device_node *required_np;
+-	struct opp_table *opp_table;
 -
- static inline int genpd_dev_pm_attach(struct device *dev)
- {
- 	return 0;
+-	opp_table = _find_opp_table(dev);
+-	if (IS_ERR(opp_table))
+-		return ERR_CAST(opp_table);
+-
+-	required_np = of_parse_phandle(np, "required-opps", 0);
+-	if (unlikely(!required_np)) {
+-		dev_err(dev, "Unable to parse required-opps\n");
+-		goto put_opp_table;
+-	}
+-
+-	mutex_lock(&opp_table->lock);
+-
+-	list_for_each_entry(temp_opp, &opp_table->opp_list, node) {
+-		if (temp_opp->available && temp_opp->np == required_np) {
+-			opp = temp_opp;
+-
+-			/* Increment the reference count of OPP */
+-			dev_pm_opp_get(opp);
+-			break;
+-		}
+-	}
+-
+-	mutex_unlock(&opp_table->lock);
+-
+-	of_node_put(required_np);
+-put_opp_table:
+-	dev_pm_opp_put_opp_table(opp_table);
+-
+-	return opp;
+-}
+-EXPORT_SYMBOL_GPL(of_dev_pm_opp_find_required_opp);
+-
+ /**
+  * dev_pm_opp_get_of_node() - Gets the DT node corresponding to an opp
+  * @opp:	opp for which DT node has to be returned for
 diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index b14600ce078f..f440e625f1fd 100644
+index f440e625f1fd..fdd87a21dac4 100644
 --- a/include/linux/pm_opp.h
 +++ b/include/linux/pm_opp.h
-@@ -315,6 +315,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
+@@ -313,7 +313,6 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
+ void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
+ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
  struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
- struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
+-struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
  struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
-+unsigned int of_get_required_opp_performance_state(struct device_node *np, int index);
+ unsigned int of_get_required_opp_performance_state(struct device_node *np, int index);
  #else
- static inline int dev_pm_opp_of_add_table(struct device *dev)
- {
-@@ -357,6 +358,10 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- {
+@@ -350,10 +349,6 @@ static inline struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device
  	return NULL;
  }
-+static inline unsigned int of_get_required_opp_performance_state(struct device_node *np, int index)
-+{
-+	return 0;
-+}
- #endif
  
- #endif		/* __LINUX_OPP_H__ */
+-static inline struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np)
+-{
+-	return NULL;
+-}
+ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
+ {
+ 	return NULL;
 -- 
 2.18.0.rc1.242.g61856ae69a2c
