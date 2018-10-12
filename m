@@ -1,29 +1,25 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 0/2] cpufreq: intel_pstate: Base frequency attribute
-Date: Fri, 12 Oct 2018 10:20:13 +0200
-Message-ID: <CAJZ5v0i3_2pxX48iZOwm+AyuU12E2g-bEnxNEaFURUsXyJpX3w@mail.gmail.com>
-References: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V2 1/2] sched: Factor out nr_iowait and nr_iowait_cpu
+Date: Fri, 12 Oct 2018 10:28:12 +0200
+Message-ID: <20181012082812.GO9848@hirez.programming.kicks-ass.net>
+References: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181009214633.16390-1-srinivas.pandruvada@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <1538654644-32705-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Prashanth Prakash <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, devel@acpica.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rafael@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "open list:SCHEDULER" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 9, 2018 at 11:46 PM Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
->
-> This series presents base frequency to cpufreq sysfs when intel_pstate
-> is in use in HWP mode.
->
-> Changes:
-> v2
-> - Removed guaranteed attribute addition to acpi_cppc sysfs
-> - Using the cppc_acpi interface to get base frequency and present
+On Thu, Oct 04, 2018 at 02:04:02PM +0200, Daniel Lezcano wrote:
+> The function nr_iowait_cpu() can be used directly by nr_iowait() instead
+> of duplicating code.
+> 
+> Call nr_iowait_cpu() from nr_iowait()
+> 
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The code changes are fine by me, but what about documenting the new sysfs attr?
-
-Thanks,
-Rafael
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
