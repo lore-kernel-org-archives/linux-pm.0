@@ -1,7 +1,7 @@
 From: Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 7/8] media: sti/bdisp: don't pass GFP_DMA32 to dma_alloc_attrs
-Date: Sat, 13 Oct 2018 17:17:06 +0200
-Message-ID: <20181013151707.32210-8-hch@lst.de>
+Subject: [PATCH 8/8] fsl-diu-fb: don't pass GFP_DMA32 to dmam_alloc_coherent
+Date: Sat, 13 Oct 2018 17:17:07 +0200
+Message-ID: <20181013151707.32210-9-hch@lst.de>
 References: <20181013151707.32210-1-hch@lst.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -16,21 +16,21 @@ The DMA API does its own zone decisions based on the coherent_dma_mask.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/media/platform/sti/bdisp/bdisp-hw.c | 2 +-
+ drivers/video/fbdev/fsl-diu-fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/media/platform/sti/bdisp/bdisp-hw.c b/drivers/media/platform/sti/bdisp/bdisp-hw.c
-index 26d9fa7aeb5f..4372abbb5950 100644
---- a/drivers/media/platform/sti/bdisp/bdisp-hw.c
-+++ b/drivers/media/platform/sti/bdisp/bdisp-hw.c
-@@ -510,7 +510,7 @@ int bdisp_hw_alloc_filters(struct device *dev)
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index bc9eb8afc313..6a49fe917bdb 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1697,7 +1697,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	int ret;
  
- 	/* Allocate all the filters within a single memory page */
- 	size = (BDISP_HF_NB * NB_H_FILTER) + (BDISP_VF_NB * NB_V_FILTER);
--	base = dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL | GFP_DMA,
-+	base = dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL,
- 			       DMA_ATTR_WRITE_COMBINE);
- 	if (!base)
+ 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+-				   &dma_addr, GFP_DMA | __GFP_ZERO);
++				   &dma_addr, GFP_KERNEL | __GFP_ZERO);
+ 	if (!data)
  		return -ENOMEM;
+ 	data->dma_addr = dma_addr;
 -- 
 2.19.1
