@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v4 3/7] arm64: dts: allwinner: axp803: add AC and battery power supplies
-Date: Sat, 13 Oct 2018 11:08:44 +0300
-Message-ID: <20181013080848.29894-4-oskari@lemmela.net>
+Subject: [PATCH v4 7/7] mfd: axp20x: Add supported cells for AXP803
+Date: Sat, 13 Oct 2018 11:08:48 +0300
+Message-ID: <20181013080848.29894-8-oskari@lemmela.net>
 References: <20181013080848.29894-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181013080848.29894-1-oskari@lemmela.net>
@@ -10,56 +10,44 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-AXP803 is compatible with AXP813. Add DT nodes ADC, GPIO,
-AC and battery power supplies.
+AXP803 is compatible with AXP813.
+Adding cells for GPIO, ADC, AC and battery power supplies.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
 ---
- arch/arm64/boot/dts/allwinner/axp803.dtsi | 31 +++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ drivers/mfd/axp20x.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/allwinner/axp803.dtsi b/arch/arm64/boot/dts/allwinner/axp803.dtsi
-index e5eae8bafc42..128177178615 100644
---- a/arch/arm64/boot/dts/allwinner/axp803.dtsi
-+++ b/arch/arm64/boot/dts/allwinner/axp803.dtsi
-@@ -49,6 +49,37 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index dfc3cff1d08b..e415b967d38c 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -728,11 +728,26 @@ static const struct mfd_cell axp288_cells[] = {
  
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp813-ac-power-supply";
-+		status = "disabled";
-+	};
-+
-+	axp_adc: adc {
-+		compatible = "x-powers,axp813-adc";
-+		#io-channel-cells = <1>;
-+	};
-+
-+	axp_gpio: gpio {
-+		compatible = "x-powers,axp813-gpio";
-+		gpio-controller;
-+		#gpio-cells = <2>;
-+
-+		gpio0_ldo: gpio0-ldo {
-+			pins = "GPIO0";
-+			function = "ldo";
-+		};
-+
-+		gpio1_ldo: gpio1-ldo {
-+			pins = "GPIO1";
-+			function = "ldo";
-+		};
-+	};
-+
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp813-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
+ static const struct mfd_cell axp803_cells[] = {
+ 	{
++		.name		= "axp20x-gpio",
++		.of_compatible	= "x-powers,axp813-gpio",
++	}, {
+ 		.name			= "axp221-pek",
+ 		.num_resources		= ARRAY_SIZE(axp803_pek_resources),
+ 		.resources		= axp803_pek_resources,
+ 	},
+ 	{	.name			= "axp20x-regulator" },
++	{
++		.name		= "axp813-adc",
++		.of_compatible	= "x-powers,axp813-adc",
++	}, {
++		.name		= "axp20x-battery-power-supply",
++		.of_compatible	= "x-powers,axp813-battery-power-supply",
++	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp813-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	},
+ };
+ 
+ static const struct mfd_cell axp806_self_working_cells[] = {
 -- 
 2.17.1
