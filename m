@@ -1,36 +1,60 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 8/8] fsl-diu-fb: don't pass GFP_DMA32 to dmam_alloc_coherent
-Date: Sat, 13 Oct 2018 17:17:07 +0200
-Message-ID: <20181013151707.32210-9-hch@lst.de>
-References: <20181013151707.32210-1-hch@lst.de>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] power: supply: fix spelling mistake "Gauage" -> "Guage"
+Date: Sat, 13 Oct 2018 16:27:27 +0100
+Message-ID: <20181013152727.5520-1-colin.king@canonical.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181013151707.32210-1-hch@lst.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The DMA API does its own zone decisions based on the coherent_dma_mask.
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Trivial fix to spelling mistake in MODULE_DESCRIPTION text
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/fbdev/fsl-diu-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/ds2780_battery.c | 2 +-
+ drivers/power/supply/ds2781_battery.c | 2 +-
+ drivers/power/supply/ds2782_battery.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-index bc9eb8afc313..6a49fe917bdb 100644
---- a/drivers/video/fbdev/fsl-diu-fb.c
-+++ b/drivers/video/fbdev/fsl-diu-fb.c
-@@ -1697,7 +1697,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 	int ret;
+diff --git a/drivers/power/supply/ds2780_battery.c b/drivers/power/supply/ds2780_battery.c
+index 370e9109342b..cad14ba1b648 100644
+--- a/drivers/power/supply/ds2780_battery.c
++++ b/drivers/power/supply/ds2780_battery.c
+@@ -829,5 +829,5 @@ module_platform_driver(ds2780_battery_driver);
  
- 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
--				   &dma_addr, GFP_DMA | __GFP_ZERO);
-+				   &dma_addr, GFP_KERNEL | __GFP_ZERO);
- 	if (!data)
- 		return -ENOMEM;
- 	data->dma_addr = dma_addr;
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Clifton Barnes <cabarnes@indesign-llc.com>");
+-MODULE_DESCRIPTION("Maxim/Dallas DS2780 Stand-Alone Fuel Gauage IC driver");
++MODULE_DESCRIPTION("Maxim/Dallas DS2780 Stand-Alone Fuel Gauge IC driver");
+ MODULE_ALIAS("platform:ds2780-battery");
+diff --git a/drivers/power/supply/ds2781_battery.c b/drivers/power/supply/ds2781_battery.c
+index d1b5a19aae7c..5e794607f732 100644
+--- a/drivers/power/supply/ds2781_battery.c
++++ b/drivers/power/supply/ds2781_battery.c
+@@ -829,6 +829,6 @@ module_platform_driver(ds2781_battery_driver);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Renata Sayakhova <renata@oktetlabs.ru>");
+-MODULE_DESCRIPTION("Maxim/Dallas DS2781 Stand-Alone Fuel Gauage IC driver");
++MODULE_DESCRIPTION("Maxim/Dallas DS2781 Stand-Alone Fuel Gauge IC driver");
+ MODULE_ALIAS("platform:ds2781-battery");
+ 
+diff --git a/drivers/power/supply/ds2782_battery.c b/drivers/power/supply/ds2782_battery.c
+index a1b7e0592245..019c58493e3d 100644
+--- a/drivers/power/supply/ds2782_battery.c
++++ b/drivers/power/supply/ds2782_battery.c
+@@ -471,5 +471,5 @@ static struct i2c_driver ds278x_battery_driver = {
+ module_i2c_driver(ds278x_battery_driver);
+ 
+ MODULE_AUTHOR("Ryan Mallon");
+-MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC driver");
++MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauge IC driver");
+ MODULE_LICENSE("GPL");
 -- 
-2.19.1
+2.17.1
