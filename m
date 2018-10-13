@@ -1,65 +1,36 @@
 From: Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 2/8] firmware: tegra: don't pass GFP_DMA32 to
- dma_alloc_coherent
-Date: Sat, 13 Oct 2018 17:17:01 +0200
-Message-ID: <20181013151707.32210-3-hch@lst.de>
+Subject: [PATCH 3/8] spi: pic32-sqi: don't pass GFP_DMA32 to dma_alloc_coherent
+Date: Sat, 13 Oct 2018 17:17:02 +0200
+Message-ID: <20181013151707.32210-4-hch@lst.de>
 References: <20181013151707.32210-1-hch@lst.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181013151707.32210-1-hch@lst.de>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIERNQSBBUEkgZG9lcyBpdHMgb3duIHpvbmUgZGVjaXNpb25zIGJhc2VkIG9uIHRoZSBjb2hl
-cmVudF9kbWFfbWFzay4KClNpZ25lZC1vZmYtYnk6IENocmlzdG9waCBIZWxsd2lnIDxoY2hAbHN0
-LmRlPgotLS0KIGRyaXZlcnMvZmlybXdhcmUvdGVncmEvYnBtcC1kZWJ1Z2ZzLmMgfCAxMSArKysr
-Ky0tLS0tLQogZHJpdmVycy9maXJtd2FyZS90ZWdyYS9icG1wLmMgICAgICAgICB8ICAyICstCiAy
-IGZpbGVzIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgNyBkZWxldGlvbnMoLSkKCmRpZmYgLS1n
-aXQgYS9kcml2ZXJzL2Zpcm13YXJlL3RlZ3JhL2JwbXAtZGVidWdmcy5jIGIvZHJpdmVycy9maXJt
-d2FyZS90ZWdyYS9icG1wLWRlYnVnZnMuYwppbmRleCBmN2Y2YTBhNWNiMDcuLjU2NzE2MDg5N2Jh
-YyAxMDA2NDQKLS0tIGEvZHJpdmVycy9maXJtd2FyZS90ZWdyYS9icG1wLWRlYnVnZnMuYworKysg
-Yi9kcml2ZXJzL2Zpcm13YXJlL3RlZ3JhL2JwbXAtZGVidWdmcy5jCkBAIC0yMTgsMTIgKzIxOCwx
-MiBAQCBzdGF0aWMgaW50IGRlYnVnZnNfc2hvdyhzdHJ1Y3Qgc2VxX2ZpbGUgKm0sIHZvaWQgKnAp
-CiAJCXJldHVybiAtRU5PRU5UOwogCiAJbmFtZXZpcnQgPSBkbWFfYWxsb2NfY29oZXJlbnQoYnBt
-cC0+ZGV2LCBuYW1lc2l6ZSwgJm5hbWVwaHlzLAotCQkJCSAgICAgIEdGUF9LRVJORUwgfCBHRlBf
-RE1BMzIpOworCQkJCSAgICAgIEdGUF9LRVJORUwpOwogCWlmICghbmFtZXZpcnQpCiAJCXJldHVy
-biAtRU5PTUVNOwogCiAJZGF0YXZpcnQgPSBkbWFfYWxsb2NfY29oZXJlbnQoYnBtcC0+ZGV2LCBk
-YXRhc2l6ZSwgJmRhdGFwaHlzLAotCQkJCSAgICAgIEdGUF9LRVJORUwgfCBHRlBfRE1BMzIpOwor
-CQkJCSAgICAgIEdGUF9LRVJORUwpOwogCWlmICghZGF0YXZpcnQpIHsKIAkJcmV0ID0gLUVOT01F
-TTsKIAkJZ290byBmcmVlX25hbWVidWY7CkBAIC0yNjksMTIgKzI2OSwxMiBAQCBzdGF0aWMgc3Np
-emVfdCBkZWJ1Z2ZzX3N0b3JlKHN0cnVjdCBmaWxlICpmaWxlLCBjb25zdCBjaGFyIF9fdXNlciAq
-YnVmLAogCQlyZXR1cm4gLUVOT0VOVDsKIAogCW5hbWV2aXJ0ID0gZG1hX2FsbG9jX2NvaGVyZW50
-KGJwbXAtPmRldiwgbmFtZXNpemUsICZuYW1lcGh5cywKLQkJCQkgICAgICBHRlBfS0VSTkVMIHwg
-R0ZQX0RNQTMyKTsKKwkJCQkgICAgICBHRlBfS0VSTkVMKTsKIAlpZiAoIW5hbWV2aXJ0KQogCQly
-ZXR1cm4gLUVOT01FTTsKIAogCWRhdGF2aXJ0ID0gZG1hX2FsbG9jX2NvaGVyZW50KGJwbXAtPmRl
-diwgZGF0YXNpemUsICZkYXRhcGh5cywKLQkJCQkgICAgICBHRlBfS0VSTkVMIHwgR0ZQX0RNQTMy
-KTsKKwkJCQkgICAgICBHRlBfS0VSTkVMKTsKIAlpZiAoIWRhdGF2aXJ0KSB7CiAJCXJldCA9IC1F
-Tk9NRU07CiAJCWdvdG8gZnJlZV9uYW1lYnVmOwpAQCAtNDIyLDggKzQyMiw3IEBAIGludCB0ZWdy
-YV9icG1wX2luaXRfZGVidWdmcyhzdHJ1Y3QgdGVncmFfYnBtcCAqYnBtcCkKIAlpZiAoIXJvb3Qp
-CiAJCXJldHVybiAtRU5PTUVNOwogCi0JdmlydCA9IGRtYV9hbGxvY19jb2hlcmVudChicG1wLT5k
-ZXYsIHN6LCAmcGh5cywKLQkJCQkgIEdGUF9LRVJORUwgfCBHRlBfRE1BMzIpOworCXZpcnQgPSBk
-bWFfYWxsb2NfY29oZXJlbnQoYnBtcC0+ZGV2LCBzeiwgJnBoeXMsIEdGUF9LRVJORUwpOwogCWlm
-ICghdmlydCkgewogCQlyZXQgPSAtRU5PTUVNOwogCQlnb3RvIG91dDsKZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZmlybXdhcmUvdGVncmEvYnBtcC5jIGIvZHJpdmVycy9maXJtd2FyZS90ZWdyYS9icG1w
-LmMKaW5kZXggMTRhNDU2YWZhMzc5Li5lNmQyMzU2Y2NlYzMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMv
-ZmlybXdhcmUvdGVncmEvYnBtcC5jCisrKyBiL2RyaXZlcnMvZmlybXdhcmUvdGVncmEvYnBtcC5j
-CkBAIC01MzEsNyArNTMxLDcgQEAgc3RhdGljIGludCB0ZWdyYV9icG1wX2dldF9maXJtd2FyZV90
-YWcoc3RydWN0IHRlZ3JhX2JwbXAgKmJwbXAsIGNoYXIgKnRhZywKIAlpbnQgZXJyOwogCiAJdmly
-dCA9IGRtYV9hbGxvY19jb2hlcmVudChicG1wLT5kZXYsIE1TR19EQVRBX01JTl9TWiwgJnBoeXMs
-Ci0JCQkJICBHRlBfS0VSTkVMIHwgR0ZQX0RNQTMyKTsKKwkJCQkgIEdGUF9LRVJORUwpOwogCWlm
-ICghdmlydCkKIAkJcmV0dXJuIC1FTk9NRU07CiAKLS0gCjIuMTkuMQoKX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApk
-cmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+The DMA API does its own zone decisions based on the coherent_dma_mask.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/spi/spi-pic32-sqi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/spi/spi-pic32-sqi.c b/drivers/spi/spi-pic32-sqi.c
+index bd1c6b53283f..ab53e461d80f 100644
+--- a/drivers/spi/spi-pic32-sqi.c
++++ b/drivers/spi/spi-pic32-sqi.c
+@@ -468,7 +468,7 @@ static int ring_desc_ring_alloc(struct pic32_sqi *sqi)
+ 	/* allocate coherent DMAable memory for hardware buffer descriptors. */
+ 	sqi->bd = dma_zalloc_coherent(&sqi->master->dev,
+ 				      sizeof(*bd) * PESQI_BD_COUNT,
+-				      &sqi->bd_dma, GFP_DMA32);
++				      &sqi->bd_dma, GFP_KERNEL);
+ 	if (!sqi->bd) {
+ 		dev_err(&sqi->master->dev, "failed allocating dma buffer\n");
+ 		return -ENOMEM;
+-- 
+2.19.1
