@@ -1,88 +1,67 @@
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v5 0/6] arm64: dts: NXP: add basic dts file for LX2160A SoC
-Date: Sun, 14 Oct 2018 22:37:57 +0530
-Message-ID: <1539536883-1928-1-git-send-email-vabhav.sharma@nxp.com>
+Subject: [PATCH v5 1/6] dt-bindings: arm64: add compatible for LX2160A
+Date: Sun, 14 Oct 2018 22:37:58 +0530
+Message-ID: <1539536883-1928-2-git-send-email-vabhav.sharma@nxp.com>
+References: <1539536883-1928-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1539536883-1928-1-git-send-email-vabhav.sharma@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: sudeep.holla@arm.com, oss@buserror.net, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com, will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de, kstewart@linuxfoundation.org, yamada.masahiro@socionext.com, leoyang.li@nxp.com, shawnguo@kernel.org
 Cc: linux@armlinux.org.uk, adrian.hunter@intel.com, ulf.hansson@linaro.org, V.Sethi@nxp.com, udit.kumar@nxp.com, pankaj.bansal@nxp.com, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Changes for v5:
-- Updated temperature sensor regulator name in board device tree
-- Sorted nodes alphabatically and unit-address in SoC/board device tree
-- Identation, new line update in SoC/board device tree
-- Updated nodes name as per DT spec generic name recommendation in SoC DT
-- Updated macro define for interrupt/gpio property
-- Updated i2c node property name scl-gpio
-- Removed device_type property except cpu/memory node
-- Added esdhc controller nodes in SoC/RDB board device tree
-- Added aliases for uart/crypto nodes
-- Add SoC die attribute definition for LX2160A
+Add compatible for LX2160A SoC,QDS and RDB board
+Add lx2160a compatible for clockgen and dcfg
 
-Changes for v4:
-- Updated bindings for lx2160a clockgen and dcfg
-- Modified commit message for lx2160a clockgen changes
-- Updated interrupt property with macro definition
-- Added required enable-method property to each core node with psci value
-- Removed unused node syscon in device tree
-- Removed blank lines in device tree fsl-lx2160a.dtsi
-- Updated uart node compatible sbsa-uart first
-- Added and defined vcc-supply property to temperature sensor node in
-  device tree fsl-lx2160a-rdb.dts
+Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/arm/fsl.txt           | 14 +++++++++++++-
+ Documentation/devicetree/bindings/clock/qoriq-clock.txt |  1 +
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
-Changes for v3:
--Split clockgen support patch into below two patches:
-- a)Updated array size of cmux_to_group[] with NUM_CMUX+1 to include -1
- terminator and p4080 cmux_to_group[] array with -1 terminator
-- b)Add clockgen support for lx2160a
-
-Changes for v2:
-- Modified cmux_to_group array to include -1 terminator
-- Revert NUM_CMUX to original value 8 from 16
-- Remove “As LX2160A is 16 core, so modified value for NUM_CMUX”
-  in patch "[PATCH 3/5] drivers: clk-qoriq: Add clockgen support for
-  lx2160a" description
-- Populated cache properties for L1 and L2 cache in lx2160a device-tree.
-- Removed reboot node from lx2160a device-tree as PSCI is implemented.
-- Removed incorrect comment for timer node interrupt property in
-  lx2160a device-tree.
-- Modified pmu node compatible property from "arm,armv8-pmuv3" to
-  "arm,cortex-a72-pmu" in lx2160a device-tree
-- Non-standard aliases removed in lx2160a rdb board device-tree
-- Updated i2c child nodes to generic name in lx2160a rdb device-tree.
-
-Changes for v1:
-- Add compatible string for LX2160A clockgen support
-- Add compatible string to initialize LX2160A guts driver
-- Add compatible string for LX2160A support in dt-bindings
-- Add dts file to enable support for LX2160A SoC and LX2160A RDB
-  (Reference design board)
-
-Vabhav Sharma (4):
-  dt-bindings: arm64: add compatible for LX2160A
-  soc/fsl/guts: Add definition for LX2160A
-  arm64: dts: add QorIQ LX2160A SoC support
-  arm64: dts: add LX2160ARDB board support
-
-Yogesh Gaur (2):
-  clk: qoriq: increase array size of cmux_to_group
-  clk: qoriq: Add clockgen support for lx2160a
-
- Documentation/devicetree/bindings/arm/fsl.txt      |  14 +-
- .../devicetree/bindings/clock/qoriq-clock.txt      |   1 +
- arch/arm64/boot/dts/freescale/Makefile             |   1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts  | 119 ++++
- arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi     | 765 +++++++++++++++++++++
- drivers/clk/clk-qoriq.c                            |  16 +-
- drivers/cpufreq/qoriq-cpufreq.c                    |   1 +
- drivers/soc/fsl/guts.c                             |   6 +
- 8 files changed, 920 insertions(+), 3 deletions(-)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
-
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/devicetree/bindings/arm/fsl.txt
+index 8a1baa2..71adce2 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -130,7 +130,7 @@ core start address and release the secondary core from holdoff and startup.
+   - compatible: Should contain a chip-specific compatible string,
+ 	Chip-specific strings are of the form "fsl,<chip>-dcfg",
+ 	The following <chip>s are known to be supported:
+-	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a.
++	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a, lx2160a.
+ 
+   - reg : should contain base address and length of DCFG memory-mapped registers
+ 
+@@ -222,3 +222,15 @@ Required root node properties:
+ LS2088A ARMv8 based RDB Board
+ Required root node properties:
+     - compatible = "fsl,ls2088a-rdb", "fsl,ls2088a";
++
++LX2160A SoC
++Required root node properties:
++    - compatible = "fsl,lx2160a";
++
++LX2160A ARMv8 based QDS Board
++Required root node properties:
++    - compatible = "fsl,lx2160a-qds", "fsl,lx2160a";
++
++LX2160A ARMv8 based RDB Board
++Required root node properties:
++    - compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
+diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+index 97f46ad..3fb9995 100644
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -37,6 +37,7 @@ Required properties:
+ 	* "fsl,ls1046a-clockgen"
+ 	* "fsl,ls1088a-clockgen"
+ 	* "fsl,ls2080a-clockgen"
++	* "fsl,lx2160a-clockgen"
+ 	Chassis-version clock strings include:
+ 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
+ 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
 -- 
 2.7.4
