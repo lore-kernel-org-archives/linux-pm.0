@@ -1,263 +1,174 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
-Date: Sat, 13 Oct 2018 22:42:37 +0200
-Message-ID: <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
-References: <20180927024204.17314-1-andy.tang@nxp.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT/[PATCH] cpuidle: New timer events oriented governor for tickless systems
+Date: Sat, 13 Oct 2018 23:53:04 -0700
+Message-ID: <000e01d4638a$91a20c60$b4e62520$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180927024204.17314-1-andy.tang@nxp.com>
-Content-Language: en-US
+References: Ai8Vgb2Sy7Ku3Ai8agzgab
+In-Reply-To: Ai8Vgb2Sy7Ku3Ai8agzgab
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: andy.tang@nxp.com, rui.zhang@intel.com
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
-Hi Yuantian,
+I tried your TEO idle governor.
 
+On 2018.10.11 14:02 Rafael J. Wysocki wrote:
 
-On 27/09/2018 04:42, andy.tang@nxp.com wrote:
-> From: Yuantian Tang <andy.tang@nxp.com>
-> 
-> There is only one sensor supported in current driver.
-> Multiple sensors are existing on Layscape socs. To support them,
-> covert this driver to support multiple sensors.
+...[cut]...
 
-s/covert/convert/
+> It has been tested on a few different systems with a number of
+> different workloads and compared with the menu governor.  In the
+> majority of cases the workloads performed similarly regardless of
+> the cpuidle governor in use, but in one case the TEO governor
+> allowed the workload to perform 75% better, which is a clear
+> indication that some workloads may benefit from using it quite
+> a bit depending on the hardware they run on.
 
-What about the following changelog ?
+Could you supply more detail for the 75% better case, so that
+I can try to repeat the results on my system?
 
-"
-The QorIQ Layerscape SoC has several thermal sensors but the current
-driver only supports one.
+...[cut]...
 
-Massage the code to be sensor oriented and allow the support for
-multiple sensors.
-"
+> It is likely to select the "polling" state less often than menu
+> due to the lack of the extra latency limit derived from the
+> predicted idle duration, so the workloads depending on that
+> behavior may be worse off (but less energy should be used
+> while running them at the same time).
 
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> ---
->  drivers/thermal/qoriq_thermal.c |  117 +++++++++++++++++++++++----------------
->  1 files changed, 70 insertions(+), 47 deletions(-)
-> 
-> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-> index c866cc1..7c1e88a 100644
-> --- a/drivers/thermal/qoriq_thermal.c
-> +++ b/drivers/thermal/qoriq_thermal.c
-> @@ -69,14 +69,21 @@ struct qoriq_tmu_regs {
->  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
->  };
->  
-> +struct qoriq_tmu_data;
+Yes, and I see exactly that with the 1 core pipe test: Less
+performance (~10%), but also less processor package power
+(~3%), compared to the 8 patch set results from the other day.
+
+The iperf test (running 3 clients at once) results were similar
+for both power and throughput.
+
+> Overall, it selects deeper idle states than menu more often, but
+> that doesn't seem to make a significant difference in the majority
+> of cases.
+
+Not always, that viscous powernightmare sweep test that I run used
+way way more processor package power and spent a staggering amount
+of time in idle state 0. [1]. 
+
+... [cut]...
+
+> + * The sleep length is the maximum duration of the upcoming idle time of the
+> + * CPU and it is always known to the kernel.  Using it alone for selecting an
+> + * idle state for the CPU every time is a viable option in principle, but that
+> + * might lead to suboptimal results if the other wakeup sources are more active
+> + * for some reason.  Thus this governor estimates whether or not the CPU idle
+> + * time is likely to be significantly shorter than the sleep length and selects
+> + * an idle state for it in accordance with that, as follows:
+
+There is something wrong here, in my opinion, but I have not isolated exactly where
+by staring at the code.
+Read on.
+
+... [cut]...
+
+> + * Assuming an idle interval every second tick, take the maximum number of CPU
+> + * wakeups regarded as recent to rougly correspond to 10 minutes.
+> + *
+> + * When the total number of CPU wakeups goes above this value, all of the
+> + * counters corresponding to the given CPU undergo a "decay" and the counting
+> + * of recent events stars over.
+> + */
+> +#define TEO_MAX_RECENT_WAKEUPS	(300 * HZ)
+
+In my opinion, there are problems with this is approach:
+
+First, the huge huge range of possible times between decay events,
+anywhere from ~ a second to approximately a week.
+	In an idle 1000 HZ system, at 2 idle entries per 4 second watchdog event:
+	time = 300,000 wakes * 2 seconds/wake = 6.9 days
+	Note: The longest single idle time I measured was 3.5 seconds, but that is
+	always combined with a shorter one. Even using a more realistic, and
+	just now measured, average value of 0.7 idles/second would be 2.4 days.
+
+Second: It leads to unpredictable behaviour, sometimes for a long time, until
+the effects of some previous work are completely flushed. And from the first
+point above, that previous work might have been days ago. In my case, and while
+doing this work, it resulted in non-repeatability of tests and confusion
+for awhile. Decay events are basically asynchronous to the actual tasks being
+executed. For data to support what I am saying I did the following:
+	Do a bunch of times {
+		Start the powernightmare sweep test.
+		Abort after several seconds (enough time to flush filters
+			and prefer idle state 0)
+		Wait a random amount of time
+		Start a very light work load, but such that the sleep time
+			per work cycle is less than one tick
+		Observe varying times until idle state 0 is not excessively selected.
+			Anywhere from 0 to 17 minutes (the maximum length of test) was observed.
+	}
+
+Additional information:
+
+Periodic workflow: I am having difficulty understanding an unexpected high
+number of idle entries/exits in steady state (i.e. once things have settled
+down and the filters have finally flushed) For example, a 60% work / 40% sleep
+at 500 hertz workflow seems to have an extra idle entry exit. Trace excerpt
+(edited, the first column is uSeconds since previous):
+
+     140 cpu_idle: state=4294967295 cpu_id=7
+    1152 cpu_idle: state=4 cpu_id=7    <<<< The expected ~1200 uSecs of work
+     690 cpu_idle: state=4294967295 cpu_id=7  <<<< Unexpected, Expected ~800 uSecs
+      18 cpu_idle: state=2 cpu_id=7           <<<< So this extra idle makes up the difference
+     138 cpu_idle: state=4294967295 cpu_id=7  <<<< But why is it there?
+    1152 cpu_idle: state=4 cpu_id=7     <<<< Repeat
+     690 cpu_idle: state=4294967295 cpu_id=7
+      13 cpu_idle: state=2 cpu_id=7
+     143 cpu_idle: state=4294967295 cpu_id=7
+    1152 cpu_idle: state=4 cpu_id=7      <<<< Repeat
+     689 cpu_idle: state=4294967295 cpu_id=7
+      19 cpu_idle: state=2 cpu_id=7
+
+Now compare with trace data for kernel 4.16-rc6 with the 9 patches
+from the other day (which is what I expect to see):
+
+     846 cpu_idle: state=4294967295 cpu_id=7
+    1150 cpu_idle: state=4 cpu_id=7    <<<< The expected ~1200 uSecs of work
+     848 cpu_idle: state=4294967295 cpu_id=7 <<<< The expected ~800 uSecs of idle
+    1152 cpu_idle: state=4 cpu_id=7    <<<< Repeat
+     848 cpu_idle: state=4294967295 cpu_id=7
+    1151 cpu_idle: state=4 cpu_id=7    <<<< Repeat
+     848 cpu_idle: state=4294967295 cpu_id=7
+    1152 cpu_idle: state=4 cpu_id=7    <<<< Repeat
+     848 cpu_idle: state=4294967295 cpu_id=7
+    1152 cpu_idle: state=4 cpu_id=7    <<<< Repeat
+
+Anyway, in the end we really only care about power. So for this test:
+Kernel 4.19-rc6 + 9 patches: 9.133 watts
+TEO (on top of 4.19-rc7):
+At start, high number of idle state 0 entries: 11.33 watts (+24%)
+After awhile, it shifted to idle state 1: 10.00 watts (+9.5%)
+After awhile, it shifted to idle state 2: 9.67 watts (+5.9%)
+That seemed to finally be a steady state scenario (at least for over 2 hours).
+Note: it was always using idle state 4 also.
+
+...[snip]...
+
+> +	/* Decay past events information. */
+> +	for (i = 0; i < drv->state_count; i++) {
+> +		cpu_data->states[i].early_wakeups_old += cpu_data->states[i].early_wakeups;
+> +		cpu_data->states[i].early_wakeups_old /= 2;
+> +		cpu_data->states[i].early_wakeups = 0;
 > +
->  /*
->   * Thermal zone data
->   */
-> +struct qoriq_sensor {
-> +	struct thermal_zone_device	*tzd;
-> +	struct qoriq_tmu_data		*qdata;
-> +	int				id;
-> +};
+> +		cpu_data->states[i].hits_old += cpu_data->states[i].hits;
+> +		cpu_data->states[i].hits_old /= 2;
+> +		cpu_data->states[i].hits = 0;
 
-Can you move the qoriq_tmu_site_regs structure content inside the
-qoriq_sensor structure and kill the 'sites' field in the qoriq_tmu_regs
-structure ? Otherwise we end up with a SITES_MAX array in the
-qoriq_tmu_data structure and another one in the qoriq_tmu_regs structure.
+I wonder if this decay rate is strong enough.
 
->  struct qoriq_tmu_data {
-> -	struct thermal_zone_device *tz;
->  	struct qoriq_tmu_regs __iomem *regs;
-> -	int sensor_id;
->  	bool little_endian;
-> +	struct qoriq_sensor	*sensor[SITES_MAX];
->  };
->  
->  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
-> @@ -97,48 +104,83 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
->  
->  static int tmu_get_temp(void *p, int *temp)
->  {
-> +	struct qoriq_sensor *qsensor = p;
-> +	struct qoriq_tmu_data *qdata = qsensor->qdata;
->  	u32 val;
-> -	struct qoriq_tmu_data *data = p;
->  
-> -	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
-> +	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
->  	*temp = (val & 0xff) * 1000;
->  
->  	return 0;
->  }
->  
-> -static int qoriq_tmu_get_sensor_id(void)
-> +static const struct thermal_zone_of_device_ops tmu_tz_ops = {
-> +	.get_temp = tmu_get_temp,
-> +};
-> +
-> +static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
->  {
-> -	int ret, id;
-> +	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
->  	struct of_phandle_args sensor_specs;
->  	struct device_node *np, *sensor_np;
-> +	int ret, id, sites = 0;
->  
->  	np = of_find_node_by_name(NULL, "thermal-zones");
->  	if (!np)
->  		return -ENODEV;
->  
-> -	sensor_np = of_get_next_child(np, NULL);
-> -	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
-> -			"#thermal-sensor-cells",
-> -			0, &sensor_specs);
-> -	if (ret) {
-> +	for_each_available_child_of_node(np, sensor_np) {
-> +		ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
-> +				"#thermal-sensor-cells",
-> +				0, &sensor_specs);
-> +		if (ret) {
-> +			of_node_put(np);
-> +			of_node_put(sensor_np);
-> +			return ret;
-> +		}
-> +
-> +		if (sensor_specs.args_count >= 1) {
-> +			id = sensor_specs.args[0];
-> +			WARN(sensor_specs.args_count > 1,
-> +					"%s: too many cells in sensor specifier %d\n",
-> +					sensor_specs.np->name,
-> +					sensor_specs.args_count);
-> +		} else {
-> +			id = 0;
-> +		}
-> +
->  		of_node_put(np);
->  		of_node_put(sensor_np);
-> -		return ret;
-> -	}
->  
-> -	if (sensor_specs.args_count >= 1) {
-> -		id = sensor_specs.args[0];
-> -		WARN(sensor_specs.args_count > 1,
-> -				"%s: too many cells in sensor specifier %d\n",
-> -				sensor_specs.np->name, sensor_specs.args_count);
-> -	} else {
-> -		id = 0;
-> +		if (id > SITES_MAX)
-> +			return -EINVAL;
-> +
-> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
-> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
-> +		if (!qdata->sensor[id])
-> +			return -ENOMEM;
-> +
-> +		qdata->sensor[id]->id = id;
-> +		qdata->sensor[id]->qdata = qdata;
-> +
-> +		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
-> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
-> +
-> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
-> +			ret = PTR_ERR(qdata->sensor[id]->tzd);
-> +			dev_err(&pdev->dev,
-> +				"Failed to register thermal zone device.\n");
-> +			return -ENODEV;
-> +		}
-> +
-> +		sites |= 0x1 << (15 - id);
+Hope this helps.
 
-The current code is reading the DT in order to get the sensor id and
-initialize it. IOW, the DT gives the sensors to use.
+... Doug
 
-IMO, it would be more self contained if the driver initializes all the
-sensors without taking care of the DT and let the of- code to do the
-binding when the thermal zone, no ?
-
->  	}
->  
-> -	of_node_put(np);
-> -	of_node_put(sensor_np);
-> +	/* Enable monitoring */
-> +	if (sites != 0)
-> +		tmu_write(qdata, sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
->  
-> -	return id;
-> +	return 0;
->  }
->  
->  static int qoriq_tmu_calibration(struct platform_device *pdev)
-> @@ -188,16 +230,11 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
->  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
->  }
->  
-> -static const struct thermal_zone_of_device_ops tmu_tz_ops = {
-> -	.get_temp = tmu_get_temp,
-> -};
-> -
->  static int qoriq_tmu_probe(struct platform_device *pdev)
->  {
->  	int ret;
->  	struct qoriq_tmu_data *data;
->  	struct device_node *np = pdev->dev.of_node;
-> -	u32 site = 0;
->  
->  	if (!np) {
->  		dev_err(&pdev->dev, "Device OF-Node is NULL");
-> @@ -213,13 +250,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  
->  	data->little_endian = of_property_read_bool(np, "little-endian");
->  
-> -	data->sensor_id = qoriq_tmu_get_sensor_id();
-> -	if (data->sensor_id < 0) {
-> -		dev_err(&pdev->dev, "Failed to get sensor id\n");
-> -		ret = -ENODEV;
-> -		goto err_iomap;
-> -	}
-> -
->  	data->regs = of_iomap(np, 0);
->  	if (!data->regs) {
->  		dev_err(&pdev->dev, "Failed to get memory region\n");
-> @@ -233,18 +263,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
->  	if (ret < 0)
->  		goto err_tmu;
->  
-> -	data->tz = thermal_zone_of_sensor_register(&pdev->dev, data->sensor_id,
-> -				data, &tmu_tz_ops);
-> -	if (IS_ERR(data->tz)) {
-> -		ret = PTR_ERR(data->tz);
-> -		dev_err(&pdev->dev,
-> -			"Failed to register thermal zone device %d\n", ret);
-> -		goto err_tmu;
-> +	ret = qoriq_tmu_register_tmu_zone(pdev);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "Failed to register sensors\n");
-> +		ret = -ENODEV;
-> +		goto err_iomap;
->  	}
->  
-> -	/* Enable monitoring */
-> -	site |= 0x1 << (15 - data->sensor_id);
-> -	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
->  
->  	return 0;
->  
-> @@ -261,8 +286,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
->  {
->  	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
->  
-> -	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-> -
->  	/* Disable monitoring */
->  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
->  
-> 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+[1] http://fast.smythies.com/linux-pm/k419/k419-pn-sweep-teo.htm
