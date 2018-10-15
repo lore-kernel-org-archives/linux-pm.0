@@ -1,62 +1,148 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: RE: [PATCH v4 5/6] arm64: dts: add QorIQ LX2160A SoC support
-Date: Mon, 15 Oct 2018 09:48:33 -0700
-Message-ID: <153962211360.5275.18031876744546062419@swboyd.mtv.corp.google.com>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
- <1538615031-7507-6-git-send-email-vabhav.sharma@nxp.com>
- <20181008054510.GG3587@dragon>
- <VI1PR04MB4800C0AB214B258793AF9ABAF3FD0@VI1PR04MB4800.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Subject: [PATCH] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Mon, 15 Oct 2018 22:32:33 +0530
+Message-ID: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <VI1PR04MB4800C0AB214B258793AF9ABAF3FD0@VI1PR04MB4800.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>, Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>
+To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Vabhav Sharma (2018-10-14 19:58:15)
-> > > +
-> > > +   pmu {
-> > > +           compatible =3D "arm,cortex-a72-pmu";
-> > > +           interrupts =3D <GIC_PPI 7 IRQ_TYPE_LEVEL_LOW>;
-> > > +   };
-> > > +
-> > > +   psci {
-> > > +           compatible =3D "arm,psci-0.2";
-> > > +           method =3D "smc";
-> > > +   };
-> > > +
-> > > +   memory@80000000 {
-> > > +           // DRAM space - 1, size : 2 GB DRAM
-> > > +           device_type =3D "memory";
-> > > +           reg =3D <0x00000000 0x80000000 0 0x80000000>;
-> > > +   };
-> > > +
-> > > +   ddr1: memory-controller@1080000 {
-> > > +           compatible =3D "fsl,qoriq-memory-controller";
-> > > +           reg =3D <0x0 0x1080000 0x0 0x1000>;
-> > > +           interrupts =3D <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
-> > > +           little-endian;
-> > > +   };
-> > > +
-> > > +   ddr2: memory-controller@1090000 {
-> > > +           compatible =3D "fsl,qoriq-memory-controller";
-> > > +           reg =3D <0x0 0x1090000 0x0 0x1000>;
-> > > +           interrupts =3D <GIC_SPI 18 IRQ_TYPE_LEVEL_HIGH>;
-> > > +           little-endian;
-> > > +   };
-> > > +
-> > > +   sysclk: sysclk {
-> > =
+Add device bindings for cpuidle states for cpu devices.
 
-> > Name the node a bit generic like clock-xxx.
-> There is only one clock-unit, Bootloader(U-boot) require sysclk node duri=
-ng device tree fix-up as different platform support varied platform frequen=
-cy as per reset configuration word used.
-> Referred other ARM based platform with one clock using name as x: x
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+---
+ arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
-Please add a comment above this node with this information. Newcomers
-reading this DTS file won't have any idea why this node is specially
-named and a comment will help tremendously here.
+diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+index 0c9a2aa..32262b0 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+@@ -96,6 +96,7 @@
+ 			reg = <0x0 0x0>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_0>;
++			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+ 			L2_0: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -111,6 +112,7 @@
+ 			reg = <0x0 0x100>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_100>;
++			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+ 			L2_100: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -123,6 +125,7 @@
+ 			reg = <0x0 0x200>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_200>;
++			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+ 			L2_200: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -135,6 +138,7 @@
+ 			reg = <0x0 0x300>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_300>;
++			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+ 			L2_300: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -147,6 +151,7 @@
+ 			reg = <0x0 0x400>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_400>;
++			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+ 			L2_400: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -159,6 +164,7 @@
+ 			reg = <0x0 0x500>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_500>;
++			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+ 			L2_500: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -171,6 +177,7 @@
+ 			reg = <0x0 0x600>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_600>;
++			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+ 			L2_600: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -183,11 +190,66 @@
+ 			reg = <0x0 0x700>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_700>;
++			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+ 			L2_700: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+ 			};
+ 		};
++
++		idle-states {
++			entry-method = "psci";
++
++			C0_CPU_SPC: c0_spc {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000003>;
++				entry-latency-us = <350>;
++				exit-latency-us = <461>;
++				min-residency-us = <1890>;
++				local-timer-stop;
++				idle-state-name = "pc";
++			};
++
++			C0_CPU_PC: c0_pc {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000004>;
++				entry-latency-us = <360>;
++				exit-latency-us = <531>;
++				min-residency-us = <3934>;
++				local-timer-stop;
++				idle-state-name = "rail pc";
++			};
++
++			C4_CPU_SPC: c4_spc {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000003>;
++				entry-latency-us = <264>;
++				exit-latency-us = <621>;
++				min-residency-us = <952>;
++				local-timer-stop;
++				idle-state-name = "pc";
++			};
++
++			C4_CPU_PC: c4_pc {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000004>;
++				entry-latency-us = <702>;
++				exit-latency-us = <1061>;
++				min-residency-us = <4488>;
++				local-timer-stop;
++				idle-state-name = "rail pc";
++			};
++
++			CLUSTER_PC: cluster_pc {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x400000F4>;
++				entry-latency-us = <3263>;
++				exit-latency-us = <6562>;
++				min-residency-us = <9987>;
++				local-timer-stop;
++				idle-state-name = "cluster pc";
++			};
++		};
+ 	};
+ 
+ 	pmu {
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of the Code Aurora Forum, hosted by The Linux Foundation.
