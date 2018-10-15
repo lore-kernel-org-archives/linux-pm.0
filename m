@@ -1,141 +1,64 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
-Date: Mon, 15 Oct 2018 14:50:19 +0200
-Message-ID: <CAHKzcEOECQP8j6q=NKzuEjF+mc0s80fr6xWw-=NXsTtzCGGg_w@mail.gmail.com>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
- <2671493.AgiGORq3CZ@aspire.rjw.lan> <CAHKzcEPuD7nnmvBjnUNn=wb-5LfN1nHoTYBekAiBFG8Je+oPwA@mail.gmail.com>
- <1926816.WaOCFmosuL@aspire.rjw.lan>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 6/9] PM / OPP: dt-bindings: Add
+ opp-interconnect-bw
+Date: Mon, 15 Oct 2018 09:34:20 -0500
+Message-ID: <20181015143420.GA16932@bogus>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-7-jcrouse@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1926816.WaOCFmosuL@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20180827151112.25211-7-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Oct 2018 at 13:34, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Monday, October 15, 2018 11:34:33 AM CEST Waldemar Rymarkiewicz wrote:
-> > On Thu, 11 Oct 2018 at 23:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
-> > > > On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > > >
-> > > > > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
-> > > > > <waldemar.rymarkiewicz@gmail.com> wrote:
-> > > > > >
-> > > > > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> > > > > >
-> > > > > > The governor updates dbs_info->requested_freq only after increasing or
-> > > > > > decreasing frequency. There is, however, an use case when this is not
-> > > > > > sufficient.
-> > > > > >
-> > > > > > Imagine, external module constraining cpufreq policy in a way that policy->max
-> > > > >
-> > > > > Is the "external module" here a utility or a demon running in user space?
-> > > >
-> > > > No, this is a driver that communicates with a firmware and makes sure
-> > > > CPU is running at the highest rate in specific time.
-> > > > It uses verify_within_limits  and update_policy, a standard way to
-> > > > constraint cpufreq policy limits.
-> > > >
-> > > > > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> > > > > >                         requested_freq = policy->min;
-> > > > > >
-> > > > > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
-> > > > > > -               dbs_info->requested_freq = requested_freq;
-> > > > > >         }
-> > > > > >
-> > > > > >   out:
-> > > > > > +       dbs_info->requested_freq = requested_freq;
-> > > > >
-> > > > > This will have a side effect when requested_freq is updated before the
-> > > > > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
-> > > > > check.
-> > > > >
-> > > > > Shouldn't that be avoided?
-> > > >
-> > > > I would say we should.
-> > > >
-> > > > A hardware design I use is running 4.9 kernel where the check does not
-> > > > exist yet, so there is not a problem.
-> > > > Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
-> > > > requested_freq  either to requested_freq = policy->min or
-> > > > requested_freq -= freq_steps;. The first case will not change anything
-> > > > for us as policy->max=min=cur. The second, however, will force to
-> > > > update freq which is definitely not expected when limits are set to
-> > > > min=max. Simply it will not go out  here:
-> > > >
-> > > > if (load < cs_tuners->down_threshold) {
-> > > >       if (requested_freq == policy->min)
-> > > >            goto out;   <---
-> > > > ...
-> > > > }
-> > > >
-> > > > Am I right here? If so, shouldn't we check explicitly
-> > > >
-> > > > /*
-> > > > * If requested_freq is out of range, it is likely that the limits
-> > > > * changed in the meantime, so fall back to current frequency in that
-> > > > * case.
-> > > > */
-> > > > if (requested_freq > policy->max || requested_freq < policy->min)
-> > > >        requested_freq = policy->cur;
-> > > >
-> > > > +/*
-> > > > +* If the the new limits min,max are equal, there is no point to process further
-> > > > +*/
-> > > > +
-> > > > +if (requested_freq == policy->max  &&  requested_freq == policy->min)
-> > > > +     goto out;
-> > >
-> > > If my understanding of the problem is correct, it would be better to simply
-> > > update dbs_info->requested_freq along with requested_freq when that is found
-> > > to be out of range.  IOW, something like the appended patch (untested).
-> >
-> > Yes, this will solve the original problem as well.
-> >
-> > I think there could also be a  problem with policy_dbs->idle_periods <
-> > UINT_MAX  check. It it's true it  can modify requested_freq (
-> > requested_freq -= freq_steps) and further it can result in a change of
-> > the freq,  requested_freq == policy->max is not anymore true. I would
-> > expect governor not to change freq (requested_freq) when
-> > policy->max=policy->min=policy->cur.
->
-> Well, that's because there is a bug in that code IMO.  It should never
-> decrease requested_freq below policy->min in particular.
->
-> Please find a patch with that fixed below.
->
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> @@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
->          * changed in the meantime, so fall back to current frequency in that
->          * case.
->          */
-> -       if (requested_freq > policy->max || requested_freq < policy->min)
-> +       if (requested_freq > policy->max || requested_freq < policy->min) {
->                 requested_freq = policy->cur;
-> +               dbs_info->requested_freq = requested_freq;
-> +       }
->
->         freq_step = get_freq_step(cs_tuners, policy);
->
-> @@ -92,7 +94,7 @@ static unsigned int cs_dbs_update(struct
->         if (policy_dbs->idle_periods < UINT_MAX) {
->                 unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
->
-> -               if (requested_freq > freq_steps)
-> +               if (requested_freq > policy->min + freq_steps)
->                         requested_freq -= freq_steps;
->                 else
->                         requested_freq = policy->min;
-
-Yes looks good now. Will you apply this patch?
+T24gTW9uLCBBdWcgMjcsIDIwMTggYXQgMDk6MTE6MDlBTSAtMDYwMCwgSm9yZGFuIENyb3VzZSB3
+cm90ZToKPiBBZGQgdGhlICJvcHAtaW50ZXJjb25uZWN0LWJ3IiBwcm9wZXJ0eSB0byBzcGVjaWZ5
+IHRoZQo+IGF2ZXJhZ2UgYW5kIHBlYWsgYmFuZHdpZHRoIGZvciBhbiBpbnRlcmNvbm5lY3QgcGF0
+aCBmb3IKPiBhIHNwZWNpZmljIG9wZXJhdGluZyBwb3dlciBwb2ludC4gQSBzZXBhcmF0ZSBiYW5k
+d2lkdGgKPiBwYWlyIGNhbiBiZSBzcGVjaWZpZWQgZm9yIGVhY2ggb2YgdGhlIGludGVyY29ubmVj
+dHMKPiBkZWZpbmVkIGZvciB0aGUgZGV2aWNlIGJ5IGFwcGVuZGluZyB0aGUgaW50ZXJjb25uZWN0
+Cj4gbmFtZSB0byB0aGUgcHJvcGVydHkuCj4gCj4gU2lnbmVkLW9mZi1ieTogSm9yZGFuIENyb3Vz
+ZSA8amNyb3VzZUBjb2RlYXVyb3JhLm9yZz4KPiAtLS0KPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL29wcC9vcHAudHh0IHwgMzYgKysrKysrKysrKysrKysrKysrKwo+ICAxIGZp
+bGUgY2hhbmdlZCwgMzYgaW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL29wcC50eHQgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3Mvb3BwL29wcC50eHQKPiBpbmRleCBjMzk2YzRjMGFmOTIuLmQ3MTRjMDg0
+ZjM2ZCAxMDA2NDQKPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3Bw
+L29wcC50eHQKPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL29w
+cC50eHQKPiBAQCAtMTcwLDYgKzE3MCwxMSBAQCBPcHRpb25hbCBwcm9wZXJ0aWVzOgo+ICAgIGZ1
+bmN0aW9uaW5nIG9mIHRoZSBjdXJyZW50IGRldmljZSBhdCB0aGUgY3VycmVudCBPUFAgKHdoZXJl
+IHRoaXMgcHJvcGVydHkgaXMKPiAgICBwcmVzZW50KS4KPiAgCj4gKy0gb3BwLWludGVyY29ubmVj
+dC1idy08bmFtZT46IFRoaXMgaXMgYW4gYXJyYXkgb2YgcGFpcnMgc3BlY2lmeWluZyB0aGUgYXZl
+cmFnZQo+ICsgIGFuZCBwZWFrIGJhbmR3aWR0aCBpbiBieXRlcyBwZXIgc2Vjb25kIGZvciB0aGUg
+aW50ZXJjb25uZWN0IHBhdGgga25vd24gYnkKPiArICAnbmFtZScuICBUaGlzIHNob3VsZCBtYXRj
+aCB0aGUgbmFtZShzKSBzcGVjaWZpZWQgYnkgaW50ZXJjb25uZWN0LW5hbWVzIGluIHRoZQo+ICsg
+IGRldmljZSBkZWZpbml0aW9uLgo+ICsKCkkgZG9uJ3QgdGhpbmsgdGhpcyBpcyBnb29kIGRlc2ln
+biB3aXRoIHRoZSBuYW1lIGRlZmluZWQgaW4gb25lIG5vZGUgYW5kIAp0aGVuIHVzZWQgaW4gdGhl
+IE9QUCB0YWJsZS4gRmlyc3QsICcqLW5hbWVzJyBpcyB0eXBpY2FsbHkgdGhlIGEgbmFtZSAKbG9j
+YWwgdG8gdGhhdCBub2RlL2RldmljZS4gSWYgeW91IGhhZCAyIGluc3RhbmNlcyBvZiBhIGRldmlj
+ZSB3aXRoIGEgCnNoYXJlZCBPUFAgdGFibGUgZm9yIHRoZSAyIGluc3RhbmNlcywgdGhlbiB5b3Ug
+YXJlIGdvaW5nIHRvIGhhdmUgdG8gCm1ha2UgdGhlIG5hbWVzIHVuaXF1ZS4gU2Vjb25kLCBob3cg
+ZXhhY3RseSB3b3VsZCBoYXZpbmcgbXVsdGlwbGUgYi93IAplbnRyaWVzIHdvcms/IEEgZ2l2ZW4g
+T1BQIGZyZXF1ZW5jeSBzdXBwb3J0cyB0aGUgc3VtIG9mIHRoZSBiL3cgZW50cmllcz8gCldoYXQg
+aWYgc29tZSBkZXZpY2VzIGZvciBiL3cgZW50cmllcyBhcmVuJ3QgY3VycmVudGx5IGFjdGl2ZT8K
+ClRoaXMgYWxzbyBzZWVtcyBsaWtlIGEgbWl4dHVyZSBvZiB1c2luZyBPUFAgdGFibGUgZm9yIHNl
+dHRpbmcgR1BVJ3MgCmJhbmR3aWR0aC9mcmVxIGFuZCB0aGVuIHRoZSBpbnRlcmNvbm5lY3QgYmlu
+ZGluZyB0byBzZXQgdGhlIAppbnRlcmNvbm5lY3QncyBiYW5kd2lkdGguIFBlcmhhcHMgd2UgbmVl
+ZCBhIG1vcmUgdW5pZmllZCBhcHByb2FjaC4gTm90IApzdXJlIHdoYXQgdGhhdCB3b3VsZCBsb29r
+IGxpa2UgdGhvdWdoLgoKUm9iCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNr
+dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Zy
+ZWVkcmVubwo=
