@@ -1,91 +1,156 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v3 2/4] power: supply: core: Introduce properties to
- present the battery OCV capacity table
-Date: Sun, 14 Oct 2018 14:53:19 +0800
-Message-ID: <CAMz4kuKo0jZ8YS7zx-t8hESedTYb094VLzdzNOpQd04M3kE4Dw@mail.gmail.com>
-References: <2787f18a0366576959557d05112a069dca982269.1538033078.git.baolin.wang@linaro.org>
- <7dccec1694a05a524710e59a63859974b4cdae89.1538033078.git.baolin.wang@linaro.org>
- <20181012143530.GA28145@bogus>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH] thermal: qoriq: add multiple sensors support
+Date: Mon, 15 Oct 2018 01:41:15 +0000
+Message-ID: <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+References: <20180927024204.17314-1-andy.tang@nxp.com>
+ <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181012143530.GA28145@bogus>
+In-Reply-To: <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
-
-On 12 October 2018 at 22:35, Rob Herring <robh@kernel.org> wrote:
-> On Thu, Sep 27, 2018 at 03:26:55PM +0800, Baolin Wang wrote:
->> Some battery driver will use the open circuit voltage (OCV) value to look
->> up the corresponding battery capacity percent in one certain degree Celsius.
->> Thus this patch provides some battery properties to present the OCV table
->> temperatures and OCV capacity table values. Moreover it also provides some
->> helper functions to use the OCV capacity table for users.
->>
->> Suggested-by: Sebastian Reichel <sre@kernel.org>
->> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
->> ---
->> Changes from v2:
->>  - Use type __be32 to calculate the table length.
->>  - Update error messages.
->>  - Add some helper functions.
->>
->> Changes from v1:
->>  - New patch in v2.
->> ---
->>  .../devicetree/bindings/power/supply/battery.txt   |   14 +++
->
-> Please split binding patches.
-
-Sure.
-
->
->>  drivers/power/supply/power_supply_core.c           |  125 +++++++++++++++++++-
->>  include/linux/power_supply.h                       |   19 +++
->>  3 files changed, 157 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> index 938d027..cad38df 100644
->> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -23,6 +23,16 @@ Optional Properties:
->>   - constant-charge-current-max-microamp: maximum constant input current
->>   - constant-charge-voltage-max-microvolt: maximum constant input voltage
->>   - factory-internal-resistance-micro-ohms: battery factory internal resistance
->> + - ocv-capacity-table-0: An array providing the battery capacity percent
->> +   with corresponding open circuit voltage (OCV) of the battery, which
->> +   is used to look up battery capacity according to current OCV value.
->> + - ocv-capacity-table-1: Same as ocv-capacity-table-0
->> + ......
->> + - ocv-capacity-table-n: Same as ocv-capacity-table-0
->
-> So it is tubles of (percent, voltage)? What's the units for voltage?
-
-Yes. The units for voltage is microvolt, and I will add some words to
-make it clear in next version.
-
->
-> What determines the # of entries for each table? Do all tables have the
-> same number of entries?
-
-Not same, that depends on the battery drivers' requirement.
-
->> + - ocv-capacity-table-temperatures: An array containing the temperature
->> +   in degree Celsius, for each of the battery capacity lookup table.
->> +   The first temperature value specifies the OCV table 0, and the second
->> +   temperature value specifies the OCV table 1, and so on.
->
-> This should have unit suffix. Perhaps just "ocv-capacity-celsius" to
-> avoid being too long.
-
-I am fine with this. Thanks for your comments.
-
-Sebastian and Linusw, what do you think about Rob's suggestion? Thanks.
-
--- 
-Baolin Wang
-Best Regards
+VGhhbmtzIERhbmllbCwNCg0KUGxlYXNlIHNlZSBteSByZXBseSBpbmxpbmUuDQoNCj4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpj
+YW5vQGxpbmFyby5vcmc+DQo+IFNlbnQ6IDIwMTjlubQxMOaciDE05pelIDQ6NDMNCj4gVG86IEFu
+ZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+OyBydWkuemhhbmdAaW50ZWwuY29tDQo+IENjOiBl
+ZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gdGhlcm1hbDogcW9y
+aXE6IGFkZCBtdWx0aXBsZSBzZW5zb3JzIHN1cHBvcnQNCj4gDQo+IA0KPiBIaSBZdWFudGlhbiwN
+Cj4gDQo+IA0KPiBPbiAyNy8wOS8yMDE4IDA0OjQyLCBhbmR5LnRhbmdAbnhwLmNvbSB3cm90ZToN
+Cj4gPiBGcm9tOiBZdWFudGlhbiBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT4NCj4gPg0KPiA+IFRo
+ZXJlIGlzIG9ubHkgb25lIHNlbnNvciBzdXBwb3J0ZWQgaW4gY3VycmVudCBkcml2ZXIuDQo+ID4g
+TXVsdGlwbGUgc2Vuc29ycyBhcmUgZXhpc3Rpbmcgb24gTGF5c2NhcGUgc29jcy4gVG8gc3VwcG9y
+dCB0aGVtLA0KPiA+IGNvdmVydCB0aGlzIGRyaXZlciB0byBzdXBwb3J0IG11bHRpcGxlIHNlbnNv
+cnMuDQo+IA0KPiBzL2NvdmVydC9jb252ZXJ0Lw0KPiANCj4gV2hhdCBhYm91dCB0aGUgZm9sbG93
+aW5nIGNoYW5nZWxvZyA/DQo+IA0KPiAiDQo+IFRoZSBRb3JJUSBMYXllcnNjYXBlIFNvQyBoYXMg
+c2V2ZXJhbCB0aGVybWFsIHNlbnNvcnMgYnV0IHRoZSBjdXJyZW50DQo+IGRyaXZlciBvbmx5IHN1
+cHBvcnRzIG9uZS4NCj4gDQo+IE1hc3NhZ2UgdGhlIGNvZGUgdG8gYmUgc2Vuc29yIG9yaWVudGVk
+IGFuZCBhbGxvdyB0aGUgc3VwcG9ydCBmb3INCj4gbXVsdGlwbGUgc2Vuc29ycy4NCj4gIg0KW0Fu
+ZHldICBUaGFua3MsIHdpbGwgdXBkYXRlDQoNCj4gDQo+ID4gU2lnbmVkLW9mZi1ieTogVGFuZyBZ
+dWFudGlhbiA8YW5keS50YW5nQG54cC5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvdGhlcm1h
+bC9xb3JpcV90aGVybWFsLmMgfCAgMTE3DQo+ID4gKysrKysrKysrKysrKysrKysrKysrKystLS0t
+LS0tLS0tLS0tLS0tDQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgNzAgaW5zZXJ0aW9ucygrKSwgNDcg
+ZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3Fvcmlx
+X3RoZXJtYWwuYw0KPiA+IGIvZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYyBpbmRleCBj
+ODY2Y2MxLi43YzFlODhhIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90
+aGVybWFsLmMNCj4gPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jDQo+ID4g
+QEAgLTY5LDE0ICs2OSwyMSBAQCBzdHJ1Y3QgcW9yaXFfdG11X3JlZ3Mgew0KPiA+ICAJdTMyIHR0
+cjNjcjsJCS8qIFRlbXBlcmF0dXJlIFJhbmdlIDMgQ29udHJvbCBSZWdpc3RlciAqLw0KPiA+ICB9
+Ow0KPiA+DQo+ID4gK3N0cnVjdCBxb3JpcV90bXVfZGF0YTsNCj4gPiArDQo+ID4gIC8qDQo+ID4g
+ICAqIFRoZXJtYWwgem9uZSBkYXRhDQo+ID4gICAqLw0KPiA+ICtzdHJ1Y3QgcW9yaXFfc2Vuc29y
+IHsNCj4gPiArCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlCSp0emQ7DQo+ID4gKwlzdHJ1Y3Qg
+cW9yaXFfdG11X2RhdGEJCSpxZGF0YTsNCj4gPiArCWludAkJCQlpZDsNCj4gPiArfTsNCj4gDQo+
+IENhbiB5b3UgbW92ZSB0aGUgcW9yaXFfdG11X3NpdGVfcmVncyBzdHJ1Y3R1cmUgY29udGVudCBp
+bnNpZGUgdGhlDQo+IHFvcmlxX3NlbnNvciBzdHJ1Y3R1cmUgYW5kIGtpbGwgdGhlICdzaXRlcycg
+ZmllbGQgaW4gdGhlIHFvcmlxX3RtdV9yZWdzDQo+IHN0cnVjdHVyZSA/IE90aGVyd2lzZSB3ZSBl
+bmQgdXAgd2l0aCBhIFNJVEVTX01BWCBhcnJheSBpbiB0aGUNCj4gcW9yaXFfdG11X2RhdGEgc3Ry
+dWN0dXJlIGFuZCBhbm90aGVyIG9uZSBpbiB0aGUgcW9yaXFfdG11X3JlZ3MNCj4gc3RydWN0dXJl
+Lg0KW0FuZHldIEkgYW0gYWZyYWlkIEkgY2FuJ3QuDQpxb3JpcV90bXVfc2l0ZV9yZWdzIHN0cnVj
+dHVyZSBpcyB0byBkZWZpbmUgdGhlIHJlZ2lzdGVycy4gQWZ0ZXIgaW9tYXAsIFRNVSBjYW4gYmUg
+YWNjZXNzZWQuDQpxb3JpcV9zZW5zb3Igc3RydWN0dXJlIGlzIHVzZWQgZm9yIGVhY2ggc2Vuc29y
+LiBJdCBET05PVCBpbmNsdWRlIHRoZSByZWdpc3RlciBkZWZpbmVzLg0KcW9yaXFfdG11X2RhdGEg
+c3RydWN0dXJlIGlzIHVzZWQgZm9yIGdsb2JhbCBUTVUgZGF0ZS4NClNvIHRoZXJlIGlzIG5vIGFu
+eSBkdXBsaWNhdGVkIG9yIHJlZHVuZGFudCBkYXRhIGhlcmUuDQoNCj4gPiAtCWlmIChzZW5zb3Jf
+c3BlY3MuYXJnc19jb3VudCA+PSAxKSB7DQo+ID4gLQkJaWQgPSBzZW5zb3Jfc3BlY3MuYXJnc1sw
+XTsNCj4gPiAtCQlXQVJOKHNlbnNvcl9zcGVjcy5hcmdzX2NvdW50ID4gMSwNCj4gPiAtCQkJCSIl
+czogdG9vIG1hbnkgY2VsbHMgaW4gc2Vuc29yIHNwZWNpZmllciAlZFxuIiwNCj4gPiAtCQkJCXNl
+bnNvcl9zcGVjcy5ucC0+bmFtZSwgc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQpOw0KPiA+IC0JfSBl
+bHNlIHsNCj4gPiAtCQlpZCA9IDA7DQo+ID4gKwkJaWYgKGlkID4gU0lURVNfTUFYKQ0KPiA+ICsJ
+CQlyZXR1cm4gLUVJTlZBTDsNCj4gPiArDQo+ID4gKwkJcWRhdGEtPnNlbnNvcltpZF0gPSBkZXZt
+X2t6YWxsb2MoJnBkZXYtPmRldiwNCj4gPiArCQkJCXNpemVvZihzdHJ1Y3QgcW9yaXFfc2Vuc29y
+KSwgR0ZQX0tFUk5FTCk7DQo+ID4gKwkJaWYgKCFxZGF0YS0+c2Vuc29yW2lkXSkNCj4gPiArCQkJ
+cmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT5pZCA9IGlk
+Ow0KPiA+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT5xZGF0YSA9IHFkYXRhOw0KPiA+ICsNCj4gPiAr
+CQlxZGF0YS0+c2Vuc29yW2lkXS0+dHpkID0NCj4gZGV2bV90aGVybWFsX3pvbmVfb2Zfc2Vuc29y
+X3JlZ2lzdGVyKA0KPiA+ICsJCQkJJnBkZXYtPmRldiwgaWQsIHFkYXRhLT5zZW5zb3JbaWRdLCAm
+dG11X3R6X29wcyk7DQo+ID4gKw0KPiA+ICsJCWlmIChJU19FUlIocWRhdGEtPnNlbnNvcltpZF0t
+PnR6ZCkpIHsNCj4gPiArCQkJcmV0ID0gUFRSX0VSUihxZGF0YS0+c2Vuc29yW2lkXS0+dHpkKTsN
+Cj4gPiArCQkJZGV2X2VycigmcGRldi0+ZGV2LA0KPiA+ICsJCQkJIkZhaWxlZCB0byByZWdpc3Rl
+ciB0aGVybWFsIHpvbmUgZGV2aWNlLlxuIik7DQo+ID4gKwkJCXJldHVybiAtRU5PREVWOw0KPiA+
+ICsJCX0NCj4gPiArDQo+ID4gKwkJc2l0ZXMgfD0gMHgxIDw8ICgxNSAtIGlkKTsNCj4gDQo+IFRo
+ZSBjdXJyZW50IGNvZGUgaXMgcmVhZGluZyB0aGUgRFQgaW4gb3JkZXIgdG8gZ2V0IHRoZSBzZW5z
+b3IgaWQgYW5kDQo+IGluaXRpYWxpemUgaXQuIElPVywgdGhlIERUIGdpdmVzIHRoZSBzZW5zb3Jz
+IHRvIHVzZS4NCj4gDQo+IElNTywgaXQgd291bGQgYmUgbW9yZSBzZWxmIGNvbnRhaW5lZCBpZiB0
+aGUgZHJpdmVyIGluaXRpYWxpemVzIGFsbCB0aGUgc2Vuc29ycw0KPiB3aXRob3V0IHRha2luZyBj
+YXJlIG9mIHRoZSBEVCBhbmQgbGV0IHRoZSBvZi0gY29kZSB0byBkbyB0aGUgYmluZGluZyB3aGVu
+DQo+IHRoZSB0aGVybWFsIHpvbmUsIG5vID8NCltBbmR5XSBjb3VsZCB5b3UgcGxlYXNlIGV4cGxh
+aW4gbW9yZSBhYm91dCB0aGlzIHdheT8gSSBhbSBub3Qgc3VyZSBob3cgdG8gaW1wbGVtZW50IGl0
+Lg0KQnV0IG9uZSB0aGluZyBpcyBmb3Igc3VyZTogd2UgbXVzdCBnZXQgdGhlIHNlbnNvciBJRHMg
+ZXhwbGljaXRseSBzbyB0aGF0IHdlIGNhbiBlbmFibGUgdGhlbSBieQ0KdGhlIGZvbGxvd2luZyBj
+b21tYW5kOiAgdG11X3dyaXRlKHFkYXRhLCBzaXRlcyB8IFRNUl9NRSB8IFRNUl9BTFBGLCAmcWRh
+dGEtPnJlZ3MtPnRtcik7DQoNCkJSLA0KQW5keSAgDQoNCj4gDQo+ID4gIAl9DQo+ID4NCj4gPiAt
+CW9mX25vZGVfcHV0KG5wKTsNCj4gPiAtCW9mX25vZGVfcHV0KHNlbnNvcl9ucCk7DQo+ID4gKwkv
+KiBFbmFibGUgbW9uaXRvcmluZyAqLw0KPiA+ICsJaWYgKHNpdGVzICE9IDApDQo+ID4gKwkJdG11
+X3dyaXRlKHFkYXRhLCBzaXRlcyB8IFRNUl9NRSB8IFRNUl9BTFBGLA0KPiAmcWRhdGEtPnJlZ3Mt
+PnRtcik7DQo+ID4NCj4gPiAtCXJldHVybiBpZDsNCj4gPiArCXJldHVybiAwOw0KPiA+ICB9DQo+
+ID4NCj4gPiAgc3RhdGljIGludCBxb3JpcV90bXVfY2FsaWJyYXRpb24oc3RydWN0IHBsYXRmb3Jt
+X2RldmljZSAqcGRldikgQEANCj4gPiAtMTg4LDE2ICsyMzAsMTEgQEAgc3RhdGljIHZvaWQgcW9y
+aXFfdG11X2luaXRfZGV2aWNlKHN0cnVjdA0KPiBxb3JpcV90bXVfZGF0YSAqZGF0YSkNCj4gPiAg
+CXRtdV93cml0ZShkYXRhLCBUTVJfRElTQUJMRSwgJmRhdGEtPnJlZ3MtPnRtcik7ICB9DQo+ID4N
+Cj4gPiAtc3RhdGljIGNvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfb2ZfZGV2aWNlX29wcyB0bXVf
+dHpfb3BzID0gew0KPiA+IC0JLmdldF90ZW1wID0gdG11X2dldF90ZW1wLA0KPiA+IC19Ow0KPiA+
+IC0NCj4gPiAgc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rldmlj
+ZSAqcGRldikgIHsNCj4gPiAgCWludCByZXQ7DQo+ID4gIAlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEg
+KmRhdGE7DQo+ID4gIAlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wID0gcGRldi0+ZGV2Lm9mX25vZGU7
+DQo+ID4gLQl1MzIgc2l0ZSA9IDA7DQo+ID4NCj4gPiAgCWlmICghbnApIHsNCj4gPiAgCQlkZXZf
+ZXJyKCZwZGV2LT5kZXYsICJEZXZpY2UgT0YtTm9kZSBpcyBOVUxMIik7IEBAIC0yMTMsMTMNCj4g
+KzI1MCw2IEBADQo+ID4gc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3RydWN0IHBsYXRmb3Jt
+X2RldmljZSAqcGRldikNCj4gPg0KPiA+ICAJZGF0YS0+bGl0dGxlX2VuZGlhbiA9IG9mX3Byb3Bl
+cnR5X3JlYWRfYm9vbChucCwgImxpdHRsZS1lbmRpYW4iKTsNCj4gPg0KPiA+IC0JZGF0YS0+c2Vu
+c29yX2lkID0gcW9yaXFfdG11X2dldF9zZW5zb3JfaWQoKTsNCj4gPiAtCWlmIChkYXRhLT5zZW5z
+b3JfaWQgPCAwKSB7DQo+ID4gLQkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIGdldCBz
+ZW5zb3IgaWRcbiIpOw0KPiA+IC0JCXJldCA9IC1FTk9ERVY7DQo+ID4gLQkJZ290byBlcnJfaW9t
+YXA7DQo+ID4gLQl9DQo+ID4gLQ0KPiA+ICAJZGF0YS0+cmVncyA9IG9mX2lvbWFwKG5wLCAwKTsN
+Cj4gPiAgCWlmICghZGF0YS0+cmVncykgew0KPiA+ICAJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZh
+aWxlZCB0byBnZXQgbWVtb3J5IHJlZ2lvblxuIik7IEBADQo+IC0yMzMsMTgNCj4gPiArMjYzLDEz
+IEBAIHN0YXRpYyBpbnQgcW9yaXFfdG11X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
+ZXYpDQo+ID4gIAlpZiAocmV0IDwgMCkNCj4gPiAgCQlnb3RvIGVycl90bXU7DQo+ID4NCj4gPiAt
+CWRhdGEtPnR6ID0gdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlcigmcGRldi0+ZGV2LA0K
+PiBkYXRhLT5zZW5zb3JfaWQsDQo+ID4gLQkJCQlkYXRhLCAmdG11X3R6X29wcyk7DQo+ID4gLQlp
+ZiAoSVNfRVJSKGRhdGEtPnR6KSkgew0KPiA+IC0JCXJldCA9IFBUUl9FUlIoZGF0YS0+dHopOw0K
+PiA+IC0JCWRldl9lcnIoJnBkZXYtPmRldiwNCj4gPiAtCQkJIkZhaWxlZCB0byByZWdpc3RlciB0
+aGVybWFsIHpvbmUgZGV2aWNlICVkXG4iLCByZXQpOw0KPiA+IC0JCWdvdG8gZXJyX3RtdTsNCj4g
+PiArCXJldCA9IHFvcmlxX3RtdV9yZWdpc3Rlcl90bXVfem9uZShwZGV2KTsNCj4gPiArCWlmIChy
+ZXQgPCAwKSB7DQo+ID4gKwkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIHJlZ2lzdGVy
+IHNlbnNvcnNcbiIpOw0KPiA+ICsJCXJldCA9IC1FTk9ERVY7DQo+ID4gKwkJZ290byBlcnJfaW9t
+YXA7DQo+ID4gIAl9DQo+ID4NCj4gPiAtCS8qIEVuYWJsZSBtb25pdG9yaW5nICovDQo+ID4gLQlz
+aXRlIHw9IDB4MSA8PCAoMTUgLSBkYXRhLT5zZW5zb3JfaWQpOw0KPiA+IC0JdG11X3dyaXRlKGRh
+dGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwgJmRhdGEtPnJlZ3MtPnRtcik7DQo+ID4NCj4g
+PiAgCXJldHVybiAwOw0KPiA+DQo+ID4gQEAgLTI2MSw4ICsyODYsNiBAQCBzdGF0aWMgaW50IHFv
+cmlxX3RtdV9yZW1vdmUoc3RydWN0DQo+IHBsYXRmb3JtX2RldmljZQ0KPiA+ICpwZGV2KSAgew0K
+PiA+ICAJc3RydWN0IHFvcmlxX3RtdV9kYXRhICpkYXRhID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEo
+cGRldik7DQo+ID4NCj4gPiAtCXRoZXJtYWxfem9uZV9vZl9zZW5zb3JfdW5yZWdpc3RlcigmcGRl
+di0+ZGV2LCBkYXRhLT50eik7DQo+ID4gLQ0KPiA+ICAJLyogRGlzYWJsZSBtb25pdG9yaW5nICov
+DQo+ID4gIAl0bXVfd3JpdGUoZGF0YSwgVE1SX0RJU0FCTEUsICZkYXRhLT5yZWdzLT50bXIpOw0K
+PiA+DQo+ID4NCj4gDQo+IA0KPiAtLQ0KPiANCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5w
+cm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRg0KPiB3d3cubGluYXJvLm9y
+ZyUyRiZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50YW5nJTQwbnhwLmNvbSU3QzgwDQo+IGIyMzcx
+YzcyMWI0ZDBkMzM0OTA4ZDYzMTRjNmI0ZCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzUNCj4g
+YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzUwNjAxNjI0OTMwNTgxJmFtcDtzZGF0YT13YmhSc2RBWWRh
+aQ0KPiA1UnFnVzFBSVBBbjJXbHM5czc4MkUxJTJCJTJCSlNjdVgzVk0lM0QmYW1wO3Jlc2VydmVk
+PTA+DQo+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0K
+PiANCj4gRm9sbG93IExpbmFybzoNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0
+aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRg0KPiB3d3cuZmFjZWJvb2suY29tJTJG
+cGFnZXMlMkZMaW5hcm8mYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuDQo+IGclNDBueHAuY29t
+JTdDODBiMjM3MWM3MjFiNGQwZDMzNDkwOGQ2MzE0YzZiNGQlN0M2ODZlYTFkMw0KPiBiYzJiNGM2
+ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc1MDYwMTYyNDkzMDU4MSZhbXANCj4gO3Nk
+YXRhPWVxWThUJTJGQ1dFeFVXWWpSeCUyRnVtOHRUWWNtOG5VaVNNVXRJcWZNVzRLY0ZNJTNEDQo+
+ICZhbXA7cmVzZXJ2ZWQ9MD4gRmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtz
+LnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGdA0KPiB3aXR0ZXIuY29t
+JTJGJTIzISUyRmxpbmFyb29yZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50YW5nJTQwbg0KPiB4
+cC5jb20lN0M4MGIyMzcxYzcyMWI0ZDBkMzM0OTA4ZDYzMTRjNmI0ZCU3QzY4NmVhMWQzYmMyYjRj
+DQo+IDZmYTkyY2Q5OWM1YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzUwNjAxNjI0OTMwNTgxJmFtcDtz
+ZGF0YT0NCj4gVmlqNEVCQWdNUHRWNEtCRHI1aFQxZk1henhpU3M5bmFTZ0g0b0FHVUZCYyUzRCZh
+bXA7cmVzZXJ2ZWQ9DQo+IDA+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtz
+LnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGDQo+IHd3dy5saW5hcm8u
+b3JnJTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MA0KPiBu
+eHAuY29tJTdDODBiMjM3MWM3MjFiNGQwZDMzNDkwOGQ2MzE0YzZiNGQlN0M2ODZlYTFkM2JjMmIN
+Cj4gNGM2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc1MDYwMTYyNDkzMDU4MSZhbXA7
+c2RhdA0KPiBhPVVvdXElMkJSWXlNcTVFNk1nZkJ3YmlRM1lyVVlDdk1iNFBWWUhhMEZ2NnUwOCUz
+RCZhbXA7cmUNCj4gc2VydmVkPTA+IEJsb2cNCg0K
