@@ -1,72 +1,68 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v3 3/3] Documentation: intel_pstate: Add base_frequency
- information
-Date: Mon, 15 Oct 2018 08:49:24 -0700
-Message-ID: <c89ff15144f0c24187f82db088622d6c8aebd7d7.camel@linux.intel.com>
-References: <20181012164400.3479-1-srinivas.pandruvada@linux.intel.com>
-         <20181012164400.3479-4-srinivas.pandruvada@linux.intel.com>
-         <CAJZ5v0iXOtcNSqPU7NYwG=S_JCdoTFzLRD1qZocWMnFnVJ-oMQ@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 08/14] ARM64: dts: hisilicon: Add tsensor interrupt name
+Date: Mon, 15 Oct 2018 11:28:35 -0500
+Message-ID: <20181015162835.GA20955@bogus>
+References: <1537866192-12320-1-git-send-email-daniel.lezcano@linaro.org>
+ <1537866192-12320-9-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iXOtcNSqPU7NYwG=S_JCdoTFzLRD1qZocWMnFnVJ-oMQ@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1537866192-12320-9-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, Juri Lelli <juri.lelli@redhat.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, devel@acpica.org, Prashanth Prakash <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, leo.yan@linaro.org, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Wei Xu <xuwei5@hisilicon.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "moderated list:ARM/HISILICON SOC SUPPORT" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-10-15 at 10:53 +0200, Rafael J. Wysocki wrote:
-> On Fri, Oct 12, 2018 at 6:44 PM Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > 
-> > Updated documentation to explain base_frequency attribute.
-> > 
-> > Signed-off-by: Srinivas Pandruvada <
-> > srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  Documentation/admin-guide/pm/intel_pstate.rst | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/Documentation/admin-guide/pm/intel_pstate.rst
-> > b/Documentation/admin-guide/pm/intel_pstate.rst
-> > index 8f1d3de449b5..14a5505e073e 100644
-> > --- a/Documentation/admin-guide/pm/intel_pstate.rst
-> > +++ b/Documentation/admin-guide/pm/intel_pstate.rst
-> > @@ -465,6 +465,10 @@ Next, the following policy attributes have
-> > special meaning if
-> >         policy for the time interval between the last two
-> > invocations of the
-> >         driver's utilization update callback by the CPU scheduler
-> > for that CPU.
-> > 
-> > +``base_frequency``
-> > +       When present, shows the base frequency of the CPU. Any
-> > frequency above
-> > +       this will be in the turbo frequency range.
-> > +
+On Tue, Sep 25, 2018 at 11:03:06AM +0200, Daniel Lezcano wrote:
+> Add the interrupt names for the sensors, so the code can rely on them
+> instead of dealing with index which are prone to error.
 > 
-> This isn't entirely correct, because base_frequency is not present in
-> the passive mode (and it is not present for the other drivers for
-> that
-> matter).
-That's why it said, "when present". This keeps door open to add to
-other modes too in future if needed.
+> The name comes from the Hisilicon documentation found on internet.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  .../bindings/thermal/hisilicon-thermal.txt         |  3 ++
+>  arch/arm64/boot/dts/hisilicon/hi3660.dtsi          | 63 +++++++++++-----------
+>  arch/arm64/boot/dts/hisilicon/hi6220.dtsi          |  1 +
+>  3 files changed, 36 insertions(+), 31 deletions(-)
 
-Thanks,
-Srinivas
+Lots of whitespace errors reported by checkpatch.pl.
 
 > 
-> >  The meaning of these attributes in the `passive mode <Passive
-> > Mode_>`_ is the
-> >  same as for other scaling drivers.
-> 
-> Instead, I would say:
-> 
-> "One more policy attribute is present if the `HWP feature is enabled
-> in the processor <Active Mode With HWP_>`_:"
-> 
-> here and I would add the description of the attribute below.
-> 
-> Thanks,
-> Rafael
+> diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> index cef716a..3edfae3 100644
+> --- a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> @@ -7,6 +7,7 @@
+>    region.
+>  - interrupt: The interrupt number to the cpu. Defines the interrupt used
+>    by /SOCTHERM/tsensor.
+> +- interrupt-names: The interrupt names for the different sensors
+
+Need to define what the names are.
+
+>  - clock-names: Input clock name, should be 'thermal_clk'.
+>  - clocks: phandles for clock specified in "clock-names" property.
+>  - #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
+> @@ -18,6 +19,7 @@ for Hi6220:
+>  		compatible = "hisilicon,tsensor";
+>  		reg = <0x0 0xf7030700 0x0 0x1000>;
+>  		interrupts = <0 7 0x4>;
+> +		interrupt-names = "tsensor_intr";
+
+That name seems pretty pointless.
+
+>  		clocks = <&sys_ctrl HI6220_TSENSOR_CLK>;
+>  		clock-names = "thermal_clk";
+>  		#thermal-sensor-cells = <1>;
+> @@ -28,5 +30,6 @@ for Hi3660:
+>  		compatible = "hisilicon,hi3660-tsensor";
+>  		reg = <0x0 0xfff30000 0x0 0x1000>;
+>  		interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
+> +		interrupt-names = "tsensor_a73";
+
+Just 'a73' is sufficient.
+
+>  		#thermal-sensor-cells = <1>;
+>  	};
