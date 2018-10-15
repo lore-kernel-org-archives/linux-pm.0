@@ -1,184 +1,61 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
-Date: Mon, 15 Oct 2018 10:55:38 +0200
-Message-ID: <cf157e9f-a4cb-6d7d-f51d-8b9d91f3335c@linaro.org>
-References: <20180927024204.17314-1-andy.tang@nxp.com>
- <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
- <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Subject: Re: [PATCH 6/8] drm: sti: don't pass GFP_DMA32 to dma_alloc_wc
+Date: Mon, 15 Oct 2018 11:12:40 +0200
+Message-ID: <CA+M3ks66FL-F8dk+UcG-gR8Gz4N6gz7eYuT_Ht_scw7foPaP0A@mail.gmail.com>
+References: <20181013151707.32210-1-hch@lst.de> <20181013151707.32210-7-hch@lst.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-Content-Language: en-US
+In-Reply-To: <20181013151707.32210-7-hch@lst.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, alsa-devel@alsa-project.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15/10/2018 03:41, Andy Tang wrote:
-> Thanks Daniel,
-> 
-> Please see my reply inline.
-> 
->> -----Original Message-----
->> From: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Sent: 2018年10月14日 4:43
->> To: Andy Tang <andy.tang@nxp.com>; rui.zhang@intel.com
->> Cc: edubezval@gmail.com; linux-pm@vger.kernel.org;
->> linux-kernel@vger.kernel.org
->> Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
->>
->>
->> Hi Yuantian,
->>
->>
->> On 27/09/2018 04:42, andy.tang@nxp.com wrote:
->>> From: Yuantian Tang <andy.tang@nxp.com>
->>>
->>> There is only one sensor supported in current driver.
->>> Multiple sensors are existing on Layscape socs. To support them,
->>> covert this driver to support multiple sensors.
->>
->> s/covert/convert/
->>
->> What about the following changelog ?
->>
->> "
->> The QorIQ Layerscape SoC has several thermal sensors but the current
->> driver only supports one.
->>
->> Massage the code to be sensor oriented and allow the support for
->> multiple sensors.
->> "
-> [Andy]  Thanks, will update
-> 
->>
->>> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
->>> ---
->>>  drivers/thermal/qoriq_thermal.c |  117
->>> +++++++++++++++++++++++----------------
->>>  1 files changed, 70 insertions(+), 47 deletions(-)
->>>
->>> diff --git a/drivers/thermal/qoriq_thermal.c
->>> b/drivers/thermal/qoriq_thermal.c index c866cc1..7c1e88a 100644
->>> --- a/drivers/thermal/qoriq_thermal.c
->>> +++ b/drivers/thermal/qoriq_thermal.c
->>> @@ -69,14 +69,21 @@ struct qoriq_tmu_regs {
->>>  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
->>>  };
->>>
->>> +struct qoriq_tmu_data;
->>> +
->>>  /*
->>>   * Thermal zone data
->>>   */
->>> +struct qoriq_sensor {
->>> +	struct thermal_zone_device	*tzd;
->>> +	struct qoriq_tmu_data		*qdata;
->>> +	int				id;
->>> +};
->>
->> Can you move the qoriq_tmu_site_regs structure content inside the
->> qoriq_sensor structure and kill the 'sites' field in the qoriq_tmu_regs
->> structure ? Otherwise we end up with a SITES_MAX array in the
->> qoriq_tmu_data structure and another one in the qoriq_tmu_regs
->> structure.
-> [Andy] I am afraid I can't.
-> qoriq_tmu_site_regs structure is to define the registers. After iomap, TMU can be accessed.
-> qoriq_sensor structure is used for each sensor. It DONOT include the register defines.
-> qoriq_tmu_data structure is used for global TMU date.
-> So there is no any duplicated or redundant data here.
+Le sam. 13 oct. 2018 =C3=A0 17:17, Christoph Hellwig <hch@lst.de> a =C3=A9c=
+rit :
+>
+> The DMA API does its own zone decisions based on the coherent_dma_mask.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-It is not about duplicate but just code reorg.
+Reviewed-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
 
-This patch changes the structure as:
-
-struct qoriq_tmu_data {
--	struct thermal_zone_device *tz;
- 	struct qoriq_tmu_regs __iomem *regs;
--	int sensor_id;
- 	bool little_endian;
-+	struct qoriq_sensor	*sensor[SITES_MAX];
- };
-
-
-So we have:
-
-struct qoriq_tmu_data
-  => struct qoriq_sensor[SITES_MAX]
-  => struct qoriq_tmu_regs
-     => struct qoriq_tmu_site_regs[SITES_MAX]
-
-I'm proposing to move struct qoriq_tmu_site_regs inside the struct
-qoriq_sensor.
-
-
-We end up with:
-
-struct qoriq_sensor {
-   struct thermal_zone_device *tzd;
-   struct struct qoriq_tmu_site_regs *regs;
-   struct qoriq_tmu_data *qdata;
-   int id;
-};
-
-
->>> -	if (sensor_specs.args_count >= 1) {
->>> -		id = sensor_specs.args[0];
->>> -		WARN(sensor_specs.args_count > 1,
->>> -				"%s: too many cells in sensor specifier %d\n",
->>> -				sensor_specs.np->name, sensor_specs.args_count);
->>> -	} else {
->>> -		id = 0;
->>> +		if (id > SITES_MAX)
->>> +			return -EINVAL;
->>> +
->>> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
->>> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
->>> +		if (!qdata->sensor[id])
->>> +			return -ENOMEM;
->>> +
->>> +		qdata->sensor[id]->id = id;
->>> +		qdata->sensor[id]->qdata = qdata;
->>> +
->>> +		qdata->sensor[id]->tzd =
->> devm_thermal_zone_of_sensor_register(
->>> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
->>> +
->>> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
->>> +			ret = PTR_ERR(qdata->sensor[id]->tzd);
->>> +			dev_err(&pdev->dev,
->>> +				"Failed to register thermal zone device.\n");
->>> +			return -ENODEV;
->>> +		}
->>> +
->>> +		sites |= 0x1 << (15 - id);
->>
->> The current code is reading the DT in order to get the sensor id and
->> initialize it. IOW, the DT gives the sensors to use.
->>
->> IMO, it would be more self contained if the driver initializes all the sensors
->> without taking care of the DT and let the of- code to do the binding when
->> the thermal zone, no ?
-> [Andy] could you please explain more about this way? I am not sure how to implement it.
-> But one thing is for sure: we must get the sensor IDs explicitly so that we can enable them by
-> the following command:  tmu_write(qdata, sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
-
-What I meant is about code separation between the driver itself and the
-of-thermal code.
-
-The code above re-inspect the DT to find out the sensor ids in order to
-enable them and somehow this is not wrong but breaks the self
-encapsulation of the driver. I was suggesting if it isn't possible to
-enable all the sensors without taking care of digging into the DT.
+> ---
+>  drivers/gpu/drm/sti/sti_gdp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/gpu/drm/sti/sti_gdp.c b/drivers/gpu/drm/sti/sti_gdp.=
+c
+> index c32de6cbf061..cdf0a1396e00 100644
+> --- a/drivers/gpu/drm/sti/sti_gdp.c
+> +++ b/drivers/gpu/drm/sti/sti_gdp.c
+> @@ -517,7 +517,7 @@ static void sti_gdp_init(struct sti_gdp *gdp)
+>         /* Allocate all the nodes within a single memory page */
+>         size =3D sizeof(struct sti_gdp_node) *
+>             GDP_NODE_PER_FIELD * GDP_NODE_NB_BANK;
+> -       base =3D dma_alloc_wc(gdp->dev, size, &dma_addr, GFP_KERNEL | GFP=
+_DMA);
+> +       base =3D dma_alloc_wc(gdp->dev, size, &dma_addr, GFP_KERNEL);
+>
+>         if (!base) {
+>                 DRM_ERROR("Failed to allocate memory for GDP node\n");
+> --
+> 2.19.1
+>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
 
 
+--=20
+Benjamin Gaignard
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Graphic Study Group
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+
+Follow Linaro: Facebook | Twitter | Blog
