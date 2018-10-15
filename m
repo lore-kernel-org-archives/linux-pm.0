@@ -1,94 +1,72 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 6/9] PM / OPP: dt-bindings: Add
- opp-interconnect-bw
-Date: Mon, 15 Oct 2018 09:12:28 -0600
-Message-ID: <20181015151228.GB4751@jcrouse-lnx.qualcomm.com>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-7-jcrouse@codeaurora.org>
- <20181015143420.GA16932@bogus>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v3 3/3] Documentation: intel_pstate: Add base_frequency
+ information
+Date: Mon, 15 Oct 2018 08:49:24 -0700
+Message-ID: <c89ff15144f0c24187f82db088622d6c8aebd7d7.camel@linux.intel.com>
+References: <20181012164400.3479-1-srinivas.pandruvada@linux.intel.com>
+         <20181012164400.3479-4-srinivas.pandruvada@linux.intel.com>
+         <CAJZ5v0iXOtcNSqPU7NYwG=S_JCdoTFzLRD1qZocWMnFnVJ-oMQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20181015143420.GA16932@bogus>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iXOtcNSqPU7NYwG=S_JCdoTFzLRD1qZocWMnFnVJ-oMQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Robert Moore <robert.moore@intel.com>, "Schmauss, Erik" <erik.schmauss@intel.com>, Juri Lelli <juri.lelli@redhat.com>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, devel@acpica.org, Prashanth Prakash <pprakash@codeaurora.org>, George Cherian <george.cherian@cavium.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBPY3QgMTUsIDIwMTggYXQgMDk6MzQ6MjBBTSAtMDUwMCwgUm9iIEhlcnJpbmcgd3Jv
-dGU6Cj4gT24gTW9uLCBBdWcgMjcsIDIwMTggYXQgMDk6MTE6MDlBTSAtMDYwMCwgSm9yZGFuIENy
-b3VzZSB3cm90ZToKPiA+IEFkZCB0aGUgIm9wcC1pbnRlcmNvbm5lY3QtYnciIHByb3BlcnR5IHRv
-IHNwZWNpZnkgdGhlCj4gPiBhdmVyYWdlIGFuZCBwZWFrIGJhbmR3aWR0aCBmb3IgYW4gaW50ZXJj
-b25uZWN0IHBhdGggZm9yCj4gPiBhIHNwZWNpZmljIG9wZXJhdGluZyBwb3dlciBwb2ludC4gQSBz
-ZXBhcmF0ZSBiYW5kd2lkdGgKPiA+IHBhaXIgY2FuIGJlIHNwZWNpZmllZCBmb3IgZWFjaCBvZiB0
-aGUgaW50ZXJjb25uZWN0cwo+ID4gZGVmaW5lZCBmb3IgdGhlIGRldmljZSBieSBhcHBlbmRpbmcg
-dGhlIGludGVyY29ubmVjdAo+ID4gbmFtZSB0byB0aGUgcHJvcGVydHkuCj4gPiAKPiA+IFNpZ25l
-ZC1vZmYtYnk6IEpvcmRhbiBDcm91c2UgPGpjcm91c2VAY29kZWF1cm9yYS5vcmc+Cj4gPiAtLS0K
-PiA+ICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL29wcC50eHQgfCAzNiAr
-KysrKysrKysrKysrKysrKysrCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDM2IGluc2VydGlvbnMoKykK
-PiA+IAo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9v
-cHAvb3BwLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9vcHAvb3BwLnR4
-dAo+ID4gaW5kZXggYzM5NmM0YzBhZjkyLi5kNzE0YzA4NGYzNmQgMTAwNjQ0Cj4gPiAtLS0gYS9E
-b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL29wcC50eHQKPiA+ICsrKyBiL0Rv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9vcHAvb3BwLnR4dAo+ID4gQEAgLTE3MCw2
-ICsxNzAsMTEgQEAgT3B0aW9uYWwgcHJvcGVydGllczoKPiA+ICAgIGZ1bmN0aW9uaW5nIG9mIHRo
-ZSBjdXJyZW50IGRldmljZSBhdCB0aGUgY3VycmVudCBPUFAgKHdoZXJlIHRoaXMgcHJvcGVydHkg
-aXMKPiA+ICAgIHByZXNlbnQpLgo+ID4gIAo+ID4gKy0gb3BwLWludGVyY29ubmVjdC1idy08bmFt
-ZT46IFRoaXMgaXMgYW4gYXJyYXkgb2YgcGFpcnMgc3BlY2lmeWluZyB0aGUgYXZlcmFnZQo+ID4g
-KyAgYW5kIHBlYWsgYmFuZHdpZHRoIGluIGJ5dGVzIHBlciBzZWNvbmQgZm9yIHRoZSBpbnRlcmNv
-bm5lY3QgcGF0aCBrbm93biBieQo+ID4gKyAgJ25hbWUnLiAgVGhpcyBzaG91bGQgbWF0Y2ggdGhl
-IG5hbWUocykgc3BlY2lmaWVkIGJ5IGludGVyY29ubmVjdC1uYW1lcyBpbiB0aGUKPiA+ICsgIGRl
-dmljZSBkZWZpbml0aW9uLgo+ID4gKwo+IAo+IEkgZG9uJ3QgdGhpbmsgdGhpcyBpcyBnb29kIGRl
-c2lnbiB3aXRoIHRoZSBuYW1lIGRlZmluZWQgaW4gb25lIG5vZGUgYW5kIAo+IHRoZW4gdXNlZCBp
-biB0aGUgT1BQIHRhYmxlLiBGaXJzdCwgJyotbmFtZXMnIGlzIHR5cGljYWxseSB0aGUgYSBuYW1l
-IAo+IGxvY2FsIHRvIHRoYXQgbm9kZS9kZXZpY2UuIElmIHlvdSBoYWQgMiBpbnN0YW5jZXMgb2Yg
-YSBkZXZpY2Ugd2l0aCBhIAo+IHNoYXJlZCBPUFAgdGFibGUgZm9yIHRoZSAyIGluc3RhbmNlcywg
-dGhlbiB5b3UgYXJlIGdvaW5nIHRvIGhhdmUgdG8gCj4gbWFrZSB0aGUgbmFtZXMgdW5pcXVlLiBT
-ZWNvbmQsIGhvdyBleGFjdGx5IHdvdWxkIGhhdmluZyBtdWx0aXBsZSBiL3cgCj4gZW50cmllcyB3
-b3JrPyBBIGdpdmVuIE9QUCBmcmVxdWVuY3kgc3VwcG9ydHMgdGhlIHN1bSBvZiB0aGUgYi93IGVu
-dHJpZXM/IAo+IFdoYXQgaWYgc29tZSBkZXZpY2VzIGZvciBiL3cgZW50cmllcyBhcmVuJ3QgY3Vy
-cmVudGx5IGFjdGl2ZT8KCkZvciBkZXZpY2UgdGhhdCBpcyBmdWxseSBzY2FsYWJsZSBhIGdpdmVu
-IE9QUCBmcmVxdWVuY3kgY291bGQgbmVlZCBhCmRpZmZlcmVudCBxdW90YSBmb3IgbXVsdGlwbGUg
-aW50ZXJjb25uZWN0IGVudHJpZXMgLSBlYWNoIG9uZSB3b3VsZCBiZQpwcm9ncmFtbWVkIGluZGl2
-aWR1YWxseSwgc29tZXRoaW5nIGxpa2UgdGhpczoKCnNldF9vcHAoKSB7CiAgICBzZXRfZGV2aWNl
-X2ZyZXF1ZW5jeShvcHApOwogICAgZm9yIGVhY2ggaW50ZXJjb25uZWN0IG5hbWUgewogICAgICAg
-IGdldF9kZXZpY2VfYncob3BwLCBuYW1lKTsKCWljY19zZXQobmFtZSwgYncpOwogICAgfQp9CgpB
-bmQgdGhlIG5hbWluZyBzY2hlbWUgZ2l2ZXMgeW91IHRoZSBmbGV4aWJpbGl0eSB0byBjaG9vc2Ug
-dGhlIGljYyBuYW1lcwp5b3UgbmVlZC4gIEZvciBleGFtcGxlIGlmIHBvcnQwIHdhcyBhbHdheXMg
-Zml4ZWQgYW5kIHBvcnQxIHNjYWxlZCB5b3UgY291bGQKc3BlY2lmeSB0aGUgYi93IGZvciBwb3J0
-MSB3aXRob3V0IGhhdmluZyB0byBhbHNvIGhhdmUgYSBkdW1teSB2b3RlIGZvciBwb3J0MC4KClRo
-ZSBtYWluIHJlYXNvbiBJIGluY2x1ZGVkIHRoZSBuYW1lcyB3YXMgdGhhdCBJIGZlbHQgaXQgaGFk
-IGEgcG90ZW50aWFsIHRvCmJlIGNvbmZ1c2luZyBpZiB3ZSB1c2VkIGFic29sdXRlIGluZGV4ZXMg
-b3Igc29tZSBvdGhlciBpbXBsaWVkIHNjaGVtZSAtIGF0CmxlYXN0IGZvciB0aGUgZHJpdmVyIGRl
-dmVsb3BlciBpdCBtYWtlcyBzbGlnaHRseSBtb3JlIHNlbnNlIHRvIGxvb2sgdXAgdGhlCmJhbmR3
-aWR0aCBmb3IgInBvcnQwIiB3aXRoIHRoZSBzYW1lIG5hbWUgeW91IHVzZWQgdG8gcmVnaXN0ZXIg
-dGhlIGludGVyY29ubmVjdC4KCj4gVGhpcyBhbHNvIHNlZW1zIGxpa2UgYSBtaXh0dXJlIG9mIHVz
-aW5nIE9QUCB0YWJsZSBmb3Igc2V0dGluZyBHUFUncyAKPiBiYW5kd2lkdGgvZnJlcSBhbmQgdGhl
-biB0aGUgaW50ZXJjb25uZWN0IGJpbmRpbmcgdG8gc2V0IHRoZSAKPiBpbnRlcmNvbm5lY3QncyBi
-YW5kd2lkdGguIFBlcmhhcHMgd2UgbmVlZCBhIG1vcmUgdW5pZmllZCBhcHByb2FjaC4gTm90IAo+
-IHN1cmUgd2hhdCB0aGF0IHdvdWxkIGxvb2sgbGlrZSB0aG91Z2guCgpJbiBhIHBlcmZlY3Qgd29y
-bGQgdGhlIGludGVyY29ubmVjdChzKSB3b3VsZCBiZSBsZWZ0IHRvIHNjYWxlIG9uIHRoZWlyIG93
-bgphbmQgdGhleSB3b3VsZG4ndCBiZSB0aWVkIHRvIGFuIGluZGl2aWR1YWwgZGV2aWNlIGZyZXF1
-ZW5jeS4gQnV0IHRoYXQgd291bGQKaW52b2x2ZSBzaWduaWZpY2FudGx5IG1vcmUgaW5mcmFzdHJ1
-Y3R1cmUgZm9yIGEgZ2l2ZW4gZGV2aWNlLgoKQWxzbyBpbiBSRSB0byBvdXIgb3RoZXIgZGlzY3Vz
-c2lvbiB3aXRoIFZpcmVzaCBvbiB0aGUgcWNvbSxsZXZlbCBmb3IgdGhlCkdQVTsgdGhlIEdQVSBm
-cmVxdWVuY3kgdm90ZSBpcyBkb25lIGJ5IHRoZSBtaWNyb2NvbnRyb2xsZXIgYnV0IHRoZQppbnRl
-cmNvbm5lY3QgYmFuZHdpZHRoIGlzIHNldCBieSB0aGUgQ1BVIG9uIHRoZSBzZG04NDUgc28gd2Un
-cmUgYWxyZWFkeQpub3QgdW5pZmllZCBieSBkZXNpZ24uIFRoZXJlIGNvdWxkIGJlIHNvbWV0aGlu
-ZyBvdXQgdGhlcmUgdGhhdCB1c2VzCm1hZ2ljIGFuZCBjYWxsYmFja3MgYnV0IEkgYWxzbyBkb24n
-dCBrbm93IHdoYXQgdGhhdCBsb29rcyBsaWtlLgoKSm9yZGFuCgotLSAKVGhlIFF1YWxjb21tIElu
-bm92YXRpb24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyIG9mIENvZGUgQXVyb3JhIEZvcnVtLAph
-IExpbnV4IEZvdW5kYXRpb24gQ29sbGFib3JhdGl2ZSBQcm9qZWN0Cl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJl
-ZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+On Mon, 2018-10-15 at 10:53 +0200, Rafael J. Wysocki wrote:
+> On Fri, Oct 12, 2018 at 6:44 PM Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > Updated documentation to explain base_frequency attribute.
+> > 
+> > Signed-off-by: Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  Documentation/admin-guide/pm/intel_pstate.rst | 4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > diff --git a/Documentation/admin-guide/pm/intel_pstate.rst
+> > b/Documentation/admin-guide/pm/intel_pstate.rst
+> > index 8f1d3de449b5..14a5505e073e 100644
+> > --- a/Documentation/admin-guide/pm/intel_pstate.rst
+> > +++ b/Documentation/admin-guide/pm/intel_pstate.rst
+> > @@ -465,6 +465,10 @@ Next, the following policy attributes have
+> > special meaning if
+> >         policy for the time interval between the last two
+> > invocations of the
+> >         driver's utilization update callback by the CPU scheduler
+> > for that CPU.
+> > 
+> > +``base_frequency``
+> > +       When present, shows the base frequency of the CPU. Any
+> > frequency above
+> > +       this will be in the turbo frequency range.
+> > +
+> 
+> This isn't entirely correct, because base_frequency is not present in
+> the passive mode (and it is not present for the other drivers for
+> that
+> matter).
+That's why it said, "when present". This keeps door open to add to
+other modes too in future if needed.
+
+Thanks,
+Srinivas
+
+> 
+> >  The meaning of these attributes in the `passive mode <Passive
+> > Mode_>`_ is the
+> >  same as for other scaling drivers.
+> 
+> Instead, I would say:
+> 
+> "One more policy attribute is present if the `HWP feature is enabled
+> in the processor <Active Mode With HWP_>`_:"
+> 
+> here and I would add the description of the attribute below.
+> 
+> Thanks,
+> Rafael
