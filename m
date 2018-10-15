@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 3/3] Documentation: intel_pstate: Add base_frequency information
-Date: Mon, 15 Oct 2018 10:37:21 -0700
-Message-ID: <20181015173721.66147-4-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 1/3] ACPI / CPPC: Add support for guaranteed performance
+Date: Mon, 15 Oct 2018 10:37:19 -0700
+Message-ID: <20181015173721.66147-2-srinivas.pandruvada@linux.intel.com>
 References: <20181015173721.66147-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181015173721.66147-1-srinivas.pandruvada@linux.intel.com>
@@ -10,31 +10,60 @@ To: corbet@lwn.net, rjw@rjwysocki.net, lenb@kernel.org, viresh.kumar@linaro.org,
 Cc: juri.lelli@redhat.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, devel@acpica.org, pprakash@codeaurora.org, george.cherian@cavium.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Updated documentation to explain base_frequency attribute.
+The Continuous Performance Control Package can have guaranteed performance
+field. Add support to read guaranteed performance.
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- Documentation/admin-guide/pm/intel_pstate.rst | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/acpi/cppc_acpi.c | 8 ++++++--
+ include/acpi/cppc_acpi.h | 1 +
+ 2 files changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
-index 8f1d3de449b5..ac6f5c597a56 100644
---- a/Documentation/admin-guide/pm/intel_pstate.rst
-+++ b/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -465,6 +465,13 @@ Next, the following policy attributes have special meaning if
- 	policy for the time interval between the last two invocations of the
- 	driver's utilization update callback by the CPU scheduler for that CPU.
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index d9ce4b162e2c..217a782c3e55 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -1061,9 +1061,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ {
+ 	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+ 	struct cpc_register_resource *highest_reg, *lowest_reg,
+-		*lowest_non_linear_reg, *nominal_reg,
++		*lowest_non_linear_reg, *nominal_reg, *guaranteed_reg,
+ 		*low_freq_reg = NULL, *nom_freq_reg = NULL;
+-	u64 high, low, nom, min_nonlinear, low_f = 0, nom_f = 0;
++	u64 high, low, guaranteed, nom, min_nonlinear, low_f = 0, nom_f = 0;
+ 	int pcc_ss_id = per_cpu(cpu_pcc_subspace_idx, cpunum);
+ 	struct cppc_pcc_data *pcc_ss_data = NULL;
+ 	int ret = 0, regs_in_pcc = 0;
+@@ -1079,6 +1079,7 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	nominal_reg = &cpc_desc->cpc_regs[NOMINAL_PERF];
+ 	low_freq_reg = &cpc_desc->cpc_regs[LOWEST_FREQ];
+ 	nom_freq_reg = &cpc_desc->cpc_regs[NOMINAL_FREQ];
++	guaranteed_reg = &cpc_desc->cpc_regs[GUARANTEED_PERF];
  
-+One more policy attribute is present if the `HWP feature is enabled in the
-+processor <Active Mode With HWP_>`_:
-+
-+``base_frequency``
-+	Shows the base frequency of the CPU. Any frequency above this will be
-+	in the turbo frequency range.
-+
- The meaning of these attributes in the `passive mode <Passive Mode_>`_ is the
- same as for other scaling drivers.
+ 	/* Are any of the regs PCC ?*/
+ 	if (CPC_IN_PCC(highest_reg) || CPC_IN_PCC(lowest_reg) ||
+@@ -1107,6 +1108,9 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 	cpc_read(cpunum, nominal_reg, &nom);
+ 	perf_caps->nominal_perf = nom;
  
++	cpc_read(cpunum, guaranteed_reg, &guaranteed);
++	perf_caps->guaranteed_perf = guaranteed;
++
+ 	cpc_read(cpunum, lowest_non_linear_reg, &min_nonlinear);
+ 	perf_caps->lowest_nonlinear_perf = min_nonlinear;
+ 
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 8e0b8250a139..cf59e6210d27 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -104,6 +104,7 @@ enum cppc_regs {
+  * today.
+  */
+ struct cppc_perf_caps {
++	u32 guaranteed_perf;
+ 	u32 highest_perf;
+ 	u32 nominal_perf;
+ 	u32 lowest_perf;
 -- 
 2.17.1
