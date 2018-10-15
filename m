@@ -1,104 +1,86 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
-Date: Mon, 15 Oct 2018 11:34:33 +0200
-Message-ID: <CAHKzcEPuD7nnmvBjnUNn=wb-5LfN1nHoTYBekAiBFG8Je+oPwA@mail.gmail.com>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
- <CAJZ5v0j0GLHgKS9+mafm3eoFMuNEo6VPa3LhRthg+H5OKHhFqA@mail.gmail.com>
- <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com> <2671493.AgiGORq3CZ@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
+ device nodes
+Date: Mon, 15 Oct 2018 15:33:27 +0530
+Message-ID: <20181015100327.qoojonf46lh6g3sh@vireshk-i7>
+References: <20180827151112.25211-1-jcrouse@codeaurora.org>
+ <20180827151112.25211-6-jcrouse@codeaurora.org>
+ <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
+ <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
+ <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
+ <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
+ <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
+ <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
+ <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
+ <20181011145456.GG9977@jcrouse-lnx.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2671493.AgiGORq3CZ@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20181011145456.GG9977-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 11 Oct 2018 at 23:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
-> > On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
-> > > <waldemar.rymarkiewicz@gmail.com> wrote:
-> > > >
-> > > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> > > >
-> > > > The governor updates dbs_info->requested_freq only after increasing or
-> > > > decreasing frequency. There is, however, an use case when this is not
-> > > > sufficient.
-> > > >
-> > > > Imagine, external module constraining cpufreq policy in a way that policy->max
-> > >
-> > > Is the "external module" here a utility or a demon running in user space?
-> >
-> > No, this is a driver that communicates with a firmware and makes sure
-> > CPU is running at the highest rate in specific time.
-> > It uses verify_within_limits  and update_policy, a standard way to
-> > constraint cpufreq policy limits.
-> >
-> > > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> > > >                         requested_freq = policy->min;
-> > > >
-> > > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
-> > > > -               dbs_info->requested_freq = requested_freq;
-> > > >         }
-> > > >
-> > > >   out:
-> > > > +       dbs_info->requested_freq = requested_freq;
-> > >
-> > > This will have a side effect when requested_freq is updated before the
-> > > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
-> > > check.
-> > >
-> > > Shouldn't that be avoided?
-> >
-> > I would say we should.
-> >
-> > A hardware design I use is running 4.9 kernel where the check does not
-> > exist yet, so there is not a problem.
-> > Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
-> > requested_freq  either to requested_freq = policy->min or
-> > requested_freq -= freq_steps;. The first case will not change anything
-> > for us as policy->max=min=cur. The second, however, will force to
-> > update freq which is definitely not expected when limits are set to
-> > min=max. Simply it will not go out  here:
-> >
-> > if (load < cs_tuners->down_threshold) {
-> >       if (requested_freq == policy->min)
-> >            goto out;   <---
-> > ...
-> > }
-> >
-> > Am I right here? If so, shouldn't we check explicitly
-> >
-> > /*
-> > * If requested_freq is out of range, it is likely that the limits
-> > * changed in the meantime, so fall back to current frequency in that
-> > * case.
-> > */
-> > if (requested_freq > policy->max || requested_freq < policy->min)
-> >        requested_freq = policy->cur;
-> >
-> > +/*
-> > +* If the the new limits min,max are equal, there is no point to process further
-> > +*/
-> > +
-> > +if (requested_freq == policy->max  &&  requested_freq == policy->min)
-> > +     goto out;
->
-> If my understanding of the problem is correct, it would be better to simply
-> update dbs_info->requested_freq along with requested_freq when that is found
-> to be out of range.  IOW, something like the appended patch (untested).
-
-Yes, this will solve the original problem as well.
-
-I think there could also be a  problem with policy_dbs->idle_periods <
-UINT_MAX  check. It it's true it  can modify requested_freq (
-requested_freq -= freq_steps) and further it can result in a change of
-the freq,  requested_freq == policy->max is not anymore true. I would
-expect governor not to change freq (requested_freq) when
-policy->max=policy->min=policy->cur.
-
-Thanks,
-/Waldek
+T24gMTEtMTAtMTgsIDA4OjU0LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgoKSSB1bmRlcnN0YW5kIHdo
+YXQgeW91IGFyZSB0cnlpbmcgdG8gc2F5IEpvcmRhbiBhbmQgSSBhZ3JlZSB3aXRoIHRob3NlCmV4
+cGVjdGF0aW9ucy4gQnV0IHdoYXQgSSBhbSBsb29raW5nIGZvciBpcyBjb25zaXN0ZW5jeSBhY3Jv
+c3MgUWNvbQpjb2RlIHVzaW5nIHRoZSBzYW1lIGZlYXR1cmUuIFdoaWNoIGVuYWJsZXMgYmV0dGVy
+IHN1cHBvcnQgZm9yIHRoZSBjb2RlCmdvaW5nIGZvcndhcmQsIGV0Yy4gQW5kIGlmIHdlIGFyZSBn
+b2luZyB0byBnbyBhIGRpZmZlcmVudCB3YXksIHRoZXJlCm11c3QgYmUgYSB2ZXJ5IGdvb2QgcmVh
+c29uIHRvIGRvIHRoYXQuCgpCdXQgbGV0IG1lIHRyeSB0byB1bmRlcnN0YW5kIHRoZSBoYXJkd2Fy
+ZSBhIGJpdCBmaXJzdC4uCgo+IFRoZSBHUFUgZG9tYWluIGlzIGNvbXBsZXRlbHkgY29udHJvbGxl
+ZCBieSB0aGUgR01VIGhhcmR3YXJlIGFuZCBpcyBwb3dlcmVkCj4gaW5kZXBlbmRlbnRseSBvZiB0
+aGUgQ1BVLiBGb3IgdmFyaW91cyByZWFzb25zIHRoZSBHTVUgY2FuJ3QgY29tZSB1cCB3aXRoCj4g
+dGhlIHZvdGUgaXRzZWxmIHNvIHdlIG5lZWQgdG8gY29uc3RydWN0IGEgdm90ZSBhbmQgc2VuZCBp
+dCBkdXJpbmcKPiBpbml0aWFsaXphdGlvbi4KClNvIGl0IGlzIHRoZSBrZXJuZWwgd2hpY2ggbmVl
+ZHMgdG8gc2VuZCB0aGlzIHZvdGUgb24gYmVoYWxmIG9mIHRoZSBHTVUKdG8gUlBNID8gV2hvIGRv
+ZXMgdGhlIHZvdGUgYWdncmVnYXRpb24gaW4gdGhpcyBjYXNlID8gSSB0aG91Z2h0IHRoZXJlCmhh
+cyB0byBiZSBhIHNpbmdsZSB2b3RlIGdvaW5nIGZyb20gQ1BVIHNpZGUgdG8gdGhlIFJQTS4gSXNu
+J3QgdGhlIEdNVQp2b3RlIHBhcnQgb2YgdGhhdCA/Cgo+IEZvciB0aGlzIHdlIGR1cGxpY2F0ZSB0
+aGUgY29kZSB0aGF0IHJtcGhkIGRvZXMgdG8gcXVlcnkgdGhlCj4gY21kLWRiIGFuZCBidWlsZCB0
+aGUgdmFsdWVzIHVzaW5nIHFjb20sbGV2ZWwgYXMgYSBndWlkZS4gVGhpcyBpcyBuZWNlc3NhcnkK
+PiBjb3B5cGFzdGEgYXMgdGhlIGFsdGVybmF0aXZlIHdvdWxkIGJlIHRvIGFkZCB0aGUgaG9va3Mg
+aW50byBnZW5wZCBvciBhZGQgYQo+IHNpZGUgaG9vayBpbnRvIHRoZSBycG1oZCB0byBnZXQgdGhl
+IHZhbHVlcyB3ZSBuZWVkIGFuZCBub25lIG9mIHRoYXQgaXMgd29ydGgKPiBpdCBmb3IgYSBmZXcg
+bGluZXMgb2Ygd2Fsa2luZyBhbiBhcnJheS4KCkluaXRpYWxseSB3aGVuIEkgd2FzIGRlc2lnbmlu
+ZyB0aGlzIHFjb20sbGV2ZWwgb3IgZ2VuZXJpY2FsbHkgY2FsbGVkCiJwZXJmb3JtYW5jZS1zdGF0
+ZSIgdGhpbmd5LCBJIGtlcHQgdGhlIHZhbHVlcyBkaXJlY3RseSBpbiB0aGUgT1BQIG5vZGUKb2Yg
+dGhlIGNvbnN1bWVyICh0aGUgd2F5IHlvdSBoYXZlIGRvbmUgaXQpLCBidXQgdGhlbiB0aGVyZSB3
+ZXJlCmRpc2N1c3Npb25zIHdoaWNoIGZvcmNlZCB1cyB0byBtb3ZlIHRoaXMgdG8gdGhlIGdlbnBk
+IGxldmVsLiBGb3IKZXhhbXBsZSwgd2hhdCB3aWxsIHlvdSBkbyBpZiB5b3UgYWxzbyBuZWVkIHRv
+IHBhc3Mgdm9sdGFnZS9jdXJyZW50IGluCmFkZGl0aW9uIHRvIHBlcmZvcm1hbmNlLXN0YXRlIHRv
+IHRoZSBSUE0/IFN0ZXBoZW5CIGFjdHVhbGx5IHNhaWQgd2UKbWF5IG9yIG1heSBub3Qga25vdyB0
+aGVzZSB2YWx1ZXMgYW5kIHdlIG11c3Qgc3VwcG9ydCBib3RoIHRoZSBjYXNlcy4KClRoZSBvcHAt
+bWljcm92b2x0IHByb3BlcnRpZXMgb2YgdGhlIGNvbnN1bWVyIGRldmljZSAoR1BVIGhlcmUpIHNo
+b3VsZApiZSB1c2VkIHRvIGhhbmRsZSB0aGUgcmVndWxhdG9ycyB3aGljaCBhcmUgY29udHJvbGxl
+ZCBieSBrZXJuZWwgaXRzZWxmCmFuZCBzbyB0aGV5IGNhbid0IGFkZGl0aW9uYWxseSBoYW5kbGUg
+dGhlIFJQTXMgZGF0YS4gQW5kIHNvIHdlIGNyZWF0ZWQKc2VwYXJhdGUgT1BQIHRhYmxlIGZvciB0
+aGUgUlBNIGFuZCByZXByZXNlbnRlZCB0aGF0IGFzIGEgZ2VucGQgYW5kIHdlCm5vdyBoYW5kbGUg
+dGhlIGFnZ3JlZ2F0aW9uIGluIGdlbnBkIGNvcmUgaXRzZWxmIG9uIGJlaGFsZiBvZiBhbGwgdGhl
+CmNvbnN1bWVycy4KCj4gcWNvbSxsZXZlbCBzZXJ2ZXMgdGhlIHB1cnBvc2UgZm9yIHVzIGluIHRo
+aXMgY2FzZSBiZWNhdXNlIHdlIGNhbiBnZXQgdGhlIHZhbHVlCj4gd2UgbmVlZCBhbmQgY29uc3Ry
+dWN0IHRoZSB2b3RlLiBJZiB3ZSBtb3ZlIHRvIHVzaW5nIHJlcXVpcmVkLW9wcCwgdGhhdHMganVz
+dAo+IGFub3RoZXIgc3RlcCBvZiBwYXJzaW5nIGZvciB0aGUgZHJpdmVyIGFuZAoKVGhlIE9QUCBj
+b3JlIHNoYWxsIGhhdmUgYWxsIHRoZSBpbmZyYXN0cnVjdHVyZSB0byBwYXJzZSB0aGVzZSB0aGlu
+Z3MKYW5kIHdlIHNob3VsZCBrZWVwIGFsbCBzdWNoIGNvZGUgdGhlcmUgdG8gYXZvaWQgZHVwbGlj
+YXRpb24uCgo+IGl0IGVzdGFibGlzaGVzIGEgcmVsYXRpb25zaGlwIHdpdGgKPiBybXBoZCBvbiB0
+aGUgQ1BVIHRoYXQgc2hvdWxkbid0IGV4aXN0LgoKU3VyZS4gSSBhbSBub3Qgc3VnZ2VzdGluZyB0
+aGF0IHRoZSByZXByZXNlbnRhdGlvbiBpbiBzb2Z0d2FyZSBzaG91bGQKYmUgZGlmZmVyZW50IGZy
+b20gd2hhdCB0aGUgaGFyZHdhcmUgaXMsIG1heWJlIEkgZGlkbid0IHVuZGVyc3Rvb2QgdGhlCmhh
+cmR3YXJlIGRlc2lnbiB3ZWxsLgoKPiBJIGRvIHNlZSBhIGdvb2QgYXJndW1lbnQgZm9yIHVzaW5n
+IHRoZSBzeW1ib2xpYyBiaW5kaW5ncyAoaS5lLgo+IFJQTUhfUkVHVUxBVE9SX0xFVkVMX1RVUkJP
+X0wxKSBhbmQgd2UgY2FuIGRvIHRoYXQgZWFzaWx5IGJ1dCBiZXlvbmQgdGhhdCBJCj4gZG9uJ3Qg
+dGhpbmsgdGhhdCB3ZSBuZWVkIHRoZSBleHRyYSBwYXJzaW5nIHN0ZXAuCgotLSAKdmlyZXNoCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBt
+YWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
+LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
