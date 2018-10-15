@@ -1,136 +1,89 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
-Date: Mon, 15 Oct 2018 13:31:03 +0200
-Message-ID: <1926816.WaOCFmosuL@aspire.rjw.lan>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com> <2671493.AgiGORq3CZ@aspire.rjw.lan> <CAHKzcEPuD7nnmvBjnUNn=wb-5LfN1nHoTYBekAiBFG8Je+oPwA@mail.gmail.com>
+Subject: [PATCH 2/2] cpuidle: menu: Avoid computations when result will be discarded
+Date: Mon, 15 Oct 2018 13:53:25 +0200
+Message-ID: <3958974.INltPUcQCY@aspire.rjw.lan>
+References: <9077862.OKK49htnqA@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHKzcEPuD7nnmvBjnUNn=wb-5LfN1nHoTYBekAiBFG8Je+oPwA@mail.gmail.com>
+In-Reply-To: <9077862.OKK49htnqA@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 15, 2018 11:34:33 AM CEST Waldemar Rymarkiewicz wrote:
-> On Thu, 11 Oct 2018 at 23:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
-> > > On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > >
-> > > > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
-> > > > <waldemar.rymarkiewicz@gmail.com> wrote:
-> > > > >
-> > > > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> > > > >
-> > > > > The governor updates dbs_info->requested_freq only after increasing or
-> > > > > decreasing frequency. There is, however, an use case when this is not
-> > > > > sufficient.
-> > > > >
-> > > > > Imagine, external module constraining cpufreq policy in a way that policy->max
-> > > >
-> > > > Is the "external module" here a utility or a demon running in user space?
-> > >
-> > > No, this is a driver that communicates with a firmware and makes sure
-> > > CPU is running at the highest rate in specific time.
-> > > It uses verify_within_limits  and update_policy, a standard way to
-> > > constraint cpufreq policy limits.
-> > >
-> > > > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> > > > >                         requested_freq = policy->min;
-> > > > >
-> > > > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
-> > > > > -               dbs_info->requested_freq = requested_freq;
-> > > > >         }
-> > > > >
-> > > > >   out:
-> > > > > +       dbs_info->requested_freq = requested_freq;
-> > > >
-> > > > This will have a side effect when requested_freq is updated before the
-> > > > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
-> > > > check.
-> > > >
-> > > > Shouldn't that be avoided?
-> > >
-> > > I would say we should.
-> > >
-> > > A hardware design I use is running 4.9 kernel where the check does not
-> > > exist yet, so there is not a problem.
-> > > Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
-> > > requested_freq  either to requested_freq = policy->min or
-> > > requested_freq -= freq_steps;. The first case will not change anything
-> > > for us as policy->max=min=cur. The second, however, will force to
-> > > update freq which is definitely not expected when limits are set to
-> > > min=max. Simply it will not go out  here:
-> > >
-> > > if (load < cs_tuners->down_threshold) {
-> > >       if (requested_freq == policy->min)
-> > >            goto out;   <---
-> > > ...
-> > > }
-> > >
-> > > Am I right here? If so, shouldn't we check explicitly
-> > >
-> > > /*
-> > > * If requested_freq is out of range, it is likely that the limits
-> > > * changed in the meantime, so fall back to current frequency in that
-> > > * case.
-> > > */
-> > > if (requested_freq > policy->max || requested_freq < policy->min)
-> > >        requested_freq = policy->cur;
-> > >
-> > > +/*
-> > > +* If the the new limits min,max are equal, there is no point to process further
-> > > +*/
-> > > +
-> > > +if (requested_freq == policy->max  &&  requested_freq == policy->min)
-> > > +     goto out;
-> >
-> > If my understanding of the problem is correct, it would be better to simply
-> > update dbs_info->requested_freq along with requested_freq when that is found
-> > to be out of range.  IOW, something like the appended patch (untested).
-> 
-> Yes, this will solve the original problem as well.
-> 
-> I think there could also be a  problem with policy_dbs->idle_periods <
-> UINT_MAX  check. It it's true it  can modify requested_freq (
-> requested_freq -= freq_steps) and further it can result in a change of
-> the freq,  requested_freq == policy->max is not anymore true. I would
-> expect governor not to change freq (requested_freq) when
-> policy->max=policy->min=policy->cur.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Well, that's because there is a bug in that code IMO.  It should never
-decrease requested_freq below policy->min in particular.
+If the minimum interval taken into account in the average computation
+loop in get_typical_interval() is less than the expected idle
+duration determined so far, the resultant average cannot be greater
+than that value as well and the entire return result of the function
+is going to be discarded anyway going forward.
 
-Please find a patch with that fixed below.
+In that case, it is a waste of time to carry out the remaining
+computations in get_typical_interval(), so avoid that by returning
+early if the minimum interval is not below the expected idle duration.
 
+No intentional changes of behavior.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq_conservative.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/cpuidle/governors/menu.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+Index: linux-pm/drivers/cpuidle/governors/menu.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
- 	 * changed in the meantime, so fall back to current frequency in that
- 	 * case.
+--- linux-pm.orig/drivers/cpuidle/governors/menu.c
++++ linux-pm/drivers/cpuidle/governors/menu.c
+@@ -196,10 +196,11 @@ static void menu_update(struct cpuidle_d
+  * of points is below a threshold. If it is... then use the
+  * average of these 8 points as the estimated value.
+  */
+-static unsigned int get_typical_interval(struct menu_device *data)
++static unsigned int get_typical_interval(struct menu_device *data,
++					 unsigned int predicted_us)
+ {
+ 	int i, divisor;
+-	unsigned int max, thresh, avg;
++	unsigned int min, max, thresh, avg;
+ 	uint64_t sum, variance;
+ 
+ 	thresh = UINT_MAX; /* Discard outliers above this value */
+@@ -207,6 +208,7 @@ static unsigned int get_typical_interval
+ again:
+ 
+ 	/* First calculate the average of past intervals */
++	min = UINT_MAX;
+ 	max = 0;
+ 	sum = 0;
+ 	divisor = 0;
+@@ -217,8 +219,19 @@ again:
+ 			divisor++;
+ 			if (value > max)
+ 				max = value;
++
++			if (value < min)
++				min = value;
+ 		}
+ 	}
++
++	/*
++	 * If the result of the computation is going to be discarded anyway,
++	 * avoid the computation altogether.
++	 */
++	if (min >= predicted_us)
++		return UINT_MAX;
++
+ 	if (divisor == INTERVALS)
+ 		avg = sum >> INTERVAL_SHIFT;
+ 	else
+@@ -325,7 +338,7 @@ static int menu_select(struct cpuidle_dr
+ 	/*
+ 	 * Use the lowest expected idle interval to pick the idle state.
  	 */
--	if (requested_freq > policy->max || requested_freq < policy->min)
-+	if (requested_freq > policy->max || requested_freq < policy->min) {
- 		requested_freq = policy->cur;
-+		dbs_info->requested_freq = requested_freq;
-+	}
+-	predicted_us = min(predicted_us, get_typical_interval(data));
++	predicted_us = min(predicted_us, get_typical_interval(data, predicted_us));
  
- 	freq_step = get_freq_step(cs_tuners, policy);
- 
-@@ -92,7 +94,7 @@ static unsigned int cs_dbs_update(struct
- 	if (policy_dbs->idle_periods < UINT_MAX) {
- 		unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
- 
--		if (requested_freq > freq_steps)
-+		if (requested_freq > policy->min + freq_steps)
- 			requested_freq -= freq_steps;
- 		else
- 			requested_freq = policy->min;
+ 	if (tick_nohz_tick_stopped()) {
+ 		/*
