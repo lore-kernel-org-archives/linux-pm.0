@@ -1,118 +1,68 @@
-From: Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Mon, 15 Oct 2018 08:34:44 -0600
-Message-ID: <20181015143444.GA4751@jcrouse-lnx.qualcomm.com>
-References: <20180827151112.25211-6-jcrouse@codeaurora.org>
- <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
- <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
- <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
- <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
- <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
- <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
- <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
- <20181011145456.GG9977@jcrouse-lnx.qualcomm.com>
- <20181015100327.qoojonf46lh6g3sh@vireshk-i7>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: [driver-core PATCH v4 0/6] Add NUMA aware async_schedule calls
+Date: Mon, 15 Oct 2018 08:09:01 -0700
+Message-ID: <20181015150305.29520.86363.stgit@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20181015100327.qoojonf46lh6g3sh@vireshk-i7>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
+Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBPY3QgMTUsIDIwMTggYXQgMDM6MzM6MjdQTSArMDUzMCwgVmlyZXNoIEt1bWFyIHdy
-b3RlOgo+IE9uIDExLTEwLTE4LCAwODo1NCwgSm9yZGFuIENyb3VzZSB3cm90ZToKPiAKPiBJIHVu
-ZGVyc3RhbmQgd2hhdCB5b3UgYXJlIHRyeWluZyB0byBzYXkgSm9yZGFuIGFuZCBJIGFncmVlIHdp
-dGggdGhvc2UKPiBleHBlY3RhdGlvbnMuIEJ1dCB3aGF0IEkgYW0gbG9va2luZyBmb3IgaXMgY29u
-c2lzdGVuY3kgYWNyb3NzIFFjb20KPiBjb2RlIHVzaW5nIHRoZSBzYW1lIGZlYXR1cmUuIFdoaWNo
-IGVuYWJsZXMgYmV0dGVyIHN1cHBvcnQgZm9yIHRoZSBjb2RlCj4gZ29pbmcgZm9yd2FyZCwgZXRj
-LiBBbmQgaWYgd2UgYXJlIGdvaW5nIHRvIGdvIGEgZGlmZmVyZW50IHdheSwgdGhlcmUKPiBtdXN0
-IGJlIGEgdmVyeSBnb29kIHJlYXNvbiB0byBkbyB0aGF0LgoKSSBhZ3JlZSB0aGF0IGNvbnNpc3Rl
-bmN5IGlzIGdvb2QuIEJ1dCB0aGUgR1BVIGlzIGJ5IGRlc2lnbiBvdXRzaWRlIG9mIHRoZQpjb250
-cm9sIG9mIHRoZSBnZW5wZCB1bml2ZXJzZSBzbyBpdCBpcyBieSBkZXNpZ24gbm90IHVzaW5nIHRo
-ZSBzYW1lIGZlYXR1cmVzLgpJdCB1bmZvcnR1bmF0ZWx5IGRvZXMgaGFwcGVuIHRvIHVzZSBhIHNp
-bWlsYXIgbnVtYmVyIGluIGFuIE9QUCBiaW5kaW5nIHRvCmNvbnN0cnVjdCB0aGUgbGV2ZWwgbWFw
-cGluZyBidXQgc2luY2Ugd2UgY2FuJ3QgcmVhZCB0aGUgY21kLWRiIGZyb20gdGhlIEdNVQpzcGFj
-ZSB0aGlzIGlzIGEgbmVjZXNzYXJ5IGV2aWwuCgo+IEJ1dCBsZXQgbWUgdHJ5IHRvIHVuZGVyc3Rh
-bmQgdGhlIGhhcmR3YXJlIGEgYml0IGZpcnN0Li4KPiAKPiA+IFRoZSBHUFUgZG9tYWluIGlzIGNv
-bXBsZXRlbHkgY29udHJvbGxlZCBieSB0aGUgR01VIGhhcmR3YXJlIGFuZCBpcyBwb3dlcmVkCj4g
-PiBpbmRlcGVuZGVudGx5IG9mIHRoZSBDUFUuIEZvciB2YXJpb3VzIHJlYXNvbnMgdGhlIEdNVSBj
-YW4ndCBjb21lIHVwIHdpdGgKPiA+IHRoZSB2b3RlIGl0c2VsZiBzbyB3ZSBuZWVkIHRvIGNvbnN0
-cnVjdCBhIHZvdGUgYW5kIHNlbmQgaXQgZHVyaW5nCj4gPiBpbml0aWFsaXphdGlvbi4KPiAKPiBT
-byBpdCBpcyB0aGUga2VybmVsIHdoaWNoIG5lZWRzIHRvIHNlbmQgdGhpcyB2b3RlIG9uIGJlaGFs
-ZiBvZiB0aGUgR01VCj4gdG8gUlBNID8gV2hvIGRvZXMgdGhlIHZvdGUgYWdncmVnYXRpb24gaW4g
-dGhpcyBjYXNlID8gSSB0aG91Z2h0IHRoZXJlCj4gaGFzIHRvIGJlIGEgc2luZ2xlIHZvdGUgZ29p
-bmcgZnJvbSBDUFUgc2lkZSB0byB0aGUgUlBNLiBJc24ndCB0aGUgR01VCj4gdm90ZSBwYXJ0IG9m
-IHRoYXQgPwoKRm9yIGNsYXJpdHkgdGhlIEdNVSBhbmQgR1BVIGFyZSBpbiBkaWZmZXJlbnQgZG9t
-YWlucy4gVGhlIEdNVSAod2hpY2ggaXMKY29udHJvbGxlZCBieSB0aGUgQ1BVKSBpcyByZXNwb25z
-aWJsZSBmb3IgZ2VuZXJhdGluZyBhbmQgc2VuZGluZyB0aGUgdm90ZSBvbgpiZWhhbGYgb2YgdGhl
-IEdQVS4gRnJvbSBhbiBSUE1oIHBlcnNwZWN0aXZlIFRoZSBHUFUgaXMgY29uc2lkZXJlZCB0byBi
-ZQpzZXBhcmF0ZSBmcm9tIHRoZSBDUFUgdm90ZS4KCkFsc28sIEkgcHJvYmFibHkgY29uZnVzZWQg
-eW91IGJ5IHNheWluZyB0aGF0IHRoZSBrZXJuZWwgY29uc3RydWN0cyB0aGUgdm90ZQpmb3IgdGhl
-IEdQVS4gSXQgYWN0dWFsbHkgY29uc3RydWN0cyB0aGUgbWFwcGluZyB0aGF0IHRoZSBHTVUgY2Fu
-IHVzZSB0byBzZW5kIAp0aGUgdm90ZS4gVGhpcyBpcyBlcXVpdmFsZW50IHRvIHJwbWhwZF91cGRh
-dGVfbGV2ZWxfbWFwcGluZygpIGluIHRoZSBycG1ocGQKZHJpdmVyIGlmIHRoYXQgaGVscHMuCgo+
-ID4gRm9yIHRoaXMgd2UgZHVwbGljYXRlIHRoZSBjb2RlIHRoYXQgcm1waGQgZG9lcyB0byBxdWVy
-eSB0aGUKPiA+IGNtZC1kYiBhbmQgYnVpbGQgdGhlIHZhbHVlcyB1c2luZyBxY29tLGxldmVsIGFz
-IGEgZ3VpZGUuIFRoaXMgaXMgbmVjZXNzYXJ5Cj4gPiBjb3B5cGFzdGEgYXMgdGhlIGFsdGVybmF0
-aXZlIHdvdWxkIGJlIHRvIGFkZCB0aGUgaG9va3MgaW50byBnZW5wZCBvciBhZGQgYQo+ID4gc2lk
-ZSBob29rIGludG8gdGhlIHJwbWhkIHRvIGdldCB0aGUgdmFsdWVzIHdlIG5lZWQgYW5kIG5vbmUg
-b2YgdGhhdCBpcyB3b3J0aAo+ID4gaXQgZm9yIGEgZmV3IGxpbmVzIG9mIHdhbGtpbmcgYW4gYXJy
-YXkuCj4gCj4gSW5pdGlhbGx5IHdoZW4gSSB3YXMgZGVzaWduaW5nIHRoaXMgcWNvbSxsZXZlbCBv
-ciBnZW5lcmljYWxseSBjYWxsZWQKPiAicGVyZm9ybWFuY2Utc3RhdGUiIHRoaW5neSwgSSBrZXB0
-IHRoZSB2YWx1ZXMgZGlyZWN0bHkgaW4gdGhlIE9QUCBub2RlCj4gb2YgdGhlIGNvbnN1bWVyICh0
-aGUgd2F5IHlvdSBoYXZlIGRvbmUgaXQpLCBidXQgdGhlbiB0aGVyZSB3ZXJlCj4gZGlzY3Vzc2lv
-bnMgd2hpY2ggZm9yY2VkIHVzIHRvIG1vdmUgdGhpcyB0byB0aGUgZ2VucGQgbGV2ZWwuIEZvcgo+
-IGV4YW1wbGUsIHdoYXQgd2lsbCB5b3UgZG8gaWYgeW91IGFsc28gbmVlZCB0byBwYXNzIHZvbHRh
-Z2UvY3VycmVudCBpbgo+IGFkZGl0aW9uIHRvIHBlcmZvcm1hbmNlLXN0YXRlIHRvIHRoZSBSUE0/
-IFN0ZXBoZW5CIGFjdHVhbGx5IHNhaWQgd2UKPiBtYXkgb3IgbWF5IG5vdCBrbm93IHRoZXNlIHZh
-bHVlcyBhbmQgd2UgbXVzdCBzdXBwb3J0IGJvdGggdGhlIGNhc2VzLgoKSSBhZ3JlZSB0aGF0IGdl
-bnBkIGhhcyBtYW55IHJlc3BvbnNpYmlsaXRpZXMgYmVjYXVzZSBpdCBoYXMgdG8gZGVhbCB3aXRo
-IG1hbnkKZGlmZmVyZW50IGRldmljZXMuCgpUaGUgR01VIC8gR1BVIGlzIGJ1aWx0IGZvciBhIHNp
-bmdsZSBwdXJwb3NlIGFuZCB0aGUgaGFyZHdhcmUgaGFzIGJlZW4gZGVzaWduZWQKYWNjb3JkaW5n
-bHkuIEZvciB0aGUgZm9yZXNlZWFibGUgZnV0dXJlIHdlIHdpbGwgbm90IG5lZWQgdG8ga25vdyBh
-bnl0aGluZwpiZXlvbmQgdGhlIGxldmVsIG1hcHBpbmcgdG8gb3BlcmF0ZSB0aGUgR1BVLgoKPiBU
-aGUgb3BwLW1pY3Jvdm9sdCBwcm9wZXJ0aWVzIG9mIHRoZSBjb25zdW1lciBkZXZpY2UgKEdQVSBo
-ZXJlKSBzaG91bGQKPiBiZSB1c2VkIHRvIGhhbmRsZSB0aGUgcmVndWxhdG9ycyB3aGljaCBhcmUg
-Y29udHJvbGxlZCBieSBrZXJuZWwgaXRzZWxmCj4gYW5kIHNvIHRoZXkgY2FuJ3QgYWRkaXRpb25h
-bGx5IGhhbmRsZSB0aGUgUlBNcyBkYXRhLiBBbmQgc28gd2UgY3JlYXRlZAo+IHNlcGFyYXRlIE9Q
-UCB0YWJsZSBmb3IgdGhlIFJQTSBhbmQgcmVwcmVzZW50ZWQgdGhhdCBhcyBhIGdlbnBkIGFuZCB3
-ZQo+IG5vdyBoYW5kbGUgdGhlIGFnZ3JlZ2F0aW9uIGluIGdlbnBkIGNvcmUgaXRzZWxmIG9uIGJl
-aGFsZiBvZiBhbGwgdGhlCj4gY29uc3VtZXJzLgoKWWVzIGFuZCBpdCBzaG91bGQgY29udGludWUg
-dG8gYmUgdGhhdCB3YXkuIFRoaXMganVzdCBoYXBwZW5zIHRvIGJlIGEKc2l0dWF0aW9uIHdoZXJl
-IG9uZSBvZiB0aGUgY29uc3VtZXJzIGlzIG91dCBvZiB5b3VyIGFyZWEgb2YgY29udHJvbCBieQpk
-ZXNpZ24uCgo+ID4gcWNvbSxsZXZlbCBzZXJ2ZXMgdGhlIHB1cnBvc2UgZm9yIHVzIGluIHRoaXMg
-Y2FzZSBiZWNhdXNlIHdlIGNhbiBnZXQgdGhlIHZhbHVlCj4gPiB3ZSBuZWVkIGFuZCBjb25zdHJ1
-Y3QgdGhlIHZvdGUuIElmIHdlIG1vdmUgdG8gdXNpbmcgcmVxdWlyZWQtb3BwLCB0aGF0cyBqdXN0
-Cj4gPiBhbm90aGVyIHN0ZXAgb2YgcGFyc2luZyBmb3IgdGhlIGRyaXZlciBhbmQKPiAKPiBUaGUg
-T1BQIGNvcmUgc2hhbGwgaGF2ZSBhbGwgdGhlIGluZnJhc3RydWN0dXJlIHRvIHBhcnNlIHRoZXNl
-IHRoaW5ncwo+IGFuZCB3ZSBzaG91bGQga2VlcCBhbGwgc3VjaCBjb2RlIHRoZXJlIHRvIGF2b2lk
-IGR1cGxpY2F0aW9uLgoKVXNpbmcgcmVxdWlyZWQtb3BwIHRvIGxvb2sgdXAgYW5vdGhlciBvcHAg
-dG8gbG9vayB1cCB0aGUgcWNvbSxsZXZlbCBpcwpieSBkZWZpbml0aW9uIGFkZGl0aW9uYWwgcGFy
-c2luZy4gSXQgZG9lc24ndCBpbXBseSB0aGF0IHRoZXJlIHdvdWxkIGJlCmNvZGUgZHVwbGljYXRp
-b24uCgo+ID4gaXQgZXN0YWJsaXNoZXMgYSByZWxhdGlvbnNoaXAgd2l0aAo+ID4gcm1waGQgb24g
-dGhlIENQVSB0aGF0IHNob3VsZG4ndCBleGlzdC4KPiAKPiBTdXJlLiBJIGFtIG5vdCBzdWdnZXN0
-aW5nIHRoYXQgdGhlIHJlcHJlc2VudGF0aW9uIGluIHNvZnR3YXJlIHNob3VsZAo+IGJlIGRpZmZl
-cmVudCBmcm9tIHdoYXQgdGhlIGhhcmR3YXJlIGlzLCBtYXliZSBJIGRpZG4ndCB1bmRlcnN0b29k
-IHRoZQo+IGhhcmR3YXJlIGRlc2lnbiB3ZWxsLgo+IAo+ID4gSSBkbyBzZWUgYSBnb29kIGFyZ3Vt
-ZW50IGZvciB1c2luZyB0aGUgc3ltYm9saWMgYmluZGluZ3MgKGkuZS4KPiA+IFJQTUhfUkVHVUxB
-VE9SX0xFVkVMX1RVUkJPX0wxKSBhbmQgd2UgY2FuIGRvIHRoYXQgZWFzaWx5IGJ1dCBiZXlvbmQg
-dGhhdCBJCj4gPiBkb24ndCB0aGluayB0aGF0IHdlIG5lZWQgdGhlIGV4dHJhIHBhcnNpbmcgc3Rl
-cC4KCkpvcmRhbgoKLS0gClRoZSBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5jLiBpcyBh
-IG1lbWJlciBvZiBDb2RlIEF1cm9yYSBGb3J1bSwKYSBMaW51eCBGb3VuZGF0aW9uIENvbGxhYm9y
-YXRpdmUgUHJvamVjdApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5v
-cmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJl
-bm8K
+This patch set provides functionality that will help to improve the
+locality of the async_schedule calls used to provide deferred
+initialization.
+
+This patch set originally started out with me focused on just the one call
+to async_schedule_domain in the nvdimm tree that was being used to
+defer the device_add call however after doing some digging I realized the
+scope of this was much broader than I had originally planned. As such I
+went through and reworked the underlying infrastructure down to replacing
+the queue_work call itself with a function of my own and opted to try and
+provide a NUMA aware solution that would work for a broader audience.
+
+RFC->v1:
+    Dropped nvdimm patch to submit later
+        It relies on code in libnvdimm development tree
+    Simplified queue_work_near to just convert node into a CPU
+    Split up drivers core and PM core patches
+v1->v2:
+    Renamed queue_work_near to queue_work_node
+    Added WARN_ON_ONCE if we use queue_work_node with per-cpu workqueue
+v2->v3:
+    Added Acked-by for queue_work_node patch
+    Continued rename from _near to _node to be consistent with queue_work_node
+        Renamed async_schedule_near_domain to async_schedule_node_domain
+        Renamed async_schedule_near to async_schedule_node
+    Added kerneldoc for new async_schedule_XXX functions
+    Updated patch description for patch 4 to include data on potential gains
+v3->v4
+    Added patch to consolidate use of need_parent_lock
+    Make asynchronous driver probing explicit about use of drvdata
+    Added Acked-by for PM core patch
+
+---
+
+Alexander Duyck (6):
+      workqueue: Provide queue_work_node to queue work near a given NUMA node
+      async: Add support for queueing on specific NUMA node
+      device core: Consolidate locking and unlocking of parent and device
+      driver core: Probe devices asynchronously instead of the driver
+      driver core: Attach devices on CPU local to device node
+      PM core: Use new async_schedule_dev command
+
+
+ drivers/base/base.h       |    2 +
+ drivers/base/bus.c        |   46 ++--------------
+ drivers/base/dd.c         |  130 ++++++++++++++++++++++++++++++++++++++++-----
+ drivers/base/power/main.c |   12 ++--
+ include/linux/async.h     |   84 ++++++++++++++++++++++++++++-
+ include/linux/device.h    |    4 +
+ include/linux/workqueue.h |    2 +
+ kernel/async.c            |   53 ++++++++++--------
+ kernel/workqueue.c        |   84 +++++++++++++++++++++++++++++
+ 9 files changed, 329 insertions(+), 88 deletions(-)
+
+--
