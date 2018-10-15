@@ -1,61 +1,104 @@
-From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Subject: Re: [PATCH 7/8] media: sti/bdisp: don't pass GFP_DMA32 to dma_alloc_attrs
-Date: Mon, 15 Oct 2018 11:12:55 +0200
-Message-ID: <CA+M3ks5KO-Yr_PEczaENhTfirthFz2gW1uv4bwZe5mjy3-jZyg@mail.gmail.com>
-References: <20181013151707.32210-1-hch@lst.de> <20181013151707.32210-8-hch@lst.de>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH] cpufreq: conservative: Fix requested_freq handling
+Date: Mon, 15 Oct 2018 11:34:33 +0200
+Message-ID: <CAHKzcEPuD7nnmvBjnUNn=wb-5LfN1nHoTYBekAiBFG8Je+oPwA@mail.gmail.com>
+References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
+ <CAJZ5v0j0GLHgKS9+mafm3eoFMuNEo6VPa3LhRthg+H5OKHhFqA@mail.gmail.com>
+ <CAHKzcEMx2V-uvkM7_gUXiL1jEiYDwNn3KoGHqneqXAwmUQJ+0w@mail.gmail.com> <2671493.AgiGORq3CZ@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181013151707.32210-8-hch@lst.de>
+In-Reply-To: <2671493.AgiGORq3CZ@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, alsa-devel@alsa-project.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Le sam. 13 oct. 2018 =C3=A0 17:18, Christoph Hellwig <hch@lst.de> a =C3=A9c=
-rit :
+On Thu, 11 Oct 2018 at 23:10, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> The DMA API does its own zone decisions based on the coherent_dma_mask.
+> On Tuesday, October 9, 2018 6:06:08 PM CEST Waldemar Rymarkiewicz wrote:
+> > On Tue, 9 Oct 2018 at 09:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > On Mon, Oct 8, 2018 at 5:11 PM Waldemar Rymarkiewicz
+> > > <waldemar.rymarkiewicz@gmail.com> wrote:
+> > > >
+> > > > From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+> > > >
+> > > > The governor updates dbs_info->requested_freq only after increasing or
+> > > > decreasing frequency. There is, however, an use case when this is not
+> > > > sufficient.
+> > > >
+> > > > Imagine, external module constraining cpufreq policy in a way that policy->max
+> > >
+> > > Is the "external module" here a utility or a demon running in user space?
+> >
+> > No, this is a driver that communicates with a firmware and makes sure
+> > CPU is running at the highest rate in specific time.
+> > It uses verify_within_limits  and update_policy, a standard way to
+> > constraint cpufreq policy limits.
+> >
+> > > > @@ -136,10 +135,10 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+> > > >                         requested_freq = policy->min;
+> > > >
+> > > >                 __cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
+> > > > -               dbs_info->requested_freq = requested_freq;
+> > > >         }
+> > > >
+> > > >   out:
+> > > > +       dbs_info->requested_freq = requested_freq;
+> > >
+> > > This will have a side effect when requested_freq is updated before the
+> > > thresholds checks due to the policy_dbs->idle_periods < UINT_MAX
+> > > check.
+> > >
+> > > Shouldn't that be avoided?
+> >
+> > I would say we should.
+> >
+> > A hardware design I use is running 4.9 kernel where the check does not
+> > exist yet, so there is not a problem.
+> > Anyway, the check policy_dbs->idle_periods < UINT_MAX  can change
+> > requested_freq  either to requested_freq = policy->min or
+> > requested_freq -= freq_steps;. The first case will not change anything
+> > for us as policy->max=min=cur. The second, however, will force to
+> > update freq which is definitely not expected when limits are set to
+> > min=max. Simply it will not go out  here:
+> >
+> > if (load < cs_tuners->down_threshold) {
+> >       if (requested_freq == policy->min)
+> >            goto out;   <---
+> > ...
+> > }
+> >
+> > Am I right here? If so, shouldn't we check explicitly
+> >
+> > /*
+> > * If requested_freq is out of range, it is likely that the limits
+> > * changed in the meantime, so fall back to current frequency in that
+> > * case.
+> > */
+> > if (requested_freq > policy->max || requested_freq < policy->min)
+> >        requested_freq = policy->cur;
+> >
+> > +/*
+> > +* If the the new limits min,max are equal, there is no point to process further
+> > +*/
+> > +
+> > +if (requested_freq == policy->max  &&  requested_freq == policy->min)
+> > +     goto out;
 >
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> If my understanding of the problem is correct, it would be better to simply
+> update dbs_info->requested_freq along with requested_freq when that is found
+> to be out of range.  IOW, something like the appended patch (untested).
 
-Reviewed-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Yes, this will solve the original problem as well.
 
-> ---
->  drivers/media/platform/sti/bdisp/bdisp-hw.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/media/platform/sti/bdisp/bdisp-hw.c b/drivers/media/=
-platform/sti/bdisp/bdisp-hw.c
-> index 26d9fa7aeb5f..4372abbb5950 100644
-> --- a/drivers/media/platform/sti/bdisp/bdisp-hw.c
-> +++ b/drivers/media/platform/sti/bdisp/bdisp-hw.c
-> @@ -510,7 +510,7 @@ int bdisp_hw_alloc_filters(struct device *dev)
->
->         /* Allocate all the filters within a single memory page */
->         size =3D (BDISP_HF_NB * NB_H_FILTER) + (BDISP_VF_NB * NB_V_FILTER=
-);
-> -       base =3D dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL | GFP_DMA,
-> +       base =3D dma_alloc_attrs(dev, size, &paddr, GFP_KERNEL,
->                                DMA_ATTR_WRITE_COMBINE);
->         if (!base)
->                 return -ENOMEM;
-> --
-> 2.19.1
->
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+I think there could also be a  problem with policy_dbs->idle_periods <
+UINT_MAX  check. It it's true it  can modify requested_freq (
+requested_freq -= freq_steps) and further it can result in a change of
+the freq,  requested_freq == policy->max is not anymore true. I would
+expect governor not to change freq (requested_freq) when
+policy->max=policy->min=policy->cur.
 
-
-
---=20
-Benjamin Gaignard
-
-Graphic Study Group
-
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-
-Follow Linaro: Facebook | Twitter | Blog
+Thanks,
+/Waldek
