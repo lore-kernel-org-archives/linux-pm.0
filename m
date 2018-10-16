@@ -1,45 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: conservative: Take limits changes into account
- properly
-Date: Tue, 16 Oct 2018 15:22:25 +0530
-Message-ID: <20181016095225.snxu3dafz4x3w7ch@vireshk-i7>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
- <CAHKzcEOECQP8j6q=NKzuEjF+mc0s80fr6xWw-=NXsTtzCGGg_w@mail.gmail.com>
- <CAJZ5v0gFjBoFi=cpC2gPkZTDZof8dxdCCVx0XoAv2XuPmTfWPA@mail.gmail.com>
- <5406371.vuaACy5i7F@aspire.rjw.lan>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH] PM / devfreq: Fix static checker warning in try_then_request_governor
+Date: Tue, 16 Oct 2018 12:02:03 +0200
+Message-ID: <20181016100203.18624-1-enric.balletbo@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5406371.vuaACy5i7F@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, t.bartholomae@intel.com
+To: linux-kernel@vger.kernel.org
+Cc: kernel@collabora.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15-10-18, 23:21, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If the policy limits change between invocations of cs_dbs_update(),
-> the requested frequency value stored in dbs_info may not be updated
-> and the function may use a stale value of it next time.  Moreover, if
-> idle periods are takem into account by cs_dbs_update(), the requested
-> frequency value stored in dbs_info may be below the min policy limit,
-> which is incorrect.
-> 
-> To fix these problems, always update the requested frequency value
-> in dbs_info along with the local copy of it when the previous
-> requested frequency is beyond the policy limits and avoid decreasing
-> the requested frequency below the min policy limit when taking
-> idle periods into account.
-> 
-> Reported-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+The patch 23c7b54ca1cd: "PM / devfreq: Fix devfreq_add_device() when
+drivers are built as modules." leads to the following static checker
+warning:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+    drivers/devfreq/devfreq.c:1043 governor_store()
+    warn: 'governor' can also be NULL
 
+The reason is that the try_then_request_governor() function returns both
+error pointers and NULL. It should just return error pointers, so fix
+this by returning a ERR_PTR to the error intead of returning NULL.
+
+Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+
+ drivers/devfreq/devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 62ead442a872..b10124c7308f 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -231,7 +231,7 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
+  * if is not found. This can happen when both drivers (the governor driver
+  * and the driver that call devfreq_add_device) are built as modules.
+  * devfreq_list_lock should be held by the caller. Returns the matched
+- * governor's pointer.
++ * governor's pointer or an error pointer.
+  */
+ static struct devfreq_governor *try_then_request_governor(const char *name)
+ {
+@@ -257,7 +257,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
+ 		/* Restore previous state before return */
+ 		mutex_lock(&devfreq_list_lock);
+ 		if (err)
+-			return NULL;
++			return ERR_PTR(err);
+ 
+ 		governor = find_devfreq_governor(name);
+ 	}
 -- 
-viresh
+2.19.1
