@@ -1,137 +1,81 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH 03/11] thermal: add new sysfs file for irq-mode
-Date: Tue, 16 Oct 2018 16:56:14 +0200
-Message-ID: <20181016145644eucas1p2755acef5196e01799d5704fac9766547~eHqIWySvH0770707707eucas1p2z@eucas1p2.samsung.com>
-References: <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181016145644eucas1p2755acef5196e01799d5704fac9766547@eucas1p2.samsung.com>
-Content-Type: text/plain; charset="utf-8"
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 06/11] DT: arm64: exynos: add support for thermal trip irq-mode
+Date: Tue, 16 Oct 2018 17:09:14 +0200
+Message-ID: <CAJKOXPe4Jf3QVbQ6BFPFptkgvmmpNu+QCmDoD3JqhyYOidJ7vA@mail.gmail.com>
+References: <CGME20181016145647eucas1p206c068806214535da339588d77cbdfa5@eucas1p2.samsung.com>
+ <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com> <20181016145647eucas1p206c068806214535da339588d77cbdfa5~eHqLYh2dR2135021350eucas1p2K@eucas1p2.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
+In-Reply-To: <20181016145647eucas1p206c068806214535da339588d77cbdfa5~eHqLYh2dR2135021350eucas1p2K@eucas1p2.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
+To: l.luba@partner.samsung.com
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Patch adds show functions for irq-mode feature.
-It allocates new attributes and extends the old list.
+On Tue, 16 Oct 2018 at 16:56, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/thermal/thermal_sysfs.c | 53 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 51 insertions(+), 2 deletions(-)
+Hi Lukasz,
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 2241cea..372b439 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -21,6 +21,8 @@
- 
- #include "thermal_core.h"
- 
-+#define TRIP_ATTR_NUM 4
-+
- /* sys I/F for thermal zone */
- 
- static ssize_t
-@@ -167,6 +169,28 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
- }
- 
- static ssize_t
-+trip_point_irq_mode_show(struct device *dev, struct device_attribute *attr,
-+			 char *buf)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int trip, ret;
-+	bool mode;
-+
-+	if (!tz->ops->get_trip_irq_mode)
-+		return -EPERM;
-+
-+	if (sscanf(attr->attr.name, "trip_point_%d_irq", &trip) != 1)
-+		return -EINVAL;
-+
-+	ret = tz->ops->get_trip_irq_mode(tz, trip, &mode);
-+
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf, "%d\n", mode);
-+}
-+
-+static ssize_t
- trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
- 		      const char *buf, size_t count)
- {
-@@ -520,10 +544,19 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 	if (!tz->trip_type_attrs)
- 		return -ENOMEM;
- 
-+	tz->trip_irq_mode_attrs = kcalloc(tz->trips,
-+					  sizeof(*tz->trip_irq_mode_attrs),
-+					  GFP_KERNEL);
-+	if (!tz->trip_irq_mode_attrs) {
-+		kfree(tz->trip_type_attrs);
-+		return -ENOMEM;
-+	}
-+
- 	tz->trip_temp_attrs = kcalloc(tz->trips, sizeof(*tz->trip_temp_attrs),
- 				      GFP_KERNEL);
- 	if (!tz->trip_temp_attrs) {
- 		kfree(tz->trip_type_attrs);
-+		kfree(tz->trip_irq_mode_attrs);
- 		return -ENOMEM;
- 	}
- 
-@@ -533,14 +566,17 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 					      GFP_KERNEL);
- 		if (!tz->trip_hyst_attrs) {
- 			kfree(tz->trip_type_attrs);
-+			kfree(tz->trip_irq_mode_attrs);
- 			kfree(tz->trip_temp_attrs);
- 			return -ENOMEM;
- 		}
- 	}
- 
--	attrs = kcalloc(tz->trips * 3 + 1, sizeof(*attrs), GFP_KERNEL);
-+	attrs = kcalloc(tz->trips * TRIP_ATTR_NUM + 1, sizeof(*attrs),
-+			GFP_KERNEL);
- 	if (!attrs) {
- 		kfree(tz->trip_type_attrs);
-+		kfree(tz->trip_irq_mode_attrs);
- 		kfree(tz->trip_temp_attrs);
- 		if (tz->ops->get_trip_hyst)
- 			kfree(tz->trip_hyst_attrs);
-@@ -559,6 +595,19 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 		tz->trip_type_attrs[indx].attr.show = trip_point_type_show;
- 		attrs[indx] = &tz->trip_type_attrs[indx].attr.attr;
- 
-+		/* create trip irq_mode attribute */
-+		snprintf(tz->trip_irq_mode_attrs[indx].name,
-+			 THERMAL_NAME_LENGTH, "trip_point_%d_irq", indx);
-+
-+		sysfs_attr_init(&tz->trip_irq_mode_attrs[indx].attr.attr);
-+		tz->trip_irq_mode_attrs[indx].attr.attr.name =
-+			tz->trip_irq_mode_attrs[indx].name;
-+		tz->trip_irq_mode_attrs[indx].attr.attr.mode = S_IRUGO;
-+		tz->trip_irq_mode_attrs[indx].attr.show =
-+			trip_point_irq_mode_show;
-+		attrs[indx + tz->trips * 3] =
-+			&tz->trip_irq_mode_attrs[indx].attr.attr;
-+
- 		/* create trip temp attribute */
- 		snprintf(tz->trip_temp_attrs[indx].name, THERMAL_NAME_LENGTH,
- 			 "trip_point_%d_temp", indx);
-@@ -595,7 +644,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 		attrs[indx + tz->trips * 2] =
- 					&tz->trip_hyst_attrs[indx].attr.attr;
- 	}
--	attrs[tz->trips * 3] = NULL;
-+	attrs[tz->trips * TRIP_ATTR_NUM] = NULL;
- 
- 	tz->trips_attribute_group.attrs = attrs;
- 
--- 
-2.7.4
+Thanks for patches.
+
+I did not receive the first patches in the series. It is okay (depends
+on the context) but in such case sending cover letter to all people is
+quite useful. It helps to understand the entire patchset. Since I did
+not get them, I really do not know:
+1. Whether DTS patches are independent?
+2. How this fits in the big picture of Exynos thermal?
+
+
+> This patch adds support for new flash which indicates
+
+What is "flash"?
+
+Please wrap your lines accordingly (75 characters like in
+submitting-patches.rst). Current wrapping makes it more difficult to
+read.
+
+> that trip point triggers irq when temperature is met.
+> Exynos5433 supports 8 trip point which will trigger irq.
+
+"Exynos5433 supports 8 trip points which trigger interrupt."
+(or IRQ but not irq)
+
+> Above that number other trip points should be registered
+> without 'irq-mode' flag.
+
+Why they should be registered without irq-mode?
+
+> That will force the thermal framework to start polling
+> the temperature sensor under configured conditions and
+> handle the trip point.
+
+How does it fit into existing polling mode?
+
+>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi | 105 ++++++++++++++++---------
+>  1 file changed, 70 insertions(+), 35 deletions(-)
+>
+> diff --git a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
+> index fe3a0b1..c4330f6 100644
+> --- a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
+> +++ b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
+> @@ -17,37 +17,44 @@ thermal-zones {
+>                         atlas0_alert_0: atlas0-alert-0 {
+>                                 temperature = <65000>;  /* millicelsius */
+>                                 hysteresis = <1000>;    /* millicelsius */
+> -                               type = "active";
+> +                               type = "passive";
+
+Change of active->passive looks irrelevant to this topic. Here and
+everywhere else.
+
+Best regards,
+Krzysztof
