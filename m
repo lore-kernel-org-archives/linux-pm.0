@@ -1,63 +1,98 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Tue, 16 Oct 2018 09:33:05 +0200
-Message-ID: <20181016073305.GA64994@gmail.com>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com>
- <5BBE1E1F.3030308@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT/[PATCH] cpuidle: New timer events oriented governor for tickless systems
+Date: Tue, 16 Oct 2018 10:00:02 +0200
+Message-ID: <3128524.UsqAxBK4jd@aspire.rjw.lan>
+References: <000e01d4638a$91a20c60$b4e62520$@net> <001101d464fc$65623c60$3026b520$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5BBE1E1F.3030308@linaro.org>
+In-Reply-To: <001101d464fc$65623c60$3026b520$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-* Thara Gopinath <thara.gopinath@linaro.org> wrote:
-
-> >> Regarding testing, basic build, boot and sanity testing have been
-> >> performed on hikey960 mainline kernel with debian file system.
-> >> Further aobench (An occlusion renderer for benchmarking realworld
-> >> floating point performance) showed the following results on hikey960
-> >> with debain.
+On Tuesday, October 16, 2018 5:00:19 AM CEST Doug Smythies wrote:
+> On 2018.10.15 00:52 Rafael J. Wysocki wrote:
+> > On Sun, Oct 14, 2018 at 8:53 AM Doug Smythies <dsmythies@telus.net> wrote:
+> >> On 2018.10.11 14:02 Rafael J. Wysocki wrote:
+> >
+> > ...[cut]...
+> >
+> >>> Overall, it selects deeper idle states than menu more often, but
+> >>> that doesn't seem to make a significant difference in the majority
+> >>> of cases.
 > >>
-> >>                                         Result          Standard        Standard
-> >>                                         (Time secs)     Error           Deviation
-> >> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
-> >> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
-> > 
-> > Wow, +13% speedup, impressive! We definitely want this outcome.
-> > 
-> > I'm wondering what happens if we do not track and decay the thermal 
-> > load at all at the PELT level, but instantaneously decrease/increase 
-> > effective CPU capacity in reaction to thermal events we receive from 
-> > the CPU.
+> >> Not always, that viscous powernightmare sweep test that I run used
+> >> way way more processor package power and spent a staggering amount
+> >> of time in idle state 0. [1].
+> >
+> > Can you please remind me what exactly the workload is in that test?
 > 
-> The problem with instantaneous update is that sometimes thermal events 
-> happen at a much faster pace than cpu_capacity is updated in the 
-> scheduler. This means that at the moment when scheduler uses the 
-> value, it might not be correct anymore.
+> The problem with my main test computer is that I have never had a good
+> way to make it use idle state 0 and/or idle state 1 a significant amount,
+> while not setting the need-resched flag. Due to the minimum overheads
+> involved, in a tight loop c program calling nanosleep with an only 1
+> nanosecond argument, will result in about 50 (44 to 57 measured)
+> microseconds, or much too long to invoke idle state 0 or 1 (at least
+> on my test computer). So, for my 8 CPU older model i7-2600K, the idea
+> is to spin out 40 threads doing short sleeps in an attempt to pile up
+> events such that the shallower idle states are invoked more often.
+> 
+> Why 40 threads, one might wonder? This was many months ago now, but
+> I tested quite a number of threads, and 40 seemed to provide the
+> most interesting results for this type of work. I have not rechecked
+> it since (probably should).
+> 
+> For the testing I did in August for this:
+> 
+> "[PATCH] cpuidle: menu: Retain tick when shallow state is selected"
+> [2].
+> The thinking was to sweep through a wide range of sleep times,
+> and see if anything odd shows up. The test description is copied
+> here:
+> 
+> In [2] Doug wrote:
+> > Test 1: A Thomas Ilsche type "powernightmare" test:
+> > (forever ((10 times - variable usec sleep) 0.999 seconds sleep) X 40 staggered
+> > threads. Where the "variable" was from 0.05 to 5 in steps of 0.05, for the first ~200
+> > minutes of the test. (note: overheads mean that actual loop times are quite
+> > different.) And then from 5 to 500 in steps of 1, for the remaining 1000 minutes of
+> > the test. Each step ran for 2 minutes. The system was idle for 1 minute at the start,
+> > and a few minutes at the end of the graphs.
+> > While called "kernel 4.18", the baseline was actually from mainline at head =
+> > df2def4, or just after Rafael's linux-pm "pm-4.19-rc1-2" merge.
+> > (actually after the next acpi merge).
+> > Reference kernel = df2def4 with the two patches reverted.
+> 
+> However, that description was flawed, because there actually was never
+> a long sleep (incompetence on my part, but it doesn't really matter).
+> That test was 1200 minutes, and is worth looking at [3].
+> Notice how, as the test progresses, a migration through the idle
+> states can be observed, just as expected.
+> 
+> The next old reference of this test was the 8 patch set on top of
+> Kernel 4.19-rc6 [4], from a week ago. However, I shortened the test
+> by 900 minutes. Why? Well, there is only so much time in a day.
+> 
+> So now, back to the test this thread is about [1]. It might be
+> argued that maybe the TEO governor should be spending more time
+> in idle state 0 near the start of test, as the test shows. Trace
+> data does, maybe, support such an argument, but I haven't had
+> time to dig into it.
+> 
+> I also wonder if some of the weirdness later in the test is
+> repeatable or not (re: discussion elsewhere on this thread,
+> now cut, about lack of repeatability). However, I have not
+> had time to repeat the test.
+> 
+> Hope this helps, and sorry for any confusion and this long e-mail.
 
-Let me offer a different interpretation: if we average throttling events 
-then we create a 'smooth' average of 'true CPU capacity' that doesn't 
-fluctuate much. This allows more stable yet asymmetric task placement if 
-the thermal characteristics of the different cores is different 
-(asymmetric). This, compared to instantaneous updates, would reduce 
-unnecessary task migrations between cores.
+Yes, it helps, many thanks again and no worries about long emails. :-)
 
-Is that accurate?
+I'm going to make some changes to the new governor to take your observations
+into account.
 
-If the thermal characteristics of the cores is roughly symmetric and the 
-measured CPU-intense load itself is symmetric as well, then I have 
-trouble seeing why reacting to thermal events should make any difference 
-at all.
-
-Are there any inherent asymmetries in the thermal properties of the 
-cores, or in the benchmarked workload itself?
-
-Thanks,
-
-	Ingo
+Cheers,
+Rafael
