@@ -1,28 +1,94 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] cpupower update for Linux 4.20-rc1
-Date: Tue, 16 Oct 2018 10:14:30 +0200
-Message-ID: <CAJZ5v0jWrmCj=tpi_Eb6Z8vtRHFNdfU1d0_prytMZqK7hJPK-g@mail.gmail.com>
-References: <88f95364-29a8-358e-356e-e62771e52c8e@kernel.org>
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Subject: [PATCH] tools/power/cpupower: fix compilation with STATIC=true
+Date: Tue, 16 Oct 2018 11:56:26 +0300
+Message-ID: <153968018626.397151.17942194042449956995.stgit@buzz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <88f95364-29a8-358e-356e-e62771e52c8e@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shuah Khan <shuah@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Prarit Bhargava <prarit@redhat.com>, anders.roxell@linaro.org
+To: Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Shuah,
+Rename duplicate sysfs_read_file into cpupower_read_sysfs and fix linking.
 
-On Mon, Oct 15, 2018 at 9:21 PM Shuah Khan <shuah@kernel.org> wrote:
->
-> Hi Rafael,
->
-> Please pull the following cpupower update for Linux 4.20-rc1
->
-> This cpupower update for Linux 4.20-rc1 consists of fixes for bugs and
-> compile warnings from Prarit Bhargava and Anders Roxell.
->
-> diff is attached.
+Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+---
+ tools/power/cpupower/bench/Makefile        |    2 +-
+ tools/power/cpupower/lib/cpufreq.c         |    2 +-
+ tools/power/cpupower/lib/cpuidle.c         |    2 +-
+ tools/power/cpupower/lib/cpupower.c        |    4 ++--
+ tools/power/cpupower/lib/cpupower_intern.h |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
 
-Pulled, thanks!
+diff --git a/tools/power/cpupower/bench/Makefile b/tools/power/cpupower/bench/Makefile
+index d79ab161cc75..f68b4bc55273 100644
+--- a/tools/power/cpupower/bench/Makefile
++++ b/tools/power/cpupower/bench/Makefile
+@@ -9,7 +9,7 @@ endif
+ ifeq ($(strip $(STATIC)),true)
+ LIBS = -L../ -L$(OUTPUT) -lm
+ OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o \
+-       $(OUTPUT)../lib/cpufreq.o $(OUTPUT)../lib/sysfs.o
++       $(OUTPUT)../lib/cpufreq.o $(OUTPUT)../lib/cpupower.o
+ else
+ LIBS = -L../ -L$(OUTPUT) -lm -lcpupower
+ OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o
+diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
+index 1b993fe1ce23..0c0f3e3f0d80 100644
+--- a/tools/power/cpupower/lib/cpufreq.c
++++ b/tools/power/cpupower/lib/cpufreq.c
+@@ -28,7 +28,7 @@ static unsigned int sysfs_cpufreq_read_file(unsigned int cpu, const char *fname,
+ 
+ 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
+ 			 cpu, fname);
+-	return sysfs_read_file(path, buf, buflen);
++	return cpupower_read_sysfs(path, buf, buflen);
+ }
+ 
+ /* helper function to write a new value to a /sys file */
+diff --git a/tools/power/cpupower/lib/cpuidle.c b/tools/power/cpupower/lib/cpuidle.c
+index 9bd4c7655fdb..852d25462388 100644
+--- a/tools/power/cpupower/lib/cpuidle.c
++++ b/tools/power/cpupower/lib/cpuidle.c
+@@ -319,7 +319,7 @@ static unsigned int sysfs_cpuidle_read_file(const char *fname, char *buf,
+ 
+ 	snprintf(path, sizeof(path), PATH_TO_CPU "cpuidle/%s", fname);
+ 
+-	return sysfs_read_file(path, buf, buflen);
++	return cpupower_read_sysfs(path, buf, buflen);
+ }
+ 
+ 
+diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
+index 9c395ec924de..9711d628b0f4 100644
+--- a/tools/power/cpupower/lib/cpupower.c
++++ b/tools/power/cpupower/lib/cpupower.c
+@@ -15,7 +15,7 @@
+ #include "cpupower.h"
+ #include "cpupower_intern.h"
+ 
+-unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
++unsigned int cpupower_read_sysfs(const char *path, char *buf, size_t buflen)
+ {
+ 	int fd;
+ 	ssize_t numread;
+@@ -95,7 +95,7 @@ static int sysfs_topology_read_file(unsigned int cpu, const char *fname, int *re
+ 
+ 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/topology/%s",
+ 			 cpu, fname);
+-	if (sysfs_read_file(path, linebuf, MAX_LINE_LEN) == 0)
++	if (cpupower_read_sysfs(path, linebuf, MAX_LINE_LEN) == 0)
+ 		return -1;
+ 	*result = strtol(linebuf, &endp, 0);
+ 	if (endp == linebuf || errno == ERANGE)
+diff --git a/tools/power/cpupower/lib/cpupower_intern.h b/tools/power/cpupower/lib/cpupower_intern.h
+index 92affdfbe417..4887c76d23f8 100644
+--- a/tools/power/cpupower/lib/cpupower_intern.h
++++ b/tools/power/cpupower/lib/cpupower_intern.h
+@@ -3,4 +3,4 @@
+ #define MAX_LINE_LEN 4096
+ #define SYSFS_PATH_MAX 255
+ 
+-unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen);
++unsigned int cpupower_read_sysfs(const char *path, char *buf, size_t buflen);
