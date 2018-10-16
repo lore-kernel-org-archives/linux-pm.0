@@ -1,51 +1,61 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v8 10/15] sched: Introduce a sysctl for Energy Aware
- Scheduling
-Date: Tue, 16 Oct 2018 14:50:58 +0200
-Message-ID: <20181016125058.GD9130@localhost.localdomain>
-References: <20181016101513.26919-1-quentin.perret@arm.com>
- <20181016101513.26919-11-quentin.perret@arm.com>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for
+ at91sam9260_reset
+Date: Tue, 16 Oct 2018 13:30:24 +0000
+Message-ID: <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com>
+References: <20181007125815.8392-1-jonas@threetimestwo.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181016101513.26919-11-quentin.perret@arm.com>
+In-Reply-To: <20181007125815.8392-1-jonas@threetimestwo.org>
+Content-Language: en-US
+Content-ID: <D1F3A927FB1D134C99D9257FB1D90650@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: jonas@orbital-systems.com, linux-kernel@vger.kernel.org
+Cc: sre@kernel.org, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 16/10/18 11:15, Quentin Perret wrote:
-
-[...]
-
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index cc02050fd0c4..481309a11174 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -466,6 +466,17 @@ static struct ctl_table kern_table[] = {
->  		.extra1		= &one,
->  	},
->  #endif
-> +#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
-> +	{
-> +		.procname	= "sched_energy_aware",
-> +		.data		= &sysctl_sched_energy_aware,
-> +		.maxlen		= sizeof(unsigned int),
-> +		.mode		= 0644,
-> +		.proc_handler	= sched_energy_aware_handler,
-> +		.extra1		= &zero,
-> +		.extra2		= &one,
-> +	},
-> +#endif
-
-Doesn't this need to be documented in Documentation/sysctl/kernel.txt?
-
-Also, do we want a kernel parameter as well to be able to disable this
-at boot?
-
-Best,
-
-- Juri
+SGkgSm9uYXMsDQoNCk9uIDA3LjEwLjIwMTggMTU6NTcsIEpvbmFzIERhbmllbHNzb24gd3JvdGU6
+DQo+IEZyb206IEpvbmFzIERhbmllbHNzb24gPGpvbmFzQG9yYml0YWwtc3lzdGVtcy5jb20+DQo+
+IA0KPiBUaGlzIGZpeGVzIGEgYnVnIHdoZXJlIG91ciBlbWJlZGRlZCBzeXN0ZW0gKEFUOTFTQU05
+MjYwIGJhc2VkKSB3b3VsZA0KPiBoYW5nIGF0IHJlYm9vdC4gQXQgdGhlIG1vc3Qgd2UgbWFuYWdl
+ZCAxNiBib290IGxvb3BzIHdpdGhvdXQgYSBoYW5nLg0KPiANCj4gV2l0aCB0aGlzIHBhdGNoIGFw
+cGxpZWQgdGhlIHByb2JsZW0gaGFzIG5vdCBiZWVuIG9ic2VydmVkIGFuZCB0aGUgYm9hcmQNCj4g
+aGFzIG1hbmFnZWQgYWJvdmUgMjUwIGJvb3QgbG9vcHMuDQo+IA0KPiBUaGUgQVQ5MVNBTTkyNjAg
+ZGF0YXNoZWV0IHRlbGxzIHVzIHRoYXQgd2l0aCB0aGUgaW5zdHJ1Y3Rpb24gY2FjaGUNCj4gZGlz
+YWJsZWQgYWxsIGluc3RydWN0aW9ucyBhcmUgZmV0Y2hlZCBmcm9tIFNEUkFNLiBBbmQgd2UgaGF2
+ZSBhbiBlcnJhdGENCj4gdGVsbGluZyB1cyB3ZSBtdXN0IHBvd2VyIGRvd24gdGhlIFNEUkFNIGJl
+Zm9yZSBpc3N1aW5nIGNwdSByZXNldC4NCj4gDQo+IFRoaXMgbWVhbnMgd2UgbmVlZCB0aGUgaW5z
+dHJ1Y3Rpb24gY2FjaGUgZW5hYmxlZCBpbiBhdDkxc2FtOTI2MF9yZXNldCgpDQo+IEF0IHRoZSBt
+b21lbnQgaXQgaXMgYmVpbmcgZGlzYWJsZWQgaW4gY3B1X3Byb2NfZmluKCkgd2hpY2ggaXMgY2Fs
+bGVkIGZyb20NCj4gYXJjaC9hcm0va2VybmVsL3JlYm9vdC5jLg0KDQpBcmUgeW91IHVzaW5nIGtl
+eGVjIHJlYm9vdCBvciBpbXBsZW1lbnRlZCBoaWJlcm5hdGUgbW9kZSBvbiB0aGlzIG1hY2hpbmU/
+DQpJJ20gc2VlaW5nIGNwdV9wcm9jX2ZpbigpIGlzIGNhbGxlZCBvbmx5IGluIGNhc2Ugb2Yga2V4
+ZWMgcmVib290IG9yDQpzd2l0Y2hpbmcgdG8gaGliZXJuYXRlIG1vZGUuDQoNCkluIGNhc2Ugb2Yg
+bm9ybWFsIHJlYm9vdCAoZS5nLiByZWJvb3QgY29tbWFuZCkgbWFjaGluZV9yZXN0YXJ0KCkgZnJv
+bQ0KYXJjaC9hcm0va2VybmVsL3JlYm9vdC5jIGlzIGNhbGxlZC4gUGxlYXNlIGNvcnJlY3QgbWUg
+aWYgSSdtIHdyb25nLg0KDQpUaGFuayB5b3UsDQpDbGF1ZGl1IEJlem5lYQ0KDQo+IA0KPiBTaWdu
+ZWQtb2ZmLWJ5OiBKb25hcyBEYW5pZWxzc29uIDxqb25hc0BvcmJpdGFsLXN5c3RlbXMuY29tPg0K
+PiAtLS0NCj4gIGRyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNldC5jIHwgMTIgKysrKysrKysr
+KystDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0K
+PiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNldC5jIGIvZHJp
+dmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMNCj4gaW5kZXggZjQ0YTlmZmNjMmFiLi43ODk3
+MmJiYTY0ZGYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNldC5j
+DQo+ICsrKyBiL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNldC5jDQo+IEBAIC01MCwxNCAr
+NTAsMjQgQEAgc3RhdGljIHZvaWQgX19pb21lbSAqYXQ5MV9yYW1jX2Jhc2VbMl0sICphdDkxX3Jz
+dGNfYmFzZTsNCj4gIHN0YXRpYyBzdHJ1Y3QgY2xrICpzY2xrOw0KPiAgDQo+ICAvKg0KPiAtKiB1
+bmxlc3MgdGhlIFNEUkFNIGlzIGNsZWFubHkgc2h1dGRvd24gYmVmb3JlIHdlIGhpdCB0aGUNCj4g
+KyogRXJyYXRhIDQzLjEuNy4xIFJTVEM6IFJlc2V0IGR1cmluZyBTRFJBTSBBY2Nlc3Nlcw0KPiAr
+Kg0KPiArKiBVbmxlc3MgdGhlIFNEUkFNIGlzIGNsZWFubHkgc2h1dGRvd24gYmVmb3JlIHdlIGhp
+dCB0aGUNCj4gICogcmVzZXQgcmVnaXN0ZXIgaXQgY2FuIGJlIGxlZnQgZHJpdmluZyB0aGUgZGF0
+YSBidXMgYW5kDQo+ICAqIGtpbGxpbmcgdGhlIGNoYW5jZSBvZiBhIHN1YnNlcXVlbnQgYm9vdCBm
+cm9tIE5BTkQNCj4gKyoNCj4gKyogU2luY2Ugd2UgYXJlIGRpc2FibGluZyBTRFJBTSBuZWVkIHRv
+IG1ha2Ugc3VyZSB0aGF0IHRoZQ0KPiArKiBpbnN0cnVjdGlvbiBjYWNoZSBpcyBlbmFibGVkLg0K
+PiAgKi8NCj4gIHN0YXRpYyBpbnQgYXQ5MXNhbTkyNjBfcmVzdGFydChzdHJ1Y3Qgbm90aWZpZXJf
+YmxvY2sgKnRoaXMsIHVuc2lnbmVkIGxvbmcgbW9kZSwNCj4gIAkJCSAgICAgICB2b2lkICpjbWQp
+DQo+ICB7DQo+ICAJYXNtIHZvbGF0aWxlKA0KPiArCQkvKiBFbmFibGUgSS1jYWNoZSAqLw0KPiAr
+CQkibXJjCXAxNSwgMCwgcjAsIGMxLCBjMCwgMFxuXHQiDQo+ICsJCSJvcnIJcjAsIHIwLCAjNDA5
+NlxuXHQiIC8qIENSX0kgKGJpdCAxMikgKi8NCj4gKwkJIm1jcglwMTUsIDAsIHIwLCBjMSwgYzAs
+IDBcblx0Ig0KPiArDQo+ICAJCS8qIEFsaWduIHRvIGNhY2hlIGxpbmVzICovDQo+ICAJCSIuYmFs
+aWduIDMyXG5cdCINCj4gIA0KPiANCg==
