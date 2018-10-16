@@ -1,7 +1,7 @@
 From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v8 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Tue, 16 Oct 2018 11:15:13 +0100
-Message-ID: <20181016101513.26919-16-quentin.perret@arm.com>
+Subject: [PATCH v8 02/15] sched/cpufreq: Prepare schedutil for Energy Aware Scheduling
+Date: Tue, 16 Oct 2018 11:15:00 +0100
+Message-ID: <20181016101513.26919-3-quentin.perret@arm.com>
 References: <20181016101513.26919-1-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,115 +12,236 @@ To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux
 Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-*******************************************************************
-* This patch illustrates the usage of the newly introduced Energy *
-* Model framework and isn't supposed to be merged as-is.          *
-*******************************************************************
+Schedutil requests frequency by aggregating utilization signals from
+the scheduler (CFS, RT, DL, IRQ) and applying a 25% margin on top of
+them. Since Energy Aware Scheduling (EAS) needs to be able to predict
+the frequency requests, it needs to forecast the decisions made by the
+governor.
 
-The Energy Model framework provides an API to register the active power
-of CPUs. Call this API from the cpufreq-dt driver with an estimation
-of the power as P = C * V^2 * f with C, V, and f respectively the
-capacitance of the CPU and the voltage and frequency of the OPP.
+In order to prepare the introduction of EAS, introduce
+schedutil_freq_util() to centralize the aforementioned signal
+aggregation and make it available to both schedutil and EAS. Since
+frequency selection and energy estimation still need to deal with RT and
+DL signals slightly differently, schedutil_freq_util() is called with a
+different 'type' parameter in those two contexts, and returns an
+aggregated utilization signal accordingly. While at it, introduce the
+map_util_freq() function which is designed to make schedutil's 25%
+margin usable easily for both sugov and EAS.
 
-The CPU capacitance is read from the "dynamic-power-coefficient" DT
-binding (originally introduced for thermal/IPA), and the voltage and
-frequency values from PM_OPP.
+As EAS will be able to predict schedutil's frequency requests more
+accurately than any other governor by design, it'd be sensible to make
+sure EAS cannot be used without schedutil. This will be done later, once
+EAS has actually been introduced.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
- drivers/cpufreq/cpufreq-dt.c | 48 +++++++++++++++++++++++++++++++++++-
- 1 file changed, 47 insertions(+), 1 deletion(-)
+ include/linux/sched/cpufreq.h    |  6 +++
+ kernel/sched/cpufreq_schedutil.c | 92 +++++++++++++++++++++-----------
+ kernel/sched/sched.h             | 30 +++++++++++
+ 3 files changed, 97 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 0a9ebf00be46..15ac9754afa2 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -16,6 +16,7 @@
- #include <linux/cpu_cooling.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/energy_model.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -149,8 +150,50 @@ static int resources_available(void)
- 	return 0;
- }
- 
-+static int __maybe_unused of_est_power(unsigned long *mW, unsigned long *KHz,
-+				       int cpu)
+diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+index 59667444669f..afa940cd50dc 100644
+--- a/include/linux/sched/cpufreq.h
++++ b/include/linux/sched/cpufreq.h
+@@ -20,6 +20,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
+                        void (*func)(struct update_util_data *data, u64 time,
+ 				    unsigned int flags));
+ void cpufreq_remove_update_util_hook(int cpu);
++
++static inline unsigned long map_util_freq(unsigned long util,
++					unsigned long freq, unsigned long cap)
 +{
-+	unsigned long mV, Hz, MHz;
-+	struct device *cpu_dev;
-+	struct dev_pm_opp *opp;
-+	struct device_node *np;
-+	u32 cap;
-+	u64 tmp;
++	return (freq + (freq >> 2)) * util / cap;
++}
+ #endif /* CONFIG_CPU_FREQ */
+ 
+ #endif /* _LINUX_SCHED_CPUFREQ_H */
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 3fffad3bc8a8..105cf70fcb69 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -13,6 +13,7 @@
+ 
+ #include "sched.h"
+ 
++#include <linux/sched/cpufreq.h>
+ #include <trace/events/power.h>
+ 
+ struct sugov_tunables {
+@@ -167,7 +168,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+ 	unsigned int freq = arch_scale_freq_invariant() ?
+ 				policy->cpuinfo.max_freq : policy->cur;
+ 
+-	freq = (freq + (freq >> 2)) * util / max;
++	freq = map_util_freq(util, freq, max);
+ 
+ 	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+ 		return sg_policy->next_freq;
+@@ -197,15 +198,13 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+  * based on the task model parameters and gives the minimal utilization
+  * required to meet deadlines.
+  */
+-static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
++unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
++				  unsigned long max, enum schedutil_type type)
+ {
+-	struct rq *rq = cpu_rq(sg_cpu->cpu);
+-	unsigned long util, irq, max;
+-
+-	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+-	sg_cpu->bw_dl = cpu_bw_dl(rq);
++	struct rq *rq = cpu_rq(cpu);
++	unsigned long util, irq;
+ 
+-	if (rt_rq_is_runnable(&rq->rt))
++	if (type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt))
+ 		return max;
+ 
+ 	/*
+@@ -223,20 +222,33 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+ 	 * utilization (PELT windows are synchronized) we can directly add them
+ 	 * to obtain the CPU's actual utilization.
+ 	 */
+-	util = cpu_util_cfs(rq);
++	util = util_cfs;
+ 	util += cpu_util_rt(rq);
+ 
+-	/*
+-	 * We do not make cpu_util_dl() a permanent part of this sum because we
+-	 * want to use cpu_bw_dl() later on, but we need to check if the
+-	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
+-	 * f_max when there is no idle time.
+-	 *
+-	 * NOTE: numerical errors or stop class might cause us to not quite hit
+-	 * saturation when we should -- something for later.
+-	 */
+-	if ((util + cpu_util_dl(rq)) >= max)
+-		return max;
++	if (type == FREQUENCY_UTIL) {
++		/*
++		 * For frequency selection we do not make cpu_util_dl() a
++		 * permanent part of this sum because we want to use
++		 * cpu_bw_dl() later on, but we need to check if the
++		 * CFS+RT+DL sum is saturated (ie. no idle time) such
++		 * that we select f_max when there is no idle time.
++		 *
++		 * NOTE: numerical errors or stop class might cause us
++		 * to not quite hit saturation when we should --
++		 * something for later.
++		 */
 +
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev)
-+		return -ENODEV;
++		if ((util + cpu_util_dl(rq)) >= max)
++			return max;
++	} else {
++		/*
++		 * OTOH, for energy computation we need the estimated
++		 * running time, so include util_dl and ignore dl_bw.
++		 */
++		util += cpu_util_dl(rq);
++		if (util >= max)
++			return max;
++	}
+ 
+ 	/*
+ 	 * There is still idle time; further improve the number by using the
+@@ -250,17 +262,35 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+ 	util = scale_irq_capacity(util, irq, max);
+ 	util += irq;
+ 
+-	/*
+-	 * Bandwidth required by DEADLINE must always be granted while, for
+-	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+-	 * to gracefully reduce the frequency when no tasks show up for longer
+-	 * periods of time.
+-	 *
+-	 * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+-	 * bw_dl as requested freq. However, cpufreq is not yet ready for such
+-	 * an interface. So, we only do the latter for now.
+-	 */
+-	return min(max, util + sg_cpu->bw_dl);
++	if (type == FREQUENCY_UTIL) {
++		/*
++		 * Bandwidth required by DEADLINE must always be granted
++		 * while, for FAIR and RT, we use blocked utilization of
++		 * IDLE CPUs as a mechanism to gracefully reduce the
++		 * frequency when no tasks show up for longer periods of
++		 * time.
++		 *
++		 * Ideally we would like to set bw_dl as min/guaranteed
++		 * freq and util + bw_dl as requested freq. However,
++		 * cpufreq is not yet ready for such an interface. So,
++		 * we only do the latter for now.
++		 */
++		util += cpu_bw_dl(rq);
++	}
 +
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -EINVAL;
-+
-+	if (of_property_read_u32(np, "dynamic-power-coefficient", &cap))
-+		return -EINVAL;
-+
-+	Hz = *KHz * 1000;
-+	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &Hz);
-+	if (IS_ERR(opp))
-+		return -EINVAL;
-+
-+	mV = dev_pm_opp_get_voltage(opp) / 1000;
-+	dev_pm_opp_put(opp);
-+	if (!mV)
-+		return -EINVAL;
-+
-+	MHz = Hz / 1000000;
-+	tmp = (u64)cap * mV * mV * MHz;
-+	do_div(tmp, 1000000000);
-+
-+	*mW = (unsigned long)tmp;
-+	*KHz = Hz / 1000;
-+
-+	return 0;
++	return min(max, util);
 +}
 +
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
-+	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
- 	struct cpufreq_frequency_table *freq_table;
- 	struct opp_table *opp_table = NULL;
- 	struct private_data *priv;
-@@ -159,7 +202,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	unsigned int transition_latency;
- 	bool fallback = false;
- 	const char *name;
--	int ret;
-+	int ret, nr_opp;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
-@@ -226,6 +269,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		ret = -EPROBE_DEFER;
- 		goto out_free_opp;
- 	}
-+	nr_opp = ret;
- 
- 	if (fallback) {
- 		cpumask_setall(policy->cpus);
-@@ -278,6 +322,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
++static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
++{
++	struct rq *rq = cpu_rq(sg_cpu->cpu);
++	unsigned long util = cpu_util_cfs(rq);
++	unsigned long max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
 +
- 	return 0;
++	sg_cpu->max = max;
++	sg_cpu->bw_dl = cpu_bw_dl(rq);
++
++	return schedutil_freq_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL);
+ }
  
- out_free_cpufreq_table:
+ /**
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index ad12d11af0b2..440009115c64 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2173,6 +2173,31 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+ #endif
+ 
+ #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
++/**
++ * enum schedutil_type - CPU utilization type
++ * @FREQUENCY_UTIL:	Utilization used to select frequency
++ * @ENERGY_UTIL:	Utilization used during energy calculation
++ *
++ * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
++ * need to be aggregated differently depending on the usage made of them. This
++ * enum is used within schedutil_freq_util() to differentiate the types of
++ * utilization expected by the callers, and adjust the aggregation accordingly.
++ */
++enum schedutil_type {
++	FREQUENCY_UTIL,
++	ENERGY_UTIL,
++};
++
++unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
++			          unsigned long max, enum schedutil_type type);
++
++static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
++{
++	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
++
++	return schedutil_freq_util(cpu, cfs, max, ENERGY_UTIL);
++}
++
+ static inline unsigned long cpu_bw_dl(struct rq *rq)
+ {
+ 	return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
+@@ -2199,6 +2224,11 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+ {
+ 	return READ_ONCE(rq->avg_rt.util_avg);
+ }
++#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
++static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
++{
++	return cfs;
++}
+ #endif
+ 
+ #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
 -- 
 2.19.1
