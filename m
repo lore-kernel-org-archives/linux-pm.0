@@ -1,103 +1,93 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH v3] kernel/hung_task.c: disable on suspend
-Date: Tue, 16 Oct 2018 18:55:13 +0200
-Message-ID: <20181016165513.7133-1-vkuznets@redhat.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Tue, 16 Oct 2018 19:11:41 +0200
+Message-ID: <CAKfTPtBZam-+3sbKa+XffhoxkPX_ndTLoxioVwU-iz0qTnnPAw@mail.gmail.com>
+References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
+ <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+ <5BBE3751.7000908@linaro.org> <20181011111025eucas1p2125db99d798a60a8e38da97c2a1c7436~ciWHHd0YW0102601026eucas1p2b@eucas1p2.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181011111025eucas1p2125db99d798a60a8e38da97c2a1c7436~ciWHHd0YW0102601026eucas1p2b@eucas1p2.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
+To: l.luba@partner.samsung.com
+Cc: Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-It is possible to observe hung_task complaints when system goes to
-suspend-to-idle state:
+Hi Lukasz,
 
- # echo freeze > /sys/power/state
+On Thu, 11 Oct 2018 at 13:10, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+>
+>
+>
+> On 10/10/2018 07:30 PM, Thara Gopinath wrote:
+> > Hello Lukasz,
+> >
+> > On 10/10/2018 11:35 AM, Lukasz Luba wrote:
+> >> Hi Thara,
+> >>
+> >> I have run it on Exynos5433 mainline.
+> >> When it is enabled with step_wise thermal governor,
+> >> some of my tests are showing ~30-50% regression (i.e. hackbench),
+> >> dhrystone ~10%.
+> >
+> > That is interesting. If I understand correctly, dhrystone spawns 16
+> > threads or so and floods the system. In "theory", such a test should not
+> > see any performance improvement and degradation. What is the thermal
+> > activity like in your system? I will try running one of these tests on
+> > hikey960.
+> I use this dhrystone implementation:
+> https://github.com/Keith-S-Thompson/dhrystone/blob/master/v2.2/dry.c
+> It does not span new threads/processes and I pinned it to a single cpu.
+>
+> My thermal setup is probably different than yours.
+> You have (on hikey960) probably 1 sensor for whole SoC and one thermal
+> zone (if it is this mainline file:
+> arch/arm64/boot/dts/hisilicon/hi3660.dtsi).
+> This thermal zone has two cooling devices - two clusters with dvfs.
+> Your temperature signal read out from that sensor is probably much
+> smoother. When you have sensor inside cluster, the rising factor
+> can be even 20deg/s (for big cores).
+> In my case, there are 4 thermal zones, each cluster has it's private
+> sensor and thermal zone. There is no 'SoC sensor' or 'PCB sensor',
+> which is recommended for IPA.
+> >>
+> >> Could you tell me which thermal governor was used in your case?
+> >> Please also share the name of that benchmark, i will give it a try.
+> >> Is it single threaded compute-intensive?
+> >
+> > Step-wise governor.
+> > I use aobench which is part of phoronix-test-suite.
+> >
+> > Regards
+> > Thara
+> >
+> I have built this aobench and run it pinned to single big cpu:
+> time taskset -c 4 ./aobench
 
- PM: Syncing filesystems ... done.
- Freezing user space processes ... (elapsed 0.001 seconds) done.
- OOM killer disabled.
- Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
- sd 0:0:0:0: [sda] Synchronizing SCSI cache
- INFO: task bash:1569 blocked for more than 120 seconds.
-       Not tainted 4.19.0-rc3_+ #687
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- bash            D    0  1569    604 0x00000000
- Call Trace:
-  ? __schedule+0x1fe/0x7e0
-  schedule+0x28/0x80
-  suspend_devices_and_enter+0x4ac/0x750
-  pm_suspend+0x2c0/0x310
+Why have you pinned the test only on CPU4 ?
+Goal of thermal pressure is to inform the scheduler of reduced compute
+capacity and help the scheduler to take better decision in tasks
+placement.
+So I would not expect perf impact on your test as the bench will stay
+pinned on the cpu4
+That being said you obviously have perf impact as shown below in your results
+And other tasks on the system are not pinned and might come and
+disturb your bench
 
-Register a PM notifier to disable the detector on suspend and re-enable
-back on wakeup.
+> The results:
+> 3min-5:30min [mainline]
+> 5:15min-5:50min [+patchset]
+>
+> The idea is definitely worth to investigate further.
 
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
-Changes since v2:
-- Resurrect 'v1' as zeroing timeouts can be racy [Rafael J. Wysocki]
----
- kernel/hung_task.c | 28 +++++++++++++++++++++++++++-
- 1 file changed, 27 insertions(+), 1 deletion(-)
+Yes I agree
 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index b9132d1269ef..41955c5d8427 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -15,6 +15,7 @@
- #include <linux/lockdep.h>
- #include <linux/export.h>
- #include <linux/sysctl.h>
-+#include <linux/suspend.h>
- #include <linux/utsname.h>
- #include <linux/sched/signal.h>
- #include <linux/sched/debug.h>
-@@ -242,6 +243,26 @@ void reset_hung_task_detector(void)
- }
- EXPORT_SYMBOL_GPL(reset_hung_task_detector);
- 
-+static bool hung_detector_suspended;
-+
-+static int hungtask_pm_notify(struct notifier_block *self,
-+			      unsigned long action, void *hcpu)
-+{
-+	switch (action) {
-+	case PM_SUSPEND_PREPARE:
-+	case PM_HIBERNATION_PREPARE:
-+		hung_detector_suspended = true;
-+		break;
-+	case PM_POST_SUSPEND:
-+	case PM_POST_HIBERNATION:
-+		hung_detector_suspended = false;
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- /*
-  * kthread which checks for tasks stuck in D state
-  */
-@@ -261,7 +282,8 @@ static int watchdog(void *dummy)
- 		interval = min_t(unsigned long, interval, timeout);
- 		t = hung_timeout_jiffies(hung_last_checked, interval);
- 		if (t <= 0) {
--			if (!atomic_xchg(&reset_hung_task, 0))
-+			if (!atomic_xchg(&reset_hung_task, 0) &&
-+			    !hung_detector_suspended)
- 				check_hung_uninterruptible_tasks(timeout);
- 			hung_last_checked = jiffies;
- 			continue;
-@@ -275,6 +297,10 @@ static int watchdog(void *dummy)
- static int __init hung_task_init(void)
- {
- 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-+
-+	/* Disable hung task detector on suspend */
-+	pm_notifier(hungtask_pm_notify, 0);
-+
- 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
- 
- 	return 0;
--- 
-2.17.1
+Vincent
+>
+> Regards,
+> Lukasz
+>
+>
+>
