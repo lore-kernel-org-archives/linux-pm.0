@@ -1,247 +1,156 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH v8 02/15] sched/cpufreq: Prepare schedutil for Energy Aware Scheduling
-Date: Tue, 16 Oct 2018 11:15:00 +0100
-Message-ID: <20181016101513.26919-3-quentin.perret@arm.com>
-References: <20181016101513.26919-1-quentin.perret@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
+Date: Tue, 16 Oct 2018 13:20:56 +0200
+Message-ID: <77993e69-db55-a2a0-799f-5225d5ffb010@linaro.org>
+References: <20180927024204.17314-1-andy.tang@nxp.com>
+ <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
+ <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+ <cf157e9f-a4cb-6d7d-f51d-8b9d91f3335c@linaro.org>
+ <DB5PR0401MB2213E291AC455D61ED15AF4AF3FE0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181016101513.26919-1-quentin.perret@arm.com>
+In-Reply-To: <DB5PR0401MB2213E291AC455D61ED15AF4AF3FE0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
+To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Schedutil requests frequency by aggregating utilization signals from
-the scheduler (CFS, RT, DL, IRQ) and applying a 25% margin on top of
-them. Since Energy Aware Scheduling (EAS) needs to be able to predict
-the frequency requests, it needs to forecast the decisions made by the
-governor.
+On 16/10/2018 05:01, Andy Tang wrote:
+> Hi Daniel,
+> 
+> Please see my reply inline.
+> 
+>> -----Original Message-----
 
-In order to prepare the introduction of EAS, introduce
-schedutil_freq_util() to centralize the aforementioned signal
-aggregation and make it available to both schedutil and EAS. Since
-frequency selection and energy estimation still need to deal with RT and
-DL signals slightly differently, schedutil_freq_util() is called with a
-different 'type' parameter in those two contexts, and returns an
-aggregated utilization signal accordingly. While at it, introduce the
-map_util_freq() function which is designed to make schedutil's 25%
-margin usable easily for both sugov and EAS.
+[ ... ]
 
-As EAS will be able to predict schedutil's frequency requests more
-accurately than any other governor by design, it'd be sensible to make
-sure EAS cannot be used without schedutil. This will be done later, once
-EAS has actually been introduced.
+>> I'm proposing to move struct qoriq_tmu_site_regs inside the struct
+>> qoriq_sensor.
+>>
+>>
+>> We end up with:
+>>
+>> struct qoriq_sensor {
+>>    struct thermal_zone_device *tzd;
+>>    struct struct qoriq_tmu_site_regs *regs;
+>>    struct qoriq_tmu_data *qdata;
+>>    int id;
+>> };
+> [Andy] I see your point. If I add a *regs member to qoriq_sensor struct, then I can speed up the access to the register.
+> But I don't think it is better. Currently I can access sensor register by: qdata->regs->site[qsensor->id].
+> The whole point here is we can't MOVE struct qoriq_tmu_site_regs to the struct qoriq_sensor. We can only COPY
+> it to struct qoriq_sensor. 
+> 
+> This is the TMU module memory map:
+> struct qoriq_tmu_regs {
+> ......
+>         u32 tscfgr;             /* Sensor Configuration Register */
+>         u8 res4[0x78];
+>         struct qoriq_tmu_site_regs site[SITES_MAX];
+>         u8 res5[0x9f8];
+>         u32 ipbrr0;             /* IP Block Revision Register 0 */
+>         u32 ipbrr1;             /* IP Block Revision Register 1 */
+> .......}
+> struct qoriq_tmu_site_regs site[SITES_MAX] is part of the memory
+> map.
+> It can't be removed or we have to define a similar struct to fill it up.
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- include/linux/sched/cpufreq.h    |  6 +++
- kernel/sched/cpufreq_schedutil.c | 92 +++++++++++++++++++++-----------
- kernel/sched/sched.h             | 30 +++++++++++
- 3 files changed, 97 insertions(+), 31 deletions(-)
+Mmh, I see. Thanks for the clarification.
 
-diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-index 59667444669f..afa940cd50dc 100644
---- a/include/linux/sched/cpufreq.h
-+++ b/include/linux/sched/cpufreq.h
-@@ -20,6 +20,12 @@ void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
-                        void (*func)(struct update_util_data *data, u64 time,
- 				    unsigned int flags));
- void cpufreq_remove_update_util_hook(int cpu);
-+
-+static inline unsigned long map_util_freq(unsigned long util,
-+					unsigned long freq, unsigned long cap)
-+{
-+	return (freq + (freq >> 2)) * util / cap;
-+}
- #endif /* CONFIG_CPU_FREQ */
- 
- #endif /* _LINUX_SCHED_CPUFREQ_H */
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 3fffad3bc8a8..105cf70fcb69 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -13,6 +13,7 @@
- 
- #include "sched.h"
- 
-+#include <linux/sched/cpufreq.h>
- #include <trace/events/power.h>
- 
- struct sugov_tunables {
-@@ -167,7 +168,7 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
- 	unsigned int freq = arch_scale_freq_invariant() ?
- 				policy->cpuinfo.max_freq : policy->cur;
- 
--	freq = (freq + (freq >> 2)) * util / max;
-+	freq = map_util_freq(util, freq, max);
- 
- 	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
- 		return sg_policy->next_freq;
-@@ -197,15 +198,13 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
-  * based on the task model parameters and gives the minimal utilization
-  * required to meet deadlines.
-  */
--static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-+unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-+				  unsigned long max, enum schedutil_type type)
- {
--	struct rq *rq = cpu_rq(sg_cpu->cpu);
--	unsigned long util, irq, max;
--
--	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
--	sg_cpu->bw_dl = cpu_bw_dl(rq);
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long util, irq;
- 
--	if (rt_rq_is_runnable(&rq->rt))
-+	if (type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt))
- 		return max;
- 
- 	/*
-@@ -223,20 +222,33 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
- 	 * utilization (PELT windows are synchronized) we can directly add them
- 	 * to obtain the CPU's actual utilization.
- 	 */
--	util = cpu_util_cfs(rq);
-+	util = util_cfs;
- 	util += cpu_util_rt(rq);
- 
--	/*
--	 * We do not make cpu_util_dl() a permanent part of this sum because we
--	 * want to use cpu_bw_dl() later on, but we need to check if the
--	 * CFS+RT+DL sum is saturated (ie. no idle time) such that we select
--	 * f_max when there is no idle time.
--	 *
--	 * NOTE: numerical errors or stop class might cause us to not quite hit
--	 * saturation when we should -- something for later.
--	 */
--	if ((util + cpu_util_dl(rq)) >= max)
--		return max;
-+	if (type == FREQUENCY_UTIL) {
-+		/*
-+		 * For frequency selection we do not make cpu_util_dl() a
-+		 * permanent part of this sum because we want to use
-+		 * cpu_bw_dl() later on, but we need to check if the
-+		 * CFS+RT+DL sum is saturated (ie. no idle time) such
-+		 * that we select f_max when there is no idle time.
-+		 *
-+		 * NOTE: numerical errors or stop class might cause us
-+		 * to not quite hit saturation when we should --
-+		 * something for later.
-+		 */
-+
-+		if ((util + cpu_util_dl(rq)) >= max)
-+			return max;
-+	} else {
-+		/*
-+		 * OTOH, for energy computation we need the estimated
-+		 * running time, so include util_dl and ignore dl_bw.
-+		 */
-+		util += cpu_util_dl(rq);
-+		if (util >= max)
-+			return max;
-+	}
- 
- 	/*
- 	 * There is still idle time; further improve the number by using the
-@@ -250,17 +262,35 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
- 	util = scale_irq_capacity(util, irq, max);
- 	util += irq;
- 
--	/*
--	 * Bandwidth required by DEADLINE must always be granted while, for
--	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
--	 * to gracefully reduce the frequency when no tasks show up for longer
--	 * periods of time.
--	 *
--	 * Ideally we would like to set bw_dl as min/guaranteed freq and util +
--	 * bw_dl as requested freq. However, cpufreq is not yet ready for such
--	 * an interface. So, we only do the latter for now.
--	 */
--	return min(max, util + sg_cpu->bw_dl);
-+	if (type == FREQUENCY_UTIL) {
-+		/*
-+		 * Bandwidth required by DEADLINE must always be granted
-+		 * while, for FAIR and RT, we use blocked utilization of
-+		 * IDLE CPUs as a mechanism to gracefully reduce the
-+		 * frequency when no tasks show up for longer periods of
-+		 * time.
-+		 *
-+		 * Ideally we would like to set bw_dl as min/guaranteed
-+		 * freq and util + bw_dl as requested freq. However,
-+		 * cpufreq is not yet ready for such an interface. So,
-+		 * we only do the latter for now.
-+		 */
-+		util += cpu_bw_dl(rq);
-+	}
-+
-+	return min(max, util);
-+}
-+
-+static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-+{
-+	struct rq *rq = cpu_rq(sg_cpu->cpu);
-+	unsigned long util = cpu_util_cfs(rq);
-+	unsigned long max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-+
-+	sg_cpu->max = max;
-+	sg_cpu->bw_dl = cpu_bw_dl(rq);
-+
-+	return schedutil_freq_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL);
- }
- 
- /**
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index ad12d11af0b2..440009115c64 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -2173,6 +2173,31 @@ static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
- #endif
- 
- #ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
-+/**
-+ * enum schedutil_type - CPU utilization type
-+ * @FREQUENCY_UTIL:	Utilization used to select frequency
-+ * @ENERGY_UTIL:	Utilization used during energy calculation
-+ *
-+ * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
-+ * need to be aggregated differently depending on the usage made of them. This
-+ * enum is used within schedutil_freq_util() to differentiate the types of
-+ * utilization expected by the callers, and adjust the aggregation accordingly.
-+ */
-+enum schedutil_type {
-+	FREQUENCY_UTIL,
-+	ENERGY_UTIL,
-+};
-+
-+unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
-+			          unsigned long max, enum schedutil_type type);
-+
-+static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
-+{
-+	unsigned long max = arch_scale_cpu_capacity(NULL, cpu);
-+
-+	return schedutil_freq_util(cpu, cfs, max, ENERGY_UTIL);
-+}
-+
- static inline unsigned long cpu_bw_dl(struct rq *rq)
- {
- 	return (rq->dl.running_bw * SCHED_CAPACITY_SCALE) >> BW_SHIFT;
-@@ -2199,6 +2224,11 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
- {
- 	return READ_ONCE(rq->avg_rt.util_avg);
- }
-+#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
-+static inline unsigned long schedutil_energy_util(int cpu, unsigned long cfs)
-+{
-+	return cfs;
-+}
- #endif
- 
- #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
+A consolidation around this would have been nice but it means a DT
+change (reduce the size of the map). So I guess we can leave it as it is.
+
+
+>>>>> -	if (sensor_specs.args_count >= 1) {
+>>>>> -		id = sensor_specs.args[0];
+>>>>> -		WARN(sensor_specs.args_count > 1,
+>>>>> -				"%s: too many cells in sensor specifier %d\n",
+>>>>> -				sensor_specs.np->name,
+>> sensor_specs.args_count);
+>>>>> -	} else {
+>>>>> -		id = 0;
+>>>>> +		if (id > SITES_MAX)
+>>>>> +			return -EINVAL;
+>>>>> +
+>>>>> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+>>>>> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
+>>>>> +		if (!qdata->sensor[id])
+>>>>> +			return -ENOMEM;
+>>>>> +
+>>>>> +		qdata->sensor[id]->id = id;
+>>>>> +		qdata->sensor[id]->qdata = qdata;
+>>>>> +
+>>>>> +		qdata->sensor[id]->tzd =
+>>>> devm_thermal_zone_of_sensor_register(
+>>>>> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
+>>>>> +
+>>>>> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
+>>>>> +			ret = PTR_ERR(qdata->sensor[id]->tzd);
+>>>>> +			dev_err(&pdev->dev,
+>>>>> +				"Failed to register thermal zone device.\n");
+>>>>> +			return -ENODEV;
+>>>>> +		}
+>>>>> +
+>>>>> +		sites |= 0x1 << (15 - id);
+>>>>
+>>>> The current code is reading the DT in order to get the sensor id and
+>>>> initialize it. IOW, the DT gives the sensors to use.
+>>>>
+>>>> IMO, it would be more self contained if the driver initializes all
+>>>> the sensors without taking care of the DT and let the of- code to do
+>>>> the binding when the thermal zone, no ?
+>>> [Andy] could you please explain more about this way? I am not sure how
+>> to implement it.
+>>> But one thing is for sure: we must get the sensor IDs explicitly so
+>>> that we can enable them by the following command:  tmu_write(qdata,
+>>> sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
+>>
+>> What I meant is about code separation between the driver itself and the
+>> of-thermal code.
+>>
+>> The code above re-inspect the DT to find out the sensor ids in order to
+>> enable them and somehow this is not wrong but breaks the self
+>> encapsulation of the driver. I was suggesting if it isn't possible to enable all
+>> the sensors without taking care of digging into the DT.
+> 
+> [Andy] I don't want to re-parse the DT here too. But I have to.
+> This driver will be used by all our SOCs with different sensor IDs and number.
+> For example: there are 2 sensors on ls1088a platform with ID 0 and 1.
+> While on ls1043a there are 6 sensors with ID 0, 1, 2, 3, 4, 5.
+> If we don't scan the DT we would not know how many sensors it is and what are the sensor's IDs,
+> unless we hardcode it in driver.
+
+Yes, you are not the only one in this situation IMO and the drivers
+supporting multiple sensors are increasing, so this will repeat again
+and again.
+
+That could be hardcoded in the driver by using the compatible string but
+it will be nicer if we can fix that in the DT.
+
+[Cc'ing Rob]
+
+What is missing is a description of the sensors id in the temperature
+device node. We have the <thermal-sensor-cells> with 0 or 1 telling if
+there is one or several sensors but we can't specify which sensor ids we
+have. The only alternative is to parse the thermal zones to found out
+which sensors are in use and use them to initialize the driver, an
+approach which breaks the self-encapsulation: the of-thermal framework
+is the one in charge of doing the link between the thermal zone and a
+sensor id.
+
+Is it acceptable to add the list of the sensors id in the temp device
+node, so the driver can initialize these sensors without parsing the
+thermal zone in the DT ?
+
+
+
+
 -- 
-2.19.1
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
