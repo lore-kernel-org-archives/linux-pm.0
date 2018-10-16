@@ -1,29 +1,68 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v4 7/7] mfd: axp20x: Add supported cells for AXP803
-Date: Tue, 16 Oct 2018 12:17:37 +0800
-Message-ID: <CAGb2v66aJUYOkZL=b5TfnvLsbLk_mU8AQtR3BSBRM-49rh2yOA@mail.gmail.com>
-References: <20181013080848.29894-1-oskari@lemmela.net> <20181013080848.29894-8-oskari@lemmela.net>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH] cpufreq: conservative: Take limits changes into account properly
+Date: Tue, 16 Oct 2018 08:38:49 +0200
+Message-ID: <CAHKzcEPsiR1zDQgw_N5Fu7tX+fP+brOs0okvK3yBr=16Y9S28w@mail.gmail.com>
+References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
+ <CAHKzcEOECQP8j6q=NKzuEjF+mc0s80fr6xWw-=NXsTtzCGGg_w@mail.gmail.com>
+ <CAJZ5v0gFjBoFi=cpC2gPkZTDZof8dxdCCVx0XoAv2XuPmTfWPA@mail.gmail.com> <5406371.vuaACy5i7F@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181013080848.29894-8-oskari@lemmela.net>
+In-Reply-To: <5406371.vuaACy5i7F@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: oskari@lemmela.net
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Oct 13, 2018 at 4:09 PM Oskari Lemmela <oskari@lemmela.net> wrote:
+On Mon, 15 Oct 2018 at 23:24, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> AXP803 is compatible with AXP813.
-> Adding cells for GPIO, ADC, AC and battery power supplies.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> If the policy limits change between invocations of cs_dbs_update(),
+> the requested frequency value stored in dbs_info may not be updated
+> and the function may use a stale value of it next time.  Moreover, if
+> idle periods are takem into account by cs_dbs_update(), the requested
+> frequency value stored in dbs_info may be below the min policy limit,
+> which is incorrect.
+>
+> To fix these problems, always update the requested frequency value
+> in dbs_info along with the local copy of it when the previous
+> requested frequency is beyond the policy limits and avoid decreasing
+> the requested frequency below the min policy limit when taking
+> idle periods into account.
+>
+> Reported-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+>
+> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
+> @@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
+>          * changed in the meantime, so fall back to current frequency in that
+>          * case.
+>          */
+> -       if (requested_freq > policy->max || requested_freq < policy->min)
+> +       if (requested_freq > policy->max || requested_freq < policy->min) {
+>                 requested_freq = policy->cur;
+> +               dbs_info->requested_freq = requested_freq;
+> +       }
+>
+>         freq_step = get_freq_step(cs_tuners, policy);
+>
+> @@ -92,7 +94,7 @@ static unsigned int cs_dbs_update(struct
+>         if (policy_dbs->idle_periods < UINT_MAX) {
+>                 unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
+>
+> -               if (requested_freq > freq_steps)
+> +               if (requested_freq > policy->min + freq_steps)
+>                         requested_freq -= freq_steps;
+>                 else
+>                         requested_freq = policy->min;
 
-They are not _completely_ compatible. A better way to phrase this would be:
+Looks good.
 
-Parts of the AXP803 are compatible with their counterparts on the AXP813.
-These include the GPIO, ADC, AC and battery power supplies.
-
-> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-
-Otherwise,
-
-Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
