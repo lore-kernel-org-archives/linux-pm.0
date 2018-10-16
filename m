@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH 11/11] DT: arm: exynos: add support for thermal trip
+Subject: [PATCH 07/11] DT: arm64: exynos7: add support for thermal trip
  irq-mode
-Date: Tue, 16 Oct 2018 16:56:22 +0200
-Message-ID: <20181016145653eucas1p2c408ac952ed5c351c98398fa3df373e6~eHqRiOtv50773307733eucas1p20@eucas1p2.samsung.com>
+Date: Tue, 16 Oct 2018 16:56:18 +0200
+Message-ID: <20181016145648eucas1p275ad5f845a04e40e5b9d0bbea624f34a~eHqM4Yhz82489624896eucas1p25@eucas1p2.samsung.com>
 References: <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181016145653eucas1p2c408ac952ed5c351c98398fa3df373e6@eucas1p2.samsung.com>
+        <CGME20181016145648eucas1p275ad5f845a04e40e5b9d0bbea624f34a@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
@@ -28,42 +28,61 @@ Cc: devicetree@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- arch/arm/boot/dts/exynos5410-odroidxu.dts | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos5410-odroidxu.dts b/arch/arm/boot/dts/exynos5410-odroidxu.dts
-index a2046f5..c255466 100644
---- a/arch/arm/boot/dts/exynos5410-odroidxu.dts
-+++ b/arch/arm/boot/dts/exynos5410-odroidxu.dts
-@@ -121,22 +121,26 @@
- 		cpu_alert0: cpu-alert-0 {
- 			temperature = <50000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
- 		};
- 		cpu_alert1: cpu-alert-1 {
- 			temperature = <60000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
- 		};
- 		cpu_alert2: cpu-alert-2 {
- 			temperature = <70000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
- 		};
- 		cpu_crit0: cpu-crit-0 {
- 			temperature = <120000>; /* millicelsius */
- 			hysteresis = <0>; /* millicelsius */
- 			type = "critical";
-+			irq-mode;
- 		};
+diff --git a/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi b/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi
+index d3301b8..39185af 100644
+--- a/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos7-trip-points.dtsi
+@@ -11,40 +11,48 @@ trips {
+ 		temperature = <75000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
  	};
- 
+ 	cpu-alert-1 {
+ 		temperature = <80000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-alert-2 {
+ 		temperature = <85000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-alert-3 {
+ 		temperature = <90000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-alert-4 {
+ 		temperature = <95000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-alert-5 {
+ 		temperature = <100000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-alert-6 {
+ 		temperature = <110000>; /* millicelsius */
+ 		hysteresis = <10000>; /* millicelsius */
+ 		type = "passive";
++		irq-mode;
+ 	};
+ 	cpu-crit-0 {
+ 		temperature = <115000>; /* millicelsius */
+ 		hysteresis = <0>; /* millicelsius */
+ 		type = "critical";
++		irq-mode;
+ 	};
+ };
 -- 
 2.7.4
