@@ -1,94 +1,54 @@
-From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Subject: [PATCH] tools/power/cpupower: fix compilation with STATIC=true
-Date: Tue, 16 Oct 2018 11:56:26 +0300
-Message-ID: <153968018626.397151.17942194042449956995.stgit@buzz>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: dt-platdev: allow RK3399 to have separate tunables per cluster
+Date: Tue, 16 Oct 2018 11:08:40 +0200
+Message-ID: <6240057.8QT59a4nGB@aspire.rjw.lan>
+References: <20181005190058.GA234868@dtor-ws> <20181008055547.umpyi4zcmcmjlxn2@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181008055547.umpyi4zcmcmjlxn2@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, Derek Basehore <dbasehore@chromium.org>, Guenter Roeck <groeck@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rename duplicate sysfs_read_file into cpupower_read_sysfs and fix linking.
+On Monday, October 8, 2018 7:55:47 AM CEST Viresh Kumar wrote:
+> On 05-10-18, 12:00, Dmitry Torokhov wrote:
+> > RK3899 has one cluster with 4 small cores, and another one with 2 big
+> > cores, with cores in different clusters having different OPPs and thus
+> > needing separate set of tunables. Let's enable this via
+> > "have_governor_per_policy" platform data.
+> > 
+> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > ---
+> > 
+> > v2 changes: commit message updated.
+> > 
+> > Not tested, but we had a patch unconditionally enabling
+> > CPUFREQ_HAVE_GOVERNOR_PER_POLICY flag in tree we used to ship devices
+> > based on RK3399 platform.
+> > 
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index fe14c57de6ca..040ec0f711f9 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -78,7 +78,10 @@ static const struct of_device_id whitelist[] __initconst = {
+> >  	{ .compatible = "rockchip,rk3328", },
+> >  	{ .compatible = "rockchip,rk3366", },
+> >  	{ .compatible = "rockchip,rk3368", },
+> > -	{ .compatible = "rockchip,rk3399", },
+> > +	{ .compatible = "rockchip,rk3399",
+> > +	  .data = &(struct cpufreq_dt_platform_data)
+> > +		{ .have_governor_per_policy = true, },
+> > +	},
+> >  
+> >  	{ .compatible = "st-ericsson,u8500", },
+> >  	{ .compatible = "st-ericsson,u8540", },
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
----
- tools/power/cpupower/bench/Makefile        |    2 +-
- tools/power/cpupower/lib/cpufreq.c         |    2 +-
- tools/power/cpupower/lib/cpuidle.c         |    2 +-
- tools/power/cpupower/lib/cpupower.c        |    4 ++--
- tools/power/cpupower/lib/cpupower_intern.h |    2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/tools/power/cpupower/bench/Makefile b/tools/power/cpupower/bench/Makefile
-index d79ab161cc75..f68b4bc55273 100644
---- a/tools/power/cpupower/bench/Makefile
-+++ b/tools/power/cpupower/bench/Makefile
-@@ -9,7 +9,7 @@ endif
- ifeq ($(strip $(STATIC)),true)
- LIBS = -L../ -L$(OUTPUT) -lm
- OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o \
--       $(OUTPUT)../lib/cpufreq.o $(OUTPUT)../lib/sysfs.o
-+       $(OUTPUT)../lib/cpufreq.o $(OUTPUT)../lib/cpupower.o
- else
- LIBS = -L../ -L$(OUTPUT) -lm -lcpupower
- OBJS = $(OUTPUT)main.o $(OUTPUT)parse.o $(OUTPUT)system.o $(OUTPUT)benchmark.o
-diff --git a/tools/power/cpupower/lib/cpufreq.c b/tools/power/cpupower/lib/cpufreq.c
-index 1b993fe1ce23..0c0f3e3f0d80 100644
---- a/tools/power/cpupower/lib/cpufreq.c
-+++ b/tools/power/cpupower/lib/cpufreq.c
-@@ -28,7 +28,7 @@ static unsigned int sysfs_cpufreq_read_file(unsigned int cpu, const char *fname,
- 
- 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/cpufreq/%s",
- 			 cpu, fname);
--	return sysfs_read_file(path, buf, buflen);
-+	return cpupower_read_sysfs(path, buf, buflen);
- }
- 
- /* helper function to write a new value to a /sys file */
-diff --git a/tools/power/cpupower/lib/cpuidle.c b/tools/power/cpupower/lib/cpuidle.c
-index 9bd4c7655fdb..852d25462388 100644
---- a/tools/power/cpupower/lib/cpuidle.c
-+++ b/tools/power/cpupower/lib/cpuidle.c
-@@ -319,7 +319,7 @@ static unsigned int sysfs_cpuidle_read_file(const char *fname, char *buf,
- 
- 	snprintf(path, sizeof(path), PATH_TO_CPU "cpuidle/%s", fname);
- 
--	return sysfs_read_file(path, buf, buflen);
-+	return cpupower_read_sysfs(path, buf, buflen);
- }
- 
- 
-diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
-index 9c395ec924de..9711d628b0f4 100644
---- a/tools/power/cpupower/lib/cpupower.c
-+++ b/tools/power/cpupower/lib/cpupower.c
-@@ -15,7 +15,7 @@
- #include "cpupower.h"
- #include "cpupower_intern.h"
- 
--unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen)
-+unsigned int cpupower_read_sysfs(const char *path, char *buf, size_t buflen)
- {
- 	int fd;
- 	ssize_t numread;
-@@ -95,7 +95,7 @@ static int sysfs_topology_read_file(unsigned int cpu, const char *fname, int *re
- 
- 	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/topology/%s",
- 			 cpu, fname);
--	if (sysfs_read_file(path, linebuf, MAX_LINE_LEN) == 0)
-+	if (cpupower_read_sysfs(path, linebuf, MAX_LINE_LEN) == 0)
- 		return -1;
- 	*result = strtol(linebuf, &endp, 0);
- 	if (endp == linebuf || errno == ERANGE)
-diff --git a/tools/power/cpupower/lib/cpupower_intern.h b/tools/power/cpupower/lib/cpupower_intern.h
-index 92affdfbe417..4887c76d23f8 100644
---- a/tools/power/cpupower/lib/cpupower_intern.h
-+++ b/tools/power/cpupower/lib/cpupower_intern.h
-@@ -3,4 +3,4 @@
- #define MAX_LINE_LEN 4096
- #define SYSFS_PATH_MAX 255
- 
--unsigned int sysfs_read_file(const char *path, char *buf, size_t buflen);
-+unsigned int cpupower_read_sysfs(const char *path, char *buf, size_t buflen);
+Patch applied, thanks!
