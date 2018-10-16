@@ -1,26 +1,43 @@
 From: Jonas Danielsson <jonas@orbital-systems.com>
 Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
-Date: Tue, 16 Oct 2018 16:15:37 +0200
-Message-ID: <CALDOjzgxftbv=ePKcgXyDYZefve0Codqs5K-biDcgQRtpTRFYQ@mail.gmail.com>
-References: <20181007125815.8392-1-jonas@threetimestwo.org> <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com>
+Date: Tue, 16 Oct 2018 16:19:15 +0200
+Message-ID: <CALDOjzh4+gtFk2ezvY4MYCT_rhjUdhfjdYgNFakA=TaXk5Oo2Q@mail.gmail.com>
+References: <20181007125815.8392-1-jonas@threetimestwo.org> <4836921.pHbLXnhTfm@ws-140106>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com>
+In-Reply-To: <4836921.pHbLXnhTfm@ws-140106>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <Nicolas.Ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: alexander.stein@systec-electronic.com
+Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 16, 2018 at 3:30 PM <Claudiu.Beznea@microchip.com> wrote:
+On Tue, Oct 16, 2018 at 4:03 PM Alexander Stein
+<alexander.stein@systec-electronic.com> wrote:
 >
-> Hi Jonas,
+> Do you have CONFIG_CPU_ICACHE_DISABLE enabled?
+> I wonder why I-cache is disabled. I know about this errata, AT91SAM9G20 i=
+s affected as well.
 >
 
-Hi,
+Hi Alexander!
 
-> On 07.10.2018 15:57, Jonas Danielsson wrote:
+I just checked, we do not have CONFIG_CPU_ICACHE_DISABLE enabled.
+I wonder as well! If you have any idea I can try them out on my board tomor=
+row!
+
+The effect of enabling them is real. I have managed over 1000 reboots
+with this patch.
+And at the most 20 without.
+
+> Best regards,
+> Alexander
+
+Jonas
+
+>
+> On Sunday, October 7, 2018, 2:57:45 PM CEST Jonas Danielsson wrote:
 > > From: Jonas Danielsson <jonas@orbital-systems.com>
 > >
 > > This fixes a bug where our embedded system (AT91SAM9260 based) would
@@ -37,24 +54,6 @@ Hi,
 > > At the moment it is being disabled in cpu_proc_fin() which is called fr=
 om
 > > arch/arm/kernel/reboot.c.
->
-> Are you using kexec reboot or implemented hibernate mode on this machine?
-> I'm seeing cpu_proc_fin() is called only in case of kexec reboot or
-> switching to hibernate mode.
->
-> In case of normal reboot (e.g. reboot command) machine_restart() from
-> arch/arm/kernel/reboot.c is called. Please correct me if I'm wrong.
->
-
-We are not, we do regular reboots. I have read the code paths wrong.
-Then I wonder what disables icache.
-
-> Thank you,
-> Claudiu Beznea
-
-Thank you!
-
->
 > >
 > > Signed-off-by: Jonas Danielsson <jonas@orbital-systems.com>
 > > ---
@@ -95,7 +94,37 @@ ong mode,
 > >               ".balign 32\n\t"
 > >
 > >
-
+>
+>
+> --
+> SYS TEC electronic GmbH
+> Am Windrad 2
+> 08468 Heinsdorfergrund
+> Germany
+> Telefon : +49 (0) 3765 38600-0
+> Fax     : +49 (0) 3765 38600-4100
+> Email   : alexander.stein@systec-electronic.com
+> Website : http://www.systec-electronic.com
+>
+> Managing Director   : Dipl.-Phys. Siegmar Schmidt
+> Commercial registry : Amtsgericht Chemnitz, HRB 28082
+> USt.-Id Nr.         : DE150534010
+>
+> Diese E-Mail enth=C3=A4lt vertrauliche und/oder rechtlich gesch=C3=BCtzte=
+ Informationen.
+> Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrt=C3=BCmli=
+ch erhalten haben, informieren Sie bitte sofort den Absender und vernichten=
+ Sie diese Mail.
+> Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser Mail sind n=
+icht gestattet.
+>
+> This e-mail may contain confidential and/or privileged information.
+> If you are not the intended recipient (or have received this e-mail in er=
+ror) please notify the sender immediately and destroy this e-mail.
+> Any unauthorized copying, disclosure or distribution of the material in t=
+his e-mail is strictly forbidden.
+>
+>
 
 
 --=20
