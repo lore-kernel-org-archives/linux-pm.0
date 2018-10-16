@@ -1,107 +1,120 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] kernel/hung_task.c: disable on suspend
-Date: Tue, 16 Oct 2018 11:16:34 +0200
-Message-ID: <1805225.nUohvyHBhR@aspire.rjw.lan>
-References: <20180925121636.592-1-vkuznets@redhat.com>
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Tue, 16 Oct 2018 11:28:29 +0200
+Message-ID: <20181016092831eucas1p1d9fa0678c15afb01d72b6f3df80352f8~eDLkNsh6l0620706207eucas1p1V@eucas1p1.samsung.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+        <20181010061751.GA37224@gmail.com> <5BBE1E1F.3030308@linaro.org>
+        <CGME20181016073315epcas4p1e0d57bf856cf95312a622004ce20391f@epcas4p1.samsung.com>
+        <20181016073305.GA64994@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180925121636.592-1-vkuznets@redhat.com>
+In-Reply-To: <20181016073305.GA64994@gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vitaly Kuznetsov <vkuznets@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, l.luba@partner.samsung.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-Sorry for the delay here.
-
-On Tuesday, September 25, 2018 2:16:36 PM CEST Vitaly Kuznetsov wrote:
-> It is possible to observe hung_task complaints when system goes to
-> suspend-to-idle state:
+On 10/16/2018 09:33 AM, Ingo Molnar wrote:
 > 
->  PM: Syncing filesystems ... done.
->  Freezing user space processes ... (elapsed 0.001 seconds) done.
->  OOM killer disabled.
->  Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
->  sd 0:0:0:0: [sda] Synchronizing SCSI cache
->  INFO: task bash:1569 blocked for more than 120 seconds.
->        Not tainted 4.19.0-rc3_+ #687
->  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->  bash            D    0  1569    604 0x00000000
->  Call Trace:
->   ? __schedule+0x1fe/0x7e0
->   schedule+0x28/0x80
->   suspend_devices_and_enter+0x4ac/0x750
->   pm_suspend+0x2c0/0x310
+> * Thara Gopinath <thara.gopinath@linaro.org> wrote:
 > 
-> The root cause of the issue is that under certain circumstances jiffies
-> counter keeps advancing, some work to prevent that is currently ongoing.
-> However, it seems that it would make sense to disable hung task detector
-> on suspend and re-enable it on wakeup regardless.
+>>>> Regarding testing, basic build, boot and sanity testing have been
+>>>> performed on hikey960 mainline kernel with debian file system.
+>>>> Further aobench (An occlusion renderer for benchmarking realworld
+>>>> floating point performance) showed the following results on hikey960
+>>>> with debain.
+>>>>
+>>>>                                          Result          Standard        Standard
+>>>>                                          (Time secs)     Error           Deviation
+>>>> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
+>>>> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
+>>>
+>>> Wow, +13% speedup, impressive! We definitely want this outcome.
+>>>
+>>> I'm wondering what happens if we do not track and decay the thermal
+>>> load at all at the PELT level, but instantaneously decrease/increase
+>>> effective CPU capacity in reaction to thermal events we receive from
+>>> the CPU.
+>>
+>> The problem with instantaneous update is that sometimes thermal events
+>> happen at a much faster pace than cpu_capacity is updated in the
+>> scheduler. This means that at the moment when scheduler uses the
+>> value, it might not be correct anymore.
 > 
-> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> ---
-> Changes since v1:
-> - Implement detector disabling by zeroing timeout [Rafael J. Wysocki]
-> ---
->  kernel/hung_task.c | 36 +++++++++++++++++++++++++++++++++++-
->  1 file changed, 35 insertions(+), 1 deletion(-)
+> Let me offer a different interpretation: if we average throttling events
+> then we create a 'smooth' average of 'true CPU capacity' that doesn't
+> fluctuate much. This allows more stable yet asymmetric task placement if
+> the thermal characteristics of the different cores is different
+> (asymmetric). This, compared to instantaneous updates, would reduce
+> unnecessary task migrations between cores.
 > 
-> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-> index b9132d1269ef..ac6e8c9306bd 100644
-> --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -15,6 +15,7 @@
->  #include <linux/lockdep.h>
->  #include <linux/export.h>
->  #include <linux/sysctl.h>
-> +#include <linux/suspend.h>
->  #include <linux/utsname.h>
->  #include <linux/sched/signal.h>
->  #include <linux/sched/debug.h>
-> @@ -242,12 +243,14 @@ void reset_hung_task_detector(void)
->  }
->  EXPORT_SYMBOL_GPL(reset_hung_task_detector);
->  
-> +static unsigned long hung_last_checked;
-> +
->  /*
->   * kthread which checks for tasks stuck in D state
->   */
->  static int watchdog(void *dummy)
->  {
-> -	unsigned long hung_last_checked = jiffies;
-> +	hung_last_checked = jiffies;
->  
->  	set_user_nice(current, 0);
->  
-> @@ -272,9 +275,40 @@ static int watchdog(void *dummy)
->  	return 0;
->  }
->  
-> +static int hungtask_pm_notify(struct notifier_block *self,
-> +			      unsigned long action, void *hcpu)
-> +{
-> +	static unsigned long saved_timeout, saved_interval;
-> +
-> +	switch (action) {
-> +	case PM_SUSPEND_PREPARE:
-> +	case PM_HIBERNATION_PREPARE:
-> +		saved_timeout = sysctl_hung_task_timeout_secs;
-> +		saved_interval = sysctl_hung_task_check_interval_secs;
-> +		sysctl_hung_task_timeout_secs = 0;
-> +		sysctl_hung_task_check_interval_secs = 0;
-> +		wake_up_process(watchdog_task);
-> +		break;
+> Is that accurate?
+> 
+> If the thermal characteristics of the cores is roughly symmetric and the
+> measured CPU-intense load itself is symmetric as well, then I have
+> trouble seeing why reacting to thermal events should make any difference
+> at all.
+> 
+> Are there any inherent asymmetries in the thermal properties of the
+> cores, or in the benchmarked workload itself?
+The aobench that at least I have built is a single threaded app.
+If there is migration of the process to cluster and core which is in
+avg faster, then it will gain.
+The hikey960 platform has limited number of OPPs.
+big cluster: 2.36, 2.1, 1.8, 1.4, 0.9 [GHz]
+little cluster: 1.84, 1.7, 1.4, 1.0, 0.5 [GHz]
+Comparing to Exynos5433 which has 15 OPPs for big cluster every 100MHZ,
+it is harder to pick-up the right one.
+I can imagine that the thermal governor is jumping around 1.8, 1.4, 0.9
+for the big cluster. Maybe little cluster is at higher OPP
+and running there longer would help. Thermal has time slots are 100ms
+(based on this DT).
 
-AFAICS, this is racy (for example, it still is possible for user space
-to update the sysctl_* values after you've set them to 0).  That can be
-fixed, but I'm not sure it is worth the effort.
+Regarding other asymmetries, there are different parts of the cluster
+and core utilized depending of workload and data set.
+There might be floating point or vectorized code utilizing long piplines
+in NEON and also causing less cache misses.
+That will warm up more than integer unit or copy using load/store unit
+(which occupy less silicon (and C 'capacitance')) at the same frequency.
 
-Since watchdog() is not expected to run very often in general, I think
-I prefer your v1 after all, so please resend it.
+There are also SoCs which have single power rail from DCDC in PMIC
+for both asymmetric clusters. In SoC on front of these clusters,
+there is internal LDO, which reduces the voltage to the cluster.
+In such system cpufreq driver chooses max of the voltages for the
+clusters and sets it to the PMIC, then sets LDOx voltage diff for
+cluster with smaller voltage. This causes another asymmetries,
+because more current going through LDO causes more heat than
+direct DCDC voltage (i.e. seen as a heat on big cluster).
 
-Thanks,
-Rafael
+There are also cache portion power down asymmetries.
+I have been developing such driver. Based on memory traffic
+and cache hit/miss ratio it chooses how much cache can be powered down.
+I can image that some HW does it without the need of SW assist.
+
+There are SoCs with DDR modules mounted on top - PoP.
+I still have to investigate what is different in SoC power budget
+in such setup (depending on workload).
+
+There are also workloads for UI using GPU, which can also
+be utilized in 'portions' (shader cores from 1 to 32).
+
+These asymmetries cause that simple assumptio
+P_dynamic = C * V^2 * f
+is probably not enough.
+
+I would suggest to choose platform with more fine grained OPPs or
+add more points to hikey960 and repeat the tests.
+
+Regards,
+Lukasz Luba
+
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> 
