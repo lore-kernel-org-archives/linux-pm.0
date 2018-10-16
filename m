@@ -1,93 +1,62 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Tue, 16 Oct 2018 19:11:41 +0200
-Message-ID: <CAKfTPtBZam-+3sbKa+XffhoxkPX_ndTLoxioVwU-iz0qTnnPAw@mail.gmail.com>
-References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
- <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
- <5BBE3751.7000908@linaro.org> <20181011111025eucas1p2125db99d798a60a8e38da97c2a1c7436~ciWHHd0YW0102601026eucas1p2b@eucas1p2.samsung.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/3] dt-bindings: stm32-thermal: add binding documentation
+Date: Tue, 16 Oct 2018 17:38:54 -0500
+Message-ID: <20181016223854.GA23012@bogus>
+References: <1538734081-26585-1-git-send-email-david.hernandezsanchez@st.com>
+ <1538734081-26585-2-git-send-email-david.hernandezsanchez@st.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181011111025eucas1p2125db99d798a60a8e38da97c2a1c7436~ciWHHd0YW0102601026eucas1p2b@eucas1p2.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1538734081-26585-2-git-send-email-david.hernandezsanchez@st.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: l.luba@partner.samsung.com
-Cc: Thara Gopinath <thara.gopinath@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, b.zolnierkie@samsung.com
+To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>, Alexandre TORGUE <alexandre.torgue@st.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+On Fri, 5 Oct 2018 10:08:45 +0000, David HERNANDEZ SANCHEZ wrote:
+> QWRkIHRoZXJtYWwgYmluZGluZyBkb2N1bWVudGF0aW9uIGZvciBTVE0zMiBEVFMgc2Vuc29yDQoN
+> ClNpZ25lZC1vZmYtYnk6IERhdmlkIEhlcm5hbmRleiBTYW5jaGV6IDxkYXZpZC5oZXJuYW5kZXpz
+> YW5jaGV6QHN0LmNvbT4NCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+> aW5kaW5ncy90aGVybWFsL3N0bTMyLXRoZXJtYWwudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+> cmVlL2JpbmRpbmdzL3RoZXJtYWwvc3RtMzItdGhlcm1hbC50eHQNCm5ldyBmaWxlIG1vZGUgMTAw
+> NjQ0DQppbmRleCAwMDAwMDAwLi44YzBkNWE0DQotLS0gL2Rldi9udWxsDQorKysgYi9Eb2N1bWVu
+> dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9zdG0zMi10aGVybWFsLnR4dA0KQEAg
+> LTAsMCArMSw2MSBAQA0KK0JpbmRpbmcgZm9yIFRoZXJtYWwgU2Vuc29yIGZvciBTVE1pY3JvZWxl
+> Y3Ryb25pY3MgU1RNMzIgc2VyaWVzIG9mIFNvQ3MuDQorDQorT24gU1RNMzIgU29DcywgdGhlIERp
+> Z2l0YWwgVGVtcGVyYXR1cmUgU2Vuc29yIChEVFMpIGlzIGluIGNoYXJnZSBvZiBtYW5hZ2luZyBh
+> bg0KK2FuYWxvZyBibG9jayB3aGljaCBkZWxpdmVycyBhIGZyZXF1ZW5jeSBkZXBlbmRpbmcgb24g
+> dGhlIGludGVybmFsIFNvQydzDQordGVtcGVyYXR1cmUuIEJ5IHVzaW5nIGEgcmVmZXJlbmNlIGZy
+> ZXF1ZW5jeSwgRFRTIGlzIGFibGUgdG8gcHJvdmlkZSBhIHNhbXBsZQ0KK251bWJlciB3aGljaCBj
+> YW4gYmUgdHJhbnNsYXRlZCBpbnRvIGEgdGVtcGVyYXR1cmUgYnkgdGhlIHVzZXIuDQorDQorRFRT
+> IHByb3ZpZGVzIGludGVycnVwdCBub3RpZmljYXRpb24gbWVjaGFuaXNtIGJ5IHRocmVzaG9sZC4g
+> VGhpcyBtZWNoYW5pc20NCitvZmZlcnMgdHdvIHRlbXBlcmF0dXJlIHRyaXAgcG9pbnRzOiBwYXNz
+> aXZlIGFuZCBjcml0aWNhbC4gVGhlIGZpcnN0IGlzIGludGVuZGVkDQorZm9yIHBhc3NpdmUgY29v
+> bGluZyBub3RpZmljYXRpb24gd2hpbGUgdGhlIHNlY29uZCBpcyB1c2VkIGZvciBvdmVyLXRlbXBl
+> cmF0dXJlDQorcmVzZXQuDQorDQorUmVxdWlyZWQgcGFyYW1ldGVyczoNCistLS0tLS0tLS0tLS0t
+> LS0tLS0tDQorDQorY29tcGF0aWJsZTogCVNob3VsZCBiZSAic3Qsc3RtMzItdGhlcm1hbCINCity
+> ZWc6IAkJVGhpcyBzaG91bGQgYmUgdGhlIHBoeXNpY2FsIGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3Ro
+> IG9mIHRoZQ0KKwkJc2Vuc29yJ3MgcmVnaXN0ZXJzLg0KK2Nsb2NrczogCVBoYW5kbGUgb2YgdGhl
+> IGNsb2NrIHVzZWQgYnkgdGhlIHRoZXJtYWwgc2Vuc29yLg0KKwkJICBTZWU6IERvY3VtZW50YXRp
+> b24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jbG9jay1iaW5kaW5ncy50eHQNCitjbG9jay1u
+> YW1lczogCVNob3VsZCBiZSAicGNsayIgZm9yIHJlZ2lzdGVyIGFjY2VzcyBjbG9jayBhbmQgcmVm
+> ZXJlbmNlIGNsb2NrLg0KKwkJICBTZWU6IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+> cy9yZXNvdXJjZS1uYW1lcy50eHQNCisjdGhlcm1hbC1zZW5zb3ItY2VsbHM6IFNob3VsZCBiZSAw
+> LiBTZWUgLi90aGVybWFsLnR4dCBmb3IgYSBkZXNjcmlwdGlvbi4NCitpbnRlcnJ1cHRzOglTdGFu
+> ZGFyZCB3YXkgdG8gZGVmaW5lIGludGVycnVwdCBudW1iZXIuDQorDQorRXhhbXBsZToNCisNCisJ
+> dGhlcm1hbC16b25lcyB7DQorCQljcHVfdGhlcm1hbDogY3B1LXRoZXJtYWwgew0KKwkJCXBvbGxp
+> bmctZGVsYXktcGFzc2l2ZSA9IDwwPjsNCisJCQlwb2xsaW5nLWRlbGF5ID0gPDA+Ow0KKw0KKwkJ
+> CXRoZXJtYWwtc2Vuc29ycyA9IDwmdGhlcm1hbD47DQorDQorCQkJdHJpcHMgew0KKwkJCQljcHVf
+> YWxlcnQxOiBjcHUtYWxlcnQxIHsNCisJCQkJCXRlbXBlcmF0dXJlID0gPDg1MDAwPjsNCisJCQkJ
+> CWh5c3RlcmVzaXMgPSA8MD47DQorCQkJCQl0eXBlID0gInBhc3NpdmUiOw0KKwkJCQl9Ow0KKw0K
+> KwkJCQljcHUtY3JpdDogY3B1LWNyaXQgew0KKwkJCQkJdGVtcGVyYXR1cmUgPSA8MTIwMDAwPjsN
+> CisJCQkJCWh5c3RlcmVzaXMgPSA8MD47DQorCQkJCQl0eXBlID0gImNyaXRpY2FsIjsNCisJCQkJ
+> fTsNCisJCQl9Ow0KKw0KKwkJCWNvb2xpbmctbWFwcyB7DQorCQkJfTsNCisJCX07DQorCX07DQor
+> DQorCXRoZXJtYWw6IHRoZXJtYWxANTAwMjgwMDAgew0KKwkJY29tcGF0aWJsZSA9ICJzdCxzdG0z
+> Mi10aGVybWFsIjsNCisJCXJlZyA9IDwweDUwMDI4MDAwIDB4MTAwPjsNCisJCWNsb2NrcyA9IDwm
+> cmNjIFRNUFNFTlM+Ow0KKwkJY2xvY2stbmFtZXMgPSAicGNsayI7DQorCQkjdGhlcm1hbC1zZW5z
+> b3ItY2VsbHMgPSA8MD47DQorCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgMTQ3IElSUV9UWVBFX0xF
+> VkVMX0hJR0g+Ow0KKwl9Ow0KLS0NCjIuNy40DQo=
+> 
 
-On Thu, 11 Oct 2018 at 13:10, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->
->
->
-> On 10/10/2018 07:30 PM, Thara Gopinath wrote:
-> > Hello Lukasz,
-> >
-> > On 10/10/2018 11:35 AM, Lukasz Luba wrote:
-> >> Hi Thara,
-> >>
-> >> I have run it on Exynos5433 mainline.
-> >> When it is enabled with step_wise thermal governor,
-> >> some of my tests are showing ~30-50% regression (i.e. hackbench),
-> >> dhrystone ~10%.
-> >
-> > That is interesting. If I understand correctly, dhrystone spawns 16
-> > threads or so and floods the system. In "theory", such a test should not
-> > see any performance improvement and degradation. What is the thermal
-> > activity like in your system? I will try running one of these tests on
-> > hikey960.
-> I use this dhrystone implementation:
-> https://github.com/Keith-S-Thompson/dhrystone/blob/master/v2.2/dry.c
-> It does not span new threads/processes and I pinned it to a single cpu.
->
-> My thermal setup is probably different than yours.
-> You have (on hikey960) probably 1 sensor for whole SoC and one thermal
-> zone (if it is this mainline file:
-> arch/arm64/boot/dts/hisilicon/hi3660.dtsi).
-> This thermal zone has two cooling devices - two clusters with dvfs.
-> Your temperature signal read out from that sensor is probably much
-> smoother. When you have sensor inside cluster, the rising factor
-> can be even 20deg/s (for big cores).
-> In my case, there are 4 thermal zones, each cluster has it's private
-> sensor and thermal zone. There is no 'SoC sensor' or 'PCB sensor',
-> which is recommended for IPA.
-> >>
-> >> Could you tell me which thermal governor was used in your case?
-> >> Please also share the name of that benchmark, i will give it a try.
-> >> Is it single threaded compute-intensive?
-> >
-> > Step-wise governor.
-> > I use aobench which is part of phoronix-test-suite.
-> >
-> > Regards
-> > Thara
-> >
-> I have built this aobench and run it pinned to single big cpu:
-> time taskset -c 4 ./aobench
-
-Why have you pinned the test only on CPU4 ?
-Goal of thermal pressure is to inform the scheduler of reduced compute
-capacity and help the scheduler to take better decision in tasks
-placement.
-So I would not expect perf impact on your test as the bench will stay
-pinned on the cpu4
-That being said you obviously have perf impact as shown below in your results
-And other tasks on the system are not pinned and might come and
-disturb your bench
-
-> The results:
-> 3min-5:30min [mainline]
-> 5:15min-5:50min [+patchset]
->
-> The idea is definitely worth to investigate further.
-
-Yes I agree
-
-Vincent
->
-> Regards,
-> Lukasz
->
->
->
+Reviewed-by: Rob Herring <robh@kernel.org>
