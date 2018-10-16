@@ -1,161 +1,129 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / AVS: SmartReflex: remove unused function
-Date: Tue, 16 Oct 2018 11:09:11 +0200
-Message-ID: <10339961.29dihbgRqp@aspire.rjw.lan>
-References: <20181006164059.16106-1-u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH V4] cpufreq: imx6q: read OCOTP through nvmem for imx6ul/imx6ull
+Date: Tue, 16 Oct 2018 11:09:56 +0200
+Message-ID: <3002020.tALnatBSDD@aspire.rjw.lan>
+References: <1538978854-9678-1-git-send-email-Anson.Huang@nxp.com> <20181008061508.m3u7acg2q76jljay@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181006164059.16106-1-u.kleine-koenig@pengutronix.de>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Nishanth Menon <nm@ti.com>, Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <uwe@kleine-koenig.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, LinAdmin <linadmin@quickline.ch>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181008061508.m3u7acg2q76jljay@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Anson Huang <Anson.Huang@nxp.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Linux-imx@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 6, 2018 6:40:59 PM CEST Uwe Kleine-K=F6nig wrote:
-> From: Uwe Kleine-K=F6nig <uwe@kleine-koenig.org>
-> =
+On Monday, October 8, 2018 8:15:08 AM CEST Viresh Kumar wrote:
+> On 08-10-18, 14:07, Anson Huang wrote:
+> > On i.MX6UL/i.MX6ULL, accessing OCOTP directly is wrong because
+> > the ocotp clock needs to be enabled first. Add support for reading
+> > OCOTP through the nvmem API, and keep the old method there to
+> > support old dtb.
+> > 
+> > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > ---
+> > changes since V3:
+> > 	put node earlier to save one line code.
+> >  drivers/cpufreq/imx6q-cpufreq.c | 52 +++++++++++++++++++++++++++--------------
+> >  1 file changed, 35 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> > index b2ff423..8cfee0a 100644
+> > --- a/drivers/cpufreq/imx6q-cpufreq.c
+> > +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> > @@ -12,6 +12,7 @@
+> >  #include <linux/cpu_cooling.h>
+> >  #include <linux/err.h>
+> >  #include <linux/module.h>
+> > +#include <linux/nvmem-consumer.h>
+> >  #include <linux/of.h>
+> >  #include <linux/of_address.h>
+> >  #include <linux/pm_opp.h>
+> > @@ -290,20 +291,32 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
+> >  #define OCOTP_CFG3_6ULL_SPEED_792MHZ	0x2
+> >  #define OCOTP_CFG3_6ULL_SPEED_900MHZ	0x3
+> >  
+> > -static void imx6ul_opp_check_speed_grading(struct device *dev)
+> > +static int imx6ul_opp_check_speed_grading(struct device *dev)
+> >  {
+> > -	struct device_node *np;
+> > -	void __iomem *base;
+> >  	u32 val;
+> > +	int ret = 0;
+> >  
+> > -	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
+> > -	if (!np)
+> > -		return;
+> > +	if (of_find_property(dev->of_node, "nvmem-cells", NULL)) {
+> > +		ret = nvmem_cell_read_u32(dev, "speed_grade", &val);
+> > +		if (ret)
+> > +			return ret;
+> > +	} else {
+> > +		struct device_node *np;
+> > +		void __iomem *base;
+> > +
+> > +		np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
+> > +		if (!np)
+> > +			return -ENOENT;
+> > +
+> > +		base = of_iomap(np, 0);
+> > +		of_node_put(np);
+> > +		if (!base) {
+> > +			dev_err(dev, "failed to map ocotp\n");
+> > +			return -EFAULT;
+> > +		}
+> >  
+> > -	base = of_iomap(np, 0);
+> > -	if (!base) {
+> > -		dev_err(dev, "failed to map ocotp\n");
+> > -		goto put_node;
+> > +		val = readl_relaxed(base + OCOTP_CFG3);
+> > +		iounmap(base);
+> >  	}
+> >  
+> >  	/*
+> > @@ -314,7 +327,6 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
+> >  	 * 2b'11: 900000000Hz on i.MX6ULL only;
+> >  	 * We need to set the max speed of ARM according to fuse map.
+> >  	 */
+> > -	val = readl_relaxed(base + OCOTP_CFG3);
+> >  	val >>= OCOTP_CFG3_SPEED_SHIFT;
+> >  	val &= 0x3;
+> >  
+> > @@ -334,9 +346,7 @@ static void imx6ul_opp_check_speed_grading(struct device *dev)
+> >  				dev_warn(dev, "failed to disable 900MHz OPP\n");
+> >  	}
+> >  
+> > -	iounmap(base);
+> > -put_node:
+> > -	of_node_put(np);
+> > +	return ret;
+> >  }
+> >  
+> >  static int imx6q_cpufreq_probe(struct platform_device *pdev)
+> > @@ -394,10 +404,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+> >  	}
+> >  
+> >  	if (of_machine_is_compatible("fsl,imx6ul") ||
+> > -	    of_machine_is_compatible("fsl,imx6ull"))
+> > -		imx6ul_opp_check_speed_grading(cpu_dev);
+> > -	else
+> > +	    of_machine_is_compatible("fsl,imx6ull")) {
+> > +		ret = imx6ul_opp_check_speed_grading(cpu_dev);
+> > +		if (ret == -EPROBE_DEFER)
+> > +			return ret;
+> > +		if (ret) {
+> > +			dev_err(cpu_dev, "failed to read ocotp: %d\n",
+> > +				ret);
+> > +			return ret;
+> > +		}
+> > +	} else {
+> >  		imx6q_opp_check_speed_grading(cpu_dev);
+> > +	}
+> >  
+> >  	/* Because we have added the OPPs here, we must free them */
+> >  	free_opp = true;
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> omap_sr_register_pmic() was introduced in 2010 in commit
-> =
-
-> 	984aa6dbf4ca ("OMAP3: PM: Adding smartreflex driver support.")
-> =
-
-> . There was never any caller of this function in mainline resulting in a
-> warning
-> =
-
-> 	sr_init: No PMIC hook to init smartreflex
-> =
-
-> for each machine where this driver is enabled. So remove the unused
-> function and the pr_warn.
-> =
-
-> Signed-off-by: Uwe Kleine-K=F6nig <uwe@kleine-koenig.org>
-> ---
-> Hello,
-> =
-
-> I didn't test this change, didn't even try to compile it. Just read a
-> report[1] that this warning is annoying on an Marvell Armada based
-> machine running a Debian kernel.
-> =
-
-> Best regards
-> Uwe
-> =
-
-> [1] https://lists.debian.org/d6abf9d1-14bf-86fc-58a0-0f11ff1ac345@quickli=
-ne.ch
-> =
-
->  drivers/power/avs/smartreflex.c   | 31 -------------------------------
->  include/linux/power/smartreflex.h |  5 -----
->  2 files changed, 36 deletions(-)
-> =
-
-> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartref=
-lex.c
-> index cb0237143dbe..d29b6313cafc 100644
-> --- a/drivers/power/avs/smartreflex.c
-> +++ b/drivers/power/avs/smartreflex.c
-> @@ -36,7 +36,6 @@
->  static LIST_HEAD(sr_list);
->  =
-
->  static struct omap_sr_class_data *sr_class;
-> -static struct omap_sr_pmic_data *sr_pmic_data;
->  static struct dentry		*sr_dbg_dir;
->  =
-
->  static inline void sr_write_reg(struct omap_sr *sr, unsigned offset, u32=
- value)
-> @@ -779,25 +778,6 @@ void omap_sr_disable_reset_volt(struct voltagedomain=
- *voltdm)
->  	sr_class->disable(sr, 1);
->  }
->  =
-
-> -/**
-> - * omap_sr_register_pmic() - API to register pmic specific info.
-> - * @pmic_data:	The structure containing pmic specific data.
-> - *
-> - * This API is to be called from the PMIC specific code to register with
-> - * smartreflex driver pmic specific info. Currently the only info requir=
-ed
-> - * is the smartreflex init on the PMIC side.
-> - */
-> -void omap_sr_register_pmic(struct omap_sr_pmic_data *pmic_data)
-> -{
-> -	if (!pmic_data) {
-> -		pr_warn("%s: Trying to register NULL PMIC data structure with smartref=
-lex\n",
-> -			__func__);
-> -		return;
-> -	}
-> -
-> -	sr_pmic_data =3D pmic_data;
-> -}
-> -
->  /* PM Debug FS entries to enable and disable smartreflex. */
->  static int omap_sr_autocomp_show(void *data, u64 *val)
->  {
-> @@ -1064,17 +1044,6 @@ static int __init sr_init(void)
->  {
->  	int ret =3D 0;
->  =
-
-> -	/*
-> -	 * sr_init is a late init. If by then a pmic specific API is not
-> -	 * registered either there is no need for anything to be done on
-> -	 * the PMIC side or somebody has forgotten to register a PMIC
-> -	 * handler. Warn for the second condition.
-> -	 */
-> -	if (sr_pmic_data && sr_pmic_data->sr_pmic_init)
-> -		sr_pmic_data->sr_pmic_init();
-> -	else
-> -		pr_warn("%s: No PMIC hook to init smartreflex\n", __func__);
-> -
->  	ret =3D platform_driver_register(&smartreflex_driver);
->  	if (ret) {
->  		pr_err("%s: platform driver register failed for SR\n",
-> diff --git a/include/linux/power/smartreflex.h b/include/linux/power/smar=
-treflex.h
-> index 7b81dad712de..a586976f4784 100644
-> --- a/include/linux/power/smartreflex.h
-> +++ b/include/linux/power/smartreflex.h
-> @@ -303,9 +303,6 @@ void omap_sr_enable(struct voltagedomain *voltdm);
->  void omap_sr_disable(struct voltagedomain *voltdm);
->  void omap_sr_disable_reset_volt(struct voltagedomain *voltdm);
->  =
-
-> -/* API to register the pmic specific data with the smartreflex driver. */
-> -void omap_sr_register_pmic(struct omap_sr_pmic_data *pmic_data);
-> -
->  /* Smartreflex driver hooks to be called from Smartreflex class driver */
->  int sr_enable(struct omap_sr *sr, unsigned long volt);
->  void sr_disable(struct omap_sr *sr);
-> @@ -320,7 +317,5 @@ static inline void omap_sr_enable(struct voltagedomai=
-n *voltdm) {}
->  static inline void omap_sr_disable(struct voltagedomain *voltdm) {}
->  static inline void omap_sr_disable_reset_volt(
->  		struct voltagedomain *voltdm) {}
-> -static inline void omap_sr_register_pmic(
-> -		struct omap_sr_pmic_data *pmic_data) {}
->  #endif
->  #endif
-> =
-
-
-Applied, thanks!
+Patch applied, thanks!
