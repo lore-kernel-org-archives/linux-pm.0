@@ -1,48 +1,103 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH 09/11] DT: arm: exynos: add support for thermal trip
- irq-mode
-Date: Tue, 16 Oct 2018 17:54:46 +0200
-Message-ID: <20181016155448eucas1p26b5aaaf626771b42a2f8c54808391f43~eIc1fLmJw0976609766eucas1p2x@eucas1p2.samsung.com>
-References: <CGME20181016145651eucas1p1ea84684e37e67b4161548e6cff489cb8@eucas1p1.samsung.com>
-        <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
-        <20181016145651eucas1p1ea84684e37e67b4161548e6cff489cb8~eHqPK-tM31616816168eucas1p1y@eucas1p1.samsung.com>
-        <CAJKOXPdKoxB3aN+1y48WD9Gv2P6KvSFSiD6aCk+PimBooE3YWg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: [PATCH v3] kernel/hung_task.c: disable on suspend
+Date: Tue, 16 Oct 2018 18:55:13 +0200
+Message-ID: <20181016165513.7133-1-vkuznets@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPdKoxB3aN+1y48WD9Gv2P6KvSFSiD6aCk+PimBooE3YWg@mail.gmail.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, kgene@kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+It is possible to observe hung_task complaints when system goes to
+suspend-to-idle state:
 
-On 10/16/2018 05:13 PM, Krzysztof Kozlowski wrote:
-> On Tue, 16 Oct 2018 at 16:56, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->>
->> This patch adds support for new flash which indicates
->> that trip point triggers irq when temperature is met.
->> Exynos5433 supports 8 trip point which will trigger irq.
-> 
-> Exynos5420? 4 trip point
-Thanks, you are right. I will fix the comment in a few places.
-> 
-> BTW, I just noted that you skipped samsung-soc mailing list.
-> 
-> DTS patches always should go through arm-soc so in case of Exynos -
-> linux-samsung-soc mailing list. The list should be also CC-ed if you
-> touch other Exynos or Samsung related code and get_maintainers.pl
-> always point it. Because you skipped it, some people might miss your
-> patches and definitely Patchwork which I am using won't see them
-> (https://patchwork.kernel.org/project/linux-samsung-soc/list/).
-OK, I will push v2 through that list also.
+ # echo freeze > /sys/power/state
 
-Regards,
-Lukasz
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
+ PM: Syncing filesystems ... done.
+ Freezing user space processes ... (elapsed 0.001 seconds) done.
+ OOM killer disabled.
+ Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+ sd 0:0:0:0: [sda] Synchronizing SCSI cache
+ INFO: task bash:1569 blocked for more than 120 seconds.
+       Not tainted 4.19.0-rc3_+ #687
+ "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+ bash            D    0  1569    604 0x00000000
+ Call Trace:
+  ? __schedule+0x1fe/0x7e0
+  schedule+0x28/0x80
+  suspend_devices_and_enter+0x4ac/0x750
+  pm_suspend+0x2c0/0x310
+
+Register a PM notifier to disable the detector on suspend and re-enable
+back on wakeup.
+
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+---
+Changes since v2:
+- Resurrect 'v1' as zeroing timeouts can be racy [Rafael J. Wysocki]
+---
+ kernel/hung_task.c | 28 +++++++++++++++++++++++++++-
+ 1 file changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index b9132d1269ef..41955c5d8427 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -15,6 +15,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/export.h>
+ #include <linux/sysctl.h>
++#include <linux/suspend.h>
+ #include <linux/utsname.h>
+ #include <linux/sched/signal.h>
+ #include <linux/sched/debug.h>
+@@ -242,6 +243,26 @@ void reset_hung_task_detector(void)
+ }
+ EXPORT_SYMBOL_GPL(reset_hung_task_detector);
+ 
++static bool hung_detector_suspended;
++
++static int hungtask_pm_notify(struct notifier_block *self,
++			      unsigned long action, void *hcpu)
++{
++	switch (action) {
++	case PM_SUSPEND_PREPARE:
++	case PM_HIBERNATION_PREPARE:
++		hung_detector_suspended = true;
++		break;
++	case PM_POST_SUSPEND:
++	case PM_POST_HIBERNATION:
++		hung_detector_suspended = false;
++		break;
++	default:
++		break;
++	}
++	return NOTIFY_OK;
++}
++
+ /*
+  * kthread which checks for tasks stuck in D state
+  */
+@@ -261,7 +282,8 @@ static int watchdog(void *dummy)
+ 		interval = min_t(unsigned long, interval, timeout);
+ 		t = hung_timeout_jiffies(hung_last_checked, interval);
+ 		if (t <= 0) {
+-			if (!atomic_xchg(&reset_hung_task, 0))
++			if (!atomic_xchg(&reset_hung_task, 0) &&
++			    !hung_detector_suspended)
+ 				check_hung_uninterruptible_tasks(timeout);
+ 			hung_last_checked = jiffies;
+ 			continue;
+@@ -275,6 +297,10 @@ static int watchdog(void *dummy)
+ static int __init hung_task_init(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
++
++	/* Disable hung task detector on suspend */
++	pm_notifier(hungtask_pm_notify, 0);
++
+ 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
+ 
+ 	return 0;
+-- 
+2.17.1
