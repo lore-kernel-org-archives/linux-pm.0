@@ -1,68 +1,63 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH] cpufreq: conservative: Take limits changes into account properly
-Date: Tue, 16 Oct 2018 08:38:49 +0200
-Message-ID: <CAHKzcEPsiR1zDQgw_N5Fu7tX+fP+brOs0okvK3yBr=16Y9S28w@mail.gmail.com>
-References: <20181008150901.19667-1-waldemar.rymarkiewicz@gmail.com>
- <CAHKzcEOECQP8j6q=NKzuEjF+mc0s80fr6xWw-=NXsTtzCGGg_w@mail.gmail.com>
- <CAJZ5v0gFjBoFi=cpC2gPkZTDZof8dxdCCVx0XoAv2XuPmTfWPA@mail.gmail.com> <5406371.vuaACy5i7F@aspire.rjw.lan>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
+Date: Tue, 16 Oct 2018 09:33:05 +0200
+Message-ID: <20181016073305.GA64994@gmail.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010061751.GA37224@gmail.com>
+ <5BBE1E1F.3030308@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5406371.vuaACy5i7F@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <5BBE1E1F.3030308@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-kernel@vger.kernel.org, "Bartholomae, Thomas" <t.bartholomae@intel.com>
+To: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 15 Oct 2018 at 23:24, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If the policy limits change between invocations of cs_dbs_update(),
-> the requested frequency value stored in dbs_info may not be updated
-> and the function may use a stale value of it next time.  Moreover, if
-> idle periods are takem into account by cs_dbs_update(), the requested
-> frequency value stored in dbs_info may be below the min policy limit,
-> which is incorrect.
->
-> To fix these problems, always update the requested frequency value
-> in dbs_info along with the local copy of it when the previous
-> requested frequency is beyond the policy limits and avoid decreasing
-> the requested frequency below the min policy limit when taking
-> idle periods into account.
->
-> Reported-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-> @@ -80,8 +80,10 @@ static unsigned int cs_dbs_update(struct
->          * changed in the meantime, so fall back to current frequency in that
->          * case.
->          */
-> -       if (requested_freq > policy->max || requested_freq < policy->min)
-> +       if (requested_freq > policy->max || requested_freq < policy->min) {
->                 requested_freq = policy->cur;
-> +               dbs_info->requested_freq = requested_freq;
-> +       }
->
->         freq_step = get_freq_step(cs_tuners, policy);
->
-> @@ -92,7 +94,7 @@ static unsigned int cs_dbs_update(struct
->         if (policy_dbs->idle_periods < UINT_MAX) {
->                 unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
->
-> -               if (requested_freq > freq_steps)
-> +               if (requested_freq > policy->min + freq_steps)
->                         requested_freq -= freq_steps;
->                 else
->                         requested_freq = policy->min;
 
-Looks good.
+* Thara Gopinath <thara.gopinath@linaro.org> wrote:
 
-Acked-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+> >> Regarding testing, basic build, boot and sanity testing have been
+> >> performed on hikey960 mainline kernel with debian file system.
+> >> Further aobench (An occlusion renderer for benchmarking realworld
+> >> floating point performance) showed the following results on hikey960
+> >> with debain.
+> >>
+> >>                                         Result          Standard        Standard
+> >>                                         (Time secs)     Error           Deviation
+> >> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
+> >> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
+> > 
+> > Wow, +13% speedup, impressive! We definitely want this outcome.
+> > 
+> > I'm wondering what happens if we do not track and decay the thermal 
+> > load at all at the PELT level, but instantaneously decrease/increase 
+> > effective CPU capacity in reaction to thermal events we receive from 
+> > the CPU.
+> 
+> The problem with instantaneous update is that sometimes thermal events 
+> happen at a much faster pace than cpu_capacity is updated in the 
+> scheduler. This means that at the moment when scheduler uses the 
+> value, it might not be correct anymore.
+
+Let me offer a different interpretation: if we average throttling events 
+then we create a 'smooth' average of 'true CPU capacity' that doesn't 
+fluctuate much. This allows more stable yet asymmetric task placement if 
+the thermal characteristics of the different cores is different 
+(asymmetric). This, compared to instantaneous updates, would reduce 
+unnecessary task migrations between cores.
+
+Is that accurate?
+
+If the thermal characteristics of the cores is roughly symmetric and the 
+measured CPU-intense load itself is symmetric as well, then I have 
+trouble seeing why reacting to thermal events should make any difference 
+at all.
+
+Are there any inherent asymmetries in the thermal properties of the 
+cores, or in the benchmarked workload itself?
+
+Thanks,
+
+	Ingo
