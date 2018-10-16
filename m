@@ -1,66 +1,97 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v8 10/15] sched: Introduce a sysctl for Energy Aware
- Scheduling
-Date: Tue, 16 Oct 2018 15:46:36 +0200
-Message-ID: <20181016134636.GE9130@localhost.localdomain>
-References: <20181016101513.26919-1-quentin.perret@arm.com>
- <20181016101513.26919-11-quentin.perret@arm.com>
- <20181016125058.GD9130@localhost.localdomain>
- <20181016133451.w2y3gwj2c56cvy5c@queper01-lin>
+From: Alexander Stein <alexander.stein@systec-electronic.com>
+Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
+Date: Tue, 16 Oct 2018 16:03:25 +0200
+Message-ID: <4836921.pHbLXnhTfm@ws-140106>
+References: <20181007125815.8392-1-jonas@threetimestwo.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181016133451.w2y3gwj2c56cvy5c@queper01-lin>
+In-Reply-To: <20181007125815.8392-1-jonas@threetimestwo.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Jonas Danielsson <jonas@orbital-systems.com>
+Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16/10/18 14:36, Quentin Perret wrote:
-> Hi,
+Do you have CONFIG_CPU_ICACHE_DISABLE enabled?
+I wonder why I-cache is disabled. I know about this errata, AT91SAM9G20 is affected as well.
+
+Best regards,
+Alexander
+
+On Sunday, October 7, 2018, 2:57:45 PM CEST Jonas Danielsson wrote:
+> From: Jonas Danielsson <jonas@orbital-systems.com>
 > 
-> On Tuesday 16 Oct 2018 at 14:50:58 (+0200), Juri Lelli wrote:
-> > Hi,
-> > 
-> > On 16/10/18 11:15, Quentin Perret wrote:
-> > 
-> > [...]
-> > 
-> > > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> > > index cc02050fd0c4..481309a11174 100644
-> > > --- a/kernel/sysctl.c
-> > > +++ b/kernel/sysctl.c
-> > > @@ -466,6 +466,17 @@ static struct ctl_table kern_table[] = {
-> > >  		.extra1		= &one,
-> > >  	},
-> > >  #endif
-> > > +#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
-> > > +	{
-> > > +		.procname	= "sched_energy_aware",
-> > > +		.data		= &sysctl_sched_energy_aware,
-> > > +		.maxlen		= sizeof(unsigned int),
-> > > +		.mode		= 0644,
-> > > +		.proc_handler	= sched_energy_aware_handler,
-> > > +		.extra1		= &zero,
-> > > +		.extra2		= &one,
-> > > +	},
-> > > +#endif
-> > 
-> > Doesn't this need to be documented in Documentation/sysctl/kernel.txt?
+> This fixes a bug where our embedded system (AT91SAM9260 based) would
+> hang at reboot. At the most we managed 16 boot loops without a hang.
 > 
-> Right, that'd be a good practice indeed. What do you think about the
-> patch below ?
-
-LGTM.
-
-> > Also, do we want a kernel parameter as well to be able to disable this
-> > at boot?
+> With this patch applied the problem has not been observed and the board
+> has managed above 250 boot loops.
 > 
-> Yeah, why not. But I guess we could always add that later if need be ?
+> The AT91SAM9260 datasheet tells us that with the instruction cache
+> disabled all instructions are fetched from SDRAM. And we have an errata
+> telling us we must power down the SDRAM before issuing cpu reset.
+> 
+> This means we need the instruction cache enabled in at91sam9260_reset()
+> At the moment it is being disabled in cpu_proc_fin() which is called from
+> arch/arm/kernel/reboot.c.
+> 
+> Signed-off-by: Jonas Danielsson <jonas@orbital-systems.com>
+> ---
+>  drivers/power/reset/at91-reset.c | 12 +++++++++++-
+>  1 file changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+> index f44a9ffcc2ab..78972bba64df 100644
+> --- a/drivers/power/reset/at91-reset.c
+> +++ b/drivers/power/reset/at91-reset.c
+> @@ -50,14 +50,24 @@ static void __iomem *at91_ramc_base[2], *at91_rstc_base;
+>  static struct clk *sclk;
+>  
+>  /*
+> -* unless the SDRAM is cleanly shutdown before we hit the
+> +* Errata 43.1.7.1 RSTC: Reset during SDRAM Accesses
+> +*
+> +* Unless the SDRAM is cleanly shutdown before we hit the
+>  * reset register it can be left driving the data bus and
+>  * killing the chance of a subsequent boot from NAND
+> +*
+> +* Since we are disabling SDRAM need to make sure that the
+> +* instruction cache is enabled.
+>  */
+>  static int at91sam9260_restart(struct notifier_block *this, unsigned long mode,
+>  			       void *cmd)
+>  {
+>  	asm volatile(
+> +		/* Enable I-cache */
+> +		"mrc	p15, 0, r0, c1, c0, 0\n\t"
+> +		"orr	r0, r0, #4096\n\t" /* CR_I (bit 12) */
+> +		"mcr	p15, 0, r0, c1, c0, 0\n\t"
+> +
+>  		/* Align to cache lines */
+>  		".balign 32\n\t"
+>  
+> 
 
-Sure. Works with me.
 
-Thanks,
+-- 
+SYS TEC electronic GmbH
+Am Windrad 2
+08468 Heinsdorfergrund
+Germany
+Telefon : +49 (0) 3765 38600-0
+Fax     : +49 (0) 3765 38600-4100
+Email   : alexander.stein@systec-electronic.com
+Website : http://www.systec-electronic.com
 
-- Juri
+Managing Director   : Dipl.-Phys. Siegmar Schmidt
+Commercial registry : Amtsgericht Chemnitz, HRB 28082
+USt.-Id Nr.         : DE150534010
+
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte Informationen.
+Wenn Sie nicht der richtige Adressat sind oder diese E-Mail irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und vernichten Sie diese Mail.
+Das unerlaubte Kopieren sowie die unbefugte Weitergabe dieser Mail sind nicht gestattet.
+ 
+This e-mail may contain confidential and/or privileged information.
+If you are not the intended recipient (or have received this e-mail in error) please notify the sender immediately and destroy this e-mail.
+Any unauthorized copying, disclosure or distribution of the material in this e-mail is strictly forbidden.
