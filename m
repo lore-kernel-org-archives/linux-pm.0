@@ -1,60 +1,51 @@
-From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Subject: Re: [PATCH 6/8] drm: sti: don't pass GFP_DMA32 to dma_alloc_wc
-Date: Tue, 16 Oct 2018 14:41:23 +0200
-Message-ID: <CA+M3ks6a-D4j425JGBof+ma3NX5Fo52k5fadRNRauexOBXuaaw@mail.gmail.com>
-References: <20181013151707.32210-1-hch@lst.de>
- <20181013151707.32210-7-hch@lst.de>
- <CA+M3ks66FL-F8dk+UcG-gR8Gz4N6gz7eYuT_Ht_scw7foPaP0A@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v8 10/15] sched: Introduce a sysctl for Energy Aware
+ Scheduling
+Date: Tue, 16 Oct 2018 14:50:58 +0200
+Message-ID: <20181016125058.GD9130@localhost.localdomain>
+References: <20181016101513.26919-1-quentin.perret@arm.com>
+ <20181016101513.26919-11-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+M3ks66FL-F8dk+UcG-gR8Gz4N6gz7eYuT_Ht_scw7foPaP0A@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-spi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181016101513.26919-11-quentin.perret@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-TGUgbHVuLiAxNSBvY3QuIDIwMTggw6AgMTE6MTIsIEJlbmphbWluIEdhaWduYXJkCjxiZW5qYW1p
-bi5nYWlnbmFyZEBsaW5hcm8ub3JnPiBhIMOpY3JpdCA6Cj4KPiBMZSBzYW0uIDEzIG9jdC4gMjAx
-OCDDoCAxNzoxNywgQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBsc3QuZGU+IGEgw6ljcml0IDoKPiA+
-Cj4gPiBUaGUgRE1BIEFQSSBkb2VzIGl0cyBvd24gem9uZSBkZWNpc2lvbnMgYmFzZWQgb24gdGhl
-IGNvaGVyZW50X2RtYV9tYXNrLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IENocmlzdG9waCBIZWxs
-d2lnIDxoY2hAbHN0LmRlPgo+Cj4gUmV2aWV3ZWQtYnk6IEJlbmphbWluIEdhaWduYXJkIDxiZW5q
-YW1pbi5nYWlnbmFyZEBsaW5hcm8ub3JnPgoKQ2hyaXN0b3BoIGRvIHlvdSBwbGFuIHRvIG1lcmdl
-IHRoaXMgcGF0Y2ggb24geW91ciBvd24gdHJlZSA/IG9yIHdvdWxkCmxpa2UgSSBwdXQgaXQgZGly
-ZWN0bHkgaW4gZHJtLW1pc2MtbmV4dCBicmFuY2ggPwoKUmVnYXJkcywKQmVuamFtaW4KPgo+ID4g
-LS0tCj4gPiAgZHJpdmVycy9ncHUvZHJtL3N0aS9zdGlfZ2RwLmMgfCAyICstCj4gPiAgMSBmaWxl
-IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pCj4gPgo+ID4gZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvZ3B1L2RybS9zdGkvc3RpX2dkcC5jIGIvZHJpdmVycy9ncHUvZHJtL3N0aS9z
-dGlfZ2RwLmMKPiA+IGluZGV4IGMzMmRlNmNiZjA2MS4uY2RmMGExMzk2ZTAwIDEwMDY0NAo+ID4g
-LS0tIGEvZHJpdmVycy9ncHUvZHJtL3N0aS9zdGlfZ2RwLmMKPiA+ICsrKyBiL2RyaXZlcnMvZ3B1
-L2RybS9zdGkvc3RpX2dkcC5jCj4gPiBAQCAtNTE3LDcgKzUxNyw3IEBAIHN0YXRpYyB2b2lkIHN0
-aV9nZHBfaW5pdChzdHJ1Y3Qgc3RpX2dkcCAqZ2RwKQo+ID4gICAgICAgICAvKiBBbGxvY2F0ZSBh
-bGwgdGhlIG5vZGVzIHdpdGhpbiBhIHNpbmdsZSBtZW1vcnkgcGFnZSAqLwo+ID4gICAgICAgICBz
-aXplID0gc2l6ZW9mKHN0cnVjdCBzdGlfZ2RwX25vZGUpICoKPiA+ICAgICAgICAgICAgIEdEUF9O
-T0RFX1BFUl9GSUVMRCAqIEdEUF9OT0RFX05CX0JBTks7Cj4gPiAtICAgICAgIGJhc2UgPSBkbWFf
-YWxsb2Nfd2MoZ2RwLT5kZXYsIHNpemUsICZkbWFfYWRkciwgR0ZQX0tFUk5FTCB8IEdGUF9ETUEp
-Owo+ID4gKyAgICAgICBiYXNlID0gZG1hX2FsbG9jX3djKGdkcC0+ZGV2LCBzaXplLCAmZG1hX2Fk
-ZHIsIEdGUF9LRVJORUwpOwo+ID4KPiA+ICAgICAgICAgaWYgKCFiYXNlKSB7Cj4gPiAgICAgICAg
-ICAgICAgICAgRFJNX0VSUk9SKCJGYWlsZWQgdG8gYWxsb2NhdGUgbWVtb3J5IGZvciBHRFAgbm9k
-ZVxuIik7Cj4gPiAtLQo+ID4gMi4xOS4xCj4gPgo+ID4gX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KPiA+IGRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKPiA+IGRy
-aS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKPiA+IGh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCj4KPgo+Cj4gLS0KPiBCZW5qYW1pbiBH
-YWlnbmFyZAo+Cj4gR3JhcGhpYyBTdHVkeSBHcm91cAo+Cj4gTGluYXJvLm9yZyDilIIgT3BlbiBz
-b3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCj4KPiBGb2xsb3cgTGluYXJvOiBGYWNlYm9vayB8
-IFR3aXR0ZXIgfCBCbG9nCgoKCi0tIApCZW5qYW1pbiBHYWlnbmFyZAoKR3JhcGhpYyBTdHVkeSBH
-cm91cAoKTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpG
-b2xsb3cgTGluYXJvOiBGYWNlYm9vayB8IFR3aXR0ZXIgfCBCbG9nCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJp
-LWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+Hi,
+
+On 16/10/18 11:15, Quentin Perret wrote:
+
+[...]
+
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index cc02050fd0c4..481309a11174 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -466,6 +466,17 @@ static struct ctl_table kern_table[] = {
+>  		.extra1		= &one,
+>  	},
+>  #endif
+> +#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
+> +	{
+> +		.procname	= "sched_energy_aware",
+> +		.data		= &sysctl_sched_energy_aware,
+> +		.maxlen		= sizeof(unsigned int),
+> +		.mode		= 0644,
+> +		.proc_handler	= sched_energy_aware_handler,
+> +		.extra1		= &zero,
+> +		.extra2		= &one,
+> +	},
+> +#endif
+
+Doesn't this need to be documented in Documentation/sysctl/kernel.txt?
+
+Also, do we want a kernel parameter as well to be able to disable this
+at boot?
+
+Best,
+
+- Juri
