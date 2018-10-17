@@ -1,86 +1,111 @@
 From: Thara Gopinath <thara.gopinath@linaro.org>
 Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Wed, 17 Oct 2018 12:21:21 -0400
-Message-ID: <5BC76181.90105@linaro.org>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com> <5BBE1E1F.3030308@linaro.org>
- <20181016073305.GA64994@gmail.com>
+Date: Wed, 17 Oct 2018 12:24:14 -0400
+Message-ID: <5BC7622E.6000201@linaro.org>
+References: <CGME20181009162509epcas1p4fdd2e23039caa24586a4a52c6d2e7336@epcas1p4.samsung.com>
+ <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
+ <20181010153553eucas1p1b8f74f4aa45751ef029805fd118affc1~cSUmU58-F2963929639eucas1p1L@eucas1p1.samsung.com>
+ <5BBE3751.7000908@linaro.org>
+ <20181011111025eucas1p2125db99d798a60a8e38da97c2a1c7436~ciWHHd0YW0102601026eucas1p2b@eucas1p2.samsung.com>
+ <CAKfTPtBZam-+3sbKa+XffhoxkPX_ndTLoxioVwU-iz0qTnnPAw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181016073305.GA64994@gmail.com>
+In-Reply-To: <CAKfTPtBZam-+3sbKa+XffhoxkPX_ndTLoxioVwU-iz0qTnnPAw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, rafael@kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, javi.merino@kernel.org, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org
+To: Vincent Guittot <vincent.guittot@linaro.org>, l.luba@partner.samsung.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On 10/16/2018 03:33 AM, Ingo Molnar wrote:
+On 10/16/2018 01:11 PM, Vincent Guittot wrote:
+> Hi Lukasz,
 > 
-> * Thara Gopinath <thara.gopinath@linaro.org> wrote:
-> 
->>>> Regarding testing, basic build, boot and sanity testing have been
->>>> performed on hikey960 mainline kernel with debian file system.
->>>> Further aobench (An occlusion renderer for benchmarking realworld
->>>> floating point performance) showed the following results on hikey960
->>>> with debain.
->>>>
->>>>                                         Result          Standard        Standard
->>>>                                         (Time secs)     Error           Deviation
->>>> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
->>>> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
->>>
->>> Wow, +13% speedup, impressive! We definitely want this outcome.
->>>
->>> I'm wondering what happens if we do not track and decay the thermal 
->>> load at all at the PELT level, but instantaneously decrease/increase 
->>> effective CPU capacity in reaction to thermal events we receive from 
->>> the CPU.
+> On Thu, 11 Oct 2018 at 13:10, Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >>
->> The problem with instantaneous update is that sometimes thermal events 
->> happen at a much faster pace than cpu_capacity is updated in the 
->> scheduler. This means that at the moment when scheduler uses the 
->> value, it might not be correct anymore.
+>>
+>>
+>> On 10/10/2018 07:30 PM, Thara Gopinath wrote:
+>>> Hello Lukasz,
+>>>
+>>> On 10/10/2018 11:35 AM, Lukasz Luba wrote:
+>>>> Hi Thara,
+>>>>
+>>>> I have run it on Exynos5433 mainline.
+>>>> When it is enabled with step_wise thermal governor,
+>>>> some of my tests are showing ~30-50% regression (i.e. hackbench),
+>>>> dhrystone ~10%.
+>>>
+>>> That is interesting. If I understand correctly, dhrystone spawns 16
+>>> threads or so and floods the system. In "theory", such a test should not
+>>> see any performance improvement and degradation. What is the thermal
+>>> activity like in your system? I will try running one of these tests on
+>>> hikey960.
+>> I use this dhrystone implementation:
+>> https://github.com/Keith-S-Thompson/dhrystone/blob/master/v2.2/dry.c
+>> It does not span new threads/processes and I pinned it to a single cpu.
+>>
+>> My thermal setup is probably different than yours.
+>> You have (on hikey960) probably 1 sensor for whole SoC and one thermal
+>> zone (if it is this mainline file:
+>> arch/arm64/boot/dts/hisilicon/hi3660.dtsi).
+>> This thermal zone has two cooling devices - two clusters with dvfs.
+>> Your temperature signal read out from that sensor is probably much
+>> smoother. When you have sensor inside cluster, the rising factor
+>> can be even 20deg/s (for big cores).
+>> In my case, there are 4 thermal zones, each cluster has it's private
+>> sensor and thermal zone. There is no 'SoC sensor' or 'PCB sensor',
+>> which is recommended for IPA.
+>>>>
+>>>> Could you tell me which thermal governor was used in your case?
+>>>> Please also share the name of that benchmark, i will give it a try.
+>>>> Is it single threaded compute-intensive?
+>>>
+>>> Step-wise governor.
+>>> I use aobench which is part of phoronix-test-suite.
+>>>
+>>> Regards
+>>> Thara
+>>>
+>> I have built this aobench and run it pinned to single big cpu:
+>> time taskset -c 4 ./aobench
 > 
-> Let me offer a different interpretation: if we average throttling events 
-> then we create a 'smooth' average of 'true CPU capacity' that doesn't 
-> fluctuate much. This allows more stable yet asymmetric task placement if 
-> the thermal characteristics of the different cores is different 
-> (asymmetric). This, compared to instantaneous updates, would reduce 
-> unnecessary task migrations between cores.
-> 
-> Is that accurate?
+> Why have you pinned the test only on CPU4 ?
+> Goal of thermal pressure is to inform the scheduler of reduced compute
+> capacity and help the scheduler to take better decision in tasks
+> placement.
 
-Yes. I think it is accurate. I will also add that if we don't average
-throttling events, we will miss the events that occur in between load
-balancing(LB) period.
+Hi Lukasz,
 
-> 
-> If the thermal characteristics of the cores is roughly symmetric and the 
-> measured CPU-intense load itself is symmetric as well, then I have 
-> trouble seeing why reacting to thermal events should make any difference 
-> at all.
-In this scenario, i agree that scheduler reaction to thermal events
-should not make any difference in fact we should not observe any
-improvement or degradation in performance.
-
-> 
-> Are there any inherent asymmetries in the thermal properties of the 
-> cores, or in the benchmarked workload itself?
-
-The benchmarked workload , meaning aobench? I don't think there arre any
-asymmetries there. On Hikey960, there are two clusters with different
-frequency domains. So yes I will say there is asymmetry there. Asides,
-IMHO, any other tasks running on the system can create an inherent
-asymmetry as cpu utilizations can vary.
+I agree with Vincent's observation. I had not seen this earlier. Pinning
+a task to a cpu will obviously prevent migration. The performance
+regression could be due to as Vincent mentioned below other tasks in the
+system. On another note, which cpufreq governor are you using? Is the
+core being bumped up to highest possible OPP during the test?
 
 Regards
 Thara
+> So I would not expect perf impact on your test as the bench will stay
+> pinned on the cpu4
+> That being said you obviously have perf impact as shown below in your results
+> And other tasks on the system are not pinned and might come and
+> disturb your bench
 > 
-> Thanks,
+>> The results:
+>> 3min-5:30min [mainline]
+>> 5:15min-5:50min [+patchset]
+>>
+>> The idea is definitely worth to investigate further.
 > 
-> 	Ingo
+> Yes I agree
 > 
+> Vincent
+>>
+>> Regards,
+>> Lukasz
+>>
+>>
+>>
 
 
 -- 
