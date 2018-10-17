@@ -1,15 +1,15 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
- Tegra20/30
-Date: Wed, 17 Oct 2018 09:40:32 +0100
-Message-ID: <f38b38f1-0a60-d6fa-9047-23c619494b23@nvidia.com>
+Subject: Re: [PATCH v1 2/5] cpufreq: tegra20: Support OPP, thermal cooling and
+ Tegra30
+Date: Wed, 17 Oct 2018 09:47:16 +0100
+Message-ID: <50a5b783-d865-c1a6-bfa3-7b38a5ad2a01@nvidia.com>
 References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-2-digetx@gmail.com>
+ <20180830194356.14059-3-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180830194356.14059-2-digetx@gmail.com>
+In-Reply-To: <20180830194356.14059-3-digetx@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
@@ -18,39 +18,12 @@ List-Id: linux-pm@vger.kernel.org
 
 
 On 30/08/2018 20:43, Dmitry Osipenko wrote:
-> Add device-tree binding that describes CPU frequency-scaling hardware
-> found on NVIDIA Tegra20/30 SoC's.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
->  1 file changed, 38 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> new file mode 100644
-> index 000000000000..2c51f676e958
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-> @@ -0,0 +1,38 @@
-> +Binding for NVIDIA Tegra20 CPUFreq
-> +==================================
-> +
-> +Required properties:
-> +- clocks: Must contain an entry for each entry in clock-names.
-> +  See ../clocks/clock-bindings.txt for details.
-> +- clock-names: Must include the following entries:
-> +  - pll_x: main-parent for CPU clock, must be the first entry
-> +  - backup: intermediate-parent for CPU clock
-> +  - cpu: the CPU clock
+> Add support for thermal throttling and Operating Performance Points.
+> Driver now relies on OPP's supplied via device tree and therefore will
+> work only on devices that use the updated device tree. The generalization
+> of the driver allows to transparently support Tegra30.
 
-Is it likely that 'backup' will be anything other that pll_p? If not why
-not just call it pll_p? Personally, I don't 'backup' to descriptive even
-though I can see what you mean.
-
-I can see that you want to make this flexible, but if the likelihood is
-that we will just use pll_p then I am not sure it is warranted at this
-point.
+Thierry, can we or should we do this?
 
 Cheers
 Jon
