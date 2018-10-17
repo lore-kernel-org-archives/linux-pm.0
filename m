@@ -1,106 +1,68 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH v4] kernel/hung_task.c: disable on suspend
-Date: Wed, 17 Oct 2018 13:23:55 +0200
-Message-ID: <20181017112355.12763-1-vkuznets@redhat.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Applied "ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent" to the asoc tree
+Date: Wed, 17 Oct 2018 12:54:54 +0100 (BST)
+Message-ID: <20181017115454.BA5D611224C4@debutante.sirena.org.uk>
+References: <20181013151707.32210-6-hch@lst.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181013151707.32210-6-hch@lst.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.orgalsa-devel@alsa-project.org
 List-Id: linux-pm@vger.kernel.org
 
-It is possible to observe hung_task complaints when system goes to
-suspend-to-idle state:
+The patch
 
- # echo freeze > /sys/power/state
+   ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
 
- PM: Syncing filesystems ... done.
- Freezing user space processes ... (elapsed 0.001 seconds) done.
- OOM killer disabled.
- Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
- sd 0:0:0:0: [sda] Synchronizing SCSI cache
- INFO: task bash:1569 blocked for more than 120 seconds.
-       Not tainted 4.19.0-rc3_+ #687
- "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
- bash            D    0  1569    604 0x00000000
- Call Trace:
-  ? __schedule+0x1fe/0x7e0
-  schedule+0x28/0x80
-  suspend_devices_and_enter+0x4ac/0x750
-  pm_suspend+0x2c0/0x310
+has been applied to the asoc tree at
 
-Register a PM notifier to disable the detector on suspend and re-enable
-back on wakeup.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+>From 3b991038498bc5011b063d6a804503c577a79434 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 13 Oct 2018 17:17:04 +0200
+Subject: [PATCH] ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
+
+The DMA API does its own zone decisions based on the coherent_dma_mask.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
-Changes since v3:
-- Handle PM_RESTORE_PREPARE/PM_POST_RESTORE for completeness
-  [Rafael J. Wysocki]
----
- kernel/hung_task.c | 30 +++++++++++++++++++++++++++++-
- 1 file changed, 29 insertions(+), 1 deletion(-)
+ sound/soc/intel/common/sst-firmware.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index b9132d1269ef..cb8e3e8ac7b9 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -15,6 +15,7 @@
- #include <linux/lockdep.h>
- #include <linux/export.h>
- #include <linux/sysctl.h>
-+#include <linux/suspend.h>
- #include <linux/utsname.h>
- #include <linux/sched/signal.h>
- #include <linux/sched/debug.h>
-@@ -242,6 +243,28 @@ void reset_hung_task_detector(void)
- }
- EXPORT_SYMBOL_GPL(reset_hung_task_detector);
+diff --git a/sound/soc/intel/common/sst-firmware.c b/sound/soc/intel/common/sst-firmware.c
+index 11041aedea31..1e067504b604 100644
+--- a/sound/soc/intel/common/sst-firmware.c
++++ b/sound/soc/intel/common/sst-firmware.c
+@@ -355,7 +355,7 @@ struct sst_fw *sst_fw_new(struct sst_dsp *dsp,
  
-+static bool hung_detector_suspended;
-+
-+static int hungtask_pm_notify(struct notifier_block *self,
-+			      unsigned long action, void *hcpu)
-+{
-+	switch (action) {
-+	case PM_SUSPEND_PREPARE:
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+		hung_detector_suspended = true;
-+		break;
-+	case PM_POST_SUSPEND:
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_RESTORE:
-+		hung_detector_suspended = false;
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- /*
-  * kthread which checks for tasks stuck in D state
-  */
-@@ -261,7 +284,8 @@ static int watchdog(void *dummy)
- 		interval = min_t(unsigned long, interval, timeout);
- 		t = hung_timeout_jiffies(hung_last_checked, interval);
- 		if (t <= 0) {
--			if (!atomic_xchg(&reset_hung_task, 0))
-+			if (!atomic_xchg(&reset_hung_task, 0) &&
-+			    !hung_detector_suspended)
- 				check_hung_uninterruptible_tasks(timeout);
- 			hung_last_checked = jiffies;
- 			continue;
-@@ -275,6 +299,10 @@ static int watchdog(void *dummy)
- static int __init hung_task_init(void)
- {
- 	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-+
-+	/* Disable hung task detector on suspend */
-+	pm_notifier(hungtask_pm_notify, 0);
-+
- 	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
- 
- 	return 0;
+ 	/* allocate DMA buffer to store FW data */
+ 	sst_fw->dma_buf = dma_alloc_coherent(dsp->dma_dev, sst_fw->size,
+-				&sst_fw->dmable_fw_paddr, GFP_DMA | GFP_KERNEL);
++				&sst_fw->dmable_fw_paddr, GFP_KERNEL);
+ 	if (!sst_fw->dma_buf) {
+ 		dev_err(dsp->dev, "error: DMA alloc failed\n");
+ 		kfree(sst_fw);
 -- 
-2.17.1
+2.19.0.rc2
