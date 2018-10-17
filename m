@@ -1,54 +1,108 @@
-From: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Wed, 17 Oct 2018 11:28:38 -0700
-Message-ID: <CAD=FV=WzkRtcdy_=eatp=AEkJ54d=qvNGzNYCMCMnVAWtrXAQg@mail.gmail.com>
-References: <20180827151112.25211-1-jcrouse@codeaurora.org>
- <20180827151112.25211-6-jcrouse@codeaurora.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
+ Tegra20/30
+Date: Wed, 17 Oct 2018 20:29:51 +0100
+Message-ID: <821c13a9-ff9c-c9bd-83f6-7566f7bb4477@nvidia.com>
+References: <20180830194356.14059-1-digetx@gmail.com>
+ <20180830194356.14059-2-digetx@gmail.com>
+ <f38b38f1-0a60-d6fa-9047-23c619494b23@nvidia.com>
+ <1448e619-35c9-0195-c68a-604d10f4dc8b@gmail.com>
+ <a9b6e683-3802-896c-27ad-9c49853c231f@nvidia.com>
+ <a0dd5d75-6683-f938-c5e5-a95a5c2b86e4@gmail.com>
+ <3c72f573-d109-b607-b7b7-d70aea3e03df@nvidia.com>
+ <c6249de9-bcaa-ab3e-8546-40f8c2c17599@gmail.com>
+ <4db9c51c-0c1d-c9a2-b781-250c053e6e24@nvidia.com>
+ <e4f63df9-d92a-4e57-05ba-c999bdda9cc0@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20180827151112.25211-6-jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Georgi Djakov <georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux ARM <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <e4f63df9-d92a-4e57-05ba-c999bdda9cc0@gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBNb24sIEF1ZyAyNywgMjAxOCBhdCA4OjExIEFNIEpvcmRhbiBDcm91c2UgPGpjcm91
-c2VAY29kZWF1cm9yYS5vcmc+IHdyb3RlOgo+ICsgICAgICAgICAgICAgICBncHVANTAwMDAwMCB7
-Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJxY29tLGFkcmVuby02MzAu
-MiIsICJxY29tLGFkcmVubyI7Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgI3N0cmVhbS1pZC1j
-ZWxscyA9IDwxNj47Cj4gKwo+ICsgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDUwMDAw
-MDAgMHg0MDAwMD47Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgcmVnLW5hbWVzID0gImtnc2xf
-M2QwX3JlZ19tZW1vcnkiOwo+ICsKPiArICAgICAgICAgICAgICAgICAgICAgICAvKgo+ICsgICAg
-ICAgICAgICAgICAgICAgICAgICAqIExvb2sgbWEsIG5vIGNsb2NrcyEgVGhlIEdQVSBjbG9ja3Mg
-YW5kIHBvd2VyIGFyZQo+ICsgICAgICAgICAgICAgICAgICAgICAgICAqIGNvbnRyb2xsZWQgZW50
-aXJlbHkgYnkgdGhlIEdNVQo+ICsgICAgICAgICAgICAgICAgICAgICAgICAqLwo+ICsKPiArICAg
-ICAgICAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0gPDAgMzAwIDA+Owo+ICsgICAgICAgICAg
-ICAgICAgICAgICAgIGludGVycnVwdC1uYW1lcyA9ICJrZ3NsXzNkMF9pcnEiOwoKRHJpdmUtYnkg
-ZmVlZGJhY2sgaGVyZS4gIFRoZSAiaW50ZXJydXB0cyIgYWJvdmUgc2hvdWxkIGJlOgoKaW50ZXJy
-dXB0cyA9IDxHSUNfU1BJIDMwMCBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKCiogR0lDX1NQSSBpcyAw
-LCBidXQgR0lDX1NQSSBpcyBtb3JlIGRvY3VtZW50aW5nLgoKKiBoYXZpbmcgMCBmb3IgdGhlIGZp
-bmFsIGVsZW1lbnQgbWVhbnMgJ0lSUV9UWVBFX05PTkUnLiAgT24gbmV3ZXIKa2VybmVscyBjb21t
-aXQgNmVmNjM4NmVmN2MxICgiaXJxY2hpcC9naWMtdjM6IExvdWRseSBjb21wbGFpbiBhYm91dAp0
-aGUgdXNlIG9mIElSUV9UWVBFX05PTkUiKSB3aWxsIGNhdXNlIGxvdWQgeWVsbHMgaWYgeW91IGRv
-IHRoaXMuICBUaGlzCnR1cm5zIG91dCB0byBiZSBhIGJpdCBzaWxseSBiZWNhdXNlIChJSVVDKSB0
-aGUgZmxhZ3MgaW4gdGhlIGRldmljZQp0cmVlIGFyZSB0b3RhbGx5IGlnbm9yZWQgaWYgdGhlIGRy
-aXZlciBwYXNzZXMgaW4gZmxhZ3MgaXRzZWxmIFsxXS4KLi4uYnV0IEkgZ3Vlc3Mgd2Ugc2hvdWxk
-IGRvIGl0IHJpZ2h0LiAgSSBiZWxpZXZlIHRoZSBjb2RlIHJlcXVlc3RpbmcKdGhpcyBpcnEgaXMg
-YTZ4eF9nbXVfZ2V0X2lycSgpIHdoaWNoIHJlcXVlc3RzIGEgbGV2ZWwgaGlnaCBpbnRlcnJ1cHQs
-CnNvIHdlIHNob3VsZCBsaXN0IGxldmVsIGhpZ2ggaGVyZS4KCgpbMV0gaHR0cHM6Ly9sb3JlLmtl
-cm5lbC5vcmcvbGttbC9DQUQ9RlY9WG1pT2gwTWcwZjRhPVcwTkNIOGViLS1PUWhQMmpOQXYyWk1w
-VUJPbjluNlFAbWFpbC5nbWFpbC5jb20vVC8jdQoKCi1Eb3VnCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRy
-ZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVubwo=
+
+On 17/10/2018 15:43, Dmitry Osipenko wrote:
+> On 10/17/18 5:14 PM, Jon Hunter wrote:
+>>
+>> On 17/10/2018 14:46, Dmitry Osipenko wrote:
+>>> On 10/17/18 4:34 PM, Jon Hunter wrote:
+>>>>
+>>>> On 17/10/2018 14:07, Dmitry Osipenko wrote:
+>>>>> On 10/17/18 3:59 PM, Jon Hunter wrote:
+>>>>>>
+>>>>>> On 17/10/2018 13:37, Dmitry Osipenko wrote:
+>>>>>>> On 10/17/18 11:40 AM, Jon Hunter wrote:
+>>>>>>>>
+>>>>>>>> On 30/08/2018 20:43, Dmitry Osipenko wrote:
+>>>>>>>>> Add device-tree binding that describes CPU frequency-scaling hardware
+>>>>>>>>> found on NVIDIA Tegra20/30 SoC's.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>>>>>>>> ---
+>>>>>>>>>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 38 +++++++++++++++++++
+>>>>>>>>>  1 file changed, 38 insertions(+)
+>>>>>>>>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>>>>>>>>>
+>>>>>>>>> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>>>>>>>>> new file mode 100644
+>>>>>>>>> index 000000000000..2c51f676e958
+>>>>>>>>> --- /dev/null
+>>>>>>>>> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>>>>>>>>> @@ -0,0 +1,38 @@
+>>>>>>>>> +Binding for NVIDIA Tegra20 CPUFreq
+>>>>>>>>> +==================================
+>>>>>>>>> +
+>>>>>>>>> +Required properties:
+>>>>>>>>> +- clocks: Must contain an entry for each entry in clock-names.
+>>>>>>>>> +  See ../clocks/clock-bindings.txt for details.
+>>>>>>>>> +- clock-names: Must include the following entries:
+>>>>>>>>> +  - pll_x: main-parent for CPU clock, must be the first entry
+>>>>>>>>> +  - backup: intermediate-parent for CPU clock
+>>>>>>>>> +  - cpu: the CPU clock
+>>>>>>>>
+>>>>>>>> Is it likely that 'backup' will be anything other that pll_p? If not why
+>>>>>>>> not just call it pll_p? Personally, I don't 'backup' to descriptive even
+>>>>>>>> though I can see what you mean.
+>>>>>>>>
+>>>>>>>> I can see that you want to make this flexible, but if the likelihood is
+>>>>>>>> that we will just use pll_p then I am not sure it is warranted at this
+>>>>>>>> point.
+>>>>>>>
+>>>>>>> That won't describe HW, but software. And device tree should describe HW.
+>>>>>>
+>>>>>> Hmm ... well that's my point exactly. So why call it 'backup'? Sounds
+>>>>>> like a software description to me.
+>>>>>
+>>>>> Because HW is designed the way that CPU parent need to be switched to the backup clock source while main clock changes its rate. HW also allow to select among different parents, pll_p is one of those parents.
+>>>>
+>>>> Yes that part is understood. I am just splitting hairs over the actual
+>>>> name. We do the same for tegra124 but we just call it 'pll_p'. See ...
+>>>>
+>>>> Documentation/devicetree/bindings/cpufreq/nvidia,tegra124-cpufreq.txt
+>>>
+>>> tegra124-cpufreq choose to hardwire to the pll_p, but it could be other clocks. Technically abstracting backup clock should be more correct, but result is the same in the end.
+>>
+>> Yes and that is probably intentional as that is the configuration that
+>> has been validated. So unless we are planning to test and verify every
+>> possibility, my preference is to keep it simple. But yes the result is
+>> the same.
+>>
+>> I was simply curious of your intention here because of the other series
+>> you posted with regard to the cpu clocks.
+> 
+> Actually I tried other parents on T30 and they worked with no problems. The intention of having 'backup' is to describe HW properly in the device tree, that's it. We'll have backup set to pll_p by default. ACK?
+
+Yes but I don't find the name 'backup' very descriptive because like you
+say it is an intermediate clock for switching frequency. But at the same
+time I don't have a good suggestion. Anyway it is more of a
+bike-shedding comment.
+
+Cheers
+Jon
+
+-- 
+nvpublic
