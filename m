@@ -1,70 +1,198 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Fix static checker warning in
- try_then_request_governor
-Date: Wed, 17 Oct 2018 09:27:49 +0900
-Message-ID: <5BC68205.1090406@samsung.com>
-References: <CGME20181016100221epcas2p3da3cd977eefd0681e7d1231640b9e96e@epcas2p3.samsung.com>
-        <20181016100203.18624-1-enric.balletbo@collabora.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v4 5/7] power: supply: add AC power supply driver for AXP813
+Date: Wed, 17 Oct 2018 14:12:57 +0800
+Message-ID: <CAGb2v646PM4s+MvFt3MRS7g6O7_DBw8Jha24dd=a0DmMsvcAoQ@mail.gmail.com>
+References: <20181013080848.29894-1-oskari@lemmela.net> <20181013080848.29894-6-oskari@lemmela.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20181016100203.18624-1-enric.balletbo@collabora.com>
+In-Reply-To: <20181013080848.29894-6-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-kernel@vger.kernel.org
-Cc: kernel@collabora.com, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+To: oskari@lemmela.net
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Enric,
-
-On 2018년 10월 16일 19:02, Enric Balletbo i Serra wrote:
-> The patch 23c7b54ca1cd: "PM / devfreq: Fix devfreq_add_device() when
-> drivers are built as modules." leads to the following static checker
-> warning:
-> 
->     drivers/devfreq/devfreq.c:1043 governor_store()
->     warn: 'governor' can also be NULL
-> 
-> The reason is that the try_then_request_governor() function returns both
-> error pointers and NULL. It should just return error pointers, so fix
-> this by returning a ERR_PTR to the error intead of returning NULL.
-> 
-> Fixes: 23c7b54ca1cd ("PM / devfreq: Fix devfreq_add_device() when drivers are built as modules.")
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> 
->  drivers/devfreq/devfreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 62ead442a872..b10124c7308f 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -231,7 +231,7 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
->   * if is not found. This can happen when both drivers (the governor driver
->   * and the driver that call devfreq_add_device) are built as modules.
->   * devfreq_list_lock should be held by the caller. Returns the matched
-> - * governor's pointer.
-> + * governor's pointer or an error pointer.
->   */
->  static struct devfreq_governor *try_then_request_governor(const char *name)
->  {
-> @@ -257,7 +257,7 @@ static struct devfreq_governor *try_then_request_governor(const char *name)
->  		/* Restore previous state before return */
->  		mutex_lock(&devfreq_list_lock);
->  		if (err)
-> -			return NULL;
-> +			return ERR_PTR(err);
->  
->  		governor = find_devfreq_governor(name);
->  	}
+On Sat, Oct 13, 2018 at 4:09 PM Oskari Lemmela <oskari@lemmela.net> wrote:
 >
+> AXP813 and AXP803 PMICs can control input current and
+> minimum voltage.
+>
+> Both of these values are configurable.
+>
+> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+> Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
+> ---
+>  drivers/power/supply/axp20x_ac_power.c | 92 ++++++++++++++++++++++++++
+>  include/linux/mfd/axp20x.h             |  1 +
+>  2 files changed, 93 insertions(+)
+>
+> diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/supply/axp20x_ac_power.c
+> index 0771f951b11f..059a97d6e14c 100644
+> --- a/drivers/power/supply/axp20x_ac_power.c
+> +++ b/drivers/power/supply/axp20x_ac_power.c
+> @@ -27,6 +27,16 @@
+>  #define AXP20X_PWR_STATUS_ACIN_PRESENT BIT(7)
+>  #define AXP20X_PWR_STATUS_ACIN_AVAIL   BIT(6)
+>
+> +#define AXP813_VHOLD_MASK              GENMASK(5, 3)
+> +#define AXP813_VHOLD_UV_TO_BIT(x)      ((((x) / 100000) - 40) << 3)
+> +#define AXP813_VHOLD_REG_TO_UV(x)      \
+> +       (((((x) & AXP813_VHOLD_MASK) >> 3) + 40) * 100000)
+> +
+> +#define AXP813_CURR_LIMIT_MASK         GENMASK(2, 0)
+> +#define AXP813_CURR_LIMIT_UA_TO_BIT(x) (((x) / 500000) - 3)
+> +#define AXP813_CURR_LIMIT_REG_TO_UA(x) \
+> +       ((((x) & AXP813_CURR_LIMIT_MASK) + 3) * 500000)
+> +
+>  #define DRVNAME "axp20x-ac-power-supply"
+>
+>  struct axp20x_ac_power {
+> @@ -102,6 +112,55 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
+>
+>                 return 0;
+>
+> +       case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+> +               ret = regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
+> +               if (ret)
+> +                       return ret;
+> +
+> +               val->intval = AXP813_VHOLD_REG_TO_UV(reg);
+> +
+> +               return 0;
+> +
+> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +               ret = regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
+> +               if (ret)
+> +                       return ret;
+> +
+> +               val->intval = AXP813_CURR_LIMIT_REG_TO_UA(reg);
 
-LGTM.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+This doesn't handle the case where the register value is set to 0x6 or 0x7,
+which should still mean 4000 mA.
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+> +
+> +               return 0;
+> +
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +
+> +       return -EINVAL;
+> +}
+> +
+> +static int axp813_ac_power_set_property(struct power_supply *psy,
+> +                                       enum power_supply_property psp,
+> +                                       const union power_supply_propval *val)
+> +{
+> +       struct axp20x_ac_power *power = power_supply_get_drvdata(psy);
+> +
+> +       switch (psp) {
+> +       case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+> +               if (val->intval < 4000000 || val->intval > 4700000)
+> +                       return -EINVAL;
+> +
+> +               return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
+> +                                         AXP813_VHOLD_MASK,
+> +                                         AXP813_VHOLD_UV_TO_BIT(val->intval));
+> +
+> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+> +               if (val->intval < 1500000 || val->intval > 4000000)
+> +                       return -EINVAL;
+> +
+> +               return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
+> +                                         AXP813_CURR_LIMIT_MASK,
+> +                                         AXP813_CURR_LIMIT_UA_TO_BIT
+> +                                         (val->intval));
+
+Nit, don't wrap this part. Even if it exceeds the 80 character limit, it's
+still easier to read that way.
+
+ChenYu
+
+> +
+>         default:
+>                 return -EINVAL;
+>         }
+> @@ -109,6 +168,13 @@ static int axp20x_ac_power_get_property(struct power_supply *psy,
+>         return -EINVAL;
+>  }
+>
+> +static int axp813_ac_power_prop_writeable(struct power_supply *psy,
+> +                                         enum power_supply_property psp)
+> +{
+> +       return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
+> +              psp == POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT;
+> +}
+> +
+>  static enum power_supply_property axp20x_ac_power_properties[] = {
+>         POWER_SUPPLY_PROP_HEALTH,
+>         POWER_SUPPLY_PROP_PRESENT,
+> @@ -123,6 +189,14 @@ static enum power_supply_property axp22x_ac_power_properties[] = {
+>         POWER_SUPPLY_PROP_ONLINE,
+>  };
+>
+> +static enum power_supply_property axp813_ac_power_properties[] = {
+> +       POWER_SUPPLY_PROP_HEALTH,
+> +       POWER_SUPPLY_PROP_PRESENT,
+> +       POWER_SUPPLY_PROP_ONLINE,
+> +       POWER_SUPPLY_PROP_VOLTAGE_MIN,
+> +       POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+> +};
+> +
+>  static const struct power_supply_desc axp20x_ac_power_desc = {
+>         .name = "axp20x-ac",
+>         .type = POWER_SUPPLY_TYPE_MAINS,
+> @@ -139,6 +213,16 @@ static const struct power_supply_desc axp22x_ac_power_desc = {
+>         .get_property = axp20x_ac_power_get_property,
+>  };
+>
+> +static const struct power_supply_desc axp813_ac_power_desc = {
+> +       .name = "axp813-ac",
+> +       .type = POWER_SUPPLY_TYPE_MAINS,
+> +       .properties = axp813_ac_power_properties,
+> +       .num_properties = ARRAY_SIZE(axp813_ac_power_properties),
+> +       .property_is_writeable = axp813_ac_power_prop_writeable,
+> +       .get_property = axp20x_ac_power_get_property,
+> +       .set_property = axp813_ac_power_set_property,
+> +};
+> +
+>  struct axp_data {
+>         const struct power_supply_desc  *power_desc;
+>         bool                            acin_adc;
+> @@ -154,6 +238,11 @@ static const struct axp_data axp22x_data = {
+>         .acin_adc = false,
+>  };
+>
+> +static const struct axp_data axp813_data = {
+> +       .power_desc = &axp813_ac_power_desc,
+> +       .acin_adc = false,
+> +};
+> +
+>  static int axp20x_ac_power_probe(struct platform_device *pdev)
+>  {
+>         struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+> @@ -234,6 +323,9 @@ static const struct of_device_id axp20x_ac_power_match[] = {
+>         }, {
+>                 .compatible = "x-powers,axp221-ac-power-supply",
+>                 .data = &axp22x_data,
+> +       }, {
+> +               .compatible = "x-powers,axp813-ac-power-supply",
+> +               .data = &axp813_data,
+>         }, { /* sentinel */ }
+>  };
+>  MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 517e60eecbcb..2302b620d238 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -266,6 +266,7 @@ enum axp20x_variants {
+>  #define AXP288_RT_BATT_V_H             0xa0
+>  #define AXP288_RT_BATT_V_L             0xa1
+>
+> +#define AXP813_ACIN_PATH_CTRL          0x3a
+>  #define AXP813_ADC_RATE                        0x85
+>
+>  /* Fuel Gauge */
+> --
+> 2.17.1
+>
