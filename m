@@ -1,68 +1,63 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Applied "ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent" to the asoc tree
-Date: Wed, 17 Oct 2018 12:54:54 +0100 (BST)
-Message-ID: <20181017115454.BA5D611224C4@debutante.sirena.org.uk>
-References: <20181013151707.32210-6-hch@lst.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181013151707.32210-6-hch@lst.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: Applied "spi: pic32-sqi: don't pass GFP_DMA32 to dma_alloc_coherent"
+ to the spi tree
+Date: Wed, 17 Oct 2018 12:55:04 +0100 (BST)
+Message-ID: <20181017115504.2A15E11224C4@debutante.sirena.org.uk>
+References: <20181013151707.32210-4-hch@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20181013151707.32210-4-hch@lst.de>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
 To: Christoph Hellwig <hch@lst.de>
-Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.orgalsa-devel@alsa-project.org
+Cc: linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-tegra@vger.kernel.org, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The patch
-
-   ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
-
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From 3b991038498bc5011b063d6a804503c577a79434 Mon Sep 17 00:00:00 2001
-From: Christoph Hellwig <hch@lst.de>
-Date: Sat, 13 Oct 2018 17:17:04 +0200
-Subject: [PATCH] ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
-
-The DMA API does its own zone decisions based on the coherent_dma_mask.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/intel/common/sst-firmware.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/intel/common/sst-firmware.c b/sound/soc/intel/common/sst-firmware.c
-index 11041aedea31..1e067504b604 100644
---- a/sound/soc/intel/common/sst-firmware.c
-+++ b/sound/soc/intel/common/sst-firmware.c
-@@ -355,7 +355,7 @@ struct sst_fw *sst_fw_new(struct sst_dsp *dsp,
- 
- 	/* allocate DMA buffer to store FW data */
- 	sst_fw->dma_buf = dma_alloc_coherent(dsp->dma_dev, sst_fw->size,
--				&sst_fw->dmable_fw_paddr, GFP_DMA | GFP_KERNEL);
-+				&sst_fw->dmable_fw_paddr, GFP_KERNEL);
- 	if (!sst_fw->dma_buf) {
- 		dev_err(dsp->dev, "error: DMA alloc failed\n");
- 		kfree(sst_fw);
--- 
-2.19.0.rc2
+VGhlIHBhdGNoCgogICBzcGk6IHBpYzMyLXNxaTogZG9uJ3QgcGFzcyBHRlBfRE1BMzIgdG8gZG1h
+X2FsbG9jX2NvaGVyZW50CgpoYXMgYmVlbiBhcHBsaWVkIHRvIHRoZSBzcGkgdHJlZSBhdAoKICAg
+aHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvYnJvb25pZS9z
+cGkuZ2l0IAoKQWxsIGJlaW5nIHdlbGwgdGhpcyBtZWFucyB0aGF0IGl0IHdpbGwgYmUgaW50ZWdy
+YXRlZCBpbnRvIHRoZSBsaW51eC1uZXh0CnRyZWUgKHVzdWFsbHkgc29tZXRpbWUgaW4gdGhlIG5l
+eHQgMjQgaG91cnMpIGFuZCBzZW50IHRvIExpbnVzIGR1cmluZwp0aGUgbmV4dCBtZXJnZSB3aW5k
+b3cgKG9yIHNvb25lciBpZiBpdCBpcyBhIGJ1ZyBmaXgpLCBob3dldmVyIGlmCnByb2JsZW1zIGFy
+ZSBkaXNjb3ZlcmVkIHRoZW4gdGhlIHBhdGNoIG1heSBiZSBkcm9wcGVkIG9yIHJldmVydGVkLiAg
+CgpZb3UgbWF5IGdldCBmdXJ0aGVyIGUtbWFpbHMgcmVzdWx0aW5nIGZyb20gYXV0b21hdGVkIG9y
+IG1hbnVhbCB0ZXN0aW5nCmFuZCByZXZpZXcgb2YgdGhlIHRyZWUsIHBsZWFzZSBlbmdhZ2Ugd2l0
+aCBwZW9wbGUgcmVwb3J0aW5nIHByb2JsZW1zIGFuZApzZW5kIGZvbGxvd3VwIHBhdGNoZXMgYWRk
+cmVzc2luZyBhbnkgaXNzdWVzIHRoYXQgYXJlIHJlcG9ydGVkIGlmIG5lZWRlZC4KCklmIGFueSB1
+cGRhdGVzIGFyZSByZXF1aXJlZCBvciB5b3UgYXJlIHN1Ym1pdHRpbmcgZnVydGhlciBjaGFuZ2Vz
+IHRoZXkKc2hvdWxkIGJlIHNlbnQgYXMgaW5jcmVtZW50YWwgdXBkYXRlcyBhZ2FpbnN0IGN1cnJl
+bnQgZ2l0LCBleGlzdGluZwpwYXRjaGVzIHdpbGwgbm90IGJlIHJlcGxhY2VkLgoKUGxlYXNlIGFk
+ZCBhbnkgcmVsZXZhbnQgbGlzdHMgYW5kIG1haW50YWluZXJzIHRvIHRoZSBDQ3Mgd2hlbiByZXBs
+eWluZwp0byB0aGlzIG1haWwuCgpUaGFua3MsCk1hcmsKCkZyb20gZWM1MDZlOTI0NmJmNDI3OTVm
+MWZhOGE1Y2QwMDc0MGU1Njg2YmE3MyBNb24gU2VwIDE3IDAwOjAwOjAwIDIwMDEKRnJvbTogQ2hy
+aXN0b3BoIEhlbGx3aWcgPGhjaEBsc3QuZGU+CkRhdGU6IFNhdCwgMTMgT2N0IDIwMTggMTc6MTc6
+MDIgKzAyMDAKU3ViamVjdDogW1BBVENIXSBzcGk6IHBpYzMyLXNxaTogZG9uJ3QgcGFzcyBHRlBf
+RE1BMzIgdG8gZG1hX2FsbG9jX2NvaGVyZW50CgpUaGUgRE1BIEFQSSBkb2VzIGl0cyBvd24gem9u
+ZSBkZWNpc2lvbnMgYmFzZWQgb24gdGhlIGNvaGVyZW50X2RtYV9tYXNrLgoKU2lnbmVkLW9mZi1i
+eTogQ2hyaXN0b3BoIEhlbGx3aWcgPGhjaEBsc3QuZGU+ClNpZ25lZC1vZmYtYnk6IE1hcmsgQnJv
+d24gPGJyb29uaWVAa2VybmVsLm9yZz4KLS0tCiBkcml2ZXJzL3NwaS9zcGktcGljMzItc3FpLmMg
+fCAyICstCiAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkKCmRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3NwaS9zcGktcGljMzItc3FpLmMgYi9kcml2ZXJzL3NwaS9zcGkt
+cGljMzItc3FpLmMKaW5kZXggNjJlNmJmMWY1MGIxLi5kN2U0ZTE4ZWMzZGYgMTAwNjQ0Ci0tLSBh
+L2RyaXZlcnMvc3BpL3NwaS1waWMzMi1zcWkuYworKysgYi9kcml2ZXJzL3NwaS9zcGktcGljMzIt
+c3FpLmMKQEAgLTQ2OCw3ICs0NjgsNyBAQCBzdGF0aWMgaW50IHJpbmdfZGVzY19yaW5nX2FsbG9j
+KHN0cnVjdCBwaWMzMl9zcWkgKnNxaSkKIAkvKiBhbGxvY2F0ZSBjb2hlcmVudCBETUFhYmxlIG1l
+bW9yeSBmb3IgaGFyZHdhcmUgYnVmZmVyIGRlc2NyaXB0b3JzLiAqLwogCXNxaS0+YmQgPSBkbWFf
+emFsbG9jX2NvaGVyZW50KCZzcWktPm1hc3Rlci0+ZGV2LAogCQkJCSAgICAgIHNpemVvZigqYmQp
+ICogUEVTUUlfQkRfQ09VTlQsCi0JCQkJICAgICAgJnNxaS0+YmRfZG1hLCBHRlBfRE1BMzIpOwor
+CQkJCSAgICAgICZzcWktPmJkX2RtYSwgR0ZQX0tFUk5FTCk7CiAJaWYgKCFzcWktPmJkKSB7CiAJ
+CWRldl9lcnIoJnNxaS0+bWFzdGVyLT5kZXYsICJmYWlsZWQgYWxsb2NhdGluZyBkbWEgYnVmZmVy
+XG4iKTsKIAkJcmV0dXJuIC1FTk9NRU07Ci0tIAoyLjE5LjAucmMyCgpfX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRy
+aS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5v
+cmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
