@@ -1,54 +1,85 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v1 3/5] ARM: tegra: Create tegra20-cpufreq device on
- Tegra30
-Date: Wed, 17 Oct 2018 09:49:40 +0100
-Message-ID: <9ec51c2d-02f6-0988-0940-0ec31d22f697@nvidia.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-4-digetx@gmail.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH v2 3/3] thermal: da9062/61: Prevent hardware access
+ during system suspend
+Date: Wed, 17 Oct 2018 08:57:05 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7021C4CCFCB@SW-EX-MBX02.diasemi.com>
+References: <20181012072017.10765-1-geert+renesas@glider.be>
+ <20181012072017.10765-4-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180830194356.14059-4-digetx@gmail.com>
+In-Reply-To: <20181012072017.10765-4-geert+renesas@glider.be>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Support Opensource <Support.Opensource@diasemi.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Geert,
 
-On 30/08/2018 20:43, Dmitry Osipenko wrote:
-> Tegra20-cpufreq driver require a platform device in order to be loaded,
-> instantiate a simple platform device for the driver during of the machines
-> late initialization. Driver now supports Tegra30 SoC's, hence create the
-> device on Tegra30 machines.
+Many thanks for looking at this.
+
+On 12 October 2018 08:20 Geert Uytterhoeven wrote:
+
+> Subject: [PATCH v2 3/3] thermal: da9062/61: Prevent hardware access during
+> system suspend
 > 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> The workqueue used for monitoring the hardware may run while the device
+> is already suspended.  Fix this by using the freezable system workqueue
+> instead, cfr. commit 51e20d0e3a60cf46 ("thermal: Prevent polling from
+> happening during system suspend").
+
+My thinking was:  this device is a PMIC and it will power the system. So when
+the device is turned off, the S/W will also not be running.
+
+Although my assumption only works if the PMIC device is the primary system
+power -- this has always been the case so far. And although I don't have any
+evidence this will change, it may become untrue in the future of course.
+
+> Fixes: 608567aac3206ae8 ("thermal: da9062/61: Thermal junction temperature
+> monitoring driver")
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  arch/arm/mach-tegra/tegra.c | 4 ++++
->  1 file changed, 4 insertions(+)
+> Untested due to lack of hardware.
+
+So, I have not been able to make any time to test this patch yet -- and with
+current workloads this might take a bit of time before I get to it.
+
+Regards,
+Steve
+
+> v2:
+>   - No changes.
+> ---
+>  drivers/thermal/da9062-thermal.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
-> index 67d8ae60ac67..b559e22eab76 100644
-> --- a/arch/arm/mach-tegra/tegra.c
-> +++ b/arch/arm/mach-tegra/tegra.c
-> @@ -111,6 +111,10 @@ static void __init tegra_dt_init_late(void)
->  	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
->  	    of_machine_is_compatible("nvidia,tegra20"))
->  		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
-> +
-> +	if (IS_ENABLED(CONFIG_ARCH_TEGRA_3x_SOC) &&
-> +	    of_machine_is_compatible("nvidia,tegra30"))
-> +		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
+> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-
+> thermal.c
+> index dd8dd947b7f0737c..01b0cb9944577851 100644
+> --- a/drivers/thermal/da9062-thermal.c
+> +++ b/drivers/thermal/da9062-thermal.c
+> @@ -106,7 +106,7 @@ static void da9062_thermal_poll_on(struct work_struct
+> *work)
+>  					   THERMAL_EVENT_UNSPECIFIED);
+> 
+>  		delay = msecs_to_jiffies(thermal->zone->passive_delay);
+> -		schedule_delayed_work(&thermal->work, delay);
+> +		queue_delayed_work(system_freezable_wq, &thermal->work,
+> delay);
+>  		return;
+>  	}
+> 
+> @@ -125,7 +125,7 @@ static irqreturn_t da9062_thermal_irq_handler(int irq,
+> void *data)
+>  	struct da9062_thermal *thermal = data;
+> 
+>  	disable_irq_nosync(thermal->irq);
+> -	schedule_delayed_work(&thermal->work, 0);
+> +	queue_delayed_work(system_freezable_wq, &thermal->work, 0);
+> 
+>  	return IRQ_HANDLED;
 >  }
->  
->  static const char * const tegra_dt_board_compat[] = {
-
-Not sure why you would do this if now the driver only works with DT. Am
-I missing something?
-
-Cheers
-Jon
-
--- 
-nvpublic
+> --
+> 2.17.1
