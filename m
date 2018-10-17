@@ -1,24 +1,25 @@
-From: Dmitry Osipenko <digetx@gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
 Subject: Re: [PATCH v1 1/5] dt-bindings: cpufreq: Add binding for NVIDIA
  Tegra20/30
-Date: Wed, 17 Oct 2018 15:42:50 +0300
-Message-ID: <4b0966fa-c3f1-b7c9-e4bd-24337b8e97fe@gmail.com>
+Date: Wed, 17 Oct 2018 13:59:53 +0100
+Message-ID: <a9b6e683-3802-896c-27ad-9c49853c231f@nvidia.com>
 References: <20180830194356.14059-1-digetx@gmail.com>
  <20180830194356.14059-2-digetx@gmail.com>
  <f38b38f1-0a60-d6fa-9047-23c619494b23@nvidia.com>
  <1448e619-35c9-0195-c68a-604d10f4dc8b@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1448e619-35c9-0195-c68a-604d10f4dc8b@gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
+To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/17/18 3:37 PM, Dmitry Osipenko wrote:
+
+On 17/10/2018 13:37, Dmitry Osipenko wrote:
 > On 10/17/18 11:40 AM, Jon Hunter wrote:
 >>
 >> On 30/08/2018 20:43, Dmitry Osipenko wrote:
@@ -57,6 +58,11 @@ On 10/17/18 3:37 PM, Dmitry Osipenko wrote:
 >> point.
 > 
 > That won't describe HW, but software. And device tree should describe HW.
-> 
 
-Though indeed it is unlikely that anything else other than pll_p will be used, so it is a software/firmware description anyway.
+Hmm ... well that's my point exactly. So why call it 'backup'? Sounds
+like a software description to me.
+
+Jon
+
+-- 
+nvpublic
