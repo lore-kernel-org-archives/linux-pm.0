@@ -1,88 +1,54 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k+lkml@gmail.com>
-Subject: Re: [PATCH 00/11] thermal: add new flag irq-mode for trip point
-Date: Wed, 17 Oct 2018 09:03:13 +0200
-Message-ID: <CAJKOXPei6b7TnOnG7DUMNm+xEUsMxqcMOfbG10cJbrNROXLN2w@mail.gmail.com>
-References: <CGME20181016145637eucas1p2dfa78042b9fd4fd27af7cc8537b7f485@eucas1p2.samsung.com>
- <20181016145637eucas1p2dfa78042b9fd4fd27af7cc8537b7f485~eHqCoEO-42133821338eucas1p2F@eucas1p2.samsung.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 06/11] DT: arm64: exynos: add support for thermal trip irq-mode
+Date: Wed, 17 Oct 2018 09:04:26 +0200
+Message-ID: <CAJKOXPdfkdAAoEj=J4T4yxC2EL8rcu88P2Yg2OkUCq89CW3Qiw@mail.gmail.com>
+References: <CGME20181016145647eucas1p206c068806214535da339588d77cbdfa5@eucas1p2.samsung.com>
+ <1539701782-26852-1-git-send-email-l.luba@partner.samsung.com>
+ <20181016145647eucas1p206c068806214535da339588d77cbdfa5~eHqLYh2dR2135021350eucas1p2K@eucas1p2.samsung.com>
+ <CAJKOXPe4Jf3QVbQ6BFPFptkgvmmpNu+QCmDoD3JqhyYOidJ7vA@mail.gmail.com> <20181016154833eucas1p2b2e7cbb90df83737e655bb8a343c4eab~eIXYh7z9r2960029600eucas1p2p@eucas1p2.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181016145637eucas1p2dfa78042b9fd4fd27af7cc8537b7f485~eHqCoEO-42133821338eucas1p2F@eucas1p2.samsung.com>
+In-Reply-To: <20181016154833eucas1p2b2e7cbb90df83737e655bb8a343c4eab~eIXYh7z9r2960029600eucas1p2p@eucas1p2.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: l.luba@partner.samsung.com
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 16 Oct 2018 at 16:56, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+On Tue, 16 Oct 2018 at 17:48, Lukasz Luba <l.luba@partner.samsung.com> wrote:
 >
-> Hi all,
+> Hi Krzysztof,
 >
-> This patch set adds new flag and mechanism in thermal trip point in DT.
-> The current situation with 'passive' (passive cooling - DVFS)
-> trip point is that it enables polling mode in thermal framework.
+> On 10/16/2018 05:09 PM, Krzysztof Kozlowski wrote:
+> > On Tue, 16 Oct 2018 at 16:56, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+> >>
+> >
+> > Hi Lukasz,
+> >
+> > Thanks for patches.
+> >
+> > I did not receive the first patches in the series. It is okay (depends
+> > on the context) but in such case sending cover letter to all people is
+> > quite useful. It helps to understand the entire patchset. Since I did
+> > not get them, I really do not know:
+> > 1. Whether DTS patches are independent?
+> > 2. How this fits in the big picture of Exynos thermal?
+> I have lost your email for my 'cc' command line, my apologies.
+> I will add you in v2.
+> Here you can find the cover letter:
+> https://marc.info/?l=linux-pm&m=153970180314648&w=2
+> regarding
+> 1. they are independent
+> 2. It will be less confusing and more coherent with documentation
+> when we use 'passive' for DVFS cooling. Unfortunately, when 'passive'
+> is set, it registers our trip points for polling and thermal schedules
+> the work. I had conversation with Daniel regarding this setup,
+> please check these email:
+> https://marc.info/?l=linux-kernel&m=153924620318766&w=2
+> and my response:
+> https://marc.info/?l=linux-kernel&m=153933708316168&w=2
 
-For DT platform, I checked it some months ago... and that time I was
-pretty sure - passive mode does not enable polling (unless you tell it
-explicitly with "polling-delay-passive"). Maybe something changed...
-but quick look at the code tell me that not. Passive does not indicate
-polling mode.
+I see it on the linux-pm, I'll reply there.
 
-Why do you think that passive enables polling?
-
-Best regards
-
-
-> If the device supports irqs fired when the desired temerature is met,
-> thermal framwork should be notifed from driver's irq routine.
-> This is sufficent and there is no need of polling.
-> As a workaround, people declare trip point as 'active'
-> (active cooling, i.e. fan) to bypass polling mode setup in thermal
-> framework.
->
-> With this patch set trip point 'passive' declared in DT with explicit flag:
-> 'irq-mode;' will not register itself as polling mode.
->
-> A good example is Exynos4 SoC family, where there is 4 HW supported
-> trip points and there is a need of 6. The rest 2 are declared as 'passive'
-> without 'irq-mode;' flag, thus polling needed.
->
-> It does not break existing design for trip points which do not have 'irq-mode'
-> flag - they will use polling.
->
-> For consistency this flag should be added to all trip point types('active',
-> 'passive', 'hot', 'critical') when need (meaning, when irq will notify thermal
-> framework).
->
-> Regards,
-> Lukasz Luba
->
-> Lukasz Luba (11):
->   thermal: remove unused function parameter
->   thermal: add irq-mode configuration for trip point
->   thermal: add new sysfs file for irq-mode
->   Doc: thermal: new irq-mode for trip point
->   Doc: DT: thermal: new irq-mode for trip point
->   DT: arm64: exynos: add support for thermal trip irq-mode
->   DT: arm64: exynos7: add support for thermal trip irq-mode
->   DT: arm: exynos4: add support for thermal trip irq-mode
->   DT: arm: exynos: add support for thermal trip irq-mode
->   DT: arm: exynos: add support for thermal trip irq-mode
->   DT: arm: exynos: add support for thermal trip irq-mode
->
->  .../devicetree/bindings/thermal/thermal.txt        |   7 ++
->  Documentation/thermal/sysfs-api.txt                |   9 ++
->  arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  10 +-
->  arch/arm/boot/dts/exynos5410-odroidxu.dts          |  10 +-
->  arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  10 +-
->  arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  40 +++++---
->  arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi     | 105 ++++++++++++++-------
->  .../arm64/boot/dts/exynos/exynos7-trip-points.dtsi |   8 ++
->  drivers/thermal/of-thermal.c                       |  17 ++++
->  drivers/thermal/thermal_core.c                     |  16 ++--
->  drivers/thermal/thermal_sysfs.c                    |  53 ++++++++++-
->  include/linux/thermal.h                            |   5 +
->  12 files changed, 226 insertions(+), 64 deletions(-)
->
-> --
-> 2.7.4
->
+Best regards,
+Krzysztof
