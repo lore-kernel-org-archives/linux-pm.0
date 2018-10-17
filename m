@@ -1,60 +1,30 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v1 3/5] ARM: tegra: Create tegra20-cpufreq device on
- Tegra30
-Date: Wed, 17 Oct 2018 10:54:30 +0100
-Message-ID: <65532de7-2768-0d99-33a9-5b43cfbf510c@nvidia.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-4-digetx@gmail.com>
- <9ec51c2d-02f6-0988-0940-0ec31d22f697@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/2] cpuidle: menu: Two more refinements
+Date: Wed, 17 Oct 2018 12:36:48 +0200
+Message-ID: <CAJZ5v0hzn2XiH0-3VmHxzprFdAtijqmWjw528fiOpf9Jj6FkLA@mail.gmail.com>
+References: <9077862.OKK49htnqA@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9ec51c2d-02f6-0988-0940-0ec31d22f697@nvidia.com>
-Content-Language: en-US
+In-Reply-To: <9077862.OKK49htnqA@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, Oct 15, 2018 at 1:57 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> Hi All,
+>
+> The following patches are two more refinements of the menu governor (on top
+> of the recent changes in linux-next now).  The are not expected to change the
+> overall behavior of it.
+>
+> Please refer to the patch changelogs for details.
 
-On 17/10/2018 09:49, Jon Hunter wrote:
-> 
-> On 30/08/2018 20:43, Dmitry Osipenko wrote:
->> Tegra20-cpufreq driver require a platform device in order to be loaded,
->> instantiate a simple platform device for the driver during of the machines
->> late initialization. Driver now supports Tegra30 SoC's, hence create the
->> device on Tegra30 machines.
->>
->> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->> ---
->>  arch/arm/mach-tegra/tegra.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
->> index 67d8ae60ac67..b559e22eab76 100644
->> --- a/arch/arm/mach-tegra/tegra.c
->> +++ b/arch/arm/mach-tegra/tegra.c
->> @@ -111,6 +111,10 @@ static void __init tegra_dt_init_late(void)
->>  	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
->>  	    of_machine_is_compatible("nvidia,tegra20"))
->>  		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
->> +
->> +	if (IS_ENABLED(CONFIG_ARCH_TEGRA_3x_SOC) &&
->> +	    of_machine_is_compatible("nvidia,tegra30"))
->> +		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
->>  }
->>  
->>  static const char * const tegra_dt_board_compat[] = {
-> 
-> Not sure why you would do this if now the driver only works with DT. Am
-> I missing something?
+Any objections or concerns regarding the two patches?
 
-Actually, not sure why we just don't move this into the actual driver
-itself like we have for tegra124.
+If not, I will queue them up.
 
-Cheers
-Jon
-
--- 
-nvpublic
+Thanks,
+Rafael
