@@ -1,58 +1,109 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [PATCH v1 3/5] ARM: tegra: Create tegra20-cpufreq device on
- Tegra30
-Date: Wed, 17 Oct 2018 15:02:25 +0300
-Message-ID: <45b53cd5-c1e2-d733-38ed-b04531bce65e@gmail.com>
-References: <20180830194356.14059-1-digetx@gmail.com>
- <20180830194356.14059-4-digetx@gmail.com>
- <9ec51c2d-02f6-0988-0940-0ec31d22f697@nvidia.com>
- <65532de7-2768-0d99-33a9-5b43cfbf510c@nvidia.com>
+From: Jonas Danielsson <jonas@orbital-systems.com>
+Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
+Date: Wed, 17 Oct 2018 14:17:14 +0200
+Message-ID: <CALDOjzhZg3X1y22KE1yw_0ZFjuvaa=3GhEF2iU=KUk6-eRZN2g@mail.gmail.com>
+References: <20181007125815.8392-1-jonas@threetimestwo.org>
+ <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com> <2351196.3BzoFE0xYq@ws-140106>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <65532de7-2768-0d99-33a9-5b43cfbf510c@nvidia.com>
-Content-Language: en-US
+In-Reply-To: <2351196.3BzoFE0xYq@ws-140106>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>, Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+To: alexander.stein@systec-electronic.com
+Cc: Claudiu.Beznea@microchip.com, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <Nicolas.Ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/17/18 12:54 PM, Jon Hunter wrote:
-> 
-> On 17/10/2018 09:49, Jon Hunter wrote:
->>
->> On 30/08/2018 20:43, Dmitry Osipenko wrote:
->>> Tegra20-cpufreq driver require a platform device in order to be loaded,
->>> instantiate a simple platform device for the driver during of the machines
->>> late initialization. Driver now supports Tegra30 SoC's, hence create the
->>> device on Tegra30 machines.
->>>
->>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
->>> ---
->>>  arch/arm/mach-tegra/tegra.c | 4 ++++
->>>  1 file changed, 4 insertions(+)
->>>
->>> diff --git a/arch/arm/mach-tegra/tegra.c b/arch/arm/mach-tegra/tegra.c
->>> index 67d8ae60ac67..b559e22eab76 100644
->>> --- a/arch/arm/mach-tegra/tegra.c
->>> +++ b/arch/arm/mach-tegra/tegra.c
->>> @@ -111,6 +111,10 @@ static void __init tegra_dt_init_late(void)
->>>  	if (IS_ENABLED(CONFIG_ARCH_TEGRA_2x_SOC) &&
->>>  	    of_machine_is_compatible("nvidia,tegra20"))
->>>  		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
->>> +
->>> +	if (IS_ENABLED(CONFIG_ARCH_TEGRA_3x_SOC) &&
->>> +	    of_machine_is_compatible("nvidia,tegra30"))
->>> +		platform_device_register_simple("tegra20-cpufreq", -1, NULL, 0);
->>>  }
->>>  
->>>  static const char * const tegra_dt_board_compat[] = {
->>
->> Not sure why you would do this if now the driver only works with DT. Am
->> I missing something?
-> 
-> Actually, not sure why we just don't move this into the actual driver
-> itself like we have for tegra124.
+On Tue, Oct 16, 2018 at 4:52 PM Alexander Stein
+<alexander.stein@systec-electronic.com> wrote:
+>
+> On Tuesday, October 16, 2018, 3:30:24 PM CEST Claudiu.Beznea@microchip.co=
+m wrote:
+> > Hi Jonas,
+> >
+> > On 07.10.2018 15:57, Jonas Danielsson wrote:
+> > > From: Jonas Danielsson <jonas@orbital-systems.com>
+> > >
+> > > This fixes a bug where our embedded system (AT91SAM9260 based) would
+> > > hang at reboot. At the most we managed 16 boot loops without a hang.
+> > >
+> > > With this patch applied the problem has not been observed and the boa=
+rd
+> > > has managed above 250 boot loops.
+> > >
+> > > The AT91SAM9260 datasheet tells us that with the instruction cache
+> > > disabled all instructions are fetched from SDRAM. And we have an erra=
+ta
+> > > telling us we must power down the SDRAM before issuing cpu reset.
+> > >
+> > > This means we need the instruction cache enabled in at91sam9260_reset=
+()
+> > > At the moment it is being disabled in cpu_proc_fin() which is called =
+from
+> > > arch/arm/kernel/reboot.c.
+> >
+> > Are you using kexec reboot or implemented hibernate mode on this machin=
+e?
+> > I'm seeing cpu_proc_fin() is called only in case of kexec reboot or
+> > switching to hibernate mode.
+> >
+> > In case of normal reboot (e.g. reboot command) machine_restart() from
+> > arch/arm/kernel/reboot.c is called. Please correct me if I'm wrong.
+>
+> Another location is cpu_reset() aka cpu_arm926_reset() in proc-arm926.S
+> which also disables I-cache. But I can't track down a callstack
+> ending there.
+>
 
-Tegra124 has specific HW for the CPUFreq, T20/30 do not. Hence on T20/30 CPUFreq control is implemented purely in software and there is no real HW device for the driver.
+We take the normal path of sys_reboot =3D> kernel_restart =3D> machine_rest=
+art ...
+
+I added code to print the c1 register in different paths. And I-cache
+is enabled.
+So now I am really confused about why the patch worked.
+
+> Best regards,
+> Alexander
+
+Jonas
+
+>
+>
+>
+
+
+--=20
+
+
+
+
+
+
+JONAS DANIELSSON
+Software Developer
+
++46 72 361 5022
+Malm=C3=B6 - Sweden
+
+ORBITAL SYSTEMS
+orbital-systems.com
+
+
+
+
+The information contained in this message is intended for the personal
+and confidential use of the designated recipients named above and may
+contain confidential and/or privileged material. If the reader of this
+message is not the intended recipient or an agent responsible for
+delivering it to the intended recipient, you are hereby notified that
+you have received this document in error, and that any review,
+dissemination, distribution, or copying of this message is strictly
+prohibited. If you have received this communication in error, please
+notify the sender immediately and delete this e-mail from your system.
+
+Although this transmission and any attachments are believed to be free
+of any virus or other defect that might affect any computer system
+into which it is received and opened, it is the responsibility of the
+recipient to ensure that it is virus free and no responsibility is
+accepted by ORBITAL SYSTEMS AB, its subsidiaries and affiliates, as
+applicable, for any loss or damage arising in any way.
