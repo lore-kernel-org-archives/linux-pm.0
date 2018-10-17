@@ -1,10 +1,10 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 03/17] thermal: separate sensor enable and check
- operations
-Date: Wed, 17 Oct 2018 17:52:29 +0200
-Message-ID: <1539791563-5959-4-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 05/17] thermal: bcm2835: enable+check sensor after its
+ setup is finished
+Date: Wed, 17 Oct 2018 17:52:31 +0200
+Message-ID: <1539791563-5959-6-git-send-email-b.zolnierkie@samsung.com>
 References: <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com>
-        <CGME20181017155332epcas2p499ac9d53678d82a9984b3533e723a0dd@epcas2p4.samsung.com>
+        <CGME20181017155345epcas1p18dee37b9a46f2bf0b68aa3ded43f2717@epcas1p1.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -12,276 +12,39 @@ To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: Amit kucheria <amit.kucheria@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-[devm]_thermal_zone_of_sensor_register() is used to register
-thermal sensor by thermal drivers using DeviceTree. Besides
-registering sensor this function also immediately:
+Enable+check sensor after HW-block setup (if necessary) and setting
+data->tz.
 
-- enables it:
-
-  tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED)
-  (->set_mode is set to of_thermal_set_mode() in of-thermal.c)
-
-- checks it (indirectly by using of_thermal_set_mode()):
-
-  thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-  (which in turn ends up using ->get_temp method).
-
-For many DT thermal drivers this causes a problem because:
-
-- [devm]_thermal_zone_of_sensor_register() need to be called in
-  order to obtain data about thermal trips which are then used to
-  finish hardware sensor setup (only after which ->get_temp can
-  be used)
-
-There is also related issue for DT thermal drivers that support
-IRQ (i.e. exynos and rockchip ones):
-
-- sensor hardware should be enabled only after IRQ handler is
-  requested (because otherwise we might get IRQs that we can't
-  handle)
-
-- IRQ handler needs tzd structure which is obtained from
-  [devm_]thermal_zone_of_sensor_register()
-
-- after [devm_]thermal_zone_of_sensor_register() call core
-  thermal code assumes that sensor is enabled and ready to use
-  (i.e. that IRQ handler has been requested and sensor hardware
-  has been enabled)
-
-In order to prepare for fixing all abovementioned issues separate
-sensor enable and check operations in the core thermal code and
-update thermal drivers accordingly:
-
-* Add set_mode_skip_check flag to struct thermal_zone_device_ops and
-  set it in drivers that don't check the thermal zone device in their
-  ->set_mode method implementations.
-
-* Move thermal_zone_device_check() from ->set_mode implementations to
-  the users of thermal_zone_set_mode() (only place which calls
-  ->set_mode). Modify mode_store() in thermal_sysfs.c accordingly.
-
-There should be no functional changes caused by this patch.
-
+Cc: Eric Anholt <eric@anholt.net>
+Cc: Stefan Wahren <stefan.wahren@i2se.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/acpi/thermal.c                             |  2 ++
- drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  2 --
- drivers/platform/x86/acerhdf.c                     |  2 ++
- drivers/thermal/db8500_thermal.c                   |  2 ++
- drivers/thermal/hisi_thermal.c                     |  2 ++
- drivers/thermal/imx_thermal.c                      |  2 --
- drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
- drivers/thermal/of-thermal.c                       |  6 +++---
- drivers/thermal/rockchip_thermal.c                 | 16 ++++++++++++----
- drivers/thermal/thermal_sysfs.c                    |  3 +++
- include/linux/thermal.h                            |  2 ++
- 11 files changed, 29 insertions(+), 11 deletions(-)
+ drivers/thermal/broadcom/bcm2835_thermal.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index b8b275e1..a7e3d9e 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -879,6 +879,8 @@ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
- 	.get_crit_temp = thermal_get_crit_temp,
- 	.get_trend = thermal_get_trend,
- 	.notify = thermal_notify,
-+
-+	.set_mode_skip_check = true,
- };
- 
- static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index b0afd36..5f4b3bd 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -170,8 +170,6 @@ static int mlxsw_thermal_set_mode(struct thermal_zone_device *tzdev,
- 
- 	thermal->mode = mode;
- 
--	thermal_zone_device_check(tzdev);
--
- 	return 0;
- }
- 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 5a2b93a..884fd83 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -507,6 +507,8 @@ static int acerhdf_get_crit_temp(struct thermal_zone_device *thermal,
- 	.get_trip_hyst = acerhdf_get_trip_hyst,
- 	.get_trip_temp = acerhdf_get_trip_temp,
- 	.get_crit_temp = acerhdf_get_crit_temp,
-+
-+	.set_mode_skip_check = true,
- };
- 
- 
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index ab66b2d7..c4d0fb1 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -220,6 +220,8 @@ static int db8500_sys_get_crit_temp(struct thermal_zone_device *thermal,
- 	.get_trip_type = db8500_sys_get_trip_type,
- 	.get_trip_temp = db8500_sys_get_trip_temp,
- 	.get_crit_temp = db8500_sys_get_crit_temp,
-+
-+	.set_mode_skip_check = true,
- };
- 
- static void db8500_thermal_update_config(struct db8500_thermal_zone *pzone,
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 63d4fc3..6151e55 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -561,6 +561,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+index 687a00c..ec82fef 100644
+--- a/drivers/thermal/broadcom/bcm2835_thermal.c
++++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+@@ -227,9 +227,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 		goto err_clk;
  	}
  
- 	thermal_zone_set_mode((&data->sensor)->tzd, THERMAL_DEVICE_ENABLED);
-+	thermal_zone_device_check((&data->sensor)->tzd);
- 
- 	return 0;
- }
-@@ -570,6 +571,7 @@ static int hisi_thermal_remove(struct platform_device *pdev)
- 	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
- 
- 	thermal_zone_set_mode((&data->sensor)->tzd, THERMAL_DEVICE_DISABLED);
-+	thermal_zone_device_check((&data->sensor)->tzd);
- 
- 	data->disable_sensor(data);
- 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 22f57ef..7abad6c 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -385,8 +385,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 
- 	data->mode = mode;
- 
+-	thermal_zone_set_mode(tz, THERMAL_DEVICE_ENABLED);
 -	thermal_zone_device_check(tz);
 -
- 	return 0;
- }
+ 	/*
+ 	 * right now the FW does set up the HW-block, so we are not
+ 	 * touching the configuration registers.
+@@ -276,6 +273,9 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
  
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index e26b01c..d1f0641 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -305,6 +305,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	if (priv->uuid_bitmap & 1 << INT3400_THERMAL_PASSIVE_1) {
- 		int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
- 		int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
-+		int3400_thermal_ops.set_mode_skip_check = true;
- 	}
- 	priv->thermal = thermal_zone_device_register("INT3400 Thermal", 0, 0,
- 						priv, &int3400_thermal_ops,
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index c422b08..f1dcb7d 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -272,8 +272,6 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
+ 	data->tz = tz;
  
- 	data->mode = mode;
- 
--	thermal_zone_device_check(tz);
--
- 	return 0;
- }
- 
-@@ -496,9 +494,11 @@ struct thermal_zone_device *
- 		if (sensor_specs.np == sensor_np && id == sensor_id) {
- 			tzd = thermal_zone_of_add_sensor(child, sensor_np,
- 							 data, ops);
--			if (!IS_ERR(tzd))
-+			if (!IS_ERR(tzd)) {
- 				thermal_zone_set_mode(tzd,
- 						      THERMAL_DEVICE_ENABLED);
-+				thermal_zone_device_check(tzd);
-+			}
- 
- 			of_node_put(sensor_specs.np);
- 			of_node_put(child);
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 5640675..715f4cd 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1281,9 +1281,11 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 
- 	thermal->chip->control(thermal->regs, true);
- 
--	for (i = 0; i < thermal->chip->chn_num; i++)
-+	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		thermal_zone_set_mode((&thermal->sensors[i])->tzd,
- 				      THERMAL_DEVICE_ENABLED);
-+		thermal_zone_device_check((&thermal->sensors[i])->tzd);
-+	}
- 
- 	platform_set_drvdata(pdev, thermal);
- 
-@@ -1302,9 +1304,11 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
- 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
- 	int i;
- 
--	for (i = 0; i < thermal->chip->chn_num; i++)
-+	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		thermal_zone_set_mode((&thermal->sensors[i])->tzd,
- 				      THERMAL_DEVICE_DISABLED);
-+		thermal_zone_device_check((&thermal->sensors[i])->tzd);
-+	}
- 
- 	thermal->chip->control(thermal->regs, false);
- 
-@@ -1320,9 +1324,11 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
- 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
- 	int i;
- 
--	for (i = 0; i < thermal->chip->chn_num; i++)
-+	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		thermal_zone_set_mode((&thermal->sensors[i])->tzd,
- 				      THERMAL_DEVICE_DISABLED);
-+		thermal_zone_device_check((&thermal->sensors[i])->tzd);
-+	}
- 
- 	thermal->chip->control(thermal->regs, false);
- 
-@@ -1372,9 +1378,11 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 
- 	thermal->chip->control(thermal->regs, true);
- 
--	for (i = 0; i < thermal->chip->chn_num; i++)
-+	for (i = 0; i < thermal->chip->chn_num; i++) {
- 		thermal_zone_set_mode((&thermal->sensors[i])->tzd,
- 				      THERMAL_DEVICE_ENABLED);
-+		thermal_zone_device_check((&thermal->sensors[i])->tzd);
-+	}
- 
- 	pinctrl_pm_select_default_state(dev);
- 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 3b38fb9..ac39fb6 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -85,6 +85,9 @@
- 	if (result)
- 		return result;
- 
-+	if (!tz->ops->set_mode_skip_check)
-+		thermal_zone_device_check(tz);
++	thermal_zone_set_mode(tz, THERMAL_DEVICE_ENABLED);
++	thermal_zone_device_check(tz);
 +
- 	return count;
- }
+ 	platform_set_drvdata(pdev, tz);
  
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 3e325b3..92c460e 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -113,6 +113,8 @@ struct thermal_zone_device_ops {
- 			  enum thermal_trend *);
- 	int (*notify) (struct thermal_zone_device *, int,
- 		       enum thermal_trip_type);
-+
-+	bool set_mode_skip_check;
- };
- 
- struct thermal_cooling_device_ops {
+ 	bcm2835_thermal_debugfs(pdev);
 -- 
 1.9.1
