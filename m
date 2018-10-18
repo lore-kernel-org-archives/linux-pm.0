@@ -1,104 +1,118 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Thu, 18 Oct 2018 09:08:25 +0200
-Message-ID: <CAJZ5v0g=CnAv6HC6H68ub0KbO8Z8Fx4BtW=mjfEshNsnNX407w@mail.gmail.com>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com> <5BBE1E1F.3030308@linaro.org>
- <20181016073305.GA64994@gmail.com> <5BC76181.90105@linaro.org> <20181018064849.GA42813@gmail.com>
+Subject: Re: [PATCH v4] kernel/hung_task.c: disable on suspend
+Date: Thu, 18 Oct 2018 09:32:42 +0200
+Message-ID: <CAJZ5v0iJmn4x+zqNhQ4zfYCucnZhYb2hK3o096xPX6Ju2zV2oQ@mail.gmail.com>
+References: <20181017112355.12763-1-vkuznets@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181018064849.GA42813@gmail.com>
+In-Reply-To: <20181017112355.12763-1-vkuznets@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Thara Gopinath <thara.gopinath@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, ionela.voinescu@arm.com, Vincent Guittot <vincent.guittot@linaro.org>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>, Dmitry Vyukov <dvyukov@google.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Oleg Nesterov <oleg@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 18, 2018 at 8:48 AM Ingo Molnar <mingo@kernel.org> wrote:
+On Wed, Oct 17, 2018 at 1:24 PM Vitaly Kuznetsov <vkuznets@redhat.com> wrote:
 >
+> It is possible to observe hung_task complaints when system goes to
+> suspend-to-idle state:
 >
-> * Thara Gopinath <thara.gopinath@linaro.org> wrote:
+>  # echo freeze > /sys/power/state
 >
-> > On 10/16/2018 03:33 AM, Ingo Molnar wrote:
-> > >
-> > > * Thara Gopinath <thara.gopinath@linaro.org> wrote:
-> > >
-> > >>>> Regarding testing, basic build, boot and sanity testing have been
-> > >>>> performed on hikey960 mainline kernel with debian file system.
-> > >>>> Further aobench (An occlusion renderer for benchmarking realworld
-> > >>>> floating point performance) showed the following results on hikey960
-> > >>>> with debain.
-> > >>>>
-> > >>>>                                         Result          Standard        Standard
-> > >>>>                                         (Time secs)     Error           Deviation
-> > >>>> Hikey 960 - no thermal pressure applied 138.67          6.52            11.52%
-> > >>>> Hikey 960 -  thermal pressure applied   122.37          5.78            11.57%
-> > >>>
-> > >>> Wow, +13% speedup, impressive! We definitely want this outcome.
-> > >>>
-> > >>> I'm wondering what happens if we do not track and decay the thermal
-> > >>> load at all at the PELT level, but instantaneously decrease/increase
-> > >>> effective CPU capacity in reaction to thermal events we receive from
-> > >>> the CPU.
-> > >>
-> > >> The problem with instantaneous update is that sometimes thermal events
-> > >> happen at a much faster pace than cpu_capacity is updated in the
-> > >> scheduler. This means that at the moment when scheduler uses the
-> > >> value, it might not be correct anymore.
-> > >
-> > > Let me offer a different interpretation: if we average throttling events
-> > > then we create a 'smooth' average of 'true CPU capacity' that doesn't
-> > > fluctuate much. This allows more stable yet asymmetric task placement if
-> > > the thermal characteristics of the different cores is different
-> > > (asymmetric). This, compared to instantaneous updates, would reduce
-> > > unnecessary task migrations between cores.
-> > >
-> > > Is that accurate?
-> >
-> > Yes. I think it is accurate. I will also add that if we don't average
-> > throttling events, we will miss the events that occur in between load
-> > balancing(LB) period.
+>  PM: Syncing filesystems ... done.
+>  Freezing user space processes ... (elapsed 0.001 seconds) done.
+>  OOM killer disabled.
+>  Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
+>  sd 0:0:0:0: [sda] Synchronizing SCSI cache
+>  INFO: task bash:1569 blocked for more than 120 seconds.
+>        Not tainted 4.19.0-rc3_+ #687
+>  "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+>  bash            D    0  1569    604 0x00000000
+>  Call Trace:
+>   ? __schedule+0x1fe/0x7e0
+>   schedule+0x28/0x80
+>   suspend_devices_and_enter+0x4ac/0x750
+>   pm_suspend+0x2c0/0x310
 >
-> Yeah, so I'd definitely suggest to not integrate this averaging into
-> pelt.c in the fashion presented, because:
+> Register a PM notifier to disable the detector on suspend and re-enable
+> back on wakeup.
 >
->  - This couples your thermal throttling averaging to the PELT decay
->    half-time AFAICS, which would break the other user every time the
->    decay is changed/tuned.
->
->  - The boolean flag that changes behavior in pelt.c is not particularly
->    clean either and complicates the code.
->
->  - Instead maybe factor out a decaying average library into
->    kernel/sched/avg.h perhaps (if this truly improves the code), and use
->    those methods both in pelt.c and any future thermal.c - and maybe
->    other places where we do decaying averages.
->
->  - But simple decaying averages are not that complex either, so I think
->    your original solution of open coding it is probably fine as well.
->
-> Furthermore, any logic introduced by thermal.c and the resulting change
-> to load-balancing behavior would have to be in perfect sync with cpufreq
-> governor actions - one mechanism should not work against the other.
+> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 
-Right, that really is required.
+Thanks for your patience with this!
 
-> The only long term maintainable solution is to move all high level
-> cpufreq logic and policy handling code into kernel/sched/cpufreq*.c,
-> which has been done to a fair degree already in the past ~2 years - but
-> it's unclear to me to what extent this is true for thermal throttling
-> policy currently: there might be more governor surgery and code
-> reshuffling required?
+Are there any objections or concerns regarding this patch?
 
-It doesn't cover thermal management directly ATM.
-
-The EAS work kind of hopes to make a connection in there by adding a
-common energy model to underlie both the performance scaling and
-thermal management, but it doesn't change the thermal decision making
-part AFAICS.
-
-So it is fair to say that additional governor surgery and code
-reshuffling will be required IMO.
-
-Thanks,
-Rafael
+> ---
+> Changes since v3:
+> - Handle PM_RESTORE_PREPARE/PM_POST_RESTORE for completeness
+>   [Rafael J. Wysocki]
+> ---
+>  kernel/hung_task.c | 30 +++++++++++++++++++++++++++++-
+>  1 file changed, 29 insertions(+), 1 deletion(-)
+>
+> diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+> index b9132d1269ef..cb8e3e8ac7b9 100644
+> --- a/kernel/hung_task.c
+> +++ b/kernel/hung_task.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/lockdep.h>
+>  #include <linux/export.h>
+>  #include <linux/sysctl.h>
+> +#include <linux/suspend.h>
+>  #include <linux/utsname.h>
+>  #include <linux/sched/signal.h>
+>  #include <linux/sched/debug.h>
+> @@ -242,6 +243,28 @@ void reset_hung_task_detector(void)
+>  }
+>  EXPORT_SYMBOL_GPL(reset_hung_task_detector);
+>
+> +static bool hung_detector_suspended;
+> +
+> +static int hungtask_pm_notify(struct notifier_block *self,
+> +                             unsigned long action, void *hcpu)
+> +{
+> +       switch (action) {
+> +       case PM_SUSPEND_PREPARE:
+> +       case PM_HIBERNATION_PREPARE:
+> +       case PM_RESTORE_PREPARE:
+> +               hung_detector_suspended = true;
+> +               break;
+> +       case PM_POST_SUSPEND:
+> +       case PM_POST_HIBERNATION:
+> +       case PM_POST_RESTORE:
+> +               hung_detector_suspended = false;
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +       return NOTIFY_OK;
+> +}
+> +
+>  /*
+>   * kthread which checks for tasks stuck in D state
+>   */
+> @@ -261,7 +284,8 @@ static int watchdog(void *dummy)
+>                 interval = min_t(unsigned long, interval, timeout);
+>                 t = hung_timeout_jiffies(hung_last_checked, interval);
+>                 if (t <= 0) {
+> -                       if (!atomic_xchg(&reset_hung_task, 0))
+> +                       if (!atomic_xchg(&reset_hung_task, 0) &&
+> +                           !hung_detector_suspended)
+>                                 check_hung_uninterruptible_tasks(timeout);
+>                         hung_last_checked = jiffies;
+>                         continue;
+> @@ -275,6 +299,10 @@ static int watchdog(void *dummy)
+>  static int __init hung_task_init(void)
+>  {
+>         atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
+> +
+> +       /* Disable hung task detector on suspend */
+> +       pm_notifier(hungtask_pm_notify, 0);
+> +
+>         watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
+>
+>         return 0;
+> --
+> 2.17.1
+>
