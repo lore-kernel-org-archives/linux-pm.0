@@ -1,84 +1,62 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 3/6] dt-bindings: power: Introduce properties to
- present the battery OCV capacity table
-Date: Thu, 18 Oct 2018 11:51:01 -0500
-Message-ID: <20181018165101.GA11562@bogus>
-References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1539587217.git.baolin.wang@linaro.org>
- <eb56baf2e2d127067e459b6014516071ba9005c0.1539587217.git.baolin.wang@linaro.org>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: [PATCH V7 0/3] soc: imx: add scu power domain driver
+Date: Thu, 18 Oct 2018 17:25:52 +0000
+Message-ID: <1539883285-7990-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <eb56baf2e2d127067e459b6014516071ba9005c0.1539587217.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: sre@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 15, 2018 at 04:09:22PM +0800, Baolin Wang wrote:
-> Some battery driver will use the open circuit voltage (OCV) value to look
-> up the corresponding battery capacity percent in one certain degree Celsius.
-> Thus this patch provides some battery properties to present the OCV table
-> temperatures and OCV capacity table values.
-> 
-> Suggested-by: Sebastian Reichel <sre@kernel.org>
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> Changes from v3:
->  - Split binding into one separate patch.
->  - Rename ocv-capacity-table-temperatures to ocv-capacity-celsius.
->  - Add some words to specify the OCV's unit.
-> 
-> Changes from v2:
->  - Use type __be32 to calculate the table length.
->  - Update error messages.
->  - Add some helper functions.
-> 
-> Changes from v1:
->  - New patch in v2.
-> ---
->  .../devicetree/bindings/power/supply/battery.txt   |   15 +++++++++++++++
->  1 file changed, 15 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-> index 938d027..1f70e5d 100644
-> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -23,6 +23,17 @@ Optional Properties:
->   - constant-charge-current-max-microamp: maximum constant input current
->   - constant-charge-voltage-max-microvolt: maximum constant input voltage
->   - factory-internal-resistance-micro-ohms: battery factory internal resistance
-> + - ocv-capacity-table-0: An array providing the battery capacity percent
-> +   with corresponding open circuit voltage (OCV) of the battery, which
-> +   is used to look up battery capacity according to current OCV value.
-> +   And the open circuit voltage unit is microvolt.
+This patch set adds the scu based power domain driver.
+It depends on SCU driver.
 
-The order percent and voltage is still not clear. I'd guess one way 
-based on the text here, but the example is the opposite. The description 
-here must stand on its own.
+Change Log:
+v6->v7:
+ * keep "fsl,scu-pd" as fall back compatible string
+v5->v6:
+ * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
+   accordingly
+v4->v5:
+ * some minor improvements according to Sascha's suggestion
+   Note: did not use dev_* print functions due to we already have proper
+         prefix by redefining pr_fmt. So it seems not quite neccesary
+	 to pass in a struct device * pointer for debug purpose only in
+	 each functions.
+v3->v4:
+ * only scu headfile path update
 
-> + - ocv-capacity-table-1: Same as ocv-capacity-table-0
-> + ......
-> + - ocv-capacity-table-n: Same as ocv-capacity-table-0
-> + - ocv-capacity-celsius: An array containing the temperature in degree Celsius,
-> +   for each of the battery capacity lookup table. The first temperature value
-> +   specifies the OCV table 0, and the second temperature value specifies the
-> +   OCV table 1, and so on.
->  
->  Battery properties are named, where possible, for the corresponding
->  elements in enum power_supply_property, defined in
-> @@ -44,6 +55,10 @@ Example:
->  		constant-charge-current-max-microamp = <900000>;
->  		constant-charge-voltage-max-microvolt = <4200000>;
->  		factory-internal-resistance-micro-ohms = <250000>;
-> +		ocv-capacity-celsius = <(-10) 0 10>;
-> +		ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
-> +		ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
-> +		ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
->  	};
->  
->  	charger: charger@11 {
-> -- 
-> 1.7.9.5
-> 
+v2->v3:
+ * structure and enums name update
+ * api usage update
+
+Dong Aisheng (3):
+  dt-bindings: fsl: scu: make power domain compatible string SoC
+    specific
+  firmware: imx: add pm svc headfile
+  firmware: imx: add SCU power domain driver
+
+ .../devicetree/bindings/arm/freescale/fsl,scu.txt  |   6 +-
+ drivers/firmware/imx/Kconfig                       |   6 +
+ drivers/firmware/imx/Makefile                      |   3 +-
+ drivers/firmware/imx/scu-pd.c                      | 164 +++++++++++++++++++++
+ include/linux/firmware/imx/sci.h                   |   1 +
+ include/linux/firmware/imx/svc/pm.h                |  85 +++++++++++
+ 6 files changed, 262 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/firmware/imx/scu-pd.c
+ create mode 100644 include/linux/firmware/imx/svc/pm.h
+
+-- 
+2.7.4
