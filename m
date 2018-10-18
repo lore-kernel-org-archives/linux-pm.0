@@ -1,58 +1,85 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH 0/7] Introduce thermal pressure
-Date: Thu, 18 Oct 2018 10:14:28 +0200
-Message-ID: <CAJZ5v0iALqLw+Y_tKw86dh2oxnmvALhoVJxEcWWA+x1jU3GjdA@mail.gmail.com>
-References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org>
- <20181010061751.GA37224@gmail.com> <5BBE1E1F.3030308@linaro.org>
- <20181016073305.GA64994@gmail.com> <5BC76181.90105@linaro.org>
- <20181018064849.GA42813@gmail.com> <CAJZ5v0g=CnAv6HC6H68ub0KbO8Z8Fx4BtW=mjfEshNsnNX407w@mail.gmail.com>
- <20181018075033.GA58819@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 1/2] sched/cpufreq: Reorganize the cpufreq files
+Date: Thu, 18 Oct 2018 11:35:58 +0200
+Message-ID: <1539855372-11472-1-git-send-email-daniel.lezcano@linaro.org>
+References: <CAJZ5v0iALqLw+Y_tKw86dh2oxnmvALhoVJxEcWWA+x1jU3GjdA@mail.gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181018075033.GA58819@gmail.com>
+In-Reply-To: <CAJZ5v0iALqLw+Y_tKw86dh2oxnmvALhoVJxEcWWA+x1jU3GjdA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Amit Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, ionela.voinescu@arm.com, Vincent Guittot <vincent.guittot@linaro.org>
+To: rafael@kernel.org, mingo@kernel.org
+Cc: thara.gopinath@linaro.org, linux-kernel@vger.kernel.org, peterz@infradead.org, rui.zhang@intel.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, amit.kachhap@gmail.com, javi.merino@kernel.org, edubezval@gmail.com, linux-pm@vger.kernel.org, quentin.perret@arm.com, ionela.voinescu@arm.com, vincent.guittot@linaro.org, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Juri Lelli <juri.lelli@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 18, 2018 at 9:50 AM Ingo Molnar <mingo@kernel.org> wrote:
->
->
-> * Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> > > The only long term maintainable solution is to move all high level
-> > > cpufreq logic and policy handling code into kernel/sched/cpufreq*.c,
-> > > which has been done to a fair degree already in the past ~2 years - but
-> > > it's unclear to me to what extent this is true for thermal throttling
-> > > policy currently: there might be more governor surgery and code
-> > > reshuffling required?
-> >
-> > It doesn't cover thermal management directly ATM.
-> >
-> > The EAS work kind of hopes to make a connection in there by adding a
-> > common energy model to underlie both the performance scaling and
-> > thermal management, but it doesn't change the thermal decision making
-> > part AFAICS.
-> >
-> > So it is fair to say that additional governor surgery and code
-> > reshuffling will be required IMO.
->
-> BTW., when factoring out high level thermal management code it might make
-> sense to increase the prominence of the cpufreq code within the scheduler
-> and organize it a bit better, by introducing its own
-> kernel/sched/cpufreq/ directory and renaming things the following way:
->
->   kernel/sched/cpufreq.c                => kernel/sched/cpufreq/core.c
->   kernel/sched/cpufreq_schedutil.c      => kernel/sched/cpufreq/metrics.c
->   kernel/sched/thermal.c                => kernel/sched/cpufreq/thermal.c
->
-> ... or so?
->
-> With no change to functionality, this is just a re-organization and
-> expansion/preparation for the bright future. =B-)
+It was suggested to set the scene for the PM components in the
+scheduler code organization in the recent discussion about making the
+scheduler aware of the capacity capping from the thermal framework.
 
-No disagreement here. :-)
+Move the cpufreq files into its own directory as suggested at:
 
-Cheers,
-Rafael
+https://lkml.org/lkml/2018/10/18/353
+https://lkml.org/lkml/2018/10/18/408
+
+Suggested-by: Ingo Molnar <mingo@kernel.org>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ kernel/sched/Makefile                                   | 3 +--
+ kernel/sched/{cpufreq.c => cpufreq/core.c}              | 2 +-
+ kernel/sched/{cpufreq_schedutil.c => cpufreq/metrics.c} | 2 +-
+ 3 files changed, 3 insertions(+), 4 deletions(-)
+ rename kernel/sched/{cpufreq.c => cpufreq/core.c} (99%)
+ rename kernel/sched/{cpufreq_schedutil.c => cpufreq/metrics.c} (99%)
+
+diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
+index 7fe1834..bc6bce0 100644
+--- a/kernel/sched/Makefile
++++ b/kernel/sched/Makefile
+@@ -19,13 +19,12 @@ endif
+ obj-y += core.o loadavg.o clock.o cputime.o
+ obj-y += idle.o fair.o rt.o deadline.o
+ obj-y += wait.o wait_bit.o swait.o completion.o
++obj-y += cpufreq/
+ 
+ obj-$(CONFIG_SMP) += cpupri.o cpudeadline.o topology.o stop_task.o pelt.o
+ obj-$(CONFIG_SCHED_AUTOGROUP) += autogroup.o
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
+-obj-$(CONFIG_CPU_FREQ) += cpufreq.o
+-obj-$(CONFIG_CPU_FREQ_GOV_SCHEDUTIL) += cpufreq_schedutil.o
+ obj-$(CONFIG_MEMBARRIER) += membarrier.o
+ obj-$(CONFIG_CPU_ISOLATION) += isolation.o
+diff --git a/kernel/sched/cpufreq.c b/kernel/sched/cpufreq/core.c
+similarity index 99%
+rename from kernel/sched/cpufreq.c
+rename to kernel/sched/cpufreq/core.c
+index 5e54cbc..8c17a63 100644
+--- a/kernel/sched/cpufreq.c
++++ b/kernel/sched/cpufreq/core.c
+@@ -8,7 +8,7 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  */
+-#include "sched.h"
++#include "../sched.h"
+ 
+ DEFINE_PER_CPU(struct update_util_data *, cpufreq_update_util_data);
+ 
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq/metrics.c
+similarity index 99%
+rename from kernel/sched/cpufreq_schedutil.c
+rename to kernel/sched/cpufreq/metrics.c
+index 3fffad3..597df47 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq/metrics.c
+@@ -11,7 +11,7 @@
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+ 
+-#include "sched.h"
++#include "../sched.h"
+ 
+ #include <trace/events/power.h>
+ 
+-- 
+2.7.4
