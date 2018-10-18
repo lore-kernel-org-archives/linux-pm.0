@@ -1,55 +1,44 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] sched/cpufreq: Reorganize the cpufreq files
-Date: Thu, 18 Oct 2018 12:13:42 +0200
-Message-ID: <a662abc2-a44a-de58-3fec-76f477e3bfd2@linaro.org>
-References: <CAJZ5v0iALqLw+Y_tKw86dh2oxnmvALhoVJxEcWWA+x1jU3GjdA@mail.gmail.com>
- <1539855372-11472-1-git-send-email-daniel.lezcano@linaro.org>
- <CAJZ5v0ikpPk12PshjB7EwtGSz6kF5WJyKgDHB8cnXaEusy38UQ@mail.gmail.com>
- <8585bac0-c72c-edf4-2e93-c8740a3b1b6c@linaro.org>
- <CAJZ5v0ia6jc80=xTkOSZofhmx80UXn2Kv-mPJ6B4JZ-Sc75kBA@mail.gmail.com>
+From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Subject: Re: [PATCH 6/8] drm: sti: don't pass GFP_DMA32 to dma_alloc_wc
+Date: Thu, 18 Oct 2018 13:59:27 +0200
+Message-ID: <CA+M3ks5WW9WviTNr3VLHc-ijYLu-fp8XMtAbr3p9cFe3J+n39Q@mail.gmail.com>
+References: <20181013151707.32210-1-hch@lst.de>
+ <20181013151707.32210-7-hch@lst.de>
+ <CA+M3ks66FL-F8dk+UcG-gR8Gz4N6gz7eYuT_Ht_scw7foPaP0A@mail.gmail.com>
+ <CA+M3ks6a-D4j425JGBof+ma3NX5Fo52k5fadRNRauexOBXuaaw@mail.gmail.com>
+ <20181017071958.GC23407@lst.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ia6jc80=xTkOSZofhmx80UXn2Kv-mPJ6B4JZ-Sc75kBA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Thara Gopinath <thara.gopinath@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Amit Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, ionela.voinescu@arm.com, Vincent Guittot <vincent.guittot@linaro.org>, Ingo Molnar <mingo@redhat.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Juri Lelli <juri.lelli@redhat.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20181017071958.GC23407@lst.de>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-spi@vger.kernel.org, linux-tegra@vger.kernel.org, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18/10/2018 12:06, Rafael J. Wysocki wrote:
-> On Thu, Oct 18, 2018 at 11:54 AM Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->>
->> On 18/10/2018 11:42, Rafael J. Wysocki wrote:
->>> On Thu, Oct 18, 2018 at 11:36 AM Daniel Lezcano
->>> <daniel.lezcano@linaro.org> wrote:
->>>>
->>>> It was suggested to set the scene for the PM components in the
->>>> scheduler code organization in the recent discussion about making the
->>>> scheduler aware of the capacity capping from the thermal framework.
->>>>
->>>> Move the cpufreq files into its own directory as suggested at:
->>>>
->>>> https://lkml.org/lkml/2018/10/18/353
->>>> https://lkml.org/lkml/2018/10/18/408
->>>
->>> Fair enough, but do we need to do that right now?
->>
->> I'm not planning to do more code reorg than this patch right now. Up to
->> you to decide if you are willing to take them.
-> 
-> The SPDX one certainly is applicable, but I'm not sure about the other one TBH.
-> 
-> Why don't you add the SPDX IDs to those files as they are for now?
-
-Yes, sure.
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+TGUgbWVyLiAxNyBvY3QuIDIwMTggw6AgMDk6MTksIENocmlzdG9waCBIZWxsd2lnIDxoY2hAbHN0
+LmRlPiBhIMOpY3JpdCA6Cj4KPiBPbiBUdWUsIE9jdCAxNiwgMjAxOCBhdCAwMjo0MToyM1BNICsw
+MjAwLCBCZW5qYW1pbiBHYWlnbmFyZCB3cm90ZToKPiA+IExlIGx1bi4gMTUgb2N0LiAyMDE4IMOg
+IDExOjEyLCBCZW5qYW1pbiBHYWlnbmFyZAo+ID4gPGJlbmphbWluLmdhaWduYXJkQGxpbmFyby5v
+cmc+IGEgw6ljcml0IDoKPiA+ID4KPiA+ID4gTGUgc2FtLiAxMyBvY3QuIDIwMTggw6AgMTc6MTcs
+IENocmlzdG9waCBIZWxsd2lnIDxoY2hAbHN0LmRlPiBhIMOpY3JpdCA6Cj4gPiA+ID4KPiA+ID4g
+PiBUaGUgRE1BIEFQSSBkb2VzIGl0cyBvd24gem9uZSBkZWNpc2lvbnMgYmFzZWQgb24gdGhlIGNv
+aGVyZW50X2RtYV9tYXNrLgo+ID4gPiA+Cj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogQ2hyaXN0b3Bo
+IEhlbGx3aWcgPGhjaEBsc3QuZGU+Cj4gPiA+Cj4gPiA+IFJldmlld2VkLWJ5OiBCZW5qYW1pbiBH
+YWlnbmFyZCA8YmVuamFtaW4uZ2FpZ25hcmRAbGluYXJvLm9yZz4KPiA+Cj4gPiBDaHJpc3RvcGgg
+ZG8geW91IHBsYW4gdG8gbWVyZ2UgdGhpcyBwYXRjaCBvbiB5b3VyIG93biB0cmVlID8gb3Igd291
+bGQKPiA+IGxpa2UgSSBwdXQgaXQgZGlyZWN0bHkgaW4gZHJtLW1pc2MtbmV4dCBicmFuY2ggPwo+
+Cj4gUGxlYXNlIHB1bGwgaXQgaW4gdGhyb3VnaCBkcm0tbWlzYy1uZXh0LCB0aGFua3MhCgpBcHBs
+aWVkIG9uIGRybS1taXNjLW5leHQsClRoYW5rcywKQmVuamFtaW4KX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmkt
+ZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+L21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
