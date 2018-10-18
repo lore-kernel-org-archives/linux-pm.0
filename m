@@ -1,79 +1,53 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [driver-core PATCH v4 4/6] driver core: Probe devices
- asynchronously instead of the driver
-Date: Thu, 18 Oct 2018 11:11:15 -0700
-Message-ID: <1539886275.81977.17.camel@acm.org>
-References: <20181015150305.29520.86363.stgit@localhost.localdomain>
-         <20181015150926.29520.45280.stgit@localhost.localdomain>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V7 1/3] dt-bindings: fsl: scu: make power domain
+ compatible  string SoC specific
+Date: Thu, 18 Oct 2018 13:24:35 -0500
+Message-ID: <20181018182435.GA27382@bogus>
+References: <1539883285-7990-1-git-send-email-aisheng.dong@nxp.com>
+ <1539883285-7990-2-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181015150926.29520.45280.stgit@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexander Duyck <alexander.h.duyck@linux.intel.com>, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
-Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1539883285-7990-2-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-10-15 at 08:09 -0700, Alexander Duyck wrote:
-+AD4 +-static void +AF8AXw-driver+AF8-attach+AF8-async+AF8-helper(void +ACoAXw-dev, async+AF8-cookie+AF8-t cookie)
-+AD4 +-+AHs
-+AD4 +-	struct device +ACo-dev +AD0 +AF8-dev+ADs
-+AD4 +-
-+AD4 +-	+AF8AXw-device+AF8-driver+AF8-lock(dev, dev-+AD4-parent)+ADs
-+AD4 +-
-+AD4 +-	/+ACo
-+AD4 +-	 +ACo If someone attempted to bind a driver either successfully or
-+AD4 +-	 +ACo unsuccessfully before we got here we should just skip the driver
-+AD4 +-	 +ACo probe call.
-+AD4 +-	 +ACo-/
-+AD4 +-	if (+ACE-dev-+AD4-driver) +AHs
-+AD4 +-		struct device+AF8-driver +ACo-drv +AD0 dev+AF8-get+AF8-drvdata(dev)+ADs
-+AD4 +-
-+AD4 +-		if (drv)
-+AD4 +-			driver+AF8-probe+AF8-device(drv, dev)+ADs
-+AD4 +-	+AH0
-+AD4 +-
-+AD4 +-	+AF8AXw-device+AF8-driver+AF8-unlock(dev, dev-+AD4-parent)+ADs
-+AD4 +-
-+AD4 +-	put+AF8-device(dev)+ADs
-+AD4 +-
-+AD4 +-	dev+AF8-dbg(dev, +ACI-async probe completed+AFw-n+ACI)+ADs
-+AD4 +-+AH0
-+AD4 +-
-+AD4  static int +AF8AXw-driver+AF8-attach(struct device +ACo-dev, void +ACo-data)
-+AD4  +AHs
-+AD4  	struct device+AF8-driver +ACo-drv +AD0 data+ADs
-+AD4 +AEAAQA -945,6 +-971,25 +AEAAQA static int +AF8AXw-driver+AF8-attach(struct device +ACo-dev, void +ACo-data)
-+AD4  		return ret+ADs
-+AD4  	+AH0 /+ACo ret +AD4 0 means positive match +ACo-/
-+AD4  
-+AD4 +-	if (driver+AF8-allows+AF8-async+AF8-probing(drv)) +AHs
-+AD4 +-		/+ACo
-+AD4 +-		 +ACo Instead of probing the device synchronously we will
-+AD4 +-		 +ACo probe it asynchronously to allow for more parallelism.
-+AD4 +-		 +ACo
-+AD4 +-		 +ACo We only take the device lock here in order to guarantee
-+AD4 +-		 +ACo that the dev-+AD4-driver and driver+AF8-data fields are protected
-+AD4 +-		 +ACo-/
-+AD4 +-		dev+AF8-dbg(dev, +ACI-scheduling asynchronous probe+AFw-n+ACI)+ADs
-+AD4 +-		device+AF8-lock(dev)+ADs
-+AD4 +-		if (+ACE-dev-+AD4-driver) +AHs
-+AD4 +-			get+AF8-device(dev)+ADs
-+AD4 +-			dev+AF8-set+AF8-drvdata(dev, drv)+ADs
-+AD4 +-			async+AF8-schedule(+AF8AXw-driver+AF8-attach+AF8-async+AF8-helper, dev)+ADs
-+AD4 +-		+AH0
-+AD4 +-		device+AF8-unlock(dev)+ADs
-+AD4 +-		return 0+ADs
-+AD4 +-	+AH0
-+AD4 +-
-+AD4  	device+AF8-driver+AF8-attach(drv, dev)+ADs
+On Thu, 18 Oct 2018 17:25:57 +0000, "A.s. Dong" wrote:
+> As the power domain API might change in the future for new SoCs, although
+> in a very low possibility, it's still better to make the compatible string
+> more SoC specific to avoid the possible version change for new SoCs.
+> 
+> Due to there're still no users in kernel, it's safe to update it without
+> breaking anything.
+> 
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: devicetree@vger.kernel.org
+> Suggested-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> ---
+> ChangeLog:
+> v6->v7:
+>  * keep "fsl,scu-pd" as fall back compatible string
+> v5->v6:
+>  * new patch
+> ---
+>  Documentation/devicetree/bindings/arm/freescale/fsl,scu.txt | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
 
-What prevents that the driver pointer becomes invalid after async+AF8-schedule() has
-been called and before +AF8AXw-driver+AF8-attach+AF8-async+AF8-helper() is called? I think we need
-protection against concurrent driver+AF8-unregister() and +AF8AXw-driver+AF8-attach+AF8-async+AF8-helper()
-calls. I'm not sure whether that is possible without introducing a new mutex.
-
-Thanks,
-
-Bart.
+Reviewed-by: Rob Herring <robh@kernel.org>
