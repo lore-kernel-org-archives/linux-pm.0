@@ -1,260 +1,65 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: [PATCH V7 3/3] firmware: imx: add SCU power domain driver
-Date: Thu, 18 Oct 2018 17:26:06 +0000
-Message-ID: <1539883285-7990-4-git-send-email-aisheng.dong@nxp.com>
-References: <1539883285-7990-1-git-send-email-aisheng.dong@nxp.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Subject: Re: [driver-core PATCH v4 3/6] device core: Consolidate locking and
+ unlocking of parent and device
+Date: Thu, 18 Oct 2018 10:53:35 -0700
+Message-ID: <1539885215.81977.8.camel@acm.org>
+References: <20181015150305.29520.86363.stgit@localhost.localdomain>
+         <20181015150920.29520.32815.stgit@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-7"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1539883285-7990-1-git-send-email-aisheng.dong@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181015150920.29520.32815.stgit@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexander Duyck <alexander.h.duyck@linux.intel.com>, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org
+Cc: len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Some i.MX SoCs contain a system controller that is responsible for
-controlling the state of the IPs that are present. Communication
-between the host processor running an OS and the system controller
-happens through a SCU protocol. This patch adds SCU protocol based
-power domains drivers.
-
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-ChangeLog:
-v6->v7:
- * still using generic "fsl,scu-pd" to driver binding incase the future
-   SoC is compatible
- * remove unnecessary cast
-v5->v6:
- * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
-   accordingly
-v4->v5:
- * minor improvements according to Sascha's suggestions
-v3->v4:
- * update firmware headfile patch from include/soc/imx to
-   include/linux/firmware/imx
-v2->v3:
- * name of structures/enums updated with imx_sc prefix
-v1->v2:
- * move into drivers/firmware/imx
- * Implement sc_pm_set_resource_power_mode() API in the driver instead
-   of call it via SCU API according to Sascha's suggestion
----
- drivers/firmware/imx/Kconfig  |   6 ++
- drivers/firmware/imx/Makefile |   3 +-
- drivers/firmware/imx/scu-pd.c | 164 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 172 insertions(+), 1 deletion(-)
- create mode 100644 drivers/firmware/imx/scu-pd.c
-
-diff --git a/drivers/firmware/imx/Kconfig b/drivers/firmware/imx/Kconfig
-index b170c28..6a7a7c2 100644
---- a/drivers/firmware/imx/Kconfig
-+++ b/drivers/firmware/imx/Kconfig
-@@ -9,3 +9,9 @@ config IMX_SCU
+On Mon, 2018-10-15 at 08:09 -0700, Alexander Duyck wrote:
++AD4 This patch is meant to try and consolidate all of the locking and unlocking
++AD4 of both the parent and device when attaching or removing a driver from a
++AD4 given device.
++AD4 
++AD4 To do that I first consolidated the lock pattern into two functions
++AD4 +AF8AXw-device+AF8-driver+AF8-lock and +AF8AXw-device+AF8-driver+AF8-unlock. After doing that I then
++AD4 created functions specific to attaching and detaching the driver while
++AD4 acquiring this locks. By doing this I was able to reduce the number of
+            +AF4AXgBeAF4
+Should +ACI-this+ACI perhaps be changed into +ACI-these+ACI?
  
- 	  This driver manages the IPC interface between host CPU and the
- 	  SCU firmware running on M4.
-+
-+config IMX_SCU_PD
-+	bool "IMX SCU Power Domain driver"
-+	depends on IMX_SCU
-+	help
-+	  The System Controller Firmware (SCFW) based power domain driver.
-diff --git a/drivers/firmware/imx/Makefile b/drivers/firmware/imx/Makefile
-index 0ac04df..1b2e15b 100644
---- a/drivers/firmware/imx/Makefile
-+++ b/drivers/firmware/imx/Makefile
-@@ -1,2 +1,3 @@
- # SPDX-License-Identifier: GPL-2.0
--obj-$(CONFIG_IMX_SCU)	+= imx-scu.o misc.o
-+obj-$(CONFIG_IMX_SCU)		+= imx-scu.o misc.o
-+obj-$(CONFIG_IMX_SCU_PD)	+= scu-pd.o
-diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
-new file mode 100644
-index 0000000..13478cd
---- /dev/null
-+++ b/drivers/firmware/imx/scu-pd.c
-@@ -0,0 +1,164 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Copyright 2017~2018 NXP
-+ *	Dong Aisheng <aisheng.dong@nxp.com>
-+ *
-+ * Implementation of the SCU based Power Domains
-+ */
-+
-+#define pr_fmt(fmt) "scu_pd: " fmt
-+
-+#include <linux/firmware/imx/sci.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/pm_domain.h>
-+#include <linux/slab.h>
-+
-+struct imx_sc_pm_domain {
-+	struct generic_pm_domain pd;
-+	u32 rsrc_id;
-+};
-+
-+static struct imx_sc_ipc *pm_ipc_handle;
-+
-+/* SCU Power Mode Protocol definition */
-+struct imx_sc_msg_req_set_resource_power_mode {
-+	struct imx_sc_rpc_msg hdr;
-+	u16 resource;
-+	u8 mode;
-+} __packed;
-+
-+static int imx_sc_pd_power(struct generic_pm_domain *domain, bool power_on)
-+{
-+	struct imx_sc_msg_req_set_resource_power_mode msg;
-+	struct imx_sc_rpc_msg *hdr = &msg.hdr;
-+	struct imx_sc_pm_domain *pd;
-+	int ret;
-+
-+	pd = container_of(domain, struct imx_sc_pm_domain, pd);
-+
-+	hdr->ver = IMX_SC_RPC_VERSION;
-+	hdr->svc = IMX_SC_RPC_SVC_PM;
-+	hdr->func = IMX_SC_PM_FUNC_SET_RESOURCE_POWER_MODE;
-+	hdr->size = 2;
-+
-+	msg.resource = pd->rsrc_id;
-+	msg.mode = power_on ? IMX_SC_PM_PW_MODE_ON : IMX_SC_PM_PW_MODE_LP;
-+
-+	ret = imx_scu_call_rpc(pm_ipc_handle, &msg, true);
-+	if (ret)
-+		pr_err("failed to power %s resource %d ret %d\n",
-+			power_on ? "up" : "off", pd->rsrc_id, ret);
-+
-+	return ret;
-+}
-+
-+static int imx_sc_pd_power_on(struct generic_pm_domain *domain)
-+{
-+	return imx_sc_pd_power(domain, true);
-+}
-+
-+static int imx_sc_pd_power_off(struct generic_pm_domain *domain)
-+{
-+	return imx_sc_pd_power(domain, false);
-+}
-+
-+static struct generic_pm_domain *imx_sc_pm_add_one_domain(
-+					struct device_node *np,
-+					struct generic_pm_domain *genpd_parent)
-+{
-+	struct imx_sc_pm_domain *imx_sc_pd;
-+	u32 rsrc_id;
-+	int ret;
-+
-+	imx_sc_pd = kzalloc(sizeof(*imx_sc_pd), GFP_KERNEL);
-+	if (!imx_sc_pd)
-+		return ERR_PTR(-ENOMEM);
-+
-+	if (!of_property_read_u32(np, "reg", &rsrc_id)) {
-+		if (rsrc_id >= IMX_SC_R_LAST) {
-+			pr_warn("%pOF: invalid rsrc id %d found", np, rsrc_id);
-+			ret = -EINVAL;
-+			goto err;
-+		}
-+		imx_sc_pd->rsrc_id = rsrc_id;
-+		imx_sc_pd->pd.power_off = imx_sc_pd_power_off;
-+		imx_sc_pd->pd.power_on = imx_sc_pd_power_on;
-+	} else {
-+		imx_sc_pd->rsrc_id = IMX_SC_R_LAST;
-+	}
-+
-+	imx_sc_pd->pd.name = np->name;
-+
-+	ret = pm_genpd_init(&imx_sc_pd->pd, NULL, true);
-+	if (ret < 0)
-+		goto err;
-+
-+	if (genpd_parent) {
-+		ret = pm_genpd_add_subdomain(genpd_parent, &imx_sc_pd->pd);
-+		if (ret)
-+			goto err;
-+	}
-+
-+	ret = of_genpd_add_provider_simple(np, &imx_sc_pd->pd);
-+	if (!ret)
-+		return &imx_sc_pd->pd;
-+
-+	pm_genpd_remove_subdomain(genpd_parent, &imx_sc_pd->pd);
-+
-+err:
-+	pr_warn("failed to add PM domain %pOF: %d\n", np, ret);
-+	kfree(imx_sc_pd);
-+	return ERR_PTR(ret);
-+}
-+
-+static void imx_sc_pm_add_pm_domains(struct device_node *parent,
-+				     struct generic_pm_domain *genpd_parent)
-+{
-+	struct generic_pm_domain *pd;
-+	struct device_node *np;
-+
-+	for_each_child_of_node(parent, np) {
-+		pd = imx_sc_pm_add_one_domain(np, genpd_parent);
-+		if (!IS_ERR(pd))
-+			imx_sc_pm_add_pm_domains(np, pd);
-+	}
-+}
-+
-+static int imx_sc_pd_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	int ret;
-+
-+	ret = imx_scu_get_handle(&pm_ipc_handle);
-+	if (ret)
-+		return ret;
-+
-+	imx_sc_pm_add_pm_domains(np, NULL);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_sc_pd_match[] = {
-+	{ .compatible = "fsl,scu-pd", },
-+	{ /* sentinel */ }
-+};
-+
-+static struct platform_driver imx_sc_pd_driver = {
-+	.driver = {
-+		.name = "imx-scu-pd",
-+		.of_match_table = imx_sc_pd_match,
-+	},
-+	.probe = imx_sc_pd_probe,
-+};
-+builtin_platform_driver(imx_sc_pd_driver);
-+
-+MODULE_AUTHOR("Dong Aisheng <aisheng.dong@nxp.com>");
-+MODULE_DESCRIPTION("IMX SCU Power Domain driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
++AD4 +-/+ACo
++AD4 +- +ACo +AF8AXw-device+AF8-driver+AF8-lock - acquire locks needed to manipulate dev-+AD4-drv
++AD4 +- +ACo +AEA-dev: Device we will update driver info for
++AD4 +- +ACo +AEA-parent: Parent device needed if the bus requires parent lock
+
+Please consider splitting that description into two sentences to enhance
+clarity, e.g. +ACI-Parent device. Needed if the bus requires parent lock.+ACI
+
++AD4 +- +ACo +AEA-parent: Parent device needed if the bus requires parent lock
+
+Same comment here.
+
++AD4  /+ACoAKg
++AD4 +- +ACo device+AF8-driver+AF8-detach - detach driver from a specific device
++AD4 +- +ACo +AEA-dev: device to detach driver from
++AD4 +- +ACo
++AD4 +- +ACo Manually detach driver from device. Will acquire both +AEA-dev lock and
++AD4 +- +ACo +AEA-dev-+AD4-parent lock if needed.
++AD4 +- +ACo-/
++AD4 +-void device+AF8-driver+AF8-detach(struct device +ACo-dev)
++AD4 +-+AHs
++AD4 +-	device+AF8-release+AF8-driver+AF8-internal(dev, NULL, dev-+AD4-parent)+ADs
++AD4 +-+AH0
++AD4 +-
++AD4 +-/+ACoAKg
++AD4   +ACo driver+AF8-detach - detach driver from all devices it controls.
++AD4   +ACo +AEA-drv: driver.
++AD4   +ACo-/
+
+Elsewhere in the driver core the word +ACI-manually+ACI only appears in comments
+above exported functions and functions that implement sysfs store methods.
+Since device+AF8-driver+AF8-detach() is neither, I think the word +ACI-manually+ACI should
+not be used in the comment block above that function. But since the rest of
+this patch looks fine to me, feel free to add:
+
+Reviewed-by: Bart Van Assche +ADw-bvanassche+AEA-acm.org+AD4-
