@@ -1,93 +1,61 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v4 3/6] dt-bindings: power: Introduce properties to
- present the battery OCV capacity table
-Date: Fri, 19 Oct 2018 09:50:51 +0800
-Message-ID: <CAMz4kuK7FjFSs0gUENsGekg+0eWyd40yaG6d27A-gMJCG-9_Sw@mail.gmail.com>
-References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1539587217.git.baolin.wang@linaro.org>
- <eb56baf2e2d127067e459b6014516071ba9005c0.1539587217.git.baolin.wang@linaro.org>
- <20181018165101.GA11562@bogus>
+From: Alexander Duyck <alexander.duyck@gmail.com>
+Subject: Re: [driver-core PATCH v4 4/6] driver core: Probe devices
+ asynchronously instead of the driver
+Date: Thu, 18 Oct 2018 19:20:12 -0700
+Message-ID: <CAKgT0Ucf-v3FNTA0z=3nPR-xS=0NYeqDjRfDW-KjDE5Ed-n1_g@mail.gmail.com>
+References: <20181015150305.29520.86363.stgit@localhost.localdomain>
+ <20181015150926.29520.45280.stgit@localhost.localdomain> <1539886275.81977.17.camel@acm.org>
+ <e870da1d-48fa-7f2e-6909-b168a06633f2@linux.intel.com> <1539893636.81977.29.camel@acm.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181018165101.GA11562@bogus>
+In-Reply-To: <1539893636.81977.29.camel@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
+To: bvanassche@acm.org
+Cc: alexander.h.duyck@linux.intel.com, Greg KH <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 October 2018 at 00:51, Rob Herring <robh@kernel.org> wrote:
-> On Mon, Oct 15, 2018 at 04:09:22PM +0800, Baolin Wang wrote:
->> Some battery driver will use the open circuit voltage (OCV) value to look
->> up the corresponding battery capacity percent in one certain degree Celsius.
->> Thus this patch provides some battery properties to present the OCV table
->> temperatures and OCV capacity table values.
->>
->> Suggested-by: Sebastian Reichel <sre@kernel.org>
->> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
->> ---
->> Changes from v3:
->>  - Split binding into one separate patch.
->>  - Rename ocv-capacity-table-temperatures to ocv-capacity-celsius.
->>  - Add some words to specify the OCV's unit.
->>
->> Changes from v2:
->>  - Use type __be32 to calculate the table length.
->>  - Update error messages.
->>  - Add some helper functions.
->>
->> Changes from v1:
->>  - New patch in v2.
->> ---
->>  .../devicetree/bindings/power/supply/battery.txt   |   15 +++++++++++++++
->>  1 file changed, 15 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> index 938d027..1f70e5d 100644
->> --- a/Documentation/devicetree/bindings/power/supply/battery.txt
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -23,6 +23,17 @@ Optional Properties:
->>   - constant-charge-current-max-microamp: maximum constant input current
->>   - constant-charge-voltage-max-microvolt: maximum constant input voltage
->>   - factory-internal-resistance-micro-ohms: battery factory internal resistance
->> + - ocv-capacity-table-0: An array providing the battery capacity percent
->> +   with corresponding open circuit voltage (OCV) of the battery, which
->> +   is used to look up battery capacity according to current OCV value.
->> +   And the open circuit voltage unit is microvolt.
+On Thu, Oct 18, 2018 at 1:15 PM Bart Van Assche <bvanassche@acm.org> wrote:
 >
-> The order percent and voltage is still not clear. I'd guess one way
-> based on the text here, but the example is the opposite. The description
-> here must stand on its own.
+> On Thu, 2018-10-18 at 12:38 -0700, Alexander Duyck wrote:
+> > Basically if somebody loads a driver the dev->driver becomes set. If a
+> > driver is removed it will clear dev->driver and set driver_data to
+> > 0/NULL. That is what I am using as a mutex to track it in conjunction
+> > with the device mutex. Basically if somebody attempts to attach a driver
+> > before we get there we just exit and don't attempt to load this driver.
+>
+> I don't think that the above matches your code. __device_attach() does not
+> set the dev->driver pointer before scheduling an asynchronous probe. Only
+> dev->driver_data gets set before the asynchonous probe is scheduled. Since
+> driver_detach() only iterates over devices that are in the per-driver klist
+> it will skip all devices for which an asynchronous probe has been scheduled
+> but __device_attach_async_helper() has not yet been called. My conclusion
+> remains that this patch does not prevent a driver pointer to become invalid
+> concurrently with __device_attach_async_helper() dereferencing the same
+> driver pointer.
+>
+> Bart.
 
-Yes, you are right. I will correct the order of ocv-capacity-table-n. Thanks.
+I see what you are talking about now. Actually I think this was an
+existing issue before my patch even came into play. Basically the code
+as it currently stands is device specific in terms of the attach and
+release code.
 
->> + - ocv-capacity-table-1: Same as ocv-capacity-table-0
->> + ......
->> + - ocv-capacity-table-n: Same as ocv-capacity-table-0
->> + - ocv-capacity-celsius: An array containing the temperature in degree Celsius,
->> +   for each of the battery capacity lookup table. The first temperature value
->> +   specifies the OCV table 0, and the second temperature value specifies the
->> +   OCV table 1, and so on.
->>
->>  Battery properties are named, where possible, for the corresponding
->>  elements in enum power_supply_property, defined in
->> @@ -44,6 +55,10 @@ Example:
->>               constant-charge-current-max-microamp = <900000>;
->>               constant-charge-voltage-max-microvolt = <4200000>;
->>               factory-internal-resistance-micro-ohms = <250000>;
->> +             ocv-capacity-celsius = <(-10) 0 10>;
->> +             ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
->> +             ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
->> +             ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
->>       };
->>
->>       charger: charger@11 {
->> --
->> 1.7.9.5
->>
+I wonder if we shouldn't have the async_synchronize_full call in
+__device_release_driver moved down and into driver_detach before we
+even start the for loop. Assuming the driver is no longer associated
+with the bus that should flush out all devices so that we can then
+pull them out of the devices list at least. I may look at adding an
+additional bitflag to the device struct to indicate that it has a
+driver attach pending. Then for things like races between any attach
+and detach calls the logic becomes pretty straight forward. Attach
+will set the bit and provide driver data, detach will clear the bit
+and the driver data. If a driver loads in between it should clear the
+bit as well.
 
+I'll work on it over the next couple days and hopefully have something
+ready for testing/review early next week.
 
+Thanks.
 
--- 
-Baolin Wang
-Best Regards
+- Alex
