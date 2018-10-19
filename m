@@ -1,157 +1,217 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH] arm64: dts: sdm845: Add PSCI cpuidle low power states
-Date: Fri, 19 Oct 2018 13:48:03 -0600
-Message-ID: <20181019194803.GC17444@codeaurora.org>
-References: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Fri, 19 Oct 2018 14:30:13 -0700
+Message-ID: <20181019213013.GW22824@google.com>
+References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
+ <1539257761-23023-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
+In-Reply-To: <1539257761-23023-2-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 15 2018 at 11:02 -0600, Raju P.L.S.S.S.N wrote:
->Add device bindings for cpuidle states for cpu devices.
->
->Cc: <devicetree@vger.kernel.org>
->Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
->---
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+On Thu, Oct 11, 2018 at 05:06:00PM +0530, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 173 +++++++++++++++++++++
+>  1 file changed, 173 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..712643f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,173 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +	Usage:		required
+> +	Value type:	<phandle> From common clock binding.
+> +	Definition:	clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +	Usage:		required
+> +	Value type:	<string> From common clock binding.
+> +	Definition:	must be "xo", "cpu_clk".
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the HW bases in
+> +			each frequency domain.
+> +- reg-names
+> +	Usage:		Optional
+> +	Value type:	<string>
+> +	Definition:	Frequency domain name i.e.
+> +			"freq-domain0", "freq-domain1".
+> +
+> +- freq-domain-cells:
+> +	Usage:		required.
+> +	Definition:	Number of cells in a freqency domain specifier.
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+> +
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +	cpus {
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x0>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_0>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_0: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +				L3_0: l3-cache {
+> +				      compatible = "cache";
+> +				};
+> +			};
+> +		};
+> +
+> +		CPU1: cpu@100 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x100>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_100>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_100: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU2: cpu@200 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x200>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_200>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_200: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU3: cpu@300 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x300>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_300>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_300: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU4: cpu@400 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x400>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_400>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_400: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU5: cpu@500 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x500>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_500>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_500: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU6: cpu@600 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x600>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_600>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_600: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU7: cpu@700 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x700>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_700>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_700: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +	};
+> +
+> + soc {
+> +	cpufreq_hw: cpufreq@17d43000 {
+> +		compatible = "qcom,cpufreq-hw";
+> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+> +		reg-names = "freq-domain0", "freq-domain1";
+> +
+> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+> +		clock-names = "xo", "cpu_clk";
+> +
+> +		#freq-domain-cells = <1>
 
-> arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
-> 1 file changed, 62 insertions(+)
->
->diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->index 0c9a2aa..32262b0 100644
->--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
->+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
->@@ -96,6 +96,7 @@
-> 			reg = <0x0 0x0>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_0>;
->+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
-> 			L2_0: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -111,6 +112,7 @@
-> 			reg = <0x0 0x100>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_100>;
->+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
-> 			L2_100: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -123,6 +125,7 @@
-> 			reg = <0x0 0x200>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_200>;
->+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
-> 			L2_200: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -135,6 +138,7 @@
-> 			reg = <0x0 0x300>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_300>;
->+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
-> 			L2_300: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -147,6 +151,7 @@
-> 			reg = <0x0 0x400>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_400>;
->+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
-> 			L2_400: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -159,6 +164,7 @@
-> 			reg = <0x0 0x500>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_500>;
->+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
-> 			L2_500: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -171,6 +177,7 @@
-> 			reg = <0x0 0x600>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_600>;
->+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
-> 			L2_600: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
->@@ -183,11 +190,66 @@
-> 			reg = <0x0 0x700>;
-> 			enable-method = "psci";
-> 			next-level-cache = <&L2_700>;
->+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
-> 			L2_700: l2-cache {
-> 				compatible = "cache";
-> 				next-level-cache = <&L3_0>;
-> 			};
-> 		};
->+
->+		idle-states {
->+			entry-method = "psci";
->+
->+			C0_CPU_SPC: c0_spc {
->+				compatible = "arm,idle-state";
->+				arm,psci-suspend-param = <0x40000003>;
->+				entry-latency-us = <350>;
->+				exit-latency-us = <461>;
->+				min-residency-us = <1890>;
->+				local-timer-stop;
->+				idle-state-name = "pc";
->+			};
->+
->+			C0_CPU_PC: c0_pc {
->+				compatible = "arm,idle-state";
->+				arm,psci-suspend-param = <0x40000004>;
->+				entry-latency-us = <360>;
->+				exit-latency-us = <531>;
->+				min-residency-us = <3934>;
->+				local-timer-stop;
->+				idle-state-name = "rail pc";
->+			};
->+
->+			C4_CPU_SPC: c4_spc {
->+				compatible = "arm,idle-state";
->+				arm,psci-suspend-param = <0x40000003>;
->+				entry-latency-us = <264>;
->+				exit-latency-us = <621>;
->+				min-residency-us = <952>;
->+				local-timer-stop;
->+				idle-state-name = "pc";
->+			};
->+
->+			C4_CPU_PC: c4_pc {
->+				compatible = "arm,idle-state";
->+				arm,psci-suspend-param = <0x40000004>;
->+				entry-latency-us = <702>;
->+				exit-latency-us = <1061>;
->+				min-residency-us = <4488>;
->+				local-timer-stop;
->+				idle-state-name = "rail pc";
->+			};
->+
->+			CLUSTER_PC: cluster_pc {
->+				compatible = "arm,idle-state";
->+				arm,psci-suspend-param = <0x400000F4>;
->+				entry-latency-us = <3263>;
->+				exit-latency-us = <6562>;
->+				min-residency-us = <9987>;
->+				local-timer-stop;
->+				idle-state-name = "cluster pc";
->+			};
->+		};
-> 	};
->
-> 	pmu {
->--
->QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->of the Code Aurora Forum, hosted by The Linux Foundation.
->
+semicolon is missing.
+
+> +
+
+delete empty line
+
+> +	};
+> +}
+
+Thanks
+
+Matthias
