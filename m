@@ -1,80 +1,157 @@
-From: Evan Green <evgreen@chromium.org>
-Subject: Re: [RFC] i2c: qup: Use the interconnect API
-Date: Fri, 19 Oct 2018 10:37:35 -0700
-Message-ID: <CAE=gft4BCgrPCf5UuhxMh8ORCk40C4tnFxWy-QQJ4ag+yObwvg@mail.gmail.com>
-References: <20180920182903.19991-1-georgi.djakov@linaro.org>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Fri, 19 Oct 2018 13:48:03 -0600
+Message-ID: <20181019194803.GC17444@codeaurora.org>
+References: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180920182903.19991-1-georgi.djakov@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: georgi.djakov@linaro.org
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, Michael Turquette <mturquette@baylibre.com>, khilman@baylibre.com, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Alexandre Bailon <abailon@baylibre.com>, maxime.ripard@bootlin.com, Arnd Bergmann <arnd@arndb.de>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, wsa@the-dreams.de, linux-i2c@vger.kernel.org
+To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Cc: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 20, 2018 at 11:29 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
+On Mon, Oct 15 2018 at 11:02 -0600, Raju P.L.S.S.S.N wrote:
+>Add device bindings for cpuidle states for cpu devices.
 >
-> The interconnect API provides an interface for consumer drivers to express
-> their bandwidth needs in the SoC. This data is aggregated and the on-chip
-> interconnect hardware is configured to the appropriate power/performance
-> profile.
->
-> Use the interconnect API to get() the path between the endpoints used for
-> data transfers by the I2C QUP and report the needed bandwidth based on the
-> i2c mode.
->
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->
-> This patch depends on the interconnect API: https://lkml.org/lkml/2018/8/31/444
->
-> TODO: Use a macro for converting and rounding to icc units instead of
-> converting between kilobits, kilobytes etc. in the consumer drivers.
->
->  drivers/i2c/busses/i2c-qup.c | 25 +++++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->
-> diff --git a/drivers/i2c/busses/i2c-qup.c b/drivers/i2c/busses/i2c-qup.c
-> index c86c3ae1318f..436747a74dc6 100644
-> --- a/drivers/i2c/busses/i2c-qup.c
-> +++ b/drivers/i2c/busses/i2c-qup.c
-> @@ -14,6 +14,7 @@
->  #include <linux/dma-mapping.h>
->  #include <linux/err.h>
->  #include <linux/i2c.h>
-> +#include <linux/interconnect.h>
->  #include <linux/interrupt.h>
->  #include <linux/io.h>
->  #include <linux/module.h>
-> @@ -280,6 +281,11 @@ struct qup_i2c_dev {
->         void (*read_rx_fifo)(struct qup_i2c_dev *qup);
->         /* function to write tags in tx fifo for i2c read transfer */
->         void (*write_rx_tags)(struct qup_i2c_dev *qup);
-> +
-> +       /* frequency mode standard */
-> +       u32                     clk_freq;
-> +       /* interconnect path to scale according to bandwidth needs */
-> +       struct icc_path         *path;
->  };
->
->  static irqreturn_t qup_i2c_interrupt(int irq, void *dev)
-> @@ -1657,6 +1663,16 @@ static void qup_i2c_disable_clocks(struct qup_i2c_dev *qup)
->         clk_disable_unprepare(qup->pclk);
->  }
->
-> +static void qup_i2c_enable_icc(struct qup_i2c_dev *qup)
-> +{
-> +       icc_set(qup->path, 0, qup->clk_freq / 8000);
+>Cc: <devicetree@vger.kernel.org>
+>Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+>---
+Reviewed-by: Lina Iyer <ilina@codeaurora.org>
 
-So this specifies an average bandwidth of zero, and a peak bandwidth
-of freq / 8000? Can you explain why that is the right choice?
-Also, where is this 8000 coming from? Can that be a define, and
-possibly explained?
-
-> +}
-> +
-> +static void qup_i2c_disable_icc(struct qup_i2c_dev *qup)
-> +{
-> +       icc_set(qup->path, 0, 0);
-> +}
-> +
+> arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+> 1 file changed, 62 insertions(+)
+>
+>diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>index 0c9a2aa..32262b0 100644
+>--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+>@@ -96,6 +96,7 @@
+> 			reg = <0x0 0x0>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_0>;
+>+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+> 			L2_0: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -111,6 +112,7 @@
+> 			reg = <0x0 0x100>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_100>;
+>+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+> 			L2_100: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -123,6 +125,7 @@
+> 			reg = <0x0 0x200>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_200>;
+>+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+> 			L2_200: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -135,6 +138,7 @@
+> 			reg = <0x0 0x300>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_300>;
+>+			cpu-idle-states = <&C0_CPU_SPC &C0_CPU_PC &CLUSTER_PC>;
+> 			L2_300: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -147,6 +151,7 @@
+> 			reg = <0x0 0x400>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_400>;
+>+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+> 			L2_400: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -159,6 +164,7 @@
+> 			reg = <0x0 0x500>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_500>;
+>+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+> 			L2_500: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -171,6 +177,7 @@
+> 			reg = <0x0 0x600>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_600>;
+>+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+> 			L2_600: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+>@@ -183,11 +190,66 @@
+> 			reg = <0x0 0x700>;
+> 			enable-method = "psci";
+> 			next-level-cache = <&L2_700>;
+>+			cpu-idle-states = <&C4_CPU_SPC &C4_CPU_PC &CLUSTER_PC>;
+> 			L2_700: l2-cache {
+> 				compatible = "cache";
+> 				next-level-cache = <&L3_0>;
+> 			};
+> 		};
+>+
+>+		idle-states {
+>+			entry-method = "psci";
+>+
+>+			C0_CPU_SPC: c0_spc {
+>+				compatible = "arm,idle-state";
+>+				arm,psci-suspend-param = <0x40000003>;
+>+				entry-latency-us = <350>;
+>+				exit-latency-us = <461>;
+>+				min-residency-us = <1890>;
+>+				local-timer-stop;
+>+				idle-state-name = "pc";
+>+			};
+>+
+>+			C0_CPU_PC: c0_pc {
+>+				compatible = "arm,idle-state";
+>+				arm,psci-suspend-param = <0x40000004>;
+>+				entry-latency-us = <360>;
+>+				exit-latency-us = <531>;
+>+				min-residency-us = <3934>;
+>+				local-timer-stop;
+>+				idle-state-name = "rail pc";
+>+			};
+>+
+>+			C4_CPU_SPC: c4_spc {
+>+				compatible = "arm,idle-state";
+>+				arm,psci-suspend-param = <0x40000003>;
+>+				entry-latency-us = <264>;
+>+				exit-latency-us = <621>;
+>+				min-residency-us = <952>;
+>+				local-timer-stop;
+>+				idle-state-name = "pc";
+>+			};
+>+
+>+			C4_CPU_PC: c4_pc {
+>+				compatible = "arm,idle-state";
+>+				arm,psci-suspend-param = <0x40000004>;
+>+				entry-latency-us = <702>;
+>+				exit-latency-us = <1061>;
+>+				min-residency-us = <4488>;
+>+				local-timer-stop;
+>+				idle-state-name = "rail pc";
+>+			};
+>+
+>+			CLUSTER_PC: cluster_pc {
+>+				compatible = "arm,idle-state";
+>+				arm,psci-suspend-param = <0x400000F4>;
+>+				entry-latency-us = <3263>;
+>+				exit-latency-us = <6562>;
+>+				min-residency-us = <9987>;
+>+				local-timer-stop;
+>+				idle-state-name = "cluster pc";
+>+			};
+>+		};
+> 	};
+>
+> 	pmu {
+>--
+>QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>of the Code Aurora Forum, hosted by The Linux Foundation.
+>
