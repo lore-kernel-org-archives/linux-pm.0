@@ -1,108 +1,58 @@
-From: Jonas Danielsson <jonas@orbital-systems.com>
-Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for at91sam9260_reset
-Date: Fri, 19 Oct 2018 12:30:05 +0200
-Message-ID: <CALDOjzhgqcx5XEWon9EQXEGxt9J280Z6AvuFQcBa=nh-9VA6PQ@mail.gmail.com>
-References: <20181007125815.8392-1-jonas@threetimestwo.org>
- <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com> <2351196.3BzoFE0xYq@ws-140106>
- <CALDOjzhZg3X1y22KE1yw_0ZFjuvaa=3GhEF2iU=KUk6-eRZN2g@mail.gmail.com> <11b4bcb4-8882-bdd2-c7f7-6a74d0758cbc@microchip.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v5 1/6] dt-bindings: power: Introduce one property to present the battery internal resistance
+Date: Fri, 19 Oct 2018 18:53:10 +0800
+Message-ID: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1539915051.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11b4bcb4-8882-bdd2-c7f7-6a74d0758cbc@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: alexander.stein@systec-electronic.com, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Nicolas Ferre <Nicolas.Ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 17, 2018 at 3:10 PM <Claudiu.Beznea@microchip.com> wrote:
->
-> >
-> > We take the normal path of sys_reboot =3D> kernel_restart =3D> machine_=
-restart ...
-> >
-> > I added code to print the c1 register in different paths. And I-cache
-> > is enabled.
-> > So now I am really confused about why the patch worked.
->
-> Just saying... maybe your instructions add some delay on the execution pa=
-th
-> and this is why it helps... try to access cp15 co-processor for read and
-> write back the value you read without actually to modify it, to see if th=
-is
-> could be the reason: e.g.:
->
-> mrc     p15, 0, r0, c1, c0, 0
-> orr     r1, r1, #4096           // whatever is in r1, doesn't matter
-> mcr     p15, 0, r0, c1, c0, 0
->
+The internal resistance of a battery is not a constant in its life cycle,
+this varies over the age of the battery or temperature and so on. But we
+just want use one constant battery internal resistance to estimate the
+battery capacity. Thus this patch introduces one property to present
+the battery factory internal resistance for battery information.
 
-Yes, this also seems to work. I have over 100 reboots completed with this c=
-ode.
-So what could be the issue here? It seem related to the powering down
-of the sdram at least.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+---
+Changes from v4:
+ - None.
 
-This thread on the AT91SAM community deals with the same issue:
-http://www.at91.com/viewtopic.php?t=3D25830
-There the solution people chose was removing the SDRAM powering down.
-But that leaves one open to the cause of the errata.
+Changes from v3:
+ - Split binding into one separate patch.
+ - Add LinusW reviewed tag.
 
-Do you have any thought on how to approach this?
+Changes from v2:
+ - Rename the property.
+ - Improve the commit message.
 
-> Thank you,
-> Claudiu Beznea
->
+Changes from v1:
+ - New patch in v2.
+---
+ .../devicetree/bindings/power/supply/battery.txt   |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Regards
-Jonas
-
-
-> >
-> >> Best regards,
-> >> Alexander
-> >
-> > Jonas
-> >
-> >>
-> >>
-> >>
-> >
-> >
-
-
-
---=20
-
-
-
-
-
-
-JONAS DANIELSSON
-Software Developer
-
-+46 72 361 5022
-Malm=C3=B6 - Sweden
-
-ORBITAL SYSTEMS
-orbital-systems.com
-
-
-
-
-The information contained in this message is intended for the personal
-and confidential use of the designated recipients named above and may
-contain confidential and/or privileged material. If the reader of this
-message is not the intended recipient or an agent responsible for
-delivering it to the intended recipient, you are hereby notified that
-you have received this document in error, and that any review,
-dissemination, distribution, or copying of this message is strictly
-prohibited. If you have received this communication in error, please
-notify the sender immediately and delete this e-mail from your system.
-
-Although this transmission and any attachments are believed to be free
-of any virus or other defect that might affect any computer system
-into which it is received and opened, it is the responsibility of the
-recipient to ensure that it is virus free and no responsibility is
-accepted by ORBITAL SYSTEMS AB, its subsidiaries and affiliates, as
-applicable, for any loss or damage arising in any way.
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+index f4d3b4a..938d027 100644
+--- a/Documentation/devicetree/bindings/power/supply/battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -22,6 +22,7 @@ Optional Properties:
+  - charge-term-current-microamp: current for charge termination phase
+  - constant-charge-current-max-microamp: maximum constant input current
+  - constant-charge-voltage-max-microvolt: maximum constant input voltage
++ - factory-internal-resistance-micro-ohms: battery factory internal resistance
+ 
+ Battery properties are named, where possible, for the corresponding
+ elements in enum power_supply_property, defined in
+@@ -42,6 +43,7 @@ Example:
+ 		charge-term-current-microamp = <128000>;
+ 		constant-charge-current-max-microamp = <900000>;
+ 		constant-charge-voltage-max-microvolt = <4200000>;
++		factory-internal-resistance-micro-ohms = <250000>;
+ 	};
+ 
+ 	charger: charger@11 {
+-- 
+1.7.9.5
