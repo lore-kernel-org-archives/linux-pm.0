@@ -1,12 +1,13 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 09/15] Platform: OLPC: add a regulator for the DCON
-Date: Fri, 19 Oct 2018 16:39:35 +0300
-Message-ID: <CAHp75VcwjoNT76F0qn=2CjETRCdNjX2P-GRLWT4pqJ-9Ch6+ZQ@mail.gmail.com>
-References: <20181010172300.317643-1-lkundrak@v3.sk> <20181010172300.317643-10-lkundrak@v3.sk>
+Subject: Re: [PATCH 11/15] x86, olpc: Use a correct version when making up a
+ battery node
+Date: Fri, 19 Oct 2018 16:43:22 +0300
+Message-ID: <CAHp75VdnrWUSONXwPfVD1HuON5DyGq3qF4JOJbhC-LKudhRdng@mail.gmail.com>
+References: <20181010172300.317643-1-lkundrak@v3.sk> <20181010172300.317643-12-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010172300.317643-10-lkundrak@v3.sk>
+In-Reply-To: <20181010172300.317643-12-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Lubomir Rintel <lkundrak@v3.sk>
 Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, devel@driverdev.osuosl.or
@@ -14,49 +15,45 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, Oct 10, 2018 at 8:23 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
 >
-> All OLPC ECs are able to turn the power to the DCON on an off. Use the
-> regulator framework to expose the functionality.
+> The XO-1 and XO-1.5 batteries apparently differ in an ability to report
+> ambient temperature. Add a different compatible string to the 1.5
+> battery.
 
-> +static int olpc_ec_set_dcon_power(struct olpc_ec_priv *ec, bool state)
-> +{
-> +       unsigned char ec_byte = state;
-> +       int ret;
+> +int olpc_dt_compatible_match(phandle node, const char *compat)
+>  {
+>         char buf[64];
+> +       int plen;
+> +       char *p;
+> +       int len;
 > +
-> +       if (ec->dcon_enabled == state)
+> +       plen = olpc_dt_getproperty(node, "compatible", buf, sizeof(buf));
+> +       if (plen <= 0)
 > +               return 0;
 > +
-
-> +       ret = olpc_ec_cmd(EC_DCON_POWER_MODE, &ec_byte, 1, NULL, 0);
-> +       if (ret == 0)
-> +               ec->dcon_enabled = state;
+> +       len = strlen(compat);
+> +       for (p = buf; p < buf + plen; p += strlen(p) + 1) {
+> +               if (strcmp(p, compat) == 0)
+> +                       return 1;
+> +       }
 > +
-> +       return ret;
-
-I would prefer to see usual pattern, i.e.
-
-if (ret)
- return ret;
-
-...
-return 0;
-
-This comment applies to entire series. (Yes, you might address an old
-code in a separate patch to be on consistent side)
-
+> +       return 0;
 > +}
 
-> +       return olpc_ec_set_dcon_power(ec, 1);
+DT doesn't still have a helper for that?!
+I hardly believe in that.
 
-defined as boolean, supplied an int. Not good.
+> +               olpc_dt_interpret("\" /battery@0\" find-device"
+> +                       " \" olpc,xo1.5-battery\" +compatible"
+> +                       " device-end");
 
-> +       return olpc_ec_set_dcon_power(ec, 0);
+Please, don't split string literals.
 
-Ditto.
+>                 olpc_dt_interpret("\" /pci/display@1\" find-device"
+>                         " new-device"
+>                         " \" dcon\" device-name \" olpc,xo1-dcon\" +compatible"
+>                         " finish-device device-end");
 
-> +static int dcon_regulator_is_enabled(struct regulator_dev *rdev)
-> +       return ec->dcon_enabled;
-
-Ditto.
+Yeah, this and similar also needs to be fixed.
 
 -- 
 With Best Regards,
