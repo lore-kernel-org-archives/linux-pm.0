@@ -1,91 +1,103 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: Re: [driver-core PATCH v4 4/6] driver core: Probe devices
- asynchronously instead of the driver
-Date: Fri, 19 Oct 2018 15:35:06 -0700
-Message-ID: <b07027cb4b9d51ec8f27d9e6c0b73b3032610ebd.camel@linux.intel.com>
-References: <20181015150305.29520.86363.stgit@localhost.localdomain>
-         <20181015150926.29520.45280.stgit@localhost.localdomain>
-         <1539886275.81977.17.camel@acm.org>
-         <e870da1d-48fa-7f2e-6909-b168a06633f2@linux.intel.com>
-         <1539893636.81977.29.camel@acm.org>
-         <CAKgT0Ucf-v3FNTA0z=3nPR-xS=0NYeqDjRfDW-KjDE5Ed-n1_g@mail.gmail.com>
-         <1e061fe5-9be4-77be-5350-4cb7175afdf8@acm.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI / PM: Allow runtime PM without callback functions
+Date: Sat, 20 Oct 2018 11:19:48 -0500
+Message-ID: <20181020161948.GS5906@bhelgaas-glaptop.roam.corp.google.com>
+References: <20181018123038.21386-1-jarkko.nikula@linux.intel.com>
+ <20181019152105.0325a663@endymion>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1e061fe5-9be4-77be-5350-4cb7175afdf8@acm.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bart Van Assche <bvanassche@acm.org>, Alexander Duyck <alexander.duyck@gmail.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, len.brown@intel.com, rafael@kernel.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, pavel@ucw.cz, zwisler@kernel.org, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181019152105.0325a663@endymion>
+Sender: stable-owner@vger.kernel.org
+To: Jean Delvare <jdelvare@suse.de>
+Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2018-10-18 at 19:31 -0700, Bart Van Assche wrote:
-> On 10/18/18 7:20 PM, Alexander Duyck wrote:
-> > I see what you are talking about now. Actually I think this was an
-> > existing issue before my patch even came into play. Basically the
-> > code
-> > as it currently stands is device specific in terms of the attach
-> > and
-> > release code.
+On Fri, Oct 19, 2018 at 03:21:05PM +0200, Jean Delvare wrote:
+> On Thu, 18 Oct 2018 15:30:38 +0300, Jarkko Nikula wrote:
+> > Allow PCI core to do runtime PM to devices without needing to use dummy
+> > runtime PM callback functions if there is no need to do anything device
+> > specific beyond PCI device power state management.
 > > 
-> > I wonder if we shouldn't have the async_synchronize_full call in
-> > __device_release_driver moved down and into driver_detach before we
-> > even start the for loop. Assuming the driver is no longer
-> > associated
-> > with the bus that should flush out all devices so that we can then
-> > pull them out of the devices list at least. I may look at adding an
-> > additional bitflag to the device struct to indicate that it has a
-> > driver attach pending. Then for things like races between any
-> > attach
-> > and detach calls the logic becomes pretty straight forward. Attach
-> > will set the bit and provide driver data, detach will clear the bit
-> > and the driver data. If a driver loads in between it should clear
-> > the
-> > bit as well.
+> > Implement this by letting core to change device power state during
+> > runtime PM transitions even if no callback functions are defined.
+> 
+> Thank you very much for looking into this and providing a fix.
+> 
+> > Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
+> > Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Cc: <stable@vger.kernel.org>
+> > Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> > ---
+> > This is related to my i2c-i801.c fix thread back in June which I completely
+> > forgot till now: https://lkml.org/lkml/2018/6/27/642
+> > Discussion back then was that it should be handled in the PCI PM instead
+> > of having dummy functions in the drivers. I wanted to respin with a
+> > patch.
+> > ---
+> >  drivers/pci/pci-driver.c | 16 ++++++----------
+> >  1 file changed, 6 insertions(+), 10 deletions(-)
 > > 
-> > I'll work on it over the next couple days and hopefully have
-> > something
-> > ready for testing/review early next week.
+> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> > index bef17c3fca67..6185b878ede1 100644
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -1239,7 +1239,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
+> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> >  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> >  	pci_power_t prev = pci_dev->current_state;
+> > -	int error;
+> > +	int error = 0;
+> >  
+> >  	/*
+> >  	 * If pci_dev->driver is not set (unbound), we leave the device in D0,
+> > @@ -1251,11 +1251,9 @@ static int pci_pm_runtime_suspend(struct device *dev)
+> >  		return 0;
+> >  	}
+> >  
+> > -	if (!pm || !pm->runtime_suspend)
+> > -		return -ENOSYS;
+> > -
+> >  	pci_dev->state_saved = false;
+> > -	error = pm->runtime_suspend(dev);
+> > +	if (pm && pm->runtime_suspend)
+> > +		error = pm->runtime_suspend(dev);
+> >  	if (error) {
+> >  		/*
+> >  		 * -EBUSY and -EAGAIN is used to request the runtime PM core
 > 
-> Hi Alex,
+> Later in this function, pm is dereferenced again. It happens twice in
+> the "if (error)" condition where it is currently safe (error can't be
+> non-zero if pm->runtime_suspend() has not been called, and obviously
+> pm->runtime_suspend() can't have been called if pm was NULL). However
+> it also happens later without the condition:
 > 
-> How about checking in __driver_attach_async_helper() whether the
-> driver 
-> pointer is still valid by checking whether bus_for_each_drv(dev-
-> >bus, 
-> ...) can still find the driver pointer? That approach requires 
-> protection with a mutex to avoid races with the driver detach code
-> but 
-> shouldn't require any new flags in struct device.
+> 	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
+> 	    && pci_dev->current_state != PCI_UNKNOWN) {
+> 		WARN_ONCE(pci_dev->current_state != prev,
+> 			"PCI PM: State of device not saved by %pF\n",
+> 			pm->runtime_suspend);
+> 		return 0;
+> 	}
 > 
-> Thanks,
+> I am no expert of the PM framework but is there no risk to dereference
+> NULL at this point? Or even if pm is non-NULL, pm->runtime_suspend may
+> be NULL, leading to a confusing warning message?
 > 
-> Bart.
+> More generally, I would feel better if instead of initializing error to
+> 0, we would move under the "if (pm && pm->runtime_suspend)" condition
+> everything that must not be run if pm->runtime_suspend is not defined.
+> That would make the possible code flows a lot clearer.
 
-That doesn't solve the problem I was pointing out though.
+I agree, this isn't good.  Even if it's safe (and I don't think that
+second spot is safe), it's too hard to analyze.  I'm going to drop
+this for now.
 
-So the issue you are addressing by rechecking the bus should already be
-handled by just calling async_synchronize_full in driver_detach. After
-all we can't have a driver that is being added to the bus while it is
-also being removed. So if we are detaching the driver calling
-async_synchronize_full will flush out any deferred attach calls and
-there will be no further calls since the driver has already been
-removed from the bus.
+Jarkko, I assume a9c8088c7988 ("i2c: i801: Don't restore config
+registers on runtime PM"), which you reference as "Fixes:" is what
+causes the regression.  If you can update the changelog so it mentions
+the regression, why it happens, and why this patch fixes it, we'll be
+in a better spot to backport it to stable kernels.
 
-The issue I was thinking of is how do we deal with races between
-device_attach and device_release_driver. In that case we know the
-device we want to remove a driver from, but we may not have information
-about the driver. The easiest solution is to basically just disable the
-pending enable. I could use the approach I am doing now and just NULL
-out the driver_data if dev->driver is NULL. The only thing I am
-thinking about is if just dev->driver being NULL is enough to signal
-that we are using driver_data to carry a pointer to a pending driver,
-or if we should add an extra bit to carry that meaning. It would be
-pretty easy to just add a bit and then use that to prevent any false
-reads of the deferred driver as driver data, or driver data as a
-deferred driver as it would essentially act as a type bit.
-
-Thanks.
-
-- Alex
+Bjorn
