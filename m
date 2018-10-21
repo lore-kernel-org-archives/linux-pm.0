@@ -1,78 +1,81 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: max8925: mark expected switch fall-through
-Date: Sun, 21 Oct 2018 21:34:13 +0200
-Message-ID: <20181021193413.6w7x4rvx4xkyeyaw@earth.universe>
-References: <20181004135636.GA15157@embeddedor.com>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Subject: [PATCH 0/5] thermal: simplify getting .driver_data
+Date: Sun, 21 Oct 2018 22:00:47 +0200
+Message-ID: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5why2j2ejhabe252"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181004135636.GA15157@embeddedor.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+I got tired of fixing this in Renesas drivers manually, so I took the big
+hammer. Remove this cumbersome code pattern which got copy-pasted too much
+already:
 
---5why2j2ejhabe252
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct ep93xx_keypad *keypad = platform_get_drvdata(pdev);
++	struct ep93xx_keypad *keypad = dev_get_drvdata(dev);
 
-Hi,
+A branch, tested by buildbot, can be found here:
 
-On Thu, Oct 04, 2018 at 03:56:36PM +0200, Gustavo A. R. Silva wrote:
-> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
-> where we are expecting to fall through.
->=20
-> Addresses-Coverity-ID: 201510 ("Missing break in switch")
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> ---
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git coccinelle/get_drvdata
 
-Thanks, queued.
+I have been asked if it couldn't be done for dev_set_drvdata as well. I checked
+it and did not find one occasion where it could be simplified like this. Not
+much of a surprise because driver_data is usually set in probe() functions
+which access struct platform_device in many other ways.
 
--- Sebastian
+I am open for other comments, suggestions, too, of course.
 
->  drivers/power/supply/max8925_power.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/power/supply/max8925_power.c b/drivers/power/supply/=
-max8925_power.c
-> index 3b94620..39b4d5b 100644
-> --- a/drivers/power/supply/max8925_power.c
-> +++ b/drivers/power/supply/max8925_power.c
-> @@ -124,6 +124,7 @@ static irqreturn_t max8925_charger_handler(int irq, v=
-oid *data)
->  	case MAX8925_IRQ_VCHG_THM_OK_F:
->  		/* Battery is not ready yet */
->  		dev_dbg(chip->dev, "Battery temperature is out of range\n");
-> +		/* Fall through */
->  	case MAX8925_IRQ_VCHG_DC_OVP:
->  		dev_dbg(chip->dev, "Error detection\n");
->  		__set_charger(info, 0);
-> --=20
-> 2.7.4
->=20
+Here is the cocci-script I created:
 
---5why2j2ejhabe252
-Content-Type: application/pgp-signature; name="signature.asc"
+@@
+struct device* d;
+identifier pdev;
+expression *ptr;
+@@
+(
+-	struct platform_device *pdev = to_platform_device(d);
+|
+-	struct platform_device *pdev;
+	...
+-	pdev = to_platform_device(d);
+)
+	<... when != pdev
+-	&pdev->dev
++	d
+	...>
 
------BEGIN PGP SIGNATURE-----
+	ptr =
+-	platform_get_drvdata(pdev)
++	dev_get_drvdata(d)
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvM1LUACgkQ2O7X88g7
-+pqg5Q//ecxAFxAcMfEjXPAUNEyfetJvuk22LHz3gu9SsPbweu7k3/bF/eErlEAe
-458haowS+dg7GNiymqIVH+Qe7n5sAV+x/GxCN8w6J8q35lR+Z8Q0iVc3nssfnIqG
-3AEyUHgWmgZpZacrGIjoluGceu3mfaSC+eGYNnvIO0biWmukWEvde9AnuZBC2N3j
-/0YSpdDOclVYk9+3eeAxQC/D2RE6rczbEaYGyyncixohlcFcGKv72/SRNRFj3NOY
-v5rFjmt1ABilVQyf8o2xv4LOMHcq/+9Rk7O8HE3CNa2XP6zdlcVPmc6B4l3aO0Dv
-6CrDbiO9k8l6jUbN9wPLQYAtaImoGL/bhVW84URU4CCWLfIBvzlAofIqzOpv4ICP
-YQrgwgvAzPo7xK/NXL17gYq59es0bT2n/UYtmitA6Q/Yv69ZaZhKHvRIvg7gOAtF
-kmt1PMiA7neU3gqIBfXMZ2+Fe9LrdkulxeJIqPtAYDD9D651/6hcfD/Ml4u/eQ8i
-50ehgX2ASHfTKZkaDcCFLrztUuAsTkQSpb5vIFVm3A787Fa0NtqgbSqxovt0gYBx
-1tQdkTQC2vhPKKkGv9aoqMnU/VuwqBIcRuVUzpegp00tAHEAviEIYPO3iFf+DuUp
-VT95IPWnTs5uqgMrjaZ4UQ5OXkDpd/wCi7pPHx9zugqiUs53c0M=
-=oRPN
------END PGP SIGNATURE-----
+	<... when != pdev
+-	&pdev->dev
++	d
+	...>
 
---5why2j2ejhabe252--
+Kind regards,
+
+   Wolfram
+
+
+Wolfram Sang (5):
+  thermal: int340x_thermal: int3400_thermal: simplify getting
+    .driver_data
+  thermal: rockchip_thermal: simplify getting .driver_data
+  thermal: spear_thermal: simplify getting .driver_data
+  thermal: st: st_thermal: simplify getting .driver_data
+  thermal: zx2967_thermal: simplify getting .driver_data
+
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
+ drivers/thermal/rockchip_thermal.c                | 8 +++-----
+ drivers/thermal/spear_thermal.c                   | 8 +++-----
+ drivers/thermal/st/st_thermal.c                   | 6 ++----
+ drivers/thermal/zx2967_thermal.c                  | 6 ++----
+ 5 files changed, 13 insertions(+), 24 deletions(-)
+
+-- 
+2.19.0
