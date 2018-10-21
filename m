@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [RFC PATCH v2 15/17] ARM: dts: tegra30: beaver: Setup voltage regulators for DVFS
-Date: Sun, 21 Oct 2018 23:54:59 +0300
-Message-ID: <20181021205501.23943-16-digetx@gmail.com>
+Subject: [RFC PATCH v2 12/17] ARM: dts: tegra20: tamonten: Setup voltage regulators for DVFS
+Date: Sun, 21 Oct 2018 23:54:56 +0300
+Message-ID: <20181021205501.23943-13-digetx@gmail.com>
 References: <20181021205501.23943-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -17,54 +17,66 @@ voltage regulators.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra30-beaver.dts | 19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/tegra20-tamonten.dtsi | 31 ++++++++++++++++++-------
+ 1 file changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
-index b0d40ac8ac6e..39941489d005 100644
---- a/arch/arm/boot/dts/tegra30-beaver.dts
-+++ b/arch/arm/boot/dts/tegra30-beaver.dts
-@@ -1806,8 +1806,11 @@
- 
- 				vddctrl_reg: vddctrl {
- 					regulator-name = "vdd_cpu,vdd_sys";
--					regulator-min-microvolt = <1000000>;
--					regulator-max-microvolt = <1000000>;
-+					regulator-min-microvolt = <800000>;
-+					regulator-max-microvolt = <1250000>;
-+					regulator-coupled-with = <&core_vdd_reg>;
-+					regulator-coupled-max-spread = <300000>;
-+					regulator-max-step-microvolt = <100000>;
+diff --git a/arch/arm/boot/dts/tegra20-tamonten.dtsi b/arch/arm/boot/dts/tegra20-tamonten.dtsi
+index 20137fc578b1..e9db60f4c317 100644
+--- a/arch/arm/boot/dts/tegra20-tamonten.dtsi
++++ b/arch/arm/boot/dts/tegra20-tamonten.dtsi
+@@ -357,17 +357,19 @@
  					regulator-always-on;
  				};
  
-@@ -1868,13 +1871,16 @@
- 			};
+-				sm0 {
++				core_vdd_reg: sm0 {
+ 					regulator-name = "vdd_sys_sm0,vdd_core";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
++					regulator-min-microvolt = <1000000>;
++					regulator-max-microvolt = <1300000>;
++					regulator-coupled-with = <&rtc_vdd_reg>;
++					regulator-coupled-max-spread = <150000>;
+ 					regulator-always-on;
+ 				};
+ 
+-				sm1 {
++				cpu_vdd_reg: sm1 {
+ 					regulator-name = "vdd_sys_sm1,vdd_cpu";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
++					regulator-min-microvolt = <750000>;
++					regulator-max-microvolt = <1125000>;
+ 					regulator-always-on;
+ 				};
+ 
+@@ -391,10 +393,13 @@
+ 					regulator-always-on;
+ 				};
+ 
+-				ldo2 {
++				rtc_vdd_reg: ldo2 {
+ 					regulator-name = "vdd_ldo2,vdd_rtc";
+-					regulator-min-microvolt = <1200000>;
+-					regulator-max-microvolt = <1200000>;
++					regulator-min-microvolt = <950000>;
++					regulator-max-microvolt = <1300000>;
++					regulator-coupled-with = <&core_vdd_reg>;
++					regulator-coupled-max-spread = <150000>;
++					regulator-always-on;
+ 				};
+ 
+ 				ldo3 {
+@@ -531,4 +536,12 @@
+ 			enable-active-high;
  		};
- 
--		tps62361@60 {
-+		core_vdd_reg: tps62361@60 {
- 			compatible = "ti,tps62361";
- 			reg = <0x60>;
- 
- 			regulator-name = "tps62361-vout";
- 			regulator-min-microvolt = <500000>;
- 			regulator-max-microvolt = <1500000>;
-+			regulator-coupled-with = <&vddctrl_reg>;
-+			regulator-coupled-max-spread = <300000>;
-+			regulator-max-step-microvolt = <100000>;
- 			regulator-boot-on;
- 			regulator-always-on;
- 			ti,vsel0-state-high;
-@@ -2114,4 +2120,11 @@
- 			 <&tegra_car TEGRA30_CLK_EXTERN1>;
- 		clock-names = "pll_a", "pll_a_out0", "mclk";
  	};
 +
 +	cpus {
 +		cpu0: cpu@0 {
-+			cpu-supply = <&vddctrl_reg>;
++			cpu-supply = <&cpu_vdd_reg>;
 +			core-supply = <&core_vdd_reg>;
++			rtc-supply = <&rtc_vdd_reg>;
 +		};
 +	};
  };
