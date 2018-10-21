@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [RFC PATCH v2 08/17] ARM: dts: tegra20: colibri: Setup voltage regulators for DVFS
-Date: Sun, 21 Oct 2018 23:54:52 +0300
-Message-ID: <20181021205501.23943-9-digetx@gmail.com>
+Subject: [RFC PATCH v2 02/17] soc/tegra: fuse: Export tegra_get_chip_id()
+Date: Sun, 21 Oct 2018 23:54:46 +0300
+Message-ID: <20181021205501.23943-3-digetx@gmail.com>
 References: <20181021205501.23943-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,75 +12,25 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.o
 Cc: linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Set min/max regulators voltage and add CPU node that hooks up CPU with
-voltage regulators.
+This function is used by tegra20-cpufreq driver which can be built as a
+kernel module.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra20-colibri.dtsi | 31 ++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+ drivers/soc/tegra/fuse/tegra-apbmisc.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/boot/dts/tegra20-colibri.dtsi b/arch/arm/boot/dts/tegra20-colibri.dtsi
-index 6162d193e12c..5b3155dbf47a 100644
---- a/arch/arm/boot/dts/tegra20-colibri.dtsi
-+++ b/arch/arm/boot/dts/tegra20-colibri.dtsi
-@@ -495,17 +495,19 @@
- 					regulator-always-on;
- 				};
+diff --git a/drivers/soc/tegra/fuse/tegra-apbmisc.c b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+index e5a4d8f98b10..c94dccf3eb30 100644
+--- a/drivers/soc/tegra/fuse/tegra-apbmisc.c
++++ b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+@@ -51,6 +51,7 @@ u8 tegra_get_chip_id(void)
+ {
+ 	return (tegra_read_chipid() >> 8) & 0xff;
+ }
++EXPORT_SYMBOL_GPL(tegra_get_chip_id);
  
--				sm0 {
-+				core_vdd_reg: sm0 {
- 					regulator-name = "VDD_CORE_1.2V";
--					regulator-min-microvolt = <1200000>;
--					regulator-max-microvolt = <1200000>;
-+					regulator-min-microvolt = <1000000>;
-+					regulator-max-microvolt = <1300000>;
-+					regulator-coupled-with = <&rtc_vdd_reg>;
-+					regulator-coupled-max-spread = <150000>;
- 					regulator-always-on;
- 				};
- 
--				sm1 {
-+				cpu_vdd_reg: sm1 {
- 					regulator-name = "VDD_CPU_1.0V";
--					regulator-min-microvolt = <1000000>;
--					regulator-max-microvolt = <1000000>;
-+					regulator-min-microvolt = <750000>;
-+					regulator-max-microvolt = <1125000>;
- 					regulator-always-on;
- 				};
- 
-@@ -530,10 +532,13 @@
- 					regulator-always-on;
- 				};
- 
--				ldo2 {
-+				rtc_vdd_reg: ldo2 {
- 					regulator-name = "VDD_RTC_1.2V";
--					regulator-min-microvolt = <1200000>;
--					regulator-max-microvolt = <1200000>;
-+					regulator-min-microvolt = <950000>;
-+					regulator-max-microvolt = <1300000>;
-+					regulator-coupled-with = <&core_vdd_reg>;
-+					regulator-coupled-max-spread = <150000>;
-+					regulator-always-on;
- 				};
- 
- 				/* LDO3 is not connected to anything */
-@@ -740,6 +745,14 @@
- 			 <&tegra_car TEGRA20_CLK_CDEV1>;
- 		clock-names = "pll_a", "pll_a_out0", "mclk";
- 	};
-+
-+	cpus {
-+		cpu0: cpu@0 {
-+			cpu-supply = <&cpu_vdd_reg>;
-+			core-supply = <&core_vdd_reg>;
-+			rtc-supply = <&rtc_vdd_reg>;
-+		};
-+	};
- };
- 
- &gpio {
+ u32 tegra_read_straps(void)
+ {
 -- 
 2.19.0
