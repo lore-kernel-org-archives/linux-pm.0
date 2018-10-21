@@ -1,103 +1,113 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Allow runtime PM without callback functions
-Date: Sat, 20 Oct 2018 11:19:48 -0500
-Message-ID: <20181020161948.GS5906@bhelgaas-glaptop.roam.corp.google.com>
-References: <20181018123038.21386-1-jarkko.nikula@linux.intel.com>
- <20181019152105.0325a663@endymion>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 2/6] power: supply: core: Add one field to present the
+ battery internal resistance
+Date: Sun, 21 Oct 2018 18:22:10 +0200
+Message-ID: <20181021162210.jq3bzgxnw4xucbvm@earth.universe>
+References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1539915051.git.baolin.wang@linaro.org>
+ <b70d55f008cfbbb79abf27018261d8a6f16e9673.1539915051.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="zadvt6bl3wgb755k"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181019152105.0325a663@endymion>
-Sender: stable-owner@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.de>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, stable@vger.kernel.org
+In-Reply-To: <b70d55f008cfbbb79abf27018261d8a6f16e9673.1539915051.git.baolin.wang@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 19, 2018 at 03:21:05PM +0200, Jean Delvare wrote:
-> On Thu, 18 Oct 2018 15:30:38 +0300, Jarkko Nikula wrote:
-> > Allow PCI core to do runtime PM to devices without needing to use dummy
-> > runtime PM callback functions if there is no need to do anything device
-> > specific beyond PCI device power state management.
-> > 
-> > Implement this by letting core to change device power state during
-> > runtime PM transitions even if no callback functions are defined.
-> 
-> Thank you very much for looking into this and providing a fix.
-> 
-> > Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
-> > Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > Cc: <stable@vger.kernel.org>
-> > Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> > ---
-> > This is related to my i2c-i801.c fix thread back in June which I completely
-> > forgot till now: https://lkml.org/lkml/2018/6/27/642
-> > Discussion back then was that it should be handled in the PCI PM instead
-> > of having dummy functions in the drivers. I wanted to respin with a
-> > patch.
-> > ---
-> >  drivers/pci/pci-driver.c | 16 ++++++----------
-> >  1 file changed, 6 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> > index bef17c3fca67..6185b878ede1 100644
-> > --- a/drivers/pci/pci-driver.c
-> > +++ b/drivers/pci/pci-driver.c
-> > @@ -1239,7 +1239,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
-> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> >  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> >  	pci_power_t prev = pci_dev->current_state;
-> > -	int error;
-> > +	int error = 0;
-> >  
-> >  	/*
-> >  	 * If pci_dev->driver is not set (unbound), we leave the device in D0,
-> > @@ -1251,11 +1251,9 @@ static int pci_pm_runtime_suspend(struct device *dev)
-> >  		return 0;
-> >  	}
-> >  
-> > -	if (!pm || !pm->runtime_suspend)
-> > -		return -ENOSYS;
-> > -
-> >  	pci_dev->state_saved = false;
-> > -	error = pm->runtime_suspend(dev);
-> > +	if (pm && pm->runtime_suspend)
-> > +		error = pm->runtime_suspend(dev);
-> >  	if (error) {
-> >  		/*
-> >  		 * -EBUSY and -EAGAIN is used to request the runtime PM core
-> 
-> Later in this function, pm is dereferenced again. It happens twice in
-> the "if (error)" condition where it is currently safe (error can't be
-> non-zero if pm->runtime_suspend() has not been called, and obviously
-> pm->runtime_suspend() can't have been called if pm was NULL). However
-> it also happens later without the condition:
-> 
-> 	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-> 	    && pci_dev->current_state != PCI_UNKNOWN) {
-> 		WARN_ONCE(pci_dev->current_state != prev,
-> 			"PCI PM: State of device not saved by %pF\n",
-> 			pm->runtime_suspend);
-> 		return 0;
-> 	}
-> 
-> I am no expert of the PM framework but is there no risk to dereference
-> NULL at this point? Or even if pm is non-NULL, pm->runtime_suspend may
-> be NULL, leading to a confusing warning message?
-> 
-> More generally, I would feel better if instead of initializing error to
-> 0, we would move under the "if (pm && pm->runtime_suspend)" condition
-> everything that must not be run if pm->runtime_suspend is not defined.
-> That would make the possible code flows a lot clearer.
 
-I agree, this isn't good.  Even if it's safe (and I don't think that
-second spot is safe), it's too hard to analyze.  I'm going to drop
-this for now.
+--zadvt6bl3wgb755k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jarkko, I assume a9c8088c7988 ("i2c: i801: Don't restore config
-registers on runtime PM"), which you reference as "Fixes:" is what
-causes the regression.  If you can update the changelog so it mentions
-the regression, why it happens, and why this patch fixes it, we'll be
-in a better spot to backport it to stable kernels.
+Hi,
 
-Bjorn
+On Fri, Oct 19, 2018 at 06:53:11PM +0800, Baolin Wang wrote:
+> Add one field for 'struct power_supply_battery_info' to present the batte=
+ry
+> factory internal resistance.
+>=20
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+
+Looks good to me.
+
+-- Sebastian
+
+> Changes from v4:
+>  - None.
+>=20
+> Changes from v3:
+>  - New patch in v3, which splits code into one separate patch.
+>  - Add Linusw reviewed tag.
+> ---
+>  drivers/power/supply/power_supply_core.c |    3 +++
+>  include/linux/power_supply.h             |    1 +
+>  2 files changed, 4 insertions(+)
+>=20
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index e853618..307e0995 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -579,6 +579,7 @@ int power_supply_get_battery_info(struct power_supply=
+ *psy,
+>  	info->charge_term_current_ua         =3D -EINVAL;
+>  	info->constant_charge_current_max_ua =3D -EINVAL;
+>  	info->constant_charge_voltage_max_uv =3D -EINVAL;
+> +	info->factory_internal_resistance_uohm  =3D -EINVAL;
+> =20
+>  	if (!psy->of_node) {
+>  		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
+> @@ -616,6 +617,8 @@ int power_supply_get_battery_info(struct power_supply=
+ *psy,
+>  			     &info->constant_charge_current_max_ua);
+>  	of_property_read_u32(battery_np, "constant_charge_voltage_max_microvolt=
+",
+>  			     &info->constant_charge_voltage_max_uv);
+> +	of_property_read_u32(battery_np, "factory-internal-resistance-micro-ohm=
+s",
+> +			     &info->factory_internal_resistance_uohm);
+> =20
+>  	return 0;
+>  }
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index f807691..d089566 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -326,6 +326,7 @@ struct power_supply_battery_info {
+>  	int charge_term_current_ua;	    /* microAmps */
+>  	int constant_charge_current_max_ua; /* microAmps */
+>  	int constant_charge_voltage_max_uv; /* microVolts */
+> +	int factory_internal_resistance_uohm;   /* microOhms */
+>  };
+> =20
+>  extern struct atomic_notifier_head power_supply_notifier;
+> --=20
+> 1.7.9.5
+>=20
+
+--zadvt6bl3wgb755k
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvMp7IACgkQ2O7X88g7
++poqng/9Ft61j2F8QNqbZ3meLD0Sw0omW44rldkmL4u2AnZwLAIBBDV5xu2uENOI
+tdsqC/AB0+eb0Er6d/MwmPr7jnWFq0UqU/Vr+fL+Ia2F45z5cTWEkrewu+xNJR5l
+rOtKl57zX4He5A/Ach2ugyJQEACKJ+WIEpxyfEXb4yWLPwIJQIrlZo69G/RB/WmB
+Wq+kYvGH8uYMiQH7kY0c9yl2xTFM4Ar8aD2kGJR2xQV9P5ft7pX2oQD7OuWTKgA6
+i2tTAjrOPUz4eIkV9lLSJrNDtQZwphJLjS/VFOU0ACp+JXq9j1Rzv/VCe2XmPtK2
+SyzjxA2FKEel9vGVw4tX4ElXriu8QkpIcn8DLz78lxCzHFiilubhCX96L8WC15A4
+jAIUmnflDnnTCpK/sOo8WJRw4fj8fEjWQN/LLQmhJJqSgfmmlAyWvbHWKtIS9ZCL
+6wBUALl6Rr9nT3SP70pxOzIH2wX53tPRckYUfGqjg8b8vhsb+JOCxRSx9eQ/JsrE
+pdWWK4u7oFBgYp6yeC/gp0ONOaLfuvXuNNx1Vk+SfAUuwikyIPLLvDx3PbOFENL+
+J2A1d5X0bLjla+dKVNiXg9w1oqY7zpAop/Q6K8wPMnweiCufkRRcINaZ3EWP/TpW
+7MOWjFSE6N4VE8GPX5bOjaEnE+MnCv4TIvHRryJ2WvepIMoBbMA=
+=GikG
+-----END PGP SIGNATURE-----
+
+--zadvt6bl3wgb755k--
