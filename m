@@ -1,88 +1,100 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 1/7] dt-bindings: power: supply: axp20x: add AXP813 AC
- power DT binding
-Date: Sun, 21 Oct 2018 23:15:26 +0200
-Message-ID: <20181021211526.gnynhk3ibte3o2kf@earth.universe>
-References: <20181013080848.29894-1-oskari@lemmela.net>
- <20181013080848.29894-2-oskari@lemmela.net>
+Subject: Re: [PATCH 0/15] Add support for OLPC XO 1.75 Embedded Controller
+Date: Sun, 21 Oct 2018 23:45:54 +0200
+Message-ID: <20181021214554.i2mb5yn2doabyt5a@earth.universe>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="u4twyzyo3rubrpig"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181013080848.29894-2-oskari@lemmela.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oskari Lemmela <oskari@lemmela.net>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/mixed; boundary="===============4634300731478293321=="
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <20181010172300.317643-1-lkundrak@v3.sk>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Andy Shevchenko <andy@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---u4twyzyo3rubrpig
+--===============4634300731478293321==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="jnox64lrvnzk7wym"
+Content-Disposition: inline
+
+
+--jnox64lrvnzk7wym
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Oct 13, 2018 at 11:08:42AM +0300, Oskari Lemmela wrote:
-> The AXP803/AXP813 AC power supply can limit input current and voltage.
+On Wed, Oct 10, 2018 at 07:22:45PM +0200, Lubomir Rintel wrote:
+> Hi.
 >=20
-> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
-> ---
+> This patchset adds support for the Embedded Controller on an OLPC XO
+> 1.75 machine. OLPC XO 1.75 is a MMP2 based ARM laptop. It plugs into
+> the existing OLPC platform infrastructure, currently used by the x86
+> based models.
+>=20
+> The EC operates in SPI master mode, meaning the SOC is the SPI slave. It
+> uses extra handshake signal to signal readiness of SOC to accept data
+> from EC and to initiate a transaction if SOC wishes to submit data.
+>=20
+> The SPI slave support for MMP2 was submitted separately:
+> https://lore.kernel.org/lkml/20181010170936.316862-1-lkundrak@v3.sk/T/#t
+>=20
+> THe "power: supply: olpc_battery: correct the temperature" patch was
+> already sent out separately, but I'm including it because the last
+> commit of the set depends on it.
+>=20
+> Tested to work on an OLPC XO 1.75 and also tested not to break x86
+> support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
+> unlikely this breaks it when XO 1 works.
+>=20
+> Thanks in advance for reviews and feedback of any kind.
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+I reviewed the power-supply related patches (1, 10, 12-15) and think
+they are fine apart from the things found by Andy Shevchenko.
 
 -- Sebastian
 
->  .../devicetree/bindings/power/supply/axp20x_ac_power.txt       | 3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_pow=
-er.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-> index 826e8a879121..7a1fb532abe5 100644
-> --- a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-> @@ -4,6 +4,7 @@ Required Properties:
->   - compatible: One of:
->  			"x-powers,axp202-ac-power-supply"
->  			"x-powers,axp221-ac-power-supply"
-> +			"x-powers,axp813-ac-power-supply"
-> =20
->  This node is a subnode of the axp20x PMIC.
-> =20
-> @@ -13,6 +14,8 @@ reading ADC channels from the AXP20X ADC.
->  The AXP22X is only able to tell if an AC power supply is present and
->  usable.
-> =20
-> +AXP813/AXP803 are able to limit current and supply voltage
-> +
->  Example:
-> =20
->  &axp209 {
-> --=20
-> 2.17.1
->=20
-
---u4twyzyo3rubrpig
+--jnox64lrvnzk7wym
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvM7GsACgkQ2O7X88g7
-+ppRDhAAlOzpWCAqyTCbY3wqpzLCchIxX5mpjbrYJRVBM+gQvuo6PQyzmF5/JKdV
-xhfXDucdKEG1GcNyjpegeaX79dpmuzvh5EF9T5DSXdZUyjo5wb5rcfajX2xYHMhM
-UuSqNfDjAFjtO0gT9v3xsfhazBajb8zbi13Bq9fS0GjVFsE9VmME3vAzku56gIUq
-3UtGAdLP9IALUegtyuPT5jvytqd7nwJR64OlD0OrcCclaiXKKenfi7k9YYg3icxV
-NWBRE+ykD5w9NNvNdhR2WJSgzZ/k9pr6bHvqPWuX/eVFH1TdtG9PHpN3ynOx6vKP
-yPV3gnAeYhxsJS+aPfEY61PffKFJnGpqz06o81i7LMIJ3IuTUbx42Mc7yoVCc7aj
-gqHEZ99n3oDJQ/2JBgfmWhZN/zP9onjknwjmAtUiW9l8EJwKLQZ1ySAcNDWtKOwY
-szocE3JReDU5kreqi5uZLhSODrwJEZj1AysLQqqMgxoHpMPDRGchSVk15Z8NznvC
-c7vmcvzvuf5FQ8lLk9AoBmCAOaxr4bgs1UQMO+7pC7eCI2CZky09+JbdBcaz2l53
-obv8PtTV7kipln2jOP01zPh1LQhZ9Qu/iZ1rYOsKKLYdfgVaZ4J5P/aiXVmPdoLl
-SmO5gyjsx+LsRgEvJZPqdTucoJWSnzexf4AI66edyeOyGoKj66w=
-=p1Or
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvM848ACgkQ2O7X88g7
++pqfnA//TKs8BES/kjdXsbsj0Q2N00S/gqI2yAJfPVzPjGUx8CwKBsRzW1yiQa5L
+PLupI4oHdeRkThPP8o3aS1kLwHuJXxDt9VWCNQl98LpoTPs9iTDGfraFfSlVSFYG
+arjQBKbPBt1wLt2hsEOgiipPA9nNZM+rFcO3nzYbTKgmf+wQ+bpKettsf/3qDeNV
+3ZPj2LK/WX3jY0cnIw2y1vuR5PJj4eBsPwWC+FeOj63JJBtCHfY6jvfMv0rcOOz3
+u9AQQJdhd23BK5xWT8qrOQ0OPLWvr9sFpImAvUjwT52okULTzCUJsFUR+X3iWHBg
+FtHSUjwzf4tMVHQFsQmUGOdjrzXNnAOFs+OV3r/MHRNPc/eHHSE1GfPlgE3o0MBp
+dFFs60geDQStMBxkGnCi1ILoU2pzOkBG/t0Hzd0rWGHWJPYApZIv5yJ8b/EBO+nJ
++e5/dXhe3d6lpdr6mECRoMXnpeGZAmhX95LLi6CdyMb9BfZVP2PVugBeD3pIaGwH
+sEj21DXPTFM1lhgKFjD884E2CQEEpnxRhbcLCnpDmFjkt20h8irChVqq3NPaCphX
++4DgSj3ZRE9EgNNWgAA2K4UoJFupeGxk9EatMxMpxWybnoYgwyBg+SFZeh/v7LJt
+9LC2H1BGBA0eP1A6UUc+ETcV9Qj2C/BGVbbKUfR7hLCxrx8WDaQ=
+=Xjo8
 -----END PGP SIGNATURE-----
 
---u4twyzyo3rubrpig--
+--jnox64lrvnzk7wym--
+
+--===============4634300731478293321==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+devel mailing list
+devel@linuxdriverproject.org
+http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
+
+--===============4634300731478293321==--
