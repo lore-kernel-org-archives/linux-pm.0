@@ -1,81 +1,61 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 0/5] thermal: simplify getting .driver_data
-Date: Sun, 21 Oct 2018 22:00:47 +0200
-Message-ID: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 1/5] thermal: int340x_thermal: int3400_thermal: simplify getting .driver_data
+Date: Sun, 21 Oct 2018 22:00:48 +0200
+Message-ID: <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
+References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
+Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I got tired of fixing this in Renesas drivers manually, so I took the big
-hammer. Remove this cumbersome code pattern which got copy-pasted too much
-already:
+We should get 'driver_data' from 'struct device' directly. Going via
+platform_device is an unneeded step back and forth.
 
--	struct platform_device *pdev = to_platform_device(dev);
--	struct ep93xx_keypad *keypad = platform_get_drvdata(pdev);
-+	struct ep93xx_keypad *keypad = dev_get_drvdata(dev);
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
 
-A branch, tested by buildbot, can be found here:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git coccinelle/get_drvdata
-
-I have been asked if it couldn't be done for dev_set_drvdata as well. I checked
-it and did not find one occasion where it could be simplified like this. Not
-much of a surprise because driver_data is usually set in probe() functions
-which access struct platform_device in many other ways.
-
-I am open for other comments, suggestions, too, of course.
-
-Here is the cocci-script I created:
-
-@@
-struct device* d;
-identifier pdev;
-expression *ptr;
-@@
-(
--	struct platform_device *pdev = to_platform_device(d);
-|
--	struct platform_device *pdev;
-	...
--	pdev = to_platform_device(d);
-)
-	<... when != pdev
--	&pdev->dev
-+	d
-	...>
-
-	ptr =
--	platform_get_drvdata(pdev)
-+	dev_get_drvdata(d)
-
-	<... when != pdev
--	&pdev->dev
-+	d
-	...>
-
-Kind regards,
-
-   Wolfram
-
-
-Wolfram Sang (5):
-  thermal: int340x_thermal: int3400_thermal: simplify getting
-    .driver_data
-  thermal: rockchip_thermal: simplify getting .driver_data
-  thermal: spear_thermal: simplify getting .driver_data
-  thermal: st: st_thermal: simplify getting .driver_data
-  thermal: zx2967_thermal: simplify getting .driver_data
+Build tested only. buildbot is happy.
 
  drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
- drivers/thermal/rockchip_thermal.c                | 8 +++-----
- drivers/thermal/spear_thermal.c                   | 8 +++-----
- drivers/thermal/st/st_thermal.c                   | 6 ++----
- drivers/thermal/zx2967_thermal.c                  | 6 ++----
- 5 files changed, 13 insertions(+), 24 deletions(-)
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index e26b01c05e82..61ca7ce3624e 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -48,8 +48,7 @@ static ssize_t available_uuids_show(struct device *dev,
+ 				    struct device_attribute *attr,
+ 				    char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+ 	int i;
+ 	int length = 0;
+ 
+@@ -68,8 +67,7 @@ static ssize_t available_uuids_show(struct device *dev,
+ static ssize_t current_uuid_show(struct device *dev,
+ 				 struct device_attribute *devattr, char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+ 
+ 	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
+ 		return sprintf(buf, "%s\n",
+@@ -82,8 +80,7 @@ static ssize_t current_uuid_store(struct device *dev,
+ 				  struct device_attribute *attr,
+ 				  const char *buf, size_t count)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
++	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+ 	int i;
+ 
+ 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
 -- 
 2.19.0
