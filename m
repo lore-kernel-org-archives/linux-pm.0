@@ -1,7 +1,7 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 1/5] thermal: int340x_thermal: int3400_thermal: simplify getting .driver_data
-Date: Sun, 21 Oct 2018 22:00:48 +0200
-Message-ID: <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
+Subject: [PATCH 3/5] thermal: spear_thermal: simplify getting .driver_data
+Date: Sun, 21 Oct 2018 22:00:50 +0200
+Message-ID: <20181021200053.2194-4-wsa+renesas@sang-engineering.com>
 References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -20,42 +20,40 @@ Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
 Build tested only. buildbot is happy.
 
- drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/thermal/spear_thermal.c | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index e26b01c05e82..61ca7ce3624e 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -48,8 +48,7 @@ static ssize_t available_uuids_show(struct device *dev,
- 				    struct device_attribute *attr,
- 				    char *buf)
+diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
+index 81b35aace9de..8b9d567134d0 100644
+--- a/drivers/thermal/spear_thermal.c
++++ b/drivers/thermal/spear_thermal.c
+@@ -56,8 +56,7 @@ static struct thermal_zone_device_ops ops = {
+ 
+ static int __maybe_unused spear_thermal_suspend(struct device *dev)
  {
 -	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
- 	int i;
- 	int length = 0;
+-	struct thermal_zone_device *spear_thermal = platform_get_drvdata(pdev);
++	struct thermal_zone_device *spear_thermal = dev_get_drvdata(dev);
+ 	struct spear_thermal_dev *stdev = spear_thermal->devdata;
+ 	unsigned int actual_mask = 0;
  
-@@ -68,8 +67,7 @@ static ssize_t available_uuids_show(struct device *dev,
- static ssize_t current_uuid_show(struct device *dev,
- 				 struct device_attribute *devattr, char *buf)
+@@ -73,15 +72,14 @@ static int __maybe_unused spear_thermal_suspend(struct device *dev)
+ 
+ static int __maybe_unused spear_thermal_resume(struct device *dev)
  {
 -	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+-	struct thermal_zone_device *spear_thermal = platform_get_drvdata(pdev);
++	struct thermal_zone_device *spear_thermal = dev_get_drvdata(dev);
+ 	struct spear_thermal_dev *stdev = spear_thermal->devdata;
+ 	unsigned int actual_mask = 0;
+ 	int ret = 0;
  
- 	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
- 		return sprintf(buf, "%s\n",
-@@ -82,8 +80,7 @@ static ssize_t current_uuid_store(struct device *dev,
- 				  struct device_attribute *attr,
- 				  const char *buf, size_t count)
- {
--	struct platform_device *pdev = to_platform_device(dev);
--	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-+	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
- 	int i;
+ 	ret = clk_enable(stdev->clk);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "Can't enable clock\n");
++		dev_err(dev, "Can't enable clock\n");
+ 		return ret;
+ 	}
  
- 	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
 -- 
 2.19.0
