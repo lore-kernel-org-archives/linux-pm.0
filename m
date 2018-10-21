@@ -1,7 +1,7 @@
 From: Dmitry Osipenko <digetx@gmail.com>
-Subject: [RFC PATCH v2 12/17] ARM: dts: tegra20: tamonten: Setup voltage regulators for DVFS
-Date: Sun, 21 Oct 2018 23:54:56 +0300
-Message-ID: <20181021205501.23943-13-digetx@gmail.com>
+Subject: [RFC PATCH v2 10/17] ARM: dts: tegra20: paz00: Setup voltage regulators for DVFS
+Date: Sun, 21 Oct 2018 23:54:54 +0300
+Message-ID: <20181021205501.23943-11-digetx@gmail.com>
 References: <20181021205501.23943-1-digetx@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -17,20 +17,20 @@ voltage regulators.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra20-tamonten.dtsi | 31 ++++++++++++++++++-------
+ arch/arm/boot/dts/tegra20-paz00.dts | 31 ++++++++++++++++++++---------
  1 file changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra20-tamonten.dtsi b/arch/arm/boot/dts/tegra20-tamonten.dtsi
-index 20137fc578b1..e9db60f4c317 100644
---- a/arch/arm/boot/dts/tegra20-tamonten.dtsi
-+++ b/arch/arm/boot/dts/tegra20-tamonten.dtsi
-@@ -357,17 +357,19 @@
+diff --git a/arch/arm/boot/dts/tegra20-paz00.dts b/arch/arm/boot/dts/tegra20-paz00.dts
+index 8861e0976e37..51a09ae99f3a 100644
+--- a/arch/arm/boot/dts/tegra20-paz00.dts
++++ b/arch/arm/boot/dts/tegra20-paz00.dts
+@@ -337,17 +337,19 @@
  					regulator-always-on;
  				};
  
 -				sm0 {
 +				core_vdd_reg: sm0 {
- 					regulator-name = "vdd_sys_sm0,vdd_core";
+ 					regulator-name = "+1.2vs_sm0,vdd_core";
 -					regulator-min-microvolt = <1200000>;
 -					regulator-max-microvolt = <1200000>;
 +					regulator-min-microvolt = <1000000>;
@@ -42,7 +42,7 @@ index 20137fc578b1..e9db60f4c317 100644
  
 -				sm1 {
 +				cpu_vdd_reg: sm1 {
- 					regulator-name = "vdd_sys_sm1,vdd_cpu";
+ 					regulator-name = "+1.0vs_sm1,vdd_cpu";
 -					regulator-min-microvolt = <1000000>;
 -					regulator-max-microvolt = <1000000>;
 +					regulator-min-microvolt = <750000>;
@@ -50,13 +50,13 @@ index 20137fc578b1..e9db60f4c317 100644
  					regulator-always-on;
  				};
  
-@@ -391,10 +393,13 @@
+@@ -367,10 +369,13 @@
  					regulator-always-on;
  				};
  
 -				ldo2 {
 +				rtc_vdd_reg: ldo2 {
- 					regulator-name = "vdd_ldo2,vdd_rtc";
+ 					regulator-name = "+1.2vs_ldo2,vdd_rtc";
 -					regulator-min-microvolt = <1200000>;
 -					regulator-max-microvolt = <1200000>;
 +					regulator-min-microvolt = <950000>;
@@ -67,9 +67,9 @@ index 20137fc578b1..e9db60f4c317 100644
  				};
  
  				ldo3 {
-@@ -531,4 +536,12 @@
- 			enable-active-high;
- 		};
+@@ -603,4 +608,12 @@
+ 			 <&tegra_car TEGRA20_CLK_CDEV1>;
+ 		clock-names = "pll_a", "pll_a_out0", "mclk";
  	};
 +
 +	cpus {
