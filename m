@@ -1,24 +1,63 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH 5/5] thermal: zx2967_thermal: simplify getting
- .driver_data
-Date: Mon, 22 Oct 2018 09:12:05 +0800
-Message-ID: <20181022011203.GA13039@tiger>
-References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
- <20181021200053.2194-6-wsa+renesas@sang-engineering.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH 1/2] thermal: imx: improve error message
+Date: Mon, 22 Oct 2018 01:43:21 +0000
+Message-ID: <DB3PR0402MB39167401447D80C62A427BB5F5F40@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1536829986-23702-1-git-send-email-Anson.Huang@nxp.com>
+ <3ef674ab-6152-dc77-6c5e-5d5d23642a9f@linaro.org>
+ <DB3PR0402MB3916867EF2740736050170CAF5E20@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181021200053.2194-6-wsa+renesas@sang-engineering.com>
+In-Reply-To: <DB3PR0402MB3916867EF2740736050170CAF5E20@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Jun Nie <jun.nie@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Oct 21, 2018 at 10:00:52PM +0200, Wolfram Sang wrote:
-> We should get 'driver_data' from 'struct device' directly. Going via
-> platform_device is an unneeded step back and forth.
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+UGluZy4uLg0KDQpBbnNvbiBIdWFuZw0KQmVzdCBSZWdhcmRzIQ0KDQoNCj4gLS0tLS1PcmlnaW5h
+bCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQW5zb24gSHVhbmcNCj4gU2VudDogRnJpZGF5LCBPY3Rv
+YmVyIDEyLCAyMDE4IDI6NDIgUE0NCj4gVG86ICdEYW5pZWwgTGV6Y2FubycgPGRhbmllbC5sZXpj
+YW5vQGxpbmFyby5vcmc+OyBydWkuemhhbmdAaW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwu
+Y29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5l
+bC5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSCAxLzJdIHRoZXJtYWw6IGlteDogaW1wcm92ZSBl
+cnJvciBtZXNzYWdlDQo+IA0KPiBHZW50bGUgcGluZyB0aGlzIHBhdGNoIHNldC4uLi4NCj4gDQo+
+IEFuc29uIEh1YW5nDQo+IEJlc3QgUmVnYXJkcyENCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxp
+bmFyby5vcmc+DQo+ID4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciAxMywgMjAxOCA5OjQzIFBN
+DQo+ID4gVG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgcnVpLnpoYW5nQGlu
+dGVsLmNvbTsNCj4gPiBlZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
+cmc7DQo+ID4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggMS8yXSB0aGVybWFsOiBpbXg6IGltcHJvdmUgZXJyb3IgbWVzc2FnZQ0KPiA+DQo+ID4g
+T24gMTMvMDkvMjAxOCAxMToxMywgQW5zb24gSHVhbmcgd3JvdGU6DQo+ID4gPiBSZW1vdmUgdGhl
+IGR1cGxpY2F0ZWQgImZyb20iIHRvIGltcHJvdmUgdGhlIGVycm9yIG1lc3NhZ2UuDQo+ID4gPg0K
+PiA+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+
+ID4gPiAtLS0NCj4gPg0KPiA+IFJldmlld2VkLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxl
+emNhbm9AbGluYXJvLm9yZz4NCj4gPg0KPiA+IC0tDQo+ID4NCj4gPg0KPiA8aHR0cHM6Ly9lbWVh
+MDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3
+DQo+ID4gLmxpbmFyby5vcmclMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhw
+LmNvbSU3Qzc0YjANCj4gZTMNCj4gPg0KPiA2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4
+NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTdDDQo+ID4NCj4gMCU3QzAlN0M2MzY3MjQ0
+MzAxMjk3ODkwMTMmYW1wO3NkYXRhPUM5bDhRRnQ1OFlKVm81cHJ2d0hOcVNpT1A1DQo+ID4gNG9w
+VU1QR09menlWNFBaRkElM0QmYW1wO3Jlc2VydmVkPTA+IExpbmFyby5vcmcg4pSCIE9wZW4gc291
+cmNlDQo+IHNvZnR3YXJlDQo+ID4gZm9yIEFSTSBTb0NzDQo+ID4NCj4gPiBGb2xsb3cgTGluYXJv
+Og0KPiA+DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29rLmNv
+bS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gPiAuZmFjZWJvb2suY29tJTJGcGFnZXMlMkZMaW5h
+cm8mYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJQ0KPiA0MA0KPiA+DQo+IG54cC5jb20l
+N0M3NGIwZTM2OWRlYTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMyYjRjNmZhOTIN
+Cj4gPiBjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1wO3NkYXRh
+PVNxZkdmNmE0bg0KPiA+IE1Rdk81ZHZBamhYUGt4SlJLeFptOSUyRk8zN0xMeDhuQm1KNCUzRCZh
+bXA7cmVzZXJ2ZWQ9MD4NCj4gPiBGYWNlYm9vayB8DQo+ID4gPGh0dHBzOi8vZW1lYTAxLnNhZmVs
+aW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnR3aQ0KPiA+IHR0
+DQo+IGVyLmNvbSUyRiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q0Fuc29uLkh1
+YW5nJTQwbnhwLmMNCj4gPg0KPiBvbSU3Qzc0YjBlMzY5ZGVhNDQyY2QyM2NhMDhkNjE5N2VlNTE4
+JTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNkOTkNCj4gPg0KPiBjNWMzMDE2MzUlN0MwJTdDMCU3QzYz
+NjcyNDQzMDEyOTc4OTAxMyZhbXA7c2RhdGE9ZU9mMm52Q2RKRXJtVg0KPiA+IHJhMTJ1eGxaNDJM
+RmpqcnlIQTN1NEJxbUVGaEFwRSUzRCZhbXA7cmVzZXJ2ZWQ9MD4gVHdpdHRlciB8DQo+ID4NCj4g
+PGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0
+cCUzQSUyRiUyRnd3dw0KPiA+IC5saW5hcm8ub3JnJTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9
+MDIlN0MwMSU3Q0Fuc29uLkh1YW5nJTQwbnhwLg0KPiBjDQo+ID4NCj4gb20lN0M3NGIwZTM2OWRl
+YTQ0MmNkMjNjYTA4ZDYxOTdlZTUxOCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5DQo+ID4NCj4g
+YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3MjQ0MzAxMjk3ODkwMTMmYW1wO3NkYXRhPVZjcTJDWjNX
+dXR6NloNCj4gPiB4UTc3dHBvdzMwWDJ3JTJGVnNtajQzeWwxTTUzR2NXVSUzRCZhbXA7cmVzZXJ2
+ZWQ9MD4gQmxvZw0KDQo=
