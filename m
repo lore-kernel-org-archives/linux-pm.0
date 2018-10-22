@@ -1,232 +1,65 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 5/7] power: supply: add AC power supply driver for
- AXP813
-Date: Sun, 21 Oct 2018 23:16:45 +0200
-Message-ID: <20181021211645.g7yrfudolmrtayb5@earth.universe>
-References: <20181013080848.29894-1-oskari@lemmela.net>
- <20181013080848.29894-6-oskari@lemmela.net>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [RFC PATCH v2 01/17] OPP: Allow to request stub voltage
+ regulators
+Date: Mon, 22 Oct 2018 15:12:08 +0300
+Message-ID: <29f893be-feed-c4c5-8468-51f7228dd468@gmail.com>
+References: <20181021205501.23943-1-digetx@gmail.com>
+ <20181021205501.23943-2-digetx@gmail.com>
+ <20181022053636.ag62j3rj3vovbz53@vireshk-i7>
+ <e4027793-9436-413d-2a7b-34cf519218c3@gmail.com>
+ <20181022113224.b5fiebgy2aap66nd@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mhir7tnyekmtbebi"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181013080848.29894-6-oskari@lemmela.net>
+In-Reply-To: <20181022113224.b5fiebgy2aap66nd@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oskari Lemmela <oskari@lemmela.net>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 10/22/18 2:32 PM, Viresh Kumar wrote:
+> On 22-10-18, 14:29, Dmitry Osipenko wrote:
+>> On 10/22/18 8:36 AM, Viresh Kumar wrote:
+>>> On 21-10-18, 23:54, Dmitry Osipenko wrote:
+>>>> Voltage regulators may be not available on some variations of HW, allow to
+>>>> request stub voltage regulators by OPP core in a such case to reduce code
+>>>> churning within drivers.
+>>>>
+>>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>>> ---
+>>>>  drivers/cpufreq/cpufreq-dt.c | 2 +-
+>>>>  drivers/cpufreq/ti-cpufreq.c | 3 ++-
+>>>>  drivers/opp/core.c           | 9 +++++++--
+>>>>  include/linux/pm_opp.h       | 4 ++--
+>>>>  4 files changed, 12 insertions(+), 6 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+>>>> index e58bfcb1169e..6ebca472ec76 100644
+>>>> --- a/drivers/cpufreq/cpufreq-dt.c
+>>>> +++ b/drivers/cpufreq/cpufreq-dt.c
+>>>> @@ -196,7 +196,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>>>>  	 */
+>>>>  	name = find_supply_name(cpu_dev);
+>>>>  	if (name) {
+>>>> -		opp_table = dev_pm_opp_set_regulators(cpu_dev, &name, 1);
+>>>> +		opp_table = dev_pm_opp_set_regulators(cpu_dev, &name, 1, false);
+>>>>  		if (IS_ERR(opp_table)) {
+>>>>  			ret = PTR_ERR(opp_table);
+>>>>  			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
+>>>
+>>> Have you actually tested this stuff ? The cpufreq-dt driver will
+>>> probably fail to probe if the CPU node has a "-supply" property, but
+>>> no regulator matching that.
+>>>
+>>
+>> Please notice that this patch doesn't change the original behaviour
+>> and I suppose that failing in a case of missing regulator is the
+>> expected behaviour for cpufreq-dt. Hence can't see any problem here.
+> 
+> So why have this patch then ?
 
---mhir7tnyekmtbebi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Because there is one Tegra20 board (tegra20-trimslice) that doesn't declare necessary regulators, but we want to have CPU frequency scaling. I couldn't find board schematics and so don't know if CPU / CORE voltages are fixed on Trim-Slice or it is just preferable not to have DVFS for that board, it is an outlet-powered device [0]. Hence tegra20-cpufreq driver will request a dummy regulators when appropriate. 
 
-Hi,
-
-On Sat, Oct 13, 2018 at 11:08:46AM +0300, Oskari Lemmela wrote:
-> AXP813 and AXP803 PMICs can control input current and
-> minimum voltage.
->=20
-> Both of these values are configurable.
->=20
-> Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
-> ---
-
-Looks good to me apart from Chen-Yu Tsai's comments.
-
--- Sebastian
-
->  drivers/power/supply/axp20x_ac_power.c | 92 ++++++++++++++++++++++++++
->  include/linux/mfd/axp20x.h             |  1 +
->  2 files changed, 93 insertions(+)
->=20
-> diff --git a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/suppl=
-y/axp20x_ac_power.c
-> index 0771f951b11f..059a97d6e14c 100644
-> --- a/drivers/power/supply/axp20x_ac_power.c
-> +++ b/drivers/power/supply/axp20x_ac_power.c
-> @@ -27,6 +27,16 @@
->  #define AXP20X_PWR_STATUS_ACIN_PRESENT	BIT(7)
->  #define AXP20X_PWR_STATUS_ACIN_AVAIL	BIT(6)
-> =20
-> +#define AXP813_VHOLD_MASK		GENMASK(5, 3)
-> +#define AXP813_VHOLD_UV_TO_BIT(x)	((((x) / 100000) - 40) << 3)
-> +#define AXP813_VHOLD_REG_TO_UV(x)	\
-> +	(((((x) & AXP813_VHOLD_MASK) >> 3) + 40) * 100000)
-> +
-> +#define AXP813_CURR_LIMIT_MASK		GENMASK(2, 0)
-> +#define AXP813_CURR_LIMIT_UA_TO_BIT(x)	(((x) / 500000) - 3)
-> +#define AXP813_CURR_LIMIT_REG_TO_UA(x)	\
-> +	((((x) & AXP813_CURR_LIMIT_MASK) + 3) * 500000)
-> +
->  #define DRVNAME "axp20x-ac-power-supply"
-> =20
->  struct axp20x_ac_power {
-> @@ -102,6 +112,55 @@ static int axp20x_ac_power_get_property(struct power=
-_supply *psy,
-> =20
->  		return 0;
-> =20
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-> +		ret =3D regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
-> +		if (ret)
-> +			return ret;
-> +
-> +		val->intval =3D AXP813_VHOLD_REG_TO_UV(reg);
-> +
-> +		return 0;
-> +
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		ret =3D regmap_read(power->regmap, AXP813_ACIN_PATH_CTRL, &reg);
-> +		if (ret)
-> +			return ret;
-> +
-> +		val->intval =3D AXP813_CURR_LIMIT_REG_TO_UA(reg);
-> +
-> +		return 0;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static int axp813_ac_power_set_property(struct power_supply *psy,
-> +					enum power_supply_property psp,
-> +					const union power_supply_propval *val)
-> +{
-> +	struct axp20x_ac_power *power =3D power_supply_get_drvdata(psy);
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-> +		if (val->intval < 4000000 || val->intval > 4700000)
-> +			return -EINVAL;
-> +
-> +		return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
-> +					  AXP813_VHOLD_MASK,
-> +					  AXP813_VHOLD_UV_TO_BIT(val->intval));
-> +
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		if (val->intval < 1500000 || val->intval > 4000000)
-> +			return -EINVAL;
-> +
-> +		return regmap_update_bits(power->regmap, AXP813_ACIN_PATH_CTRL,
-> +					  AXP813_CURR_LIMIT_MASK,
-> +					  AXP813_CURR_LIMIT_UA_TO_BIT
-> +					  (val->intval));
-> +
->  	default:
->  		return -EINVAL;
->  	}
-> @@ -109,6 +168,13 @@ static int axp20x_ac_power_get_property(struct power=
-_supply *psy,
->  	return -EINVAL;
->  }
-> =20
-> +static int axp813_ac_power_prop_writeable(struct power_supply *psy,
-> +					  enum power_supply_property psp)
-> +{
-> +	return psp =3D=3D POWER_SUPPLY_PROP_VOLTAGE_MIN ||
-> +	       psp =3D=3D POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT;
-> +}
-> +
->  static enum power_supply_property axp20x_ac_power_properties[] =3D {
->  	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_PRESENT,
-> @@ -123,6 +189,14 @@ static enum power_supply_property axp22x_ac_power_pr=
-operties[] =3D {
->  	POWER_SUPPLY_PROP_ONLINE,
->  };
-> =20
-> +static enum power_supply_property axp813_ac_power_properties[] =3D {
-> +	POWER_SUPPLY_PROP_HEALTH,
-> +	POWER_SUPPLY_PROP_PRESENT,
-> +	POWER_SUPPLY_PROP_ONLINE,
-> +	POWER_SUPPLY_PROP_VOLTAGE_MIN,
-> +	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-> +};
-> +
->  static const struct power_supply_desc axp20x_ac_power_desc =3D {
->  	.name =3D "axp20x-ac",
->  	.type =3D POWER_SUPPLY_TYPE_MAINS,
-> @@ -139,6 +213,16 @@ static const struct power_supply_desc axp22x_ac_powe=
-r_desc =3D {
->  	.get_property =3D axp20x_ac_power_get_property,
->  };
-> =20
-> +static const struct power_supply_desc axp813_ac_power_desc =3D {
-> +	.name =3D "axp813-ac",
-> +	.type =3D POWER_SUPPLY_TYPE_MAINS,
-> +	.properties =3D axp813_ac_power_properties,
-> +	.num_properties =3D ARRAY_SIZE(axp813_ac_power_properties),
-> +	.property_is_writeable =3D axp813_ac_power_prop_writeable,
-> +	.get_property =3D axp20x_ac_power_get_property,
-> +	.set_property =3D axp813_ac_power_set_property,
-> +};
-> +
->  struct axp_data {
->  	const struct power_supply_desc	*power_desc;
->  	bool				acin_adc;
-> @@ -154,6 +238,11 @@ static const struct axp_data axp22x_data =3D {
->  	.acin_adc =3D false,
->  };
-> =20
-> +static const struct axp_data axp813_data =3D {
-> +	.power_desc =3D &axp813_ac_power_desc,
-> +	.acin_adc =3D false,
-> +};
-> +
->  static int axp20x_ac_power_probe(struct platform_device *pdev)
->  {
->  	struct axp20x_dev *axp20x =3D dev_get_drvdata(pdev->dev.parent);
-> @@ -234,6 +323,9 @@ static const struct of_device_id axp20x_ac_power_matc=
-h[] =3D {
->  	}, {
->  		.compatible =3D "x-powers,axp221-ac-power-supply",
->  		.data =3D &axp22x_data,
-> +	}, {
-> +		.compatible =3D "x-powers,axp813-ac-power-supply",
-> +		.data =3D &axp813_data,
->  	}, { /* sentinel */ }
->  };
->  MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 517e60eecbcb..2302b620d238 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -266,6 +266,7 @@ enum axp20x_variants {
->  #define AXP288_RT_BATT_V_H		0xa0
->  #define AXP288_RT_BATT_V_L		0xa1
-> =20
-> +#define AXP813_ACIN_PATH_CTRL		0x3a
->  #define AXP813_ADC_RATE			0x85
-> =20
->  /* Fuel Gauge */
-> --=20
-> 2.17.1
->=20
-
---mhir7tnyekmtbebi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvM7L0ACgkQ2O7X88g7
-+poHAg//Z16M6EShkrvd9ccrxlcV7nkv08XaxTvLMGlZNg9JhuO/yE38Lu0P8lwm
-i2fRYjSA1dlHgxay7t4oMuhj5Ws/Azxp88Ro/3CUKy/IdmChVlAp3f0UZSInDKkI
-c46rWFf/MtWnDLMI28dIfrLtC7wkqUQqrmXSmFUOT0O/oAgO4yh+ls981GteVzEf
-cTxyZ7htNQEbdO0qXzaJ2bloqsNafePkBNIwoDe5nBjhnJE+akP8+LNgooSMPTdi
-nNHlBXvhPqtCE530an4Ra5QU5sqLwTzU9iqlISGtKXnEHVlRguZ7mme6QOY0IWry
-18Relry4yI6EhVAROGeW9jaBGcaA29QSsgAjlEmCCQgz6HGXNHe885QLMJyPdMWX
-TLA5Jg88Mp/wcq8d1ohdcDDyBrs5uOkNgIo4XVgyCc1IHYpcsTuFa5JNLAGwSvDt
-FJJYBpqFyx02ULTEkkmWO13zevjInJgQs2G9Ayz1NM+9J+4Q2ulLTfPalMxcEHCS
-twgOm7OVLwBG5wYS1frIxMFmyXE8DPCrV6UGM5GD8JuK0hLUKiHgJk3Vavmsmv2g
-JkUWFpzkyAcfGZxI1UZHU7+/Hot/3NMwlWmUcXi/UvaMW77KETj+91IujopmydO8
-4LpYItDFyiyDmDOq5PNPbD0kJLSQA0BSiVfZ0z3KKben3Ywaf5I=
-=WCP8
------END PGP SIGNATURE-----
-
---mhir7tnyekmtbebi--
+[0] http://www.compulab.co.il/utilite-computer/web/trim-slice
