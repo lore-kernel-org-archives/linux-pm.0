@@ -1,10 +1,12 @@
 From: Ross Zwisler <zwisler@google.com>
-Subject: [PATCH 1/2] thermal: Add notifier call chain for hot/critical events
-Date: Mon, 22 Oct 2018 14:32:17 -0600
-Message-ID: <20181022203218.7007-1-zwisler@google.com>
+Subject: [PATCH 2/2] gsmi: Log event for critical thermal thresholds
+Date: Mon, 22 Oct 2018 14:32:18 -0600
+Message-ID: <20181022203218.7007-2-zwisler@google.com>
+References: <20181022203218.7007-1-zwisler@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181022203218.7007-1-zwisler@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Duncan Laurie <dlaurie@chromium.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Ross Zwisler <zwisler@google.com>
@@ -12,119 +14,84 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Duncan Laurie <dlaurie@chromium.org>
 
-This will allow drivers to register a callback for important
-thermal events and log critical thresholds that cause the system
-to shut down.
+This registers a notifier for the new thermal notifier
+introduced in a previous commit and logs a kernel shutdown
+event when the notifier is called for crossing the
+THERMAL_TRIP_CRITICAL threshold.
 
-There are other places this might work, but after consideration
-I think it makes sense to have the chain at this level:
+To test:
+1) Modify critical shutdown threshold in the BIOS
+2) Generate a load on the system to increase temperature
+3) Wait until system powers off
+4) Power back on and read the event log:
 
-The ACPI thermal driver has an existing notify function that is
-eventually called into, but that would limit the notifier to only
-working on systems that use ACPI.
-
-The cpufreq driver is already getting a notify callback executed
-in this path (tz->ops->notify) but the threshold info is not passed
-to the cpu_cooling notifier chain so it is not useful for logging.
+4 | 2012-07-18 10:47:02 | Kernel Event | Critical Thermal Threshold
+5 | 2012-07-18 10:47:06 | Kernel Event | Clean Shutdown
+6 | 2012-07-18 10:47:06 | ACPI Enter | S5
 
 Signed-off-by: Duncan Laurie <dlaurie@chromium.org>
-Reviewed-by: Olof Johansson <olofj@chromium.org>
 Reviewed-by: Vincent Palatin <vpalatin@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
 [ rez: updated changelog for upstream ]
 Signed-off-by: Ross Zwisler <zwisler@google.com>
 ---
- drivers/thermal/thermal_core.c | 38 ++++++++++++++++++++++++++++++++++
- include/linux/thermal.h        |  4 ++++
- 2 files changed, 42 insertions(+)
+ drivers/firmware/google/gsmi.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6ab982309e6a0..e1f8764b3d9f9 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/kdev_t.h>
- #include <linux/idr.h>
-+#include <linux/notifier.h>
- #include <linux/thermal.h>
- #include <linux/reboot.h>
- #include <linux/string.h>
-@@ -313,12 +314,46 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- 	mutex_unlock(&tz->lock);
- }
+diff --git a/drivers/firmware/google/gsmi.c b/drivers/firmware/google/gsmi.c
+index c8f169bf2e27d..ee0c611b83e99 100644
+--- a/drivers/firmware/google/gsmi.c
++++ b/drivers/firmware/google/gsmi.c
+@@ -29,6 +29,7 @@
+ #include <linux/efi.h>
+ #include <linux/module.h>
+ #include <linux/ucs2_string.h>
++#include <linux/thermal.h>
  
-+static BLOCKING_NOTIFIER_HEAD(thermal_notifier_list);
-+
-+/**
-+ * register_thermal_notifier - Register function to be called for
-+ *                             critical thermal events.
-+ *
-+ * @nb: Info about notifier function to be called
-+ *
-+ * Currently always returns zero, as blocking_notifier_chain_register()
-+ * always returns zero.
-+ */
-+int register_thermal_notifier(struct notifier_block *nb)
+ #define GSMI_SHUTDOWN_CLEAN	0	/* Clean Shutdown */
+ /* TODO(mikew@google.com): Tie in HARDLOCKUP_DETECTOR with NMIWDT */
+@@ -40,6 +41,7 @@
+ #define GSMI_SHUTDOWN_SOFTWDT	6	/* Software Watchdog */
+ #define GSMI_SHUTDOWN_MBE	7	/* Uncorrected ECC */
+ #define GSMI_SHUTDOWN_TRIPLE	8	/* Triple Fault */
++#define GSMI_SHUTDOWN_THERMAL	9	/* Critical Thermal Threshold */
+ 
+ #define DRIVER_VERSION		"1.0"
+ #define GSMI_GUID_SIZE		16
+@@ -670,6 +672,18 @@ static struct notifier_block gsmi_panic_notifier = {
+ 	.notifier_call = gsmi_panic_callback,
+ };
+ 
++static int gsmi_thermal_callback(struct notifier_block *nb,
++				 unsigned long reason, void *arg)
 +{
-+	return blocking_notifier_chain_register(&thermal_notifier_list, nb);
++	if (reason == THERMAL_TRIP_CRITICAL)
++		gsmi_shutdown_reason(GSMI_SHUTDOWN_THERMAL);
++	return NOTIFY_DONE;
 +}
-+EXPORT_SYMBOL(register_thermal_notifier);
 +
-+/**
-+ * unregister_thermal_notifier - Unregister thermal notifier
-+ *
-+ * @nb: Hook to be unregistered
-+ *
-+ * Returns zero on success, or %-ENOENT on failure.
-+ */
-+int unregister_thermal_notifier(struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&thermal_notifier_list, nb);
-+}
-+EXPORT_SYMBOL(unregister_thermal_notifier);
++static struct notifier_block gsmi_thermal_notifier = {
++	.notifier_call = gsmi_thermal_callback
++};
 +
-+
- static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 				      int trip,
- 				      enum thermal_trip_type trip_type)
+ /*
+  * This hash function was blatantly copied from include/linux/hash.h.
+  * It is used by this driver to obfuscate a board name that requires a
+@@ -892,6 +906,7 @@ static __init int gsmi_init(void)
+ 		goto out_remove_sysfs_files;
+ 	}
+ 
++	register_thermal_notifier(&gsmi_thermal_notifier);
+ 	register_reboot_notifier(&gsmi_reboot_notifier);
+ 	register_die_notifier(&gsmi_die_notifier);
+ 	atomic_notifier_chain_register(&panic_notifier_list,
+@@ -918,6 +933,7 @@ static __init int gsmi_init(void)
+ 
+ static void __exit gsmi_exit(void)
  {
- 	tz->governor ? tz->governor->throttle(tz, trip) :
- 		       def_governor->throttle(tz, trip);
-+
-+	blocking_notifier_call_chain(&thermal_notifier_list,
-+				     trip_type, NULL);
- }
- 
- /**
-@@ -385,6 +420,9 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 	if (tz->ops->notify)
- 		tz->ops->notify(tz, trip, trip_type);
- 
-+	blocking_notifier_call_chain(&thermal_notifier_list,
-+				     trip_type, NULL);
-+
- 	if (trip_type == THERMAL_TRIP_CRITICAL) {
- 		dev_emerg(&tz->device,
- 			  "critical temperature reached (%d C), shutting down\n",
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5f4705f46c2f9..b948344d55cab 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -13,6 +13,7 @@
- #include <linux/of.h>
- #include <linux/idr.h>
- #include <linux/device.h>
-+#include <linux/notifier.h>
- #include <linux/sysfs.h>
- #include <linux/workqueue.h>
- #include <uapi/linux/thermal.h>
-@@ -542,4 +543,7 @@ static inline int thermal_generate_netlink_event(struct thermal_zone_device *tz,
- }
- #endif
- 
-+extern int register_thermal_notifier(struct notifier_block *);
-+extern int unregister_thermal_notifier(struct notifier_block *);
-+
- #endif /* __THERMAL_H__ */
++	unregister_thermal_notifier(&gsmi_thermal_notifier);
+ 	unregister_reboot_notifier(&gsmi_reboot_notifier);
+ 	unregister_die_notifier(&gsmi_die_notifier);
+ 	atomic_notifier_chain_unregister(&panic_notifier_list,
 -- 
 2.19.1.568.g152ad8e336-goog
