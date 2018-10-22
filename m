@@ -1,159 +1,130 @@
 From: Ross Zwisler <zwisler@google.com>
-Subject: [PATCH] thermal: add ratelimited thermal and power logging
-Date: Mon, 22 Oct 2018 14:29:01 -0600
-Message-ID: <20181022202901.1654-1-zwisler@google.com>
+Subject: [PATCH 1/2] thermal: Add notifier call chain for hot/critical events
+Date: Mon, 22 Oct 2018 14:32:17 -0600
+Message-ID: <20181022203218.7007-1-zwisler@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Ricky Liang <jcliang@chromium.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Stephen Barber <smbarber@chromium.org>, Ross Zwisler <zwisler@google.com>
+Cc: Duncan Laurie <dlaurie@chromium.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Ross Zwisler <zwisler@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Ricky Liang <jcliang@chromium.org>
+From: Duncan Laurie <dlaurie@chromium.org>
 
-Add thermal logs in devfreq_cooling and cpu_cooling.  Also add logging to
-power_allocator when it starts to control power.
+This will allow drivers to register a callback for important
+thermal events and log critical thresholds that cause the system
+to shut down.
 
-These changes can lead to excessive log spam when running up against
-thermal limits, so have this logging ratelimited to allow only 1 log each
-30 seconds from each of those subsystems.
+There are other places this might work, but after consideration
+I think it makes sense to have the chain at this level:
 
-Signed-off-by: Ricky Liang <jcliang@chromium.org>
-Co-authored-by: Stephen Barber <smbarber@chromium.org>
-Signed-off-by: Stephen Barber <smbarber@chromium.org>
-Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-[ rez: squashed initial implementation & fixes, updated changelog for
-  upstream. ]
+The ACPI thermal driver has an existing notify function that is
+eventually called into, but that would limit the notifier to only
+working on systems that use ACPI.
+
+The cpufreq driver is already getting a notify callback executed
+in this path (tz->ops->notify) but the threshold info is not passed
+to the cpu_cooling notifier chain so it is not useful for logging.
+
+Signed-off-by: Duncan Laurie <dlaurie@chromium.org>
+Reviewed-by: Olof Johansson <olofj@chromium.org>
+Reviewed-by: Vincent Palatin <vpalatin@chromium.org>
+[ rez: updated changelog for upstream ]
 Signed-off-by: Ross Zwisler <zwisler@google.com>
 ---
- drivers/thermal/cpu_cooling.c     | 16 ++++++++++++++++
- drivers/thermal/devfreq_cooling.c | 12 ++++++++++++
- drivers/thermal/power_allocator.c | 17 +++++++++++++++++
- 3 files changed, 45 insertions(+)
+ drivers/thermal/thermal_core.c | 38 ++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h        |  4 ++++
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index dfd23245f778a..d8d1855d7d991 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -31,9 +31,17 @@
- #include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/cpu_cooling.h>
-+#include <linux/ratelimit.h>
- 
- #include <trace/events/thermal.h>
- 
-+static DEFINE_RATELIMIT_STATE(cpu_cooling_ratelimit_state, 30 * HZ, 1);
-+
-+static int cpu_cooling_ratelimit(void)
-+{
-+	return __ratelimit(&cpu_cooling_ratelimit_state);
-+}
-+
- /*
-  * Cooling state <-> CPUFreq frequency
-  *
-@@ -389,6 +397,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- {
- 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
- 	unsigned int clip_freq;
-+	struct device *cpu_dev;
- 
- 	/* Request state should be less than max_level */
- 	if (WARN_ON(state > cpufreq_cdev->max_level))
-@@ -404,6 +413,13 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 
- 	cpufreq_update_policy(cpufreq_cdev->policy->cpu);
- 
-+	if (cpu_cooling_ratelimit()) {
-+		cpu_dev = get_cpu_device(cpufreq_cdev->policy->cpu);
-+		dev_info(cpu_dev,
-+			 "Cooling state set to %lu. New max freq = %u\n",
-+			 state, clip_freq);
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index ef59256887ff6..f95c7f513f05a 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -25,6 +25,7 @@
- #include <linux/slab.h>
- #include <linux/pm_opp.h>
- #include <linux/thermal.h>
-+#include <linux/ratelimit.h>
- 
- #include <trace/events/thermal.h>
- 
-@@ -32,6 +33,13 @@
- 
- static DEFINE_IDA(devfreq_ida);
- 
-+static DEFINE_RATELIMIT_STATE(devfreq_cooling_ratelimit_state, 30 * HZ, 1);
-+
-+static int devfreq_cooling_ratelimit(void)
-+{
-+	return __ratelimit(&devfreq_cooling_ratelimit_state);
-+}
-+
- /**
-  * struct devfreq_cooling_device - Devfreq cooling device
-  * @id:		unique integer value corresponding to each
-@@ -150,6 +158,10 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
- 
- 	dfc->cooling_state = state;
- 
-+	if (devfreq_cooling_ratelimit())
-+		dev_info(dev, "Cooling state set to %lu. New max freq = %u\n",
-+			 state, dfc->freq_table[state]);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 3055f9a12a170..5140a07fe60aa 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 6ab982309e6a0..e1f8764b3d9f9 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
 @@ -15,6 +15,7 @@
- 
- #define pr_fmt(fmt) "Power allocator: " fmt
- 
-+#include <linux/ratelimit.h>
- #include <linux/rculist.h>
  #include <linux/slab.h>
+ #include <linux/kdev_t.h>
+ #include <linux/idr.h>
++#include <linux/notifier.h>
  #include <linux/thermal.h>
-@@ -30,6 +31,13 @@
- #define int_to_frac(x) ((x) << FRAC_BITS)
- #define frac_to_int(x) ((x) >> FRAC_BITS)
- 
-+static DEFINE_RATELIMIT_STATE(power_allocator_ratelimit_state, 30 * HZ, 1);
-+
-+static int power_allocator_ratelimit(void)
-+{
-+	return __ratelimit(&power_allocator_ratelimit_state);
-+}
-+
- /**
-  * mul_frac() - multiply two fixed-point numbers
-  * @x:	first multiplicand
-@@ -443,6 +451,15 @@ static int allocate_power(struct thermal_zone_device *tz,
- 				      max_allocatable_power, tz->temperature,
- 				      control_temp - tz->temperature);
- 
-+	if (total_granted_power < total_req_power &&
-+			power_allocator_ratelimit()) {
-+		dev_info(&tz->device, "Controlling power: control_temp=%d "
-+			 "last_temp=%d, curr_temp=%d total_requested_power=%d "
-+			 "total_granted_power=%d\n", control_temp,
-+			 tz->last_temperature, tz->temperature,
-+			 total_req_power, total_granted_power);
-+	}
-+
- 	kfree(req_power);
- unlock:
+ #include <linux/reboot.h>
+ #include <linux/string.h>
+@@ -313,12 +314,46 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
  	mutex_unlock(&tz->lock);
+ }
+ 
++static BLOCKING_NOTIFIER_HEAD(thermal_notifier_list);
++
++/**
++ * register_thermal_notifier - Register function to be called for
++ *                             critical thermal events.
++ *
++ * @nb: Info about notifier function to be called
++ *
++ * Currently always returns zero, as blocking_notifier_chain_register()
++ * always returns zero.
++ */
++int register_thermal_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&thermal_notifier_list, nb);
++}
++EXPORT_SYMBOL(register_thermal_notifier);
++
++/**
++ * unregister_thermal_notifier - Unregister thermal notifier
++ *
++ * @nb: Hook to be unregistered
++ *
++ * Returns zero on success, or %-ENOENT on failure.
++ */
++int unregister_thermal_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&thermal_notifier_list, nb);
++}
++EXPORT_SYMBOL(unregister_thermal_notifier);
++
++
+ static void handle_non_critical_trips(struct thermal_zone_device *tz,
+ 				      int trip,
+ 				      enum thermal_trip_type trip_type)
+ {
+ 	tz->governor ? tz->governor->throttle(tz, trip) :
+ 		       def_governor->throttle(tz, trip);
++
++	blocking_notifier_call_chain(&thermal_notifier_list,
++				     trip_type, NULL);
+ }
+ 
+ /**
+@@ -385,6 +420,9 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 	if (tz->ops->notify)
+ 		tz->ops->notify(tz, trip, trip_type);
+ 
++	blocking_notifier_call_chain(&thermal_notifier_list,
++				     trip_type, NULL);
++
+ 	if (trip_type == THERMAL_TRIP_CRITICAL) {
+ 		dev_emerg(&tz->device,
+ 			  "critical temperature reached (%d C), shutting down\n",
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 5f4705f46c2f9..b948344d55cab 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -13,6 +13,7 @@
+ #include <linux/of.h>
+ #include <linux/idr.h>
+ #include <linux/device.h>
++#include <linux/notifier.h>
+ #include <linux/sysfs.h>
+ #include <linux/workqueue.h>
+ #include <uapi/linux/thermal.h>
+@@ -542,4 +543,7 @@ static inline int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+ }
+ #endif
+ 
++extern int register_thermal_notifier(struct notifier_block *);
++extern int unregister_thermal_notifier(struct notifier_block *);
++
+ #endif /* __THERMAL_H__ */
 -- 
 2.19.1.568.g152ad8e336-goog
