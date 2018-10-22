@@ -1,48 +1,706 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Mon, 22 Oct 2018 16:08:11 +0530
-Message-ID: <20181022103811.ywvyasnshjtdzjki@vireshk-i7>
-References: <20181010094628.wejfgmvcv6stzoco@vireshk-i7>
- <20181010142905.GB9977@jcrouse-lnx.qualcomm.com>
- <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
- <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
- <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
- <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
- <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
- <20181011145456.GG9977@jcrouse-lnx.qualcomm.com>
- <20181015100327.qoojonf46lh6g3sh@vireshk-i7>
- <20181015143444.GA4751@jcrouse-lnx.qualcomm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 6/6] power: supply: Add Spreadtrum SC27XX fuel gauge
+ unit driver
+Date: Mon, 22 Oct 2018 12:43:33 +0200
+Message-ID: <20181022104333.uakqxng7naf65d6m@earth.universe>
+References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1539915051.git.baolin.wang@linaro.org>
+ <2983281f449d180d008c2f49133088a12ea4046d.1539915051.git.baolin.wang@linaro.org>
+ <20181021165201.wob4iar5sd263wkg@earth.universe>
+ <CAMz4kuKt-=TGZGEr+n9d1yALhaRe1-_Da23QYojk_ZPmhzz9Vg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="tvvfnc7kz6kh6bqq"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181015143444.GA4751-9PYrDHPZ2Orvke4nUoYGnHL1okKdlPRT@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, georgi.djakov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, niklas.cassel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+In-Reply-To: <CAMz4kuKt-=TGZGEr+n9d1yALhaRe1-_Da23QYojk_ZPmhzz9Vg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTUtMTAtMTgsIDA4OjM0LCBKb3JkYW4gQ3JvdXNlIHdyb3RlOgo+IEkgYWdyZWUgdGhhdCBj
-b25zaXN0ZW5jeSBpcyBnb29kLiBCdXQgdGhlIEdQVSBpcyBieSBkZXNpZ24gb3V0c2lkZSBvZiB0
-aGUKPiBjb250cm9sIG9mIHRoZSBnZW5wZCB1bml2ZXJzZSBzbyBpdCBpcyBieSBkZXNpZ24gbm90
-IHVzaW5nIHRoZSBzYW1lIGZlYXR1cmVzLgo+IEl0IHVuZm9ydHVuYXRlbHkgZG9lcyBoYXBwZW4g
-dG8gdXNlIGEgc2ltaWxhciBudW1iZXIgaW4gYW4gT1BQIGJpbmRpbmcgdG8KPiBjb25zdHJ1Y3Qg
-dGhlIGxldmVsIG1hcHBpbmcgYnV0IHNpbmNlIHdlIGNhbid0IHJlYWQgdGhlIGNtZC1kYiBmcm9t
-IHRoZSBHTVUKPiBzcGFjZSB0aGlzIGlzIGEgbmVjZXNzYXJ5IGV2aWwuCgpXaGVyZSBkbyB5b3Ug
-ZGVmaW5lIGhvdyB0byB1c2UgdGhpcyBiaW5kaW5nIGluIGNhc2Ugb2YgR1BVPyBJIG1lYW4Kc29t
-ZSBEVCBiaW5kaW5nIGRvYyBtdXN0IGhhdmUgc29tZSBpbmZvcm1hdGlvbiB0byBhdm9pZCBjb25m
-dXNpb24gYXMKYWxsIG90aGVyIHVzZXJzIHdpbGwgaGF2ZSB0aGUgcWNvbSxsZXZlbCB0aGluZyBp
-biB0aGUgZ2VucGQncyBPUFAKdGFibGUgd2hpY2ggR1BVIHdpbGwgaGF2ZSBpdCBkaXJlY3RseSB3
-aXRoaW4gaXRzIE9QUCB0YWJsZS4KCi0tIAp2aXJlc2gKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9A
-bGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxt
-YW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+
+--tvvfnc7kz6kh6bqq
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Oct 22, 2018 at 01:54:50PM +0800, Baolin Wang wrote:
+> Hi Sebastian,
+>=20
+> On 22 October 2018 at 00:52, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Fri, Oct 19, 2018 at 06:53:15PM +0800, Baolin Wang wrote:
+> >> This patch adds the Spreadtrum SC27XX serial PMICs fuel gauge support,
+> >> which is used to calculate the battery capacity.
+> >>
+> >> Original-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+> >> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> >> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> >> ---
+> >
+> > Looks mostly good. I have a few comments still. My plan is to merge
+> > this early after the merge window, if the final version is finished
+> > at this point.
+> >
+> >> Changes from v4:
+> >>  - None.
+> >>
+> >> Changes from v3:
+> >>  - None.
+> >>
+> >> Changes from v2:
+> >>  - Use core helper functions to look up OCV capacity table.
+> >>  - Use device_property_read_u32() instead of of_property_read_u32().
+> >>  - Add acked tag from Linus.
+> >>
+> >> Changes from v1:
+> >>  - Use battery standard properties to get internal resistance and ocv =
+table.
+> >>  - Change devm_gpiod_get_optional() to devm_gpiod_get().
+> >>  - Add power_supply_changed() when detecting battery present change.
+> >>  - Return micro volts for sc27xx_fgu_get_vbat_ocv().
+> >> ---
+> >>  drivers/power/supply/Kconfig             |    7 +
+> >>  drivers/power/supply/Makefile            |    1 +
+> >>  drivers/power/supply/sc27xx_fuel_gauge.c |  661 +++++++++++++++++++++=
++++++++++
+> >>  3 files changed, 669 insertions(+)
+> >>  create mode 100644 drivers/power/supply/sc27xx_fuel_gauge.c
+> >>
+> >> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconf=
+ig
+> >> index f27cf07..917f4b7 100644
+> >> --- a/drivers/power/supply/Kconfig
+> >> +++ b/drivers/power/supply/Kconfig
+> >> @@ -652,4 +652,11 @@ config CHARGER_SC2731
+> >>        Say Y here to enable support for battery charging with SC2731
+> >>        PMIC chips.
+> >>
+> >> +config FUEL_GAUGE_SC27XX
+> >> +     tristate "Spreadtrum SC27XX fuel gauge driver"
+> >> +     depends on MFD_SC27XX_PMIC || COMPILE_TEST
+> >> +     help
+> >> +      Say Y here to enable support for fuel gauge with SC27XX
+> >> +      PMIC chips.
+> >> +
+> >>  endif # POWER_SUPPLY
+> >> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Make=
+file
+> >> index 767105b..b731c2a 100644
+> >> --- a/drivers/power/supply/Makefile
+> >> +++ b/drivers/power/supply/Makefile
+> >> @@ -86,3 +86,4 @@ obj-$(CONFIG_AXP288_FUEL_GAUGE) +=3D axp288_fuel_gau=
+ge.o
+> >>  obj-$(CONFIG_AXP288_CHARGER) +=3D axp288_charger.o
+> >>  obj-$(CONFIG_CHARGER_CROS_USBPD)     +=3D cros_usbpd-charger.o
+> >>  obj-$(CONFIG_CHARGER_SC2731) +=3D sc2731_charger.o
+> >> +obj-$(CONFIG_FUEL_GAUGE_SC27XX)      +=3D sc27xx_fuel_gauge.o
+> >> diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/=
+supply/sc27xx_fuel_gauge.c
+> >> new file mode 100644
+> >> index 0000000..1c0b856
+> >> --- /dev/null
+> >> +++ b/drivers/power/supply/sc27xx_fuel_gauge.c
+> >> @@ -0,0 +1,661 @@
+> >> +// SPDX-License-Identifier: GPL-2.0
+> >> +// Copyright (C) 2018 Spreadtrum Communications Inc.
+> >> +
+> >> +#include <linux/gpio/consumer.h>
+> >> +#include <linux/iio/consumer.h>
+> >> +#include <linux/interrupt.h>
+> >> +#include <linux/kernel.h>
+> >> +#include <linux/module.h>
+> >> +#include <linux/of.h>
+> >> +#include <linux/platform_device.h>
+> >> +#include <linux/power_supply.h>
+> >> +#include <linux/regmap.h>
+> >> +
+> >> +/* PMIC global control registers definition */
+> >> +#define SC27XX_MODULE_EN0            0xc08
+> >> +#define SC27XX_CLK_EN0                       0xc18
+> >> +#define SC27XX_FGU_EN                        BIT(7)
+> >> +#define SC27XX_FGU_RTC_EN            BIT(6)
+> >> +
+> >> +/* FGU registers definition */
+> >> +#define SC27XX_FGU_START             0x0
+> >> +#define SC27XX_FGU_CONFIG            0x4
+> >> +#define SC27XX_FGU_ADC_CONFIG                0x8
+> >> +#define SC27XX_FGU_STATUS            0xc
+> >> +#define SC27XX_FGU_INT_EN            0x10
+> >> +#define SC27XX_FGU_INT_CLR           0x14
+> >> +#define SC27XX_FGU_INT_STS           0x1c
+> >> +#define SC27XX_FGU_VOLTAGE           0x20
+> >> +#define SC27XX_FGU_OCV                       0x24
+> >> +#define SC27XX_FGU_POCV                      0x28
+> >> +#define SC27XX_FGU_CURRENT           0x2c
+> >> +#define SC27XX_FGU_CLBCNT_SETH               0x50
+> >> +#define SC27XX_FGU_CLBCNT_SETL               0x54
+> >> +#define SC27XX_FGU_CLBCNT_VALH               0x68
+> >> +#define SC27XX_FGU_CLBCNT_VALL               0x6c
+> >> +#define SC27XX_FGU_CLBCNT_QMAXL              0x74
+> >> +
+> >> +#define SC27XX_WRITE_SELCLB_EN               BIT(0)
+> >> +#define SC27XX_FGU_CLBCNT_MASK               GENMASK(15, 0)
+> >> +#define SC27XX_FGU_CLBCNT_SHIFT              16
+> >> +
+> >> +#define SC27XX_FGU_1000MV_ADC                686
+> >> +#define SC27XX_FGU_1000MA_ADC                1372
+> >> +#define SC27XX_FGU_CUR_BASIC_ADC     8192
+> >> +#define SC27XX_FGU_SAMPLE_HZ         2
+> >> +
+> >> +/*
+> >> + * struct sc27xx_fgu_data: describe the FGU device
+> >> + * @regmap: regmap for register access
+> >> + * @dev: platform device
+> >> + * @battery: battery power supply
+> >> + * @base: the base offset for the controller
+> >> + * @lock: protect the structure
+> >> + * @gpiod: GPIO for battery detection
+> >> + * @channel: IIO channel to get battery temperature
+> >> + * @internal_resist: the battery internal resistance in mOhm
+> >> + * @total_cap: the total capacity of the battery in mAh
+> >> + * @init_cap: the initial capacity of the battery in mAh
+> >> + * @init_clbcnt: the initial coulomb counter
+> >> + * @max_volt: the maximum constant input voltage in millivolt
+> >> + * @table_len: the capacity table length
+> >> + * @cap_table: capacity table with corresponding ocv
+> >> + */
+> >> +struct sc27xx_fgu_data {
+> >> +     struct regmap *regmap;
+> >> +     struct device *dev;
+> >> +     struct power_supply *battery;
+> >> +     u32 base;
+> >> +     struct mutex lock;
+> >> +     struct gpio_desc *gpiod;
+> >> +     struct iio_channel *channel;
+> >> +     bool bat_present;
+> >> +     int internal_resist;
+> >> +     int total_cap;
+> >> +     int init_cap;
+> >> +     int init_clbcnt;
+> >> +     int max_volt;
+> >> +     int table_len;
+> >> +     struct power_supply_battery_ocv_table *cap_table;
+> >> +};
+> >> +
+> >> +static const char * const sc27xx_charger_supply_name[] =3D {
+> >> +     "sc2731_charger",
+> >> +     "sc2720_charger",
+> >> +     "sc2721_charger",
+> >> +     "sc2723_charger",
+> >> +};
+> >> +
+> >> +static int sc27xx_fgu_adc_to_current(int adc)
+> >> +{
+> >> +     return (adc * 1000) / SC27XX_FGU_1000MA_ADC;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_adc_to_voltage(int adc)
+> >> +{
+> >> +     return (adc * 1000) / SC27XX_FGU_1000MV_ADC;
+> >> +}
+> >> +
+> >> +/*
+> >> + * When system boots on, we can not read battery capacity from coulomb
+> >> + * registers, since now the coulomb registers are invalid. So we shou=
+ld
+> >> + * calculate the battery open circuit voltage, and get current battery
+> >> + * capacity according to the capacity table.
+> >> + */
+> >> +static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data,=
+ int *cap)
+> >> +{
+> >> +     int volt, cur, oci, ocv, ret;
+> >> +
+> >> +     /*
+> >> +      * After system booting on, the SC27XX_FGU_CLBCNT_QMAXL register=
+ saved
+> >> +      * the first sampled open circuit current.
+> >> +      */
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT=
+_QMAXL,
+> >> +                       &cur);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     cur <<=3D 1;
+> >> +     oci =3D sc27xx_fgu_adc_to_current(cur - SC27XX_FGU_CUR_BASIC_ADC=
+);
+> >> +
+> >> +     /*
+> >> +      * Should get the OCV from SC27XX_FGU_POCV register at the system
+> >> +      * beginning. It is ADC values reading from registers which need=
+ to
+> >> +      * convert the corresponding voltage.
+> >> +      */
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_POCV, =
+&volt);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     volt =3D sc27xx_fgu_adc_to_voltage(volt);
+> >> +     ocv =3D volt - (oci * data->internal_resist) / 1000;
+> >> +
+> >> +     /*
+> >> +      * Parse the capacity table to look up the correct capacity perc=
+ent
+> >> +      * according to current battery's corresponding OCV values.
+> >> +      */
+> >> +     *cap =3D power_supply_ocv2cap_simple(data->cap_table, data->tabl=
+e_len,
+> >> +                                        ocv);
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_set_clbcnt(struct sc27xx_fgu_data *data, int cl=
+bcnt)
+> >> +{
+> >> +     int ret;
+> >> +
+> >> +     clbcnt *=3D SC27XX_FGU_SAMPLE_HZ;
+> >> +
+> >> +     ret =3D regmap_update_bits(data->regmap,
+> >> +                              data->base + SC27XX_FGU_CLBCNT_SETL,
+> >> +                              SC27XX_FGU_CLBCNT_MASK, clbcnt);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     ret =3D regmap_update_bits(data->regmap,
+> >> +                              data->base + SC27XX_FGU_CLBCNT_SETH,
+> >> +                              SC27XX_FGU_CLBCNT_MASK,
+> >> +                              clbcnt >> SC27XX_FGU_CLBCNT_SHIFT);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     return regmap_update_bits(data->regmap, data->base + SC27XX_FGU_=
+START,
+> >> +                              SC27XX_WRITE_SELCLB_EN,
+> >> +                              SC27XX_WRITE_SELCLB_EN);
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_clbcnt(struct sc27xx_fgu_data *data, int *c=
+lb_cnt)
+> >> +{
+> >> +     int ccl, cch, ret;
+> >> +
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT=
+_VALL,
+> >> +                       &ccl);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT=
+_VALH,
+> >> +                       &cch);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     *clb_cnt =3D ccl & SC27XX_FGU_CLBCNT_MASK;
+> >> +     *clb_cnt |=3D (cch & SC27XX_FGU_CLBCNT_MASK) << SC27XX_FGU_CLBCN=
+T_SHIFT;
+> >> +     *clb_cnt /=3D SC27XX_FGU_SAMPLE_HZ;
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_capacity(struct sc27xx_fgu_data *data, int =
+*cap)
+> >> +{
+> >> +     int ret, cur_clbcnt, delta_clbcnt, delta_cap, temp;
+> >> +
+> >> +     /* Get current coulomb counters firstly */
+> >> +     ret =3D sc27xx_fgu_get_clbcnt(data, &cur_clbcnt);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     delta_clbcnt =3D cur_clbcnt - data->init_clbcnt;
+> >> +
+> >> +     /*
+> >> +      * Convert coulomb counter to delta capacity (mAh), and set mult=
+iplier
+> >> +      * as 100 to improve the precision.
+> >> +      */
+> >> +     temp =3D DIV_ROUND_CLOSEST(delta_clbcnt, 360);
+> >> +     temp =3D sc27xx_fgu_adc_to_current(temp);
+> >> +
+> >> +     /*
+> >> +      * Convert to capacity percent of the battery total capacity,
+> >> +      * and multiplier is 100 too.
+> >> +      */
+> >> +     delta_cap =3D DIV_ROUND_CLOSEST(temp * 100, data->total_cap);
+> >> +     *cap =3D delta_cap + data->init_cap;
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_vbat_vol(struct sc27xx_fgu_data *data, int =
+*val)
+> >> +{
+> >> +     int ret, vol;
+> >> +
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_VOLTAG=
+E, &vol);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     /*
+> >> +      * It is ADC values reading from registers which need to convert=
+ to
+> >> +      * corresponding voltage values.
+> >> +      */
+> >> +     *val =3D sc27xx_fgu_adc_to_voltage(vol);
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_current(struct sc27xx_fgu_data *data, int *=
+val)
+> >> +{
+> >> +     int ret, cur;
+> >> +
+> >> +     ret =3D regmap_read(data->regmap, data->base + SC27XX_FGU_CURREN=
+T, &cur);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     /*
+> >> +      * It is ADC values reading from registers which need to convert=
+ to
+> >> +      * corresponding current values.
+> >> +      */
+> >> +     *val =3D sc27xx_fgu_adc_to_current(cur - SC27XX_FGU_CUR_BASIC_AD=
+C);
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_vbat_ocv(struct sc27xx_fgu_data *data, int =
+*val)
+> >> +{
+> >> +     int vol, cur, ret;
+> >> +
+> >> +     ret =3D sc27xx_fgu_get_vbat_vol(data, &vol);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     ret =3D sc27xx_fgu_get_current(data, &cur);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     /* Return the battery OCV in micro volts. */
+> >> +     *val =3D vol * 1000 - cur * data->internal_resist;
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *tem=
+p)
+> >> +{
+> >> +     return iio_read_channel_processed(data->channel, temp);
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_health(struct sc27xx_fgu_data *data, int *h=
+ealth)
+> >> +{
+> >> +     int ret, vol;
+> >> +
+> >> +     ret =3D sc27xx_fgu_get_vbat_vol(data, &vol);
+> >> +     if (ret)
+> >> +             return ret;
+> >> +
+> >> +     if (vol > data->max_volt)
+> >> +             *health =3D POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> >> +     else
+> >> +             *health =3D POWER_SUPPLY_HEALTH_GOOD;
+> >> +
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_status(struct sc27xx_fgu_data *data, int *s=
+tatus)
+> >> +{
+> >> +     union power_supply_propval val;
+> >> +     struct power_supply *psy;
+> >> +     int i, ret =3D -EINVAL;
+> >> +
+> >> +     for (i =3D 0; i < ARRAY_SIZE(sc27xx_charger_supply_name); i++) {
+> >> +             psy =3D power_supply_get_by_name(sc27xx_charger_supply_n=
+ame[i]);
+> >> +             if (!psy)
+> >> +                     continue;
+> >> +
+> >> +             ret =3D power_supply_get_property(psy, POWER_SUPPLY_PROP=
+_STATUS,
+> >> +                                             &val);
+> >> +             power_supply_put(psy);
+> >> +             if (ret)
+> >> +                     return ret;
+> >> +
+> >> +             *status =3D val.intval;
+> >> +     }
+> >> +
+> >> +     return ret;
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_get_property(struct power_supply *psy,
+> >> +                                enum power_supply_property psp,
+> >> +                                union power_supply_propval *val)
+> >> +{
+> >> +     struct sc27xx_fgu_data *data =3D power_supply_get_drvdata(psy);
+> >> +     int ret =3D 0;
+> >> +     int value;
+> >> +
+> >> +     mutex_lock(&data->lock);
+> >> +
+> >> +     switch (psp) {
+> >> +     case POWER_SUPPLY_PROP_STATUS:
+> >> +             ret =3D sc27xx_fgu_get_status(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_HEALTH:
+> >> +             ret =3D sc27xx_fgu_get_health(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_PRESENT:
+> >> +             val->intval =3D data->bat_present;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_TEMP:
+> >> +             ret =3D sc27xx_fgu_get_temp(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_TECHNOLOGY:
+> >> +             val->intval =3D POWER_SUPPLY_TECHNOLOGY_LION;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_CAPACITY:
+> >> +             ret =3D sc27xx_fgu_get_capacity(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> >> +             ret =3D sc27xx_fgu_get_vbat_vol(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value * 1000;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+> >> +             ret =3D sc27xx_fgu_get_vbat_ocv(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value;
+> >> +             break;
+> >> +
+> >> +     case POWER_SUPPLY_PROP_CURRENT_NOW:
+> >> +     case POWER_SUPPLY_PROP_CURRENT_AVG:
+> >> +             ret =3D sc27xx_fgu_get_current(data, &value);
+> >> +             if (ret)
+> >> +                     goto error;
+> >> +
+> >> +             val->intval =3D value * 1000;
+> >> +             break;
+> >> +
+> >> +     default:
+> >> +             ret =3D -EINVAL;
+> >> +             break;
+> >> +     }
+> >> +
+> >> +error:
+> >> +     mutex_unlock(&data->lock);
+> >> +     return ret;
+> >> +}
+> >> +
+> >> +static void sc27xx_fgu_external_power_changed(struct power_supply *ps=
+y)
+> >> +{
+> >> +     struct sc27xx_fgu_data *data =3D power_supply_get_drvdata(psy);
+> >> +
+> >> +     power_supply_changed(data->battery);
+> >> +}
+> >> +
+> >> +static enum power_supply_property sc27xx_fgu_props[] =3D {
+> >> +     POWER_SUPPLY_PROP_STATUS,
+> >> +     POWER_SUPPLY_PROP_HEALTH,
+> >> +     POWER_SUPPLY_PROP_PRESENT,
+> >> +     POWER_SUPPLY_PROP_TEMP,
+> >> +     POWER_SUPPLY_PROP_TECHNOLOGY,
+> >> +     POWER_SUPPLY_PROP_CAPACITY,
+> >> +     POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> >> +     POWER_SUPPLY_PROP_VOLTAGE_OCV,
+> >> +     POWER_SUPPLY_PROP_CURRENT_NOW,
+> >> +     POWER_SUPPLY_PROP_CURRENT_AVG,
+> >> +};
+> >> +
+> >> +static const struct power_supply_desc sc27xx_fgu_desc =3D {
+> >> +     .name                   =3D "sc27xx-fgu",
+> >> +     .type                   =3D POWER_SUPPLY_TYPE_BATTERY,
+> >> +     .properties             =3D sc27xx_fgu_props,
+> >> +     .num_properties         =3D ARRAY_SIZE(sc27xx_fgu_props),
+> >> +     .get_property           =3D sc27xx_fgu_get_property,
+> >> +     .external_power_changed =3D sc27xx_fgu_external_power_changed,
+> >> +};
+> >> +
+> >> +static irqreturn_t sc27xx_fgu_bat_detection(int irq, void *dev_id)
+> >> +{
+> >> +     struct sc27xx_fgu_data *data =3D dev_id;
+> >> +     int state;
+> >> +
+> >> +     mutex_lock(&data->lock);
+> >> +
+> >> +     state =3D gpiod_get_value_cansleep(data->gpiod);
+> >> +     if (state < 0) {
+> >> +             dev_err(data->dev, "failed to get gpio state\n");
+> >> +             mutex_unlock(&data->lock);
+> >> +             return IRQ_RETVAL(state);
+> >> +     }
+> >> +
+> >> +     data->bat_present =3D !!state;
+> >> +
+> >> +     mutex_unlock(&data->lock);
+> >> +
+> >> +     power_supply_changed(data->battery);
+> >> +     return IRQ_HANDLED;
+> >> +}
+> >> +
+> >> +static void sc27xx_fgu_disable(void *_data)
+> >> +{
+> >> +     struct sc27xx_fgu_data *data =3D _data;
+> >> +
+> >> +     regmap_update_bits(data->regmap, SC27XX_CLK_EN0, SC27XX_FGU_RTC_=
+EN, 0);
+> >> +     regmap_update_bits(data->regmap, SC27XX_MODULE_EN0, SC27XX_FGU_E=
+N, 0);
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_cap_to_clbcnt(struct sc27xx_fgu_data *data, int=
+ capacity)
+> >> +{
+> >> +     /*
+> >> +      * Get current capacity (mAh) =3D battery total capacity (mAh) *
+> >> +      * current capacity percent (capacity / 100).
+> >> +      */
+> >> +     int cur_cap =3D DIV_ROUND_CLOSEST(data->total_cap * capacity, 10=
+0);
+> >> +
+> >> +     /*
+> >> +      * Convert current capacity (mAh) to coulomb counter according t=
+o the
+> >> +      * formula: 1 mAh =3D3.6 coulomb.
+> >> +      */
+> >> +     return DIV_ROUND_CLOSEST(cur_cap * 36, 10);
+> >> +}
+> >> +
+> >> +static int sc27xx_fgu_hw_init(struct sc27xx_fgu_data *data)
+> >> +{
+> >> +     struct power_supply_battery_info info =3D { };
+> >> +     struct power_supply_battery_ocv_table *table;
+> >> +     int ret, i;
+> >> +
+> >> +     ret =3D power_supply_get_battery_info(data->battery, &info);
+> >> +     if (ret) {
+> >> +             dev_err(data->dev, "failed to get battery information\n"=
+);
+> >> +             return ret;
+> >> +     }
+> >> +
+> >> +     data->total_cap =3D info.charge_full_design_uah / 1000;
+> >> +     data->max_volt =3D info.constant_charge_voltage_max_uv / 1000;
+> >> +     data->internal_resist =3D info.factory_internal_resistance_uohm =
+/ 1000;
+> >> +
+> >> +     /*
+> >> +      * For SC27XX fuel gauge device, we only use one ocv-capacity
+> >> +      * table in normal temperature 20 Celsius.
+> >> +      */
+> >> +     table =3D power_supply_find_ocv2cap_table(&info, 20, &data->tabl=
+e_len);
+> >> +     if (!table)
+> >> +             return -EINVAL;
+> >> +
+> >> +     data->cap_table =3D devm_kzalloc(data->dev,
+> >> +                                    data->table_len * sizeof(*table),
+> >> +                                    GFP_KERNEL);
+> >> +     if (!data->cap_table) {
+> >> +             power_supply_put_battery_info(data->battery, &info);
+> >> +             return -ENOMEM;
+> >> +     }
+> >> +
+> >> +     for (i =3D 0; i < data->table_len; i++) {
+> >> +             data->cap_table[i].ocv =3D table[i].ocv / 1000;
+> >> +             data->cap_table[i].capacity =3D table[i].capacity;
+> >> +     }
+> >
+> > Don't divide the OCV by 1000. You feed this table into the
+> > generic power-supply function later, which should always
+> > get uV. Instead multiply the ocv parameter in your
+> > power_supply_ocv2cap_simple() call with 1000. This
+> > means you can just use devm_kmemdup() here.
+>=20
+> Good point. Will change it in next version.
+>=20
+> >
+> > Some ideas for later (I'm fine with merging the driver
+> > without these changes):
+> >
+> >  * Store battery_info directly in private driver data
+> >    instead of doing a copy of the temperature table.
+> >  * Call power_supply_ocv2cap() with current battery
+> >    temperature and let the power-supply core figure
+> >    out which ocv-to-capacity curve should be used.
+>=20
+> I should keep my original method, since we have no temperature table
+> now and only use one room temperature (20 degree). Thanks for your
+> useful comments.
+
+Which should work perfectly fine with power_supply_ocv2cap(). It
+will use the nearest curve, which is always the 20=B0C one in your
+case. If you add a second temperature curve in the future (i.e.
+because of using the sc27xx fuel gauge with a different battery),
+it would just pick this up automatically. But I'm fine with doing
+this later.
+
+-- Sebastian
+
+--tvvfnc7kz6kh6bqq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvNqdIACgkQ2O7X88g7
++pqxAQ/+Kk9l0dlaC6bp1kRSJrMmfdz6Z24WTj4QWX8O2OQYYpbMYbIf1vYyh/JW
+rKY26+2ubhOsCTiUeyVy7kDdbBuDeSTNy2FvKbpiWOlO607trF/O96NACr6YJwg5
+FdomejQcRfAdN0ipReMU70PBHWO2CmtUosf/YBz6GVvarb3BOtCqtXrCsCjHMWAC
+7vqa69UdyKDbGeKwVZkvYailywoiXldVgu1pNzvb/JCg08AHg0G30elBPDZLomGp
+g3PgLI/zfqd93l1VHvqBmBIZmBU/VX0XdSxonxI1qzRB7RRCUh/ZkLzVg50YLDfg
+cbBBri4IOjxhV6r6SSIeS84xpWdoJJJldwrQTWcwFK4vcMuelaOfNLhtfaVRGz26
+QBP5/rvzFo/wN2tai0DdvndcFG45b2QVx7G3M5EUmbp+wmmroGy2JXykCOVYez+w
+ayHwV0lq9f2va9FAvdUBt2IqODiejbB95Oy6ZCFY60aZHHFJ5V14suZLqEqEhcjy
+JduVMLzFfy73Q22WifisdF2/JCXU0VAUYYrR5eAV3PzDzOakKEaeGtpd9avGlvWM
+LOH73bwFoLXQqUAWCNfg0VA67QimlH9J5mSP4f110niCVOGKOYpcfeHuEOcEbxnd
++sYTAjDgRhDbUX6z19+E2SRe6+pQxaVgNlwYlUROMWLcYb4PtcM=
+=WqDi
+-----END PGP SIGNATURE-----
+
+--tvvfnc7kz6kh6bqq--
