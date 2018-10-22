@@ -1,69 +1,69 @@
-From: Jordan Crouse <jcrouse@codeaurora.org>
-Subject: Re: [Freedreno] [PATCH 5/9] arm64: dts: sdm845: Add gpu and gmu
- device nodes
-Date: Mon, 22 Oct 2018 08:37:45 -0600
-Message-ID: <20181022143745.GF26762@jcrouse-lnx.qualcomm.com>
-References: <20181010143149.4e3ct3efkuwxa2hw@vireshk-i7>
- <20181010144856.GC9977@jcrouse-lnx.qualcomm.com>
- <20181010145139.nvalsr2ij2lj53dh@vireshk-i7>
- <20181010151006.GD9977@jcrouse-lnx.qualcomm.com>
- <20181011050216.4ba5i3ghh5rbvjbl@vireshk-i7>
- <20181011145456.GG9977@jcrouse-lnx.qualcomm.com>
- <20181015100327.qoojonf46lh6g3sh@vireshk-i7>
- <20181015143444.GA4751@jcrouse-lnx.qualcomm.com>
- <20181022103811.ywvyasnshjtdzjki@vireshk-i7>
- <20181022132027.GA15708@centauri.lan>
+From: Niklas Cassel <niklas.cassel@linaro.org>
+Subject: Re: [PATCH V12 00/14] Krait clocks + Krait CPUfreq
+Date: Mon, 22 Oct 2018 17:30:05 +0200
+Message-ID: <20181022153005.GA23950@centauri.lan>
+References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
+ <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org>
+ <d682580d-5070-0271-197f-29d988172937@codeaurora.org>
+ <D8FC68C0-2572-4A86-81D9-D0099D314A45@gmail.com>
+ <F5A89365-C613-4FE2-AD32-DC0AC6DF380B@gmail.com>
+ <fb81b8d5-3d24-b413-8d59-33cb70e46f8b@codeaurora.org>
+ <153979105280.5275.841088095583550635@swboyd.mtv.corp.google.com>
+ <153980741313.5275.10376918222904341760@swboyd.mtv.corp.google.com>
+ <c5f492c0-19a2-db8f-a114-d3cfe17ae6c6@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181022132027.GA15708@centauri.lan>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Niklas Cassel <niklas.cassel@linaro.org>
-Cc: nm@ti.com, devicetree@vger.kernel.org, rnayak@codeaurora.org, linux-pm@vger.kernel.org, sboyd@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, dri-devel@lists.freedesktop.org, bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org, freedreno@lists.freedesktop.org, georgi.djakov@linaro.org, linux-arm-kernel@lists.infradead.org, vireshk@kernel.org
+In-Reply-To: <c5f492c0-19a2-db8f-a114-d3cfe17ae6c6@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: Stephen Boyd <sboyd@kernel.org>, Craig <ctatlor97@gmail.com>, andy.gross@linaro.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org, linux@arm.linux.org.uk, linux@armlinux.org.uk, mark.rutland@arm.com, mturquette@baylibre.com, rjw@rjwysocki.net, robh@kernel.org, sboyd@codeaurora.org, sudeep.holla@arm.com, thierry.escande@linaro.org, viresh.kumar@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBPY3QgMjIsIDIwMTggYXQgMDM6MjA6MjdQTSArMDIwMCwgTmlrbGFzIENhc3NlbCB3
-cm90ZToKPiBPbiBNb24sIE9jdCAyMiwgMjAxOCBhdCAwNDowODoxMVBNICswNTMwLCBWaXJlc2gg
-S3VtYXIgd3JvdGU6Cj4gPiBPbiAxNS0xMC0xOCwgMDg6MzQsIEpvcmRhbiBDcm91c2Ugd3JvdGU6
-Cj4gPiA+IEkgYWdyZWUgdGhhdCBjb25zaXN0ZW5jeSBpcyBnb29kLiBCdXQgdGhlIEdQVSBpcyBi
-eSBkZXNpZ24gb3V0c2lkZSBvZiB0aGUKPiA+ID4gY29udHJvbCBvZiB0aGUgZ2VucGQgdW5pdmVy
-c2Ugc28gaXQgaXMgYnkgZGVzaWduIG5vdCB1c2luZyB0aGUgc2FtZSBmZWF0dXJlcy4KPiA+ID4g
-SXQgdW5mb3J0dW5hdGVseSBkb2VzIGhhcHBlbiB0byB1c2UgYSBzaW1pbGFyIG51bWJlciBpbiBh
-biBPUFAgYmluZGluZyB0bwo+ID4gPiBjb25zdHJ1Y3QgdGhlIGxldmVsIG1hcHBpbmcgYnV0IHNp
-bmNlIHdlIGNhbid0IHJlYWQgdGhlIGNtZC1kYiBmcm9tIHRoZSBHTVUKPiA+ID4gc3BhY2UgdGhp
-cyBpcyBhIG5lY2Vzc2FyeSBldmlsLgo+ID4gCj4gPiBXaGVyZSBkbyB5b3UgZGVmaW5lIGhvdyB0
-byB1c2UgdGhpcyBiaW5kaW5nIGluIGNhc2Ugb2YgR1BVPyBJIG1lYW4KPiA+IHNvbWUgRFQgYmlu
-ZGluZyBkb2MgbXVzdCBoYXZlIHNvbWUgaW5mb3JtYXRpb24gdG8gYXZvaWQgY29uZnVzaW9uIGFz
-Cj4gPiBhbGwgb3RoZXIgdXNlcnMgd2lsbCBoYXZlIHRoZSBxY29tLGxldmVsIHRoaW5nIGluIHRo
-ZSBnZW5wZCdzIE9QUAo+ID4gdGFibGUgd2hpY2ggR1BVIHdpbGwgaGF2ZSBpdCBkaXJlY3RseSB3
-aXRoaW4gaXRzIE9QUCB0YWJsZS4KPiAKPiBKb3JkYW4gc3VnZ2VzdGVkIHRvIHVzZSB0aGUgUlBN
-SF9SRUdVTEFUT1JfTEVWRUxfKiBkZWZpbmVzLgo+IFRoZXNlIGFyZSBkZWZpbmVkIGluIGluY2x1
-ZGUvZHQtYmluZGluZ3MvcG93ZXIvcWNvbS1ycG1wZC5oLgo+IAo+IFRoaXMgaGVhZGVyIGlzIG9u
-bHkgcmVmZXJlbmNlZCBpbgo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dl
-ci9xY29tLHJwbXBkLnR4dAo+IChXaGljaCB0aGlzIHBhdGNoIHNlcmllcyBkb2VzIG5vdCBzZWVt
-IHRvIHVzZS4pCj4gCj4gVGhpcyBwYXRjaCBzZXJpZXMgZG9lcyB1c2UKPiBEb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3Mvb3BwL3Fjb20tb3BwLnR4dAo+IGJ1dCBpdCBkb2VzIG5vdCBy
-ZWZlcmVuY2UgaW5jbHVkZS9kdC1iaW5kaW5ncy9wb3dlci9xY29tLXJwbXBkLmguCj4gCj4gU28g
-dG8gZnVydGhlciBhdm9pZCBjb25mdXNpb24sIHBlcmhhcHMgaXQgaXMgYmV0dGVyIHRvIGNyZWF0
-ZSBuZXcKPiBkZWZpbmVzLCBpbnN0ZWFkIG9mIHJldXNpbmcgdGhlIFJQTUhfUkVHVUxBVE9SX0xF
-VkVMXyogZGVmaW5lcz8KCkkgd291bGQgYmUgZmluZSB3aXRoIHRoYXQuIEknbSBhbHNvIG9rYXkg
-d2l0aCB1c2luZyB0aGUgcmF3IHZhbHVlcywgYnV0IEkKZmlndXJlIGl0IHdvdWxkIHJlc29sdmUg
-VmlyZXNoJ3MgY29uY2VybnMgaWYgaXQgd2FzIG1hZGUgY2xlYXIgdGhhdCB0aGUKdHdvIHVzZSBj
-YXNlcyB3ZXJlIHVzaW5nIHRoZSBzYW1lIHJhdyB2YWx1ZXMuIEl0IHdvdWxkIGFsc28gaGVscCB0
-aGUgR1BVCmZvbGtzIHZpc3VhbGl6ZSB0aGUgZXhwZWN0ZWQgbGV2ZWwgZm9yIGVhY2ggZnJlcXVl
-bmN5IGVudHJ5LgoKSm9yZGFuCi0tIApUaGUgUXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIElu
-Yy4gaXMgYSBtZW1iZXIgb2YgQ29kZSBBdXJvcmEgRm9ydW0sCmEgTGludXggRm91bmRhdGlvbiBD
-b2xsYWJvcmF0aXZlIFByb2plY3QKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
-ZHJpLWRldmVsCg==
+On Mon, Oct 22, 2018 at 09:39:03AM +0530, Sricharan R wrote:
+> Hi Stephen,
+> 
+> On 10/18/2018 1:46 AM, Stephen Boyd wrote:
+> > Quoting Stephen Boyd (2018-10-17 08:44:12)
+> >> Quoting Sricharan R (2018-09-20 06:03:31)
+> >>>
+> >>>
+> >>> On 9/20/2018 1:54 AM, Craig wrote:
+> >>>> Yup, this patch seems to have fixed the higher frequencies from the quick test I did.
+> >>>>
+> >>>       Thanks !!. Can i take that as 
+> >>>           Tested-by: Craig Tatlor <ctatlor97@gmail.com>  ?
+> >>>
+> >>
+> >> Is this patch series going to be resent?
+> >>
+> > 
+> > Nevermind. Looking at it I think I can apply all the clk ones and we're
+> > good to go. If you can send a followup patch series to change the
+> > registration and provider APIs to be clk_hw instead of clk based I would
+> > appreciate it.
+> > 
+> 
+> Sorry for the late response. Was away.
+> Only pending thing was separating out the binding documentation for the cpu-freq
+> driver and fixing the text in documentation.  That means, yes its fine to merge
+> the clk ones as you said. I will resend that. Also, will send a follow up series for clk_hw to
+> clk change as you mentioned separately.
+
+Hello Sricharan,
+
+Great to see that the clk parts has been marged to clk-next!
+
+Are you also planning on sending out a new version of the cpufreq driver
+consolidation parts?
+
+I'm planning on extending your consilidated cpufreq driver with support
+for msm8916 (Cortex-A53), where I plan to read PVS/speedbin, in order to
+set opp_supported_hw(), and also register with cpufreq (since Viresh/Ulf
+suggested that we shouldn't register with cpufreq in the CPR power-domain
+driver).
+
+
+Kind regards,
+Niklas
