@@ -1,56 +1,50 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH V12 00/14] Krait clocks + Krait CPUfreq
-Date: Mon, 22 Oct 2018 09:39:03 +0530
-Message-ID: <c5f492c0-19a2-db8f-a114-d3cfe17ae6c6@codeaurora.org>
-References: <1534248753-2440-1-git-send-email-sricharan@codeaurora.org>
- <2ae96741-94c0-ba4c-fc19-05d33179683c@codeaurora.org>
- <d682580d-5070-0271-197f-29d988172937@codeaurora.org>
- <D8FC68C0-2572-4A86-81D9-D0099D314A45@gmail.com>
- <F5A89365-C613-4FE2-AD32-DC0AC6DF380B@gmail.com>
- <fb81b8d5-3d24-b413-8d59-33cb70e46f8b@codeaurora.org>
- <153979105280.5275.841088095583550635@swboyd.mtv.corp.google.com>
- <153980741313.5275.10376918222904341760@swboyd.mtv.corp.google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v2 01/17] OPP: Allow to request stub voltage
+ regulators
+Date: Mon, 22 Oct 2018 11:06:36 +0530
+Message-ID: <20181022053636.ag62j3rj3vovbz53@vireshk-i7>
+References: <20181021205501.23943-1-digetx@gmail.com>
+ <20181021205501.23943-2-digetx@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <153980741313.5275.10376918222904341760@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181021205501.23943-2-digetx@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, Craig <ctatlor97@gmail.com>, andy.gross@linaro.org, david.brown@linaro.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org, linux@arm.linux.org.uk, linux@armlinux.org.uk, mark.rutland@arm.com, mturquette@baylibre.com, niklas.cassel@linaro.org, rjw@rjwysocki.net, robh@kernel.org, sboyd@codeaurora.org, sudeep.holla@arm.com, thierry.escande@linaro.org, viresh.kumar@linaro.org
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Stephen,
-
-On 10/18/2018 1:46 AM, Stephen Boyd wrote:
-> Quoting Stephen Boyd (2018-10-17 08:44:12)
->> Quoting Sricharan R (2018-09-20 06:03:31)
->>>
->>>
->>> On 9/20/2018 1:54 AM, Craig wrote:
->>>> Yup, this patch seems to have fixed the higher frequencies from the quick test I did.
->>>>
->>>       Thanks !!. Can i take that as 
->>>           Tested-by: Craig Tatlor <ctatlor97@gmail.com>  ?
->>>
->>
->> Is this patch series going to be resent?
->>
+On 21-10-18, 23:54, Dmitry Osipenko wrote:
+> Voltage regulators may be not available on some variations of HW, allow to
+> request stub voltage regulators by OPP core in a such case to reduce code
+> churning within drivers.
 > 
-> Nevermind. Looking at it I think I can apply all the clk ones and we're
-> good to go. If you can send a followup patch series to change the
-> registration and provider APIs to be clk_hw instead of clk based I would
-> appreciate it.
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt.c | 2 +-
+>  drivers/cpufreq/ti-cpufreq.c | 3 ++-
+>  drivers/opp/core.c           | 9 +++++++--
+>  include/linux/pm_opp.h       | 4 ++--
+>  4 files changed, 12 insertions(+), 6 deletions(-)
 > 
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index e58bfcb1169e..6ebca472ec76 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -196,7 +196,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	 */
+>  	name = find_supply_name(cpu_dev);
+>  	if (name) {
+> -		opp_table = dev_pm_opp_set_regulators(cpu_dev, &name, 1);
+> +		opp_table = dev_pm_opp_set_regulators(cpu_dev, &name, 1, false);
+>  		if (IS_ERR(opp_table)) {
+>  			ret = PTR_ERR(opp_table);
+>  			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
 
-Sorry for the late response. Was away.
-Only pending thing was separating out the binding documentation for the cpu-freq
-driver and fixing the text in documentation.  That means, yes its fine to merge
-the clk ones as you said. I will resend that. Also, will send a follow up series for clk_hw to
-clk change as you mentioned separately.
-
-Regards,
- Sricharan
+Have you actually tested this stuff ? The cpufreq-dt driver will
+probably fail to probe if the CPU node has a "-supply" property, but
+no regulator matching that.
 
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+viresh
