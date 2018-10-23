@@ -1,135 +1,273 @@
-From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Subject: [PATCH v2] PCI / PM: Allow runtime PM without callback functions
-Date: Tue, 23 Oct 2018 14:45:52 +0300
-Message-ID: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware bindings
+Date: Tue, 23 Oct 2018 17:23:34 +0530
+Message-ID: <CAP245DV4yK2u2tS_Jjgb1PBx+qkXPXBOs3w4THNDaBEw7WGDLg@mail.gmail.com>
+References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org> <1539257761-23023-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jean Delvare <jdelvare@suse.de>, Wolfram Sang <wsa@the-dreams.de>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1539257761-23023-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
-runtime PM") nullified the runtime PM suspend/resume callback pointers
-while keeping the runtime PM enabled.
+Hi Taniya,
 
-This causes that SMBus PCI device stays in D0 power state and sysfs
-/sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
-when the runtime PM framework attempts to autosuspend the device. This
-is due PCI bus runtime PM which checks for driver runtime PM callbacks
-and returns with -ENOSYS if they are not set.
+Both the patches are missing v9 in their subject line - this threw off
+patchwork when trying to download the patches.
 
-Since i2c-i801.c don't need to do anything device specific beyond PCI
-device power state management Jean Delvare proposed if this can be fixed
-in the PCI subsystem core level rather than adding dummy runtime PM
-callback functions in the PCI drivers.
+On Thu, Oct 11, 2018 at 5:06 PM Taniya Das <tdas@codeaurora.org> wrote:
+>
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
 
-Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
-that they allow change the PCI device power state during runtime PM
-transitions even if no runtime PM callback functions are defined.
+I tested these patches on the sdm845-mtp against 4.19 and found that
+the frequency gets stuck at the highest opp (the boost frequency)
+after running a couple of 'yes > /dev/null &' instances. Have you
+tested these against a mainline kernel?
 
-This change fixes the runtime PM regression on i2c-i801.c.
+See cpufreq statistics below:
 
-It is not obvious why the code had hard requirements for the runtime PM
-callbacks. Test has been here since the code was introduced by the
-commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
+linaro-test [rc=0]# cat policy?/scaling_cur_freq
+300000
+2803200
 
-On the other hand similar change than this was done to generic runtime
-PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
-generic runtime pm callbacks").
+linaro-test [rc=0]# cat policy?/stats/time_in_state
+300000 100840
+403200 388
+480000 71
+576000 54
+652800 22
+748800 11
+825600 5
+902400 5
+979200 9
+1056000 3
+1132800 2
+1228800 5
+1324800 8
+1420800 2
+1516800 1
+1612800 0
+1689600 0
+1766400 392
+825600 22048
+902400 21
+979200 4
+1056000 15
+1209600 6
+1286400 0
+1363200 1
+1459200 0
+1536000 0
+1612800 1
+1689600 0
+1766400 0
+1843200 2
+1920000 2
+1996800 0
+2092800 0
+2169600 0
+2246400 0
+2323200 0
+2400000 0
+2476800 0
+2553600 0
+2649600 0
+2707200 0
+2764800 0
+2784000 0
+2803200 79718
 
-Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
-Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: <stable@vger.kernel.org> # 4.18+
-Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
----
-I Cc'ed stable since this fixes the regression on i2c-i801.c. But we
-probably want to get some test coverage first before applying into
-stable. Queueing for v4.20 sounds reasonable to me.
-v2:
-Previous version had a potential NULL dereference in WARN_ONCE() statement
-noted by Jean Delvare. Now covered by pm && pm->runtime_suspend test.
-Also handling of error code from pm->runtime_suspend() moved under the
-same code block where callback is called.
-v1:
-This is related to my i2c-i801.c fix thread back in June which I completely
-forgot till now: https://lkml.org/lkml/2018/6/27/642
-Discussion back then was that it should be handled in the PCI PM instead
-of having dummy functions in the drivers. I wanted to respin with a patch.
----
- drivers/pci/pci-driver.c | 27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index bef17c3fca67..33f3f475e5c6 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -1251,30 +1251,29 @@ static int pci_pm_runtime_suspend(struct device *dev)
- 		return 0;
- 	}
- 
--	if (!pm || !pm->runtime_suspend)
--		return -ENOSYS;
--
- 	pci_dev->state_saved = false;
--	error = pm->runtime_suspend(dev);
--	if (error) {
-+	if (pm && pm->runtime_suspend) {
-+		error = pm->runtime_suspend(dev);
- 		/*
- 		 * -EBUSY and -EAGAIN is used to request the runtime PM core
- 		 * to schedule a new suspend, so log the event only with debug
- 		 * log level.
- 		 */
--		if (error == -EBUSY || error == -EAGAIN)
-+		if (error == -EBUSY || error == -EAGAIN) {
- 			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
- 				pm->runtime_suspend, error);
--		else
-+			return error;
-+		} else if (error) {
- 			dev_err(dev, "can't suspend (%pf returned %d)\n",
- 				pm->runtime_suspend, error);
--
--		return error;
-+			return error;
-+		}
- 	}
- 
- 	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
--	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-+	if (pm && pm->runtime_suspend
-+	    && !pci_dev->state_saved && pci_dev->current_state != PCI_D0
- 	    && pci_dev->current_state != PCI_UNKNOWN) {
- 		WARN_ONCE(pci_dev->current_state != prev,
- 			"PCI PM: State of device not saved by %pF\n",
-@@ -1292,7 +1291,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
- 
- static int pci_pm_runtime_resume(struct device *dev)
- {
--	int rc;
-+	int rc = 0;
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
-@@ -1306,14 +1305,12 @@ static int pci_pm_runtime_resume(struct device *dev)
- 	if (!pci_dev->driver)
- 		return 0;
- 
--	if (!pm || !pm->runtime_resume)
--		return -ENOSYS;
--
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
- 	pci_enable_wake(pci_dev, PCI_D0, false);
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
--	rc = pm->runtime_resume(dev);
-+	if (pm && pm->runtime_resume)
-+		rc = pm->runtime_resume(dev);
- 
- 	pci_dev->runtime_d3cold = false;
- 
--- 
-2.19.1
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 173 +++++++++++++++++++++
+>  1 file changed, 173 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..712643f
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,173 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +       Usage:          required
+> +       Value type:     <string>
+> +       Definition:     must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +       Usage:          required
+> +       Value type:     <phandle> From common clock binding.
+> +       Definition:     clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +       Usage:          required
+> +       Value type:     <string> From common clock binding.
+> +       Definition:     must be "xo", "cpu_clk".
+> +
+> +- reg
+> +       Usage:          required
+> +       Value type:     <prop-encoded-array>
+> +       Definition:     Addresses and sizes for the memory of the HW bases in
+> +                       each frequency domain.
+> +- reg-names
+> +       Usage:          Optional
+> +       Value type:     <string>
+> +       Definition:     Frequency domain name i.e.
+> +                       "freq-domain0", "freq-domain1".
+> +
+> +- freq-domain-cells:
+> +       Usage:          required.
+> +       Definition:     Number of cells in a freqency domain specifier.
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+> +
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +       cpus {
+> +               #address-cells = <2>;
+> +               #size-cells = <0>;
+> +
+> +               CPU0: cpu@0 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x0>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_0>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_0: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                               L3_0: l3-cache {
+> +                                     compatible = "cache";
+> +                               };
+> +                       };
+> +               };
+> +
+> +               CPU1: cpu@100 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x100>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_100>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_100: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU2: cpu@200 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x200>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_200>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_200: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU3: cpu@300 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x300>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_300>;
+> +                       qcom,freq-domain = <&cpufreq_hw 0>;
+> +                       L2_300: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU4: cpu@400 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x400>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_400>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_400: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU5: cpu@500 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x500>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_500>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_500: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU6: cpu@600 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x600>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_600>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_600: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +
+> +               CPU7: cpu@700 {
+> +                       device_type = "cpu";
+> +                       compatible = "qcom,kryo385";
+> +                       reg = <0x0 0x700>;
+> +                       enable-method = "psci";
+> +                       next-level-cache = <&L2_700>;
+> +                       qcom,freq-domain = <&cpufreq_hw 1>;
+> +                       L2_700: l2-cache {
+> +                               compatible = "cache";
+> +                               next-level-cache = <&L3_0>;
+> +                       };
+> +               };
+> +       };
+> +
+> + soc {
+> +       cpufreq_hw: cpufreq@17d43000 {
+> +               compatible = "qcom,cpufreq-hw";
+> +               reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+> +               reg-names = "freq-domain0", "freq-domain1";
+> +
+> +               clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+> +               clock-names = "xo", "cpu_clk";
+> +
+> +               #freq-domain-cells = <1>
+> +
+> +       };
+> +}
+> --
+> Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
+> of the Code Aurora Forum, hosted by the  Linux Foundation.
+>
