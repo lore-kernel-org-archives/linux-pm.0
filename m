@@ -1,146 +1,69 @@
-From: Jean Delvare <jdelvare@suse.de>
-Subject: Re: [PATCH v2] PCI / PM: Allow runtime PM without callback
- functions
-Date: Tue, 23 Oct 2018 15:58:54 +0200
-Message-ID: <20181023155854.35cd1210@endymion>
-References: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: Re: [PATCH 0/15] Add support for OLPC XO 1.75 Embedded Controller
+Date: Tue, 23 Oct 2018 19:03:26 +0200
+Message-ID: <734019816c2a8e1930127332249b1180f6d0cddc.camel@v3.sk>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+ <CAHp75Vd_9RmfDFnSzkNOQyfKVOR1tfzbMPy0_J7_DfZ2e4A16g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20181023114552.22958-1-jarkko.nikula@linux.intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, stable@vger.kernel.org
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <CAHp75Vd_9RmfDFnSzkNOQyfKVOR1tfzbMPy0_J7_DfZ2e4A16g@mail.gmail.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, quozl@laptop.org, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-spi <linux-spi@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>, Andy Shevchenko <andy@infradead.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 23 Oct 2018 14:45:52 +0300, Jarkko Nikula wrote:
-> Commit a9c8088c7988 ("i2c: i801: Don't restore config registers on
-> runtime PM") nullified the runtime PM suspend/resume callback pointers
-> while keeping the runtime PM enabled.
+On Fri, 2018-10-19 at 16:57 +0300, Andy Shevchenko wrote:
+> On Wed, Oct 10, 2018 at 8:23 PM Lubomir Rintel <lkundrak@v3.sk> wrote:
+> > Hi.
+> > 
+> > This patchset adds support for the Embedded Controller on an OLPC XO
+> > 1.75 machine. OLPC XO 1.75 is a MMP2 based ARM laptop. It plugs into
+> > the existing OLPC platform infrastructure, currently used by the x86
+> > based models.
+> > 
+> > The EC operates in SPI master mode, meaning the SOC is the SPI slave. It
+> > uses extra handshake signal to signal readiness of SOC to accept data
+> > from EC and to initiate a transaction if SOC wishes to submit data.
+> > 
+> > The SPI slave support for MMP2 was submitted separately:
+> > https://lore.kernel.org/lkml/20181010170936.316862-1-lkundrak@v3.sk/T/#t
+> > 
+> > THe "power: supply: olpc_battery: correct the temperature" patch was
 > 
-> This causes that SMBus PCI device stays in D0 power state and sysfs
-> /sys/bus/pci/devices/[SMBus PCI ID]/power/runtime_status shows "error"
-> when the runtime PM framework attempts to autosuspend the device. This
-> is due PCI bus runtime PM which checks for driver runtime PM callbacks
-> and returns with -ENOSYS if they are not set.
+> The
 > 
-> Since i2c-i801.c don't need to do anything device specific beyond PCI
-> device power state management Jean Delvare proposed if this can be fixed
-> in the PCI subsystem core level rather than adding dummy runtime PM
-> callback functions in the PCI drivers.
+> > already sent out separately, but I'm including it because the last
+> > commit of the set depends on it.
+> > 
+> > Tested to work on an OLPC XO 1.75 and also tested not to break x86
+> > support with an OLPC XO 1 machine. I don't have a XO 1.5, but it's
+> > unlikely this breaks it when XO 1 works.
+> > 
+> > Thanks in advance for reviews and feedback of any kind.
 > 
-> Change the pci_pm_runtime_suspend()/pci_pm_runtime_resume() semantics so
-> that they allow change the PCI device power state during runtime PM
-> transitions even if no runtime PM callback functions are defined.
-> 
-> This change fixes the runtime PM regression on i2c-i801.c.
-> 
-> It is not obvious why the code had hard requirements for the runtime PM
-> callbacks. Test has been here since the code was introduced by the
-> commit 6cbf82148ff2 ("PCI PM: Run-time callbacks for PCI bus type").
-> 
-> On the other hand similar change than this was done to generic runtime
-> PM callbacks way back in the commit 05aa55dddb9e ("PM / Runtime: Lenient
-> generic runtime pm callbacks").
-> 
-> Fixes: a9c8088c7988 ("i2c: i801: Don't restore config registers on runtime PM")
-> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: <stable@vger.kernel.org> # 4.18+
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> ---
-> I Cc'ed stable since this fixes the regression on i2c-i801.c. But we
-> probably want to get some test coverage first before applying into
-> stable. Queueing for v4.20 sounds reasonable to me.
-> v2:
-> Previous version had a potential NULL dereference in WARN_ONCE() statement
-> noted by Jean Delvare. Now covered by pm && pm->runtime_suspend test.
-> Also handling of error code from pm->runtime_suspend() moved under the
-> same code block where callback is called.
-> v1:
-> This is related to my i2c-i801.c fix thread back in June which I completely
-> forgot till now: https://lkml.org/lkml/2018/6/27/642
-> Discussion back then was that it should be handled in the PCI PM instead
-> of having dummy functions in the drivers. I wanted to respin with a patch.
-> ---
->  drivers/pci/pci-driver.c | 27 ++++++++++++---------------
->  1 file changed, 12 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index bef17c3fca67..33f3f475e5c6 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -1251,30 +1251,29 @@ static int pci_pm_runtime_suspend(struct device *dev)
->  		return 0;
->  	}
->  
-> -	if (!pm || !pm->runtime_suspend)
-> -		return -ENOSYS;
-> -
->  	pci_dev->state_saved = false;
-> -	error = pm->runtime_suspend(dev);
-> -	if (error) {
-> +	if (pm && pm->runtime_suspend) {
-> +		error = pm->runtime_suspend(dev);
->  		/*
->  		 * -EBUSY and -EAGAIN is used to request the runtime PM core
->  		 * to schedule a new suspend, so log the event only with debug
->  		 * log level.
->  		 */
-> -		if (error == -EBUSY || error == -EAGAIN)
-> +		if (error == -EBUSY || error == -EAGAIN) {
->  			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
->  				pm->runtime_suspend, error);
-> -		else
-> +			return error;
-> +		} else if (error) {
->  			dev_err(dev, "can't suspend (%pf returned %d)\n",
->  				pm->runtime_suspend, error);
-> -
-> -		return error;
-> +			return error;
-> +		}
->  	}
->  
->  	pci_fixup_device(pci_fixup_suspend, pci_dev);
->  
-> -	if (!pci_dev->state_saved && pci_dev->current_state != PCI_D0
-> +	if (pm && pm->runtime_suspend
-> +	    && !pci_dev->state_saved && pci_dev->current_state != PCI_D0
->  	    && pci_dev->current_state != PCI_UNKNOWN) {
->  		WARN_ONCE(pci_dev->current_state != prev,
->  			"PCI PM: State of device not saved by %pF\n",
-> @@ -1292,7 +1291,7 @@ static int pci_pm_runtime_suspend(struct device *dev)
->  
->  static int pci_pm_runtime_resume(struct device *dev)
->  {
-> -	int rc;
-> +	int rc = 0;
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
-> @@ -1306,14 +1305,12 @@ static int pci_pm_runtime_resume(struct device *dev)
->  	if (!pci_dev->driver)
->  		return 0;
->  
-> -	if (!pm || !pm->runtime_resume)
-> -		return -ENOSYS;
-> -
->  	pci_fixup_device(pci_fixup_resume_early, pci_dev);
->  	pci_enable_wake(pci_dev, PCI_D0, false);
->  	pci_fixup_device(pci_fixup_resume, pci_dev);
->  
-> -	rc = pm->runtime_resume(dev);
-> +	if (pm && pm->runtime_resume)
-> +		rc = pm->runtime_resume(dev);
->  
->  	pci_dev->runtime_d3cold = false;
->  
+> Thanks for the series.
+> I'm about to review the patch 6, otherwise read my comments for the
+> rest and consider addressing them.
 
-Looks good to me.
+Thank you very much for your feedback, it is very appreciated.
 
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
+The XO 1.75 patch set has grown somewhat larger than I'm comfortable
+with, so I need some time to digest and address the review. I hope I'll
+be able to post a v2 some time after the 4.20 merge window closes and
+respond to questions raised in individual patches before that.
 
--- 
-Jean Delvare
-SUSE L3 Support
+> 
+> > Lubo
+> > 
+> 
+> 
