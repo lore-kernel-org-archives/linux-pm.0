@@ -1,70 +1,56 @@
-From: Brian Masney <masneyb@onstation.org>
-Subject: Re: [PATCH RFC 1/5] dt-bindings: power: supply: bq24190_charger: add
- bq24192 and usb-otg-vbus
-Date: Mon, 22 Oct 2018 20:04:39 -0400
-Message-ID: <20181023000439.neadgrmsyg2t6da4@38e519447dc0>
-References: <20181001053005.18906-1-masneyb@onstation.org>
- <20181001053005.18906-2-masneyb@onstation.org>
- <20181015185252.GA8056@bogus>
+From: Arun Sudhilal <getarunks-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] mm: convert totalram_pages, totalhigh_pages and
+ managed_pages to atomic.
+Date: Tue, 23 Oct 2018 10:16:51 +0530
+Message-ID: <CABOM9Zpq41Ox8wQvsNjgfCtwuqh6CnyeW1B09DWa1TQN+JKf0w@mail.gmail.com>
+References: <1540229092-25207-1-git-send-email-arunks@codeaurora.org>
+ <20181022181122.GK18839@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181015185252.GA8056@bogus>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: andy.gross@linaro.org, sre@kernel.org, mark.rutland@arm.com, david.brown@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, jonathan@marek.ca
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20181022181122.GK18839-2MMpYkNvuYDjFM9bn6wA6Q@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: mhocko-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: snitzer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org, kemi.wang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, cl-vYTEC60ixJUAvxtiuMwx3w@public.gmane.org, kys-0li6OtcxBFHby3iVrkZq2A@public.gmane.org, sumit.semwal-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, David1.Zhou-5C7GfCeVMHo@public.gmane.org, ptesarik-IBi9RG/b67k@public.gmane.org, mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org, ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jejb-6jwH94ZQLHl74goWV3ctuw@public.gmane.org, kasan-dev-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, marcos.souza.org-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, steven.hill-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, rientjes-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, anthony.yznaga-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, neelx-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, guro-b10kYP2dOMg@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, vbabka-AlSwsSmVLrQ@public.gmane.org, linux-um-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rppt-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, trond.myklebust-F/q8l9xzQnoyLce1RVWEUA@public.gmane.org, anton-yrGDUoBaLx3QT0dZR+AlfA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, malat-8fiUuRrzOP0dnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, rdunlap-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cyrilbur@gma
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+On Mon, Oct 22, 2018 at 11:41 PM Michal Hocko <mhocko-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>
+> On Mon 22-10-18 22:53:22, Arun KS wrote:
+> > Remove managed_page_count_lock spinlock and instead use atomic
+> > variables.
+>
 
-On Mon, Oct 15, 2018 at 01:52:52PM -0500, Rob Herring wrote:
-> On Mon, Oct 01, 2018 at 01:30:01AM -0400, Brian Masney wrote:
-> > Add support for the ti,bq24192 variant and a child node for the
-> > usb-otg-vbus regulator.
-> > 
-> > Signed-off-by: Brian Masney <masneyb@onstation.org>
-> > ---
-> >  Documentation/devicetree/bindings/power/supply/bq24190.txt | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> > index 9e517d307070..8f2560824a97 100644
-> > --- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> > +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> > @@ -3,6 +3,7 @@ TI BQ24190 Li-Ion Battery Charger
-> >  Required properties:
-> >  - compatible: contains one of the following:
-> >      * "ti,bq24190"
-> > +    * "ti,bq24192"
-> >      * "ti,bq24192i"
-> >  - reg: integer, I2C address of the charger.
-> >  - interrupts[-extended]: configuration for charger INT pin.
-> > @@ -19,6 +20,12 @@ Optional properties:
-> >  - ti,system-minimum-microvolt: when power is connected and the battery is below
-> >    minimum system voltage, the system will be regulated above this setting.
-> >  
-> > +child nodes:
-> > +- usb-otg-vbus:
-> > +  Usage: optional
-> > +  Description: Regulator that is used to control the VBUS voltage direction for
-> > +               either USB host mode or for charging on the OTG port.
-> 
-> What about the regulator properties?
+Hello Michal,
+> I assume this has been auto-generated. If yes, it would be better to
+> mention the script so that people can review it and regenerate for
+> comparision. Such a large change is hard to review manually.
 
-There are no regulator properties underneath this child node. This is a
-similar setup to what is described in
-Documentation/devicetree/bindings/power/supply/qcom_smbb.txt.
+Changes were made partially with script.  For totalram_pages and
+totalhigh_pages,
 
-If this is the correct way to do this, then perhaps I can add the
-usb_otg_vbus node to the example in v2.
+find dir -type f -exec sed -i
+'s/totalram_pages/atomic_long_read(\&totalram_pages)/g' {} \;
+find dir -type f -exec sed -i
+'s/totalhigh_pages/atomic_long_read(\&totalhigh_pages)/g' {} \;
 
-Brian
+For managed_pages it was mostly manual edits after using,
+find mm/ -type f -exec sed -i
+'s/zone->managed_pages/atomic_long_read(\&zone->managed_pages)/g' {}
+\;
 
-> > +
-> >  Notes:
-> >  - Some circuit boards wire the chip's "OTG" pin high (enabling 500mA default
-> >    charge current on USB SDP ports, among other features). To simulate this on
-> > -- 
-> > 2.17.1
-> > 
+Regards,
+Arun
+
+> --
+> Michal Hocko
+> SUSE Labs
