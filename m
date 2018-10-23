@@ -1,74 +1,46 @@
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-Subject: [PATCH v2] cpufreq: intel_pstate: Fix compilation for !CONFIG_ACPI
-Date: Tue, 23 Oct 2018 21:54:04 +0200
-Message-ID: <20181023195403.GA3094@light.dominikbrodowski.net>
-References: <20181023185429.GA6756@light.dominikbrodowski.net>
- <e8e018e267434cabc2b8db434a3576c082ab3fff.camel@linux.intel.com>
- <20181023193405.pxfl4vyazt7rtc3x@isilmar-4.linta.de>
- <b95b247b5dd85b0839a9fa6167fd1682578fb92b.camel@linux.intel.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH] thermal: bcm2835: enable hwmon explicitly
+Date: Tue, 23 Oct 2018 23:20:18 +0200
+Message-ID: <12ca4f71-8ba9-91dd-f5a0-0c72c91401ef@gmail.com>
+References: <20181021215848.5827-1-matthias.bgg@kernel.org>
+ <459136891.184150.1540296101955@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <b95b247b5dd85b0839a9fa6167fd1682578fb92b.camel@linux.intel.com>
+In-Reply-To: <459136891.184150.1540296101955@email.1und1.de>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>, matthias.bgg@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, bcm-kernel-feedback-list@broadcom.com, eric@anholt.net
+Cc: geert+renesas@glider.be, pmladek@suse.com, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Matthias Brugger <mbrugger@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-While at it, add a few comments which config options #ifdef
-and #else statements refer to.
+Hi Stefan,
 
-Fixes: 86d333a8cc7f ("cpufreq: intel_pstate: Add base_frequency attribute")
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+On 23/10/2018 14:01, Stefan Wahren wrote:
+> Hi Matthias,
+> 
+>> matthias.bgg@kernel.org hat am 21. Oktober 2018 um 23:58 geschrieben:
+>>
+>>
+>> From: Matthias Brugger <mbrugger@suse.com>
+>>
+>> By defaul of-based thermal driver do not enable hwmon.
+>> This patch does this explicitly, so that the temperature can be read
+>> through the common hwmon sysfs.
+>>
+>> Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+> 
+> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+> 
+> I'm just curious which board and config did you use for your tests?
+> 
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 49c0abf2d48f..9578312e43f2 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -386,16 +386,11 @@ static int intel_pstate_get_cppc_guranteed(int cpu)
- 	return cppc_perf.guaranteed_perf;
- }
- 
--#else
-+#else /* CONFIG_ACPI_CPPC_LIB */
- static void intel_pstate_set_itmt_prio(int cpu)
- {
- }
--
--static int intel_pstate_get_cppc_guranteed(int cpu)
--{
--	return -ENOTSUPP;
--}
--#endif
-+#endif /* CONFIG_ACPI_CPPC_LIB */
- 
- static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
- {
-@@ -477,7 +472,7 @@ static void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
- 
- 	acpi_processor_unregister_performance(policy->cpu);
- }
--#else
-+#else /* CONFIG_ACPI */
- static inline void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
- {
- }
-@@ -490,7 +485,14 @@ static inline bool intel_pstate_acpi_pm_profile_server(void)
- {
- 	return false;
- }
--#endif
-+#endif /* CONFIG_ACPI */
-+
-+#ifndef CONFIG_ACPI_CPPC_LIB
-+static int intel_pstate_get_cppc_guranteed(int cpu)
-+{
-+	return -ENOTSUPP;
-+}
-+#endif /* CONFIG_ACPI_CPPC_LIB */
- 
- static inline void update_turbo_state(void)
- {
+I use the RPi3 B+. I suppose when asking about the config, you want to know if I
+also enable the RASPBERRYPI_HWMON, yes I enable that as well. Actually this
+patch is for openSUSE Leap. You can find the whole config (if you are
+interested) here:
+https://kernel.suse.com/cgit/kernel-source/tree/config/arm64/default?h=SLE15
+
+Regards,
+Matthias
