@@ -1,52 +1,64 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH] arm64: dts: sdm845: Add PSCI cpuidle low power states
-Date: Tue, 23 Oct 2018 11:36:03 -0700
-Message-ID: <CAD=FV=XB9diR_n1TB4+wUjVaRf0VAmCMgkSbtuOSNO5pkrQ8zg@mail.gmail.com>
-References: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Oskari Lemmela <oskari@lemmela.net>
+Subject: [PATCH v5 00/11] AXP8x3 AC and battery power supply support
+Date: Tue, 23 Oct 2018 21:53:19 +0300
+Message-ID: <20181023185330.10472-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Raju P L S S S N <rplsssn@codeaurora.org>
-Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Lina Iyer <ilina@codeaurora.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Jonathan Cameron <jic23@kernel.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Vasily Khoruzhick <anarsoul@gmail.com>, Quentin Schulz <quentin.schulz@free-electrons.com>, Oskari Lemmela <oskari@lemmela.net>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+AXP813 AC power supply support with input current and
+voltage limiting support.
 
-On Mon, Oct 15, 2018 at 10:02 AM Raju P.L.S.S.S.N
-<rplsssn@codeaurora.org> wrote:
-> +               idle-states {
-> +                       entry-method = "psci";
-> +
-> +                       C0_CPU_SPC: c0_spc {
+AXP803 AC and battery power supply support.
 
-nit: all these nodes should have dashes instead of spaces in the node
-names (labels can still have spaces).  AKA:
+Changes in v5:
+* Return correct input current limit for values 0x6 and 0x7
+* Add specific compatibles for AXP803
+* Change commit messages
+* Add Vasily Khoruzhick Pinebook DTS patch
 
-C0_CPU_SPC: c0-spc {
+Changes in v4:
+* Change order of axp20x-gpio in axp20x.c
+* Fix indentation and spaces to tabs in axp20x.c
 
+Changes in v3:
+* Reorder ac_power_supply DT node
+* Rename axp20x_ac_power_set_property function
+* Split mfd commit 
 
-> +                               compatible = "arm,idle-state";
-> +                               arm,psci-suspend-param = <0x40000003>;
-> +                               entry-latency-us = <350>;
-> +                               exit-latency-us = <461>;
-> +                               min-residency-us = <1890>;
-> +                               local-timer-stop;
-> +                               idle-state-name = "pc";
+Changes in v2:
+* Reuse axp813 compatibles for axp803
+* Refactor axp20x_ac_power.c
 
-It seems weird that the idle state with the node name "spc" has the
-name "pc" and the idle state with the node name "pc" has the name
-"rail pc".  Can this be more consistent or is there a reason why they
-need to be mismatched?
+Oskari Lemmela (10):
+  dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
+  dt-bindings: power: supply: axp20x: add AXP803 power bindings
+  dt-bindings: gpio: gpio-axp209: add AXP803 GPIO bindings
+  dt-bindings: iio: adc: add AXP803 ADC bindings
+  ARM: dts: axp81x: add AC power supply subnode
+  arm64: dts: allwinner: axp803: add AC and battery power supplies
+  arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
+  power: supply: add AC power supply driver for AXP813
+  mfd: axp20x: Add AC power supply cell for AXP813
+  mfd: axp20x: Add supported cells for AXP803
 
-Also: AAHTUFSWDKWTM (acronyms are hard to understand for someone who
-doesn't know what they mean).  If you really need to use an the
-acronyms "PC" and "SPC" please document them somewhere.  In the very
-least the commit message, but having a comment in the file is good
-too.  ...or (even better) don't use the acronym and spell out what
-you're talking about.  Please correct me if I'm wrong, but I don't
-think it's obvious what the "PC" and "SPC" idle states mean.
+Vasily Khoruzhick (1):
+  arm64: dts: allwinner: a64: pinebook: enable power supplies
 
+ .../devicetree/bindings/gpio/gpio-axp209.txt  |  2 +
+ .../bindings/iio/adc/axp20x_adc.txt           |  2 +
+ .../bindings/power/supply/axp20x_ac_power.txt |  4 +
+ .../bindings/power/supply/axp20x_battery.txt  |  1 +
+ arch/arm/boot/dts/axp81x.dtsi                 |  5 +
+ arch/arm64/boot/dts/allwinner/axp803.dtsi     | 33 +++++++
+ .../dts/allwinner/sun50i-a64-pinebook.dts     |  8 ++
+ .../allwinner/sun50i-a64-sopine-baseboard.dts |  8 ++
+ drivers/mfd/axp20x.c                          | 20 ++++
+ drivers/power/supply/axp20x_ac_power.c        | 94 +++++++++++++++++++
+ include/linux/mfd/axp20x.h                    |  1 +
+ 11 files changed, 178 insertions(+)
 
--Doug
+-- 
+2.17.1
