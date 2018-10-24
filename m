@@ -1,43 +1,171 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Subject: Re: [PATCH 2/3] net: ethernet: Remove dummy runtime PM callbacks from
- Renesas drivers
-Date: Wed, 24 Oct 2018 20:44:07 +0300
-Message-ID: <ecf01d95-f973-5294-932f-41e2a68decf3@cogentembedded.com>
-References: <20181024135134.28456-1-jarkko.nikula@linux.intel.com>
- <20181024135134.28456-3-jarkko.nikula@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power-supply changes for 4.20
+Date: Wed, 24 Oct 2018 20:11:21 +0200
+Message-ID: <20181024181121.3pw6o3qqcx6zd7ob@earth.universe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <20181024135134.28456-3-jarkko.nikula@linux.intel.com>
-Content-Language: en-MW
-Sender: netdev-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>, linux-pm@vger.kernel.org
-Cc: linux-i2c@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bocorhr2qhyfdbao"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello!
 
-On 10/24/2018 04:51 PM, Jarkko Nikula wrote:
+--bocorhr2qhyfdbao
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Platform drivers don't need dummy runtime PM callbacks that just return
-> success in order to have runtime PM happening. This has changed since
-> following commits:
-> 
-> 05aa55dddb9e ("PM / Runtime: Lenient generic runtime pm callbacks")
-> 543f2503a956 ("PM / platform_bus: Allow runtime PM by default")
-> 8b313a38ecff ("PM / Platform: Use generic runtime PM callbacks directly")
+Hi Linus,
 
-   Wow, these are old! :-)
+All patches have been in linux-next for like 4 weeks except for
+ones, that have only been in there for a couple of days. Those
+are simple fixes not touching any real code, so it should be fine.
+Please find the details are in the tag. There shouldn't be any
+problems merging this.
 
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> ---
-> Only build tested.
+-- Sebastian
 
-   Seems long overdue...
+The following changes since commit 5b394b2ddf0347bef56e50c69a58773c94343ff3:
 
-[...]
+  Linux 4.19-rc1 (2018-08-26 14:11:59 -0700)
 
-Reviewed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+are available in the Git repository at:
 
-MBR, Sergei
+  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.20
+
+for you to fetch changes up to cfb347979e71d3ce6be59a988b3357f541c9eacf:
+
+  power: max8925: mark expected switch fall-through (2018-10-21 21:33:35 +0200)
+
+----------------------------------------------------------------
+power supply and reset changes for the v4.20 series
+
+* Add Spreadtrum SC2731 charger driver
+* bq25890-charger: Add BQ25896 support
+* bq27xxx-battery: Add support for BQ27411
+* qcom-pon: Add pms405 pon support
+* cros-charger: add support for dedicated port
+* misc. fixes
+
+----------------------------------------------------------------
+Andreas Kemnade (2):
+      power: supply: twl4030_charger: fix charging current out-of-bounds
+      power: supply: twl4030_charger: disable eoc interrupt on linear charge
+
+Angus Ainslie (Purism) (4):
+      power: supply: bq25890_charger: Add debugging output of failed initialization
+      power: supply: bq25890_charger: Remove unused table entries
+      power: supply: bq25890_charger: Add the BQ25896 part
+      power: supply: bq25890_charger: Read back the current battery voltage
+
+Baolin Wang (2):
+      dt-bindings: power: Add Spreadtrum SC2731 charger documentation
+      power: supply: Add Spreadtrum SC2731 charger support
+
+Claudiu Beznea (6):
+      power: reset: at91-poweroff: switch to slow clock before shutdown
+      power: reset: at91-poweroff: use only one poweroff function
+      power: reset: at91-poweroff: make mpddrc_base part of struct shdwc
+      power: reset: at91-poweroff: make sclk part of struct shdwc
+      power: reset: at91-poweroff: rename at91_shdwc_base member of struct shdwc
+      power: reset: at91-poweroff: do not procede if at91_shdwc is allocated
+
+Colin Ian King (2):
+      power: supply: cros_usbpd: remove unused pointer 'dev'
+      power: supply: fix spelling mistake "Gauage" -> "Gauge"
+
+Dan Carpenter (1):
+      power: supply: ab8500_fg: silence uninitialized variable warnings
+
+David Lechner (1):
+      power: supply: sysfs: ratelimit property read error message
+
+Ding Xiang (1):
+      power: supply: ab8500_fg: fix obsolete function
+
+Fabien Parent (2):
+      mfd: cros: add charger port count command definition
+      power: supply: cros: add support for dedicated port
+
+Gustavo A. R. Silva (1):
+      power: max8925: mark expected switch fall-through
+
+Krzysztof Kozlowski (1):
+      power: supply: maxim: Add SPDX license identifiers
+
+Kuninori Morimoto (1):
+      power: reset: convert to SPDX identifiers
+
+Liu Xiang (1):
+      power: supply: bq27xxx: Add support for BQ27411
+
+Sebastian Reichel (2):
+      Merge tag 'psy-at91-poweroff-immutable-for-v4.20-signed' into psy-next
+      Merge tag 'psy-mfd-cros-immutable-for-v4.20-signed' into psy-next
+
+Tomasz Figa (1):
+      power: supply: max8998-charger: Fix platform data retrieval
+
+Vinod Koul (1):
+      power: reset: qcom-pon: Add pms405 pon support
+
+kbuild test robot (1):
+      power: supply: bq25890_charger: fix semicolon.cocci warnings
+
+ .../devicetree/bindings/power/reset/qcom,pon.txt   |   5 +-
+ .../devicetree/bindings/power/supply/bq25890.txt   |   3 +
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |   1 +
+ .../bindings/power/supply/sc2731_charger.txt       |  40 ++
+ arch/arm/mach-at91/pm_suspend.S                    |   8 +
+ drivers/power/reset/at91-sama5d2_shdwc.c           | 119 +++--
+ drivers/power/reset/qcom-pon.c                     |   1 +
+ drivers/power/reset/rmobile-reset.c                |   5 +-
+ drivers/power/supply/Kconfig                       |   7 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/ab8500_fg.c                   |  52 ++-
+ drivers/power/supply/bq25890_charger.c             |  62 ++-
+ drivers/power/supply/bq27xxx_battery.c             |   9 +
+ drivers/power/supply/bq27xxx_battery_i2c.c         |   2 +
+ drivers/power/supply/cros_usbpd-charger.c          | 117 ++++-
+ drivers/power/supply/ds2780_battery.c              |   2 +-
+ drivers/power/supply/ds2781_battery.c              |   2 +-
+ drivers/power/supply/ds2782_battery.c              |   2 +-
+ drivers/power/supply/max14577_charger.c            |  22 +-
+ drivers/power/supply/max17040_battery.c            |  18 +-
+ drivers/power/supply/max17042_battery.c            |  32 +-
+ drivers/power/supply/max77693_charger.c            |  22 +-
+ drivers/power/supply/max8925_power.c               |   1 +
+ drivers/power/supply/max8997_charger.c             |  26 +-
+ drivers/power/supply/max8998_charger.c             |  28 +-
+ drivers/power/supply/power_supply_sysfs.c          |   3 +-
+ drivers/power/supply/sc2731_charger.c              | 504 +++++++++++++++++++++
+ drivers/power/supply/twl4030_charger.c             |  30 +-
+ include/linux/mfd/cros_ec_commands.h               |  10 +
+ include/linux/power/bq27xxx_battery.h              |   1 +
+ 30 files changed, 922 insertions(+), 213 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
+ create mode 100644 drivers/power/supply/sc2731_charger.c
+
+--bocorhr2qhyfdbao
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvQtcYACgkQ2O7X88g7
++pqJ3A//cZijmASolDKhjKNiJc/HblfuNEnHjPeSczx8p3CuEt7V00bvKoNLG5MX
+qnxiUtV6PHdW7gpPBTf/3j2MG/qX8DkM5pbYu4kedPkQzouA8X1RingRPEqx90AW
+P9TC21lW18t+20qoRDU10P6HcWMsufn54HclMOC8QILi4S5UvMFJoicHoOP3hROL
+alFb4v+1tqNZ78YFgtaoATdhP5VB+SSrOzU5IYJhxN1US9u85Qz23gE2X3wATCFD
+H6vuTlk3g2YSj9k+hj99c0TMCU/sRR/5sVbRfpXjWN46s9bbgNc1ffGsGtIuzUYa
+Bp2Goc7xTeLKuGbkd08TNKtBPWT16x+fWkZkGcG6ZR6rFte/UU7fVSyZrTKVv01h
+mh+M765xATvTR2mtJz0jyxuyYZmfdr25tlihn5pRKrS5P2LwoFl7WrenBpSAB90d
+CeDjruaWLz+pbi4egI14batY+ytgIJsH0rfk0i3mXWPBNbrTO7wmBLYu9A30kgy5
+6FyWjseH+rsT1qe5ZA+eRWGrCbF5XLGjX0ljmDXmVMfoUCEbibwSazpcSV8kRFin
+iBNzpTKGVyoJAmAGO5t0sch+mjm4m2CNVkNX2IarY7iON7sr32c7GVj9hbQ1WX6a
+n9g93IKcpVCAWjXwPFMVorwH8gszDn7tJbrP1whwCLQztta6r/I=
+=Kcv9
+-----END PGP SIGNATURE-----
+
+--bocorhr2qhyfdbao--
