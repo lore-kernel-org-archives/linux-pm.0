@@ -1,51 +1,277 @@
 From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH RESEND] drivers: qcom: rpmh: avoid sending sleep/wake
- sets immediately
-Date: Wed, 24 Oct 2018 11:04:29 -0600
-Message-ID: <20181024170429.GE17444@codeaurora.org>
-References: <1540315748-29158-1-git-send-email-rplsssn@codeaurora.org>
+Subject: Re: [PATCH v3 1/3] drivers: qcom: rpmh-rsc: simplify TCS locking
+Date: Wed, 24 Oct 2018 11:07:16 -0600
+Message-ID: <20181024170716.GF17444@codeaurora.org>
+References: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org>
+ <1539050912-25749-2-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1540315748-29158-1-git-send-email-rplsssn@codeaurora.org>
+In-Reply-To: <1539050912-25749-2-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
 Cc: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 23 2018 at 11:29 -0600, Raju P.L.S.S.S.N wrote:
->Fix the redundant call being made to send the sleep and wake requests
->immediately to the controller.
+On Tue, Oct 09 2018 at 20:08 -0600, Raju P.L.S.S.S.N wrote:
+>tcs->lock was introduced to serialize access with in TCS group. But
+>even without tcs->lock, drv->lock is serving the same purpose. So
+>use single drv->lock.
 >
->As per the patch[1], the sleep and wake request votes are cached in rpmh
->controller and sent during rpmh_flush(). These requests needs to be sent
->only during entry of deeper system low power modes or suspend.
+>Other optimizations include -
+> - Remove locking around clear_bit() in IRQ handler. clear_bit() is
+>   atomic.
+> - Remove redundant read of TCS registers.
+> - Use spin_lock instead of _irq variants as the locks are not held
+>   in interrupt context
 >
->[1]https://patchwork.kernel.org/patch/10477533/
->
-nit: [1] https://
+>Suggested-by: Lina Iyer <ilina@codeaurora.org>
 >Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
->Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+
 >---
-> drivers/soc/qcom/rpmh.c | 3 +--
-> 1 file changed, 1 insertion(+), 2 deletions(-)
+>This patch is based on https://lkml.org/lkml/2018/10/3/422
+>---
+> drivers/soc/qcom/rpmh-internal.h |  2 --
+> drivers/soc/qcom/rpmh-rsc.c      | 37 +++++++++++++------------------------
+> drivers/soc/qcom/rpmh.c          | 20 ++++++++------------
+> 3 files changed, 21 insertions(+), 38 deletions(-)
 >
->diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
->index e6e98d4..877fe78 100644
->--- a/drivers/soc/qcom/rpmh.c
->+++ b/drivers/soc/qcom/rpmh.c
->@@ -228,9 +228,8 @@ static int __rpmh_write(const struct device *dev, enum rpmh_state state,
-> 		WARN_ON(irqs_disabled());
-> 		ret = rpmh_rsc_send_data(ctrlr_to_drv(ctrlr), &rpm_msg->msg);
-> 	} else {
->-		ret = rpmh_rsc_write_ctrl_data(ctrlr_to_drv(ctrlr),
->-				&rpm_msg->msg);
-> 		/* Clean up our call by spoofing tx_done */
->+		ret = 0;
-> 		rpmh_tx_done(&rpm_msg->msg, ret);
+>diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
+>index 8c316b4..2e3ffcd 100644
+>--- a/drivers/soc/qcom/rpmh-internal.h
+>+++ b/drivers/soc/qcom/rpmh-internal.h
+>@@ -28,7 +28,6 @@
+>  * @offset:    start of the TCS group relative to the TCSes in the RSC
+>  * @num_tcs:   number of TCSes in this type
+>  * @ncpt:      number of commands in each TCS
+>- * @lock:      lock for synchronizing this TCS writes
+>  * @req:       requests that are sent from the TCS
+>  * @cmd_cache: flattened cache of cmds in sleep/wake TCS
+>  * @slots:     indicates which of @cmd_addr are occupied
+>@@ -40,7 +39,6 @@ struct tcs_group {
+> 	u32 offset;
+> 	int num_tcs;
+> 	int ncpt;
+>-	spinlock_t lock;
+> 	const struct tcs_request *req[MAX_TCS_PER_TYPE];
+> 	u32 *cmd_cache;
+> 	DECLARE_BITMAP(slots, MAX_TCS_SLOTS);
+>diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+>index 73d5b98..d6b834e 100644
+>--- a/drivers/soc/qcom/rpmh-rsc.c
+>+++ b/drivers/soc/qcom/rpmh-rsc.c
+>@@ -98,8 +98,7 @@ static void write_tcs_reg_sync(struct rsc_drv *drv, int reg, int tcs_id,
+>
+> static bool tcs_is_free(struct rsc_drv *drv, int tcs_id)
+> {
+>-	return !test_bit(tcs_id, drv->tcs_in_use) &&
+>-	       read_tcs_reg(drv, RSC_DRV_STATUS, tcs_id, 0);
+>+	return !test_bit(tcs_id, drv->tcs_in_use);
+> }
+>
+> static struct tcs_group *get_tcs_of_type(struct rsc_drv *drv, int type)
+>@@ -109,29 +108,28 @@ static struct tcs_group *get_tcs_of_type(struct rsc_drv *drv, int type)
+>
+> static int tcs_invalidate(struct rsc_drv *drv, int type)
+> {
+>-	int m;
+>+	int m, ret = 0;
+> 	struct tcs_group *tcs;
+>
+> 	tcs = get_tcs_of_type(drv, type);
+>
+>-	spin_lock(&tcs->lock);
+>-	if (bitmap_empty(tcs->slots, MAX_TCS_SLOTS)) {
+>-		spin_unlock(&tcs->lock);
+>-		return 0;
+>-	}
+>+	spin_lock(&drv->lock);
+>+	if (bitmap_empty(tcs->slots, MAX_TCS_SLOTS))
+>+		goto done;
+>
+> 	for (m = tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
+> 		if (!tcs_is_free(drv, m)) {
+>-			spin_unlock(&tcs->lock);
+>-			return -EAGAIN;
+>+			ret = -EAGAIN;
+>+			goto done;
+> 		}
+> 		write_tcs_reg_sync(drv, RSC_DRV_CMD_ENABLE, m, 0);
+> 		write_tcs_reg_sync(drv, RSC_DRV_CMD_WAIT_FOR_CMPL, m, 0);
+> 	}
+> 	bitmap_zero(tcs->slots, MAX_TCS_SLOTS);
+>-	spin_unlock(&tcs->lock);
+>
+>-	return 0;
+>+done:
+>+	spin_unlock(&drv->lock);
+>+	return ret;
+> }
+>
+> /**
+>@@ -298,9 +296,7 @@ static irqreturn_t tcs_tx_done(int irq, void *p)
+> 		write_tcs_reg(drv, RSC_DRV_CMD_ENABLE, i, 0);
+> 		write_tcs_reg(drv, RSC_DRV_CMD_WAIT_FOR_CMPL, i, 0);
+> 		write_tcs_reg(drv, RSC_DRV_IRQ_CLEAR, 0, BIT(i));
+>-		spin_lock(&drv->lock);
+> 		clear_bit(i, drv->tcs_in_use);
+>-		spin_unlock(&drv->lock);
+> 		if (req)
+> 			rpmh_tx_done(req, err);
+> 	}
+>@@ -383,14 +379,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
+> {
+> 	struct tcs_group *tcs;
+> 	int tcs_id;
+>-	unsigned long flags;
+> 	int ret;
+>
+> 	tcs = get_tcs_for_msg(drv, msg);
+> 	if (IS_ERR(tcs))
+> 		return PTR_ERR(tcs);
+>
+>-	spin_lock_irqsave(&tcs->lock, flags);
+> 	spin_lock(&drv->lock);
+> 	/*
+> 	 * The h/w does not like if we send a request to the same address,
+>@@ -398,14 +392,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
+> 	 */
+> 	ret = check_for_req_inflight(drv, tcs, msg);
+> 	if (ret) {
+>-		spin_unlock(&drv->lock);
+> 		goto done_write;
 > 	}
 >
+> 	tcs_id = find_free_tcs(tcs);
+> 	if (tcs_id < 0) {
+> 		ret = tcs_id;
+>-		spin_unlock(&drv->lock);
+> 		goto done_write;
+> 	}
+>
+>@@ -413,13 +405,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
+> 	set_bit(tcs_id, drv->tcs_in_use);
+> 	if (msg->state == RPMH_ACTIVE_ONLY_STATE && tcs->type != ACTIVE_TCS)
+> 		enable_tcs_irq(drv, tcs_id, true);
+>-	spin_unlock(&drv->lock);
+>
+> 	__tcs_buffer_write(drv, tcs_id, 0, msg);
+> 	__tcs_trigger(drv, tcs_id, true);
+>
+> done_write:
+>-	spin_unlock_irqrestore(&tcs->lock, flags);
+>+	spin_unlock(&drv->lock);
+> 	return ret;
+> }
+>
+>@@ -517,19 +508,18 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
+> {
+> 	struct tcs_group *tcs;
+> 	int tcs_id = 0, cmd_id = 0;
+>-	unsigned long flags;
+> 	int ret;
+>
+> 	tcs = get_tcs_for_msg(drv, msg);
+> 	if (IS_ERR(tcs))
+> 		return PTR_ERR(tcs);
+>
+>-	spin_lock_irqsave(&tcs->lock, flags);
+>+	spin_lock(&drv->lock);
+> 	/* find the TCS id and the command in the TCS to write to */
+> 	ret = find_slots(tcs, msg, &tcs_id, &cmd_id);
+> 	if (!ret)
+> 		__tcs_buffer_write(drv, tcs_id, cmd_id, msg);
+>-	spin_unlock_irqrestore(&tcs->lock, flags);
+>+	spin_unlock(&drv->lock);
+>
+> 	return ret;
+> }
+>@@ -638,7 +628,6 @@ static int rpmh_probe_tcs_config(struct platform_device *pdev,
+> 		tcs->type = tcs_cfg[i].type;
+> 		tcs->num_tcs = tcs_cfg[i].n;
+> 		tcs->ncpt = ncpt;
+>-		spin_lock_init(&tcs->lock);
+>
+> 		if (!tcs->num_tcs || tcs->type == CONTROL_TCS)
+> 			continue;
+>diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+>index 71a76ea..297d6cc 100644
+>--- a/drivers/soc/qcom/rpmh.c
+>+++ b/drivers/soc/qcom/rpmh.c
+>@@ -117,9 +117,8 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
+> 					   struct tcs_cmd *cmd)
+> {
+> 	struct cache_req *req;
+>-	unsigned long flags;
+>
+>-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
+>+	spin_lock(&ctrlr->cache_lock);
+> 	req = __find_req(ctrlr, cmd->addr);
+> 	if (req)
+> 		goto existing;
+>@@ -153,7 +152,7 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
+>
+> 	ctrlr->dirty = true;
+> unlock:
+>-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
+>+	spin_unlock(&ctrlr->cache_lock);
+>
+> 	return req;
+> }
+>@@ -283,23 +282,21 @@ int rpmh_write(const struct device *dev, enum rpmh_state state,
+>
+> static void cache_batch(struct rpmh_ctrlr *ctrlr, struct batch_cache_req *req)
+> {
+>-	unsigned long flags;
+>
+>-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
+>+	spin_lock(&ctrlr->cache_lock);
+> 	list_add_tail(&req->list, &ctrlr->batch_cache);
+>-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
+>+	spin_unlock(&ctrlr->cache_lock);
+> }
+>
+> static int flush_batch(struct rpmh_ctrlr *ctrlr)
+> {
+> 	struct batch_cache_req *req;
+> 	const struct rpmh_request *rpm_msg;
+>-	unsigned long flags;
+> 	int ret = 0;
+> 	int i;
+>
+> 	/* Send Sleep/Wake requests to the controller, expect no response */
+>-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
+>+	spin_lock(&ctrlr->cache_lock);
+> 	list_for_each_entry(req, &ctrlr->batch_cache, list) {
+> 		for (i = 0; i < req->count; i++) {
+> 			rpm_msg = req->rpm_msgs + i;
+>@@ -309,7 +306,7 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
+> 				break;
+> 		}
+> 	}
+>-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
+>+	spin_unlock(&ctrlr->cache_lock);
+>
+> 	return ret;
+> }
+>@@ -317,13 +314,12 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
+> static void invalidate_batch(struct rpmh_ctrlr *ctrlr)
+> {
+> 	struct batch_cache_req *req, *tmp;
+>-	unsigned long flags;
+>
+>-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
+>+	spin_lock(&ctrlr->cache_lock);
+> 	list_for_each_entry_safe(req, tmp, &ctrlr->batch_cache, list)
+> 		kfree(req);
+> 	INIT_LIST_HEAD(&ctrlr->batch_cache);
+>-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
+>+	spin_unlock(&ctrlr->cache_lock);
+> }
+>
+> /**
 >--
 >QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 >of the Code Aurora Forum, hosted by The Linux Foundation.
