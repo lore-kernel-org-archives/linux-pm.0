@@ -1,54 +1,121 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH v2 01/17] OPP: Allow to request stub voltage
- regulators
-Date: Wed, 24 Oct 2018 12:11:23 +0530
-Message-ID: <20181024064123.lbpbeervghp35fe7@vireshk-i7>
-References: <20181021205501.23943-1-digetx@gmail.com>
- <20181021205501.23943-2-digetx@gmail.com>
- <20181022053636.ag62j3rj3vovbz53@vireshk-i7>
- <e4027793-9436-413d-2a7b-34cf519218c3@gmail.com>
- <20181022113224.b5fiebgy2aap66nd@vireshk-i7>
- <29f893be-feed-c4c5-8468-51f7228dd468@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] nds32: Power management for nds32
+Date: Wed, 24 Oct 2018 08:51:17 +0200
+Message-ID: <20181024065117.GA18779@amd>
+References: <cover.1540349342.git.nickhu@andestech.com>
+ <ccc18702a8d93c0a31e46f53c498b6d34c9c17e1.1540349342.git.nickhu@andestech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <29f893be-feed-c4c5-8468-51f7228dd468@gmail.com>
+In-Reply-To: <ccc18702a8d93c0a31e46f53c498b6d34c9c17e1.1540349342.git.nickhu@andestech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Osipenko <digetx@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Nickhu <nickhu@andestech.com>
+Cc: greentime@andestech.com, linux-kernel@vger.kernel.org, arnd@arndb.de, deanbo422@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, zong@andestech.com, linux-pm@vger.kernel.org, alankao@andestech.com, green.hu@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On 22-10-18, 15:12, Dmitry Osipenko wrote:
-> Because there is one Tegra20 board (tegra20-trimslice) that doesn't declare
-> necessary regulators, but we want to have CPU frequency scaling. I couldn't
-> find board schematics and so don't know if CPU / CORE voltages are fixed on
-> Trim-Slice or it is just preferable not to have DVFS for that board, it is an
-> outlet-powered device [0]. Hence tegra20-cpufreq driver will request a dummy
-> regulators when appropriate. 
 
-We have been using the regulator_get_optional() variant until now in the OPP
-core to make sure that we don't do DVFS for the CPU without the mandatory
-regulators being present, as that may make things unstable and cause harm to the
-SoC if we try to take CPU to frequency range over the currently programmed
-regulator can support.
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Now coming back to tegra-20 SoC, which actually requires a regulator normally by
-design. On one of the boards (which is outlet powered), you aren't sure if there
-is a programmable regulator or not, or if DVFS should really be done or not.
-Isn't it worth checking the same from Tegra maintainers, or whomsoever has
-information on that board ? What would happen if there actually was a regulator
-and its default settings aren't good enough for high end frequencies ?
+On Wed 2018-10-24 11:40:07, Nickhu wrote:
+> There are three sleep states in nds32:
+> 	suspend to idle,
+> 	suspend to standby,
+> 	suspend to ram
+>=20
+> In suspend to ram, we use the 'standby' instruction to emulate
+> power management device to hang the system util wakeup source
+> send wakeup events to break the loop.
+>=20
+> First, we push the general purpose registers and system registers
+> to stack. Second, we translate stack pointer to physical address
+> and store to memory to save the stack pointer. Third, after write
+> back and invalid the cache we hang in 'standby' intruction.
+> When wakeup source trigger wake up events, the loop will be break
+> and resume the system.
+>=20
+> Signed-off-by: Nickhu <nickhu@andestech.com>
 
-On the other hand, the tegra20 cpufreq driver is common across a lot of boards.
-What will happen if the DT for some of the boards isn't correct and missed the
-necessary regulator node ? And because you are moving to regulator_get() API for
-the entire SoC (i.e. its cpufreq driver), people will never find the missing
-regulator.
+Is "Nickhu" complete name?
 
-If we can do it safely for all tegra20 boards, why not migrate to using
-regulator_get() instead of regulator_get_optional() in the OPP core API itself
-for everyone ?
+> diff --git a/arch/nds32/kernel/pm.c b/arch/nds32/kernel/pm.c
+> new file mode 100644
+> index 000000000000..e1eaf3bac709
+> --- /dev/null
+> +++ b/arch/nds32/kernel/pm.c
+> @@ -0,0 +1,91 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (C) 2008-2017 Andes Technology Corporation
+> +
+> +/*
+> + * nds32 Power Management Routines
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License.
+> + *
+> + *  Abstract:
+> + *
+> + *    This program is for nds32 power management routines.
+> + *
+> + */
 
--- 
-viresh
+I'd get rid of "abstract" here, repeating GPL twice and "nds32 power
+management routines" twice does not make much sense either.
+
+> @@ -0,0 +1,129 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright (C) 2017 Andes Technology Corporation */
+> +
+> +#include<asm/memory.h>
+
+Missing space.
+
+> +static int nointc_set_wake(struct irq_data *data, unsigned int on)
+> +{
+> +	unsigned long int_mask =3D __nds32__mfsr(NDS32_SR_INT_MASK);
+> +	static bool is_bit_1[NR_IRQS] =3D {false};
+> +	u32 bit =3D 1 << data->hwirq;
+> +
+> +	if (on) {
+> +		if (int_mask & bit)
+> +			is_bit_1[data->hwirq] =3D true;
+> +		else
+> +			is_bit_1[data->hwirq] =3D false;
+> +
+> +		int_mask |=3D bit;
+> +		wake_mask |=3D bit;
+> +	} else {
+> +		if (!is_bit_1[data->hwirq])
+> +			int_mask &=3D ~bit;
+> +
+> +		wake_mask &=3D ~bit;
+> +		is_bit_1[data->hwirq] =3D false;
+> +	}
+
+Can we get rid of "is_bit_1" array here, and use normal bit operations
+on another variable here?
+
+Thanks,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlvQFmUACgkQMOfwapXb+vKtKgCgqujodsnnEp000PGVRDbR4LHy
+iO0AnjEkvFReScr9wQvjGwSsmVf+UHL3
+=Vddh
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
