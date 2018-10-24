@@ -1,121 +1,42 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] nds32: Power management for nds32
-Date: Wed, 24 Oct 2018 08:51:17 +0200
-Message-ID: <20181024065117.GA18779@amd>
-References: <cover.1540349342.git.nickhu@andestech.com>
- <ccc18702a8d93c0a31e46f53c498b6d34c9c17e1.1540349342.git.nickhu@andestech.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: add ratelimited thermal and power logging
+Date: Wed, 24 Oct 2018 12:52:27 +0530
+Message-ID: <20181024072227.achkbix2ndef2ule@vireshk-i7>
+References: <20181022202901.1654-1-zwisler@google.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <ccc18702a8d93c0a31e46f53c498b6d34c9c17e1.1540349342.git.nickhu@andestech.com>
+In-Reply-To: <20181022202901.1654-1-zwisler@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nickhu <nickhu@andestech.com>
-Cc: greentime@andestech.com, linux-kernel@vger.kernel.org, arnd@arndb.de, deanbo422@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, zong@andestech.com, linux-pm@vger.kernel.org, alankao@andestech.com, green.hu@gmail.com
+To: Ross Zwisler <zwisler@google.com>
+Cc: linux-kernel@vger.kernel.org, Ricky Liang <jcliang@chromium.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Stephen Barber <smbarber@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
+On 22-10-18, 14:29, Ross Zwisler wrote:
+> From: Ricky Liang <jcliang@chromium.org>
+> 
+> Add thermal logs in devfreq_cooling and cpu_cooling.
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Why should we add them ?
 
-On Wed 2018-10-24 11:40:07, Nickhu wrote:
-> There are three sleep states in nds32:
-> 	suspend to idle,
-> 	suspend to standby,
-> 	suspend to ram
->=20
-> In suspend to ram, we use the 'standby' instruction to emulate
-> power management device to hang the system util wakeup source
-> send wakeup events to break the loop.
->=20
-> First, we push the general purpose registers and system registers
-> to stack. Second, we translate stack pointer to physical address
-> and store to memory to save the stack pointer. Third, after write
-> back and invalid the cache we hang in 'standby' intruction.
-> When wakeup source trigger wake up events, the loop will be break
-> and resume the system.
->=20
-> Signed-off-by: Nickhu <nickhu@andestech.com>
+> Also add logging to
+> power_allocator when it starts to control power.
+> 
+> These changes can lead to excessive log spam when running up against
+> thermal limits, so have this logging ratelimited to allow only 1 log each
+> 30 seconds from each of those subsystems.
 
-Is "Nickhu" complete name?
+What's the use of these logs when we are going to print them only once every 30
+seconds ?
 
-> diff --git a/arch/nds32/kernel/pm.c b/arch/nds32/kernel/pm.c
-> new file mode 100644
-> index 000000000000..e1eaf3bac709
-> --- /dev/null
-> +++ b/arch/nds32/kernel/pm.c
-> @@ -0,0 +1,91 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +// Copyright (C) 2008-2017 Andes Technology Corporation
-> +
-> +/*
-> + * nds32 Power Management Routines
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License.
-> + *
-> + *  Abstract:
-> + *
-> + *    This program is for nds32 power management routines.
-> + *
-> + */
+I recently extended thermal sysfs support to share more stats.
 
-I'd get rid of "abstract" here, repeating GPL twice and "nds32 power
-management routines" twice does not make much sense either.
+commit 8ea229511e06 ("thermal: Add cooling device's statistics in sysfs")
 
-> @@ -0,0 +1,129 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/* Copyright (C) 2017 Andes Technology Corporation */
-> +
-> +#include<asm/memory.h>
+Will that be helpful in your case ?
 
-Missing space.
+Otherwise we should probably add trace points instead.
 
-> +static int nointc_set_wake(struct irq_data *data, unsigned int on)
-> +{
-> +	unsigned long int_mask =3D __nds32__mfsr(NDS32_SR_INT_MASK);
-> +	static bool is_bit_1[NR_IRQS] =3D {false};
-> +	u32 bit =3D 1 << data->hwirq;
-> +
-> +	if (on) {
-> +		if (int_mask & bit)
-> +			is_bit_1[data->hwirq] =3D true;
-> +		else
-> +			is_bit_1[data->hwirq] =3D false;
-> +
-> +		int_mask |=3D bit;
-> +		wake_mask |=3D bit;
-> +	} else {
-> +		if (!is_bit_1[data->hwirq])
-> +			int_mask &=3D ~bit;
-> +
-> +		wake_mask &=3D ~bit;
-> +		is_bit_1[data->hwirq] =3D false;
-> +	}
-
-Can we get rid of "is_bit_1" array here, and use normal bit operations
-on another variable here?
-
-Thanks,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---sm4nu43k4a2Rpi4c
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlvQFmUACgkQMOfwapXb+vKtKgCgqujodsnnEp000PGVRDbR4LHy
-iO0AnjEkvFReScr9wQvjGwSsmVf+UHL3
-=Vddh
------END PGP SIGNATURE-----
-
---sm4nu43k4a2Rpi4c--
+-- 
+viresh
