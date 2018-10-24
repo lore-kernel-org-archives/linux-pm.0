@@ -1,86 +1,100 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2] cpufreq: intel_pstate: Fix compilation for
- !CONFIG_ACPI
-Date: Tue, 23 Oct 2018 14:52:12 -0700
-Message-ID: <af0dac7535332ecedeab9f04654fbb1d5a21e1a2.camel@linux.intel.com>
-References: <20181023185429.GA6756@light.dominikbrodowski.net>
-         <e8e018e267434cabc2b8db434a3576c082ab3fff.camel@linux.intel.com>
-         <20181023193405.pxfl4vyazt7rtc3x@isilmar-4.linta.de>
-         <b95b247b5dd85b0839a9fa6167fd1682578fb92b.camel@linux.intel.com>
-         <20181023195403.GA3094@light.dominikbrodowski.net>
+From: Andy Tang <andy.tang@nxp.com>
+Subject: RE: [PATCH] thermal: qoriq: add multiple sensors support
+Date: Wed, 24 Oct 2018 02:48:53 +0000
+Message-ID: <DB5PR0401MB221381AD65417D17AAD7B16DF3F60@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+References: <20180927024204.17314-1-andy.tang@nxp.com>
+ <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
+ <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+ <cf157e9f-a4cb-6d7d-f51d-8b9d91f3335c@linaro.org>
+ <DB5PR0401MB2213E291AC455D61ED15AF4AF3FE0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+ <77993e69-db55-a2a0-799f-5225d5ffb010@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181023195403.GA3094@light.dominikbrodowski.net>
+In-Reply-To: <77993e69-db55-a2a0-799f-5225d5ffb010@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@vger.kernel.org, lenb@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-10-23 at 21:54 +0200, Dominik Brodowski wrote:
-> While at it, add a few comments which config options #ifdef
-> and #else statements refer to.
-> 
-> Fixes: 86d333a8cc7f ("cpufreq: intel_pstate: Add base_frequency
-> attribute")
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 49c0abf2d48f..9578312e43f2 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -386,16 +386,11 @@ static int intel_pstate_get_cppc_guranteed(int
-> cpu)
->  	return cppc_perf.guaranteed_perf;
->  }
->  
-> -#else
-> +#else /* CONFIG_ACPI_CPPC_LIB */
->  static void intel_pstate_set_itmt_prio(int cpu)
->  {
->  }
-> -
-> -static int intel_pstate_get_cppc_guranteed(int cpu)
-> -{
-> -	return -ENOTSUPP;
-> -}
-> -#endif
-> +#endif /* CONFIG_ACPI_CPPC_LIB */
->  
->  static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy
-> *policy)
->  {
-> @@ -477,7 +472,7 @@ static void intel_pstate_exit_perf_limits(struct
-> cpufreq_policy *policy)
->  
->  	acpi_processor_unregister_performance(policy->cpu);
->  }
-> -#else
-> +#else /* CONFIG_ACPI */
->  static inline void intel_pstate_init_acpi_perf_limits(struct
-> cpufreq_policy *policy)
->  {
->  }
-> @@ -490,7 +485,14 @@ static inline bool
-> intel_pstate_acpi_pm_profile_server(void)
->  {
->  	return false;
->  }
-> -#endif
-> +#endif /* CONFIG_ACPI */
-> +
-> +#ifndef CONFIG_ACPI_CPPC_LIB
-> +static int intel_pstate_get_cppc_guranteed(int cpu)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +#endif /* CONFIG_ACPI_CPPC_LIB */
->  
->  static inline void update_turbo_state(void)
->  {
+SGkgRGFuaWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmll
+bCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPg0KPiBTZW50OiAyMDE45bm0MTDm
+nIgxNuaXpSAxOToyMQ0KPiBUbzogQW5keSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IHJ1aS56
+aGFuZ0BpbnRlbC5jb20NCj4gQ2M6IGVkdWJlenZhbEBnbWFpbC5jb207IGxpbnV4LXBtQHZnZXIu
+a2VybmVsLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgUm9iIEhlcnJpbmcg
+PHJvYmgrZHRAa2VybmVsLm9yZz4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gdGhlcm1hbDogcW9y
+aXE6IGFkZCBtdWx0aXBsZSBzZW5zb3JzIHN1cHBvcnQNCj4gDQo+ID4+Pj4gVGhlIGN1cnJlbnQg
+Y29kZSBpcyByZWFkaW5nIHRoZSBEVCBpbiBvcmRlciB0byBnZXQgdGhlIHNlbnNvciBpZA0KPiA+
+Pj4+IGFuZCBpbml0aWFsaXplIGl0LiBJT1csIHRoZSBEVCBnaXZlcyB0aGUgc2Vuc29ycyB0byB1
+c2UuDQo+ID4+Pj4NCj4gPj4+PiBJTU8sIGl0IHdvdWxkIGJlIG1vcmUgc2VsZiBjb250YWluZWQg
+aWYgdGhlIGRyaXZlciBpbml0aWFsaXplcyBhbGwNCj4gPj4+PiB0aGUgc2Vuc29ycyB3aXRob3V0
+IHRha2luZyBjYXJlIG9mIHRoZSBEVCBhbmQgbGV0IHRoZSBvZi0gY29kZSB0bw0KPiA+Pj4+IGRv
+IHRoZSBiaW5kaW5nIHdoZW4gdGhlIHRoZXJtYWwgem9uZSwgbm8gPw0KPiA+Pj4gW0FuZHldIGNv
+dWxkIHlvdSBwbGVhc2UgZXhwbGFpbiBtb3JlIGFib3V0IHRoaXMgd2F5PyBJIGFtIG5vdCBzdXJl
+DQo+ID4+PiBob3cNCj4gPj4gdG8gaW1wbGVtZW50IGl0Lg0KPiA+Pj4gQnV0IG9uZSB0aGluZyBp
+cyBmb3Igc3VyZTogd2UgbXVzdCBnZXQgdGhlIHNlbnNvciBJRHMgZXhwbGljaXRseSBzbw0KPiA+
+Pj4gdGhhdCB3ZSBjYW4gZW5hYmxlIHRoZW0gYnkgdGhlIGZvbGxvd2luZyBjb21tYW5kOg0KPiB0
+bXVfd3JpdGUocWRhdGEsDQo+ID4+PiBzaXRlcyB8IFRNUl9NRSB8IFRNUl9BTFBGLCAmcWRhdGEt
+PnJlZ3MtPnRtcik7DQo+ID4+DQo+ID4+IFdoYXQgSSBtZWFudCBpcyBhYm91dCBjb2RlIHNlcGFy
+YXRpb24gYmV0d2VlbiB0aGUgZHJpdmVyIGl0c2VsZiBhbmQNCj4gPj4gdGhlIG9mLXRoZXJtYWwg
+Y29kZS4NCj4gPj4NCj4gPj4gVGhlIGNvZGUgYWJvdmUgcmUtaW5zcGVjdCB0aGUgRFQgdG8gZmlu
+ZCBvdXQgdGhlIHNlbnNvciBpZHMgaW4gb3JkZXINCj4gPj4gdG8gZW5hYmxlIHRoZW0gYW5kIHNv
+bWVob3cgdGhpcyBpcyBub3Qgd3JvbmcgYnV0IGJyZWFrcyB0aGUgc2VsZg0KPiA+PiBlbmNhcHN1
+bGF0aW9uIG9mIHRoZSBkcml2ZXIuIEkgd2FzIHN1Z2dlc3RpbmcgaWYgaXQgaXNuJ3QgcG9zc2li
+bGUgdG8NCj4gPj4gZW5hYmxlIGFsbCB0aGUgc2Vuc29ycyB3aXRob3V0IHRha2luZyBjYXJlIG9m
+IGRpZ2dpbmcgaW50byB0aGUgRFQuDQo+ID4NCj4gPiBbQW5keV0gSSBkb24ndCB3YW50IHRvIHJl
+LXBhcnNlIHRoZSBEVCBoZXJlIHRvby4gQnV0IEkgaGF2ZSB0by4NCj4gPiBUaGlzIGRyaXZlciB3
+aWxsIGJlIHVzZWQgYnkgYWxsIG91ciBTT0NzIHdpdGggZGlmZmVyZW50IHNlbnNvciBJRHMgYW5k
+DQo+IG51bWJlci4NCj4gPiBGb3IgZXhhbXBsZTogdGhlcmUgYXJlIDIgc2Vuc29ycyBvbiBsczEw
+ODhhIHBsYXRmb3JtIHdpdGggSUQgMCBhbmQgMS4NCj4gPiBXaGlsZSBvbiBsczEwNDNhIHRoZXJl
+IGFyZSA2IHNlbnNvcnMgd2l0aCBJRCAwLCAxLCAyLCAzLCA0LCA1Lg0KPiA+IElmIHdlIGRvbid0
+IHNjYW4gdGhlIERUIHdlIHdvdWxkIG5vdCBrbm93IGhvdyBtYW55IHNlbnNvcnMgaXQgaXMgYW5k
+DQo+ID4gd2hhdCBhcmUgdGhlIHNlbnNvcidzIElEcywgdW5sZXNzIHdlIGhhcmRjb2RlIGl0IGlu
+IGRyaXZlci4NCj4gDQo+IFllcywgeW91IGFyZSBub3QgdGhlIG9ubHkgb25lIGluIHRoaXMgc2l0
+dWF0aW9uIElNTyBhbmQgdGhlIGRyaXZlcnMNCj4gc3VwcG9ydGluZyBtdWx0aXBsZSBzZW5zb3Jz
+IGFyZSBpbmNyZWFzaW5nLCBzbyB0aGlzIHdpbGwgcmVwZWF0IGFnYWluIGFuZA0KPiBhZ2Fpbi4N
+Cj4gDQo+IFRoYXQgY291bGQgYmUgaGFyZGNvZGVkIGluIHRoZSBkcml2ZXIgYnkgdXNpbmcgdGhl
+IGNvbXBhdGlibGUgc3RyaW5nIGJ1dCBpdA0KPiB3aWxsIGJlIG5pY2VyIGlmIHdlIGNhbiBmaXgg
+dGhhdCBpbiB0aGUgRFQuDQo+IA0KPiBbQ2MnaW5nIFJvYl0NCj4gDQo+IFdoYXQgaXMgbWlzc2lu
+ZyBpcyBhIGRlc2NyaXB0aW9uIG9mIHRoZSBzZW5zb3JzIGlkIGluIHRoZSB0ZW1wZXJhdHVyZQ0K
+PiBkZXZpY2Ugbm9kZS4gV2UgaGF2ZSB0aGUgPHRoZXJtYWwtc2Vuc29yLWNlbGxzPiB3aXRoIDAg
+b3IgMSB0ZWxsaW5nIGlmDQo+IHRoZXJlIGlzIG9uZSBvciBzZXZlcmFsIHNlbnNvcnMgYnV0IHdl
+IGNhbid0IHNwZWNpZnkgd2hpY2ggc2Vuc29yIGlkcyB3ZQ0KPiBoYXZlLiBUaGUgb25seSBhbHRl
+cm5hdGl2ZSBpcyB0byBwYXJzZSB0aGUgdGhlcm1hbCB6b25lcyB0byBmb3VuZCBvdXQgd2hpY2gN
+Cj4gc2Vuc29ycyBhcmUgaW4gdXNlIGFuZCB1c2UgdGhlbSB0byBpbml0aWFsaXplIHRoZSBkcml2
+ZXIsIGFuIGFwcHJvYWNoIHdoaWNoDQo+IGJyZWFrcyB0aGUgc2VsZi1lbmNhcHN1bGF0aW9uOiB0
+aGUgb2YtdGhlcm1hbCBmcmFtZXdvcmsgaXMgdGhlIG9uZSBpbg0KPiBjaGFyZ2Ugb2YgZG9pbmcg
+dGhlIGxpbmsgYmV0d2VlbiB0aGUgdGhlcm1hbCB6b25lIGFuZCBhIHNlbnNvciBpZC4NCj4gDQo+
+IElzIGl0IGFjY2VwdGFibGUgdG8gYWRkIHRoZSBsaXN0IG9mIHRoZSBzZW5zb3JzIGlkIGluIHRo
+ZSB0ZW1wIGRldmljZSBub2RlLCBzbw0KPiB0aGUgZHJpdmVyIGNhbiBpbml0aWFsaXplIHRoZXNl
+IHNlbnNvcnMgd2l0aG91dCBwYXJzaW5nIHRoZSB0aGVybWFsIHpvbmUgaW4NCj4gdGhlIERUID8N
+Cj4gDQpIYXZlIHlvdSBnb3QgYW55IGNvbmNsdXNpb24geWV0Pw0KV2hlbiBjYW4gSSBzZW5kIHRo
+ZSBuZXh0IHZlcnNpb24gb2YgdGhpcyBwYXRjaD8NCg0KQlIsDQpBbmR5DQo+IA0KPiANCj4gDQo+
+IC0tDQo+IA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5j
+b20vP3VybD1odHRwJTNBJTJGJTJGDQo+IHd3dy5saW5hcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdD
+MDElN0NhbmR5LnRhbmclNDBueHAuY29tJTdDZjYNCj4gMzQzYmQyOGUwNjQzODMzZmExMDhkNjMz
+NTk3M2NhJTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNkOTljNWMNCj4gMzAxNjM1JTdDMCU3QzAlN0M2
+MzY3NTI4NTY2NDQwMDY1NjgmYW1wO3NkYXRhPU9LSVhZakhiNFB2Yw0KPiA4bG1ldnElMkZ3SmU5
+c29zdk5SRnhodlBBYjhUVDNGV1ElM0QmYW1wO3Jlc2VydmVkPTA+DQo+IExpbmFyby5vcmcg4pSC
+IE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzoN
+Cj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9
+aHR0cCUzQSUyRiUyRg0KPiB3d3cuZmFjZWJvb2suY29tJTJGcGFnZXMlMkZMaW5hcm8mYW1wO2Rh
+dGE9MDIlN0MwMSU3Q2FuZHkudGFuDQo+IGclNDBueHAuY29tJTdDZjYzNDNiZDI4ZTA2NDM4MzNm
+YTEwOGQ2MzM1OTczY2ElN0M2ODZlYTFkM2INCj4gYzJiNGM2ZmE5MmNkOTljNWMzMDE2MzUlN0Mw
+JTdDMCU3QzYzNjc1Mjg1NjY0NDAwNjU2OCZhbXA7cw0KPiBkYXRhPUxRM1Q1a3BYRnJxUnJRUjFK
+dDlPalk1NDdUV3NmeGFJVTF6OHRLJTJGNng4WSUzRCZhbXA7cmVzDQo+IGVydmVkPTA+IEZhY2Vi
+b29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90ZWN0aW9uLm91dGxvb2suY29t
+Lz91cmw9aHR0cCUzQSUyRiUyRnQNCj4gd2l0dGVyLmNvbSUyRiUyMyElMkZsaW5hcm9vcmcmYW1w
+O2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG4NCj4geHAuY29tJTdDZjYzNDNiZDI4ZTA2NDM4
+MzNmYTEwOGQ2MzM1OTczY2ElN0M2ODZlYTFkM2JjMmI0YzYNCj4gZmE5MmNkOTljNWMzMDE2MzUl
+N0MwJTdDMCU3QzYzNjc1Mjg1NjY0NDAwNjU2OCZhbXA7c2RhdGE9aA0KPiBNT1MxV3hRQmNTJTJC
+dnh5and6Njhua1pGYUIlMkZlWjIxRTMzVTUwR2RGOXBZJTNEJmFtcDtyZXMNCj4gZXJ2ZWQ9MD4g
+VHdpdHRlciB8DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlvbi5vdXRsb29r
+LmNvbS8/dXJsPWh0dHAlM0ElMkYlMkYNCj4gd3d3LmxpbmFyby5vcmclMkZsaW5hcm8tYmxvZyUy
+RiZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50YW5nJTQwDQo+IG54cC5jb20lN0NmNjM0M2JkMjhl
+MDY0MzgzM2ZhMTA4ZDYzMzU5NzNjYSU3QzY4NmVhMWQzYmMyYjRjDQo+IDZmYTkyY2Q5OWM1YzMw
+MTYzNSU3QzAlN0MwJTdDNjM2NzUyODU2NjQ0MTYyODM2JmFtcDtzZGF0YT0NCj4gMmowYkpMSmd6
+WHNtbHJHOGhSNmFLU1l2bWczUnJpYUglMkJ6dDF4NE9GOGtVJTNEJmFtcDtyZXNlcnZlZD0NCj4g
+MD4gQmxvZw0KDQo=
