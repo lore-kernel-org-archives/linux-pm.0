@@ -1,171 +1,308 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power-supply changes for 4.20
-Date: Wed, 24 Oct 2018 20:11:21 +0200
-Message-ID: <20181024181121.3pw6o3qqcx6zd7ob@earth.universe>
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH v3 3/3] drivers: qcom: rpmh: disallow active requests in
+ solver mode
+Date: Wed, 24 Oct 2018 14:16:37 -0600
+Message-ID: <20181024201637.GG17444@codeaurora.org>
+References: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org>
+ <1539050912-25749-4-git-send-email-rplsssn@codeaurora.org>
+ <CAE=gft4qNfRFN2sXG7gX0kV5AGCtHAdLNxD5fz1RAbZ-8WCoDw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bocorhr2qhyfdbao"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <CAE=gft4qNfRFN2sXG7gX0kV5AGCtHAdLNxD5fz1RAbZ-8WCoDw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Evan Green <evgreen@chromium.org>
+Cc: rplsssn@codeaurora.org, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, Doug Anderson <dianders@chromium.org>, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Oct 24 2018 at 11:43 -0600, Evan Green wrote:
+>On Mon, Oct 8, 2018 at 7:09 PM Raju P.L.S.S.S.N <rplsssn@codeaurora.org> wrote:
+>>
+>> From: Lina Iyer <ilina@codeaurora.org>
+>>
+>> Controllers may be in 'solver' state, where they could be in autonomous
+>> mode executing low power modes for their hardware and as such are not
+>> available for sending active votes. Device driver may notify RPMH API
+>> that the controller is in solver mode and when in such mode, disallow
+>> requests from platform drivers for state change using the RSC.
+>
+>Maybe I'm being dense, but I don't really get it. So in solver mode,
+>the whole RSC is just disabled? Solver mode just figures out what
+>state to put the hardware in without needing all these votes? Sounds
+>cool, why doesn't it just do that all the time? Can you describe an
+>example usecase of a real client that would use solver mode, and how
+>that works?
+>
+You are right. Solver just figures out the state to put the hardware in
+for a short period of time. Usually when a usecase runs and the hw block
+can periodically sleep while a partner/client is busy processing the
+data, the solver can take care of figuring out the next wakeup and
+choose the best low power mode for the hardware block and reduce the
+votes. But all that have to be pre-programmed into the hardware. The
+display RSC is a good example. A smart display controller can pick up
+the data and show it on the screen and sleep until the next data needs
+to be sent. The driver can configure the active and therefore the wake
+values of the bus clocks and the sleep value, it can run without CPU
+intervention. The display driver makes the decision to put the block in
+solver mode and informs the RPMH block that the hardware is not to be
+used for active requests or writing any sleep/wake votes.
 
---bocorhr2qhyfdbao
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Coordinating that with the drivers is a major pain point involving
+multiple drivers. To avoid that, we let the RPMH know that the RSC is
+running in solver mode and will ignore voting that may happen from
+drivers.
 
-Hi Linus,
+Thanks,
+Lina
 
-All patches have been in linux-next for like 4 weeks except for
-ones, that have only been in there for a couple of days. Those
-are simple fixes not touching any real code, so it should be fine.
-Please find the details are in the tag. There shouldn't be any
-problems merging this.
-
--- Sebastian
-
-The following changes since commit 5b394b2ddf0347bef56e50c69a58773c94343ff3:
-
-  Linux 4.19-rc1 (2018-08-26 14:11:59 -0700)
-
-are available in the Git repository at:
-
-  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.20
-
-for you to fetch changes up to cfb347979e71d3ce6be59a988b3357f541c9eacf:
-
-  power: max8925: mark expected switch fall-through (2018-10-21 21:33:35 +0200)
-
-----------------------------------------------------------------
-power supply and reset changes for the v4.20 series
-
-* Add Spreadtrum SC2731 charger driver
-* bq25890-charger: Add BQ25896 support
-* bq27xxx-battery: Add support for BQ27411
-* qcom-pon: Add pms405 pon support
-* cros-charger: add support for dedicated port
-* misc. fixes
-
-----------------------------------------------------------------
-Andreas Kemnade (2):
-      power: supply: twl4030_charger: fix charging current out-of-bounds
-      power: supply: twl4030_charger: disable eoc interrupt on linear charge
-
-Angus Ainslie (Purism) (4):
-      power: supply: bq25890_charger: Add debugging output of failed initialization
-      power: supply: bq25890_charger: Remove unused table entries
-      power: supply: bq25890_charger: Add the BQ25896 part
-      power: supply: bq25890_charger: Read back the current battery voltage
-
-Baolin Wang (2):
-      dt-bindings: power: Add Spreadtrum SC2731 charger documentation
-      power: supply: Add Spreadtrum SC2731 charger support
-
-Claudiu Beznea (6):
-      power: reset: at91-poweroff: switch to slow clock before shutdown
-      power: reset: at91-poweroff: use only one poweroff function
-      power: reset: at91-poweroff: make mpddrc_base part of struct shdwc
-      power: reset: at91-poweroff: make sclk part of struct shdwc
-      power: reset: at91-poweroff: rename at91_shdwc_base member of struct shdwc
-      power: reset: at91-poweroff: do not procede if at91_shdwc is allocated
-
-Colin Ian King (2):
-      power: supply: cros_usbpd: remove unused pointer 'dev'
-      power: supply: fix spelling mistake "Gauage" -> "Gauge"
-
-Dan Carpenter (1):
-      power: supply: ab8500_fg: silence uninitialized variable warnings
-
-David Lechner (1):
-      power: supply: sysfs: ratelimit property read error message
-
-Ding Xiang (1):
-      power: supply: ab8500_fg: fix obsolete function
-
-Fabien Parent (2):
-      mfd: cros: add charger port count command definition
-      power: supply: cros: add support for dedicated port
-
-Gustavo A. R. Silva (1):
-      power: max8925: mark expected switch fall-through
-
-Krzysztof Kozlowski (1):
-      power: supply: maxim: Add SPDX license identifiers
-
-Kuninori Morimoto (1):
-      power: reset: convert to SPDX identifiers
-
-Liu Xiang (1):
-      power: supply: bq27xxx: Add support for BQ27411
-
-Sebastian Reichel (2):
-      Merge tag 'psy-at91-poweroff-immutable-for-v4.20-signed' into psy-next
-      Merge tag 'psy-mfd-cros-immutable-for-v4.20-signed' into psy-next
-
-Tomasz Figa (1):
-      power: supply: max8998-charger: Fix platform data retrieval
-
-Vinod Koul (1):
-      power: reset: qcom-pon: Add pms405 pon support
-
-kbuild test robot (1):
-      power: supply: bq25890_charger: fix semicolon.cocci warnings
-
- .../devicetree/bindings/power/reset/qcom,pon.txt   |   5 +-
- .../devicetree/bindings/power/supply/bq25890.txt   |   3 +
- .../devicetree/bindings/power/supply/bq27xxx.txt   |   1 +
- .../bindings/power/supply/sc2731_charger.txt       |  40 ++
- arch/arm/mach-at91/pm_suspend.S                    |   8 +
- drivers/power/reset/at91-sama5d2_shdwc.c           | 119 +++--
- drivers/power/reset/qcom-pon.c                     |   1 +
- drivers/power/reset/rmobile-reset.c                |   5 +-
- drivers/power/supply/Kconfig                       |   7 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/ab8500_fg.c                   |  52 ++-
- drivers/power/supply/bq25890_charger.c             |  62 ++-
- drivers/power/supply/bq27xxx_battery.c             |   9 +
- drivers/power/supply/bq27xxx_battery_i2c.c         |   2 +
- drivers/power/supply/cros_usbpd-charger.c          | 117 ++++-
- drivers/power/supply/ds2780_battery.c              |   2 +-
- drivers/power/supply/ds2781_battery.c              |   2 +-
- drivers/power/supply/ds2782_battery.c              |   2 +-
- drivers/power/supply/max14577_charger.c            |  22 +-
- drivers/power/supply/max17040_battery.c            |  18 +-
- drivers/power/supply/max17042_battery.c            |  32 +-
- drivers/power/supply/max77693_charger.c            |  22 +-
- drivers/power/supply/max8925_power.c               |   1 +
- drivers/power/supply/max8997_charger.c             |  26 +-
- drivers/power/supply/max8998_charger.c             |  28 +-
- drivers/power/supply/power_supply_sysfs.c          |   3 +-
- drivers/power/supply/sc2731_charger.c              | 504 +++++++++++++++++++++
- drivers/power/supply/twl4030_charger.c             |  30 +-
- include/linux/mfd/cros_ec_commands.h               |  10 +
- include/linux/power/bq27xxx_battery.h              |   1 +
- 30 files changed, 922 insertions(+), 213 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/sc2731_charger.txt
- create mode 100644 drivers/power/supply/sc2731_charger.c
-
---bocorhr2qhyfdbao
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvQtcYACgkQ2O7X88g7
-+pqJ3A//cZijmASolDKhjKNiJc/HblfuNEnHjPeSczx8p3CuEt7V00bvKoNLG5MX
-qnxiUtV6PHdW7gpPBTf/3j2MG/qX8DkM5pbYu4kedPkQzouA8X1RingRPEqx90AW
-P9TC21lW18t+20qoRDU10P6HcWMsufn54HclMOC8QILi4S5UvMFJoicHoOP3hROL
-alFb4v+1tqNZ78YFgtaoATdhP5VB+SSrOzU5IYJhxN1US9u85Qz23gE2X3wATCFD
-H6vuTlk3g2YSj9k+hj99c0TMCU/sRR/5sVbRfpXjWN46s9bbgNc1ffGsGtIuzUYa
-Bp2Goc7xTeLKuGbkd08TNKtBPWT16x+fWkZkGcG6ZR6rFte/UU7fVSyZrTKVv01h
-mh+M765xATvTR2mtJz0jyxuyYZmfdr25tlihn5pRKrS5P2LwoFl7WrenBpSAB90d
-CeDjruaWLz+pbi4egI14batY+ytgIJsH0rfk0i3mXWPBNbrTO7wmBLYu9A30kgy5
-6FyWjseH+rsT1qe5ZA+eRWGrCbF5XLGjX0ljmDXmVMfoUCEbibwSazpcSV8kRFin
-iBNzpTKGVyoJAmAGO5t0sch+mjm4m2CNVkNX2IarY7iON7sr32c7GVj9hbQ1WX6a
-n9g93IKcpVCAWjXwPFMVorwH8gszDn7tJbrP1whwCLQztta6r/I=
-=Kcv9
------END PGP SIGNATURE-----
-
---bocorhr2qhyfdbao--
+>>
+>> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+>> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+>> ---
+>> Chanages in v3
+>>  - Add functionality to set solver mode for RSC controller
+>>  - return -EINVAL if active requests are sent in solver mode
+>> ---
+>>  drivers/soc/qcom/rpmh-internal.h |  5 ++++
+>>  drivers/soc/qcom/rpmh-rsc.c      | 31 ++++++++++++++++++++++++
+>>  drivers/soc/qcom/rpmh.c          | 51 ++++++++++++++++++++++++++++++++++++++++
+>>  include/soc/qcom/rpmh.h          |  5 ++++
+>>  4 files changed, 92 insertions(+)
+>>
+>> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
+>> index 4b891c23..0923c45 100644
+>> --- a/drivers/soc/qcom/rpmh-internal.h
+>> +++ b/drivers/soc/qcom/rpmh-internal.h
+>> @@ -70,12 +70,14 @@ struct rpmh_request {
+>>   * @cache_lock: synchronize access to the cache data
+>>   * @dirty: was the cache updated since flush
+>>   * @batch_cache: Cache sleep and wake requests sent as batch
+>> + * @in_solver_mode: Controller is busy in solver mode
+>>   */
+>>  struct rpmh_ctrlr {
+>>         struct list_head cache;
+>>         spinlock_t cache_lock;
+>>         bool dirty;
+>>         struct list_head batch_cache;
+>> +       bool in_solver_mode;
+>>  };
+>>
+>>  /**
+>> @@ -86,6 +88,7 @@ struct rpmh_ctrlr {
+>>   * @base:       start address of the RSC's DRV registers
+>>   * @tcs_base:   start address of the TCS registers in this controller
+>>   * @id:         instance id in the controller (Direct Resource Voter)
+>> + * @in_solver_mode: Controller is in solver mode
+>>   * @num_tcs:    number of TCSes in this DRV
+>>   * @tcs:        TCS groups
+>>   * @tcs_in_use: s/w state of the TCS
+>> @@ -97,6 +100,7 @@ struct rsc_drv {
+>>         void __iomem *base;
+>>         void __iomem *tcs_base;
+>>         int id;
+>> +       bool in_solver_mode;
+>>         int num_tcs;
+>>         struct tcs_group tcs[TCS_TYPE_NR];
+>>         DECLARE_BITMAP(tcs_in_use, MAX_TCS_NR);
+>> @@ -107,6 +111,7 @@ struct rsc_drv {
+>>  int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg);
+>>  int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
+>>                              const struct tcs_request *msg);
+>> +void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable);
+>>  int rpmh_rsc_invalidate(struct rsc_drv *drv);
+>>  int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg);
+>>  bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv);
+>> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+>> index 9cc303e..17126be 100644
+>> --- a/drivers/soc/qcom/rpmh-rsc.c
+>> +++ b/drivers/soc/qcom/rpmh-rsc.c
+>> @@ -386,6 +386,11 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
+>>                 return PTR_ERR(tcs);
+>>
+>>         spin_lock(&drv->lock);
+>> +
+>> +       if (msg->state == RPMH_ACTIVE_ONLY_STATE && drv->in_solver_mode) {
+>> +               ret = -EINVAL;
+>> +               goto done_write;
+>> +       }
+>>         /*
+>>          * The h/w does not like if we send a request to the same address,
+>>          * when one is already in-flight or being processed.
+>> @@ -525,6 +530,31 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
+>>  }
+>>
+>>  /**
+>> + *  rpmh_rsc_mode_solver_set: Enable/disable solver mode
+>> + *
+>> + *  @drv: The controller
+>> + *
+>> + *  enable: boolean state to be set - true/false
+>
+>Add an @?
+>
+>> + */
+>> +void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable)
+>> +{
+>> +       int m;
+>> +       struct tcs_group *tcs = get_tcs_of_type(drv, ACTIVE_TCS);
+>> +
+>> +again:
+>> +       spin_lock(&drv->lock);
+>> +       for (m = tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
+>> +               if (!tcs_is_free(drv, m)) {
+>> +                       spin_unlock(&drv->lock);
+>> +                       goto again;
+>> +               }
+>> +       }
+>> +       drv->in_solver_mode = enable;
+>> +       spin_unlock(&drv->lock);
+>
+>I don't see you actually telling the controller to be in solver mode.
+>So I guess this is more informing the rpmh driver that something has
+>happened behind its back? Maybe the example will help me understand
+>this.
+>
+>> +
+>> +}
+>> +
+>> +/**
+>>   *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
+>>   *
+>>   *  @drv: The controller
+>> @@ -718,6 +748,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
+>>                 return ret;
+>>
+>>         spin_lock_init(&drv->lock);
+>> +       drv->in_solver_mode = false;
+>>         bitmap_zero(drv->tcs_in_use, MAX_TCS_NR);
+>>
+>>         irq = platform_get_irq(pdev, drv->id);
+>> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+>> index 43eb981..e6e98d4 100644
+>> --- a/drivers/soc/qcom/rpmh.c
+>> +++ b/drivers/soc/qcom/rpmh.c
+>> @@ -5,6 +5,7 @@
+>>
+>>  #include <linux/atomic.h>
+>>  #include <linux/bug.h>
+>> +#include <linux/delay.h>
+>>  #include <linux/interrupt.h>
+>>  #include <linux/jiffies.h>
+>>  #include <linux/kernel.h>
+>> @@ -75,6 +76,42 @@ static struct rpmh_ctrlr *get_rpmh_ctrlr(const struct device *dev)
+>>         return &drv->client;
+>>  }
+>>
+>> +static int check_ctrlr_state(struct rpmh_ctrlr *ctrlr, enum rpmh_state state)
+>> +{
+>> +       int ret = 0;
+>> +
+>> +       /* Do not allow setting active votes when in solver mode */
+>> +       spin_lock(&ctrlr->cache_lock);
+>> +       if (ctrlr->in_solver_mode && state == RPMH_ACTIVE_ONLY_STATE)
+>> +               ret = -EBUSY;
+>> +       spin_unlock(&ctrlr->cache_lock);
+>> +
+>> +       return ret;
+>> +}
+>> +
+>> +/**
+>> + * rpmh_mode_solver_set: Indicate that the RSC controller hardware has
+>> + * been configured to be in solver mode
+>> + *
+>> + * @dev: the device making the request
+>> + * @enable: Boolean value indicating if the controller is in solver mode.
+>> + *
+>> + * When solver mode is enabled, passthru API will not be able to send wake
+>> + * votes, just awake and active votes.
+>
+>I don't understand this comment, maybe sharpening up the terminology
+>will help me?
+>
+>> + */
+>> +int rpmh_mode_solver_set(const struct device *dev, bool enable)
+>> +{
+>> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+>> +
+>> +       spin_lock(&ctrlr->cache_lock);
+>> +       rpmh_rsc_mode_solver_set(ctrlr_to_drv(ctrlr), enable);
+>> +       ctrlr->in_solver_mode = enable;
+>> +       spin_unlock(&ctrlr->cache_lock);
+>> +
+>> +       return 0;
+>> +}
+>> +EXPORT_SYMBOL(rpmh_mode_solver_set);
+>> +
+>>  void rpmh_tx_done(const struct tcs_request *msg, int r)
+>>  {
+>>         struct rpmh_request *rpm_msg = container_of(msg, struct rpmh_request,
+>> @@ -230,8 +267,13 @@ int rpmh_write_async(const struct device *dev, enum rpmh_state state,
+>>                      const struct tcs_cmd *cmd, u32 n)
+>>  {
+>>         struct rpmh_request *rpm_msg;
+>> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+>>         int ret;
+>>
+>> +       ret = check_ctrlr_state(ctrlr, state);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>>         rpm_msg = kzalloc(sizeof(*rpm_msg), GFP_ATOMIC);
+>>         if (!rpm_msg)
+>>                 return -ENOMEM;
+>> @@ -262,11 +304,16 @@ int rpmh_write(const struct device *dev, enum rpmh_state state,
+>>  {
+>>         DECLARE_COMPLETION_ONSTACK(compl);
+>>         DEFINE_RPMH_MSG_ONSTACK(dev, state, &compl, rpm_msg);
+>> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+>>         int ret;
+>>
+>>         if (!cmd || !n || n > MAX_RPMH_PAYLOAD)
+>>                 return -EINVAL;
+>>
+>> +       ret = check_ctrlr_state(ctrlr, state);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>>         memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
+>>         rpm_msg.msg.num_cmds = n;
+>>
+>> @@ -353,6 +400,10 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
+>>         if (!cmd || !n)
+>>                 return -EINVAL;
+>>
+>> +       ret = check_ctrlr_state(ctrlr, state);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>>         while (n[count] > 0)
+>>                 count++;
+>>         if (!count)
+>> diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
+>> index 4c4b013..e8356b6 100644
+>> --- a/include/soc/qcom/rpmh.h
+>> +++ b/include/soc/qcom/rpmh.h
+>> @@ -29,6 +29,8 @@ int rpmh_write_pdc_data(const struct device *dev,
+>>
+>>  int rpmh_ctrlr_idle(const struct device *dev);
+>>
+>> +int rpmh_mode_solver_set(const struct device *dev, bool enable);
+>> +
+>>  #else
+>>
+>>  static inline int rpmh_write(const struct device *dev, enum rpmh_state state,
+>> @@ -58,6 +60,9 @@ static inline int rpmh_write_pdc_data(const struct device *dev,
+>>  static inline int rpmh_ctrlr_idle(const struct device *dev)
+>>  { return -ENODEV; }
+>>
+>> +static inline int rpmh_mode_solver_set(const struct device *dev, bool enable)
+>> +{ return -ENODEV; }
+>> +
+>>  #endif /* CONFIG_QCOM_RPMH */
+>>
+>>  #endif /* __SOC_QCOM_RPMH_H__ */
+>> --
+>> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>> of the Code Aurora Forum, hosted by The Linux Foundation.
+>>
