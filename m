@@ -1,7 +1,7 @@
 From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Subject: [PATCH 2/3] net: ethernet: Remove dummy runtime PM callbacks from Renesas drivers
-Date: Wed, 24 Oct 2018 16:51:33 +0300
-Message-ID: <20181024135134.28456-3-jarkko.nikula@linux.intel.com>
+Subject: [PATCH 3/3] usb: renesas_usbhs: Remove dummy runtime PM callbacks
+Date: Wed, 24 Oct 2018 16:51:34 +0300
+Message-ID: <20181024135134.28456-4-jarkko.nikula@linux.intel.com>
 References: <20181024135134.28456-1-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -24,19 +24,18 @@ Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
 ---
 Only build tested.
 ---
- drivers/net/ethernet/renesas/ravb_main.c | 13 -------------
- drivers/net/ethernet/renesas/sh_eth.c    | 13 -------------
- 2 files changed, 26 deletions(-)
+ drivers/usb/renesas_usbhs/common.c | 14 --------------
+ 1 file changed, 14 deletions(-)
 
-diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
-index defed0d0c51d..9498f9d67501 100644
---- a/drivers/net/ethernet/renesas/ravb_main.c
-+++ b/drivers/net/ethernet/renesas/ravb_main.c
-@@ -2335,21 +2335,8 @@ static int __maybe_unused ravb_resume(struct device *dev)
- 	return ret;
+diff --git a/drivers/usb/renesas_usbhs/common.c b/drivers/usb/renesas_usbhs/common.c
+index a3e1290d682d..0e760f228dd8 100644
+--- a/drivers/usb/renesas_usbhs/common.c
++++ b/drivers/usb/renesas_usbhs/common.c
+@@ -874,23 +874,9 @@ static int usbhsc_resume(struct device *dev)
+ 	return 0;
  }
  
--static int __maybe_unused ravb_runtime_nop(struct device *dev)
+-static int usbhsc_runtime_nop(struct device *dev)
 -{
 -	/* Runtime PM callback shared between ->runtime_suspend()
 -	 * and ->runtime_resume(). Simply returns success.
@@ -48,37 +47,13 @@ index defed0d0c51d..9498f9d67501 100644
 -	return 0;
 -}
 -
- static const struct dev_pm_ops ravb_dev_pm_ops = {
- 	SET_SYSTEM_SLEEP_PM_OPS(ravb_suspend, ravb_resume)
--	SET_RUNTIME_PM_OPS(ravb_runtime_nop, ravb_runtime_nop, NULL)
+ static const struct dev_pm_ops usbhsc_pm_ops = {
+ 	.suspend		= usbhsc_suspend,
+ 	.resume			= usbhsc_resume,
+-	.runtime_suspend	= usbhsc_runtime_nop,
+-	.runtime_resume		= usbhsc_runtime_nop,
  };
  
- static struct platform_driver ravb_driver = {
-diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
-index f27a0dc8c563..980310686d45 100644
---- a/drivers/net/ethernet/renesas/sh_eth.c
-+++ b/drivers/net/ethernet/renesas/sh_eth.c
-@@ -3447,21 +3447,8 @@ static int sh_eth_resume(struct device *dev)
- }
- #endif
- 
--static int sh_eth_runtime_nop(struct device *dev)
--{
--	/* Runtime PM callback shared between ->runtime_suspend()
--	 * and ->runtime_resume(). Simply returns success.
--	 *
--	 * This driver re-initializes all registers after
--	 * pm_runtime_get_sync() anyway so there is no need
--	 * to save and restore registers here.
--	 */
--	return 0;
--}
--
- static const struct dev_pm_ops sh_eth_dev_pm_ops = {
- 	SET_SYSTEM_SLEEP_PM_OPS(sh_eth_suspend, sh_eth_resume)
--	SET_RUNTIME_PM_OPS(sh_eth_runtime_nop, sh_eth_runtime_nop, NULL)
- };
- #define SH_ETH_PM_OPS (&sh_eth_dev_pm_ops)
- #else
+ static struct platform_driver renesas_usbhs_driver = {
 -- 
 2.19.1
