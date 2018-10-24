@@ -1,97 +1,141 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
-Date: Wed, 24 Oct 2018 10:29:08 +0200
-Message-ID: <86739c2a-3027-0ac0-e4d1-8257f00effc6@linaro.org>
-References: <20180927024204.17314-1-andy.tang@nxp.com>
- <3d1f8304-9005-23f3-2e0e-ef9c962c9f6e@linaro.org>
- <DB5PR0401MB2213D4C1874291B87F231547F3FD0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
- <cf157e9f-a4cb-6d7d-f51d-8b9d91f3335c@linaro.org>
- <DB5PR0401MB2213E291AC455D61ED15AF4AF3FE0@DB5PR0401MB2213.eurprd04.prod.outlook.com>
- <77993e69-db55-a2a0-799f-5225d5ffb010@linaro.org>
- <DB5PR0401MB221381AD65417D17AAD7B16DF3F60@DB5PR0401MB2213.eurprd04.prod.outlook.com>
+From: Nick Hu <nickhu@andestech.com>
+Subject: Re: [PATCH 1/1] nds32: Power management for nds32
+Date: Wed, 24 Oct 2018 17:38:43 +0800
+Message-ID: <20181024093843.GA18476@andestech.com>
+References: <cover.1540349342.git.nickhu@andestech.com>
+ <ccc18702a8d93c0a31e46f53c498b6d34c9c17e1.1540349342.git.nickhu@andestech.com>
+ <20181024065117.GA18779@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB5PR0401MB221381AD65417D17AAD7B16DF3F60@DB5PR0401MB2213.eurprd04.prod.outlook.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181024065117.GA18779@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greentime Ying-Han =?utf-8?B?SHUo6IOh6Iux5ryiKQ==?= <greentime@andestech.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "deanbo422@gmail.com" <deanbo422@gmail.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "tglx@linutronix.de" <tglx@linutronix.de>, "jason@lakedaemon.net" <jason@lakedaemon.net>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>, Zong Zong-Xian =?utf-8?B?TGko5p2O5a6X5oayKQ==?= <zong@andestech.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Quey-Liang =?utf-8?B?S2FvKOmrmOmtgeiJryk=?= <alankao@andestech.com>, "green.hu@gmail.com" <green.hu@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 24/10/2018 04:48, Andy Tang wrote:
-> Hi Daniel,
+Hi Pavel,
+
+On Wed, Oct 24, 2018 at 02:51:17PM +0800, Pavel Machek wrote:
+> On Wed 2018-10-24 11:40:07, Nickhu wrote:
+> > There are three sleep states in nds32:
+> > 	suspend to idle,
+> > 	suspend to standby,
+> > 	suspend to ram
+> > 
+> > In suspend to ram, we use the 'standby' instruction to emulate
+> > power management device to hang the system util wakeup source
+> > send wakeup events to break the loop.
+> > 
+> > First, we push the general purpose registers and system registers
+> > to stack. Second, we translate stack pointer to physical address
+> > and store to memory to save the stack pointer. Third, after write
+> > back and invalid the cache we hang in 'standby' intruction.
+> > When wakeup source trigger wake up events, the loop will be break
+> > and resume the system.
+> > 
+> > Signed-off-by: Nickhu <nickhu@andestech.com>
 > 
->> -----Original Message-----
->> From: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Sent: 2018年10月16日 19:21
->> To: Andy Tang <andy.tang@nxp.com>; rui.zhang@intel.com
->> Cc: edubezval@gmail.com; linux-pm@vger.kernel.org;
->> linux-kernel@vger.kernel.org; Rob Herring <robh+dt@kernel.org>
->> Subject: Re: [PATCH] thermal: qoriq: add multiple sensors support
->>
->>>>>> The current code is reading the DT in order to get the sensor id
->>>>>> and initialize it. IOW, the DT gives the sensors to use.
->>>>>>
->>>>>> IMO, it would be more self contained if the driver initializes all
->>>>>> the sensors without taking care of the DT and let the of- code to
->>>>>> do the binding when the thermal zone, no ?
->>>>> [Andy] could you please explain more about this way? I am not sure
->>>>> how
->>>> to implement it.
->>>>> But one thing is for sure: we must get the sensor IDs explicitly so
->>>>> that we can enable them by the following command:
->> tmu_write(qdata,
->>>>> sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
->>>>
->>>> What I meant is about code separation between the driver itself and
->>>> the of-thermal code.
->>>>
->>>> The code above re-inspect the DT to find out the sensor ids in order
->>>> to enable them and somehow this is not wrong but breaks the self
->>>> encapsulation of the driver. I was suggesting if it isn't possible to
->>>> enable all the sensors without taking care of digging into the DT.
->>>
->>> [Andy] I don't want to re-parse the DT here too. But I have to.
->>> This driver will be used by all our SOCs with different sensor IDs and
->> number.
->>> For example: there are 2 sensors on ls1088a platform with ID 0 and 1.
->>> While on ls1043a there are 6 sensors with ID 0, 1, 2, 3, 4, 5.
->>> If we don't scan the DT we would not know how many sensors it is and
->>> what are the sensor's IDs, unless we hardcode it in driver.
->>
->> Yes, you are not the only one in this situation IMO and the drivers
->> supporting multiple sensors are increasing, so this will repeat again and
->> again.
->>
->> That could be hardcoded in the driver by using the compatible string but it
->> will be nicer if we can fix that in the DT.
->>
->> [Cc'ing Rob]
->>
->> What is missing is a description of the sensors id in the temperature
->> device node. We have the <thermal-sensor-cells> with 0 or 1 telling if
->> there is one or several sensors but we can't specify which sensor ids we
->> have. The only alternative is to parse the thermal zones to found out which
->> sensors are in use and use them to initialize the driver, an approach which
->> breaks the self-encapsulation: the of-thermal framework is the one in
->> charge of doing the link between the thermal zone and a sensor id.
->>
->> Is it acceptable to add the list of the sensors id in the temp device node, so
->> the driver can initialize these sensors without parsing the thermal zone in
->> the DT ?
->>
-> Have you got any conclusion yet?
-> When can I send the next version of this patch?
+> Is "Nickhu" complete name?
+>
+Oh, Nick Hu is my complete name.
+I will fix it.
+Thanks!
+ 
+> > diff --git a/arch/nds32/kernel/pm.c b/arch/nds32/kernel/pm.c
+> > new file mode 100644
+> > index 000000000000..e1eaf3bac709
+> > --- /dev/null
+> > +++ b/arch/nds32/kernel/pm.c
+> > @@ -0,0 +1,91 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +// Copyright (C) 2008-2017 Andes Technology Corporation
+> > +
+> > +/*
+> > + * nds32 Power Management Routines
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License.
+> > + *
+> > + *  Abstract:
+> > + *
+> > + *    This program is for nds32 power management routines.
+> > + *
+> > + */
+> 
+> I'd get rid of "abstract" here, repeating GPL twice and "nds32 power
+> management routines" twice does not make much sense either.
+> 
+Ok, I will get rid of it.
 
+> > @@ -0,0 +1,129 @@
+> > +/* SPDX-License-Identifier: GPL-2.0 */
+> > +/* Copyright (C) 2017 Andes Technology Corporation */
+> > +
+> > +#include<asm/memory.h>
+> 
+> Missing space.
+> 
+> > +static int nointc_set_wake(struct irq_data *data, unsigned int on)
+> > +{
+> > +	unsigned long int_mask = __nds32__mfsr(NDS32_SR_INT_MASK);
+> > +	static bool is_bit_1[NR_IRQS] = {false};
+> > +	u32 bit = 1 << data->hwirq;
+> > +
+> > +	if (on) {
+> > +		if (int_mask & bit)
+> > +			is_bit_1[data->hwirq] = true;
+> > +		else
+> > +			is_bit_1[data->hwirq] = false;
+> > +
+> > +		int_mask |= bit;
+> > +		wake_mask |= bit;
+> > +	} else {
+> > +		if (!is_bit_1[data->hwirq])
+> > +			int_mask &= ~bit;
+> > +
+> > +		wake_mask &= ~bit;
+> > +		is_bit_1[data->hwirq] = false;
+> > +	}
+> 
+> Can we get rid of "is_bit_1" array here, and use normal bit operations
+> on another variable here?
+>
+Do you mean like this:
 
-Let's give an opportunity to Rob to answer.
+ static int nointc_set_wake(struct irq_data *data, unsigned int on)  {
+        unsigned long int_mask = __nds32__mfsr(NDS32_SR_INT_MASK);
+        static unsigned long irq_orig_bit = 0;
+        u32 bit = 1 << data->hwirq;
 
+        if (on) {
+                if (int_mask & bit)
+                        __assign_bit(data->hwirq, &irq_orig_bit, true);
+                else
+                        __assign_bit(data->hwirq, &irq_orig_bit, false);
+ 
+                __assign_bit(data->hwirq, &int_mask, true);
+                __assign_bit(data->hwirq, &wake_mask, true);
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+        } else {
+                if (!(irq_orig_bit & bit))
+                        __assign_bit(data->hwirq, &int_mask, false);
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+                __assign_bit(data->hwirq, &wake_mask, false);
+                __assign_bit(data->hwirq, &irq_orig_bit, false);
+        }
+
+        __nds32__mtsr_dsb(int_mask, NDS32_SR_INT_MASK);
+ 
+        return 0;
+ }
+
+> Thanks,
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+Thank your for quick reply,
+Nick Hu.
