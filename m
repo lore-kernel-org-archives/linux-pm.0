@@ -1,278 +1,282 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH v3 1/3] drivers: qcom: rpmh-rsc: simplify TCS locking
-Date: Wed, 24 Oct 2018 11:07:16 -0600
-Message-ID: <20181024170716.GF17444@codeaurora.org>
-References: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org>
- <1539050912-25749-2-git-send-email-rplsssn@codeaurora.org>
+From: Evan Green <evgreen@chromium.org>
+Subject: Re: [PATCH v3 3/3] drivers: qcom: rpmh: disallow active requests in
+ solver mode
+Date: Wed, 24 Oct 2018 10:42:28 -0700
+Message-ID: <CAE=gft4qNfRFN2sXG7gX0kV5AGCtHAdLNxD5fz1RAbZ-8WCoDw@mail.gmail.com>
+References: <1539050912-25749-1-git-send-email-rplsssn@codeaurora.org> <1539050912-25749-4-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1539050912-25749-2-git-send-email-rplsssn@codeaurora.org>
+In-Reply-To: <1539050912-25749-4-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org
+To: rplsssn@codeaurora.org
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sboyd@kernel.org, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 09 2018 at 20:08 -0600, Raju P.L.S.S.S.N wrote:
->tcs->lock was introduced to serialize access with in TCS group. But
->even without tcs->lock, drv->lock is serving the same purpose. So
->use single drv->lock.
+On Mon, Oct 8, 2018 at 7:09 PM Raju P.L.S.S.S.N <rplsssn@codeaurora.org> wrote:
 >
->Other optimizations include -
-> - Remove locking around clear_bit() in IRQ handler. clear_bit() is
->   atomic.
-> - Remove redundant read of TCS registers.
-> - Use spin_lock instead of _irq variants as the locks are not held
->   in interrupt context
+> From: Lina Iyer <ilina@codeaurora.org>
 >
->Suggested-by: Lina Iyer <ilina@codeaurora.org>
->Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+> Controllers may be in 'solver' state, where they could be in autonomous
+> mode executing low power modes for their hardware and as such are not
+> available for sending active votes. Device driver may notify RPMH API
+> that the controller is in solver mode and when in such mode, disallow
+> requests from platform drivers for state change using the RSC.
 
->---
->This patch is based on https://lkml.org/lkml/2018/10/3/422
->---
-> drivers/soc/qcom/rpmh-internal.h |  2 --
-> drivers/soc/qcom/rpmh-rsc.c      | 37 +++++++++++++------------------------
-> drivers/soc/qcom/rpmh.c          | 20 ++++++++------------
-> 3 files changed, 21 insertions(+), 38 deletions(-)
+Maybe I'm being dense, but I don't really get it. So in solver mode,
+the whole RSC is just disabled? Solver mode just figures out what
+state to put the hardware in without needing all these votes? Sounds
+cool, why doesn't it just do that all the time? Can you describe an
+example usecase of a real client that would use solver mode, and how
+that works?
+
 >
->diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
->index 8c316b4..2e3ffcd 100644
->--- a/drivers/soc/qcom/rpmh-internal.h
->+++ b/drivers/soc/qcom/rpmh-internal.h
->@@ -28,7 +28,6 @@
->  * @offset:    start of the TCS group relative to the TCSes in the RSC
->  * @num_tcs:   number of TCSes in this type
->  * @ncpt:      number of commands in each TCS
->- * @lock:      lock for synchronizing this TCS writes
->  * @req:       requests that are sent from the TCS
->  * @cmd_cache: flattened cache of cmds in sleep/wake TCS
->  * @slots:     indicates which of @cmd_addr are occupied
->@@ -40,7 +39,6 @@ struct tcs_group {
-> 	u32 offset;
-> 	int num_tcs;
-> 	int ncpt;
->-	spinlock_t lock;
-> 	const struct tcs_request *req[MAX_TCS_PER_TYPE];
-> 	u32 *cmd_cache;
-> 	DECLARE_BITMAP(slots, MAX_TCS_SLOTS);
->diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
->index 73d5b98..d6b834e 100644
->--- a/drivers/soc/qcom/rpmh-rsc.c
->+++ b/drivers/soc/qcom/rpmh-rsc.c
->@@ -98,8 +98,7 @@ static void write_tcs_reg_sync(struct rsc_drv *drv, int reg, int tcs_id,
+> Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> ---
+> Chanages in v3
+>  - Add functionality to set solver mode for RSC controller
+>  - return -EINVAL if active requests are sent in solver mode
+> ---
+>  drivers/soc/qcom/rpmh-internal.h |  5 ++++
+>  drivers/soc/qcom/rpmh-rsc.c      | 31 ++++++++++++++++++++++++
+>  drivers/soc/qcom/rpmh.c          | 51 ++++++++++++++++++++++++++++++++++++++++
+>  include/soc/qcom/rpmh.h          |  5 ++++
+>  4 files changed, 92 insertions(+)
 >
-> static bool tcs_is_free(struct rsc_drv *drv, int tcs_id)
-> {
->-	return !test_bit(tcs_id, drv->tcs_in_use) &&
->-	       read_tcs_reg(drv, RSC_DRV_STATUS, tcs_id, 0);
->+	return !test_bit(tcs_id, drv->tcs_in_use);
-> }
+> diff --git a/drivers/soc/qcom/rpmh-internal.h b/drivers/soc/qcom/rpmh-internal.h
+> index 4b891c23..0923c45 100644
+> --- a/drivers/soc/qcom/rpmh-internal.h
+> +++ b/drivers/soc/qcom/rpmh-internal.h
+> @@ -70,12 +70,14 @@ struct rpmh_request {
+>   * @cache_lock: synchronize access to the cache data
+>   * @dirty: was the cache updated since flush
+>   * @batch_cache: Cache sleep and wake requests sent as batch
+> + * @in_solver_mode: Controller is busy in solver mode
+>   */
+>  struct rpmh_ctrlr {
+>         struct list_head cache;
+>         spinlock_t cache_lock;
+>         bool dirty;
+>         struct list_head batch_cache;
+> +       bool in_solver_mode;
+>  };
 >
-> static struct tcs_group *get_tcs_of_type(struct rsc_drv *drv, int type)
->@@ -109,29 +108,28 @@ static struct tcs_group *get_tcs_of_type(struct rsc_drv *drv, int type)
+>  /**
+> @@ -86,6 +88,7 @@ struct rpmh_ctrlr {
+>   * @base:       start address of the RSC's DRV registers
+>   * @tcs_base:   start address of the TCS registers in this controller
+>   * @id:         instance id in the controller (Direct Resource Voter)
+> + * @in_solver_mode: Controller is in solver mode
+>   * @num_tcs:    number of TCSes in this DRV
+>   * @tcs:        TCS groups
+>   * @tcs_in_use: s/w state of the TCS
+> @@ -97,6 +100,7 @@ struct rsc_drv {
+>         void __iomem *base;
+>         void __iomem *tcs_base;
+>         int id;
+> +       bool in_solver_mode;
+>         int num_tcs;
+>         struct tcs_group tcs[TCS_TYPE_NR];
+>         DECLARE_BITMAP(tcs_in_use, MAX_TCS_NR);
+> @@ -107,6 +111,7 @@ struct rsc_drv {
+>  int rpmh_rsc_send_data(struct rsc_drv *drv, const struct tcs_request *msg);
+>  int rpmh_rsc_write_ctrl_data(struct rsc_drv *drv,
+>                              const struct tcs_request *msg);
+> +void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable);
+>  int rpmh_rsc_invalidate(struct rsc_drv *drv);
+>  int rpmh_rsc_write_pdc_data(struct rsc_drv *drv, const struct tcs_request *msg);
+>  bool rpmh_rsc_ctrlr_is_idle(struct rsc_drv *drv);
+> diff --git a/drivers/soc/qcom/rpmh-rsc.c b/drivers/soc/qcom/rpmh-rsc.c
+> index 9cc303e..17126be 100644
+> --- a/drivers/soc/qcom/rpmh-rsc.c
+> +++ b/drivers/soc/qcom/rpmh-rsc.c
+> @@ -386,6 +386,11 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
+>                 return PTR_ERR(tcs);
 >
-> static int tcs_invalidate(struct rsc_drv *drv, int type)
-> {
->-	int m;
->+	int m, ret = 0;
-> 	struct tcs_group *tcs;
+>         spin_lock(&drv->lock);
+> +
+> +       if (msg->state == RPMH_ACTIVE_ONLY_STATE && drv->in_solver_mode) {
+> +               ret = -EINVAL;
+> +               goto done_write;
+> +       }
+>         /*
+>          * The h/w does not like if we send a request to the same address,
+>          * when one is already in-flight or being processed.
+> @@ -525,6 +530,31 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
+>  }
 >
-> 	tcs = get_tcs_of_type(drv, type);
+>  /**
+> + *  rpmh_rsc_mode_solver_set: Enable/disable solver mode
+> + *
+> + *  @drv: The controller
+> + *
+> + *  enable: boolean state to be set - true/false
+
+Add an @?
+
+> + */
+> +void rpmh_rsc_mode_solver_set(struct rsc_drv *drv, bool enable)
+> +{
+> +       int m;
+> +       struct tcs_group *tcs = get_tcs_of_type(drv, ACTIVE_TCS);
+> +
+> +again:
+> +       spin_lock(&drv->lock);
+> +       for (m = tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
+> +               if (!tcs_is_free(drv, m)) {
+> +                       spin_unlock(&drv->lock);
+> +                       goto again;
+> +               }
+> +       }
+> +       drv->in_solver_mode = enable;
+> +       spin_unlock(&drv->lock);
+
+I don't see you actually telling the controller to be in solver mode.
+So I guess this is more informing the rpmh driver that something has
+happened behind its back? Maybe the example will help me understand
+this.
+
+> +
+> +}
+> +
+> +/**
+>   *  rpmh_rsc_ctrlr_is_idle: Check if any of the AMCs are busy.
+>   *
+>   *  @drv: The controller
+> @@ -718,6 +748,7 @@ static int rpmh_rsc_probe(struct platform_device *pdev)
+>                 return ret;
 >
->-	spin_lock(&tcs->lock);
->-	if (bitmap_empty(tcs->slots, MAX_TCS_SLOTS)) {
->-		spin_unlock(&tcs->lock);
->-		return 0;
->-	}
->+	spin_lock(&drv->lock);
->+	if (bitmap_empty(tcs->slots, MAX_TCS_SLOTS))
->+		goto done;
+>         spin_lock_init(&drv->lock);
+> +       drv->in_solver_mode = false;
+>         bitmap_zero(drv->tcs_in_use, MAX_TCS_NR);
 >
-> 	for (m = tcs->offset; m < tcs->offset + tcs->num_tcs; m++) {
-> 		if (!tcs_is_free(drv, m)) {
->-			spin_unlock(&tcs->lock);
->-			return -EAGAIN;
->+			ret = -EAGAIN;
->+			goto done;
-> 		}
-> 		write_tcs_reg_sync(drv, RSC_DRV_CMD_ENABLE, m, 0);
-> 		write_tcs_reg_sync(drv, RSC_DRV_CMD_WAIT_FOR_CMPL, m, 0);
-> 	}
-> 	bitmap_zero(tcs->slots, MAX_TCS_SLOTS);
->-	spin_unlock(&tcs->lock);
+>         irq = platform_get_irq(pdev, drv->id);
+> diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
+> index 43eb981..e6e98d4 100644
+> --- a/drivers/soc/qcom/rpmh.c
+> +++ b/drivers/soc/qcom/rpmh.c
+> @@ -5,6 +5,7 @@
 >
->-	return 0;
->+done:
->+	spin_unlock(&drv->lock);
->+	return ret;
-> }
+>  #include <linux/atomic.h>
+>  #include <linux/bug.h>
+> +#include <linux/delay.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/jiffies.h>
+>  #include <linux/kernel.h>
+> @@ -75,6 +76,42 @@ static struct rpmh_ctrlr *get_rpmh_ctrlr(const struct device *dev)
+>         return &drv->client;
+>  }
 >
-> /**
->@@ -298,9 +296,7 @@ static irqreturn_t tcs_tx_done(int irq, void *p)
-> 		write_tcs_reg(drv, RSC_DRV_CMD_ENABLE, i, 0);
-> 		write_tcs_reg(drv, RSC_DRV_CMD_WAIT_FOR_CMPL, i, 0);
-> 		write_tcs_reg(drv, RSC_DRV_IRQ_CLEAR, 0, BIT(i));
->-		spin_lock(&drv->lock);
-> 		clear_bit(i, drv->tcs_in_use);
->-		spin_unlock(&drv->lock);
-> 		if (req)
-> 			rpmh_tx_done(req, err);
-> 	}
->@@ -383,14 +379,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
-> {
-> 	struct tcs_group *tcs;
-> 	int tcs_id;
->-	unsigned long flags;
-> 	int ret;
+> +static int check_ctrlr_state(struct rpmh_ctrlr *ctrlr, enum rpmh_state state)
+> +{
+> +       int ret = 0;
+> +
+> +       /* Do not allow setting active votes when in solver mode */
+> +       spin_lock(&ctrlr->cache_lock);
+> +       if (ctrlr->in_solver_mode && state == RPMH_ACTIVE_ONLY_STATE)
+> +               ret = -EBUSY;
+> +       spin_unlock(&ctrlr->cache_lock);
+> +
+> +       return ret;
+> +}
+> +
+> +/**
+> + * rpmh_mode_solver_set: Indicate that the RSC controller hardware has
+> + * been configured to be in solver mode
+> + *
+> + * @dev: the device making the request
+> + * @enable: Boolean value indicating if the controller is in solver mode.
+> + *
+> + * When solver mode is enabled, passthru API will not be able to send wake
+> + * votes, just awake and active votes.
+
+I don't understand this comment, maybe sharpening up the terminology
+will help me?
+
+> + */
+> +int rpmh_mode_solver_set(const struct device *dev, bool enable)
+> +{
+> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+> +
+> +       spin_lock(&ctrlr->cache_lock);
+> +       rpmh_rsc_mode_solver_set(ctrlr_to_drv(ctrlr), enable);
+> +       ctrlr->in_solver_mode = enable;
+> +       spin_unlock(&ctrlr->cache_lock);
+> +
+> +       return 0;
+> +}
+> +EXPORT_SYMBOL(rpmh_mode_solver_set);
+> +
+>  void rpmh_tx_done(const struct tcs_request *msg, int r)
+>  {
+>         struct rpmh_request *rpm_msg = container_of(msg, struct rpmh_request,
+> @@ -230,8 +267,13 @@ int rpmh_write_async(const struct device *dev, enum rpmh_state state,
+>                      const struct tcs_cmd *cmd, u32 n)
+>  {
+>         struct rpmh_request *rpm_msg;
+> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+>         int ret;
 >
-> 	tcs = get_tcs_for_msg(drv, msg);
-> 	if (IS_ERR(tcs))
-> 		return PTR_ERR(tcs);
+> +       ret = check_ctrlr_state(ctrlr, state);
+> +       if (ret)
+> +               return ret;
+> +
+>         rpm_msg = kzalloc(sizeof(*rpm_msg), GFP_ATOMIC);
+>         if (!rpm_msg)
+>                 return -ENOMEM;
+> @@ -262,11 +304,16 @@ int rpmh_write(const struct device *dev, enum rpmh_state state,
+>  {
+>         DECLARE_COMPLETION_ONSTACK(compl);
+>         DEFINE_RPMH_MSG_ONSTACK(dev, state, &compl, rpm_msg);
+> +       struct rpmh_ctrlr *ctrlr = get_rpmh_ctrlr(dev);
+>         int ret;
 >
->-	spin_lock_irqsave(&tcs->lock, flags);
-> 	spin_lock(&drv->lock);
-> 	/*
-> 	 * The h/w does not like if we send a request to the same address,
->@@ -398,14 +392,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
-> 	 */
-> 	ret = check_for_req_inflight(drv, tcs, msg);
-> 	if (ret) {
->-		spin_unlock(&drv->lock);
-> 		goto done_write;
-> 	}
+>         if (!cmd || !n || n > MAX_RPMH_PAYLOAD)
+>                 return -EINVAL;
 >
-> 	tcs_id = find_free_tcs(tcs);
-> 	if (tcs_id < 0) {
-> 		ret = tcs_id;
->-		spin_unlock(&drv->lock);
-> 		goto done_write;
-> 	}
+> +       ret = check_ctrlr_state(ctrlr, state);
+> +       if (ret)
+> +               return ret;
+> +
+>         memcpy(rpm_msg.cmd, cmd, n * sizeof(*cmd));
+>         rpm_msg.msg.num_cmds = n;
 >
->@@ -413,13 +405,12 @@ static int tcs_write(struct rsc_drv *drv, const struct tcs_request *msg)
-> 	set_bit(tcs_id, drv->tcs_in_use);
-> 	if (msg->state == RPMH_ACTIVE_ONLY_STATE && tcs->type != ACTIVE_TCS)
-> 		enable_tcs_irq(drv, tcs_id, true);
->-	spin_unlock(&drv->lock);
+> @@ -353,6 +400,10 @@ int rpmh_write_batch(const struct device *dev, enum rpmh_state state,
+>         if (!cmd || !n)
+>                 return -EINVAL;
 >
-> 	__tcs_buffer_write(drv, tcs_id, 0, msg);
-> 	__tcs_trigger(drv, tcs_id, true);
+> +       ret = check_ctrlr_state(ctrlr, state);
+> +       if (ret)
+> +               return ret;
+> +
+>         while (n[count] > 0)
+>                 count++;
+>         if (!count)
+> diff --git a/include/soc/qcom/rpmh.h b/include/soc/qcom/rpmh.h
+> index 4c4b013..e8356b6 100644
+> --- a/include/soc/qcom/rpmh.h
+> +++ b/include/soc/qcom/rpmh.h
+> @@ -29,6 +29,8 @@ int rpmh_write_pdc_data(const struct device *dev,
 >
-> done_write:
->-	spin_unlock_irqrestore(&tcs->lock, flags);
->+	spin_unlock(&drv->lock);
-> 	return ret;
-> }
+>  int rpmh_ctrlr_idle(const struct device *dev);
 >
->@@ -517,19 +508,18 @@ static int tcs_ctrl_write(struct rsc_drv *drv, const struct tcs_request *msg)
-> {
-> 	struct tcs_group *tcs;
-> 	int tcs_id = 0, cmd_id = 0;
->-	unsigned long flags;
-> 	int ret;
+> +int rpmh_mode_solver_set(const struct device *dev, bool enable);
+> +
+>  #else
 >
-> 	tcs = get_tcs_for_msg(drv, msg);
-> 	if (IS_ERR(tcs))
-> 		return PTR_ERR(tcs);
+>  static inline int rpmh_write(const struct device *dev, enum rpmh_state state,
+> @@ -58,6 +60,9 @@ static inline int rpmh_write_pdc_data(const struct device *dev,
+>  static inline int rpmh_ctrlr_idle(const struct device *dev)
+>  { return -ENODEV; }
 >
->-	spin_lock_irqsave(&tcs->lock, flags);
->+	spin_lock(&drv->lock);
-> 	/* find the TCS id and the command in the TCS to write to */
-> 	ret = find_slots(tcs, msg, &tcs_id, &cmd_id);
-> 	if (!ret)
-> 		__tcs_buffer_write(drv, tcs_id, cmd_id, msg);
->-	spin_unlock_irqrestore(&tcs->lock, flags);
->+	spin_unlock(&drv->lock);
+> +static inline int rpmh_mode_solver_set(const struct device *dev, bool enable)
+> +{ return -ENODEV; }
+> +
+>  #endif /* CONFIG_QCOM_RPMH */
 >
-> 	return ret;
-> }
->@@ -638,7 +628,6 @@ static int rpmh_probe_tcs_config(struct platform_device *pdev,
-> 		tcs->type = tcs_cfg[i].type;
-> 		tcs->num_tcs = tcs_cfg[i].n;
-> 		tcs->ncpt = ncpt;
->-		spin_lock_init(&tcs->lock);
->
-> 		if (!tcs->num_tcs || tcs->type == CONTROL_TCS)
-> 			continue;
->diff --git a/drivers/soc/qcom/rpmh.c b/drivers/soc/qcom/rpmh.c
->index 71a76ea..297d6cc 100644
->--- a/drivers/soc/qcom/rpmh.c
->+++ b/drivers/soc/qcom/rpmh.c
->@@ -117,9 +117,8 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
-> 					   struct tcs_cmd *cmd)
-> {
-> 	struct cache_req *req;
->-	unsigned long flags;
->
->-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
->+	spin_lock(&ctrlr->cache_lock);
-> 	req = __find_req(ctrlr, cmd->addr);
-> 	if (req)
-> 		goto existing;
->@@ -153,7 +152,7 @@ static struct cache_req *cache_rpm_request(struct rpmh_ctrlr *ctrlr,
->
-> 	ctrlr->dirty = true;
-> unlock:
->-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
->+	spin_unlock(&ctrlr->cache_lock);
->
-> 	return req;
-> }
->@@ -283,23 +282,21 @@ int rpmh_write(const struct device *dev, enum rpmh_state state,
->
-> static void cache_batch(struct rpmh_ctrlr *ctrlr, struct batch_cache_req *req)
-> {
->-	unsigned long flags;
->
->-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
->+	spin_lock(&ctrlr->cache_lock);
-> 	list_add_tail(&req->list, &ctrlr->batch_cache);
->-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
->+	spin_unlock(&ctrlr->cache_lock);
-> }
->
-> static int flush_batch(struct rpmh_ctrlr *ctrlr)
-> {
-> 	struct batch_cache_req *req;
-> 	const struct rpmh_request *rpm_msg;
->-	unsigned long flags;
-> 	int ret = 0;
-> 	int i;
->
-> 	/* Send Sleep/Wake requests to the controller, expect no response */
->-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
->+	spin_lock(&ctrlr->cache_lock);
-> 	list_for_each_entry(req, &ctrlr->batch_cache, list) {
-> 		for (i = 0; i < req->count; i++) {
-> 			rpm_msg = req->rpm_msgs + i;
->@@ -309,7 +306,7 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
-> 				break;
-> 		}
-> 	}
->-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
->+	spin_unlock(&ctrlr->cache_lock);
->
-> 	return ret;
-> }
->@@ -317,13 +314,12 @@ static int flush_batch(struct rpmh_ctrlr *ctrlr)
-> static void invalidate_batch(struct rpmh_ctrlr *ctrlr)
-> {
-> 	struct batch_cache_req *req, *tmp;
->-	unsigned long flags;
->
->-	spin_lock_irqsave(&ctrlr->cache_lock, flags);
->+	spin_lock(&ctrlr->cache_lock);
-> 	list_for_each_entry_safe(req, tmp, &ctrlr->batch_cache, list)
-> 		kfree(req);
-> 	INIT_LIST_HEAD(&ctrlr->batch_cache);
->-	spin_unlock_irqrestore(&ctrlr->cache_lock, flags);
->+	spin_unlock(&ctrlr->cache_lock);
-> }
->
-> /**
->--
->QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->of the Code Aurora Forum, hosted by The Linux Foundation.
+>  #endif /* __SOC_QCOM_RPMH_H__ */
+> --
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> of the Code Aurora Forum, hosted by The Linux Foundation.
 >
