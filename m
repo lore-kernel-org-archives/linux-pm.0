@@ -1,90 +1,102 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v6 1/6] dt-bindings: power: Introduce one property to
- present the battery internal resistance
-Date: Thu, 25 Oct 2018 22:13:49 +0200
-Message-ID: <20181025201349.c4564dgc7743kosx@earth.universe>
-References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1540189330.git.baolin.wang@linaro.org>
- <CAMz4kuJCS1_E+CUdANepYe+WpYSOwovZ9Rnu85zvTgmV9BE5+g@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Thu, 25 Oct 2018 15:43:39 -0700
+Message-ID: <20181025224339.GB22824@google.com>
+References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
+ <1539257761-23023-2-git-send-email-tdas@codeaurora.org>
+ <CAP245DV4yK2u2tS_Jjgb1PBx+qkXPXBOs3w4THNDaBEw7WGDLg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ugq6v2bge6kmq75q"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMz4kuJCS1_E+CUdANepYe+WpYSOwovZ9Rnu85zvTgmV9BE5+g@mail.gmail.com>
+In-Reply-To: <CAP245DV4yK2u2tS_Jjgb1PBx+qkXPXBOs3w4THNDaBEw7WGDLg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Taniya Das <tdas@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, DTML <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>, Saravana Kannan <skannan@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---ugq6v2bge6kmq75q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Baolin,
-
-On Thu, Oct 25, 2018 at 10:01:55AM +0800, Baolin Wang wrote:
-> Hi Sebastian,
->=20
-> On 22 October 2018 at 15:43, Baolin Wang <baolin.wang@linaro.org> wrote:
-> > The internal resistance of a battery is not a constant in its life cycl=
-e,
-> > this varies over the age of the battery or temperature and so on. But we
-> > just want use one constant battery internal resistance to estimate the
-> > battery capacity. Thus this patch introduces one property to present
-> > the battery factory internal resistance for battery information.
+On Tue, Oct 23, 2018 at 05:23:34PM +0530, Amit Kucheria wrote:
+> Hi Taniya,
+> 
+> Both the patches are missing v9 in their subject line - this threw off
+> patchwork when trying to download the patches.
+> 
+> On Thu, Oct 11, 2018 at 5:06 PM Taniya Das <tdas@codeaurora.org> wrote:
 > >
-> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> > Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> > ---
-> > Changes from v5:
-> >  - None.
-> >
-> > Changes from v4:
-> >  - None.
-> >
-> > Changes from v3:
-> >  - Split binding into one separate patch.
-> >  - Add LinusW reviewed tag.
-> >
-> > Changes from v2:
-> >  - Rename the property.
-> >  - Improve the commit message.
-> >
-> > Changes from v1:
-> >  - New patch in v2.
-> > ---
->=20
-> I think this v6 patch set have addressed your comments on v5, so could
-> you apply this patch set if there are no other comments? I hope this
-> driver can be merged into 4.20 finally. Thanks.
+> > Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> > SoCs. This is required for managing the cpu frequency transitions which are
+> > controlled by the hardware engine.
+> 
+> I tested these patches on the sdm845-mtp against 4.19 and found that
+> the frequency gets stuck at the highest opp (the boost frequency)
+> after running a couple of 'yes > /dev/null &' instances. Have you
+> tested these against a mainline kernel?
+> 
+> See cpufreq statistics below:
+> 
+> linaro-test [rc=0]# cat policy?/scaling_cur_freq
+> 300000
+> 2803200
+> 
+> linaro-test [rc=0]# cat policy?/stats/time_in_state
+> 300000 100840
+> 403200 388
+> 480000 71
+> 576000 54
+> 652800 22
+> 748800 11
+> 825600 5
+> 902400 5
+> 979200 9
+> 1056000 3
+> 1132800 2
+> 1228800 5
+> 1324800 8
+> 1420800 2
+> 1516800 1
+> 1612800 0
+> 1689600 0
+> 1766400 392
+> 825600 22048
+> 902400 21
+> 979200 4
+> 1056000 15
+> 1209600 6
+> 1286400 0
+> 1363200 1
+> 1459200 0
+> 1536000 0
+> 1612800 1
+> 1689600 0
+> 1766400 0
+> 1843200 2
+> 1920000 2
+> 1996800 0
+> 2092800 0
+> 2169600 0
+> 2246400 0
+> 2323200 0
+> 2400000 0
+> 2476800 0
+> 2553600 0
+> 2649600 0
+> 2707200 0
+> 2764800 0
+> 2784000 0
+> 2803200 79718
 
-Everything looks fine to me. I will merge this directly after the
-4.20 merge window has been closed and linux-next is open again.
-I'm not merging non-trivial, non-bugfix patches this lates during the
-release process.
+I can repro this on SDM845 with a v4.19 kernel.
 
--- Sebastian
+Since the little cores don't have a boost frequency I think maxing out
+can be expected with a high workload and no thermal throttling.
+However the big cores have a boost frequency (2.803 MHz), so the
+driver shouldn't be stuck at it. Though in practice I also wonder if
+the ~1% 'boost' makes a big difference in terms of performance or CPU
+overload ...
 
---ugq6v2bge6kmq75q
-Content-Type: application/pgp-signature; name="signature.asc"
+Cheers
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlvSI/oACgkQ2O7X88g7
-+poBrA/+KA++EX9zBEIHotTx/Qn4oktuABsscaPQY621URT5I2mNTL/TDclEc3o9
-nFtw4EvEVrLWIfdPM3q2RST6JOWr1oh9/etdfT2wYBdF9Hl6Vn/L5ZVebUnyHNCf
-LjsVwLKd6BjeGlIhEGc3NyLsCDYiH3yZlLrV95fmkDDyAjuKOMXjw00TG7AgH26Z
-2BRNXZIc2stb4ZAJBYoHbVwpCiwHSYe6eUKI4/2Q0rgONalh1z8ZOWpzSTp32kLQ
-wbQ7aBbM2pDhxJwCp0ln7yQeeT3x3ydWn5lXoUAhV9ddkG9vIIjuf/RWQ9tc/wjT
-zCjgfAi4cPa6R3TQCnvky60fcE3MbCr81g8BCyh90jBCbqwtr1/R0Veoyy2QGpI7
-SO/CVTurvroOyP6/F+grRNGEkQAIque6Kyw60tCGDmWPzFHsOCC7kOk91gC1s3b9
-LAGY3QHu1h4Lwr6hUlewW4v+vuz32wa9vufzLoAj4+ckQvE9c7xrv9w4UbJYcTO8
-ku9xD7JR/5d48rUmVp8h+jhkwTKJiL8Ckqtd8KaXQwFN2h/VCUBNYhyl2ctXlMpb
-qJ3y09JvRR3mRty5ojr3ILuPsE8fTKghO/0aWDRNBpuedp2d8BUKdtJFpjjfg0sZ
-KEEAciTlqelWk6Mzx03XHISQxNwvl0xvhXGWdEqBCws0n7SB60A=
-=fu6Q
------END PGP SIGNATURE-----
-
---ugq6v2bge6kmq75q--
+Matthias
