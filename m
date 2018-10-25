@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 02/10] OPP: Identify and mark genpd OPP tables
-Date: Thu, 25 Oct 2018 11:22:39 +0530
-Message-ID: <320abb3732333763c6d87e5e6aa81aa80dbace8d.1540446493.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 03/10] OPP: Separate out custom OPP handler specific code
+Date: Thu, 25 Oct 2018 11:22:40 +0530
+Message-ID: <2b94b3d1454a5e5da9e1a984a1a87cc852b44213.1540446493.git.viresh.kumar@linaro.org>
 References: <cover.1540446493.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -12,60 +12,113 @@ To: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <n
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We need to handle genpd OPP tables differently, this is already the case
-at one location and will be extended going forward. Add another field to
-the OPP table to check if the table belongs to a genpd or not.
+Create a separate routine to take care of custom set_opp() handler
+specific stuff.
 
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/of.c  | 6 ++++--
- drivers/opp/opp.h | 2 ++
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ drivers/opp/core.c | 67 +++++++++++++++++++++++++++-------------------
+ 1 file changed, 40 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 5a4b47958073..5f114cd3d88c 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -92,6 +92,9 @@ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev,
- 	of_property_read_u32(np, "voltage-tolerance",
- 			     &opp_table->voltage_tolerance_v1);
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 2c2df4e4fc14..ebb3b648e0fd 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -635,6 +635,34 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 	return ret;
+ }
  
-+	if (of_find_property(np, "#power-domain-cells", NULL))
-+		opp_table->is_genpd = true;
++static int _set_opp_custom(const struct opp_table *opp_table,
++			   struct device *dev, unsigned long old_freq,
++			   unsigned long freq,
++			   struct dev_pm_opp_supply *old_supply,
++			   struct dev_pm_opp_supply *new_supply)
++{
++	struct dev_pm_set_opp_data *data;
++	int size;
 +
- 	/* Get OPP table node */
- 	opp_np = _opp_of_get_opp_desc_node(np, index);
- 	of_node_put(np);
-@@ -326,8 +329,7 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
- 	ret = of_property_read_u64(np, "opp-hz", &rate);
- 	if (ret < 0) {
- 		/* "opp-hz" is optional for devices like power domains. */
--		if (!of_find_property(dev->of_node, "#power-domain-cells",
--				      NULL)) {
-+		if (!opp_table->is_genpd) {
- 			dev_err(dev, "%s: opp-hz not found\n", __func__);
- 			goto free_opp;
- 		}
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 9c6544b4f4f9..cdb0c2b095e2 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -140,6 +140,7 @@ enum opp_table_access {
-  * @regulators: Supply regulators
-  * @regulator_count: Number of power supply regulators
-  * @genpd_performance_state: Device's power domain support performance state.
-+ * @is_genpd: Marks if the OPP table belongs to a genpd.
-  * @set_opp: Platform specific set_opp callback
-  * @set_opp_data: Data to be passed to set_opp callback
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-@@ -178,6 +179,7 @@ struct opp_table {
- 	struct regulator **regulators;
- 	unsigned int regulator_count;
- 	bool genpd_performance_state;
-+	bool is_genpd;
++	data = opp_table->set_opp_data;
++	data->regulators = opp_table->regulators;
++	data->regulator_count = opp_table->regulator_count;
++	data->clk = opp_table->clk;
++	data->dev = dev;
++
++	data->old_opp.rate = old_freq;
++	size = sizeof(*old_supply) * opp_table->regulator_count;
++	if (IS_ERR(old_supply))
++		memset(data->old_opp.supplies, 0, size);
++	else
++		memcpy(data->old_opp.supplies, old_supply, size);
++
++	data->new_opp.rate = freq;
++	memcpy(data->new_opp.supplies, new_supply, size);
++
++	return opp_table->set_opp(data);
++}
++
+ /**
+  * dev_pm_opp_set_rate() - Configure new OPP based on frequency
+  * @dev:	 device for which we do this operation
+@@ -649,7 +677,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	unsigned long freq, old_freq;
+ 	struct dev_pm_opp *old_opp, *opp;
+ 	struct clk *clk;
+-	int ret, size;
++	int ret;
  
- 	int (*set_opp)(struct dev_pm_set_opp_data *data);
- 	struct dev_pm_set_opp_data *set_opp_data;
+ 	if (unlikely(!target_freq)) {
+ 		dev_err(dev, "%s: Invalid target frequency %lu\n", __func__,
+@@ -702,8 +730,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
+ 		old_freq, freq);
+ 
+-	/* Only frequency scaling */
+-	if (!opp_table->regulators) {
++	if (opp_table->set_opp) {
++		ret = _set_opp_custom(opp_table, dev, old_freq, freq,
++				      IS_ERR(old_opp) ? NULL : old_opp->supplies,
++				      opp->supplies);
++	} else if (opp_table->regulators) {
++		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
++						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
++						 opp->supplies);
++	} else {
++		/* Only frequency scaling */
++
+ 		/*
+ 		 * We don't support devices with both regulator and
+ 		 * domain performance-state for now.
+@@ -714,30 +751,6 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 						      opp->pstate);
+ 		else
+ 			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+-	} else if (!opp_table->set_opp) {
+-		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
+-						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
+-						 opp->supplies);
+-	} else {
+-		struct dev_pm_set_opp_data *data;
+-
+-		data = opp_table->set_opp_data;
+-		data->regulators = opp_table->regulators;
+-		data->regulator_count = opp_table->regulator_count;
+-		data->clk = clk;
+-		data->dev = dev;
+-
+-		data->old_opp.rate = old_freq;
+-		size = sizeof(*opp->supplies) * opp_table->regulator_count;
+-		if (IS_ERR(old_opp))
+-			memset(data->old_opp.supplies, 0, size);
+-		else
+-			memcpy(data->old_opp.supplies, old_opp->supplies, size);
+-
+-		data->new_opp.rate = freq;
+-		memcpy(data->new_opp.supplies, opp->supplies, size);
+-
+-		ret = opp_table->set_opp(data);
+ 	}
+ 
+ 	dev_pm_opp_put(opp);
 -- 
 2.19.1.568.g152ad8e3369a
