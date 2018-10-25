@@ -1,52 +1,79 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v6 1/6] dt-bindings: power: Introduce one property to
- present the battery internal resistance
-Date: Thu, 25 Oct 2018 10:01:55 +0800
-Message-ID: <CAMz4kuJCS1_E+CUdANepYe+WpYSOwovZ9Rnu85zvTgmV9BE5+g@mail.gmail.com>
-References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1540189330.git.baolin.wang@linaro.org>
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: RE: [PATCH 3/3] usb: renesas_usbhs: Remove dummy runtime PM callbacks
+Date: Thu, 25 Oct 2018 02:45:18 +0000
+Message-ID: <OSBPR01MB229365A4E6587232987F1F1CD8F70@OSBPR01MB2293.jpnprd01.prod.outlook.com>
+References: <20181024135134.28456-1-jarkko.nikula@linux.intel.com>
+ <20181024135134.28456-4-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1540189330.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Baolin Wang <baolin.wang@linaro.org>, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20181024135134.28456-4-jarkko.nikula@linux.intel.com>
+Content-Language: ja-JP
+Sender: netdev-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "David S . Miller" <davem@davemloft.net>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+Hi Jarkko,
 
-On 22 October 2018 at 15:43, Baolin Wang <baolin.wang@linaro.org> wrote:
-> The internal resistance of a battery is not a constant in its life cycle,
-> this varies over the age of the battery or temperature and so on. But we
-> just want use one constant battery internal resistance to estimate the
-> battery capacity. Thus this patch introduces one property to present
-> the battery factory internal resistance for battery information.
->
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> From: Jarkko Nikula, Sent: Wednesday, October 24, 2018 10:52 PM
+>=20
+> Platform drivers don't need dummy runtime PM callbacks that just return
+> success in order to have runtime PM happening. This has changed since
+> following commits:
+>=20
+> 05aa55dddb9e ("PM / Runtime: Lenient generic runtime pm callbacks")
+> 543f2503a956 ("PM / platform_bus: Allow runtime PM by default")
+> 8b313a38ecff ("PM / Platform: Use generic runtime PM callbacks directly")
+>=20
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
 > ---
-> Changes from v5:
->  - None.
->
-> Changes from v4:
->  - None.
->
-> Changes from v3:
->  - Split binding into one separate patch.
->  - Add LinusW reviewed tag.
->
-> Changes from v2:
->  - Rename the property.
->  - Improve the commit message.
->
-> Changes from v1:
->  - New patch in v2.
+> Only build tested.
+
+Thank you for the patch!
+
+Reviewed-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+
 > ---
+>  drivers/usb/renesas_usbhs/common.c | 14 --------------
+>  1 file changed, 14 deletions(-)
+>=20
+> diff --git a/drivers/usb/renesas_usbhs/common.c b/drivers/usb/renesas_usb=
+hs/common.c
+> index a3e1290d682d..0e760f228dd8 100644
+> --- a/drivers/usb/renesas_usbhs/common.c
+> +++ b/drivers/usb/renesas_usbhs/common.c
+> @@ -874,23 +874,9 @@ static int usbhsc_resume(struct device *dev)
+>  	return 0;
+>  }
+>=20
+> -static int usbhsc_runtime_nop(struct device *dev)
+> -{
+> -	/* Runtime PM callback shared between ->runtime_suspend()
+> -	 * and ->runtime_resume(). Simply returns success.
+> -	 *
+> -	 * This driver re-initializes all registers after
+> -	 * pm_runtime_get_sync() anyway so there is no need
+> -	 * to save and restore registers here.
+> -	 */
 
-I think this v6 patch set have addressed your comments on v5, so could
-you apply this patch set if there are no other comments? I hope this
-driver can be merged into 4.20 finally. Thanks.
+I guess this code came from i2c-sh_mobile.c or sh_eth.c
+and we didn't realize this code didn't need at that time (Oct 10 2011).
 
--- 
-Baolin Wang
-Best Regards
+Best regards,
+Yoshihiro Shimoda
+
+> -	return 0;
+> -}
+> -
+>  static const struct dev_pm_ops usbhsc_pm_ops =3D {
+>  	.suspend		=3D usbhsc_suspend,
+>  	.resume			=3D usbhsc_resume,
+> -	.runtime_suspend	=3D usbhsc_runtime_nop,
+> -	.runtime_resume		=3D usbhsc_runtime_nop,
+>  };
+>=20
+>  static struct platform_driver renesas_usbhs_driver =3D {
+> --
+> 2.19.1
