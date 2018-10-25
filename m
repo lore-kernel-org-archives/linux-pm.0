@@ -1,173 +1,379 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v6 6/6] arm64: dts: add LX2160ARDB board support
-Date: Thu, 25 Oct 2018 07:02:09 +0000
-Message-ID: <1540407376-24115-7-git-send-email-vabhav.sharma@nxp.com>
-References: <1540407376-24115-1-git-send-email-vabhav.sharma@nxp.com>
+From: Greentime Hu <green.hu@gmail.com>
+Subject: Re: [PATCH v2 1/1] nds32: Power management for nds32
+Date: Thu, 25 Oct 2018 18:14:22 +0800
+Message-ID: <CAEbi=3fp0YJh9iJw+D0apTa6-Atio-sscu1KuQZ0qbB5ie6cNg@mail.gmail.com>
+References: <cover.1540375392.git.nickhu@andestech.com> <8ce923ff55f75b764888fc82d97bc3b744858be1.1540375392.git.nickhu@andestech.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540407376-24115-1-git-send-email-vabhav.sharma@nxp.com>
-Content-Language: en-US
+In-Reply-To: <8ce923ff55f75b764888fc82d97bc3b744858be1.1540375392.git.nickhu@andestech.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
-Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, Pankaj Bansal <pankaj.bansal@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>, Horia Geanta <horia.geanta@nxp.com>, Ran Wang <ran.wang_1@nxp.com>, Ying Zhang <ying.zhang22455@nxp.com>, Yinbo Zhu <yinbo.zhu@nxp.com>
+To: Nickhu <nickhu@andestech.com>
+Cc: Greentime <greentime@andestech.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-arch <linux-arch@vger.kernel.org>, Vincent Chen <deanbo422@gmail.com>, rjw@rjwysocki.net, pavel@ucw.cz, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Zong Li <zong@andestech.com>, linux-pm@vger.kernel.org, alankao@andestech.com
 List-Id: linux-pm@vger.kernel.org
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
+Nick Hu <nickhu@andestech.com> =E6=96=BC 2018=E5=B9=B410=E6=9C=8824=E6=97=
+=A5 =E9=80=B1=E4=B8=89 =E4=B8=8B=E5=8D=886:14=E5=AF=AB=E9=81=93=EF=BC=9A
+>
+> There are three sleep states in nds32:
+>         suspend to idle,
+>         suspend to standby,
+>         suspend to ram
+>
+> In suspend to ram, we use the 'standby' instruction to emulate
+> power management device to hang the system util wakeup source
+> send wakeup events to break the loop.
+>
+> First, we push the general purpose registers and system registers
+> to stack. Second, we translate stack pointer to physical address
+> and store to memory to save the stack pointer. Third, after write
+> back and invalid the cache we hang in 'standby' intruction.
+> When wakeup source trigger wake up events, the loop will be break
+> and resume the system.
+>
+> Signed-off-by: Nick Hu <nickhu@andestech.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> ---
+>  arch/nds32/Kconfig               |  10 +++
+>  arch/nds32/include/asm/suspend.h |  11 +++
+>  arch/nds32/kernel/Makefile       |   2 +-
+>  arch/nds32/kernel/pm.c           |  79 +++++++++++++++++++
+>  arch/nds32/kernel/sleep.S        | 129 +++++++++++++++++++++++++++++++
+>  drivers/irqchip/irq-ativic32.c   |  31 ++++++++
+>  6 files changed, 261 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/nds32/include/asm/suspend.h
+>  create mode 100644 arch/nds32/kernel/pm.c
+>  create mode 100644 arch/nds32/kernel/sleep.S
+>
+> diff --git a/arch/nds32/Kconfig b/arch/nds32/Kconfig
+> index dd448d431f5a..8e2c5ac6acd1 100644
+> --- a/arch/nds32/Kconfig
+> +++ b/arch/nds32/Kconfig
+> @@ -95,3 +95,13 @@ endmenu
+>  menu "Kernel Features"
+>  source "kernel/Kconfig.hz"
+>  endmenu
+> +
+> +menu "Power management options"
+> +config SYS_SUPPORTS_APM_EMULATION
+> +       bool
+> +
+> +config ARCH_SUSPEND_POSSIBLE
+> +       def_bool y
+> +
+> +source "kernel/power/Kconfig"
+> +endmenu
+> diff --git a/arch/nds32/include/asm/suspend.h b/arch/nds32/include/asm/su=
+spend.h
+> new file mode 100644
+> index 000000000000..6ed2418af1ac
+> --- /dev/null
+> +++ b/arch/nds32/include/asm/suspend.h
+> @@ -0,0 +1,11 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +// Copyright (C) 2008-2017 Andes Technology Corporation
+> +
+> +#ifndef __ASM_NDS32_SUSPEND_H
+> +#define __ASM_NDS32_SUSPEND_H
+> +
+> +extern void suspend2ram(void);
+> +extern void cpu_resume(void);
+> +extern unsigned long wake_mask;
+> +
+> +#endif
+> diff --git a/arch/nds32/kernel/Makefile b/arch/nds32/kernel/Makefile
+> index f52bd2744f50..8d62f2ecb1ab 100644
+> --- a/arch/nds32/kernel/Makefile
+> +++ b/arch/nds32/kernel/Makefile
+> @@ -16,7 +16,7 @@ obj-$(CONFIG_STACKTRACE)      +=3D stacktrace.o
+>  obj-$(CONFIG_OF)               +=3D devtree.o
+>  obj-$(CONFIG_CACHE_L2)         +=3D atl2c.o
+>  obj-$(CONFIG_PERF_EVENTS) +=3D perf_event_cpu.o
+> -
+> +obj-$(CONFIG_PM)               +=3D pm.o sleep.o
+>  extra-y :=3D head.o vmlinux.lds
+>
+>  obj-y                          +=3D vdso/
+> diff --git a/arch/nds32/kernel/pm.c b/arch/nds32/kernel/pm.c
+> new file mode 100644
+> index 000000000000..6989560abf4e
+> --- /dev/null
+> +++ b/arch/nds32/kernel/pm.c
+> @@ -0,0 +1,79 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +// Copyright (C) 2008-2017 Andes Technology Corporation
+> +
+> +#include <linux/init.h>
+> +#include <linux/suspend.h>
+> +#include <linux/device.h>
+> +#include <linux/printk.h>
+> +#include <linux/suspend.h>
+> +#include <asm/suspend.h>
+> +#include <nds32_intrinsic.h>
+> +
+> +unsigned int resume_addr;
+> +unsigned int *phy_addr_sp_tmp;
+> +
+> +static void nds32_suspend2ram(void)
+> +{
+> +       pgd_t *pgdv;
+> +       pud_t *pudv;
+> +       pmd_t *pmdv;
+> +       pte_t *ptev;
+> +
+> +       pgdv =3D (pgd_t *)__va((__nds32__mfsr(NDS32_SR_L1_PPTB) &
+> +               L1_PPTB_mskBASE)) + pgd_index((unsigned int)cpu_resume);
+> +
+> +       pudv =3D pud_offset(pgdv, (unsigned int)cpu_resume);
+> +       pmdv =3D pmd_offset(pudv, (unsigned int)cpu_resume);
+> +       ptev =3D pte_offset_map(pmdv, (unsigned int)cpu_resume);
+> +
+> +       resume_addr =3D ((*ptev) & TLB_DATA_mskPPN)
+> +                       | ((unsigned int)cpu_resume & 0x00000fff);
+> +
+> +       suspend2ram();
+> +}
+> +
+> +static void nds32_suspend_cpu(void)
+> +{
+> +       while (!(__nds32__mfsr(NDS32_SR_INT_PEND) & wake_mask))
+> +               __asm__ volatile ("standby no_wake_grant\n\t");
+> +}
+> +
+> +static int nds32_pm_valid(suspend_state_t state)
+> +{
+> +       switch (state) {
+> +       case PM_SUSPEND_ON:
+> +       case PM_SUSPEND_STANDBY:
+> +       case PM_SUSPEND_MEM:
+> +               return 1;
+> +       default:
+> +               return 0;
+> +       }
+> +}
+> +
+> +static int nds32_pm_enter(suspend_state_t state)
+> +{
+> +       pr_debug("%s:state:%d\n", __func__, state);
+> +       switch (state) {
+> +       case PM_SUSPEND_STANDBY:
+> +               nds32_suspend_cpu();
+> +               return 0;
+> +       case PM_SUSPEND_MEM:
+> +               nds32_suspend2ram();
+> +               return 0;
+> +       default:
+> +               return -EINVAL;
+> +       }
+> +}
+> +
+> +static const struct platform_suspend_ops nds32_pm_ops =3D {
+> +       .valid =3D nds32_pm_valid,
+> +       .enter =3D nds32_pm_enter,
+> +};
+> +
+> +static int __init nds32_pm_init(void)
+> +{
+> +       pr_debug("Enter %s\n", __func__);
+> +       suspend_set_ops(&nds32_pm_ops);
+> +       return 0;
+> +}
+> +late_initcall(nds32_pm_init);
+> diff --git a/arch/nds32/kernel/sleep.S b/arch/nds32/kernel/sleep.S
+> new file mode 100644
+> index 000000000000..60c64bfbc901
+> --- /dev/null
+> +++ b/arch/nds32/kernel/sleep.S
+> @@ -0,0 +1,129 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/* Copyright (C) 2017 Andes Technology Corporation */
+> +
+> +#include <asm/memory.h>
+> +
+> +.data
+> +.global sp_tmp
+> +sp_tmp:
+> +.long
+> +
+> +.text
+> +.globl suspend2ram
+> +.globl cpu_resume
+> +
+> +suspend2ram:
+> +       pushm   $r0, $r31
+> +#if defined(CONFIG_HWZOL)
+> +       mfusr   $r0, $lc
+> +       mfusr   $r1, $le
+> +       mfusr   $r2, $lb
+> +#endif
+> +       mfsr    $r3, $mr0
+> +       mfsr    $r4, $mr1
+> +       mfsr    $r5, $mr4
+> +       mfsr    $r6, $mr6
+> +       mfsr    $r7, $mr7
+> +       mfsr    $r8, $mr8
+> +       mfsr    $r9, $ir0
+> +       mfsr    $r10, $ir1
+> +       mfsr    $r11, $ir2
+> +       mfsr    $r12, $ir3
+> +       mfsr    $r13, $ir9
+> +       mfsr    $r14, $ir10
+> +       mfsr    $r15, $ir12
+> +       mfsr    $r16, $ir13
+> +       mfsr    $r17, $ir14
+> +       mfsr    $r18, $ir15
+> +       pushm   $r0, $r19
+> +
+> +       tlbop   FlushAll
+> +       isb
+> +
+> +       // transfer $sp from va to pa
+> +       sethi   $r0, hi20(PAGE_OFFSET)
+> +       ori     $r0, $r0, lo12(PAGE_OFFSET)
+> +       movi    $r2, PHYS_OFFSET
+> +       sub     $r1, $sp, $r0
+> +       add     $r2, $r1, $r2
+> +
+> +       // store pa($sp) to sp_tmp
+> +       sethi   $r1, hi20(sp_tmp)
+> +       swi     $r2, [$r1 + lo12(sp_tmp)]
+> +
+> +       pushm   $r16, $r25
+> +       pushm   $r29, $r30
+> +#ifdef CONFIG_CACHE_L2
+> +       jal     dcache_wb_all_level
+> +#else
+> +       jal     cpu_dcache_wb_all
+> +#endif
+> +       popm    $r29, $r30
+> +       popm    $r16, $r25
+> +
+> +       // get wake_mask and loop in standby
+> +       la      $r1, wake_mask
+> +       lwi     $r1, [$r1]
+> +self_loop:
+> +       standby wake_grant
+> +       mfsr    $r2, $ir15
+> +       and     $r2, $r1, $r2
+> +       beqz    $r2, self_loop
+> +
+> +       // set ipc to resume address
+> +       la      $r1, resume_addr
+> +       lwi     $r1, [$r1]
+> +       mtsr    $r1, $ipc
+> +       isb
+> +
+> +       // reset psw, turn off the address translation
+> +       li      $r2, 0x7000a
+> +       mtsr    $r2, $ipsw
+> +       isb
+> +
+> +       iret
+> +cpu_resume:
+> +       // translate the address of sp_tmp variable to pa
+> +       la      $r1, sp_tmp
+> +       sethi   $r0, hi20(PAGE_OFFSET)
+> +       ori     $r0, $r0, lo12(PAGE_OFFSET)
+> +       movi    $r2, PHYS_OFFSET
+> +       sub     $r1, $r1, $r0
+> +       add     $r1, $r1, $r2
+> +
+> +       // access the sp_tmp to get stack pointer
+> +       lwi     $sp, [$r1]
+> +
+> +       popm    $r0, $r19
+> +#if defined(CONFIG_HWZOL)
+> +       mtusr   $r0, $lb
+> +       mtusr   $r1, $lc
+> +       mtusr   $r2, $le
+> +#endif
+> +       mtsr    $r3, $mr0
+> +       mtsr    $r4, $mr1
+> +       mtsr    $r5, $mr4
+> +       mtsr    $r6, $mr6
+> +       mtsr    $r7, $mr7
+> +       mtsr    $r8, $mr8
+> +       // set original psw to ipsw
+> +       mtsr    $r9, $ir1
+> +
+> +       mtsr    $r11, $ir2
+> +       mtsr    $r12, $ir3
+> +
+> +       // set ipc to RR
+> +       la      $r13, RR
+> +       mtsr    $r13, $ir9
+> +
+> +       mtsr    $r14, $ir10
+> +       mtsr    $r15, $ir12
+> +       mtsr    $r16, $ir13
+> +       mtsr    $r17, $ir14
+> +       mtsr    $r18, $ir15
+> +       popm    $r0, $r31
+> +
+> +       isb
+> +       iret
+> +RR:
+> +       ret
+> diff --git a/drivers/irqchip/irq-ativic32.c b/drivers/irqchip/irq-ativic3=
+2.c
+> index f69a8588521c..85cf6e0e0e52 100644
+> --- a/drivers/irqchip/irq-ativic32.c
+> +++ b/drivers/irqchip/irq-ativic32.c
+> @@ -10,6 +10,8 @@
+>  #include <linux/irqchip.h>
+>  #include <nds32_intrinsic.h>
+>
+> +unsigned long wake_mask;
+> +
+>  static void ativic32_ack_irq(struct irq_data *data)
+>  {
+>         __nds32__mtsr_dsb(BIT(data->hwirq), NDS32_SR_INT_PEND2);
+> @@ -27,11 +29,40 @@ static void ativic32_unmask_irq(struct irq_data *data=
+)
+>         __nds32__mtsr_dsb(int_mask2 | (BIT(data->hwirq)), NDS32_SR_INT_MA=
+SK2);
+>  }
+>
+> +static int nointc_set_wake(struct irq_data *data, unsigned int on)
+> +{
+> +       unsigned long int_mask =3D __nds32__mfsr(NDS32_SR_INT_MASK);
+> +       static unsigned long irq_orig_bit;
+> +       u32 bit =3D 1 << data->hwirq;
+> +
+> +       if (on) {
+> +               if (int_mask & bit)
+> +                       __assign_bit(data->hwirq, &irq_orig_bit, true);
+> +               else
+> +                       __assign_bit(data->hwirq, &irq_orig_bit, false);
+> +
+> +               __assign_bit(data->hwirq, &int_mask, true);
+> +               __assign_bit(data->hwirq, &wake_mask, true);
+> +
+> +       } else {
+> +               if (!(irq_orig_bit & bit))
+> +                       __assign_bit(data->hwirq, &int_mask, false);
+> +
+> +               __assign_bit(data->hwirq, &wake_mask, false);
+> +               __assign_bit(data->hwirq, &irq_orig_bit, false);
+> +       }
+> +
+> +       __nds32__mtsr_dsb(int_mask, NDS32_SR_INT_MASK);
+> +
+> +       return 0;
+> +}
+> +
+>  static struct irq_chip ativic32_chip =3D {
+>         .name =3D "ativic32",
+>         .irq_ack =3D ativic32_ack_irq,
+>         .irq_mask =3D ativic32_mask_irq,
+>         .irq_unmask =3D ativic32_unmask_irq,
+> +       .irq_set_wake =3D nointc_set_wake,
+>  };
+>
+>  static unsigned int __initdata nivic_map[6] =3D { 6, 2, 10, 16, 24, 32 }=
+;
+Hi Nick,
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-Signed-off-by: Horia Geanta <horia.geanta@nxp.com>
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
-Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
-Acked-by: Li Yang <leoyang.li@nxp.com>
----
- arch/arm64/boot/dts/freescale/Makefile            |   1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 119 ++++++++++++++++++=
-++++
- 2 files changed, 120 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/f=
-reescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64=
-/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..6481e5f
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,119 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
-+
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model =3D "NXP Layerscape LX2160ARDB";
-+	compatible =3D "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	aliases {
-+		crypto =3D &crypto;
-+		serial0 =3D &uart0;
-+	};
-+
-+	chosen {
-+		stdout-path =3D "serial0:115200n8";
-+	};
-+
-+	sb_3v3: regulator-sb3v3 {
-+		compatible =3D "regulator-fixed";
-+		regulator-name =3D "MC34717-3.3VSB";
-+		regulator-min-microvolt =3D <3300000>;
-+		regulator-max-microvolt =3D <3300000>;
-+		regulator-boot-on;
-+		regulator-always-on;
-+	};
-+};
-+
-+&crypto {
-+	status =3D "okay";
-+};
-+
-+&esdhc0 {
-+	sd-uhs-sdr104;
-+	sd-uhs-sdr50;
-+	sd-uhs-sdr25;
-+	sd-uhs-sdr12;
-+	status =3D "okay";
-+};
-+
-+&esdhc1 {
-+	mmc-hs200-1_8v;
-+	mmc-hs400-1_8v;
-+	bus-width =3D <8>;
-+	status =3D "okay";
-+};
-+
-+&i2c0 {
-+	status =3D "okay";
-+
-+	i2c-mux@77 {
-+		compatible =3D "nxp,pca9547";
-+		reg =3D <0x77>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+
-+		i2c@2 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <0>;
-+			reg =3D <0x2>;
-+
-+			power-monitor@40 {
-+				compatible =3D "ti,ina220";
-+				reg =3D <0x40>;
-+				shunt-resistor =3D <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <0>;
-+			reg =3D <0x3>;
-+
-+			temperature-sensor@4c {
-+				compatible =3D "nxp,sa56004";
-+				reg =3D <0x4c>;
-+				vcc-supply =3D <&sb_3v3>;
-+			};
-+
-+			temperature-sensor@4d {
-+				compatible =3D "nxp,sa56004";
-+				reg =3D <0x4d>;
-+				vcc-supply =3D <&sb_3v3>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status =3D "okay";
-+
-+	rtc@51 {
-+		compatible =3D "nxp,pcf2129";
-+		reg =3D <0x51>;
-+		// IRQ10_B
-+		interrupts =3D <0 150 0x4>;
-+	};
-+};
-+
-+&uart0 {
-+	status =3D "okay";
-+};
-+
-+&uart1 {
-+	status =3D "okay";
-+};
-+
-+&usb0 {
-+	status =3D "okay";
-+};
-+
-+&usb1 {
-+	status =3D "okay";
-+};
---=20
-2.7.4
+Thank you.
+Acked-by: Greentime Hu <greentime@andestech.com>
