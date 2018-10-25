@@ -1,112 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 10/10] OPP: Remove of_dev_pm_opp_find_required_opp()
-Date: Thu, 25 Oct 2018 11:22:47 +0530
-Message-ID: <db0789a3048dd659ce8bf3f0fafb1c1dcf392791.1540446493.git.viresh.kumar@linaro.org>
-References: <cover.1540446493.git.viresh.kumar@linaro.org>
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+Subject: [PATCH v6 0/6] arm64: dts: NXP: add basic dts file for LX2160A SoC
+Date: Thu, 25 Oct 2018 07:01:28 +0000
+Message-ID: <1540407376-24115-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1540446493.git.viresh.kumar@linaro.org>
+Content-Language: en-US
+Content-ID: <A2E91447A74BBE45BDF30797B41516D5@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
+To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
+Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, Pankaj Bansal <pankaj.bansal@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-This isn't used anymore, remove it.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/of.c       | 54 ------------------------------------------
- include/linux/pm_opp.h |  5 ----
- 2 files changed, 59 deletions(-)
-
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 0755ee307b1a..da31874c7fe9 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -1013,60 +1013,6 @@ unsigned int of_get_required_opp_performance_state(struct device_node *np,
- }
- EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
- 
--/**
-- * of_dev_pm_opp_find_required_opp() - Search for required OPP.
-- * @dev: The device whose OPP node is referenced by the 'np' DT node.
-- * @np: Node that contains the "required-opps" property.
-- *
-- * Returns the OPP of the device 'dev', whose phandle is present in the "np"
-- * node. Although the "required-opps" property supports having multiple
-- * phandles, this helper routine only parses the very first phandle in the list.
-- *
-- * Return: Matching opp, else returns ERR_PTR in case of error and should be
-- * handled using IS_ERR.
-- *
-- * The callers are required to call dev_pm_opp_put() for the returned OPP after
-- * use.
-- */
--struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev,
--						   struct device_node *np)
--{
--	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ENODEV);
--	struct device_node *required_np;
--	struct opp_table *opp_table;
--
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table))
--		return ERR_CAST(opp_table);
--
--	required_np = of_parse_phandle(np, "required-opps", 0);
--	if (unlikely(!required_np)) {
--		dev_err(dev, "Unable to parse required-opps\n");
--		goto put_opp_table;
--	}
--
--	mutex_lock(&opp_table->lock);
--
--	list_for_each_entry(temp_opp, &opp_table->opp_list, node) {
--		if (temp_opp->available && temp_opp->np == required_np) {
--			opp = temp_opp;
--
--			/* Increment the reference count of OPP */
--			dev_pm_opp_get(opp);
--			break;
--		}
--	}
--
--	mutex_unlock(&opp_table->lock);
--
--	of_node_put(required_np);
--put_opp_table:
--	dev_pm_opp_put_opp_table(opp_table);
--
--	return opp;
--}
--EXPORT_SYMBOL_GPL(of_dev_pm_opp_find_required_opp);
--
- /**
-  * dev_pm_opp_get_of_node() - Gets the DT node corresponding to an opp
-  * @opp:	opp for which DT node has to be returned for
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 889bb347fbd9..2b2c3fd985ab 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -313,7 +313,6 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
- void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
- int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
- struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
--struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
- struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
- unsigned int of_get_required_opp_performance_state(struct device_node *np, int index);
- #else
-@@ -350,10 +349,6 @@ static inline struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device
- 	return NULL;
- }
- 
--static inline struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np)
--{
--	return NULL;
--}
- static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- {
- 	return NULL;
--- 
-2.19.1.568.g152ad8e3369a
+Q2hhbmdlcyBmb3IgdjY6DQotIEFkZGVkIGNvbW1lbnQgZm9yIGNsb2NrIHVuaXQtc3lzY2xrIG5v
+ZGUgbmFtZSBpbiBTb0MgZGV2aWNlIHRyZWUgDQoNCkNoYW5nZXMgZm9yIHY1Og0KLSBVcGRhdGVk
+IHRlbXBlcmF0dXJlIHNlbnNvciByZWd1bGF0b3IgbmFtZSBpbiBib2FyZCBkZXZpY2UgdHJlZQ0K
+LSBTb3J0ZWQgbm9kZXMgYWxwaGFiYXRpY2FsbHkgYW5kIHVuaXQtYWRkcmVzcyBpbiBTb0MvYm9h
+cmQgZGV2aWNlIHRyZWUNCi0gSWRlbnRhdGlvbiwgbmV3IGxpbmUgdXBkYXRlIGluIFNvQy9ib2Fy
+ZCBkZXZpY2UgdHJlZQ0KLSBVcGRhdGVkIG5vZGVzIG5hbWUgYXMgcGVyIERUIHNwZWMgZ2VuZXJp
+YyBuYW1lIHJlY29tbWVuZGF0aW9uIGluIFNvQyBEVA0KLSBVcGRhdGVkIG1hY3JvIGRlZmluZSBm
+b3IgaW50ZXJydXB0L2dwaW8gcHJvcGVydHkNCi0gVXBkYXRlZCBpMmMgbm9kZSBwcm9wZXJ0eSBu
+YW1lIHNjbC1ncGlvDQotIFJlbW92ZWQgZGV2aWNlX3R5cGUgcHJvcGVydHkgZXhjZXB0IGNwdS9t
+ZW1vcnkgbm9kZQ0KLSBBZGRlZCBlc2RoYyBjb250cm9sbGVyIG5vZGVzIGluIFNvQy9SREIgYm9h
+cmQgZGV2aWNlIHRyZWUNCi0gQWRkZWQgYWxpYXNlcyBmb3IgdWFydC9jcnlwdG8gbm9kZXMNCi0g
+QWRkIFNvQyBkaWUgYXR0cmlidXRlIGRlZmluaXRpb24gZm9yIExYMjE2MEENCg0KQ2hhbmdlcyBm
+b3IgdjQ6DQotIFVwZGF0ZWQgYmluZGluZ3MgZm9yIGx4MjE2MGEgY2xvY2tnZW4gYW5kIGRjZmcN
+Ci0gTW9kaWZpZWQgY29tbWl0IG1lc3NhZ2UgZm9yIGx4MjE2MGEgY2xvY2tnZW4gY2hhbmdlcw0K
+LSBVcGRhdGVkIGludGVycnVwdCBwcm9wZXJ0eSB3aXRoIG1hY3JvIGRlZmluaXRpb24NCi0gQWRk
+ZWQgcmVxdWlyZWQgZW5hYmxlLW1ldGhvZCBwcm9wZXJ0eSB0byBlYWNoIGNvcmUgbm9kZSB3aXRo
+IHBzY2kgdmFsdWUNCi0gUmVtb3ZlZCB1bnVzZWQgbm9kZSBzeXNjb24gaW4gZGV2aWNlIHRyZWUN
+Ci0gUmVtb3ZlZCBibGFuayBsaW5lcyBpbiBkZXZpY2UgdHJlZSBmc2wtbHgyMTYwYS5kdHNpDQot
+IFVwZGF0ZWQgdWFydCBub2RlIGNvbXBhdGlibGUgc2JzYS11YXJ0IGZpcnN0DQotIEFkZGVkIGFu
+ZCBkZWZpbmVkIHZjYy1zdXBwbHkgcHJvcGVydHkgdG8gdGVtcGVyYXR1cmUgc2Vuc29yIG5vZGUg
+aW4NCiAgZGV2aWNlIHRyZWUgZnNsLWx4MjE2MGEtcmRiLmR0cw0KDQpDaGFuZ2VzIGZvciB2MzoN
+Ci1TcGxpdCBjbG9ja2dlbiBzdXBwb3J0IHBhdGNoIGludG8gYmVsb3cgdHdvIHBhdGNoZXM6DQot
+IGEpVXBkYXRlZCBhcnJheSBzaXplIG9mIGNtdXhfdG9fZ3JvdXBbXSB3aXRoIE5VTV9DTVVYKzEg
+dG8gaW5jbHVkZSAtMQ0KIHRlcm1pbmF0b3IgYW5kIHA0MDgwIGNtdXhfdG9fZ3JvdXBbXSBhcnJh
+eSB3aXRoIC0xIHRlcm1pbmF0b3INCi0gYilBZGQgY2xvY2tnZW4gc3VwcG9ydCBmb3IgbHgyMTYw
+YQ0KDQpDaGFuZ2VzIGZvciB2MjoNCi0gTW9kaWZpZWQgY211eF90b19ncm91cCBhcnJheSB0byBp
+bmNsdWRlIC0xIHRlcm1pbmF0b3INCi0gUmV2ZXJ0IE5VTV9DTVVYIHRvIG9yaWdpbmFsIHZhbHVl
+IDggZnJvbSAxNg0KLSBSZW1vdmUgw6IgTFgyMTYwQSBpcyAxNiBjb3JlLCBzbyBtb2RpZmllZCB2
+YWx1ZSBmb3IgTlVNX0NNVVhYDQogIGluIHBhdGNoICJbUEFUQ0ggMy81XSBkcml2ZXJzOiBjbGst
+cW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0IGZvcg0KICBseDIxNjBhIiBkZXNjcmlwdGlvbg0K
+LSBQb3B1bGF0ZWQgY2FjaGUgcHJvcGVydGllcyBmb3IgTDEgYW5kIEwyIGNhY2hlIGluIGx4MjE2
+MGEgZGV2aWNlLXRyZWUuDQotIFJlbW92ZWQgcmVib290IG5vZGUgZnJvbSBseDIxNjBhIGRldmlj
+ZS10cmVlIGFzIFBTQ0kgaXMgaW1wbGVtZW50ZWQuDQotIFJlbW92ZWQgaW5jb3JyZWN0IGNvbW1l
+bnQgZm9yIHRpbWVyIG5vZGUgaW50ZXJydXB0IHByb3BlcnR5IGluDQogIGx4MjE2MGEgZGV2aWNl
+LXRyZWUuDQotIE1vZGlmaWVkIHBtdSBub2RlIGNvbXBhdGlibGUgcHJvcGVydHkgZnJvbSAiYXJt
+LGFybXY4LXBtdXYzIiB0bw0KICAiYXJtLGNvcnRleC1hNzItcG11IiBpbiBseDIxNjBhIGRldmlj
+ZS10cmVlDQotIE5vbi1zdGFuZGFyZCBhbGlhc2VzIHJlbW92ZWQgaW4gbHgyMTYwYSByZGIgYm9h
+cmQgZGV2aWNlLXRyZWUNCi0gVXBkYXRlZCBpMmMgY2hpbGQgbm9kZXMgdG8gZ2VuZXJpYyBuYW1l
+IGluIGx4MjE2MGEgcmRiIGRldmljZS10cmVlLg0KDQpDaGFuZ2VzIGZvciB2MToNCi0gQWRkIGNv
+bXBhdGlibGUgc3RyaW5nIGZvciBMWDIxNjBBIGNsb2NrZ2VuIHN1cHBvcnQNCi0gQWRkIGNvbXBh
+dGlibGUgc3RyaW5nIHRvIGluaXRpYWxpemUgTFgyMTYwQSBndXRzIGRyaXZlcg0KLSBBZGQgY29t
+cGF0aWJsZSBzdHJpbmcgZm9yIExYMjE2MEEgc3VwcG9ydCBpbiBkdC1iaW5kaW5ncw0KLSBBZGQg
+ZHRzIGZpbGUgdG8gZW5hYmxlIHN1cHBvcnQgZm9yIExYMjE2MEEgU29DIGFuZCBMWDIxNjBBIFJE
+Qg0KICAoUmVmZXJlbmNlIGRlc2lnbiBib2FyZCkNCg0KVmFiaGF2IFNoYXJtYSAoNCk6DQogIGR0
+LWJpbmRpbmdzOiBhcm02NDogYWRkIGNvbXBhdGlibGUgZm9yIExYMjE2MEENCiAgc29jL2ZzbC9n
+dXRzOiBBZGQgZGVmaW5pdGlvbiBmb3IgTFgyMTYwQQ0KICBhcm02NDogZHRzOiBhZGQgUW9ySVEg
+TFgyMTYwQSBTb0Mgc3VwcG9ydA0KICBhcm02NDogZHRzOiBhZGQgTFgyMTYwQVJEQiBib2FyZCBz
+dXBwb3J0DQoNCllvZ2VzaCBHYXVyICgyKToNCiAgY2xrOiBxb3JpcTogaW5jcmVhc2UgYXJyYXkg
+c2l6ZSBvZiBjbXV4X3RvX2dyb3VwDQogIGNsazogcW9yaXE6IEFkZCBjbG9ja2dlbiBzdXBwb3J0
+IGZvciBseDIxNjBhDQoNCiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvYXJtL2Zz
+bC50eHQgICAgICB8ICAxNCArLQ0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3Fvcmlx
+LWNsb2NrLnR4dCAgICAgIHwgICAxICsNCiBhcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9N
+YWtlZmlsZSAgICAgICAgICAgICB8ICAgMSArDQogYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2Nh
+bGUvZnNsLWx4MjE2MGEtcmRiLmR0cyAgfCAxMTkgKysrKw0KIGFyY2gvYXJtNjQvYm9vdC9kdHMv
+ZnJlZXNjYWxlL2ZzbC1seDIxNjBhLmR0c2kgICAgIHwgNzY2ICsrKysrKysrKysrKysrKysrKysr
+Kw0KIGRyaXZlcnMvY2xrL2Nsay1xb3JpcS5jICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwg
+IDE2ICstDQogZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYyAgICAgICAgICAgICAgICAg
+ICAgfCAgIDEgKw0KIGRyaXZlcnMvc29jL2ZzbC9ndXRzLmMgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHwgICA2ICsNCiA4IGZpbGVzIGNoYW5nZWQsIDkyMSBpbnNlcnRpb25zKCspLCAzIGRl
+bGV0aW9ucygtKQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVz
+Y2FsZS9mc2wtbHgyMTYwYS1yZGIuZHRzDQogY3JlYXRlIG1vZGUgMTAwNjQ0IGFyY2gvYXJtNjQv
+Ym9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1seDIxNjBhLmR0c2kNCg0KLS0gDQoyLjcuNA0KDQo=
