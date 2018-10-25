@@ -1,74 +1,72 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: RE: [PATCH v4 5/6] arm64: dts: add QorIQ LX2160A SoC support
-Date: Thu, 25 Oct 2018 04:19:43 +0000
-Message-ID: <VI1PR04MB4800F4B5009B90F50B9C70F7F3F70@VI1PR04MB4800.eurprd04.prod.outlook.com>
-References: <1538615031-7507-1-git-send-email-vabhav.sharma@nxp.com>
- <1538615031-7507-6-git-send-email-vabhav.sharma@nxp.com>
- <20181008054510.GG3587@dragon>
- <VI1PR04MB4800C0AB214B258793AF9ABAF3FD0@VI1PR04MB4800.eurprd04.prod.outlook.com>
- <153962211360.5275.18031876744546062419@swboyd.mtv.corp.google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 00/10] OPP: Support multiple power-domains per device
+Date: Thu, 25 Oct 2018 11:22:37 +0530
+Message-ID: <cover.1540446493.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <153962211360.5275.18031876744546062419@swboyd.mtv.corp.google.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@kernel.org>, Shawn Guo <shawnguo@kernel.org>
-Cc: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org" <linux-kernel-owner@vger.kernel.org>
+To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogZGV2aWNldHJlZS1vd25l
-ckB2Z2VyLmtlcm5lbC5vcmcgPGRldmljZXRyZWUtb3duZXJAdmdlci5rZXJuZWwub3JnPg0KPiBP
-biBCZWhhbGYgT2YgU3RlcGhlbiBCb3lkDQo+IFNlbnQ6IE1vbmRheSwgT2N0b2JlciAxNSwgMjAx
-OCAxMDoxOSBQTQ0KPiBUbzogU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJuZWwub3JnPjsgVmFiaGF2
-IFNoYXJtYQ0KPiA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiBDYzogc3VkZWVwLmhvbGxhQGFy
-bS5jb207IG9zc0BidXNlcnJvci5uZXQ7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+
-IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyByb2JoK2R0QGtlcm5lbC5vcmc7IG1hcmsucnV0
-bGFuZEBhcm0uY29tOw0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtYXJt
-LWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOw0KPiBtdHVycXVldHRlQGJheWxpYnJlLmNvbTsg
-cmp3QHJqd3lzb2NraS5uZXQ7IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOw0KPiBsaW51eC1jbGtA
-dmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbC0N
-Cj4gb3duZXJAdmdlci5rZXJuZWwub3JnOyBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5k
-ZWFjb25AYXJtLmNvbTsNCj4gZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7IGFybmRAYXJuZGIu
-ZGU7DQo+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IHlhbWFkYS5tYXNhaGlyb0Bzb2Np
-b25leHQuY29tOyBMZW8gTGkNCj4gPGxlb3lhbmcubGlAbnhwLmNvbT47IGxpbnV4QGFybWxpbnV4
-Lm9yZy51azsgVmFydW4gU2V0aGkNCj4gPFYuU2V0aGlAbnhwLmNvbT47IFVkaXQgS3VtYXIgPHVk
-aXQua3VtYXJAbnhwLmNvbT47IFBhbmthaiBCYW5zYWwNCj4gPHBhbmthai5iYW5zYWxAbnhwLmNv
-bT47IFJhbW5lZWsgTWVocmVzaA0KPiA8cmFtbmVlay5tZWhyZXNoQG54cC5jb20+OyBZaW5nIFpo
-YW5nIDx5aW5nLnpoYW5nMjI0NTVAbnhwLmNvbT47DQo+IE5pcHVuIEd1cHRhIDxuaXB1bi5ndXB0
-YUBueHAuY29tPjsgUHJpeWFua2EgSmFpbg0KPiA8cHJpeWFua2EuamFpbkBueHAuY29tPjsgWW9n
-ZXNoIE5hcmF5YW4gR2F1cg0KPiA8eW9nZXNobmFyYXlhbi5nYXVyQG54cC5jb20+OyBTcmlyYW0g
-RGFzaCA8c3JpcmFtLmRhc2hAbnhwLmNvbT4NCj4gU3ViamVjdDogUkU6IFtQQVRDSCB2NCA1LzZd
-IGFybTY0OiBkdHM6IGFkZCBRb3JJUSBMWDIxNjBBIFNvQyBzdXBwb3J0DQo+IA0KPiBRdW90aW5n
-IFZhYmhhdiBTaGFybWEgKDIwMTgtMTAtMTQgMTk6NTg6MTUpDQo+ID4gPiA+ICsNCj4gPiA+ID4g
-KyAgIHBtdSB7DQo+ID4gPiA+ICsgICAgICAgICAgIGNvbXBhdGlibGUgPSAiYXJtLGNvcnRleC1h
-NzItcG11IjsNCj4gPiA+ID4gKyAgICAgICAgICAgaW50ZXJydXB0cyA9IDxHSUNfUFBJIDcgSVJR
-X1RZUEVfTEVWRUxfTE9XPjsNCj4gPiA+ID4gKyAgIH07DQo+ID4gPiA+ICsNCj4gPiA+ID4gKyAg
-IHBzY2kgew0KPiA+ID4gPiArICAgICAgICAgICBjb21wYXRpYmxlID0gImFybSxwc2NpLTAuMiI7
-DQo+ID4gPiA+ICsgICAgICAgICAgIG1ldGhvZCA9ICJzbWMiOw0KPiA+ID4gPiArICAgfTsNCj4g
-PiA+ID4gKw0KPiA+ID4gPiArICAgbWVtb3J5QDgwMDAwMDAwIHsNCj4gPiA+ID4gKyAgICAgICAg
-ICAgLy8gRFJBTSBzcGFjZSAtIDEsIHNpemUgOiAyIEdCIERSQU0NCj4gPiA+ID4gKyAgICAgICAg
-ICAgZGV2aWNlX3R5cGUgPSAibWVtb3J5IjsNCj4gPiA+ID4gKyAgICAgICAgICAgcmVnID0gPDB4
-MDAwMDAwMDAgMHg4MDAwMDAwMCAwIDB4ODAwMDAwMDA+Ow0KPiA+ID4gPiArICAgfTsNCj4gPiA+
-ID4gKw0KPiA+ID4gPiArICAgZGRyMTogbWVtb3J5LWNvbnRyb2xsZXJAMTA4MDAwMCB7DQo+ID4g
-PiA+ICsgICAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHFvcmlxLW1lbW9yeS1jb250cm9sbGVy
-IjsNCj4gPiA+ID4gKyAgICAgICAgICAgcmVnID0gPDB4MCAweDEwODAwMDAgMHgwIDB4MTAwMD47
-DQo+ID4gPiA+ICsgICAgICAgICAgIGludGVycnVwdHMgPSA8R0lDX1NQSSAxNyBJUlFfVFlQRV9M
-RVZFTF9ISUdIPjsNCj4gPiA+ID4gKyAgICAgICAgICAgbGl0dGxlLWVuZGlhbjsNCj4gPiA+ID4g
-KyAgIH07DQo+ID4gPiA+ICsNCj4gPiA+ID4gKyAgIGRkcjI6IG1lbW9yeS1jb250cm9sbGVyQDEw
-OTAwMDAgew0KPiA+ID4gPiArICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxxb3JpcS1tZW1v
-cnktY29udHJvbGxlciI7DQo+ID4gPiA+ICsgICAgICAgICAgIHJlZyA9IDwweDAgMHgxMDkwMDAw
-IDB4MCAweDEwMDA+Ow0KPiA+ID4gPiArICAgICAgICAgICBpbnRlcnJ1cHRzID0gPEdJQ19TUEkg
-MTggSVJRX1RZUEVfTEVWRUxfSElHSD47DQo+ID4gPiA+ICsgICAgICAgICAgIGxpdHRsZS1lbmRp
-YW47DQo+ID4gPiA+ICsgICB9Ow0KPiA+ID4gPiArDQo+ID4gPiA+ICsgICBzeXNjbGs6IHN5c2Ns
-ayB7DQo+ID4gPg0KPiA+ID4gTmFtZSB0aGUgbm9kZSBhIGJpdCBnZW5lcmljIGxpa2UgY2xvY2st
-eHh4Lg0KPiA+IFRoZXJlIGlzIG9ubHkgb25lIGNsb2NrLXVuaXQsIEJvb3Rsb2FkZXIoVS1ib290
-KSByZXF1aXJlIHN5c2NsayBub2RlIGR1cmluZw0KPiBkZXZpY2UgdHJlZSBmaXgtdXAgYXMgZGlm
-ZmVyZW50IHBsYXRmb3JtIHN1cHBvcnQgdmFyaWVkIHBsYXRmb3JtIGZyZXF1ZW5jeSBhcw0KPiBw
-ZXIgcmVzZXQgY29uZmlndXJhdGlvbiB3b3JkIHVzZWQuDQo+ID4gUmVmZXJyZWQgb3RoZXIgQVJN
-IGJhc2VkIHBsYXRmb3JtIHdpdGggb25lIGNsb2NrIHVzaW5nIG5hbWUgYXMgeDogeA0KPiANCj4g
-UGxlYXNlIGFkZCBhIGNvbW1lbnQgYWJvdmUgdGhpcyBub2RlIHdpdGggdGhpcyBpbmZvcm1hdGlv
-bi4gTmV3Y29tZXJzDQo+IHJlYWRpbmcgdGhpcyBEVFMgZmlsZSB3b24ndCBoYXZlIGFueSBpZGVh
-IHdoeSB0aGlzIG5vZGUgaXMgc3BlY2lhbGx5IG5hbWVkDQo+IGFuZCBhIGNvbW1lbnQgd2lsbCBo
-ZWxwIHRyZW1lbmRvdXNseSBoZXJlLg0KU3VyZQ0KDQo=
+Hello,
+
+This series improves the OPP core (and a bit of genpd core as well) to
+support multiple phandles in the "required-opps" property, which are
+only used for multiple power-domains per device for now.
+
+We still don't propagate the changes to master domains for the
+sub-domains, but this patchset is an important stepping stone for that
+to happen.
+
+Tested on Hikey960 after faking some power domains for CPUs.
+
+V2->V3:
+- Gained an additional patch to properly name the virtual device (1/10)
+- Renamed the virtual device as virt_dev instead of genpd_dev.
+- Few helpers renamed as well accordingly.
+- Use container_of() instead of traversing list of genpd.
+- Included tags received from Ulf.
+
+V1->V2:
+- Had a discussion at Linaro connect with Ulf regarding the changes V1
+  did in the genpd core and what his objections are to them. Based on
+  his suggestions many changes are made.
+- The OPP core still needs the virtual device pointers to set the
+  performance state for multiple domains, but the genpd core doesn't
+  provide them automatically to the OPP core. One of the reasons behind
+  this is to give more power to the consumer drivers which may not want
+  to enable all the genpds at once.
+- The consumer drivers would now need to call the APIs
+  dev_pm_opp_{set|put}_genpd_device() in order to set/reset these
+  virtual device pointers.
+- More locking is put in place to protect the genpd device pointers in
+  OPP core.
+- Reorg of the code at many places to make code less redundant.
+
+--
+viresh
+
+Viresh Kumar (10):
+  PM / Domains: Rename genpd virtual devices as virt_dev
+  OPP: Identify and mark genpd OPP tables
+  OPP: Separate out custom OPP handler specific code
+  OPP: Populate required opp tables from "required-opps" property
+  OPP: Populate OPPs from "required-opps" property
+  PM / Domains: Add genpd_opp_to_performance_state()
+  OPP: Add dev_pm_opp_{set|put}_genpd_virt_dev() helper
+  OPP: Configure all required OPPs
+  OPP: Rename and relocate of_genpd_opp_to_performance_state()
+  OPP: Remove of_dev_pm_opp_find_required_opp()
+
+ drivers/base/power/domain.c |  70 ++++----
+ drivers/opp/core.c          | 261 ++++++++++++++++++++++--------
+ drivers/opp/of.c            | 313 +++++++++++++++++++++++++++++++-----
+ drivers/opp/opp.h           |  20 +++
+ include/linux/pm_domain.h   |   8 +-
+ include/linux/pm_opp.h      |  16 +-
+ 6 files changed, 526 insertions(+), 162 deletions(-)
+
+-- 
+2.19.1.568.g152ad8e3369a
