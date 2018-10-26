@@ -1,86 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: intel_pstate: Fix compilation for !CONFIG_ACPI
-Date: Fri, 26 Oct 2018 11:24:25 +0200
-Message-ID: <32781963.NEgFcAD2pt@aspire.rjw.lan>
-References: <20181023185429.GA6756@light.dominikbrodowski.net> <20181023195403.GA3094@light.dominikbrodowski.net> <af0dac7535332ecedeab9f04654fbb1d5a21e1a2.camel@linux.intel.com>
+From: <Claudiu.Beznea@microchip.com>
+Subject: Re: [PATCH] power: reset: at91-reset: enable I-cache for
+ at91sam9260_reset
+Date: Fri, 26 Oct 2018 11:05:30 +0000
+Message-ID: <f8ed781a-2ee7-9d0e-1220-b23ccf3fdbb2@microchip.com>
+References: <20181007125815.8392-1-jonas@threetimestwo.org>
+ <80993f04-c8ce-5a71-4f04-7edab5e1857b@microchip.com>
+ <2351196.3BzoFE0xYq@ws-140106>
+ <CALDOjzhZg3X1y22KE1yw_0ZFjuvaa=3GhEF2iU=KUk6-eRZN2g@mail.gmail.com>
+ <11b4bcb4-8882-bdd2-c7f7-6a74d0758cbc@microchip.com>
+ <CALDOjzhgqcx5XEWon9EQXEGxt9J280Z6AvuFQcBa=nh-9VA6PQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <af0dac7535332ecedeab9f04654fbb1d5a21e1a2.camel@linux.intel.com>
+In-Reply-To: <CALDOjzhgqcx5XEWon9EQXEGxt9J280Z6AvuFQcBa=nh-9VA6PQ@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <6CE50F7A6BBA94469B3C48A38106DC97@namprd11.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: linux-pm@vger.kernel.org, lenb@kernel.org, linux-kernel@vger.kernel.org
+To: jonas@orbital-systems.com
+Cc: alexander.stein@systec-electronic.com, linux-kernel@vger.kernel.org, sre@kernel.org, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 23, 2018 11:52:12 PM CEST Srinivas Pandruvada wrote:
-> On Tue, 2018-10-23 at 21:54 +0200, Dominik Brodowski wrote:
-> > While at it, add a few comments which config options #ifdef
-> > and #else statements refer to.
-> > 
-> > Fixes: 86d333a8cc7f ("cpufreq: intel_pstate: Add base_frequency
-> > attribute")
-> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> 
-> > 
-> > diff --git a/drivers/cpufreq/intel_pstate.c
-> > b/drivers/cpufreq/intel_pstate.c
-> > index 49c0abf2d48f..9578312e43f2 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -386,16 +386,11 @@ static int intel_pstate_get_cppc_guranteed(int
-> > cpu)
-> >  	return cppc_perf.guaranteed_perf;
-> >  }
-> >  
-> > -#else
-> > +#else /* CONFIG_ACPI_CPPC_LIB */
-> >  static void intel_pstate_set_itmt_prio(int cpu)
-> >  {
-> >  }
-> > -
-> > -static int intel_pstate_get_cppc_guranteed(int cpu)
-> > -{
-> > -	return -ENOTSUPP;
-> > -}
-> > -#endif
-> > +#endif /* CONFIG_ACPI_CPPC_LIB */
-> >  
-> >  static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy
-> > *policy)
-> >  {
-> > @@ -477,7 +472,7 @@ static void intel_pstate_exit_perf_limits(struct
-> > cpufreq_policy *policy)
-> >  
-> >  	acpi_processor_unregister_performance(policy->cpu);
-> >  }
-> > -#else
-> > +#else /* CONFIG_ACPI */
-> >  static inline void intel_pstate_init_acpi_perf_limits(struct
-> > cpufreq_policy *policy)
-> >  {
-> >  }
-> > @@ -490,7 +485,14 @@ static inline bool
-> > intel_pstate_acpi_pm_profile_server(void)
-> >  {
-> >  	return false;
-> >  }
-> > -#endif
-> > +#endif /* CONFIG_ACPI */
-> > +
-> > +#ifndef CONFIG_ACPI_CPPC_LIB
-> > +static int intel_pstate_get_cppc_guranteed(int cpu)
-> > +{
-> > +	return -ENOTSUPP;
-> > +}
-> > +#endif /* CONFIG_ACPI_CPPC_LIB */
-> >  
-> >  static inline void update_turbo_state(void)
-> >  {
-> 
-> 
-
-Patch applied, thanks!
+DQoNCk9uIDE5LjEwLjIwMTggMTM6MzAsIEpvbmFzIERhbmllbHNzb24gd3JvdGU6DQo+IE9uIFdl
+ZCwgT2N0IDE3LCAyMDE4IGF0IDM6MTAgUE0gPENsYXVkaXUuQmV6bmVhQG1pY3JvY2hpcC5jb20+
+IHdyb3RlOg0KPj4NCj4+Pg0KPj4+IFdlIHRha2UgdGhlIG5vcm1hbCBwYXRoIG9mIHN5c19yZWJv
+b3QgPT4ga2VybmVsX3Jlc3RhcnQgPT4gbWFjaGluZV9yZXN0YXJ0IC4uLg0KPj4+DQo+Pj4gSSBh
+ZGRlZCBjb2RlIHRvIHByaW50IHRoZSBjMSByZWdpc3RlciBpbiBkaWZmZXJlbnQgcGF0aHMuIEFu
+ZCBJLWNhY2hlDQo+Pj4gaXMgZW5hYmxlZC4NCj4+PiBTbyBub3cgSSBhbSByZWFsbHkgY29uZnVz
+ZWQgYWJvdXQgd2h5IHRoZSBwYXRjaCB3b3JrZWQuDQo+Pg0KPj4gSnVzdCBzYXlpbmcuLi4gbWF5
+YmUgeW91ciBpbnN0cnVjdGlvbnMgYWRkIHNvbWUgZGVsYXkgb24gdGhlIGV4ZWN1dGlvbiBwYXRo
+DQo+PiBhbmQgdGhpcyBpcyB3aHkgaXQgaGVscHMuLi4gdHJ5IHRvIGFjY2VzcyBjcDE1IGNvLXBy
+b2Nlc3NvciBmb3IgcmVhZCBhbmQNCj4+IHdyaXRlIGJhY2sgdGhlIHZhbHVlIHlvdSByZWFkIHdp
+dGhvdXQgYWN0dWFsbHkgdG8gbW9kaWZ5IGl0LCB0byBzZWUgaWYgdGhpcw0KPj4gY291bGQgYmUg
+dGhlIHJlYXNvbjogZS5nLjoNCj4+DQo+PiBtcmMgICAgIHAxNSwgMCwgcjAsIGMxLCBjMCwgMA0K
+Pj4gb3JyICAgICByMSwgcjEsICM0MDk2ICAgICAgICAgICAvLyB3aGF0ZXZlciBpcyBpbiByMSwg
+ZG9lc24ndCBtYXR0ZXINCj4+IG1jciAgICAgcDE1LCAwLCByMCwgYzEsIGMwLCAwDQo+Pg0KPiAN
+Cj4gWWVzLCB0aGlzIGFsc28gc2VlbXMgdG8gd29yay4gSSBoYXZlIG92ZXIgMTAwIHJlYm9vdHMg
+Y29tcGxldGVkIHdpdGggdGhpcyBjb2RlLg0KPiBTbyB3aGF0IGNvdWxkIGJlIHRoZSBpc3N1ZSBo
+ZXJlPyBJdCBzZWVtIHJlbGF0ZWQgdG8gdGhlIHBvd2VyaW5nIGRvd24NCj4gb2YgdGhlIHNkcmFt
+IGF0IGxlYXN0Lg0KDQpJIGRvbid0IGtub3cgd2hhdCBjb3VsZCBiZSB0aGUgaXNzdWUgaGVyZS4g
+DQoNCj4gDQo+IFRoaXMgdGhyZWFkIG9uIHRoZSBBVDkxU0FNIGNvbW11bml0eSBkZWFscyB3aXRo
+IHRoZSBzYW1lIGlzc3VlOg0KPiBodHRwOi8vd3d3LmF0OTEuY29tL3ZpZXd0b3BpYy5waHA/dD0y
+NTgzMA0KPiBUaGVyZSB0aGUgc29sdXRpb24gcGVvcGxlIGNob3NlIHdhcyByZW1vdmluZyB0aGUg
+U0RSQU0gcG93ZXJpbmcgZG93bi4NCj4gQnV0IHRoYXQgbGVhdmVzIG9uZSBvcGVuIHRvIHRoZSBj
+YXVzZSBvZiB0aGUgZXJyYXRhLg0KPiANCj4gRG8geW91IGhhdmUgYW55IHRob3VnaHQgb24gaG93
+IHRvIGFwcHJvYWNoIHRoaXM/DQoNCkZvciBub3csIG5vLiBJIGRpZG4ndCBkdWcgdGhpcyBpc3N1
+ZS4NCg0KVGhhbmsgeW91LA0KQ2xhdWRpdQ0KDQo+IA0KPj4gVGhhbmsgeW91LA0KPj4gQ2xhdWRp
+dSBCZXpuZWENCj4+DQo+IA0KPiBSZWdhcmRzDQo+IEpvbmFzDQo+IA0KPiANCj4+Pg0KPj4+PiBC
+ZXN0IHJlZ2FyZHMsDQo+Pj4+IEFsZXhhbmRlcg0KPj4+DQo+Pj4gSm9uYXMNCj4+Pg0KPj4+Pg0K
+Pj4+Pg0KPj4+Pg0KPj4+DQo+Pj4NCj4gDQo+IA0KPiANCg==
