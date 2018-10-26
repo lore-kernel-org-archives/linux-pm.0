@@ -1,67 +1,97 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 08/17] thermal: qcom: tsens: enable+check sensor after
- its setup is finished
-Date: Fri, 26 Oct 2018 18:09:58 +0530
-Message-ID: <CAHLCerOqgLep=sPvODyEY8sUr=xxkVU+BkWU5ipTX6w_j6dWtQ@mail.gmail.com>
-References: <CGME20181017155403epcas2p1ed9777e96c6b2c77c2c5b67466be9843@epcas2p1.samsung.com>
- <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com>
- <1539791563-5959-9-git-send-email-b.zolnierkie@samsung.com> <CAHLCerNsdhG1OjiRiy5s4uSRGB6dUCVe7mvknCqWqMeQzxCb7Q@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 2/2] ARM: cpuidle: Convert to use cpuidle_register|unregister()
+Date: Fri, 26 Oct 2018 16:49:15 +0200
+Message-ID: <20181026144915.3084-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerNsdhG1OjiRiy5s4uSRGB6dUCVe7mvknCqWqMeQzxCb7Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 26, 2018 at 5:41 PM Amit Kucheria <amit.kucheria@linaro.org> wrote:
->
-> On Wed, Oct 17, 2018 at 9:24 PM Bartlomiej Zolnierkiewicz
-> <b.zolnierkie@samsung.com> wrote:
-> >
-> > Enable+check sensor after setting tmdev->sensor[i].tzd and calling
-> > chipset specific enable operation.
-> >
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> >  drivers/thermal/qcom/tsens.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-> > index dbd2556..01bff96 100644
-> > --- a/drivers/thermal/qcom/tsens.c
-> > +++ b/drivers/thermal/qcom/tsens.c
-> > @@ -105,13 +105,13 @@ static int tsens_register(struct tsens_device *tmdev)
-> >                 if (IS_ERR(tzd))
-> >                         continue;
-> >
-> > -               thermal_zone_set_mode(tzd, THERMAL_DEVICE_ENABLED);
-> > -               thermal_zone_device_check(tzd);
-> > -
->
-> I don't quite understand why you're making this move explicitly in a
-> separate patch for each of the drivers? You added it here in patch 4
-> in the first place, why not add it in the correct place there itself?
+The only reason that remains, to why the ARM cpuidle driver calls
+cpuidle_register_driver(), is to avoid printing an error message in case
+another driver already have been registered for the CPU. This seems a bit
+silly, but more importantly, if that is a common scenario, perhaps we
+should change cpuidle_register() accordingly instead.
 
-I think I understand now. You wanted to separate patches causing
-functional changes from ones that didn't.
+In either case, let's consolidate the code, by converting to use
+cpuidle_register|unregsiter(), which also avoids the unnecessary allocation
+of the struct cpuidle_device.
 
-IMHO, it makes the series a bit hard to read but I have no better
-suggestion than to squash everything (patches 3-16), but that will
-make it harder to collect Acks.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/cpuidle/cpuidle-arm.c | 30 +++---------------------------
+ 1 file changed, 3 insertions(+), 27 deletions(-)
 
-> >                 tmdev->sensor[i].tzd = tzd;
-> >
-> >                 if (tmdev->ops->enable)
-> >                         tmdev->ops->enable(tmdev, i);
-> > +
-> > +               thermal_zone_set_mode(tzd, THERMAL_DEVICE_ENABLED);
-> > +               thermal_zone_device_check(tzd);
-> >
-> >         }
-> >         return 0;
-> >  }
-> > --
-> > 1.9.1
-> >
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index df564d783216..3a407a3ef22b 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -82,7 +82,6 @@ static int __init arm_idle_init_cpu(int cpu)
+ {
+ 	int ret;
+ 	struct cpuidle_driver *drv;
+-	struct cpuidle_device *dev;
+ 
+ 	drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+ 	if (!drv)
+@@ -119,33 +118,12 @@ static int __init arm_idle_init_cpu(int cpu)
+ 		goto out_kfree_drv;
+ 	}
+ 
+-	ret = cpuidle_register_driver(drv);
+-	if (ret) {
+-		if (ret != -EBUSY)
+-			pr_err("Failed to register cpuidle driver\n");
++	ret = cpuidle_register(drv, NULL);
++	if (ret)
+ 		goto out_kfree_drv;
+-	}
+-
+-	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+-	if (!dev) {
+-		ret = -ENOMEM;
+-		goto out_unregister_drv;
+-	}
+-	dev->cpu = cpu;
+-
+-	ret = cpuidle_register_device(dev);
+-	if (ret) {
+-		pr_err("Failed to register cpuidle device for CPU %d\n",
+-		       cpu);
+-		goto out_kfree_dev;
+-	}
+ 
+ 	return 0;
+ 
+-out_kfree_dev:
+-	kfree(dev);
+-out_unregister_drv:
+-	cpuidle_unregister_driver(drv);
+ out_kfree_drv:
+ 	kfree(drv);
+ 	return ret;
+@@ -176,9 +154,7 @@ static int __init arm_idle_init(void)
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
+ 		drv = cpuidle_get_cpu_driver(dev);
+-		cpuidle_unregister_device(dev);
+-		cpuidle_unregister_driver(drv);
+-		kfree(dev);
++		cpuidle_unregister(drv);
+ 		kfree(drv);
+ 	}
+ 
+-- 
+2.17.1
