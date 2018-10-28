@@ -1,40 +1,58 @@
-From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Subject: Re: [PATCH v5 04/11] dt-bindings: iio: adc: add AXP803 ADC bindings
-Date: Sun, 28 Oct 2018 15:40:11 +0000
-Message-ID: <20181028154011.04efdecf@archlinux>
-References: <20181023185330.10472-1-oskari@lemmela.net>
-        <20181023185330.10472-5-oskari@lemmela.net>
-        <20181024135633.GA342@bogus>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH 1/3] i2c: sh_mobile: Remove dummy runtime PM callbacks
+Date: Sun, 28 Oct 2018 22:22:37 +0000
+Message-ID: <20181028222237.GG1882@kunai>
+References: <20181024135134.28456-1-jarkko.nikula@linux.intel.com>
+ <20181024135134.28456-2-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181024135633.GA342@bogus>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Oskari Lemmela <oskari@lemmela.net>, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Vasily Khoruzhick <anarsoul@gmail.com>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181024135134.28456-2-jarkko.nikula@linux.intel.com>
+Sender: netdev-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 24 Oct 2018 08:56:33 -0500
-Rob Herring <robh@kernel.org> wrote:
 
-> On Tue, 23 Oct 2018 21:53:23 +0300, Oskari Lemmela wrote:
-> > The AXP803 ADC is compatible with AXP813 ADC, but add
-> > specific compatible for it.
-> > 
-> > Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> > ---
-> >  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >   
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+--gm5TwAJMO0F2iVRz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This doesn't seem to have any dependencies with the other patches
-so applied to the togreg branch of iio.git and pushed out as testing
-for the autobuilders to ignore.  However I am a little curious to know
-why we would add the ID and then not use it (that I can see)?
+On Wed, Oct 24, 2018 at 04:51:32PM +0300, Jarkko Nikula wrote:
+> Platform drivers don't need dummy runtime PM callbacks that just return
+> success and non-NULL pm pointer in their struct device_driver in order
+> to have runtime PM happening. This has changed since following commits:
+>=20
+> 05aa55dddb9e ("PM / Runtime: Lenient generic runtime pm callbacks")
+> 543f2503a956 ("PM / platform_bus: Allow runtime PM by default")
+> 8b313a38ecff ("PM / Platform: Use generic runtime PM callbacks directly")
+>=20
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-Thanks,
+Applied to for-next, thanks!
 
-Jonathan
+
+--gm5TwAJMO0F2iVRz
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlvWNq0ACgkQFA3kzBSg
+KbaZrw//SNsMT9sG1waPr8dZfdP8N42mjVNRfqABCx+9SUftMbMe+BbeWxyU7j2P
+tk3HxyctyyTpjG3NbnODXzCv5Jk29XcxV8CxNe8NZdxGSObwjGnS5yT9lW+Ptn8t
+A8vZKSlc4q56Y6NpRtk0sWHPk3X/XvJOiEs7ClvchoJjQJ6AG36xAqsq0uhqYjx0
+b/7nuj2PcmRoP5aXM7Zo2ZJs0jGcyfX9RSDVGLGa45rxggPJB+kDbt0KHkRSP485
+zQ59Qy7yxTNAyfMwjV9LYp4+uhq79DTZUyoYilwTCBmUP5HDMI8yqxikrLuZZ4Ze
+Tk7BEvLPO5MiucSzkgsZSAMEY/TIylU7JA36uUIgBuo+5wxS2e1K8xRO7Y8hzrv8
+kU1ndKW7Hz7bBKdY4AMg8NUIRbJENF7EqnUNMxLsQgODlE+RYEPhzVpEF+vcyVhL
+/z0C4XcLLUb9zDeIWuwtnjPhKT1BkJxC2/d/+ztaY7NDeOG43KR90kZUyRW9oF29
+hRJd4MQNoFIMpeEYx3LLDBOjNGvlkGBlM1E/x52AluUA+boqDsyXJPtfSRvdIvtT
+rYjbur8sVIXHPLEmg5ysjVJrvYNp0HtB2qWc/j/sPnaMEGwP9a6KSIAtGbJ8TrrF
+/zzSxmjU88EvmWt0YmBGARTMbPppjZ1JwD6lXyDbNdaZZ0qO+1w=
+=+Vek
+-----END PGP SIGNATURE-----
+
+--gm5TwAJMO0F2iVRz--
