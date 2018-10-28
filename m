@@ -1,54 +1,69 @@
-From: Dmitry Osipenko <digetx@gmail.com>
-Subject: Re: [RFC PATCH v2 01/17] OPP: Allow to request stub voltage
- regulators
-Date: Sun, 28 Oct 2018 15:58:25 +0300
-Message-ID: <bd3a57ee-6131-22bb-1954-3d97bba5276a@gmail.com>
-References: <20181021205501.23943-1-digetx@gmail.com>
- <20181021205501.23943-2-digetx@gmail.com>
- <20181022053636.ag62j3rj3vovbz53@vireshk-i7>
- <e4027793-9436-413d-2a7b-34cf519218c3@gmail.com>
- <20181022113224.b5fiebgy2aap66nd@vireshk-i7>
- <29f893be-feed-c4c5-8468-51f7228dd468@gmail.com>
- <20181024064123.lbpbeervghp35fe7@vireshk-i7>
- <ba782346-6ac0-7bf3-e187-00d2634b145b@gmail.com>
- <1540568255.2245.11.camel@pengutronix.de>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: [PATCH V8 0/5] soc: imx: add scu power domain driver
+Date: Sun, 28 Oct 2018 15:19:30 +0000
+Message-ID: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540568255.2245.11.camel@pengutronix.de>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/26/18 6:37 PM, Lucas Stach wrote:
-> Am Freitag, den 26.10.2018, 15:03 +0300 schrieb Dmitry Osipenko:
-> [...]
->>> On the other hand, the tegra20 cpufreq driver is common across a lot of boards.
->>> What will happen if the DT for some of the boards isn't correct and missed the
->>> necessary regulator node ?
->>
->> AFAIK, there is assumption that bootloader should setup regulators in
->> a way that kernel could work properly at max clock rates. Otherwise
->> things won't work.
-> 
-> This isn't true. The assumption is that the bootloader sets up the
-> regulators such that stable operation at the CPU speed used by the
-> bootloader is guaranteed.
-> 
-> Often the bootloader doesn't know about specific SKUs, so drives things
-> at a rate/voltage that is safe across all SKUs [1], in which case the
-> bootloader is totally unaware of the voltage needed to run the CPU at
-> highest possible clock frequency.
-> 
-> Regards,
-> Lucas
-> 
-> [1] http://git.denx.de/?p=u-boot.git;a=commit;h=2364e151e432b4ccf32dc9e6147121253d4ff86d
-> 
+This patch set adds the scu based power domain driver.
+It depends on SCU driver.
 
-Oh, okay. Thank you for pointing at [1], though the assumption is true for T20. 
+Change Log:
+v7->v8:
+ * update to #power-domain-cells 1 binding
+v6->v7:
+ * keep "fsl,scu-pd" as fall back compatible string
+v5->v6:
+ * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
+   accordingly
+v4->v5:
+ * some minor improvements according to Sascha's suggestion
+   Note: did not use dev_* print functions due to we already have proper
+         prefix by redefining pr_fmt. So it seems not quite neccesary
+	 to pass in a struct device * pointer for debug purpose only in
+	 each functions.
+v3->v4:
+ * only scu headfile path update
 
-I agree that it's better not to rely on configuration left from bootloader in general.
+v2->v3:
+ * structure and enums name update
+ * api usage update
+
+
+Dong Aisheng (5):
+  dt-bindings: imx: add scu resource id headfile
+  firmware: imx: remove resource id enums
+  dt-bindings: fsl: scu: update power domain binding
+  firmware: imx: add pm svc headfile
+  firmware: imx: add SCU power domain driver
+
+ .../devicetree/bindings/arm/freescale/fsl,scu.txt  |  37 +-
+ drivers/firmware/imx/Kconfig                       |   6 +
+ drivers/firmware/imx/Makefile                      |   3 +-
+ drivers/firmware/imx/scu-pd.c                      | 302 +++++++++++
+ include/dt-bindings/firmware/imx/rsrc.h            | 559 +++++++++++++++++++++
+ include/linux/firmware/imx/sci.h                   |   1 +
+ include/linux/firmware/imx/svc/pm.h                |  85 ++++
+ include/linux/firmware/imx/types.h                 | 552 --------------------
+ 8 files changed, 963 insertions(+), 582 deletions(-)
+ create mode 100644 drivers/firmware/imx/scu-pd.c
+ create mode 100644 include/dt-bindings/firmware/imx/rsrc.h
+ create mode 100644 include/linux/firmware/imx/svc/pm.h
+
+-- 
+2.7.4
