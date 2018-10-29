@@ -1,93 +1,79 @@
-From: Poonam Aggrwal <poonam.aggrwal@nxp.com>
-Subject: RE: [PATCH v7 2/6] soc/fsl/guts: Add definition for LX2160A
-Date: Mon, 29 Oct 2018 11:09:24 +0000
-Message-ID: <VI1PR04MB4976D4A33E0561D125BE837486F30@VI1PR04MB4976.eurprd04.prod.outlook.com>
-References: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
- <1540759926-3641-3-git-send-email-vabhav.sharma@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V8 0/5] soc: imx: add scu power domain driver
+Date: Mon, 29 Oct 2018 12:14:49 +0100
+Message-ID: <CAPDyKFq0dGiEEiveFeDyYeie74VjxCyK9N5zARNvaSOLLSzWpg@mail.gmail.com>
+References: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540759926-3641-3-git-send-email-vabhav.sharma@nxp.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.or>
-Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Udit Kumar <udit.kumar@nxp.com>, Pankaj Bansal <pankaj.bansal@nxp.com>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, Varun Sethi <V.Sethi@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>, Yinbo Zhu <yinbo.zhu@nxp.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "A.s. Dong" <aisheng.dong@nxp.com>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-> -----Original Message-----
-> From: linux-arm-kernel [mailto:linux-arm-kernel-bounces@lists.infradead.o=
-rg]
-> On Behalf Of Vabhav Sharma
-> Sent: Monday, October 29, 2018 2:28 PM
-> To: sudeep.holla@arm.com; oss@buserror.net; linux-kernel@vger.kernel.org;
-> devicetree@vger.kernel.org; robh+dt@kernel.org; mark.rutland@arm.com;
-> linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org;
-> mturquette@baylibre.com; sboyd@kernel.org; rjw@rjwysocki.net;
-> viresh.kumar@linaro.org; linux-clk@vger.kernel.org; linux-pm@vger.kernel.=
-org;
-> linux-kernel-owner@vger.kernel.org; catalin.marinas@arm.com;
-> will.deacon@arm.com; gregkh@linuxfoundation.org; arnd@arndb.de;
-> kstewart@linuxfoundation.org; yamada.masahiro@socionext.com; Leo Li
-> <leoyang.li@nxp.com>; shawnguo@kernel.org
-> Cc: ulf.hansson@linaro.org; Udit Kumar <udit.kumar@nxp.com>; Pankaj Bansa=
-l
-> <pankaj.bansal@nxp.com>; linux@armlinux.org.uk; adrian.hunter@intel.com;
-> Varun Sethi <V.Sethi@nxp.com>; Vabhav Sharma <vabhav.sharma@nxp.com>;
-> Yinbo Zhu <yinbo.zhu@nxp.com>
-> Subject: [PATCH v7 2/6] soc/fsl/guts: Add definition for LX2160A
->=20
-> Adding compatible string "lx2160a-dcfg" to initialize guts driver for lx2=
-160 and
-> SoC die attribute definition for LX2160A
->=20
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
-> Acked-by: Li Yang <leoyang.li@nxp.com>
-> ---
->  drivers/soc/fsl/guts.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/drivers/soc/fsl/guts.c b/drivers/soc/fsl/guts.c index
-> 302e0c8..bcab1ee 100644
-> --- a/drivers/soc/fsl/guts.c
-> +++ b/drivers/soc/fsl/guts.c
-> @@ -100,6 +100,11 @@ static const struct fsl_soc_die_attr fsl_soc_die[] =
-=3D {
->  	  .svr		=3D 0x87000000,
->  	  .mask		=3D 0xfff70000,
->  	},
-> +	/* Die: LX2160A, SoC: LX2160A/LX2120A/LX2080A */
-> +	{ .die          =3D "LX2160A",
-> +	  .svr          =3D 0x87360000,
-Do all  the threevariants " LX2160A/LX2120A/LX2080A"  have same SVR?
-> +	  .mask         =3D 0xff3f0000,
-> +	},
->  	{ },
->  };
->=20
-> @@ -222,6 +227,7 @@ static const struct of_device_id fsl_guts_of_match[] =
-=3D {
->  	{ .compatible =3D "fsl,ls1088a-dcfg", },
->  	{ .compatible =3D "fsl,ls1012a-dcfg", },
->  	{ .compatible =3D "fsl,ls1046a-dcfg", },
-> +	{ .compatible =3D "fsl,lx2160a-dcfg", },
->  	{}
->  };
->  MODULE_DEVICE_TABLE(of, fsl_guts_of_match);
+On 28 October 2018 at 16:19, A.s. Dong <aisheng.dong@nxp.com> wrote:
+> This patch set adds the scu based power domain driver.
+> It depends on SCU driver.
+>
+> Change Log:
+> v7->v8:
+>  * update to #power-domain-cells 1 binding
+> v6->v7:
+>  * keep "fsl,scu-pd" as fall back compatible string
+> v5->v6:
+>  * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
+>    accordingly
+> v4->v5:
+>  * some minor improvements according to Sascha's suggestion
+>    Note: did not use dev_* print functions due to we already have proper
+>          prefix by redefining pr_fmt. So it seems not quite neccesary
+>          to pass in a struct device * pointer for debug purpose only in
+>          each functions.
+> v3->v4:
+>  * only scu headfile path update
+>
+> v2->v3:
+>  * structure and enums name update
+>  * api usage update
+>
+>
+> Dong Aisheng (5):
+>   dt-bindings: imx: add scu resource id headfile
+>   firmware: imx: remove resource id enums
+>   dt-bindings: fsl: scu: update power domain binding
+>   firmware: imx: add pm svc headfile
+>   firmware: imx: add SCU power domain driver
+>
+>  .../devicetree/bindings/arm/freescale/fsl,scu.txt  |  37 +-
+>  drivers/firmware/imx/Kconfig                       |   6 +
+>  drivers/firmware/imx/Makefile                      |   3 +-
+>  drivers/firmware/imx/scu-pd.c                      | 302 +++++++++++
+>  include/dt-bindings/firmware/imx/rsrc.h            | 559 +++++++++++++++++++++
+>  include/linux/firmware/imx/sci.h                   |   1 +
+>  include/linux/firmware/imx/svc/pm.h                |  85 ++++
+>  include/linux/firmware/imx/types.h                 | 552 --------------------
+>  8 files changed, 963 insertions(+), 582 deletions(-)
+>  create mode 100644 drivers/firmware/imx/scu-pd.c
+>  create mode 100644 include/dt-bindings/firmware/imx/rsrc.h
+>  create mode 100644 include/linux/firmware/imx/svc/pm.h
+>
 > --
 > 2.7.4
->=20
->=20
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> https://emea01.safelinks.protection.outlook.com/?url=3Dhttp%3A%2F%2Flists=
-.infr
-> adead.org%2Fmailman%2Flistinfo%2Flinux-arm-
-> kernel&amp;data=3D02%7C01%7Cpoonam.aggrwal%40nxp.com%7Cd9b7c36c786
-> 54cd6dc4008d63d7fee63%7C686ea1d3bc2b4c6fa92cd99c5c301635%7C0%7C0
-> %7C636764017001504288&amp;sdata=3DpqFMlw6yVrHrvn4YRhqj%2FmoOnSscrZu
-> tcoYn3In8OJc%3D&amp;reserved=3D0
+>
+
+For patch 1 -> 4 (comments on patch5 is on its way).
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
