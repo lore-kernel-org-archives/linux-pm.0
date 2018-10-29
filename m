@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v5 14/15] sched/core: uclamp: use TG's clamps to restrict Task's clamps
-Date: Mon, 29 Oct 2018 18:33:09 +0000
-Message-ID: <20181029183311.29175-16-patrick.bellasi@arm.com>
+Subject: [PATCH v5 14/15] sched/core: uclamp: use TG's clamps to restrict TASK's clamps
+Date: Mon, 29 Oct 2018 18:33:10 +0000
+Message-ID: <20181029183311.29175-17-patrick.bellasi@arm.com>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181029183311.29175-1-patrick.bellasi@arm.com>
@@ -12,9 +12,9 @@ List-Id: linux-pm@vger.kernel.org
 
 When a task's util_clamp value is configured via sched_setattr(2), this
 value has to be properly accounted in the corresponding clamp group
-every time the task is enqueued and dequeued. When cgroups are also in
-use, per-task clamp values have to be aggregated to those of the CPU's
-controller's Task Group (TG) in which the task is currently living.
+every time the task is enqueued and dequeued. However, when cgroups are
+also in use, the per-task clamp values could be restricted by the TG in
+which the task is currently living.
 
 Let's update uclamp_cpu_get() to provide aggregation between the task
 and the TG clamp values. Every time a task is enqueued, it will be
@@ -23,33 +23,29 @@ task specific value and its TG effective value.
 
 This also mimics what already happen for a task's CPU affinity mask when
 the task is also living in a cpuset. The overall idea is that cgroup
-attributes are always used to restrict the per-task attributes.
+attributes are always used to restrict per-task attributes.
 
 Thus, this implementation allows to:
 
 1. ensure cgroup clamps are always used to restrict task specific
    requests, i.e. boosted only up to the effective granted value or
    clamped at least to a certain value
+
 2. implements a "nice-like" policy, where tasks are still allowed to
    request less then what enforced by their current TG
 
 For this mechanisms to work properly, we exploit the concept of
 "effective" clamp, which is already used by a TG to track parent
-enforced restrictions.
-In this patch we re-use the same variable:
+enforced restrictions. Here we re-use the same variable:
+
    task_struct::uclamp::effective::group_id
+
 to track the currently most restrictive clamp group each task is
-subject to and thus it's also currently refcounted into.
+subject to and thus currently refcounted into.
 
 This solution allows also to better decouple the slow-path, where task
 and task group clamp values are updated, from the fast-path, where the
 most appropriate clamp value is tracked by refcounting clamp groups.
-
-For consistency purposes, as well as to properly inform userspace, the
-sched_getattr(2) call is updated to always return the properly
-aggregated constrains as described above. This will also make
-sched_getattr(2) a convenient userspace API to know the utilization
-constraints enforced on a task by the cgroup's CPU controller.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
@@ -68,6 +64,10 @@ Cc: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
 
 ---
+Changes in v5:
+ Others:
+ - rebased on v4.19
+
 Changes in v4:
  Message-ID: <20180816140731.GD2960@e110439-lin>
  - reuse already existing:
@@ -79,7 +79,6 @@ Changes in v4:
  Others:
  - small documentation fixes
  - rebased on v4.19-rc1
-
 Changes in v3:
  Message-ID: <CAJuCfpFnj2g3+ZpR4fP4yqfxs0zd=c-Zehr2XM7m_C+WdL9jNA@mail.gmail.com>
  - rename UCLAMP_NONE into UCLAMP_NOT_VALID
@@ -130,7 +129,7 @@ index 7698e7554892..4b61fbcb0797 100644
  	 * Clamp group and value actually used by a scheduling entity,
  	 * i.e. a (RUNNABLE) task or a task group.
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e2292c698e3b..2ce84d22ab17 100644
+index 3dcd1c17a244..f2e35b0a1f0c 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
 @@ -875,6 +875,28 @@ static inline void uclamp_cpu_update(struct rq *rq, unsigned int clamp_id,
@@ -221,7 +220,7 @@ index e2292c698e3b..2ce84d22ab17 100644
   */
  static inline void uclamp_cpu_get_id(struct task_struct *p, struct rq *rq,
  				     unsigned int clamp_id)
-@@ -1312,10 +1356,12 @@ static int __setscheduler_uclamp(struct task_struct *p,
+@@ -1310,10 +1354,12 @@ static int __setscheduler_uclamp(struct task_struct *p,
  
  	/* Update each required clamp group */
  	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
@@ -234,7 +233,7 @@ index e2292c698e3b..2ce84d22ab17 100644
  		uclamp_group_get(p, &p->uclamp[UCLAMP_MAX],
  				 UCLAMP_MAX, upper_bound);
  	}
-@@ -1359,8 +1405,10 @@ static void uclamp_fork(struct task_struct *p, bool reset)
+@@ -1357,8 +1403,10 @@ static void uclamp_fork(struct task_struct *p, bool reset)
  	for (clamp_id = 0; clamp_id < UCLAMP_CNT; ++clamp_id) {
  		unsigned int clamp_value = p->uclamp[clamp_id].value;
  
