@@ -1,58 +1,89 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 1/3] i2c: sh_mobile: Remove dummy runtime PM callbacks
-Date: Sun, 28 Oct 2018 22:22:37 +0000
-Message-ID: <20181028222237.GG1882@kunai>
-References: <20181024135134.28456-1-jarkko.nikula@linux.intel.com>
- <20181024135134.28456-2-jarkko.nikula@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH v2 01/17] OPP: Allow to request stub voltage
+ regulators
+Date: Mon, 29 Oct 2018 12:23:28 +0530
+Message-ID: <20181029065328.6vkbwjnq2zzwxric@vireshk-i7>
+References: <20181021205501.23943-1-digetx@gmail.com>
+ <20181021205501.23943-2-digetx@gmail.com>
+ <20181022053636.ag62j3rj3vovbz53@vireshk-i7>
+ <e4027793-9436-413d-2a7b-34cf519218c3@gmail.com>
+ <20181022113224.b5fiebgy2aap66nd@vireshk-i7>
+ <29f893be-feed-c4c5-8468-51f7228dd468@gmail.com>
+ <20181024064123.lbpbeervghp35fe7@vireshk-i7>
+ <ba782346-6ac0-7bf3-e187-00d2634b145b@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gm5TwAJMO0F2iVRz"
-Return-path: <netdev-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181024135134.28456-2-jarkko.nikula@linux.intel.com>
-Sender: netdev-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, netdev@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+In-Reply-To: <ba782346-6ac0-7bf3-e187-00d2634b145b@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Osipenko <digetx@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 26-10-18, 15:03, Dmitry Osipenko wrote:
+> On 10/24/18 9:41 AM, Viresh Kumar wrote:
+> > On 22-10-18, 15:12, Dmitry Osipenko wrote:
+> >> Because there is one Tegra20 board (tegra20-trimslice) that doesn't declare
+> >> necessary regulators, but we want to have CPU frequency scaling. I couldn't
+> >> find board schematics and so don't know if CPU / CORE voltages are fixed on
+> >> Trim-Slice or it is just preferable not to have DVFS for that board, it is an
+> >> outlet-powered device [0]. Hence tegra20-cpufreq driver will request a dummy
+> >> regulators when appropriate. 
+> > 
+> > We have been using the regulator_get_optional() variant until now in the OPP
+> > core to make sure that we don't do DVFS for the CPU without the mandatory
+> > regulators being present, as that may make things unstable and cause harm to the
+> > SoC if we try to take CPU to frequency range over the currently programmed
+> > regulator can support.
+> > 
+> > Now coming back to tegra-20 SoC, which actually requires a regulator normally by
+> > design. On one of the boards (which is outlet powered), you aren't sure if there
+> > is a programmable regulator or not, or if DVFS should really be done or not.
+> > Isn't it worth checking the same from Tegra maintainers, or whomsoever has
+> > information on that board ?
+> 
+> I'll try to find out more detailed information for the next revision of the patchset.
 
---gm5TwAJMO0F2iVRz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks Dmitry.
 
-On Wed, Oct 24, 2018 at 04:51:32PM +0300, Jarkko Nikula wrote:
-> Platform drivers don't need dummy runtime PM callbacks that just return
-> success and non-NULL pm pointer in their struct device_driver in order
-> to have runtime PM happening. This has changed since following commits:
->=20
-> 05aa55dddb9e ("PM / Runtime: Lenient generic runtime pm callbacks")
-> 543f2503a956 ("PM / platform_bus: Allow runtime PM by default")
-> 8b313a38ecff ("PM / Platform: Use generic runtime PM callbacks directly")
->=20
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+>  What would happen if there actually was a regulator
 
-Applied to for-next, thanks!
+Please preserve the '>' from previous replies at the beginning of the
+lines. Otherwise it looks as if you have written the above line. :)
 
+> > and its default settings aren't good enough for high end frequencies ?
+> 
+> Usually this causes kernel/applications crashes and/or machine hang.
 
---gm5TwAJMO0F2iVRz
-Content-Type: application/pgp-signature; name="signature.asc"
+Sure. I also do remember from some guys (maybe TI), where they
+mentioned that such scenarios can harm the hardware as well sometimes.
+Don't remember the details though.
 
------BEGIN PGP SIGNATURE-----
+>  And because you are moving to regulator_get() API for
+> > the entire SoC (i.e. its cpufreq driver), people will never find the missing
+> > regulator.
+> 
+> Regulators core prints info message when dummy regulator is being used.
 
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlvWNq0ACgkQFA3kzBSg
-KbaZrw//SNsMT9sG1waPr8dZfdP8N42mjVNRfqABCx+9SUftMbMe+BbeWxyU7j2P
-tk3HxyctyyTpjG3NbnODXzCv5Jk29XcxV8CxNe8NZdxGSObwjGnS5yT9lW+Ptn8t
-A8vZKSlc4q56Y6NpRtk0sWHPk3X/XvJOiEs7ClvchoJjQJ6AG36xAqsq0uhqYjx0
-b/7nuj2PcmRoP5aXM7Zo2ZJs0jGcyfX9RSDVGLGa45rxggPJB+kDbt0KHkRSP485
-zQ59Qy7yxTNAyfMwjV9LYp4+uhq79DTZUyoYilwTCBmUP5HDMI8yqxikrLuZZ4Ze
-Tk7BEvLPO5MiucSzkgsZSAMEY/TIylU7JA36uUIgBuo+5wxS2e1K8xRO7Y8hzrv8
-kU1ndKW7Hz7bBKdY4AMg8NUIRbJENF7EqnUNMxLsQgODlE+RYEPhzVpEF+vcyVhL
-/z0C4XcLLUb9zDeIWuwtnjPhKT1BkJxC2/d/+ztaY7NDeOG43KR90kZUyRW9oF29
-hRJd4MQNoFIMpeEYx3LLDBOjNGvlkGBlM1E/x52AluUA+boqDsyXJPtfSRvdIvtT
-rYjbur8sVIXHPLEmg5ysjVJrvYNp0HtB2qWc/j/sPnaMEGwP9a6KSIAtGbJ8TrrF
-/zzSxmjU88EvmWt0YmBGARTMbPppjZ1JwD6lXyDbNdaZZ0qO+1w=
-=+Vek
------END PGP SIGNATURE-----
+Sure, but they are easy to miss and they are only seen by developers
+not regular users of a machine.
 
---gm5TwAJMO0F2iVRz--
+> > If we can do it safely for all tegra20 boards, why not migrate to using
+> > regulator_get() instead of regulator_get_optional() in the OPP core API itself
+> > for everyone ?
+> > 
+> 
+> This should be a platform-specific decision. For Tegra we know that regulators should be in a good state at kernel boot time, I don't think that this applies to other platforms.
+
+Based on the other discussion with Lucas on this thread, I don't think
+this is correct any more ?
+
+Don't get me wrong, I am all good for changes and another API change
+doesn't matter much to me. I am just wondering if it would be the
+right approach to fix the issue. Why not rather call
+dev_pm_opp_set_regulators() conditionally and avoid calling it for the
+specific tegra20 board.
+
+-- 
+viresh
