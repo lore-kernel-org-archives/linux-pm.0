@@ -1,16 +1,15 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: cpuidle: Don't register the driver when back-end
- init returns -ENXIO
-Date: Mon, 29 Oct 2018 19:10:39 +0100
-Message-ID: <6313b4d7-a2a7-98c4-3951-0a1c3e4ff2d5@linaro.org>
-References: <../../misc/pm_patches/submitted_patches/cpuidle_arm_consolidate/0002-ARM-cpuidle-Convert-to-use-cpuidle_register-unregist.patch>
- <20181026144843.3028-1-ulf.hansson@linaro.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 2/2] ARM: cpuidle: Convert to use
+ cpuidle_register|unregister()
+Date: Mon, 29 Oct 2018 18:12:09 +0000
+Message-ID: <20181029181209.GB9687@e107981-ln.cambridge.arm.com>
+References: <20181026144915.3084-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181026144843.3028-1-ulf.hansson@linaro.org>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181026144915.3084-1-ulf.hansson@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,66 +19,95 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjYvMTAvMjAxOCAxNjo0OCwgVWxmIEhhbnNzb24gd3JvdGU6Cj4gVGhlcmUncyBubyBwb2lu
-dCB0byByZWdpc3RlciB0aGUgY3B1aWRsZSBkcml2ZXIgZm9yIHRoZSBjdXJyZW50IENQVSwgd2hl
-bgo+IHRoZSBpbml0aWFsaXphdGlvbiBvZiB0aGUgYXJjaCBzcGVjaWZpYyBiYWNrLWVuZCBkYXRh
-IGZhaWxzIGJ5IHJldHVybmluZwo+IC1FTlhJTy4KPiAKPiBJbnN0ZWFkLCBsZXQncyByZS1vcmRl
-ciB0aGUgc2VxdWVuY2UgdG8gaXRzIG9yaWdpbmFsIGZsb3csIGJ5IGZpcnN0IHRyeWluZwo+IHRv
-IGluaXRpYWxpemUgdGhlIGJhY2stZW5kIHBhcnQgYW5kIHRoZW4gYWN0IGFjY29yZGluZ2x5IG9u
-IHRoZSByZXR1cm5lZAo+IGVycm9yIGNvZGUuIEFkZGl0aW9uYWxseSwgbGV0J3MgcHJpbnQgdGhl
-IGVycm9yIG1lc3NhZ2UsIG5vIG1hdHRlciBvZiB3aGF0Cj4gZXJyb3IgY29kZSB0aGF0IHdhcyBy
-ZXR1cm5lZC4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGlu
-YXJvLm9yZz4KPiAtLS0KPiAKPiBOb3RlLCBhcyBmYXIgYXMgSSBjYW4gdGVsbCBpdCdzIG9ubHkg
-cWNvbS1zcG0gdGhhdCBtYXkgcmV0dXJuIC1FTlhJTywgd2hpY2ggYWxzbwo+IHdhcyBvcmlnaW5h
-bCByZWFzb24gdG8gd2h5IHRoaXMgZXJyb3IgcGF0aCB3YXMgaW52ZW50ZWQuCj4gCj4gVW5mdXJ0
-dW5hdGUgSSBkb24ndCBoYXZlIGEgcWNvbSBzcG0gcGxhdGZyb20gYXQgaGFuZCwgaG93ZXZlciBJ
-IG1hbnVhbGx5IHRyaWVkCj4gdGhpcyBieSBoYWNraW5nIHRoZSBQU0NJIGRyaXZlciB0byByZXR1
-cm4gLUVOWElPIGZvciBzb21lIENQVXMuIFNvIEkgYXNzdW1lIGl0Cj4gc2hvdWxkIHRoZW4gYWxz
-byB3b3JrIGZvciBxY29tIHNwbS4KPiAKPiAtLS0KPiAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUt
-YXJtLmMgfCAyMiArKysrKysrKysrLS0tLS0tLS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAxMCBp
-bnNlcnRpb25zKCspLCAxMiBkZWxldGlvbnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9j
-cHVpZGxlL2NwdWlkbGUtYXJtLmMgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1hcm0uYwo+IGlu
-ZGV4IDA3MzU1N2Y0MzNlYi4uZGY1NjRkNzgzMjE2IDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvY3B1
-aWRsZS9jcHVpZGxlLWFybS5jCj4gKysrIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtYXJtLmMK
-PiBAQCAtMTAzLDEzICsxMDMsNiBAQCBzdGF0aWMgaW50IF9faW5pdCBhcm1faWRsZV9pbml0X2Nw
-dShpbnQgY3B1KQo+ICAJCWdvdG8gb3V0X2tmcmVlX2RydjsKPiAgCX0KPiAgCj4gLQlyZXQgPSBj
-cHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYpOwo+IC0JaWYgKHJldCkgewo+IC0JCWlmIChyZXQg
-IT0gLUVCVVNZKQo+IC0JCQlwcl9lcnIoIkZhaWxlZCB0byByZWdpc3RlciBjcHVpZGxlIGRyaXZl
-clxuIik7Cj4gLQkJZ290byBvdXRfa2ZyZWVfZHJ2Owo+IC0JfQo+IC0KCldoeSBub3QgbW92ZSB0
-aGUgZm9sbG93aW5nIGJsb2NrIGF0IHRoZSBiZWdpbm5pbmcgb2YgdGhlIGZ1bmN0aW9uID8KCi0t
-LT4KCiAgICAgICAgLyoKICAgICAgICAgKiBDYWxsIGFyY2ggQ1BVIG9wZXJhdGlvbnMgaW4gb3Jk
-ZXIgdG8gaW5pdGlhbGl6ZQogICAgICAgICAqIGlkbGUgc3RhdGVzIHN1c3BlbmQgYmFjay1lbmQg
-c3BlY2lmaWMgZGF0YQogICAgICAgICAqLwogICAgICAgIHJldCA9IGFybV9jcHVpZGxlX2luaXQo
-Y3B1KTsKCiAgICAgICAgLyoKICAgICAgICAgKiBTa2lwIHRoZSBjcHVpZGxlIGRldmljZSBpbml0
-aWFsaXphdGlvbiBpZiB0aGUgcmVwb3J0ZWQKICAgICAgICAgKiBmYWlsdXJlIGlzIGEgSFcgbWlz
-Y29uZmlndXJhdGlvbi9icmVha2FnZSAoLUVOWElPKS4KICAgICAgICAgKi8KICAgICAgICBpZiAo
-cmV0ID09IC1FTlhJTykKICAgICAgICAgICAgICAgIHJldHVybiAwOwoKICAgICAgICBpZiAocmV0
-KSB7CiAgICAgICAgICAgICAgICBwcl9lcnIoIkNQVSAlZCBmYWlsZWQgdG8gaW5pdCBpZGxlIENQ
-VSBvcHNcbiIsIGNwdSk7CiAgICAgICAgICAgICAgICBzL2dvdG8gb3V0X3VucmVnaXN0ZXJfZHJ2
-Oy9yZXR1cm4gcmV0Oy8KICAgICAgICB9Cgo8LS0tCgoKPiAgCS8qCj4gIAkgKiBDYWxsIGFyY2gg
-Q1BVIG9wZXJhdGlvbnMgaW4gb3JkZXIgdG8gaW5pdGlhbGl6ZQo+ICAJICogaWRsZSBzdGF0ZXMg
-c3VzcGVuZCBiYWNrLWVuZCBzcGVjaWZpYyBkYXRhCj4gQEAgLTExNywxNSArMTEwLDIwIEBAIHN0
-YXRpYyBpbnQgX19pbml0IGFybV9pZGxlX2luaXRfY3B1KGludCBjcHUpCj4gIAlyZXQgPSBhcm1f
-Y3B1aWRsZV9pbml0KGNwdSk7Cj4gIAo+ICAJLyoKPiAtCSAqIFNraXAgdGhlIGNwdWlkbGUgZGV2
-aWNlIGluaXRpYWxpemF0aW9uIGlmIHRoZSByZXBvcnRlZAo+ICsJICogQWxsb3cgdGhlIGluaXRp
-YWxpemF0aW9uIHRvIGNvbnRpbnVlIGZvciBvdGhlciBDUFVzLCBpZiB0aGUgcmVwb3J0ZWQKPiAg
-CSAqIGZhaWx1cmUgaXMgYSBIVyBtaXNjb25maWd1cmF0aW9uL2JyZWFrYWdlICgtRU5YSU8pLgo+
-ICAJICovCj4gLQlpZiAocmV0ID09IC1FTlhJTykKPiAtCQlyZXR1cm4gMDsKPiAtCj4gIAlpZiAo
-cmV0KSB7Cj4gIAkJcHJfZXJyKCJDUFUgJWQgZmFpbGVkIHRvIGluaXQgaWRsZSBDUFUgb3BzXG4i
-LCBjcHUpOwo+IC0JCWdvdG8gb3V0X3VucmVnaXN0ZXJfZHJ2Owo+ICsJCXJldCA9IHJldCA9PSAt
-RU5YSU8gPyAwIDogcmV0Owo+ICsJCWdvdG8gb3V0X2tmcmVlX2RydjsKPiArCX0KPiArCj4gKwly
-ZXQgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYpOwo+ICsJaWYgKHJldCkgewo+ICsJCWlm
-IChyZXQgIT0gLUVCVVNZKQo+ICsJCQlwcl9lcnIoIkZhaWxlZCB0byByZWdpc3RlciBjcHVpZGxl
-IGRyaXZlclxuIik7Cj4gKwkJZ290byBvdXRfa2ZyZWVfZHJ2Owo+ICAJfQo+ICAKPiAgCWRldiA9
-IGt6YWxsb2Moc2l6ZW9mKCpkZXYpLCBHRlBfS0VSTkVMKTsKPiAKCgotLSAKIDxodHRwOi8vd3d3
-LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJN
-IFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGlu
-YXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVy
-IHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1h
-aWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
-c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Fri, Oct 26, 2018 at 04:49:15PM +0200, Ulf Hansson wrote:
+> The only reason that remains, to why the ARM cpuidle driver calls
+> cpuidle_register_driver(), is to avoid printing an error message in case
+> another driver already have been registered for the CPU. This seems a bit
+> silly, but more importantly, if that is a common scenario, perhaps we
+> should change cpuidle_register() accordingly instead.
+
+I can't remember if there was a specific reason why we wanted to avoid
+the kernel log on -EBUSY but I agree that's questionable.
+
+> In either case, let's consolidate the code, by converting to use
+> cpuidle_register|unregsiter(), which also avoids the unnecessary allocation
+
+s/unregsiter/unregister/
+
+> of the struct cpuidle_device.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle-arm.c | 30 +++---------------------------
+>  1 file changed, 3 insertions(+), 27 deletions(-)
+
+It seems correct to me:
+
+Reviewed-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index df564d783216..3a407a3ef22b 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -82,7 +82,6 @@ static int __init arm_idle_init_cpu(int cpu)
+>  {
+>  	int ret;
+>  	struct cpuidle_driver *drv;
+> -	struct cpuidle_device *dev;
+>  
+>  	drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
+>  	if (!drv)
+> @@ -119,33 +118,12 @@ static int __init arm_idle_init_cpu(int cpu)
+>  		goto out_kfree_drv;
+>  	}
+>  
+> -	ret = cpuidle_register_driver(drv);
+> -	if (ret) {
+> -		if (ret != -EBUSY)
+> -			pr_err("Failed to register cpuidle driver\n");
+> +	ret = cpuidle_register(drv, NULL);
+> +	if (ret)
+>  		goto out_kfree_drv;
+> -	}
+> -
+> -	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> -	if (!dev) {
+> -		ret = -ENOMEM;
+> -		goto out_unregister_drv;
+> -	}
+> -	dev->cpu = cpu;
+> -
+> -	ret = cpuidle_register_device(dev);
+> -	if (ret) {
+> -		pr_err("Failed to register cpuidle device for CPU %d\n",
+> -		       cpu);
+> -		goto out_kfree_dev;
+> -	}
+>  
+>  	return 0;
+>  
+> -out_kfree_dev:
+> -	kfree(dev);
+> -out_unregister_drv:
+> -	cpuidle_unregister_driver(drv);
+>  out_kfree_drv:
+>  	kfree(drv);
+>  	return ret;
+> @@ -176,9 +154,7 @@ static int __init arm_idle_init(void)
+>  	while (--cpu >= 0) {
+>  		dev = per_cpu(cpuidle_devices, cpu);
+>  		drv = cpuidle_get_cpu_driver(dev);
+> -		cpuidle_unregister_device(dev);
+> -		cpuidle_unregister_driver(drv);
+> -		kfree(dev);
+> +		cpuidle_unregister(drv);
+>  		kfree(drv);
+>  	}
+>  
+> -- 
+> 2.17.1
+> 
