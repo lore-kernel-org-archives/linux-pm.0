@@ -1,13 +1,14 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V8 0/5] soc: imx: add scu power domain driver
-Date: Mon, 29 Oct 2018 12:14:49 +0100
-Message-ID: <CAPDyKFq0dGiEEiveFeDyYeie74VjxCyK9N5zARNvaSOLLSzWpg@mail.gmail.com>
+Subject: Re: [PATCH V8 5/5] firmware: imx: add SCU power domain driver
+Date: Mon, 29 Oct 2018 12:43:19 +0100
+Message-ID: <CAPDyKFp=ajE5gh5KnfKjm31x1oKDu3O56Yki1CvrTEf0SysS7w@mail.gmail.com>
 References: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
+ <1540739690-23750-6-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1540739690-23750-6-git-send-email-aisheng.dong@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -18,62 +19,81 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: "A.s. Dong" <aisheng.dong@nxp.com>
-Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 28 October 2018 at 16:19, A.s. Dong <aisheng.dong@nxp.com> wrote:
-> This patch set adds the scu based power domain driver.
-> It depends on SCU driver.
->
-> Change Log:
-> v7->v8:
->  * update to #power-domain-cells 1 binding
-> v6->v7:
->  * keep "fsl,scu-pd" as fall back compatible string
-> v5->v6:
->  * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
->    accordingly
-> v4->v5:
->  * some minor improvements according to Sascha's suggestion
->    Note: did not use dev_* print functions due to we already have proper
->          prefix by redefining pr_fmt. So it seems not quite neccesary
->          to pass in a struct device * pointer for debug purpose only in
->          each functions.
-> v3->v4:
->  * only scu headfile path update
->
-> v2->v3:
->  * structure and enums name update
->  * api usage update
->
->
-> Dong Aisheng (5):
->   dt-bindings: imx: add scu resource id headfile
->   firmware: imx: remove resource id enums
->   dt-bindings: fsl: scu: update power domain binding
->   firmware: imx: add pm svc headfile
->   firmware: imx: add SCU power domain driver
->
->  .../devicetree/bindings/arm/freescale/fsl,scu.txt  |  37 +-
->  drivers/firmware/imx/Kconfig                       |   6 +
->  drivers/firmware/imx/Makefile                      |   3 +-
->  drivers/firmware/imx/scu-pd.c                      | 302 +++++++++++
->  include/dt-bindings/firmware/imx/rsrc.h            | 559 +++++++++++++++++++++
->  include/linux/firmware/imx/sci.h                   |   1 +
->  include/linux/firmware/imx/svc/pm.h                |  85 ++++
->  include/linux/firmware/imx/types.h                 | 552 --------------------
->  8 files changed, 963 insertions(+), 582 deletions(-)
->  create mode 100644 drivers/firmware/imx/scu-pd.c
->  create mode 100644 include/dt-bindings/firmware/imx/rsrc.h
->  create mode 100644 include/linux/firmware/imx/svc/pm.h
->
-> --
-> 2.7.4
->
+[...]
 
-For patch 1 -> 4 (comments on patch5 is on its way).
+}
+> +
+> +static struct imx_sc_pm_domain *
+> +imx_scu_add_pm_domain(struct device *dev, int idx,
+> +                     const struct imx_sc_pd_range *pd_ranges)
+> +{
+> +       struct imx_sc_pm_domain *sc_pd;
+> +       int ret;
+> +
+> +       sc_pd = devm_kzalloc(dev, sizeof(*sc_pd), GFP_KERNEL);
+> +       if (!sc_pd)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       sc_pd->rsrc = pd_ranges->rsrc + idx;
+> +       sc_pd->pd.power_off = imx_sc_pd_power_off;
+> +       sc_pd->pd.power_on = imx_sc_pd_power_on;
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+So, this means you are going to register one genpd per device (one for
+each uart, pwm etc), but there is actually a better option.
+
+What you seems to be needing is a way to "power on/off" devices,
+rather than the PM domain. Right? The PM domain, is managed internally
+by the FW, no?
+
+In any case, it looks like what you should do is to implement the
+->attach|detach_dev() callback for the genpd and use the regular
+of_genpd_add_provider_simple(). From within the ->attach_dev(), you
+should get the OF node for the device that is being attached and then
+parse the power-domain cell containing the "resource id" and store
+that in the per device struct generic_pm_domain_data (we have void
+pointer there for storing these kind of things).
+
+Additionally, you need to implement the ->stop() and ->start()
+callbacks of genpd, which is where you "power on/off" devices, rather
+than using the above ->power_on|off() callbacks.
+
+Please have a look a drivers/soc/ti/ti_sci_pm_domains.c. Apologize, I
+should have pointed you towards that reference already in the earlier
+version.
+
+> +
+> +       if (pd_ranges->postfix)
+> +               snprintf(sc_pd->name, sizeof(sc_pd->name),
+> +                        "%s%i", pd_ranges->name, idx);
+> +       else
+> +               snprintf(sc_pd->name, sizeof(sc_pd->name),
+> +                        "%s", pd_ranges->name);
+> +
+> +       sc_pd->pd.name = sc_pd->name;
+> +
+> +       if (sc_pd->rsrc >= IMX_SC_R_LAST) {
+> +               dev_warn(dev, "invalid pd %s rsrc id %d found",
+> +                        sc_pd->name, sc_pd->rsrc);
+> +
+> +               devm_kfree(dev, sc_pd);
+> +               return NULL;
+> +       }
+> +
+> +       ret = pm_genpd_init(&sc_pd->pd, NULL, true);
+> +       if (ret) {
+> +               dev_warn(dev, "failed to init pd %s rsrc id %d",
+> +                        sc_pd->name, sc_pd->rsrc);
+> +               devm_kfree(dev, sc_pd);
+> +               return NULL;
+> +       }
+> +
+> +       return sc_pd;
+> +}
+
+[...]
 
 Kind regards
 Uffe
