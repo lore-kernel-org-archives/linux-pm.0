@@ -1,173 +1,194 @@
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v7 6/6] arm64: dts: add LX2160ARDB board support
-Date: Mon, 29 Oct 2018 08:58:01 +0000
-Message-ID: <1540759926-3641-7-git-send-email-vabhav.sharma@nxp.com>
-References: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+From: andy.tang@nxp.com
+Subject: [PATCH v2] thermal: qoriq: add multiple sensors support
+Date: Mon, 29 Oct 2018 17:31:19 +0800
+Message-ID: <20181029093119.33971-1-andy.tang@nxp.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
-Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, Pankaj Bansal <pankaj.bansal@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>, Horia Geanta <horia.geanta@nxp.com>, Ran Wang <ran.wang_1@nxp.com>, Ying Zhang <ying.zhang22455@nxp.com>, Yinbo Zhu <yinbo.zhu@nxp.com>
+To: rui.zhang@intel.com, daniel.lezcano@linaro.org
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yuantian Tang <andy.tang@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
+From: Yuantian Tang <andy.tang@nxp.com>
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-Signed-off-by: Horia Geanta <horia.geanta@nxp.com>
-Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
-Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
-Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
-Acked-by: Li Yang <leoyang.li@nxp.com>
+The QorIQ Layerscape SoC has several thermal sensors but the current
+driver only supports one.
+
+Massage the code to be sensor oriented and allow the support for
+multiple sensors.
+
+Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/Makefile            |   1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 119 ++++++++++++++++++=
-++++
- 2 files changed, 120 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+v2:
+  - update the commit message
+  - refine the qoriq_tmu_register_tmu_zone()
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/f=
-reescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) +=3D fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64=
-/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..6481e5f
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,119 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
+ drivers/thermal/qoriq_thermal.c |  100 ++++++++++++++++++---------------------
+ 1 files changed, 46 insertions(+), 54 deletions(-)
+
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 450ed66..8beb344 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -59,14 +59,21 @@ struct qoriq_tmu_regs {
+ 	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+ };
+ 
++struct qoriq_tmu_data;
 +
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model =3D "NXP Layerscape LX2160ARDB";
-+	compatible =3D "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	aliases {
-+		crypto =3D &crypto;
-+		serial0 =3D &uart0;
-+	};
-+
-+	chosen {
-+		stdout-path =3D "serial0:115200n8";
-+	};
-+
-+	sb_3v3: regulator-sb3v3 {
-+		compatible =3D "regulator-fixed";
-+		regulator-name =3D "MC34717-3.3VSB";
-+		regulator-min-microvolt =3D <3300000>;
-+		regulator-max-microvolt =3D <3300000>;
-+		regulator-boot-on;
-+		regulator-always-on;
-+	};
+ /*
+  * Thermal zone data
+  */
++struct qoriq_sensor {
++	struct thermal_zone_device	*tzd;
++	struct qoriq_tmu_data		*qdata;
++	int				id;
 +};
 +
-+&crypto {
-+	status =3D "okay";
+ struct qoriq_tmu_data {
+-	struct thermal_zone_device *tz;
+ 	struct qoriq_tmu_regs __iomem *regs;
+-	int sensor_id;
+ 	bool little_endian;
++	struct qoriq_sensor	*sensor[SITES_MAX];
+ };
+ 
+ static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
+@@ -87,48 +94,51 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
+ 
+ static int tmu_get_temp(void *p, int *temp)
+ {
++	struct qoriq_sensor *qsensor = p;
++	struct qoriq_tmu_data *qdata = qsensor->qdata;
+ 	u32 val;
+-	struct qoriq_tmu_data *data = p;
+ 
+-	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
++	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+ 	*temp = (val & 0xff) * 1000;
+ 
+ 	return 0;
+ }
+ 
+-static int qoriq_tmu_get_sensor_id(void)
++static const struct thermal_zone_of_device_ops tmu_tz_ops = {
++	.get_temp = tmu_get_temp,
 +};
 +
-+&esdhc0 {
-+	sd-uhs-sdr104;
-+	sd-uhs-sdr50;
-+	sd-uhs-sdr25;
-+	sd-uhs-sdr12;
-+	status =3D "okay";
-+};
++static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ {
+-	int ret, id;
+-	struct of_phandle_args sensor_specs;
+-	struct device_node *np, *sensor_np;
++	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
++	int id, sites = 0;
+ 
+-	np = of_find_node_by_name(NULL, "thermal-zones");
+-	if (!np)
+-		return -ENODEV;
++	for (id = 0; id < SITES_MAX; id++) {
++		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
++				sizeof(struct qoriq_sensor), GFP_KERNEL);
++		if (!qdata->sensor[id])
++			return -ENOMEM;
+ 
+-	sensor_np = of_get_next_child(np, NULL);
+-	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+-			"#thermal-sensor-cells",
+-			0, &sensor_specs);
+-	if (ret) {
+-		of_node_put(np);
+-		of_node_put(sensor_np);
+-		return ret;
+-	}
++		qdata->sensor[id]->id = id;
++		qdata->sensor[id]->qdata = qdata;
+ 
+-	if (sensor_specs.args_count >= 1) {
+-		id = sensor_specs.args[0];
+-		WARN(sensor_specs.args_count > 1,
+-				"%s: too many cells in sensor specifier %d\n",
+-				sensor_specs.np->name, sensor_specs.args_count);
+-	} else {
+-		id = 0;
+-	}
++		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
++				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
++		if (IS_ERR(qdata->sensor[id]->tzd)) {
++			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
++				continue;
++			else
++				return PTR_ERR(qdata->sensor[id]->tzd);
+ 
+-	of_node_put(np);
+-	of_node_put(sensor_np);
++		}
 +
-+&esdhc1 {
-+	mmc-hs200-1_8v;
-+	mmc-hs400-1_8v;
-+	bus-width =3D <8>;
-+	status =3D "okay";
-+};
-+
-+&i2c0 {
-+	status =3D "okay";
-+
-+	i2c-mux@77 {
-+		compatible =3D "nxp,pca9547";
-+		reg =3D <0x77>;
-+		#address-cells =3D <1>;
-+		#size-cells =3D <0>;
-+
-+		i2c@2 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <0>;
-+			reg =3D <0x2>;
-+
-+			power-monitor@40 {
-+				compatible =3D "ti,ina220";
-+				reg =3D <0x40>;
-+				shunt-resistor =3D <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <0>;
-+			reg =3D <0x3>;
-+
-+			temperature-sensor@4c {
-+				compatible =3D "nxp,sa56004";
-+				reg =3D <0x4c>;
-+				vcc-supply =3D <&sb_3v3>;
-+			};
-+
-+			temperature-sensor@4d {
-+				compatible =3D "nxp,sa56004";
-+				reg =3D <0x4d>;
-+				vcc-supply =3D <&sb_3v3>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status =3D "okay";
-+
-+	rtc@51 {
-+		compatible =3D "nxp,pcf2129";
-+		reg =3D <0x51>;
-+		// IRQ10_B
-+		interrupts =3D <0 150 0x4>;
-+	};
-+};
-+
-+&uart0 {
-+	status =3D "okay";
-+};
-+
-+&uart1 {
-+	status =3D "okay";
-+};
-+
-+&usb0 {
-+	status =3D "okay";
-+};
-+
-+&usb1 {
-+	status =3D "okay";
-+};
---=20
-2.7.4
++		sites |= 0x1 << (15 - id);
++	}
++	/* Enable monitoring */
++	if (sites != 0)
++		tmu_write(qdata, sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
+ 
+-	return id;
++	return 0;
+ }
+ 
+ static int qoriq_tmu_calibration(struct platform_device *pdev)
+@@ -178,16 +188,11 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+ 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+ }
+ 
+-static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+-	.get_temp = tmu_get_temp,
+-};
+-
+ static int qoriq_tmu_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
+-	u32 site;
+ 
+ 	if (!np) {
+ 		dev_err(&pdev->dev, "Device OF-Node is NULL");
+@@ -203,13 +208,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
+ 
+-	data->sensor_id = qoriq_tmu_get_sensor_id();
+-	if (data->sensor_id < 0) {
+-		dev_err(&pdev->dev, "Failed to get sensor id\n");
+-		ret = -ENODEV;
+-		goto err_iomap;
+-	}
+-
+ 	data->regs = of_iomap(np, 0);
+ 	if (!data->regs) {
+ 		dev_err(&pdev->dev, "Failed to get memory region\n");
+@@ -223,19 +221,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto err_tmu;
+ 
+-	data->tz = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-							data->sensor_id,
+-							data, &tmu_tz_ops);
+-	if (IS_ERR(data->tz)) {
+-		ret = PTR_ERR(data->tz);
+-		dev_err(&pdev->dev,
+-			"Failed to register thermal zone device %d\n", ret);
+-		goto err_tmu;
++	ret = qoriq_tmu_register_tmu_zone(pdev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Failed to register sensors\n");
++		ret = -ENODEV;
++		goto err_iomap;
+ 	}
+ 
+-	/* Enable monitoring */
+-	site = 0x1 << (15 - data->sensor_id);
+-	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
+ 
+ 	return 0;
+ 
+-- 
+1.7.1
