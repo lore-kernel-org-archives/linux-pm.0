@@ -1,54 +1,108 @@
-From: Ross Zwisler <zwisler@google.com>
-Subject: Re: [PATCH] thermal: add ratelimited thermal and power logging
-Date: Mon, 29 Oct 2018 07:21:26 -0600
-Message-ID: <CAGRrVHw=Hkch+U9Unrw0DCOWxddCx239hSEbvQTM=xrto1ekoA@mail.gmail.com>
-References: <20181022202901.1654-1-zwisler@google.com> <20181024072227.achkbix2ndef2ule@vireshk-i7>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 1/2] ARM: cpuidle: Don't register the driver when
+ back-end init returns -ENXIO
+Date: Mon, 29 Oct 2018 17:45:05 +0000
+Message-ID: <20181029174456.GA9687@e107981-ln.cambridge.arm.com>
+References: <../../misc/pm_patches/submitted_patches/cpuidle_arm_consolidate/0002-ARM-cpuidle-Convert-to-use-cpuidle_register-unregist.patch>
+ <20181026144843.3028-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181024072227.achkbix2ndef2ule@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: linux-kernel@vger.kernel.org, Ricky Liang <jcliang@chromium.org>, amit.kachhap@gmail.com, daniel.lezcano@linaro.org, edubezval@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, Stephen Barber <smbarber@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20181026144843.3028-1-ulf.hansson@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 24, 2018 at 1:22 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22-10-18, 14:29, Ross Zwisler wrote:
-> > From: Ricky Liang <jcliang@chromium.org>
-> >
-> > Add thermal logs in devfreq_cooling and cpu_cooling.
->
-> Why should we add them ?
->
-> > Also add logging to
-> > power_allocator when it starts to control power.
-> >
-> > These changes can lead to excessive log spam when running up against
-> > thermal limits, so have this logging ratelimited to allow only 1 log each
-> > 30 seconds from each of those subsystems.
->
-> What's the use of these logs when we are going to print them only once every 30
-> seconds ?
->
-> I recently extended thermal sysfs support to share more stats.
->
-> commit 8ea229511e06 ("thermal: Add cooling device's statistics in sysfs")
->
-> Will that be helpful in your case ?
->
-> Otherwise we should probably add trace points instead.
+On Fri, Oct 26, 2018 at 04:48:43PM +0200, Ulf Hansson wrote:
+> There's no point to register the cpuidle driver for the current CPU, when
+> the initialization of the arch specific back-end data fails by returning
+> -ENXIO.
+> 
+> Instead, let's re-order the sequence to its original flow, by first trying
+> to initialize the back-end part and then act accordingly on the returned
+> error code. Additionally, let's print the error message, no matter of what
+> error code that was returned.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> Note, as far as I can tell it's only qcom-spm that may return -ENXIO, which also
+> was original reason to why this error path was invented.
+> 
+> Unfurtunate I don't have a qcom spm platfrom at hand, however I manually tried
+> this by hacking the PSCI driver to return -ENXIO for some CPUs. So I assume it
+> should then also work for qcom spm.
+> 
+> ---
+>  drivers/cpuidle/cpuidle-arm.c | 22 ++++++++++------------
+>  1 file changed, 10 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index 073557f433eb..df564d783216 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -103,13 +103,6 @@ static int __init arm_idle_init_cpu(int cpu)
+>  		goto out_kfree_drv;
+>  	}
+>  
+> -	ret = cpuidle_register_driver(drv);
+> -	if (ret) {
+> -		if (ret != -EBUSY)
+> -			pr_err("Failed to register cpuidle driver\n");
+> -		goto out_kfree_drv;
+> -	}
+> -
+>  	/*
+>  	 * Call arch CPU operations in order to initialize
+>  	 * idle states suspend back-end specific data
+> @@ -117,15 +110,20 @@ static int __init arm_idle_init_cpu(int cpu)
+>  	ret = arm_cpuidle_init(cpu);
+>  
+>  	/*
+> -	 * Skip the cpuidle device initialization if the reported
+> +	 * Allow the initialization to continue for other CPUs, if the reported
+>  	 * failure is a HW misconfiguration/breakage (-ENXIO).
+>  	 */
+> -	if (ret == -ENXIO)
+> -		return 0;
 
-Thank you for the review.  Basically we use these prints to get a
-notification when a system is having thermal issues.  It's easy to
-look in dmesg and see the prints and know that something temperature
-related is going on.
+I wonder whether moving the drv allocation and dt initialization after
+arm_cpuidle_init(cpu) would simplify the error path; the patch makes sense
+the error path is getting a bit hard to read - maybe we can simplify it.
 
-However, I agree that the current solution is a bit hacky, and in
-looking at it a bit further we don't even cover all the paths that we
-need to.  The processor_set_cur_state()  function in
-drivers/acpi/processor_thermal.c, for example, is used on the x86_64
-systems I'm testing with and wasn't augmented with prints.
+I think, if you can single it out, it would be good to add a Fixes:
+tag too.
 
-I'm going to take a step back and try and find another solution.  The
-info you added to sysfs looks very promising, thank you for pointing
-it out.
+Thanks,
+Lorenzo
+
+> -
+>  	if (ret) {
+>  		pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+> -		goto out_unregister_drv;
+> +		ret = ret == -ENXIO ? 0 : ret;
+> +		goto out_kfree_drv;
+> +	}
+> +
+> +	ret = cpuidle_register_driver(drv);
+> +	if (ret) {
+> +		if (ret != -EBUSY)
+> +			pr_err("Failed to register cpuidle driver\n");
+> +		goto out_kfree_drv;
+>  	}
+>  
+>  	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> -- 
+> 2.17.1
+> 
