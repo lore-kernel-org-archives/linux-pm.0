@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v5 04/15] sched/core: uclamp: add CPU's clamp groups accounting
-Date: Mon, 29 Oct 2018 18:32:58 +0000
-Message-ID: <20181029183311.29175-5-patrick.bellasi@arm.com>
+Subject: [PATCH v5 04/15] sched/core: uclamp: add CPU's clamp groups refcounting
+Date: Mon, 29 Oct 2018 18:32:59 +0000
+Message-ID: <20181029183311.29175-6-patrick.bellasi@arm.com>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -17,8 +17,8 @@ Utilization clamping allows to clamp the utilization of a CPU within a
 [util_min, util_max] range which depends on the set of currently
 RUNNABLE tasks on that CPU.
 Each task references two "clamp groups" defining the minimum and maximum
-utilization clamp values to be considered for that task. These clamp
-value are mapped by a clamp group which is enforced on a CPU only when
+utilization "clamp values" to be considered for that task. Each clamp
+value is mapped to a clamp group which is enforced on a CPU only when
 there is at least one RUNNABLE task referencing that clamp group.
 
 When tasks are enqueued/dequeued on/from a CPU, the set of clamp groups
@@ -36,9 +36,9 @@ Here we introduce the required support to properly reference count clamp
 groups at each task enqueue/dequeue time.
 
 Tasks have a:
-   task_struct::uclamp::group_id[clamp_idx]
-indexing, for each clamp index (i.e. util_{min,max}), the clamp group
-they have to refcount at enqueue time.
+   task_struct::uclamp[clamp_idx]::group_id
+indexing, for each "clamp index" (i.e. util_{min,max}), the "group
+index" of the clamp group they have to refcount at enqueue time.
 
 CPUs rq have a:
    rq::uclamp::group[clamp_idx][group_idx].tasks
@@ -46,16 +46,17 @@ which is used to reference count how many tasks are currently RUNNABLE on
 that CPU for each clamp group of each clamp index.
 
 The clamp value of each clamp group is tracked by
-   rq::uclamp::group[][].value
+   rq::uclamp::group[clamp_idx][group_idx].value
 thus making rq::uclamp::group[][] an unordered array of clamp values.
-However, the MAX aggregation of the currently active clamp groups is
-implemented to minimize the number of times we need to scan the complete
-(unordered) clamp group array to figure out the new max value. This
-operation indeed happens only when we dequeue the last task of the clamp
-group corresponding to the current max clamp, and thus the CPU is either
-entering IDLE or going to schedule a less boosted or more clamped task.
-Moreover, the expected number of different clamp values, which can be
-configured at build time, is usually so small that a more advanced
+
+The MAX aggregation of the currently active clamp groups is implemented
+to minimize the number of times we need to scan the complete (unordered)
+clamp group array to figure out the new max value.
+This operation indeed happens only when we dequeue the last task of the
+clamp group corresponding to the current max clamp, and thus the CPU is
+either entering IDLE or going to schedule a less boosted or more clamped
+task. Moreover, the expected number of different clamp values, which can
+be configured at build time, is usually so small that a more advanced
 ordering algorithm is not needed. In real use-cases we expect less then
 10 different clamp values for each clamp index.
 
@@ -84,7 +85,7 @@ Changes in v5:
  - consistently use "unsigned int" for both clamp_id and group_id
  - fixup documentation
  - reduced usage of inline comments
- - rebased on v4.19.0
+ - rebased on v4.19
 
 Changes in v4:
  Message-ID: <20180816133249.GA2964@e110439-lin>
@@ -397,7 +398,7 @@ index 654327d7f212..a98a96a7d9f1 100644
  }
  
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 947ab14d3d5b..1755c9c9f4f0 100644
+index 947ab14d3d5b..94c4f2f410ad 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
 @@ -766,6 +766,50 @@ extern void rto_push_irq_work_func(struct irq_work *work);
@@ -443,7 +444,7 @@ index 947ab14d3d5b..1755c9c9f4f0 100644
 + * values, i.e. no min/max clamping at all.
 + */
 +struct uclamp_cpu {
-+	struct uclamp_group group[UCLAMP_CNT][CONFIG_UCLAMP_GROUPS_COUNT + 1];
++	struct uclamp_group group[UCLAMP_CNT][UCLAMP_GROUPS];
 +	int value[UCLAMP_CNT];
 +};
 +#endif /* CONFIG_UCLAMP_TASK */
