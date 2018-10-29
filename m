@@ -1,79 +1,74 @@
 From: Vabhav Sharma <vabhav.sharma@nxp.com>
-Subject: [PATCH v7 0/6] arm64: dts: NXP: add basic dts file for LX2160A SoC
-Date: Mon, 29 Oct 2018 08:57:22 +0000
-Message-ID: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
+Subject: [PATCH v7 1/6] dt-bindings: arm64: add compatible for LX2160A
+Date: Mon, 29 Oct 2018 08:57:28 +0000
+Message-ID: <1540759926-3641-2-git-send-email-vabhav.sharma@nxp.com>
+References: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1540759926-3641-1-git-send-email-vabhav.sharma@nxp.com>
 Content-Language: en-US
-Content-ID: <F33E4F94D80D6045B879D3B3D08757E6@eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "oss@buserror.net" <oss@buserror.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel-owner@vger.kernel.org
 Cc: "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "adrian.hunter@intel.com" <adrian.hunter@intel.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, Pankaj Bansal <pankaj.bansal@nxp.com>, Vabhav Sharma <vabhav.sharma@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Q2hhbmdlcyBmb3Igdjc6DQotIENvbW1lbnQgZm9yIGNsb2NrLWZyZXF1ZW5jeSBwcm9wZXJ0eSBm
-aXhlZCBieSBib290bG9hZGVyICAgICANCg0KQ2hhbmdlcyBmb3IgdjY6DQotIEFkZGVkIGNvbW1l
-bnQgZm9yIGNsb2NrIHVuaXQtc3lzY2xrIG5vZGUgbmFtZSBpbiBTb0MgZGV2aWNlIHRyZWUNCg0K
-Q2hhbmdlcyBmb3IgdjU6DQotIFVwZGF0ZWQgdGVtcGVyYXR1cmUgc2Vuc29yIHJlZ3VsYXRvciBu
-YW1lIGluIGJvYXJkIGRldmljZSB0cmVlDQotIFNvcnRlZCBub2RlcyBhbHBoYWJhdGljYWxseSBh
-bmQgdW5pdC1hZGRyZXNzIGluIFNvQy9ib2FyZCBkZXZpY2UgdHJlZQ0KLSBJZGVudGF0aW9uLCBu
-ZXcgbGluZSB1cGRhdGUgaW4gU29DL2JvYXJkIGRldmljZSB0cmVlDQotIFVwZGF0ZWQgbm9kZXMg
-bmFtZSBhcyBwZXIgRFQgc3BlYyBnZW5lcmljIG5hbWUgcmVjb21tZW5kYXRpb24gaW4gU29DIERU
-DQotIFVwZGF0ZWQgbWFjcm8gZGVmaW5lIGZvciBpbnRlcnJ1cHQvZ3BpbyBwcm9wZXJ0eQ0KLSBV
-cGRhdGVkIGkyYyBub2RlIHByb3BlcnR5IG5hbWUgc2NsLWdwaW8NCi0gUmVtb3ZlZCBkZXZpY2Vf
-dHlwZSBwcm9wZXJ0eSBleGNlcHQgY3B1L21lbW9yeSBub2RlDQotIEFkZGVkIGVzZGhjIGNvbnRy
-b2xsZXIgbm9kZXMgaW4gU29DL1JEQiBib2FyZCBkZXZpY2UgdHJlZQ0KLSBBZGRlZCBhbGlhc2Vz
-IGZvciB1YXJ0L2NyeXB0byBub2Rlcw0KLSBBZGQgU29DIGRpZSBhdHRyaWJ1dGUgZGVmaW5pdGlv
-biBmb3IgTFgyMTYwQQ0KDQpDaGFuZ2VzIGZvciB2NDoNCi0gVXBkYXRlZCBiaW5kaW5ncyBmb3Ig
-bHgyMTYwYSBjbG9ja2dlbiBhbmQgZGNmZw0KLSBNb2RpZmllZCBjb21taXQgbWVzc2FnZSBmb3Ig
-bHgyMTYwYSBjbG9ja2dlbiBjaGFuZ2VzDQotIFVwZGF0ZWQgaW50ZXJydXB0IHByb3BlcnR5IHdp
-dGggbWFjcm8gZGVmaW5pdGlvbg0KLSBBZGRlZCByZXF1aXJlZCBlbmFibGUtbWV0aG9kIHByb3Bl
-cnR5IHRvIGVhY2ggY29yZSBub2RlIHdpdGggcHNjaSB2YWx1ZQ0KLSBSZW1vdmVkIHVudXNlZCBu
-b2RlIHN5c2NvbiBpbiBkZXZpY2UgdHJlZQ0KLSBSZW1vdmVkIGJsYW5rIGxpbmVzIGluIGRldmlj
-ZSB0cmVlIGZzbC1seDIxNjBhLmR0c2kNCi0gVXBkYXRlZCB1YXJ0IG5vZGUgY29tcGF0aWJsZSBz
-YnNhLXVhcnQgZmlyc3QNCi0gQWRkZWQgYW5kIGRlZmluZWQgdmNjLXN1cHBseSBwcm9wZXJ0eSB0
-byB0ZW1wZXJhdHVyZSBzZW5zb3Igbm9kZSBpbg0KICBkZXZpY2UgdHJlZSBmc2wtbHgyMTYwYS1y
-ZGIuZHRzDQoNCkNoYW5nZXMgZm9yIHYzOg0KLVNwbGl0IGNsb2NrZ2VuIHN1cHBvcnQgcGF0Y2gg
-aW50byBiZWxvdyB0d28gcGF0Y2hlczoNCi0gYSlVcGRhdGVkIGFycmF5IHNpemUgb2YgY211eF90
-b19ncm91cFtdIHdpdGggTlVNX0NNVVgrMSB0byBpbmNsdWRlIC0xDQogdGVybWluYXRvciBhbmQg
-cDQwODAgY211eF90b19ncm91cFtdIGFycmF5IHdpdGggLTEgdGVybWluYXRvcg0KLSBiKUFkZCBj
-bG9ja2dlbiBzdXBwb3J0IGZvciBseDIxNjBhDQoNCkNoYW5nZXMgZm9yIHYyOg0KLSBNb2RpZmll
-ZCBjbXV4X3RvX2dyb3VwIGFycmF5IHRvIGluY2x1ZGUgLTEgdGVybWluYXRvcg0KLSBSZXZlcnQg
-TlVNX0NNVVggdG8gb3JpZ2luYWwgdmFsdWUgOCBmcm9tIDE2DQotIFJlbW92ZSDDoiBMWDIxNjBB
-IGlzIDE2IGNvcmUsIHNvIG1vZGlmaWVkIHZhbHVlIGZvciBOVU1fQ01VWFgNCiAgaW4gcGF0Y2gg
-IltQQVRDSCAzLzVdIGRyaXZlcnM6IGNsay1xb3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9y
-DQogIGx4MjE2MGEiIGRlc2NyaXB0aW9uDQotIFBvcHVsYXRlZCBjYWNoZSBwcm9wZXJ0aWVzIGZv
-ciBMMSBhbmQgTDIgY2FjaGUgaW4gbHgyMTYwYSBkZXZpY2UtdHJlZS4NCi0gUmVtb3ZlZCByZWJv
-b3Qgbm9kZSBmcm9tIGx4MjE2MGEgZGV2aWNlLXRyZWUgYXMgUFNDSSBpcyBpbXBsZW1lbnRlZC4N
-Ci0gUmVtb3ZlZCBpbmNvcnJlY3QgY29tbWVudCBmb3IgdGltZXIgbm9kZSBpbnRlcnJ1cHQgcHJv
-cGVydHkgaW4NCiAgbHgyMTYwYSBkZXZpY2UtdHJlZS4NCi0gTW9kaWZpZWQgcG11IG5vZGUgY29t
-cGF0aWJsZSBwcm9wZXJ0eSBmcm9tICJhcm0sYXJtdjgtcG11djMiIHRvDQogICJhcm0sY29ydGV4
-LWE3Mi1wbXUiIGluIGx4MjE2MGEgZGV2aWNlLXRyZWUNCi0gTm9uLXN0YW5kYXJkIGFsaWFzZXMg
-cmVtb3ZlZCBpbiBseDIxNjBhIHJkYiBib2FyZCBkZXZpY2UtdHJlZQ0KLSBVcGRhdGVkIGkyYyBj
-aGlsZCBub2RlcyB0byBnZW5lcmljIG5hbWUgaW4gbHgyMTYwYSByZGIgZGV2aWNlLXRyZWUuDQoN
-CkNoYW5nZXMgZm9yIHYxOg0KLSBBZGQgY29tcGF0aWJsZSBzdHJpbmcgZm9yIExYMjE2MEEgY2xv
-Y2tnZW4gc3VwcG9ydA0KLSBBZGQgY29tcGF0aWJsZSBzdHJpbmcgdG8gaW5pdGlhbGl6ZSBMWDIx
-NjBBIGd1dHMgZHJpdmVyDQotIEFkZCBjb21wYXRpYmxlIHN0cmluZyBmb3IgTFgyMTYwQSBzdXBw
-b3J0IGluIGR0LWJpbmRpbmdzDQotIEFkZCBkdHMgZmlsZSB0byBlbmFibGUgc3VwcG9ydCBmb3Ig
-TFgyMTYwQSBTb0MgYW5kIExYMjE2MEEgUkRCDQogIChSZWZlcmVuY2UgZGVzaWduIGJvYXJkKQ0K
-DQpWYWJoYXYgU2hhcm1hICg0KToNCiAgZHQtYmluZGluZ3M6IGFybTY0OiBhZGQgY29tcGF0aWJs
-ZSBmb3IgTFgyMTYwQQ0KICBzb2MvZnNsL2d1dHM6IEFkZCBkZWZpbml0aW9uIGZvciBMWDIxNjBB
-DQogIGFybTY0OiBkdHM6IGFkZCBRb3JJUSBMWDIxNjBBIFNvQyBzdXBwb3J0DQogIGFybTY0OiBk
-dHM6IGFkZCBMWDIxNjBBUkRCIGJvYXJkIHN1cHBvcnQNCg0KWW9nZXNoIEdhdXIgKDIpOg0KICBj
-bGs6IHFvcmlxOiBpbmNyZWFzZSBhcnJheSBzaXplIG9mIGNtdXhfdG9fZ3JvdXANCiAgY2xrOiBx
-b3JpcTogQWRkIGNsb2NrZ2VuIHN1cHBvcnQgZm9yIGx4MjE2MGENCg0KIERvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy9hcm0vZnNsLnR4dCAgICAgIHwgIDE0ICstDQogLi4uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0ICAgICAgfCAgIDEgKw0KIGFyY2gv
-YXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL01ha2VmaWxlICAgICAgICAgICAgIHwgICAxICsNCiBh
-cmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHgyMTYwYS1yZGIuZHRzICB8IDExOSAr
-KysrDQogYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWx4MjE2MGEuZHRzaSAgICAg
-fCA3NjYgKysrKysrKysrKysrKysrKysrKysrDQogZHJpdmVycy9jbGsvY2xrLXFvcmlxLmMgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgfCAgMTYgKy0NCiBkcml2ZXJzL2NwdWZyZXEvcW9yaXEt
-Y3B1ZnJlcS5jICAgICAgICAgICAgICAgICAgICB8ICAgMSArDQogZHJpdmVycy9zb2MvZnNsL2d1
-dHMuYyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDYgKw0KIDggZmlsZXMgY2hhbmdl
-ZCwgOTIxIGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pDQogY3JlYXRlIG1vZGUgMTAwNjQ0
-IGFyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1seDIxNjBhLXJkYi5kdHMNCiBjcmVh
-dGUgbW9kZSAxMDA2NDQgYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWx4MjE2MGEu
-ZHRzaQ0KDQotLSANCjIuNy40DQoNCg==
+Add compatible for LX2160A SoC,QDS and RDB board
+Add lx2160a compatible for clockgen and dcfg
+
+Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/arm/fsl.txt           | 14 +++++++++++++=
+-
+ Documentation/devicetree/bindings/clock/qoriq-clock.txt |  1 +
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/arm/fsl.txt b/Documentation/=
+devicetree/bindings/arm/fsl.txt
+index 8a1baa2..71adce2 100644
+--- a/Documentation/devicetree/bindings/arm/fsl.txt
++++ b/Documentation/devicetree/bindings/arm/fsl.txt
+@@ -130,7 +130,7 @@ core start address and release the secondary core from =
+holdoff and startup.
+   - compatible: Should contain a chip-specific compatible string,
+ 	Chip-specific strings are of the form "fsl,<chip>-dcfg",
+ 	The following <chip>s are known to be supported:
+-	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a.
++	ls1012a, ls1021a, ls1043a, ls1046a, ls2080a, lx2160a.
+=20
+   - reg : should contain base address and length of DCFG memory-mapped reg=
+isters
+=20
+@@ -222,3 +222,15 @@ Required root node properties:
+ LS2088A ARMv8 based RDB Board
+ Required root node properties:
+     - compatible =3D "fsl,ls2088a-rdb", "fsl,ls2088a";
++
++LX2160A SoC
++Required root node properties:
++    - compatible =3D "fsl,lx2160a";
++
++LX2160A ARMv8 based QDS Board
++Required root node properties:
++    - compatible =3D "fsl,lx2160a-qds", "fsl,lx2160a";
++
++LX2160A ARMv8 based RDB Board
++Required root node properties:
++    - compatible =3D "fsl,lx2160a-rdb", "fsl,lx2160a";
+diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Docu=
+mentation/devicetree/bindings/clock/qoriq-clock.txt
+index 97f46ad..3fb9995 100644
+--- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -37,6 +37,7 @@ Required properties:
+ 	* "fsl,ls1046a-clockgen"
+ 	* "fsl,ls1088a-clockgen"
+ 	* "fsl,ls2080a-clockgen"
++	* "fsl,lx2160a-clockgen"
+ 	Chassis-version clock strings include:
+ 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
+ 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
+--=20
+2.7.4
