@@ -1,35 +1,197 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RFC v1 3/8] timer: Export next wakeup time of a CPU
-Date: Mon, 29 Oct 2018 23:36:08 +0100 (CET)
-Message-ID: <alpine.DEB.2.21.1810292334160.5984@nanos.tec.linutronix.de>
-References: <1539206455-29342-1-git-send-email-rplsssn@codeaurora.org> <1539206455-29342-4-git-send-email-rplsssn@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: andy.tang@nxp.com
+Subject: [PATCH v3] thermal: qoriq: add multiple sensors support
+Date: Tue, 30 Oct 2018 09:00:08 +0800
+Message-ID: <20181030010008.27237-1-andy.tang@nxp.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539206455-29342-4-git-send-email-rplsssn@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Cc: andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>
+To: rui.zhang@intel.com, daniel.lezcano@linaro.org
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yuantian Tang <andy.tang@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Raju,
+From: Yuantian Tang <andy.tang@nxp.com>
 
-On Thu, 11 Oct 2018, Raju P.L.S.S.S.N wrote:
->  
-> +/**
-> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+The QorIQ Layerscape SoC has several thermal sensors but the current
+driver only supports one.
 
-Lacks documentation of @cpu. Please include kernel docs into your test
-builds.
+Massage the code to be sensor oriented and allow the support for
+multiple sensors.
 
-> + */
-> +ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
-> +
-> +	return dev->next_event;
-> +}
+Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+v3:
+  - add Reviewed-by
+v2:
+  - update the commit message
+  - refine the qoriq_tmu_register_tmu_zone()
 
-Thanks,
+ drivers/thermal/qoriq_thermal.c |  100 ++++++++++++++++++---------------------
+ 1 files changed, 46 insertions(+), 54 deletions(-)
 
-	tglx
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 450ed66..8beb344 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -59,14 +59,21 @@ struct qoriq_tmu_regs {
+ 	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+ };
+ 
++struct qoriq_tmu_data;
++
+ /*
+  * Thermal zone data
+  */
++struct qoriq_sensor {
++	struct thermal_zone_device	*tzd;
++	struct qoriq_tmu_data		*qdata;
++	int				id;
++};
++
+ struct qoriq_tmu_data {
+-	struct thermal_zone_device *tz;
+ 	struct qoriq_tmu_regs __iomem *regs;
+-	int sensor_id;
+ 	bool little_endian;
++	struct qoriq_sensor	*sensor[SITES_MAX];
+ };
+ 
+ static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
+@@ -87,48 +94,51 @@ static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
+ 
+ static int tmu_get_temp(void *p, int *temp)
+ {
++	struct qoriq_sensor *qsensor = p;
++	struct qoriq_tmu_data *qdata = qsensor->qdata;
+ 	u32 val;
+-	struct qoriq_tmu_data *data = p;
+ 
+-	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
++	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+ 	*temp = (val & 0xff) * 1000;
+ 
+ 	return 0;
+ }
+ 
+-static int qoriq_tmu_get_sensor_id(void)
++static const struct thermal_zone_of_device_ops tmu_tz_ops = {
++	.get_temp = tmu_get_temp,
++};
++
++static int qoriq_tmu_register_tmu_zone(struct platform_device *pdev)
+ {
+-	int ret, id;
+-	struct of_phandle_args sensor_specs;
+-	struct device_node *np, *sensor_np;
++	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
++	int id, sites = 0;
+ 
+-	np = of_find_node_by_name(NULL, "thermal-zones");
+-	if (!np)
+-		return -ENODEV;
++	for (id = 0; id < SITES_MAX; id++) {
++		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
++				sizeof(struct qoriq_sensor), GFP_KERNEL);
++		if (!qdata->sensor[id])
++			return -ENOMEM;
+ 
+-	sensor_np = of_get_next_child(np, NULL);
+-	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+-			"#thermal-sensor-cells",
+-			0, &sensor_specs);
+-	if (ret) {
+-		of_node_put(np);
+-		of_node_put(sensor_np);
+-		return ret;
+-	}
++		qdata->sensor[id]->id = id;
++		qdata->sensor[id]->qdata = qdata;
+ 
+-	if (sensor_specs.args_count >= 1) {
+-		id = sensor_specs.args[0];
+-		WARN(sensor_specs.args_count > 1,
+-				"%s: too many cells in sensor specifier %d\n",
+-				sensor_specs.np->name, sensor_specs.args_count);
+-	} else {
+-		id = 0;
+-	}
++		qdata->sensor[id]->tzd = devm_thermal_zone_of_sensor_register(
++				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
++		if (IS_ERR(qdata->sensor[id]->tzd)) {
++			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
++				continue;
++			else
++				return PTR_ERR(qdata->sensor[id]->tzd);
+ 
+-	of_node_put(np);
+-	of_node_put(sensor_np);
++		}
++
++		sites |= 0x1 << (15 - id);
++	}
++	/* Enable monitoring */
++	if (sites != 0)
++		tmu_write(qdata, sites | TMR_ME | TMR_ALPF, &qdata->regs->tmr);
+ 
+-	return id;
++	return 0;
+ }
+ 
+ static int qoriq_tmu_calibration(struct platform_device *pdev)
+@@ -178,16 +188,11 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+ 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+ }
+ 
+-static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+-	.get_temp = tmu_get_temp,
+-};
+-
+ static int qoriq_tmu_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	struct qoriq_tmu_data *data;
+ 	struct device_node *np = pdev->dev.of_node;
+-	u32 site;
+ 
+ 	if (!np) {
+ 		dev_err(&pdev->dev, "Device OF-Node is NULL");
+@@ -203,13 +208,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 
+ 	data->little_endian = of_property_read_bool(np, "little-endian");
+ 
+-	data->sensor_id = qoriq_tmu_get_sensor_id();
+-	if (data->sensor_id < 0) {
+-		dev_err(&pdev->dev, "Failed to get sensor id\n");
+-		ret = -ENODEV;
+-		goto err_iomap;
+-	}
+-
+ 	data->regs = of_iomap(np, 0);
+ 	if (!data->regs) {
+ 		dev_err(&pdev->dev, "Failed to get memory region\n");
+@@ -223,19 +221,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
+ 	if (ret < 0)
+ 		goto err_tmu;
+ 
+-	data->tz = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-							data->sensor_id,
+-							data, &tmu_tz_ops);
+-	if (IS_ERR(data->tz)) {
+-		ret = PTR_ERR(data->tz);
+-		dev_err(&pdev->dev,
+-			"Failed to register thermal zone device %d\n", ret);
+-		goto err_tmu;
++	ret = qoriq_tmu_register_tmu_zone(pdev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Failed to register sensors\n");
++		ret = -ENODEV;
++		goto err_iomap;
+ 	}
+ 
+-	/* Enable monitoring */
+-	site = 0x1 << (15 - data->sensor_id);
+-	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
+ 
+ 	return 0;
+ 
+-- 
+1.7.1
