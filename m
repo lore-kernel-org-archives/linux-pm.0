@@ -1,152 +1,46 @@
-From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
-Subject: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
-Date: Tue, 30 Oct 2018 22:53:29 +0530
-Message-ID: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V8 1/5] dt-bindings: imx: add scu resource id headfile
+Date: Tue, 30 Oct 2018 14:30:11 -0500
+Message-ID: <20181030193011.GA25741@bogus>
+References: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
+ <1540739690-23750-2-git-send-email-aisheng.dong@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1540739690-23750-2-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Cc: "A.s. Dong" <aisheng.dong@nxp.com>, Mark Rutland <mark.rutland@arm.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add device bindings for cpuidle states for cpu devices.
+On Sun, 28 Oct 2018 15:19:35 +0000, "A.s. Dong" wrote:
+> SCU firmware uses resource id to provide services. Every device on
+> a SCU based system has a resource id. Exported it in device tree to
+> allow service bindings to use it. e.g. power domain.
+> 
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> ---
+> v7->v8:
+>  * new patch
+> ---
+>  include/dt-bindings/firmware/imx/rsrc.h | 559 ++++++++++++++++++++++++++++++++
+>  1 file changed, 559 insertions(+)
+>  create mode 100644 include/dt-bindings/firmware/imx/rsrc.h
+> 
 
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
----
-Changes in v2
- - Address comments from Doug
----
----
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 62 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index 0c9a2aa..3a8381e 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -96,6 +96,7 @@
- 			reg = <0x0 0x0>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_0>;
-+			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
- 			L2_0: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -111,6 +112,7 @@
- 			reg = <0x0 0x100>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_100>;
-+			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
- 			L2_100: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -123,6 +125,7 @@
- 			reg = <0x0 0x200>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_200>;
-+			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
- 			L2_200: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -135,6 +138,7 @@
- 			reg = <0x0 0x300>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_300>;
-+			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
- 			L2_300: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -147,6 +151,7 @@
- 			reg = <0x0 0x400>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_400>;
-+			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
- 			L2_400: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -159,6 +164,7 @@
- 			reg = <0x0 0x500>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_500>;
-+			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
- 			L2_500: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -171,6 +177,7 @@
- 			reg = <0x0 0x600>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_600>;
-+			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
- 			L2_600: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
-@@ -183,11 +190,66 @@
- 			reg = <0x0 0x700>;
- 			enable-method = "psci";
- 			next-level-cache = <&L2_700>;
-+			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
- 			L2_700: l2-cache {
- 				compatible = "cache";
- 				next-level-cache = <&L3_0>;
- 			};
- 		};
-+
-+		idle-states {
-+			entry-method = "psci";
-+
-+			C0_CPU_PD: c0-power-down {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x40000003>;
-+				entry-latency-us = <350>;
-+				exit-latency-us = <461>;
-+				min-residency-us = <1890>;
-+				local-timer-stop;
-+				idle-state-name = "power-down";
-+			};
-+
-+			C0_CPU_RPD: c0-rail-power-down {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x40000004>;
-+				entry-latency-us = <360>;
-+				exit-latency-us = <531>;
-+				min-residency-us = <3934>;
-+				local-timer-stop;
-+				idle-state-name = "rail-power-down";
-+			};
-+
-+			C4_CPU_PD: c4-power-down {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x40000003>;
-+				entry-latency-us = <264>;
-+				exit-latency-us = <621>;
-+				min-residency-us = <952>;
-+				local-timer-stop;
-+				idle-state-name = "power-down";
-+			};
-+
-+			C4_CPU_RPD: c4-rail-power-down {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x40000004>;
-+				entry-latency-us = <702>;
-+				exit-latency-us = <1061>;
-+				min-residency-us = <4488>;
-+				local-timer-stop;
-+				idle-state-name = "rail-power-down";
-+			};
-+
-+			CLUSTER_PD: cluster-power-down {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x400000F4>;
-+				entry-latency-us = <3263>;
-+				exit-latency-us = <6562>;
-+				min-residency-us = <9987>;
-+				local-timer-stop;
-+				idle-state-name = "cluster-power-down";
-+			};
-+		};
- 	};
- 
- 	pmu {
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of the Code Aurora Forum, hosted by The Linux Foundation.
+Reviewed-by: Rob Herring <robh@kernel.org>
