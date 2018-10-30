@@ -1,101 +1,60 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: cpuidle: Don't register the driver when back-end
- init returns -ENXIO
-Date: Tue, 30 Oct 2018 11:20:39 +0100
-Message-ID: <CAPDyKFqsCwLXhxeNfx0hVas3Qmj-qJ96sgNFi+Ogr0aUAfNxtw@mail.gmail.com>
-References: <20181026144843.3028-1-ulf.hansson@linaro.org>
- <6313b4d7-a2a7-98c4-3951-0a1c3e4ff2d5@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] thermal: broadcom: constify
+ thermal_zone_of_device_ops structure
+Date: Tue, 30 Oct 2018 17:22:22 +0100
+Message-ID: <b0442517-ea11-9366-b17d-c60acf5c9cb3@linaro.org>
+References: <1540912500-21941-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1540912500-21941-3-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <6313b4d7-a2a7-98c4-3951-0a1c3e4ff2d5@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1540912500-21941-3-git-send-email-Julia.Lawall@lip6.fr>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>, Markus Mayer <mmayer@broadcom.com>
+Cc: kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29 October 2018 at 19:10, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On 26/10/2018 16:48, Ulf Hansson wrote:
->> There's no point to register the cpuidle driver for the current CPU, when
->> the initialization of the arch specific back-end data fails by returning
->> -ENXIO.
->>
->> Instead, let's re-order the sequence to its original flow, by first trying
->> to initialize the back-end part and then act accordingly on the returned
->> error code. Additionally, let's print the error message, no matter of what
->> error code that was returned.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>
->> Note, as far as I can tell it's only qcom-spm that may return -ENXIO, which also
->> was original reason to why this error path was invented.
->>
->> Unfurtunate I don't have a qcom spm platfrom at hand, however I manually tried
->> this by hacking the PSCI driver to return -ENXIO for some CPUs. So I assume it
->> should then also work for qcom spm.
->>
->> ---
->>  drivers/cpuidle/cpuidle-arm.c | 22 ++++++++++------------
->>  1 file changed, 10 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
->> index 073557f433eb..df564d783216 100644
->> --- a/drivers/cpuidle/cpuidle-arm.c
->> +++ b/drivers/cpuidle/cpuidle-arm.c
->> @@ -103,13 +103,6 @@ static int __init arm_idle_init_cpu(int cpu)
->>               goto out_kfree_drv;
->>       }
->>
->> -     ret = cpuidle_register_driver(drv);
->> -     if (ret) {
->> -             if (ret != -EBUSY)
->> -                     pr_err("Failed to register cpuidle driver\n");
->> -             goto out_kfree_drv;
->> -     }
->> -
->
-> Why not move the following block at the beginning of the function ?
+On 30/10/2018 16:15, Julia Lawall wrote:
+> The thermal_zone_of_device_ops structure can be const as it is only
+> passed as the last argument of thermal_zone_of_sensor_register
+> and the corresponding parameter is declared as const.
+> 
+> Done with the help of Coccinelle.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-That's kind of what is happening in patch 2/2.
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-However, I wanted to take small steps, isolating one change per patch.
-Does it make sense to keep $subject patch as is, when you look at
-patch2/2?
+> ---
+> 
+> Unrelated to this change, is there a reason not to use
+> devm_thermal_zone_of_sensor_register?
 
->
-> --->
->
->         /*
->          * Call arch CPU operations in order to initialize
->          * idle states suspend back-end specific data
->          */
->         ret = arm_cpuidle_init(cpu);
->
->         /*
->          * Skip the cpuidle device initialization if the reported
->          * failure is a HW misconfiguration/breakage (-ENXIO).
->          */
->         if (ret == -ENXIO)
->                 return 0;
->
->         if (ret) {
->                 pr_err("CPU %d failed to init idle CPU ops\n", cpu);
->                 s/goto out_unregister_drv;/return ret;/
->         }
->
-> <---
+Agree, it would make sense to use the devm* version.
 
-[...]
+>  drivers/thermal/broadcom/brcmstb_thermal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -u -p a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+> --- a/drivers/thermal/broadcom/brcmstb_thermal.c
+> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+> @@ -299,7 +299,7 @@ static int brcmstb_set_trips(void *data,
+>  	return 0;
+>  }
+>  
+> -static struct thermal_zone_of_device_ops of_ops = {
+> +static const struct thermal_zone_of_device_ops of_ops = {
+>  	.get_temp	= brcmstb_get_temp,
+>  	.set_trips	= brcmstb_set_trips,
+>  };
+> 
 
-Kind regards
-Uffe
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
