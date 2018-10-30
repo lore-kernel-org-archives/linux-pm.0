@@ -1,48 +1,73 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: Build error in drivers/cpufreq/intel_pstate.c
-Date: Tue, 30 Oct 2018 09:22:50 -0700
-Message-ID: <8a97f82e93fa42022aaf186ccbe6fef6be56e236.camel@linux.intel.com>
-References: <e176a41a-eb24-7f2c-bb75-a9b18eab420f@gmail.com>
+From: Raju P L S S S N <rplsssn@codeaurora.org>
+Subject: Re: [PATCH] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Tue, 30 Oct 2018 21:53:55 +0530
+Message-ID: <5b62572d-9f45-c0ee-776e-1486a9d40862@codeaurora.org>
+References: <1539622953-4188-1-git-send-email-rplsssn@codeaurora.org>
+ <CAD=FV=XB9diR_n1TB4+wUjVaRf0VAmCMgkSbtuOSNO5pkrQ8zg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e176a41a-eb24-7f2c-bb75-a9b18eab420f@gmail.com>
+In-Reply-To: <CAD=FV=XB9diR_n1TB4+wUjVaRf0VAmCMgkSbtuOSNO5pkrQ8zg@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Igor Stoppa <igor.stoppa@gmail.com>, Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Doug Anderson <dianders@chromium.org>
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Evan Green <evgreen@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Tue, 2018-10-30 at 18:00 +0200, Igor Stoppa wrote:
+
+
+On 10/24/2018 12:06 AM, Doug Anderson wrote:
 > Hi,
-> I'm getting the following build error:
 > 
-> /home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c: In
-> function 
-> ‘show_base_frequency’:
-> /home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c:726:10: 
-> error: implicit declaration of function 
-> ‘intel_pstate_get_cppc_guranteed’; did you mean
-> ‘intel_pstate_get_epp’? 
-> [-Werror=implicit-function-declaration]
->    ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
->            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->            intel_pstate_get_epp
+> On Mon, Oct 15, 2018 at 10:02 AM Raju P.L.S.S.S.N
+> <rplsssn@codeaurora.org> wrote:
+>> +               idle-states {
+>> +                       entry-method = "psci";
+>> +
+>> +                       C0_CPU_SPC: c0_spc {
 > 
+> nit: all these nodes should have dashes instead of spaces in the node
+> names (labels can still have spaces).  AKA:
 > 
+> C0_CPU_SPC: c0-spc {
 
-This should fix this:
+Sure. I will change this. (However, from device tree specification v0.2, 
+I see that Table 2.1 mentions underscore as valid character for node. 
+Please correct me if I'm missing something)
 
-https://patchwork.kernel.org/patch/10653593/
+> 
+> 
+>> +                               compatible = "arm,idle-state";
+>> +                               arm,psci-suspend-param = <0x40000003>;
+>> +                               entry-latency-us = <350>;
+>> +                               exit-latency-us = <461>;
+>> +                               min-residency-us = <1890>;
+>> +                               local-timer-stop;
+>> +                               idle-state-name = "pc";
+> 
+> It seems weird that the idle state with the node name "spc" has the
+> name "pc" and the idle state with the node name "pc" has the name
+> "rail pc".  Can this be more consistent or is there a reason why they
+> need to be mismatched?
 
-Thanks,
-Srinivas
+Agree. They are confusing. Will change this.
+
 > 
-> on top of:
+> Also: AAHTUFSWDKWTM (acronyms are hard to understand for someone who
+> doesn't know what they mean).  If you really need to use an the
+> acronyms "PC" and "SPC" please document them somewhere.  In the very
+> least the commit message, but having a comment in the file is good
+> too.  ...or (even better) don't use the acronym and spell out what
+> you're talking about.  Please correct me if I'm wrong, but I don't
+> think it's obvious what the "PC" and "SPC" idle states mean.
+
+Sure. Will change this.
+
+
+Thanks for feedback Doug.
+
 > 
-> commit 11743c56785c751c087eecdb98713eef796609e0
-> Merge: 929e134c43c9 928002a5e9da
 > 
-> --
-> igor
+> -Doug
+> 
