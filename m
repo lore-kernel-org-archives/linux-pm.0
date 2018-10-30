@@ -1,36 +1,24 @@
-From: Igor Stoppa <igor.stoppa@gmail.com>
-Subject: Build error in drivers/cpufreq/intel_pstate.c
-Date: Tue, 30 Oct 2018 18:00:52 +0200
-Message-ID: <e176a41a-eb24-7f2c-bb75-a9b18eab420f@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] More power management updates for v4.20-rc1
+Date: Tue, 30 Oct 2018 09:09:12 -0700
+Message-ID: <CAHk-=wgyRsCfBqOo6F0SEq-fO=euSfHbmW2dWifgmVXSXaNwTA@mail.gmail.com>
+References: <CAJZ5v0g7iRUA2=fi3+rkJcsx38YTE6fx26bnnpjeMHwv_CSMVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0g7iRUA2=fi3+rkJcsx38YTE6fx26bnnpjeMHwv_CSMVw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-I'm getting the following build error:
+On Tue, Oct 30, 2018 at 1:28 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> These remove a questionable heuristic from the menu cpuidle governor,
+> fix a recent build regression in the intel_pstate driver, clean up
+> ARM big-Little support in cpufreq and fix up hung task watchdog's
+> interaction with system-wide power management transitions.
 
-/home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c: In function 
-‘show_base_frequency’:
-/home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c:726:10: 
-error: implicit declaration of function 
-‘intel_pstate_get_cppc_guranteed’; did you mean ‘intel_pstate_get_epp’? 
-[-Werror=implicit-function-declaration]
-   ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
-           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-           intel_pstate_get_epp
+Pulled,
 
-
-
-on top of:
-
-commit 11743c56785c751c087eecdb98713eef796609e0
-Merge: 929e134c43c9 928002a5e9da
-
---
-igor
+                 Linus
