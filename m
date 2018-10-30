@@ -1,99 +1,152 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: broadcom: use
- devm_thermal_zone_of_sensor_register
-Date: Tue, 30 Oct 2018 17:54:53 +0100
-Message-ID: <14095608-e080-d907-c9ea-788a3abe1645@linaro.org>
-References: <1540915731-22312-1-git-send-email-Julia.Lawall@lip6.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
+Subject: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Tue, 30 Oct 2018 22:53:29 +0530
+Message-ID: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540915731-22312-1-git-send-email-Julia.Lawall@lip6.fr>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Markus Mayer <mmayer@broadcom.com>
-Cc: kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: andy.gross@linaro.org, david.brown@linaro.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
+Cc: rnayak@codeaurora.org, bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, evgreen@chromium.org, dianders@chromium.org, mka@chromium.org, ilina@codeaurora.org, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30/10/2018 17:08, Julia Lawall wrote:
-> Using devm_thermal_zone_of_sensor_register allows to simplify some
-> error handling code, drop a label, and drop the remove function.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Add device bindings for cpuidle states for cpu devices.
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+---
+Changes in v2
+ - Address comments from Doug
+---
+---
+ arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
-> ---
-> 
-> This patch is completely orthogonal to the recent constification
-> patch.
-> 
->  drivers/thermal/broadcom/brcmstb_thermal.c |   24 ++++--------------------
->  1 file changed, 4 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-> index 1919f91fa756..956eef8717bb 100644
-> --- a/drivers/thermal/broadcom/brcmstb_thermal.c
-> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-> @@ -329,7 +329,8 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
->  	priv->dev = &pdev->dev;
->  	platform_set_drvdata(pdev, priv);
->  
-> -	thermal = thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &of_ops);
-> +	thermal = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv,
-> +						       &of_ops);
->  	if (IS_ERR(thermal)) {
->  		ret = PTR_ERR(thermal);
->  		dev_err(&pdev->dev, "could not register sensor: %d\n", ret);
-> @@ -341,40 +342,23 @@ static int brcmstb_thermal_probe(struct platform_device *pdev)
->  	irq = platform_get_irq(pdev, 0);
->  	if (irq < 0) {
->  		dev_err(&pdev->dev, "could not get IRQ\n");
-> -		ret = irq;
-> -		goto err;
-> +		return irq;
->  	}
->  	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
->  					brcmstb_tmon_irq_thread, IRQF_ONESHOT,
->  					DRV_NAME, priv);
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "could not request IRQ: %d\n", ret);
-> -		goto err;
-> +		return ret;
->  	}
->  
->  	dev_info(&pdev->dev, "registered AVS TMON of-sensor driver\n");
->  
->  	return 0;
-> -
-> -err:
-> -	thermal_zone_of_sensor_unregister(&pdev->dev, thermal);
-> -	return ret;
-> -}
-> -
-> -static int brcmstb_thermal_exit(struct platform_device *pdev)
-> -{
-> -	struct brcmstb_thermal_priv *priv = platform_get_drvdata(pdev);
-> -	struct thermal_zone_device *thermal = priv->thermal;
-> -
-> -	if (thermal)
-> -		thermal_zone_of_sensor_unregister(&pdev->dev, priv->thermal);
-> -
-> -	return 0;
->  }
->  
->  static struct platform_driver brcmstb_thermal_driver = {
->  	.probe = brcmstb_thermal_probe,
-> -	.remove = brcmstb_thermal_exit,
->  	.driver = {
->  		.name = DRV_NAME,
->  		.of_match_table = brcmstb_thermal_id_table,
-> 
-
-
+diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+index 0c9a2aa..3a8381e 100644
+--- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
+@@ -96,6 +96,7 @@
+ 			reg = <0x0 0x0>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_0>;
++			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+ 			L2_0: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -111,6 +112,7 @@
+ 			reg = <0x0 0x100>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_100>;
++			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+ 			L2_100: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -123,6 +125,7 @@
+ 			reg = <0x0 0x200>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_200>;
++			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+ 			L2_200: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -135,6 +138,7 @@
+ 			reg = <0x0 0x300>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_300>;
++			cpu-idle-states = <&C0_CPU_PD &C0_CPU_RPD &CLUSTER_PD>;
+ 			L2_300: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -147,6 +151,7 @@
+ 			reg = <0x0 0x400>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_400>;
++			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+ 			L2_400: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -159,6 +164,7 @@
+ 			reg = <0x0 0x500>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_500>;
++			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+ 			L2_500: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -171,6 +177,7 @@
+ 			reg = <0x0 0x600>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_600>;
++			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+ 			L2_600: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+@@ -183,11 +190,66 @@
+ 			reg = <0x0 0x700>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_700>;
++			cpu-idle-states = <&C4_CPU_PD &C4_CPU_RPD &CLUSTER_PD>;
+ 			L2_700: l2-cache {
+ 				compatible = "cache";
+ 				next-level-cache = <&L3_0>;
+ 			};
+ 		};
++
++		idle-states {
++			entry-method = "psci";
++
++			C0_CPU_PD: c0-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000003>;
++				entry-latency-us = <350>;
++				exit-latency-us = <461>;
++				min-residency-us = <1890>;
++				local-timer-stop;
++				idle-state-name = "power-down";
++			};
++
++			C0_CPU_RPD: c0-rail-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000004>;
++				entry-latency-us = <360>;
++				exit-latency-us = <531>;
++				min-residency-us = <3934>;
++				local-timer-stop;
++				idle-state-name = "rail-power-down";
++			};
++
++			C4_CPU_PD: c4-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000003>;
++				entry-latency-us = <264>;
++				exit-latency-us = <621>;
++				min-residency-us = <952>;
++				local-timer-stop;
++				idle-state-name = "power-down";
++			};
++
++			C4_CPU_RPD: c4-rail-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x40000004>;
++				entry-latency-us = <702>;
++				exit-latency-us = <1061>;
++				min-residency-us = <4488>;
++				local-timer-stop;
++				idle-state-name = "rail-power-down";
++			};
++
++			CLUSTER_PD: cluster-power-down {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x400000F4>;
++				entry-latency-us = <3263>;
++				exit-latency-us = <6562>;
++				min-residency-us = <9987>;
++				local-timer-stop;
++				idle-state-name = "cluster-power-down";
++			};
++		};
+ 	};
+ 
+ 	pmu {
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of the Code Aurora Forum, hosted by The Linux Foundation.
