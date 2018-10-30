@@ -1,60 +1,48 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] thermal: broadcom: constify
- thermal_zone_of_device_ops structure
-Date: Tue, 30 Oct 2018 17:22:22 +0100
-Message-ID: <b0442517-ea11-9366-b17d-c60acf5c9cb3@linaro.org>
-References: <1540912500-21941-1-git-send-email-Julia.Lawall@lip6.fr>
- <1540912500-21941-3-git-send-email-Julia.Lawall@lip6.fr>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: Build error in drivers/cpufreq/intel_pstate.c
+Date: Tue, 30 Oct 2018 09:22:50 -0700
+Message-ID: <8a97f82e93fa42022aaf186ccbe6fef6be56e236.camel@linux.intel.com>
+References: <e176a41a-eb24-7f2c-bb75-a9b18eab420f@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540912500-21941-3-git-send-email-Julia.Lawall@lip6.fr>
-Content-Language: en-US
+In-Reply-To: <e176a41a-eb24-7f2c-bb75-a9b18eab420f@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Markus Mayer <mmayer@broadcom.com>
-Cc: kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Igor Stoppa <igor.stoppa@gmail.com>, Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30/10/2018 16:15, Julia Lawall wrote:
-> The thermal_zone_of_device_ops structure can be const as it is only
-> passed as the last argument of thermal_zone_of_sensor_register
-> and the corresponding parameter is declared as const.
+Hi,
+On Tue, 2018-10-30 at 18:00 +0200, Igor Stoppa wrote:
+> Hi,
+> I'm getting the following build error:
 > 
-> Done with the help of Coccinelle.
+> /home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c: In
+> function 
+> ‘show_base_frequency’:
+> /home/igor/dev/kernel/linux/drivers/cpufreq/intel_pstate.c:726:10: 
+> error: implicit declaration of function 
+> ‘intel_pstate_get_cppc_guranteed’; did you mean
+> ‘intel_pstate_get_epp’? 
+> [-Werror=implicit-function-declaration]
+>    ratio = intel_pstate_get_cppc_guranteed(policy->cpu);
+>            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+>            intel_pstate_get_epp
 > 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-> ---
-> 
-> Unrelated to this change, is there a reason not to use
-> devm_thermal_zone_of_sensor_register?
-
-Agree, it would make sense to use the devm* version.
-
->  drivers/thermal/broadcom/brcmstb_thermal.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -u -p a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
-> --- a/drivers/thermal/broadcom/brcmstb_thermal.c
-> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
-> @@ -299,7 +299,7 @@ static int brcmstb_set_trips(void *data,
->  	return 0;
->  }
->  
-> -static struct thermal_zone_of_device_ops of_ops = {
-> +static const struct thermal_zone_of_device_ops of_ops = {
->  	.get_temp	= brcmstb_get_temp,
->  	.set_trips	= brcmstb_set_trips,
->  };
 > 
 
+This should fix this:
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+https://patchwork.kernel.org/patch/10653593/
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Srinivas
+> 
+> on top of:
+> 
+> commit 11743c56785c751c087eecdb98713eef796609e0
+> Merge: 929e134c43c9 928002a5e9da
+> 
+> --
+> igor
