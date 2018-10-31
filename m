@@ -1,83 +1,57 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH v2 04/17] thermal: separate sensor registration and
- enable+check operations
-Date: Wed, 31 Oct 2018 18:10:00 +0530
-Message-ID: <CAHLCerNYO+srv4codxKqbOgtaUBr3WKV460jpry-Ppn1mf0Nug@mail.gmail.com>
-References: <CGME20181017155338epcas1p3a22cd0b22e757c3e51eb72ccee545478@epcas1p3.samsung.com>
- <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com> <1539791563-5959-5-git-send-email-b.zolnierkie@samsung.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 4/4] ARM: dts: imx6sx: Add DISPLAY power domain support
+Date: Wed, 31 Oct 2018 15:05:59 +0000
+Message-ID: <20181031150559.GA20437@e107981-ln.cambridge.arm.com>
+References: <cover.1539020938.git.leonard.crestez@nxp.com>
+ <a3265a84052a7c11ae96e61e39adc988ca980d66.1539020938.git.leonard.crestez@nxp.com>
+ <20181031061134.GB10386@tiger>
+ <AM0PR04MB4290F31234D75AC7029F066FEECD0@AM0PR04MB4290.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1539791563-5959-5-git-send-email-b.zolnierkie@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <AM0PR04MB4290F31234D75AC7029F066FEECD0@AM0PR04MB4290.eurprd04.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-<snip>
+On Wed, Oct 31, 2018 at 12:17:50PM +0000, Leonard Crestez wrote:
+> On 10/31/2018 8:12 AM, Shawn Guo wrote:
+> > On Mon, Oct 08, 2018 at 06:06:23PM +0000, Leonard Crestez wrote:
+> >> This was implemented in the driver but not actually defined and
+> >> referenced in dts. This makes it always on.
+> >>
+> >>  From reference manual in section "10.4.1.4.1 Power Distribution":
+> >>
+> >> "Display domain - The DISPLAY domain contains GIS, CSI, PXP, LCDIF,
+> >> PCIe, DCIC, and LDB. It is supplied by internal regulator."
+> >>
+> >> The current pd_pcie is actually only for PCIE_PHY, the PCIE ip block is
+> >> actually inside the DISPLAY domain. Handle this by adding the pcie node
+> >> in both power domains.
+> >>
+> >> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> > 
+> > Applied, thanks.
+> 
+> As mentioned in the cover letter this requires multi-PD support in 
+> imx-pci to be implemented, specifically PATCH 3/4 of this series:
+> 
+> 	https://lore.kernel.org/patchwork/patch/996810/
+> 
+> Unless that also gets merged soon via pci I expect issues in linux-next. 
 
-> --- a/drivers/hwmon/hwmon.c
-> +++ b/drivers/hwmon/hwmon.c
-> @@ -161,6 +161,11 @@ static int hwmon_thermal_add_sensor(struct device *dev,
->         if (IS_ERR(tzd) && (PTR_ERR(tzd) != -ENODEV))
->                 return PTR_ERR(tzd);
->
-> +       if (!IS_ERR(tzd)) {
-> +               thermal_zone_set_mode(tzd, THERMAL_DEVICE_ENABLED);
-> +               thermal_zone_device_check(tzd);
-> +       }
-> +
->         return 0;
->  }
->  #else
-> diff --git a/drivers/hwmon/ntc_thermistor.c b/drivers/hwmon/ntc_thermistor.c
-> index c52d07c..d423b0f 100644
-> --- a/drivers/hwmon/ntc_thermistor.c
-> +++ b/drivers/hwmon/ntc_thermistor.c
-> @@ -647,6 +647,10 @@ static int ntc_thermistor_probe(struct platform_device *pdev)
->                                                   &ntc_of_thermal_ops);
->         if (IS_ERR(tz))
->                 dev_dbg(dev, "Failed to register to thermal fw.\n");
-> +       else {
-> +               thermal_zone_set_mode(tz, THERMAL_DEVICE_ENABLED);
-> +               thermal_zone_device_check(tz);
-> +       }
+I do not know what you mean by "issues in linux-next" (I assume you mean
+when Shawn sends the patches to linux-next in preparation for v4.21); we
+have not planned any other PCI pull request for v4.20-rc1 material.
 
-Use the negative check here as above to get rid of the 'else' statement?
+> The patch already has reviewed-by tags so "merging it soon" is not 
+> unreasonable.
 
->         return 0;
->  }
-> diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
-> index 111d521..ad5c5d7 100644
-> --- a/drivers/hwmon/scpi-hwmon.c
-> +++ b/drivers/hwmon/scpi-hwmon.c
-> @@ -288,6 +288,10 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
->                  */
->                 if (IS_ERR(z))
->                         devm_kfree(dev, zone);
-> +               else {
-> +                       thermal_zone_set_mode(z, THERMAL_DEVICE_ENABLED);
-> +                       thermal_zone_device_check(z);
-> +               }
+I can ACK it if Shawn wants to pull it, it may take a while to see it
+in -next if it has to go through the PCI tree, I think it is better
+to queue the series without splitting the patches across multiple
+channels though.
 
-Use the negative check here (!IS_ERR(z)) as above to get rid of the
-'else' statement? The memory is allocated through devm_kzalloc so it
-doesn't need to be explicitly freed.
-
->         }
->
->         return 0;
-> diff --git a/drivers/iio/adc/sun4i-gpadc-iio.c b/drivers/iio/adc/sun4i-gpadc-iio.c
-> index 04d7147..ff67f72 100644
-> --- a/drivers/iio/adc/sun4i-gpadc-iio.c
-> +++ b/drivers/iio/adc/sun4i-gpadc-iio.c
-> @@ -659,6 +659,11 @@ static int sun4i_gpadc_probe(struct platform_device *pdev)
->                                 PTR_ERR(info->tzd));
->                         return PTR_ERR(info->tzd);
->                 }
-> +               if (!IS_ERR(info->tzd)) {
-> +                       thermal_zone_set_mode(info->tzd,
-> +                                             THERMAL_DEVICE_ENABLED);
-> +                       thermal_zone_device_check(info->tzd);
-> +               }
->         }
+Lorenzo
