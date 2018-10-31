@@ -1,221 +1,266 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: 4.18: early boot crash in thermal_cooling_device_destroy_sysfs
-Date: Wed, 31 Oct 2018 14:48:52 -0700
-Message-ID: <f3bdedc2-6b6d-9842-3331-cee34eeebb06@infradead.org>
-References: <c1e0c7c7-2ed9-39fd-b3e0-aebf4d5839a3@infradead.org>
- <4a200a32-7d7f-1248-2ecd-74600083b1c1@infradead.org>
- <3743579.MQBqPkux9Q@aspire.rjw.lan>
- <6eaa3393-f7aa-8f1a-a5c4-72aaafa2d1f9@infradead.org>
- <1540948029.2254.57.camel@intel.com>
- <89eac8ad-ec37-7573-e385-0e1d46364691@infradead.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V8 5/5] firmware: imx: add SCU power domain driver
+Date: Wed, 31 Oct 2018 22:48:51 +0100
+Message-ID: <CAPDyKFrBNoXiWgjKk7mdOEARgOV+7RQPnMcDRccS04triaUHtg@mail.gmail.com>
+References: <1540739690-23750-1-git-send-email-aisheng.dong@nxp.com>
+ <1540739690-23750-6-git-send-email-aisheng.dong@nxp.com>
+ <CAPDyKFp=ajE5gh5KnfKjm31x1oKDu3O56Yki1CvrTEf0SysS7w@mail.gmail.com>
+ <AM0PR04MB4211F8B08821BEA7CEA8950880CC0@AM0PR04MB4211.eurprd04.prod.outlook.com>
+ <CAPDyKFpzvN1R91ByRUmZ8XDsm6L2SF92oOrDSn3qv-d9wWGYtA@mail.gmail.com>
+ <AM0PR04MB4211084AB67D86ED162FDB1280CD0@AM0PR04MB4211.eurprd04.prod.outlook.com>
+ <CAPDyKFoEbuLcA5AZPQob0PgK=A3pAH5N8CacHb3WO+54-0svrA@mail.gmail.com>
+ <AM0PR04MB42116E6F24F4943BC999CAEE80CD0@AM0PR04MB4211.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <89eac8ad-ec37-7573-e385-0e1d46364691@infradead.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <AM0PR04MB42116E6F24F4943BC999CAEE80CD0@AM0PR04MB4211.eurprd04.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "A.s. Dong" <aisheng.dong@nxp.com>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/30/18 10:47 PM, Randy Dunlap wrote:
-> On 10/30/18 6:07 PM, Zhang Rui wrote:
->> Hi, Randy,
+On 31 October 2018 at 18:24, A.s. Dong <aisheng.dong@nxp.com> wrote:
+>> -----Original Message-----
+>> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
+>> Sent: Wednesday, October 31, 2018 11:56 PM
+> [...]
+>> On 31 October 2018 at 02:45, A.s. Dong <aisheng.dong@nxp.com> wrote:
+>> >> -----Original Message-----
+>> >> From: Ulf Hansson [mailto:ulf.hansson@linaro.org]
+>> >> Sent: Wednesday, October 31, 2018 12:00 AM
+>> > [...]
+>> >> On 30 October 2018 at 14:20, A.s. Dong <aisheng.dong@nxp.com> wrote:
+>> >> > [...]
+>> >> >
+>> >> >> }
+>> >> >> > +
+>> >> >> > +static struct imx_sc_pm_domain * imx_scu_add_pm_domain(struct
+>> >> >> > +device *dev, int idx,
+>> >> >> > +                     const struct imx_sc_pd_range *pd_ranges) {
+>> >> >> > +       struct imx_sc_pm_domain *sc_pd;
+>> >> >> > +       int ret;
+>> >> >> > +
+>> >> >> > +       sc_pd = devm_kzalloc(dev, sizeof(*sc_pd), GFP_KERNEL);
+>> >> >> > +       if (!sc_pd)
+>> >> >> > +               return ERR_PTR(-ENOMEM);
+>> >> >> > +
+>> >> >> > +       sc_pd->rsrc = pd_ranges->rsrc + idx;
+>> >> >> > +       sc_pd->pd.power_off = imx_sc_pd_power_off;
+>> >> >> > +       sc_pd->pd.power_on = imx_sc_pd_power_on;
+>> >> >>
+>> >> >> So, this means you are going to register one genpd per device (one
+>> >> >> for each uart, pwm etc), but there is actually a better option.
+>> >> >>
+>> >> >> What you seems to be needing is a way to "power on/off" devices,
+>> >> >> rather than the PM domain. Right? The PM domain, is managed
+>> >> >> internally
+>> >> by the FW, no?
+>> >> >>
+>> >> >
+>> >> > Yes, you're right.
+>> >> >
+>> >> >> In any case, it looks like what you should do is to implement the
+>> >> >> ->attach|detach_dev() callback for the genpd and use the regular
+>> >> >> of_genpd_add_provider_simple(). From within the ->attach_dev(),
+>> >> >> you should get the OF node for the device that is being attached
+>> >> >> and then parse the power-domain cell containing the "resource id"
+>> >> >> and store that in the per device struct generic_pm_domain_data (we
+>> >> >> have void pointer there for storing these kind of things).
+>> >> >>
+>> >> >> Additionally, you need to implement the ->stop() and ->start()
+>> >> >> callbacks of genpd, which is where you "power on/off" devices,
+>> >> >> rather than using the above
+>> >> >> ->power_on|off() callbacks.
+>> >> >>
+>> >> >> Please have a look a drivers/soc/ti/ti_sci_pm_domains.c.
+>> >> >> Apologize, I should have pointed you towards that reference
+>> >> >> already in the earlier
+>> >> version.
+>> >> >>
+>> >> >
+>> >> > Appreciated for such detailed explanation. lt's a good suggestion
+>> >> > and I really like to switch to it.  However, after digged a bit
+>> >> > more, i found a few
+>> >> blocking issues:
+>> >> > 1. The .attach_dev() of power domain infrastructure still does not
+>> >> > support
+>> >> multi domains case.
+>> >> >
+>> >> > It looks like there's no way for .attach_dev() to understand which
+>> >> > sub 'power
+>> >> domain'
+>> >> > the device is attaching for one global power domain provider like
+>> >> > ti_sci as
+>> >> you suggested.
+>> >> > Secondly, the struct device *dev passed into is a virtual PD device.
+>> >> > It does not help for parsing the real device resource id.
+>> >> >
+>> >> > So framework probably needs some extension to support multi power
+>> >> domain cases.
+>> >>
+>> >> Right, you are correct.
+>> >>
+>> >> Let me think about this and see what I can come up with - unless you
+>> >> already have something you want to propose?
+>> >>
+>> >
+>> > I have thought we may need add two more params (real dev and pd index)
+>> > for
+>> > .attach_dev().detach_dev() and .start()/.stop() for multi PDs case.
+>> > But I'm not sure if they are proper.
 >>
->> On 五, 2018-10-26 at 20:35 -0700, Randy Dunlap wrote:
->>> On 10/26/18 2:14 AM, Rafael J. Wysocki wrote:
->>>>
->>>> On Monday, October 22, 2018 8:37:25 PM CEST Randy Dunlap wrote:
->>>>>
->>>>>
->>>>> On 8/16/18 2:33 PM, Randy Dunlap wrote:
->>>>>>
->>>>>> Hi,
->>>>>>
->>>>>> Sorry for the photo.  That's all I have available so far.
->>>>>>
->>>>>> https://www.infradead.org/~rdunlap/doc/IMG_20180816_133254743_H
->>>>>> DR.jpg
->>>>>>
->>>>>>
->>>>>> Does anyone recognize this?
->>>>>>
->>>>>> This is an (older) Toshiba laptop.  The kernel .config is
->>>>>> mostly an
->>>>>> allmodconfig with some DEBUG options disabled and other options
->>>>>> enabled
->>>>>> so that it can boot without using an initramfs.  (and with
->>>>>> COMPILE_TEST
->>>>>> disabled :)
->>>>>>
->>>>>>
->>>>>> The full kernel .config file is attached.
->>>>>>
->>>>>> Thanks,
->>>>>>
->>>>> This is a result of CONFIG_DEBUG_TEST_DRIVER_REMOVE=y.
->>>>> [switch from 64-bit to 32-bit machine]
->>>>>
->>>>>
->>>>> When using CONFIG_DEBUG_VM=y, it BUGs at:
->>>>> [    5.553603] ------------[ cut here ]------------
->>>>> [    5.553733] kernel BUG at arch/x86/mm/physaddr.c:75!
->>>>> [    5.557788] invalid opcode: 0000 [#1] PREEMPT SMP
->>>>> DEBUG_PAGEALLOC
->>>>> [    5.558738] CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.19.0-
->>>>> rc7 #4
->>>>> [    5.558738] Hardware name: Dell Inc. Inspiron
->>>>> 1318                   /0C236D, BIOS A04 01/15/2009
->>>>> [    5.558738] EIP: __phys_addr+0x40/0x90
->>>>> [    5.558738] Code: 00 40 75 2e 8b 15 00 57 23 d5 85 d2 74 12 89
->>>>> d9 c1 e9 0c 39 ca 72 5b e8 2e ca ff ff 39 d8 75 4a 89 d8 5b 5d c3
->>>>> 8d 74 26 00 90 <0f> 0b 8d b6 00 00 00 00 8b 0d 80 56 23 d5 8d 91
->>>>> 00 00 80 00 39 d0
->>>>> [    5.558738] EAX: 6b6b6b6b EBX: 6b6b6b6b ECX: 00140011 EDX:
->>>>> 00000000
->>>>> [    5.558738] ESI: f4890000 EDI: d4a58d60 EBP: f40c1e0c ESP:
->>>>> f40c1e08
->>>>> [    5.558738] DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
->>>>> EFLAGS: 00210a97
->>>>> [    5.558738] CR0: 80050033 CR2: 00000000 CR3: 14cad000 CR4:
->>>>> 000406d0
->>>>> [    5.558738] Call Trace:
->>>>> [    5.558738]  kfree+0x1f/0x160
->>>>> [    5.558738]  thermal_cooling_device_destroy_sysfs+0x11/0x20
->>>>> [    5.558738]  thermal_cooling_device_unregister+0x168/0x180
->>>>> [    5.558738]  acpi_pss_perf_exit.isra.4+0x32/0x50
->>>>> [    5.558738]  acpi_processor_stop+0x4d/0x60
->>>>> [    5.558738]  really_probe+0xa3/0x3e0
->>>>> [    5.558738]  driver_probe_device+0x5b/0x120
->>>>> [    5.558738]  __driver_attach+0xd9/0x100
->>>>> [    5.558738]  ? driver_probe_device+0x120/0x120
->>>>> [    5.558738]  bus_for_each_dev+0x56/0x90
->>>>> [    5.558738]  driver_attach+0x14/0x20
->>>>> [    5.558738]  ? driver_probe_device+0x120/0x120
->>>>> [    5.558738]  bus_add_driver+0x117/0x210
->>>>> [    5.558738]  driver_register+0x61/0xb0
->>>>> [    5.558738]  acpi_processor_driver_init+0x19/0x88
->>>>> [    5.558738]  ? acpi_pci_slot_init+0xf/0xf
->>>>> [    5.558738]  do_one_initcall+0x3e/0x15a
->>>>> [    5.558738]  ? do_early_param+0x75/0x75
->>>>> [    5.558738]  kernel_init_freeable+0x170/0x1f3
->>>>> [    5.558738]  ? rest_init+0xcd/0xcd
->>>>> [    5.558738]  kernel_init+0x8/0xdb
->>>>> [    5.558738]  ret_from_fork+0x2e/0x38
->>>>> [    5.558738] Modules linked in:
->>>>> [    5.625269] _warn_unseeded_randomness: 1 callbacks suppressed
->>>>> [    5.625272] random: get_random_bytes called from
->>>>> init_oops_id+0x3a/0x40 with crng_init=0
->>>>> [    5.629758] ---[ end trace 65b17bf4d18e7692 ]---
->>>>> [    5.631573] EIP: __phys_addr+0x40/0x90
->>>>> [    5.633242] Code: 00 40 75 2e 8b 15 00 57 23 d5 85 d2 74 12 89
->>>>> d9 c1 e9 0c 39 ca 72 5b e8 2e ca ff ff 39 d8 75 4a 89 d8 5b 5d c3
->>>>> 8d 74 26 00 90 <0f> 0b 8d b6 00 00 00 00 8b 0d 80 56 23 d5 8d 91
->>>>> 00 00 80 00 39 d0
->>>>> [    5.638618] EAX: 6b6b6b6b EBX: 6b6b6b6b ECX: 00140011 EDX:
->>>>> 00000000
->>>>> [    5.640703] ESI: f4890000 EDI: d4a58d60 EBP: f40c1e0c ESP:
->>>>> d4cb13dc
->>>>> [    5.642801] DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
->>>>> EFLAGS: 00210a97
->>>>> [    5.645053] CR0: 80050033 CR2: 00000000 CR3: 14cad000 CR4:
->>>>> 000406d0
->>>>> [    5.647179] Kernel panic - not syncing: Fatal exception
->>>>> [    5.648172] Kernel Offset: 0x13000000 from 0xc1000000
->>>>> (relocation range: 0xc0000000-0xf77fdfff)
->>>>> [    5.648172] ---[ end Kernel panic - not syncing: Fatal
->>>>> exception ]---
->>>>>
->>>>>
->>>>> When not using CONFIG_DEBUG_VM, it BUGs in kfree:
->>>>> [    5.497864] ------------[ cut here ]------------
->>>>> [    5.498215] kernel BUG at mm/slub.c:3901!
->>>>> [    5.501739] invalid opcode: 0000 [#1] PREEMPT SMP
->>>>> [    5.502720] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.19.0-
->>>>> rc7 #3
->>>>> [    5.502720] Hardware name: Dell Inc. Inspiron
->>>>> 1318                   /0C236D, BIOS A04 01/15/2009
->>>>> [    5.502720] EIP: kfree+0x117/0x150
->>>>> [    5.502720] Code: 74 21 8b 06 31 d2 f6 c4 80 74 04 0f b6 56 31
->>>>> 89 f0 e8 7d e0 fa ff e9 7b ff ff ff 8d b4 26 00 00 00 00 90 8b 46
->>>>> 04 a8 01 75 d8 <0f> 0b 8d b4 26 00 00 00 00 8b 75 f0 ff 75 ec 89
->>>>> d9 89 f8 6a 01 53
->>>>> [    5.502720] EAX: 00000100 EBX: 6b6b6b6b ECX: 00140011 EDX:
->>>>> 00000000
->>>>> [    5.502720] ESI: f67dac70 EDI: ccc4aca0 EBP: f4083e28 ESP:
->>>>> f4083e10
->>>>> [    5.502720] DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
->>>>> EFLAGS: 00210246
->>>>> [    5.502720] CR0: 80050033 CR2: ffd14000 CR3: 0ce94000 CR4:
->>>>> 000406d0
->>>>> [    5.502720] Call Trace:
->>>>> [    5.502720]  thermal_cooling_device_destroy_sysfs+0x11/0x20
->>>>> [    5.502720]  thermal_cooling_device_unregister+0x168/0x180
->>>>> [    5.502720]  acpi_pss_perf_exit.isra.4+0x32/0x50
->>>>> [    5.502720]  acpi_processor_stop+0x4d/0x60
->>>>> [    5.502720]  really_probe+0xa3/0x3e0
->>>>> [    5.502720]  driver_probe_device+0x5b/0x120
->>>>> [    5.502720]  __driver_attach+0xd9/0x100
->>>>> [    5.502720]  ? driver_probe_device+0x120/0x120
->>>>> [    5.502720]  bus_for_each_dev+0x56/0x90
->>>>> [    5.502720]  driver_attach+0x14/0x20
->>>>> [    5.502720]  ? driver_probe_device+0x120/0x120
->>>>> [    5.502720]  bus_add_driver+0x117/0x210
->>>>> [    5.502720]  driver_register+0x61/0xb0
->>>>> [    5.502720]  acpi_processor_driver_init+0x19/0x88
->>>>> [    5.502720]  ? acpi_pci_slot_init+0xf/0xf
->>>>> [    5.502720]  do_one_initcall+0x3e/0x15a
->>>>> [    5.502720]  ? do_early_param+0x75/0x75
->>>>> [    5.502720]  kernel_init_freeable+0x170/0x1f3
->>>>> [    5.502720]  ? rest_init+0xcd/0xcd
->>>>> [    5.502720]  kernel_init+0x8/0xdb
->>>>> [    5.502720]  ret_from_fork+0x2e/0x38
->>>>> [    5.502720] Modules linked in:
->>>>> [    5.567678] _warn_unseeded_randomness: 1 callbacks suppressed
->>>>> [    5.567682] random: get_random_bytes called from
->>>>> init_oops_id+0x3a/0x40 with crng_init=0
->>>>> [    5.572237] ---[ end trace 1b6e88c03e412db2 ]---
->>>>> [    5.574099] EIP: kfree+0x117/0x150
->>>>> [    5.575673] Code: 74 21 8b 06 31 d2 f6 c4 80 74 04 0f b6 56 31
->>>>> 89 f0 e8 7d e0 fa ff e9 7b ff ff ff 8d b4 26 00 00 00 00 90 8b 46
->>>>> 04 a8 01 75 d8 <0f> 0b 8d b4 26 00 00 00 00 8b 75 f0 ff 75 ec 89
->>>>> d9 89 f8 6a 01 53
->>>>> [    5.581124] EAX: 00000100 EBX: 6b6b6b6b ECX: 00140011 EDX:
->>>>> 00000000
->>>>> [    5.583243] ESI: f67dac70 EDI: ccc4aca0 EBP: f4083e28 ESP:
->>>>> cce983dc
->>>>> [    5.585347] DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
->>>>> EFLAGS: 00210246
->>>>> [    5.587600] CR0: 80050033 CR2: ffd14000 CR3: 0ce94000 CR4:
->>>>> 000406d0
->>>>> [    5.589747] Kernel panic - not syncing: Fatal exception
->>>>> [    5.590740] Kernel Offset: 0xb200000 from 0xc1000000
->>>>> (relocation range: 0xc0000000-0xf77fdfff)
->>>>> [    5.590740] ---[ end Kernel panic - not syncing: Fatal
->>>>> exception ]---
->>>>>
->>>>>
->>>>>
->>>>>
->>>> This admittedly is a long shot, but does the appended patch help?
->>> Thanks for the patch, but:
->>> Nope, same crash.
->>>
+>> Right.
 >>
->> thanks for the report, please confirm if the following patch fixes the
->> problem or not
->> https://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git/commit
->> /?h=next&id=3c587768271e9c20276522025729e4ebca51583b
-> 
-> Hi,
-> 
-> I believe this patch does fix the problem.
-> I'll hook up a serial cable tomorrow to confirm/verify this.
+>> I don't think we need to change the definition of the callbacks.
+>> However, from within the callbacks (or at least the ->attach_dev()) we need
+>> access to the data you suggest above.
+>>
+>> To make that data available, genpd needs to store it in the per device struct
+>> generic_pm_domain_data, but of course before invoking the
+>> ->attach_dev() callback.
+>>
+>
+> Yes, that's an option.
+> Currently gpd_data is allocated in genpd_add_device() which looks like to be
+> designed to attach device to the specified power domain passed in, so it's
+> unware of whether it's multi domains or not. Then we may still need fine
+> tune those functions in different abstract layers.
 
-That fix is tested & confirmed.
+Yes, something like that. I don't think it should be that hard, I can
+have a stab at it of you like?
 
-> thanks,
+>
+>> >
+>> >
+>> >> >
+>> >> > 2. It also breaks most of current drivers as the driver probe
+>> >> > sequence behavior changed If removing .power_on() and .power_off()
+>> >> > callback and
+>> >> use .start() and .stop() instead.
+>> >> >
+>> >> > genpd_dev_pm_attach will only power up the domain and attach
+>> >> > device, but will not call .start() which relies on device runtime
+>> >> > pm. That means the device power is still not up before running
+>> >> > driver probe function. For SCU enabled platforms, all device
+>> >> > drivers accessing registers/clock without power domain enabled will
+>> >> > trigger a HW access error. That means we need fix most of drivers
+>> >> > probe sequence with proper
+>> >> runtime pm. So I'm a bit wondering whether we should still keep the exist
+>> way.
+>> >>
+>> >> I see what you are trying to say, but I am not sure why you consider
+>> >> this as they would break? How did they work in the first place?
+>> >>
+>> >
+>> > Most drivers does not require power domains before. E.g. GPIO, I2C, PWM,
+>> MMC.
+>> > Or even we need power domain(PUs/PCIE), they're enabled in
+>> > .power_on()/.power_off() which has been already up before probe.
+>> >
+>> >> Anyway, the problem you are talking about have so far been addressed
+>> >> by making buses/drivers to call pm_runtime_enable() and
+>> >> pm_runtime_get_sync() - before trying to probe their devices.
+>> >>
+>> >
+>> > Yes, called them early before accessing clock and hw registers.
+>> >
+>> >> Do you have an idea of the amount of drivers that needs to fixed, in
+>> >> regards to this?
+>> >>
+>> >
+>> > So far all enabled devices I tested need fixes. GPIO/I2C/FEC/MMC and etc.
+>> > Suppose other need the same fix as we have not met this situation before.
+>>
+>> Okay, I see.
+>>
+>> >
+>> >> I guess an option could be to, that via the ->attach_dev() callback
+>> >> perform the same operations as also being done during ->start(). Of
+>> >> course, you may need to keep a flag about this being done, so that
+>> >> operations that need to be balanced with get/put or the like is
+>> >> managed correctly, the next time
+>> >> ->start|stop() becomes called.
+>> >>
+>> >
+>> > That might be a way to try. The follow seems may introduce a bit
+>> > complexities and driver needs to maintainer the runtime status along
+>> > with framework in order to keep the balance?
+>>
+>> Yeah, it's likely not going to be very elegant, but should be rather self
+>> contained in the PM domain driver and could serve as a way forward - while
+>> working on fixing the drivers long term.
+>>
+>> >
+>> >> >
+>> >> > In summary, we probably may not be able to try ti_sci way before
+>> >> > fixing
+>> >> above two issues.
+>> >> >
+>> >> > Do you think I should wait for them to be fixed or if we could use
+>> >> > the current
+>> >> way at first?
+>> >> > I might be a little intend to the second way as we now have a lot
+>> >> > upstreaming work pending on this. But please let me know if you
+>> >> > have a
+>> >> different idea.
+>> >>
+>> >> As this is also about deploying a DTB with a correctly modeled HW, I
+>> >> think we need to fix the above issues.
+>> >>
+>> >
+>> > DTB are the same with #power-domain-cells 1 (resource ID) in either case.
+>> > So DTB don't need change and driver could be optimized.
+>>
+>> You are correct.
+>>
+>> Although, how does $subject patch solves the case where a device may have
+>> multiple PM domains attached to it? Or is left as a future improvement?
+>>
+>
+> IIRC this patch does not have such issue for multi PM domains as we have
+> individual power domains for each resources. Devices will be attached to
+> each individual domains in __genpd_dev_pm_attach rather than the single
+> one global virtual SCU domain. Furthermore we're using domains .power_on()/
+> power_off() callback which means the power will be up before the probe.
+> (no the issue like when using .attach_dev()/.detach_dev() and run .start()/stop()
+> via runtime pm).
 
--- 
-~Randy
+I don't follow your reasoning here, sorry. You stated earlier, that
+there was a need to support multiple PM domains per device.
+
+How can that problem be resolved by using one genpd per device? What
+am I missing?
+
+>
+> Actually I'm a bit wondering that if abstracting SCU domains into one
+> global virtual domain is certainly better than individual domains. For SCU based SoCs,
+> the power domain service is provided by SCU firmware, users don't have to care
+> too much about the HW internals. And according to SCU definition, each devices is
+> associated with a power domain, devices should treat it as a separate domain
+> and have to enable it before accessing HW. So one single global domain looks like
+> not exactly as SCU firmware defines. Not quite sure, but a bit feel like that....
+
+I don't agree with you here, sorry. As also pointed out by Rob
+earlier, in regards to the DT bindings. Simply put, I doubt the SoC
+deploys separate power rails/islands for each of the available
+devices. Instead, it seems like the SCU interface, allows its clients
+to controls "power" to each of the available *devices* - and not power
+domains.
+
+Anyway, we are debating how to implement this in software and not in DT. :-)
+
+That said, if you strongly feel that the short cut, about registering
+one genpd per device and thus suffer from the overhead it gives, is
+the best approach to start with, feel free to do that.
+
+Kind regards
+Uffe
