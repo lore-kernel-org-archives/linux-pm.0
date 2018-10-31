@@ -1,69 +1,51 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v6 6/6] power: supply: Add Spreadtrum SC27XX fuel gauge
- unit driver
-Date: Wed, 31 Oct 2018 09:56:24 +0100
-Message-ID: <CACRpkdaDB2f5FTY-sk6Ak49GMtqFzV_5Jkway49zSLA6XJkq0A@mail.gmail.com>
-References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1540189330.git.baolin.wang@linaro.org>
- <6a4c15368e0bf34f8e6aad4d788bc899cfb9d61e.1540189330.git.baolin.wang@linaro.org>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 4/4] ARM: dts: imx6sx: Add DISPLAY power domain support
+Date: Wed, 31 Oct 2018 12:17:50 +0000
+Message-ID: <AM0PR04MB4290F31234D75AC7029F066FEECD0@AM0PR04MB4290.eurprd04.prod.outlook.com>
+References: <cover.1539020938.git.leonard.crestez@nxp.com>
+ <a3265a84052a7c11ae96e61e39adc988ca980d66.1539020938.git.leonard.crestez@nxp.com>
+ <20181031061134.GB10386@tiger>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6a4c15368e0bf34f8e6aad4d788bc899cfb9d61e.1540189330.git.baolin.wang@linaro.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>
+To: Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 22, 2018 at 9:44 AM Baolin Wang <baolin.wang@linaro.org> wrote:
-
-> This patch adds the Spreadtrum SC27XX serial PMICs fuel gauge support,
-> which is used to calculate the battery capacity.
->
-> Original-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> Changes from v5:
->  - Save the OCV values in micro volts for OCV capacity table.
->  - Use devm_kmemdup() instead of devm_kzalloc() in sc27xx_fgu_hw_init()
-
-Hi Baolin, you can keep my ACK, just adding some nitpicking:
-
-> +struct sc27xx_fgu_data {
-> +       struct regmap *regmap;
-> +       struct device *dev;
-> +       struct power_supply *battery;
-> +       u32 base;
-> +       struct mutex lock;
-> +       struct gpio_desc *gpiod;
-> +       struct iio_channel *channel;
-> +       bool bat_present;
-> +       int internal_resist;
-> +       int total_cap;
-> +       int init_cap;
-> +       int init_clbcnt;
-> +       int max_volt;
-> +       int table_len;
-
-Can  the above really be negative or should these int:s really
-be unsigned int?
-
-> +static int sc27xx_fgu_adc_to_current(int adc)
-> +{
-> +       return (adc * 1000) / SC27XX_FGU_1000MA_ADC;
-> +}
-> +
-> +static int sc27xx_fgu_adc_to_voltage(int adc)
-> +{
-> +       return (adc * 1000) / SC27XX_FGU_1000MV_ADC;
-> +}
-
-Would you maybe use
-DIV_ROUND_CLOSEST(adc*1000, SC27XX_FGU_1000MV_ADC)
-on these?
-
-Overall this is a very fine driver and really pretty compared to some
-other stuff we have in drivers/power.
-
-Yours,
-Linus Walleij
+On 10/31/2018 8:12 AM, Shawn Guo wrote:=0A=
+> On Mon, Oct 08, 2018 at 06:06:23PM +0000, Leonard Crestez wrote:=0A=
+>> This was implemented in the driver but not actually defined and=0A=
+>> referenced in dts. This makes it always on.=0A=
+>>=0A=
+>>  From reference manual in section "10.4.1.4.1 Power Distribution":=0A=
+>>=0A=
+>> "Display domain - The DISPLAY domain contains GIS, CSI, PXP, LCDIF,=0A=
+>> PCIe, DCIC, and LDB. It is supplied by internal regulator."=0A=
+>>=0A=
+>> The current pd_pcie is actually only for PCIE_PHY, the PCIE ip block is=
+=0A=
+>> actually inside the DISPLAY domain. Handle this by adding the pcie node=
+=0A=
+>> in both power domains.=0A=
+>>=0A=
+>> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>=0A=
+> =0A=
+> Applied, thanks.=0A=
+=0A=
+As mentioned in the cover letter this requires multi-PD support in =0A=
+imx-pci to be implemented, specifically PATCH 3/4 of this series:=0A=
+=0A=
+	https://lore.kernel.org/patchwork/patch/996810/=0A=
+=0A=
+Unless that also gets merged soon via pci I expect issues in linux-next. =
+=0A=
+The patch already has reviewed-by tags so "merging it soon" is not =0A=
+unreasonable.=0A=
+=0A=
+Link to cover: https://lore.kernel.org/patchwork/cover/996807/=0A=
+=0A=
+There is also an mxsfb dependency but that's already merged in =0A=
+torvalds/master.=0A=
