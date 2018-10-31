@@ -1,32 +1,32 @@
 From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v2 1/4] soc: imx: gpc: Increase GPC_CLK_MAX to 7
-Date: Wed, 31 Oct 2018 14:09:18 +0800
-Message-ID: <20181031060916.GA10386@tiger>
+Subject: Re: [PATCH v2 4/4] ARM: dts: imx6sx: Add DISPLAY power domain support
+Date: Wed, 31 Oct 2018 14:11:36 +0800
+Message-ID: <20181031061134.GB10386@tiger>
 References: <cover.1539020938.git.leonard.crestez@nxp.com>
- <be94b872b63e6e0ac6f65ea41a69322d958f4a93.1539020938.git.leonard.crestez@nxp.com>
+ <a3265a84052a7c11ae96e61e39adc988ca980d66.1539020938.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <be94b872b63e6e0ac6f65ea41a69322d958f4a93.1539020938.git.leonard.crestez@nxp.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <a3265a84052a7c11ae96e61e39adc988ca980d66.1539020938.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Marek Vasut <marex@denx.de>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Richard Zhu <hongxing.zhu@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBPY3QgMDgsIDIwMTggYXQgMDY6MDY6MTlQTSArMDAwMCwgTGVvbmFyZCBDcmVzdGV6
-IHdyb3RlOgo+IFRoZSBESVNQTEFZIHBvd2VyIGRvbWFpbiBvbiBpbXg2c3ggaGFzIDcgY2xvY2tz
-Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IExlb25hcmQgQ3Jlc3RleiA8bGVvbmFyZC5jcmVzdGV6QG54
-cC5jb20+CgpBcHBsaWVkLCB0aGFua3MuCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZy
-ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2RyaS1kZXZlbAo=
+On Mon, Oct 08, 2018 at 06:06:23PM +0000, Leonard Crestez wrote:
+> This was implemented in the driver but not actually defined and
+> referenced in dts. This makes it always on.
+> 
+> From reference manual in section "10.4.1.4.1 Power Distribution":
+> 
+> "Display domain - The DISPLAY domain contains GIS, CSI, PXP, LCDIF,
+> PCIe, DCIC, and LDB. It is supplied by internal regulator."
+> 
+> The current pd_pcie is actually only for PCIE_PHY, the PCIE ip block is
+> actually inside the DISPLAY domain. Handle this by adding the pcie node
+> in both power domains.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+
+Applied, thanks.
