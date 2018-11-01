@@ -1,152 +1,31 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: [PATCH V9 4/5] firmware: imx: add pm svc headfile
-Date: Thu, 1 Nov 2018 15:20:08 +0000
-Message-ID: <1541085298-375-5-git-send-email-aisheng.dong@nxp.com>
-References: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
+From: Evan Green <evgreen@chromium.org>
+Subject: Re: [PATCH v2] arm64: dts: sdm845: Add PSCI cpuidle low power states
+Date: Thu, 1 Nov 2018 10:21:27 -0700
+Message-ID: <CAE=gft59UWM4=WhLkcLR3+FCEeD5OVwaJjZ8w_t=Fgtt=vFFpA@mail.gmail.com>
+References: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "A.s. Dong" <aisheng.dong@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1540920209-28954-1-git-send-email-rplsssn@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rplsssn@codeaurora.org
+Cc: Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, sboyd@kernel.org, Doug Anderson <dianders@chromium.org>, mka@chromium.org, Lina Iyer <ilina@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add SCU PM SVC related protocol definitions which will be used by
-a number of PM functions like Power Domain, Clock, Reset and etc.
-The detailed implementation of each function will put in the individual
-function drivers.
+On Tue, Oct 30, 2018 at 10:23 AM Raju P.L.S.S.S.N
+<rplsssn@codeaurora.org> wrote:
+>
+> Add device bindings for cpuidle states for cpu devices.
+>
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Raju P.L.S.S.S.N <rplsssn@codeaurora.org>
+> ---
+> Changes in v2
+>  - Address comments from Doug
+> ---
+> ---
+>  arch/arm64/boot/dts/qcom/sdm845.dtsi | 62 ++++++++++++++++++++++++++++++++++++
+>  1 file changed, 62 insertions(+)
+>
 
-Cc: Shawn Guo <shawnguo@kernel.org>
-Cc: Sascha Hauer <kernel@pengutronix.de>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
-v4->v8:
- * no changes
-v3->v4:
- * update firmware headfile patch from include/soc/imx to
-   include/linux/firmware/imx
-v2->v3:
- * name updated with IMX_SC prefix
-v1->v2:
- * new introduced
----
- include/linux/firmware/imx/sci.h    |  1 +
- include/linux/firmware/imx/svc/pm.h | 85 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 86 insertions(+)
- create mode 100644 include/linux/firmware/imx/svc/pm.h
-
-diff --git a/include/linux/firmware/imx/sci.h b/include/linux/firmware/imx/sci.h
-index 29ada60..ebc5509 100644
---- a/include/linux/firmware/imx/sci.h
-+++ b/include/linux/firmware/imx/sci.h
-@@ -14,4 +14,5 @@
- #include <linux/firmware/imx/types.h>
- 
- #include <linux/firmware/imx/svc/misc.h>
-+#include <linux/firmware/imx/svc/pm.h>
- #endif /* _SC_SCI_H */
-diff --git a/include/linux/firmware/imx/svc/pm.h b/include/linux/firmware/imx/svc/pm.h
-new file mode 100644
-index 0000000..1f6975d
---- /dev/null
-+++ b/include/linux/firmware/imx/svc/pm.h
-@@ -0,0 +1,85 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Copyright 2017-2018 NXP
-+ *
-+ * Header file containing the public API for the System Controller (SC)
-+ * Power Management (PM) function. This includes functions for power state
-+ * control, clock control, reset control, and wake-up event control.
-+ *
-+ * PM_SVC (SVC) Power Management Service
-+ *
-+ * Module for the Power Management (PM) service.
-+ */
-+
-+#ifndef _SC_PM_API_H
-+#define _SC_PM_API_H
-+
-+#include <linux/firmware/imx/sci.h>
-+
-+/*
-+ * This type is used to indicate RPC PM function calls.
-+ */
-+enum imx_sc_pm_func {
-+	IMX_SC_PM_FUNC_UNKNOWN = 0,
-+	IMX_SC_PM_FUNC_SET_SYS_POWER_MODE = 19,
-+	IMX_SC_PM_FUNC_SET_PARTITION_POWER_MODE = 1,
-+	IMX_SC_PM_FUNC_GET_SYS_POWER_MODE = 2,
-+	IMX_SC_PM_FUNC_SET_RESOURCE_POWER_MODE = 3,
-+	IMX_SC_PM_FUNC_GET_RESOURCE_POWER_MODE = 4,
-+	IMX_SC_PM_FUNC_REQ_LOW_POWER_MODE = 16,
-+	IMX_SC_PM_FUNC_SET_CPU_RESUME_ADDR = 17,
-+	IMX_SC_PM_FUNC_REQ_SYS_IF_POWER_MODE = 18,
-+	IMX_SC_PM_FUNC_SET_CLOCK_RATE = 5,
-+	IMX_SC_PM_FUNC_GET_CLOCK_RATE = 6,
-+	IMX_SC_PM_FUNC_CLOCK_ENABLE = 7,
-+	IMX_SC_PM_FUNC_SET_CLOCK_PARENT = 14,
-+	IMX_SC_PM_FUNC_GET_CLOCK_PARENT = 15,
-+	IMX_SC_PM_FUNC_RESET = 13,
-+	IMX_SC_PM_FUNC_RESET_REASON = 10,
-+	IMX_SC_PM_FUNC_BOOT = 8,
-+	IMX_SC_PM_FUNC_REBOOT = 9,
-+	IMX_SC_PM_FUNC_REBOOT_PARTITION = 12,
-+	IMX_SC_PM_FUNC_CPU_START = 11,
-+};
-+
-+/*
-+ * Defines for ALL parameters
-+ */
-+#define IMX_SC_PM_CLK_ALL		UINT8_MAX	/* All clocks */
-+
-+/*
-+ * Defines for SC PM Power Mode
-+ */
-+#define IMX_SC_PM_PW_MODE_OFF	0	/* Power off */
-+#define IMX_SC_PM_PW_MODE_STBY	1	/* Power in standby */
-+#define IMX_SC_PM_PW_MODE_LP	2	/* Power in low-power */
-+#define IMX_SC_PM_PW_MODE_ON	3	/* Power on */
-+
-+/*
-+ * Defines for SC PM CLK
-+ */
-+#define IMX_SC_PM_CLK_SLV_BUS	0	/* Slave bus clock */
-+#define IMX_SC_PM_CLK_MST_BUS	1	/* Master bus clock */
-+#define IMX_SC_PM_CLK_PER	2	/* Peripheral clock */
-+#define IMX_SC_PM_CLK_PHY	3	/* Phy clock */
-+#define IMX_SC_PM_CLK_MISC	4	/* Misc clock */
-+#define IMX_SC_PM_CLK_MISC0	0	/* Misc 0 clock */
-+#define IMX_SC_PM_CLK_MISC1	1	/* Misc 1 clock */
-+#define IMX_SC_PM_CLK_MISC2	2	/* Misc 2 clock */
-+#define IMX_SC_PM_CLK_MISC3	3	/* Misc 3 clock */
-+#define IMX_SC_PM_CLK_MISC4	4	/* Misc 4 clock */
-+#define IMX_SC_PM_CLK_CPU	2	/* CPU clock */
-+#define IMX_SC_PM_CLK_PLL	4	/* PLL */
-+#define IMX_SC_PM_CLK_BYPASS	4	/* Bypass clock */
-+
-+/*
-+ * Defines for SC PM CLK Parent
-+ */
-+#define IMX_SC_PM_PARENT_XTAL	0	/* Parent is XTAL. */
-+#define IMX_SC_PM_PARENT_PLL0	1	/* Parent is PLL0 */
-+#define IMX_SC_PM_PARENT_PLL1	2	/* Parent is PLL1 or PLL0/2 */
-+#define IMX_SC_PM_PARENT_PLL2	3	/* Parent in PLL2 or PLL0/4 */
-+#define IMX_SC_PM_PARENT_BYPS	4	/* Parent is a bypass clock. */
-+
-+#endif /* _SC_PM_API_H */
--- 
-2.7.4
+Reviewed-by: Evan Green <evgreen@chromium.org>
