@@ -1,118 +1,205 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: cpuidle: Don't register the driver when back-end
- init returns -ENXIO
-Date: Thu, 1 Nov 2018 13:22:05 +0100
-Message-ID: <CAPDyKFrC83aPWEgUNUcptJXwgs8jL7D3J1xremeXzWjQ-VrxtQ@mail.gmail.com>
-References: <20181026144843.3028-1-ulf.hansson@linaro.org>
- <20181029174456.GA9687@e107981-ln.cambridge.arm.com>
- <CAPDyKFp57pZwTzAPGkeLGj+okYvkOx_i7zZcdphJsLFeKd_m+w@mail.gmail.com>
- <20181101113831.GB6608@e107981-ln.cambridge.arm.com>
+From: Quentin Schulz <quentin.schulz@bootlin.com>
+Subject: Re: [PATCH v6 4/6] power: supply: core: Add some helpers to use the
+ battery OCV capacity table
+Date: Thu, 1 Nov 2018 14:50:05 +0100
+Message-ID: <20181101135005.cqufebdryffm6ray@qschulz>
+References: <e7c061535f2dcca54d6498405fdd5ed7098b19f9.1540189330.git.baolin.wang@linaro.org>
+ <f1529c567a340e4d31354a4b117954eeebf89942.1540189330.git.baolin.wang@linaro.org>
+ <CAMz4kuJm5eO1QwW7L+QyD_5VcTWqtq4gz9m_QDpQ-zn4zzukvQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181101113831.GB6608@e107981-ln.cambridge.arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="4bx2txevspscynaw"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMz4kuJm5eO1QwW7L+QyD_5VcTWqtq4gz9m_QDpQ-zn4zzukvQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, yuanjiang.yu@unisoc.com, Mark Brown <broonie@kernel.org>, Craig Tatlor <ctatlor97@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, maxime.ripard@bootlin.com, Hans de Goede <hdegoede@redhat.com>, icenowy@aosc.io
 List-Id: linux-pm@vger.kernel.org
 
-On 1 November 2018 at 12:38, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> On Tue, Oct 30, 2018 at 11:24:49AM +0100, Ulf Hansson wrote:
->> On 29 October 2018 at 18:45, Lorenzo Pieralisi
->> <lorenzo.pieralisi@arm.com> wrote:
->> > On Fri, Oct 26, 2018 at 04:48:43PM +0200, Ulf Hansson wrote:
->> >> There's no point to register the cpuidle driver for the current CPU, when
->> >> the initialization of the arch specific back-end data fails by returning
->> >> -ENXIO.
->> >>
->> >> Instead, let's re-order the sequence to its original flow, by first trying
->> >> to initialize the back-end part and then act accordingly on the returned
->> >> error code. Additionally, let's print the error message, no matter of what
->> >> error code that was returned.
->> >>
->> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >> ---
->> >>
->> >> Note, as far as I can tell it's only qcom-spm that may return -ENXIO, which also
->> >> was original reason to why this error path was invented.
->> >>
->> >> Unfurtunate I don't have a qcom spm platfrom at hand, however I manually tried
->> >> this by hacking the PSCI driver to return -ENXIO for some CPUs. So I assume it
->> >> should then also work for qcom spm.
->> >>
->> >> ---
->> >>  drivers/cpuidle/cpuidle-arm.c | 22 ++++++++++------------
->> >>  1 file changed, 10 insertions(+), 12 deletions(-)
->> >>
->> >> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
->> >> index 073557f433eb..df564d783216 100644
->> >> --- a/drivers/cpuidle/cpuidle-arm.c
->> >> +++ b/drivers/cpuidle/cpuidle-arm.c
->> >> @@ -103,13 +103,6 @@ static int __init arm_idle_init_cpu(int cpu)
->> >>               goto out_kfree_drv;
->> >>       }
->> >>
->> >> -     ret = cpuidle_register_driver(drv);
->> >> -     if (ret) {
->> >> -             if (ret != -EBUSY)
->> >> -                     pr_err("Failed to register cpuidle driver\n");
->> >> -             goto out_kfree_drv;
->> >> -     }
->> >> -
->> >>       /*
->> >>        * Call arch CPU operations in order to initialize
->> >>        * idle states suspend back-end specific data
->> >> @@ -117,15 +110,20 @@ static int __init arm_idle_init_cpu(int cpu)
->> >>       ret = arm_cpuidle_init(cpu);
->> >>
->> >>       /*
->> >> -      * Skip the cpuidle device initialization if the reported
->> >> +      * Allow the initialization to continue for other CPUs, if the reported
->> >>        * failure is a HW misconfiguration/breakage (-ENXIO).
->> >>        */
->> >> -     if (ret == -ENXIO)
->> >> -             return 0;
->> >
->> > I wonder whether moving the drv allocation and dt initialization after
->> > arm_cpuidle_init(cpu) would simplify the error path; the patch makes sense
->> > the error path is getting a bit hard to read - maybe we can simplify it.
->>
->> Yep, exactly that is happening in patch 2/2. But as I also told
->> Daniel, I wanted to take small steps and keep one change per patch.
->>
->> Does it make sense to keep this as is, when you have looked at patch 2/2?
->>
->> >
->> > I think, if you can single it out, it would be good to add a Fixes:
->> > tag too.
->>
->> I can do that, but I am not sure it actually solves a problem, besides
->> improving the error path.
->>
->> Or what did you have in mind?
->
-> I am not sure it counts as a bug but leaving the driver registered even if
-> the following set-up fails is certainly not the expected behaviour.
 
-I agree.
+--4bx2txevspscynaw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> Hardly urgent but still a fix.
+Hi Baolin,
 
-You have a point. However, the fixes tag would point to a rather old
-commit. Anyway, I can provide a stable tag as well, to point to what
-release it can be picked without conflicts. Then it's up to others to
-make a backport to older releases, if they like.
+On Thu, Nov 01, 2018 at 03:22:18PM +0800, Baolin Wang wrote:
+> Hi Quentin,
+>=20
+> On 29 October 2018 at 22:48, Quentin Schulz <quentin.schulz@bootlin.com> =
+wrote:
+[...]
+> >
+> >> +             return len;
+> >> +     } else if (len > POWER_SUPPLY_OCV_TEMP_MAX) {
+> >> +             dev_err(&psy->dev, "Too many temperature values\n");
+> >> +             return -EINVAL;
+> >> +     } else if (len > 0) {
+> >> +             of_property_read_u32_array(battery_np, "ocv-capacity-cel=
+sius",
+> >> +                                        info->ocv_temp, len);
+> >> +     }
+> >> +
+> >> +     for (index =3D 0; index < len; index++) {
+> >
+> > This won't work as intended as we can reach this part of the code with
+> > len =3D -EINVAL;
+>=20
+> No, the condition (index < len) is false if len =3D -EINVAL, maybe one
+> reason keep index as 'int' type.
+>=20
 
-Kind regards
-Uffe
+Ugh. Next time I'll make sure my brain is wired before reviewing a
+patch, sorry :)
+
+[...]
+> >> +             if (!info->ocv_table[index]) {
+> >> +                     power_supply_put_battery_info(psy, info);
+> >> +                     return -ENOMEM;
+> >> +             }
+> >> +
+> >> +             for (i =3D 0; i < tab_len; i++) {
+> >> +                     table[i].ocv =3D be32_to_cpu(*list++);
+> >> +                     table[i].capacity =3D be32_to_cpu(*list++);
+> >
+> > Please check these are valid values.
+>=20
+> Um, It is hard to validate the values for OCV and capacity, because
+> now we do not know each battery's parameters. Any good suggestion?
+>=20
+
+You know the capacity is between 0 and 100 (since it's an unsigned
+value, checking against 100 is enough), that's a good start.
+
+For the OCV, I'd say it's basically between the minimum and maximum
+voltage a battery can hold. I don't know enough about batteries to
+give the correct bounds unfortunately :(
+
+[...]
+> > What is the use case for letting a user call this function? I can
+> > understand you want to delete the arrays if they're invalid in the
+> > get_function, which could be done thanks to a goto statement or with
+> > this function if you really want (if it does not mess with refs) but I
+> > don't see why you want to export this function.
+>=20
+> Cause some drivers will copy the OCV tables into their own structures,
+> one helper function to help to free memory of battery information. In
+> future, this can be expanded to clean up more resources of battery
+> information.
+>=20
+
+Couldn't they only use a pointer to the appropriate table? Or do you
+plan on the drivers directly modifying the table but wanting to keep a
+clean copy on the core side?
+
+I find it weird to free the tables. I'd suppose that a driver wants to
+keep all tables available to be able to chose the appropriate one
+depending on the current temperature of the battery (which is what
+power_supply_batinfo_ocv2cap is for if I understood correctly) and not
+only at definite time (probe function for the driver you attached to the
+patch series IIRC). If you need to keep all tables, why would you want
+to copy them to the driver and not keep them in the core and use a
+pointer to the table in current use?
+
+I'm sure I'm missing something, let me know what it is. Thanks.
+
+[...]
+> > I would like to give my specific use case of the OCV on X-Powers PMICs
+> > so that hopefully we can get things sorted out before it's too late to
+> > make modifications that might be needed.
+> >
+> > I'm adding a few people on Cc that work on the X-Power PMICs so that
+> > hopefully we can have all the correct pieces of information and go
+> > towards the right solution.
+> >
+> > In the AXP818/AXP288 datasheet[1] (p.57), we have access to OCV values
+> > and battery RDC register.
+> >
+> > The hardware learns from the battery or from the given OCV and RDC
+> > values and then updates the returned battery capacity accordingly (in
+> > another register).
+> > I've 32 values (see the issue with a max of 20 values?) to be written in
+>=20
+> I think you misunderstood the 20, it is means we can have max 20 OCV tabl=
+es now.
+>=20
+
+Indeed, misread the patch, thanks for clarifying.
+
+> > different registers that represent the battery capacity at a given
+> > voltage. I do not have to do any computation on the kernel side, I just
+> > have to set the registers with the correct values and the battery
+> > capacity will be auto-updated by the PMIC. With this patch series,
+> > should I just call power_supply_get_battery_info, get the OCV tables and
+>=20
+> I think so.
+>=20
+> > do my thing in the driver? Could we have a more generic way to do it
+> > (does it make sense to have a generic one?)?
+>=20
+> Sorry, maybe I did not follow you here. You said your hardware will
+> help to get the capacity automatically if you set the register, so
+> what generic way you want to introduce? Could you elaborate on?
+>=20
+
+I think I got my thoughts tangled-up, I can't honestly find a generic
+way right now.
+
+> >
+> > We also definitely need a sysfs entry so that the user can enter the new
+> > values of the RDC/OCV since it changes during the life cycle of the
+> > battery IIRC.
+>=20
+> Why it changed? Due to different temperatures or other factors? If the
+> factor is temperature, I think we have supplied one generic way:
+> https://lore.kernel.org/patchwork/patch/1002350/
+>=20
+
+Apparently age is a factor in the OCV curve. I don't know if it's
+substantial enough to care about though.
+
+Anyway, I have a very strong bias towards not having to modify the
+Device Tree or recompile the kernel when a piece of hardware can be
+replaced easily by something different. I see the battery as such a
+piece of hardware. I understand the need to define the battery that
+comes with a product but I also like to let the users switch the battery
+(for a bigger one for example) without getting their hands dirty with
+getting the kernel sources, recompiling, etc.
+
+What if the provided OCV curves are not the best ones and the user has
+found better ones?
+
+For that, I like to let the user configure parameters that impact the
+battery after we've optionaly set the default one.
+
+I'd be mad to have to recompile the Device Tree or kernel when switching
+devices on a USB bus for example.
+
+Does that make sense?
+
+Thanks,
+Quentin
+
+--4bx2txevspscynaw
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEXeEYjDsJh38OoyMzhLiadT7g8aMFAlvbBIwACgkQhLiadT7g
+8aM45g/9GwhwslT3Lj0CjLOa//X03/Eye8gfaDKvgrGoRQDt6+ykaVgwL5BVpeVM
+x0OkKD0XcSCaNztmeJRj3czg2cvyUoax9g42Ep0mEC6uJI6U45FxfnUMebUwU1Kf
+fxxcDx0EkOnjxUTAqnG2Nhs/3dS96VVxuFoG93bbRAJMmmwgCeTNagqv6sSfWJu1
+NWIhT18SaC2i1RGxHxyNm+Mo0ZbtkntA5heYsj+E0Rwo1XTjCW8E+7pdj6WJ/x1p
+6fFPacgKCiWyZ4EhyzE32sRhgYoYmH9EAmNlNk48xv8TEP4xazysg5P2mcLwwlvl
+FbX7v1bFdmlxvPsuLKi6RmJ3V9IfiSbsaGiHhVzyeg2hWezv/vRJ07PYZ+9hYp3f
+iu8mX6QxCfoZw4KbyNWQtzFhVtzU4yKH1/bCqIiE1CRcai+BGSeRaTF5YGI1yvck
+EaimFbnqhYTumxaEWbKBI4wKSMDpc1qv2d079Q7+qsnUOwU7HrXvD4xNvlfOZig1
+4Q1QTbZBlcn6yRmvL8nDSxdr81qsyQWMjDRxRA/9aNyw+KFyOpjCm5ljNGm5+P14
+wt0meHJ3okGc6HJAWLyNHrB5WU6GvC6ejUbKp9mroybgnhYsEiD4QoC61JQpSpZF
+w0MSCyeO+YtRt/F6eZbv8nbxoEYLrNMMqOo9zFKHz/MOMY+6v1I=
+=+Gfk
+-----END PGP SIGNATURE-----
+
+--4bx2txevspscynaw--
