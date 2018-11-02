@@ -1,77 +1,95 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 2/2] ARM: cpuidle: Convert to use
- cpuidle_register|unregister()
-Date: Fri, 2 Nov 2018 12:24:12 +0100
-Message-ID: <e167cd49-1547-17ad-1bba-9dbf892e8286@linaro.org>
-References: <20181101101558.3035-1-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/2] ARM: cpuidle: Don't register the driver when
+ back-end init returns -ENXIO
+Date: Fri, 2 Nov 2018 12:26:52 +0100
+Message-ID: <d7562a0b-393c-9caf-7afc-a196ca1888fd@linaro.org>
+References: <20181101122238.4167-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181101101558.3035-1-ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20181101122238.4167-1-ulf.hansson@linaro.org>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: stable-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Lina Iyer <ilina@codeaurora.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDEvMTEvMjAxOCAxMToxNSwgVWxmIEhhbnNzb24gd3JvdGU6Cj4gVGhlIG9ubHkgcmVhc29u
-IHRoYXQgcmVtYWlucywgdG8gd2h5IHRoZSBBUk0gY3B1aWRsZSBkcml2ZXIgY2FsbHMKPiBjcHVp
-ZGxlX3JlZ2lzdGVyX2RyaXZlcigpLCBpcyB0byBhdm9pZCBwcmludGluZyBhbiBlcnJvciBtZXNz
-YWdlIGluIGNhc2UKPiBhbm90aGVyIGRyaXZlciBhbHJlYWR5IGhhdmUgYmVlbiByZWdpc3RlcmVk
-IGZvciB0aGUgQ1BVLiBUaGlzIHNlZW1zIGEgYml0Cj4gc2lsbHksIGJ1dCBtb3JlIGltcG9ydGFu
-dGx5LCBpZiB0aGF0IGlzIGEgY29tbW9uIHNjZW5hcmlvLCBwZXJoYXBzIHdlCj4gc2hvdWxkIGNo
-YW5nZSBjcHVpZGxlX3JlZ2lzdGVyKCkgYWNjb3JkaW5nbHkgaW5zdGVhZC4KPiAKPiBJbiBlaXRo
-ZXIgY2FzZSwgbGV0J3MgY29uc29saWRhdGUgdGhlIGNvZGUsIGJ5IGNvbnZlcnRpbmcgdG8gdXNl
-Cj4gY3B1aWRsZV9yZWdpc3Rlcnx1bnJlZ2lzdGVyKCksIHdoaWNoIGFsc28gYXZvaWRzIHRoZSB1
-bm5lY2Vzc2FyeSBhbGxvY2F0aW9uCj4gb2YgdGhlIHN0cnVjdCBjcHVpZGxlX2RldmljZS4KPiAK
-PiBTaWduZWQtb2ZmLWJ5OiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4KPiBS
-ZXZpZXdlZC1ieTogTG9yZW56byBQaWVyYWxpc2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+
-CgpSZXZpZXdlZC1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+
-Cgo+IC0tLQo+IAo+IENoYW5nZXMgaW4gdjI6Cj4gCS0gRml4dXAgc3BlbGxpbmcgaW4gY2hhbmdl
-bG9nLgo+IAktIEFkZGVkIExvcmVuem8ncyByZXZpZXdlZC1ieSB0YWcuCj4gCj4gLS0tCj4gIGRy
-aXZlcnMvY3B1aWRsZS9jcHVpZGxlLWFybS5jIHwgMzAgKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDI3IGRlbGV0aW9ucygt
-KQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1hcm0uYyBiL2RyaXZl
-cnMvY3B1aWRsZS9jcHVpZGxlLWFybS5jCj4gaW5kZXggZGY1NjRkNzgzMjE2Li4zYTQwN2EzZWYy
-MmIgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtYXJtLmMKPiArKysgYi9k
-cml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1hcm0uYwo+IEBAIC04Miw3ICs4Miw2IEBAIHN0YXRpYyBp
-bnQgX19pbml0IGFybV9pZGxlX2luaXRfY3B1KGludCBjcHUpCj4gIHsKPiAgCWludCByZXQ7Cj4g
-IAlzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydjsKPiAtCXN0cnVjdCBjcHVpZGxlX2RldmljZSAq
-ZGV2Owo+ICAKPiAgCWRydiA9IGttZW1kdXAoJmFybV9pZGxlX2RyaXZlciwgc2l6ZW9mKCpkcnYp
-LCBHRlBfS0VSTkVMKTsKPiAgCWlmICghZHJ2KQo+IEBAIC0xMTksMzMgKzExOCwxMiBAQCBzdGF0
-aWMgaW50IF9faW5pdCBhcm1faWRsZV9pbml0X2NwdShpbnQgY3B1KQo+ICAJCWdvdG8gb3V0X2tm
-cmVlX2RydjsKPiAgCX0KPiAgCj4gLQlyZXQgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYp
-Owo+IC0JaWYgKHJldCkgewo+IC0JCWlmIChyZXQgIT0gLUVCVVNZKQo+IC0JCQlwcl9lcnIoIkZh
-aWxlZCB0byByZWdpc3RlciBjcHVpZGxlIGRyaXZlclxuIik7Cj4gKwlyZXQgPSBjcHVpZGxlX3Jl
-Z2lzdGVyKGRydiwgTlVMTCk7Cj4gKwlpZiAocmV0KQo+ICAJCWdvdG8gb3V0X2tmcmVlX2RydjsK
-PiAtCX0KPiAtCj4gLQlkZXYgPSBremFsbG9jKHNpemVvZigqZGV2KSwgR0ZQX0tFUk5FTCk7Cj4g
-LQlpZiAoIWRldikgewo+IC0JCXJldCA9IC1FTk9NRU07Cj4gLQkJZ290byBvdXRfdW5yZWdpc3Rl
-cl9kcnY7Cj4gLQl9Cj4gLQlkZXYtPmNwdSA9IGNwdTsKPiAtCj4gLQlyZXQgPSBjcHVpZGxlX3Jl
-Z2lzdGVyX2RldmljZShkZXYpOwo+IC0JaWYgKHJldCkgewo+IC0JCXByX2VycigiRmFpbGVkIHRv
-IHJlZ2lzdGVyIGNwdWlkbGUgZGV2aWNlIGZvciBDUFUgJWRcbiIsCj4gLQkJICAgICAgIGNwdSk7
-Cj4gLQkJZ290byBvdXRfa2ZyZWVfZGV2Owo+IC0JfQo+ICAKPiAgCXJldHVybiAwOwo+ICAKPiAt
-b3V0X2tmcmVlX2RldjoKPiAtCWtmcmVlKGRldik7Cj4gLW91dF91bnJlZ2lzdGVyX2RydjoKPiAt
-CWNwdWlkbGVfdW5yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPiAgb3V0X2tmcmVlX2RydjoKPiAgCWtm
-cmVlKGRydik7Cj4gIAlyZXR1cm4gcmV0Owo+IEBAIC0xNzYsOSArMTU0LDcgQEAgc3RhdGljIGlu
-dCBfX2luaXQgYXJtX2lkbGVfaW5pdCh2b2lkKQo+ICAJd2hpbGUgKC0tY3B1ID49IDApIHsKPiAg
-CQlkZXYgPSBwZXJfY3B1KGNwdWlkbGVfZGV2aWNlcywgY3B1KTsKPiAgCQlkcnYgPSBjcHVpZGxl
-X2dldF9jcHVfZHJpdmVyKGRldik7Cj4gLQkJY3B1aWRsZV91bnJlZ2lzdGVyX2RldmljZShkZXYp
-Owo+IC0JCWNwdWlkbGVfdW5yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPiAtCQlrZnJlZShkZXYpOwo+
-ICsJCWNwdWlkbGVfdW5yZWdpc3RlcihkcnYpOwo+ICAJCWtmcmVlKGRydik7Cj4gIAl9Cj4gIAo+
-IAoKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291
-cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZh
-Y2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8j
-IS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9n
-Lz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5m
-cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LWFybS1rZXJuZWwK
+On 01/11/2018 13:22, Ulf Hansson wrote:
+> There's no point to register the cpuidle driver for the current CPU, when
+> the initialization of the arch specific back-end data fails by returning
+> -ENXIO.
+> 
+> Instead, let's re-order the sequence to its original flow, by first trying
+> to initialize the back-end part and then act accordingly on the returned
+> error code. Additionally, let's print the error message, no matter of what
+> error code that was returned.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Fixes: a0d46a3dfdc3 ("ARM: cpuidle: Register per cpuidle device")
+> Cc: <stable@vger.kernel.org> # v4.19+
+
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+> ---
+> 
+> Changes in v2:
+> 	- Added a fixes and a stable tag.
+> 
+> ---
+>  drivers/cpuidle/cpuidle-arm.c | 22 ++++++++++------------
+>  1 file changed, 10 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index 073557f433eb..df564d783216 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -103,13 +103,6 @@ static int __init arm_idle_init_cpu(int cpu)
+>  		goto out_kfree_drv;
+>  	}
+>  
+> -	ret = cpuidle_register_driver(drv);
+> -	if (ret) {
+> -		if (ret != -EBUSY)
+> -			pr_err("Failed to register cpuidle driver\n");
+> -		goto out_kfree_drv;
+> -	}
+> -
+>  	/*
+>  	 * Call arch CPU operations in order to initialize
+>  	 * idle states suspend back-end specific data
+> @@ -117,15 +110,20 @@ static int __init arm_idle_init_cpu(int cpu)
+>  	ret = arm_cpuidle_init(cpu);
+>  
+>  	/*
+> -	 * Skip the cpuidle device initialization if the reported
+> +	 * Allow the initialization to continue for other CPUs, if the reported
+>  	 * failure is a HW misconfiguration/breakage (-ENXIO).
+>  	 */
+> -	if (ret == -ENXIO)
+> -		return 0;
+> -
+>  	if (ret) {
+>  		pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+> -		goto out_unregister_drv;
+> +		ret = ret == -ENXIO ? 0 : ret;
+> +		goto out_kfree_drv;
+> +	}
+> +
+> +	ret = cpuidle_register_driver(drv);
+> +	if (ret) {
+> +		if (ret != -EBUSY)
+> +			pr_err("Failed to register cpuidle driver\n");
+> +		goto out_kfree_drv;
+>  	}
+>  
+>  	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
