@@ -1,203 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 09/10] OPP: Rename and relocate of_genpd_opp_to_performance_state()
-Date: Fri,  2 Nov 2018 14:45:04 +0530
-Message-ID: <51b9513d84569c80c6f830afe54f2caef2fddb4f.1541149874.git.viresh.kumar@linaro.org>
-References: <6ac7dd52047805dc1ec211cce261aee561d10abc.1540446493.git.viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 2/2] ARM: cpuidle: Convert to use
+ cpuidle_register|unregister()
+Date: Fri, 2 Nov 2018 12:24:12 +0100
+Message-ID: <e167cd49-1547-17ad-1bba-9dbf892e8286@linaro.org>
+References: <20181101101558.3035-1-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6ac7dd52047805dc1ec211cce261aee561d10abc.1540446493.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181101101558.3035-1-ulf.hansson@linaro.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The OPP core already has the performance state values for each of the
-genpd's OPPs and there is no need to call the genpd callback again to
-get the performance state for the case where the end device doesn't have
-an OPP table and has the "required-opps" property directly in its node.
-
-This commit renames of_genpd_opp_to_performance_state() as
-of_get_required_opp_performance_state() and moves it to the OPP core, as
-it is all about OPP stuff now.
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V3->V4:
-- Return 0 from of_get_required_opp_performance_state() on error instead
-  of -ENODEV as described by the comment over the helper.
-- Add Reviewed by tag from Ulf.
-
- drivers/base/power/domain.c | 48 -------------------------------------
- drivers/opp/of.c            | 44 ++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  9 -------
- include/linux/pm_opp.h      |  5 ++++
- 4 files changed, 49 insertions(+), 57 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 7be8c94c6b7f..8e554e6a82a2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2552,54 +2552,6 @@ unsigned int pm_genpd_opp_to_performance_state(struct device *genpd_dev,
- }
- EXPORT_SYMBOL_GPL(pm_genpd_opp_to_performance_state);
- 
--/**
-- * of_genpd_opp_to_performance_state- Gets performance state of device's
-- * power domain corresponding to a DT node's "required-opps" property.
-- *
-- * @dev: Device for which the performance-state needs to be found.
-- * @np: DT node where the "required-opps" property is present. This can be
-- *	the device node itself (if it doesn't have an OPP table) or a node
-- *	within the OPP table of a device (if device has an OPP table).
-- *
-- * Returns performance state corresponding to the "required-opps" property of
-- * a DT node. This calls platform specific genpd->opp_to_performance_state()
-- * callback to translate power domain OPP to performance state.
-- *
-- * Returns performance state on success and 0 on failure.
-- */
--unsigned int of_genpd_opp_to_performance_state(struct device *dev,
--					       struct device_node *np)
--{
--	struct generic_pm_domain *genpd;
--	struct dev_pm_opp *opp;
--	int state = 0;
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return 0;
--
--	if (unlikely(!genpd->set_performance_state))
--		return 0;
--
--	genpd_lock(genpd);
--
--	opp = of_dev_pm_opp_find_required_opp(&genpd->dev, np);
--	if (IS_ERR(opp)) {
--		dev_err(dev, "Failed to find required OPP: %ld\n",
--			PTR_ERR(opp));
--		goto unlock;
--	}
--
--	state = genpd->opp_to_performance_state(genpd, opp);
--	dev_pm_opp_put(opp);
--
--unlock:
--	genpd_unlock(genpd);
--
--	return state;
--}
--EXPORT_SYMBOL_GPL(of_genpd_opp_to_performance_state);
--
- static int __init genpd_bus_init(void)
- {
- 	return bus_register(&genpd_bus_type);
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 4e494720ac25..369d63a58ac4 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -969,6 +969,50 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
- 
-+/**
-+ * of_get_required_opp_performance_state() - Search for required OPP and return its performance state.
-+ * @np: Node that contains the "required-opps" property.
-+ * @index: Index of the phandle to parse.
-+ *
-+ * Returns the performance state of the OPP pointed out by the "required-opps"
-+ * property at @index in @np.
-+ *
-+ * Return: Positive performance state on success, otherwise 0 on errors.
-+ */
-+unsigned int of_get_required_opp_performance_state(struct device_node *np,
-+						   int index)
-+{
-+	struct dev_pm_opp *opp;
-+	struct device_node *required_np;
-+	struct opp_table *opp_table;
-+	unsigned int pstate = 0;
-+
-+	required_np = of_parse_required_opp(np, index);
-+	if (!required_np)
-+		return 0;
-+
-+	opp_table = _find_table_of_opp_np(required_np);
-+	if (IS_ERR(opp_table)) {
-+		pr_err("%s: Failed to find required OPP table %pOF: %ld\n",
-+		       __func__, np, PTR_ERR(opp_table));
-+		goto put_required_np;
-+	}
-+
-+	opp = _find_opp_of_np(opp_table, required_np);
-+	if (opp) {
-+		pstate = opp->pstate;
-+		dev_pm_opp_put(opp);
-+	}
-+
-+	dev_pm_opp_put_opp_table(opp_table);
-+
-+put_required_np:
-+	of_node_put(required_np);
-+
-+	return pstate;
-+}
-+EXPORT_SYMBOL_GPL(of_get_required_opp_performance_state);
-+
- /**
-  * of_dev_pm_opp_find_required_opp() - Search for required OPP.
-  * @dev: The device whose OPP node is referenced by the 'np' DT node.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 4f803f934308..642036952553 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -260,8 +260,6 @@ int of_genpd_parse_idle_states(struct device_node *dn,
- 			       struct genpd_power_state **states, int *n);
- unsigned int pm_genpd_opp_to_performance_state(struct device *genpd_dev,
- 					       struct dev_pm_opp *opp);
--unsigned int of_genpd_opp_to_performance_state(struct device *dev,
--				struct device_node *np);
- 
- int genpd_dev_pm_attach(struct device *dev);
- struct device *genpd_dev_pm_attach_by_id(struct device *dev,
-@@ -308,13 +306,6 @@ pm_genpd_opp_to_performance_state(struct device *genpd_dev,
- 	return 0;
- }
- 
--static inline unsigned int
--of_genpd_opp_to_performance_state(struct device *dev,
--				  struct device_node *np)
--{
--	return 0;
--}
--
- static inline int genpd_dev_pm_attach(struct device *dev)
- {
- 	return 0;
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 8fed222c089b..889bb347fbd9 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -315,6 +315,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpuma
- struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
- struct dev_pm_opp *of_dev_pm_opp_find_required_opp(struct device *dev, struct device_node *np);
- struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp);
-+unsigned int of_get_required_opp_performance_state(struct device_node *np, int index);
- #else
- static inline int dev_pm_opp_of_add_table(struct device *dev)
- {
-@@ -357,6 +358,10 @@ static inline struct device_node *dev_pm_opp_get_of_node(struct dev_pm_opp *opp)
- {
- 	return NULL;
- }
-+static inline unsigned int of_get_required_opp_performance_state(struct device_node *np, int index)
-+{
-+	return 0;
-+}
- #endif
- 
- #endif		/* __LINUX_OPP_H__ */
--- 
-2.19.1.568.g152ad8e3369a
+T24gMDEvMTEvMjAxOCAxMToxNSwgVWxmIEhhbnNzb24gd3JvdGU6Cj4gVGhlIG9ubHkgcmVhc29u
+IHRoYXQgcmVtYWlucywgdG8gd2h5IHRoZSBBUk0gY3B1aWRsZSBkcml2ZXIgY2FsbHMKPiBjcHVp
+ZGxlX3JlZ2lzdGVyX2RyaXZlcigpLCBpcyB0byBhdm9pZCBwcmludGluZyBhbiBlcnJvciBtZXNz
+YWdlIGluIGNhc2UKPiBhbm90aGVyIGRyaXZlciBhbHJlYWR5IGhhdmUgYmVlbiByZWdpc3RlcmVk
+IGZvciB0aGUgQ1BVLiBUaGlzIHNlZW1zIGEgYml0Cj4gc2lsbHksIGJ1dCBtb3JlIGltcG9ydGFu
+dGx5LCBpZiB0aGF0IGlzIGEgY29tbW9uIHNjZW5hcmlvLCBwZXJoYXBzIHdlCj4gc2hvdWxkIGNo
+YW5nZSBjcHVpZGxlX3JlZ2lzdGVyKCkgYWNjb3JkaW5nbHkgaW5zdGVhZC4KPiAKPiBJbiBlaXRo
+ZXIgY2FzZSwgbGV0J3MgY29uc29saWRhdGUgdGhlIGNvZGUsIGJ5IGNvbnZlcnRpbmcgdG8gdXNl
+Cj4gY3B1aWRsZV9yZWdpc3Rlcnx1bnJlZ2lzdGVyKCksIHdoaWNoIGFsc28gYXZvaWRzIHRoZSB1
+bm5lY2Vzc2FyeSBhbGxvY2F0aW9uCj4gb2YgdGhlIHN0cnVjdCBjcHVpZGxlX2RldmljZS4KPiAK
+PiBTaWduZWQtb2ZmLWJ5OiBVbGYgSGFuc3NvbiA8dWxmLmhhbnNzb25AbGluYXJvLm9yZz4KPiBS
+ZXZpZXdlZC1ieTogTG9yZW56byBQaWVyYWxpc2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+
+CgpSZXZpZXdlZC1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+
+Cgo+IC0tLQo+IAo+IENoYW5nZXMgaW4gdjI6Cj4gCS0gRml4dXAgc3BlbGxpbmcgaW4gY2hhbmdl
+bG9nLgo+IAktIEFkZGVkIExvcmVuem8ncyByZXZpZXdlZC1ieSB0YWcuCj4gCj4gLS0tCj4gIGRy
+aXZlcnMvY3B1aWRsZS9jcHVpZGxlLWFybS5jIHwgMzAgKysrLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGluc2VydGlvbnMoKyksIDI3IGRlbGV0aW9ucygt
+KQo+IAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1hcm0uYyBiL2RyaXZl
+cnMvY3B1aWRsZS9jcHVpZGxlLWFybS5jCj4gaW5kZXggZGY1NjRkNzgzMjE2Li4zYTQwN2EzZWYy
+MmIgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUtYXJtLmMKPiArKysgYi9k
+cml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1hcm0uYwo+IEBAIC04Miw3ICs4Miw2IEBAIHN0YXRpYyBp
+bnQgX19pbml0IGFybV9pZGxlX2luaXRfY3B1KGludCBjcHUpCj4gIHsKPiAgCWludCByZXQ7Cj4g
+IAlzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydjsKPiAtCXN0cnVjdCBjcHVpZGxlX2RldmljZSAq
+ZGV2Owo+ICAKPiAgCWRydiA9IGttZW1kdXAoJmFybV9pZGxlX2RyaXZlciwgc2l6ZW9mKCpkcnYp
+LCBHRlBfS0VSTkVMKTsKPiAgCWlmICghZHJ2KQo+IEBAIC0xMTksMzMgKzExOCwxMiBAQCBzdGF0
+aWMgaW50IF9faW5pdCBhcm1faWRsZV9pbml0X2NwdShpbnQgY3B1KQo+ICAJCWdvdG8gb3V0X2tm
+cmVlX2RydjsKPiAgCX0KPiAgCj4gLQlyZXQgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYp
+Owo+IC0JaWYgKHJldCkgewo+IC0JCWlmIChyZXQgIT0gLUVCVVNZKQo+IC0JCQlwcl9lcnIoIkZh
+aWxlZCB0byByZWdpc3RlciBjcHVpZGxlIGRyaXZlclxuIik7Cj4gKwlyZXQgPSBjcHVpZGxlX3Jl
+Z2lzdGVyKGRydiwgTlVMTCk7Cj4gKwlpZiAocmV0KQo+ICAJCWdvdG8gb3V0X2tmcmVlX2RydjsK
+PiAtCX0KPiAtCj4gLQlkZXYgPSBremFsbG9jKHNpemVvZigqZGV2KSwgR0ZQX0tFUk5FTCk7Cj4g
+LQlpZiAoIWRldikgewo+IC0JCXJldCA9IC1FTk9NRU07Cj4gLQkJZ290byBvdXRfdW5yZWdpc3Rl
+cl9kcnY7Cj4gLQl9Cj4gLQlkZXYtPmNwdSA9IGNwdTsKPiAtCj4gLQlyZXQgPSBjcHVpZGxlX3Jl
+Z2lzdGVyX2RldmljZShkZXYpOwo+IC0JaWYgKHJldCkgewo+IC0JCXByX2VycigiRmFpbGVkIHRv
+IHJlZ2lzdGVyIGNwdWlkbGUgZGV2aWNlIGZvciBDUFUgJWRcbiIsCj4gLQkJICAgICAgIGNwdSk7
+Cj4gLQkJZ290byBvdXRfa2ZyZWVfZGV2Owo+IC0JfQo+ICAKPiAgCXJldHVybiAwOwo+ICAKPiAt
+b3V0X2tmcmVlX2RldjoKPiAtCWtmcmVlKGRldik7Cj4gLW91dF91bnJlZ2lzdGVyX2RydjoKPiAt
+CWNwdWlkbGVfdW5yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPiAgb3V0X2tmcmVlX2RydjoKPiAgCWtm
+cmVlKGRydik7Cj4gIAlyZXR1cm4gcmV0Owo+IEBAIC0xNzYsOSArMTU0LDcgQEAgc3RhdGljIGlu
+dCBfX2luaXQgYXJtX2lkbGVfaW5pdCh2b2lkKQo+ICAJd2hpbGUgKC0tY3B1ID49IDApIHsKPiAg
+CQlkZXYgPSBwZXJfY3B1KGNwdWlkbGVfZGV2aWNlcywgY3B1KTsKPiAgCQlkcnYgPSBjcHVpZGxl
+X2dldF9jcHVfZHJpdmVyKGRldik7Cj4gLQkJY3B1aWRsZV91bnJlZ2lzdGVyX2RldmljZShkZXYp
+Owo+IC0JCWNwdWlkbGVfdW5yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPiAtCQlrZnJlZShkZXYpOwo+
+ICsJCWNwdWlkbGVfdW5yZWdpc3RlcihkcnYpOwo+ICAJCWtmcmVlKGRydik7Cj4gIAl9Cj4gIAo+
+IAoKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291
+cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3LmZh
+Y2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0dHA6Ly90d2l0dGVyLmNvbS8j
+IS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9n
+Lz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+CmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5m
+cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
+bnV4LWFybS1rZXJuZWwK
