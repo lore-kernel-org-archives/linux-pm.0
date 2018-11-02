@@ -1,75 +1,88 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v2] cpuidle: New timer events oriented governor for tickless systems
-Date: Fri, 2 Nov 2018 08:39:42 -0700
-Message-ID: <000301d472c2$49f28740$ddd795c0$@net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 01/15] power: supply: olpc_battery: correct the
+ temperature units
+Date: Fri, 2 Nov 2018 23:16:15 +0100
+Message-ID: <20181102221615.GB5322@amd>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+ <20181010172300.317643-2-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="5/uDoXvLw7AC5HRs"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-References: FyDag8LEB6DhgFyDfglTus
-In-Reply-To: FyDag8LEB6DhgFyDfglTus
-Content-Language: en-ca
+Content-Disposition: inline
+In-Reply-To: <20181010172300.317643-2-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, Doug Smythies <dsmythies@telus.net>, 'Linux PM' <linux-pm@vger.kernel.org>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.10.26 02:12 Rafael J. Wysocki wrote:
 
-...[snip]...
+--5/uDoXvLw7AC5HRs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> The v2 is a re-write of major parts of the original patch.
->
-> The approach the same in general, but the details have changed significantly
-> with respect to the previous version.  In particular:
-> * The decay of the idle state metrics is implemented differently.
-> * There is a more "clever" pattern detection (sort of along the lines
->   of what the menu does, but simplified quite a bit and trying to avoid
->   including timer wakeups).
-> * The "promotion" from the "polling" state is gone.
-> * The "safety net" wakeups are treated as the CPU might have been idle
->   until the closest timer.
+On Wed 2018-10-10 19:22:46, Lubomir Rintel wrote:
+> According to [1] and [2], the temperature values are in tenths of degree
+> Celsius. Exposing the Celsius value makes the battery appear on fire:
+>=20
+>   $ upower -i /org/freedesktop/UPower/devices/battery_olpc_battery
+>   ...
+>       temperature:         236.9 degrees C
+>=20
+> Tested on OLPC XO-1 and OLPC XO-1.75 laptops.
+>=20
+> [1] include/linux/power_supply.h
+> [2] Documentation/power/power_supply_class.txt
+>=20
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 
-...[snip]...
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-I have been testing this V2 against a baseline that includes all
-of the pending menu patches. My baseline kernel is somewhere
-after 4.19, at 345671e.
+> ---
+>  drivers/power/supply/olpc_battery.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+> index 6da79ae14860..5a97e42a3547 100644
+> --- a/drivers/power/supply/olpc_battery.c
+> +++ b/drivers/power/supply/olpc_battery.c
+> @@ -428,14 +428,14 @@ static int olpc_bat_get_property(struct power_suppl=
+y *psy,
+>  		if (ret)
+>  			return ret;
+> =20
+> -		val->intval =3D (s16)be16_to_cpu(ec_word) * 100 / 256;
+> +		val->intval =3D (s16)be16_to_cpu(ec_word) * 10 / 256;
+>  		break;
+>  	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+>  		ret =3D olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+>  		if (ret)
+>  			return ret;
+> =20
+> -		val->intval =3D (int)be16_to_cpu(ec_word) * 100 / 256;
+> +		val->intval =3D (int)be16_to_cpu(ec_word) * 10 / 256;
+>  		break;
+>  	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+>  		ret =3D olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
 
-A side note:
-Recall that with the menu patch set tests, I found that the baseline
-reference performance for the pipe test on one core had changed
-significantly (worse - Kernel 4.19-rc1). Well, now it has changed
-significantly again (better, and even significantly better than it
-was for 4.18). 4.18 ~4.8 uSec/loop; 4.19 ~5.2 uSec/loop; 4.19+
-(345671e) 4.2 uSec/loop.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-This V2 is pretty good. All of the tests that I run gave similar
-performance and power use between the baseline reference and V2.
-I couldn't find any issues with the decay stuff, and I tried.
-(sorry, I didn't do pretty graphs.)
+--5/uDoXvLw7AC5HRs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-After reading Giovanni's reply the other day, I tried the
-Phoronix dbench test: 12 clients resulted in similar performance,
-But TEOv2 used a little less processor package power; 256 clients
-had about -7% performance using TEOv2, but (my numbers are not
-exact) also used less processor package power.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-On 2018.10.31 11:36 Giovanni Gherdovich wrote:
+iEYEARECAAYFAlvczK8ACgkQMOfwapXb+vK+VQCfcgyq3cidqXHQN1SQVFGn9ZBk
+kjgAn0TYj1SDQaMTLx294PzTSslABpR5
+=qO4G
+-----END PGP SIGNATURE-----
 
-> Something I'd like to do now is verify that "teo"'s predictions
-> are better than "menu"'s; I'll probably use systemtap to make
-> some histograms of idle times versus what idle state was chosen
-> -- that'd be enough to compare the two.
-
-I don't know what a "systemtap" is, but I have (crude) tools to
-post process trace data into histograms data. I did 5 minute
-traces during the 12 client Phoronix dbench test and plotted
-the results, [1]. Sometimes, to the right of the autoscaled
-graph is another with fixed scaling. Better grouping of idle
-durations with TEOv2 are clearly visible.
-
-... Doug
-
-[1] http://fast.smythies.com/linux-pm/k419p/histo_compare.htm
+--5/uDoXvLw7AC5HRs--
