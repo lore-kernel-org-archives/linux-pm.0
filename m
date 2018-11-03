@@ -1,153 +1,75 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Sat, 3 Nov 2018 08:36:00 +0530
-Message-ID: <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
-References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
- <1539257761-23023-3-git-send-email-tdas@codeaurora.org>
- <153981915373.5275.15971019914218464179@swboyd.mtv.corp.google.com>
+From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
+Subject: Re: [PATCH v5 04/11] dt-bindings: iio: adc: add AXP803 ADC bindings
+Date: Sat, 3 Nov 2018 10:21:53 +0000
+Message-ID: <20181103102153.4f0481ad@archlinux>
+References: <20181023185330.10472-1-oskari@lemmela.net>
+        <20181023185330.10472-5-oskari@lemmela.net>
+        <20181024135633.GA342@bogus>
+        <20181028154011.04efdecf@archlinux>
+        <20181029130757.m5okrfvusjl5fu5m@qschulz>
+        <CAGb2v65JKj_7VcEr1KuZVop85hn-3h73NrExprpmLbKZiosD5Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <153981915373.5275.15971019914218464179@swboyd.mtv.corp.google.com>
-Content-Language: en-US
+In-Reply-To: <CAGb2v65JKj_7VcEr1KuZVop85hn-3h73NrExprpmLbKZiosD5Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <swboyd@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Rob Herring <robh@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Vasily Khoruzhick <anarsoul@gmail.com>, Quentin Schulz <quentin.schulz@free-electrons.com>, devicetree <devicetree@vger.kernel.org>, oskari@lemmela.net, linux-gpio@vger.kernel.org, Hartmut Knaack <knaack.h@gmx.de>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Quentin Schulz <quentin.schulz@bootlin.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Stephen,
+On Wed, 31 Oct 2018 10:29:59 +0800
+Chen-Yu Tsai <wens@csie.org> wrote:
 
-On 10/18/2018 5:02 AM, Stephen Boyd wrote:
-> Quoting Taniya Das (2018-10-11 04:36:01)
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -121,6 +121,17 @@ config ARM_QCOM_CPUFREQ_KRYO
->>
->>            If in doubt, say N.
->>
->> +config ARM_QCOM_CPUFREQ_HW
->> +       bool "QCOM CPUFreq HW driver"
+> On Mon, Oct 29, 2018 at 9:10 PM Quentin Schulz
+> <quentin.schulz@bootlin.com> wrote:
+> >
+> > Hi Jonathan,
+> >
+> > On Sun, Oct 28, 2018 at 03:40:11PM +0000, Jonathan Cameron wrote:  
+> > > On Wed, 24 Oct 2018 08:56:33 -0500
+> > > Rob Herring <robh@kernel.org> wrote:
+> > >  
+> > > > On Tue, 23 Oct 2018 21:53:23 +0300, Oskari Lemmela wrote:  
+> > > > > The AXP803 ADC is compatible with AXP813 ADC, but add
+> > > > > specific compatible for it.
+> > > > >
+> > > > > Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+> > > > > ---
+> > > > >  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt | 2 ++
+> > > > >  1 file changed, 2 insertions(+)
+> > > > >  
+> > > >
+> > > > Reviewed-by: Rob Herring <robh@kernel.org>  
+> > >
+> > > This doesn't seem to have any dependencies with the other patches
+> > > so applied to the togreg branch of iio.git and pushed out as testing
+> > > for the autobuilders to ignore.  However I am a little curious to know
+> > > why we would add the ID and then not use it (that I can see)?
+> > >  
+> >
+> > Sometimes with Allwinner (and X-Powers), two IPs seem identical until we
+> > discover something that is slightly different. When this happens, we
+> > have to add a compatible to differentiate both. However, we would also
+> > need to change the Device Tree to change the compatible. We would need
+> > to handle the driver behaviour for both Device Trees.
+> >
+> > So better anticipate a possible difference so that we don't have to do
+> > some hacks in the driver to handle the device correctly.
+> >
+> > As always, Chen-Yu or Maxime may know better so I'm just stating what I
+> > seem to recall.  
 > 
-> Is there any reason this can't be a module?
+> With Allwinner stuff (X-Powers included), sometimes the documents are
+> incomplete or have errors. We tend to add a model-specific compatible
+> just in case things turn out not to be so compatible, unless someone
+> has triple-checked everything, documents and actual hardware included.
 > 
-
-We do not have any use cases where we need to support it as module.
-
->> +       depends on ARCH_QCOM || COMPILE_TEST
->> +       help
->> +         Support for the CPUFreq HW driver.
->> +         Some QCOM chipsets have a HW engine to offload the steps
->> +         necessary for changing the frequency of the CPUs. Firmware loaded
->> +         in this engine exposes a programming interface to the OS.
->> +         The driver implements the cpufreq interface for this HW engine.
->> +         Say Y if you want to support CPUFreq HW.
->> +
->>   config ARM_S3C_CPUFREQ
->>          bool
->>          help
->> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
->> new file mode 100644
->> index 0000000..fe1c264
->> --- /dev/null
->> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
->> @@ -0,0 +1,354 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
->> + */
->> +
->> +#include <linux/cpufreq.h>
->> +#include <linux/init.h>
->> +#include <linux/kernel.h>
->> +#include <linux/of_address.h>
->> +#include <linux/of_platform.h>
->> +
->> +#define LUT_MAX_ENTRIES                        40U
->> +#define CORE_COUNT_VAL(val)            (((val) & (GENMASK(18, 16))) >> 16)
->> +#define LUT_ROW_SIZE                   32
->> +#define CLK_HW_DIV                     2
->> +
->> +enum {
->> +       REG_ENABLE,
->> +       REG_LUT_TABLE,
->> +       REG_PERF_STATE,
->> +
->> +       REG_ARRAY_SIZE,
->> +};
->> +
->> +struct cpufreq_qcom {
->> +       struct cpufreq_frequency_table *table;
->> +       void __iomem *reg_bases[REG_ARRAY_SIZE];
->> +       cpumask_t related_cpus;
->> +       unsigned int max_cores;
->> +       unsigned long xo_rate;
->> +       unsigned long cpu_hw_rate;
->> +};
->> +
->> +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
+> However we don't actually document these, so this patch isn't strictly
+> needed. (I suppose this might annoy the device tree binding maintainers.)
 > 
-> Is this going to change in the future?
-> 
+> ChenYu
+I don't think it does any harm so I'll leave it in place.  Thanks for
+the explanations.
 
-Yes, they could change and that was the reason to introduce the offsets. 
-This was discussed earlier too with Sudeep and was to add them.
-
->> +       [REG_ENABLE]            = 0x0,
->> +       [REG_LUT_TABLE]         = 0x110,
->> +       [REG_PERF_STATE]        = 0x920,
->> +};
->> +
->> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
->> +
->> +static int
->> +qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
->> +                            unsigned int index)
->> +{
->> +       struct cpufreq_qcom *c = policy->driver_data;
->> +
->> +       writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
-> 
-> Why can't we avoid the indirection here and store the perf_state pointer
-> in probe? Then we don't have to indirect through a table to perform the
-> register write.
-> 
-
-As the offsets could change and that was the reason to add this.
-
->> +
->> +       return 0;
->> +}
->> +
-> [..]
->> +static int qcom_resources_init(struct platform_device *pdev)
->> +{
->> +       struct device_node *cpu_np;
->> +       struct of_phandle_args args;
->> +       struct clk *clk;
->> +       unsigned int cpu;
->> +       unsigned long xo_rate, cpu_hw_rate;
->> +       int ret;
->> +
->> +       clk = clk_get(&pdev->dev, "xo");
->> +       if (IS_ERR(clk))
->> +               return PTR_ERR(clk);
->> +
->> +       xo_rate = clk_get_rate(clk);
->> +
->> +       clk_put(clk);
->> +
->> +       clk = clk_get(&pdev->dev, "cpu_clk");
-> 
-> Sad that the name is cpu_clk, instead of something like 'backup' or
-> whatever the name really is in hardware.
-> 
-
-Sure, would update it.
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+Jonathan
