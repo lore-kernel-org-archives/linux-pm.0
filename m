@@ -1,75 +1,66 @@
-From: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Subject: Re: [PATCH v5 04/11] dt-bindings: iio: adc: add AXP803 ADC bindings
-Date: Sat, 3 Nov 2018 10:21:53 +0000
-Message-ID: <20181103102153.4f0481ad@archlinux>
-References: <20181023185330.10472-1-oskari@lemmela.net>
-        <20181023185330.10472-5-oskari@lemmela.net>
-        <20181024135633.GA342@bogus>
-        <20181028154011.04efdecf@archlinux>
-        <20181029130757.m5okrfvusjl5fu5m@qschulz>
-        <CAGb2v65JKj_7VcEr1KuZVop85hn-3h73NrExprpmLbKZiosD5Q@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH v2 4/4] ARM: dts: imx6sx: Add DISPLAY power domain support
+Date: Sat, 3 Nov 2018 15:54:13 +0000
+Message-ID: <AM0PR04MB42908FA25B4F44FE0C0FC243EEC80@AM0PR04MB4290.eurprd04.prod.outlook.com>
+References: <cover.1539020938.git.leonard.crestez@nxp.com>
+ <a3265a84052a7c11ae96e61e39adc988ca980d66.1539020938.git.leonard.crestez@nxp.com>
+ <20181031061134.GB10386@tiger>
+ <AM0PR04MB4290F31234D75AC7029F066FEECD0@AM0PR04MB4290.eurprd04.prod.outlook.com>
+ <20181031150559.GA20437@e107981-ln.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGb2v65JKj_7VcEr1KuZVop85hn-3h73NrExprpmLbKZiosD5Q@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Rob Herring <robh@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Sebastian Reichel <sre@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Vasily Khoruzhick <anarsoul@gmail.com>, Quentin Schulz <quentin.schulz@free-electrons.com>, devicetree <devicetree@vger.kernel.org>, oskari@lemmela.net, linux-gpio@vger.kernel.org, Hartmut Knaack <knaack.h@gmx.de>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Quentin Schulz <quentin.schulz@bootlin.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Richard Zhu <hongxing.zhu@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 31 Oct 2018 10:29:59 +0800
-Chen-Yu Tsai <wens@csie.org> wrote:
-
-> On Mon, Oct 29, 2018 at 9:10 PM Quentin Schulz
-> <quentin.schulz@bootlin.com> wrote:
-> >
-> > Hi Jonathan,
-> >
-> > On Sun, Oct 28, 2018 at 03:40:11PM +0000, Jonathan Cameron wrote:  
-> > > On Wed, 24 Oct 2018 08:56:33 -0500
-> > > Rob Herring <robh@kernel.org> wrote:
-> > >  
-> > > > On Tue, 23 Oct 2018 21:53:23 +0300, Oskari Lemmela wrote:  
-> > > > > The AXP803 ADC is compatible with AXP813 ADC, but add
-> > > > > specific compatible for it.
-> > > > >
-> > > > > Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-> > > > > ---
-> > > > >  Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt | 2 ++
-> > > > >  1 file changed, 2 insertions(+)
-> > > > >  
-> > > >
-> > > > Reviewed-by: Rob Herring <robh@kernel.org>  
-> > >
-> > > This doesn't seem to have any dependencies with the other patches
-> > > so applied to the togreg branch of iio.git and pushed out as testing
-> > > for the autobuilders to ignore.  However I am a little curious to know
-> > > why we would add the ID and then not use it (that I can see)?
-> > >  
-> >
-> > Sometimes with Allwinner (and X-Powers), two IPs seem identical until we
-> > discover something that is slightly different. When this happens, we
-> > have to add a compatible to differentiate both. However, we would also
-> > need to change the Device Tree to change the compatible. We would need
-> > to handle the driver behaviour for both Device Trees.
-> >
-> > So better anticipate a possible difference so that we don't have to do
-> > some hacks in the driver to handle the device correctly.
-> >
-> > As always, Chen-Yu or Maxime may know better so I'm just stating what I
-> > seem to recall.  
-> 
-> With Allwinner stuff (X-Powers included), sometimes the documents are
-> incomplete or have errors. We tend to add a model-specific compatible
-> just in case things turn out not to be so compatible, unless someone
-> has triple-checked everything, documents and actual hardware included.
-> 
-> However we don't actually document these, so this patch isn't strictly
-> needed. (I suppose this might annoy the device tree binding maintainers.)
-> 
-> ChenYu
-I don't think it does any harm so I'll leave it in place.  Thanks for
-the explanations.
-
-Jonathan
+On 10/31/2018 5:06 PM, Lorenzo Pieralisi wrote:=0A=
+> On Wed, Oct 31, 2018 at 12:17:50PM +0000, Leonard Crestez wrote:=0A=
+>> On 10/31/2018 8:12 AM, Shawn Guo wrote:=0A=
+>>> On Mon, Oct 08, 2018 at 06:06:23PM +0000, Leonard Crestez wrote:=0A=
+>>>> This was implemented in the driver but not actually defined and=0A=
+>>>> referenced in dts. This makes it always on.=0A=
+>>>>=0A=
+>>>>   From reference manual in section "10.4.1.4.1 Power Distribution":=0A=
+>>>>=0A=
+>>>> "Display domain - The DISPLAY domain contains GIS, CSI, PXP, LCDIF,=0A=
+>>>> PCIe, DCIC, and LDB. It is supplied by internal regulator."=0A=
+>>>>=0A=
+>>>> The current pd_pcie is actually only for PCIE_PHY, the PCIE ip block i=
+s=0A=
+>>>> actually inside the DISPLAY domain. Handle this by adding the pcie nod=
+e=0A=
+>>>> in both power domains.=0A=
+>>>>=0A=
+>>>> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>=0A=
+>>>=0A=
+>>> Applied, thanks.=0A=
+>>=0A=
+>> As mentioned in the cover letter this requires multi-PD support in=0A=
+>> imx-pci to be implemented, specifically PATCH 3/4 of this series:=0A=
+>>=0A=
+>> Unless that also gets merged soon via pci I expect issues in linux-next.=
+=0A=
+> =0A=
+> I do not know what you mean by "issues in linux-next" (I assume you mean=
+=0A=
+> when Shawn sends the patches to linux-next in preparation for v4.21); we=
+=0A=
+> have not planned any other PCI pull request for v4.20-rc1 material.=0A=
+=0A=
+Yes my concern is linux-next for 4.21=0A=
+=0A=
+>> The patch already has reviewed-by tags so "merging it soon" is not=0A=
+>> unreasonable.=0A=
+> =0A=
+> I can ACK it if Shawn wants to pull it, it may take a while to see it=0A=
+> in -next if it has to go through the PCI tree, I think it is better=0A=
+> to queue the series without splitting the patches across multiple=0A=
+> channels though.=0A=
+=0A=
+This sounds great to me, merging the whole series through Shawn's imx =0A=
+tree would prevent issues in linux-next or possible bisect failures in 4.21=
+.=0A=
