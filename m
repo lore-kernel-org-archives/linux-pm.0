@@ -1,113 +1,375 @@
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Sat, 03 Nov 2018 21:20:32 -0700
-Message-ID: <154130523254.88331.12609105382114756048@swboyd.mtv.corp.google.com>
-References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
- <1539257761-23023-3-git-send-email-tdas@codeaurora.org>
- <153981915373.5275.15971019914218464179@swboyd.mtv.corp.google.com>
- <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH v2] cpuidle: New timer events oriented governor for tickless systems
+Date: Sun, 04 Nov 2018 11:06:06 +0100
+Message-ID: <4168371.zz0pVZtGOY@aspire.rjw.lan>
+References: <1899281.leNo2RexrE@aspire.rjw.lan> <1541010981.3423.2.camel@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
+In-Reply-To: <1541010981.3423.2.camel@suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Taniya Das <tdas@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: Giovanni Gherdovich <ggherdovich@suse.cz>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Doug Smythies <dsmythies@telus.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Taniya Das (2018-11-02 20:06:00)
-> Hello Stephen,
-> =
+On Wednesday, October 31, 2018 7:36:21 PM CET Giovanni Gherdovich wrote:
+> On Fri, 2018-10-26 at 11:12 +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> On 10/18/2018 5:02 AM, Stephen Boyd wrote:
-> > Quoting Taniya Das (2018-10-11 04:36:01)
-> >> --- a/drivers/cpufreq/Kconfig.arm
-> >> +++ b/drivers/cpufreq/Kconfig.arm
-> >> @@ -121,6 +121,17 @@ config ARM_QCOM_CPUFREQ_KRYO
-> >>
-> >>            If in doubt, say N.
-> >>
-> >> +config ARM_QCOM_CPUFREQ_HW
-> >> +       bool "QCOM CPUFreq HW driver"
-> > =
+[cut]
 
-> > Is there any reason this can't be a module?
-> > =
+> 
+> Hello Rafael,
 
-> =
+Hi Giovanni,
 
-> We do not have any use cases where we need to support it as module.
+First off, many thanks for doing this work, it is very very much appreciated!
 
-Ok, so it could easily be tristate then? Why not allow it?
+> your new governor has a neutral impact on performance, as you expected. This is
+> a positive result, since the purpose of "teo" is to give improved
+> predictions on idle times without regressing on the performance side.
 
-> =
+Right.
 
-> >> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-=
-cpufreq-hw.c
-> >> new file mode 100644
-> >> index 0000000..fe1c264
-> >> --- /dev/null
-> >> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> >> @@ -0,0 +1,354 @@
-> >> +// SPDX-License-Identifier: GPL-2.0
-> >> +/*
-> >> + * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-> >> + */
-[...]
-> >> +
-> >> +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] =3D {
-> > =
+> There are swings here and there but nothing looks extremely bad. v2 is largely
+> equivalent to v1 in my tests, except for sockperf and netperf on the
+> Haswell machine (v2 slightly worse) and tbench on the Skylake machine
+> (again v2 slightly worse).
 
-> > Is this going to change in the future?
-> > =
+Thanks for the data.
 
-> =
+I have some ideas on what may be the difference between the v1 and the v2 on
+these machines, more about that below.
 
-> Yes, they could change and that was the reason to introduce the offsets. =
+> I've tested your patches applying them on v4.18 (plus the backport
+> necessary for v2 as Doug helpfully noted), just because it was the latest
+> release when I started preparing this.
+> 
+> I've tested it on three machines, with different generations of Intel CPUs:
+> 
+> * single socket E3-1240 v5 (Skylake 8 cores, which I'll call 8x-SKYLAKE-UMA)
+> * two sockets E5-2698 v4 (Broadwell 80 cores, 80x-BROADWELL-NUMA from here onwards)
+> * two sockets E5-2670 v3 (Haswell 48 cores, 48x-HASWELL-NUMA from here onwards)
+> 
+> 
+> BENCHMARKS WITH NEUTRAL RESULTS
+> ===============================
+> 
+> These are the workloads where no noticeable difference is measured (on both
+> v1 and v2, all machines), together with the corresponding MMTests[1]
+> configuration file name:
+> 
+> * pgbench read-only on xfs, pgbench read/write on xfs
+> 	* global-dhp__db-pgbench-timed-ro-small-xfs
+> 	* global-dhp__db-pgbench-timed-rw-small-xfs
+> * siege
+> 	* global-dhp__http-siege
+> * hackbench, pipetest
+> 	* global-dhp__scheduler-unbound
+> * Linux kernel compilation
+> 	* global-dhp__workload_kerndevel-xfs
+> * NASA Parallel Benchmarks, C-Class (linear algebra; run both with OpenMP
+>   and OpenMPI, over xfs)
+> 	* global-dhp__nas-c-class-mpi-full-xfs
+> 	* global-dhp__nas-c-class-omp-full
+> * FIO (Flexible IO) in several configurations
+> 	* global-dhp__io-fio-randread-async-randwrite-xfs
+> 	* global-dhp__io-fio-randread-async-seqwrite-xfs
+> 	* global-dhp__io-fio-seqread-doublemem-32k-4t-xfs
+> 	* global-dhp__io-fio-seqread-doublemem-4k-4t-xfs
+> * netperf on loopback over TCP
+> 	* global-dhp__network-netperf-unbound
 
-> This was discussed earlier too with Sudeep and was to add them.
-> =
+The above is great to know.
 
-> >> +       [REG_ENABLE]            =3D 0x0,
+> BENCHMARKS WITH NON-NEUTRAL RESULTS: OVERVIEW
+> =============================================
+> 
+> These are benchmarks which exhibit a variation in their performance;
+> you'll see the magnitude of the changes is moderate and it's highly variable
+> from machine to machine. All percentages refer to the v4.18 baseline. In
+> more than one case the Haswell machine seems to prefer v1 to v2.
+> 
+> * xfsrepair
+> 	* global-dhp__io-xfsrepair-xfs
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		2% worse	2% worse
+> 		80x-BROADWELL-NUMA	1% worse	1% worse
+> 		48x-HASWELL-NUMA	1% worse	1% worse
+> 
+> * sqlite (insert operations on xfs)
+> 	* global-dhp__db-sqlite-insert-medium-xfs
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		no change	no change
+> 		80x-BROADWELL-NUMA	2% worse	3% worse
+> 		48x-HASWELL-NUMA	no change	no change
+> 
+> * netperf on loopback over UDP
+> 	* global-dhp__network-netperf-unbound
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		no change	6% worse
+> 		80x-BROADWELL-NUMA	1% worse	4% worse
+> 		48x-HASWELL-NUMA	3% better	5% worse
+> 
+> * sockperf on loopback over TCP, mode "under load"
+> 	* global-dhp__network-sockperf-unbound
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		6% worse	no change
+> 		80x-BROADWELL-NUMA	7% better	no change
+> 		48x-HASWELL-NUMA	3% better	2% worse
+> 
+> * sockperf on loopback over UDP, mode "throughput"
+> 	* global-dhp__network-sockperf-unbound
 
-This is only used once? Maybe it could be removed.
+Generally speaking, I'm not worried about single-digit percent differences,
+because overall they tend to fall into the noise range in the grand picture.
 
-> >> +       [REG_LUT_TABLE]         =3D 0x110,
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		1% worse	1% worse
+> 		80x-BROADWELL-NUMA	3% better	2% better
+> 		48x-HASWELL-NUMA	4% better	12% worse
 
-And this is only used during probe to figure out the supported
-frequencies. So we definitely don't need to store around the registers
-after probe in an array of iomem pointers. The only one that we need
-after probe is the one below.
+But the 12% difference here is slightly worrisome.
 
-> >> +       [REG_PERF_STATE]        =3D 0x920,
-> >> +};
-> >> +
-> >> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-> >> +
-> >> +static int
-> >> +qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
-> >> +                            unsigned int index)
-> >> +{
-> >> +       struct cpufreq_qcom *c =3D policy->driver_data;
-> >> +
-> >> +       writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
-> > =
+> * sockperf on loopback over UDP, mode "under load"
+> 	* global-dhp__network-sockperf-unbound
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		3% worse	1% worse
+> 		80x-BROADWELL-NUMA	10% better	8% better
+> 		48x-HASWELL-NUMA	1% better	no change
+> 
+> * dbench on xfs
+>         * global-dhp__io-dbench4-async-xfs
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		3% better	4% better
+> 		80x-BROADWELL-NUMA	no change	no change
+> 		48x-HASWELL-NUMA	6% worse	16% worse
 
-> > Why can't we avoid the indirection here and store the perf_state pointer
-> > in probe? Then we don't have to indirect through a table to perform the
-> > register write.
-> > =
+And same here.
 
-> =
+> * tbench on loopback
+> 	* global-dhp__network-tbench
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		1% worse	10% worse
+> 		80x-BROADWELL-NUMA	1% worse	1% worse
+> 		48x-HASWELL-NUMA	1% worse	2% worse
+> 
+> * schbench
+> 	* global-dhp__workload_schbench
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		1% better	no change
+> 		80x-BROADWELL-NUMA	2% worse	1% worse
+> 		48x-HASWELL-NUMA	2% worse	3% worse
+> 
+> * gitsource on xfs (git unit tests, shell intensive)
+> 	* global-dhp__workload_shellscripts-xfs
+> 
+> 					teo-v1		teo-v2
+> 		-------------------------------------------------
+> 		8x-SKYLAKE-UMA		no change	no change
+> 		80x-BROADWELL-NUMA	no change	1% better
+> 		48x-HASWELL-NUMA	no change	1% better
+> 
+> 
+> BENCHMARKS WITH NON-NEUTRAL RESULTS: DETAIL
+> ===========================================
+> 
+> Now some more detail. Each benchmark is run in a variety of configurations
+> (eg. number of threads, number of concurrent connections and so forth) each
+> of them giving a result. What you see above is the geometric mean of
+> "sub-results"; below is the detailed view where there was a regression
+> larger than 5% (either in v1 or v2, on any of the machines). That means
+> I'll exclude xfsrepar, sqlite, schbench and the git unit tests "gitsource"
+> that have negligible swings from the baseline.
+> 
+> In all tables asterisks indicate a statement about statistical
+> significance: the difference with baseline has a p-value smaller than 0.1
+> (small p-values indicate that the difference is real and not just random
+> noise).
+> 
+> NETPERF-UDP
+> ===========
+> NOTES: Test run in mode "stream" over UDP. The varying parameter is the
+>     message size in bytes. Each measurement is taken 5 times and the
+>     harmonic mean is reported.
+> MEASURES: Throughput in MBits/second, both on the sender and on the receiver end.
+> HIGHER is better
+> 
+> machine: 8x-SKYLAKE-UMA
+>                                      4.18.0                 4.18.0                 4.18.0
+>                                     vanilla                 teo-v1        teo-v2+backport
+> -----------------------------------------------------------------------------------------
+> Hmean     send-64         362.27 (   0.00%)      362.87 (   0.16%)      318.85 * -11.99%*
+> Hmean     send-128        723.17 (   0.00%)      723.66 (   0.07%)      660.96 *  -8.60%*
+> Hmean     send-256       1435.24 (   0.00%)     1427.08 (  -0.57%)     1346.22 *  -6.20%*
+> Hmean     send-1024      5563.78 (   0.00%)     5529.90 *  -0.61%*     5228.28 *  -6.03%*
+> Hmean     send-2048     10935.42 (   0.00%)    10809.66 *  -1.15%*    10521.14 *  -3.79%*
+> Hmean     send-3312     16898.66 (   0.00%)    16539.89 *  -2.12%*    16240.87 *  -3.89%*
+> Hmean     send-4096     19354.33 (   0.00%)    19185.43 (  -0.87%)    18600.52 *  -3.89%*
+> Hmean     send-8192     32238.80 (   0.00%)    32275.57 (   0.11%)    29850.62 *  -7.41%*
+> Hmean     send-16384    48146.75 (   0.00%)    49297.23 *   2.39%*    48295.51 (   0.31%)
+> Hmean     recv-64         362.16 (   0.00%)      362.87 (   0.19%)      318.82 * -11.97%*
+> Hmean     recv-128        723.01 (   0.00%)      723.66 (   0.09%)      660.89 *  -8.59%*
+> Hmean     recv-256       1435.06 (   0.00%)     1426.94 (  -0.57%)     1346.07 *  -6.20%*
+> Hmean     recv-1024      5562.68 (   0.00%)     5529.90 *  -0.59%*     5228.28 *  -6.01%*
+> Hmean     recv-2048     10934.36 (   0.00%)    10809.66 *  -1.14%*    10519.89 *  -3.79%*
+> Hmean     recv-3312     16898.65 (   0.00%)    16538.21 *  -2.13%*    16240.86 *  -3.89%*
+> Hmean     recv-4096     19351.99 (   0.00%)    19183.17 (  -0.87%)    18598.33 *  -3.89%*
+> Hmean     recv-8192     32238.74 (   0.00%)    32275.13 (   0.11%)    29850.39 *  -7.41%*
+> Hmean     recv-16384    48146.59 (   0.00%)    49296.23 *   2.39%*    48295.03 (   0.31%)
 
-> As the offsets could change and that was the reason to add this.
+That is a bit worse than I would like it to be TBH.
 
-With fast switching we can avoid incurring any extra instructions, so
-please make another iomem pointer in the cpufreq_qcom struct just for
-writing the index or if possible, just pass the iomem pointer that
-points to the REG_PERF_STATE as the policy->driver_data variable here.
-Then we have the address in hand without any extra load. If my
-understanding is correct, we don't need to keep around anything besides
-this register address anyway so we should be able to just load it and
-write it immediately.
+> SOCKPERF-TCP-UNDER-LOAD
+> =======================
+> NOTES: Test run in mode "under load" over TCP. Parameters are message size
+>     and transmission rate.
+> MEASURES: Round-trip time in microseconds
+> LOWER is better
+> 
+> machine: 8x-SKYLAKE-UMA
+>                                                  4.18.0                 4.18.0                 4.18.0
+>                                                 vanilla                 teo-v1        teo-v2+backport
+> -----------------------------------------------------------------------------------------------------
+> Amean        size-14-rate-10000        36.43 (   0.00%)       36.86 (  -1.17%)       20.24 (  44.44%)
+> Amean        size-14-rate-24000        17.78 (   0.00%)       17.71 (   0.36%)       18.54 (  -4.29%)
+> Amean        size-14-rate-50000        20.53 (   0.00%)       22.29 (  -8.58%)       16.16 (  21.30%)
+> Amean        size-100-rate-10000       21.22 (   0.00%)       23.41 ( -10.35%)       33.04 ( -55.73%)
+> Amean        size-100-rate-24000       17.81 (   0.00%)       21.09 ( -18.40%)       14.39 (  19.18%)
+> Amean        size-100-rate-50000       12.31 (   0.00%)       19.65 ( -59.64%)       15.11 ( -22.77%)
+> Amean        size-300-rate-10000       34.21 (   0.00%)       35.30 (  -3.19%)       34.20 (   0.05%)
+> Amean        size-300-rate-24000       24.52 (   0.00%)       26.00 (  -6.04%)       27.42 ( -11.81%)
+> Amean        size-300-rate-50000       20.20 (   0.00%)       20.39 (  -0.95%)       17.83 (  11.73%)
+> Amean        size-500-rate-10000       21.56 (   0.00%)       21.31 (   1.15%)       29.32 ( -35.98%)
+> Amean        size-500-rate-24000       30.58 (   0.00%)       27.41 (  10.38%)       27.21 (  11.03%)
+> Amean        size-500-rate-50000       19.46 (   0.00%)       22.48 ( -15.55%)       16.29 (  16.30%)
+> Amean        size-850-rate-10000       35.89 (   0.00%)       35.56 (   0.91%)       23.84 (  33.57%)
+> Amean        size-850-rate-24000       29.11 (   0.00%)       28.18 (   3.20%)       17.44 (  40.08%)
+> Amean        size-850-rate-50000       13.55 (   0.00%)       18.05 ( -33.26%)       21.30 ( -57.20%)
+
+IMO there is too much variation here to draw any meaningful conclusions from it.
+
+> SOCKPERF-UDP-THROUGHPUT
+> =======================
+> NOTES: Test run in mode "throughput" over UDP. The varying parameter is the
+>     message size.
+> MEASURES: Throughput, in MBits/second
+> HIGHER is better
+> 
+> machine: 48x-HASWELL-NUMA
+>                               4.18.0                 4.18.0                 4.18.0
+>                              vanilla                 teo-v1        teo-v2+backport
+> ----------------------------------------------------------------------------------
+> Hmean     14        48.16 (   0.00%)       50.94 *   5.77%*       42.50 * -11.77%*
+> Hmean     100      346.77 (   0.00%)      358.74 *   3.45%*      303.31 * -12.53%*
+> Hmean     300     1018.06 (   0.00%)     1053.75 *   3.51%*      895.55 * -12.03%*
+> Hmean     500     1693.07 (   0.00%)     1754.62 *   3.64%*     1489.61 * -12.02%*
+> Hmean     850     2853.04 (   0.00%)     2948.73 *   3.35%*     2473.50 * -13.30%*
+
+Well, in this case the consistent improvement in v1 turned into a consistent decline
+in the v2, and over 10% for that matter.  Needs improvement IMO.
+
+> DBENCH4
+> =======
+> NOTES: asyncronous IO; varies the number of clients up to NUMCPUS*8.
+> MEASURES: latency (millisecs)
+> LOWER is better
+> 
+> machine: 48x-HASWELL-NUMA
+>                               4.18.0                 4.18.0                 4.18.0
+>                              vanilla                 teo-v1        teo-v2+backport
+> ----------------------------------------------------------------------------------
+> Amean      1        37.15 (   0.00%)       50.10 ( -34.86%)       39.02 (  -5.03%)
+> Amean      2        43.75 (   0.00%)       45.50 (  -4.01%)       44.36 (  -1.39%)
+> Amean      4        54.42 (   0.00%)       58.85 (  -8.15%)       58.17 (  -6.89%)
+> Amean      8        75.72 (   0.00%)       74.25 (   1.94%)       82.76 (  -9.30%)
+> Amean      16      116.56 (   0.00%)      119.88 (  -2.85%)      164.14 ( -40.82%)
+> Amean      32      570.02 (   0.00%)      561.92 (   1.42%)      681.94 ( -19.63%)
+> Amean      64     3185.20 (   0.00%)     3291.80 (  -3.35%)     4337.43 ( -36.17%)
+
+This one too.
+
+> TBENCH4
+> =======
+> NOTES: networking counterpart of dbench. Varies the number of clients up to NUMCPUS*4
+> MEASURES: Throughput, MB/sec
+> HIGHER is better
+> 
+> machine: 8x-SKYLAKE-UMA
+>                                     4.18.0                 4.18.0                 4.18.0
+>                                    vanilla                    teo        teo-v2+backport
+> ----------------------------------------------------------------------------------------
+> Hmean     mb/sec-1       620.52 (   0.00%)      613.98 *  -1.05%*      502.47 * -19.03%*
+> Hmean     mb/sec-2      1179.05 (   0.00%)     1112.84 *  -5.62%*      820.57 * -30.40%*
+> Hmean     mb/sec-4      2072.29 (   0.00%)     2040.55 *  -1.53%*     2036.11 *  -1.75%*
+> Hmean     mb/sec-8      4238.96 (   0.00%)     4205.01 *  -0.80%*     4124.59 *  -2.70%*
+> Hmean     mb/sec-16     3515.96 (   0.00%)     3536.23 *   0.58%*     3500.02 *  -0.45%*
+> Hmean     mb/sec-32     3452.92 (   0.00%)     3448.94 *  -0.12%*     3428.08 *  -0.72%*
+> 
+
+And same here.
+
+> [1] https://github.com/gormanm/mmtests
+> 
+> 
+> Happy to answer any questions on the benchmarks or the methods used to
+> collect/report data.
+> 
+> Something I'd like to do now is verify that "teo"'s predictions are better
+> than "menu"'s; I'll probably use systemtap to make some histograms of idle
+> times versus what idle state was chosen -- that'd be enough to compare the
+> two.
+
+You can use the cpu_idle trace point to correlate the selected state index
+with the observed idle duration (that's what Doug did IIUC).
+
+Then, if the observed idle duration is between the target residency of the
+selected state and the target residency of the next one, the selected state
+is adequate and that's what we care about really.
+
+If the observed idle duration is below the target residency of the selected
+state, the selected state is too deep and it if is above (or equal to) the
+target residency of the next state, it is too shallow.
+
+> After that it would be nice to somehow know where timers came from; i.e. if
+> I see that residences in a given state are consistently shorter than
+> they're supposed to be, it would be interesting to see who set the timer
+> that causes the wakeup. But... I'm not sure to know how to do that :) Do
+> you have a strategy to track down the origin of timers/interrupts? Is there
+> any script you're using to evaluate teo that you can share?
+
+I need to think about that TBH.
+
+The information that we can get readily should give use quite a good idea of
+what happens on average, though, so let's first do that and then try to dig
+deeper if need be.
+
+I think that the difference between the v1 and v2 of the TEO governor comes
+mostly from the way in which they handle patterns of "early" wakeups.  The
+method used in v1 is very crude (and arguably invalid in general) and it
+will cause shallow states to be selected more often, while the v2 tries to
+be more "intelligent", but it may be overly conservative with that.
+
+I'm working on a v3 that will try to address the above ATM, but I'd like to run
+it on my systems first (I'm going back home from a conference right now).
+
+Cheers,
+Rafael
