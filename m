@@ -1,88 +1,120 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v2] cpuidle: New timer events oriented governor for tickless systems
-Date: Sun, 04 Nov 2018 11:06:17 +0100
-Message-ID: <5001963.Ahc0lEbC1L@aspire.rjw.lan>
-References: <000301d472c2$49f28740$ddd795c0$@net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 03/15] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75 EC
+ bindings
+Date: Sun, 4 Nov 2018 13:26:36 +0100
+Message-ID: <20181104122636.GX23864@amd>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+ <20181010172300.317643-4-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000301d472c2$49f28740$ddd795c0$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============3754414334320641034=="
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <20181010172300.317643-4-lkundrak@v3.sk>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Andy Shevchenko <andy@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 2, 2018 4:39:42 PM CET Doug Smythies wrote:
-> On 2018.10.26 02:12 Rafael J. Wysocki wrote:
-> 
-> ...[snip]...
 
-Again, thanks a lot for the feedback, it is appreciated very much!
+--===============3754414334320641034==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="b2s+RKoBicgQlNJs"
+Content-Disposition: inline
 
-> > The v2 is a re-write of major parts of the original patch.
-> >
-> > The approach the same in general, but the details have changed significantly
-> > with respect to the previous version.  In particular:
-> > * The decay of the idle state metrics is implemented differently.
-> > * There is a more "clever" pattern detection (sort of along the lines
-> >   of what the menu does, but simplified quite a bit and trying to avoid
-> >   including timer wakeups).
-> > * The "promotion" from the "polling" state is gone.
-> > * The "safety net" wakeups are treated as the CPU might have been idle
-> >   until the closest timer.
-> 
-> ...[snip]...
-> 
-> I have been testing this V2 against a baseline that includes all
-> of the pending menu patches. My baseline kernel is somewhere
-> after 4.19, at 345671e.
-> 
-> A side note:
-> Recall that with the menu patch set tests, I found that the baseline
-> reference performance for the pipe test on one core had changed
-> significantly (worse - Kernel 4.19-rc1). Well, now it has changed
-> significantly again (better, and even significantly better than it
-> was for 4.18). 4.18 ~4.8 uSec/loop; 4.19 ~5.2 uSec/loop; 4.19+
-> (345671e) 4.2 uSec/loop.
-> 
-> This V2 is pretty good.
 
-That's awesome!
+--b2s+RKoBicgQlNJs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> All of the tests that I run gave similar
-> performance and power use between the baseline reference and V2.
-> I couldn't find any issues with the decay stuff, and I tried.
-> (sorry, I didn't do pretty graphs.)
-> 
-> After reading Giovanni's reply the other day, I tried the
-> Phoronix dbench test: 12 clients resulted in similar performance,
-> But TEOv2 used a little less processor package power; 256 clients
-> had about -7% performance using TEOv2, but (my numbers are not
-> exact) also used less processor package power.
+On Wed 2018-10-10 19:22:48, Lubomir Rintel wrote:
+> The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
+> signals for handshaking. It needs to know when is the slave (Linux)
+> side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
+> controller node) and when does it wish to respond with a command (the
+> cmd-gpio property).
+>=20
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 
-Good to know, thank you!
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> On 2018.10.31 11:36 Giovanni Gherdovich wrote:
-> 
-> > Something I'd like to do now is verify that "teo"'s predictions
-> > are better than "menu"'s; I'll probably use systemtap to make
-> > some histograms of idle times versus what idle state was chosen
-> > -- that'd be enough to compare the two.
-> 
-> I don't know what a "systemtap" is, but I have (crude) tools to
-> post process trace data into histograms data. I did 5 minute
-> traces during the 12 client Phoronix dbench test and plotted
-> the results, [1]. Sometimes, to the right of the autoscaled
-> graph is another with fixed scaling. Better grouping of idle
-> durations with TEOv2 are clearly visible.
-> 
-> ... Doug
-> 
-> [1] http://fast.smythies.com/linux-pm/k419p/histo_compare.htm
 
-Thanks for the graphs.  At least they show the consistent underestimation of
-the idle duration in menu if I'm not mistaken.
+> ---
+>  .../bindings/misc/olpc,xo1.75-ec.txt          | 24 +++++++++++++++++++
+>  1 file changed, 24 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec=
+=2Etxt
+>=20
+> diff --git a/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt b/=
+Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+> new file mode 100644
+> index 000000000000..14385fee65d2
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
+> @@ -0,0 +1,24 @@
+> +OLPC XO-1.75 Embedded Controller
+> +
+> +Required properties:
+> +- compatible: Should be "olpc,xo1.75-ec".
+> +- cmd-gpio: gpio specifier of the CMD pin
+> +
+> +The embedded controller requires the SPI controller driver to signal rea=
+diness
+> +to receive a transfer (that is, when TX FIFO contains the response data)=
+ by
+> +strobing the ACK pin with the ready signal. See the "ready-gpio" propert=
+y of the
+> +SSP binding as documented in:
+> +<Documentation/devicetree/bindings/spi/spi-pxa2xx.txt>.
+> +
+> +Example:
+> +	&ssp3 {
+> +		spi-slave;
+> +		status =3D "okay";
+> +		ready-gpio =3D <&gpio 125 GPIO_ACTIVE_HIGH>;
+> +
+> +		slave {
+> +			compatible =3D "olpc,xo1.75-ec";
+> +			spi-cpha;
+> +			cmd-gpio =3D <&gpio 155 GPIO_ACTIVE_HIGH>;
+> +		};
+> +	};
 
-Cheers,
-Rafael
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--b2s+RKoBicgQlNJs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlve5XwACgkQMOfwapXb+vJx6QCdGqqNgkjNqR4djwsotKU86vIg
+OmMAnjS8aSbF0gsMNHfYnF5fM5wl4Sfv
+=CwE1
+-----END PGP SIGNATURE-----
+
+--b2s+RKoBicgQlNJs--
+
+--===============3754414334320641034==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+devel mailing list
+devel@linuxdriverproject.org
+http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
+
+--===============3754414334320641034==--
