@@ -1,43 +1,76 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: [PATCH 4/4] power: reset: at91-poweroff: remove at91_ramc_of_match
-Date: Mon, 5 Nov 2018 11:14:31 +0000
-Message-ID: <1541416443-4321-5-git-send-email-claudiu.beznea@microchip.com>
-References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/5] thermal: int340x_thermal: int3400_thermal: simplify
+ getting .driver_data
+Date: Mon, 5 Nov 2018 16:04:17 +0100
+Message-ID: <6a8727da-66d6-8be2-6fd0-ad0984f819d9@linaro.org>
+References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
+ <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Claudiu.Beznea@microchip.com
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Remove at91_ramc_of_match[] since it is not used anywhere in this code.
+On 21/10/2018 22:00, Wolfram Sang wrote:
+> We should get 'driver_data' from 'struct device' directly. Going via
+> platform_device is an unneeded step back and forth.
+> 
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- drivers/power/reset/at91-poweroff.c | 5 -----
- 1 file changed, 5 deletions(-)
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91=
--poweroff.c
-index e75d8f0f0526..43b4cccb7d0c 100644
---- a/drivers/power/reset/at91-poweroff.c
-+++ b/drivers/power/reset/at91-poweroff.c
-@@ -232,11 +232,6 @@ static int __exit at91_poweroff_remove(struct platform=
-_device *pdev)
- 	return 0;
- }
-=20
--static const struct of_device_id at91_ramc_of_match[] =3D {
--	{ .compatible =3D "atmel,sama5d3-ddramc", },
--	{ /* sentinel */ }
--};
--
- static const struct of_device_id at91_poweroff_of_match[] =3D {
- 	{ .compatible =3D "atmel,at91sam9260-shdwc", },
- 	{ .compatible =3D "atmel,at91sam9rl-shdwc", },
---=20
-2.7.4
+
+> 
+> Build tested only. buildbot is happy.
+> 
+>  drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+> index e26b01c05e82..61ca7ce3624e 100644
+> --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
+> +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+> @@ -48,8 +48,7 @@ static ssize_t available_uuids_show(struct device *dev,
+>  				    struct device_attribute *attr,
+>  				    char *buf)
+>  {
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
+> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+>  	int i;
+>  	int length = 0;
+>  
+> @@ -68,8 +67,7 @@ static ssize_t available_uuids_show(struct device *dev,
+>  static ssize_t current_uuid_show(struct device *dev,
+>  				 struct device_attribute *devattr, char *buf)
+>  {
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
+> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+>  
+>  	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
+>  		return sprintf(buf, "%s\n",
+> @@ -82,8 +80,7 @@ static ssize_t current_uuid_store(struct device *dev,
+>  				  struct device_attribute *attr,
+>  				  const char *buf, size_t count)
+>  {
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
+> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+>  	int i;
+>  
+>  	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
