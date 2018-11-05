@@ -1,14 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/5] thermal: spear_thermal: simplify getting .driver_data
-Date: Mon, 5 Nov 2018 16:06:05 +0100
-Message-ID: <8dbe48f1-6e9c-ed43-b902-6d9f7f757017@linaro.org>
+Subject: Re: [PATCH 4/5] thermal: st: st_thermal: simplify getting
+ .driver_data
+Date: Mon, 5 Nov 2018 16:06:30 +0100
+Message-ID: <0c7d3c84-c073-087e-eafb-c93bb5d43ea7@linaro.org>
 References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
- <20181021200053.2194-4-wsa+renesas@sang-engineering.com>
+ <20181021200053.2194-5-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181021200053.2194-4-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20181021200053.2194-5-wsa+renesas@sang-engineering.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org
@@ -27,41 +28,33 @@ Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
 > Build tested only. buildbot is happy.
 > 
->  drivers/thermal/spear_thermal.c | 8 +++-----
->  1 file changed, 3 insertions(+), 5 deletions(-)
+>  drivers/thermal/st/st_thermal.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
-> index 81b35aace9de..8b9d567134d0 100644
-> --- a/drivers/thermal/spear_thermal.c
-> +++ b/drivers/thermal/spear_thermal.c
-> @@ -56,8 +56,7 @@ static struct thermal_zone_device_ops ops = {
->  
->  static int __maybe_unused spear_thermal_suspend(struct device *dev)
+> diff --git a/drivers/thermal/st/st_thermal.c b/drivers/thermal/st/st_thermal.c
+> index be637e6b01d2..b2bbdf6eb02b 100644
+> --- a/drivers/thermal/st/st_thermal.c
+> +++ b/drivers/thermal/st/st_thermal.c
+> @@ -277,8 +277,7 @@ EXPORT_SYMBOL_GPL(st_thermal_unregister);
+>  #ifdef CONFIG_PM_SLEEP
+>  static int st_thermal_suspend(struct device *dev)
 >  {
 > -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct thermal_zone_device *spear_thermal = platform_get_drvdata(pdev);
-> +	struct thermal_zone_device *spear_thermal = dev_get_drvdata(dev);
->  	struct spear_thermal_dev *stdev = spear_thermal->devdata;
->  	unsigned int actual_mask = 0;
+> -	struct st_thermal_sensor *sensor = platform_get_drvdata(pdev);
+> +	struct st_thermal_sensor *sensor = dev_get_drvdata(dev);
 >  
-> @@ -73,15 +72,14 @@ static int __maybe_unused spear_thermal_suspend(struct device *dev)
->  
->  static int __maybe_unused spear_thermal_resume(struct device *dev)
+>  	return st_thermal_sensor_off(sensor);
+>  }
+> @@ -286,8 +285,7 @@ static int st_thermal_suspend(struct device *dev)
+>  static int st_thermal_resume(struct device *dev)
 >  {
+>  	int ret;
 > -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct thermal_zone_device *spear_thermal = platform_get_drvdata(pdev);
-> +	struct thermal_zone_device *spear_thermal = dev_get_drvdata(dev);
->  	struct spear_thermal_dev *stdev = spear_thermal->devdata;
->  	unsigned int actual_mask = 0;
->  	int ret = 0;
+> -	struct st_thermal_sensor *sensor = platform_get_drvdata(pdev);
+> +	struct st_thermal_sensor *sensor = dev_get_drvdata(dev);
 >  
->  	ret = clk_enable(stdev->clk);
->  	if (ret) {
-> -		dev_err(&pdev->dev, "Can't enable clock\n");
-> +		dev_err(dev, "Can't enable clock\n");
->  		return ret;
->  	}
->  
+>  	ret = st_thermal_sensor_on(sensor);
+>  	if (ret)
 > 
 
 
