@@ -1,157 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/4] PM / Domains: Factorize dev_pm_genpd_set_performance_state()
-Date: Mon,  5 Nov 2018 12:06:45 +0530
-Message-ID: <fe07f860e87833377183e1f77ecb089407eb9ad4.1541399301.git.viresh.kumar@linaro.org>
-References: <cover.1541399301.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v7 1/6] dt-bindings: power: Introduce one property to present the battery internal resistance
+Date: Mon,  5 Nov 2018 15:39:06 +0800
+Message-ID: <5640f29e0b7f46f9ee77d80745f8c93eda355c34.1541393063.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1541399301.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, niklas.cassel@linaro.org, rnayak@codeaurora.org, linux-kernel@vger.kernel.org
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org, quentin.schulz@bootlin.com
 List-Id: linux-pm@vger.kernel.org
 
-Separate out _genpd_set_performance_state() and
-_genpd_reeval_performance_state() from
-dev_pm_genpd_set_performance_state() to handle performance state update
-related stuff. This will be used by a later commit.
+The internal resistance of a battery is not a constant in its life cycle,
+this varies over the age of the battery or temperature and so on. But we
+just want use one constant battery internal resistance to estimate the
+battery capacity. Thus this patch introduces one property to present
+the battery factory internal resistance for battery information.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/base/power/domain.c | 104 +++++++++++++++++++++---------------
- 1 file changed, 61 insertions(+), 43 deletions(-)
+Changes from v6:
+ - None.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 0d928359b880..6d2e9b3406f1 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -239,6 +239,62 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
- static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- #endif
+Changes from v5:
+ - None.
+
+Changes from v4:
+ - None.
+
+Changes from v3:
+ - Split binding into one separate patch.
+ - Add LinusW reviewed tag.
+
+Changes from v2:
+ - Rename the property.
+ - Improve the commit message.
+
+Changes from v1:
+ - New patch in v2.
+---
+ .../devicetree/bindings/power/supply/battery.txt   |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+index f4d3b4a..938d027 100644
+--- a/Documentation/devicetree/bindings/power/supply/battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -22,6 +22,7 @@ Optional Properties:
+  - charge-term-current-microamp: current for charge termination phase
+  - constant-charge-current-max-microamp: maximum constant input current
+  - constant-charge-voltage-max-microvolt: maximum constant input voltage
++ - factory-internal-resistance-micro-ohms: battery factory internal resistance
  
-+static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-+					unsigned int state)
-+{
-+	int ret;
-+
-+	if (!genpd_status_on(genpd))
-+		goto out;
-+
-+	ret = genpd->set_performance_state(genpd, state);
-+	if (ret)
-+		return ret;
-+
-+out:
-+	genpd->performance_state = state;
-+	return 0;
-+}
-+
-+static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-+					   unsigned int state)
-+{
-+	struct generic_pm_domain_data *pd_data;
-+	struct pm_domain_data *pdd;
-+
-+	/* New requested state is same as Max requested state */
-+	if (state == genpd->performance_state)
-+		return 0;
-+
-+	/* New requested state is higher than Max requested state */
-+	if (state > genpd->performance_state)
-+		goto update_state;
-+
-+	/* Traverse all devices within the domain */
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		pd_data = to_gpd_data(pdd);
-+
-+		if (pd_data->performance_state > state)
-+			state = pd_data->performance_state;
-+	}
-+
-+	if (state == genpd->performance_state)
-+		return 0;
-+
-+	/*
-+	 * We aren't propagating performance state changes of a subdomain to its
-+	 * masters as we don't have hardware that needs it. Over that, the
-+	 * performance states of subdomain and its masters may not have
-+	 * one-to-one mapping and would require additional information. We can
-+	 * get back to this once we have hardware that needs it. For that
-+	 * reason, we don't have to consider performance state of the subdomains
-+	 * of genpd here.
-+	 */
-+
-+update_state:
-+	return _genpd_set_performance_state(genpd, state);
-+}
-+
- /**
-  * dev_pm_genpd_set_performance_state- Set performance state of device's power
-  * domain.
-@@ -257,10 +313,9 @@ static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- {
- 	struct generic_pm_domain *genpd;
--	struct generic_pm_domain_data *gpd_data, *pd_data;
--	struct pm_domain_data *pdd;
-+	struct generic_pm_domain_data *gpd_data;
- 	unsigned int prev;
--	int ret = 0;
-+	int ret;
+ Battery properties are named, where possible, for the corresponding
+ elements in enum power_supply_property, defined in
+@@ -42,6 +43,7 @@ Example:
+ 		charge-term-current-microamp = <128000>;
+ 		constant-charge-current-max-microamp = <900000>;
+ 		constant-charge-voltage-max-microvolt = <4200000>;
++		factory-internal-resistance-micro-ohms = <250000>;
+ 	};
  
- 	genpd = dev_to_genpd(dev);
- 	if (IS_ERR(genpd))
-@@ -281,47 +336,10 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 	prev = gpd_data->performance_state;
- 	gpd_data->performance_state = state;
- 
--	/* New requested state is same as Max requested state */
--	if (state == genpd->performance_state)
--		goto unlock;
--
--	/* New requested state is higher than Max requested state */
--	if (state > genpd->performance_state)
--		goto update_state;
--
--	/* Traverse all devices within the domain */
--	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
--		pd_data = to_gpd_data(pdd);
--
--		if (pd_data->performance_state > state)
--			state = pd_data->performance_state;
--	}
--
--	if (state == genpd->performance_state)
--		goto unlock;
--
--	/*
--	 * We aren't propagating performance state changes of a subdomain to its
--	 * masters as we don't have hardware that needs it. Over that, the
--	 * performance states of subdomain and its masters may not have
--	 * one-to-one mapping and would require additional information. We can
--	 * get back to this once we have hardware that needs it. For that
--	 * reason, we don't have to consider performance state of the subdomains
--	 * of genpd here.
--	 */
--
--update_state:
--	if (genpd_status_on(genpd)) {
--		ret = genpd->set_performance_state(genpd, state);
--		if (ret) {
--			gpd_data->performance_state = prev;
--			goto unlock;
--		}
--	}
--
--	genpd->performance_state = state;
-+	ret = _genpd_reeval_performance_state(genpd, state);
-+	if (ret)
-+		gpd_data->performance_state = prev;
- 
--unlock:
- 	genpd_unlock(genpd);
- 
- 	return ret;
+ 	charger: charger@11 {
 -- 
-2.19.1.568.g152ad8e3369a
+1.7.9.5
