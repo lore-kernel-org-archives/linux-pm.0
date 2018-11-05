@@ -1,45 +1,43 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Mon, 5 Nov 2018 10:38:07 +0000
-Message-ID: <20181105103807.GA12647@e107155-lin>
-References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
- <1539257761-23023-3-git-send-email-tdas@codeaurora.org>
- <153981915373.5275.15971019914218464179@swboyd.mtv.corp.google.com>
- <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
+From: <Claudiu.Beznea@microchip.com>
+Subject: [PATCH 0/4] power: reset: at91-poweroff: cleanups
+Date: Mon, 5 Nov 2018 11:14:21 +0000
+Message-ID: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>
-Cc: Stephen Boyd <swboyd@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com, Sudeep Holla <sudeep.holla@arm.com>
+To: sre@kernel.org, Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Claudiu.Beznea@microchip.com
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 03, 2018 at 08:36:00AM +0530, Taniya Das wrote:
-> Hello Stephen,
->
-> On 10/18/2018 5:02 AM, Stephen Boyd wrote:
-> > Quoting Taniya Das (2018-10-11 04:36:01)
-> > > --- a/drivers/cpufreq/Kconfig.arm
-> > > +++ b/drivers/cpufreq/Kconfig.arm
+Hi,
 
-[...]
+This series includes cleanups for at91-poweroff.c similar to the one did fo=
+r
+SAMA5D2 Xplained SHDWC on series at [1].
 
-> > > +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] = {
-> >
-> > Is this going to change in the future?
-> >
->
-> Yes, they could change and that was the reason to introduce the offsets.
-> This was discussed earlier too with Sudeep and was to add them.
+Changes were tested on SAMA5D3 Xplained, SAMA5D4 Xplained and AT91SAM9G35-E=
+K
+boards.
 
-Sorry, I didn't like these registers to be coming from DT and I had the
-same question: will this keep changing ? And IIRC, the answer was yes.
-But I agree with Stephen, if and when we see the change, you can
-introduce the array and keep it simple until then.
+Thank you,
+Claudiu Beznea
 
---
-Regards,
-Sudeep
+[1] https://www.spinics.net/lists/arm-kernel/msg673559.html
+
+Claudiu Beznea (4):
+  power: reset: at91-poweroff: use one poweroff function for
+    at91-poweroff
+  power: reset: at91-poweroff: move shdwc related data to one structure
+  power: reset: at91-poweroff: check shdwc data structure at the
+    beginning of probe
+  power: reset: at91-poweroff: remove at91_ramc_of_match
+
+ drivers/power/reset/at91-poweroff.c | 101 +++++++++++++++++++++-----------=
+----
+ 1 file changed, 59 insertions(+), 42 deletions(-)
+
+--=20
+2.7.4
