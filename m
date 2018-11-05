@@ -1,740 +1,449 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v7 6/6] power: supply: Add Spreadtrum SC27XX fuel gauge unit driver
-Date: Mon,  5 Nov 2018 15:39:11 +0800
-Message-ID: <b1dea411d17a42bde8bed6b6e78c2103500b584f.1541393063.git.baolin.wang@linaro.org>
-References: <5640f29e0b7f46f9ee77d80745f8c93eda355c34.1541393063.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5640f29e0b7f46f9ee77d80745f8c93eda355c34.1541393063.git.baolin.wang@linaro.org>
-In-Reply-To: <5640f29e0b7f46f9ee77d80745f8c93eda355c34.1541393063.git.baolin.wang@linaro.org>
-References: <5640f29e0b7f46f9ee77d80745f8c93eda355c34.1541393063.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org, ctatlor97@gmail.com, linus.walleij@linaro.org, quentin.schulz@bootlin.com
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V9 5/5] firmware: imx: add SCU power domain driver
+Date: Mon, 5 Nov 2018 09:41:06 +0100
+Message-ID: <CAPDyKFqT8J6ooMaoZEc4U97E7Q1xa1GpNw6iU8QaRSHrjm-NUg@mail.gmail.com>
+References: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
+ <1541085298-375-6-git-send-email-aisheng.dong@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1541085298-375-6-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "A.s. Dong" <aisheng.dong@nxp.com>
+Cc: "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the Spreadtrum SC27XX serial PMICs fuel gauge support,
-which is used to calculate the battery capacity.
+On 1 November 2018 at 16:20, A.s. Dong <aisheng.dong@nxp.com> wrote:
+> Some i.MX SoCs contain a system controller that is responsible for
+> controlling the state of the IPs that are present. Communication
+> between the host processor running an OS and the system controller
+> happens through a SCU protocol. This patch adds SCU protocol based
+> power domains drivers.
+>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-Original-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
----
-Changes from v6:
- - Use DIV_ROUND_CLOSEST macro to simplify code.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Changes from v5:
- - Save the OCV values in micro volts for OCV capacity table.
- - Use devm_kmemdup() instead of devm_kzalloc() in sc27xx_fgu_hw_init()
+Kind regards
+Uffe
 
-Changes from v4:
- - None.
-
-Changes from v3:
- - None.
-
-Changes from v2:
- - Use core helper functions to look up OCV capacity table.
- - Use device_property_read_u32() instead of of_property_read_u32().
- - Add acked tag from Linus.
-
-Changes from v1:
- - Use battery standard properties to get internal resistance and ocv table.
- - Change devm_gpiod_get_optional() to devm_gpiod_get().
- - Add power_supply_changed() when detecting battery present change.
- - Return micro volts for sc27xx_fgu_get_vbat_ocv().
----
- drivers/power/supply/Kconfig             |    7 +
- drivers/power/supply/Makefile            |    1 +
- drivers/power/supply/sc27xx_fuel_gauge.c |  656 ++++++++++++++++++++++++++++++
- 3 files changed, 664 insertions(+)
- create mode 100644 drivers/power/supply/sc27xx_fuel_gauge.c
-
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index f27cf07..917f4b7 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -652,4 +652,11 @@ config CHARGER_SC2731
- 	 Say Y here to enable support for battery charging with SC2731
- 	 PMIC chips.
- 
-+config FUEL_GAUGE_SC27XX
-+	tristate "Spreadtrum SC27XX fuel gauge driver"
-+	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-+	help
-+	 Say Y here to enable support for fuel gauge with SC27XX
-+	 PMIC chips.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index 767105b..b731c2a 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -86,3 +86,4 @@ obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
- obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
- obj-$(CONFIG_CHARGER_CROS_USBPD)	+= cros_usbpd-charger.o
- obj-$(CONFIG_CHARGER_SC2731)	+= sc2731_charger.o
-+obj-$(CONFIG_FUEL_GAUGE_SC27XX)	+= sc27xx_fuel_gauge.o
-diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
-new file mode 100644
-index 0000000..8613584
---- /dev/null
-+++ b/drivers/power/supply/sc27xx_fuel_gauge.c
-@@ -0,0 +1,656 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2018 Spreadtrum Communications Inc.
-+
-+#include <linux/gpio/consumer.h>
-+#include <linux/iio/consumer.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+
-+/* PMIC global control registers definition */
-+#define SC27XX_MODULE_EN0		0xc08
-+#define SC27XX_CLK_EN0			0xc18
-+#define SC27XX_FGU_EN			BIT(7)
-+#define SC27XX_FGU_RTC_EN		BIT(6)
-+
-+/* FGU registers definition */
-+#define SC27XX_FGU_START		0x0
-+#define SC27XX_FGU_CONFIG		0x4
-+#define SC27XX_FGU_ADC_CONFIG		0x8
-+#define SC27XX_FGU_STATUS		0xc
-+#define SC27XX_FGU_INT_EN		0x10
-+#define SC27XX_FGU_INT_CLR		0x14
-+#define SC27XX_FGU_INT_STS		0x1c
-+#define SC27XX_FGU_VOLTAGE		0x20
-+#define SC27XX_FGU_OCV			0x24
-+#define SC27XX_FGU_POCV			0x28
-+#define SC27XX_FGU_CURRENT		0x2c
-+#define SC27XX_FGU_CLBCNT_SETH		0x50
-+#define SC27XX_FGU_CLBCNT_SETL		0x54
-+#define SC27XX_FGU_CLBCNT_VALH		0x68
-+#define SC27XX_FGU_CLBCNT_VALL		0x6c
-+#define SC27XX_FGU_CLBCNT_QMAXL		0x74
-+
-+#define SC27XX_WRITE_SELCLB_EN		BIT(0)
-+#define SC27XX_FGU_CLBCNT_MASK		GENMASK(15, 0)
-+#define SC27XX_FGU_CLBCNT_SHIFT		16
-+
-+#define SC27XX_FGU_1000MV_ADC		686
-+#define SC27XX_FGU_1000MA_ADC		1372
-+#define SC27XX_FGU_CUR_BASIC_ADC	8192
-+#define SC27XX_FGU_SAMPLE_HZ		2
-+
-+/*
-+ * struct sc27xx_fgu_data: describe the FGU device
-+ * @regmap: regmap for register access
-+ * @dev: platform device
-+ * @battery: battery power supply
-+ * @base: the base offset for the controller
-+ * @lock: protect the structure
-+ * @gpiod: GPIO for battery detection
-+ * @channel: IIO channel to get battery temperature
-+ * @internal_resist: the battery internal resistance in mOhm
-+ * @total_cap: the total capacity of the battery in mAh
-+ * @init_cap: the initial capacity of the battery in mAh
-+ * @init_clbcnt: the initial coulomb counter
-+ * @max_volt: the maximum constant input voltage in millivolt
-+ * @table_len: the capacity table length
-+ * @cap_table: capacity table with corresponding ocv
-+ */
-+struct sc27xx_fgu_data {
-+	struct regmap *regmap;
-+	struct device *dev;
-+	struct power_supply *battery;
-+	u32 base;
-+	struct mutex lock;
-+	struct gpio_desc *gpiod;
-+	struct iio_channel *channel;
-+	bool bat_present;
-+	int internal_resist;
-+	int total_cap;
-+	int init_cap;
-+	int init_clbcnt;
-+	int max_volt;
-+	int table_len;
-+	struct power_supply_battery_ocv_table *cap_table;
-+};
-+
-+static const char * const sc27xx_charger_supply_name[] = {
-+	"sc2731_charger",
-+	"sc2720_charger",
-+	"sc2721_charger",
-+	"sc2723_charger",
-+};
-+
-+static int sc27xx_fgu_adc_to_current(int adc)
-+{
-+	return DIV_ROUND_CLOSEST(adc * 1000, SC27XX_FGU_1000MA_ADC);
-+}
-+
-+static int sc27xx_fgu_adc_to_voltage(int adc)
-+{
-+	return DIV_ROUND_CLOSEST(adc * 1000, SC27XX_FGU_1000MV_ADC);
-+}
-+
-+/*
-+ * When system boots on, we can not read battery capacity from coulomb
-+ * registers, since now the coulomb registers are invalid. So we should
-+ * calculate the battery open circuit voltage, and get current battery
-+ * capacity according to the capacity table.
-+ */
-+static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, int *cap)
-+{
-+	int volt, cur, oci, ocv, ret;
-+
-+	/*
-+	 * After system booting on, the SC27XX_FGU_CLBCNT_QMAXL register saved
-+	 * the first sampled open circuit current.
-+	 */
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT_QMAXL,
-+			  &cur);
-+	if (ret)
-+		return ret;
-+
-+	cur <<= 1;
-+	oci = sc27xx_fgu_adc_to_current(cur - SC27XX_FGU_CUR_BASIC_ADC);
-+
-+	/*
-+	 * Should get the OCV from SC27XX_FGU_POCV register at the system
-+	 * beginning. It is ADC values reading from registers which need to
-+	 * convert the corresponding voltage.
-+	 */
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_POCV, &volt);
-+	if (ret)
-+		return ret;
-+
-+	volt = sc27xx_fgu_adc_to_voltage(volt);
-+	ocv = volt * 1000 - oci * data->internal_resist;
-+
-+	/*
-+	 * Parse the capacity table to look up the correct capacity percent
-+	 * according to current battery's corresponding OCV values.
-+	 */
-+	*cap = power_supply_ocv2cap_simple(data->cap_table, data->table_len,
-+					   ocv);
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_set_clbcnt(struct sc27xx_fgu_data *data, int clbcnt)
-+{
-+	int ret;
-+
-+	clbcnt *= SC27XX_FGU_SAMPLE_HZ;
-+
-+	ret = regmap_update_bits(data->regmap,
-+				 data->base + SC27XX_FGU_CLBCNT_SETL,
-+				 SC27XX_FGU_CLBCNT_MASK, clbcnt);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_update_bits(data->regmap,
-+				 data->base + SC27XX_FGU_CLBCNT_SETH,
-+				 SC27XX_FGU_CLBCNT_MASK,
-+				 clbcnt >> SC27XX_FGU_CLBCNT_SHIFT);
-+	if (ret)
-+		return ret;
-+
-+	return regmap_update_bits(data->regmap, data->base + SC27XX_FGU_START,
-+				 SC27XX_WRITE_SELCLB_EN,
-+				 SC27XX_WRITE_SELCLB_EN);
-+}
-+
-+static int sc27xx_fgu_get_clbcnt(struct sc27xx_fgu_data *data, int *clb_cnt)
-+{
-+	int ccl, cch, ret;
-+
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT_VALL,
-+			  &ccl);
-+	if (ret)
-+		return ret;
-+
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_CLBCNT_VALH,
-+			  &cch);
-+	if (ret)
-+		return ret;
-+
-+	*clb_cnt = ccl & SC27XX_FGU_CLBCNT_MASK;
-+	*clb_cnt |= (cch & SC27XX_FGU_CLBCNT_MASK) << SC27XX_FGU_CLBCNT_SHIFT;
-+	*clb_cnt /= SC27XX_FGU_SAMPLE_HZ;
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_capacity(struct sc27xx_fgu_data *data, int *cap)
-+{
-+	int ret, cur_clbcnt, delta_clbcnt, delta_cap, temp;
-+
-+	/* Get current coulomb counters firstly */
-+	ret = sc27xx_fgu_get_clbcnt(data, &cur_clbcnt);
-+	if (ret)
-+		return ret;
-+
-+	delta_clbcnt = cur_clbcnt - data->init_clbcnt;
-+
-+	/*
-+	 * Convert coulomb counter to delta capacity (mAh), and set multiplier
-+	 * as 100 to improve the precision.
-+	 */
-+	temp = DIV_ROUND_CLOSEST(delta_clbcnt, 360);
-+	temp = sc27xx_fgu_adc_to_current(temp);
-+
-+	/*
-+	 * Convert to capacity percent of the battery total capacity,
-+	 * and multiplier is 100 too.
-+	 */
-+	delta_cap = DIV_ROUND_CLOSEST(temp * 100, data->total_cap);
-+	*cap = delta_cap + data->init_cap;
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_vbat_vol(struct sc27xx_fgu_data *data, int *val)
-+{
-+	int ret, vol;
-+
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_VOLTAGE, &vol);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * It is ADC values reading from registers which need to convert to
-+	 * corresponding voltage values.
-+	 */
-+	*val = sc27xx_fgu_adc_to_voltage(vol);
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_current(struct sc27xx_fgu_data *data, int *val)
-+{
-+	int ret, cur;
-+
-+	ret = regmap_read(data->regmap, data->base + SC27XX_FGU_CURRENT, &cur);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * It is ADC values reading from registers which need to convert to
-+	 * corresponding current values.
-+	 */
-+	*val = sc27xx_fgu_adc_to_current(cur - SC27XX_FGU_CUR_BASIC_ADC);
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_vbat_ocv(struct sc27xx_fgu_data *data, int *val)
-+{
-+	int vol, cur, ret;
-+
-+	ret = sc27xx_fgu_get_vbat_vol(data, &vol);
-+	if (ret)
-+		return ret;
-+
-+	ret = sc27xx_fgu_get_current(data, &cur);
-+	if (ret)
-+		return ret;
-+
-+	/* Return the battery OCV in micro volts. */
-+	*val = vol * 1000 - cur * data->internal_resist;
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_temp(struct sc27xx_fgu_data *data, int *temp)
-+{
-+	return iio_read_channel_processed(data->channel, temp);
-+}
-+
-+static int sc27xx_fgu_get_health(struct sc27xx_fgu_data *data, int *health)
-+{
-+	int ret, vol;
-+
-+	ret = sc27xx_fgu_get_vbat_vol(data, &vol);
-+	if (ret)
-+		return ret;
-+
-+	if (vol > data->max_volt)
-+		*health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+	else
-+		*health = POWER_SUPPLY_HEALTH_GOOD;
-+
-+	return 0;
-+}
-+
-+static int sc27xx_fgu_get_status(struct sc27xx_fgu_data *data, int *status)
-+{
-+	union power_supply_propval val;
-+	struct power_supply *psy;
-+	int i, ret = -EINVAL;
-+
-+	for (i = 0; i < ARRAY_SIZE(sc27xx_charger_supply_name); i++) {
-+		psy = power_supply_get_by_name(sc27xx_charger_supply_name[i]);
-+		if (!psy)
-+			continue;
-+
-+		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_STATUS,
-+						&val);
-+		power_supply_put(psy);
-+		if (ret)
-+			return ret;
-+
-+		*status = val.intval;
-+	}
-+
-+	return ret;
-+}
-+
-+static int sc27xx_fgu_get_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   union power_supply_propval *val)
-+{
-+	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
-+	int ret = 0;
-+	int value;
-+
-+	mutex_lock(&data->lock);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = sc27xx_fgu_get_status(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = sc27xx_fgu_get_health(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = data->bat_present;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_TEMP:
-+		ret = sc27xx_fgu_get_temp(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = sc27xx_fgu_get_capacity(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = sc27xx_fgu_get_vbat_vol(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value * 1000;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
-+		ret = sc27xx_fgu_get_vbat_ocv(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+		ret = sc27xx_fgu_get_current(data, &value);
-+		if (ret)
-+			goto error;
-+
-+		val->intval = value * 1000;
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+error:
-+	mutex_unlock(&data->lock);
-+	return ret;
-+}
-+
-+static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
-+{
-+	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
-+
-+	power_supply_changed(data->battery);
-+}
-+
-+static enum power_supply_property sc27xx_fgu_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_VOLTAGE_OCV,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+};
-+
-+static const struct power_supply_desc sc27xx_fgu_desc = {
-+	.name			= "sc27xx-fgu",
-+	.type			= POWER_SUPPLY_TYPE_BATTERY,
-+	.properties		= sc27xx_fgu_props,
-+	.num_properties		= ARRAY_SIZE(sc27xx_fgu_props),
-+	.get_property		= sc27xx_fgu_get_property,
-+	.external_power_changed	= sc27xx_fgu_external_power_changed,
-+};
-+
-+static irqreturn_t sc27xx_fgu_bat_detection(int irq, void *dev_id)
-+{
-+	struct sc27xx_fgu_data *data = dev_id;
-+	int state;
-+
-+	mutex_lock(&data->lock);
-+
-+	state = gpiod_get_value_cansleep(data->gpiod);
-+	if (state < 0) {
-+		dev_err(data->dev, "failed to get gpio state\n");
-+		mutex_unlock(&data->lock);
-+		return IRQ_RETVAL(state);
-+	}
-+
-+	data->bat_present = !!state;
-+
-+	mutex_unlock(&data->lock);
-+
-+	power_supply_changed(data->battery);
-+	return IRQ_HANDLED;
-+}
-+
-+static void sc27xx_fgu_disable(void *_data)
-+{
-+	struct sc27xx_fgu_data *data = _data;
-+
-+	regmap_update_bits(data->regmap, SC27XX_CLK_EN0, SC27XX_FGU_RTC_EN, 0);
-+	regmap_update_bits(data->regmap, SC27XX_MODULE_EN0, SC27XX_FGU_EN, 0);
-+}
-+
-+static int sc27xx_fgu_cap_to_clbcnt(struct sc27xx_fgu_data *data, int capacity)
-+{
-+	/*
-+	 * Get current capacity (mAh) = battery total capacity (mAh) *
-+	 * current capacity percent (capacity / 100).
-+	 */
-+	int cur_cap = DIV_ROUND_CLOSEST(data->total_cap * capacity, 100);
-+
-+	/*
-+	 * Convert current capacity (mAh) to coulomb counter according to the
-+	 * formula: 1 mAh =3.6 coulomb.
-+	 */
-+	return DIV_ROUND_CLOSEST(cur_cap * 36, 10);
-+}
-+
-+static int sc27xx_fgu_hw_init(struct sc27xx_fgu_data *data)
-+{
-+	struct power_supply_battery_info info = { };
-+	struct power_supply_battery_ocv_table *table;
-+	int ret;
-+
-+	ret = power_supply_get_battery_info(data->battery, &info);
-+	if (ret) {
-+		dev_err(data->dev, "failed to get battery information\n");
-+		return ret;
-+	}
-+
-+	data->total_cap = info.charge_full_design_uah / 1000;
-+	data->max_volt = info.constant_charge_voltage_max_uv / 1000;
-+	data->internal_resist = info.factory_internal_resistance_uohm / 1000;
-+
-+	/*
-+	 * For SC27XX fuel gauge device, we only use one ocv-capacity
-+	 * table in normal temperature 20 Celsius.
-+	 */
-+	table = power_supply_find_ocv2cap_table(&info, 20, &data->table_len);
-+	if (!table)
-+		return -EINVAL;
-+
-+	data->cap_table = devm_kmemdup(data->dev, table,
-+				       data->table_len * sizeof(*table),
-+				       GFP_KERNEL);
-+	if (!data->cap_table) {
-+		power_supply_put_battery_info(data->battery, &info);
-+		return -ENOMEM;
-+	}
-+
-+	power_supply_put_battery_info(data->battery, &info);
-+
-+	/* Enable the FGU module */
-+	ret = regmap_update_bits(data->regmap, SC27XX_MODULE_EN0,
-+				 SC27XX_FGU_EN, SC27XX_FGU_EN);
-+	if (ret) {
-+		dev_err(data->dev, "failed to enable fgu\n");
-+		return ret;
-+	}
-+
-+	/* Enable the FGU RTC clock to make it work */
-+	ret = regmap_update_bits(data->regmap, SC27XX_CLK_EN0,
-+				 SC27XX_FGU_RTC_EN, SC27XX_FGU_RTC_EN);
-+	if (ret) {
-+		dev_err(data->dev, "failed to enable fgu RTC clock\n");
-+		goto disable_fgu;
-+	}
-+
-+	/*
-+	 * Get the boot battery capacity when system powers on, which is used to
-+	 * initialize the coulomb counter. After that, we can read the coulomb
-+	 * counter to measure the battery capacity.
-+	 */
-+	ret = sc27xx_fgu_get_boot_capacity(data, &data->init_cap);
-+	if (ret) {
-+		dev_err(data->dev, "failed to get boot capacity\n");
-+		goto disable_clk;
-+	}
-+
-+	/*
-+	 * Convert battery capacity to the corresponding initial coulomb counter
-+	 * and set into coulomb counter registers.
-+	 */
-+	data->init_clbcnt = sc27xx_fgu_cap_to_clbcnt(data, data->init_cap);
-+	ret = sc27xx_fgu_set_clbcnt(data, data->init_clbcnt);
-+	if (ret) {
-+		dev_err(data->dev, "failed to initialize coulomb counter\n");
-+		goto disable_clk;
-+	}
-+
-+	return 0;
-+
-+disable_clk:
-+	regmap_update_bits(data->regmap, SC27XX_CLK_EN0, SC27XX_FGU_RTC_EN, 0);
-+disable_fgu:
-+	regmap_update_bits(data->regmap, SC27XX_MODULE_EN0, SC27XX_FGU_EN, 0);
-+
-+	return ret;
-+}
-+
-+static int sc27xx_fgu_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct power_supply_config fgu_cfg = { };
-+	struct sc27xx_fgu_data *data;
-+	int ret, irq;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->regmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!data->regmap) {
-+		dev_err(&pdev->dev, "failed to get regmap\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = device_property_read_u32(&pdev->dev, "reg", &data->base);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to get fgu address\n");
-+		return ret;
-+	}
-+
-+	data->channel = devm_iio_channel_get(&pdev->dev, "bat-temp");
-+	if (IS_ERR(data->channel)) {
-+		dev_err(&pdev->dev, "failed to get IIO channel\n");
-+		return PTR_ERR(data->channel);
-+	}
-+
-+	data->gpiod = devm_gpiod_get(&pdev->dev, "bat-detect", GPIOD_IN);
-+	if (IS_ERR(data->gpiod)) {
-+		dev_err(&pdev->dev, "failed to get battery detection GPIO\n");
-+		return PTR_ERR(data->gpiod);
-+	}
-+
-+	ret = gpiod_get_value_cansleep(data->gpiod);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to get gpio state\n");
-+		return ret;
-+	}
-+
-+	data->bat_present = !!ret;
-+	mutex_init(&data->lock);
-+	data->dev = &pdev->dev;
-+
-+	fgu_cfg.drv_data = data;
-+	fgu_cfg.of_node = np;
-+	data->battery = devm_power_supply_register(&pdev->dev, &sc27xx_fgu_desc,
-+						   &fgu_cfg);
-+	if (IS_ERR(data->battery)) {
-+		dev_err(&pdev->dev, "failed to register power supply\n");
-+		return PTR_ERR(data->battery);
-+	}
-+
-+	ret = sc27xx_fgu_hw_init(data);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to initialize fgu hardware\n");
-+		return ret;
-+	}
-+
-+	ret = devm_add_action(&pdev->dev, sc27xx_fgu_disable, data);
-+	if (ret) {
-+		sc27xx_fgu_disable(data);
-+		dev_err(&pdev->dev, "failed to add fgu disable action\n");
-+		return ret;
-+	}
-+
-+	irq = gpiod_to_irq(data->gpiod);
-+	if (irq < 0) {
-+		dev_err(&pdev->dev, "failed to translate GPIO to IRQ\n");
-+		return irq;
-+	}
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+					sc27xx_fgu_bat_detection,
-+					IRQF_ONESHOT | IRQF_TRIGGER_RISING |
-+					IRQF_TRIGGER_FALLING,
-+					pdev->name, data);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to request IRQ\n");
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id sc27xx_fgu_of_match[] = {
-+	{ .compatible = "sprd,sc2731-fgu", },
-+	{ }
-+};
-+
-+static struct platform_driver sc27xx_fgu_driver = {
-+	.probe = sc27xx_fgu_probe,
-+	.driver = {
-+		.name = "sc27xx-fgu",
-+		.of_match_table = sc27xx_fgu_of_match,
-+	}
-+};
-+
-+module_platform_driver(sc27xx_fgu_driver);
-+
-+MODULE_DESCRIPTION("Spreadtrum SC27XX PMICs Fual Gauge Unit Driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.7.9.5
+> ---
+> ChangeLog:
+> v8->v9:
+>  * add comment at the top of scu-pd.c file about how to convert
+>    to "single global domain".
+> v7->v8:
+>  * update to #power-domain-cells 1 binding
+> v6->v7:
+>  * still using generic "fsl,scu-pd" to driver binding incase the future
+>    SoC is compatible
+>  * remove unnecessary cast
+> v5->v6:
+>  * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
+>    accordingly
+> v4->v5:
+>  * minor improvements according to Sascha's suggestions
+> v3->v4:
+>  * update firmware headfile patch from include/soc/imx to
+>    include/linux/firmware/imx
+> v2->v3:
+>  * name of structures/enums updated with imx_sc prefix
+> v1->v2:
+>  * move into drivers/firmware/imx
+>  * Implement sc_pm_set_resource_power_mode() API in the driver instead
+>    of call it via SCU API according to Sascha's suggestion
+> ---
+>  drivers/firmware/imx/Kconfig  |   6 +
+>  drivers/firmware/imx/Makefile |   3 +-
+>  drivers/firmware/imx/scu-pd.c | 339 ++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 347 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/firmware/imx/scu-pd.c
+>
+> diff --git a/drivers/firmware/imx/Kconfig b/drivers/firmware/imx/Kconfig
+> index b170c28..6a7a7c2 100644
+> --- a/drivers/firmware/imx/Kconfig
+> +++ b/drivers/firmware/imx/Kconfig
+> @@ -9,3 +9,9 @@ config IMX_SCU
+>
+>           This driver manages the IPC interface between host CPU and the
+>           SCU firmware running on M4.
+> +
+> +config IMX_SCU_PD
+> +       bool "IMX SCU Power Domain driver"
+> +       depends on IMX_SCU
+> +       help
+> +         The System Controller Firmware (SCFW) based power domain driver.
+> diff --git a/drivers/firmware/imx/Makefile b/drivers/firmware/imx/Makefile
+> index 0ac04df..1b2e15b 100644
+> --- a/drivers/firmware/imx/Makefile
+> +++ b/drivers/firmware/imx/Makefile
+> @@ -1,2 +1,3 @@
+>  # SPDX-License-Identifier: GPL-2.0
+> -obj-$(CONFIG_IMX_SCU)  += imx-scu.o misc.o
+> +obj-$(CONFIG_IMX_SCU)          += imx-scu.o misc.o
+> +obj-$(CONFIG_IMX_SCU_PD)       += scu-pd.o
+> diff --git a/drivers/firmware/imx/scu-pd.c b/drivers/firmware/imx/scu-pd.c
+> new file mode 100644
+> index 0000000..407245f
+> --- /dev/null
+> +++ b/drivers/firmware/imx/scu-pd.c
+> @@ -0,0 +1,339 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
+> + * Copyright 2017-2018 NXP
+> + *     Dong Aisheng <aisheng.dong@nxp.com>
+> + *
+> + * Implementation of the SCU based Power Domains
+> + *
+> + * NOTE: a better implementation suggested by Ulf Hansson is using a
+> + * single global power domain and implement the ->attach|detach_dev()
+> + * callback for the genpd and use the regular of_genpd_add_provider_simple().
+> + * From within the ->attach_dev(), we could get the OF node for
+> + * the device that is being attached and then parse the power-domain
+> + * cell containing the "resource id" and store that in the per device
+> + * struct generic_pm_domain_data (we have void pointer there for
+> + * storing these kind of things).
+> + *
+> + * Additionally, we need to implement the ->stop() and ->start()
+> + * callbacks of genpd, which is where you "power on/off" devices,
+> + * rather than using the above ->power_on|off() callbacks.
+> + *
+> + * However, there're two known issues:
+> + * 1. The ->attach_dev() of power domain infrastructure still does
+> + *    not support multi domains case as the struct device *dev passed
+> + *    in is a virtual PD device, it does not help for parsing the real
+> + *    device resource id from device tree, so it's unware of which
+> + *    real sub power domain of device should be attached.
+> + *
+> + *    The framework needs some proper extension to support multi power
+> + *    domain cases.
+> + *
+> + * 2. It also breaks most of current drivers as the driver probe sequence
+> + *    behavior changed if removing ->power_on|off() callback and use
+> + *    ->start() and ->stop() instead. genpd_dev_pm_attach will only power
+> + *    up the domain and attach device, but will not call .start() which
+> + *    relies on device runtime pm. That means the device power is still
+> + *    not up before running driver probe function. For SCU enabled
+> + *    platforms, all device drivers accessing registers/clock without power
+> + *    domain enabled will trigger a HW access error. That means we need fix
+> + *    most drivers probe sequence with proper runtime pm.
+> + *
+> + * In summary, we need fix above two issue before being able to switch to
+> + * the "single global power domain" way.
+> + *
+> + */
+> +
+> +#include <dt-bindings/firmware/imx/rsrc.h>
+> +#include <linux/firmware/imx/sci.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/slab.h>
+> +
+> +/* SCU Power Mode Protocol definition */
+> +struct imx_sc_msg_req_set_resource_power_mode {
+> +       struct imx_sc_rpc_msg hdr;
+> +       u16 resource;
+> +       u8 mode;
+> +} __packed;
+> +
+> +#define IMX_SCU_PD_NAME_SIZE 20
+> +struct imx_sc_pm_domain {
+> +       struct generic_pm_domain pd;
+> +       char name[IMX_SCU_PD_NAME_SIZE];
+> +       u32 rsrc;
+> +};
+> +
+> +struct imx_sc_pd_range {
+> +       char *name;
+> +       u32 rsrc;
+> +       u8 num;
+> +       bool postfix;
+> +};
+> +
+> +struct imx_sc_pd_soc {
+> +       const struct imx_sc_pd_range *pd_ranges;
+> +       u8 num_ranges;
+> +};
+> +
+> +static const struct imx_sc_pd_range imx8qxp_scu_pd_ranges[] = {
+> +       /* LSIO SS */
+> +       { "lsio-pwm", IMX_SC_R_PWM_0, 8, 1 },
+> +       { "lsio-gpio", IMX_SC_R_GPIO_0, 8, 1 },
+> +       { "lsio-gpt", IMX_SC_R_GPT_0, 5, 1 },
+> +       { "lsio-kpp", IMX_SC_R_KPP, 1, 0 },
+> +       { "lsio-fspi", IMX_SC_R_FSPI_0, 2, 1 },
+> +       { "lsio-mu", IMX_SC_R_MU_0A, 14, 1 },
+> +
+> +       /* CONN SS */
+> +       { "con-usb", IMX_SC_R_USB_0, 2, 1 },
+> +       { "con-usb0phy", IMX_SC_R_USB_0_PHY, 1, 0 },
+> +       { "con-usb2", IMX_SC_R_USB_2, 1, 0 },
+> +       { "con-usb2phy", IMX_SC_R_USB_2_PHY, 1, 0 },
+> +       { "con-sdhc", IMX_SC_R_SDHC_0, 3, 1 },
+> +       { "con-enet", IMX_SC_R_ENET_0, 2, 1 },
+> +       { "con-nand", IMX_SC_R_NAND, 1, 0 },
+> +       { "con-mlb", IMX_SC_R_MLB_0, 1, 1 },
+> +
+> +       /* Audio DMA SS */
+> +       { "adma-audio-pll0", IMX_SC_R_AUDIO_PLL_0, 1, 0 },
+> +       { "adma-audio-pll1", IMX_SC_R_AUDIO_PLL_1, 1, 0 },
+> +       { "adma-audio-clk-0", IMX_SC_R_AUDIO_CLK_0, 1, 0 },
+> +       { "adma-dma0-ch", IMX_SC_R_DMA_0_CH0, 16, 1 },
+> +       { "adma-dma1-ch", IMX_SC_R_DMA_1_CH0, 16, 1 },
+> +       { "adma-dma2-ch", IMX_SC_R_DMA_2_CH0, 5, 1 },
+> +       { "adma-asrc0", IMX_SC_R_ASRC_0, 1, 0 },
+> +       { "adma-asrc1", IMX_SC_R_ASRC_1, 1, 0 },
+> +       { "adma-esai0", IMX_SC_R_ESAI_0, 1, 0 },
+> +       { "adma-spdif0", IMX_SC_R_SPDIF_0, 1, 0 },
+> +       { "adma-sai", IMX_SC_R_SAI_0, 3, 1 },
+> +       { "adma-amix", IMX_SC_R_AMIX, 1, 0 },
+> +       { "adma-mqs0", IMX_SC_R_MQS_0, 1, 0 },
+> +       { "adma-dsp", IMX_SC_R_DSP, 1, 0 },
+> +       { "adma-dsp-ram", IMX_SC_R_DSP_RAM, 1, 0 },
+> +       { "adma-can", IMX_SC_R_CAN_0, 3, 1 },
+> +       { "adma-ftm", IMX_SC_R_FTM_0, 2, 1 },
+> +       { "adma-lpi2c", IMX_SC_R_I2C_0, 4, 1 },
+> +       { "adma-adc", IMX_SC_R_ADC_0, 1, 1 },
+> +       { "adma-lcd", IMX_SC_R_LCD_0, 1, 1 },
+> +       { "adma-lcd0-pwm", IMX_SC_R_LCD_0_PWM_0, 1, 1 },
+> +       { "adma-lpuart", IMX_SC_R_UART_0, 4, 1 },
+> +       { "adma-lpspi", IMX_SC_R_SPI_0, 4, 1 },
+> +
+> +       /* VPU SS  */
+> +       { "vpu", IMX_SC_R_VPU, 1, 0 },
+> +       { "vpu-pid", IMX_SC_R_VPU_PID0, 8, 1 },
+> +       { "vpu-dec0", IMX_SC_R_VPU_DEC_0, 1, 0 },
+> +       { "vpu-enc0", IMX_SC_R_VPU_ENC_0, 1, 0 },
+> +
+> +       /* GPU SS */
+> +       { "gpu0-pid", IMX_SC_R_GPU_0_PID0, 4, 1 },
+> +
+> +       /* HSIO SS */
+> +       { "hsio-pcie-b", IMX_SC_R_PCIE_B, 1, 0 },
+> +       { "hsio-serdes-1", IMX_SC_R_SERDES_1, 1, 0 },
+> +       { "hsio-gpio", IMX_SC_R_HSIO_GPIO, 1, 0 },
+> +
+> +       /* MIPI/LVDS SS */
+> +       { "mipi0", IMX_SC_R_MIPI_0, 1, 0 },
+> +       { "mipi0-pwm0", IMX_SC_R_MIPI_0_PWM_0, 1, 0 },
+> +       { "mipi0-i2c", IMX_SC_R_MIPI_0_I2C_0, 2, 1 },
+> +       { "lvds0", IMX_SC_R_LVDS_0, 1, 0 },
+> +
+> +       /* DC SS */
+> +       { "dc0", IMX_SC_R_DC_0, 1, 0 },
+> +       { "dc0-pll", IMX_SC_R_DC_0_PLL_0, 2, 1 },
+> +};
+> +
+> +static const struct imx_sc_pd_soc imx8qxp_scu_pd = {
+> +       .pd_ranges = imx8qxp_scu_pd_ranges,
+> +       .num_ranges = ARRAY_SIZE(imx8qxp_scu_pd_ranges),
+> +};
+> +
+> +static struct imx_sc_ipc *pm_ipc_handle;
+> +
+> +static inline struct imx_sc_pm_domain *
+> +to_imx_sc_pd(struct generic_pm_domain *genpd)
+> +{
+> +       return container_of(genpd, struct imx_sc_pm_domain, pd);
+> +}
+> +
+> +static int imx_sc_pd_power(struct generic_pm_domain *domain, bool power_on)
+> +{
+> +       struct imx_sc_msg_req_set_resource_power_mode msg;
+> +       struct imx_sc_rpc_msg *hdr = &msg.hdr;
+> +       struct imx_sc_pm_domain *pd;
+> +       int ret;
+> +
+> +       pd = to_imx_sc_pd(domain);
+> +
+> +       hdr->ver = IMX_SC_RPC_VERSION;
+> +       hdr->svc = IMX_SC_RPC_SVC_PM;
+> +       hdr->func = IMX_SC_PM_FUNC_SET_RESOURCE_POWER_MODE;
+> +       hdr->size = 2;
+> +
+> +       msg.resource = pd->rsrc;
+> +       msg.mode = power_on ? IMX_SC_PM_PW_MODE_ON : IMX_SC_PM_PW_MODE_LP;
+> +
+> +       ret = imx_scu_call_rpc(pm_ipc_handle, &msg, true);
+> +       if (ret)
+> +               dev_err(&domain->dev, "failed to power %s resource %d ret %d\n",
+> +                       power_on ? "up" : "off", pd->rsrc, ret);
+> +
+> +       return ret;
+> +}
+> +
+> +static int imx_sc_pd_power_on(struct generic_pm_domain *domain)
+> +{
+> +       return imx_sc_pd_power(domain, true);
+> +}
+> +
+> +static int imx_sc_pd_power_off(struct generic_pm_domain *domain)
+> +{
+> +       return imx_sc_pd_power(domain, false);
+> +}
+> +
+> +static struct generic_pm_domain *imx_scu_pd_xlate(struct of_phandle_args *spec,
+> +                                                 void *data)
+> +{
+> +       struct generic_pm_domain *domain = ERR_PTR(-ENOENT);
+> +       struct genpd_onecell_data *pd_data = data;
+> +       unsigned int i;
+> +
+> +       for (i = 0; i < pd_data->num_domains; i++) {
+> +               struct imx_sc_pm_domain *sc_pd;
+> +
+> +               sc_pd = to_imx_sc_pd(pd_data->domains[i]);
+> +               if (sc_pd->rsrc == spec->args[0]) {
+> +                       domain = &sc_pd->pd;
+> +                       break;
+> +               }
+> +       }
+> +
+> +       return domain;
+> +}
+> +
+> +static struct imx_sc_pm_domain *
+> +imx_scu_add_pm_domain(struct device *dev, int idx,
+> +                     const struct imx_sc_pd_range *pd_ranges)
+> +{
+> +       struct imx_sc_pm_domain *sc_pd;
+> +       int ret;
+> +
+> +       sc_pd = devm_kzalloc(dev, sizeof(*sc_pd), GFP_KERNEL);
+> +       if (!sc_pd)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       sc_pd->rsrc = pd_ranges->rsrc + idx;
+> +       sc_pd->pd.power_off = imx_sc_pd_power_off;
+> +       sc_pd->pd.power_on = imx_sc_pd_power_on;
+> +
+> +       if (pd_ranges->postfix)
+> +               snprintf(sc_pd->name, sizeof(sc_pd->name),
+> +                        "%s%i", pd_ranges->name, idx);
+> +       else
+> +               snprintf(sc_pd->name, sizeof(sc_pd->name),
+> +                        "%s", pd_ranges->name);
+> +
+> +       sc_pd->pd.name = sc_pd->name;
+> +
+> +       if (sc_pd->rsrc >= IMX_SC_R_LAST) {
+> +               dev_warn(dev, "invalid pd %s rsrc id %d found",
+> +                        sc_pd->name, sc_pd->rsrc);
+> +
+> +               devm_kfree(dev, sc_pd);
+> +               return NULL;
+> +       }
+> +
+> +       ret = pm_genpd_init(&sc_pd->pd, NULL, true);
+> +       if (ret) {
+> +               dev_warn(dev, "failed to init pd %s rsrc id %d",
+> +                        sc_pd->name, sc_pd->rsrc);
+> +               devm_kfree(dev, sc_pd);
+> +               return NULL;
+> +       }
+> +
+> +       return sc_pd;
+> +}
+> +
+> +static int imx_scu_init_pm_domains(struct device *dev,
+> +                                   const struct imx_sc_pd_soc *pd_soc)
+> +{
+> +       const struct imx_sc_pd_range *pd_ranges = pd_soc->pd_ranges;
+> +       struct generic_pm_domain **domains;
+> +       struct genpd_onecell_data *pd_data;
+> +       struct imx_sc_pm_domain *sc_pd;
+> +       u32 count = 0;
+> +       int i, j;
+> +
+> +       for (i = 0; i < pd_soc->num_ranges; i++)
+> +               count += pd_ranges[i].num;
+> +
+> +       domains = devm_kcalloc(dev, count, sizeof(*domains), GFP_KERNEL);
+> +       if (!domains)
+> +               return -ENOMEM;
+> +
+> +       pd_data = devm_kzalloc(dev, sizeof(*pd_data), GFP_KERNEL);
+> +       if (!pd_data)
+> +               return -ENOMEM;
+> +
+> +       count = 0;
+> +       for (i = 0; i < pd_soc->num_ranges; i++) {
+> +               for (j = 0; j < pd_ranges[i].num; j++) {
+> +                       sc_pd = imx_scu_add_pm_domain(dev, j, &pd_ranges[i]);
+> +                       if (IS_ERR_OR_NULL(sc_pd))
+> +                               continue;
+> +
+> +                       domains[count++] = &sc_pd->pd;
+> +                       dev_dbg(dev, "added power domain %s\n", sc_pd->pd.name);
+> +               }
+> +       }
+> +
+> +       pd_data->domains = domains;
+> +       pd_data->num_domains = count;
+> +       pd_data->xlate = imx_scu_pd_xlate;
+> +
+> +       of_genpd_add_provider_onecell(dev->of_node, pd_data);
+> +
+> +       return 0;
+> +}
+> +
+> +static int imx_sc_pd_probe(struct platform_device *pdev)
+> +{
+> +       const struct imx_sc_pd_soc *pd_soc;
+> +       int ret;
+> +
+> +       ret = imx_scu_get_handle(&pm_ipc_handle);
+> +       if (ret)
+> +               return ret;
+> +
+> +       pd_soc = of_device_get_match_data(&pdev->dev);
+> +       if (!pd_soc)
+> +               return -ENODEV;
+> +
+> +       return imx_scu_init_pm_domains(&pdev->dev, pd_soc);
+> +}
+> +
+> +static const struct of_device_id imx_sc_pd_match[] = {
+> +       { .compatible = "fsl,imx8qxp-scu-pd", &imx8qxp_scu_pd},
+> +       { /* sentinel */ }
+> +};
+> +
+> +static struct platform_driver imx_sc_pd_driver = {
+> +       .driver = {
+> +               .name = "imx-scu-pd",
+> +               .of_match_table = imx_sc_pd_match,
+> +       },
+> +       .probe = imx_sc_pd_probe,
+> +};
+> +builtin_platform_driver(imx_sc_pd_driver);
+> +
+> +MODULE_AUTHOR("Dong Aisheng <aisheng.dong@nxp.com>");
+> +MODULE_DESCRIPTION("IMX SCU Power Domain driver");
+> +MODULE_LICENSE("GPL v2");
+> --
+> 2.7.4
+>
