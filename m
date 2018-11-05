@@ -1,194 +1,118 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 00/17] thermal: enable+check sensor after its setup
- is finished
-Date: Mon, 5 Nov 2018 17:35:55 +0100
-Message-ID: <ba5bc790-6809-e0e3-58fb-757c8c617181@samsung.com>
-References: <CGME20181017155314epcas2p4a5aa24978b36354a2ccb2f9b0fb6f0f6@epcas2p4.samsung.com>
-        <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com>
-        <1541387097.2124.9.camel@intel.com>
+From: Giovanni Gherdovich <ggherdovich@suse.cz>
+Subject: Re: [RFC/RFT][PATCH v2] cpuidle: New timer events oriented governor
+ for tickless systems
+Date: Mon, 05 Nov 2018 20:11:58 +0100
+Message-ID: <1541445118.3441.4.camel@suse.cz>
+References: FyDag8LEB6DhgFyDfglTus <000301d472c2$49f28740$ddd795c0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1541387097.2124.9.camel@intel.com>
+In-Reply-To: <000301d472c2$49f28740$ddd795c0$@net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Amit kucheria <amit.kucheria@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, 2018-11-02 at 08:39 -0700, Doug Smythies wrote:
+> 
+> I have been testing this V2 against a baseline that includes all
+> of the pending menu patches. My baseline kernel is somewhere
+> after 4.19, at 345671e.
+> 
+> A side note:
+> Recall that with the menu patch set tests, I found that the baseline
+> reference performance for the pipe test on one core had changed
+> significantly (worse - Kernel 4.19-rc1). Well, now it has changed
+> significantly again (better, and even significantly better than it
+> was for 4.18). 4.18 ~4.8 uSec/loop; 4.19 ~5.2 uSec/loop; 4.19+
+> (345671e) 4.2 uSec/loop.
+> 
+> This V2 is pretty good. All of the tests that I run gave similar
+> performance and power use between the baseline reference and V2.
+> I couldn't find any issues with the decay stuff, and I tried.
+> (sorry, I didn't do pretty graphs.)
+> 
+> After reading Giovanni's reply the other day, I tried the
+> Phoronix dbench test: 12 clients resulted in similar performance,
+> But TEOv2 used a little less processor package power; 256 clients
+> had about -7% performance using TEOv2, but (my numbers are not
+> exact) also used less processor package power.
 
-On 11/05/2018 04:04 AM, Zhang Rui wrote:
-> Hi, Bartlomiej,
+Uhm, I see. The results I've got vary between machines; that could
+depend on the CPU type. What is your machine processor model (or
+microarchitecture, see the search box at the website https://ark.intel.com ),
+and how many logical cores does it have?
 
-Hi Rui,
+For the record, in my previous email I wrote that my script runs dbench with
+up to NUMCPUS*8 clients, but that's misleading; indeed for the 48-cores
+machines I had runs with 1, 2, 4, 8, 16, 32 and 64 clients.
+https://lore.kernel.org/lkml/1541010981.3423.2.camel@suse.cz/
 
-> Interesting, I'm about to bring this issue to Linux Plumber Conference
-> this year for discussion, and I'm also proposing a solution to fix the
-> issues, but only with thermal core part finished yet.
-> can you please take a look at it?
-> https://patchwork.kernel.org/project/linux-pm/list/?series=38181
+The sequence is generated with
 
-Thank you for the patches but they seem to be far from being
-a complete solution for issues fixed by my patchset. Even
-thermal core part is not finished yet as it doesn't provide
-a way to register disabled sensors for DT thermal drivers (only
-for platform ones)..
+    CLIENT=1
+    DBENCH_MAX_CLIENTS=$((NUMCPUS*8))
 
-Why not simply apply my patchset now and incrementally work
-on top of it to implement fixes for issues your patchset is
-addressing?
+    while [ $CLIENT -le $DBENCH_MAX_CLIENTS ]; do
 
-My patchset may not be a perfect solution but IMO it is good
-enough and it has been practically ready since v1 posted in
-April (v2 fixes all issues requested by Eduardo's review from
-September)..
+            ./bin/dbench [...] $CLIENT
 
-> thanks,
-> rui
-> 
-> On 三, 2018-10-17 at 17:52 +0200, Bartlomiej Zolnierkiewicz wrote:
->> Hi,
->>
->> [devm]_thermal_zone_of_sensor_register() is used to register
->> thermal sensor by thermal drivers using DeviceTree. Besides
->> registering sensor this function also immediately:
->>
->> - enables it:
->>
->>   tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED)
->>   (->set_mode is set to of_thermal_set_mode() in of-thermal.c)
->>
->> - checks it (indirectly by using of_thermal_set_mode()):
->>
->>   thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
->>   (which in turn ends up using ->get_temp method).
->>
->> For many DT thermal drivers this causes a problem because:
->>
->> - [devm]_thermal_zone_of_sensor_register() need to be called in
->>   order to obtain data about thermal trips which are then used to
->>   finish hardware sensor setup (only after which ->get_temp can
->>   be used)
->>
->> There is also related issue for DT thermal drivers that support
->> IRQ (i.e. exynos and rockchip ones):
->>
->> - sensor hardware should be enabled only after IRQ handler is
->>   requested (because otherwise we might get IRQs that we can't
->>   handle)
->>
->> - IRQ handler needs tzd structure which is obtained from
->>   [devm_]thermal_zone_of_sensor_register()
->>
->> - after [devm_]thermal_zone_of_sensor_register() call core
->>   thermal code assumes that sensor is enabled and ready to use
->>   (i.e. that IRQ handler has been requested and sensor hardware
->>   has been enabled)
->>
->> In order to fix all abovementioned issues sensor registration,
->> enable and check operations are separated in the core DT thermal
->> code and corresponding DT thermal drivers are modified to do sensor
->> setup correctly.
->>
->> Changes since v1:
->> - rebased on the current -next kernel (next-20181015)
->> - enhanced patch descriptions and cover letter
->> - renamed thermal_zone_device_toggler() to thermal_zone_set_mode()
->> - converted thermal_zone_set_mode() to use enum thermal_device_mode
->> - added CONFIG_THERMAL=n stubs for thermal_zone_set_mode() and
->>   thermal_zone_device_check()
->> - fixed uses of [devm]_thermal_zone_of_sensor_register() outside of
->>   drivers/thermal/
->> - changed ordering between patch #2 and #3 in order to add all
->>   needed core helpers first before fixing sensor setup code
->> - changed ordering between patch #3 and #4 in order to simplify them
->> - renamed patch #3 to "thermal: separate sensor enable and check
->>   operations"
->> - renamed patch #4 to "thermal: separate sensor registration and
->>   enable+check operations"
->>
->> Best regards,
->> --
->> Bartlomiej Zolnierkiewicz
->> Samsung R&D Institute Poland
->> Samsung Electronics
->>
->>
->> Bartlomiej Zolnierkiewicz (17):
->>   thermal: add thermal_zone_set_mode() helper
->>   thermal: add thermal_zone_device_check() helper
->>   thermal: separate sensor enable and check operations
->>   thermal: separate sensor registration and enable+check operations
->>   thermal: bcm2835: enable+check sensor after its setup is finished
->>   thermal: brcmstb: enable+check sensor after its setup is finished
->>   thermal: hisi_thermal: enable+check sensor after its setup is
->> finished
->>   thermal: qcom: tsens: enable+check sensor after its setup is
->> finished
->>   thermal: qoriq: enable+check sensor after its setup is finished
->>   thermal: rcar_gen3_thermal: enable+check sensor after its setup is
->>     finished
->>   thermal: rockchip_thermal: enable+check sensor after its setup is
->>     finished
->>   thermal: exynos: enable+check sensor after its setup is finished
->>   thermal: tegra: enable+check sensor after its setup is finished
->>   thermal: ti-soc-thermal: enable+check sensor after its setup is
->>     finished
->>   thermal: uniphier: enable+check sensor after its setup is finished
->>   thermal: zx2967: enable+check sensor after its setup is finished
->>   thermal: warn on attempts to read temperature on disabled sensors
->>
->>  drivers/acpi/thermal.c                             |  5 +--
->>  drivers/ata/ahci_imx.c                             | 10 ++++--
->>  drivers/hwmon/hwmon.c                              |  5 +++
->>  drivers/hwmon/ntc_thermistor.c                     |  4 +++
->>  drivers/hwmon/scpi-hwmon.c                         |  4 +++
->>  drivers/iio/adc/sun4i-gpadc-iio.c                  |  5 +++
->>  drivers/input/touchscreen/sun4i-ts.c               |  8 ++++-
->>  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
->>  drivers/platform/x86/acerhdf.c                     |  6 +++-
->>  drivers/regulator/max8973-regulator.c              |  6 ++--
->>  drivers/thermal/armada_thermal.c                   |  3 ++
->>  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
->>  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
->>  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
->>  drivers/thermal/da9062-thermal.c                   |  7 ++--
->>  drivers/thermal/db8500_thermal.c                   |  5 ++-
->>  drivers/thermal/hisi_thermal.c                     | 22 ++++------
->> ---
->>  drivers/thermal/imx_thermal.c                      |  3 +-
->>  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
->>  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
->>  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
->>  drivers/thermal/max77620_thermal.c                 |  6 ++--
->>  drivers/thermal/mtk_thermal.c                      |  3 ++
->>  drivers/thermal/of-thermal.c                       |  6 ++--
->>  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 ++-
->>  drivers/thermal/qcom/tsens.c                       |  6 ++++
->>  drivers/thermal/qoriq_thermal.c                    |  3 ++
->>  drivers/thermal/rcar_gen3_thermal.c                |  7 ++--
->>  drivers/thermal/rcar_thermal.c                     |  7 ++--
->>  drivers/thermal/rockchip_thermal.c                 | 38 +++++++++++-
->> ----------
->>  drivers/thermal/samsung/exynos_tmu.c               |  7 +++-
->>  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
->>  drivers/thermal/tango_thermal.c                    |  5 +++
->>  drivers/thermal/tegra/soctherm.c                   |  3 ++
->>  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
->>  drivers/thermal/thermal-generic-adc.c              |  3 ++
->>  drivers/thermal/thermal_core.c                     | 14 ++++----
->>  drivers/thermal/thermal_helpers.c                  | 32
->> ++++++++++++++++++
->>  drivers/thermal/thermal_sysfs.c                    | 17 ++++++----
->>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 +++-
->>  drivers/thermal/uniphier_thermal.c                 |  6 +++-
->>  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
->>  drivers/thermal/zx2967_thermal.c                   |  3 ++
->>  include/linux/thermal.h                            | 11 +++++++
->>  44 files changed, 220 insertions(+), 87 deletions(-)
+            if [ $CLIENT -lt $NUMCPUS ]; then
+                    CLIENT=$((CLIENT*2))
+            else
+                    CLIENT=$((CLIENT*8))
+            fi
+    done
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+In practice the max number of clients I get is slightly below NUMCPUS*2 to
+reach saturation. I write this as I read you ran it with 256 clients but I
+never went that high.
+
+> 
+> On 2018.10.31 11:36 Giovanni Gherdovich wrote:
+> 
+> > Something I'd like to do now is verify that "teo"'s predictions
+> > are better than "menu"'s; I'll probably use systemtap to make
+> > some histograms of idle times versus what idle state was chosen
+> > -- that'd be enough to compare the two.
+> 
+> I don't know what a "systemtap" is, but I have (crude) tools to
+> post process trace data into histograms data. I did 5 minute
+> traces during the 12 client Phoronix dbench test and plotted
+> the results, [1]. Sometimes, to the right of the autoscaled
+> graph is another with fixed scaling. Better grouping of idle
+> durations with TEOv2 are clearly visible.
+> 
+> ... Doug
+> 
+> [1] http://fast.smythies.com/linux-pm/k419p/histo_compare.htm
+
+Oh, that's interesting, thanks. Can you post the break-even residency times and
+exit latencies for your CPUs? On my Skylake test machine I get this from sysfs:
+
+$ cd /sys/devices/system/cpu/cpu0/cpuidle
+$ for state in * ; do
+echo -e \
+"STATE: $state\t\
+DESC: $(cat $state/desc)\t\
+NAME: $(cat $state/name)\t\
+LATENCY: $(cat $state/latency)\t\
+RESIDENCY: $(cat $state/residency)"
+done
+
+STATE: state0   DESC: CPUIDLE CORE POLL IDLE    NAME: POLL      LATENCY: 0      RESIDENCY: 0
+STATE: state1   DESC: MWAIT 0x00        NAME: C1        LATENCY: 2      RESIDENCY: 2
+STATE: state2   DESC: MWAIT 0x01        NAME: C1E       LATENCY: 10     RESIDENCY: 20
+STATE: state3   DESC: MWAIT 0x10        NAME: C3        LATENCY: 70     RESIDENCY: 100
+STATE: state4   DESC: MWAIT 0x20        NAME: C6        LATENCY: 85     RESIDENCY: 200
+STATE: state5   DESC: MWAIT 0x33        NAME: C7s       LATENCY: 124    RESIDENCY: 800
+STATE: state6   DESC: MWAIT 0x40        NAME: C8        LATENCY: 200    RESIDENCY: 800
+
+At the bottom of the email at
+https://lore.kernel.org/lkml/4168371.zz0pVZtGOY@aspire.rjw.lan/
+Rafael explains how the sysfs residencies are important to understand the
+histograms.
+
+Thanks,
+Giovanni
