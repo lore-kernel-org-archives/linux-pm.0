@@ -1,19 +1,19 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/5] thermal: int340x_thermal: int3400_thermal: simplify
- getting .driver_data
-Date: Mon, 5 Nov 2018 16:04:17 +0100
-Message-ID: <6a8727da-66d6-8be2-6fd0-ad0984f819d9@linaro.org>
+Subject: Re: [PATCH 2/5] thermal: rockchip_thermal: simplify getting
+ .driver_data
+Date: Mon, 5 Nov 2018 16:05:16 +0100
+Message-ID: <e022320e-3a85-070c-4f9e-700457ae4386@linaro.org>
 References: <20181021200053.2194-1-wsa+renesas@sang-engineering.com>
- <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
+ <20181021200053.2194-3-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181021200053.2194-2-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20181021200053.2194-3-wsa+renesas@sang-engineering.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-kernel@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 On 21/10/2018 22:00, Wolfram Sang wrote:
@@ -24,47 +24,46 @@ On 21/10/2018 22:00, Wolfram Sang wrote:
 
 Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-
+> ---
 > 
 > Build tested only. buildbot is happy.
 > 
->  drivers/thermal/int340x_thermal/int3400_thermal.c | 9 +++------
->  1 file changed, 3 insertions(+), 6 deletions(-)
+>  drivers/thermal/rockchip_thermal.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
 > 
-> diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> index e26b01c05e82..61ca7ce3624e 100644
-> --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> @@ -48,8 +48,7 @@ static ssize_t available_uuids_show(struct device *dev,
->  				    struct device_attribute *attr,
->  				    char *buf)
->  {
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
->  	int i;
->  	int length = 0;
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index f36375d5a16c..9c7643d62ed7 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -1327,8 +1327,7 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
 >  
-> @@ -68,8 +67,7 @@ static ssize_t available_uuids_show(struct device *dev,
->  static ssize_t current_uuid_show(struct device *dev,
->  				 struct device_attribute *devattr, char *buf)
+>  static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
 >  {
 > -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
->  
->  	if (priv->uuid_bitmap & (1 << priv->current_uuid_index))
->  		return sprintf(buf, "%s\n",
-> @@ -82,8 +80,7 @@ static ssize_t current_uuid_store(struct device *dev,
->  				  struct device_attribute *attr,
->  				  const char *buf, size_t count)
->  {
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
-> +	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
+> -	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+> +	struct rockchip_thermal_data *thermal = dev_get_drvdata(dev);
 >  	int i;
 >  
->  	for (i = 0; i < INT3400_THERMAL_MAXIMUM_UUID; ++i) {
+>  	for (i = 0; i < thermal->chip->chn_num; i++)
+> @@ -1346,8 +1345,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+>  
+>  static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  {
+> -	struct platform_device *pdev = to_platform_device(dev);
+> -	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+> +	struct rockchip_thermal_data *thermal = dev_get_drvdata(dev);
+>  	int i;
+>  	int error;
+>  
+> @@ -1376,7 +1374,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  					      id, thermal->regs,
+>  					      thermal->tshut_temp);
+>  		if (error)
+> -			dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
+> +			dev_err(dev, "%s: invalid tshut=%d, error=%d\n",
+>  				__func__, thermal->tshut_temp, error);
+>  	}
+>  
 > 
 
 
