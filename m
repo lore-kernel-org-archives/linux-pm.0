@@ -1,48 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: imx6q: add return value check for voltage scale
-Date: Mon, 5 Nov 2018 08:01:52 +0530
-Message-ID: <20181105023152.pldy2i7rvsysijha@vireshk-i7>
-References: <1541379270-30149-1-git-send-email-Anson.Huang@nxp.com>
+Subject: Re: [PATCH] Documentation: cpufreq: Correct a typo
+Date: Mon, 5 Nov 2018 10:40:12 +0530
+Message-ID: <CAOh2x=nSWwN90GsyRokUoCZo5OLHN-LyVS3t3rpcAMn0v6+yVA@mail.gmail.com>
+References: <20181101013257.659-1-zhaoweiliew@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1541379270-30149-1-git-send-email-Anson.Huang@nxp.com>
+In-Reply-To: <20181101013257.659-1-zhaoweiliew@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: zhaoweiliew@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Documentation <linux-doc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Jiri Kosina <trivial@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05-11-18, 00:59, Anson Huang wrote:
-> Add return value check for voltage scale when ARM clock
-> rate change fail.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
++Rafael
+
+On Thu, Nov 1, 2018 at 7:06 AM Zhao Wei Liew <zhaoweiliew@gmail.com> wrote:
+>
+> Fix a typo in the admin-guide documentation for cpufreq.
+>
+> Signed-off-by: Zhao Wei Liew <zhaoweiliew@gmail.com>
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 8cfee0a..d8c3595 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -160,8 +160,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	/* Ensure the arm clock divider is what we expect */
->  	ret = clk_set_rate(clks[ARM].clk, new_freq * 1000);
->  	if (ret) {
-> +		int ret1;
-> +
->  		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
-> -		regulator_set_voltage_tol(arm_reg, volt_old, 0);
-> +		ret1 = regulator_set_voltage_tol(arm_reg, volt_old, 0);
-> +		if (ret1)
-> +			dev_warn(cpu_dev,
-> +				 "failed to restore vddarm voltage: %d\n", ret1);
->  		return ret;
->  	}
->  
+>  Documentation/admin-guide/pm/cpufreq.rst | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
+> index 47153e64dfb5..7eca9026a9ed 100644
+> --- a/Documentation/admin-guide/pm/cpufreq.rst
+> +++ b/Documentation/admin-guide/pm/cpufreq.rst
+> @@ -150,7 +150,7 @@ data structures necessary to handle the given policy and, possibly, to add
+>  a governor ``sysfs`` interface to it.  Next, the governor is started by
+>  invoking its ``->start()`` callback.
+>
+> -That callback it expected to register per-CPU utilization update callbacks for
+> +That callback is expected to register per-CPU utilization update callbacks for
+>  all of the online CPUs belonging to the given policy with the CPU scheduler.
+>  The utilization update callbacks will be invoked by the CPU scheduler on
+>  important events, like task enqueue and dequeue, on every iteration of the
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
