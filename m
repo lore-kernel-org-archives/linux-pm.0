@@ -1,14 +1,16 @@
 From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 0/9] Add NUMA aware async_schedule calls
-Date: Tue, 06 Nov 2018 08:25:56 -0800
-Message-ID: <9a6a3359da7b0c43b58efc5510fdaab109f3a393.camel@linux.intel.com>
+Subject: Re: [driver-core PATCH v5 1/9] workqueue: Provide queue_work_node
+ to queue work near a given NUMA node
+Date: Tue, 06 Nov 2018 08:27:19 -0800
+Message-ID: <c7f9e6b6b3d7e2217f93bb23b16589dd5dc0b092.camel@linux.intel.com>
 References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
- <1541465425.196084.170.camel@acm.org>
+ <154145230445.29224.14651284855380723028.stgit@ahduyck-desk1.jf.intel.com>
+ <1541464948.196084.168.camel@acm.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <1541465425.196084.170.camel-HInyCGIudOg@public.gmane.org>
+In-Reply-To: <1541464948.196084.168.camel-HInyCGIudOg@public.gmane.org>
 List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
  <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
@@ -22,30 +24,27 @@ To: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>, linux-kernel-u79u
 Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2018-11-05 at 16:50 -0800, Bart Van Assche wrote:
+On Mon, 2018-11-05 at 16:42 -0800, Bart Van Assche wrote:
 > On Mon, 2018-11-05 at 13:11 -0800, Alexander Duyck wrote:
-> > This patch set provides functionality that will help to improve the
-> > locality of the async_schedule calls used to provide deferred
-> > initialization.
+> > +/**
+> > + * workqueue_select_cpu_near - Select a CPU based on NUMA node
+> > + * @node: NUMA node ID that we want to bind a CPU from
 > 
-> Hi Alexander,
+>                                           ^^^^
+>                                           select?
+> > +	/* If CPU is valid return that, otherwise just defer */
+> > +	return (cpu < nr_cpu_ids) ? cpu : WORK_CPU_UNBOUND;
 > 
-> Is this patch series perhaps available in a public git tree? That would make
-> it easier for me to test my sd changes on top of your patches than applying
-> this patch series myself on kernel v4.20-rc1.
+> Please leave out the superfluous parentheses if this patch series would have to
+> be reposted.
 > 
-> Thanks,
+> Anyway:
 > 
-> Bart.
+> Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
 
-Hi Bart,
-
-Unfortunately I don't have a public git tree to host this on.
-
-You may want to see if you can just put the patches together as a
-bundle in patchwork and download them off of lore.kernel.org at:
-https://lore.kernel.org/patchwork/project/lkml/list/?series=371783
+I will incorporate you suggestions and add your Reviewed-by for the
+next submission.
 
 Thanks.
 
--Alex
+- Alex
