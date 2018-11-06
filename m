@@ -1,250 +1,239 @@
-From: kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order of
- operations for deferred probe and remove
-Date: Tue, 6 Nov 2018 12:10:35 +0800
-Message-ID: <201811061228.iteFLO2p%fengguang.wu@intel.com>
-References: <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2 00/17] thermal: enable+check sensor after its setup
+ is finished
+Date: Tue, 06 Nov 2018 15:34:38 +0800
+Message-ID: <1541489678.2124.71.camel@intel.com>
+References: <CGME20181017155314epcas2p4a5aa24978b36354a2ccb2f9b0fb6f0f6@epcas2p4.samsung.com>
+         <1539791563-5959-1-git-send-email-b.zolnierkie@samsung.com>
+         <1541387097.2124.9.camel@intel.com>
+         <ba5bc790-6809-e0e3-58fb-757c8c617181@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <154145232484.29224.1635232599636954462.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
-Content-Disposition: inline
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kbuild-all-JC7UmRfGjtg@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <ba5bc790-6809-e0e3-58fb-757c8c617181@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Amit kucheria <amit.kucheria@linaro.org>, Eric Anholt <eric@anholt.net>, Stefan Wahren <stefan.wahren@i2se.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Keerthy <j-keerthy@ti.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alexander,
+Hi, Bartlomiej,
 
-Thank you for the patch! Perhaps something to improve:
+On 一, 2018-11-05 at 17:35 +0100, Bartlomiej Zolnierkiewicz wrote:
+> On 11/05/2018 04:04 AM, Zhang Rui wrote:
+> > 
+> > Hi, Bartlomiej,
+> Hi Rui,
+> 
+> > 
+> > Interesting, I'm about to bring this issue to Linux Plumber
+> > Conference
+> > this year for discussion, and I'm also proposing a solution to fix
+> > the
+> > issues, but only with thermal core part finished yet.
+> > can you please take a look at it?
+> > https://patchwork.kernel.org/project/linux-pm/list/?series=38181
+> Thank you for the patches but they seem to be far from being
+> a complete solution for issues fixed by my patchset.
 
-[auto build test WARNING on driver-core/master]
+Right, as I said, this is a draft patch to illustrate my idea for those
+issues. And it is not targeting for upstream.
 
-url:    https://github.com/0day-ci/linux/commits/Alexander-Duyck/Add-NUMA-aware-async_schedule-calls/20181106-093800
-reproduce: make htmldocs
+>  Even
+> thermal core part is not finished yet as it doesn't provide
+> a way to register disabled sensors for DT thermal drivers (only
+> for platform ones)..
 
-All warnings (new ones prefixed by >>):
+we need sequential change of of_thermal to set tzp->disable
+in of_parse_thermal_zones.
 
-   include/net/mac80211.h:1001: warning: Function parameter or member 'status.is_valid_ack_signal' not described in 'ieee80211_tx_info'
-   include/net/mac80211.h:1001: warning: Function parameter or member 'status.status_driver_data' not described in 'ieee80211_tx_info'
-   include/net/mac80211.h:1001: warning: Function parameter or member 'driver_rates' not described in 'ieee80211_tx_info'
-   include/net/mac80211.h:1001: warning: Function parameter or member 'pad' not described in 'ieee80211_tx_info'
-   include/net/mac80211.h:1001: warning: Function parameter or member 'rate_driver_data' not described in 'ieee80211_tx_info'
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   include/net/mac80211.h:477: warning: cannot understand function prototype: 'struct ieee80211_ftm_responder_params '
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'rx_stats_avg' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'rx_stats_avg.signal' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'rx_stats_avg.chain_signal' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.filtered' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.retry_failed' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.retry_count' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.lost_packets' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.last_tdls_pkt_time' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.msdu_retries' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.msdu_failed' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.last_ack' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.last_ack_signal' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.ack_signal_filled' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'status_stats.avg_ack_signal' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'tx_stats.packets' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'tx_stats.bytes' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'tx_stats.last_rate' not described in 'sta_info'
-   net/mac80211/sta_info.h:588: warning: Function parameter or member 'tx_stats.msdu' not described in 'sta_info'
-   kernel/rcu/tree.c:685: warning: Excess function parameter 'irq' description in 'rcu_nmi_exit'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_excl.cb' not described in 'dma_buf'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_excl.poll' not described in 'dma_buf'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_excl.active' not described in 'dma_buf'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_shared.cb' not described in 'dma_buf'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_shared.poll' not described in 'dma_buf'
-   include/linux/dma-buf.h:304: warning: Function parameter or member 'cb_shared.active' not described in 'dma_buf'
-   include/linux/dma-fence-array.h:54: warning: Function parameter or member 'work' not described in 'dma_fence_array'
-   include/linux/gpio/driver.h:375: warning: Function parameter or member 'init_valid_mask' not described in 'gpio_chip'
-   include/linux/iio/hw-consumer.h:1: warning: no structured comments found
->> include/linux/device.h:1056: warning: Function parameter or member 'async_probe' not described in 'device'
-   include/linux/input/sparse-keymap.h:46: warning: Function parameter or member 'sw' not described in 'key_entry'
-   drivers/mtd/nand/raw/nand_base.c:603: warning: Excess function parameter 'mtd' description in 'panic_nand_wait'
-   drivers/mtd/nand/raw/nand_base.c:603: warning: Excess function parameter 'mtd' description in 'panic_nand_wait'
-   include/linux/regulator/driver.h:227: warning: Function parameter or member 'resume' not described in 'regulator_ops'
-   arch/s390/include/asm/cio.h:245: warning: Function parameter or member 'esw.esw0' not described in 'irb'
-   arch/s390/include/asm/cio.h:245: warning: Function parameter or member 'esw.esw1' not described in 'irb'
-   arch/s390/include/asm/cio.h:245: warning: Function parameter or member 'esw.esw2' not described in 'irb'
-   arch/s390/include/asm/cio.h:245: warning: Function parameter or member 'esw.esw3' not described in 'irb'
-   arch/s390/include/asm/cio.h:245: warning: Function parameter or member 'esw.eadm' not described in 'irb'
-   drivers/slimbus/stream.c:1: warning: no structured comments found
-   include/linux/spi/spi.h:177: warning: Function parameter or member 'driver_override' not described in 'spi_device'
-   drivers/target/target_core_device.c:1: warning: no structured comments found
-   drivers/usb/typec/bus.c:1: warning: no structured comments found
-   drivers/usb/typec/class.c:1: warning: no structured comments found
-   include/linux/w1.h:281: warning: Function parameter or member 'of_match_table' not described in 'w1_family'
-   fs/direct-io.c:257: warning: Excess function parameter 'offset' description in 'dio_complete'
-   fs/file_table.c:1: warning: no structured comments found
-   fs/libfs.c:477: warning: Excess function parameter 'available' description in 'simple_write_end'
-   fs/posix_acl.c:646: warning: Function parameter or member 'inode' not described in 'posix_acl_update_mode'
-   fs/posix_acl.c:646: warning: Function parameter or member 'mode_p' not described in 'posix_acl_update_mode'
-   fs/posix_acl.c:646: warning: Function parameter or member 'acl' not described in 'posix_acl_update_mode'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_mn.c:183: warning: Function parameter or member 'blockable' not described in 'amdgpu_mn_read_lock'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_mn.c:254: warning: Function parameter or member 'blockable' not described in 'amdgpu_mn_invalidate_range_start_gfx'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_mn.c:302: warning: Function parameter or member 'blockable' not described in 'amdgpu_mn_invalidate_range_start_hsa'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:382: warning: cannot understand function prototype: 'struct amdgpu_vm_pt_cursor '
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:383: warning: cannot understand function prototype: 'struct amdgpu_vm_pt_cursor '
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:555: warning: Function parameter or member 'adev' not described in 'for_each_amdgpu_vm_pt_leaf'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:555: warning: Function parameter or member 'vm' not described in 'for_each_amdgpu_vm_pt_leaf'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:555: warning: Function parameter or member 'start' not described in 'for_each_amdgpu_vm_pt_leaf'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:555: warning: Function parameter or member 'end' not described in 'for_each_amdgpu_vm_pt_leaf'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:555: warning: Function parameter or member 'cursor' not described in 'for_each_amdgpu_vm_pt_leaf'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:603: warning: Function parameter or member 'adev' not described in 'for_each_amdgpu_vm_pt_dfs_safe'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:603: warning: Function parameter or member 'vm' not described in 'for_each_amdgpu_vm_pt_dfs_safe'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:603: warning: Function parameter or member 'cursor' not described in 'for_each_amdgpu_vm_pt_dfs_safe'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:603: warning: Function parameter or member 'entry' not described in 'for_each_amdgpu_vm_pt_dfs_safe'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:848: warning: Function parameter or member 'level' not described in 'amdgpu_vm_bo_param'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'params' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'bo' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'pe' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'addr' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'count' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'incr' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1356: warning: Function parameter or member 'flags' not described in 'amdgpu_vm_update_func'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'params' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'bo' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'level' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'pe' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'addr' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'count' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'incr' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:1523: warning: Function parameter or member 'flags' not described in 'amdgpu_vm_update_huge'
-   drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c:3096: warning: Function parameter or member 'pasid' not described in 'amdgpu_vm_make_compute'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_pin' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_unpin' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_res_obj' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_get_sg_table' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_import_sg_table' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_vmap' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_vunmap' not described in 'drm_driver'
-   include/drm/drm_drv.h:609: warning: Function parameter or member 'gem_prime_mmap' not described in 'drm_driver'
-   include/drm/drm_mode_config.h:869: warning: Function parameter or member 'quirk_addfb_prefer_xbgr_30bpp' not described in 'drm_mode_config'
-   drivers/gpu/drm/drm_fourcc.c:112: warning: Function parameter or member 'dev' not described in 'drm_driver_legacy_fb_format'
-   drivers/gpu/drm/drm_fourcc.c:112: warning: Excess function parameter 'native' description in 'drm_driver_legacy_fb_format'
-   drivers/gpu/drm/i915/i915_vma.h:49: warning: cannot understand function prototype: 'struct i915_vma '
-   drivers/gpu/drm/i915/i915_vma.h:1: warning: no structured comments found
-   drivers/gpu/drm/i915/intel_guc_fwif.h:554: warning: cannot understand function prototype: 'struct guc_log_buffer_state '
-   drivers/gpu/drm/i915/i915_trace.h:1: warning: no structured comments found
-   include/linux/skbuff.h:862: warning: Function parameter or member 'dev_scratch' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'list' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'ip_defrag_offset' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'skb_mstamp_ns' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member '__cloned_offset' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'head_frag' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member '__pkt_type_offset' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'encapsulation' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'encap_hdr_csum' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'csum_valid' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'csum_complete_sw' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'csum_level' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'inner_protocol_type' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'remcsum_offload' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'offload_fwd_mark' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'offload_mr_fwd_mark' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'sender_cpu' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'reserved_tailroom' not described in 'sk_buff'
-   include/linux/skbuff.h:862: warning: Function parameter or member 'inner_ipproto' not described in 'sk_buff'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_addrpair' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_portpair' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_ipv6only' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_net_refcnt' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_v6_daddr' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_v6_rcv_saddr' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_cookie' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_listener' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_tw_dr' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_rcv_wnd' not described in 'sock_common'
-   include/net/sock.h:238: warning: Function parameter or member 'skc_tw_rcv_nxt' not described in 'sock_common'
-   include/net/sock.h:509: warning: Function parameter or member 'sk_backlog.rmem_alloc' not described in 'sock'
-   include/net/sock.h:509: warning: Function parameter or member 'sk_backlog.len' not described in 'sock'
-   include/net/sock.h:509: warning: Function parameter or member 'sk_backlog.head' not described in 'sock'
+> 
+> Why not simply apply my patchset now and incrementally work
+> on top of it to implement fixes for issues your patchset is
+> addressing?
 
-vim +1056 include/linux/device.h
+The main concern is that, as you point out, we have too many private
+mode implementation, and I'm looking for the possibility to handle them
+in the thermal core framework.
 
-^1da177e Linus Torvalds 2005-04-16 @1056  
+> 
+> My patchset may not be a perfect solution but IMO it is good
+> enough and it has been practically ready since v1 posted in
+> April (v2 fixes all issues requested by Eduardo's review from
+> September)..
 
-:::::: The code at line 1056 was first introduced by commit
-:::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
+I'm not against doing this, as long as it fixes something and doesn't
+break the others.
+But, I still have a couple of comments about your patches, and let me
+comment in lines.
 
-:::::: TO: Linus Torvalds <torvalds-gWtpgVMusWVb5UGfqNBoRg@public.gmane.org>
-:::::: CC: Linus Torvalds <torvalds-gWtpgVMusWVb5UGfqNBoRg@public.gmane.org>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+thanks,
+rui
+> 
+> > 
+> > thanks,
+> > rui
+> > 
+> > On 三, 2018-10-17 at 17:52 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > 
+> > > Hi,
+> > > 
+> > > [devm]_thermal_zone_of_sensor_register() is used to register
+> > > thermal sensor by thermal drivers using DeviceTree. Besides
+> > > registering sensor this function also immediately:
+> > > 
+> > > - enables it:
+> > > 
+> > >   tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED)
+> > >   (->set_mode is set to of_thermal_set_mode() in of-thermal.c)
+> > > 
+> > > - checks it (indirectly by using of_thermal_set_mode()):
+> > > 
+> > >   thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+> > >   (which in turn ends up using ->get_temp method).
+> > > 
+> > > For many DT thermal drivers this causes a problem because:
+> > > 
+> > > - [devm]_thermal_zone_of_sensor_register() need to be called in
+> > >   order to obtain data about thermal trips which are then used to
+> > >   finish hardware sensor setup (only after which ->get_temp can
+> > >   be used)
+> > > 
+> > > There is also related issue for DT thermal drivers that support
+> > > IRQ (i.e. exynos and rockchip ones):
+> > > 
+> > > - sensor hardware should be enabled only after IRQ handler is
+> > >   requested (because otherwise we might get IRQs that we can't
+> > >   handle)
+> > > 
+> > > - IRQ handler needs tzd structure which is obtained from
+> > >   [devm_]thermal_zone_of_sensor_register()
+> > > 
+> > > - after [devm_]thermal_zone_of_sensor_register() call core
+> > >   thermal code assumes that sensor is enabled and ready to use
+> > >   (i.e. that IRQ handler has been requested and sensor hardware
+> > >   has been enabled)
+> > > 
+> > > In order to fix all abovementioned issues sensor registration,
+> > > enable and check operations are separated in the core DT thermal
+> > > code and corresponding DT thermal drivers are modified to do
+> > > sensor
+> > > setup correctly.
+> > > 
+> > > Changes since v1:
+> > > - rebased on the current -next kernel (next-20181015)
+> > > - enhanced patch descriptions and cover letter
+> > > - renamed thermal_zone_device_toggler() to
+> > > thermal_zone_set_mode()
+> > > - converted thermal_zone_set_mode() to use enum
+> > > thermal_device_mode
+> > > - added CONFIG_THERMAL=n stubs for thermal_zone_set_mode() and
+> > >   thermal_zone_device_check()
+> > > - fixed uses of [devm]_thermal_zone_of_sensor_register() outside
+> > > of
+> > >   drivers/thermal/
+> > > - changed ordering between patch #2 and #3 in order to add all
+> > >   needed core helpers first before fixing sensor setup code
+> > > - changed ordering between patch #3 and #4 in order to simplify
+> > > them
+> > > - renamed patch #3 to "thermal: separate sensor enable and check
+> > >   operations"
+> > > - renamed patch #4 to "thermal: separate sensor registration and
+> > >   enable+check operations"
+> > > 
+> > > Best regards,
+> > > --
+> > > Bartlomiej Zolnierkiewicz
+> > > Samsung R&D Institute Poland
+> > > Samsung Electronics
+> > > 
+> > > 
+> > > Bartlomiej Zolnierkiewicz (17):
+> > >   thermal: add thermal_zone_set_mode() helper
+> > >   thermal: add thermal_zone_device_check() helper
+> > >   thermal: separate sensor enable and check operations
+> > >   thermal: separate sensor registration and enable+check
+> > > operations
+> > >   thermal: bcm2835: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: brcmstb: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: hisi_thermal: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: qcom: tsens: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: qoriq: enable+check sensor after its setup is finished
+> > >   thermal: rcar_gen3_thermal: enable+check sensor after its setup
+> > > is
+> > >     finished
+> > >   thermal: rockchip_thermal: enable+check sensor after its setup
+> > > is
+> > >     finished
+> > >   thermal: exynos: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: tegra: enable+check sensor after its setup is finished
+> > >   thermal: ti-soc-thermal: enable+check sensor after its setup is
+> > >     finished
+> > >   thermal: uniphier: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: zx2967: enable+check sensor after its setup is
+> > > finished
+> > >   thermal: warn on attempts to read temperature on disabled
+> > > sensors
+> > > 
+> > >  drivers/acpi/thermal.c                             |  5 +--
+> > >  drivers/ata/ahci_imx.c                             | 10 ++++--
+> > >  drivers/hwmon/hwmon.c                              |  5 +++
+> > >  drivers/hwmon/ntc_thermistor.c                     |  4 +++
+> > >  drivers/hwmon/scpi-hwmon.c                         |  4 +++
+> > >  drivers/iio/adc/sun4i-gpadc-iio.c                  |  5 +++
+> > >  drivers/input/touchscreen/sun4i-ts.c               |  8 ++++-
+> > >  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c |  1 -
+> > >  drivers/platform/x86/acerhdf.c                     |  6 +++-
+> > >  drivers/regulator/max8973-regulator.c              |  6 ++--
+> > >  drivers/thermal/armada_thermal.c                   |  3 ++
+> > >  drivers/thermal/broadcom/bcm2835_thermal.c         |  3 ++
+> > >  drivers/thermal/broadcom/brcmstb_thermal.c         |  3 ++
+> > >  drivers/thermal/broadcom/ns-thermal.c              |  3 ++
+> > >  drivers/thermal/da9062-thermal.c                   |  7 ++--
+> > >  drivers/thermal/db8500_thermal.c                   |  5 ++-
+> > >  drivers/thermal/hisi_thermal.c                     | 22 ++++--
+> > > ----
+> > > ---
+> > >  drivers/thermal/imx_thermal.c                      |  3 +-
+> > >  drivers/thermal/int340x_thermal/int3400_thermal.c  |  1 +
+> > >  drivers/thermal/intel_bxt_pmic_thermal.c           |  3 +-
+> > >  drivers/thermal/intel_soc_dts_iosf.c               |  3 +-
+> > >  drivers/thermal/max77620_thermal.c                 |  6 ++--
+> > >  drivers/thermal/mtk_thermal.c                      |  3 ++
+> > >  drivers/thermal/of-thermal.c                       |  6 ++--
+> > >  drivers/thermal/qcom-spmi-temp-alarm.c             |  5 ++-
+> > >  drivers/thermal/qcom/tsens.c                       |  6 ++++
+> > >  drivers/thermal/qoriq_thermal.c                    |  3 ++
+> > >  drivers/thermal/rcar_gen3_thermal.c                |  7 ++--
+> > >  drivers/thermal/rcar_thermal.c                     |  7 ++--
+> > >  drivers/thermal/rockchip_thermal.c                 | 38
+> > > +++++++++++-
+> > > ----------
+> > >  drivers/thermal/samsung/exynos_tmu.c               |  7 +++-
+> > >  drivers/thermal/st/st_thermal_memmap.c             |  3 +-
+> > >  drivers/thermal/tango_thermal.c                    |  5 +++
+> > >  drivers/thermal/tegra/soctherm.c                   |  3 ++
+> > >  drivers/thermal/tegra/tegra-bpmp-thermal.c         |  3 ++
+> > >  drivers/thermal/thermal-generic-adc.c              |  3 ++
+> > >  drivers/thermal/thermal_core.c                     | 14 ++++----
+> > >  drivers/thermal/thermal_helpers.c                  | 32
+> > > ++++++++++++++++++
+> > >  drivers/thermal/thermal_sysfs.c                    | 17 ++++++
+> > > ----
+> > >  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  7 +++-
+> > >  drivers/thermal/uniphier_thermal.c                 |  6 +++-
+> > >  drivers/thermal/x86_pkg_temp_thermal.c             |  2 +-
+> > >  drivers/thermal/zx2967_thermal.c                   |  3 ++
+> > >  include/linux/thermal.h                            | 11 +++++++
+> > >  44 files changed, 220 insertions(+), 87 deletions(-)
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
