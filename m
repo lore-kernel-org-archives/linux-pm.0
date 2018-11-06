@@ -1,54 +1,183 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor
- for tickless systems
-Date: Wed, 7 Nov 2018 00:39:31 +0100
-Message-ID: <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
-References: <1556808.yKVbhZSazi@aspire.rjw.lan> <20181106170442.GC9781@hirez.programming.kicks-ass.net>
- <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com> <20181106195127.GD9781@hirez.programming.kicks-ass.net>
+From: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
+Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order
+ of operations for deferred probe and remove
+Date: Tue, 06 Nov 2018 15:48:34 -0800
+Message-ID: <1541548114.196084.195.camel@acm.org>
+References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
+ <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181106195127.GD9781@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <154145232484.29224.1635232599636954462.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 6, 2018 at 8:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Tue, Nov 06, 2018 at 07:19:24PM +0100, Rafael J. Wysocki wrote:
-> > On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> > > Instead of this detector; why haven't you used the code from
-> > > kernel/irq/timings.c ?
-> >
-> > Because it doesn't help much AFAICS.
-> >
-> > Wakeups need not be interrupts in particular
->
-> You're alluding to the MWAIT wakeup through the MONITOR address ?
+On Mon, 2018-11-05 at 13:12 -0800, Alexander Duyck wrote:
+> One change I made in addition is I replaced the use of "bool X:1" to define
+> the bitfield to a "u8 X:1" setup in order to resolve some checkpatch
+> warnings.
 
-Yes.
+Please use "bool X:1" instead of "u8 X:1". I think it was a bad idea to make
+checkpatch complain about "bool X:1" since "bool X:1" should only be avoided
+in structures for which alignment must be architecture-independent. For struct
+device it is fine if member alignment differs per architecture. Additionally,
+changing "bool X:1" into "u8 X:1" will reduce performance on architectures that
+cannot do byte addressing.
 
-> > and interrupt patterns that show up when the CPU is busy may not be
-> > relevant for when it is idle.
->
-> I think that is not always true; consider things like the periodic
-> interrupt from frame rendering or audio; if there is nothing more going
-> on in the system than say playing your favourite tune, it gets the
-> 'need more data soon' interrupt from the audio card, wakes up, does a little
-> mp3/flac/ogg/whatever decode to fill up the buffer and goes back to
-> sleep. Same for video playback I assume, the vsync interrupt for buffer
-> flips is fairly predictable.
->
-> The interrupt predictor we have in kernel/irq/timings.c should be very
-> accurate in predicting those interrupts.
+>  static void __device_release_driver(struct device *dev, struct device *parent)
+>  {
+> -	struct device_driver *drv;
+> +	struct device_driver *drv = dev->driver;
+>  
+> -	drv = dev->driver;
+> -	if (drv) {
+> -		while (device_links_busy(dev)) {
+> -			__device_driver_unlock(dev, parent);
+> +	/*
+> +	 * In the event that we are asked to release the driver on an
+> +	 * interface that is still waiting on a probe we can just terminate
+> +	 * the probe by setting async_probe to false. When the async call
+> +	 * is finally completed it will see this state and just exit.
+> +	 */
+> +	dev->async_probe = false;
+> +	if (!drv)
+> +		return;
+>  
+> -			device_links_unbind_consumers(dev);
+> +	while (device_links_busy(dev)) {
+> +		__device_driver_unlock(dev, parent);
+>  
+> -			__device_driver_lock(dev, parent);
+> -			/*
+> -			 * A concurrent invocation of the same function might
+> -			 * have released the driver successfully while this one
+> -			 * was waiting, so check for that.
+> -			 */
+> -			if (dev->driver != drv)
+> -				return;
+> -		}
+> +		device_links_unbind_consumers(dev);
+>  
+> -		pm_runtime_get_sync(dev);
+> -		pm_runtime_clean_up_links(dev);
+> +		__device_driver_lock(dev, parent);
+> +		/*
+> +		 * A concurrent invocation of the same function might
+> +		 * have released the driver successfully while this one
+> +		 * was waiting, so check for that.
+> +		 */
+> +		if (dev->driver != drv)
+> +			return;
+> +	}
+>  
+> -		driver_sysfs_remove(dev);
+> +	pm_runtime_get_sync(dev);
+> +	pm_runtime_clean_up_links(dev);
+>  
+> -		if (dev->bus)
+> -			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> -						     BUS_NOTIFY_UNBIND_DRIVER,
+> -						     dev);
+> +	driver_sysfs_remove(dev);
+>  
+> -		pm_runtime_put_sync(dev);
+> +	if (dev->bus)
+> +		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> +					     BUS_NOTIFY_UNBIND_DRIVER,
+> +					     dev);
+>  
+> -		if (dev->bus && dev->bus->remove)
+> -			dev->bus->remove(dev);
+> -		else if (drv->remove)
+> -			drv->remove(dev);
+> +	pm_runtime_put_sync(dev);
+>  
+> -		device_links_driver_cleanup(dev);
+> -		arch_teardown_dma_ops(dev);
+> +	if (dev->bus && dev->bus->remove)
+> +		dev->bus->remove(dev);
+> +	else if (drv->remove)
+> +		drv->remove(dev);
+>  
+> -		devres_release_all(dev);
+> -		dev->driver = NULL;
+> -		dev_set_drvdata(dev, NULL);
+> -		if (dev->pm_domain && dev->pm_domain->dismiss)
+> -			dev->pm_domain->dismiss(dev);
+> -		pm_runtime_reinit(dev);
+> -		dev_pm_set_driver_flags(dev, 0);
+> +	device_links_driver_cleanup(dev);
+> +	arch_teardown_dma_ops(dev);
+> +
+> +	devres_release_all(dev);
+> +	dev->driver = NULL;
+> +	dev_set_drvdata(dev, NULL);
+> +	if (dev->pm_domain && dev->pm_domain->dismiss)
+> +		dev->pm_domain->dismiss(dev);
+> +	pm_runtime_reinit(dev);
+> +	dev_pm_set_driver_flags(dev, 0);
+>  
+> -		klist_remove(&dev->p->knode_driver);
+> -		device_pm_check_callbacks(dev);
+> -		if (dev->bus)
+> -			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> -						     BUS_NOTIFY_UNBOUND_DRIVER,
+> -						     dev);
+> +	klist_remove(&dev->p->knode_driver);
+> +	device_pm_check_callbacks(dev);
+> +	if (dev->bus)
+> +		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> +					     BUS_NOTIFY_UNBOUND_DRIVER,
+> +					     dev);
+>  
+> -		kobject_uevent(&dev->kobj, KOBJ_UNBIND);
+> -	}
+> +	kobject_uevent(&dev->kobj, KOBJ_UNBIND);
+>  }
 
-In the above case the interrupts should produce a detectable pattern
-of wakeups anyway.
+This patch mixes functional changes with whitespace changes. Please move the
+whitespace changes into a separate patch such that this patch becomes easier
+to read.
+ 
+>  void device_release_driver_internal(struct device *dev,
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 1b25c7a43f4c..fc7091d436c2 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -1043,14 +1043,15 @@ struct device {
+>  	struct iommu_group	*iommu_group;
+>  	struct iommu_fwspec	*iommu_fwspec;
+>  
+> -	bool			offline_disabled:1;
+> -	bool			offline:1;
+> -	bool			of_node_reused:1;
+> +	u8			offline_disabled:1;
+> +	u8			offline:1;
+> +	u8			of_node_reused:1;
+>  #if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+>      defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+>      defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+> -	bool			dma_coherent:1;
+> +	u8			dma_coherent:1;
+>  #endif
+> +	u8			async_probe:1;
 
-In general, however, I need to be convinced that interrupts that
-didn't wake up the CPU from idle are relevant for next wakeup
-prediction.  I see that this may be the case, but to what extent is
-rather unclear to me and it looks like calling
-irq_timings_next_event() would add considerable overhead.
+The new async_probe field can be changed from multiple threads. Concurrent
+changes of a bitfield are only safe if these are serialized in some way.
+Please document the locking requirements for the async_probe bitfield in
+device.h.
+
+Thanks,
+
+Bart.
