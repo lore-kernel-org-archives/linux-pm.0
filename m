@@ -1,43 +1,54 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
- to one structure
-Date: Tue, 6 Nov 2018 22:09:33 +0100
-Message-ID: <20181106210933.GU24212@piout.net>
-References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor
+ for tickless systems
+Date: Wed, 7 Nov 2018 00:39:31 +0100
+Message-ID: <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
+References: <1556808.yKVbhZSazi@aspire.rjw.lan> <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+ <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com> <20181106195127.GD9781@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <20181106195127.GD9781@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: sre@kernel.org, Nicolas.Ferre@microchip.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Claudiu,
+On Tue, Nov 6, 2018 at 8:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Tue, Nov 06, 2018 at 07:19:24PM +0100, Rafael J. Wysocki wrote:
+> > On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> > > Instead of this detector; why haven't you used the code from
+> > > kernel/irq/timings.c ?
+> >
+> > Because it doesn't help much AFAICS.
+> >
+> > Wakeups need not be interrupts in particular
+>
+> You're alluding to the MWAIT wakeup through the MONITOR address ?
 
-On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
->  static int __init at91_poweroff_probe(struct platform_device *pdev)
-> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct platform_device *pdev)
->  	u32 ddr_type;
->  	int ret;
->  
-> +	at91_shdwc = devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL);
-> +	if (!at91_shdwc)
-> +		return -ENOMEM;
-> +
+Yes.
 
-Is there any real benefit that will offset the time lost for that
-allocation at boot time?
+> > and interrupt patterns that show up when the CPU is busy may not be
+> > relevant for when it is idle.
+>
+> I think that is not always true; consider things like the periodic
+> interrupt from frame rendering or audio; if there is nothing more going
+> on in the system than say playing your favourite tune, it gets the
+> 'need more data soon' interrupt from the audio card, wakes up, does a little
+> mp3/flac/ogg/whatever decode to fill up the buffer and goes back to
+> sleep. Same for video playback I assume, the vsync interrupt for buffer
+> flips is fairly predictable.
+>
+> The interrupt predictor we have in kernel/irq/timings.c should be very
+> accurate in predicting those interrupts.
 
-I understand you are then testing at91_shdwc to know whether the driver
-already probed once. But, the driver will never probe twice as there is
-only one shutdown controller on the SoC and anyway, If it was to probe
-twice, it will still work as expected.
+In the above case the interrupts should produce a detectable pattern
+of wakeups anyway.
 
-
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+In general, however, I need to be convinced that interrupts that
+didn't wake up the CPU from idle are relevant for next wakeup
+prediction.  I see that this may be the case, but to what extent is
+rather unclear to me and it looks like calling
+irq_timings_next_event() would add considerable overhead.
