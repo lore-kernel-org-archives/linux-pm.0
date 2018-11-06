@@ -1,45 +1,43 @@
-From: Jason Gunthorpe <jgg@mellanox.com>
-Subject: Re: [RFC PATCH v4 01/13] ktask: add documentation
-Date: Tue, 6 Nov 2018 20:51:54 +0000
-Message-ID: <20181106205146.GB30490@mellanox.com>
-References: <20181105165558.11698-1-daniel.m.jordan@oracle.com>
- <20181105165558.11698-2-daniel.m.jordan@oracle.com>
- <20181106084911.GA22504@hirez.programming.kicks-ass.net>
- <20181106203411.pdce6tgs7dncwflh@ca-dmjordan1.us.oracle.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
+ to one structure
+Date: Tue, 6 Nov 2018 22:09:33 +0100
+Message-ID: <20181106210933.GU24212@piout.net>
+References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
+ <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181106203411.pdce6tgs7dncwflh@ca-dmjordan1.us.oracle.com>
-Content-Language: en-US
-Content-ID: <5D06AA0EB35F9848AAEE468B33AEEB0F@eurprd05.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "aarcange@redhat.com" <aarcange@redhat.com>, "aaron.lu@intel.com" <aaron.lu@intel.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "alex.williamson@redhat.com" <alex.williamson@redhat.com>, "bsd@redhat.com" <bsd@redhat.com>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>, "jwadams@google.com" <jwadams@google.com>, "jiangshanlai@gmail.com" <jiangshanlai@gmail.com>, "mhocko@kernel.org" <mhocko@kernel.org>
+To: Claudiu.Beznea@microchip.com
+Cc: sre@kernel.org, Nicolas.Ferre@microchip.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 06, 2018 at 12:34:11PM -0800, Daniel Jordan wrote:
+Hi Claudiu,
 
-> > What isn't clear is if this calling thread is waiting or not. Only do
-> > this inheritance trick if it is actually waiting on the work. If it is
-> > not, nobody cares.
->=20
-> The calling thread waits.  Even if it didn't though, the inheritance tric=
-k
-> would still be desirable for timely completion of the job.
+On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
+>  static int __init at91_poweroff_probe(struct platform_device *pdev)
+> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct platform_device *pdev)
+>  	u32 ddr_type;
+>  	int ret;
+>  
+> +	at91_shdwc = devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL);
+> +	if (!at91_shdwc)
+> +		return -ENOMEM;
+> +
 
-Can you make lockdep aware that this is synchronous?
+Is there any real benefit that will offset the time lost for that
+allocation at boot time?
 
-ie if I do
+I understand you are then testing at91_shdwc to know whether the driver
+already probed once. But, the driver will never probe twice as there is
+only one shutdown controller on the SoC and anyway, If it was to probe
+twice, it will still work as expected.
 
-  mutex_lock()
-  ktask_run()
-  mutex_lock()
 
-Can lockdep know that all the workers are running under that lock?
-
-I'm thinking particularly about rtnl_lock as a possible case, but
-there could also make some sense to hold the read side of the mm_sem
-or similar like the above.
-
-Jason
+-- 
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
