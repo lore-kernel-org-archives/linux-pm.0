@@ -1,92 +1,116 @@
-From: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 4/9] driver core: Move
- async_synchronize_full call
-Date: Tue, 06 Nov 2018 09:22:23 -0800
-Message-ID: <1541524943.196084.178.camel@acm.org>
-References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
- <154145231976.29224.39638353241256116.stgit@ahduyck-desk1.jf.intel.com>
- <1541466289.196084.176.camel@acm.org>
- <e2fec0e159757f31abbd258e284a844d0d8a2859.camel@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor
+ for tickless systems
+Date: Tue, 6 Nov 2018 19:19:24 +0100
+Message-ID: <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
+References: <1556808.yKVbhZSazi@aspire.rjw.lan> <20181106170442.GC9781@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <e2fec0e159757f31abbd258e284a844d0d8a2859.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-11-06 at 08:18 -0800, Alexander Duyck wrote:
-> On Mon, 2018-11-05 at 17:04 -0800, Bart Van Assche wrote:
-> > On Mon, 2018-11-05 at 13:11 -0800, Alexander Duyck wrote:
-> > > This patch moves the async_synchronize_full call out of
-> > > __device_release_driver and into driver_detach.
-> > > 
-> > > The idea behind this is that the async_synchronize_full call will only
-> > > guarantee that any existing async operations are flushed. This doesn't do
-> > > anything to guarantee that a hotplug event that may occur while we are
-> > > doing the release of the driver will not be asynchronously scheduled.
-> > > 
-> > > By moving this into the driver_detach path we can avoid potential deadlocks
-> > > as we aren't holding the device lock at this point and we should not have
-> > > the driver we want to flush loaded so the flush will take care of any
-> > > asynchronous events the driver we are detaching might have scheduled.
-> > > 
-> > > Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> > > ---
-> > >  drivers/base/dd.c |    6 +++---
-> > >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> > > index 76c40fe69463..e74cefeb5b69 100644
-> > > --- a/drivers/base/dd.c
-> > > +++ b/drivers/base/dd.c
-> > > @@ -975,9 +975,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
-> > >  
-> > >  	drv = dev->driver;
-> > >  	if (drv) {
-> > > -		if (driver_allows_async_probing(drv))
-> > > -			async_synchronize_full();
-> > > -
-> > >  		while (device_links_busy(dev)) {
-> > >  			__device_driver_unlock(dev, parent);
-> > >  
-> > > @@ -1087,6 +1084,9 @@ void driver_detach(struct device_driver *drv)
-> > >  	struct device_private *dev_prv;
-> > >  	struct device *dev;
-> > >  
-> > > +	if (driver_allows_async_probing(drv))
-> > > +		async_synchronize_full();
-> > > +
-> > >  	for (;;) {
-> > >  		spin_lock(&drv->p->klist_devices.k_lock);
-> > >  		if (list_empty(&drv->p->klist_devices.k_list)) {
-> > 
-> > Have you considered to move that async_synchronize_full() call into
-> > bus_remove_driver()? Verifying the correctness of this patch requires to
-> > check whether the async_synchronize_full() comes after the
-> > klist_remove(&drv->p->knode_bus) call. That verification is easier when
-> > the async_synchronize_full() call occurs in bus_remove_driver() instead
-> > of in driver_detach().
-> 
-> I considered it, however it ends up with things being more symmetric to
-> have use take care of synchronizing things in driver_detach since after
-> this patch set we are scheduling thing asynchronously in driver_attach.
-> 
-> Also I don't think it would be any great risk simply because calling
-> driver_detach with the driver still associated with the bus would be a
-> blatent error as it could easily lead to issues where you unbind a
-> driver but have it get hotplugged to a device while that is going on.
+On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Sun, Nov 04, 2018 at 05:31:20PM +0100, Rafael J. Wysocki wrote:
+> > + * - If there is a pattern of 5 or more recent non-timer wakeups earlier than
+> > + *   the closest timer event, expect one more of them to occur and use the
+> > + *   average of the idle duration values corresponding to them to select an
+> > + *   idle state for the CPU.
+>
+>
+> > +/**
+> > + * teo_idle_duration - Estimate the duration of the upcoming CPU idle time.
+> > + * @drv: cpuidle driver containing state data.
+> > + * @cpu_data: Governor data for the target CPU.
+> > + * @sleep_length_us: Time till the closest timer event in microseconds.
+> > + */
+> > +unsigned int teo_idle_duration(struct cpuidle_driver *drv,
+> > +                            struct teo_cpu *cpu_data,
+> > +                            unsigned int sleep_length_us)
+> > +{
+> > +     u64 range, max_spread, max, sum;
+> > +     unsigned int count;
+> > +
+> > +     /*
+> > +      * If the sleep length is below the target residency of idle state 1,
+> > +      * the only viable choice is to select the first available (enabled)
+> > +      * idle state, so return immediately in that case.
+> > +      */
+> > +     if (sleep_length_us < drv->states[1].target_residency)
+> > +             return sleep_length_us;
+> > +
+> > +     /*
+> > +      * The purpose of this function is to check if there is a pattern of
+> > +      * wakeups indicating that it would be better to select a state
+> > +      * shallower than the deepest one matching the sleep length or the
+> > +      * deepest one at all if the sleep lenght is long.  Larger idle duration
+> > +      * values are beyond the interesting range.
+> > +      *
+> > +      * Narrowing the range of interesting values down upfront also helps to
+> > +      * avoid overflows during the computation below.
+> > +      */
+> > +     range = drv->states[drv->state_count-1].target_residency;
+> > +     range = min_t(u64, sleep_length_us, range + (range >> 2));
+> > +
+> > +     /*
+> > +      * This is the value to compare with the distance between the average
+> > +      * and the greatest sample to decide whether or not it is small enough.
+> > +      * Take 10 us as the total cap of it.
+> > +      */
+> > +     max_spread = max_t(u64, range >> MAX_SPREAD_SHIFT, 10);
+> > +
+> > +     max = range;
+> > +
+> > +     do {
+> > +             u64 cap = max;
+> > +             int i;
+> > +
+> > +             /*
+> > +              * Compute the sum of the saved intervals below the cap and the
+> > +              * sum of of their squares.  Count them and find the maximum
+> > +              * interval below the cap.
+> > +              */
+> > +             count = 0;
+> > +             sum = 0;
+> > +             max = 0;
+> > +
+> > +             for (i = 0; i < INTERVALS; i++) {
+> > +                     u64 val = cpu_data->intervals[i];
+> > +
+> > +                     if (val >= cap)
+> > +                             continue;
+> > +
+> > +                     count++;
+> > +                     sum += val;
+> > +                     if (max < val)
+> > +                             max = val;
+> > +             }
+> > +
+> > +             /*
+> > +              * Give up if the total number of interesting samples is too
+> > +              * small.
+> > +              */
+> > +             if (cap == range && count <= INTERVALS / 2)
+> > +                     return sleep_length_us;
+> > +
+> > +             /*
+> > +              * If the distance between the max and the average is too large,
+> > +              * discard the max an repeat.
+> > +              */
+> > +     } while (count > 3 && max > max_spread && (max - max_spread) * count > sum);
+> > +
+> > +     return div64_u64(sum, count);
+> > +}
+>
+> Instead of this detector; why haven't you used the code from
+> kernel/irq/timings.c ?
 
-Thanks for the additional clarification. Since I'm fine with this patch:
+Because it doesn't help much AFAICS.
 
-Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
+Wakeups need not be interrupts in particular and interrupt patterns
+that show up when the CPU is busy may not be relevant for when it is
+idle.
