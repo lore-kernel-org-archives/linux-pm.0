@@ -1,116 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor
  for tickless systems
-Date: Tue, 6 Nov 2018 19:19:24 +0100
-Message-ID: <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
-References: <1556808.yKVbhZSazi@aspire.rjw.lan> <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+Date: Tue, 6 Nov 2018 20:51:27 +0100
+Message-ID: <20181106195127.GD9781@hirez.programming.kicks-ass.net>
+References: <1556808.yKVbhZSazi@aspire.rjw.lan>
+ <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+ <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
->
-> On Sun, Nov 04, 2018 at 05:31:20PM +0100, Rafael J. Wysocki wrote:
-> > + * - If there is a pattern of 5 or more recent non-timer wakeups earlier than
-> > + *   the closest timer event, expect one more of them to occur and use the
-> > + *   average of the idle duration values corresponding to them to select an
-> > + *   idle state for the CPU.
->
->
-> > +/**
-> > + * teo_idle_duration - Estimate the duration of the upcoming CPU idle time.
-> > + * @drv: cpuidle driver containing state data.
-> > + * @cpu_data: Governor data for the target CPU.
-> > + * @sleep_length_us: Time till the closest timer event in microseconds.
-> > + */
-> > +unsigned int teo_idle_duration(struct cpuidle_driver *drv,
-> > +                            struct teo_cpu *cpu_data,
-> > +                            unsigned int sleep_length_us)
-> > +{
-> > +     u64 range, max_spread, max, sum;
-> > +     unsigned int count;
-> > +
-> > +     /*
-> > +      * If the sleep length is below the target residency of idle state 1,
-> > +      * the only viable choice is to select the first available (enabled)
-> > +      * idle state, so return immediately in that case.
-> > +      */
-> > +     if (sleep_length_us < drv->states[1].target_residency)
-> > +             return sleep_length_us;
-> > +
-> > +     /*
-> > +      * The purpose of this function is to check if there is a pattern of
-> > +      * wakeups indicating that it would be better to select a state
-> > +      * shallower than the deepest one matching the sleep length or the
-> > +      * deepest one at all if the sleep lenght is long.  Larger idle duration
-> > +      * values are beyond the interesting range.
-> > +      *
-> > +      * Narrowing the range of interesting values down upfront also helps to
-> > +      * avoid overflows during the computation below.
-> > +      */
-> > +     range = drv->states[drv->state_count-1].target_residency;
-> > +     range = min_t(u64, sleep_length_us, range + (range >> 2));
-> > +
-> > +     /*
-> > +      * This is the value to compare with the distance between the average
-> > +      * and the greatest sample to decide whether or not it is small enough.
-> > +      * Take 10 us as the total cap of it.
-> > +      */
-> > +     max_spread = max_t(u64, range >> MAX_SPREAD_SHIFT, 10);
-> > +
-> > +     max = range;
-> > +
-> > +     do {
-> > +             u64 cap = max;
-> > +             int i;
-> > +
-> > +             /*
-> > +              * Compute the sum of the saved intervals below the cap and the
-> > +              * sum of of their squares.  Count them and find the maximum
-> > +              * interval below the cap.
-> > +              */
-> > +             count = 0;
-> > +             sum = 0;
-> > +             max = 0;
-> > +
-> > +             for (i = 0; i < INTERVALS; i++) {
-> > +                     u64 val = cpu_data->intervals[i];
-> > +
-> > +                     if (val >= cap)
-> > +                             continue;
-> > +
-> > +                     count++;
-> > +                     sum += val;
-> > +                     if (max < val)
-> > +                             max = val;
-> > +             }
-> > +
-> > +             /*
-> > +              * Give up if the total number of interesting samples is too
-> > +              * small.
-> > +              */
-> > +             if (cap == range && count <= INTERVALS / 2)
-> > +                     return sleep_length_us;
-> > +
-> > +             /*
-> > +              * If the distance between the max and the average is too large,
-> > +              * discard the max an repeat.
-> > +              */
-> > +     } while (count > 3 && max > max_spread && (max - max_spread) * count > sum);
-> > +
-> > +     return div64_u64(sum, count);
-> > +}
->
-> Instead of this detector; why haven't you used the code from
-> kernel/irq/timings.c ?
+On Tue, Nov 06, 2018 at 07:19:24PM +0100, Rafael J. Wysocki wrote:
+> On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
 
-Because it doesn't help much AFAICS.
+> > Instead of this detector; why haven't you used the code from
+> > kernel/irq/timings.c ?
+> 
+> Because it doesn't help much AFAICS.
+> 
+> Wakeups need not be interrupts in particular 
 
-Wakeups need not be interrupts in particular and interrupt patterns
-that show up when the CPU is busy may not be relevant for when it is
-idle.
+You're alluding to the MWAIT wakeup through the MONITOR address ?
+
+> and interrupt patterns that show up when the CPU is busy may not be
+> relevant for when it is idle.
+
+I think that is not always true; consider things like the periodic
+interrupt from frame rendering or audio; if there is nothing more going
+on in the system than say playing your favourite tune, it gets the
+'need more data soon' interrupt from the audio card, wakes up, does a little
+mp3/flac/ogg/whatever decode to fill up the buffer and goes back to
+sleep. Same for video playback I assume, the vsync interrupt for buffer
+flips is fairly predictable.
+
+The interrupt predictor we have in kernel/irq/timings.c should be very
+accurate in predicting those interrupts.
