@@ -1,70 +1,87 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor for tickless systems
-Date: Wed, 7 Nov 2018 09:04:12 -0800
-Message-ID: <000001d476bb$ec964520$c5c2cf60$@net>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH v2 00/11] thermal: add new flag irq-mode for trip point
+Date: Wed,  7 Nov 2018 18:09:42 +0100
+Message-ID: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20181107171019eucas1p1fcb1f44e00265434548d901479f2ea94@eucas1p1.samsung.com>
+Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-References: JLIjge0NMDhAwJLIogChPj
-In-Reply-To: JLIjge0NMDhAwJLIogChPj
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.11.04 08:31 Rafael J. Wysocki wrote:
+Hi all,
 
-> v2 -> v3:
-> * Simplify the pattern detection code and make it return a value
->	lower than the time to the closest timer if the majority of recent
->	idle intervals are below it regardless of their variance (that should
->	cause it to be slightly more aggressive).
-> * Do not count wakeups from state 0 due to the time limit in poll_idle()
->    as non-timer.
->
-> Note: I will be mostly offline tomorrow, so this goes slightly early.
-> I have tested it only very lightly, but it is not so much different from
-> the previous one.
-> 
-> It requires the same additional patches to apply as the previous one too.
+This patch set adds a new flag and mechanism in thermal trip points in
+DT.  The old implementation in thermal zone in DT sets the same
+configuration for all internal trip points. It does not work for all
+HW.  There are SoCs which support IRQs for some trip points (i.e.
+Exynos 4 has 4 trip points with IRQs). For additional one defined
+inside the thermal zone there is a need of 'polling'. When developer
+adds polling mode settings inside the thermal zone, all the trip
+points will be registered for polling, even those supporting IRQs,
+which does not make sense. Thus, developers create workarounds, which
+are confusing for some other developers.  To workaround, 
+people declare some trip points as 'active' (those with IRQ support).
+It allows to bypass polling mode in thermal framework applied for 
+all thermal zone's trip points.
 
-Even though this v3 has now been superseded by v4, I completed some test
-work in progress for v3 anyhow.
+Thermal framework defines 4 types of trip points. The 'passive' means
+passive cooling using DVFS, 'active' is designed for fan and other
+devices actively changing the outside conditions. Therefore, a workaround
+mentioned earlier is confusing when someone does not know about the
+framework limitations.
 
-The main reason to complete the work, and write up, was because, and for my
-own interest as much as anything, I wanted to specifically test for the
-influence of running trace on the system under test.
-Reference: https://marc.info/?l=linux-kernel&m=154145580925439&w=2
+This patch set tries to solve the issue by adding one flag inside the
+trip point: 'irq-mode;'.  The trip point 'passive' declared in DT with
+explicit flag 'irq-mode;' will not register itself as polling mode.
+Thermal framework will skip it during scheduling next read out work.
+The old global-polling-mode-configuration-inside-thermal-zone is still
+valid.  Patch set does not break existing design for trip points which
+do not have 'irq-mode' flag - they will use polling.
 
-The Phoronix dbench test was run under the option to run all
-the tests, instead of just one number of clients. This was done
-with a reference/baseline kernel of 4.20-rc1, and also with this
-TEO version 3 patch. The tests were also repeated with trace
-enabled for 5000 seconds. Idle information and processor
-package power were sampled once per minute in all test runs.
+As an example please check patch #10 for Exynos4 SoC family, where there
+is 4 HW supported trip points and there is a need of 6. The rest 2 are
+declared as 'passive' without 'irq-mode;' flag, which means polling
+mode needed for them.
 
-The results are:
-http://fast.smythies.com/linux-pm/k420/k420-dbench-teo3.htm
-http://fast.smythies.com/linux-pm/k420/histo_compare.htm
+Patch #1 is a small cleanup in thermal framework.
 
-Conclusion: trace has negligible effect, until the system gets
-severely overloaded.
+Change log:
+v2
+- changed description in cover letter
+- change commit messages according to Krzysztof comments
+- rebase on top of current mainline (v4.20-rc1)
 
-There are some odd long idle durations with TEOv3 for idle
-states 1, 2, and 3 that I'll watch for with v4 testing.
+Regards,
+Lukasz Luba
 
-Other information:
-Processor: Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz
-The kernels were 1000 Hz.
-Idle latency/residency info:
-STATE: state0   DESC: CPUIDLE CORE POLL IDLE    NAME: POLL      LATENCY: 0      RESIDENCY: 0
-STATE: state1   DESC: MWAIT 0x00        NAME: C1        LATENCY: 2      RESIDENCY: 2
-STATE: state2   DESC: MWAIT 0x01        NAME: C1E       LATENCY: 10     RESIDENCY: 20
-STATE: state3   DESC: MWAIT 0x10        NAME: C3        LATENCY: 80     RESIDENCY: 211
-STATE: state4   DESC: MWAIT 0x20        NAME: C6        LATENCY: 104    RESIDENCY: 345
+Lukasz Luba (11):
+  thermal: remove unused function parameter
+  thermal: add irq-mode configuration for trip point
+  thermal: add new sysfs file for irq-mode
+  Doc: thermal: new irq-mode for trip point
+  Doc: DT: thermal: new irq-mode for trip point
+  arm64: dts: exynos5433: add support for thermal trip irq-mode
+  arm64: dts: exynos7: add support for thermal trip irq-mode
+  arm: dts: exynos4: add support for thermal trip irq-mode
+  arm: dts: exynos5420: add support for thermal trip irq-mode
+  arm: dts: exynos5422: add support for thermal trip irq-mode
+  arm: dts: exynos5410: add support for thermal trip irq-mode
 
-... Doug
- 
+ .../devicetree/bindings/thermal/thermal.txt        |   7 ++
+ Documentation/thermal/sysfs-api.txt                |   9 ++
+ arch/arm/boot/dts/exynos4-cpu-thermal.dtsi         |  10 +-
+ arch/arm/boot/dts/exynos5410-odroidxu.dts          |  10 +-
+ arch/arm/boot/dts/exynos5420-trip-points.dtsi      |  10 +-
+ arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |  40 +++++---
+ arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi     | 105 ++++++++++++++-------
+ .../arm64/boot/dts/exynos/exynos7-trip-points.dtsi |   8 ++
+ drivers/thermal/of-thermal.c                       |  17 ++++
+ drivers/thermal/thermal_core.c                     |  16 ++--
+ drivers/thermal/thermal_sysfs.c                    |  53 ++++++++++-
+ include/linux/thermal.h                            |   5 +
+ 12 files changed, 226 insertions(+), 64 deletions(-)
+
+-- 
+2.7.4
