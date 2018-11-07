@@ -1,66 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Wed, 7 Nov 2018 15:55:27 +0100
-Message-ID: <20181107145527.GI9761@hirez.programming.kicks-ass.net>
+Date: Wed, 7 Nov 2018 14:56:12 +0000
+Message-ID: <20181107145612.GJ14309@e110439-lin>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
  <20181029183311.29175-4-patrick.bellasi@arm.com>
- <20181107133504.GQ9781@hirez.programming.kicks-ass.net>
- <20181107144809.GH14309@e110439-lin>
+ <20181107121908.GO9781@hirez.programming.kicks-ass.net>
+ <20181107141949.GF14309@e110439-lin>
+ <20181107144252.GG9761@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181107144809.GH14309@e110439-lin>
+In-Reply-To: <20181107144252.GG9761@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 07, 2018 at 02:48:09PM +0000, Patrick Bellasi wrote:
-> On 07-Nov 14:35, Peter Zijlstra wrote:
-> You mean se_count overflow ?
-
-Yah..
-
-> > And I'm not really a fan of hiding that error in a define like you keep
-> > doing.
-> 
-> The #define is not there to mask an overflow, it's there to catch the
-
-+#define UCLAMP_MAPERR "clamp value [%u] mapping to clamp group failed\n"
-
-Is what I was talking about.
-
-> > What's wrong with something like:
+On 07-Nov 15:42, Peter Zijlstra wrote:
+> On Wed, Nov 07, 2018 at 02:19:49PM +0000, Patrick Bellasi wrote:
+> > On 07-Nov 13:19, Peter Zijlstra wrote:
+> > > On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
+> > > > +struct uclamp_se {
+> > > > +	unsigned int value		: SCHED_CAPACITY_SHIFT + 1;
+> > > > +	unsigned int group_id		: order_base_2(UCLAMP_GROUPS);
+> > > 
+> > > Are you sure about ob2() ? seems weird we'll end up with 0 for
+> > > UCLAMP_GROUPS==1.
 > > 
-> > 	if (SCHED_WARN(free_group_id == UCLAMP_GROUPS))
-> > 		return;
-> 
-> Right, the flow should be:
-> 
->   1. try to find a valid clamp group
->   2. if you don't find one, the data structures are corrupted
->      warn once for data corruption
->      do not map this scheduling entity and return
->   3. map the scheduling entity
-> 
-> Is that ok ?
-
-That's what the proposed does.
-
-> > and
+> > So, we have:
 > > 
-> > > +	uc_map_new.se_count = uc_map_old.se_count + 1;
+> >    #define UCLAMP_GROUPS (CONFIG_UCLAMP_GROUPS_COUNT + 1)
 > > 
-> > 	if (SCHED_WARN(!new.se_count))
-> > 		new.se_count = -1;
+> > because one clamp group is always reserved for defaults.
+> > Thus, ob2(in) is always called with n>=2.
+> > 
+> > ... should be safe no ?
 > 
-> Mmm... not sure we can recover from a corrupted refcount or an
-> overflow.
+> +config UCLAMP_GROUPS_COUNT
+> +       int "Number of different utilization clamp values supported"
+> +       range 0 32
+> +       default 5
 > 
-> What should we do on these cases, disable uclamp completely ?
+> 0+1 == 1
 
-You can teach put to never decrement -1 (aka. all 1s).
+Seems so... :)
 
-But its all SCHED_DEBUG stuff anyway, so who really cares.
+> Increase the min range and you should be good I think.
+
+... dunno why I was absolutely convinced that was already 1, since 0
+group does not make a lot of sense. :/
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
