@@ -1,10 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 11/11] arm: dts: exynos5410: add support for thermal trip
+Subject: [PATCH v2 08/11] arm: dts: exynos4: add support for thermal trip
  irq-mode
-Date: Wed,  7 Nov 2018 18:09:53 +0100
-Message-ID: <1541610593-28542-12-git-send-email-l.luba@partner.samsung.com>
+Date: Wed,  7 Nov 2018 18:09:50 +0100
+Message-ID: <1541610593-28542-9-git-send-email-l.luba@partner.samsung.com>
 References: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181107171046eucas1p1649bcf14a88ef9dd183724dde3a98f8c@eucas1p1.samsung.com>
+        <CGME20181107171043eucas1p16be3fa901c7bceb129c70fc81dba6e48@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
@@ -24,42 +24,42 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-samsung-soc@vger.kernel.org
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- arch/arm/boot/dts/exynos5410-odroidxu.dts | 10 +++++++---
+ arch/arm/boot/dts/exynos4-cpu-thermal.dtsi | 10 +++++++---
  1 file changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5410-odroidxu.dts b/arch/arm/boot/dts/exynos5410-odroidxu.dts
-index 434a759..e85a5d6 100644
---- a/arch/arm/boot/dts/exynos5410-odroidxu.dts
-+++ b/arch/arm/boot/dts/exynos5410-odroidxu.dts
-@@ -121,22 +121,26 @@
- 		cpu_alert0: cpu-alert-0 {
- 			temperature = <50000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
+diff --git a/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi b/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
+index 021d9fc..5e07289 100644
+--- a/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
++++ b/arch/arm/boot/dts/exynos4-cpu-thermal.dtsi
+@@ -17,22 +17,26 @@ thermal-zones {
+ 			cpu_alert0: cpu-alert-0 {
+ 				temperature = <70000>; /* millicelsius */
+ 				hysteresis = <10000>; /* millicelsius */
+-				type = "active";
++				type = "passive";
++				irq-mode;
+ 			};
+ 			cpu_alert1: cpu-alert-1 {
+ 				temperature = <95000>; /* millicelsius */
+ 				hysteresis = <10000>; /* millicelsius */
+-				type = "active";
++				type = "passive";
++				irq-mode;
+ 			};
+ 			cpu_alert2: cpu-alert-2 {
+ 				temperature = <110000>; /* millicelsius */
+ 				hysteresis = <10000>; /* millicelsius */
+-				type = "active";
++				type = "passive";
++				irq-mode;
+ 			};
+ 			cpu_crit0: cpu-crit-0 {
+ 				temperature = <120000>; /* millicelsius */
+ 				hysteresis = <0>; /* millicelsius */
+ 				type = "critical";
++				irq-mode;
+ 			};
  		};
- 		cpu_alert1: cpu-alert-1 {
- 			temperature = <60000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
- 		};
- 		cpu_alert2: cpu-alert-2 {
- 			temperature = <70000>; /* millicelsius */
- 			hysteresis = <5000>; /* millicelsius */
--			type = "active";
-+			type = "passive";
-+			irq-mode;
- 		};
- 		cpu_crit0: cpu-crit-0 {
- 			temperature = <120000>; /* millicelsius */
- 			hysteresis = <0>; /* millicelsius */
- 			type = "critical";
-+			irq-mode;
- 		};
- 	};
- 
+ 		cooling-maps {
 -- 
 2.7.4
