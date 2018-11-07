@@ -1,15 +1,15 @@
 From: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 8/9] PM core: Use new async_schedule_dev
- command
-Date: Tue, 06 Nov 2018 16:24:50 -0800
-Message-ID: <1541550290.196084.201.camel@acm.org>
+Subject: Re: [driver-core PATCH v5 9/9] libnvdimm: Schedule device
+ registration on node local to the device
+Date: Tue, 06 Nov 2018 16:26:33 -0800
+Message-ID: <1541550393.196084.202.camel@acm.org>
 References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
- <154145234017.29224.9183571187943571535.stgit@ahduyck-desk1.jf.intel.com>
+ <154145234526.29224.2575533246153120029.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <154145234017.29224.9183571187943571535.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
+In-Reply-To: <154145234526.29224.2575533246153120029.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
 List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
  <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
@@ -24,10 +24,15 @@ Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2r
 List-Id: linux-pm@vger.kernel.org
 
 On Mon, 2018-11-05 at 13:12 -0800, Alexander Duyck wrote:
-> This change makes it so that we use the device specific version of the
-> async_schedule commands to defer various tasks related to power management.
-> By doing this we should see a slight improvement in performance as any
-> device that is sensitive to latency/locality in the setup will now be
-> initializing on the node closest to the device.
+> This patch is meant to force the device registration for nvdimm devices to
+> be closer to the actual device. This is achieved by using either the NUMA
+> node ID of the region, or of the parent. By doing this we can have
+> everything above the region based on the region, and everything below the
+> region based on the nvdimm bus.
+> 
+> By guaranteeing NUMA locality I see an improvement of as high as 25% for
+> per-node init of a system with 12TB of persistent memory.
+
+Thank you for having included the performance numbers.
 
 Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
