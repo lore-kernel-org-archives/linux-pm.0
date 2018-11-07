@@ -1,48 +1,60 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 02/15] sched/core: make sched_setattr able to tune the
- current policy
-Date: Wed, 7 Nov 2018 13:50:39 +0000
-Message-ID: <20181107135039.GD14309@e110439-lin>
+Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Wed, 7 Nov 2018 13:57:38 +0000
+Message-ID: <20181107135738.GE14309@e110439-lin>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-3-patrick.bellasi@arm.com>
- <20181107121126.GN9781@hirez.programming.kicks-ass.net>
+ <20181029183311.29175-4-patrick.bellasi@arm.com>
+ <20181107131632.GP9781@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181107121126.GN9781@hirez.programming.kicks-ass.net>
+In-Reply-To: <20181107131632.GP9781@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>, linux-api@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-Nov 13:11, Peter Zijlstra wrote:
-> On Mon, Oct 29, 2018 at 06:32:56PM +0000, Patrick Bellasi wrote:
+On 07-Nov 14:16, Peter Zijlstra wrote:
+> On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
 > 
-> > @@ -50,11 +52,13 @@
-> >  #define SCHED_FLAG_RESET_ON_FORK	0x01
-> >  #define SCHED_FLAG_RECLAIM		0x02
-> >  #define SCHED_FLAG_DL_OVERRUN		0x04
-> > -#define SCHED_FLAG_UTIL_CLAMP		0x08
-> > +#define SCHED_FLAG_TUNE_POLICY		0x08
-> > +#define SCHED_FLAG_UTIL_CLAMP		0x10
+> > +static void uclamp_group_put(unsigned int clamp_id, unsigned int group_id)
+> >  {
+> > +	union uclamp_map *uc_maps = &uclamp_maps[clamp_id][0];
+> > +	union uclamp_map uc_map_old, uc_map_new;
+> > +	long res;
+> > +
+> > +retry:
+> > +
+> > +	uc_map_old.data = atomic_long_read(&uc_maps[group_id].adata);
+> > +	uc_map_new = uc_map_old;
+> > +	uc_map_new.se_count -= 1;
+> > +	res = atomic_long_cmpxchg(&uc_maps[group_id].adata,
+> > +				  uc_map_old.data, uc_map_new.data);
+> > +	if (res != uc_map_old.data)
+> > +		goto retry;
+> > +}
 > 
-> That seems to suggest you want to do this patch first, but you didn't..
+> Please write cmpxchg loops in the form:
+> 
+> 	atomic_long_t *ptr = &uclamp_maps[clamp_id][group_id].adata;
+> 	union uclamp_map old, new;
+> 
+> 	old.data = atomic_long_read(ptr);
+> 	do {
+> 		new.data = old.data;
+> 		new.se_cound--;
+> 	} while (!atomic_long_try_cmpxchg(ptr, &old.data, new.data));
+> 
+> 
+> (same for all the others of course)
 
-I've kept it here just to better highlight this change, suggested by
-Juri, since we was not entirely sure you are fine with it...
+Ok, I did that to save some indentation, but actually it's most
+commonly used in a while loop... will update in v6.
 
-If you think it's ok adding a SCHED_FLAG_TUNE_POLICY behavior to the
-sched_setattr syscall, I can certainly squash into the previous patch,
-which gives more context on why we need it.
-
-Otherwise, if we want to keep these bits better isolated for possible
-future bisects, I can also move it at the beginning of the series.
-
-What do you like best ?
-
-Since we are at that, are we supposed to document some{where,how}
-these API changes ?
+Out of curiosity, apart from code consistency, is that required also
+specifically for any possible compiler related (mis)behavior ?
 
 -- 
 #include <best/regards.h>
