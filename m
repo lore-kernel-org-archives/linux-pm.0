@@ -1,45 +1,90 @@
-From: Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order
- of operations for deferred probe and remove
-Date: Tue, 06 Nov 2018 17:34:31 -0800
-Message-ID: <499e4358e72fca510fa6fcfb76ea3ac3792db08f.camel@perches.com>
-References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
- <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
- <1541548114.196084.195.camel@acm.org>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH V9 0/5] soc: imx: add scu power domain driver
+Date: Wed, 7 Nov 2018 03:05:51 +0000
+Message-ID: <AM0PR04MB421199044A8EFA6B643FD68080C40@AM0PR04MB4211.eurprd04.prod.outlook.com>
+References: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <1541548114.196084.195.camel-HInyCGIudOg@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>, Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "khilman@kernel.org" <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-11-06 at 15:48 -0800, Bart Van Assche wrote:
-> On Mon, 2018-11-05 at 13:12 -0800, Alexander Duyck wrote:
-> > One change I made in addition is I replaced the use of "bool X:1" to define
-> > the bitfield to a "u8 X:1" setup in order to resolve some checkpatch
-> > warnings.
+Hi Shawn,
+
+> -----Original Message-----
+> From: A.s. Dong
+> Sent: Thursday, November 1, 2018 11:20 PM
+[...]
+> Subject: [PATCH V9 0/5] soc: imx: add scu power domain driver
 > 
-> Please use "bool X:1" instead of "u8 X:1". I think it was a bad idea to make
-> checkpatch complain about "bool X:1" since "bool X:1" should only be avoided
-> in structures for which alignment must be architecture-independent. For struct
-> device it is fine if member alignment differs per architecture. Additionally,
-> changing "bool X:1" into "u8 X:1" will reduce performance on architectures that
-> cannot do byte addressing.
+> This patch set adds the scu based power domain driver.
+> It depends on SCU driver.
+> 
 
-I generally agree.  But the checkpatch warning _could_
-be useful in those cases where alignment should be
-architecture-independent.
+Do you have a chance to help look at and take this series?
 
-Any suggestion on how to improve the message?
-s
+Regards
+Dong Aisheng
+
+> Change Log:
+> v8->v9:
+>  * add comment at the top of scu-pd.c file about how to convert
+>    to "single global domain".
+> v7->v8:
+>  * update to #power-domain-cells 1 binding
+> v6->v7:
+>  * keep "fsl,scu-pd" as fall back compatible string
+> v5->v6:
+>  * only compatible string name updated from fsl,scu-pd to fsl,imx8qxp-scu-pd
+>    accordingly
+> v4->v5:
+>  * some minor improvements according to Sascha's suggestion
+>    Note: did not use dev_* print functions due to we already have proper
+>          prefix by redefining pr_fmt. So it seems not quite neccesary
+> 	 to pass in a struct device * pointer for debug purpose only in
+> 	 each functions.
+> v3->v4:
+>  * only scu headfile path update
+> 
+> v2->v3:
+>  * structure and enums name update
+>  * api usage update
+> 
+> 
+> Dong Aisheng (5):
+>   dt-bindings: imx: add scu resource id headfile
+>   firmware: imx: remove resource id enums
+>   dt-bindings: fsl: scu: update power domain binding
+>   firmware: imx: add pm svc headfile
+>   firmware: imx: add SCU power domain driver
+> 
+>  .../devicetree/bindings/arm/freescale/fsl,scu.txt  |  37 +-
+>  drivers/firmware/imx/Kconfig                       |   6 +
+>  drivers/firmware/imx/Makefile                      |   3 +-
+>  drivers/firmware/imx/scu-pd.c                      | 339
+> +++++++++++++
+>  include/dt-bindings/firmware/imx/rsrc.h            | 559
+> +++++++++++++++++++++
+>  include/linux/firmware/imx/sci.h                   |   1 +
+>  include/linux/firmware/imx/svc/pm.h                |  85 ++++
+>  include/linux/firmware/imx/types.h                 | 552 --------------------
+>  8 files changed, 1000 insertions(+), 582 deletions(-)  create mode 100644
+> drivers/firmware/imx/scu-pd.c  create mode 100644
+> include/dt-bindings/firmware/imx/rsrc.h
+>  create mode 100644 include/linux/firmware/imx/svc/pm.h
+> 
+> --
+> 2.7.4
