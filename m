@@ -1,85 +1,83 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Wed, 7 Nov 2018 14:58:58 +0000
-Message-ID: <20181107145858.GK14309@e110439-lin>
+Date: Wed, 7 Nov 2018 15:04:30 +0000
+Message-ID: <20181107150430.GL14309@e110439-lin>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
  <20181029183311.29175-4-patrick.bellasi@arm.com>
- <20181107134414.GR9781@hirez.programming.kicks-ass.net>
- <20181107142428.GG14309@e110439-lin>
- <20181107144448.GH9761@hirez.programming.kicks-ass.net>
+ <20181107133504.GQ9781@hirez.programming.kicks-ass.net>
+ <20181107144809.GH14309@e110439-lin>
+ <20181107145527.GI9761@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181107144448.GH9761@hirez.programming.kicks-ass.net>
+In-Reply-To: <20181107145527.GI9761@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-Nov 15:44, Peter Zijlstra wrote:
-> On Wed, Nov 07, 2018 at 02:24:28PM +0000, Patrick Bellasi wrote:
-> > On 07-Nov 14:44, Peter Zijlstra wrote:
-> > > On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
+On 07-Nov 15:55, Peter Zijlstra wrote:
+> On Wed, Nov 07, 2018 at 02:48:09PM +0000, Patrick Bellasi wrote:
+> > On 07-Nov 14:35, Peter Zijlstra wrote:
+> > You mean se_count overflow ?
 > 
-> > > > +static void uclamp_group_get(struct uclamp_se *uc_se, unsigned int clamp_id,
-> > > > +			     unsigned int clamp_value)
-> > > > +{
-> > > > +	union uclamp_map *uc_maps = &uclamp_maps[clamp_id][0];
-> > > > +	unsigned int prev_group_id = uc_se->group_id;
-> > > > +	union uclamp_map uc_map_old, uc_map_new;
-> > > > +	unsigned int free_group_id;
-> > > > +	unsigned int group_id;
-> > > > +	unsigned long res;
-> > > > +
-> > > > +retry:
-> > > > +
-> > > > +	free_group_id = UCLAMP_GROUPS;
-> > > > +	for (group_id = 0; group_id < UCLAMP_GROUPS; ++group_id) {
-> > > > +		uc_map_old.data = atomic_long_read(&uc_maps[group_id].adata);
-> > > > +		if (free_group_id == UCLAMP_GROUPS && !uc_map_old.se_count)
-> > > > +			free_group_id = group_id;
-> > > > +		if (uc_map_old.value == clamp_value)
-> > > > +			break;
-> > > > +	}
-> > > > +	if (group_id >= UCLAMP_GROUPS) {
-> > > > +#ifdef CONFIG_SCHED_DEBUG
-> > > > +#define UCLAMP_MAPERR "clamp value [%u] mapping to clamp group failed\n"
-> > > > +		if (unlikely(free_group_id == UCLAMP_GROUPS)) {
-> > > > +			pr_err_ratelimited(UCLAMP_MAPERR, clamp_value);
-> > > > +			return;
-> > > > +		}
-> > > > +#endif
+> Yah..
+> 
+> > > And I'm not really a fan of hiding that error in a define like you keep
+> > > doing.
+> > 
+> > The #define is not there to mask an overflow, it's there to catch the
+> 
+> +#define UCLAMP_MAPERR "clamp value [%u] mapping to clamp group failed\n"
+> 
+> Is what I was talking about.
+> 
+> > > What's wrong with something like:
 > > > 
-> > > Can you please put in a comment, either here or on top, on why this can
-> > > not in fact happen? And we're always guaranteed a free group.
+> > > 	if (SCHED_WARN(free_group_id == UCLAMP_GROUPS))
+> > > 		return;
 > > 
-> > You right, that's confusing especially because up to this point we are
-> > not granted. We are always granted a free group once we add:
+> > Right, the flow should be:
 > > 
-> >    sched/core: uclamp: add clamp group bucketing support
+> >   1. try to find a valid clamp group
+> >   2. if you don't find one, the data structures are corrupted
+> >      warn once for data corruption
+> >      do not map this scheduling entity and return
+> >   3. map the scheduling entity
 > > 
-> > I've kept it separated to better document how we introduce that
-> > support.
-> > 
-> > Is it ok for for you if I better call out in the change log that the
-> > guarantee comes from a following patch... and add the comment in
-> > that later patch ?
+> > Is that ok ?
 > 
-> Urgh.. that is mighty confusing and since this stuff actually 'works'
-> might result in bisection issues too, right?
+> That's what the proposed does.
+> 
+> > > and
+> > > 
+> > > > +	uc_map_new.se_count = uc_map_old.se_count + 1;
+> > > 
+> > > 	if (SCHED_WARN(!new.se_count))
+> > > 		new.se_count = -1;
+> > 
+> > Mmm... not sure we can recover from a corrupted refcount or an
+> > overflow.
+> > 
+> > What should we do on these cases, disable uclamp completely ?
+> 
+> You can teach put to never decrement -1 (aka. all 1s).
 
-True...
+Still we don't know when re-enable -1 again...
 
-> I would really rather prefer a series that makes sense in the order you
-> read it.
+But, with bucketization, this will eventually turns into a small
+performance penalty at run-time when a CPU clamp group is going to be
+empty (since we will end up scanning an array with some holes to find
+out the new max)...  maybe still acceptable...
 
-... yes, bisects can be a problem, if we run functional tests on them.
+Will look into that for v6!
 
-Ok, let see what you think about the bucketing support and then we can
-see if it's better to keep them separate by adding here some check to
-remove after... or just squash them in since the beginning.
+Thanks
+
+> But its all SCHED_DEBUG stuff anyway, so who really cares.
+
 
 -- 
 #include <best/regards.h>
