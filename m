@@ -1,133 +1,70 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v8 03/15] PM: Introduce an Energy Model management
- framework
-Date: Wed, 7 Nov 2018 17:02:16 +0000
-Message-ID: <20181107170213.yapun7nk5rrjdf55@queper01-lin>
-References: <20181016101513.26919-1-quentin.perret@arm.com>
- <20181016101513.26919-4-quentin.perret@arm.com>
- <CAKfTPtBN3HpNMrztcmAwkGuW9uHaKBi9KoqdvBEHuxf7=078NA@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor for tickless systems
+Date: Wed, 7 Nov 2018 09:04:12 -0800
+Message-ID: <000001d476bb$ec964520$c5c2cf60$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtBN3HpNMrztcmAwkGuW9uHaKBi9KoqdvBEHuxf7=078NA@mail.gmail.com>
+References: JLIjge0NMDhAwJLIogChPj
+In-Reply-To: JLIjge0NMDhAwJLIogChPj
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skannan@codeaurora.org>, pkondeti@cod
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vincent,
+On 2018.11.04 08:31 Rafael J. Wysocki wrote:
 
-On Wednesday 07 Nov 2018 at 17:32:32 (+0100), Vincent Guittot wrote:
-> Hi Quentin,
+> v2 -> v3:
+> * Simplify the pattern detection code and make it return a value
+>	lower than the time to the closest timer if the majority of recent
+>	idle intervals are below it regardless of their variance (that should
+>	cause it to be slightly more aggressive).
+> * Do not count wakeups from state 0 due to the time limit in poll_idle()
+>    as non-timer.
+>
+> Note: I will be mostly offline tomorrow, so this goes slightly early.
+> I have tested it only very lightly, but it is not so much different from
+> the previous one.
 > 
-> On Tue, 16 Oct 2018 at 12:15, Quentin Perret <quentin.perret@arm.com> wrote:
-> >
-> 
-> > +
-> > +/**
-> > + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
-> > + * @pd         : performance domain for which energy has to be estimated
-> > + * @max_util   : highest utilization among CPUs of the domain
-> > + * @sum_util   : sum of the utilization of all CPUs in the domain
-> > + *
-> > + * Return: the sum of the energy consumed by the CPUs of the domain assuming
-> > + * a capacity state satisfying the max utilization of the domain.
-> > + */
-> > +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
-> > +                               unsigned long max_util, unsigned long sum_util)
-> > +{
-> > +       unsigned long freq, scale_cpu;
-> > +       struct em_cap_state *cs;
-> > +       int i, cpu;
-> > +
-> > +       /*
-> > +        * In order to predict the capacity state, map the utilization of the
-> > +        * most utilized CPU of the performance domain to a requested frequency,
-> > +        * like schedutil.
-> > +        */
-> > +       cpu = cpumask_first(to_cpumask(pd->cpus));
-> > +       scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> > +       cs = &pd->table[pd->nr_cap_states - 1];
-> > +       freq = map_util_freq(max_util, cs->frequency, scale_cpu);
-> > +
-> > +       /*
-> > +        * Find the lowest capacity state of the Energy Model above the
-> > +        * requested frequency.
-> > +        */
-> > +       for (i = 0; i < pd->nr_cap_states; i++) {
-> > +               cs = &pd->table[i];
-> > +               if (cs->frequency >= freq)
-> > +                       break;
-> > +       }
-> > +
-> > +       /*
-> > +        * The capacity of a CPU in the domain at that capacity state (cs)
-> > +        * can be computed as:
-> > +        *
-> > +        *             cs->freq * scale_cpu
-> > +        *   cs->cap = --------------------                          (1)
-> > +        *                 cpu_max_freq
-> > +        *
-> > +        * So, ignoring the costs of idle states (which are not available in
-> > +        * the EM), the energy consumed by this CPU at that capacity state is
-> > +        * estimated as:
-> > +        *
-> > +        *             cs->power * cpu_util
-> > +        *   cpu_nrg = --------------------                          (2)
-> > +        *                   cs->cap
-> > +        *
-> > +        * since 'cpu_util / cs->cap' represents its percentage of busy time.
-> > +        *
-> > +        *   NOTE: Although the result of this computation actually is in
-> > +        *         units of power, it can be manipulated as an energy value
-> > +        *         over a scheduling period, since it is assumed to be
-> > +        *         constant during that interval.
-> > +        *
-> > +        * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
-> > +        * of two terms:
-> > +        *
-> > +        *             cs->power * cpu_max_freq   cpu_util
-> > +        *   cpu_nrg = ------------------------ * ---------          (3)
-> > +        *                    cs->freq            scale_cpu
-> > +        *
-> > +        * The first term is static, and is stored in the em_cap_state struct
-> > +        * as 'cs->cost'.
-> > +        *
-> > +        * Since all CPUs of the domain have the same micro-architecture, they
-> > +        * share the same 'cs->cost', and the same CPU capacity. Hence, the
-> > +        * total energy of the domain (which is the simple sum of the energy of
-> > +        * all of its CPUs) can be factorized as:
-> > +        *
-> > +        *            cs->cost * \Sum cpu_util
-> > +        *   pd_nrg = ------------------------                       (4)
-> > +        *                  scale_cpu
-> > +        */
-> > +       return cs->cost * sum_util / scale_cpu;
-> 
-> Why do you need to keep scale_cpu outside the cs->cost ? do you expect
-> arch_scale_cpu_capacity() to change at runtime ?
+> It requires the same additional patches to apply as the previous one too.
 
-Unfortunately yes, it can. It'll change at least during boot on arm64,
-for example (see drivers/base/arch_topology.c). And also, userspace can
-actually set that value via sysfs ...
+Even though this v3 has now been superseded by v4, I completed some test
+work in progress for v3 anyhow.
 
-> If the returned value of arch_scale_cpu_capacity() changes, we will
-> have to rebuild several others things and we can include the update of
-> cs->cost
+The main reason to complete the work, and write up, was because, and for my
+own interest as much as anything, I wanted to specifically test for the
+influence of running trace on the system under test.
+Reference: https://marc.info/?l=linux-kernel&m=154145580925439&w=2
 
-Yeah, that was the original approach I had actually. Some of the older
-versions of this patch set were doing just that. The only issue is that,
-in order to make the cs->cost updatable are run time, you need to
-introduce some level of protection around that data structure (RCU or
-something). And that would make it a bit harder for IPA (for example) to
-access the data -- it doesn't need any kind of RCU to access it's EM at
-the moment.
+The Phoronix dbench test was run under the option to run all
+the tests, instead of just one number of clients. This was done
+with a reference/baseline kernel of 4.20-rc1, and also with this
+TEO version 3 patch. The tests were also repeated with trace
+enabled for 5000 seconds. Idle information and processor
+package power were sampled once per minute in all test runs.
 
-We can probably do something a bit smarter and introduce RCU protection
-only for the 'cost' field or something, but I was hoping that we could
-keep things simple for now and do that kind of small optimization a bit
-later :-)
+The results are:
+http://fast.smythies.com/linux-pm/k420/k420-dbench-teo3.htm
+http://fast.smythies.com/linux-pm/k420/histo_compare.htm
 
-Thanks,
-Quentin
+Conclusion: trace has negligible effect, until the system gets
+severely overloaded.
+
+There are some odd long idle durations with TEOv3 for idle
+states 1, 2, and 3 that I'll watch for with v4 testing.
+
+Other information:
+Processor: Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz
+The kernels were 1000 Hz.
+Idle latency/residency info:
+STATE: state0   DESC: CPUIDLE CORE POLL IDLE    NAME: POLL      LATENCY: 0      RESIDENCY: 0
+STATE: state1   DESC: MWAIT 0x00        NAME: C1        LATENCY: 2      RESIDENCY: 2
+STATE: state2   DESC: MWAIT 0x01        NAME: C1E       LATENCY: 10     RESIDENCY: 20
+STATE: state3   DESC: MWAIT 0x10        NAME: C3        LATENCY: 80     RESIDENCY: 211
+STATE: state4   DESC: MWAIT 0x20        NAME: C6        LATENCY: 104    RESIDENCY: 345
+
+... Doug
+ 
