@@ -1,184 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] irq/timings: Fix model validity
-Date: Wed, 7 Nov 2018 11:52:31 +0100
-Message-ID: <ab9e60d7-e2d3-7d0c-dbf1-c0bed7bdb516@linaro.org>
-References: <1556808.yKVbhZSazi@aspire.rjw.lan>
- <20181106170442.GC9781@hirez.programming.kicks-ass.net>
- <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
- <20181106195127.GD9781@hirez.programming.kicks-ass.net>
- <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
- <20181107085936.GI9781@hirez.programming.kicks-ass.net>
- <20181107094624.GB9828@hirez.programming.kicks-ass.net>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v5 09/15] sched/cpufreq: uclamp: add utilization clamping
+ for FAIR tasks
+Date: Wed, 7 Nov 2018 11:38:49 +0000
+Message-ID: <20181107113849.GC14309@e110439-lin>
+References: <20181029183311.29175-1-patrick.bellasi@arm.com>
+ <20181029183311.29175-11-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181107094624.GB9828@hirez.programming.kicks-ass.net>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181029183311.29175-11-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Nicolas Pitre <nicolas.pitre@linaro.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/11/2018 10:46, Peter Zijlstra wrote:
-> On Wed, Nov 07, 2018 at 09:59:36AM +0100, Peter Zijlstra wrote:
->> On Wed, Nov 07, 2018 at 12:39:31AM +0100, Rafael J. Wysocki wrote:
-> 
->>> In general, however, I need to be convinced that interrupts that
->>> didn't wake up the CPU from idle are relevant for next wakeup
->>> prediction.  I see that this may be the case, but to what extent is
->>> rather unclear to me and it looks like calling
->>> irq_timings_next_event() would add considerable overhead.
->>
->> How about we add a (debug) knob so that people can play with it for now?
->> If it turns out to be useful, we'll learn.
-> 
-> That said; Daniel, I think there is a problem with how irqs_update()
-> sets irqs->valid. We seem to set valid even when we're still training.
+On 29-Oct 18:33, Patrick Bellasi wrote:
 
-Yes, the fix seems right.
+[...]
 
-Thanks for fixing it.
-
-  -- Daniel
-
-> ---
-> Subject: irq/timings: Fix model validity
-> 
-> The per IRQ timing predictor will produce a 'valid' prediction even if
-> the model is still training. This should not happen.
-> 
-> Fix this by moving the actual training (online stddev algorithm) up a
-> bit and returning early (before predicting) when we've not yet reached
-> the sample threshold.
-> 
-> A direct concequence is that the predictor will only ever run with at
-> least that many samples, which means we can remove one branch.
-> 
-> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> ---
->  kernel/irq/timings.c | 66 +++++++++++++++++++++++++++++-----------------------
->  1 file changed, 37 insertions(+), 29 deletions(-)
-> 
-> diff --git a/kernel/irq/timings.c b/kernel/irq/timings.c
-> index 1e4cb63a5c82..5d22fd5facd5 100644
-> --- a/kernel/irq/timings.c
-> +++ b/kernel/irq/timings.c
-> @@ -28,6 +28,13 @@ struct irqt_stat {
->  	int	valid;
->  };
->  
-> +/*
-> + * The rule of thumb in statistics for the normal distribution
-> + * is having at least 30 samples in order to have the model to
-> + * apply.
+> +#ifdef CONFIG_UCLAMP_TASK
+> +/**
+> + * clamp_util: clamp a utilization value for a specified CPU
+> + * @rq: the CPU's RQ to get the clamp values from
+> + * @util: the utilization signal to clamp
+> + *
+> + * Each CPU tracks util_{min,max} clamp values depending on the set of its
+> + * currently RUNNABLE tasks. Given a utilization signal, i.e a signal in
+> + * the [0..SCHED_CAPACITY_SCALE] range, this function returns a clamped
+> + * utilization signal considering the current clamp values for the
+> + * specified CPU.
+> + *
+> + * Return: a clamped utilization signal for a given CPU.
 > + */
-> +#define SAMPLE_THRESHOLD	30
-> +
->  static DEFINE_IDR(irqt_stats);
->  
->  void irq_timings_enable(void)
-> @@ -101,7 +108,6 @@ void irq_timings_disable(void)
->   * distribution appears when the number of samples is 30 (it is the
->   * rule of thumb in statistics, cf. "30 samples" on Internet). When
->   * there are three consecutive anomalies, the statistics are resetted.
-> - *
->   */
->  static void irqs_update(struct irqt_stat *irqs, u64 ts)
->  {
-> @@ -146,11 +152,38 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
->  	 */
->  	diff = interval - irqs->avg;
->  
-> +	/*
-> +	 * Online average algorithm:
-> +	 *
-> +	 *  new_average = average + ((value - average) / count)
-> +	 *
-> +	 * The variance computation depends on the new average
-> +	 * to be computed here first.
-> +	 *
-> +	 */
-> +	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
-> +
-> +	/*
-> +	 * Online variance algorithm:
-> +	 *
-> +	 *  new_variance = variance + (value - average) x (value - new_average)
-> +	 *
-> +	 * Warning: irqs->avg is updated with the line above, hence
-> +	 * 'interval - irqs->avg' is no longer equal to 'diff'
-> +	 */
-> +	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
-> +
->  	/*
->  	 * Increment the number of samples.
->  	 */
->  	irqs->nr_samples++;
->  
-> +	/*
-> +	 * If we're still training the model, we can't make any predictions yet.
-> +	 */
-> +	if (irqs->nr_samples < SAMPLE_THRESHOLD)
-> +		return;
-> +
->  	/*
->  	 * Online variance divided by the number of elements if there
->  	 * is more than one sample.  Normally the formula is division
-> @@ -158,16 +191,12 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
->  	 * more than 32 and dividing by 32 instead of 31 is enough
->  	 * precise.
->  	 */
-> -	if (likely(irqs->nr_samples > 1))
-> -		variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
-> +	variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
->  
->  	/*
-> -	 * The rule of thumb in statistics for the normal distribution
-> -	 * is having at least 30 samples in order to have the model to
-> -	 * apply. Values outside the interval are considered as an
-> -	 * anomaly.
-> +	 * Values outside the interval are considered as an anomaly.
->  	 */
-> -	if ((irqs->nr_samples >= 30) && ((diff * diff) > (9 * variance))) {
-> +	if ((diff * diff) > (9 * variance)) {
->  		/*
->  		 * After three consecutive anomalies, we reset the
->  		 * stats as it is no longer stable enough.
-> @@ -191,27 +220,6 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
->  	 */
->  	irqs->valid = 1;
->  
-> -	/*
-> -	 * Online average algorithm:
-> -	 *
-> -	 *  new_average = average + ((value - average) / count)
-> -	 *
-> -	 * The variance computation depends on the new average
-> -	 * to be computed here first.
-> -	 *
-> -	 */
-> -	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
-> -
-> -	/*
-> -	 * Online variance algorithm:
-> -	 *
-> -	 *  new_variance = variance + (value - average) x (value - new_average)
-> -	 *
-> -	 * Warning: irqs->avg is updated with the line above, hence
-> -	 * 'interval - irqs->avg' is no longer equal to 'diff'
-> -	 */
-> -	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
-> -
->  	/*
->  	 * Update the next event
->  	 */
-> 
+> +static inline unsigned int uclamp_util(struct rq *rq, unsigned int util)
+> +{
+> +	unsigned int min_util = rq->uclamp.value[UCLAMP_MIN];
+> +	unsigned int max_util = rq->uclamp.value[UCLAMP_MAX];
 
+Just notice here we can have an issue.
+
+For each scheduling entity, we always ensure that:
+
+    util_min <= util_max
+
+However, since CPU's {min,max}_util clamps are always MAX aggregated
+considering the corresponding clamps of RUNNABLE tasks with
+_different_ clamps, we can end up with CPU clamps where:
+
+    util_min > util_max
+
+Thus, we need to add the following sanity check here:
+
++       if (unlikely(min_util > max_util))
++               return min_util;
+
+> +
+> +	return clamp(util, min_util, max_util);
+> +}
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+#include <best/regards.h>
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Patrick Bellasi
