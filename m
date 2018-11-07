@@ -1,68 +1,166 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor
- for tickless systems
-Date: Wed, 7 Nov 2018 09:59:36 +0100
-Message-ID: <20181107085936.GI9781@hirez.programming.kicks-ass.net>
+Subject: [PATCH] irq/timings: Fix model validity
+Date: Wed, 7 Nov 2018 10:46:24 +0100
+Message-ID: <20181107094624.GB9828@hirez.programming.kicks-ass.net>
 References: <1556808.yKVbhZSazi@aspire.rjw.lan>
  <20181106170442.GC9781@hirez.programming.kicks-ass.net>
  <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
  <20181106195127.GD9781@hirez.programming.kicks-ass.net>
  <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
+ <20181107085936.GI9781@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
+In-Reply-To: <20181107085936.GI9781@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 07, 2018 at 12:39:31AM +0100, Rafael J. Wysocki wrote:
-> On Tue, Nov 6, 2018 at 8:51 PM Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > On Tue, Nov 06, 2018 at 07:19:24PM +0100, Rafael J. Wysocki wrote:
-> > > On Tue, Nov 6, 2018 at 6:04 PM Peter Zijlstra <peterz@infradead.org> wrote:
-> >
-> > > > Instead of this detector; why haven't you used the code from
-> > > > kernel/irq/timings.c ?
-> > >
-> > > Because it doesn't help much AFAICS.
-> > >
-> > > Wakeups need not be interrupts in particular
-> >
-> > You're alluding to the MWAIT wakeup through the MONITOR address ?
+On Wed, Nov 07, 2018 at 09:59:36AM +0100, Peter Zijlstra wrote:
+> On Wed, Nov 07, 2018 at 12:39:31AM +0100, Rafael J. Wysocki wrote:
+
+> > In general, however, I need to be convinced that interrupts that
+> > didn't wake up the CPU from idle are relevant for next wakeup
+> > prediction.  I see that this may be the case, but to what extent is
+> > rather unclear to me and it looks like calling
+> > irq_timings_next_event() would add considerable overhead.
 > 
-> Yes.
+> How about we add a (debug) knob so that people can play with it for now?
+> If it turns out to be useful, we'll learn.
 
-Right, those will not be accounted for and will need something else.
+That said; Daniel, I think there is a problem with how irqs_update()
+sets irqs->valid. We seem to set valid even when we're still training.
 
-> > > and interrupt patterns that show up when the CPU is busy may not be
-> > > relevant for when it is idle.
-> >
-> > I think that is not always true; consider things like the periodic
-> > interrupt from frame rendering or audio; if there is nothing more going
-> > on in the system than say playing your favourite tune, it gets the
-> > 'need more data soon' interrupt from the audio card, wakes up, does a little
-> > mp3/flac/ogg/whatever decode to fill up the buffer and goes back to
-> > sleep. Same for video playback I assume, the vsync interrupt for buffer
-> > flips is fairly predictable.
-> >
-> > The interrupt predictor we have in kernel/irq/timings.c should be very
-> > accurate in predicting those interrupts.
-> 
-> In the above case the interrupts should produce a detectable pattern
-> of wakeups anyway.
+---
+Subject: irq/timings: Fix model validity
 
-Ah, not so. Suppose you have both the audio and video interrupt going at
-a steady rate but different rate, then the combined pattern isn't
-trivial at all.
+The per IRQ timing predictor will produce a 'valid' prediction even if
+the model is still training. This should not happen.
 
-> In general, however, I need to be convinced that interrupts that
-> didn't wake up the CPU from idle are relevant for next wakeup
-> prediction.  I see that this may be the case, but to what extent is
-> rather unclear to me and it looks like calling
-> irq_timings_next_event() would add considerable overhead.
+Fix this by moving the actual training (online stddev algorithm) up a
+bit and returning early (before predicting) when we've not yet reached
+the sample threshold.
 
-How about we add a (debug) knob so that people can play with it for now?
-If it turns out to be useful, we'll learn.
+A direct concequence is that the predictor will only ever run with at
+least that many samples, which means we can remove one branch.
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+---
+ kernel/irq/timings.c | 66 +++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 37 insertions(+), 29 deletions(-)
+
+diff --git a/kernel/irq/timings.c b/kernel/irq/timings.c
+index 1e4cb63a5c82..5d22fd5facd5 100644
+--- a/kernel/irq/timings.c
++++ b/kernel/irq/timings.c
+@@ -28,6 +28,13 @@ struct irqt_stat {
+ 	int	valid;
+ };
+ 
++/*
++ * The rule of thumb in statistics for the normal distribution
++ * is having at least 30 samples in order to have the model to
++ * apply.
++ */
++#define SAMPLE_THRESHOLD	30
++
+ static DEFINE_IDR(irqt_stats);
+ 
+ void irq_timings_enable(void)
+@@ -101,7 +108,6 @@ void irq_timings_disable(void)
+  * distribution appears when the number of samples is 30 (it is the
+  * rule of thumb in statistics, cf. "30 samples" on Internet). When
+  * there are three consecutive anomalies, the statistics are resetted.
+- *
+  */
+ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+ {
+@@ -146,11 +152,38 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+ 	 */
+ 	diff = interval - irqs->avg;
+ 
++	/*
++	 * Online average algorithm:
++	 *
++	 *  new_average = average + ((value - average) / count)
++	 *
++	 * The variance computation depends on the new average
++	 * to be computed here first.
++	 *
++	 */
++	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
++
++	/*
++	 * Online variance algorithm:
++	 *
++	 *  new_variance = variance + (value - average) x (value - new_average)
++	 *
++	 * Warning: irqs->avg is updated with the line above, hence
++	 * 'interval - irqs->avg' is no longer equal to 'diff'
++	 */
++	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
++
+ 	/*
+ 	 * Increment the number of samples.
+ 	 */
+ 	irqs->nr_samples++;
+ 
++	/*
++	 * If we're still training the model, we can't make any predictions yet.
++	 */
++	if (irqs->nr_samples < SAMPLE_THRESHOLD)
++		return;
++
+ 	/*
+ 	 * Online variance divided by the number of elements if there
+ 	 * is more than one sample.  Normally the formula is division
+@@ -158,16 +191,12 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+ 	 * more than 32 and dividing by 32 instead of 31 is enough
+ 	 * precise.
+ 	 */
+-	if (likely(irqs->nr_samples > 1))
+-		variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
++	variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
+ 
+ 	/*
+-	 * The rule of thumb in statistics for the normal distribution
+-	 * is having at least 30 samples in order to have the model to
+-	 * apply. Values outside the interval are considered as an
+-	 * anomaly.
++	 * Values outside the interval are considered as an anomaly.
+ 	 */
+-	if ((irqs->nr_samples >= 30) && ((diff * diff) > (9 * variance))) {
++	if ((diff * diff) > (9 * variance)) {
+ 		/*
+ 		 * After three consecutive anomalies, we reset the
+ 		 * stats as it is no longer stable enough.
+@@ -191,27 +220,6 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+ 	 */
+ 	irqs->valid = 1;
+ 
+-	/*
+-	 * Online average algorithm:
+-	 *
+-	 *  new_average = average + ((value - average) / count)
+-	 *
+-	 * The variance computation depends on the new average
+-	 * to be computed here first.
+-	 *
+-	 */
+-	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
+-
+-	/*
+-	 * Online variance algorithm:
+-	 *
+-	 *  new_variance = variance + (value - average) x (value - new_average)
+-	 *
+-	 * Warning: irqs->avg is updated with the line above, hence
+-	 * 'interval - irqs->avg' is no longer equal to 'diff'
+-	 */
+-	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
+-
+ 	/*
+ 	 * Update the next event
+ 	 */
