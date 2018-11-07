@@ -1,101 +1,106 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] cpufreq: s3c24xx: Change to use DEFINE_SHOW_ATTRIBUTE macro
-Date: Wed,  7 Nov 2018 11:13:46 -0500
-Message-ID: <20181107161346.9887-1-tiny.windzz@gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v8 03/15] PM: Introduce an Energy Model management framework
+Date: Wed, 7 Nov 2018 17:32:32 +0100
+Message-ID: <CAKfTPtBN3HpNMrztcmAwkGuW9uHaKBi9KoqdvBEHuxf7=078NA@mail.gmail.com>
+References: <20181016101513.26919-1-quentin.perret@arm.com> <20181016101513.26919-4-quentin.perret@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181016101513.26919-4-quentin.perret@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kgene@kernel.org, krzk@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skannan@codeaurora.org>, pkondeti@cod
 List-Id: linux-pm@vger.kernel.org
 
-Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
+Hi Quentin,
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- drivers/cpufreq/s3c24xx-cpufreq-debugfs.c | 46 +++--------------------
- 1 file changed, 6 insertions(+), 40 deletions(-)
+On Tue, 16 Oct 2018 at 12:15, Quentin Perret <quentin.perret@arm.com> wrote:
+>
 
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
-index 4d976e8dbb2f..0df87b6480fe 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
-@@ -63,18 +63,7 @@ static int board_show(struct seq_file *seq, void *p)
- 	return 0;
- }
- 
--static int fops_board_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, board_show, NULL);
--}
--
--static const struct file_operations fops_board = {
--	.open		= fops_board_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--	.owner		= THIS_MODULE,
--};
-+DEFINE_SHOW_ATTRIBUTE(board);
- 
- static int info_show(struct seq_file *seq, void *p)
- {
-@@ -105,18 +94,7 @@ static int info_show(struct seq_file *seq, void *p)
- 	return 0;
- }
- 
--static int fops_info_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, info_show, NULL);
--}
--
--static const struct file_operations fops_info = {
--	.open		= fops_info_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--	.owner		= THIS_MODULE,
--};
-+DEFINE_SHOW_ATTRIBUTE(info);
- 
- static int io_show(struct seq_file *seq, void *p)
- {
-@@ -162,19 +140,7 @@ static int io_show(struct seq_file *seq, void *p)
- 	return 0;
- }
- 
--static int fops_io_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, io_show, NULL);
--}
--
--static const struct file_operations fops_io = {
--	.open		= fops_io_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--	.owner		= THIS_MODULE,
--};
--
-+DEFINE_SHOW_ATTRIBUTE(io);
- 
- static int __init s3c_freq_debugfs_init(void)
- {
-@@ -185,13 +151,13 @@ static int __init s3c_freq_debugfs_init(void)
- 	}
- 
- 	dbgfs_file_io = debugfs_create_file("io-timing", S_IRUGO, dbgfs_root,
--					    NULL, &fops_io);
-+					    NULL, &io_fops);
- 
- 	dbgfs_file_info = debugfs_create_file("info", S_IRUGO, dbgfs_root,
--					      NULL, &fops_info);
-+					      NULL, &info_fops);
- 
- 	dbgfs_file_board = debugfs_create_file("board", S_IRUGO, dbgfs_root,
--					       NULL, &fops_board);
-+					       NULL, &board_fops);
- 
- 	return 0;
- }
--- 
-2.17.0
+> +
+> +/**
+> + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
+> + * @pd         : performance domain for which energy has to be estimated
+> + * @max_util   : highest utilization among CPUs of the domain
+> + * @sum_util   : sum of the utilization of all CPUs in the domain
+> + *
+> + * Return: the sum of the energy consumed by the CPUs of the domain assuming
+> + * a capacity state satisfying the max utilization of the domain.
+> + */
+> +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
+> +                               unsigned long max_util, unsigned long sum_util)
+> +{
+> +       unsigned long freq, scale_cpu;
+> +       struct em_cap_state *cs;
+> +       int i, cpu;
+> +
+> +       /*
+> +        * In order to predict the capacity state, map the utilization of the
+> +        * most utilized CPU of the performance domain to a requested frequency,
+> +        * like schedutil.
+> +        */
+> +       cpu = cpumask_first(to_cpumask(pd->cpus));
+> +       scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> +       cs = &pd->table[pd->nr_cap_states - 1];
+> +       freq = map_util_freq(max_util, cs->frequency, scale_cpu);
+> +
+> +       /*
+> +        * Find the lowest capacity state of the Energy Model above the
+> +        * requested frequency.
+> +        */
+> +       for (i = 0; i < pd->nr_cap_states; i++) {
+> +               cs = &pd->table[i];
+> +               if (cs->frequency >= freq)
+> +                       break;
+> +       }
+> +
+> +       /*
+> +        * The capacity of a CPU in the domain at that capacity state (cs)
+> +        * can be computed as:
+> +        *
+> +        *             cs->freq * scale_cpu
+> +        *   cs->cap = --------------------                          (1)
+> +        *                 cpu_max_freq
+> +        *
+> +        * So, ignoring the costs of idle states (which are not available in
+> +        * the EM), the energy consumed by this CPU at that capacity state is
+> +        * estimated as:
+> +        *
+> +        *             cs->power * cpu_util
+> +        *   cpu_nrg = --------------------                          (2)
+> +        *                   cs->cap
+> +        *
+> +        * since 'cpu_util / cs->cap' represents its percentage of busy time.
+> +        *
+> +        *   NOTE: Although the result of this computation actually is in
+> +        *         units of power, it can be manipulated as an energy value
+> +        *         over a scheduling period, since it is assumed to be
+> +        *         constant during that interval.
+> +        *
+> +        * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
+> +        * of two terms:
+> +        *
+> +        *             cs->power * cpu_max_freq   cpu_util
+> +        *   cpu_nrg = ------------------------ * ---------          (3)
+> +        *                    cs->freq            scale_cpu
+> +        *
+> +        * The first term is static, and is stored in the em_cap_state struct
+> +        * as 'cs->cost'.
+> +        *
+> +        * Since all CPUs of the domain have the same micro-architecture, they
+> +        * share the same 'cs->cost', and the same CPU capacity. Hence, the
+> +        * total energy of the domain (which is the simple sum of the energy of
+> +        * all of its CPUs) can be factorized as:
+> +        *
+> +        *            cs->cost * \Sum cpu_util
+> +        *   pd_nrg = ------------------------                       (4)
+> +        *                  scale_cpu
+> +        */
+> +       return cs->cost * sum_util / scale_cpu;
+
+Why do you need to keep scale_cpu outside the cs->cost ? do you expect
+arch_scale_cpu_capacity() to change at runtime ?
+
+If the returned value of arch_scale_cpu_capacity() changes, we will
+have to rebuild several others things and we can include the update of
+cs->cost
