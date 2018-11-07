@@ -1,85 +1,101 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
- into CPU's clamp groups
-Date: Wed, 7 Nov 2018 15:04:30 +0000
-Message-ID: <20181107150430.GL14309@e110439-lin>
-References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-4-patrick.bellasi@arm.com>
- <20181107133504.GQ9781@hirez.programming.kicks-ass.net>
- <20181107144809.GH14309@e110439-lin>
- <20181107145527.GI9761@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] cpufreq: s3c24xx: Change to use DEFINE_SHOW_ATTRIBUTE macro
+Date: Wed,  7 Nov 2018 11:13:46 -0500
+Message-ID: <20181107161346.9887-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181107145527.GI9761@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: kgene@kernel.org, krzk@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-Nov 15:55, Peter Zijlstra wrote:
-> On Wed, Nov 07, 2018 at 02:48:09PM +0000, Patrick Bellasi wrote:
-> > On 07-Nov 14:35, Peter Zijlstra wrote:
-> > You mean se_count overflow ?
-> 
-> Yah..
-> 
-> > > And I'm not really a fan of hiding that error in a define like you keep
-> > > doing.
-> > 
-> > The #define is not there to mask an overflow, it's there to catch the
-> 
-> +#define UCLAMP_MAPERR "clamp value [%u] mapping to clamp group failed\n"
-> 
-> Is what I was talking about.
-> 
-> > > What's wrong with something like:
-> > > 
-> > > 	if (SCHED_WARN(free_group_id == UCLAMP_GROUPS))
-> > > 		return;
-> > 
-> > Right, the flow should be:
-> > 
-> >   1. try to find a valid clamp group
-> >   2. if you don't find one, the data structures are corrupted
-> >      warn once for data corruption
-> >      do not map this scheduling entity and return
-> >   3. map the scheduling entity
-> > 
-> > Is that ok ?
-> 
-> That's what the proposed does.
-> 
-> > > and
-> > > 
-> > > > +	uc_map_new.se_count = uc_map_old.se_count + 1;
-> > > 
-> > > 	if (SCHED_WARN(!new.se_count))
-> > > 		new.se_count = -1;
-> > 
-> > Mmm... not sure we can recover from a corrupted refcount or an
-> > overflow.
-> > 
-> > What should we do on these cases, disable uclamp completely ?
-> 
-> You can teach put to never decrement -1 (aka. all 1s).
+Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
 
-Still we don't know when re-enable -1 again...
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/cpufreq/s3c24xx-cpufreq-debugfs.c | 46 +++--------------------
+ 1 file changed, 6 insertions(+), 40 deletions(-)
 
-But, with bucketization, this will eventually turns into a small
-performance penalty at run-time when a CPU clamp group is going to be
-empty (since we will end up scanning an array with some holes to find
-out the new max)...  maybe still acceptable...
-
-Will look into that for v6!
-
-Thanks
-
-> But its all SCHED_DEBUG stuff anyway, so who really cares.
-
-
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+index 4d976e8dbb2f..0df87b6480fe 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+@@ -63,18 +63,7 @@ static int board_show(struct seq_file *seq, void *p)
+ 	return 0;
+ }
+ 
+-static int fops_board_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, board_show, NULL);
+-}
+-
+-static const struct file_operations fops_board = {
+-	.open		= fops_board_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-	.owner		= THIS_MODULE,
+-};
++DEFINE_SHOW_ATTRIBUTE(board);
+ 
+ static int info_show(struct seq_file *seq, void *p)
+ {
+@@ -105,18 +94,7 @@ static int info_show(struct seq_file *seq, void *p)
+ 	return 0;
+ }
+ 
+-static int fops_info_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, info_show, NULL);
+-}
+-
+-static const struct file_operations fops_info = {
+-	.open		= fops_info_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-	.owner		= THIS_MODULE,
+-};
++DEFINE_SHOW_ATTRIBUTE(info);
+ 
+ static int io_show(struct seq_file *seq, void *p)
+ {
+@@ -162,19 +140,7 @@ static int io_show(struct seq_file *seq, void *p)
+ 	return 0;
+ }
+ 
+-static int fops_io_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, io_show, NULL);
+-}
+-
+-static const struct file_operations fops_io = {
+-	.open		= fops_io_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-	.owner		= THIS_MODULE,
+-};
+-
++DEFINE_SHOW_ATTRIBUTE(io);
+ 
+ static int __init s3c_freq_debugfs_init(void)
+ {
+@@ -185,13 +151,13 @@ static int __init s3c_freq_debugfs_init(void)
+ 	}
+ 
+ 	dbgfs_file_io = debugfs_create_file("io-timing", S_IRUGO, dbgfs_root,
+-					    NULL, &fops_io);
++					    NULL, &io_fops);
+ 
+ 	dbgfs_file_info = debugfs_create_file("info", S_IRUGO, dbgfs_root,
+-					      NULL, &fops_info);
++					      NULL, &info_fops);
+ 
+ 	dbgfs_file_board = debugfs_create_file("board", S_IRUGO, dbgfs_root,
+-					       NULL, &fops_board);
++					       NULL, &board_fops);
+ 
+ 	return 0;
+ }
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.17.0
