@@ -1,108 +1,184 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v4 01/13] ktask: add documentation
-Date: Wed, 7 Nov 2018 11:35:54 +0100
-Message-ID: <20181107103554.GL9781@hirez.programming.kicks-ass.net>
-References: <20181105165558.11698-1-daniel.m.jordan@oracle.com>
- <20181105165558.11698-2-daniel.m.jordan@oracle.com>
- <20181106084911.GA22504@hirez.programming.kicks-ass.net>
- <20181106203411.pdce6tgs7dncwflh@ca-dmjordan1.us.oracle.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] irq/timings: Fix model validity
+Date: Wed, 7 Nov 2018 11:52:31 +0100
+Message-ID: <ab9e60d7-e2d3-7d0c-dbf1-c0bed7bdb516@linaro.org>
+References: <1556808.yKVbhZSazi@aspire.rjw.lan>
+ <20181106170442.GC9781@hirez.programming.kicks-ass.net>
+ <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
+ <20181106195127.GD9781@hirez.programming.kicks-ass.net>
+ <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
+ <20181107085936.GI9781@hirez.programming.kicks-ass.net>
+ <20181107094624.GB9828@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181106203411.pdce6tgs7dncwflh@ca-dmjordan1.us.oracle.com>
+In-Reply-To: <20181107094624.GB9828@hirez.programming.kicks-ass.net>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Jordan <daniel.m.jordan@oracle.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org, aarcange@redhat.com, aaron.lu@intel.com, akpm@linux-foundation.org, alex.williamson@redhat.com, bsd@redhat.com, darrick.wong@oracle.com, dave.hansen@linux.intel.com, jgg@mellanox.com, jwadams@google.com, jiangshanlai@gmail.com, mhocko@kernel.org, mike.kravetz@oracle.com, Pavel.Tatashin@microsoft.com, prasad.singamsetty@oracle.com, rdunlap@infradead.org, steven.sistare@oracle.com, tim.c.chen@intel.com, tj@kernel.org, vbabka@suse.cz
+To: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Nicolas Pitre <nicolas.pitre@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 06, 2018 at 12:34:11PM -0800, Daniel Jordan wrote:
-> On Tue, Nov 06, 2018 at 09:49:11AM +0100, Peter Zijlstra wrote:
-> > On Mon, Nov 05, 2018 at 11:55:46AM -0500, Daniel Jordan wrote:
-> > > +Concept
-> > > +=======
-> > > +
-> > > +ktask is built on unbound workqueues to take advantage of the thread management
-> > > +facilities it provides: creation, destruction, flushing, priority setting, and
-> > > +NUMA affinity.
-> > > +
-> > > +A little terminology up front:  A 'task' is the total work there is to do and a
-> > > +'chunk' is a unit of work given to a thread.
-> > 
-> > So I hate on the task naming. We already have a task, lets not overload
-> > that name.
+On 07/11/2018 10:46, Peter Zijlstra wrote:
+> On Wed, Nov 07, 2018 at 09:59:36AM +0100, Peter Zijlstra wrote:
+>> On Wed, Nov 07, 2018 at 12:39:31AM +0100, Rafael J. Wysocki wrote:
 > 
-> Ok, agreed, it's a crowded field with 'task', 'work', 'thread'...
+>>> In general, however, I need to be convinced that interrupts that
+>>> didn't wake up the CPU from idle are relevant for next wakeup
+>>> prediction.  I see that this may be the case, but to what extent is
+>>> rather unclear to me and it looks like calling
+>>> irq_timings_next_event() would add considerable overhead.
+>>
+>> How about we add a (debug) knob so that people can play with it for now?
+>> If it turns out to be useful, we'll learn.
 > 
-> Maybe 'job', since nothing seems to have taken that in kernel/.
+> That said; Daniel, I think there is a problem with how irqs_update()
+> sets irqs->valid. We seem to set valid even when we're still training.
 
-Do we want to somehow convey the fundamentally parallel nature of the
-thing?
+Yes, the fix seems right.
 
-> > I see no mention of padata anywhere; I also don't see mention of the
-> > async init stuff. Both appear to me to share, at least in part, the same
-> > reason for existence.
+Thanks for fixing it.
+
+  -- Daniel
+
+> ---
+> Subject: irq/timings: Fix model validity
 > 
-> padata is news to me.  From reading its doc, it comes with some special
-> requirements of its own, like softirqs disabled during the parallel callback,
-> and some ktask users need to sleep.  I'll check whether it could be reworked to
-> handle this.
-
-Right, padata is something that came from the network stack I think.
-It's a bit of an odd thing, but it would be nice if we can fold it into
-something larger.
-
-> And yes, async shares the same basic infrastructure, but ktask callers need to
-> wait, so the two seem fundamentally at odds.  I'll add this explanation in.
-
-Why does ktask have to be fundamentally async?
-
-> > > +Scheduler Interaction
-> > > +=====================
-> ...
-> > > +It is possible for a helper thread to start running and then be forced off-CPU
-> > > +by a higher priority thread.  With the helper's CPU time curtailed by MAX_NICE,
-> > > +the main thread may wait longer for the task to finish than it would have had
-> > > +it not started any helpers, so to ensure forward progress at a single-threaded
-> > > +pace, once the main thread is finished with all outstanding work in the task,
-> > > +the main thread wills its priority to one helper thread at a time.  At least
-> > > +one thread will then always be running at the priority of the calling thread.
-> > 
-> > What isn't clear is if this calling thread is waiting or not. Only do
-> > this inheritance trick if it is actually waiting on the work. If it is
-> > not, nobody cares.
+> The per IRQ timing predictor will produce a 'valid' prediction even if
+> the model is still training. This should not happen.
 > 
-> The calling thread waits.  Even if it didn't though, the inheritance trick
-> would still be desirable for timely completion of the job.
-
-No, if nobody is waiting on it, it really doesn't matter.
-
-> > > +Power Management
-> > > +================
-> > > +
-> > > +Starting additional helper threads may cause the system to consume more energy,
-> > > +which is undesirable on energy-conscious devices.  Therefore ktask needs to be
-> > > +aware of cpufreq policies and scaling governors.
-> > > +
-> > > +If an energy-conscious policy is in use (e.g. powersave, conservative) on any
-> > > +part of the system, that is a signal that the user has strong power management
-> > > +preferences, in which case ktask is disabled.
-> > > +
-> > > +TODO: Implement this.
-> > 
-> > No, don't do that, its broken. Also, we're trying to move to a single
-> > cpufreq governor for all.
-> >
-> > Sure we'll retain 'performance', but powersave and conservative and all
-> > that nonsense should go away eventually.
+> Fix this by moving the actual training (online stddev algorithm) up a
+> bit and returning early (before predicting) when we've not yet reached
+> the sample threshold.
 > 
-> Ok, good to know.
+> A direct concequence is that the predictor will only ever run with at
+> least that many samples, which means we can remove one branch.
 > 
-> > That's not saying you don't need a knob for this; but don't look at
-> > cpufreq for this.
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> ---
+>  kernel/irq/timings.c | 66 +++++++++++++++++++++++++++++-----------------------
+>  1 file changed, 37 insertions(+), 29 deletions(-)
 > 
-> Ok, I'll dig through power management to see what else is there.  Maybe there's
-> some way to ask "is this machine energy conscious?"
+> diff --git a/kernel/irq/timings.c b/kernel/irq/timings.c
+> index 1e4cb63a5c82..5d22fd5facd5 100644
+> --- a/kernel/irq/timings.c
+> +++ b/kernel/irq/timings.c
+> @@ -28,6 +28,13 @@ struct irqt_stat {
+>  	int	valid;
+>  };
+>  
+> +/*
+> + * The rule of thumb in statistics for the normal distribution
+> + * is having at least 30 samples in order to have the model to
+> + * apply.
+> + */
+> +#define SAMPLE_THRESHOLD	30
+> +
+>  static DEFINE_IDR(irqt_stats);
+>  
+>  void irq_timings_enable(void)
+> @@ -101,7 +108,6 @@ void irq_timings_disable(void)
+>   * distribution appears when the number of samples is 30 (it is the
+>   * rule of thumb in statistics, cf. "30 samples" on Internet). When
+>   * there are three consecutive anomalies, the statistics are resetted.
+> - *
+>   */
+>  static void irqs_update(struct irqt_stat *irqs, u64 ts)
+>  {
+> @@ -146,11 +152,38 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+>  	 */
+>  	diff = interval - irqs->avg;
+>  
+> +	/*
+> +	 * Online average algorithm:
+> +	 *
+> +	 *  new_average = average + ((value - average) / count)
+> +	 *
+> +	 * The variance computation depends on the new average
+> +	 * to be computed here first.
+> +	 *
+> +	 */
+> +	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
+> +
+> +	/*
+> +	 * Online variance algorithm:
+> +	 *
+> +	 *  new_variance = variance + (value - average) x (value - new_average)
+> +	 *
+> +	 * Warning: irqs->avg is updated with the line above, hence
+> +	 * 'interval - irqs->avg' is no longer equal to 'diff'
+> +	 */
+> +	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
+> +
+>  	/*
+>  	 * Increment the number of samples.
+>  	 */
+>  	irqs->nr_samples++;
+>  
+> +	/*
+> +	 * If we're still training the model, we can't make any predictions yet.
+> +	 */
+> +	if (irqs->nr_samples < SAMPLE_THRESHOLD)
+> +		return;
+> +
+>  	/*
+>  	 * Online variance divided by the number of elements if there
+>  	 * is more than one sample.  Normally the formula is division
+> @@ -158,16 +191,12 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+>  	 * more than 32 and dividing by 32 instead of 31 is enough
+>  	 * precise.
+>  	 */
+> -	if (likely(irqs->nr_samples > 1))
+> -		variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
+> +	variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
+>  
+>  	/*
+> -	 * The rule of thumb in statistics for the normal distribution
+> -	 * is having at least 30 samples in order to have the model to
+> -	 * apply. Values outside the interval are considered as an
+> -	 * anomaly.
+> +	 * Values outside the interval are considered as an anomaly.
+>  	 */
+> -	if ((irqs->nr_samples >= 30) && ((diff * diff) > (9 * variance))) {
+> +	if ((diff * diff) > (9 * variance)) {
+>  		/*
+>  		 * After three consecutive anomalies, we reset the
+>  		 * stats as it is no longer stable enough.
+> @@ -191,27 +220,6 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
+>  	 */
+>  	irqs->valid = 1;
+>  
+> -	/*
+> -	 * Online average algorithm:
+> -	 *
+> -	 *  new_average = average + ((value - average) / count)
+> -	 *
+> -	 * The variance computation depends on the new average
+> -	 * to be computed here first.
+> -	 *
+> -	 */
+> -	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
+> -
+> -	/*
+> -	 * Online variance algorithm:
+> -	 *
+> -	 *  new_variance = variance + (value - average) x (value - new_average)
+> -	 *
+> -	 * Warning: irqs->avg is updated with the line above, hence
+> -	 * 'interval - irqs->avg' is no longer equal to 'diff'
+> -	 */
+> -	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
+> -
+>  	/*
+>  	 * Update the next event
+>  	 */
+> 
 
-IIRC you're presenting at LPC, drop by the Power Management and
-Energy-awareness MC.
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
