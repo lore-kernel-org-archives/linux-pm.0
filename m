@@ -1,53 +1,46 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Wed, 7 Nov 2018 15:37:13 +0100
-Message-ID: <20181107143713.GS9781@hirez.programming.kicks-ass.net>
+Date: Wed, 7 Nov 2018 15:42:52 +0100
+Message-ID: <20181107144252.GG9761@hirez.programming.kicks-ass.net>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
  <20181029183311.29175-4-patrick.bellasi@arm.com>
+ <20181107121908.GO9781@hirez.programming.kicks-ass.net>
+ <20181107141949.GF14309@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181029183311.29175-4-patrick.bellasi@arm.com>
+In-Reply-To: <20181107141949.GF14309@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
-> +static int __setscheduler_uclamp(struct task_struct *p,
-> +				 const struct sched_attr *attr)
-> +{
-> +	unsigned int lower_bound = p->uclamp[UCLAMP_MIN].value;
-> +	unsigned int upper_bound = p->uclamp[UCLAMP_MAX].value;
-> +	int result = 0;
-> +
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN)
-> +		lower_bound = attr->sched_util_min;
-> +
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX)
-> +		upper_bound = attr->sched_util_max;
-> +
-> +	if (lower_bound > upper_bound ||
-> +	    upper_bound > SCHED_CAPACITY_SCALE)
->  		return -EINVAL;
->  
-> +	mutex_lock(&uclamp_mutex);
->  
-> +	/* Update each required clamp group */
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MIN) {
-> +		uclamp_group_get(&p->uclamp[UCLAMP_MIN],
-> +				 UCLAMP_MIN, lower_bound);
-> +	}
-> +	if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP_MAX) {
-> +		uclamp_group_get(&p->uclamp[UCLAMP_MAX],
-> +				 UCLAMP_MAX, upper_bound);
-> +	}
-> +
-> +	mutex_unlock(&uclamp_mutex);
-> +
-> +	return result;
-> +}
+On Wed, Nov 07, 2018 at 02:19:49PM +0000, Patrick Bellasi wrote:
+> On 07-Nov 13:19, Peter Zijlstra wrote:
+> > On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
+> > > +struct uclamp_se {
+> > > +	unsigned int value		: SCHED_CAPACITY_SHIFT + 1;
+> > > +	unsigned int group_id		: order_base_2(UCLAMP_GROUPS);
+> > 
+> > Are you sure about ob2() ? seems weird we'll end up with 0 for
+> > UCLAMP_GROUPS==1.
+> 
+> So, we have:
+> 
+>    #define UCLAMP_GROUPS (CONFIG_UCLAMP_GROUPS_COUNT + 1)
+> 
+> because one clamp group is always reserved for defaults.
+> Thus, ob2(in) is always called with n>=2.
+> 
+> ... should be safe no ?
 
-I'm missing where we error due to lack of groups.
++config UCLAMP_GROUPS_COUNT
++       int "Number of different utilization clamp values supported"
++       range 0 32
++       default 5
+
+0+1 == 1
+
+Increase the min range and you should be good I think.
