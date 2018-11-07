@@ -1,8 +1,8 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
  into CPU's clamp groups
-Date: Wed, 7 Nov 2018 14:35:04 +0100
-Message-ID: <20181107133504.GQ9781@hirez.programming.kicks-ass.net>
+Date: Wed, 7 Nov 2018 14:44:14 +0100
+Message-ID: <20181107134414.GR9781@hirez.programming.kicks-ass.net>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
  <20181029183311.29175-4-patrick.bellasi@arm.com>
 Mime-Version: 1.0
@@ -56,27 +56,15 @@ On Mon, Oct 29, 2018 at 06:32:57PM +0000, Patrick Bellasi wrote:
 > +			return;
 > +		}
 > +#endif
+
+Can you please put in a comment, either here or on top, on why this can
+not in fact happen? And we're always guaranteed a free group.
+
 > +		group_id = free_group_id;
 > +		uc_map_old.data = atomic_long_read(&uc_maps[group_id].adata);
 > +	}
-
-You forgot to check for refcount overflow here ;-)
-
-And I'm not really a fan of hiding that error in a define like you keep
-doing.
-
-What's wrong with something like:
-
-	if (SCHED_WARN(free_group_id == UCLAMP_GROUPS))
-		return;
-
-and
-
+> +
 > +	uc_map_new.se_count = uc_map_old.se_count + 1;
-
-	if (SCHED_WARN(!new.se_count))
-		new.se_count = -1;
-
 > +	uc_map_new.value = clamp_value;
 > +	res = atomic_long_cmpxchg(&uc_maps[group_id].adata,
 > +				  uc_map_old.data, uc_map_new.data);
