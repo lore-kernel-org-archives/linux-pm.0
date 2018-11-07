@@ -1,64 +1,141 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
- to one structure
-Date: Wed, 7 Nov 2018 18:23:40 +0100
-Message-ID: <20181107172340.GF21694@piout.net>
-References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
- <20181106210933.GU24212@piout.net>
- <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v8 03/15] PM: Introduce an Energy Model management framework
+Date: Wed, 7 Nov 2018 19:02:06 +0100
+Message-ID: <CAKfTPtCXxp54Gwy4T0bkuwnGXgDrLby+eQvnqpXctv1OMevN9Q@mail.gmail.com>
+References: <20181016101513.26919-1-quentin.perret@arm.com>
+ <20181016101513.26919-4-quentin.perret@arm.com> <CAKfTPtBN3HpNMrztcmAwkGuW9uHaKBi9KoqdvBEHuxf7=078NA@mail.gmail.com>
+ <20181107170213.yapun7nk5rrjdf55@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
+In-Reply-To: <20181107170213.yapun7nk5rrjdf55@queper01-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, linux-arm-kernel@lists.infradead.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Ingo Molnar <mingo@redhat.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Chris Redpath <chris.redpath@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Valentin Schneider <valentin.schneider@arm.com>, Thara Gopinath <thara.gopinath@linaro.org>, viresh kumar <viresh.kumar@linaro.org>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joel@joelfernandes.org>, "Cc: Steve Muckle" <smuckle@google.com>, adharmap@codeaurora.org, Saravana Kannan <skannan@codeaurora.org>, pkondeti@cod
 List-Id: linux-pm@vger.kernel.org
 
-On 07/11/2018 14:54:17+0000, Claudiu.Beznea@microchip.com wrote:
-> Hi Alexandre,
-> 
-> On 06.11.2018 23:09, Alexandre Belloni wrote:
-> > Hi Claudiu,
-> > 
-> > On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
-> >>  static int __init at91_poweroff_probe(struct platform_device *pdev)
-> >> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct platform_device *pdev)
-> >>  	u32 ddr_type;
-> >>  	int ret;
-> >>  
-> >> +	at91_shdwc = devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL);
-> >> +	if (!at91_shdwc)
-> >> +		return -ENOMEM;
-> >> +
-> > 
-> > Is there any real benefit that will offset the time lost for that
-> > allocation at boot time?
-> 
-> No, I haven't run benchmarks on this. I only wanted to have them grouped in
-> one structure. Please let me know if you have some tests in mind.
-> 
+On Wed, 7 Nov 2018 at 18:02, Quentin Perret <quentin.perret@arm.com> wrote:
+>
+> Hi Vincent,
+>
+> On Wednesday 07 Nov 2018 at 17:32:32 (+0100), Vincent Guittot wrote:
+> > Hi Quentin,
+> >
+> > On Tue, 16 Oct 2018 at 12:15, Quentin Perret <quentin.perret@arm.com> wrote:
+> > >
+> >
+> > > +
+> > > +/**
+> > > + * em_pd_energy() - Estimates the energy consumed by the CPUs of a perf. domain
+> > > + * @pd         : performance domain for which energy has to be estimated
+> > > + * @max_util   : highest utilization among CPUs of the domain
+> > > + * @sum_util   : sum of the utilization of all CPUs in the domain
+> > > + *
+> > > + * Return: the sum of the energy consumed by the CPUs of the domain assuming
+> > > + * a capacity state satisfying the max utilization of the domain.
+> > > + */
+> > > +static inline unsigned long em_pd_energy(struct em_perf_domain *pd,
+> > > +                               unsigned long max_util, unsigned long sum_util)
+> > > +{
+> > > +       unsigned long freq, scale_cpu;
+> > > +       struct em_cap_state *cs;
+> > > +       int i, cpu;
+> > > +
+> > > +       /*
+> > > +        * In order to predict the capacity state, map the utilization of the
+> > > +        * most utilized CPU of the performance domain to a requested frequency,
+> > > +        * like schedutil.
+> > > +        */
+> > > +       cpu = cpumask_first(to_cpumask(pd->cpus));
+> > > +       scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> > > +       cs = &pd->table[pd->nr_cap_states - 1];
+> > > +       freq = map_util_freq(max_util, cs->frequency, scale_cpu);
+> > > +
+> > > +       /*
+> > > +        * Find the lowest capacity state of the Energy Model above the
+> > > +        * requested frequency.
+> > > +        */
+> > > +       for (i = 0; i < pd->nr_cap_states; i++) {
+> > > +               cs = &pd->table[i];
+> > > +               if (cs->frequency >= freq)
+> > > +                       break;
+> > > +       }
+> > > +
+> > > +       /*
+> > > +        * The capacity of a CPU in the domain at that capacity state (cs)
+> > > +        * can be computed as:
+> > > +        *
+> > > +        *             cs->freq * scale_cpu
+> > > +        *   cs->cap = --------------------                          (1)
+> > > +        *                 cpu_max_freq
+> > > +        *
+> > > +        * So, ignoring the costs of idle states (which are not available in
+> > > +        * the EM), the energy consumed by this CPU at that capacity state is
+> > > +        * estimated as:
+> > > +        *
+> > > +        *             cs->power * cpu_util
+> > > +        *   cpu_nrg = --------------------                          (2)
+> > > +        *                   cs->cap
+> > > +        *
+> > > +        * since 'cpu_util / cs->cap' represents its percentage of busy time.
+> > > +        *
+> > > +        *   NOTE: Although the result of this computation actually is in
+> > > +        *         units of power, it can be manipulated as an energy value
+> > > +        *         over a scheduling period, since it is assumed to be
+> > > +        *         constant during that interval.
+> > > +        *
+> > > +        * By injecting (1) in (2), 'cpu_nrg' can be re-expressed as a product
+> > > +        * of two terms:
+> > > +        *
+> > > +        *             cs->power * cpu_max_freq   cpu_util
+> > > +        *   cpu_nrg = ------------------------ * ---------          (3)
+> > > +        *                    cs->freq            scale_cpu
+> > > +        *
+> > > +        * The first term is static, and is stored in the em_cap_state struct
+> > > +        * as 'cs->cost'.
+> > > +        *
+> > > +        * Since all CPUs of the domain have the same micro-architecture, they
+> > > +        * share the same 'cs->cost', and the same CPU capacity. Hence, the
+> > > +        * total energy of the domain (which is the simple sum of the energy of
+> > > +        * all of its CPUs) can be factorized as:
+> > > +        *
+> > > +        *            cs->cost * \Sum cpu_util
+> > > +        *   pd_nrg = ------------------------                       (4)
+> > > +        *                  scale_cpu
+> > > +        */
+> > > +       return cs->cost * sum_util / scale_cpu;
+> >
+> > Why do you need to keep scale_cpu outside the cs->cost ? do you expect
+> > arch_scale_cpu_capacity() to change at runtime ?
+>
+> Unfortunately yes, it can. It'll change at least during boot on arm64,
+> for example (see drivers/base/arch_topology.c). And also, userspace can
+> actually set that value via sysfs ...
 
-Well, it is probably not much but small things adds up. Havinf it as a
-global structure is probably good enough.
+yes. I had this in mind too but we are also rebuilding sched_domain in
+this case and thought that everything could be changed at the same
+time
 
-> > 
-> > I understand you are then testing at91_shdwc to know whether the driver
-> > already probed once. But, the driver will never probe twice as there is
-> > only one shutdown controller on the SoC and anyway, If it was to probe
-> > twice, it will still work as expected.
-> 
-> I had in mind the scenario where the driver would be compiled as module. I
-> know insmod already does this checking. I'm ok to remove this checking. I
-> will do it in next version. With this I will also remove devm_kzalloc() of
-> at91_shdwc.
-> 
+>
+> > If the returned value of arch_scale_cpu_capacity() changes, we will
+> > have to rebuild several others things and we can include the update of
+> > cs->cost
+>
+> Yeah, that was the original approach I had actually. Some of the older
+> versions of this patch set were doing just that. The only issue is that,
+> in order to make the cs->cost updatable are run time, you need to
+> introduce some level of protection around that data structure (RCU or
+> something). And that would make it a bit harder for IPA (for example) to
+> access the data -- it doesn't need any kind of RCU to access it's EM at
+> the moment.
+>
+> We can probably do something a bit smarter and introduce RCU protection
+> only for the 'cost' field or something, but I was hoping that we could
+> keep things simple for now and do that kind of small optimization a bit
+> later :-)
 
-Thanks,
+Thanks for the explanation
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+>
+> Thanks,
+> Quentin
