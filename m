@@ -1,43 +1,66 @@
-From: <Claudiu.Beznea@microchip.com>
-Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
- to one structure
-Date: Wed, 7 Nov 2018 14:54:17 +0000
-Message-ID: <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
-References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
- <20181106210933.GU24212@piout.net>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v5 03/15] sched/core: uclamp: map TASK's clamp values
+ into CPU's clamp groups
+Date: Wed, 7 Nov 2018 15:55:27 +0100
+Message-ID: <20181107145527.GI9761@hirez.programming.kicks-ass.net>
+References: <20181029183311.29175-1-patrick.bellasi@arm.com>
+ <20181029183311.29175-4-patrick.bellasi@arm.com>
+ <20181107133504.GQ9781@hirez.programming.kicks-ass.net>
+ <20181107144809.GH14309@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181106210933.GU24212@piout.net>
-Content-Language: en-US
-Content-ID: <01F515C802F08F479FF0623A84C3C590@namprd11.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <20181107144809.GH14309@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: alexandre.belloni@bootlin.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sre@kernel.org, linux-arm-kernel@lists.infradead.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQWxleGFuZHJlLA0KDQpPbiAwNi4xMS4yMDE4IDIzOjA5LCBBbGV4YW5kcmUgQmVsbG9uaSB3
-cm90ZToNCj4gSGkgQ2xhdWRpdSwNCj4gDQo+IE9uIDA1LzExLzIwMTggMTE6MTQ6MjYrMDAwMCwg
-Q2xhdWRpdS5CZXpuZWFAbWljcm9jaGlwLmNvbSB3cm90ZToNCj4+ICBzdGF0aWMgaW50IF9faW5p
-dCBhdDkxX3Bvd2Vyb2ZmX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+PiBA
-QCAtMTU0LDE2ICsxNjAsMjIgQEAgc3RhdGljIGludCBfX2luaXQgYXQ5MV9wb3dlcm9mZl9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPj4gIAl1MzIgZGRyX3R5cGU7DQo+PiAg
-CWludCByZXQ7DQo+PiAgDQo+PiArCWF0OTFfc2hkd2MgPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRl
-diwgc2l6ZW9mKCphdDkxX3NoZHdjKSwgR0ZQX0tFUk5FTCk7DQo+PiArCWlmICghYXQ5MV9zaGR3
-YykNCj4+ICsJCXJldHVybiAtRU5PTUVNOw0KPj4gKw0KPiANCj4gSXMgdGhlcmUgYW55IHJlYWwg
-YmVuZWZpdCB0aGF0IHdpbGwgb2Zmc2V0IHRoZSB0aW1lIGxvc3QgZm9yIHRoYXQNCj4gYWxsb2Nh
-dGlvbiBhdCBib290IHRpbWU/DQoNCk5vLCBJIGhhdmVuJ3QgcnVuIGJlbmNobWFya3Mgb24gdGhp
-cy4gSSBvbmx5IHdhbnRlZCB0byBoYXZlIHRoZW0gZ3JvdXBlZCBpbg0Kb25lIHN0cnVjdHVyZS4g
-UGxlYXNlIGxldCBtZSBrbm93IGlmIHlvdSBoYXZlIHNvbWUgdGVzdHMgaW4gbWluZC4NCg0KPiAN
-Cj4gSSB1bmRlcnN0YW5kIHlvdSBhcmUgdGhlbiB0ZXN0aW5nIGF0OTFfc2hkd2MgdG8ga25vdyB3
-aGV0aGVyIHRoZSBkcml2ZXINCj4gYWxyZWFkeSBwcm9iZWQgb25jZS4gQnV0LCB0aGUgZHJpdmVy
-IHdpbGwgbmV2ZXIgcHJvYmUgdHdpY2UgYXMgdGhlcmUgaXMNCj4gb25seSBvbmUgc2h1dGRvd24g
-Y29udHJvbGxlciBvbiB0aGUgU29DIGFuZCBhbnl3YXksIElmIGl0IHdhcyB0byBwcm9iZQ0KPiB0
-d2ljZSwgaXQgd2lsbCBzdGlsbCB3b3JrIGFzIGV4cGVjdGVkLg0KDQpJIGhhZCBpbiBtaW5kIHRo
-ZSBzY2VuYXJpbyB3aGVyZSB0aGUgZHJpdmVyIHdvdWxkIGJlIGNvbXBpbGVkIGFzIG1vZHVsZS4g
-SQ0Ka25vdyBpbnNtb2QgYWxyZWFkeSBkb2VzIHRoaXMgY2hlY2tpbmcuIEknbSBvayB0byByZW1v
-dmUgdGhpcyBjaGVja2luZy4gSQ0Kd2lsbCBkbyBpdCBpbiBuZXh0IHZlcnNpb24uIFdpdGggdGhp
-cyBJIHdpbGwgYWxzbyByZW1vdmUgZGV2bV9remFsbG9jKCkgb2YNCmF0OTFfc2hkd2MuDQoNClRo
-YW5rIHlvdSwNCkNsYXVkaXUgQmV6bmVhDQoNCj4gDQo+IA0K
+On Wed, Nov 07, 2018 at 02:48:09PM +0000, Patrick Bellasi wrote:
+> On 07-Nov 14:35, Peter Zijlstra wrote:
+> You mean se_count overflow ?
+
+Yah..
+
+> > And I'm not really a fan of hiding that error in a define like you keep
+> > doing.
+> 
+> The #define is not there to mask an overflow, it's there to catch the
+
++#define UCLAMP_MAPERR "clamp value [%u] mapping to clamp group failed\n"
+
+Is what I was talking about.
+
+> > What's wrong with something like:
+> > 
+> > 	if (SCHED_WARN(free_group_id == UCLAMP_GROUPS))
+> > 		return;
+> 
+> Right, the flow should be:
+> 
+>   1. try to find a valid clamp group
+>   2. if you don't find one, the data structures are corrupted
+>      warn once for data corruption
+>      do not map this scheduling entity and return
+>   3. map the scheduling entity
+> 
+> Is that ok ?
+
+That's what the proposed does.
+
+> > and
+> > 
+> > > +	uc_map_new.se_count = uc_map_old.se_count + 1;
+> > 
+> > 	if (SCHED_WARN(!new.se_count))
+> > 		new.se_count = -1;
+> 
+> Mmm... not sure we can recover from a corrupted refcount or an
+> overflow.
+> 
+> What should we do on these cases, disable uclamp completely ?
+
+You can teach put to never decrement -1 (aka. all 1s).
+
+But its all SCHED_DEBUG stuff anyway, so who really cares.
