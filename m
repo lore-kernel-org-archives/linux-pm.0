@@ -1,50 +1,49 @@
-From: jane.chu-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 Subject: Re: [driver-core PATCH v6 3/9] device core: Consolidate locking and
  unlocking of parent and device
-Date: Thu, 8 Nov 2018 14:43:04 -0800
-Message-ID: <791408d3-bf97-0f54-adc5-9b06540015c6@oracle.com>
+Date: Thu, 08 Nov 2018 14:48:59 -0800
+Message-ID: <b92d7ea58dafefc30128dacebc6de6fb9c7fa8e8.camel@linux.intel.com>
 References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
- <154170041590.12967.4367086895437513524.stgit@ahduyck-desk1.jf.intel.com>
+         <154170041590.12967.4367086895437513524.stgit@ahduyck-desk1.jf.intel.com>
+         <791408d3-bf97-0f54-adc5-9b06540015c6@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <154170041590.12967.4367086895437513524.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <791408d3-bf97-0f54-adc5-9b06540015c6@oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jane.chu@oracle.com, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: len.brown@intel.com, bvanassche@acm.org, linux-pm@vger.kernel.org, rafael@kernel.org, jiangshanlai@gmail.com, linux-nvdimm@lists.01.org, pavel@ucw.cz, zwisler@kernel.org, tj@kernel.org, akpm@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Alex,
+On Thu, 2018-11-08 at 14:43 -0800, jane.chu@oracle.com wrote:
+> Hi, Alex,
+> 
+> 
+> On 11/08/2018 10:06 AM, Alexander Duyck wrote:
+> > +/*
+> > + * __device_driver_lock - release locks needed to manipulate dev->drv
+> 
+> You meant to say __device_driver_unlock, right?
 
+Yes, you are correct.
 
-On 11/08/2018 10:06 AM, Alexander Duyck wrote:
-> +/*
-> + * __device_driver_lock - release locks needed to manipulate dev->drv
+> > + * @dev: Device we will update driver info for
+> > + * @parent: Parent device. Needed if the bus requires parent lock
+> > + *
+> > + * This function will release the required locks for manipulating dev->drv.
+> > + * Normally this will just be the the @dev lock, but when called for a
+> > + * USB interface, @parent lock will be released as well.
+> > + */
+> > +static void __device_driver_unlock(struct device *dev, struct device *parent)
+> > +{
+> > +	device_unlock(dev);
+> > +	if (parent && dev->bus->need_parent_lock)
+> > +		device_unlock(parent);
+> > +}
+> 
+> -jane
 
-You meant to say __device_driver_unlock, right?
+Thanks.
 
-> + * @dev: Device we will update driver info for
-> + * @parent: Parent device. Needed if the bus requires parent lock
-> + *
-> + * This function will release the required locks for manipulating dev->drv.
-> + * Normally this will just be the the @dev lock, but when called for a
-> + * USB interface, @parent lock will be released as well.
-> + */
-> +static void __device_driver_unlock(struct device *dev, struct device *parent)
-> +{
-> +	device_unlock(dev);
-> +	if (parent && dev->bus->need_parent_lock)
-> +		device_unlock(parent);
-> +}
-
--jane
+- Alex
