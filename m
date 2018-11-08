@@ -1,61 +1,50 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: [driver-core PATCH v6 9/9] libnvdimm: Schedule device registration
- on node local to the device
-Date: Thu, 08 Nov 2018 10:07:26 -0800
-Message-ID: <154170044652.12967.17419321472770956712.stgit@ahduyck-desk1.jf.intel.com>
+From: jane.chu-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org
+Subject: Re: [driver-core PATCH v6 3/9] device core: Consolidate locking and
+ unlocking of parent and device
+Date: Thu, 8 Nov 2018 14:43:04 -0800
+Message-ID: <791408d3-bf97-0f54-adc5-9b06540015c6@oracle.com>
 References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
+ <154170041590.12967.4367086895437513524.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, alexander.h.duyck@linux.intel.com
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <154170041590.12967.4367086895437513524.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Force the device registration for nvdimm devices to be closer to the actual
-device. This is achieved by using either the NUMA node ID of the region, or
-of the parent. By doing this we can have everything above the region based
-on the region, and everything below the region based on the nvdimm bus.
+Hi, Alex,
 
-By guaranteeing NUMA locality I see an improvement of as high as 25% for
-per-node init of a system with 12TB of persistent memory.
 
-Reviewed-by: Bart Van Assche <bvanassche@acm.org>
-Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
----
- drivers/nvdimm/bus.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+On 11/08/2018 10:06 AM, Alexander Duyck wrote:
+> +/*
+> + * __device_driver_lock - release locks needed to manipulate dev->drv
 
-diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
-index f1fb39921236..b1e193541874 100644
---- a/drivers/nvdimm/bus.c
-+++ b/drivers/nvdimm/bus.c
-@@ -23,6 +23,7 @@
- #include <linux/ndctl.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-+#include <linux/cpu.h>
- #include <linux/fs.h>
- #include <linux/io.h>
- #include <linux/mm.h>
-@@ -513,11 +514,15 @@ void __nd_device_register(struct device *dev)
- 		set_dev_node(dev, to_nd_region(dev)->numa_node);
- 
- 	dev->bus = &nvdimm_bus_type;
--	if (dev->parent)
-+	if (dev->parent) {
- 		get_device(dev->parent);
-+		if (dev_to_node(dev) == NUMA_NO_NODE)
-+			set_dev_node(dev, dev_to_node(dev->parent));
-+	}
- 	get_device(dev);
--	async_schedule_domain(nd_async_device_register, dev,
--			&nd_async_domain);
-+
-+	async_schedule_dev_domain(nd_async_device_register, dev,
-+				  &nd_async_domain);
- }
- 
- void nd_device_register(struct device *dev)
+You meant to say __device_driver_unlock, right?
+
+> + * @dev: Device we will update driver info for
+> + * @parent: Parent device. Needed if the bus requires parent lock
+> + *
+> + * This function will release the required locks for manipulating dev->drv.
+> + * Normally this will just be the the @dev lock, but when called for a
+> + * USB interface, @parent lock will be released as well.
+> + */
+> +static void __device_driver_unlock(struct device *dev, struct device *parent)
+> +{
+> +	device_unlock(dev);
+> +	if (parent && dev->bus->need_parent_lock)
+> +		device_unlock(parent);
+> +}
+
+-jane
