@@ -1,71 +1,111 @@
-From: Wei Wang <wvw@google.com>
-Subject: [PATCH] Thermal: do not clear passive state during system sleep
-Date: Wed,  7 Nov 2018 14:36:11 -0800
-Message-ID: <20181107223611.61092-1-wvw@google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: s3c24xx: Change to use DEFINE_SHOW_ATTRIBUTE
+ macro
+Date: Thu, 8 Nov 2018 10:15:03 +0530
+Message-ID: <20181108044503.7zqgi3cjsxnsziuo@vireshk-i7>
+References: <20181107161346.9887-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181107161346.9887-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: wei.vince.wang@gmail.com, Wei Wang <wvw@google.com>, Kame Wang <kamewang@google.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: kgene@kernel.org, krzk@kernel.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Wei Wang <wvw@google.com>
+On 07-11-18, 11:13, Yangtao Li wrote:
+> Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  drivers/cpufreq/s3c24xx-cpufreq-debugfs.c | 46 +++--------------------
+>  1 file changed, 6 insertions(+), 40 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> index 4d976e8dbb2f..0df87b6480fe 100644
+> --- a/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> +++ b/drivers/cpufreq/s3c24xx-cpufreq-debugfs.c
+> @@ -63,18 +63,7 @@ static int board_show(struct seq_file *seq, void *p)
+>  	return 0;
+>  }
+>  
+> -static int fops_board_open(struct inode *inode, struct file *file)
+> -{
+> -	return single_open(file, board_show, NULL);
+> -}
+> -
+> -static const struct file_operations fops_board = {
+> -	.open		= fops_board_open,
+> -	.read		= seq_read,
+> -	.llseek		= seq_lseek,
+> -	.release	= single_release,
+> -	.owner		= THIS_MODULE,
+> -};
+> +DEFINE_SHOW_ATTRIBUTE(board);
+>  
+>  static int info_show(struct seq_file *seq, void *p)
+>  {
+> @@ -105,18 +94,7 @@ static int info_show(struct seq_file *seq, void *p)
+>  	return 0;
+>  }
+>  
+> -static int fops_info_open(struct inode *inode, struct file *file)
+> -{
+> -	return single_open(file, info_show, NULL);
+> -}
+> -
+> -static const struct file_operations fops_info = {
+> -	.open		= fops_info_open,
+> -	.read		= seq_read,
+> -	.llseek		= seq_lseek,
+> -	.release	= single_release,
+> -	.owner		= THIS_MODULE,
+> -};
+> +DEFINE_SHOW_ATTRIBUTE(info);
+>  
+>  static int io_show(struct seq_file *seq, void *p)
+>  {
+> @@ -162,19 +140,7 @@ static int io_show(struct seq_file *seq, void *p)
+>  	return 0;
+>  }
+>  
+> -static int fops_io_open(struct inode *inode, struct file *file)
+> -{
+> -	return single_open(file, io_show, NULL);
+> -}
+> -
+> -static const struct file_operations fops_io = {
+> -	.open		= fops_io_open,
+> -	.read		= seq_read,
+> -	.llseek		= seq_lseek,
+> -	.release	= single_release,
+> -	.owner		= THIS_MODULE,
+> -};
+> -
+> +DEFINE_SHOW_ATTRIBUTE(io);
+>  
+>  static int __init s3c_freq_debugfs_init(void)
+>  {
+> @@ -185,13 +151,13 @@ static int __init s3c_freq_debugfs_init(void)
+>  	}
+>  
+>  	dbgfs_file_io = debugfs_create_file("io-timing", S_IRUGO, dbgfs_root,
+> -					    NULL, &fops_io);
+> +					    NULL, &io_fops);
+>  
+>  	dbgfs_file_info = debugfs_create_file("info", S_IRUGO, dbgfs_root,
+> -					      NULL, &fops_info);
+> +					      NULL, &info_fops);
+>  
+>  	dbgfs_file_board = debugfs_create_file("board", S_IRUGO, dbgfs_root,
+> -					       NULL, &fops_board);
+> +					       NULL, &board_fops);
+>  
+>  	return 0;
+>  }
 
-commit ff140fea847e ("Thermal: handle thermal zone device properly
-during system sleep") added PM hook to call thermal zone reset during
-sleep. However reseting thermal zone will also clear the passive state
-and thus cancel the polling queue which leads the passive cooling device
-state not being cleared properly after sleep.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-thermal_pm_notify => thermal_zone_device_reset set passive to 0
-thermal_zone_trip_update will skip update passive as `old_target ==
-instance->target'.
-monitor_thermal_zone => thermal_zone_device_set_polling will cancel
-tz->poll_queue, so the cooling device state will not be changed
-afterwards.
-
-Reported-by: Kame Wang <kamewang@google.com>
-Signed-off-by: Wei Wang <wvw@google.com>
----
- drivers/thermal/thermal_core.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6ab982309e6a..29b26b0959e8 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -451,16 +451,20 @@ static void update_temperature(struct thermal_zone_device *tz)
- 			tz->last_temperature, tz->temperature);
- }
- 
--static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+static void thermal_zone_device_init(struct thermal_zone_device *tz)
- {
- 	struct thermal_instance *pos;
--
- 	tz->temperature = THERMAL_TEMP_INVALID;
--	tz->passive = 0;
- 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
- 		pos->initialized = false;
- }
- 
-+static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+{
-+	tz->passive = 0;
-+	thermal_zone_device_init(tz);
-+}
-+
- void thermal_zone_device_update(struct thermal_zone_device *tz,
- 				enum thermal_notify_event event)
- {
-@@ -1501,7 +1505,7 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 	case PM_POST_SUSPEND:
- 		atomic_set(&in_suspend, 0);
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
--			thermal_zone_device_reset(tz);
-+			thermal_zone_device_init(tz);
- 			thermal_zone_device_update(tz,
- 						   THERMAL_EVENT_UNSPECIFIED);
- 		}
 -- 
-2.19.1.930.g4563a0d9d0-goog
+viresh
