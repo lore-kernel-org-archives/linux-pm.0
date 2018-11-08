@@ -1,114 +1,123 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] irq/timings: Fix model validity
-Date: Thu, 8 Nov 2018 09:10:26 +0100
-Message-ID: <c9d8152a-566e-7ae6-e41c-5817c884c277@linaro.org>
-References: <1556808.yKVbhZSazi@aspire.rjw.lan>
- <20181106170442.GC9781@hirez.programming.kicks-ass.net>
- <CAJZ5v0hmm2UWRt1j6hQo14nZLgPrE3DZkOznfo2kMxsZ1spo-Q@mail.gmail.com>
- <20181106195127.GD9781@hirez.programming.kicks-ass.net>
- <CAJZ5v0iPs8Wt0PneBVWptqJPP6dEze+=GvxjU=dHBRbmty+kOw@mail.gmail.com>
- <20181107085936.GI9781@hirez.programming.kicks-ass.net>
- <20181107094624.GB9828@hirez.programming.kicks-ass.net>
- <ab9e60d7-e2d3-7d0c-dbf1-c0bed7bdb516@linaro.org>
- <20181107130507.GD9761@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Chanho Min <chanho.min@lge.com>
+Subject: [PATCH] freezer: fix freeze timeout on exec
+Date: Thu,  8 Nov 2018 19:09:55 +0900
+Message-ID: <1541671796-8725-1-git-send-email-chanho.min@lge.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181107130507.GD9761@hirez.programming.kicks-ass.net>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Nicolas Pitre <nicolas.pitre@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Chanho Min <chanho.min@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/11/2018 14:05, Peter Zijlstra wrote:
-> On Wed, Nov 07, 2018 at 11:52:31AM +0100, Daniel Lezcano wrote:
->>> @@ -146,11 +152,38 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
->>>  	 */
->>>  	diff = interval - irqs->avg;
->>>  
->>> +	/*
->>> +	 * Online average algorithm:
->>> +	 *
->>> +	 *  new_average = average + ((value - average) / count)
->>> +	 *
->>> +	 * The variance computation depends on the new average
->>> +	 * to be computed here first.
->>> +	 *
->>> +	 */
->>> +	irqs->avg = irqs->avg + (diff >> IRQ_TIMINGS_SHIFT);
->>> +
->>> +	/*
->>> +	 * Online variance algorithm:
->>> +	 *
->>> +	 *  new_variance = variance + (value - average) x (value - new_average)
->>> +	 *
->>> +	 * Warning: irqs->avg is updated with the line above, hence
->>> +	 * 'interval - irqs->avg' is no longer equal to 'diff'
->>> +	 */
->>> +	irqs->variance = irqs->variance + (diff * (interval - irqs->avg));
->>> +
->>>  	/*
->>>  	 * Increment the number of samples.
->>>  	 */
->>>  	irqs->nr_samples++;
-> 
-> FWIW, I'm confused on this. The normal (Welford's) online algorithm
-> does:
-> 
-> 	count++;
-> 	delta = value - mean;
-> 	mean += delta / count;
-> 	M2 += delta * (value - mean);
-> 
-> But the above uses:
-> 
-> 	mean += delta / 32;
-> 
-> Which, for count >> 32, over-estimates the mean adjustment. But worse,
-> it significantly under-estimates the mean during training.
-> 
-> How is the computed variance still correct with this? I can not find any
-> comments that clarifies this. I'm thinking that since the mean will
-> slowly wander towards it's actual location (assuming an actual standard
-> distribution input) the resulting variance will be far too large, since
-> the (value - mean) term will be much larger than 'expected'.
+Suspend fails due to the exec family of fuctnions blocking the freezer.
+This issue has been found that it is mentioned in the ancient mail thread.
+The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for all
+sub-threads to die, and we have the "deadlock" if one of them is frozen.
+It causes freeze timeout as bellows.
 
-You are right, initially it was divided by min(count, 32) but for
-optimization reason, we decided to change that by a power of two
-constant assuming the number of samples will reach quickly 32 and the
-compiler will replace that by a shift.
+Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
+setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+ Call trace:
+[<ffffffc00008ed70>] __switch_to+0x88/0xa0
+[<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+[<ffffffc000d1ca90>] schedule+0x40/0xa8
+[<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+[<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc00021c584>] load_script+0x20c/0x228
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+[<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+[<ffffffc00008de30>] el0_svc_naked+0x24/0x28
 
-https://lkml.org/lkml/2017/3/23/696
+To fix this, I suggest a patch by emboding the mentioned solution.
+First, revive and rework cancel_freezing_and_thaw() function whitch stops the
+task from sleeping in refrigirator reliably. And, The task to be killed does not
+allow to freeze.
 
->>> @@ -158,16 +191,12 @@ static void irqs_update(struct irqt_stat *irqs, u64 ts)
->>>  	 * more than 32 and dividing by 32 instead of 31 is enough
->>>  	 * precise.
->>>  	 */
->>> +	variance = irqs->variance >> IRQ_TIMINGS_SHIFT;
-> 
-> Worse; variance is actually (as the comment states):
-> 
-> 	s^2 = M2 / (count -1)
-> 
-> But instead you compute:
-> 
-> 	s^2 = M2 / 32;
-> 
-> Which is again much larger than the actual result; assuming count >> 32.
-> 
-> So you compute a variance that is inflated in two different ways.
-> 
-> 
-> I'm not seeing how this thing works reliably.
+Reference:
+http://lkml.iu.edu/hypermail//linux/kernel/0702.2/1300.html
 
-I have to revisit this part of code soon, I will double check that.
+Signed-off-by: Chanho Min <chanho.min@lge.com>
+---
+ include/linux/freezer.h |  7 +++++++
+ kernel/freezer.c        | 14 ++++++++++++++
+ kernel/signal.c         |  7 +++++++
+ 3 files changed, 28 insertions(+)
 
-
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index 21f5aa0..1c1e3cb 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -57,6 +57,12 @@ static inline bool try_to_freeze_unsafe(void)
+ 	might_sleep();
+ 	if (likely(!freezing(current)))
+ 		return false;
++	/*
++	 * we are going to call do_exit() really soon,
++	 * we have a pending SIGKILL
++	 */
++	if (unlikely(current->signal->flags & SIGNAL_GROUP_EXIT))
++		return false;
+ 	return __refrigerator(false);
+ }
+ 
+@@ -68,6 +74,7 @@ static inline bool try_to_freeze(void)
+ }
+ 
+ extern bool freeze_task(struct task_struct *p);
++extern void cancel_freezing_thaw_task(struct task_struct *p);
+ extern bool set_freezable(void);
+ 
+ #ifdef CONFIG_CGROUP_FREEZER
+diff --git a/kernel/freezer.c b/kernel/freezer.c
+index b162b74..584c5c8 100644
+--- a/kernel/freezer.c
++++ b/kernel/freezer.c
+@@ -148,6 +148,20 @@ bool freeze_task(struct task_struct *p)
+ 	return true;
+ }
+ 
++void cancel_freezing_thaw_task(struct task_struct *p)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&freezer_lock, flags);
++	if (freezing(p)) {
++		spin_lock(&p->sighand->siglock);
++		recalc_sigpending_and_wake(p);
++		spin_unlock(&p->sighand->siglock);
++	} else if (frozen(p))
++		wake_up_process(p);
++	spin_unlock_irqrestore(&freezer_lock, flags);
++}
++
+ void __thaw_task(struct task_struct *p)
+ {
+ 	unsigned long flags;
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 5843c54..ca9b25b 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -41,6 +41,7 @@
+ #include <linux/compiler.h>
+ #include <linux/posix-timers.h>
+ #include <linux/livepatch.h>
++#include <linux/freezer.h>
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/signal.h>
+@@ -1273,6 +1274,12 @@ int zap_other_threads(struct task_struct *p)
+ 		/* Don't bother with already dead threads */
+ 		if (t->exit_state)
+ 			continue;
++
++		/*
++		 * we can check sig->group_exit_task to detect de_thread,
++		 * but perhaps it doesn't hurt if the caller is do_group_exit
++		 */
++		cancel_freezing_thaw_task(t);
+ 		sigaddset(&t->pending.signal, SIGKILL);
+ 		signal_wake_up(t, 1);
+ 	}
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.7.4
