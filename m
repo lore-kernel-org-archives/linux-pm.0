@@ -1,46 +1,157 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] freezer: fix freeze timeout on exec
-Date: Thu, 8 Nov 2018 11:50:30 +0100
-Message-ID: <20181108105030.GB9939@redhat.com>
-References: <1541671796-8725-1-git-send-email-chanho.min@lge.com>
+From: Dmitry Osipenko <digetx@gmail.com>
+Subject: Re: [RFC PATCH v2 03/17] dt-bindings: cpufreq: Add binding for NVIDIA
+ Tegra20/30
+Date: Thu, 8 Nov 2018 19:48:16 +0300
+Message-ID: <0fc53853-862c-4cc3-6548-d347bc68bdd6@gmail.com>
+References: <20181021205501.23943-1-digetx@gmail.com>
+ <20181021205501.23943-4-digetx@gmail.com> <20181105213000.GA13425@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1541671796-8725-1-git-send-email-chanho.min@lge.com>
+In-Reply-To: <20181105213000.GA13425@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanho Min <chanho.min@lge.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Anna-Maria Gleixner <anna-maria@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>
+To: Rob Herring <robh@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jonathan Hunter <jonathanh@nvidia.com>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/08, Chanho Min wrote:
->
-> Suspend fails due to the exec family of fuctnions blocking the freezer.
-> This issue has been found that it is mentioned in the ancient mail thread.
-> The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for all
-> sub-threads to die, and we have the "deadlock" if one of them is frozen.
-> It causes freeze timeout as bellows.
->
-> Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
-> setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
->  Call trace:
-> [<ffffffc00008ed70>] __switch_to+0x88/0xa0
-> [<ffffffc000d1c30c>] __schedule+0x1bc/0x720
-> [<ffffffc000d1ca90>] schedule+0x40/0xa8
-> [<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
-> [<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
-> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
-> [<ffffffc00021c584>] load_script+0x20c/0x228
-> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
-> [<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
-> [<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
-> [<ffffffc00008de30>] el0_svc_naked+0x24/0x28
->
-> To fix this, I suggest a patch by emboding the mentioned solution.
-> First, revive and rework cancel_freezing_and_thaw() function whitch stops the
-> task from sleeping in refrigirator reliably. And, The task to be killed does not
-> allow to freeze.
+On 06.11.2018 0:30, Rob Herring wrote:
+> On Sun, Oct 21, 2018 at 11:54:47PM +0300, Dmitry Osipenko wrote:
+>> Add device-tree binding that describes CPU frequency-scaling hardware
+>> found on NVIDIA Tegra20/30 SoC's.
+>>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+>>  .../cpufreq/nvidia,tegra20-cpufreq.txt        | 96 +++++++++++++++++++
+>>  1 file changed, 96 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>> new file mode 100644
+>> index 000000000000..a8023ea7a99f
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+>> @@ -0,0 +1,96 @@
+>> +Binding for NVIDIA Tegra20 CPUFreq
+>> +==================================
+>> +
+>> +Required properties:
+>> +- clocks: Must contain an entry for each entry in clock-names.
+>> +  See ../clocks/clock-bindings.txt for details.
+>> +- clock-names: Must include the following entries:
+>> +  - pll_x: main-parent for CPU clock, must be the first entry
+>> +  - intermediate: intermediate-parent for CPU clock
+>> +  - cclk: the CPU clock
+>> +- operating-points-v2: See ../bindings/opp/opp.txt for details.
+>> +- #cooling-cells: Should be 2. See ../thermal/thermal.txt for details.
+>> +
+>> +For each opp entry in 'operating-points-v2' table:
+>> +- opp-supported-hw: Two bitfields indicating:
+>> +	On Tegra20:
+>> +	1. CPU process ID mask
+>> +	2. SoC speedo ID mask
+>> +
+>> +	On Tegra30:
+>> +	1. CPU process ID mask
+>> +	2. CPU speedo ID mask
+>> +
+>> +	A bitwise AND is performed against these values and if any bit
+>> +	matches, the OPP gets enabled.
+>> +
+>> +- opp-microvolt: CPU voltage triplet.
+>> +
+>> +Optional properties:
+>> +- cpu-supply: Phandle to the CPU power supply.
+>> +- core-supply: Phandle to the CORE power supply.
+>> +- rtc-supply: Phandle to the RTC power supply, required only for Tegra20.
+>> +
+>> +Voltage supply requirements:
+>> +- Tegra20:
+>> +	CORE and RTC regulators must be coupled using the regulator-coupled-with
+>> +	property and regulator-coupled-max-spread property must be set to no
+>> +	more than 170mV.
+>> +
+>> +	See ../regulator/regulator.txt for more detail about the properties.
+>> +
+>> +- Tegra30:
+>> +	CORE and CPU regulators must be coupled using the regulator-coupled-with
+>> +	property and regulator-coupled-max-spread property must be set to no
+>> +	more than 300mV. Each of CORE and CPU regulators must set
+>> +	regulator-max-step-microvolt property to no more than 100mV.
+>> +
+>> +	See ../regulator/regulator.txt for more detail about the properties.
+>> +
+>> +
+>> +Example:
+>> +	regulators {
+>> +		cpu_reg: regulator0 {
+>> +			regulator-name = "vdd_cpu";
+>> +		};
+>> +
+>> +		core_reg: regulator1 {
+>> +			regulator-name = "vdd_core";
+>> +			regulator-coupled-with = <&rtc_reg>;
+>> +			regulator-coupled-max-spread = <170000>;
+>> +		};
+>> +
+>> +		rtc_reg: regulator2 {
+>> +			regulator-name = "vdd_rtc";
+>> +			regulator-coupled-with = <&core_reg>;
+>> +			regulator-coupled-max-spread = <170000>;
+>> +		};
+>> +	};
+>> +
+>> +	cpu0_opp_table: opp_table0 {
+>> +		compatible = "operating-points-v2";
+>> +
+>> +		opp@456000000 {
+>> +			clock-latency-ns = <125000>;
+>> +			opp-microvolt = <825000 825000 1125000>;
+>> +			opp-supported-hw = <0x03 0x0001>;
+>> +			opp-hz = /bits/ 64 <456000000>;
+>> +		};
+>> +
+>> +		...
+>> +	};
+>> +
+>> +	cpus {
+>> +		cpu@0 {
+>> +			compatible = "arm,cortex-a9";
+>> +			clocks = <&tegra_car TEGRA20_CLK_PLL_X>,
+>> +				 <&tegra_car TEGRA20_CLK_PLL_P>,
+>> +				 <&tegra_car TEGRA20_CLK_CCLK>;
+>> +			clock-names = "pll_x", "intermediate", "cclk";
+> 
+> I still object to having clocks (and supplies) which don't reflect the 
+> h/w and are documented in the CA9 TRM.
+> 
+>> +			operating-points-v2 = <&cpu0_opp_table>;
+>> +			cpu-supply = <&cpu_reg>;
+>> +			core-supply = <&core_reg>;
+>> +			rtc-supply = <&rtc_reg>;
+> 
+> Supplies are suspect too, but perhaps supplies and power domains are 
+> beyond the scope of the TRM and part of the physical design.
 
-Can't we simply change de_thread() to use freezable_schedule() ?
+Is it possible to have a "firmware" device-tree node specifically for cpufreq driver? Something like this:
 
-Oleg.
+cpufreq {
+	compatible = "nvidia,tegra20-cpufreq";
+	clocks = <&tegra_car TEGRA20_CLK_PLL_X>,
+		 <&tegra_car TEGRA20_CLK_PLL_P>;
+	clock-names = "pll_x", "intermediate";
+};
+
+We may also need a Tegra-specific DVFS helper-driver that will help to manage CPU-CORE voltage dependency. Yet I'll have to examine this all in more details, but maybe it will be nicer if DVFS could be instantiated via device-tree as well. It will provide a Tegra-specific DVFS API and manage CORE / RTC dependencies for the CPUFreq and peripheral drivers, also helping to maintain proper voltages during kernel boot-up until all drivers are brought into action.
+
+cpufreq {
+	compatible = "nvidia,tegra20-dvfs";
+	cpu-supply = <&cpu_vdd_reg>;
+	core-supply = <&core_vdd_reg>;
+	rtc-supply = <&rtc_vdd_reg>;
+};
+
+So my question is:
+
+Is it possible to have device-tree nodes that solely describe firmware? Kernel drivers in this case.
