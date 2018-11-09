@@ -1,24 +1,47 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [driver-core PATCH v6 6/9] driver core: Probe devices
- asynchronously instead of the driver
-Date: Thu, 08 Nov 2018 15:59:46 -0800
-Message-ID: <1541721586.196084.241.camel@acm.org>
-References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
-         <154170043123.12967.3591757325647337726.stgit@ahduyck-desk1.jf.intel.com>
+From: "Chanho Min" <chanho.min@lge.com>
+Subject: RE: [PATCH] freezer: fix freeze timeout on exec
+Date: Fri, 9 Nov 2018 09:29:42 +0900
+Message-ID: <02ce01d477c3$4ebec440$ec3c4cc0$@lge.com>
+References: <1541671796-8725-1-git-send-email-chanho.min@lge.com> <20181108105030.GB9939@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-7"
+Content-Type: text/plain;
+        charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154170043123.12967.3591757325647337726.stgit@ahduyck-desk1.jf.intel.com>
+In-Reply-To: <20181108105030.GB9939@redhat.com>
+Content-Language: ko
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alexander Duyck <alexander.h.duyck@linux.intel.com>, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
-Cc: linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com
+To: 'Oleg Nesterov' <oleg@redhat.com>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Pavel Machek' <pavel@ucw.cz>, 'Len Brown' <len.brown@intel.com>, 'Andrew Morton' <akpm@linux-foundation.org>, "'Eric W. Biederman'" <ebiederm@xmission.com>, 'Christian Brauner' <christian@brauner.io>, 'Anna-Maria Gleixner' <anna-maria@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Seungho Park' <seungho1.park@lge.com>, 'Jongsung Kim' <neidhard.kim@lge.com>, 'Inkyu Hwang' <inkyu.hwang@lge.com>, "'donghwan.jung'" <donghwan.jung@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2018-11-08 at 10:07 -0800, Alexander Duyck wrote:
-+AD4 Probe devices asynchronously instead of the driver. This results in us
-+AD4 seeing the same behavior if the device is registered before the driver or
-+AD4 after. This way we can avoid serializing the initialization should the
-+AD4 driver not be loaded until after the devices have already been added.
+> >
+> > To fix this, I suggest a patch by emboding the mentioned solution.
+> > First, revive and rework cancel_freezing_and_thaw() function whitch
+> > stops the task from sleeping in refrigirator reliably. And, The task
+> > to be killed does not allow to freeze.
+> 
+> Can't we simply change de_thread() to use freezable_schedule() ?
+> 
+> Oleg.
 
-Reviewed-by: Bart Van Assche +ADw-bvanassche+AEA-acm.org+AD4
+We need to change freezable_schedule_timeout() instead.
+freezable_schedule also can't be frozen if sub-threads can't stop
+schedule().
+Furthermore, I'm not sure if it is safe to freeze it at de_thread().
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 9c5ee2a..291cbd6 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -942,7 +942,7 @@ static int de_thread(struct task_struct *tsk)
+        while (sig->notify_count) {
+                __set_current_state(TASK_KILLABLE);
+                spin_unlock_irq(lock);
+-               schedule();
++               while (!freezable_schedule_timeout(HZ));
+                if (unlikely(__fatal_signal_pending(tsk)))
+                        goto killed;
+                spin_lock_irq(lock);
+
+Chanho
