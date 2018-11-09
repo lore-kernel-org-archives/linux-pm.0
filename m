@@ -1,44 +1,57 @@
-From: Brian Masney <masneyb@onstation.org>
-Subject: Re: [PATCH v2 5/7] pinctrl: qcom: spmi-gpio: fix gpio-hog related
- boot issues
-Date: Fri, 9 Nov 2018 05:22:13 -0500
-Message-ID: <20181109102213.dijt35etkzwdvu2a@ad8ea8ed68ae>
-References: <20181101001149.13453-1-masneyb@onstation.org>
- <20181101001149.13453-6-masneyb@onstation.org>
- <CACRpkdaabE-ekKQp93CiFtN_Qp6OohEUE-qufsX=12u2p_SXtw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: [PATCH] power: supply: bq24190_charger: add support for bq24196 variant
+Date: Fri,  9 Nov 2018 13:53:35 +0100
+Message-ID: <20181109125335.1219-1-heiko@sntech.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CACRpkdaabE-ekKQp93CiFtN_Qp6OohEUE-qufsX=12u2p_SXtw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-arm-msm@vger.kernel.org, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>, jonathan@marek.ca
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 09, 2018 at 09:59:08AM +0100, Linus Walleij wrote:
-> On Thu, Nov 1, 2018 at 1:12 AM Brian Masney <masneyb@onstation.org> wrote:
-> 
-> > When attempting to setup up a gpio hog, device probing would repeatedly
-> > fail with -EPROBE_DEFERED errors. It was caused by a circular dependency
-> > between the gpio and pinctrl frameworks. If the gpio-ranges property is
-> > present in device tree, then the gpio framework will handle the gpio pin
-> > registration and eliminate the circular dependency.
-> >
-> > See Christian Lamparter's commit a86caa9ba5d7 ("pinctrl: msm: fix
-> > gpio-hog related boot issues") for a detailed commit message that
-> > explains the issue in much more detail. The code comment in this commit
-> > came from Christian's commit.
-> >
-> > Signed-off-by: Brian Masney <masneyb@onstation.org>
-> 
-> No word from Bjorn but I trust my own intuition and applied it.
-> 
-> Björn: shout if it's wrong.
-> 
-> Question: should this also be done for pinctrl-ssbi-gpio.c?
+From: Heiko Stuebner <heiko.stuebner@bq.com>
 
-Yes, I believe so.
+The bq24196 is another variant of the bq24190 charger ic.
+Its register set is identical to the bq24192 and it even reuses
+the same part number (0x5).
 
-Brian
+Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+---
+This should go on top of the bq24192 support patches from Brian Masney /
+Jonathan Marek [0]
+
+[0] https://patchwork.kernel.org/patch/10663409/
+
+ drivers/power/supply/bq24190_charger.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 4e64e6ac95c5..effa7c3c21e6 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -143,7 +143,7 @@
+ #define BQ24190_REG_VPRS_PN_MASK		(BIT(5) | BIT(4) | BIT(3))
+ #define BQ24190_REG_VPRS_PN_SHIFT		3
+ #define BQ24190_REG_VPRS_PN_24190			0x4
+-#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193 */
++#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193, 24196 */
+ #define BQ24190_REG_VPRS_PN_24192I			0x3
+ #define BQ24190_REG_VPRS_TS_PROFILE_MASK	BIT(2)
+ #define BQ24190_REG_VPRS_TS_PROFILE_SHIFT	2
+@@ -1973,6 +1973,7 @@ static const struct i2c_device_id bq24190_i2c_ids[] = {
+ 	{ "bq24190" },
+ 	{ "bq24192" },
+ 	{ "bq24192i" },
++	{ "bq24196" },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+@@ -1982,6 +1983,7 @@ static const struct of_device_id bq24190_of_match[] = {
+ 	{ .compatible = "ti,bq24190", },
+ 	{ .compatible = "ti,bq24192", },
+ 	{ .compatible = "ti,bq24192i", },
++	{ .compatible = "ti,bq24196", },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, bq24190_of_match);
+-- 
+2.18.0
