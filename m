@@ -1,48 +1,61 @@
-From: "Chanho Min" <chanho.min@lge.com>
-Subject: RE: [PATCH] freezer: fix freeze timeout on exec
-Date: Fri, 9 Nov 2018 16:50:33 +0900
-Message-ID: <05cd01d47800$e52669a0$af733ce0$@lge.com>
-References: <1541671796-8725-1-git-send-email-chanho.min@lge.com> <20181108105030.GB9939@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Chanho Min <chanho.min@lge.com>
+Subject: [PATCH] exec: make de_thread() freezable
+Date: Fri,  9 Nov 2018 17:37:36 +0900
+Message-ID: <1541752656-12857-1-git-send-email-chanho.min@lge.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: 
-Content-Language: ko
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Oleg Nesterov' <oleg@redhat.com>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Pavel Machek' <pavel@ucw.cz>, 'Len Brown' <len.brown@intel.com>, 'Andrew Morton' <akpm@linux-foundation.org>, "'Eric W. Biederman'" <ebiederm@xmission.com>, 'Christian Brauner' <christian@brauner.io>, 'Anna-Maria Gleixner' <anna-maria@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Seungho Park' <seungho1.park@lge.com>, 'Jongsung Kim' <neidhard.kim@lge.com>, 'Inkyu Hwang' <inkyu.hwang@lge.com>, "'donghwan.jung'" <donghwan.jung@lge.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>, Chanho Min <chanho.min@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-> >
-> > Can't we simply change de_thread() to use freezable_schedule() ?
-> >
-> > Oleg.
-> 
-> We need to change freezable_schedule_timeout() instead.
-> freezable_schedule also can't be frozen if sub-threads can't stop
-> schedule().
-> Furthermore, I'm not sure if it is safe to freeze it at de_thread().
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index 9c5ee2a..291cbd6 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -942,7 +942,7 @@ static int de_thread(struct task_struct *tsk)
->         while (sig->notify_count) {
->                 __set_current_state(TASK_KILLABLE);
->                 spin_unlock_irq(lock);
-> -               schedule();
-> +               while (!freezable_schedule_timeout(HZ));
->                 if (unlikely(__fatal_signal_pending(tsk)))
->                         goto killed;
->                 spin_lock_irq(lock);
-> 
-> Chanho
+Suspend fails due to the exec family of functions blocking the freezer.
+The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
+all sub-threads to die, and we have the deadlock if one of them is frozen.
+In our machine, it causes freeze timeout as bellows.
 
-Sorry, I might misunderstand freezer.
-Changes to freezable_schedule() works fine. It looks safe.
-I'll apply patch again.
+Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
+setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+ Call trace:
+[<ffffffc00008ed70>] __switch_to+0x88/0xa0
+[<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+[<ffffffc000d1ca90>] schedule+0x40/0xa8
+[<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+[<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc00021c584>] load_script+0x20c/0x228
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+[<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+[<ffffffc00008de30>] el0_svc_naked+0x24/0x28
 
-Chanho
+To fix this, make de_thread() freezable. It looks safe and works fine.
+
+Suggested-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Chanho Min <chanho.min@lge.com>
+---
+ fs/exec.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 1ebf6e5..70ccfc8 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -62,6 +62,7 @@
+ #include <linux/oom.h>
+ #include <linux/compat.h>
+ #include <linux/vmalloc.h>
++#include <linux/freezer.h>
+ 
+ #include <linux/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -1083,7 +1084,7 @@ static int de_thread(struct task_struct *tsk)
+ 	while (sig->notify_count) {
+ 		__set_current_state(TASK_KILLABLE);
+ 		spin_unlock_irq(lock);
+-		schedule();
++		freezable_schedule();
+ 		if (unlikely(__fatal_signal_pending(tsk)))
+ 			goto killed;
+ 		spin_lock_irq(lock);
+-- 
+2.1.4
