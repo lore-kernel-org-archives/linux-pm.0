@@ -1,52 +1,81 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Subject: [PATCH] power: reset: ocelot: switch the SI to boot mode
-Date: Fri,  9 Nov 2018 20:57:00 +0100
-Message-ID: <20181109195700.28321-1-alexandre.belloni@bootlin.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH 00/17] bcm2835: Treewide switch to SPDX identifier
+Date: Sat, 10 Nov 2018 15:17:56 +0100
+Message-ID: <1541859476-6210-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: UNGLinuxDriver@microchip.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, Eric Anholt <eric@anholt.net>, Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vinod Koul <vkoul@kernel.org>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Mark Brown <broonie@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edube>
+Cc: Stefan Wahren <stefan.wahren@i2se.com>, linux-pwm@vger.kernel.org, alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-i2c@vger.kernel.org, linux-gpio@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Switch the SI to boot mode so on a warm reboot, the SI is able to access
-the flash.
+After fixing the module license of some bcm2835 drivers in "Fix MODULE_LICENSE
+of bcm2835 drivers", we can finally switch all outstanding bcm2835 /
+Raspberry Pi drivers to SPDX identifier and drop the unnecessary license text.
+I omit the staging area, because there are proposed a lot of changes for
+vc04_services. 
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
----
- drivers/power/reset/ocelot-reset.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+I hope it is okay to have the binding header integrated in the tree-wise
+patches instead of a separate one. This should avoid conflicts while merging.
 
-diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
-index 5a13a5cc8188..419952c61fd0 100644
---- a/drivers/power/reset/ocelot-reset.c
-+++ b/drivers/power/reset/ocelot-reset.c
-@@ -26,6 +26,13 @@ struct ocelot_reset_context {
- 
- #define SOFT_CHIP_RST BIT(0)
- 
-+#define ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL	0x24
-+#define IF_SI_OWNER_MASK			GENMASK(1, 0)
-+#define IF_SI_OWNER_SISL			0
-+#define IF_SI_OWNER_SIBM			1
-+#define IF_SI_OWNER_SIMC			2
-+#define IF_SI_OWNER_OFFSET			4
-+
- static int ocelot_restart_handle(struct notifier_block *this,
- 				 unsigned long mode, void *cmd)
- {
-@@ -37,6 +44,11 @@ static int ocelot_restart_handle(struct notifier_block *this,
- 	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
- 			   CORE_RST_PROTECT, 0);
- 
-+	/* Make the SI back to boot mode */
-+	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL,
-+			   IF_SI_OWNER_MASK << IF_SI_OWNER_OFFSET,
-+			   IF_SI_OWNER_SIBM << IF_SI_OWNER_OFFSET);
-+
- 	writel(SOFT_CHIP_RST, ctx->base);
- 
- 	pr_emerg("Unable to restart system\n");
+Stefan Wahren (17):
+  ARM: dts: bcm2835-rpi-zero: Switch to SPDX identifier
+  ARM: mach-bcm: Switch bcm2835 and platsmp to SPDX identifier
+  hw_random: bcm2835-rng: Switch to SPDX identifier
+  clk: bcm2835: Switch to SPDX identifier
+  clocksource: bcm2835: Switch to SPDX identifier
+  dma: bcm2835: Switch to SPDX identifier
+  firmware: raspberrypi: Switch to SPDX identifier
+  i2c: bcm2835: Switch to SPDX identifier
+  irqchip: bcm283x: Switch to SPDX identifier
+  mailbox: bcm2835: Switch to SPDX identifier
+  mmc: bcm2835: Switch to SPDX identifier
+  pinctrl: bcm2835: Switch to SPDX identifier
+  pwm: bcm2835: Switch to SPDX identifier
+  soc: bcm: Switch raspberrypi-power to SPDX identifier
+  spi: bcm2835: Switch to SPDX identifier
+  thermal: bcm2835: Switch to SPDX identifier
+  ASoc: bcm2835-i2s: Switch to SPDX identifier
+
+ arch/arm/boot/dts/bcm2835-rpi-zero-w.dts      |  8 +-------
+ arch/arm/boot/dts/bcm2835-rpi-zero.dts        |  8 +-------
+ arch/arm/mach-bcm/board_bcm2835.c             | 11 +----------
+ arch/arm/mach-bcm/platsmp.c                   | 10 +---------
+ arch/arm/mach-bcm/platsmp.h                   |  6 +-----
+ drivers/char/hw_random/bcm2835-rng.c          |  7 ++-----
+ drivers/clk/bcm/clk-bcm2835-aux.c             | 11 +----------
+ drivers/clk/bcm/clk-bcm2835.c                 | 12 +-----------
+ drivers/clocksource/bcm2835_timer.c           | 15 +--------------
+ drivers/dma/bcm2835-dma.c                     | 11 +----------
+ drivers/firmware/raspberrypi.c                |  5 +----
+ drivers/i2c/busses/i2c-bcm2835.c              | 10 +---------
+ drivers/irqchip/irq-bcm2835.c                 | 11 +----------
+ drivers/irqchip/irq-bcm2836.c                 | 11 +----------
+ drivers/mailbox/bcm2835-mailbox.c             |  8 +-------
+ drivers/mmc/host/bcm2835.c                    | 13 +------------
+ drivers/pinctrl/bcm/pinctrl-bcm2835.c         | 11 +----------
+ drivers/pwm/pwm-bcm2835.c                     |  5 +----
+ drivers/soc/bcm/raspberrypi-power.c           |  5 +----
+ drivers/spi/spi-bcm2835.c                     | 11 +----------
+ drivers/spi/spi-bcm2835aux.c                  | 11 +----------
+ drivers/thermal/broadcom/bcm2835_thermal.c    | 11 +----------
+ include/dt-bindings/clock/bcm2835-aux.h       | 10 +---------
+ include/dt-bindings/clock/bcm2835.h           | 10 +---------
+ include/dt-bindings/pinctrl/bcm2835.h         |  8 +-------
+ include/dt-bindings/power/raspberrypi-power.h |  5 +----
+ include/soc/bcm2835/raspberrypi-firmware.h    |  5 +----
+ sound/soc/bcm/bcm2835-i2s.c                   | 10 +---------
+ 28 files changed, 29 insertions(+), 230 deletions(-)
+
 -- 
-2.19.1
+2.7.4
