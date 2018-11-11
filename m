@@ -1,71 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v5 06/15] sched/core: uclamp: enforce last task UCLAMP_MAX
-Date: Sun, 11 Nov 2018 18:08:48 +0100
-Message-ID: <20181111170848.GB3038@worktop>
-References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-8-patrick.bellasi@arm.com>
+From: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Subject: Re: [driver-core PATCH v6 2/9] async: Add support for queueing on
+ specific NUMA node
+Date: Sun, 11 Nov 2018 11:32:08 -0800
+Message-ID: <20181111193208.GB8332@kroah.com>
+References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
+ <154170041079.12967.13132220574997822111.stgit@ahduyck-desk1.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20181029183311.29175-8-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+In-Reply-To: <154170041079.12967.13132220574997822111.stgit-+uVpp3jiz/RcxmDmkzA3yGt3HXsI98Cx0E9HWUfgJXw@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 29, 2018 at 06:33:01PM +0000, Patrick Bellasi wrote:
-> When a util_max clamped task sleeps, its clamp constraints are removed
-> from the CPU. However, the blocked utilization on that CPU can still be
-> higher than the max clamp value enforced while that task was running.
+On Thu, Nov 08, 2018 at 10:06:50AM -0800, Alexander Duyck wrote:
+> Introduce four new variants of the async_schedule_ functions that allow
+> scheduling on a specific NUMA node.
 > 
-> The release of a util_max clamp when a CPU is going to be idle could
-> thus allow unwanted CPU frequency increases while tasks are not
-> running. This can happen, for example, when a frequency update is
-> triggered from another CPU of the same frequency domain.
-> In this case, when we aggregate the utilization of all the CPUs in a
-> shared frequency domain, schedutil can still see the full not clamped
-> blocked utilization of all the CPUs and thus, eventually, increase the
-> frequency.
+> The first two functions are async_schedule_near and
+> async_schedule_near_domain end up mapping to async_schedule and
+> async_schedule_domain, but provide NUMA node specific functionality. They
+> replace the original functions which were moved to inline function
+> definitions that call the new functions while passing NUMA_NO_NODE.
+> 
+> The second two functions are async_schedule_dev and
+> async_schedule_dev_domain which provide NUMA specific functionality when
+> passing a device as the data member and that device has a NUMA node other
+> than NUMA_NO_NODE.
+> 
+> The main motivation behind this is to address the need to be able to
+> schedule device specific init work on specific NUMA nodes in order to
+> improve performance of memory initialization.
+> 
+> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> ---
 
-> @@ -810,6 +811,28 @@ static inline void uclamp_cpu_update(struct rq *rq, unsigned int clamp_id)
->  		if (max_value >= SCHED_CAPACITY_SCALE)
->  			break;
->  	}
-> +
-> +	/*
-> +	 * Just for the UCLAMP_MAX value, in case there are no RUNNABLE
-> +	 * task, we want to keep the CPU clamped to the last task's clamp
-> +	 * value. This is to avoid frequency spikes to MAX when one CPU, with
-> +	 * an high blocked utilization, sleeps and another CPU, in the same
-> +	 * frequency domain, do not see anymore the clamp on the first CPU.
-> +	 *
-> +	 * The UCLAMP_FLAG_IDLE is set whenever we detect, from the above
-> +	 * loop, that there are no more RUNNABLE taks on that CPU.
-> +	 * In this case we enforce the CPU util_max to that of the last
-> +	 * dequeued task.
-> +	 */
-> +	if (max_value < 0) {
-> +		if (clamp_id == UCLAMP_MAX) {
-> +			rq->uclamp.flags |= UCLAMP_FLAG_IDLE;
-> +			max_value = last_clamp_value;
-> +		} else {
-> +			max_value = uclamp_none(UCLAMP_MIN);
-> +		}
-> +	}
-> +
->  	rq->uclamp.value[clamp_id] = max_value;
->  }
+No one else from Intel has reviewed/verified this code at all?
 
-*groan*, so it could be jet-lag, but I find the comment really hard to
-understand.
+Please take advantages of the resources you have that most people do
+not, get reviewes from your coworkers please before you send this out
+again, as they can give you valuable help before the community has to
+review the code...
 
-Would not something like:
+thanks,
 
-	/*
-	 * Avoid blocked utilization pushing up the frequency when we go
-	 * idle (which drops the max-clamp) by retaining the last known
-	 * max-clamp.
-	 */
-
-Be more clear?
+greg k-h
