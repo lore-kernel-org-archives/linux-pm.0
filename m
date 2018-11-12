@@ -1,59 +1,77 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor for tickless systems
-Date: Sun, 11 Nov 2018 19:48:51 -0800
-Message-ID: <005901d47a3a$a49420d0$edbc6270$@net>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+From: Chanho Min <chanho.min@lge.com>
+Subject: [PATCH v2] exec: make de_thread() freezable
+Date: Mon, 12 Nov 2018 12:54:45 +0900
+Message-ID: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-References: JLIjge0NMDhAwJLIogChPj KR9ogVaVz6DhgKRFdgxgYz LaclgNKRzDhAwLb6UgqZPJ
-In-Reply-To: LaclgNKRzDhAwLb6UgqZPJ
-Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Doug Smythies' <dsmythies@telus.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>, Chanho Min <chanho.min@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2018.11.10 13:48 Doug Smythies wrote:
-> On 2018.11.07 09:04 Doug Smythies wrote:
->
->> The Phoronix dbench test was run under the option to run all
->> the tests, instead of just one number of clients. This was done
->> with a reference/baseline kernel of 4.20-rc1, and also with this
->> TEO version 3 patch. The tests were also repeated with trace
->> enabled for 5000 seconds. Idle information and processor
->> package power were sampled once per minute in all test runs.
->>
->> The results are:
->> http://fast.smythies.com/linux-pm/k420/k420-dbench-teo3.htm
->> http://fast.smythies.com/linux-pm/k420/histo_compare.htm
->
-> Another observation from the data, and for the reference/
-> baseline 4.20-rc1 kernel, idle state 0 histogram plots
-> is that there are several (280) long idle durations.
->
-> For unknown reasons, these are consistently dominated by
-> CPU 5 on my system (264 of the 280, in this case).
->
-> No other test that I have tried shows this issue,
-> But other tests also tend to set the need_resched
-> flag whereas the dbench test doesn't.
->
-> Older kernels also have the issue. I tried: 4.19, 4.18
-> 4.17, 4.16+"V9" idle re-work patch set of the time.
-> There is no use going back further, because "V9" was
-> to address excessively long durations in shallow idle states.
->
-> I have not made progress towards determining the root issue.
+Suspend fails due to the exec family of functions blocking the freezer.
+The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
+all sub-threads to die, and we have the deadlock if one of them is frozen.
+This also can occur with the schedule() waiting for the group thread leader
+to exit if it is frozen.
 
-For whatever reason, sometimes a softirq_entry occurs and it is
-a considerably longer than usual time until the softirq_exit.
-Sometimes there are bunch of interrupts piled up, and sometimes
-some delay between the softirq_entry and anything else happening,
-which perhaps just means I didn't figure out what else to enable
-in the trace to observe it.
+In our machine, it causes freeze timeout as bellows.
 
-Anyway, it seems likely that there is no problem here after all.
+Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
+setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+ Call trace:
+[<ffffffc00008ed70>] __switch_to+0x88/0xa0
+[<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+[<ffffffc000d1ca90>] schedule+0x40/0xa8
+[<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+[<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc00021c584>] load_script+0x20c/0x228
+[<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+[<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+[<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+[<ffffffc00008de30>] el0_svc_naked+0x24/0x28
+
+To fix this, make de_thread() freezable. It looks safe and works fine.
+
+Changes in v2:
+ - changes for the same reason in "if (!thread_group_leader(tsk))" branch.
+   (reported by Oleg)
+
+Suggested-by: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Chanho Min <chanho.min@lge.com>
+---
+ fs/exec.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 1ebf6e5..6da8745 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -62,6 +62,7 @@
+ #include <linux/oom.h>
+ #include <linux/compat.h>
+ #include <linux/vmalloc.h>
++#include <linux/freezer.h>
  
-... Doug
+ #include <linux/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -1083,7 +1084,7 @@ static int de_thread(struct task_struct *tsk)
+ 	while (sig->notify_count) {
+ 		__set_current_state(TASK_KILLABLE);
+ 		spin_unlock_irq(lock);
+-		schedule();
++		freezable_schedule();
+ 		if (unlikely(__fatal_signal_pending(tsk)))
+ 			goto killed;
+ 		spin_lock_irq(lock);
+@@ -1111,7 +1112,7 @@ static int de_thread(struct task_struct *tsk)
+ 			__set_current_state(TASK_KILLABLE);
+ 			write_unlock_irq(&tasklist_lock);
+ 			cgroup_threadgroup_change_end(tsk);
+-			schedule();
++			freezable_schedule();
+ 			if (unlikely(__fatal_signal_pending(tsk)))
+ 				goto killed;
+ 		}
+-- 
+2.1.4
