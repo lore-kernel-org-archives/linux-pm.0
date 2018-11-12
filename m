@@ -1,40 +1,52 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH -next] power/supply: fix sc27xx_fuel_gauge build errors
-Date: Mon, 12 Nov 2018 09:06:32 -0800
-Message-ID: <3736c0f9-9f2c-bc74-22c2-677c42a2a630@infradead.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH 2/2] opp: ti-opp-supply: Correct the supply in
+ _get_optimal_vdd_voltage call
+Date: Mon, 12 Nov 2018 15:49:22 -0600
+Message-ID: <312975f3-3cbd-3ece-20b6-ceb93421a3c9@ti.com>
+References: <1541565263-8296-1-git-send-email-j-keerthy@ti.com>
+ <1541565263-8296-3-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1541565263-8296-3-git-send-email-j-keerthy@ti.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>
+To: Keerthy <j-keerthy@ti.com>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, t-kristo@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Randy Dunlap <rdunlap@infradead.org>
+On 11/06/2018 10:34 PM, Keerthy wrote:
+> _get_optimal_vdd_voltage call provides new_supply_vbb->u_volt
+> as the reference voltage while it should be really new_supply_vdd->u_volt.
+> 
+> Fixes: 9a835fa6e47 ("PM / OPP: Add ti-opp-supply driver")
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
 
-Fix build errors when FUEL_GUAGE_SC27XX is enabled but IIO is either
-not enabled or IIO=m and FUEL_GUAGE_SC27XX=y.
+Acked-by: Dave Gerlach <d-gerlach@ti.com>
 
-ld: drivers/power/supply/sc27xx_fuel_gauge.o: in function `sc27xx_fgu_get_temp':
-sc27xx_fuel_gauge.c:(.text+0x1d2): undefined reference to `iio_read_channel_processed'
-ld: drivers/power/supply/sc27xx_fuel_gauge.o: in function `sc27xx_fgu_probe':
-sc27xx_fuel_gauge.c:(.text+0x97f): undefined reference to `devm_iio_channel_get'
+Currently all corresponding vbb and vdd values provided by the device tree match
+which is why this does not fail, but this was a typo by me and vdd is the
+correct value to actually use.
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
----
- drivers/power/supply/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+Regards,
+Dave
 
---- linux-next-20181112.orig/drivers/power/supply/Kconfig
-+++ linux-next-20181112/drivers/power/supply/Kconfig
-@@ -655,6 +655,7 @@ config CHARGER_SC2731
- config FUEL_GAUGE_SC27XX
- 	tristate "Spreadtrum SC27XX fuel gauge driver"
- 	depends on MFD_SC27XX_PMIC || COMPILE_TEST
-+	depends on IIO
- 	help
- 	 Say Y here to enable support for fuel gauge with SC27XX
- 	 PMIC chips.
+>  drivers/opp/ti-opp-supply.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/opp/ti-opp-supply.c b/drivers/opp/ti-opp-supply.c
+> index 29e08a4..3f4fb4d 100644
+> --- a/drivers/opp/ti-opp-supply.c
+> +++ b/drivers/opp/ti-opp-supply.c
+> @@ -288,7 +288,7 @@ static int ti_opp_supply_set_opp(struct dev_pm_set_opp_data *data)
+>  	int ret;
+>  
+>  	vdd_uv = _get_optimal_vdd_voltage(dev, &opp_data,
+> -					  new_supply_vbb->u_volt);
+> +					  new_supply_vdd->u_volt);
+>  
+>  	if (new_supply_vdd->u_volt_min < vdd_uv)
+>  		new_supply_vdd->u_volt_min = vdd_uv;
+> 
