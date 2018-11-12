@@ -1,79 +1,78 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 06/11] arm64: dts: exynos5433: add support for thermal
- trip irq-mode
-Date: Mon, 12 Nov 2018 10:00:33 +0100
-Message-ID: <CAJKOXPcGOiVwVuaT+2RHGs0VxA2XRjOd6efsDQaGrWWCJS7vNg@mail.gmail.com>
-References: <CGME20181107171041eucas1p1a3cf91435b9071fd6e6f84101ebbcd9f@eucas1p1.samsung.com>
- <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com> <1541610593-28542-7-git-send-email-l.luba@partner.samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] exec: make de_thread() freezable
+Date: Mon, 12 Nov 2018 10:51:21 +0100
+Message-ID: <20181112095121.GA5695@amd>
+References: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1541610593-28542-7-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: l.luba@partner.samsung.com
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?B?QmFydMWCb21pZWogxbtvxYJuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, kgene@kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: Chanho Min <chanho.min@lge.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-Thanks Lukasz for patches. I like your work!
 
-I have few more comments which will probably apply for all the DTS commits.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 7 Nov 2018 at 18:10, Lukasz Luba <l.luba@partner.samsung.com> wrote:
->
-> This patch adds support for new flag which indicates
+On Mon 2018-11-12 12:54:45, Chanho Min wrote:
+> Suspend fails due to the exec family of functions blocking the freezer.
+> The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
+> all sub-threads to die, and we have the deadlock if one of them is frozen.
+> This also can occur with the schedule() waiting for the group thread lead=
+er
+> to exit if it is frozen.
+>=20
+> In our machine, it causes freeze timeout as bellows.
+>=20
+> Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze=
+, wq_busy=3D0):
+> setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+>  Call trace:
+> [<ffffffc00008ed70>] __switch_to+0x88/0xa0
+> [<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+> [<ffffffc000d1ca90>] schedule+0x40/0xa8
+> [<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+> [<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> [<ffffffc00021c584>] load_script+0x20c/0x228
+> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> [<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+> [<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+> [<ffffffc00008de30>] el0_svc_naked+0x24/0x28
+>=20
+> To fix this, make de_thread() freezable. It looks safe and works fine.
+>=20
+> Changes in v2:
+>  - changes for the same reason in "if (!thread_group_leader(tsk))" branch.
+>    (reported by Oleg)
+>=20
+> Suggested-by: Oleg Nesterov <oleg@redhat.com>
+> Signed-off-by: Chanho Min <chanho.min@lge.com>
 
-This patch does not add support. Support for flag was added in your
-first drivers/thermal patches in this set. This patch adds new flag.
-(and does something more, so read on)
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> that trip point triggers IRQ when temperature is met.
-> Exynos5433 supports 8 trip point which will trigger IRQ.
 
-/8 trip point/8 trip points/
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-> Above that number other trip points should be registered
-> without 'irq-mode' flag.
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Please fix the line-wrap.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
->
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi | 105 ++++++++++++++++---------
->  1 file changed, 70 insertions(+), 35 deletions(-)
->
-> diff --git a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
-> index fe3a0b1..c4330f6 100644
-> --- a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
-> +++ b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
-> @@ -17,37 +17,44 @@ thermal-zones {
->                         atlas0_alert_0: atlas0-alert-0 {
->                                 temperature = <65000>;  /* millicelsius */
->                                 hysteresis = <1000>;    /* millicelsius */
-> -                               type = "active";
-> +                               type = "passive";
+iEYEARECAAYFAlvpTRkACgkQMOfwapXb+vLcLwCeOd2jytn3uSdvAQWh2K8+RkKK
+UYkAnREFbYw3qGUcs0CX79xse5VLdBGU
+=L4si
+-----END PGP SIGNATURE-----
 
-This change is not explained in commit msg.
-
-Basically you are doing here two things (related to each other). You
-clearly define which trip points are IRQ-type and you correct the type
-of trip point. Active is incorrect. This second thing is missing in
-your commit msg and I believe it is main reason behind this patch. You
-should focus then on this reason - start from it. Subject could be
-like "Use proper passive type for thermal trip points".
-
-Without this explanation I don't see the strong reason behind that
-patch. IOW, everything was working fine before... so why adding this
-new flag? Or maybe something was not fine... and then it is real
-reason why you are sending the patch. Usually commit message should
-answer to the most important question "WHY". Now, it explains
-"WHAT"... but I can see it from the source code. However from the code
-it is not easy to guess WHY.
-
-Best regards,
-Krzysztof
+--vtzGhvizbBRQ85DL--
