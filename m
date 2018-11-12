@@ -1,52 +1,45 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH 2/2] opp: ti-opp-supply: Correct the supply in
- _get_optimal_vdd_voltage call
-Date: Mon, 12 Nov 2018 15:49:22 -0600
-Message-ID: <312975f3-3cbd-3ece-20b6-ceb93421a3c9@ti.com>
+Subject: Re: [PATCH 1/2] opp: ti-opp-supply: Dynamically update u_volt_min
+Date: Mon, 12 Nov 2018 16:05:47 -0600
+Message-ID: <d86733f4-fb87-c7ce-88ff-bc2150a8acb2@ti.com>
 References: <1541565263-8296-1-git-send-email-j-keerthy@ti.com>
- <1541565263-8296-3-git-send-email-j-keerthy@ti.com>
+ <1541565263-8296-2-git-send-email-j-keerthy@ti.com>
+ <20181108055401.btrixinlqcfh22du@vireshk-i7>
+ <e383feb1-ba04-7f56-0cd8-257660a95bd3@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1541565263-8296-3-git-send-email-j-keerthy@ti.com>
+In-Reply-To: <e383feb1-ba04-7f56-0cd8-257660a95bd3@ti.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, t-kristo@ti.com
+To: "J, KEERTHY" <j-keerthy@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, t-kristo@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-On 11/06/2018 10:34 PM, Keerthy wrote:
-> _get_optimal_vdd_voltage call provides new_supply_vbb->u_volt
-> as the reference voltage while it should be really new_supply_vdd->u_volt.
+On 11/11/2018 09:15 PM, J, KEERTHY wrote:
 > 
-> Fixes: 9a835fa6e47 ("PM / OPP: Add ti-opp-supply driver")
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
+> 
+> On 11/8/2018 11:24 AM, Viresh Kumar wrote:
+>> On 07-11-18, 10:04, Keerthy wrote:
+>>> The voltage range (min, max) provided in the device tree is from
+>>> the data manual and is pretty big, catering to a wide range of devices.
+>>> On a i2c read/write failure the regulator_set_voltage_triplet function
+>>> falls back to set voltage between min and max. The min value from Device
+>>> Tree can be lesser than the optimal value and in that case that can lead
+>>> to a hang or crash. Hence set the u_volt_min dynamically to the optimal
+>>> voltage value.
+>>
+>> And why shouldn't we fix the DT for this ?
+> 
+> The DT voltages do not cater to the broad range of devices. In some 
+> particular cases the DT min voltage is slightly lower the voltage at 
+> which the device cannot sustain a particular frequency in which case the 
+> device just silently hangs. So best thing to do is to actually read the 
+> device specific voltages dynamically which will guarantee a particular 
+> device sustaining a particular frequency at the optimal voltage.
+> 
 
 Acked-by: Dave Gerlach <d-gerlach@ti.com>
 
-Currently all corresponding vbb and vdd values provided by the device tree match
-which is why this does not fail, but this was a typo by me and vdd is the
-correct value to actually use.
-
-Regards,
-Dave
-
->  drivers/opp/ti-opp-supply.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/opp/ti-opp-supply.c b/drivers/opp/ti-opp-supply.c
-> index 29e08a4..3f4fb4d 100644
-> --- a/drivers/opp/ti-opp-supply.c
-> +++ b/drivers/opp/ti-opp-supply.c
-> @@ -288,7 +288,7 @@ static int ti_opp_supply_set_opp(struct dev_pm_set_opp_data *data)
->  	int ret;
->  
->  	vdd_uv = _get_optimal_vdd_voltage(dev, &opp_data,
-> -					  new_supply_vbb->u_volt);
-> +					  new_supply_vdd->u_volt);
->  
->  	if (new_supply_vdd->u_volt_min < vdd_uv)
->  		new_supply_vdd->u_volt_min = vdd_uv;
-> 
+>>
