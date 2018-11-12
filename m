@@ -1,40 +1,59 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: Re: [PATCH 1/2] opp: ti-opp-supply: Dynamically update u_volt_min
-Date: Mon, 12 Nov 2018 08:45:39 +0530
-Message-ID: <e383feb1-ba04-7f56-0cd8-257660a95bd3@ti.com>
-References: <1541565263-8296-1-git-send-email-j-keerthy@ti.com>
- <1541565263-8296-2-git-send-email-j-keerthy@ti.com>
- <20181108055401.btrixinlqcfh22du@vireshk-i7>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v3] cpuidle: New timer events oriented governor for tickless systems
+Date: Sun, 11 Nov 2018 19:48:51 -0800
+Message-ID: <005901d47a3a$a49420d0$edbc6270$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain;
+        charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181108055401.btrixinlqcfh22du@vireshk-i7>
-Content-Language: en-US
+References: JLIjge0NMDhAwJLIogChPj KR9ogVaVz6DhgKRFdgxgYz LaclgNKRzDhAwLb6UgqZPJ
+In-Reply-To: LaclgNKRzDhAwLb6UgqZPJ
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, d-gerlach@ti.com, t-kristo@ti.com
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Giovanni Gherdovich' <ggherdovich@suse.cz>, 'Doug Smythies' <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+On 2018.11.10 13:48 Doug Smythies wrote:
+> On 2018.11.07 09:04 Doug Smythies wrote:
+>
+>> The Phoronix dbench test was run under the option to run all
+>> the tests, instead of just one number of clients. This was done
+>> with a reference/baseline kernel of 4.20-rc1, and also with this
+>> TEO version 3 patch. The tests were also repeated with trace
+>> enabled for 5000 seconds. Idle information and processor
+>> package power were sampled once per minute in all test runs.
+>>
+>> The results are:
+>> http://fast.smythies.com/linux-pm/k420/k420-dbench-teo3.htm
+>> http://fast.smythies.com/linux-pm/k420/histo_compare.htm
+>
+> Another observation from the data, and for the reference/
+> baseline 4.20-rc1 kernel, idle state 0 histogram plots
+> is that there are several (280) long idle durations.
+>
+> For unknown reasons, these are consistently dominated by
+> CPU 5 on my system (264 of the 280, in this case).
+>
+> No other test that I have tried shows this issue,
+> But other tests also tend to set the need_resched
+> flag whereas the dbench test doesn't.
+>
+> Older kernels also have the issue. I tried: 4.19, 4.18
+> 4.17, 4.16+"V9" idle re-work patch set of the time.
+> There is no use going back further, because "V9" was
+> to address excessively long durations in shallow idle states.
+>
+> I have not made progress towards determining the root issue.
 
+For whatever reason, sometimes a softirq_entry occurs and it is
+a considerably longer than usual time until the softirq_exit.
+Sometimes there are bunch of interrupts piled up, and sometimes
+some delay between the softirq_entry and anything else happening,
+which perhaps just means I didn't figure out what else to enable
+in the trace to observe it.
 
-On 11/8/2018 11:24 AM, Viresh Kumar wrote:
-> On 07-11-18, 10:04, Keerthy wrote:
->> The voltage range (min, max) provided in the device tree is from
->> the data manual and is pretty big, catering to a wide range of devices.
->> On a i2c read/write failure the regulator_set_voltage_triplet function
->> falls back to set voltage between min and max. The min value from Device
->> Tree can be lesser than the optimal value and in that case that can lead
->> to a hang or crash. Hence set the u_volt_min dynamically to the optimal
->> voltage value.
-> 
-> And why shouldn't we fix the DT for this ?
-
-The DT voltages do not cater to the broad range of devices. In some 
-particular cases the DT min voltage is slightly lower the voltage at 
-which the device cannot sustain a particular frequency in which case the 
-device just silently hangs. So best thing to do is to actually read the 
-device specific voltages dynamically which will guarantee a particular 
-device sustaining a particular frequency at the optimal voltage.
-
-> 
+Anyway, it seems likely that there is no problem here after all.
+ 
+... Doug
