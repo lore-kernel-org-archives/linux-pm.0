@@ -1,78 +1,95 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] exec: make de_thread() freezable
-Date: Mon, 12 Nov 2018 10:51:21 +0100
-Message-ID: <20181112095121.GA5695@amd>
-References: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH 1/4] power: supply: sc2731_charger: Add one work to charge/discharge
+Date: Mon, 12 Nov 2018 18:52:35 +0800
+Message-ID: <5d096dec07f6808a70edcfaad6e8f77039f21a9b.1542019800.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanho Min <chanho.min@lge.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Since the USB notifier context is atomic, we can not start or stop charging
+in atomic context. Thus this patch adds one work to help to charge or
+discharge.
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ drivers/power/supply/sc2731_charger.c |   30 ++++++++++++++++++++++--------
+ 1 file changed, 22 insertions(+), 8 deletions(-)
 
-On Mon 2018-11-12 12:54:45, Chanho Min wrote:
-> Suspend fails due to the exec family of functions blocking the freezer.
-> The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
-> all sub-threads to die, and we have the deadlock if one of them is frozen.
-> This also can occur with the schedule() waiting for the group thread lead=
-er
-> to exit if it is frozen.
->=20
-> In our machine, it causes freeze timeout as bellows.
->=20
-> Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze=
-, wq_busy=3D0):
-> setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
->  Call trace:
-> [<ffffffc00008ed70>] __switch_to+0x88/0xa0
-> [<ffffffc000d1c30c>] __schedule+0x1bc/0x720
-> [<ffffffc000d1ca90>] schedule+0x40/0xa8
-> [<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
-> [<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
-> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
-> [<ffffffc00021c584>] load_script+0x20c/0x228
-> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
-> [<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
-> [<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
-> [<ffffffc00008de30>] el0_svc_naked+0x24/0x28
->=20
-> To fix this, make de_thread() freezable. It looks safe and works fine.
->=20
-> Changes in v2:
->  - changes for the same reason in "if (!thread_group_leader(tsk))" branch.
->    (reported by Oleg)
->=20
-> Suggested-by: Oleg Nesterov <oleg@redhat.com>
-> Signed-off-by: Chanho Min <chanho.min@lge.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlvpTRkACgkQMOfwapXb+vLcLwCeOd2jytn3uSdvAQWh2K8+RkKK
-UYkAnREFbYw3qGUcs0CX79xse5VLdBGU
-=L4si
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--
+diff --git a/drivers/power/supply/sc2731_charger.c b/drivers/power/supply/sc2731_charger.c
+index 525a820..393ba98 100644
+--- a/drivers/power/supply/sc2731_charger.c
++++ b/drivers/power/supply/sc2731_charger.c
+@@ -57,9 +57,11 @@ struct sc2731_charger_info {
+ 	struct usb_phy *usb_phy;
+ 	struct notifier_block usb_notify;
+ 	struct power_supply *psy_usb;
++	struct work_struct work;
+ 	struct mutex lock;
+ 	bool charging;
+ 	u32 base;
++	u32 limit;
+ };
+ 
+ static void sc2731_charger_stop_charge(struct sc2731_charger_info *info)
+@@ -318,22 +320,21 @@ static int sc2731_charger_property_is_writeable(struct power_supply *psy,
+ 	.property_is_writeable	= sc2731_charger_property_is_writeable,
+ };
+ 
+-static int sc2731_charger_usb_change(struct notifier_block *nb,
+-				     unsigned long limit, void *data)
++static void sc2731_charger_work(struct work_struct *data)
+ {
+ 	struct sc2731_charger_info *info =
+-		container_of(nb, struct sc2731_charger_info, usb_notify);
+-	int ret = 0;
++		container_of(data, struct sc2731_charger_info, work);
++	int ret;
+ 
+ 	mutex_lock(&info->lock);
+ 
+-	if (limit > 0) {
++	if (info->limit > 0) {
+ 		/* set current limitation and start to charge */
+-		ret = sc2731_charger_set_current_limit(info, limit);
++		ret = sc2731_charger_set_current_limit(info, info->limit);
+ 		if (ret)
+ 			goto out;
+ 
+-		ret = sc2731_charger_set_current(info, limit);
++		ret = sc2731_charger_set_current(info, info->limit);
+ 		if (ret)
+ 			goto out;
+ 
+@@ -350,7 +351,19 @@ static int sc2731_charger_usb_change(struct notifier_block *nb,
+ 
+ out:
+ 	mutex_unlock(&info->lock);
+-	return ret;
++}
++
++static int sc2731_charger_usb_change(struct notifier_block *nb,
++				     unsigned long limit, void *data)
++{
++	struct sc2731_charger_info *info =
++		container_of(nb, struct sc2731_charger_info, usb_notify);
++
++	info->limit = limit;
++
++	schedule_work(&info->work);
++
++	return NOTIFY_OK;
+ }
+ 
+ static int sc2731_charger_hw_init(struct sc2731_charger_info *info)
+@@ -432,6 +445,7 @@ static int sc2731_charger_probe(struct platform_device *pdev)
+ 
+ 	mutex_init(&info->lock);
+ 	info->dev = &pdev->dev;
++	INIT_WORK(&info->work, sc2731_charger_work);
+ 
+ 	info->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+ 	if (!info->regmap) {
+-- 
+1.7.9.5
