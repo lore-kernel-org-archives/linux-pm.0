@@ -1,97 +1,64 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 06/11] arm64: dts: exynos5433: add support for
- thermal trip irq-mode
-Date: Tue, 13 Nov 2018 11:10:23 +0100
-Message-ID: <616778d8-387f-dbc9-6523-289058b22577@partner.samsung.com>
-References: <CGME20181107171041eucas1p1a3cf91435b9071fd6e6f84101ebbcd9f@eucas1p1.samsung.com>
-        <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-        <1541610593-28542-7-git-send-email-l.luba@partner.samsung.com>
-        <CAJKOXPcGOiVwVuaT+2RHGs0VxA2XRjOd6efsDQaGrWWCJS7vNg@mail.gmail.com>
+Subject: Re: [PATCH v2 05/11] Doc: DT: thermal: new irq-mode for trip point
+Date: Tue, 13 Nov 2018 11:13:31 +0100
+Message-ID: <64aaa2aa-00ad-643f-3b44-f505a31f2ee8@partner.samsung.com>
+References: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181107171039eucas1p2227bd4bc573fd0d2a3a97986004be16b@eucas1p2.samsung.com>
+        <1541610593-28542-6-git-send-email-l.luba@partner.samsung.com>
+        <5bea0ecd.1c69fb81.d5613.1c9e@mx.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPcGOiVwVuaT+2RHGs0VxA2XRjOd6efsDQaGrWWCJS7vNg@mail.gmail.com>
+In-Reply-To: <5bea0ecd.1c69fb81.d5613.1c9e@mx.google.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= <b.zolnierkie@samsung.com>, kgene@kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+Hi Rob,
 
-On 11/12/18 10:00 AM, Krzysztof Kozlowski wrote:
-> Thanks Lukasz for patches. I like your work!
-> 
-> I have few more comments which will probably apply for all the DTS commits.
-> 
-> On Wed, 7 Nov 2018 at 18:10, Lukasz Luba <l.luba@partner.samsung.com> wrote:
+On 11/12/18 8:09 PM, Rob Herring wrote:
+> On Wed, Nov 07, 2018 at 06:09:47PM +0100, Lukasz Luba wrote:
+>> Thermal trip point gets new flag in DT: irq-mode.
+>> Trip point may have a new explicit flag which indicate
+>> IRQ support when the temperature is met (so the thermal framework
+>> deos not need to set polling for it).
+>> It is useful for 'passive' cooling trip point,
+>> which now will not register for polling the temperature.
 >>
->> This patch adds support for new flag which indicates
+>> Update documentation about irq-mode for trip points.
 > 
-> This patch does not add support. Support for flag was added in your
-> first drivers/thermal patches in this set. This patch adds new flag.
-> (and does something more, so read on)
-Got it, will change the commit message.
-> 
->> that trip point triggers IRQ when temperature is met.
->> Exynos5433 supports 8 trip point which will trigger IRQ.
-> 
-> /8 trip point/8 trip points/
-> 
->> Above that number other trip points should be registered
->> without 'irq-mode' flag.
-> 
-> Please fix the line-wrap.
-OK
+> This patch should come before you use it.
+OK, I will re-order the patch set in v3.
 > 
 >>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
 >> Cc: devicetree@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-samsung-soc@vger.kernel.org
 >> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 >> ---
->>   arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi | 105 ++++++++++++++++---------
->>   1 file changed, 70 insertions(+), 35 deletions(-)
+>>   Documentation/devicetree/bindings/thermal/thermal.txt | 7 +++++++
+>>   1 file changed, 7 insertions(+)
 >>
->> diff --git a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
->> index fe3a0b1..c4330f6 100644
->> --- a/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
->> +++ b/arch/arm64/boot/dts/exynos/exynos5433-tmu.dtsi
->> @@ -17,37 +17,44 @@ thermal-zones {
->>                          atlas0_alert_0: atlas0-alert-0 {
->>                                  temperature = <65000>;  /* millicelsius */
->>                                  hysteresis = <1000>;    /* millicelsius */
->> -                               type = "active";
->> +                               type = "passive";
+>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> index ca14ba9..bee21e3 100644
+>> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> @@ -90,6 +90,10 @@ Required properties:
+>>   	"critical":	Hardware not reliable.
+>>     Type: string
+>>   
+>> +- irq-mode:		A flag indicating that trip rises irq, so there is no
+>> +  Type: bool		need of polling in thermal framework.
+>> +  Size: one cell
 > 
-> This change is not explained in commit msg.
-> 
-> Basically you are doing here two things (related to each other). You
-> clearly define which trip points are IRQ-type and you correct the type
-> of trip point. Active is incorrect. This second thing is missing in
-> your commit msg and I believe it is main reason behind this patch. You
-> should focus then on this reason - start from it. Subject could be
-> like "Use proper passive type for thermal trip points".
-> 
-> Without this explanation I don't see the strong reason behind that
-> patch. IOW, everything was working fine before... so why adding this
-> new flag? Or maybe something was not fine... and then it is real
-> reason why you are sending the patch. Usually commit message should
-> answer to the most important question "WHY". Now, it explains
-> "WHAT"... but I can see it from the source code. However from the code
-> it is not easy to guess WHY.
-
-OK, I will add the explanation 'why' similar to description from the
-cover-letter to all the patches which add this flag in DT files.
-
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
+> Should be optional, right?
+Yes, it is optional. I will mention about it in change v3.
 
 Thank you for the review.
 
