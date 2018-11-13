@@ -1,88 +1,90 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [driver-core PATCH v6 2/9] async: Add support for queueing on
- specific NUMA node
-Date: Tue, 13 Nov 2018 23:10:14 +0100
-Message-ID: <20181113221014.GB2235@amd>
-References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
- <154170041079.12967.13132220574997822111.stgit@ahduyck-desk1.jf.intel.com>
- <20181111193208.GB8332@kroah.com>
- <20181111195903.GA9726@amd>
- <20181111203304.GA16871@kroah.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v1 2/5] extcon: Return -EPROBE_DEFER when extcon device
+ is not found
+Date: Wed, 14 Nov 2018 08:52:35 +0900
+Message-ID: <5BEB63C3.1020504@samsung.com>
+References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
+        <CGME20181110181155epcas2p1ac9bffb2dc7dd6337db5c37f8a87bd5e@epcas2p1.samsung.com>
+        <20181110181101.24557-2-andriy.shevchenko@linux.intel.com>
+        <5BE8C821.5080002@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="aVD9QWMuhilNxW9f"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181111203304.GA16871@kroah.com>
+In-reply-to: <5BE8C821.5080002@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>, linux-kernel@vger.kernel.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-usb@vger.kernel.org, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Roger Quadros <rogerq@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-omap@vger.kernel.org, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Andy,
 
---aVD9QWMuhilNxW9f
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I was thinking about again to change from NULL to EPROBE_DEFER.
 
-Hi!
+extcon_get_extcon_dev() function was almost called in the probe function.
+But, this function might be called on other position instead of probe.
 
-> > > > Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-> > > > ---
-> > >=20
-> > > No one else from Intel has reviewed/verified this code at all?
-> > >=20
-> > > Please take advantages of the resources you have that most people do
-> > > not, get reviewes from your coworkers please before you send this out
-> > > again, as they can give you valuable help before the community has to
-> > > review the code...
-> >=20
-> > We always said to companies we want to see code as soon as
-> > possible. You don't have to review their code, but discouraging the
-> > posting seems wrong.
->=20
-> I have a long history of Intel using me for their basic "find the
-> obvious bugs" review process for new driver subsystems and core changes.
-> When I see new major patches show up from an Intel developer without
-> _any_ other review from anyone else, directed at me, I get suspicious it
-> is happening again.
->=20
-> If you note, Intel is the _only_ company I say this to their developers
-> because of this problem combined with the fact that they have a whole
-> load of developers that they should be running things by first.
->=20
-> And yes, to answer Dan's point, we do want to do review in public.  But
-> this is v6 of a core patchset and there has been NO review from anyone
-> else at Intel on this.  So if that review was going to happen, one would
-> have thought it would have by now, instead of relying on me to do it.
->=20
-> And yes, I am grumpy, but I am grumpy because of the history here.  I am
-> not trying to discourage anything, only to take ADVANTAGE of resources
-> that almost no other company provides.
->=20
-> Hope this helps explain my statement here.
+ENODEV is more correct error instead of EPROBE_DEFER.
 
-Thanks for explanation. I did not have same bad experience with Intel,
-so I did not understand what was going on.
+Sorry. I'll withdraw my opinion related acked-by tag until we are clarifying it.
 
-Best regards,
+On 2018년 11월 12일 09:24, Chanwoo Choi wrote:
+> Hi Andy,
+> 
+> On 2018년 11월 11일 03:10, Andy Shevchenko wrote:
+>> All current users of extcon_get_extcon_dev() API considers
+>> an extcon device a mandatory to appear. Thus, they all convert
+>> NULL pointer to -EPROBE_DEFER error code.
+>>
+>> There is one more caller anticipated with the same requirements.
+>>
+>> To decrease a code duplication and a burden to the callers,
+>> return -EPROBE_DEFER directly from extcon_get_extcon_dev().
+>>
+>> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>> ---
+>>  drivers/extcon/extcon-axp288.c        | 4 ++--
+>>  drivers/extcon/extcon.c               | 2 +-
+>>  drivers/power/supply/axp288_charger.c | 8 ++++----
+>>  drivers/usb/phy/phy-omap-otg.c        | 6 +++---
+>>  drivers/usb/typec/tcpm/fusb302.c      | 4 ++--
+>>  5 files changed, 12 insertions(+), 12 deletions(-)
+> 
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> 
+> Best Regards,
+> Chanwoo Choi
+> 
+>>
+>> diff --git a/drivers/extcon/extcon-axp288.c b/drivers/extcon/extcon-axp288.c
+>> index a983708b77a6..3472d3b756ed 100644
+>> --- a/drivers/extcon/extcon-axp288.c
+>> +++ b/drivers/extcon/extcon-axp288.c
+>> @@ -360,8 +360,8 @@ static int axp288_extcon_probe(struct platform_device *pdev)
+>>  		name = acpi_dev_get_first_match_name("INT3496", NULL, -1);
+>>  		if (name) {
+>>  			info->id_extcon = extcon_get_extcon_dev(name);
+>> -			if (!info->id_extcon)
+>> -				return -EPROBE_DEFER;
+>> +			if (IS_ERR(info->id_extcon))
+>> +				return PTR_ERR(info->id_extcon);
+>>  
+>>  			dev_info(dev, "controlling USB role\n");
+>>  		} else {
+>> diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
+>> index 5ab0498be652..2bd0f2f33f05 100644
+>> --- a/drivers/extcon/extcon.c
+>> +++ b/drivers/extcon/extcon.c
+>> @@ -884,7 +884,7 @@ struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name)
+>>  		if (!strcmp(sd->name, extcon_name))
+>>  			goto out;
+>>  	}
+>> -	sd = NULL;
+>> +	sd = ERR_PTR(-EPROBE_DEFER);
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
 
---aVD9QWMuhilNxW9f
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+(snip)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlvrS8YACgkQMOfwapXb+vKXDACfRF940tdVtPFWr2eNlsV9g5xo
-fPQAnAiV3u4EVf2YtSl7wU1bP7fIeP/X
-=PK1K
------END PGP SIGNATURE-----
-
---aVD9QWMuhilNxW9f--
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
