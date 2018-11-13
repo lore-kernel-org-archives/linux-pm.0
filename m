@@ -1,66 +1,73 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH v2 05/11] Doc: DT: thermal: new irq-mode for trip point
-Date: Tue, 13 Nov 2018 11:13:31 +0100
-Message-ID: <64aaa2aa-00ad-643f-3b44-f505a31f2ee8@partner.samsung.com>
-References: <1541610593-28542-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181107171039eucas1p2227bd4bc573fd0d2a3a97986004be16b@eucas1p2.samsung.com>
-        <1541610593-28542-6-git-send-email-l.luba@partner.samsung.com>
-        <5bea0ecd.1c69fb81.d5613.1c9e@mx.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: [PATCH v2] power: supply: bq24190_charger: add support for bq24196 variant
+Date: Tue, 13 Nov 2018 13:47:53 +0100
+Message-ID: <20181113124753.29948-1-heiko@sntech.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5bea0ecd.1c69fb81.d5613.1c9e@mx.google.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, mark.rutland@arm.com, corbet@lwn.net, b.zolnierkie@samsung.com, krzk@kernel.org
+To: sre@kernel.org
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+From: Heiko Stuebner <heiko.stuebner@bq.com>
 
-On 11/12/18 8:09 PM, Rob Herring wrote:
-> On Wed, Nov 07, 2018 at 06:09:47PM +0100, Lukasz Luba wrote:
->> Thermal trip point gets new flag in DT: irq-mode.
->> Trip point may have a new explicit flag which indicate
->> IRQ support when the temperature is met (so the thermal framework
->> deos not need to set polling for it).
->> It is useful for 'passive' cooling trip point,
->> which now will not register for polling the temperature.
->>
->> Update documentation about irq-mode for trip points.
-> 
-> This patch should come before you use it.
-OK, I will re-order the patch set in v3.
-> 
->>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: devicetree@vger.kernel.org
->> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->> ---
->>   Documentation/devicetree/bindings/thermal/thermal.txt | 7 +++++++
->>   1 file changed, 7 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
->> index ca14ba9..bee21e3 100644
->> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
->> @@ -90,6 +90,10 @@ Required properties:
->>   	"critical":	Hardware not reliable.
->>     Type: string
->>   
->> +- irq-mode:		A flag indicating that trip rises irq, so there is no
->> +  Type: bool		need of polling in thermal framework.
->> +  Size: one cell
-> 
-> Should be optional, right?
-Yes, it is optional. I will mention about it in change v3.
+The bq24196 is another variant of the bq24190 charger ic.
+Its register set is identical to the bq24192 and it even reuses
+the same part number (0x5).
 
-Thank you for the review.
+Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+---
+This should go on top of the bq24192 support patches from Brian Masney /
+Jonathan Marek [0]
 
-Regards,
-Lukasz
+[0] https://patchwork.kernel.org/patch/10663409/
+
+changes in v2:
+- add missing compatible to dt-binding
+
+ Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
+ drivers/power/supply/bq24190_charger.c                     | 4 +++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+index c8ac028bd3c7..ffe2be408bb6 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
++++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+@@ -5,6 +5,7 @@ Required properties:
+     * "ti,bq24190"
+     * "ti,bq24192"
+     * "ti,bq24192i"
++    * "ti,bq24196"
+ - reg: integer, I2C address of the charger.
+ - interrupts[-extended]: configuration for charger INT pin.
+ 
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 4e64e6ac95c5..effa7c3c21e6 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -143,7 +143,7 @@
+ #define BQ24190_REG_VPRS_PN_MASK		(BIT(5) | BIT(4) | BIT(3))
+ #define BQ24190_REG_VPRS_PN_SHIFT		3
+ #define BQ24190_REG_VPRS_PN_24190			0x4
+-#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193 */
++#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193, 24196 */
+ #define BQ24190_REG_VPRS_PN_24192I			0x3
+ #define BQ24190_REG_VPRS_TS_PROFILE_MASK	BIT(2)
+ #define BQ24190_REG_VPRS_TS_PROFILE_SHIFT	2
+@@ -1973,6 +1973,7 @@ static const struct i2c_device_id bq24190_i2c_ids[] = {
+ 	{ "bq24190" },
+ 	{ "bq24192" },
+ 	{ "bq24192i" },
++	{ "bq24196" },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+@@ -1982,6 +1983,7 @@ static const struct of_device_id bq24190_of_match[] = {
+ 	{ .compatible = "ti,bq24190", },
+ 	{ .compatible = "ti,bq24192", },
+ 	{ .compatible = "ti,bq24192i", },
++	{ .compatible = "ti,bq24196", },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, bq24190_of_match);
+-- 
+2.18.0
