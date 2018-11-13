@@ -1,80 +1,88 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 06/15] sched/core: uclamp: enforce last task UCLAMP_MAX
-Date: Tue, 13 Nov 2018 07:14:24 -0800
-Message-ID: <20181113151424.GB7681@darkstar>
+Subject: Re: [PATCH v5 07/15] sched/core: uclamp: add clamp group bucketing
+ support
+Date: Tue, 13 Nov 2018 07:29:48 -0800
+Message-ID: <20181113152948.GC7681@darkstar>
 References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-8-patrick.bellasi@arm.com>
- <20181111170848.GB3038@worktop>
+ <20181029183311.29175-9-patrick.bellasi@arm.com>
+ <20181112000910.GC3038@worktop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181111170848.GB3038@worktop>
+In-Reply-To: <20181112000910.GC3038@worktop>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11-Nov 18:08, Peter Zijlstra wrote:
-> On Mon, Oct 29, 2018 at 06:33:01PM +0000, Patrick Bellasi wrote:
-> > When a util_max clamped task sleeps, its clamp constraints are removed
-> > from the CPU. However, the blocked utilization on that CPU can still be
-> > higher than the max clamp value enforced while that task was running.
-> > 
-> > The release of a util_max clamp when a CPU is going to be idle could
-> > thus allow unwanted CPU frequency increases while tasks are not
-> > running. This can happen, for example, when a frequency update is
-> > triggered from another CPU of the same frequency domain.
-> > In this case, when we aggregate the utilization of all the CPUs in a
-> > shared frequency domain, schedutil can still see the full not clamped
-> > blocked utilization of all the CPUs and thus, eventually, increase the
-> > frequency.
+On 12-Nov 01:09, Peter Zijlstra wrote:
+> On Mon, Oct 29, 2018 at 06:33:02PM +0000, Patrick Bellasi wrote:
+> > The number of clamp groups configured at compile time defines the range
+> > of utilization clamp values tracked by each CPU clamp group.
+> > For example, with the default configuration:
+> >    CONFIG_UCLAMP_GROUPS_COUNT 5
+> > we will have 5 clamp groups tracking 20% utilization each. In this case,
+> > a task with util_min=25% will have group_id=1.
 > 
-> > @@ -810,6 +811,28 @@ static inline void uclamp_cpu_update(struct rq *rq, unsigned int clamp_id)
-> >  		if (max_value >= SCHED_CAPACITY_SCALE)
-> >  			break;
-> >  	}
-> > +
-> > +	/*
-> > +	 * Just for the UCLAMP_MAX value, in case there are no RUNNABLE
-> > +	 * task, we want to keep the CPU clamped to the last task's clamp
-> > +	 * value. This is to avoid frequency spikes to MAX when one CPU, with
-> > +	 * an high blocked utilization, sleeps and another CPU, in the same
-> > +	 * frequency domain, do not see anymore the clamp on the first CPU.
-> > +	 *
-> > +	 * The UCLAMP_FLAG_IDLE is set whenever we detect, from the above
-> > +	 * loop, that there are no more RUNNABLE taks on that CPU.
-> > +	 * In this case we enforce the CPU util_max to that of the last
-> > +	 * dequeued task.
-> > +	 */
-> > +	if (max_value < 0) {
-> > +		if (clamp_id == UCLAMP_MAX) {
-> > +			rq->uclamp.flags |= UCLAMP_FLAG_IDLE;
-> > +			max_value = last_clamp_value;
-> > +		} else {
-> > +			max_value = uclamp_none(UCLAMP_MIN);
-> > +		}
-> > +	}
-> > +
-> >  	rq->uclamp.value[clamp_id] = max_value;
-> >  }
-> 
-> *groan*, so it could be jet-lag, but I find the comment really hard to
-> understand.
-> 
-> Would not something like:
-> 
-> 	/*
-> 	 * Avoid blocked utilization pushing up the frequency when we go
-> 	 * idle (which drops the max-clamp) by retaining the last known
-> 	 * max-clamp.
-> 	 */
-> 
-> Be more clear?
+> OK I suppose; but should we not do a wholesale s/group/bucket/ at this
+> point?
 
-It works: short and effective... will update in v6.
+Yes, if bucketization is acceptable, we should probably rename.
 
-Thanks.
+Question is: are you ok for a renaming in this patch. or you better
+prefer I use that naming since the beginning ?
+
+If we wanna use "bucket" since the beginning, then we should also
+probably squash the entire patch into the previous ones and drop this
+one.
+
+I personally prefer to keep this concept into a separate patch, but at
+the same time I don't very like the idea of a massive renaming in this
+patch.
+
+> 
+> We should probably raise the minimum number of buckets from 1 though :-)
+
+Mmm... the default is already set to what fits into a single cache
+line... perhaps we can use that as a minimum too ?
+
+But. technically we can (partially) track different clamp values also
+with just one bucket... (explanation in the following comment).
+
+> > +/*
+> > + * uclamp_group_value: get the "group value" for a given "clamp value"
+> > + * @value: the utiliation "clamp value" to translate
+> > + *
+> > + * The number of clamp group, which is defined at compile time, allows to
+> > + * track a finite number of different clamp values. Thus clamp values are
+> > + * grouped into bins each one representing a different "group value".
+> > + * This method returns the "group value" corresponding to the specified
+> > + * "clamp value".
+> > + */
+> > +static inline unsigned int uclamp_group_value(unsigned int clamp_value)
+> > +{
+> > +#define UCLAMP_GROUP_DELTA (SCHED_CAPACITY_SCALE / CONFIG_UCLAMP_GROUPS_COUNT)
+> > +#define UCLAMP_GROUP_UPPER (UCLAMP_GROUP_DELTA * CONFIG_UCLAMP_GROUPS_COUNT)
+> > +
+> > +	if (clamp_value >= UCLAMP_GROUP_UPPER)
+> > +		return SCHED_CAPACITY_SCALE;
+> > +
+> > +	return UCLAMP_GROUP_DELTA * (clamp_value / UCLAMP_GROUP_DELTA);
+> > +}
+> 
+> Can't we further simplify; I mean, at this point all we really need to
+> know is the rq's highest group_id that is in use. We don't need to
+> actually track the value anymore.
+
+This will force to track each clamp value with the exact bucket value.
+
+Instead, by tracking the actual clamp value within a bucket, we have
+the chance to updte the bucket value to the actual (max) clamp value
+of the RUNNABLE tasks in that bucket.
+
+In a properly configured system, this allows to track exact clamp
+values with a minimum number of buckets.
 
 -- 
 #include <best/regards.h>
