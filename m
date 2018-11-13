@@ -1,90 +1,69 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 07/15] sched/core: uclamp: add clamp group bucketing
- support
-Date: Tue, 13 Nov 2018 07:29:48 -0800
-Message-ID: <20181113152948.GC7681@darkstar>
-References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-9-patrick.bellasi@arm.com>
- <20181112000910.GC3038@worktop>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v2] exec: make de_thread() freezable
+Date: Tue, 13 Nov 2018 17:18:58 +0100
+Message-ID: <20181113161858.GE30990@redhat.com>
+References: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
+ <20181113145339.GD16182@dhcp22.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181112000910.GC3038@worktop>
+In-Reply-To: <20181113145339.GD16182@dhcp22.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Chanho Min <chanho.min@lge.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-Nov 01:09, Peter Zijlstra wrote:
-> On Mon, Oct 29, 2018 at 06:33:02PM +0000, Patrick Bellasi wrote:
-> > The number of clamp groups configured at compile time defines the range
-> > of utilization clamp values tracked by each CPU clamp group.
-> > For example, with the default configuration:
-> >    CONFIG_UCLAMP_GROUPS_COUNT 5
-> > we will have 5 clamp groups tracking 20% utilization each. In this case,
-> > a task with util_min=25% will have group_id=1.
-> 
-> OK I suppose; but should we not do a wholesale s/group/bucket/ at this
-> point?
+On 11/13, Michal Hocko wrote:
+>
+> On Mon 12-11-18 12:54:45, Chanho Min wrote:
+> > Suspend fails due to the exec family of functions blocking the freezer.
+> > The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
+> > all sub-threads to die, and we have the deadlock if one of them is frozen.
+> > This also can occur with the schedule() waiting for the group thread leader
+> > to exit if it is frozen.
+> >
+> > In our machine, it causes freeze timeout as bellows.
+> >
+> > Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
+> > setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+> >  Call trace:
+> > [<ffffffc00008ed70>] __switch_to+0x88/0xa0
+> > [<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+> > [<ffffffc000d1ca90>] schedule+0x40/0xa8
+> > [<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+> > [<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+> > [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> > [<ffffffc00021c584>] load_script+0x20c/0x228
+> > [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> > [<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+> > [<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+> > [<ffffffc00008de30>] el0_svc_naked+0x24/0x28
+> >
+> > To fix this, make de_thread() freezable. It looks safe and works fine.
+>
+> It's been some time since I have looked into this code so bear with me.
+> One thing is not really clear to me. Why does it help to exclude this
+> particular task from the freezer
 
-Yes, if bucketization is acceptable, we should probably rename.
+we don't exclude it,
 
-Question is: are you ok for a renaming in this patch. or you better
-prefer I use that naming since the beginning ?
+> when it is not sleeping in the freezer.
 
-If we wanna use "bucket" since the beginning, then we should also
-probably squash the entire patch into the previous ones and drop this
-one.
+Yes, it is not sleeping in __refrigerator(), but it does
 
-I personally prefer to keep this concept into a separate patch, but at
-the same time I don't very like the idea of a massive renaming in this
-patch.
+	schedule();
+	freezer_count();
 
-> 
-> We should probably raise the minimum number of buckets from 1 though :-)
+so it will enter __refrigerator() right after wakeup. If it won't be woken
+up we do not care, we can consider it "frozen".
 
-Mmm... the default is already set to what fits into a single cache
-line... perhaps we can use that as a minimum too ?
+> I can see how other threads need to be zapped and TASK_WAKEKILL doesn't
+> do that but shouldn't we fix that instead?
 
-But. technically we can (partially) track different clamp values also
-with just one bucket... (explanation in the following comment).
+Not sure I understand, but unlikely we can (or want) to make __refrigerator()
+killable.
 
-> > +/*
-> > + * uclamp_group_value: get the "group value" for a given "clamp value"
-> > + * @value: the utiliation "clamp value" to translate
-> > + *
-> > + * The number of clamp group, which is defined at compile time, allows to
-> > + * track a finite number of different clamp values. Thus clamp values are
-> > + * grouped into bins each one representing a different "group value".
-> > + * This method returns the "group value" corresponding to the specified
-> > + * "clamp value".
-> > + */
-> > +static inline unsigned int uclamp_group_value(unsigned int clamp_value)
-> > +{
-> > +#define UCLAMP_GROUP_DELTA (SCHED_CAPACITY_SCALE / CONFIG_UCLAMP_GROUPS_COUNT)
-> > +#define UCLAMP_GROUP_UPPER (UCLAMP_GROUP_DELTA * CONFIG_UCLAMP_GROUPS_COUNT)
-> > +
-> > +	if (clamp_value >= UCLAMP_GROUP_UPPER)
-> > +		return SCHED_CAPACITY_SCALE;
-> > +
-> > +	return UCLAMP_GROUP_DELTA * (clamp_value / UCLAMP_GROUP_DELTA);
-> > +}
-> 
-> Can't we further simplify; I mean, at this point all we really need to
-> know is the rq's highest group_id that is in use. We don't need to
-> actually track the value anymore.
+Otherwise, how can we fix that?
 
-This will force to track each clamp value with the exact bucket value.
-
-Instead, by tracking the actual clamp value within a bucket, we have
-the chance to updte the bucket value to the actual (max) clamp value
-of the RUNNABLE tasks in that bucket.
-
-In a properly configured system, this allows to track exact clamp
-values with a minimum number of buckets.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Oleg.
