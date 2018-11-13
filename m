@@ -1,65 +1,51 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH 04/15] Platform: OLPC: Remove an unused include
-Date: Tue, 13 Nov 2018 14:59:18 +0100
-Message-ID: <5a4c548be4cf9fb3fb6ce5128d6780eea3005215.camel@v3.sk>
-References: <20181010172300.317643-1-lkundrak@v3.sk>
-         <20181010172300.317643-5-lkundrak@v3.sk>
-         <CAHp75Veb++-F3yd9r5h305UQFvBFosRQvmPDfTTMFak9ZNVc7g@mail.gmail.com>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v2] exec: make de_thread() freezable
+Date: Tue, 13 Nov 2018 15:53:39 +0100
+Message-ID: <20181113145339.GD16182@dhcp22.suse.cz>
+References: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHp75Veb++-F3yd9r5h305UQFvBFosRQvmPDfTTMFak9ZNVc7g@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1541994885-20059-1-git-send-email-chanho.min@lge.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, devel@driverdev.osuosl.or
+To: Chanho Min <chanho.min@lge.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Christian Brauner <christian@brauner.io>, Oleg Nesterov <oleg@redhat.com>, Anna-Maria Gleixner <anna-maria@linutronix.de>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, Seungho Park <seungho1.park@lge.com>, Inkyu Hwang <inkyu.hwang@lge.com>, Donghwan Jung <donghwan.jung@lge.com>, Jongsung Kim <neidhard.kim@lge.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-thank you for the response.
-
-On Fri, 2018-10-19 at 16:05 +0300, Andy Shevchenko wrote:
-> On Wed, Oct 10, 2018 at 8:23 PM Lubomir Rintel <lkundrak@v3.sk>
-> wrote:
-> > Also, the header is x86 specific, while there are non-x86 OLPC
-> > machines.
+On Mon 12-11-18 12:54:45, Chanho Min wrote:
+> Suspend fails due to the exec family of functions blocking the freezer.
+> The casue is that de_thread() sleeps in TASK_UNINTERRUPTIBLE waiting for
+> all sub-threads to die, and we have the deadlock if one of them is frozen.
+> This also can occur with the schedule() waiting for the group thread leader
+> to exit if it is frozen.
 > 
-> Same concern. as per patch 2.
-
-Which concern? If it's that it doesn't make sense in that particular
-place in the patch set, then I don't think so; this header is
-unnecessary and the patch has no other dependencies. But the changes
-that enable the OLPC EC platform code depend on this.
-
-> Also, you might want to sort headers in alphabetical order.
-
-But should I? Doing so in the same commit would obscure the actual
-change, and a separate commit would needlessly clobber git annotate.
-
-Thank you
-Lubo
-
-> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> > ---
-> >  drivers/platform/olpc/olpc-ec.c | 1 -
-> >  1 file changed, 1 deletion(-)
-> > 
-> > diff --git a/drivers/platform/olpc/olpc-ec.c
-> > b/drivers/platform/olpc/olpc-ec.c
-> > index f99b183d5296..35a21c66cd0d 100644
-> > --- a/drivers/platform/olpc/olpc-ec.c
-> > +++ b/drivers/platform/olpc/olpc-ec.c
-> > @@ -15,7 +15,6 @@
-> >  #include <linux/module.h>
-> >  #include <linux/list.h>
-> >  #include <linux/olpc-ec.h>
-> > -#include <asm/olpc.h>
-> > 
-> >  struct ec_cmd_desc {
-> >         u8 cmd;
-> > --
-> > 2.19.0
-> > 
+> In our machine, it causes freeze timeout as bellows.
 > 
+> Freezing of tasks failed after 20.010 seconds (1 tasks refusing to freeze, wq_busy=0):
+> setcpushares-ls D ffffffc00008ed70     0  5817   1483 0x0040000d
+>  Call trace:
+> [<ffffffc00008ed70>] __switch_to+0x88/0xa0
+> [<ffffffc000d1c30c>] __schedule+0x1bc/0x720
+> [<ffffffc000d1ca90>] schedule+0x40/0xa8
+> [<ffffffc0001cd784>] flush_old_exec+0xdc/0x640
+> [<ffffffc000220360>] load_elf_binary+0x2a8/0x1090
+> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> [<ffffffc00021c584>] load_script+0x20c/0x228
+> [<ffffffc0001ccff4>] search_binary_handler+0x9c/0x240
+> [<ffffffc0001ce8e0>] do_execveat_common.isra.14+0x4f8/0x6e8
+> [<ffffffc0001cedd0>] compat_SyS_execve+0x38/0x48
+> [<ffffffc00008de30>] el0_svc_naked+0x24/0x28
 > 
+> To fix this, make de_thread() freezable. It looks safe and works fine.
+
+It's been some time since I have looked into this code so bear with me.
+One thing is not really clear to me. Why does it help to exclude this
+particular task from the freezer when it is not sleeping in the freezer.
+I can see how other threads need to be zapped and TASK_WAKEKILL doesn't
+do that but shouldn't we fix that instead?
+
+Or maybe I am missing something important here.
+-- 
+Michal Hocko
+SUSE Labs
