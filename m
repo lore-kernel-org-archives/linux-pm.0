@@ -1,78 +1,78 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management updates for v4.20-rc3
-Date: Wed, 14 Nov 2018 21:16:14 +0100
-Message-ID: <CAJZ5v0jv7Bbkc4bsnu8xwjQWneRJedbdd3dNp98wEDdCYOpg9Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: David Hildenbrand <david@redhat.com>
+Subject: [PATCH RFC 1/6] mm: balloon: update comment about isolation/migration/compaction
+Date: Wed, 14 Nov 2018 22:16:59 +0100
+Message-ID: <20181114211704.6381-2-david@redhat.com>
+References: <20181114211704.6381-1-david@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181114211704.6381-1-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, David Hildenbrand <david@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Commit b1123ea6d3b3 ("mm: balloon: use general non-lru movable page
+feature") reworked balloon handling to make use of the general
+non-lru movable page feature. The big comment block in
+balloon_compaction.h contains quite some outdated information. Let's fix
+this.
 
-Please pull from the tag
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ include/linux/balloon_compaction.h | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.20-rc3
-
-with top-most commit 97dc6c03c1b0a9af7aa26da7b0b266a762451f5f
-
- Merge branch 'pm-cpuidle'
-
-on top of commit 651022382c7f8da46cb4872a545ee1da6d097d2a
-
- Linux 4.20-rc1
-
-to receive power management updates for 4.20-rc3.
-
-These remove a stale DT entry left behind after recent removal of
-a cpufreq driver without users, fix up error handling in the imx6q
-cpufreq driver, fix two issues in the cpufreq documentation, and
-update the ARM cpufreq driver.
-
-Specifics:
-
- - Drop stale DT binding for the arm_big_little_dt driver removed
-   recently (Sudeep Holla).
-
- - Fix up error handling in the imx6q cpufreq driver to make it
-   report voltage scaling failures (Anson Huang).
-
- - Fix two issues in the cpufreq documentation (Viresh Kumar,
-   Zhao Wei Liew).
-
- - Fix ARM cpuidle driver initialization regression from the 4.19
-   time frame and rework the driver registration part of it to
-   simplify code (Ulf Hansson).
-
-Thanks!
-
-
----------------
-
-Anson Huang (1):
-      cpufreq: imx6q: add return value check for voltage scale
-
-Sudeep Holla (1):
-      dt-bindings: cpufreq: remove stale arm_big_little_dt entry
-
-Ulf Hansson (2):
-      ARM: cpuidle: Don't register the driver when back-end init returns -ENXIO
-      ARM: cpuidle: Convert to use cpuidle_register|unregister()
-
-Viresh Kumar (1):
-      Documentation: cpu-freq: Frequencies aren't always sorted
-
-Zhao Wei Liew (1):
-      Documentation: cpufreq: Correct a typo
-
----------------
-
- Documentation/admin-guide/pm/cpufreq.rst           |  2 +-
- Documentation/cpu-freq/cpufreq-stats.txt           |  8 ++-
- .../bindings/cpufreq/arm_big_little_dt.txt         | 65 ----------------------
- drivers/cpufreq/imx6q-cpufreq.c                    |  7 ++-
- drivers/cpuidle/cpuidle-arm.c                      | 40 +++----------
- 5 files changed, 19 insertions(+), 103 deletions(-)
+diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
+index 53051f3d8f25..cbe50da5a59d 100644
+--- a/include/linux/balloon_compaction.h
++++ b/include/linux/balloon_compaction.h
+@@ -4,15 +4,18 @@
+  *
+  * Common interface definitions for making balloon pages movable by compaction.
+  *
+- * Despite being perfectly possible to perform ballooned pages migration, they
+- * make a special corner case to compaction scans because balloon pages are not
+- * enlisted at any LRU list like the other pages we do compact / migrate.
++ * Balloon page migration makes use of the general non-lru movable page
++ * feature.
++ *
++ * page->private is used to reference the responsible balloon device.
++ * page->mapping is used in context of non-lru page migration to reference
++ * the address space operations for page isolation/migration/compaction.
+  *
+  * As the page isolation scanning step a compaction thread does is a lockless
+  * procedure (from a page standpoint), it might bring some racy situations while
+  * performing balloon page compaction. In order to sort out these racy scenarios
+  * and safely perform balloon's page compaction and migration we must, always,
+- * ensure following these three simple rules:
++ * ensure following these simple rules:
+  *
+  *   i. when updating a balloon's page ->mapping element, strictly do it under
+  *      the following lock order, independently of the far superior
+@@ -21,19 +24,8 @@
+  *	      +--spin_lock_irq(&b_dev_info->pages_lock);
+  *	            ... page->mapping updates here ...
+  *
+- *  ii. before isolating or dequeueing a balloon page from the balloon device
+- *      pages list, the page reference counter must be raised by one and the
+- *      extra refcount must be dropped when the page is enqueued back into
+- *      the balloon device page list, thus a balloon page keeps its reference
+- *      counter raised only while it is under our special handling;
+- *
+- * iii. after the lockless scan step have selected a potential balloon page for
+- *      isolation, re-test the PageBalloon mark and the PagePrivate flag
+- *      under the proper page lock, to ensure isolating a valid balloon page
+- *      (not yet isolated, nor under release procedure)
+- *
+- *  iv. isolation or dequeueing procedure must clear PagePrivate flag under
+- *      page lock together with removing page from balloon device page list.
++ *  ii. isolation or dequeueing procedure must remove the page from balloon
++ *      device page list under b_dev_info->pages_lock.
+  *
+  * The functions provided by this interface are placed to help on coping with
+  * the aforementioned balloon page corner case, as well as to ensure the simple
+-- 
+2.17.2
