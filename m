@@ -1,233 +1,69 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH 5/5] power: supply: sc27xx: Save last battery capacity
-Date: Wed, 14 Nov 2018 17:07:08 +0800
-Message-ID: <db2aa7892d7ecfae563ef22de5bbc7587ea3471f.1542185618.git.baolin.wang@linaro.org>
-References: <cover.1542185618.git.baolin.wang@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v1 2/5] extcon: Return -EPROBE_DEFER when extcon device
+ is not found
+Date: Wed, 14 Nov 2018 18:13:37 +0900
+Message-ID: <5BEBE741.6050101@samsung.com>
+References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
+        <CGME20181110181155epcas2p1ac9bffb2dc7dd6337db5c37f8a87bd5e@epcas2p1.samsung.com>
+        <20181110181101.24557-2-andriy.shevchenko@linux.intel.com>
+        <5BE8C821.5080002@samsung.com> <5BEB63C3.1020504@samsung.com>
+        <CAHp75Vfe586+tr5mUdSHv4ehmpi0KwS_m+UC0tfFHrdXwKhkig@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1542185618.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1542185618.git.baolin.wang@linaro.org>
-References: <cover.1542185618.git.baolin.wang@linaro.org>
+In-reply-to: <CAHp75Vfe586+tr5mUdSHv4ehmpi0KwS_m+UC0tfFHrdXwKhkig@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, USB <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, rogerq@ti.com, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
+On 2018년 11월 14일 17:35, Andy Shevchenko wrote:
+> On Wed, Nov 14, 2018 at 1:53 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> 
+>> I was thinking about again to change from NULL to EPROBE_DEFER.
+>>
+>> extcon_get_extcon_dev() function was almost called in the probe function.
+>> But, this function might be called on other position instead of probe.
+> 
+> *Might be* sounds like a theoretical thing, care to share what is in you mind?
+> Current users and more important the new coming one are *all* doing the same.
+> 
+>> ENODEV is more correct error instead of EPROBE_DEFER.
+> 
+> So, you are proposing to continue duplicating conversion from ENODEV
+> to EPROBE_DEFER in *each* caller?
 
-Our charger manager can optimize the battery capacity periodically, so
-we can save last battery capacity into registers. Then next system
-power-on, we can read the last saved battery capacity as the initial
-battery capacity, which can make the battery capacity more accurate.
+The extcon core don't know the caller situation is in either probe() or other position
+in the caller driver. The caller driver should decide the kind of error value
+by using the return value of extcon_get_extcon_dev().
 
-Signed-off-by: Yuanjiang Yu <yuanjiang.yu@unisoc.com>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/power/supply/sc27xx_fuel_gauge.c |  143 +++++++++++++++++++++++++++++-
- 1 file changed, 142 insertions(+), 1 deletion(-)
+extcon_get_extcon_dev() function cannot be modified for only one case.
+If some device driver call extcon_get_extcon_dev() out of probe() fuction,
+EPROBE_DEFER is not always correct.
 
-diff --git a/drivers/power/supply/sc27xx_fuel_gauge.c b/drivers/power/supply/sc27xx_fuel_gauge.c
-index 8c52e29..181a8f7 100644
---- a/drivers/power/supply/sc27xx_fuel_gauge.c
-+++ b/drivers/power/supply/sc27xx_fuel_gauge.c
-@@ -39,6 +39,9 @@
- #define SC27XX_FGU_CLBCNT_VALH		0x68
- #define SC27XX_FGU_CLBCNT_VALL		0x6c
- #define SC27XX_FGU_CLBCNT_QMAXL		0x74
-+#define SC27XX_FGU_USER_AREA_SET	0xa0
-+#define SC27XX_FGU_USER_AREA_CLEAR	0xa4
-+#define SC27XX_FGU_USER_AREA_STATUS	0xa8
- 
- #define SC27XX_WRITE_SELCLB_EN		BIT(0)
- #define SC27XX_FGU_CLBCNT_MASK		GENMASK(15, 0)
-@@ -49,6 +52,14 @@
- #define SC27XX_FGU_LOW_OVERLOAD_INT	BIT(0)
- #define SC27XX_FGU_CLBCNT_DELTA_INT	BIT(2)
- 
-+#define SC27XX_FGU_MODE_AREA_MASK	GENMASK(15, 12)
-+#define SC27XX_FGU_CAP_AREA_MASK	GENMASK(11, 0)
-+#define SC27XX_FGU_MODE_AREA_SHIFT	12
-+
-+#define SC27XX_FGU_FIRST_POWERTON	GENMASK(3, 0)
-+#define SC27XX_FGU_DEFAULT_CAP		GENMASK(11, 0)
-+#define SC27XX_FGU_NORMAIL_POWERTON	0x5
-+
- #define SC27XX_FGU_CUR_BASIC_ADC	8192
- #define SC27XX_FGU_SAMPLE_HZ		2
- 
-@@ -119,6 +130,80 @@ static int sc27xx_fgu_voltage_to_adc(struct sc27xx_fgu_data *data, int vol)
- 	return DIV_ROUND_CLOSEST(vol * data->vol_1000mv_adc, 1000);
- }
- 
-+static bool sc27xx_fgu_is_first_poweron(struct sc27xx_fgu_data *data)
-+{
-+	int ret, status, cap, mode;
-+
-+	ret = regmap_read(data->regmap,
-+			  data->base + SC27XX_FGU_USER_AREA_STATUS, &status);
-+	if (ret)
-+		return false;
-+
-+	/*
-+	 * We use low 4 bits to save the last battery capacity and high 12 bits
-+	 * to save the system boot mode.
-+	 */
-+	mode = (status & SC27XX_FGU_MODE_AREA_MASK) >> SC27XX_FGU_MODE_AREA_SHIFT;
-+	cap = status & SC27XX_FGU_CAP_AREA_MASK;
-+
-+	/*
-+	 * When FGU has been powered down, the user area registers became
-+	 * default value (0xffff), which can be used to valid if the system is
-+	 * first power on or not.
-+	 */
-+	if (mode == SC27XX_FGU_FIRST_POWERTON || cap == SC27XX_FGU_DEFAULT_CAP)
-+		return true;
-+
-+	return false;
-+}
-+
-+static int sc27xx_fgu_save_boot_mode(struct sc27xx_fgu_data *data,
-+				     int boot_mode)
-+{
-+	int ret;
-+
-+	ret = regmap_update_bits(data->regmap,
-+				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
-+				 SC27XX_FGU_MODE_AREA_MASK,
-+				 SC27XX_FGU_MODE_AREA_MASK);
-+	if (ret)
-+		return ret;
-+
-+	return regmap_update_bits(data->regmap,
-+				  data->base + SC27XX_FGU_USER_AREA_SET,
-+				  SC27XX_FGU_MODE_AREA_MASK,
-+				  boot_mode << SC27XX_FGU_MODE_AREA_SHIFT);
-+}
-+
-+static int sc27xx_fgu_save_last_cap(struct sc27xx_fgu_data *data, int cap)
-+{
-+	int ret;
-+
-+	ret = regmap_update_bits(data->regmap,
-+				 data->base + SC27XX_FGU_USER_AREA_CLEAR,
-+				 SC27XX_FGU_CAP_AREA_MASK,
-+				 SC27XX_FGU_CAP_AREA_MASK);
-+	if (ret)
-+		return ret;
-+
-+	return regmap_update_bits(data->regmap,
-+				  data->base + SC27XX_FGU_USER_AREA_SET,
-+				  SC27XX_FGU_CAP_AREA_MASK, cap);
-+}
-+
-+static int sc27xx_fgu_read_last_cap(struct sc27xx_fgu_data *data, int *cap)
-+{
-+	int ret, value;
-+
-+	ret = regmap_read(data->regmap,
-+			  data->base + SC27XX_FGU_USER_AREA_STATUS, &value);
-+	if (ret)
-+		return ret;
-+
-+	*cap = value & SC27XX_FGU_CAP_AREA_MASK;
-+	return 0;
-+}
-+
- /*
-  * When system boots on, we can not read battery capacity from coulomb
-  * registers, since now the coulomb registers are invalid. So we should
-@@ -128,6 +213,20 @@ static int sc27xx_fgu_voltage_to_adc(struct sc27xx_fgu_data *data, int vol)
- static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, int *cap)
- {
- 	int volt, cur, oci, ocv, ret;
-+	bool is_first_poweron = sc27xx_fgu_is_first_poweron(data);
-+
-+	/*
-+	 * If system is not the first power on, we should use the last saved
-+	 * battery capacity as the initial battery capacity. Otherwise we should
-+	 * re-calculate the initial battery capacity.
-+	 */
-+	if (!is_first_poweron) {
-+		ret = sc27xx_fgu_read_last_cap(data, cap);
-+		if (ret)
-+			return ret;
-+
-+		return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
-+	}
- 
- 	/*
- 	 * After system booting on, the SC27XX_FGU_CLBCNT_QMAXL register saved
-@@ -160,7 +259,11 @@ static int sc27xx_fgu_get_boot_capacity(struct sc27xx_fgu_data *data, int *cap)
- 	*cap = power_supply_ocv2cap_simple(data->cap_table, data->table_len,
- 					   ocv);
- 
--	return 0;
-+	ret = sc27xx_fgu_save_last_cap(data, *cap);
-+	if (ret)
-+		return ret;
-+
-+	return sc27xx_fgu_save_boot_mode(data, SC27XX_FGU_NORMAIL_POWERTON);
- }
- 
- static int sc27xx_fgu_set_clbcnt(struct sc27xx_fgu_data *data, int clbcnt)
-@@ -418,6 +521,30 @@ static int sc27xx_fgu_get_property(struct power_supply *psy,
- 	return ret;
- }
- 
-+static int sc27xx_fgu_set_property(struct power_supply *psy,
-+				   enum power_supply_property psp,
-+				   const union power_supply_propval *val)
-+{
-+	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
-+	int ret;
-+
-+	mutex_lock(&data->lock);
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = sc27xx_fgu_save_last_cap(data, val->intval);
-+		if (ret < 0)
-+			dev_err(data->dev, "failed to save battery capacity\n");
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	mutex_unlock(&data->lock);
-+	return ret;
-+}
-+
- static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
- {
- 	struct sc27xx_fgu_data *data = power_supply_get_drvdata(psy);
-@@ -425,6 +552,18 @@ static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
- 	power_supply_changed(data->battery);
- }
- 
-+static int sc27xx_fgu_property_is_writeable(struct power_supply *psy,
-+					    enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		return 1;
-+
-+	default:
-+		return 0;
-+	}
-+}
-+
- static enum power_supply_property sc27xx_fgu_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_HEALTH,
-@@ -444,7 +583,9 @@ static void sc27xx_fgu_external_power_changed(struct power_supply *psy)
- 	.properties		= sc27xx_fgu_props,
- 	.num_properties		= ARRAY_SIZE(sc27xx_fgu_props),
- 	.get_property		= sc27xx_fgu_get_property,
-+	.set_property		= sc27xx_fgu_set_property,
- 	.external_power_changed	= sc27xx_fgu_external_power_changed,
-+	.property_is_writeable	= sc27xx_fgu_property_is_writeable,
- };
- 
- static void sc27xx_fgu_adjust_cap(struct sc27xx_fgu_data *data, int cap)
+> 
+>> Sorry. I'll withdraw my opinion related acked-by tag until we are clarifying it.
+> 
+> I honestly don't know what to clarify here.
+> 
+> When we would have a real case we can change API correspondingly.
+> For now, the score is 5:0 with use cases in practice.
+> 
+>> On 2018년 11월 12일 09:24, Chanwoo Choi wrote:
+>>> On 2018년 11월 11일 03:10, Andy Shevchenko wrote:
+>>>> All current users of extcon_get_extcon_dev() API considers
+>>>> an extcon device a mandatory to appear. Thus, they all convert
+>>>> NULL pointer to -EPROBE_DEFER error code.
+>>>>
+>>>> There is one more caller anticipated with the same requirements.
+>>>>
+>>>> To decrease a code duplication and a burden to the callers,
+>>>> return -EPROBE_DEFER directly from extcon_get_extcon_dev().
+> 
+
+
 -- 
-1.7.9.5
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
