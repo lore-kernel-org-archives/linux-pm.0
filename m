@@ -1,74 +1,92 @@
-From: "Chanho Min" <chanho.min@lge.com>
-Subject: RE: [PATCH v2] exec: make de_thread() freezable
-Date: Wed, 14 Nov 2018 19:18:42 +0900
-Message-ID: <014a01d47c03$6b64eef0$422eccd0$@lge.com>
-References: <1541994885-20059-1-git-send-email-chanho.min@lge.com> <20181113145339.GD16182@dhcp22.suse.cz> <20181113161858.GE30990@redhat.com> <20181113180058.GT15120@dhcp22.suse.cz>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Subject: Re: [PATCH v1 1/5] drivercore: Revert "deferral race condition fix"
+Date: Wed, 14 Nov 2018 12:19:20 +0200
+Message-ID: <262d8ef0-ead2-1ec8-d2e1-0c5f6497b1fb@ti.com>
+References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
+ <1c2c1031-a6b4-cbce-ceed-c2ce229c204e@ti.com>
+ <20181114003345.GV2089@sirena.org.uk>
+ <CAHp75Vf7qozL8abZSh1gv_F3iSiZCprEK5_eGW=SRyUpjYrmtA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181113180058.GT15120@dhcp22.suse.cz>
-Content-Language: ko
+In-Reply-To: <CAHp75Vf7qozL8abZSh1gv_F3iSiZCprEK5_eGW=SRyUpjYrmtA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Michal Hocko' <mhocko@kernel.org>, 'Oleg Nesterov' <oleg@redhat.com>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Pavel Machek' <pavel@ucw.cz>, 'Len Brown' <len.brown@intel.com>, 'Andrew Morton' <akpm@linux-foundation.org>, "'Eric W. Biederman'" <ebiederm@xmission.com>, 'Christian Brauner' <christian@brauner.io>, 'Anna-Maria Gleixner' <anna-maria@linutronix.de>, 'Alexander Viro' <viro@zeniv.linux.org.uk>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, 'Seungho Park' <seungho1.park@lge.com>, 'Inkyu Hwang' <inkyu.hwang@lge.com>, 'Donghwan Jung' <donghwan.jung@lge.com>, 'Jongsung Kim' <neidhard.kim@lge.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, USB <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, rogerq@ti.com, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, grant.likely@arm.com, Andrze
 List-Id: linux-pm@vger.kernel.org
 
-> > > It's been some time since I have looked into this code so bear with
-me.
-> > > One thing is not really clear to me. Why does it help to exclude this
-> > > particular task from the freezer
-> >
-> > we don't exclude it,
-> >
-> > > when it is not sleeping in the freezer.
-> >
-> > Yes, it is not sleeping in __refrigerator(), but it does
-> >
-> > 	schedule();
-> > 	freezer_count();
-> >
-> > so it will enter __refrigerator() right after wakeup. If it won't be
-> woken
-> > up we do not care, we can consider it "frozen".
+Andy,
+
+On 2018-11-14 10:45, Andy Shevchenko wrote:
+> On Wed, Nov 14, 2018 at 2:34 AM Mark Brown <broonie@kernel.org> wrote:
+>>
+>> On Mon, Nov 12, 2018 at 06:11:26PM +0200, Peter Ujfalusi wrote:
+>>
+>>> if we revert the commit then the original issue will re-surfaces. afaik
+>>> it was not only audio which hit the 'last driver to be probed from the
+>>> deferred list would never probe, unless we provoke the kernel to load
+>>> additional module, or remove/reload the module' issue.
+>>
+>> Right, aren't we just going to be swapping one bug for another?
 > 
-> Right, but this is just silencing the freezing code to exclude this
-> task, right?
+> Have anyone in possession of Davinchi tested most recent kernel with
+> this revert?
+
+I don't think it is related to daVinci, in fact we have seen the very
+same issue with OMAP4.
+Fwiw this was my initial patch
+http://lkml.iu.edu/hypermail/linux/kernel/1404.0/01603.html
+Grant based his change on this.
+
+Note the part in the commit message:
+"The issue has been observed on embedded systems with CONFIG_PREEMPT
+enabled, audio support built as modules and using nfsroot for root
+filesystem."
+
+as I recall I was only able to reproduce the stall with nfsroot and
+buildroot fs. The timings were different compared to MMC rootfs.
+
+Anyways the patch fixes a real race condition which is generic:
+We have driverA and driverB as modules. driverB needs driverA to be
+registered to a framework (no direct, hard dependency).
+
+1. driverA starts to probe
+2. driverB starts to probe
+3. driverB can not continue as driverA is not registered itself to the
+framework -> driverB will defer
+4. driverA registers to the framework
+5. driverA probes successfully
+6. driver core will prepare the deferred probe list (note: driverB is
+still in it's probe, not in the deferred list)
+7. driverB returns from it's probe with -EPROBE_DEFER
+
+and here we are, driverB is alone in the deferred list and the list is
+not going to be tried as driverA and driverB were the last ones to
+probe.
+
+So, driverB is in the deferred list and stays there until other driver
+probes successfully as the deferred driver list only tried when a driver
+loads successfully (to see if that satisfy any of the deferred driver).
+
+We have evidence that this has happened, it is a generic issue given
+that now days we have more frameworks drivers are relying on.
+
+>>> Do I understand correctly that in your case you have two modules
+>>> (dwc3-pci and extcon-intel-mrfld) in a deferred probe loop, iow both of
+>>> the drivers returns -EPROBE_DEFER and they just spin?
+>>
+>>> If both is deferring, how this supposed to work?
+>>
+>> I'm struggling to follow the original explanation too :(
 > 
-> > > I can see how other threads need to be zapped and TASK_WAKEKILL
-> doesn't
-> > > do that but shouldn't we fix that instead?
-> >
-> > Not sure I understand, but unlikely we can (or want) to make
-> __refrigerator()
-> > killable.
-> 
-> Why would that be a problem. If the kill is fatal then why to keep the
-> killed task in the fridge?
+> Sorry, guys, I confused a nit myself. The bug is there, but
+> exxplanation is not fully corrent, indeed. I'll come back with more
+> details later.
 > 
 
-Is it  different between 'the killed task is frozen' and '__refrigerator()
-is killable'?
->From a general '__refrigerator()' implementation point of view I know that
-it should not be killable.
+- Péter
 
-> > Otherwise, how can we fix that?
-> 
-> We can mark all threads PF_NOFREEZE and wake them up. This would require
-> some more changes of course but wouldn't that be a more appropriate
-> solution? Do we want to block exec for ever just because some threads
-> are in the fridge?
-> 
-
-IMHO, It seems to be difficult and buggy to control with PF_NOFREEZE.
-Because,
-The sub-thread can freeze and receive SIG_KILL before the marking of
-PF_NOFREEZE
-and it should be freezable in other cases. I don't understand why it isn't
-appropriate
-for exec to block. The exec can freeze. When tasks are thawed, the killed
-sub-thread
-will die and wake de_thread(). The exec will continue to work from resume.
-
-Chanho
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
