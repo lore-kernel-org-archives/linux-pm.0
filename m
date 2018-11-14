@@ -1,70 +1,45 @@
-From: Gabriel C <nix.or.die@gmail.com>
-Subject: Re: atk10k Unknown eventid and WARN() on resume with kernel 4.19
-Date: Wed, 14 Nov 2018 23:16:59 +0100
-Message-ID: <CAEJqkghgyYMxRc8-wnF-J1CGhuYD2vfVDSiLU1A0fwpXKN7Huw@mail.gmail.com>
-References: <CAEJqkgiKzYTZQTGWNAPTeOPFWz658FWqDsAhyoxVDP1VKWSukg@mail.gmail.com>
- <CAEJqkgh7xksO7tmPHGkOXvWftc2AcCgi4j3S3C88CorV53+Hgw@mail.gmail.com>
+From: Matthew Wilcox <willy@infradead.org>
+Subject: Re: [PATCH RFC 2/6] mm: convert PG_balloon to PG_offline
+Date: Wed, 14 Nov 2018 14:23:21 -0800
+Message-ID: <20181114222321.GB1784@bombadil.infradead.org>
+References: <20181114211704.6381-1-david@redhat.com>
+ <20181114211704.6381-3-david@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAEJqkgh7xksO7tmPHGkOXvWftc2AcCgi4j3S3C88CorV53+Hgw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/ath10k/>
-List-Post: <mailto:ath10k@lists.infradead.org>
-List-Help: <mailto:ath10k-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/ath10k>,
- <mailto:ath10k-request@lists.infradead.org?subject=subscribe>
-Sender: "ath10k" <ath10k-bounces@lists.infradead.org>
-Errors-To: ath10k-bounces+gldad-ath10k=m.gmane.org@lists.infradead.org
-To: Kalle Valo <kvalo@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, ath10k@lists.infradead.org, dex77@frugalware.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181114211704.6381-3-david@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian Hansen <chansen3@cisco.com>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, Miles Chen <miles.chen@mediatek.>
 List-Id: linux-pm@vger.kernel.org
 
-Am Sa., 3. Nov. 2018 um 21:11 Uhr schrieb Gabriel C <nix.or.die@gmail.com>:
->
-> Am Sa., 3. Nov. 2018 um 21:01 Uhr schrieb Gabriel C <nix.or.die@gmail.com>:
-> >
-> > Hello,
-> >
-> > starting with kernel 4.19 we noticed  'Unknown eventid: xxxx' warnings
-> > on our Laptops.
-> >
-> > ...
-> >
-> > crazy@devnull:~$ dmesg | grep Unknow
-> > [    7.144998] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [    7.147758] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> > [    9.441654] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [    9.444446] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> > [   11.770997] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [   11.773787] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> > [320339.374108] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [320339.377020] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> > [320342.128664] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [320342.131447] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> > [320344.452864] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
-> > [320344.455696] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
-> >
-> > ....
-> >
-> > Both boxes also hits the following WARN*() on resume from S3:
-> >
->  Uh sorry .. Gmail doesn't like long lines it seems.
-> There the WARN() message:
->
-> http://ftp.frugalware.org/pub/other/people/crazy/warn.txt
->
-> >
-> > Please let me know if you need an dmesg or any other informations.
+On Wed, Nov 14, 2018 at 10:17:00PM +0100, David Hildenbrand wrote:
+> Rename PG_balloon to PG_offline. This is an indicator that the page is
+> logically offline, the content stale and that it should not be touched
+> (e.g. a hypervisor would have to allocate backing storage in order for the
+> guest to dump an unused page).  We can then e.g. exclude such pages from
+> dumps.
+> 
+> In following patches, we will make use of this bit also in other balloon
+> drivers.  While at it, document PGTABLE.
 
+Thank you for documenting PGTABLE.  I didn't realise I also had this
+document to update when I added PGTABLE.
 
-Added pm list maybe someone there got some idea ?
+> +++ b/Documentation/admin-guide/mm/pagemap.rst
+> @@ -78,6 +78,8 @@ number of times a page is mapped.
+>      23. BALLOON
+>      24. ZERO_PAGE
+>      25. IDLE
+> +    26. PGTABLE
+> +    27. OFFLINE
 
-Also same issue reported there :
-https://bugzilla.kernel.org/show_bug.cgi?id=201499
+So the offline *user* bit is new ... even though the *kernel* bit
+just renames the balloon bit.  I'm not sure how I feel about this.
+I'm going to think about it some more.  Could you share your decision
+process with us?
 
-BR,
-
-Gabriel C
+I have no objection to renaming the balloon bit inside the kernel; I
+think that's a wise idea.  I'm just not sure whether we should rename
+the user balloon bit rather than adding a new bit.
