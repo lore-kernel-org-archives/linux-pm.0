@@ -1,122 +1,58 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v3] thermal: qoriq: add multiple sensors support
-Date: Wed, 14 Nov 2018 07:28:49 +0000
-Message-ID: <VI1PR04MB4333200BCB4E2DABE1DC5B55F3C30@VI1PR04MB4333.eurprd04.prod.outlook.com>
-References: <20181030010008.27237-1-andy.tang@nxp.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v1 2/5] extcon: Return -EPROBE_DEFER when extcon device is
+ not found
+Date: Wed, 14 Nov 2018 10:35:38 +0200
+Message-ID: <CAHp75Vfe586+tr5mUdSHv4ehmpi0KwS_m+UC0tfFHrdXwKhkig@mail.gmail.com>
+References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
+ <CGME20181110181155epcas2p1ac9bffb2dc7dd6337db5c37f8a87bd5e@epcas2p1.samsung.com>
+ <20181110181101.24557-2-andriy.shevchenko@linux.intel.com>
+ <5BE8C821.5080002@samsung.com> <5BEB63C3.1020504@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181030010008.27237-1-andy.tang@nxp.com>
-Content-Language: en-US
+In-Reply-To: <5BEB63C3.1020504@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, USB <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, rogerq@ti.com, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-UElORy4NCg0KQlIsDQpBbmR5DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJv
-bTogYW5keS50YW5nQG54cC5jb20gPGFuZHkudGFuZ0BueHAuY29tPg0KPiBTZW50OiAyMDE4xOox
-MNTCMzDI1SA5OjAwDQo+IFRvOiBydWkuemhhbmdAaW50ZWwuY29tOyBkYW5pZWwubGV6Y2Fub0Bs
-aW5hcm8ub3JnDQo+IENjOiBlZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5l
-bC5vcmc7DQo+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEFuZHkgVGFuZyA8YW5keS50
-YW5nQG54cC5jb20+DQo+IFN1YmplY3Q6IFtQQVRDSCB2M10gdGhlcm1hbDogcW9yaXE6IGFkZCBt
-dWx0aXBsZSBzZW5zb3JzIHN1cHBvcnQNCj4gDQo+IEZyb206IFl1YW50aWFuIFRhbmcgPGFuZHku
-dGFuZ0BueHAuY29tPg0KPiANCj4gVGhlIFFvcklRIExheWVyc2NhcGUgU29DIGhhcyBzZXZlcmFs
-IHRoZXJtYWwgc2Vuc29ycyBidXQgdGhlIGN1cnJlbnQNCj4gZHJpdmVyIG9ubHkgc3VwcG9ydHMg
-b25lLg0KPiANCj4gTWFzc2FnZSB0aGUgY29kZSB0byBiZSBzZW5zb3Igb3JpZW50ZWQgYW5kIGFs
-bG93IHRoZSBzdXBwb3J0IGZvcg0KPiBtdWx0aXBsZSBzZW5zb3JzLg0KPiANCj4gU2lnbmVkLW9m
-Zi1ieTogWXVhbnRpYW4gVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+IFJldmlld2VkLWJ5OiBE
-YW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4NCj4gLS0tDQo+IHYzOg0K
-PiAgIC0gYWRkIFJldmlld2VkLWJ5DQo+IHYyOg0KPiAgIC0gdXBkYXRlIHRoZSBjb21taXQgbWVz
-c2FnZQ0KPiAgIC0gcmVmaW5lIHRoZSBxb3JpcV90bXVfcmVnaXN0ZXJfdG11X3pvbmUoKQ0KPiAN
-Cj4gIGRyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMgfCAgMTAwDQo+ICsrKysrKysrKysr
-KysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiAgMSBmaWxlcyBjaGFuZ2VkLCA0NiBpbnNl
-cnRpb25zKCspLCA1NCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Ro
-ZXJtYWwvcW9yaXFfdGhlcm1hbC5jDQo+IGIvZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwu
-YyBpbmRleCA0NTBlZDY2Li44YmViMzQ0IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwv
-cW9yaXFfdGhlcm1hbC5jDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMN
-Cj4gQEAgLTU5LDE0ICs1OSwyMSBAQCBzdHJ1Y3QgcW9yaXFfdG11X3JlZ3Mgew0KPiAgCXUzMiB0
-dHIzY3I7CQkvKiBUZW1wZXJhdHVyZSBSYW5nZSAzIENvbnRyb2wgUmVnaXN0ZXIgKi8NCj4gIH07
-DQo+IA0KPiArc3RydWN0IHFvcmlxX3RtdV9kYXRhOw0KPiArDQo+ICAvKg0KPiAgICogVGhlcm1h
-bCB6b25lIGRhdGENCj4gICAqLw0KPiArc3RydWN0IHFvcmlxX3NlbnNvciB7DQo+ICsJc3RydWN0
-IHRoZXJtYWxfem9uZV9kZXZpY2UJKnR6ZDsNCj4gKwlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEJCSpx
-ZGF0YTsNCj4gKwlpbnQJCQkJaWQ7DQo+ICt9Ow0KPiArDQo+ICBzdHJ1Y3QgcW9yaXFfdG11X2Rh
-dGEgew0KPiAtCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0ejsNCj4gIAlzdHJ1Y3QgcW9y
-aXFfdG11X3JlZ3MgX19pb21lbSAqcmVnczsNCj4gLQlpbnQgc2Vuc29yX2lkOw0KPiAgCWJvb2wg
-bGl0dGxlX2VuZGlhbjsNCj4gKwlzdHJ1Y3QgcW9yaXFfc2Vuc29yCSpzZW5zb3JbU0lURVNfTUFY
-XTsNCj4gIH07DQo+IA0KPiAgc3RhdGljIHZvaWQgdG11X3dyaXRlKHN0cnVjdCBxb3JpcV90bXVf
-ZGF0YSAqcCwgdTMyIHZhbCwgdm9pZCBfX2lvbWVtDQo+ICphZGRyKSBAQCAtODcsNDggKzk0LDUx
-IEBAIHN0YXRpYyB1MzIgdG11X3JlYWQoc3RydWN0DQo+IHFvcmlxX3RtdV9kYXRhICpwLCB2b2lk
-IF9faW9tZW0gKmFkZHIpDQo+IA0KPiAgc3RhdGljIGludCB0bXVfZ2V0X3RlbXAodm9pZCAqcCwg
-aW50ICp0ZW1wKSAgew0KPiArCXN0cnVjdCBxb3JpcV9zZW5zb3IgKnFzZW5zb3IgPSBwOw0KPiAr
-CXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqcWRhdGEgPSBxc2Vuc29yLT5xZGF0YTsNCj4gIAl1MzIg
-dmFsOw0KPiAtCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IHA7DQo+IA0KPiAtCXZhbCA9
-IHRtdV9yZWFkKGRhdGEsICZkYXRhLT5yZWdzLT5zaXRlW2RhdGEtPnNlbnNvcl9pZF0udHJpdHNy
-KTsNCj4gKwl2YWwgPSB0bXVfcmVhZChxZGF0YSwgJnFkYXRhLT5yZWdzLT5zaXRlW3FzZW5zb3It
-PmlkXS50cml0c3IpOw0KPiAgCSp0ZW1wID0gKHZhbCAmIDB4ZmYpICogMTAwMDsNCj4gDQo+ICAJ
-cmV0dXJuIDA7DQo+ICB9DQo+IA0KPiAtc3RhdGljIGludCBxb3JpcV90bXVfZ2V0X3NlbnNvcl9p
-ZCh2b2lkKQ0KPiArc3RhdGljIGNvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfb2ZfZGV2aWNlX29w
-cyB0bXVfdHpfb3BzID0gew0KPiArCS5nZXRfdGVtcCA9IHRtdV9nZXRfdGVtcCwNCj4gK307DQo+
-ICsNCj4gK3N0YXRpYyBpbnQgcW9yaXFfdG11X3JlZ2lzdGVyX3RtdV96b25lKHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICB7DQo+IC0JaW50IHJldCwgaWQ7DQo+IC0Jc3RydWN0IG9m
-X3BoYW5kbGVfYXJncyBzZW5zb3Jfc3BlY3M7DQo+IC0Jc3RydWN0IGRldmljZV9ub2RlICpucCwg
-KnNlbnNvcl9ucDsNCj4gKwlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgKnFkYXRhID0gcGxhdGZvcm1f
-Z2V0X2RydmRhdGEocGRldik7DQo+ICsJaW50IGlkLCBzaXRlcyA9IDA7DQo+IA0KPiAtCW5wID0g
-b2ZfZmluZF9ub2RlX2J5X25hbWUoTlVMTCwgInRoZXJtYWwtem9uZXMiKTsNCj4gLQlpZiAoIW5w
-KQ0KPiAtCQlyZXR1cm4gLUVOT0RFVjsNCj4gKwlmb3IgKGlkID0gMDsgaWQgPCBTSVRFU19NQVg7
-IGlkKyspIHsNCj4gKwkJcWRhdGEtPnNlbnNvcltpZF0gPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRl
-diwNCj4gKwkJCQlzaXplb2Yoc3RydWN0IHFvcmlxX3NlbnNvciksIEdGUF9LRVJORUwpOw0KPiAr
-CQlpZiAoIXFkYXRhLT5zZW5zb3JbaWRdKQ0KPiArCQkJcmV0dXJuIC1FTk9NRU07DQo+IA0KPiAt
-CXNlbnNvcl9ucCA9IG9mX2dldF9uZXh0X2NoaWxkKG5wLCBOVUxMKTsNCj4gLQlyZXQgPSBvZl9w
-YXJzZV9waGFuZGxlX3dpdGhfYXJncyhzZW5zb3JfbnAsICJ0aGVybWFsLXNlbnNvcnMiLA0KPiAt
-CQkJIiN0aGVybWFsLXNlbnNvci1jZWxscyIsDQo+IC0JCQkwLCAmc2Vuc29yX3NwZWNzKTsNCj4g
-LQlpZiAocmV0KSB7DQo+IC0JCW9mX25vZGVfcHV0KG5wKTsNCj4gLQkJb2Zfbm9kZV9wdXQoc2Vu
-c29yX25wKTsNCj4gLQkJcmV0dXJuIHJldDsNCj4gLQl9DQo+ICsJCXFkYXRhLT5zZW5zb3JbaWRd
-LT5pZCA9IGlkOw0KPiArCQlxZGF0YS0+c2Vuc29yW2lkXS0+cWRhdGEgPSBxZGF0YTsNCj4gDQo+
-IC0JaWYgKHNlbnNvcl9zcGVjcy5hcmdzX2NvdW50ID49IDEpIHsNCj4gLQkJaWQgPSBzZW5zb3Jf
-c3BlY3MuYXJnc1swXTsNCj4gLQkJV0FSTihzZW5zb3Jfc3BlY3MuYXJnc19jb3VudCA+IDEsDQo+
-IC0JCQkJIiVzOiB0b28gbWFueSBjZWxscyBpbiBzZW5zb3Igc3BlY2lmaWVyICVkXG4iLA0KPiAt
-CQkJCXNlbnNvcl9zcGVjcy5ucC0+bmFtZSwgc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQpOw0KPiAt
-CX0gZWxzZSB7DQo+IC0JCWlkID0gMDsNCj4gLQl9DQo+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT50
-emQgPQ0KPiBkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoDQo+ICsJCQkJJnBk
-ZXYtPmRldiwgaWQsIHFkYXRhLT5zZW5zb3JbaWRdLCAmdG11X3R6X29wcyk7DQo+ICsJCWlmIChJ
-U19FUlIocWRhdGEtPnNlbnNvcltpZF0tPnR6ZCkpIHsNCj4gKwkJCWlmIChQVFJfRVJSKHFkYXRh
-LT5zZW5zb3JbaWRdLT50emQpID09IC1FTk9ERVYpDQo+ICsJCQkJY29udGludWU7DQo+ICsJCQll
-bHNlDQo+ICsJCQkJcmV0dXJuIFBUUl9FUlIocWRhdGEtPnNlbnNvcltpZF0tPnR6ZCk7DQo+IA0K
-PiAtCW9mX25vZGVfcHV0KG5wKTsNCj4gLQlvZl9ub2RlX3B1dChzZW5zb3JfbnApOw0KPiArCQl9
-DQo+ICsNCj4gKwkJc2l0ZXMgfD0gMHgxIDw8ICgxNSAtIGlkKTsNCj4gKwl9DQo+ICsJLyogRW5h
-YmxlIG1vbml0b3JpbmcgKi8NCj4gKwlpZiAoc2l0ZXMgIT0gMCkNCj4gKwkJdG11X3dyaXRlKHFk
-YXRhLCBzaXRlcyB8IFRNUl9NRSB8IFRNUl9BTFBGLA0KPiAmcWRhdGEtPnJlZ3MtPnRtcik7DQo+
-IA0KPiAtCXJldHVybiBpZDsNCj4gKwlyZXR1cm4gMDsNCj4gIH0NCj4gDQo+ICBzdGF0aWMgaW50
-IHFvcmlxX3RtdV9jYWxpYnJhdGlvbihzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSBAQA0K
-PiAtMTc4LDE2ICsxODgsMTEgQEAgc3RhdGljIHZvaWQgcW9yaXFfdG11X2luaXRfZGV2aWNlKHN0
-cnVjdA0KPiBxb3JpcV90bXVfZGF0YSAqZGF0YSkNCj4gIAl0bXVfd3JpdGUoZGF0YSwgVE1SX0RJ
-U0FCTEUsICZkYXRhLT5yZWdzLT50bXIpOyAgfQ0KPiANCj4gLXN0YXRpYyBjb25zdCBzdHJ1Y3Qg
-dGhlcm1hbF96b25lX29mX2RldmljZV9vcHMgdG11X3R6X29wcyA9IHsNCj4gLQkuZ2V0X3RlbXAg
-PSB0bXVfZ2V0X3RlbXAsDQo+IC19Ow0KPiAtDQo+ICBzdGF0aWMgaW50IHFvcmlxX3RtdV9wcm9i
-ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAgew0KPiAgCWludCByZXQ7DQo+ICAJc3Ry
-dWN0IHFvcmlxX3RtdV9kYXRhICpkYXRhOw0KPiAgCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAgPSBw
-ZGV2LT5kZXYub2Zfbm9kZTsNCj4gLQl1MzIgc2l0ZTsNCj4gDQo+ICAJaWYgKCFucCkgew0KPiAg
-CQlkZXZfZXJyKCZwZGV2LT5kZXYsICJEZXZpY2UgT0YtTm9kZSBpcyBOVUxMIik7IEBAIC0yMDMs
-MTMNCj4gKzIwOCw2IEBAIHN0YXRpYyBpbnQgcW9yaXFfdG11X3Byb2JlKHN0cnVjdCBwbGF0Zm9y
-bV9kZXZpY2UgKnBkZXYpDQo+IA0KPiAgCWRhdGEtPmxpdHRsZV9lbmRpYW4gPSBvZl9wcm9wZXJ0
-eV9yZWFkX2Jvb2wobnAsICJsaXR0bGUtZW5kaWFuIik7DQo+IA0KPiAtCWRhdGEtPnNlbnNvcl9p
-ZCA9IHFvcmlxX3RtdV9nZXRfc2Vuc29yX2lkKCk7DQo+IC0JaWYgKGRhdGEtPnNlbnNvcl9pZCA8
-IDApIHsNCj4gLQkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIGdldCBzZW5zb3IgaWRc
-biIpOw0KPiAtCQlyZXQgPSAtRU5PREVWOw0KPiAtCQlnb3RvIGVycl9pb21hcDsNCj4gLQl9DQo+
-IC0NCj4gIAlkYXRhLT5yZWdzID0gb2ZfaW9tYXAobnAsIDApOw0KPiAgCWlmICghZGF0YS0+cmVn
-cykgew0KPiAgCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJGYWlsZWQgdG8gZ2V0IG1lbW9yeSByZWdp
-b25cbiIpOyBAQA0KPiAtMjIzLDE5ICsyMjEsMTMgQEAgc3RhdGljIGludCBxb3JpcV90bXVfcHJv
-YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gIAlpZiAocmV0IDwgMCkNCj4g
-IAkJZ290byBlcnJfdG11Ow0KPiANCj4gLQlkYXRhLT50eiA9IGRldm1fdGhlcm1hbF96b25lX29m
-X3NlbnNvcl9yZWdpc3RlcigmcGRldi0+ZGV2LA0KPiAtCQkJCQkJCWRhdGEtPnNlbnNvcl9pZCwN
-Cj4gLQkJCQkJCQlkYXRhLCAmdG11X3R6X29wcyk7DQo+IC0JaWYgKElTX0VSUihkYXRhLT50eikp
-IHsNCj4gLQkJcmV0ID0gUFRSX0VSUihkYXRhLT50eik7DQo+IC0JCWRldl9lcnIoJnBkZXYtPmRl
-diwNCj4gLQkJCSJGYWlsZWQgdG8gcmVnaXN0ZXIgdGhlcm1hbCB6b25lIGRldmljZSAlZFxuIiwg
-cmV0KTsNCj4gLQkJZ290byBlcnJfdG11Ow0KPiArCXJldCA9IHFvcmlxX3RtdV9yZWdpc3Rlcl90
-bXVfem9uZShwZGV2KTsNCj4gKwlpZiAocmV0IDwgMCkgew0KPiArCQlkZXZfZXJyKCZwZGV2LT5k
-ZXYsICJGYWlsZWQgdG8gcmVnaXN0ZXIgc2Vuc29yc1xuIik7DQo+ICsJCXJldCA9IC1FTk9ERVY7
-DQo+ICsJCWdvdG8gZXJyX2lvbWFwOw0KPiAgCX0NCj4gDQo+IC0JLyogRW5hYmxlIG1vbml0b3Jp
-bmcgKi8NCj4gLQlzaXRlID0gMHgxIDw8ICgxNSAtIGRhdGEtPnNlbnNvcl9pZCk7DQo+IC0JdG11
-X3dyaXRlKGRhdGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwgJmRhdGEtPnJlZ3MtPnRtcik7
-DQo+IA0KPiAgCXJldHVybiAwOw0KPiANCj4gLS0NCj4gMS43LjENCg0K
+On Wed, Nov 14, 2018 at 1:53 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+
+> I was thinking about again to change from NULL to EPROBE_DEFER.
+>
+> extcon_get_extcon_dev() function was almost called in the probe function.
+> But, this function might be called on other position instead of probe.
+
+*Might be* sounds like a theoretical thing, care to share what is in you mi=
+nd?
+Current users and more important the new coming one are *all* doing the sam=
+e.
+
+> ENODEV is more correct error instead of EPROBE_DEFER.
+
+So, you are proposing to continue duplicating conversion from ENODEV
+to EPROBE_DEFER in *each* caller?
+
+> Sorry. I'll withdraw my opinion related acked-by tag until we are clarify=
+ing it.
+
+I honestly don't know what to clarify here.
+
+When we would have a real case we can change API correspondingly.
+For now, the score is 5:0 with use cases in practice.
+
+> On 2018=EB=85=84 11=EC=9B=94 12=EC=9D=BC 09:24, Chanwoo Choi wrote:
+> > On 2018=EB=85=84 11=EC=9B=94 11=EC=9D=BC 03:10, Andy Shevchenko wrote:
+> >> All current users of extcon_get_extcon_dev() API considers
+> >> an extcon device a mandatory to appear. Thus, they all convert
+> >> NULL pointer to -EPROBE_DEFER error code.
+> >>
+> >> There is one more caller anticipated with the same requirements.
+> >>
+> >> To decrease a code duplication and a burden to the callers,
+> >> return -EPROBE_DEFER directly from extcon_get_extcon_dev().
+
+--=20
+With Best Regards,
+Andy Shevchenko
