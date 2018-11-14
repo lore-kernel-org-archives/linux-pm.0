@@ -1,55 +1,33 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v1 1/5] drivercore: Revert "deferral race condition fix"
-Date: Tue, 13 Nov 2018 16:33:45 -0800
-Message-ID: <20181114003345.GV2089@sirena.org.uk>
-References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
- <1c2c1031-a6b4-cbce-ceed-c2ce229c204e@ti.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH V9 0/5] soc: imx: add scu power domain driver
+Date: Wed, 14 Nov 2018 09:21:24 +0800
+Message-ID: <20181114012122.GA5829@dragon>
+References: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kM/PxlMMHsUUNZZW"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1c2c1031-a6b4-cbce-ceed-c2ce229c204e@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-usb@vger.kernel.org, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Roger Quadros <rogerq@ti.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-omap@vger.kernel.org, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Grant Likely <grant.likely@linaro.org>, Andrzej Hajda <a.hajda@samsung.com>
+In-Reply-To: <1541085298-375-1-git-send-email-aisheng.dong@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "A.s. Dong" <aisheng.dong@nxp.com>
+Cc: "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, "dongas86@gmail.com" <dongas86@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "khilman@kernel.org" <khilman@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "robh+dt@kernel.org" <robh+dt@kernel.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Nov 01, 2018 at 03:19:48PM +0000, A.s. Dong wrote:
+> Dong Aisheng (5):
+>   dt-bindings: imx: add scu resource id headfile
+>   firmware: imx: remove resource id enums
+>   dt-bindings: fsl: scu: update power domain binding
+>   firmware: imx: add pm svc headfile
+>   firmware: imx: add SCU power domain driver
 
---kM/PxlMMHsUUNZZW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Nov 12, 2018 at 06:11:26PM +0200, Peter Ujfalusi wrote:
-
-> if we revert the commit then the original issue will re-surfaces. afaik
-> it was not only audio which hit the 'last driver to be probed from the
-> deferred list would never probe, unless we provoke the kernel to load
-> additional module, or remove/reload the module' issue.
-
-Right, aren't we just going to be swapping one bug for another?
-
-> Do I understand correctly that in your case you have two modules
-> (dwc3-pci and extcon-intel-mrfld) in a deferred probe loop, iow both of
-> the drivers returns -EPROBE_DEFER and they just spin?
-
-> If both is deferring, how this supposed to work?
-
-I'm struggling to follow the original explanation too :(
-
---kM/PxlMMHsUUNZZW
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlvrbWMACgkQJNaLcl1U
-h9BMfwf/SGcoei9hwsRaGXL/3Tv+0Qikp9WNRT/2sUol+X6k9NHZwWTd59ts+w5+
-OOV7Cij0cIKBCKSr6X/AGsVL2Oa2MEU8CCdwAKSXVAcNaTXqIWraTFaXRR0YtuY4
-7Uu9Na60NPsDZY/tVmxK8XnAV6wj7IWhgnDGbe05wYnxPLC2oFt2wAGDw7ZMW1RE
-Bzv2NnVs11ZIPphUNa4Eu7mwmYaj9dRAHQN3FEjwMXNXnOKJS3UbRS3PKOJmfzgl
-Nf5PWsBcGLgd99i+s5AZFiZHopRsO75Pld3Vu0T+U252zyXFR1eI4jicojuYrZjF
-DERVmON8tTuNbxNwGpdv71b2jhzOpg==
-=nxIU
------END PGP SIGNATURE-----
-
---kM/PxlMMHsUUNZZW--
+Applied all, thanks.
