@@ -1,57 +1,59 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v1 2/5] extcon: Return -EPROBE_DEFER when extcon device
- is not found
-Date: Wed, 14 Nov 2018 11:36:52 +0200
-Message-ID: <20181114093652.GK10650@smile.fi.intel.com>
-References: <20181110181101.24557-1-andriy.shevchenko@linux.intel.com>
- <CGME20181110181155epcas2p1ac9bffb2dc7dd6337db5c37f8a87bd5e@epcas2p1.samsung.com>
- <20181110181101.24557-2-andriy.shevchenko@linux.intel.com>
- <5BE8C821.5080002@samsung.com>
- <5BEB63C3.1020504@samsung.com>
- <CAHp75Vfe586+tr5mUdSHv4ehmpi0KwS_m+UC0tfFHrdXwKhkig@mail.gmail.com>
- <5BEBE741.6050101@samsung.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] PM / AVS: SmartReflex: remove unused function
+Date: Wed, 14 Nov 2018 10:42:53 +0100
+Message-ID: <20181114094253.v45kxd2efgwhuh42@pengutronix.de>
+References: <20181006164059.16106-1-u.kleine-koenig@pengutronix.de>
+ <10339961.29dihbgRqp@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <5BEBE741.6050101@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, USB <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Krogerus, Heikki" <heikki.krogerus@linux.intel.com>, rogerq@ti.com, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Reichel <sre@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>
+In-Reply-To: <10339961.29dihbgRqp@aspire.rjw.lan>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, kernel@pengutronix.de, LinAdmin <linadmin@quickline.ch>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 14, 2018 at 06:13:37PM +0900, Chanwoo Choi wrote:
-> On 2018년 11월 14일 17:35, Andy Shevchenko wrote:
-> > On Wed, Nov 14, 2018 at 1:53 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> > 
-> >> I was thinking about again to change from NULL to EPROBE_DEFER.
-> >>
-> >> extcon_get_extcon_dev() function was almost called in the probe function.
-> >> But, this function might be called on other position instead of probe.
-> > 
-> > *Might be* sounds like a theoretical thing, care to share what is in you mind?
-> > Current users and more important the new coming one are *all* doing the same.
-> > 
-> >> ENODEV is more correct error instead of EPROBE_DEFER.
-> > 
-> > So, you are proposing to continue duplicating conversion from ENODEV
-> > to EPROBE_DEFER in *each* caller?
-> 
-> The extcon core don't know the caller situation is in either probe() or other position
-> in the caller driver. The caller driver should decide the kind of error value
-> by using the return value of extcon_get_extcon_dev().
-> 
-> extcon_get_extcon_dev() function cannot be modified for only one case.
-> If some device driver call extcon_get_extcon_dev() out of probe() fuction,
-> EPROBE_DEFER is not always correct.
+Hello,
 
-I agree with this, but look at the current state of affairs. All users do the same.
-If we need to have another case we may consider this later.
+On Tue, Oct 16, 2018 at 11:09:11AM +0200, Rafael J. Wysocki wrote:
+> On Saturday, October 6, 2018 6:40:59 PM CEST Uwe Kleine-K=F6nig wrote:
+> > From: Uwe Kleine-K=F6nig <uwe@kleine-koenig.org>
+> > =
 
-API inside the kernel are not carved in the stone.
+> > omap_sr_register_pmic() was introduced in 2010 in commit
+> > =
 
+> > 	984aa6dbf4ca ("OMAP3: PM: Adding smartreflex driver support.")
+> > =
 
--- 
-With Best Regards,
-Andy Shevchenko
+> > . There was never any caller of this function in mainline resulting in a
+> > warning
+> > =
+
+> > 	sr_init: No PMIC hook to init smartreflex
+> > =
+
+> > for each machine where this driver is enabled. So remove the unused
+> > function and the pr_warn.
+>
+> Applied, thanks!
+
+This patch didn't make it into next yet, is this expected?
+
+Best regards
+Uwe
+
+-- =
+
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
