@@ -1,164 +1,78 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH 14/15] power: supply: olpc_battery: Avoid using
- platform_info
-Date: Wed, 14 Nov 2018 18:19:50 +0100
-Message-ID: <0ddafe2451f1bea019e529035ef27dc886c1cb3c.camel@v3.sk>
-References: <20181010172300.317643-1-lkundrak@v3.sk>
-         <20181010172300.317643-15-lkundrak@v3.sk>
-         <CAHp75VcQVv-WToo-Lf1uUG0YOhusDqRN3x6HAGt-ccSbp5B+xg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management updates for v4.20-rc3
+Date: Wed, 14 Nov 2018 21:16:14 +0100
+Message-ID: <CAJZ5v0jv7Bbkc4bsnu8xwjQWneRJedbdd3dNp98wEDdCYOpg9Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHp75VcQVv-WToo-Lf1uUG0YOhusDqRN3x6HAGt-ccSbp5B+xg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, devel@driverdev.osuosl.or
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-10-19 at 16:50 +0300, Andy Shevchenko wrote:
-> On Wed, Oct 10, 2018 at 8:24 PM Lubomir Rintel <lkundrak@v3.sk>
-> wrote:
-> > This wouldn't work on the DT-based ARM platform. Let's read the EC
-> > version
-> > directly from the EC driver instead.
-> > 
-> > This makes the driver no longer x86 specific.
-> > 
-> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> > ---
-> >  drivers/power/supply/Kconfig        |  2 +-
-> >  drivers/power/supply/olpc_battery.c | 35 +++++++++++++++++++++--
-> > ------
-> >  2 files changed, 27 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/power/supply/Kconfig
-> > b/drivers/power/supply/Kconfig
-> > index ff6dab0bf0dd..f0361e4dd457 100644
-> > --- a/drivers/power/supply/Kconfig
-> > +++ b/drivers/power/supply/Kconfig
-> > @@ -151,7 +151,7 @@ config BATTERY_PMU
-> > 
-> >  config BATTERY_OLPC
-> >         tristate "One Laptop Per Child battery"
-> > -       depends on X86_32 && OLPC
-> > +       depends on OLPC
-> >         help
-> >           Say Y to enable support for the battery on the OLPC
-> > laptop.
-> > 
-> > diff --git a/drivers/power/supply/olpc_battery.c
-> > b/drivers/power/supply/olpc_battery.c
-> > index 2a2d7cc995f0..dde9863e5c4a 100644
-> > --- a/drivers/power/supply/olpc_battery.c
-> > +++ b/drivers/power/supply/olpc_battery.c
-> > @@ -20,8 +20,6 @@
-> >  #include <linux/sched.h>
-> >  #include <linux/olpc-ec.h>
-> >  #include <linux/of.h>
-> 
-> Btw, Kconfig might miss
-> depends on OF
-> part.
+Hi Linus,
 
-But will it? I thought this header can be included regardless,
-providing stubs that always fail instead of actual OF functionality.
+Please pull from the tag
 
-It just wouldn't be too useful apart for compile-testing things.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.20-rc3
 
-Apart from that, CONFIG_OLPC drags in CONFIG_OF, so we're always
-getting CONFIG_OF transitively.
+with top-most commit 97dc6c03c1b0a9af7aa26da7b0b266a762451f5f
 
-> 
-> > -#include <asm/olpc.h>
-> > -
-> > 
-> >  #define EC_BAT_VOLTAGE 0x10    /*
-> > uint16_t,    *9.76/32,    mV   */
-> >  #define EC_BAT_CURRENT 0x11    /* int16_t,     *15.625/120,
-> > mA   */
-> > @@ -57,6 +55,7 @@ struct olpc_battery_data {
-> >         struct power_supply *olpc_ac;
-> >         struct power_supply *olpc_bat;
-> >         char bat_serial[17];
-> > +       int new_proto;
-> >  };
-> > 
-> >  /*****************************************************************
-> > ****
-> > @@ -100,7 +99,7 @@ static const struct power_supply_desc
-> > olpc_ac_desc = {
-> >  static int olpc_bat_get_status(struct olpc_battery_data *data,
-> >                 union power_supply_propval *val, uint8_t ec_byte)
-> >  {
-> > -       if (olpc_platform_info.ecver > 0x44) {
-> > +       if (data->new_proto) {
-> >                 if (ec_byte & (BAT_STAT_CHARGING |
-> > BAT_STAT_TRICKLE))
-> >                         val->intval = POWER_SUPPLY_STATUS_CHARGING;
-> >                 else if (ec_byte & BAT_STAT_DISCHARGING)
-> > @@ -608,14 +607,32 @@ static int olpc_battery_probe(struct
-> > platform_device *pdev)
-> >         struct power_supply_config psy_cfg = {};
-> >         struct olpc_battery_data *data;
-> >         uint8_t status;
-> > +       unsigned char ecver[1];
-> 
-> isn't it simple
->  uint8_t ecver;
-> ?
+ Merge branch 'pm-cpuidle'
 
-Yes, it's probably going to be nicer that way.
+on top of commit 651022382c7f8da46cb4872a545ee1da6d097d2a
 
-> 
-> > +       int ret;
-> > +
-> > +       data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-> > +       if (!data)
-> > +               return -ENOMEM;
-> > +       platform_set_drvdata(pdev, data);
-> > +
-> > +       /* See if the EC is already there and get the EC revision
-> > */
-> > +       ret = olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, ecver,
-> > ARRAY_SIZE(ecver));
-> > +       if (ret) {
-> > +               if (ret == -ENODEV)
-> > +                       return -EPROBE_DEFER;
-> 
-> Yeah, exactly a question I asked somewhere in the first part of the
-> series.
-> 
-> > +               return ret;
-> > +       }
-> > 
-> > -       /*
-> > -        * We've seen a number of EC protocol changes; this driver
-> > requires
-> > -        * the latest EC protocol, supported by 0x44 and above.
-> > -        */
-> > -       if (olpc_platform_info.ecver < 0x44) {
-> > +       if (ecver[0] > 0x44) {
-> > +               /* XO 1 or 1.5 with a new EC firmware. */
-> > +               data->new_proto = 1;
-> > +       } else if (ecver[0] < 0x44) {
-> > +               /*
-> > +                * We've seen a number of EC protocol changes; this
-> > driver
-> > +                * requires the latest EC protocol, supported by
-> > 0x44 and above.
-> > +                */
-> >                 printk(KERN_NOTICE "OLPC EC version 0x%02x too old
-> > for "
-> > -                       "battery driver.\n",
-> > olpc_platform_info.ecver);
-> > +                       "battery driver.\n", ecver[0]);
-> >                 return -ENXIO;
-> >         }
-> > 
-> > --
-> > 2.19.0
-> > 
+ Linux 4.20-rc1
 
-Thanks,
-Lubo
+to receive power management updates for 4.20-rc3.
+
+These remove a stale DT entry left behind after recent removal of
+a cpufreq driver without users, fix up error handling in the imx6q
+cpufreq driver, fix two issues in the cpufreq documentation, and
+update the ARM cpufreq driver.
+
+Specifics:
+
+ - Drop stale DT binding for the arm_big_little_dt driver removed
+   recently (Sudeep Holla).
+
+ - Fix up error handling in the imx6q cpufreq driver to make it
+   report voltage scaling failures (Anson Huang).
+
+ - Fix two issues in the cpufreq documentation (Viresh Kumar,
+   Zhao Wei Liew).
+
+ - Fix ARM cpuidle driver initialization regression from the 4.19
+   time frame and rework the driver registration part of it to
+   simplify code (Ulf Hansson).
+
+Thanks!
+
+
+---------------
+
+Anson Huang (1):
+      cpufreq: imx6q: add return value check for voltage scale
+
+Sudeep Holla (1):
+      dt-bindings: cpufreq: remove stale arm_big_little_dt entry
+
+Ulf Hansson (2):
+      ARM: cpuidle: Don't register the driver when back-end init returns -ENXIO
+      ARM: cpuidle: Convert to use cpuidle_register|unregister()
+
+Viresh Kumar (1):
+      Documentation: cpu-freq: Frequencies aren't always sorted
+
+Zhao Wei Liew (1):
+      Documentation: cpufreq: Correct a typo
+
+---------------
+
+ Documentation/admin-guide/pm/cpufreq.rst           |  2 +-
+ Documentation/cpu-freq/cpufreq-stats.txt           |  8 ++-
+ .../bindings/cpufreq/arm_big_little_dt.txt         | 65 ----------------------
+ drivers/cpufreq/imx6q-cpufreq.c                    |  7 ++-
+ drivers/cpuidle/cpuidle-arm.c                      | 40 +++----------
+ 5 files changed, 19 insertions(+), 103 deletions(-)
