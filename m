@@ -1,102 +1,52 @@
 From: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH RFC 2/6] mm: convert PG_balloon to PG_offline
-Date: Thu, 15 Nov 2018 10:21:13 +0100
-Message-ID: <5730ee16-9b18-ad3d-0fb3-e9edb55e2298@redhat.com>
+Subject: Re: [PATCH RFC 3/6] kexec: export PG_offline to VMCOREINFO
+Date: Thu, 15 Nov 2018 10:23:13 +0100
+Message-ID: <685892a9-3a56-8e8c-dbe7-8b1159067a6b@redhat.com>
 References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-3-david@redhat.com>
- <20181114222321.GB1784@bombadil.infradead.org>
- <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
- <20181115020725.GC2353@rapoport-lnx>
+ <20181114211704.6381-4-david@redhat.com>
+ <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181115020725.GC2353@rapoport-lnx>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Rapoport <rppt@linux.ibm.com>
-Cc: Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian Hansen <chansen3@cisco.com>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Dave Young <dyoung@redhat.com>
+Cc: Michal Hocko <mhocko@suse.com>, Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>, linux-pm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Borislav Petkov <bp@alien8.de>, xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org, devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>, Omar Sandoval <osandov@fb.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Lianbo Jiang <lijiang@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 15.11.18 03:07, Mike Rapoport wrote:
-> On Wed, Nov 14, 2018 at 11:49:15PM +0100, David Hildenbrand wrote:
->> On 14.11.18 23:23, Matthew Wilcox wrote:
->>> On Wed, Nov 14, 2018 at 10:17:00PM +0100, David Hildenbrand wrote:
->>>> Rename PG_balloon to PG_offline. This is an indicator that the page is
->>>> logically offline, the content stale and that it should not be touched
->>>> (e.g. a hypervisor would have to allocate backing storage in order for the
->>>> guest to dump an unused page).  We can then e.g. exclude such pages from
->>>> dumps.
->>>>
->>>> In following patches, we will make use of this bit also in other balloon
->>>> drivers.  While at it, document PGTABLE.
->>>
->>> Thank you for documenting PGTABLE.  I didn't realise I also had this
->>> document to update when I added PGTABLE.
->>
->> Thank you for looking into this :)
->>
->>>
->>>> +++ b/Documentation/admin-guide/mm/pagemap.rst
->>>> @@ -78,6 +78,8 @@ number of times a page is mapped.
->>>>      23. BALLOON
->>>>      24. ZERO_PAGE
->>>>      25. IDLE
->>>> +    26. PGTABLE
->>>> +    27. OFFLINE
->>>
->>> So the offline *user* bit is new ... even though the *kernel* bit
->>> just renames the balloon bit.  I'm not sure how I feel about this.
->>> I'm going to think about it some more.  Could you share your decision
->>> process with us?
->>
->> BALLOON was/is documented as
->>
->> "23 - BALLOON
->>     balloon compaction page
->> "
->>
->> and only includes all virtio-ballon pages after the non-lru migration
->> feature has been implemented for ballooned pages. Since then, this flag
->> does basically no longer stands for what it actually was supposed to do.
+On 15.11.18 07:19, Dave Young wrote:
+> Hi David,
 > 
-> Perhaps I missing something, but how the user should interpret "23" when he
-> reads /proc/kpageflags?
+> On 11/14/18 at 10:17pm, David Hildenbrand wrote:
+>> Let's export PG_offline via PAGE_OFFLINE_MAPCOUNT_VALUE, so
+>> makedumpfile can directly skip pages that are logically offline and the
+>> content therefore stale.
+> 
+> It would be good to copy some background info from cover letter to the
+> patch description so that we can get better understanding why this is
+> needed now.
 
-Looking at the history in more detail:
-
-commit 09316c09dde33aae14f34489d9e3d243ec0d5938
-Author: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
-Date:   Thu Oct 9 15:29:32 2014 -0700
-
-    mm/balloon_compaction: add vmstat counters and kpageflags bit
-
-    Always mark pages with PageBalloon even if balloon compaction is
-disabled
-    and expose this mark in /proc/kpageflags as KPF_BALLOON.
-
-
-So KPF_BALLOON was exposed when virtio-balloon pages were always marked
-with PG_balloon. So the documentation is actually wrong ("balloon page"
-vs. "balloon compaction page").
-
-I have no idea who actually used that information. I suspect this was
-just some debugging aid.
+Yes, will add more detail!
 
 > 
->> To not break uapi I decided to not rename it but instead to add a new flag.
+> BTW, Lianbo is working on a documentation of the vmcoreinfo exported
+> fields. Ccing him so that he is aware of this.
 > 
-> I've got a feeling that uapi was anyway changed for the BALLON flag
-> meaning.
+> Also cc Boris,  although I do not want the doc changes blocks this
+> he might have different opinion :)
 
-Yes. If we *replace* KPF_BALLOON by KPF_OFFLINE
-
-a) Some applications might no longer compile (I guess that's ok)
-b) Some old applications will treat KPF_OFFLINE like KPF_BALLOON (which
-should at least for virtio-balloon usage until now be fine - it is just
-more generic)
-
-So I guess it's up to Maintainers/Matthew to decide :)
+I'll be happy to help updating documentation (or updating it myself if
+the doc updates go in first).
 
 -- 
 
