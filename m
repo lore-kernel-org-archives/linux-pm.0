@@ -1,40 +1,38 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH 02/15] Revert "platform/olpc: Make ec explicitly
- non-modular"
-Date: Thu, 15 Nov 2018 19:57:44 +0100
-Message-ID: <49eee45692f16dcbcf8aceaf3a999bb7f33178ba.camel@v3.sk>
-References: <20181010172300.317643-1-lkundrak@v3.sk>
-         <20181010172300.317643-3-lkundrak@v3.sk> <20181102221626.GC5322@amd>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RESEND] hyper-v: Fix wakeup from suspend-to-idle
+Date: Thu, 15 Nov 2018 11:07:44 -0800
+Message-ID: <20181115190744.GA212221@dtor-ws>
+References: <20181115180933.396-1-vkuznets@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181102221626.GC5322@amd>
+Content-Disposition: inline
+In-Reply-To: <20181115180933.396-1-vkuznets@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Jiri Kosina <jikos@kernel.org>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-11-02 at 23:16 +0100, Pavel Machek wrote:
-> On Wed 2018-10-10 19:22:47, Lubomir Rintel wrote:
-> > It doesn't make sense to always have this built-in, e.g. on ARM
-> > multiplatform kernels. A better way to address the problem the
-> > original
-> > commit aimed to solve is to fix Kconfig.
-> > 
-> > This reverts commit f48d1496b8537d75776478c6942dd87f34d7f270.
+On Thu, Nov 15, 2018 at 07:09:33PM +0100, Vitaly Kuznetsov wrote:
+> It makes little sense but still possible to put Hyper-V guests into
+> suspend-to-idle state. To wake them up two wakeup sources were registered
+> in the past: hyperv-keyboard and hid-hyperv. However, since
+> commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
+> suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
+> to pm_wakeup_hard_event() API as these devices are actually the only
+> possible way to wakeup Hyper-V guests.
 > 
-> This looks ok, but I don't see the Kconfig fix in the series. Is it
-> needed?
+> Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+> Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: K. Y. Srinivasan <kys@microsoft.com>
+> Acked-by: Jiri Kosina <jkosina@suse.cz>
+> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+> ---
+> - It seems the patch slipped through the cracks, resending.
 
-It's flipped to a tristate in "Platform: OLPC: Move OLPC config symbol
-out of x86 tree" and mentioned in the commit message.
+OK, so since nobody else took it I'll push it through my tree.
 
-Perhaps I could made that clear by separating the change into a
-separate patch. I'm keeping it as it is in next version of the patch
-set, but I'm going to improve this one's commit message and sort the
-patches closer together.
+Thanks.
 
-> 							Pavel
-
-Lubo								
+-- 
+Dmitry
