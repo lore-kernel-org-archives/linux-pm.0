@@ -1,41 +1,85 @@
-From: Julien Freche <jfreche@vmware.com>
-Subject: Re: [PATCH RFC 0/6] mm/kdump: allow to exclude pages that are
- logically offline
-Date: Thu, 15 Nov 2018 01:42:30 +0000
-Message-ID: <B6456717-0A6F-4957-A7F2-11599701226A@vmware.com>
+From: Mike Rapoport <rppt@linux.ibm.com>
+Subject: Re: [PATCH RFC 2/6] mm: convert PG_balloon to PG_offline
+Date: Wed, 14 Nov 2018 18:07:26 -0800
+Message-ID: <20181115020725.GC2353@rapoport-lnx>
 References: <20181114211704.6381-1-david@redhat.com>
- <8932E1F4-A5A9-4462-9800-CAC1EF85AC5D@vmware.com>
- <63c5f4b6-828a-764e-f64d-e603dc4b104e@redhat.com>
- <63214D36-14FD-4080-8E35-CF2A392D6507@vmware.com>
+ <20181114211704.6381-3-david@redhat.com>
+ <20181114222321.GB1784@bombadil.infradead.org>
+ <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <63214D36-14FD-4080-8E35-CF2A392D6507@vmware.com>
-Content-Language: en-US
-Content-ID: <E20FFFB53594D84E87A1E97CF4FFF55A@namprd05.prod.outlook.com>
+Content-Disposition: inline
+In-Reply-To: <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nadav Amit <namit@vmware.com>, David Hildenbrand <david@redhat.com>, linux-mm <linux-mm@kvack.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, linux-fsdevel <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, xen-devel <xen-devel@lists.xenproject.org>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Alexey Dobriyan <adobriyan@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Christian Hansen <chansen3@cisco.com>, Dave Young <dyoung@redhat.com>, David Rientjes <rientjes@google.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>, Ka
+To: David Hildenbrand <david@redhat.com>
+Cc: Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian Hansen <chansen3@cisco.com>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.>
 List-Id: linux-pm@vger.kernel.org
 
-Pk9uIDExLzE0LzE4LCAzOjQxIFBNLCAiTmFkYXYgQW1pdCIgPG5hbWl0QHZtd2FyZS5jb20+IHdy
-b3RlOg0KPj5Gcm9tOiBEYXZpZCBIaWxkZW5icmFuZA0KPj5TZW50OiBOb3ZlbWJlciAxNCwgMjAx
-OCBhdCAxMTowNTozOCBQTSBHTVQNCj4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggUkZDIDAvNl0gbW0v
-a2R1bXA6IGFsbG93IHRvIGV4Y2x1ZGUgcGFnZXMgdGhhdCBhcmUgbG9naWNhbGx5IG9mZmxpbmUN
-Cj4+IA0KPj4gDQo+PiBDYW4geW91IHNoYXJlIGlmIHNvbWV0aGluZyBsaWtlIHRoaXMgaXMgYWxz
-byBkZXNpcmVkIGZvciB2bXdhcmUncw0KPj4gaW1wbGVtZW50YXRpb24/IChJIHRhZ2dlZCB0aGlz
-IGFzIFJGQyB0byBnZXQgc29tZSBtb3JlIGZlZWRiYWNrKQ0KPj4gDQo+PiBJdCBzaG91bGQgaW4g
-dGhlb3J5IGJlIGFzIHNpbXBsZSBhcyBhZGRpbmcgYSBoYW5kZnVsIG9mDQo+PiBfU2V0UGFnZU9m
-ZmxpbmUoKS9fQ2xlYXJQYWdlT2ZmbGluZSgpIGF0IHRoZSByaWdodCBzcG90cy4NCj4gICAgDQo+
-IFRoYW5rcywgSSB3YXMganVzdCBzdXNwZWN0aW5nIGl0IGlzIHBlcnNvbmFsIDstKQ0KPg0KPiBJ
-IHdvdWxkIG9idmlvdXNseSBwcmVmZXIgdGhhdCB5b3VyIGNoYW5nZXMgd291bGQgYmUgZG9uZSBv
-biB0b3Agb2YgdGhvc2UNCj4gdGhhdCB3ZXJlIHNraXBwZWQuIFRoaXMgcGF0Y2gtc2V0IHNvdW5k
-cyB2ZXJ5IHJlYXNvbmFibGUgdG8gbWUsIGJ1dCBJIHByZWZlcg0KPiB0aGF0IEp1bGllbiAoY2Pi
-gJlkKSB3b3VsZCBhbHNvIGdpdmUgaGlzIG9waW5pb24uDQogICAgDQpJIHRoaW5rIHRoaXMgaXMg
-ZGVzaXJhYmxlIGZvciBWTXdhcmUncyBpbXBsZW1lbnRhdGlvbiBhbHNvLiBZb3UgYXJlIHJpZ2h0
-LA0KZHVtcGluZyBkYXRhIHRoYXQgaXMgbm90IHJlbGV2YW50IGlzIGEgd2FzdGUgOi0pIA0KSSBo
-YXZlbid0IGhlYXJkIG9mIGFueSBwYW5pYy9pc3N1ZSBkdWUgdG8gdGhpcyBidXQgdGhhdCdzIHN0
-aWxsIGEgZ29vZCBvcHRpbWl6YXRpb24uDQoNCk5hZGF2IG9yIEkgY291bGQgaGVscCB0byB0ZXN0
-IHRoYXQgb24gRVNYIGlmIHJlcXVpcmVkLg0KDQpSZWdhcmRzLA0KDQotLSANCkp1bGllbiBGcmVj
-aGUNCg0K
+On Wed, Nov 14, 2018 at 11:49:15PM +0100, David Hildenbrand wrote:
+> On 14.11.18 23:23, Matthew Wilcox wrote:
+> > On Wed, Nov 14, 2018 at 10:17:00PM +0100, David Hildenbrand wrote:
+> >> Rename PG_balloon to PG_offline. This is an indicator that the page is
+> >> logically offline, the content stale and that it should not be touched
+> >> (e.g. a hypervisor would have to allocate backing storage in order for the
+> >> guest to dump an unused page).  We can then e.g. exclude such pages from
+> >> dumps.
+> >>
+> >> In following patches, we will make use of this bit also in other balloon
+> >> drivers.  While at it, document PGTABLE.
+> > 
+> > Thank you for documenting PGTABLE.  I didn't realise I also had this
+> > document to update when I added PGTABLE.
+> 
+> Thank you for looking into this :)
+> 
+> > 
+> >> +++ b/Documentation/admin-guide/mm/pagemap.rst
+> >> @@ -78,6 +78,8 @@ number of times a page is mapped.
+> >>      23. BALLOON
+> >>      24. ZERO_PAGE
+> >>      25. IDLE
+> >> +    26. PGTABLE
+> >> +    27. OFFLINE
+> > 
+> > So the offline *user* bit is new ... even though the *kernel* bit
+> > just renames the balloon bit.  I'm not sure how I feel about this.
+> > I'm going to think about it some more.  Could you share your decision
+> > process with us?
+> 
+> BALLOON was/is documented as
+> 
+> "23 - BALLOON
+>     balloon compaction page
+> "
+> 
+> and only includes all virtio-ballon pages after the non-lru migration
+> feature has been implemented for ballooned pages. Since then, this flag
+> does basically no longer stands for what it actually was supposed to do.
+
+Perhaps I missing something, but how the user should interpret "23" when he
+reads /proc/kpageflags?
+
+> To not break uapi I decided to not rename it but instead to add a new flag.
+
+I've got a feeling that uapi was anyway changed for the BALLON flag
+meaning.
+ 
+> > 
+> > I have no objection to renaming the balloon bit inside the kernel; I
+> > think that's a wise idea.  I'm just not sure whether we should rename
+> > the user balloon bit rather than adding a new bit.
+> > 
+> 
+> Can we rename without breaking uapi?
+> 
+> -- 
+> 
+> Thanks,
+> 
+> David / dhildenb
+> 
+
+-- 
+Sincerely yours,
+Mike.
