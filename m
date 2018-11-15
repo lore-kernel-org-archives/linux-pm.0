@@ -1,75 +1,105 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH RFC 6/6] PM / Hibernate: exclude all PageOffline() pages
-Date: Thu, 15 Nov 2018 08:48:10 +0100
-Message-ID: <20181115074810.GA9055@amd>
+From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC 2/6] mm: convert PG_balloon to PG_offline
+Date: Thu, 15 Nov 2018 10:21:13 +0100
+Message-ID: <5730ee16-9b18-ad3d-0fb3-e9edb55e2298@redhat.com>
 References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-7-david@redhat.com>
+ <20181114211704.6381-3-david@redhat.com>
+ <20181114222321.GB1784@bombadil.infradead.org>
+ <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
+ <20181115020725.GC2353@rapoport-lnx>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181114211704.6381-7-david@redhat.com>
+In-Reply-To: <20181115020725.GC2353@rapoport-lnx>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
+To: Mike Rapoport <rppt@linux.ibm.com>
+Cc: Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian Hansen <chansen3@cisco.com>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.>
 List-Id: linux-pm@vger.kernel.org
 
+On 15.11.18 03:07, Mike Rapoport wrote:
+> On Wed, Nov 14, 2018 at 11:49:15PM +0100, David Hildenbrand wrote:
+>> On 14.11.18 23:23, Matthew Wilcox wrote:
+>>> On Wed, Nov 14, 2018 at 10:17:00PM +0100, David Hildenbrand wrote:
+>>>> Rename PG_balloon to PG_offline. This is an indicator that the page is
+>>>> logically offline, the content stale and that it should not be touched
+>>>> (e.g. a hypervisor would have to allocate backing storage in order for the
+>>>> guest to dump an unused page).  We can then e.g. exclude such pages from
+>>>> dumps.
+>>>>
+>>>> In following patches, we will make use of this bit also in other balloon
+>>>> drivers.  While at it, document PGTABLE.
+>>>
+>>> Thank you for documenting PGTABLE.  I didn't realise I also had this
+>>> document to update when I added PGTABLE.
+>>
+>> Thank you for looking into this :)
+>>
+>>>
+>>>> +++ b/Documentation/admin-guide/mm/pagemap.rst
+>>>> @@ -78,6 +78,8 @@ number of times a page is mapped.
+>>>>      23. BALLOON
+>>>>      24. ZERO_PAGE
+>>>>      25. IDLE
+>>>> +    26. PGTABLE
+>>>> +    27. OFFLINE
+>>>
+>>> So the offline *user* bit is new ... even though the *kernel* bit
+>>> just renames the balloon bit.  I'm not sure how I feel about this.
+>>> I'm going to think about it some more.  Could you share your decision
+>>> process with us?
+>>
+>> BALLOON was/is documented as
+>>
+>> "23 - BALLOON
+>>     balloon compaction page
+>> "
+>>
+>> and only includes all virtio-ballon pages after the non-lru migration
+>> feature has been implemented for ballooned pages. Since then, this flag
+>> does basically no longer stands for what it actually was supposed to do.
+> 
+> Perhaps I missing something, but how the user should interpret "23" when he
+> reads /proc/kpageflags?
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Looking at the history in more detail:
 
-On Wed 2018-11-14 22:17:04, David Hildenbrand wrote:
-> The content of pages that are marked PG_offline is not of interest
-> (e.g. inflated by a balloon driver), let's skip these pages.
->=20
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+commit 09316c09dde33aae14f34489d9e3d243ec0d5938
+Author: Konstantin Khlebnikov <k.khlebnikov@samsung.com>
+Date:   Thu Oct 9 15:29:32 2014 -0700
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+    mm/balloon_compaction: add vmstat counters and kpageflags bit
 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index b0308a2c6000..01db1d13481a 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1222,7 +1222,7 @@ static struct page *saveable_highmem_page(struct zo=
-ne *zone, unsigned long pfn)
->  	BUG_ON(!PageHighMem(page));
-> =20
->  	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) ||
-> -	    PageReserved(page))
-> +	    PageReserved(page) || PageOffline(page))
->  		return NULL;
-> =20
->  	if (page_is_guard(page))
-> @@ -1286,6 +1286,9 @@ static struct page *saveable_page(struct zone *zone=
-, unsigned long pfn)
->  	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
->  		return NULL;
-> =20
-> +	if (PageOffline(page))
-> +		return NULL;
-> +
->  	if (PageReserved(page)
->  	    && (!kernel_page_present(page) || pfn_is_nosave(pfn)))
->  		return NULL;
+    Always mark pages with PageBalloon even if balloon compaction is
+disabled
+    and expose this mark in /proc/kpageflags as KPF_BALLOON.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
 
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+So KPF_BALLOON was exposed when virtio-balloon pages were always marked
+with PG_balloon. So the documentation is actually wrong ("balloon page"
+vs. "balloon compaction page").
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+I have no idea who actually used that information. I suspect this was
+just some debugging aid.
 
-iEYEARECAAYFAlvtJLoACgkQMOfwapXb+vIKwQCgqMCGJ4BEWmMsp5gihD0MR/cx
-lFwAnAqKSOIHgjFwhl+uKuaItXeOXj2x
-=TTZ/
------END PGP SIGNATURE-----
+> 
+>> To not break uapi I decided to not rename it but instead to add a new flag.
+> 
+> I've got a feeling that uapi was anyway changed for the BALLON flag
+> meaning.
 
---jRHKVT23PllUwdXP--
+Yes. If we *replace* KPF_BALLOON by KPF_OFFLINE
+
+a) Some applications might no longer compile (I guess that's ok)
+b) Some old applications will treat KPF_OFFLINE like KPF_BALLOON (which
+should at least for virtio-balloon usage until now be fine - it is just
+more generic)
+
+So I guess it's up to Maintainers/Matthew to decide :)
+
+-- 
+
+Thanks,
+
+David / dhildenb
