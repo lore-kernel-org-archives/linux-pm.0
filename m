@@ -1,54 +1,61 @@
-From: Nadav Amit <namit@vmware.com>
-Subject: Re: [PATCH RFC 0/6] mm/kdump: allow to exclude pages that are
- logically offline
-Date: Wed, 14 Nov 2018 23:41:16 +0000
-Message-ID: <63214D36-14FD-4080-8E35-CF2A392D6507@vmware.com>
-References: <20181114211704.6381-1-david@redhat.com>
- <8932E1F4-A5A9-4462-9800-CAC1EF85AC5D@vmware.com>
- <63c5f4b6-828a-764e-f64d-e603dc4b104e@redhat.com>
+From: Gabriel C <nix.or.die@gmail.com>
+Subject: Re: atk10k Unknown eventid and WARN() on resume with kernel 4.19
+Date: Thu, 15 Nov 2018 02:06:47 +0100
+Message-ID: <CAEJqkgiz0-5m5uDUW2vzCatxHPX2Gi6oPQwR_J5Y4fV8iuiguw@mail.gmail.com>
+References: <CAEJqkgiKzYTZQTGWNAPTeOPFWz658FWqDsAhyoxVDP1VKWSukg@mail.gmail.com>
+ <CAEJqkgh7xksO7tmPHGkOXvWftc2AcCgi4j3S3C88CorV53+Hgw@mail.gmail.com> <CAEJqkghgyYMxRc8-wnF-J1CGhuYD2vfVDSiLU1A0fwpXKN7Huw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <63c5f4b6-828a-764e-f64d-e603dc4b104e@redhat.com>
-Content-Language: en-US
-Content-ID: <45598D8ED7B9944FBB381B5CF426DFE4@namprd05.prod.outlook.com>
+In-Reply-To: <CAEJqkghgyYMxRc8-wnF-J1CGhuYD2vfVDSiLU1A0fwpXKN7Huw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>, linux-mm <linux-mm@kvack.org>, Julien Freche <jfreche@vmware.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, linux-fsdevel <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, xen-devel <xen-devel@lists.xenproject.org>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Alexey Dobriyan <adobriyan@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Christian Hansen <chansen3@cisco.com>, Dave Young <dyoung@redhat.com>, David Rientjes <rientjes@google.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>, Ka
+To: Kalle Valo <kvalo@codeaurora.org>, Pradeep Kumar Chitrapu <pradeepc@codeaurora.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, ath10k@lists.infradead.org, linux-wireless@vger.kernel.org, dex77@frugalware.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogRGF2aWQgSGlsZGVuYnJhbmQNClNlbnQ6IE5vdmVtYmVyIDE0LCAyMDE4IGF0IDExOjA1
-OjM4IFBNIEdNVA0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFJGQyAwLzZdIG1tL2tkdW1wOiBhbGxv
-dyB0byBleGNsdWRlIHBhZ2VzIHRoYXQgYXJlIGxvZ2ljYWxseSBvZmZsaW5lDQo+IA0KPiANCj4g
-T24gMTQuMTEuMTggMjM6NTcsIE5hZGF2IEFtaXQgd3JvdGU6DQo+PiBGcm9tOiBEYXZpZCBIaWxk
-ZW5icmFuZA0KPj4gU2VudDogTm92ZW1iZXIgMTQsIDIwMTggYXQgOToxNjo1OCBQTSBHTVQNCj4+
-PiBTdWJqZWN0OiBbUEFUQ0ggUkZDIDAvNl0gbW0va2R1bXA6IGFsbG93IHRvIGV4Y2x1ZGUgcGFn
-ZXMgdGhhdCBhcmUgbG9naWNhbGx5IG9mZmxpbmUNCj4+PiANCj4+PiANCj4+PiBSaWdodCBub3cs
-IHBhZ2VzIGluZmxhdGVkIGFzIHBhcnQgb2YgYSBiYWxsb29uIGRyaXZlciB3aWxsIGJlIGR1bXBl
-ZA0KPj4+IGJ5IGR1bXAgdG9vbHMgbGlrZSBtYWtlZHVtcGZpbGUuIFdoaWxlIFhFTiBpcyBhYmxl
-IHRvIGNoZWNrIGluIHRoZQ0KPj4+IGNyYXNoIGtlcm5lbCB3aGV0aGVyIGEgY2VydGFpbiBwZm4g
-aXMgYWN0dWFsbCBiYWNrZWQgYnkgbWVtb3J5IGluIHRoZQ0KPj4+IGh5cGVydmlzb3IgKHNlZSB4
-ZW5fb2xkbWVtX3Bmbl9pc19yYW0pIGFuZCBvcHRpbWl6ZSB0aGlzIGNhc2UsIGR1bXBzIG9mDQo+
-Pj4gdmlydGlvLWJhbGxvb24gYW5kIGh2LWJhbGxvb24gaW5mbGF0ZWQgbWVtb3J5IHdpbGwgZXNz
-ZW50aWFsbHkgcmVzdWx0IGluDQo+Pj4gemVybyBwYWdlcyBnZXR0aW5nIGFsbG9jYXRlZCBieSB0
-aGUgaHlwZXJ2aXNvciBhbmQgdGhlIGR1bXAgZ2V0dGluZw0KPj4+IGZpbGxlZCB3aXRoIHRoaXMg
-ZGF0YS4NCj4+IA0KPj4gSXMgdGhlcmUgYW55IHJlYXNvbiB0aGF0IFZNd2FyZSBiYWxsb29uIGRy
-aXZlciBpcyBub3QgbWVudGlvbmVkPw0KPiANCj4gRGVmaW5pdGVseSAuLi4NCj4gDQo+IC4uLiBu
-b3QgOykgLiBJIGhhdmVuJ3QgbG9va2VkIGF0IHZtd2FyZSdzIGJhbGxvb24gZHJpdmVyIHlldCAo
-SSBvbmx5IHNhdw0KPiB0aGF0IHRoZXJlIHdhcyBxdWl0ZSBzb21lIGFjdGl2aXR5IHJlY2VudGx5
-KS4gSSBndWVzcyBpdCBzaG91bGQgaGF2ZQ0KPiBzaW1pbGFyIHByb2JsZW1zLiAoSSBtZWFuIHJl
-YWRpbmcgYW5kIGR1bXBpbmcgZGF0YSBub2JvZHkgY2FyZXMgYWJvdXQgaXMNCj4gY2VydGFpbmx5
-IG5vdCBkZXNpcmVkKQ0KPiANCj4gQ2FuIHlvdSBzaGFyZSBpZiBzb21ldGhpbmcgbGlrZSB0aGlz
-IGlzIGFsc28gZGVzaXJlZCBmb3Igdm13YXJlJ3MNCj4gaW1wbGVtZW50YXRpb24/IChJIHRhZ2dl
-ZCB0aGlzIGFzIFJGQyB0byBnZXQgc29tZSBtb3JlIGZlZWRiYWNrKQ0KPiANCj4gSXQgc2hvdWxk
-IGluIHRoZW9yeSBiZSBhcyBzaW1wbGUgYXMgYWRkaW5nIGEgaGFuZGZ1bCBvZg0KPiBfU2V0UGFn
-ZU9mZmxpbmUoKS9fQ2xlYXJQYWdlT2ZmbGluZSgpIGF0IHRoZSByaWdodCBzcG90cy4NCg0KVGhh
-bmtzLCBJIHdhcyBqdXN0IHN1c3BlY3RpbmcgaXQgaXMgcGVyc29uYWwgOy0pDQoNCkFjdHVhbGx5
-LCBzb21lIHBhdGNoZXMgdGhhdCBJIHNlbnQgZm9yIDQuMjAgdG8gdXNlIHRoZSBiYWxsb29uLWNv
-bXBhY3Rpb24NCmluZnJhc3RydWN0dXJlIGJ5IHRoZSBWTXdhcmUgYmFsbG9vbiBmZWxsIGJldHdl
-ZW4gdGhlIGNyYWNrcywgYW5kIEkgbmVlZA0KdG8gcmVzZW5kIHRoZW0uDQoNCkkgd291bGQgb2J2
-aW91c2x5IHByZWZlciB0aGF0IHlvdXIgY2hhbmdlcyB3b3VsZCBiZSBkb25lIG9uIHRvcCBvZiB0
-aG9zZQ0KdGhhdCB3ZXJlIHNraXBwZWQuIFRoaXMgcGF0Y2gtc2V0IHNvdW5kcyB2ZXJ5IHJlYXNv
-bmFibGUgdG8gbWUsIGJ1dCBJIHByZWZlcg0KdGhhdCBKdWxpZW4gKGNj4oCZZCkgd291bGQgYWxz
-byBnaXZlIGhpcyBvcGluaW9uLg0KDQpSZWdhcmRzLA0KTmFkYXY=
+Am Mi., 14. Nov. 2018 um 23:16 Uhr schrieb Gabriel C <nix.or.die@gmail.com>:
+> > > Hello,
+> > >
+> > > starting with kernel 4.19 we noticed  'Unknown eventid: xxxx' warnings
+> > > on our Laptops.
+> > >
+> > > ...
+> > >
+> > > crazy@devnull:~$ dmesg | grep Unknow
+> > > [    7.144998] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [    7.147758] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > > [    9.441654] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [    9.444446] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > > [   11.770997] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [   11.773787] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > > [320339.374108] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [320339.377020] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > > [320342.128664] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [320342.131447] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > > [320344.452864] ath10k_pci 0000:03:00.0: Unknown eventid: 118809
+> > > [320344.455696] ath10k_pci 0000:03:00.0: Unknown eventid: 90118
+> > >
+> > > ....
+> > >
+> > > Both boxes also hits the following WARN*() on resume from S3:
+> > >
+> >  Uh sorry .. Gmail doesn't like long lines it seems.
+> > There the WARN() message:
+> >
+> > http://ftp.frugalware.org/pub/other/people/crazy/warn.txt
+> >
+> > >
+> > > Please let me know if you need an dmesg or any other informations.
+>
+>
+> Added pm list maybe someone there got some idea ?
+>
+> Also same issue reported there :
+> https://bugzilla.kernel.org/show_bug.cgi?id=201499
+>
+
+The WARN_ON() on resume seems to be triggered  after commit cd93b83ad927b.
+
+BR,
+
+Gabriel C
