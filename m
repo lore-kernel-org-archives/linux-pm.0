@@ -1,61 +1,57 @@
-From: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH RFC 6/6] PM / Hibernate: exclude all PageOffline() pages
-Date: Thu, 15 Nov 2018 13:29:44 +0100
-Message-ID: <2e94148a-514f-0e18-5103-0e3ae342b3c9@redhat.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH RFC 3/6] kexec: export PG_offline to VMCOREINFO
+Date: Thu, 15 Nov 2018 15:13:07 +0100
+Message-ID: <20181115141307.GH26448@zn.tnic>
 References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-7-david@redhat.com>
- <20181115122302.GR23831@dhcp22.suse.cz>
+ <20181114211704.6381-4-david@redhat.com>
+ <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
+ <20181115111023.GC26448@zn.tnic>
+ <4aa5d39d-a923-87de-d646-70b9cbfe62f0@redhat.com>
+ <20181115115213.GE26448@zn.tnic>
+ <20181115121102.GP23831@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181115122302.GR23831@dhcp22.suse.cz>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Content-Disposition: inline
+In-Reply-To: <20181115121102.GP23831@dhcp22.suse.cz>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, "Michael S. Tsirkin" <mst@redhat.com>, xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org, devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>, Omar Sandoval <osandov@fb.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Lianbo Jiang <lijiang@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 15.11.18 13:23, Michal Hocko wrote:
-> On Wed 14-11-18 22:17:04, David Hildenbrand wrote:
-> [...]
->> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
->> index b0308a2c6000..01db1d13481a 100644
->> --- a/kernel/power/snapshot.c
->> +++ b/kernel/power/snapshot.c
->> @@ -1222,7 +1222,7 @@ static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
->>  	BUG_ON(!PageHighMem(page));
->>  
->>  	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) ||
->> -	    PageReserved(page))
->> +	    PageReserved(page) || PageOffline(page))
->>  		return NULL;
->>  
->>  	if (page_is_guard(page))
->> @@ -1286,6 +1286,9 @@ static struct page *saveable_page(struct zone *zone, unsigned long pfn)
->>  	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
->>  		return NULL;
->>  
->> +	if (PageOffline(page))
->> +		return NULL;
->> +
->>  	if (PageReserved(page)
->>  	    && (!kernel_page_present(page) || pfn_is_nosave(pfn)))
->>  		return NULL;
-> 
-> Btw. now that you are touching this file could you also make
-> s@pfn_to_page@pfn_to_online_page@ please? We really do not want to touch
-> offline pfn ranges in general. A separate patch for that of course.
-> 
-> Thanks!
-> 
+On Thu, Nov 15, 2018 at 01:11:02PM +0100, Michal Hocko wrote:
+> I am not familiar with kexec to judge this particular patch but we
+> cannot simply define any range for these pages (same as for hwpoison
+> ones) because they can be almost anywhere in the available memory range.
+> Then there can be countless of them. There is no other way to rule them
+> out but to check the page state.
 
-Sure thing, will look into that!
+I guess, especially if it is a monster box with a lot of memory in it.
 
-Thanks!
+> I am not really sure what is the concern here exactly. Kdump is so
+> closly tight to the specific kernel version that the api exported
+> specifically for its purpose cannot be seriously considered an ABI.
+> Kdump has to adopt all the time.
+
+Right...
+
+Except, when people start ogling vmcoreinfo for other things and start
+exporting all kinds of kernel internals in there, my alarm bells start
+ringing.
+
+But ok, kdump *is* special and I guess that's fine.
 
 -- 
+Regards/Gruss,
+    Boris.
 
-Thanks,
-
-David / dhildenb
+Good mailing practices for 400: avoid top-posting and trim the reply.
