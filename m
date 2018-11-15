@@ -1,85 +1,46 @@
-From: Mike Rapoport <rppt@linux.ibm.com>
-Subject: Re: [PATCH RFC 2/6] mm: convert PG_balloon to PG_offline
-Date: Wed, 14 Nov 2018 18:07:26 -0800
-Message-ID: <20181115020725.GC2353@rapoport-lnx>
-References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-3-david@redhat.com>
- <20181114222321.GB1784@bombadil.infradead.org>
- <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / AVS: SmartReflex: remove unused function
+Date: Thu, 15 Nov 2018 03:28:50 +0100
+Message-ID: <CAJZ5v0g8Y+KTHmMfbzfhhRqs6MM9kq3p3J7R2tNvPZZs2iKhpQ@mail.gmail.com>
+References: <20181006164059.16106-1-u.kleine-koenig@pengutronix.de>
+ <10339961.29dihbgRqp@aspire.rjw.lan>
+ <20181114094253.v45kxd2efgwhuh42@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <b4668081-5aa3-d7f5-6880-d01c75cfc6ae@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, Mike Rapoport <rppt@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Christian Hansen <chansen3@cisco.com>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Naoya Horiguchi <n-horiguchi@ah.jp.nec.>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181114094253.v45kxd2efgwhuh42@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Nishanth Menon <nm@ti.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, linadmin@quickline.ch, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 14, 2018 at 11:49:15PM +0100, David Hildenbrand wrote:
-> On 14.11.18 23:23, Matthew Wilcox wrote:
-> > On Wed, Nov 14, 2018 at 10:17:00PM +0100, David Hildenbrand wrote:
-> >> Rename PG_balloon to PG_offline. This is an indicator that the page is
-> >> logically offline, the content stale and that it should not be touched
-> >> (e.g. a hypervisor would have to allocate backing storage in order for the
-> >> guest to dump an unused page).  We can then e.g. exclude such pages from
-> >> dumps.
-> >>
-> >> In following patches, we will make use of this bit also in other balloon
-> >> drivers.  While at it, document PGTABLE.
-> > 
-> > Thank you for documenting PGTABLE.  I didn't realise I also had this
-> > document to update when I added PGTABLE.
-> 
-> Thank you for looking into this :)
-> 
-> > 
-> >> +++ b/Documentation/admin-guide/mm/pagemap.rst
-> >> @@ -78,6 +78,8 @@ number of times a page is mapped.
-> >>      23. BALLOON
-> >>      24. ZERO_PAGE
-> >>      25. IDLE
-> >> +    26. PGTABLE
-> >> +    27. OFFLINE
-> > 
-> > So the offline *user* bit is new ... even though the *kernel* bit
-> > just renames the balloon bit.  I'm not sure how I feel about this.
-> > I'm going to think about it some more.  Could you share your decision
-> > process with us?
-> 
-> BALLOON was/is documented as
-> 
-> "23 - BALLOON
->     balloon compaction page
-> "
-> 
-> and only includes all virtio-ballon pages after the non-lru migration
-> feature has been implemented for ballooned pages. Since then, this flag
-> does basically no longer stands for what it actually was supposed to do.
-
-Perhaps I missing something, but how the user should interpret "23" when he
-reads /proc/kpageflags?
-
-> To not break uapi I decided to not rename it but instead to add a new flag.
-
-I've got a feeling that uapi was anyway changed for the BALLON flag
-meaning.
- 
-> > 
-> > I have no objection to renaming the balloon bit inside the kernel; I
-> > think that's a wise idea.  I'm just not sure whether we should rename
-> > the user balloon bit rather than adding a new bit.
-> > 
-> 
-> Can we rename without breaking uapi?
-> 
-> -- 
-> 
-> Thanks,
-> 
-> David / dhildenb
-> 
-
--- 
-Sincerely yours,
-Mike.
+T24gV2VkLCBOb3YgMTQsIDIwMTggYXQgMTA6NDIgQU0gVXdlIEtsZWluZS1Lw7ZuaWcKPHUua2xl
+aW5lLWtvZW5pZ0BwZW5ndXRyb25peC5kZT4gd3JvdGU6Cj4KPiBIZWxsbywKPgo+IE9uIFR1ZSwg
+T2N0IDE2LCAyMDE4IGF0IDExOjA5OjExQU0gKzAyMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3Rl
+Ogo+ID4gT24gU2F0dXJkYXksIE9jdG9iZXIgNiwgMjAxOCA2OjQwOjU5IFBNIENFU1QgVXdlIEts
+ZWluZS1Lw7ZuaWcgd3JvdGU6Cj4gPiA+IEZyb206IFV3ZSBLbGVpbmUtS8O2bmlnIDx1d2VAa2xl
+aW5lLWtvZW5pZy5vcmc+Cj4gPiA+Cj4gPiA+IG9tYXBfc3JfcmVnaXN0ZXJfcG1pYygpIHdhcyBp
+bnRyb2R1Y2VkIGluIDIwMTAgaW4gY29tbWl0Cj4gPiA+Cj4gPiA+ICAgICA5ODRhYTZkYmY0Y2Eg
+KCJPTUFQMzogUE06IEFkZGluZyBzbWFydHJlZmxleCBkcml2ZXIgc3VwcG9ydC4iKQo+ID4gPgo+
+ID4gPiAuIFRoZXJlIHdhcyBuZXZlciBhbnkgY2FsbGVyIG9mIHRoaXMgZnVuY3Rpb24gaW4gbWFp
+bmxpbmUgcmVzdWx0aW5nIGluIGEKPiA+ID4gd2FybmluZwo+ID4gPgo+ID4gPiAgICAgc3JfaW5p
+dDogTm8gUE1JQyBob29rIHRvIGluaXQgc21hcnRyZWZsZXgKPiA+ID4KPiA+ID4gZm9yIGVhY2gg
+bWFjaGluZSB3aGVyZSB0aGlzIGRyaXZlciBpcyBlbmFibGVkLiBTbyByZW1vdmUgdGhlIHVudXNl
+ZAo+ID4gPiBmdW5jdGlvbiBhbmQgdGhlIHByX3dhcm4uCj4gPgo+ID4gQXBwbGllZCwgdGhhbmtz
+IQo+Cj4gVGhpcyBwYXRjaCBkaWRuJ3QgbWFrZSBpdCBpbnRvIG5leHQgeWV0LCBpcyB0aGlzIGV4
+cGVjdGVkPwoKSXQgZGlkIHNvbWUgdGltZSBhZ28sIGJ1dCB0aGVuIHRoZSBicmFuY2ggaXQncyBv
+biB3YXMgbmVnbGVjdGVkIGJ5Cm1pc3Rha2UuICBTb3JyeSBhYm91dCB0aGF0LgoKSSB3aWxsIG1l
+cmdlIGl0IGludG8gbXkgbGludXgtbmV4dCBicmFuY2ggbmV4dCB3ZWVrLgoKVGhhbmtzLApSYWZh
+ZWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4
+LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFk
+Lm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFy
+bS1rZXJuZWwK
