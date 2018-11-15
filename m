@@ -1,90 +1,40 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH 12/15] power: supply: olpc_battery: Use DT to get
- battery version
-Date: Thu, 15 Nov 2018 19:36:41 +0100
-Message-ID: <e1de44148e06379b04c72f925a30fb0e346536eb.camel@v3.sk>
+Subject: Re: [PATCH 02/15] Revert "platform/olpc: Make ec explicitly
+ non-modular"
+Date: Thu, 15 Nov 2018 19:57:44 +0100
+Message-ID: <49eee45692f16dcbcf8aceaf3a999bb7f33178ba.camel@v3.sk>
 References: <20181010172300.317643-1-lkundrak@v3.sk>
-         <20181010172300.317643-13-lkundrak@v3.sk> <20181104123710.GE23864@amd>
+         <20181010172300.317643-3-lkundrak@v3.sk> <20181102221626.GC5322@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181104123710.GE23864@amd>
+In-Reply-To: <20181102221626.GC5322@amd>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
 Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2018-11-04 at 13:37 +0100, Pavel Machek wrote:
-> On Wed 2018-10-10 19:22:57, Lubomir Rintel wrote:
-> > Avoid using the x86 OLPC platform specific call to get the board
-> > version. It won't work on FDT-based ARM MMP2 platform.
+On Fri, 2018-11-02 at 23:16 +0100, Pavel Machek wrote:
+> On Wed 2018-10-10 19:22:47, Lubomir Rintel wrote:
+> > It doesn't make sense to always have this built-in, e.g. on ARM
+> > multiplatform kernels. A better way to address the problem the
+> > original
+> > commit aimed to solve is to fix Kconfig.
 > > 
-> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> > Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> > This reverts commit f48d1496b8537d75776478c6942dd87f34d7f270.
 > 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-> AFAICT, this should go earlier in the series; first, add support in
-> the code, then switch to new name in DTS.
+> This looks ok, but I don't see the Kconfig fix in the series. Is it
+> needed?
 
-I think it's all right this way: I'm not removing the old compatible
-string -- functionality provided by one version of the battery is a
-superset of the another.
+It's flipped to a tristate in "Platform: OLPC: Move OLPC config symbol
+out of x86 tree" and mentioned in the commit message.
 
-Also, the older version of the driver with only the XO-1 compatible
-string guesses the actual battery version by querying the board version
-directly, so up to this patch things keep working the way they used to
-regardless of the new compatible string.
+Perhaps I could made that clear by separating the change into a
+separate patch. I'm keeping it as it is in next version of the patch
+set, but I'm going to improve this one's commit message and sort the
+patches closer together.
 
-Lubo
+> 							Pavel
 
-> 								Pavel
-> 
-> > ---
-> >  drivers/power/supply/olpc_battery.c | 10 +++++++---
-> >  1 file changed, 7 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/power/supply/olpc_battery.c
-> > b/drivers/power/supply/olpc_battery.c
-> > index 5a97e42a3547..540d44bf536f 100644
-> > --- a/drivers/power/supply/olpc_battery.c
-> > +++ b/drivers/power/supply/olpc_battery.c
-> > @@ -19,6 +19,7 @@
-> >  #include <linux/jiffies.h>
-> >  #include <linux/sched.h>
-> >  #include <linux/olpc-ec.h>
-> > +#include <linux/of.h>
-> >  #include <asm/olpc.h>
-> >  
-> >  
-> > @@ -622,11 +623,13 @@ static int olpc_battery_probe(struct
-> > platform_device *pdev)
-> >  	olpc_ac = power_supply_register(&pdev->dev, &olpc_ac_desc,
-> > NULL);
-> >  	if (IS_ERR(olpc_ac))
-> >  		return PTR_ERR(olpc_ac);
-> > -
-> > -	if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5 */
-> > +	if (of_property_match_string(pdev->dev.of_node, "compatible",
-> > +					"olpc,xo1.5-battery") >= 0) {
-> > +		/* XO-1.5 */
-> >  		olpc_bat_desc.properties = olpc_xo15_bat_props;
-> >  		olpc_bat_desc.num_properties =
-> > ARRAY_SIZE(olpc_xo15_bat_props);
-> > -	} else { /* XO-1 */
-> > +	} else {
-> > +		/* XO-1 */
-> >  		olpc_bat_desc.properties = olpc_xo1_bat_props;
-> >  		olpc_bat_desc.num_properties =
-> > ARRAY_SIZE(olpc_xo1_bat_props);
-> >  	}
-> > @@ -672,6 +675,7 @@ static int olpc_battery_remove(struct
-> > platform_device *pdev)
-> >  
-> >  static const struct of_device_id olpc_battery_ids[] = {
-> >  	{ .compatible = "olpc,xo1-battery" },
-> > +	{ .compatible = "olpc,xo1.5-battery" },
-> >  	{}
-> >  };
-> >  MODULE_DEVICE_TABLE(of, olpc_battery_ids);
+Lubo								
