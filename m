@@ -1,103 +1,58 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH RFC 3/6] kexec: export PG_offline to VMCOREINFO
-Date: Thu, 15 Nov 2018 18:58:58 +0100
-Message-ID: <20181115175858.GC25056@zn.tnic>
-References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-4-david@redhat.com>
- <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
- <20181115111023.GC26448@zn.tnic>
- <4aa5d39d-a923-87de-d646-70b9cbfe62f0@redhat.com>
- <20181115115213.GE26448@zn.tnic>
- <9d19a844-9ae0-9520-c32a-0a4491f8de43@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: [PATCH RESEND] hyper-v: Fix wakeup from suspend-to-idle
+Date: Thu, 15 Nov 2018 19:09:33 +0100
+Message-ID: <20181115180933.396-1-vkuznets@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9d19a844-9ae0-9520-c32a-0a4491f8de43@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: Dave Young <dyoung@redhat.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 15, 2018 at 01:01:17PM +0100, David Hildenbrand wrote:
-> Just saying that "I'm not the first to do it, don't hit me with a stick" :)
+It makes little sense but still possible to put Hyper-V guests into
+suspend-to-idle state. To wake them up two wakeup sources were registered
+in the past: hyperv-keyboard and hid-hyperv. However, since
+commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
+suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
+to pm_wakeup_hard_event() API as these devices are actually the only
+possible way to wakeup Hyper-V guests.
 
-:-)
+Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: K. Y. Srinivasan <kys@microsoft.com>
+Acked-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+---
+- It seems the patch slipped through the cracks, resending.
+---
+ drivers/hid/hid-hyperv.c              | 2 +-
+ drivers/input/serio/hyperv-keyboard.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> Indeed. And we still have without makedumpfile. I think you are aware of
-> this, but I'll explain it just for consistency: PG_hwpoison
-
-No, I appreciate an explanation very much! So thanks for that. :)
-
-> At some point we detect a HW error and mask a page as PG_hwpoison.
-> 
-> makedumpfile knows how to treat that flag and can exclude it from the
-> dump (== not access it). No crash.
-> 
-> kdump itself has no clue about old "struct pages". Especially:
-> a) Where they are located in memory (e.g. SPARSE)
-> b) What their format is ("where are the flags")
-> c) What the meaning of flags is ("what does bit X mean")
-> 
-> In order to know such information, we would have to do parsing of quite
-> some information inside the kernel in kdump. Basically what makedumpfile
-> does just now. Is this feasible? I don't think so.
-> 
-> So we would need another approach to communicate such information as you
-> said. I can't think of any, but if anybody reading this has an idea,
-> please speak up. I am interested.
-
-Yeah but that ship has sailed. And even if we had a great idea, we'd
-have to support kdump before and after the idea. And that would be a
-serious mess.
-
-And if you have a huge box with gazillion piles of memory and an alpha
-particle passes through a bunch of them on its way down to the earth's
-core, and while doing so, flips a bunch of bits, you need to go and
-collect all those regions and update some list which you then need to
-shove into the second kernel.
-
-And you probably need to do all that through perhaps a piece of memory
-which is used for communication between first and second kernel and that
-list better fit in there, or you need to realloc. And that piece of
-memory's layout needs to be properly defined so that the second kernel
-can parse it correctly.
-
-And so on...
-
-> The *only* way right now we would have to handle such scenarios:
-> 
-> 1. While dumping memory and we get a machine check, fake reading a zero
-> page instead of crashing.
-> 2. While dumping memory and we get a fault, fake reading a zero page
-> instead of crashing.
-
-Yap.
-
-> Indeed, and the basic design is to export these flags. (let's say
-> "unfortunately", being able to handle such stuff in kdump directly would
-> be the dream).
-
-Well, AFAICT, the minimum work you need to always do before starting the
-dumping is somehow generate that list of pages or ranges to not dump.
-And that work needs to be done by the first or the second kernel, I'd
-say.
-
-If the first kernel would do it, then you'd have to probably have
-callbacks to certain operations which go and add ranges or pages to
-exclude, to a list which is then readily accessible to the second
-kernel. Which means, when you reserve memory for the second kernel,
-you'd have to reserve memory also for such a list.
-
-But then what do you do when that memory gets filled up...?
-
-So I guess exporting those things in vmcoreinfo is probably the only
-thing we *can* do in the end.
-
-Oh well, enough rambling... :)
-
+diff --git a/drivers/hid/hid-hyperv.c b/drivers/hid/hid-hyperv.c
+index b372854cf38d..704049e62d58 100644
+--- a/drivers/hid/hid-hyperv.c
++++ b/drivers/hid/hid-hyperv.c
+@@ -309,7 +309,7 @@ static void mousevsc_on_receive(struct hv_device *device,
+ 		hid_input_report(input_dev->hid_device, HID_INPUT_REPORT,
+ 				 input_dev->input_buf, len, 1);
+ 
+-		pm_wakeup_event(&input_dev->device->device, 0);
++		pm_wakeup_hard_event(&input_dev->device->device);
+ 
+ 		break;
+ 	default:
+diff --git a/drivers/input/serio/hyperv-keyboard.c b/drivers/input/serio/hyperv-keyboard.c
+index 47a0e81a2989..a8b9be3e28db 100644
+--- a/drivers/input/serio/hyperv-keyboard.c
++++ b/drivers/input/serio/hyperv-keyboard.c
+@@ -177,7 +177,7 @@ static void hv_kbd_on_receive(struct hv_device *hv_dev,
+ 		 * state because the Enter-UP can trigger a wakeup at once.
+ 		 */
+ 		if (!(info & IS_BREAK))
+-			pm_wakeup_event(&hv_dev->device, 0);
++			pm_wakeup_hard_event(&hv_dev->device);
+ 
+ 		break;
+ 
 -- 
-Regards/Gruss,
-    Boris.
-
-Good mailing practices for 400: avoid top-posting and trim the reply.
+2.17.2
