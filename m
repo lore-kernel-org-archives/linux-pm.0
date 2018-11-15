@@ -1,67 +1,75 @@
-From: Dave Young <dyoung@redhat.com>
-Subject: Re: [PATCH RFC 3/6] kexec: export PG_offline to VMCOREINFO
-Date: Thu, 15 Nov 2018 14:19:23 +0800
-Message-ID: <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH RFC 6/6] PM / Hibernate: exclude all PageOffline() pages
+Date: Thu, 15 Nov 2018 08:48:10 +0100
+Message-ID: <20181115074810.GA9055@amd>
 References: <20181114211704.6381-1-david@redhat.com>
- <20181114211704.6381-4-david@redhat.com>
+ <20181114211704.6381-7-david@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181114211704.6381-4-david@redhat.com>
+In-Reply-To: <20181114211704.6381-7-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: David Hildenbrand <david@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, Borislav Petkov <bp@alien8.de>, "Michael S. Tsirkin" <mst@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi David,
 
-On 11/14/18 at 10:17pm, David Hildenbrand wrote:
-> Let's export PG_offline via PAGE_OFFLINE_MAPCOUNT_VALUE, so
-> makedumpfile can directly skip pages that are logically offline and the
-> content therefore stale.
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It would be good to copy some background info from cover letter to the
-patch description so that we can get better understanding why this is
-needed now.
+On Wed 2018-11-14 22:17:04, David Hildenbrand wrote:
+> The content of pages that are marked PG_offline is not of interest
+> (e.g. inflated by a balloon driver), let's skip these pages.
+>=20
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-BTW, Lianbo is working on a documentation of the vmcoreinfo exported
-fields. Ccing him so that he is aware of this.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Also cc Boris,  although I do not want the doc changes blocks this
-he might have different opinion :)
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index b0308a2c6000..01db1d13481a 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1222,7 +1222,7 @@ static struct page *saveable_highmem_page(struct zo=
+ne *zone, unsigned long pfn)
+>  	BUG_ON(!PageHighMem(page));
+> =20
+>  	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) ||
+> -	    PageReserved(page))
+> +	    PageReserved(page) || PageOffline(page))
+>  		return NULL;
+> =20
+>  	if (page_is_guard(page))
+> @@ -1286,6 +1286,9 @@ static struct page *saveable_page(struct zone *zone=
+, unsigned long pfn)
+>  	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
+>  		return NULL;
+> =20
+> +	if (PageOffline(page))
+> +		return NULL;
+> +
+>  	if (PageReserved(page)
+>  	    && (!kernel_page_present(page) || pfn_is_nosave(pfn)))
+>  		return NULL;
 
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Omar Sandoval <osandov@fb.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: "Michael S. Tsirkin" <mst@redhat.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  kernel/crash_core.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index 933cb3e45b98..093c9f917ed0 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -464,6 +464,8 @@ static int __init crash_save_vmcoreinfo_init(void)
->  	VMCOREINFO_NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE);
->  #ifdef CONFIG_HUGETLB_PAGE
->  	VMCOREINFO_NUMBER(HUGETLB_PAGE_DTOR);
-> +#define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
-> +	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
->  #endif
->  
->  	arch_crash_save_vmcoreinfo();
-> -- 
-> 2.17.2
-> 
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-Thanks
-Dave
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlvtJLoACgkQMOfwapXb+vIKwQCgqMCGJ4BEWmMsp5gihD0MR/cx
+lFwAnAqKSOIHgjFwhl+uKuaItXeOXj2x
+=TTZ/
+-----END PGP SIGNATURE-----
+
+--jRHKVT23PllUwdXP--
