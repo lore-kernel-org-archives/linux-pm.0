@@ -1,58 +1,103 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: [PATCH] thermal: tsens: qcom: do not create duplicate regmap debugfs entries
-Date: Thu, 15 Nov 2018 17:43:30 +0000
-Message-ID: <20181115174330.15224-1-srinivas.kandagatla@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH RFC 3/6] kexec: export PG_offline to VMCOREINFO
+Date: Thu, 15 Nov 2018 18:58:58 +0100
+Message-ID: <20181115175858.GC25056@zn.tnic>
+References: <20181114211704.6381-1-david@redhat.com>
+ <20181114211704.6381-4-david@redhat.com>
+ <20181115061923.GA3971@dhcp-128-65.nay.redhat.com>
+ <20181115111023.GC26448@zn.tnic>
+ <4aa5d39d-a923-87de-d646-70b9cbfe62f0@redhat.com>
+ <20181115115213.GE26448@zn.tnic>
+ <9d19a844-9ae0-9520-c32a-0a4491f8de43@redhat.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <9d19a844-9ae0-9520-c32a-0a4491f8de43@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: amit.kucheria@linaro.org, edubezval@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+To: David Hildenbrand <david@redhat.com>
+Cc: Dave Young <dyoung@redhat.com>, linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Regmap would use device name to create debugfs entries. If the device
-has multiple regmaps it is recommended to use name field in regmap_config.
-Fix this by providing name to the regmap configs correctly.
+On Thu, Nov 15, 2018 at 01:01:17PM +0100, David Hildenbrand wrote:
+> Just saying that "I'm not the first to do it, don't hit me with a stick" :)
 
-Without this patch we would see below error on DB820c.
+:-)
 
-qcom-tsens 4a9000.thermal-sensor: Failed to create 4a9000.thermal-sensor
-debugfs directory
+> Indeed. And we still have without makedumpfile. I think you are aware of
+> this, but I'll explain it just for consistency: PG_hwpoison
 
-Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
----
- drivers/thermal/qcom/tsens-common.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+No, I appreciate an explanation very much! So thanks for that. :)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index 3be4be2e0465..78652cac7f3d 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -114,6 +114,14 @@ int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
- }
- 
- static const struct regmap_config tsens_config = {
-+	.name		= "tm",
-+	.reg_bits	= 32,
-+	.val_bits	= 32,
-+	.reg_stride	= 4,
-+};
-+
-+static const struct regmap_config tsens_srot_config = {
-+	.name		= "srot",
- 	.reg_bits	= 32,
- 	.val_bits	= 32,
- 	.reg_stride	= 4,
-@@ -139,8 +147,8 @@ int __init init_common(struct tsens_device *tmdev)
- 		if (IS_ERR(srot_base))
- 			return PTR_ERR(srot_base);
- 
--		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev,
--							srot_base, &tsens_config);
-+		tmdev->srot_map = devm_regmap_init_mmio(tmdev->dev, srot_base,
-+							&tsens_srot_config);
- 		if (IS_ERR(tmdev->srot_map))
- 			return PTR_ERR(tmdev->srot_map);
- 
+> At some point we detect a HW error and mask a page as PG_hwpoison.
+> 
+> makedumpfile knows how to treat that flag and can exclude it from the
+> dump (== not access it). No crash.
+> 
+> kdump itself has no clue about old "struct pages". Especially:
+> a) Where they are located in memory (e.g. SPARSE)
+> b) What their format is ("where are the flags")
+> c) What the meaning of flags is ("what does bit X mean")
+> 
+> In order to know such information, we would have to do parsing of quite
+> some information inside the kernel in kdump. Basically what makedumpfile
+> does just now. Is this feasible? I don't think so.
+> 
+> So we would need another approach to communicate such information as you
+> said. I can't think of any, but if anybody reading this has an idea,
+> please speak up. I am interested.
+
+Yeah but that ship has sailed. And even if we had a great idea, we'd
+have to support kdump before and after the idea. And that would be a
+serious mess.
+
+And if you have a huge box with gazillion piles of memory and an alpha
+particle passes through a bunch of them on its way down to the earth's
+core, and while doing so, flips a bunch of bits, you need to go and
+collect all those regions and update some list which you then need to
+shove into the second kernel.
+
+And you probably need to do all that through perhaps a piece of memory
+which is used for communication between first and second kernel and that
+list better fit in there, or you need to realloc. And that piece of
+memory's layout needs to be properly defined so that the second kernel
+can parse it correctly.
+
+And so on...
+
+> The *only* way right now we would have to handle such scenarios:
+> 
+> 1. While dumping memory and we get a machine check, fake reading a zero
+> page instead of crashing.
+> 2. While dumping memory and we get a fault, fake reading a zero page
+> instead of crashing.
+
+Yap.
+
+> Indeed, and the basic design is to export these flags. (let's say
+> "unfortunately", being able to handle such stuff in kdump directly would
+> be the dream).
+
+Well, AFAICT, the minimum work you need to always do before starting the
+dumping is somehow generate that list of pages or ranges to not dump.
+And that work needs to be done by the first or the second kernel, I'd
+say.
+
+If the first kernel would do it, then you'd have to probably have
+callbacks to certain operations which go and add ranges or pages to
+exclude, to a list which is then readily accessible to the second
+kernel. Which means, when you reserve memory for the second kernel,
+you'd have to reserve memory also for such a list.
+
+But then what do you do when that memory gets filled up...?
+
+So I guess exporting those things in vmcoreinfo is probably the only
+thing we *can* do in the end.
+
+Oh well, enough rambling... :)
+
 -- 
-2.19.1
+Regards/Gruss,
+    Boris.
+
+Good mailing practices for 400: avoid top-posting and trim the reply.
