@@ -1,58 +1,90 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Subject: [PATCH RESEND] hyper-v: Fix wakeup from suspend-to-idle
-Date: Thu, 15 Nov 2018 19:09:33 +0100
-Message-ID: <20181115180933.396-1-vkuznets@redhat.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: Re: [PATCH 12/15] power: supply: olpc_battery: Use DT to get
+ battery version
+Date: Thu, 15 Nov 2018 19:33:05 +0100
+Message-ID: <320e92fd7d942f364c83a1e8411629c1f8979d5f.camel@v3.sk>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+         <20181010172300.317643-13-lkundrak@v3.sk>
+         <CAHp75VeEFK+47pz+he6Su630jnoGKPamhatuoXopS5Ee=LZtTg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHp75VeEFK+47pz+he6Su630jnoGKPamhatuoXopS5Ee=LZtTg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kys@microsoft.com, haiyangz@microsoft.com, sthemmin@microsoft.com, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, devel@driverdev.osuosl.or
 List-Id: linux-pm@vger.kernel.org
 
-It makes little sense but still possible to put Hyper-V guests into
-suspend-to-idle state. To wake them up two wakeup sources were registered
-in the past: hyperv-keyboard and hid-hyperv. However, since
-commit eed4d47efe95 ("ACPI / sleep: Ignore spurious SCI wakeups from
-suspend-to-idle") pm_wakeup_event() from these devices is ignored. Switch
-to pm_wakeup_hard_event() API as these devices are actually the only
-possible way to wakeup Hyper-V guests.
+On Fri, 2018-10-19 at 16:45 +0300, Andy Shevchenko wrote:
+> On Wed, Oct 10, 2018 at 8:23 PM Lubomir Rintel <lkundrak@v3.sk>
+> wrote:
+> > Avoid using the x86 OLPC platform specific call to get the board
+> > version. It won't work on FDT-based ARM MMP2 platform.
+> > 
+> > Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> > ---
+> >  drivers/power/supply/olpc_battery.c | 10 +++++++---
+> >  1 file changed, 7 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/power/supply/olpc_battery.c
+> > b/drivers/power/supply/olpc_battery.c
+> > index 5a97e42a3547..540d44bf536f 100644
+> > --- a/drivers/power/supply/olpc_battery.c
+> > +++ b/drivers/power/supply/olpc_battery.c
+> > @@ -19,6 +19,7 @@
+> >  #include <linux/jiffies.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/olpc-ec.h>
+> > +#include <linux/of.h>
+> >  #include <asm/olpc.h>
+> 
+> Keep it sorted, otherwise the change is good!
 
-Fixes: eed4d47efe95 (ACPI / sleep: Ignore spurious SCI wakeups from suspend-to-idle)
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: K. Y. Srinivasan <kys@microsoft.com>
-Acked-by: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
-- It seems the patch slipped through the cracks, resending.
----
- drivers/hid/hid-hyperv.c              | 2 +-
- drivers/input/serio/hyperv-keyboard.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+Yes, but... the headers are not sorted at the moment. I'll sort the new
+include before <linux/platform_device.h> so that I don't mess it up
+even more, but I don't feel like just sorting everything so that I
+don't obscure the actual change.
 
-diff --git a/drivers/hid/hid-hyperv.c b/drivers/hid/hid-hyperv.c
-index b372854cf38d..704049e62d58 100644
---- a/drivers/hid/hid-hyperv.c
-+++ b/drivers/hid/hid-hyperv.c
-@@ -309,7 +309,7 @@ static void mousevsc_on_receive(struct hv_device *device,
- 		hid_input_report(input_dev->hid_device, HID_INPUT_REPORT,
- 				 input_dev->input_buf, len, 1);
- 
--		pm_wakeup_event(&input_dev->device->device, 0);
-+		pm_wakeup_hard_event(&input_dev->device->device);
- 
- 		break;
- 	default:
-diff --git a/drivers/input/serio/hyperv-keyboard.c b/drivers/input/serio/hyperv-keyboard.c
-index 47a0e81a2989..a8b9be3e28db 100644
---- a/drivers/input/serio/hyperv-keyboard.c
-+++ b/drivers/input/serio/hyperv-keyboard.c
-@@ -177,7 +177,7 @@ static void hv_kbd_on_receive(struct hv_device *hv_dev,
- 		 * state because the Enter-UP can trigger a wakeup at once.
- 		 */
- 		if (!(info & IS_BREAK))
--			pm_wakeup_event(&hv_dev->device, 0);
-+			pm_wakeup_hard_event(&hv_dev->device);
- 
- 		break;
- 
--- 
-2.17.2
+
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> 
+> > 
+> > @@ -622,11 +623,13 @@ static int olpc_battery_probe(struct
+> > platform_device *pdev)
+> >         olpc_ac = power_supply_register(&pdev->dev, &olpc_ac_desc,
+> > NULL);
+> >         if (IS_ERR(olpc_ac))
+> >                 return PTR_ERR(olpc_ac);
+> > -
+> > -       if (olpc_board_at_least(olpc_board_pre(0xd0))) { /* XO-1.5
+> > */
+> > +       if (of_property_match_string(pdev->dev.of_node,
+> > "compatible",
+> > +                                       "olpc,xo1.5-battery") >= 0)
+> > {
+> > +               /* XO-1.5 */
+> >                 olpc_bat_desc.properties = olpc_xo15_bat_props;
+> >                 olpc_bat_desc.num_properties =
+> > ARRAY_SIZE(olpc_xo15_bat_props);
+> > -       } else { /* XO-1 */
+> > +       } else {
+> > +               /* XO-1 */
+> >                 olpc_bat_desc.properties = olpc_xo1_bat_props;
+> >                 olpc_bat_desc.num_properties =
+> > ARRAY_SIZE(olpc_xo1_bat_props);
+> >         }
+> > @@ -672,6 +675,7 @@ static int olpc_battery_remove(struct
+> > platform_device *pdev)
+> > 
+> >  static const struct of_device_id olpc_battery_ids[] = {
+> >         { .compatible = "olpc,xo1-battery" },
+> > +       { .compatible = "olpc,xo1.5-battery" },
+> >         {}
+> >  };
+> >  MODULE_DEVICE_TABLE(of, olpc_battery_ids);
+> > --
+> > 2.19.0
+> > 
+
+Lubo
