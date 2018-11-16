@@ -1,489 +1,118 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v2 08/17] Platform: OLPC: Move EC-specific functionality out
- from x86
-Date: Fri, 16 Nov 2018 17:23:54 +0100
-Message-ID: <20181116162403.49854-9-lkundrak@v3.sk>
+Subject: [PATCH v2 16/17] power: supply: olpc_battery: Avoid using platform_info
+Date: Fri, 16 Nov 2018 17:24:02 +0100
+Message-ID: <20181116162403.49854-17-lkundrak@v3.sk>
 References: <20181116162403.49854-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181116162403.49854-1-lkundrak@v3.sk>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-spi@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Daniel Mack <daniel@zonque.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-Move the olpc-ec driver away from the X86 OLPC platform so that it could be
-used by the ARM based laptops too. Notably, the driver for the OLPC battery,
-which is also used on the ARM models, builds on this driver's interface.
+This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
+n
+directly from the EC driver instead.
 
-It is actually plaform independent: the OLPC EC commands with their argument
-and responses are mostly the same despite the delivery mechanism is
-different.
+This makes the driver no longer x86 specific.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
 Changes since v1:
-- Cosmetic changes in line wrapping.
-- Remove an old extra copy of EC_SCI_* defines
-- Change version to u8
-- Explain which parts are platform independent are in the commit message
+- Use uint8_t instead of unsigned char [1] for ecver
 
- arch/x86/include/asm/olpc.h     |  31 ---------
- arch/x86/platform/olpc/olpc.c   | 119 +++++---------------------------
- drivers/platform/olpc/olpc-ec.c |  99 +++++++++++++++++++++++++-
- include/linux/olpc-ec.h         |  32 ++++++++-
- 4 files changed, 145 insertions(+), 136 deletions(-)
+ drivers/power/supply/Kconfig        |  2 +-
+ drivers/power/supply/olpc_battery.c | 35 +++++++++++++++++++++--------
+ 2 files changed, 27 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/olpc.h b/arch/x86/include/asm/olpc.h
-index c2bf1de5d901..6fe76282aceb 100644
---- a/arch/x86/include/asm/olpc.h
-+++ b/arch/x86/include/asm/olpc.h
-@@ -9,12 +9,10 @@
- struct olpc_platform_t {
- 	int flags;
- 	uint32_t boardrev;
--	int ecver;
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index f27cf0709500..dd7ae1431098 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -151,7 +151,7 @@ config BATTERY_PMU
+=20
+ config BATTERY_OLPC
+ 	tristate "One Laptop Per Child battery"
+-	depends on X86_32 && OLPC
++	depends on OLPC
+ 	help
+ 	  Say Y to enable support for the battery on the OLPC laptop.
+=20
+diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
+lpc_battery.c
+index 4433eb10a23d..ec5dfb8fcb8a 100644
+--- a/drivers/power/supply/olpc_battery.c
++++ b/drivers/power/supply/olpc_battery.c
+@@ -20,8 +20,6 @@
+ #include <linux/jiffies.h>
+ #include <linux/sched.h>
+ #include <linux/olpc-ec.h>
+-#include <asm/olpc.h>
+-
+=20
+ #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
+ #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
+@@ -57,6 +55,7 @@ struct olpc_battery_data {
+ 	struct power_supply *olpc_ac;
+ 	struct power_supply *olpc_bat;
+ 	char bat_serial[17];
++	int new_proto;
  };
- 
- #define OLPC_F_PRESENT		0x01
- #define OLPC_F_DCON		0x02
--#define OLPC_F_EC_WIDE_SCI	0x04
- 
- #ifdef CONFIG_OLPC
- 
-@@ -64,13 +62,6 @@ static inline int olpc_board_at_least(uint32_t rev)
- 	return olpc_platform_info.boardrev >= rev;
- }
- 
--extern void olpc_ec_wakeup_set(u16 value);
--extern void olpc_ec_wakeup_clear(u16 value);
--extern bool olpc_ec_wakeup_available(void);
--
--extern int olpc_ec_mask_write(u16 bits);
--extern int olpc_ec_sci_query(u16 *sci_value);
--
- #else
- 
- static inline int machine_is_olpc(void)
-@@ -83,14 +74,6 @@ static inline int olpc_has_dcon(void)
- 	return 0;
- }
- 
--static inline void olpc_ec_wakeup_set(u16 value) { }
--static inline void olpc_ec_wakeup_clear(u16 value) { }
--
--static inline bool olpc_ec_wakeup_available(void)
--{
--	return false;
--}
--
- #endif
- 
- #ifdef CONFIG_OLPC_XO1_PM
-@@ -101,20 +84,6 @@ extern void olpc_xo1_pm_wakeup_clear(u16 value);
- 
- extern int pci_olpc_init(void);
- 
--/* SCI source values */
--
--#define EC_SCI_SRC_EMPTY	0x00
--#define EC_SCI_SRC_GAME		0x01
--#define EC_SCI_SRC_BATTERY	0x02
--#define EC_SCI_SRC_BATSOC	0x04
--#define EC_SCI_SRC_BATERR	0x08
--#define EC_SCI_SRC_EBOOK	0x10	/* XO-1 only */
--#define EC_SCI_SRC_WLAN		0x20	/* XO-1 only */
--#define EC_SCI_SRC_ACPWR	0x40
--#define EC_SCI_SRC_BATCRIT	0x80
--#define EC_SCI_SRC_GPWAKE	0x100	/* XO-1.5 only */
--#define EC_SCI_SRC_ALL		0x1FF
--
- /* GPIO assignments */
- 
- #define OLPC_GPIO_MIC_AC	1
-diff --git a/arch/x86/platform/olpc/olpc.c b/arch/x86/platform/olpc/olpc.c
-index f0e920fb98ad..c6c62b4f251f 100644
---- a/arch/x86/platform/olpc/olpc.c
-+++ b/arch/x86/platform/olpc/olpc.c
-@@ -30,9 +30,6 @@
- struct olpc_platform_t olpc_platform_info;
- EXPORT_SYMBOL_GPL(olpc_platform_info);
- 
--/* EC event mask to be applied during suspend (defining wakeup sources). */
--static u16 ec_wakeup_mask;
--
- /* what the timeout *should* be (in ms) */
- #define EC_BASE_TIMEOUT 20
- 
-@@ -186,83 +183,6 @@ static int olpc_xo1_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 *outbuf,
- 	return ret;
- }
- 
--void olpc_ec_wakeup_set(u16 value)
--{
--	ec_wakeup_mask |= value;
--}
--EXPORT_SYMBOL_GPL(olpc_ec_wakeup_set);
--
--void olpc_ec_wakeup_clear(u16 value)
--{
--	ec_wakeup_mask &= ~value;
--}
--EXPORT_SYMBOL_GPL(olpc_ec_wakeup_clear);
--
--/*
-- * Returns true if the compile and runtime configurations allow for EC events
-- * to wake the system.
-- */
--bool olpc_ec_wakeup_available(void)
--{
--	if (!machine_is_olpc())
--		return false;
--
--	/*
--	 * XO-1 EC wakeups are available when olpc-xo1-sci driver is
--	 * compiled in
--	 */
--#ifdef CONFIG_OLPC_XO1_SCI
--	if (olpc_platform_info.boardrev < olpc_board_pre(0xd0)) /* XO-1 */
--		return true;
--#endif
--
--	/*
--	 * XO-1.5 EC wakeups are available when olpc-xo15-sci driver is
--	 * compiled in
--	 */
--#ifdef CONFIG_OLPC_XO15_SCI
--	if (olpc_platform_info.boardrev >= olpc_board_pre(0xd0)) /* XO-1.5 */
--		return true;
--#endif
--
--	return false;
--}
--EXPORT_SYMBOL_GPL(olpc_ec_wakeup_available);
--
--int olpc_ec_mask_write(u16 bits)
--{
--	if (olpc_platform_info.flags & OLPC_F_EC_WIDE_SCI) {
--		__be16 ec_word = cpu_to_be16(bits);
--		return olpc_ec_cmd(EC_WRITE_EXT_SCI_MASK, (void *) &ec_word, 2,
--				   NULL, 0);
--	} else {
--		unsigned char ec_byte = bits & 0xff;
--		return olpc_ec_cmd(EC_WRITE_SCI_MASK, &ec_byte, 1, NULL, 0);
--	}
--}
--EXPORT_SYMBOL_GPL(olpc_ec_mask_write);
--
--int olpc_ec_sci_query(u16 *sci_value)
--{
--	int ret;
--
--	if (olpc_platform_info.flags & OLPC_F_EC_WIDE_SCI) {
--		__be16 ec_word;
--		ret = olpc_ec_cmd(EC_EXT_SCI_QUERY,
--			NULL, 0, (void *) &ec_word, 2);
--		if (ret == 0)
--			*sci_value = be16_to_cpu(ec_word);
--	} else {
--		unsigned char ec_byte;
--		ret = olpc_ec_cmd(EC_SCI_QUERY, NULL, 0, &ec_byte, 1);
--		if (ret == 0)
--			*sci_value = ec_byte;
--	}
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(olpc_ec_sci_query);
--
- static bool __init check_ofw_architecture(struct device_node *root)
+=20
+ /*********************************************************************
+@@ -100,7 +99,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
  {
- 	const char *olpc_arch;
-@@ -296,6 +216,10 @@ static bool __init platform_detect(void)
- 	if (success) {
- 		olpc_platform_info.boardrev = get_board_revision(root);
- 		olpc_platform_info.flags |= OLPC_F_PRESENT;
-+
-+		pr_info("OLPC board revision %s%X\n",
-+			((olpc_platform_info.boardrev & 0xf) < 8) ? "pre" : "",
-+			olpc_platform_info.boardrev >> 4);
- 	}
- 
- 	of_node_put(root);
-@@ -315,27 +239,8 @@ static int __init add_xo1_platform_devices(void)
- 	return PTR_ERR_OR_ZERO(pdev);
- }
- 
--static int olpc_xo1_ec_probe(struct platform_device *pdev)
--{
--	/* get the EC revision */
--	olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0,
--			(unsigned char *) &olpc_platform_info.ecver, 1);
--
--	/* EC version 0x5f adds support for wide SCI mask */
--	if (olpc_platform_info.ecver >= 0x5f)
--		olpc_platform_info.flags |= OLPC_F_EC_WIDE_SCI;
--
--	pr_info("OLPC board revision %s%X (EC=%x)\n",
--			((olpc_platform_info.boardrev & 0xf) < 8) ? "pre" : "",
--			olpc_platform_info.boardrev >> 4,
--			olpc_platform_info.ecver);
--
--	return 0;
--}
- static int olpc_xo1_ec_suspend(struct platform_device *pdev)
+ static int olpc_bat_get_status(struct olpc_battery_data *data,
+ 		union power_supply_propval *val, uint8_t ec_byte)
  {
--	olpc_ec_mask_write(ec_wakeup_mask);
--
- 	/*
- 	 * Squelch SCIs while suspended.  This is a fix for
- 	 * <http://dev.laptop.org/ticket/1835>.
-@@ -359,15 +264,27 @@ static int olpc_xo1_ec_resume(struct platform_device *pdev)
- }
- 
- static struct olpc_ec_driver ec_xo1_driver = {
--	.probe = olpc_xo1_ec_probe,
- 	.suspend = olpc_xo1_ec_suspend,
- 	.resume = olpc_xo1_ec_resume,
- 	.ec_cmd = olpc_xo1_ec_cmd,
-+#ifdef CONFIG_OLPC_XO1_SCI
-+	/*
-+	 * XO-1 EC wakeups are available when olpc-xo1-sci driver is
-+	 * compiled in
-+	 */
-+	.wakeup_available = true,
-+#endif
- };
- 
- static struct olpc_ec_driver ec_xo1_5_driver = {
--	.probe = olpc_xo1_ec_probe,
- 	.ec_cmd = olpc_xo1_ec_cmd,
-+#ifdef CONFIG_OLPC_XO1_5_SCI
-+	/*
-+	 * XO-1.5 EC wakeups are available when olpc-xo15-sci driver is
-+	 * compiled in
-+	 */
-+	.wakeup_available = true,
-+#endif
- };
- 
- static int __init olpc_init(void)
-diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc-ec.c
-index 9ee993d5d54b..2b80174b8f4b 100644
---- a/drivers/platform/olpc/olpc-ec.c
-+++ b/drivers/platform/olpc/olpc-ec.c
-@@ -30,6 +30,7 @@ struct ec_cmd_desc {
- 
- struct olpc_ec_priv {
- 	struct olpc_ec_driver *drv;
-+	u8 version;
- 	struct work_struct worker;
- 	struct mutex cmd_lock;
- 
-@@ -39,6 +40,12 @@ struct olpc_ec_priv {
- 
- 	struct dentry *dbgfs_dir;
- 
-+	/*
-+	 * EC event mask to be applied during suspend (defining wakeup
-+	 * sources).
-+	 */
-+	u16 ec_wakeup_mask;
-+
- 	/*
- 	 * Running an EC command while suspending means we don't always finish
- 	 * the command before the machine suspends.  This means that the EC
-@@ -150,6 +157,88 @@ int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 *outbuf, size_t outlen)
- }
- EXPORT_SYMBOL_GPL(olpc_ec_cmd);
- 
-+void olpc_ec_wakeup_set(u16 value)
-+{
-+	struct olpc_ec_priv *ec = ec_priv;
-+
-+	if (WARN_ON(!ec))
-+		return;
-+
-+	ec->ec_wakeup_mask |= value;
-+}
-+EXPORT_SYMBOL_GPL(olpc_ec_wakeup_set);
-+
-+void olpc_ec_wakeup_clear(u16 value)
-+{
-+	struct olpc_ec_priv *ec = ec_priv;
-+
-+	if (WARN_ON(!ec))
-+		return;
-+
-+	ec->ec_wakeup_mask &= ~value;
-+}
-+EXPORT_SYMBOL_GPL(olpc_ec_wakeup_clear);
-+
-+int olpc_ec_mask_write(u16 bits)
-+{
-+	struct olpc_ec_priv *ec = ec_priv;
-+
-+	if (WARN_ON(!ec))
-+		return -ENODEV;
-+
-+	/* EC version 0x5f adds support for wide SCI mask */
-+	if (ec->version >= 0x5f) {
-+		__be16 ec_word = cpu_to_be16(bits);
-+
-+		return olpc_ec_cmd(EC_WRITE_EXT_SCI_MASK, (void *) &ec_word, 2, NULL, 0);
-+	} else {
-+		unsigned char ec_byte = bits & 0xff;
-+
-+		return olpc_ec_cmd(EC_WRITE_SCI_MASK, &ec_byte, 1, NULL, 0);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(olpc_ec_mask_write);
-+
-+/*
-+ * Returns true if the compile and runtime configurations allow for EC events
-+ * to wake the system.
-+ */
-+bool olpc_ec_wakeup_available(void)
-+{
-+	if (WARN_ON(!ec_driver))
-+		return false;
-+
-+	return ec_driver->wakeup_available;
-+}
-+EXPORT_SYMBOL_GPL(olpc_ec_wakeup_available);
-+
-+int olpc_ec_sci_query(u16 *sci_value)
-+{
-+	struct olpc_ec_priv *ec = ec_priv;
+-	if (olpc_platform_info.ecver > 0x44) {
++	if (data->new_proto) {
+ 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
+ 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
+ 		else if (ec_byte & BAT_STAT_DISCHARGING)
+@@ -608,14 +607,32 @@ static int olpc_battery_probe(struct platform_devic=
+e *pdev)
+ 	struct power_supply_config psy_cfg =3D {};
+ 	struct olpc_battery_data *data;
+ 	uint8_t status;
++	uint8_t ecver;
 +	int ret;
 +
-+	if (WARN_ON(!ec))
-+		return -ENODEV;
++	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++	platform_set_drvdata(pdev, data);
 +
-+	/* EC version 0x5f adds support for wide SCI mask */
-+	if (ec->version >= 0x5f) {
-+		__be16 ec_word;
-+
-+		ret = olpc_ec_cmd(EC_EXT_SCI_QUERY, NULL, 0, (void *)&ec_word, 2);
-+		if (ret == 0)
-+			*sci_value = be16_to_cpu(ec_word);
-+	} else {
-+		unsigned char ec_byte;
-+
-+		ret = olpc_ec_cmd(EC_SCI_QUERY, NULL, 0, &ec_byte, 1);
-+		if (ret == 0)
-+			*sci_value = ec_byte;
++	/* See if the EC is already there and get the EC revision */
++	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
++	if (ret) {
++		if (ret =3D=3D -ENODEV)
++			return -EPROBE_DEFER;
++		return ret;
 +	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(olpc_ec_sci_query);
-+
- #ifdef CONFIG_DEBUG_FS
- 
- /*
-@@ -277,14 +366,16 @@ static int olpc_ec_probe(struct platform_device *pdev)
- 	ec_priv = ec;
- 	platform_set_drvdata(pdev, ec);
- 
--	err = ec_driver->probe ? ec_driver->probe(pdev) : 0;
-+	/* get the EC revision */
-+	err = olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ec->version, 1);
- 	if (err) {
- 		ec_priv = NULL;
- 		kfree(ec);
--	} else {
--		ec->dbgfs_dir = olpc_ec_setup_debugfs();
-+		return err;
+=20
+-	/*
+-	 * We've seen a number of EC protocol changes; this driver requires
+-	 * the latest EC protocol, supported by 0x44 and above.
+-	 */
+-	if (olpc_platform_info.ecver < 0x44) {
++	if (ecver > 0x44) {
++		/* XO 1 or 1.5 with a new EC firmware. */
++		data->new_proto =3D 1;
++	} else if (ecver < 0x44) {
++		/*
++		 * We've seen a number of EC protocol changes; this driver
++		 * requires the latest EC protocol, supported by 0x44 and above.
++		 */
+ 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
+-			"battery driver.\n", olpc_platform_info.ecver);
++			"battery driver.\n", ecver);
+ 		return -ENXIO;
  	}
- 
-+	ec->dbgfs_dir = olpc_ec_setup_debugfs();
-+
- 	return err;
- }
- 
-@@ -294,6 +385,8 @@ static int olpc_ec_suspend(struct device *dev)
- 	struct olpc_ec_priv *ec = platform_get_drvdata(pdev);
- 	int err = 0;
- 
-+	olpc_ec_mask_write(ec->ec_wakeup_mask);
-+
- 	if (ec_driver->suspend)
- 		err = ec_driver->suspend(pdev);
- 	if (!err)
-diff --git a/include/linux/olpc-ec.h b/include/linux/olpc-ec.h
-index 79bdc6328c52..7fa3d27f7fee 100644
---- a/include/linux/olpc-ec.h
-+++ b/include/linux/olpc-ec.h
-@@ -16,14 +16,28 @@
- #define EC_SCI_QUERY			0x84
- #define EC_EXT_SCI_QUERY		0x85
- 
-+/* SCI source values */
-+#define EC_SCI_SRC_EMPTY        0x00
-+#define EC_SCI_SRC_GAME         0x01
-+#define EC_SCI_SRC_BATTERY      0x02
-+#define EC_SCI_SRC_BATSOC       0x04
-+#define EC_SCI_SRC_BATERR       0x08
-+#define EC_SCI_SRC_EBOOK        0x10    /* XO-1 only */
-+#define EC_SCI_SRC_WLAN         0x20    /* XO-1 only */
-+#define EC_SCI_SRC_ACPWR        0x40
-+#define EC_SCI_SRC_BATCRIT      0x80
-+#define EC_SCI_SRC_GPWAKE       0x100   /* XO-1.5 only */
-+#define EC_SCI_SRC_ALL          0x1FF
-+
- struct platform_device;
- 
- struct olpc_ec_driver {
--	int (*probe)(struct platform_device *);
- 	int (*suspend)(struct platform_device *);
- 	int (*resume)(struct platform_device *);
- 
- 	int (*ec_cmd)(u8, u8 *, size_t, u8 *, size_t, void *);
-+
-+	bool wakeup_available;
- };
- 
- #ifdef CONFIG_OLPC
-@@ -33,11 +47,27 @@ extern void olpc_ec_driver_register(struct olpc_ec_driver *drv, void *arg);
- extern int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 *outbuf,
- 		size_t outlen);
- 
-+extern void olpc_ec_wakeup_set(u16 value);
-+extern void olpc_ec_wakeup_clear(u16 value);
-+
-+extern int olpc_ec_mask_write(u16 bits);
-+extern int olpc_ec_sci_query(u16 *sci_value);
-+
-+extern bool olpc_ec_wakeup_available(void);
-+
- #else
- 
- static inline int olpc_ec_cmd(u8 cmd, u8 *inbuf, size_t inlen, u8 *outbuf,
- 		size_t outlen) { return -ENODEV; }
- 
-+static inline void olpc_ec_wakeup_set(u16 value) { }
-+static inline void olpc_ec_wakeup_clear(u16 value) { }
-+
-+static inline bool olpc_ec_wakeup_available(void)
-+{
-+	return false;
-+}
-+
- #endif /* CONFIG_OLPC */
- 
- #endif /* _LINUX_OLPC_EC_H */
--- 
+=20
+--=20
 2.19.1
