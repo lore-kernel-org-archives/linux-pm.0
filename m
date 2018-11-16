@@ -1,120 +1,116 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v2 17/17] power: supply: olpc_battery: Add OLPC XO 1.75 support
-Date: Fri, 16 Nov 2018 17:24:03 +0100
-Message-ID: <20181116162403.49854-18-lkundrak@v3.sk>
-References: <20181116162403.49854-1-lkundrak@v3.sk>
+From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH RFC 0/6] mm/kdump: allow to exclude pages that are
+ logically offline
+Date: Fri, 16 Nov 2018 19:23:20 +0100
+Message-ID: <a0b995a2-d78e-8413-f232-9a82b4d4f5b5@redhat.com>
+References: <20181114211704.6381-1-david@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20181116162403.49854-1-lkundrak@v3.sk>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-spi@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Daniel Mack <daniel@zonque.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181114211704.6381-1-david@redhat.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Alexey Dobriyan <adobriyan@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Baoquan He <bhe@redhat.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Christian Hansen <chansen3@cisco.com>, Dave Young <dyoung@redhat.com>, David Rientjes <rientjes@google.com>, Haiyang Zhang <haiyangz@microsoft.com>, Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>, Kairui Song <kasong@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, "K. Y. Srinivasan" <kys@microsoft.com>
 List-Id: linux-pm@vger.kernel.org
 
-The battery and the protocol are essentially the same as OLPC XO 1.5,
-but the responses from the EC are LSB first.
+On 14.11.18 22:16, David Hildenbrand wrote:
+> Right now, pages inflated as part of a balloon driver will be dumped
+> by dump tools like makedumpfile. While XEN is able to check in the
+> crash kernel whether a certain pfn is actuall backed by memory in the
+> hypervisor (see xen_oldmem_pfn_is_ram) and optimize this case, dumps of
+> virtio-balloon and hv-balloon inflated memory will essentially result in
+> zero pages getting allocated by the hypervisor and the dump getting
+> filled with this data.
+> 
+> The allocation and reading of zero pages can directly be avoided if a
+> dumping tool could know which pages only contain stale information not to
+> be dumped.
+> 
+> Also for XEN, calling into the kernel and asking the hypervisor if a
+> pfn is backed can be avoided if the duming tool would skip such pages
+> right from the beginning.
+> 
+> Dumping tools have no idea whether a given page is part of a balloon driver
+> and shall not be dumped. Esp. PG_reserved cannot be used for that purpose
+> as all memory allocated during early boot is also PG_reserved, see
+> discussion at [1]. So some other way of indication is required and a new
+> page flag is frowned upon.
+> 
+> We have PG_balloon (MAPCOUNT value), which is essentially unused now. I
+> suggest renaming it to something more generic (PG_offline) to mark pages as
+> logically offline. This flag can than e.g. also be used by virtio-mem in
+> the future to mark subsections as offline. Or by other code that wants to
+> put pages logically offline (e.g. later maybe poisoned pages that shall
+> no longer be used).
+> 
+> This series converts PG_balloon to PG_offline, allows dumping tools to
+> query the value to detect such pages and marks pages in the hv-balloon
+> and XEN balloon properly as PG_offline. Note that virtio-balloon already
+> set pages to PG_balloon (and now PG_offline).
+> 
+> Please note that this is also helpful for a problem we were seeing under
+> Hyper-V: Dumping logically offline memory (pages kept fake offline while
+> onlining a section via online_page_callback) would under some condicions
+> result in a kernel panic when dumping them.
+> 
+> As I don't have access to neither XEN nor Hyper-V installation, this was
+> not tested yet (and a makedumpfile change will be required to skip
+> dumping these pages).
+> 
+> [1] https://lkml.org/lkml/2018/7/20/566
+> 
+> David Hildenbrand (6):
+>   mm: balloon: update comment about isolation/migration/compaction
+>   mm: convert PG_balloon to PG_offline
+>   kexec: export PG_offline to VMCOREINFO
+>   xen/balloon: mark inflated pages PG_offline
+>   hv_balloon: mark inflated pages PG_offline
+>   PM / Hibernate: exclude all PageOffline() pages
+> 
+>  Documentation/admin-guide/mm/pagemap.rst |  6 +++++
+>  drivers/hv/hv_balloon.c                  | 14 ++++++++--
+>  drivers/xen/balloon.c                    |  3 +++
+>  fs/proc/page.c                           |  4 +--
+>  include/linux/balloon_compaction.h       | 34 +++++++++---------------
+>  include/linux/page-flags.h               | 11 +++++---
+>  include/uapi/linux/kernel-page-flags.h   |  1 +
+>  kernel/crash_core.c                      |  2 ++
+>  kernel/power/snapshot.c                  |  5 +++-
+>  tools/vm/page-types.c                    |  1 +
+>  10 files changed, 51 insertions(+), 30 deletions(-)
+> 
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+I just did a test with virtio-balloon (and a very simple makedumpfile
+patch which I can supply on demand).
 
----
-Changes since v1:
-- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
-- s/u16 ec_byte/u16 ec_word/
+1. Guest with 8GB. Inflate balloon to 4GB via
+ sudo virsh setmem f29 --size 4096M --live
 
- drivers/power/supply/olpc_battery.c | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+2. Trigger a kernel panic in the guest
+    echo 1 > /proc/sys/kernel/sysrq
+    echo c > /proc/sysrq-trigger
 
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
-index ec5dfb8fcb8a..898e8a6128bb 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -56,6 +56,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_bat;
- 	char bat_serial[17];
- 	int new_proto;
-+	int little_endian;
- };
- 
- /*********************************************************************
-@@ -321,6 +322,14 @@ static int olpc_bat_get_voltage_max_design(union power_supply_propval *val)
- 	return ret;
- }
- 
-+static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
-+{
-+	if (data->little_endian)
-+		return le16_to_cpu(ec_word);
-+	else
-+		return be16_to_cpu(ec_word);
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -393,7 +402,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		val->intval = (s16)be16_to_cpu(ec_word) * 9760L / 32;
-+		val->intval = ecword_to_cpu(data, ec_word) * 9760L / 32;
- 		break;
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
-@@ -401,7 +410,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		val->intval = (s16)be16_to_cpu(ec_word) * 15625L / 120;
-+		val->intval = ecword_to_cpu(data, ec_word) * 15625L / 120;
- 		break;
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 		ret = olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
-@@ -432,21 +441,21 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		val->intval = (s16)be16_to_cpu(ec_word) * 10 / 256;
-+		val->intval = ecword_to_cpu(data, ec_word) * 10 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
- 		ret = olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		val->intval = (int)be16_to_cpu(ec_word) * 10 / 256;
-+		val->intval = (int)ecword_to_cpu(data, ec_word) * 10 / 256;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
- 		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
- 		if (ret)
- 			return ret;
- 
--		val->intval = (s16)be16_to_cpu(ec_word) * 6250 / 15;
-+		val->intval = ecword_to_cpu(data, ec_word) * 6250 / 15;
- 		break;
- 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
-@@ -626,6 +635,10 @@ static int olpc_battery_probe(struct platform_device *pdev)
- 	if (ecver > 0x44) {
- 		/* XO 1 or 1.5 with a new EC firmware. */
- 		data->new_proto = 1;
-+	} else if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
-+		/* XO 1.75 */
-+		data->new_proto = 1;
-+		data->little_endian = 1;
- 	} else if (ecver < 0x44) {
- 		/*
- 		 * We've seen a number of EC protocol changes; this driver
+Original pages  : 0x00000000001e1da8
+  Excluded pages   : 0x00000000001c9221
+    Pages filled with zero  : 0x00000000000050b0
+    Non-private cache pages : 0x0000000000046547
+    Private cache pages     : 0x0000000000002165
+    User process data pages : 0x00000000000048cf
+    Free pages              : 0x00000000000771f6
+    Hwpoison pages          : 0x0000000000000000
+    Offline pages           : 0x0000000000100000
+  Remaining pages  : 0x0000000000018b87
+  (The number of pages is reduced to 5%.)
+Memory Hole     : 0x000000000009e258
+--------------------------------------------------
+Total pages     : 0x0000000000280000
+
+(Offline patches matches the 4GB)
+
 -- 
-2.19.1
+
+Thanks,
+
+David / dhildenb
