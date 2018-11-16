@@ -1,43 +1,74 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 2/2] Documentation: intel_pstate: Clarify coordination of P-State limits
-Date: Fri, 16 Nov 2018 14:24:20 -0800
-Message-ID: <20181116222420.24260-2-srinivas.pandruvada@linux.intel.com>
-References: <20181116222420.24260-1-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/2] cpufreq: intel_pstate: Force HWP min perf before offline
+Date: Fri, 16 Nov 2018 14:24:19 -0800
+Message-ID: <20181116222420.24260-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181116222420.24260-1-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, corbet@lwn.net
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, yu.c.chen@intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Explain influence of per-core P-states and hyper threading on the
-effective performance.
+Force HWP Request MAX = HWP Request MIN = HWP Capability MIN and EPP to
+0xFF. In this way the performance limits on the offlined CPU will not
+influence performance limits on its sibling CPU, which is still online.
 
+If the sibling CPU is calling for higher performance, it will impact the
+max core performance. Here core performance will follow higher of the
+performance requests from each sibling.
+
+Reported-and-tested-by: Chen Yu <yu.c.chen@intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- Documentation/admin-guide/pm/intel_pstate.rst | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/cpufreq/intel_pstate.c | 28 ++++++++++++++++++++++++++--
+ 1 file changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
-index ac6f5c597a56..ec0f7c111f65 100644
---- a/Documentation/admin-guide/pm/intel_pstate.rst
-+++ b/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -495,7 +495,15 @@ on the following rules, regardless of the current operation mode of the driver:
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 14f551a3d36e..501ab9f4489a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -830,6 +830,28 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+ 	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
+ }
  
-  2. Each individual CPU is affected by its own per-policy limits (that is, it
-     cannot be requested to run faster than its own per-policy maximum and it
--    cannot be requested to run slower than its own per-policy minimum).
-+    cannot be requested to run slower than its own per-policy minimum). The
-+    effective performance depends on whether the platform supports per core
-+    P-states, hyper-threading is enabled and on current performance requests
-+    from other CPUs. When platform doesn't support per core P-states, the
-+    effective performance can be more than the policy limits set on a CPU, if
-+    other CPUs are requesting higher performance at that moment. Even with per
-+    core P-states support, when hyper-threading is enabled, if the sibling CPU
-+    is requesting higher performance, the other siblings will get higher
-+    performance than their policy limits.
++static void intel_pstate_hwp_force_min_perf(int cpu)
++{
++	u64 value;
++	int min_perf;
++
++	value = all_cpu_data[cpu]->hwp_req_cached;
++	value &= ~GENMASK_ULL(31, 0);
++	min_perf = HWP_LOWEST_PERF(all_cpu_data[cpu]->hwp_cap_cached);
++
++	/* Set hwp_max = hwp_min */
++	value |= HWP_MAX_PERF(min_perf);
++	value |= HWP_MIN_PERF(min_perf);
++
++	/* Set EPP/EPB to min */
++	if (static_cpu_has(X86_FEATURE_HWP_EPP))
++		value |= HWP_ENERGY_PERF_PREFERENCE(HWP_EPP_POWERSAVE);
++	else
++		intel_pstate_set_epb(cpu, HWP_EPP_BALANCE_POWERSAVE);
++
++	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
++}
++
+ static int intel_pstate_hwp_save_state(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+@@ -2093,10 +2115,12 @@ static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
+ 	pr_debug("CPU %d exiting\n", policy->cpu);
  
-  3. The global and per-policy limits can be set independently.
+ 	intel_pstate_clear_update_util_hook(policy->cpu);
+-	if (hwp_active)
++	if (hwp_active) {
+ 		intel_pstate_hwp_save_state(policy);
+-	else
++		intel_pstate_hwp_force_min_perf(policy->cpu);
++	} else {
+ 		intel_cpufreq_stop_cpu(policy);
++	}
+ }
  
+ static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
 -- 
 2.17.1
