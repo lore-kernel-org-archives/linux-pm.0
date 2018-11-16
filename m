@@ -1,118 +1,120 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v2 16/17] power: supply: olpc_battery: Avoid using platform_info
-Date: Fri, 16 Nov 2018 17:24:02 +0100
-Message-ID: <20181116162403.49854-17-lkundrak@v3.sk>
+Subject: [PATCH v2 17/17] power: supply: olpc_battery: Add OLPC XO 1.75 support
+Date: Fri, 16 Nov 2018 17:24:03 +0100
+Message-ID: <20181116162403.49854-18-lkundrak@v3.sk>
 References: <20181116162403.49854-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20181116162403.49854-1-lkundrak@v3.sk>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-spi@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-This wouldn't work on the DT-based ARM platform. Let's read the EC versio=
-n
-directly from the EC driver instead.
-
-This makes the driver no longer x86 specific.
+The battery and the protocol are essentially the same as OLPC XO 1.5,
+but the responses from the EC are LSB first.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
 ---
 Changes since v1:
-- Use uint8_t instead of unsigned char [1] for ecver
+- s/s16 ecword_to_cpu/u16 ecword_to_cpu/
+- s/u16 ec_byte/u16 ec_word/
 
- drivers/power/supply/Kconfig        |  2 +-
- drivers/power/supply/olpc_battery.c | 35 +++++++++++++++++++++--------
- 2 files changed, 27 insertions(+), 10 deletions(-)
+ drivers/power/supply/olpc_battery.c | 23 ++++++++++++++++++-----
+ 1 file changed, 18 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index f27cf0709500..dd7ae1431098 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -151,7 +151,7 @@ config BATTERY_PMU
-=20
- config BATTERY_OLPC
- 	tristate "One Laptop Per Child battery"
--	depends on X86_32 && OLPC
-+	depends on OLPC
- 	help
- 	  Say Y to enable support for the battery on the OLPC laptop.
-=20
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-index 4433eb10a23d..ec5dfb8fcb8a 100644
+diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
+index ec5dfb8fcb8a..898e8a6128bb 100644
 --- a/drivers/power/supply/olpc_battery.c
 +++ b/drivers/power/supply/olpc_battery.c
-@@ -20,8 +20,6 @@
- #include <linux/jiffies.h>
- #include <linux/sched.h>
- #include <linux/olpc-ec.h>
--#include <asm/olpc.h>
--
-=20
- #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
- #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
-@@ -57,6 +55,7 @@ struct olpc_battery_data {
- 	struct power_supply *olpc_ac;
+@@ -56,6 +56,7 @@ struct olpc_battery_data {
  	struct power_supply *olpc_bat;
  	char bat_serial[17];
-+	int new_proto;
+ 	int new_proto;
++	int little_endian;
  };
-=20
+ 
  /*********************************************************************
-@@ -100,7 +99,7 @@ static const struct power_supply_desc olpc_ac_desc =3D=
- {
- static int olpc_bat_get_status(struct olpc_battery_data *data,
- 		union power_supply_propval *val, uint8_t ec_byte)
- {
--	if (olpc_platform_info.ecver > 0x44) {
-+	if (data->new_proto) {
- 		if (ec_byte & (BAT_STAT_CHARGING | BAT_STAT_TRICKLE))
- 			val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
- 		else if (ec_byte & BAT_STAT_DISCHARGING)
-@@ -608,14 +607,32 @@ static int olpc_battery_probe(struct platform_devic=
-e *pdev)
- 	struct power_supply_config psy_cfg =3D {};
- 	struct olpc_battery_data *data;
- 	uint8_t status;
-+	uint8_t ecver;
-+	int ret;
+@@ -321,6 +322,14 @@ static int olpc_bat_get_voltage_max_design(union power_supply_propval *val)
+ 	return ret;
+ }
+ 
++static u16 ecword_to_cpu(struct olpc_battery_data *data, u16 ec_word)
++{
++	if (data->little_endian)
++		return le16_to_cpu(ec_word);
++	else
++		return be16_to_cpu(ec_word);
++}
 +
-+	data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+	platform_set_drvdata(pdev, data);
-+
-+	/* See if the EC is already there and get the EC revision */
-+	ret =3D olpc_ec_cmd(EC_FIRMWARE_REV, NULL, 0, &ecver, 1);
-+	if (ret) {
-+		if (ret =3D=3D -ENODEV)
-+			return -EPROBE_DEFER;
-+		return ret;
-+	}
-=20
--	/*
--	 * We've seen a number of EC protocol changes; this driver requires
--	 * the latest EC protocol, supported by 0x44 and above.
--	 */
--	if (olpc_platform_info.ecver < 0x44) {
-+	if (ecver > 0x44) {
-+		/* XO 1 or 1.5 with a new EC firmware. */
-+		data->new_proto =3D 1;
-+	} else if (ecver < 0x44) {
-+		/*
-+		 * We've seen a number of EC protocol changes; this driver
-+		 * requires the latest EC protocol, supported by 0x44 and above.
-+		 */
- 		printk(KERN_NOTICE "OLPC EC version 0x%02x too old for "
--			"battery driver.\n", olpc_platform_info.ecver);
-+			"battery driver.\n", ecver);
- 		return -ENXIO;
- 	}
-=20
---=20
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -393,7 +402,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		val->intval = (s16)be16_to_cpu(ec_word) * 9760L / 32;
++		val->intval = ecword_to_cpu(data, ec_word) * 9760L / 32;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+@@ -401,7 +410,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		val->intval = (s16)be16_to_cpu(ec_word) * 15625L / 120;
++		val->intval = ecword_to_cpu(data, ec_word) * 15625L / 120;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+ 		ret = olpc_ec_cmd(EC_BAT_SOC, NULL, 0, &ec_byte, 1);
+@@ -432,21 +441,21 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		val->intval = (s16)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval = ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
+ 		ret = olpc_ec_cmd(EC_AMB_TEMP, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+ 
+-		val->intval = (int)be16_to_cpu(ec_word) * 10 / 256;
++		val->intval = (int)ecword_to_cpu(data, ec_word) * 10 / 256;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+ 		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+ 		if (ret)
+ 			return ret;
+ 
+-		val->intval = (s16)be16_to_cpu(ec_word) * 6250 / 15;
++		val->intval = ecword_to_cpu(data, ec_word) * 6250 / 15;
+ 		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+@@ -626,6 +635,10 @@ static int olpc_battery_probe(struct platform_device *pdev)
+ 	if (ecver > 0x44) {
+ 		/* XO 1 or 1.5 with a new EC firmware. */
+ 		data->new_proto = 1;
++	} else if (of_find_compatible_node(NULL, NULL, "olpc,xo1.75-ec")) {
++		/* XO 1.75 */
++		data->new_proto = 1;
++		data->little_endian = 1;
+ 	} else if (ecver < 0x44) {
+ 		/*
+ 		 * We've seen a number of EC protocol changes; this driver
+-- 
 2.19.1
