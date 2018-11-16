@@ -1,80 +1,139 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support for qcom,
-	smmu-v2 variant
-Date: Fri, 16 Nov 2018 16:54:30 +0530
-Message-ID: <20181116112430.31248-6-vivek.gautam@codeaurora.org>
-References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 3/4] PCI: imx: Add multi-pd support
+Date: Fri, 16 Nov 2018 12:25:41 +0000
+Message-ID: <20181116122541.GD3228@e107981-ln.cambridge.arm.com>
+References: <cover.1539020938.git.leonard.crestez@nxp.com>
+ <ee0c4ecb4b6bd26f548096e7be90a07d181d50ee.1539020938.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <20181116112430.31248-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <ee0c4ecb4b6bd26f548096e7be90a07d181d50ee.1539020938.git.leonard.crestez@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
-clock and power requirements.
-On msm8996, multiple cores, viz. mdss, video, etc. use this
-smmu. On sdm845, this smmu is used with gpu.
-Add bindings for the same.
+On Mon, Oct 08, 2018 at 06:06:21PM +0000, Leonard Crestez wrote:
+> On some chips the PCIE and PCIE_PHY blocks are in separate power domains
+> which can be power-gated independently. The pci driver needs to handle
+> this by keeping both domain active.
+> 
+> This is intended for imx6sx where PCIE is in DISPLAY and PCIE_PHY in
+> it's own domain. Defining the DISPLAY domain requires a way for pcie to
+> keep it active or it will break when displays are off.
+> 
+> The power-domains on imx6sx are meant to look like this:
+> 	power-domains = <&pd_disp>, <&pd_pci>;
+> 	power-domain-names = "pcie", "pcie_phy";
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/pci/controller/dwc/pci-imx6.c | 48 +++++++++++++++++++++++++++
+>  1 file changed, 48 insertions(+)
 
-Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
----
- drivers/iommu/arm-smmu.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+I expect Shawn to pick the whole series up and therefore I am dropping
+this series from the PCI tree.
 
-diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index 2098c3141f5f..d315ca637097 100644
---- a/drivers/iommu/arm-smmu.c
-+++ b/drivers/iommu/arm-smmu.c
-@@ -120,6 +120,7 @@ enum arm_smmu_implementation {
- 	GENERIC_SMMU,
- 	ARM_MMU500,
- 	CAVIUM_SMMUV2,
-+	QCOM_SMMUV2,
- };
- 
- struct arm_smmu_s2cr {
-@@ -2026,6 +2027,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
- ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
- ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
- 
-+static const char * const qcom_smmuv2_clks[] = {
-+	"bus", "iface",
-+};
-+
-+static const struct arm_smmu_match_data qcom_smmuv2 = {
-+	.version = ARM_SMMU_V2,
-+	.model = QCOM_SMMUV2,
-+	.clks = qcom_smmuv2_clks,
-+	.num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
-+};
-+
- static const struct of_device_id arm_smmu_of_match[] = {
- 	{ .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
- 	{ .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
-@@ -2033,6 +2045,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
- 	{ .compatible = "arm,mmu-401", .data = &arm_mmu401 },
- 	{ .compatible = "arm,mmu-500", .data = &arm_mmu500 },
- 	{ .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
-+	{ .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+> diff --git a/drivers/pci/controller/dwc/pci-imx6.c b/drivers/pci/controller/dwc/pci-imx6.c
+> index 6171171db1fc..a482f86b02e6 100644
+> --- a/drivers/pci/controller/dwc/pci-imx6.c
+> +++ b/drivers/pci/controller/dwc/pci-imx6.c
+> @@ -25,10 +25,12 @@
+>  #include <linux/resource.h>
+>  #include <linux/signal.h>
+>  #include <linux/types.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/reset.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include "pcie-designware.h"
+>  
+>  #define to_imx6_pcie(x)	dev_get_drvdata((x)->dev)
+>  
+> @@ -57,10 +59,15 @@ struct imx6_pcie {
+>  	u32			tx_deemph_gen2_6db;
+>  	u32			tx_swing_full;
+>  	u32			tx_swing_low;
+>  	int			link_gen;
+>  	struct regulator	*vpcie;
+> +
+> +	/* power domain for pcie */
+> +	struct device		*pd_pcie;
+> +	/* power domain for pcie phy */
+> +	struct device		*pd_pcie_phy;
+>  };
+>  
+>  /* Parameters for the waiting for PCIe PHY PLL to lock on i.MX7 */
+>  #define PHY_PLL_LOCK_WAIT_MAX_RETRIES	2000
+>  #define PHY_PLL_LOCK_WAIT_USLEEP_MIN	50
+> @@ -290,10 +297,47 @@ static int imx6q_pcie_abort_handler(unsigned long addr,
+>  	}
+>  
+>  	return 1;
+>  }
+>  
+> +static int imx6_pcie_attach_pd(struct device *dev)
+> +{
+> +	struct imx6_pcie *imx6_pcie = dev_get_drvdata(dev);
+> +	struct device_link *link;
+> +
+> +	/* Do nothing when in a single power domain */
+> +	if (dev->pm_domain)
+> +		return 0;
+> +
+> +	imx6_pcie->pd_pcie = dev_pm_domain_attach_by_name(dev, "pcie");
+> +	if (IS_ERR(imx6_pcie->pd_pcie))
+> +		return PTR_ERR(imx6_pcie->pd_pcie);
+> +	link = device_link_add(dev, imx6_pcie->pd_pcie,
+> +			DL_FLAG_STATELESS |
+> +			DL_FLAG_PM_RUNTIME |
+> +			DL_FLAG_RPM_ACTIVE);
+> +	if (IS_ERR(link)) {
+> +		dev_err(dev, "Failed to add device_link to pcie pd: %ld\n", PTR_ERR(link));
+> +		return PTR_ERR(link);
+> +	}
+> +
+> +	imx6_pcie->pd_pcie_phy = dev_pm_domain_attach_by_name(dev, "pcie_phy");
+> +	if (IS_ERR(imx6_pcie->pd_pcie_phy))
+> +		return PTR_ERR(imx6_pcie->pd_pcie_phy);
+> +
+> +	device_link_add(dev, imx6_pcie->pd_pcie_phy,
+> +			DL_FLAG_STATELESS |
+> +			DL_FLAG_PM_RUNTIME |
+> +			DL_FLAG_RPM_ACTIVE);
+> +	if (IS_ERR(link)) {
+> +		dev_err(dev, "Failed to add device_link to pcie_phy pd: %ld\n", PTR_ERR(link));
+> +		return PTR_ERR(link);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static void imx6_pcie_assert_core_reset(struct imx6_pcie *imx6_pcie)
+>  {
+>  	struct device *dev = imx6_pcie->pci->dev;
+>  
+>  	switch (imx6_pcie->variant) {
+> @@ -1013,10 +1057,14 @@ static int imx6_pcie_probe(struct platform_device *pdev)
+>  		imx6_pcie->vpcie = NULL;
+>  	}
+>  
+>  	platform_set_drvdata(pdev, imx6_pcie);
+>  
+> +	ret = imx6_pcie_attach_pd(dev);
+> +	if (ret)
+> +		return ret;
+> +
+>  	ret = imx6_add_pcie_port(imx6_pcie, pdev);
+>  	if (ret < 0)
+>  		return ret;
+>  
+>  	return 0;
+> -- 
+> 2.17.1
+> 
