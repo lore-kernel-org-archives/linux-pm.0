@@ -1,65 +1,45 @@
 From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: [PATCH v2 04/17] Revert "platform/olpc: Make ec explicitly non-modular"
-Date: Fri, 16 Nov 2018 17:23:50 +0100
-Message-ID: <20181116162403.49854-5-lkundrak@v3.sk>
+Subject: [PATCH v2 03/17] Platform: OLPC: Remove an unused include
+Date: Fri, 16 Nov 2018 17:23:49 +0100
+Message-ID: <20181116162403.49854-4-lkundrak@v3.sk>
 References: <20181116162403.49854-1-lkundrak@v3.sk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20181116162403.49854-1-lkundrak@v3.sk>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, devel@driverdev.osuosl.org, Eric Miao <eric.y.miao@gmail.com>, James Cameron <quozl@laptop.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-spi@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-It doesn't make sense to always have this built-in, e.g. on ARM
-multiplatform kernels.
-
-A better way to address the problem the original commit aimed to solve is
-to fix Kconfig. That is what the next commit in the series does.
-
-This reverts commit f48d1496b8537d75776478c6942dd87f34d7f270.
+Also, the header is x86 specific, while there are non-x86 OLPC machines.
 
 Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-
+Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
-Changes since v1:
-- Sort it later in the patch set
+ drivers/platform/olpc/olpc-ec.c | 1 -
+ 1 file changed, 1 deletion(-)
 
- drivers/platform/olpc/olpc-ec.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc=
--ec.c
-index 981955dce926..35a21c66cd0d 100644
+diff --git a/drivers/platform/olpc/olpc-ec.c b/drivers/platform/olpc/olpc-ec.c
+index 374a8028fec7..981955dce926 100644
 --- a/drivers/platform/olpc/olpc-ec.c
 +++ b/drivers/platform/olpc/olpc-ec.c
-@@ -1,8 +1,6 @@
- /*
-  * Generic driver for the OLPC Embedded Controller.
-  *
-- * Author: Andres Salomon <dilinger@queued.net>
-- *
-  * Copyright (C) 2011-2012 One Laptop per Child Foundation.
-  *
-  * Licensed under the GPL v2 or later.
-@@ -14,7 +12,7 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
--#include <linux/init.h>
-+#include <linux/module.h>
+@@ -17,7 +17,6 @@
+ #include <linux/init.h>
  #include <linux/list.h>
  #include <linux/olpc-ec.h>
-=20
-@@ -327,4 +325,8 @@ static int __init olpc_ec_init_module(void)
- {
- 	return platform_driver_register(&olpc_ec_plat_driver);
- }
-+
- arch_initcall(olpc_ec_init_module);
-+
-+MODULE_AUTHOR("Andres Salomon <dilinger@queued.net>");
-+MODULE_LICENSE("GPL");
---=20
+-#include <asm/olpc.h>
+ 
+ struct ec_cmd_desc {
+ 	u8 cmd;
+-- 
 2.19.1
