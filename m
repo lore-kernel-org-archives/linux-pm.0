@@ -1,63 +1,80 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 7/7] powerpc/kconfig: remove PPC_STD_MMU_32 and PPC_STD_MMU
-Date: Sat, 17 Nov 2018 10:25:07 +0000 (UTC)
-Message-ID: <4745d9467c7d399972dbd12265d0c434cb41e1ea.1542395798.git.christophe.leroy@c-s.fr>
-References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
+From: abailon@baylibre.com
+Subject: [RFC PATCH 0/2] iMX7ULP interconnect framework
+Date: Sat, 17 Nov 2018 12:19:03 +0100
+Message-ID: <20181117111905.29091-1-abailon@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: georgi.djakov@linaro.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alexandre Bailon <abailon@abailon.com>
 List-Id: linux-pm@vger.kernel.org
 
-PPC_STD_MMU_32 and PPC_STD_MMU are not used anymore. Remove them.
+From: Alexandre Bailon <abailon@abailon.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/Kconfig                   |  2 +-
- arch/powerpc/platforms/Kconfig.cputype | 10 +---------
- 2 files changed, 2 insertions(+), 10 deletions(-)
+The goal of this patchset is to use the interconnect framework
+for iMX7ULP SoC.
+This is sent as a RFC because I think the driver could be more generic,
+and, I had some issues with the clocks and I know the way I dealt with
+it is probably not the best one.
+In addition, this patchset has been written and tested on older kernel
+(4.9), and I don't expect it to applies / works on upstream kernel
+(the support of SoC itself is still not there).
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index ac9703e8e722..8ea7c2c02cbf 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -1096,7 +1096,7 @@ config PHYSICAL_START_BOOL
- 
- config PHYSICAL_START
- 	hex "Physical address where the kernel is loaded" if PHYSICAL_START_BOOL
--	default "0x02000000" if PPC_STD_MMU && CRASH_DUMP && !NONSTATIC_KERNEL
-+	default "0x02000000" if PPC_BOOK3S && CRASH_DUMP && !NONSTATIC_KERNEL
- 	default "0x00000000"
- 
- config PHYSICAL_ALIGN
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a106e78558c0..7e130035bbba 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -312,14 +312,6 @@ config SPE
- 
- 	  If in doubt, say Y here.
- 
--config PPC_STD_MMU
--	def_bool y
--	depends on PPC_BOOK3S
--
--config PPC_STD_MMU_32
--	def_bool y
--	depends on PPC_STD_MMU && PPC32
--
- config ARCH_ENABLE_SPLIT_PMD_PTLOCK
- 	def_bool y
- 	depends on PPC_BOOK3S_64
-@@ -354,7 +346,7 @@ config ARCH_ENABLE_HUGEPAGE_MIGRATION
- 
- config PPC_MMU_NOHASH
- 	def_bool y
--	depends on !PPC_STD_MMU
-+	depends on !PPC_BOOK3S
- 
- config PPC_BOOK3E_MMU
- 	def_bool y
+There are two interconnects, NIC0 and NIC1:
+
+     //==============================\\
+     || --------------------          ||
+     \\=|m0              s0|=         ||
+       =|m1              s1|===\\     ||
+       =|m2     NIC0     s2|=   ||    ||
+       =|m3                |    ||    ||
+       =|m4                |    ||    ||
+        --------------------    ||    ||
+            //=================//     ||      
+            ||  --------------------  ||
+            \\==|m0              s0|=//
+               =|m1              s1|=
+               =|m2    NIC1      s2|=
+               =|m3              s4|=
+               =|m4              s5|=
+               =|m5                |
+                --------------------
+
+     -------          -------          
+NIC0 | DIV | NIC0 DIV | DIV | NIC1 DIV 
+-----|     |----------|     |---------
+     -------          -------
+
+Although NIC0 and NIC1 are interconnected, some requests could apply to
+only one of them. This could cause some issues with clock.
+Basically, scaling the frequency of NIC0 will also scale the frequency of
+NIC1, so we have to update both of them.
+Simillarly, updating the frequency of NIC1 may also require to change NIC0
+frequency.
+In order to easily deal with it, the driver create only one device for the
+two interconnects, and update clock frequency of both interconnects at same
+time, when the last node is reached.
+
+Ideally, we would have two device, which would make the driver more
+generic, but currently, I'm not sure how to make sure that the clocks are
+always at the expected frequency. Doing that would give us the possiblity to
+use the driver for other iMX SoC (would just require to add the bus topology 
+for that SoC).
+
+Alexandre Bailon (2):
+  Add support of imx7ulp to interconnect framework
+  dt-bindings: interconnect: Document imx7ulp interconnect bindings
+
+ .../bindings/interconnect/imx7ulp.txt         |  17 +
+ drivers/interconnect/Kconfig                  |   1 +
+ drivers/interconnect/Makefile                 |   1 +
+ drivers/interconnect/imx/Kconfig              |   9 +
+ drivers/interconnect/imx/Makefile             |   1 +
+ drivers/interconnect/imx/imx7ulp.c            | 369 ++++++++++++++++++
+ 6 files changed, 398 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/imx7ulp.txt
+ create mode 100644 drivers/interconnect/imx/Kconfig
+ create mode 100644 drivers/interconnect/imx/Makefile
+ create mode 100644 drivers/interconnect/imx/imx7ulp.c
+
 -- 
-2.13.3
+2.18.1
