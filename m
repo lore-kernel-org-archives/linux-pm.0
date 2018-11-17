@@ -1,38 +1,38 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2] power: supply: bq24190_charger: add support for
- bq24196 variant
-Date: Sat, 17 Nov 2018 09:44:12 -0600
-Message-ID: <20181117154412.GA5215@bogus>
-References: <20181113124753.29948-1-heiko@sntech.de>
+Subject: Re: [PATCH v2 02/17] dt-bindings: olpc,xo1.75-ec: Add OLPC XO-1.75
+ EC bindings
+Date: Sat, 17 Nov 2018 10:03:05 -0600
+Message-ID: <20181117160305.GA31494@bogus>
+References: <20181116162403.49854-1-lkundrak@v3.sk>
+ <20181116162403.49854-3-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181113124753.29948-1-heiko@sntech.de>
+In-Reply-To: <20181116162403.49854-3-lkundrak@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
+Cc: Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, James Cameron <quozl@laptop.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Lubomir Rintel <lkundrak@v3.sk>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 13 Nov 2018 13:47:53 +0100, Heiko Stuebner wrote:
-> From: Heiko Stuebner <heiko.stuebner@bq.com>
+On Fri, 16 Nov 2018 17:23:48 +0100, Lubomir Rintel wrote:
+> The OLPC XO-1.75 Embedded Controller is a SPI master that uses extra
+> signals for handshaking. It needs to know when is the slave (Linux)
+> side's TX FIFO ready for transfer (the ready-gpio signal on the SPI
+> controller node) and when does it wish to respond with a command (the
+> cmd-gpio property).
 > 
-> The bq24196 is another variant of the bq24190 charger ic.
-> Its register set is identical to the bq24192 and it even reuses
-> the same part number (0x5).
+> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 > 
-> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
 > ---
-> This should go on top of the bq24192 support patches from Brian Masney /
-> Jonathan Marek [0]
+> Changes since v1:
+> - s/cmd-gpio/cmd-gpios/
+> - s/ready-gpio/ready-gpios/ in the documentation paragraph
+> - Remove status = "okay" from the example
 > 
-> [0] https://patchwork.kernel.org/patch/10663409/
-> 
-> changes in v2:
-> - add missing compatible to dt-binding
-> 
->  Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
->  drivers/power/supply/bq24190_charger.c                     | 4 +++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
+>  .../bindings/misc/olpc,xo1.75-ec.txt          | 23 +++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/misc/olpc,xo1.75-ec.txt
 > 
 
 Reviewed-by: Rob Herring <robh@kernel.org>
