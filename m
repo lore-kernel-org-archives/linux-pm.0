@@ -1,48 +1,38 @@
-From: abailon@baylibre.com
-Subject: [RFC PATCH 2/2] dt-bindings: interconnect: Document imx7ulp interconnect bindings
-Date: Sat, 17 Nov 2018 12:19:05 +0100
-Message-ID: <20181117111905.29091-3-abailon@baylibre.com>
-References: <20181117111905.29091-1-abailon@baylibre.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2] power: supply: bq24190_charger: add support for
+ bq24196 variant
+Date: Sat, 17 Nov 2018 09:44:12 -0600
+Message-ID: <20181117154412.GA5215@bogus>
+References: <20181113124753.29948-1-heiko@sntech.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181117111905.29091-1-abailon@baylibre.com>
+Content-Disposition: inline
+In-Reply-To: <20181113124753.29948-1-heiko@sntech.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: georgi.djakov@linaro.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alexandre Bailon <abailon@baylibre.com>
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Alexandre Bailon <abailon@baylibre.com>
+On Tue, 13 Nov 2018 13:47:53 +0100, Heiko Stuebner wrote:
+> From: Heiko Stuebner <heiko.stuebner@bq.com>
+> 
+> The bq24196 is another variant of the bq24190 charger ic.
+> Its register set is identical to the bq24192 and it even reuses
+> the same part number (0x5).
+> 
+> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+> ---
+> This should go on top of the bq24192 support patches from Brian Masney /
+> Jonathan Marek [0]
+> 
+> [0] https://patchwork.kernel.org/patch/10663409/
+> 
+> changes in v2:
+> - add missing compatible to dt-binding
+> 
+>  Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
+>  drivers/power/supply/bq24190_charger.c                     | 4 +++-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
+> 
 
-This documents the device tree bindings for the interconnects
-present in the imx7ulp SoC.
-
-Signed-off-by: Alexandre Bailon <abailon@baylibre.com>
----
- .../bindings/interconnect/imx7ulp.txt           | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/imx7ulp.txt
-
-diff --git a/Documentation/devicetree/bindings/interconnect/imx7ulp.txt b/Documentation/devicetree/bindings/interconnect/imx7ulp.txt
-new file mode 100644
-index 000000000000..c32b7becdca7
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/imx7ulp.txt
-@@ -0,0 +1,17 @@
-+iMX7ULP interconnect driver binding
-+----------------------------------------------------
-+
-+Required properties :
-+- compatible : should be "fsl,imx7ulp-icc";
-+- #interconnect-cells : should contain 1
-+- clocks : list of phandles and specifiers to all interconnect bus clocks
-+- clock-names : clock names should include both "nic0_div" and "nic1_div"
-+
-+Examples:
-+	icc0: icc {
-+		compatible = "fsl,imx7ulp-icc";
-+		clocks = <&clks IMX7ULP_CLK_NIC0_DIV>,
-+			 <&clks IMX7ULP_CLK_NIC1_DIV>;
-+		clock-names = "nic0_div", "nic1_div";
-+		#interconnect-cells = <1>;
-+	};
--- 
-2.18.1
+Reviewed-by: Rob Herring <robh@kernel.org>
