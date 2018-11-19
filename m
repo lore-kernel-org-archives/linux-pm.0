@@ -1,50 +1,224 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v2 3/4] PCI: imx: Add multi-pd support
-Date: Mon, 19 Nov 2018 19:38:18 +0800
-Message-ID: <20181119113816.GP5829@dragon>
-References: <cover.1539020938.git.leonard.crestez@nxp.com>
- <ee0c4ecb4b6bd26f548096e7be90a07d181d50ee.1539020938.git.leonard.crestez@nxp.com>
- <20181116122541.GD3228@e107981-ln.cambridge.arm.com>
+From: Konstantin Khlebnikov <koct9i@gmail.com>
+Subject: Re: [PATCH v1 2/8] mm: convert PG_balloon to PG_offline
+Date: Mon, 19 Nov 2018 14:56:07 +0300
+Message-ID: <CALYGNiM+Fr+RbNFWrxkT9u+nOORTG2dTXo=VYz4yt2k7is=eLQ@mail.gmail.com>
+References: <20181119101616.8901-1-david@redhat.com> <20181119101616.8901-3-david@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181116122541.GD3228@e107981-ln.cambridge.arm.com>
+In-Reply-To: <20181119101616.8901-3-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Richard Zhu <hongxing.zhu@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Stefan Agner <stefan@agner.ch>, Marek Vasut <marex@denx.de>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: david@redhat.com
+Cc: linux-mm@kvack.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel <linux-fsdevel@vger.kernel.org>, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec@lists.infradead.org, pv-drivers@vmware.com, Jonathan Corbet <corbet@lwn.net>, Alexey Dobriyan <adobriyan@gmail.com>, rppt@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>, chansen3@cisco.com, Vlastimil Babka <vbabka@suse.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Matthew Wilcox <willy@infradead.org>, "Michael S. Tsirkin" <mst@redhat.com>, Michal Hocko <mhocko@suse.com>, pasha.tatashin@oracle.com, alexander.h.duyck@linux.intel.com, Naoya
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 16, 2018 at 12:25:41PM +0000, Lorenzo Pieralisi wrote:
-> On Mon, Oct 08, 2018 at 06:06:21PM +0000, Leonard Crestez wrote:
-> > On some chips the PCIE and PCIE_PHY blocks are in separate power domains
-> > which can be power-gated independently. The pci driver needs to handle
-> > this by keeping both domain active.
-> > 
-> > This is intended for imx6sx where PCIE is in DISPLAY and PCIE_PHY in
-> > it's own domain. Defining the DISPLAY domain requires a way for pcie to
-> > keep it active or it will break when displays are off.
-> > 
-> > The power-domains on imx6sx are meant to look like this:
-> > 	power-domains = <&pd_disp>, <&pd_pci>;
-> > 	power-domain-names = "pcie", "pcie_phy";
-> > 
-> > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > ---
-> >  drivers/pci/controller/dwc/pci-imx6.c | 48 +++++++++++++++++++++++++++
-> >  1 file changed, 48 insertions(+)
-> 
-> I expect Shawn to pick the whole series up and therefore I am dropping
-> this series from the PCI tree.
+On Mon, Nov 19, 2018 at 1:16 PM David Hildenbrand <david@redhat.com> wrote:
+>
+> PG_balloon was introduced to implement page migration/compaction for pages
+> inflated in virtio-balloon. Nowadays, it is only a marker that a page is
+> part of virtio-balloon and therefore logically offline.
+>
+> We also want to make use of this flag in other balloon drivers - for
+> inflated pages or when onlining a section but keeping some pages offline
+> (e.g. used right now by XEN and Hyper-V via set_online_page_callback()).
+>
+> We are going to expose this flag to dump tools like makedumpfile. But
+> instead of exposing PG_balloon, let's generalize the concept of marking
+> pages as logically offline, so it can be reused for other purposes
+> later on.
+>
+> Rename PG_balloon to PG_offline. This is an indicator that the page is
+> logically offline, the content stale and that it should not be touched
+> (e.g. a hypervisor would have to allocate backing storage in order for the
+> guest to dump an unused page).  We can then e.g. exclude such pages from
+> dumps.
+>
+> We replace and reuse KPF_BALLOON (23), as this shouldn't really harm
+> (and for now the semantics stay the same).  In following patches, we will
+> make use of this bit also in other balloon drivers. While at it, document
+> PGTABLE.
 
-Lorenzo,
+Ok, makes sense.
 
-I think the best approach is that you send patch #2 and #3 for 4.21
-through PCI tree, and we will be able to apply patch #4 in 4.22
-development cycle.
+Acked-by: Konstantin Khlebnikov <koct9i@gmail.com>
 
-Queuing patch #3 on IMX tree will stands a good chance for conflicts
-with other pci-imx6.c changes on PCI tree.
+>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Alexey Dobriyan <adobriyan@gmail.com>
+> Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Christian Hansen <chansen3@cisco.com>
+> Cc: Vlastimil Babka <vbabka@suse.cz>
+> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> Cc: Matthew Wilcox <willy@infradead.org>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: Pavel Tatashin <pasha.tatashin@oracle.com>
+> Cc: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+> Cc: Miles Chen <miles.chen@mediatek.com>
+> Cc: David Rientjes <rientjes@google.com>
+> Cc: Konstantin Khlebnikov <koct9i@gmail.com>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
+> ---
+>  Documentation/admin-guide/mm/pagemap.rst |  9 ++++++---
+>  fs/proc/page.c                           |  4 ++--
+>  include/linux/balloon_compaction.h       |  8 ++++----
+>  include/linux/page-flags.h               | 11 +++++++----
+>  include/uapi/linux/kernel-page-flags.h   |  2 +-
+>  tools/vm/page-types.c                    |  2 +-
+>  6 files changed, 21 insertions(+), 15 deletions(-)
+>
+> diff --git a/Documentation/admin-guide/mm/pagemap.rst b/Documentation/admin-guide/mm/pagemap.rst
+> index 3f7bade2c231..340a5aee9b80 100644
+> --- a/Documentation/admin-guide/mm/pagemap.rst
+> +++ b/Documentation/admin-guide/mm/pagemap.rst
+> @@ -75,9 +75,10 @@ number of times a page is mapped.
+>      20. NOPAGE
+>      21. KSM
+>      22. THP
+> -    23. BALLOON
+> +    23. OFFLINE
+>      24. ZERO_PAGE
+>      25. IDLE
+> +    26. PGTABLE
+>
+>   * ``/proc/kpagecgroup``.  This file contains a 64-bit inode number of the
+>     memory cgroup each page is charged to, indexed by PFN. Only available when
+> @@ -118,8 +119,8 @@ Short descriptions to the page flags
+>      identical memory pages dynamically shared between one or more processes
+>  22 - THP
+>      contiguous pages which construct transparent hugepages
+> -23 - BALLOON
+> -    balloon compaction page
+> +23 - OFFLINE
+> +    page is logically offline
+>  24 - ZERO_PAGE
+>      zero page for pfn_zero or huge_zero page
+>  25 - IDLE
+> @@ -128,6 +129,8 @@ Short descriptions to the page flags
+>      Note that this flag may be stale in case the page was accessed via
+>      a PTE. To make sure the flag is up-to-date one has to read
+>      ``/sys/kernel/mm/page_idle/bitmap`` first.
+> +26 - PGTABLE
+> +    page is in use as a page table
+>
+>  IO related page flags
+>  ---------------------
+> diff --git a/fs/proc/page.c b/fs/proc/page.c
+> index 6c517b11acf8..378401af4d9d 100644
+> --- a/fs/proc/page.c
+> +++ b/fs/proc/page.c
+> @@ -152,8 +152,8 @@ u64 stable_page_flags(struct page *page)
+>         else if (page_count(page) == 0 && is_free_buddy_page(page))
+>                 u |= 1 << KPF_BUDDY;
+>
+> -       if (PageBalloon(page))
+> -               u |= 1 << KPF_BALLOON;
+> +       if (PageOffline(page))
+> +               u |= 1 << KPF_OFFLINE;
+>         if (PageTable(page))
+>                 u |= 1 << KPF_PGTABLE;
+>
+> diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
+> index cbe50da5a59d..f111c780ef1d 100644
+> --- a/include/linux/balloon_compaction.h
+> +++ b/include/linux/balloon_compaction.h
+> @@ -95,7 +95,7 @@ extern int balloon_page_migrate(struct address_space *mapping,
+>  static inline void balloon_page_insert(struct balloon_dev_info *balloon,
+>                                        struct page *page)
+>  {
+> -       __SetPageBalloon(page);
+> +       __SetPageOffline(page);
+>         __SetPageMovable(page, balloon->inode->i_mapping);
+>         set_page_private(page, (unsigned long)balloon);
+>         list_add(&page->lru, &balloon->pages);
+> @@ -111,7 +111,7 @@ static inline void balloon_page_insert(struct balloon_dev_info *balloon,
+>   */
+>  static inline void balloon_page_delete(struct page *page)
+>  {
+> -       __ClearPageBalloon(page);
+> +       __ClearPageOffline(page);
+>         __ClearPageMovable(page);
+>         set_page_private(page, 0);
+>         /*
+> @@ -141,13 +141,13 @@ static inline gfp_t balloon_mapping_gfp_mask(void)
+>  static inline void balloon_page_insert(struct balloon_dev_info *balloon,
+>                                        struct page *page)
+>  {
+> -       __SetPageBalloon(page);
+> +       __SetPageOffline(page);
+>         list_add(&page->lru, &balloon->pages);
+>  }
+>
+>  static inline void balloon_page_delete(struct page *page)
+>  {
+> -       __ClearPageBalloon(page);
+> +       __ClearPageOffline(page);
+>         list_del(&page->lru);
+>  }
+>
+> diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+> index 50ce1bddaf56..f91da3d0a67e 100644
+> --- a/include/linux/page-flags.h
+> +++ b/include/linux/page-flags.h
+> @@ -670,7 +670,7 @@ PAGEFLAG_FALSE(DoubleMap)
+>  #define PAGE_TYPE_BASE 0xf0000000
+>  /* Reserve             0x0000007f to catch underflows of page_mapcount */
+>  #define PG_buddy       0x00000080
+> -#define PG_balloon     0x00000100
+> +#define PG_offline     0x00000100
+>  #define PG_kmemcg      0x00000200
+>  #define PG_table       0x00000400
+>
+> @@ -700,10 +700,13 @@ static __always_inline void __ClearPage##uname(struct page *page) \
+>  PAGE_TYPE_OPS(Buddy, buddy)
+>
+>  /*
+> - * PageBalloon() is true for pages that are on the balloon page list
+> - * (see mm/balloon_compaction.c).
+> + * PageOffline() indicates that the pages is logically offline although the
+> + * containing section is online. (e.g. inflated in a balloon driver or
+> + * not onlined when onlining the section).
+> + * The content of these pages is effectively stale. Such pages should not
+> + * be touched (read/write/dump/save) except by their owner.
+>   */
+> -PAGE_TYPE_OPS(Balloon, balloon)
+> +PAGE_TYPE_OPS(Offline, offline)
+>
+>  /*
+>   * If kmemcg is enabled, the buddy allocator will set PageKmemcg() on
+> diff --git a/include/uapi/linux/kernel-page-flags.h b/include/uapi/linux/kernel-page-flags.h
+> index 21b9113c69da..6f2f2720f3ac 100644
+> --- a/include/uapi/linux/kernel-page-flags.h
+> +++ b/include/uapi/linux/kernel-page-flags.h
+> @@ -32,7 +32,7 @@
+>
+>  #define KPF_KSM                        21
+>  #define KPF_THP                        22
+> -#define KPF_BALLOON            23
+> +#define KPF_OFFLINE            23
+>  #define KPF_ZERO_PAGE          24
+>  #define KPF_IDLE               25
+>  #define KPF_PGTABLE            26
+> diff --git a/tools/vm/page-types.c b/tools/vm/page-types.c
+> index 37908a83ddc2..6c38d3b862e4 100644
+> --- a/tools/vm/page-types.c
+> +++ b/tools/vm/page-types.c
+> @@ -133,7 +133,7 @@ static const char * const page_flag_names[] = {
+>         [KPF_NOPAGE]            = "n:nopage",
+>         [KPF_KSM]               = "x:ksm",
+>         [KPF_THP]               = "t:thp",
+> -       [KPF_BALLOON]           = "o:balloon",
+> +       [KPF_OFFLINE]           = "o:offline",
 
-Shawn
+Even 'o' keyword is better suits for Offline than for ballOon =)
+
+>         [KPF_PGTABLE]           = "g:pgtable",
+>         [KPF_ZERO_PAGE]         = "z:zero_page",
+>         [KPF_IDLE]              = "i:idle_page",
+> --
+> 2.17.2
+>
