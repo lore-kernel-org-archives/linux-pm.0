@@ -1,61 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/7] drivers/cpufreq: change CONFIG_6xx to
- CONFIG_PPC_BOOK3S_32
-Date: Mon, 19 Nov 2018 09:34:23 +0530
-Message-ID: <20181119040423.pbfuszycad66e2qr@vireshk-i7>
-References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Hildenbrand <david@redhat.com>
+Subject: [PATCH v1 1/8] mm: balloon: update comment about isolation/migration/compaction
+Date: Mon, 19 Nov 2018 11:16:09 +0100
+Message-ID: <20181119101616.8901-2-david@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
+In-Reply-To: <20181119101616.8901-1-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, David Hildenbrand <david@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 17-11-18, 10:24, Christophe Leroy wrote:
-> Today, powerpc has three CONFIG labels which means exactly the same:
-> - CONFIG_6xx
-> - CONFIG_PPC_BOOK3S_32
-> - CONFIG_PPC_STD_MMU_32
-> 
-> By consistency with PPC64, CONFIG_PPC_BOOK3S_32 is the preferred one.
-> Using a label with includes _PPC_ also makes it clearer that it is
-> linked to powerpc.
-> 
-> In preparation of the removal of CONFIG_6xx, this patch replaces it
-> by CONFIG_PPC_BOOK3S_32
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  drivers/cpufreq/pmac32-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/pmac32-cpufreq.c b/drivers/cpufreq/pmac32-cpufreq.c
-> index 61ae06ca008e..52f0d91d30c1 100644
-> --- a/drivers/cpufreq/pmac32-cpufreq.c
-> +++ b/drivers/cpufreq/pmac32-cpufreq.c
-> @@ -128,7 +128,7 @@ static int cpu_750fx_cpu_speed(int low_speed)
->  			mtspr(SPRN_HID2, hid2);
->  		}
->  	}
-> -#ifdef CONFIG_6xx
-> +#ifdef CONFIG_PPC_BOOK3S_32
->  	low_choose_750fx_pll(low_speed);
->  #endif
->  	if (low_speed == 1) {
-> @@ -166,7 +166,7 @@ static int dfs_set_cpu_speed(int low_speed)
->  	}
->  
->  	/* set frequency */
-> -#ifdef CONFIG_6xx
-> +#ifdef CONFIG_PPC_BOOK3S_32
->  	low_choose_7447a_dfs(low_speed);
->  #endif
->  	udelay(100);
+Commit b1123ea6d3b3 ("mm: balloon: use general non-lru movable page
+feature") reworked balloon handling to make use of the general
+non-lru movable page feature. The big comment block in
+balloon_compaction.h contains quite some outdated information. Let's fix
+this.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ include/linux/balloon_compaction.h | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
+diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
+index 53051f3d8f25..cbe50da5a59d 100644
+--- a/include/linux/balloon_compaction.h
++++ b/include/linux/balloon_compaction.h
+@@ -4,15 +4,18 @@
+  *
+  * Common interface definitions for making balloon pages movable by compaction.
+  *
+- * Despite being perfectly possible to perform ballooned pages migration, they
+- * make a special corner case to compaction scans because balloon pages are not
+- * enlisted at any LRU list like the other pages we do compact / migrate.
++ * Balloon page migration makes use of the general non-lru movable page
++ * feature.
++ *
++ * page->private is used to reference the responsible balloon device.
++ * page->mapping is used in context of non-lru page migration to reference
++ * the address space operations for page isolation/migration/compaction.
+  *
+  * As the page isolation scanning step a compaction thread does is a lockless
+  * procedure (from a page standpoint), it might bring some racy situations while
+  * performing balloon page compaction. In order to sort out these racy scenarios
+  * and safely perform balloon's page compaction and migration we must, always,
+- * ensure following these three simple rules:
++ * ensure following these simple rules:
+  *
+  *   i. when updating a balloon's page ->mapping element, strictly do it under
+  *      the following lock order, independently of the far superior
+@@ -21,19 +24,8 @@
+  *	      +--spin_lock_irq(&b_dev_info->pages_lock);
+  *	            ... page->mapping updates here ...
+  *
+- *  ii. before isolating or dequeueing a balloon page from the balloon device
+- *      pages list, the page reference counter must be raised by one and the
+- *      extra refcount must be dropped when the page is enqueued back into
+- *      the balloon device page list, thus a balloon page keeps its reference
+- *      counter raised only while it is under our special handling;
+- *
+- * iii. after the lockless scan step have selected a potential balloon page for
+- *      isolation, re-test the PageBalloon mark and the PagePrivate flag
+- *      under the proper page lock, to ensure isolating a valid balloon page
+- *      (not yet isolated, nor under release procedure)
+- *
+- *  iv. isolation or dequeueing procedure must clear PagePrivate flag under
+- *      page lock together with removing page from balloon device page list.
++ *  ii. isolation or dequeueing procedure must remove the page from balloon
++ *      device page list under b_dev_info->pages_lock.
+  *
+  * The functions provided by this interface are placed to help on coping with
+  * the aforementioned balloon page corner case, as well as to ensure the simple
 -- 
-viresh
+2.17.2
