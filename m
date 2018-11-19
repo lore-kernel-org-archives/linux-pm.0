@@ -1,154 +1,139 @@
-From: David Hildenbrand <david@redhat.com>
-Subject: [PATCH v1] makedumpfile: exclude pages that are logically offline
-Date: Mon, 19 Nov 2018 11:18:35 +0100
-Message-ID: <20181119101835.9140-1-david@redhat.com>
-References: <20181119101616.8901-1-david@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 06/15] Platform: OLPC: Add XO-1.75 EC driver
+Date: Mon, 19 Nov 2018 11:40:46 +0100
+Message-ID: <20181119104046.GC28607@amd>
+References: <20181010172300.317643-1-lkundrak@v3.sk>
+ <20181010172300.317643-7-lkundrak@v3.sk>
+ <CAHp75VcefOJHZ3WdZYrGEJFjqg2s1oJ75Jg9gKmQFre_ScAPZg@mail.gmail.com>
+ <8881f5e48613c9d9d133e3964031fe2ab57f4801.camel@v3.sk>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="+nBD6E3TurpgldQp"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181119101616.8901-1-david@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <8881f5e48613c9d9d133e3964031fe2ab57f4801.camel@v3.sk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Kazuhito Hagio <k-hagio@ab.jp.nec.com>, David Hildenbrand <david@redhat.com>
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x8>
 List-Id: linux-pm@vger.kernel.org
 
-Linux marks pages that are logically offline via a page flag (map count).
-Such pages e.g. include pages infated as part of a balloon driver or
-pages that were not actually onlined when onlining the whole section.
 
-While the hypervisor usually allows to read such inflated memory, we
-basically read and dump data that is completely irrelevant. Also, this
-might result in quite some overhead in the hypervisor. In addition,
-we saw some problems under Hyper-V, whereby we can crash the kernel by
-dumping, when reading memory of a partially onlined memory segment
-(for memory added by the Hyper-V balloon driver).
+--+nBD6E3TurpgldQp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Therefore, don't read and dump pages that are marked as being logically
-offline.
+Hi!
 
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- makedumpfile.c | 34 ++++++++++++++++++++++++++++++----
- makedumpfile.h |  1 +
- 2 files changed, 31 insertions(+), 4 deletions(-)
+> > > +#include <linux/delay.h>
+> > > +#include <linux/gpio/consumer.h>
+> > > +#include <linux/spinlock.h>
+> > > +#include <linux/completion.h>
+> > > +#include <linux/slab.h>
+> > > +#include <linux/platform_device.h>
+> > > +#include <linux/ctype.h>
+> > > +#include <linux/olpc-ec.h>
+> > > +#include <linux/spi/spi.h>
+> > > +#include <linux/reboot.h>
+> > > +#include <linux/input.h>
+> > > +#include <linux/kfifo.h>
+> > > +#include <linux/module.h>
+> > > +#include <linux/power_supply.h>
+> >=20
+> > Easy to maintain when it's sorted.
 
-diff --git a/makedumpfile.c b/makedumpfile.c
-index 8923538..b8bfd4c 100644
---- a/makedumpfile.c
-+++ b/makedumpfile.c
-@@ -88,6 +88,7 @@ mdf_pfn_t pfn_cache_private;
- mdf_pfn_t pfn_user;
- mdf_pfn_t pfn_free;
- mdf_pfn_t pfn_hwpoison;
-+mdf_pfn_t pfn_offline;
- 
- mdf_pfn_t num_dumped;
- 
-@@ -249,6 +250,21 @@ isHugetlb(unsigned long dtor)
-                     && (SYMBOL(free_huge_page) == dtor));
- }
- 
-+static int
-+isOffline(unsigned long flags, unsigned int _mapcount)
-+{
-+	if (NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE) == NOT_FOUND_NUMBER)
-+		return FALSE;
-+
-+	if (flags & (1UL << NUMBER(PG_slab)))
-+		return FALSE;
-+
-+	if (_mapcount == (int)NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE))
-+		return TRUE;
-+
-+	return FALSE;
-+}
-+
- static int
- is_cache_page(unsigned long flags)
- {
-@@ -2287,6 +2303,8 @@ write_vmcoreinfo_data(void)
- 	WRITE_NUMBER("PG_hwpoison", PG_hwpoison);
- 
- 	WRITE_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-+	WRITE_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE",
-+		     PAGE_OFFLINE_MAPCOUNT_VALUE);
- 	WRITE_NUMBER("phys_base", phys_base);
- 
- 	WRITE_NUMBER("HUGETLB_PAGE_DTOR", HUGETLB_PAGE_DTOR);
-@@ -2687,6 +2705,7 @@ read_vmcoreinfo(void)
- 	READ_SRCFILE("pud_t", pud_t);
- 
- 	READ_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-+	READ_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE", PAGE_OFFLINE_MAPCOUNT_VALUE);
- 	READ_NUMBER("phys_base", phys_base);
- #ifdef __aarch64__
- 	READ_NUMBER("VA_BITS", VA_BITS);
-@@ -6041,6 +6060,12 @@ __exclude_unnecessary_pages(unsigned long mem_map,
- 		else if (isHWPOISON(flags)) {
- 			pfn_counter = &pfn_hwpoison;
- 		}
-+		/*
-+		 * Exclude pages that are logically offline.
-+		 */
-+		else if (isOffline(flags, _mapcount)) {
-+			pfn_counter = &pfn_offline;
-+		}
- 		/*
- 		 * Unexcludable page
- 		 */
-@@ -7522,7 +7547,7 @@ write_elf_pages_cyclic(struct cache_data *cd_header, struct cache_data *cd_page)
- 	 */
- 	if (info->flag_cyclic) {
- 		pfn_zero = pfn_cache = pfn_cache_private = 0;
--		pfn_user = pfn_free = pfn_hwpoison = 0;
-+		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
- 		pfn_memhole = info->max_mapnr;
- 	}
- 
-@@ -8804,7 +8829,7 @@ write_kdump_pages_and_bitmap_cyclic(struct cache_data *cd_header, struct cache_d
- 		 * Reset counter for debug message.
- 		 */
- 		pfn_zero = pfn_cache = pfn_cache_private = 0;
--		pfn_user = pfn_free = pfn_hwpoison = 0;
-+		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
- 		pfn_memhole = info->max_mapnr;
- 
- 		/*
-@@ -9749,7 +9774,7 @@ print_report(void)
- 	pfn_original = info->max_mapnr - pfn_memhole;
- 
- 	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
--	    + pfn_user + pfn_free + pfn_hwpoison;
-+	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
- 	shrinking = (pfn_original - pfn_excluded) * 100;
- 	shrinking = shrinking / pfn_original;
- 
-@@ -9763,6 +9788,7 @@ print_report(void)
- 	REPORT_MSG("    User process data pages : 0x%016llx\n", pfn_user);
- 	REPORT_MSG("    Free pages              : 0x%016llx\n", pfn_free);
- 	REPORT_MSG("    Hwpoison pages          : 0x%016llx\n", pfn_hwpoison);
-+	REPORT_MSG("    Offline pages           : 0x%016llx\n", pfn_offline);
- 	REPORT_MSG("  Remaining pages  : 0x%016llx\n",
- 	    pfn_original - pfn_excluded);
- 	REPORT_MSG("  (The number of pages is reduced to %lld%%.)\n",
-@@ -9790,7 +9816,7 @@ print_mem_usage(void)
- 	pfn_original = info->max_mapnr - pfn_memhole;
- 
- 	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
--	    + pfn_user + pfn_free + pfn_hwpoison;
-+	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
- 	shrinking = (pfn_original - pfn_excluded) * 100;
- 	shrinking = shrinking / pfn_original;
- 	total_size = info->page_size * pfn_original;
-diff --git a/makedumpfile.h b/makedumpfile.h
-index f02f86d..e3a2b29 100644
---- a/makedumpfile.h
-+++ b/makedumpfile.h
-@@ -1927,6 +1927,7 @@ struct number_table {
- 	long    PG_hwpoison;
- 
- 	long	PAGE_BUDDY_MAPCOUNT_VALUE;
-+	long	PAGE_OFFLINE_MAPCOUNT_VALUE;
- 	long	SECTION_SIZE_BITS;
- 	long	MAX_PHYSMEM_BITS;
- 	long    HUGETLB_PAGE_DTOR;
--- 
-2.17.2
+No / it depends.
+
+> > > +       channel =3D priv->rx_buf[0];
+> > > +       byte =3D priv->rx_buf[1];
+> >=20
+> > Maybe specific structures would fit better?
+> >=20
+> > Like
+> >=20
+> > struct olpc_ec_resp_hdr {
+> >  u8 channel;
+> >  u8 byte;
+> > ...
+> > }
+
+Structures have padding and other nastyness...
+
+> > > +                       pm_wakeup_event(priv->pwrbtn->dev.parent,
+> > > 1000);
+> >=20
+> > Magic number.
+
+Nothing wrong with magic numbers.
+
+> > > +       args[0] =3D mask & 0xff;
+> > > +       args[1] =3D (mask >> 8) & 0xff;
+> >=20
+> > ...mask >> 0;
+> > ...mask >> 8;
+
+No, please.
+
+> > __maybe_unused  instead of ugly #ifdef?
+> >=20
+> > > +{
+> > > +       struct platform_device *pdev =3D to_platform_device(dev);
+> > > +       struct olpc_xo175_ec *priv =3D platform_get_drvdata(pdev);
+> >=20
+> > dev_get_drvdata() or how is it called?
+> >=20
+> > > +       unsigned char hintargs[5];
+> >=20
+> > struct olpc_ec_hint_cmd {
+> > u8 ...
+> > u32 ...
+> > };
+> >=20
+> > ?
+
+No, unless you want to break the code. Or add __attribute__ packed and
+deal with endianness.
+
+Just no.
+
+> > > +       static unsigned int suspend_count;
+> >=20
+> > u32 I suppose.
+
+You know, there's semantic difference between unsigned int and
+u32. And this sounds like candidate for unsigned int.
+
+> > > +       /* Enable all EC events while we're awake */
+> > > +       olpc_xo175_ec_set_event_mask(0xffff);
+> >=20
+> > #define EC_ALL_EVENTS GENMASK(15, 0)
+
+Actually that's less readable. Just don't.
+
+> > > +static const struct of_device_id olpc_xo175_ec_of_match[] =3D {
+> > > +       { .compatible =3D "olpc,xo1.75-ec" },
+> > > +       { },
+> >=20
+> > No comma for terminators.
+
+Comma is fine.
+									Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--+nBD6E3TurpgldQp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlvyky4ACgkQMOfwapXb+vI2VACgq3L4bT9Babbvon3rC4cRz11g
+UaAAoJve3CamopvVPFBQrLLdYPAzTcuv
+=Tfuz
+-----END PGP SIGNATURE-----
+
+--+nBD6E3TurpgldQp--
