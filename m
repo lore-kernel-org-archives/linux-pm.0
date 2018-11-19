@@ -1,78 +1,99 @@
 From: David Hildenbrand <david@redhat.com>
-Subject: [PATCH v1 1/8] mm: balloon: update comment about isolation/migration/compaction
-Date: Mon, 19 Nov 2018 11:16:09 +0100
-Message-ID: <20181119101616.8901-2-david@redhat.com>
-References: <20181119101616.8901-1-david@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181119101616.8901-1-david@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v1 0/8] mm/kdump: allow to exclude pages that are logically
+ offline
+Date: Mon, 19 Nov 2018 11:16:08 +0100
+Message-ID: <20181119101616.8901-1-david@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, David Hildenbrand <david@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, linux-doc@vger.kernel.org, pv-drivers@vmware.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Hocko <mhocko@kernel.org>, Vitaly Kuznetsov <vkuznets@redhat.com>, Nadav Amit <namit@vmware.com>, Pavel Machek <pavel@ucw.cz>, Alexander Duyck <alexander.h.duyck@linux.intel.com>, Omar Sandoval <osandov@fb.com>, Stephen Rothwell <sfr@canb.auug.org.au>, Stefano Stabellini <sstabellini@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Baoquan He <bhe@redhat.com>, Jonathan Corbet <corbet@lwn.net>, David Hildenbrand <david@redhat.com>, Pavel Tatashin <pasha.tatashin@oracle.com>, Matthew Wilcox <willy@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org, Dave Young <dyoung@redhat.com>, Alexey Dobriyan <adobriyan@gmail.com>, Len Brown <len.br>
 List-Id: linux-pm@vger.kernel.org
 
-Commit b1123ea6d3b3 ("mm: balloon: use general non-lru movable page
-feature") reworked balloon handling to make use of the general
-non-lru movable page feature. The big comment block in
-balloon_compaction.h contains quite some outdated information. Let's fix
-this.
+Right now, pages inflated as part of a balloon driver will be dumped
+by dump tools like makedumpfile. While XEN is able to check in the
+crash kernel whether a certain pfn is actuall backed by memory in the
+hypervisor (see xen_oldmem_pfn_is_ram) and optimize this case, dumps of
+virtio-balloon, hv-balloon and VMWare balloon inflated memory will
+essentially result in zero pages getting allocated by the hypervisor and
+the dump getting filled with this data.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- include/linux/balloon_compaction.h | 26 +++++++++-----------------
- 1 file changed, 9 insertions(+), 17 deletions(-)
+The allocation and reading of zero pages can directly be avoided if a
+dumping tool could know which pages only contain stale information not to
+be dumped.
 
-diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
-index 53051f3d8f25..cbe50da5a59d 100644
---- a/include/linux/balloon_compaction.h
-+++ b/include/linux/balloon_compaction.h
-@@ -4,15 +4,18 @@
-  *
-  * Common interface definitions for making balloon pages movable by compaction.
-  *
-- * Despite being perfectly possible to perform ballooned pages migration, they
-- * make a special corner case to compaction scans because balloon pages are not
-- * enlisted at any LRU list like the other pages we do compact / migrate.
-+ * Balloon page migration makes use of the general non-lru movable page
-+ * feature.
-+ *
-+ * page->private is used to reference the responsible balloon device.
-+ * page->mapping is used in context of non-lru page migration to reference
-+ * the address space operations for page isolation/migration/compaction.
-  *
-  * As the page isolation scanning step a compaction thread does is a lockless
-  * procedure (from a page standpoint), it might bring some racy situations while
-  * performing balloon page compaction. In order to sort out these racy scenarios
-  * and safely perform balloon's page compaction and migration we must, always,
-- * ensure following these three simple rules:
-+ * ensure following these simple rules:
-  *
-  *   i. when updating a balloon's page ->mapping element, strictly do it under
-  *      the following lock order, independently of the far superior
-@@ -21,19 +24,8 @@
-  *	      +--spin_lock_irq(&b_dev_info->pages_lock);
-  *	            ... page->mapping updates here ...
-  *
-- *  ii. before isolating or dequeueing a balloon page from the balloon device
-- *      pages list, the page reference counter must be raised by one and the
-- *      extra refcount must be dropped when the page is enqueued back into
-- *      the balloon device page list, thus a balloon page keeps its reference
-- *      counter raised only while it is under our special handling;
-- *
-- * iii. after the lockless scan step have selected a potential balloon page for
-- *      isolation, re-test the PageBalloon mark and the PagePrivate flag
-- *      under the proper page lock, to ensure isolating a valid balloon page
-- *      (not yet isolated, nor under release procedure)
-- *
-- *  iv. isolation or dequeueing procedure must clear PagePrivate flag under
-- *      page lock together with removing page from balloon device page list.
-+ *  ii. isolation or dequeueing procedure must remove the page from balloon
-+ *      device page list under b_dev_info->pages_lock.
-  *
-  * The functions provided by this interface are placed to help on coping with
-  * the aforementioned balloon page corner case, as well as to ensure the simple
+Also for XEN, calling into the kernel and asking the hypervisor if a
+pfn is backed can be avoided if the duming tool would skip such pages
+right from the beginning.
+
+Dumping tools have no idea whether a given page is part of a balloon driver
+and shall not be dumped. Esp. PG_reserved cannot be used for that purpose
+as all memory allocated during early boot is also PG_reserved, see
+discussion at [1]. So some other way of indication is required and a new
+page flag is frowned upon.
+
+We have PG_balloon (MAPCOUNT value), which is essentially unused now. I
+suggest renaming it to something more generic (PG_offline) to mark pages as
+logically offline. This flag can than e.g. also be used by virtio-mem in
+the future to mark subsections as offline. Or by other code that wants to
+put pages logically offline (e.g. later maybe poisoned pages that shall
+no longer be used).
+
+This series converts PG_balloon to PG_offline, allows dumping tools to
+query the value to detect such pages and marks pages in the hv-balloon
+and XEN balloon properly as PG_offline. Note that virtio-balloon already
+set pages to PG_balloon (and now PG_offline).
+
+Please note that this is also helpful for a problem we were seeing under
+Hyper-V: Dumping logically offline memory (pages kept fake offline while
+onlining a section via online_page_callback) would under some condicions
+result in a kernel panic when dumping them.
+
+As I don't have access to neither XEN nor Hyper-V nor VMWare installations,
+this was only tested with the virtio-balloon and pages were properly
+skipped when dumping. I'll also attach the makedumpfile patch to this
+series.
+
+[1] https://lkml.org/lkml/2018/7/20/566
+
+RFC -> v1:
+- Add "PM / Hibernate: use pfn_to_online_page()"
+- Add "vmw_balloon: mark inflated pages PG_offline"
+- "mm: convert PG_balloon to PG_offline"
+-- After discussions, also rename the UAPI bit name (KPF_BALLOON -> KPF_OFFLINE)
+
+David Hildenbrand (8):
+  mm: balloon: update comment about isolation/migration/compaction
+  mm: convert PG_balloon to PG_offline
+  kexec: export PG_offline to VMCOREINFO
+  xen/balloon: mark inflated pages PG_offline
+  hv_balloon: mark inflated pages PG_offline
+  vmw_balloon: mark inflated pages PG_offline
+  PM / Hibernate: use pfn_to_online_page()
+  PM / Hibernate: exclude all PageOffline() pages
+
+ Documentation/admin-guide/mm/pagemap.rst |  9 ++++---
+ drivers/hv/hv_balloon.c                  | 14 ++++++++--
+ drivers/misc/vmw_balloon.c               | 32 ++++++++++++++++++++++
+ drivers/xen/balloon.c                    |  3 +++
+ fs/proc/page.c                           |  4 +--
+ include/linux/balloon_compaction.h       | 34 +++++++++---------------
+ include/linux/page-flags.h               | 11 +++++---
+ include/uapi/linux/kernel-page-flags.h   |  2 +-
+ kernel/crash_core.c                      |  2 ++
+ kernel/power/snapshot.c                  | 13 +++++----
+ tools/vm/page-types.c                    |  2 +-
+ 11 files changed, 87 insertions(+), 39 deletions(-)
+
 -- 
 2.17.2
