@@ -1,172 +1,162 @@
-From: Lubomir Rintel <lkundrak@v3.sk>
-Subject: Re: [PATCH 06/15] Platform: OLPC: Add XO-1.75 EC driver
-Date: Mon, 19 Nov 2018 14:25:17 +0100
-Message-ID: <26d225cd1ed93faff6e0a0513680fa5385f05f2d.camel@v3.sk>
-References: <20181010172300.317643-1-lkundrak@v3.sk>
-         <20181010172300.317643-7-lkundrak@v3.sk>
-         <CAHp75VcefOJHZ3WdZYrGEJFjqg2s1oJ75Jg9gKmQFre_ScAPZg@mail.gmail.com>
-         <8881f5e48613c9d9d133e3964031fe2ab57f4801.camel@v3.sk>
-         <20181119104046.GC28607@amd>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH v9 00/15] Energy Aware Scheduling
+Date: Mon, 19 Nov 2018 14:18:42 +0000
+Message-ID: <20181119141857.8625-1-quentin.perret@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181119104046.GC28607@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x8>
+To: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org, quentin.perret@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Pavel,
+This patch series introduces Energy Aware Scheduling (EAS) for CFS tasks
+on platforms with asymmetric CPU topologies (e.g. Arm big.LITTLE).
 
-I've addressed some of Andy's concerns you're replying to below in a
-follow-up version of the patch. To many points I'm generally
-indifferent and prefer to lean towards making things easy for whoever
-may be likely to deal with the code in past. It's not clear to me who
-that might be, or how important either of you consider your remarks to
-be. I'll be thankful if anyone makes this clearer to me.
+For more details about the ideas behind it and the overall design,
+please refer to the cover letter of version 5 [1].
 
-(I hoped that you're in the Cc list; thought git send-mail will see
-your address in the Acked-by tags and add you. I failed to notice that
-it's not the case. I apologize. Here's the v2 posting: [1].)
+Changes v8[2]->v9:
+- Rebased on latest tip/sched/core (trivial conflict with PSI stuff in
+  sched.h)
+- Added documentation for the sched_energy_aware sysctl
 
-[1] https://lore.kernel.org/lkml/20181116162403.49854-1-lkundrak@v3.sk/
+Changes v7[3]->v8:
+- Added kerneldoc to enum schedutil_type (patch 02)
+- Added 'max' argument to schedutil_freq_util() (patch 02)
+- Added schedutil_energy_util() wrapper (patch 02)
+- Added smp_store_release() to the EM loading code (patch 03)
+- Renamed 'obj' field of struct perf_domain to 'em_pd' (patch 05)
+- Added plain WARN when the EM is too large for EAS (patch 07)
+- Added dmesg warning when EAS gets disabled by switching from sugov
+  (patch 08)
+- Replaced sched_feat(ENERGY_AWARE) by a sysctl + static key (patches 09
+  and 10)
+- Improved/refactored find_energy_efficient_cpu() and compute_energy()
+  for readability (patches 13 and 14)
 
+Changes v6[4]->v7:
+- Replaced the sched_energy_present static key by a sched_feat
+- Replaced the CPUFreq notifier in the dependency between sugov and EAS
+  by a function call
+- Squashed all sugov-refactoring patches into patch 02
+- Clarified comment in em_fd_energy() to explain the choice of “energy”
+  over “power”
+- Added kerneldoc to structs in include/linux/energy_model.h
+- Removed unnecessary memory barrier from the EM framework
+- Fixed corner case in find_energy_efficient_cpu when prev_cpu is
+  overutilized (and prev_energy = ULONG_MAX)
 
-On Mon, 2018-11-19 at 11:40 +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > > +#include <linux/delay.h>
-> > > > +#include <linux/gpio/consumer.h>
-> > > > +#include <linux/spinlock.h>
-> > > > +#include <linux/completion.h>
-> > > > +#include <linux/slab.h>
-> > > > +#include <linux/platform_device.h>
-> > > > +#include <linux/ctype.h>
-> > > > +#include <linux/olpc-ec.h>
-> > > > +#include <linux/spi/spi.h>
-> > > > +#include <linux/reboot.h>
-> > > > +#include <linux/input.h>
-> > > > +#include <linux/kfifo.h>
-> > > > +#include <linux/module.h>
-> > > > +#include <linux/power_supply.h>
-> > > 
-> > > Easy to maintain when it's sorted.
-> 
-> No / it depends.
+Changes v5[1]->v6:
+- Rebased on Peter’s sched/core branch (that includes Morten's misfit
+  patches [5] and the automatic detection of SD_ASYM_CPUCAPACITY [6])
+- Removed patch 13/14 (not needed with the automatic flag detection)
+- Added patch creating a dependency between sugov and EAS
+- Renamed frequency domains to performance domains to avoid creating too
+  deep assumptions in the code about the HW
+- Renamed the sd_ea shortcut sd_asym_cpucapacity
+- Added comment to explain why new tasks are not accounted when
+  detecting the 'overutilized' flag
+- Added comment explaining why forkees don’t go in
+  find_energy_efficient_cpu()
 
-I've sorted it in the new files; following a rule of keeping things
-sorted at the very least has an advantage of being unambiguous.
+Changes v4[7]->v5:
+- Removed the RCU protection of the EM tables and the associated
+  need for em_rescale_cpu_capacity().
+- Factorized schedutil’s PELT aggregation function with EAS
+- Improved comments/doc in the EM framework
+- Added check on the uarch of CPUs in one fd in the EM framework
+- Reduced CONFIG_ENERGY_MODEL ifdefery in kernel/sched/topology.c
+- Cleaned-up update_sg_lb_stats parameters
+- Improved comments in compute_energy() to explain the multi-rd
+  scenarios
 
-I'm not sorting things where they currently are not in order, since it
-would obscure real changes.
+Changes v3[8]->v4:
+- Replaced spinlock in EM framework by smp_store_release/READ_ONCE
+- Fixed missing locks to protect rcu_assign_pointer in EM framework
+- Fixed capacity calculation in EM framework on 32 bits system
+- Fixed compilation issue for CONFIG_ENERGY_MODEL=n
+- Removed cpumask from struct em_freq_domain, now dynamically allocated
+- Power costs of the EM are specified in milliwatts
+- Added example of CPUFreq driver modification
+- Added doc/comments in the EM framework and better commit header
+- Fixed integration issue with util_est in cpu_util_next()
+- Changed scheduler topology code to have one freq. dom. list per rd
+- Split sched topology patch in smaller patches
+- Added doc/comments explaining the heuristic in the wake-up path
+- Changed energy threshold for migration to from 1.5% to 6%
 
-> > > > +       channel = priv->rx_buf[0];
-> > > > +       byte = priv->rx_buf[1];
-> > > 
-> > > Maybe specific structures would fit better?
-> > > 
-> > > Like
-> > > 
-> > > struct olpc_ec_resp_hdr {
-> > >  u8 channel;
-> > >  u8 byte;
-> > > ...
-> > > }
-> 
-> Structures have padding and other nastyness...
+Changes v2[9]->v3:
+- Removed the PM_OPP dependency by implementing a new EM framework
+- Modified the scheduler topology code to take references on the EM data
+  structures
+- Simplified the overutilization mechanism into a system-wide flag
+- Reworked the integration in the wake-up path using the sd_ea shortcut
+- Rebased on tip/sched/core (247f2f6f3c70 "sched/core: Don't schedule
+  threads on pre-empted vCPUs")
 
-I've turned them into structs. It perhaps looks a bit better -- the
-structure members serving as a documentation for the protocol.
+Changes v1[10]->v2:
+- Reworked interface between fair.c and energy.[ch] (Remove #ifdef
+  CONFIG_PM_OPP from energy.c) (Greg KH)
+- Fixed licence & header issue in energy.[ch] (Greg KH)
+- Reordered EAS path in select_task_rq_fair() (Joel)
+- Avoid prev_cpu if not allowed in select_task_rq_fair() (Morten/Joel)
+- Refactored compute_energy() (Patrick)
+- Account for RT/IRQ pressure in task_fits() (Patrick)
+- Use UTIL_EST and DL utilization during OPP estimation (Patrick/Juri)
+- Optimize selection of CPU candidates in the energy-aware wake-up path
+- Rebased on top of tip/sched/core (commit b720342849fe “sched/core:
+  Update Preempt_notifier_key to modern API”)
 
-> > > > +                       pm_wakeup_event(priv->pwrbtn-
-> > > > >dev.parent,
-> > > > 1000);
-> > > 
-> > > Magic number.
-> 
-> Nothing wrong with magic numbers.
+[1]  https://marc.info/?l=linux-kernel&m=153243513908731&w=2 (V5)
+[2]  https://marc.info/?l=linux-kernel&m=153968492908835&w=2 (V8)
+[3]  https://marc.info/?l=linux-kernel&m=153674360525432&w=2 (V7)
+[4]  https://marc.info/?l=linux-kernel&m=153476300928169&w=2 (V6)
+[5]  https://marc.info/?l=linux-kernel&m=153069968022982&w=2 (Misfit)
+[6]  https://marc.info/?l=linux-kernel&m=153209362826476&w=2 (SD_ASYM_CPUCAPACITY)
+[7]  https://marc.info/?l=linux-kernel&m=153018606728533&w=2 (V4)
+[8]  https://marc.info/?l=linux-kernel&m=152691273111941&w=2 (V3)
+[9]  https://marc.info/?l=linux-kernel&m=152302902427143&w=2 (V2)
+[10] https://marc.info/?l=linux-kernel&m=152153905805048&w=2 (V1)
 
-Turned it into a define, but it's not like it's any clearer why that
-particular value works...
+Morten Rasmussen (1):
+  sched: Add over-utilization/tipping point indicator
 
-I actually have little idea. I've copied this from the vendor's
-original driver.
+Quentin Perret (14):
+  sched: Relocate arch_scale_cpu_capacity
+  sched/cpufreq: Prepare schedutil for Energy Aware Scheduling
+  PM: Introduce an Energy Model management framework
+  PM / EM: Expose the Energy Model in sysfs
+  sched/topology: Reference the Energy Model of CPUs when available
+  sched/topology: Lowest CPU asymmetry sched_domain level pointer
+  sched/topology: Disable EAS on inappropriate platforms
+  sched/topology: Make Energy Aware Scheduling depend on schedutil
+  sched: Introduce sched_energy_present static key
+  sched: Introduce a sysctl for Energy Aware Scheduling
+  sched/fair: Clean-up update_sg_lb_stats parameters
+  sched/fair: Introduce an energy estimation helper function
+  sched/fair: Select an energy-efficient CPU on task wake-up
+  OPTIONAL: cpufreq: dt: Register an Energy Model
 
-> > > > +       args[0] = mask & 0xff;
-> > > > +       args[1] = (mask >> 8) & 0xff;
-> > > 
-> > > ...mask >> 0;
-> > > ...mask >> 8;
-> 
-> No, please.
+ Documentation/sysctl/kernel.txt  |  12 ++
+ drivers/cpufreq/cpufreq-dt.c     |  48 ++++-
+ drivers/cpufreq/cpufreq.c        |   2 +
+ include/linux/energy_model.h     | 189 +++++++++++++++++++
+ include/linux/sched/cpufreq.h    |  15 ++
+ include/linux/sched/sysctl.h     |   7 +
+ include/linux/sched/topology.h   |  19 ++
+ kernel/power/Kconfig             |  15 ++
+ kernel/power/Makefile            |   2 +
+ kernel/power/energy_model.c      | 291 +++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c | 129 +++++++++----
+ kernel/sched/fair.c              | 305 +++++++++++++++++++++++++++++--
+ kernel/sched/sched.h             |  84 ++++++---
+ kernel/sched/topology.c          | 269 ++++++++++++++++++++++++++-
+ kernel/sysctl.c                  |  11 ++
+ 15 files changed, 1316 insertions(+), 82 deletions(-)
+ create mode 100644 include/linux/energy_model.h
+ create mode 100644 kernel/power/energy_model.c
 
-I've done this too, but I don't see much point either. Perhaps those
-within the OCD spectrum may appreciate :)
-
-> > > __maybe_unused  instead of ugly #ifdef?
-> > > 
-> > > > +{
-> > > > +       struct platform_device *pdev = to_platform_device(dev);
-> > > > +       struct olpc_xo175_ec *priv =
-> > > > platform_get_drvdata(pdev);
-> > > 
-> > > dev_get_drvdata() or how is it called?
-> > > 
-> > > > +       unsigned char hintargs[5];
-> > > 
-> > > struct olpc_ec_hint_cmd {
-> > > u8 ...
-> > > u32 ...
-> > > };
-> > > 
-> > > ?
-> 
-> No, unless you want to break the code. Or add __attribute__ packed
-> and
-> deal with endianness.
-> 
-> Just no.
-
-Turned it into a packed struct too for the same reasons as above.
-
-The endianness of the hints argument doesn't actually matter, since the
-EC firmware actually uses this in a debugging printf. It's not even
-cleat what endianness did EC expect initially.
-
-> > > > +       static unsigned int suspend_count;
-> > > 
-> > > u32 I suppose.
-> 
-> You know, there's semantic difference between unsigned int and
-> u32. And this sounds like candidate for unsigned int.
-> 
-> > > > +       /* Enable all EC events while we're awake */
-> > > > +       olpc_xo175_ec_set_event_mask(0xffff);
-> > > 
-> > > #define EC_ALL_EVENTS GENMASK(15, 0)
-> 
-> Actually that's less readable. Just don't.
-
-Done this too, and, like the points above, I am indifferent too. Both
-seem equal to me.
-
-> > > > +static const struct of_device_id olpc_xo175_ec_of_match[] = {
-> > > > +       { .compatible = "olpc,xo1.75-ec" },
-> > > > +       { },
-> > > 
-> > > No comma for terminators.
-> 
-> Comma is fine.
-
-Removed it. Perhaps the lack of a comma could be understood as an
-indication that no further initializers shall follow.
-
-> 	Pavel
-
-Just in case I didn't stress that enough: I'm much more interested in
-things working well than style issues that too often are just matter of
-tast. I happily accept advice on those though.
-
-Take care,
-Lubo
+-- 
+2.19.1
