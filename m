@@ -1,25 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: powernv: add of_node_put()
-Date: Tue, 20 Nov 2018 16:26:09 +0100
-Message-ID: <CAJZ5v0gY7kO-iZBLFSYHi57hsRUbsetJa0evjfmh2KCgkHLSRA@mail.gmail.com>
-References: <20181120125731.19368-1-tiny.windzz@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH v2] cpuidle: big.LITTLE: add of_node_put()
+Date: Tue, 20 Nov 2018 10:46:17 -0500
+Message-ID: <20181120154617.20903-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181120125731.19368-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: tiny.windzz@gmail.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linux PM <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 20, 2018 at 1:57 PM Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> use of_node_put() to release the refcount.
+The of_node_put() is missing.So we call the of_node_put() to release
+the refcount.
 
-Again, this changelog is as good as no changelog at all.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+Changes in v2
+-update changelog
+-do that right after its last use 
+ to also cover error handling.
+---
+ drivers/cpuidle/cpuidle-big_little.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-If you are adding a missing of_node_put(), please say that and explain
-why it is necessary.
-
-Thanks,
-Rafael
+diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
+index db2ede565f1a..650f063ef809 100644
+--- a/drivers/cpuidle/cpuidle-big_little.c
++++ b/drivers/cpuidle/cpuidle-big_little.c
+@@ -174,8 +174,12 @@ static int __init bl_idle_init(void)
+ 	/*
+ 	 * Initialize the driver just for a compliant set of machines
+ 	 */
+-	if (!of_match_node(compatible_machine_match, root))
++	if (!of_match_node(compatible_machine_match, root)){
++		of_node_put(root);
+ 		return -ENODEV;
++	}
++
++	of_node_put(root);
+ 
+ 	if (!mcpm_is_available())
+ 		return -EUNATCH;
+-- 
+2.17.0
