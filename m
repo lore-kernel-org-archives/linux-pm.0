@@ -1,94 +1,98 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Tue, 20 Nov 2018 09:44:32 +0100
-Message-ID: <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
-References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
+From: Pankaj Gupta <pagupta@redhat.com>
+Subject: Re: [PATCH v1 5/8] hv_balloon: mark inflated pages PG_offline
+Date: Tue, 20 Nov 2018 03:45:32 -0500 (EST)
+Message-ID: <1747228.35250472.1542703532881.JavaMail.zimbra@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com> <20181119101616.8901-6-david@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
-Content-Language: en-US
+In-Reply-To: <20181119101616.8901-6-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Kairui Song <kasong@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 24/10/2018 08:39, Anson Huang wrote:
-> The thermal driver is a standalone driver for monitoring SoC temperature
-> by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
-> is NOT set. So remove the dependency with CPU_THERMAL.
+
+Hi David,
+
 > 
-> Add CONFIG_CPU_FREQ check for cpu-freq related operation in thermal
-> driver to make thermal driver probe successfully when CONFIG_CPU_FREQ
-> is NOT set.
+> Mark inflated and never onlined pages PG_offline, to tell the world that
+> the content is stale and should not be dumped.
 > 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+> Cc: Haiyang Zhang <haiyangz@microsoft.com>
+> Cc: Stephen Hemminger <sthemmin@microsoft.com>
+> Cc: Kairui Song <kasong@redhat.com>
+> Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Matthew Wilcox <willy@infradead.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
 > ---
-
-Why not simply kill this legacy code ?
-
-
-
->  drivers/thermal/Kconfig       | 2 +-
->  drivers/thermal/imx_thermal.c | 4 ++++
->  2 files changed, 5 insertions(+), 1 deletion(-)
+>  drivers/hv/hv_balloon.c | 14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 1775d44..c8a6352 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -212,7 +212,7 @@ config HISI_THERMAL
->  
->  config IMX_THERMAL
->  	tristate "Temperature sensor driver for Freescale i.MX SoCs"
-> -	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
-> +	depends on ARCH_MXC || COMPILE_TEST
->  	depends on NVMEM || !NVMEM
->  	depends on MFD_SYSCON
->  	depends on OF
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 1566154..87386d1 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -648,6 +648,7 @@ static const struct of_device_id of_imx_thermal_match[] = {
->  };
->  MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
->  
-> +#ifdef CONFIG_CPU_FREQ
->  /*
->   * Create cooling device in case no #cooling-cells property is available in
->   * CPU node
-> @@ -668,6 +669,7 @@ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *data)
->  
->  	return 0;
->  }
-> +#endif
->  
->  static int imx_thermal_probe(struct platform_device *pdev)
+> diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
+> index 211f3fe3a038..47719862e57f 100644
+> --- a/drivers/hv/hv_balloon.c
+> +++ b/drivers/hv/hv_balloon.c
+> @@ -681,8 +681,13 @@ static struct notifier_block hv_memory_nb = {
+>  /* Check if the particular page is backed and can be onlined and online it.
+>  */
+>  static void hv_page_online_one(struct hv_hotadd_state *has, struct page *pg)
 >  {
-> @@ -743,6 +745,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
->  		     data->socdata->power_down_mask);
+> -	if (!has_pfn_is_backed(has, page_to_pfn(pg)))
+> +	if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
+> +		if (!PageOffline(pg))
+> +			__SetPageOffline(pg);
+>  		return;
+> +	}
+> +	if (PageOffline(pg))
+> +		__ClearPageOffline(pg);
 >  
-> +#ifdef CONFIG_CPU_FREQ
->  	data->policy = cpufreq_cpu_get(0);
->  	if (!data->policy) {
->  		pr_debug("%s: CPUFreq policy not found\n", __func__);
-> @@ -755,6 +758,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  			"failed to register cpufreq cooling device: %d\n", ret);
->  		return ret;
+>  	/* This frame is currently backed; online the page. */
+>  	__online_page_set_limits(pg);
+> @@ -1201,6 +1206,7 @@ static void free_balloon_pages(struct hv_dynmem_device
+> *dm,
+>  
+>  	for (i = 0; i < num_pages; i++) {
+>  		pg = pfn_to_page(i + start_frame);
+> +		__ClearPageOffline(pg);
+
+Just thinking, do we need to care for clearing PageOffline flag before freeing
+a balloon'd page?
+
+Thanks,
+Pankaj
+
+>  		__free_page(pg);
+>  		dm->num_pages_ballooned--;
 >  	}
-> +#endif
+> @@ -1213,7 +1219,7 @@ static unsigned int alloc_balloon_pages(struct
+> hv_dynmem_device *dm,
+>  					struct dm_balloon_response *bl_resp,
+>  					int alloc_unit)
+>  {
+> -	unsigned int i = 0;
+> +	unsigned int i, j;
+>  	struct page *pg;
 >  
->  	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(data->thermal_clk)) {
+>  	if (num_pages < alloc_unit)
+> @@ -1245,6 +1251,10 @@ static unsigned int alloc_balloon_pages(struct
+> hv_dynmem_device *dm,
+>  		if (alloc_unit != 1)
+>  			split_page(pg, get_order(alloc_unit << PAGE_SHIFT));
+>  
+> +		/* mark all pages offline */
+> +		for (j = 0; j < (1 << get_order(alloc_unit << PAGE_SHIFT)); j++)
+> +			__SetPageOffline(pg + j);
+> +
+>  		bl_resp->range_count++;
+>  		bl_resp->range_array[i].finfo.start_page =
+>  			page_to_pfn(pg);
+> --
+> 2.17.2
 > 
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> 
