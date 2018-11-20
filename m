@@ -1,62 +1,85 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Tue, 20 Nov 2018 09:54:29 +0100
-Message-ID: <e4cf8bad-9a4f-32e5-2f0e-be44257b5fe2@linaro.org>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
+Date: Tue, 20 Nov 2018 08:58:39 +0000
+Message-ID: <DB3PR0402MB391604AB207C160F09D3595EF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
 References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
  <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
  <DB3PR0402MB391662A8DA6A1F43F26F095BF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+ <e4cf8bad-9a4f-32e5-2f0e-be44257b5fe2@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB3PR0402MB391662A8DA6A1F43F26F095BF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+In-Reply-To: <e4cf8bad-9a4f-32e5-2f0e-be44257b5fe2@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20/11/2018 09:47, Anson Huang wrote:
-> Hi, Daniel
-> 
-> Best Regards!
-> Anson Huang
-> 
->> -----Original Message-----
->> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->> Sent: 2018年11月20日 16:45
->> To: Anson Huang <anson.huang@nxp.com>; rui.zhang@intel.com;
->> edubezval@gmail.com; linux-pm@vger.kernel.org;
->> linux-kernel@vger.kernel.org
->> Cc: dl-linux-imx <linux-imx@nxp.com>
->> Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
->>
->> On 24/10/2018 08:39, Anson Huang wrote:
->>> The thermal driver is a standalone driver for monitoring SoC
->>> temperature by enabling thermal sensor, so it can be enabled even when
->>> CONFIG_CPU_FREQ is NOT set. So remove the dependency with
->> CPU_THERMAL.
->>>
->>> Add CONFIG_CPU_FREQ check for cpu-freq related operation in thermal
->>> driver to make thermal driver probe successfully when CONFIG_CPU_FREQ
->>> is NOT set.
->>>
->>> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
->>> ---
->>
->> Why not simply kill this legacy code ?
-> 
-> Because killing legacy code will have old dtb compatible issue, old dtb
-> will NOT have cpufreq cooling function.
-
-Yeah, I imagine that is the reason why you want to keep the legacy code
-but do you really care about old DTB based boards? Are they still
-updated with newer *upstream vanilla* kernels?
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+SGksIERhbmllbA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVsLmxl
+emNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDogMjAxOOW5tDEx5pyIMjDml6UgMTY6NTQNCj4gVG86
+IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgcnVpLnpoYW5nQGludGVsLmNvbTsN
+Cj4gZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51
+eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IENjOiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBu
+eHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB0aGVybWFsOiBpbXg6IGZpeCBmb3IgZGVw
+ZW5kZW5jeSBvbiBjcHUtZnJlcQ0KPiANCj4gT24gMjAvMTEvMjAxOCAwOTo0NywgQW5zb24gSHVh
+bmcgd3JvdGU6DQo+ID4gSGksIERhbmllbA0KPiA+DQo+ID4gQmVzdCBSZWdhcmRzIQ0KPiA+IEFu
+c29uIEh1YW5nDQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJv
+bTogRGFuaWVsIExlemNhbm8gW21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiA+
+PiBTZW50OiAyMDE45bm0MTHmnIgyMOaXpSAxNjo0NQ0KPiA+PiBUbzogQW5zb24gSHVhbmcgPGFu
+c29uLmh1YW5nQG54cC5jb20+OyBydWkuemhhbmdAaW50ZWwuY29tOw0KPiA+PiBlZHViZXp2YWxA
+Z21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4+IGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmcNCj4gPj4gQ2M6IGRsLWxpbnV4LWlteCA8bGludXgtaW14QG54cC5jb20+
+DQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6IGlteDogZml4IGZvciBkZXBlbmRl
+bmN5IG9uIGNwdS1mcmVxDQo+ID4+DQo+ID4+IE9uIDI0LzEwLzIwMTggMDg6MzksIEFuc29uIEh1
+YW5nIHdyb3RlOg0KPiA+Pj4gVGhlIHRoZXJtYWwgZHJpdmVyIGlzIGEgc3RhbmRhbG9uZSBkcml2
+ZXIgZm9yIG1vbml0b3JpbmcgU29DDQo+ID4+PiB0ZW1wZXJhdHVyZSBieSBlbmFibGluZyB0aGVy
+bWFsIHNlbnNvciwgc28gaXQgY2FuIGJlIGVuYWJsZWQgZXZlbg0KPiA+Pj4gd2hlbiBDT05GSUdf
+Q1BVX0ZSRVEgaXMgTk9UIHNldC4gU28gcmVtb3ZlIHRoZSBkZXBlbmRlbmN5IHdpdGgNCj4gPj4g
+Q1BVX1RIRVJNQUwuDQo+ID4+Pg0KPiA+Pj4gQWRkIENPTkZJR19DUFVfRlJFUSBjaGVjayBmb3Ig
+Y3B1LWZyZXEgcmVsYXRlZCBvcGVyYXRpb24gaW4gdGhlcm1hbA0KPiA+Pj4gZHJpdmVyIHRvIG1h
+a2UgdGhlcm1hbCBkcml2ZXIgcHJvYmUgc3VjY2Vzc2Z1bGx5IHdoZW4NCj4gPj4+IENPTkZJR19D
+UFVfRlJFUSBpcyBOT1Qgc2V0Lg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1
+YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0KPiA+Pj4gLS0tDQo+ID4+DQo+ID4+IFdoeSBub3Qg
+c2ltcGx5IGtpbGwgdGhpcyBsZWdhY3kgY29kZSA/DQo+ID4NCj4gPiBCZWNhdXNlIGtpbGxpbmcg
+bGVnYWN5IGNvZGUgd2lsbCBoYXZlIG9sZCBkdGIgY29tcGF0aWJsZSBpc3N1ZSwgb2xkDQo+ID4g
+ZHRiIHdpbGwgTk9UIGhhdmUgY3B1ZnJlcSBjb29saW5nIGZ1bmN0aW9uLg0KPiANCj4gWWVhaCwg
+SSBpbWFnaW5lIHRoYXQgaXMgdGhlIHJlYXNvbiB3aHkgeW91IHdhbnQgdG8ga2VlcCB0aGUgbGVn
+YWN5IGNvZGUgYnV0IGRvDQo+IHlvdSByZWFsbHkgY2FyZSBhYm91dCBvbGQgRFRCIGJhc2VkIGJv
+YXJkcz8gQXJlIHRoZXkgc3RpbGwgdXBkYXRlZCB3aXRoIG5ld2VyDQo+ICp1cHN0cmVhbSB2YW5p
+bGxhKiBrZXJuZWxzPw0KDQpJIGFtIE5PVCBzdXJlIGlmIHRoZXJlIGlzIHNvbWVvbmUgY2FyZSBh
+Ym91dCBpdCwgYnV0IEkgZGlkIHJlY2VpdmUgbWFueSBjb21tZW50cw0KYWJvdXQgb2xkIGR0YiBj
+b21wYXRpYmxlIHdoZW4gSSBzZW50IG91dCBvdGhlciBwYXRjaGVzLCBzbyBpcyBpdCBhIHNvbGlk
+IHJlcXVpcmVtZW50DQpvZiBvbGQgZHRiIGNvbXBhdGlibGUgd2hlbiBkb2luZyB1cHN0cmVhbSwg
+b3IgZWFjaCBzdWItc3lzdGVtIG9yIG1haW50YWluZXIgaGFzDQpkaWZmZXJlbnQgcmVxdWlyZW1l
+bnQgYWJvdXQgaXQ/IEFjdHVhbGx5IEkgYW0gaGFwcHkgdG8ganVzdCByZW1vdmUgdGhlIGxlZ2Fj
+eQ0KY29kZSwgYmVjYXVzZSBpdCBtYWtlcyB0aGUgY29kZSBtb3JlIGNsZWFuIGFuZCBlYXN5IHJl
+YWRpbmcuIFdobyBjYW4gbWFrZSB0aGUNCmRlY2lzaW9uPw0KDQpBbnNvbi4NCg0KPiANCj4gDQo+
+IC0tDQo+IA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5j
+b20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGJmFtcDtkYXRhPTAyJTdD
+MDElN0NhbnNvbi5odWFuZyU0MG54cC5jb20lN0NiYjhjZGQNCj4gNDE1NWZiNGMwMmRhYjMwOGQ2
+NGVjNWM5Y2QlN0M2ODZlYTFkM2JjMmI0YzZmYTkyY2Q5OWM1YzMwMTYzNSU3DQo+IEMwJTdDMCU3
+QzYzNjc4MzAwODczOTM3MzUzNyZhbXA7c2RhdGE9eDZxSERURlliM1NOQVJJQ3MxNUtrTEw3DQo+
+ICUyRnBwN2VuWVprWkpIUm9Ka3NYcyUzRCZhbXA7cmVzZXJ2ZWQ9MD4gTGluYXJvLm9yZyDilIIg
+T3BlbiBzb3VyY2UNCj4gc29mdHdhcmUgZm9yIEFSTSBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJv
+Og0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9vay5jb20vP3Vy
+bD1odHRwJTNBJTJGJTJGd3d3DQo+IC5mYWNlYm9vay5jb20lMkZwYWdlcyUyRkxpbmFybyZhbXA7
+ZGF0YT0wMiU3QzAxJTdDYW5zb24uaHVhbmclNDANCj4gbnhwLmNvbSU3Q2JiOGNkZDQxNTVmYjRj
+MDJkYWIzMDhkNjRlYzVjOWNkJTdDNjg2ZWExZDNiYzJiNGM2ZmE5DQo+IDJjZDk5YzVjMzAxNjM1
+JTdDMCU3QzAlN0M2MzY3ODMwMDg3MzkzNzM1MzcmYW1wO3NkYXRhPUpKNEg5WjANCj4gUkFZJTJG
+MXVMbGNLWE5RTjM2TDBBcEZJd005JTJGdVBPVTlVQlVjSSUzRCZhbXA7cmVzZXJ2ZWQ9MD4NCj4g
+RmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9v
+ay5jb20vP3VybD1odHRwJTNBJTJGJTJGdHdpdHQNCj4gZXIuY29tJTJGJTIzISUyRmxpbmFyb29y
+ZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5zb24uaHVhbmclNDBueHAuYw0KPiBvbSU3Q2JiOGNkZDQx
+NTVmYjRjMDJkYWIzMDhkNjRlYzVjOWNkJTdDNjg2ZWExZDNiYzJiNGM2ZmE5MmNkOQ0KPiA5YzVj
+MzAxNjM1JTdDMCU3QzAlN0M2MzY3ODMwMDg3MzkzNzM1MzcmYW1wO3NkYXRhPW8wbzdoOEdZQUx0
+DQo+IG82TnV1SSUyQkF4Rnp4NnJjcjNWRmc2Q1d3aDNmZUdnZ0klM0QmYW1wO3Jlc2VydmVkPTA+
+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnByb3RlY3Rpb24ub3V0bG9v
+ay5jb20vP3VybD1odHRwJTNBJTJGJTJGd3d3DQo+IC5saW5hcm8ub3JnJTJGbGluYXJvLWJsb2cl
+MkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwbnhwLmMNCj4gb20lN0NiYjhjZGQ0
+MTU1ZmI0YzAyZGFiMzA4ZDY0ZWM1YzljZCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDkNCj4gOWM1
+YzMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzMDA4NzM5MzczNTM3JmFtcDtzZGF0YT02cjJiYUI1Wmlt
+Qw0KPiB6SkVrcktUdkNCSDk4JTJCQmxudzBaSGlZT2RHNUpsaW1BJTNEJmFtcDtyZXNlcnZlZD0w
+PiBCbG9nDQoNCg==
