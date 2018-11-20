@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v6 4/8] arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
-Date: Tue, 20 Nov 2018 19:52:07 +0200
-Message-ID: <20181120175211.3913-5-oskari@lemmela.net>
+Subject: [PATCH v6 7/8] mfd: axp20x: Add AC power supply cell for AXP813
+Date: Tue, 20 Nov 2018 19:52:10 +0200
+Message-ID: <20181120175211.3913-8-oskari@lemmela.net>
 References: <20181120175211.3913-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181120175211.3913-1-oskari@lemmela.net>
@@ -10,36 +10,31 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@bootlin.com>, Vasily Khoruzhick <anarsoul@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Oskari Lemmela <oskari@lemmela.net>
 List-Id: linux-pm@vger.kernel.org
 
-AXP803 ACIN pins are routed from SOM to the DC jack on the baseboard.
-AXP803 charger pins BATSENSE, LOADSENSE, N_BATDRV, LX_CHG, VIN_CHG
-and IPSOUT are connected via PMOS driver to SOM VBAT pins. VBAT and
-AXP803 TS pins are routed to the baseboard 3-pin battery connector.
+As axp20x-ac-power-supply now supports AXP813, add a cell for it.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
 Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
 Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+Tested-by: Vasily Khoruzhick <anarsoul@gmail.com>
 ---
- .../boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts    | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/mfd/axp20x.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-index 53fcc9098df3..4695b0d407b6 100644
---- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-+++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
-@@ -80,6 +80,14 @@
- 	};
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 0be511dd93d0..dfc3cff1d08b 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -778,6 +778,11 @@ static const struct mfd_cell axp813_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-battery-power-supply",
+ 		.of_compatible	= "x-powers,axp813-battery-power-supply",
++	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp813-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
+ 	},
  };
  
-+&ac_power_supply {
-+	status = "okay";
-+};
-+
-+&battery_power_supply {
-+	status = "okay";
-+};
-+
- &de {
- 	status = "okay";
- };
 -- 
 2.17.1
