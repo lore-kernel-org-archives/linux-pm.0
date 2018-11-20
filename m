@@ -1,98 +1,87 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Tue, 20 Nov 2018 08:47:55 +0000
-Message-ID: <DB3PR0402MB391662A8DA6A1F43F26F095BF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
- <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
+From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v1 5/8] hv_balloon: mark inflated pages PG_offline
+Date: Tue, 20 Nov 2018 09:49:42 +0100
+Message-ID: <6258a58b-28c7-c055-0752-e8bd085b835f@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com>
+ <20181119101616.8901-6-david@redhat.com>
+ <1747228.35250472.1542703532881.JavaMail.zimbra@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
+In-Reply-To: <1747228.35250472.1542703532881.JavaMail.zimbra@redhat.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: Pankaj Gupta <pagupta@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Kairui Song <kasong@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIERhbmllbA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IERhbmllbCBMZXpjYW5vIFttYWlsdG86ZGFuaWVsLmxl
-emNhbm9AbGluYXJvLm9yZ10NCj4gU2VudDogMjAxOOW5tDEx5pyIMjDml6UgMTY6NDUNCj4gVG86
-IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPjsgcnVpLnpoYW5nQGludGVsLmNvbTsN
-Cj4gZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IENjOiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBu
-eHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB0aGVybWFsOiBpbXg6IGZpeCBmb3IgZGVw
-ZW5kZW5jeSBvbiBjcHUtZnJlcQ0KPiANCj4gT24gMjQvMTAvMjAxOCAwODozOSwgQW5zb24gSHVh
-bmcgd3JvdGU6DQo+ID4gVGhlIHRoZXJtYWwgZHJpdmVyIGlzIGEgc3RhbmRhbG9uZSBkcml2ZXIg
-Zm9yIG1vbml0b3JpbmcgU29DDQo+ID4gdGVtcGVyYXR1cmUgYnkgZW5hYmxpbmcgdGhlcm1hbCBz
-ZW5zb3IsIHNvIGl0IGNhbiBiZSBlbmFibGVkIGV2ZW4gd2hlbg0KPiA+IENPTkZJR19DUFVfRlJF
-USBpcyBOT1Qgc2V0LiBTbyByZW1vdmUgdGhlIGRlcGVuZGVuY3kgd2l0aA0KPiBDUFVfVEhFUk1B
-TC4NCj4gPg0KPiA+IEFkZCBDT05GSUdfQ1BVX0ZSRVEgY2hlY2sgZm9yIGNwdS1mcmVxIHJlbGF0
-ZWQgb3BlcmF0aW9uIGluIHRoZXJtYWwNCj4gPiBkcml2ZXIgdG8gbWFrZSB0aGVybWFsIGRyaXZl
-ciBwcm9iZSBzdWNjZXNzZnVsbHkgd2hlbiBDT05GSUdfQ1BVX0ZSRVENCj4gPiBpcyBOT1Qgc2V0
-Lg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5j
-b20+DQo+ID4gLS0tDQo+IA0KPiBXaHkgbm90IHNpbXBseSBraWxsIHRoaXMgbGVnYWN5IGNvZGUg
-Pw0KDQpCZWNhdXNlIGtpbGxpbmcgbGVnYWN5IGNvZGUgd2lsbCBoYXZlIG9sZCBkdGIgY29tcGF0
-aWJsZSBpc3N1ZSwgb2xkIGR0Yg0Kd2lsbCBOT1QgaGF2ZSBjcHVmcmVxIGNvb2xpbmcgZnVuY3Rp
-b24uDQoNCkFuc29uLiANCg0KPiANCj4gDQo+IA0KPiA+ICBkcml2ZXJzL3RoZXJtYWwvS2NvbmZp
-ZyAgICAgICB8IDIgKy0NCj4gPiAgZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMgfCA0ICsr
-KysNCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkN
-Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyBiL2RyaXZlcnMv
-dGhlcm1hbC9LY29uZmlnIGluZGV4DQo+ID4gMTc3NWQ0NC4uYzhhNjM1MiAxMDA2NDQNCj4gPiAt
-LS0gYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9L
-Y29uZmlnDQo+ID4gQEAgLTIxMiw3ICsyMTIsNyBAQCBjb25maWcgSElTSV9USEVSTUFMDQo+ID4N
-Cj4gPiAgY29uZmlnIElNWF9USEVSTUFMDQo+ID4gIAl0cmlzdGF0ZSAiVGVtcGVyYXR1cmUgc2Vu
-c29yIGRyaXZlciBmb3IgRnJlZXNjYWxlIGkuTVggU29DcyINCj4gPiAtCWRlcGVuZHMgb24gKEFS
-Q0hfTVhDICYmIENQVV9USEVSTUFMKSB8fCBDT01QSUxFX1RFU1QNCj4gPiArCWRlcGVuZHMgb24g
-QVJDSF9NWEMgfHwgQ09NUElMRV9URVNUDQo+ID4gIAlkZXBlbmRzIG9uIE5WTUVNIHx8ICFOVk1F
-TQ0KPiA+ICAJZGVwZW5kcyBvbiBNRkRfU1lTQ09ODQo+ID4gIAlkZXBlbmRzIG9uIE9GDQo+ID4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4gYi9kcml2ZXJz
-L3RoZXJtYWwvaW14X3RoZXJtYWwuYyBpbmRleCAxNTY2MTU0Li44NzM4NmQxIDEwMDY0NA0KPiA+
-IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4gKysrIGIvZHJpdmVycy90
-aGVybWFsL2lteF90aGVybWFsLmMNCj4gPiBAQCAtNjQ4LDYgKzY0OCw3IEBAIHN0YXRpYyBjb25z
-dCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkDQo+ID4gb2ZfaW14X3RoZXJtYWxfbWF0Y2hbXSA9IHsgIH07
-ICBNT0RVTEVfREVWSUNFX1RBQkxFKG9mLA0KPiA+IG9mX2lteF90aGVybWFsX21hdGNoKTsNCj4g
-Pg0KPiA+ICsjaWZkZWYgQ09ORklHX0NQVV9GUkVRDQo+ID4gIC8qDQo+ID4gICAqIENyZWF0ZSBj
-b29saW5nIGRldmljZSBpbiBjYXNlIG5vICNjb29saW5nLWNlbGxzIHByb3BlcnR5IGlzIGF2YWls
-YWJsZSBpbg0KPiA+ICAgKiBDUFUgbm9kZQ0KPiA+IEBAIC02NjgsNiArNjY5LDcgQEAgc3RhdGlj
-IGludA0KPiA+IGlteF90aGVybWFsX3JlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKHN0cnVjdCBpbXhf
-dGhlcm1hbF9kYXRhICpkYXRhKQ0KPiA+DQo+ID4gIAlyZXR1cm4gMDsNCj4gPiAgfQ0KPiA+ICsj
-ZW5kaWYNCj4gPg0KPiA+ICBzdGF0aWMgaW50IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgKnBkZXYpICB7IEBADQo+ID4gLTc0Myw2ICs3NDUsNyBAQCBzdGF0aWMgaW50
-IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4g
-IAlyZWdtYXBfd3JpdGUobWFwLCBkYXRhLT5zb2NkYXRhLT5zZW5zb3JfY3RybCArIFJFR19TRVQs
-DQo+ID4gIAkJICAgICBkYXRhLT5zb2NkYXRhLT5wb3dlcl9kb3duX21hc2spOw0KPiA+DQo+ID4g
-KyNpZmRlZiBDT05GSUdfQ1BVX0ZSRVENCj4gPiAgCWRhdGEtPnBvbGljeSA9IGNwdWZyZXFfY3B1
-X2dldCgwKTsNCj4gPiAgCWlmICghZGF0YS0+cG9saWN5KSB7DQo+ID4gIAkJcHJfZGVidWcoIiVz
-OiBDUFVGcmVxIHBvbGljeSBub3QgZm91bmRcbiIsIF9fZnVuY19fKTsgQEAgLTc1NSw2DQo+ID4g
-Kzc1OCw3IEBAIHN0YXRpYyBpbnQgaW14X3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2Rl
-dmljZSAqcGRldikNCj4gPiAgCQkJImZhaWxlZCB0byByZWdpc3RlciBjcHVmcmVxIGNvb2xpbmcg
-ZGV2aWNlOiAlZFxuIiwgcmV0KTsNCj4gPiAgCQlyZXR1cm4gcmV0Ow0KPiA+ICAJfQ0KPiA+ICsj
-ZW5kaWYNCj4gPg0KPiA+ICAJZGF0YS0+dGhlcm1hbF9jbGsgPSBkZXZtX2Nsa19nZXQoJnBkZXYt
-PmRldiwgTlVMTCk7DQo+ID4gIAlpZiAoSVNfRVJSKGRhdGEtPnRoZXJtYWxfY2xrKSkgew0KPiA+
-DQo+IA0KPiANCj4gLS0NCj4gDQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlv
-bi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmxpbmFyby5vcmclMkYmYW1w
-O2RhdGE9MDIlN0MwMSU3Q2Fuc29uLmh1YW5nJTQwbnhwLmNvbSU3QzZkMTA2MA0KPiBiYTMzZTI0
-ZTM3YmY1NjA4ZDY0ZWM0NjY1MSU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVjMzAxNjM1JTcN
-Cj4gQzAlN0MwJTdDNjM2NzgzMDAyNzY3NDMwNTg4JmFtcDtzZGF0YT1FTzB4eGttUGpaVFJlQnpK
-JTJGJTJGSmoNCj4geCUyRmJsYWh0bVl4SEhvZ0R4dzV1JTJGYmpvJTNEJmFtcDtyZXNlcnZlZD0w
-PiBMaW5hcm8ub3JnIOKUgiBPcGVuDQo+IHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MNCj4g
-DQo+IEZvbGxvdyBMaW5hcm86DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlv
-bi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkZ3d3cNCj4gLmZhY2Vib29rLmNvbSUyRnBh
-Z2VzJTJGTGluYXJvJmFtcDtkYXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MA0KPiBueHAuY29t
-JTdDNmQxMDYwYmEzM2UyNGUzN2JmNTYwOGQ2NGVjNDY2NTElN0M2ODZlYTFkM2JjMmI0YzZmYQ0K
-PiA5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4MzAwMjc2NzQzMDU4OCZhbXA7c2RhdGE9
-Z3AzQmxMbA0KPiBTWGU2UEducHA5M0slMkIwbjAzWElublJzY1hFUkdsNFQyZDBTYyUzRCZhbXA7
-cmVzZXJ2ZWQ9MD4NCj4gRmFjZWJvb2sgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnBy
-b3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGdHdpdHQNCj4gZXIuY29tJTJG
-JTIzISUyRmxpbmFyb29yZyZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5zb24uaHVhbmclNDBueHAuYw0K
-PiBvbSU3QzZkMTA2MGJhMzNlMjRlMzdiZjU2MDhkNjRlYzQ2NjUxJTdDNjg2ZWExZDNiYzJiNGM2
-ZmE5MmNkOQ0KPiA5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3ODMwMDI3Njc0MzA1ODgmYW1wO3Nk
-YXRhPW9HWHR6TEJpZTFaeQ0KPiA0MTlqQWg5TGMzbXc3VnUyS3NDZ2FXWWQ0czJ0dWpZJTNEJmFt
-cDtyZXNlcnZlZD0wPiBUd2l0dGVyIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5wcm90
-ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnd3dw0KPiAubGluYXJvLm9yZyUy
-RmxpbmFyby1ibG9nJTJGJmFtcDtkYXRhPTAyJTdDMDElN0NhbnNvbi5odWFuZyU0MG54cC5jDQo+
-IG9tJTdDNmQxMDYwYmEzM2UyNGUzN2JmNTYwOGQ2NGVjNDY2NTElN0M2ODZlYTFkM2JjMmI0YzZm
-YTkyY2Q5DQo+IDljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4MzAwMjc2NzQzMDU4OCZhbXA7c2Rh
-dGE9QWJBMVJvZnVKV1kNCj4gdW4lMkJLWnZMc3ZwNkhua2JuJTJGMVZxakNmaUVRc0RXJTJCYzAl
-M0QmYW1wO3Jlc2VydmVkPTA+IEJsb2cNCg0K
+On 20.11.18 09:45, Pankaj Gupta wrote:
+> 
+> Hi David,
+> 
+>>
+>> Mark inflated and never onlined pages PG_offline, to tell the world that
+>> the content is stale and should not be dumped.
+>>
+>> Cc: "K. Y. Srinivasan" <kys@microsoft.com>
+>> Cc: Haiyang Zhang <haiyangz@microsoft.com>
+>> Cc: Stephen Hemminger <sthemmin@microsoft.com>
+>> Cc: Kairui Song <kasong@redhat.com>
+>> Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Matthew Wilcox <willy@infradead.org>
+>> Cc: Michal Hocko <mhocko@suse.com>
+>> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>> ---
+>>  drivers/hv/hv_balloon.c | 14 ++++++++++++--
+>>  1 file changed, 12 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
+>> index 211f3fe3a038..47719862e57f 100644
+>> --- a/drivers/hv/hv_balloon.c
+>> +++ b/drivers/hv/hv_balloon.c
+>> @@ -681,8 +681,13 @@ static struct notifier_block hv_memory_nb = {
+>>  /* Check if the particular page is backed and can be onlined and online it.
+>>  */
+>>  static void hv_page_online_one(struct hv_hotadd_state *has, struct page *pg)
+>>  {
+>> -	if (!has_pfn_is_backed(has, page_to_pfn(pg)))
+>> +	if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
+>> +		if (!PageOffline(pg))
+>> +			__SetPageOffline(pg);
+>>  		return;
+>> +	}
+>> +	if (PageOffline(pg))
+>> +		__ClearPageOffline(pg);
+>>  
+>>  	/* This frame is currently backed; online the page. */
+>>  	__online_page_set_limits(pg);
+>> @@ -1201,6 +1206,7 @@ static void free_balloon_pages(struct hv_dynmem_device
+>> *dm,
+>>  
+>>  	for (i = 0; i < num_pages; i++) {
+>>  		pg = pfn_to_page(i + start_frame);
+>> +		__ClearPageOffline(pg);
+> 
+> Just thinking, do we need to care for clearing PageOffline flag before freeing
+> a balloon'd page?
+
+Yes we have to otherwise the code will crash when trying to set PageBuddy.
+
+(only one page type at a time may be set right now, and it makes sense.
+A page that is offline cannot e.g. be a buddy page)
+
+So PageOffline is completely managed by the page owner.
+
+> 
+> Thanks,
+> Pankaj
+
+
+-- 
+
+Thanks,
+
+David / dhildenb
