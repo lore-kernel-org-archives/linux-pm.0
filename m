@@ -1,83 +1,74 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 24/26] drivers: firmware: psci: Deal with CPU hotplug
- when using OSI mode
-Date: Tue, 20 Nov 2018 10:50:22 +0100
-Message-ID: <CAPDyKFond=Q-cWsjKwGToprjPTFj=WA_-nsAoUFJdNCdkki8Rw@mail.gmail.com>
-References: <20180620172226.15012-1-ulf.hansson@linaro.org>
- <20180620172226.15012-25-ulf.hansson@linaro.org> <9bf3713b-df00-03b3-d235-7549565382c7@codeaurora.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v9 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
+Date: Tue, 20 Nov 2018 10:01:44 +0000
+Message-ID: <20181120100141.ecx57puqurcogn53@queper01-lin>
+References: <20181119141857.8625-1-quentin.perret@arm.com>
+ <20181119141857.8625-16-quentin.perret@arm.com>
+ <20181120061925.t6j5jjepziq2gcsh@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9bf3713b-df00-03b3-d235-7549565382c7@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20181120061925.t6j5jjepziq2gcsh@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Raju P L S S S N <rplsssn@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Juri Lelli <juri.lelli@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19 November 2018 at 20:50, Raju P L S S S N <rplsssn@codeaurora.org> wro=
-te:
-> Hi Ulf,
->
-> Got one issue in hotplug path where of_genpd_detach_cpu calls
-> dev_pm_qos_remove_notifier which can be sleeping as per below call stack.=
- I
-> think it should be applicable for current patch as well right? Please let=
- me
-> know what am I missing? why didn't you see this issue with this patch?
+Hi Viresh,
 
-Weird.
+On Tuesday 20 Nov 2018 at 11:49:25 (+0530), Viresh Kumar wrote:
+> On 19-11-18, 14:18, Quentin Perret wrote:
+> >  static int cpufreq_init(struct cpufreq_policy *policy)
+> >  {
+> > +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
+> >  	struct cpufreq_frequency_table *freq_table;
+> >  	struct opp_table *opp_table = NULL;
+> >  	struct private_data *priv;
+> > @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	unsigned int transition_latency;
+> >  	bool fallback = false;
+> >  	const char *name;
+> > -	int ret;
+> > +	int ret, nr_opp;
+> >  
+> >  	cpu_dev = get_cpu_device(policy->cpu);
+> >  	if (!cpu_dev) {
+> > @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  		ret = -EPROBE_DEFER;
+> >  		goto out_free_opp;
+> >  	}
+> > +	nr_opp = ret;
+> >  
+> >  	if (fallback) {
+> >  		cpumask_setall(policy->cpus);
+> > @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.transition_latency = transition_latency;
+> >  	policy->dvfs_possible_from_any_cpu = true;
+> >  
+> > +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
+> > +
+> >  	return 0;
+> >  
+> >  out_free_cpufreq_table:
+> 
+> I haven't gone deep into the series, but why don't we need something
+> like em_unregister_perf_domain()? That can be used if the cpufreq
+> driver goes away. Else loading/unloading/loading the cpufreq driver
+> may register the perf-domain callback again.
 
->
->
-> [ 8103.221387] BUG: sleeping function called from invalid context at
-> /mnt/host/source/src/third_party/kernel/v4.14/kernel/locking/mutex.c:238
+Right, that's a good point. Registering the perf-domain multiple times
+is harmless -- all but the first registration will be ignored. That
+_should_ be documented somewhere in patch 03. I'll double check and add
+the doc if that's not the case.
 
-Could it be due to some other patch in your v.4.14 kernel?
+The overall idea so far has been to keep the EM framework as simple as
+possible. We allocate the EM once and it stays in memory forever. That
+makes it really easy for the scheduler (for instance) to manipulate
+pointers to perf domains without having to worry about them being
+unregistered. We could definitely do something smarter to
+register/unregister the PDs dynamically using refcount or something,
+but hopefully this is something we can do later, if need be.
 
-> [ 8103.221455] in_atomic(): 1, irqs_disabled(): 128, pid: 11, name:
-> migration/0
-> [ 8103.221487] Preemption disabled at:
-> [ 8103.221529] [<ffffff800814dfb0>] cpu_stopper_thread+0x98/0x118
-> [ 8103.221600] ------------[ cut here ]------------
-> [ 8103.221636] kernel BUG at
-> /mnt/host/source/src/third_party/kernel/v4.14/kernel/sched/core.c:6102!
-> [ 8103.221678] Internal error: Oops - BUG: 0 [#1] PREEMPT SMP
-> [ 8103.222396] CPU: 0 PID: 11 Comm: migration/0 Tainted: G        W  4.14=
-.72
-> #1
-> [ 8103.222428] Hardware name: Google Cheza (rev1) (DT)
-> [ 8103.222460] task: ffffffc0f842d580 task.stack: ffffff8009c18000
-> [ 8103.222504] PC is at ___might_sleep+0x138/0x140
-> [ 8103.222542] LR is at ___might_sleep+0x138/0x140
-> [ 8103.222577] pc : [<ffffff80080d8f04>] lr : [<ffffff80080d8f04>] pstate=
-:
-> 60c001c9
-> [ 8103.222605] sp : ffffff8009c1bb40
-> =E2=80=A6.
-> [ 8103.223924] [<ffffff80080d8f04>] ___might_sleep+0x138/0x140
-> [ 8103.223965] [<ffffff80080d8d98>] __might_sleep+0x4c/0x80
-> [ 8103.224009] [<ffffff80088e4258>] mutex_lock+0x28/0x60
-> [ 8103.224054] [<ffffff800850fa2c>] dev_pm_qos_remove_notifier+0x1c/0x54
-> [ 8103.224097] [<ffffff8008517814>] genpd_remove_device+0x3c/0x10c
-> [ 8103.224140] [<ffffff800851949c>] genpd_dev_pm_detach+0x48/0x108
-> [ 8103.224183] [<ffffff80085193e0>] of_genpd_detach_cpu+0x48/0xbc
-> [ 8103.224227] [<ffffff80083edea4>] cpu_pd_dying+0x28/0x38
-> [ 8103.224268] [<ffffff80080ab2c0>] cpuhp_invoke_callback+0x254/0x5f0
-> [ 8103.224308] [<ffffff80080acdec>] take_cpu_down+0x60/0x9c
-> [ 8103.224346] [<ffffff800814d898>] multi_cpu_stop+0xac/0x104
-> [ 8103.224385] [<ffffff800814dfb8>] cpu_stopper_thread+0xa0/0x118
-> [ 8103.224427] [<ffffff80080cff74>] smpboot_thread_fn+0x19c/0x278
-> [ 8103.224472] [<ffffff80080cc0c4>] kthread+0x120/0x130
-> [ 8103.224513] [<ffffff8008084608>] ret_from_fork+0x10/0x18
-
-Thanks for the report, I will double check my series before I post the
-new version of my series. If nothing unexpected shows up, that should
-be in a couple of days from now.
-
-I keep you cc.
-
-[...]
-
-Kind regards
-Uffe
+Thanks,
+Quentin
