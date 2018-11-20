@@ -1,64 +1,45 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v6 0/8] AXP8x3 AC and battery power supply support
-Date: Tue, 20 Nov 2018 19:52:03 +0200
-Message-ID: <20181120175211.3913-1-oskari@lemmela.net>
+Subject: [PATCH v6 4/8] arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
+Date: Tue, 20 Nov 2018 19:52:07 +0200
+Message-ID: <20181120175211.3913-5-oskari@lemmela.net>
+References: <20181120175211.3913-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181120175211.3913-1-oskari@lemmela.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@bootlin.com>, Vasily Khoruzhick <anarsoul@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Oskari Lemmela <oskari@lemmela.net>
 List-Id: linux-pm@vger.kernel.org
 
-AXP813 AC power supply support with input current and
-voltage limiting support.
+AXP803 ACIN pins are routed from SOM to the DC jack on the baseboard.
+AXP803 charger pins BATSENSE, LOADSENSE, N_BATDRV, LX_CHG, VIN_CHG
+and IPSOUT are connected via PMOS driver to SOM VBAT pins. VBAT and
+AXP803 TS pins are routed to the baseboard 3-pin battery connector.
 
-AXP803 AC and battery power supply support.
+Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
+Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
+Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+---
+ .../boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts    | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Changes in v6:
-* Collected tags
-* Rebase to master
-* Dropped AXP803 compatible patches
-
-Changes in v5:
-* Return correct input current limit for values 0x6 and 0x7
-* Add specific compatibles for AXP803
-* Change commit messages
-* Add Vasily Khoruzhick Pinebook DTS patch
-
-Changes in v4:
-* Change order of axp20x-gpio in axp20x.c
-* Fix indentation and spaces to tabs in axp20x.c
-
-Changes in v3:
-* Reorder ac_power_supply DT node
-* Rename axp20x_ac_power_set_property function
-* Split mfd commit 
-
-Changes in v2:
-* Reuse axp813 compatibles for axp803
-* Refactor axp20x_ac_power.c
-
-
-Oskari Lemmela (7):
-  dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
-  ARM: dts: axp81x: add AC power supply subnode
-  arm64: dts: allwinner: axp803: add AC and battery power supplies
-  arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
-  power: supply: add AC power supply driver for AXP813
-  mfd: axp20x: Add AC power supply cell for AXP813
-  mfd: axp20x: Add supported cells for AXP803
-
-Vasily Khoruzhick (1):
-  arm64: dts: allwinner: a64: pinebook: enable power supplies
-
- .../bindings/power/supply/axp20x_ac_power.txt |  3 +
- arch/arm/boot/dts/axp81x.dtsi                 |  5 +
- arch/arm64/boot/dts/allwinner/axp803.dtsi     | 33 +++++++
- .../dts/allwinner/sun50i-a64-pinebook.dts     |  8 ++
- .../allwinner/sun50i-a64-sopine-baseboard.dts |  8 ++
- drivers/mfd/axp20x.c                          | 20 ++++
- drivers/power/supply/axp20x_ac_power.c        | 94 +++++++++++++++++++
- include/linux/mfd/axp20x.h                    |  1 +
- 8 files changed, 172 insertions(+)
-
+diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+index 53fcc9098df3..4695b0d407b6 100644
+--- a/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
++++ b/arch/arm64/boot/dts/allwinner/sun50i-a64-sopine-baseboard.dts
+@@ -80,6 +80,14 @@
+ 	};
+ };
+ 
++&ac_power_supply {
++	status = "okay";
++};
++
++&battery_power_supply {
++	status = "okay";
++};
++
+ &de {
+ 	status = "okay";
+ };
 -- 
 2.17.1
