@@ -1,42 +1,64 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v3] cpuidle: big.LITTLE: add of_node_put()
-Date: Tue, 20 Nov 2018 11:14:51 -0500
-Message-ID: <20181120161451.21149-1-tiny.windzz@gmail.com>
+From: Oskari Lemmela <oskari@lemmela.net>
+Subject: [PATCH v6 0/8] AXP8x3 AC and battery power supply support
+Date: Tue, 20 Nov 2018 19:52:03 +0200
+Message-ID: <20181120175211.3913-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, lorenzo.pieralisi@arm.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@bootlin.com>, Vasily Khoruzhick <anarsoul@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Oskari Lemmela <oskari@lemmela.net>
 List-Id: linux-pm@vger.kernel.org
 
-of_find_node_by_path() acquires a reference to the node
-returned by it and that reference needs to be dropped by its caller.
-bl_idle_init() doesn't do that, so fix it.
+AXP813 AC power supply support with input current and
+voltage limiting support.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
+AXP803 AC and battery power supply support.
+
+Changes in v6:
+* Collected tags
+* Rebase to master
+* Dropped AXP803 compatible patches
+
+Changes in v5:
+* Return correct input current limit for values 0x6 and 0x7
+* Add specific compatibles for AXP803
+* Change commit messages
+* Add Vasily Khoruzhick Pinebook DTS patch
+
+Changes in v4:
+* Change order of axp20x-gpio in axp20x.c
+* Fix indentation and spaces to tabs in axp20x.c
+
 Changes in v3:
--update changelog
----
- drivers/cpuidle/cpuidle-big_little.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+* Reorder ac_power_supply DT node
+* Rename axp20x_ac_power_set_property function
+* Split mfd commit 
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index db2ede565f1a..650f063ef809 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -174,8 +174,12 @@ static int __init bl_idle_init(void)
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_match_node(compatible_machine_match, root))
-+	if (!of_match_node(compatible_machine_match, root)){
-+		of_node_put(root);
- 		return -ENODEV;
-+	}
-+
-+	of_node_put(root);
- 
- 	if (!mcpm_is_available())
- 		return -EUNATCH;
+Changes in v2:
+* Reuse axp813 compatibles for axp803
+* Refactor axp20x_ac_power.c
+
+
+Oskari Lemmela (7):
+  dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
+  ARM: dts: axp81x: add AC power supply subnode
+  arm64: dts: allwinner: axp803: add AC and battery power supplies
+  arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
+  power: supply: add AC power supply driver for AXP813
+  mfd: axp20x: Add AC power supply cell for AXP813
+  mfd: axp20x: Add supported cells for AXP803
+
+Vasily Khoruzhick (1):
+  arm64: dts: allwinner: a64: pinebook: enable power supplies
+
+ .../bindings/power/supply/axp20x_ac_power.txt |  3 +
+ arch/arm/boot/dts/axp81x.dtsi                 |  5 +
+ arch/arm64/boot/dts/allwinner/axp803.dtsi     | 33 +++++++
+ .../dts/allwinner/sun50i-a64-pinebook.dts     |  8 ++
+ .../allwinner/sun50i-a64-sopine-baseboard.dts |  8 ++
+ drivers/mfd/axp20x.c                          | 20 ++++
+ drivers/power/supply/axp20x_ac_power.c        | 94 +++++++++++++++++++
+ include/linux/mfd/axp20x.h                    |  1 +
+ 8 files changed, 172 insertions(+)
+
 -- 
-2.17.0
+2.17.1
