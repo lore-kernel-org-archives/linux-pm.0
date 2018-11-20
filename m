@@ -1,43 +1,169 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH v2] cpuidle: big.LITTLE: add of_node_put()
-Date: Tue, 20 Nov 2018 10:46:17 -0500
-Message-ID: <20181120154617.20903-1-tiny.windzz@gmail.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v9 02/15] sched/cpufreq: Prepare schedutil for Energy
+ Aware Scheduling
+Date: Tue, 20 Nov 2018 15:53:05 +0000
+Message-ID: <20181120155302.guvfvxdwbh3ztw6x@queper01-lin>
+References: <20181119141857.8625-1-quentin.perret@arm.com>
+ <20181119141857.8625-3-quentin.perret@arm.com>
+ <20181120044602.bsfsp4alswbwoweu@vireshk-i7>
+ <20181120152514.GD2113@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181120152514.GD2113@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: lorenzo.pieralisi@arm.com, daniel.lezcano@linaro.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The of_node_put() is missing.So we call the of_node_put() to release
-the refcount.
+On Tuesday 20 Nov 2018 at 16:25:14 (+0100), Peter Zijlstra wrote:
+> On Tue, Nov 20, 2018 at 10:16:02AM +0530, Viresh Kumar wrote:
+> > On 19-11-18, 14:18, Quentin Perret wrote:
+> > > @@ -223,20 +222,33 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+> > 
+> > > -	if ((util + cpu_util_dl(rq)) >= max)
+> > > -		return max;
+> > > +	if (type == FREQUENCY_UTIL) {
+> > > +		/*
+> > > +		 * For frequency selection we do not make cpu_util_dl() a
+> > > +		 * permanent part of this sum because we want to use
+> > > +		 * cpu_bw_dl() later on, but we need to check if the
+> > > +		 * CFS+RT+DL sum is saturated (ie. no idle time) such
+> > > +		 * that we select f_max when there is no idle time.
+> > > +		 *
+> > > +		 * NOTE: numerical errors or stop class might cause us
+> > > +		 * to not quite hit saturation when we should --
+> > > +		 * something for later.
+> > > +		 */
+> > > +
+> > > +		if ((util + cpu_util_dl(rq)) >= max)
+> > > +			return max;
+> > > +	} else {
+> > > +		/*
+> > > +		 * OTOH, for energy computation we need the estimated
+> > > +		 * running time, so include util_dl and ignore dl_bw.
+> > > +		 */
+> > > +		util += cpu_util_dl(rq);
+> > > +		if (util >= max)
+> > > +			return max;
+> > > +	}
+> > 
+> > Maybe write above as:
+> > 
+> >         dl_util = cpu_util_dl(rq);
+> > 
+> >         if ((util + dl_util) >= max)
+> >                 return max;
+> > 
+> > 	if (type != FREQUENCY_UTIL)
+> > 		util += dl_util;
+> > 
+> > 
+> > as both the if/else parts were doing almost the same thing.
+> 
+> A little like so ?
+> 
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -201,8 +201,8 @@ static unsigned int get_next_freq(struct
+>  unsigned long schedutil_freq_util(int cpu, unsigned long util_cfs,
+>  				  unsigned long max, enum schedutil_type type)
+>  {
+> +	unsigned long dl_util, util, irq;
+>  	struct rq *rq = cpu_rq(cpu);
+> -	unsigned long util, irq;
+>  
+>  	if (type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt))
+>  		return max;
+> @@ -225,30 +225,26 @@ unsigned long schedutil_freq_util(int cp
+>  	util = util_cfs;
+>  	util += cpu_util_rt(rq);
+>  
+> -	if (type == FREQUENCY_UTIL) {
+> -		/*
+> -		 * For frequency selection we do not make cpu_util_dl() a
+> -		 * permanent part of this sum because we want to use
+> -		 * cpu_bw_dl() later on, but we need to check if the
+> -		 * CFS+RT+DL sum is saturated (ie. no idle time) such
+> -		 * that we select f_max when there is no idle time.
+> -		 *
+> -		 * NOTE: numerical errors or stop class might cause us
+> -		 * to not quite hit saturation when we should --
+> -		 * something for later.
+> -		 */
+> -
+> -		if ((util + cpu_util_dl(rq)) >= max)
+> -			return max;
+> -	} else {
+> -		/*
+> -		 * OTOH, for energy computation we need the estimated
+> -		 * running time, so include util_dl and ignore dl_bw.
+> -		 */
+> -		util += cpu_util_dl(rq);
+> -		if (util >= max)
+> -			return max;
+> -	}
+> +	dl_util = cpu_util_dl(rq);
+> +
+> +	/*
+> +	 * NOTE: numerical errors or stop class might cause us to not quite hit
+> +	 * saturation when we should -- something for later.
+> +	 */
+> +	if (util + dl_util > max)
+> +		return max;
+> +
+> +	/*
+> +	 * For frequency selection we do not make cpu_util_dl() a permanent
+> +	 * part of this sum because we want to use cpu_bw_dl() later on, but we
+> +	 * need to check if the CFS+RT+DL sum is saturated (ie. no idle time)
+> +	 * such that we select f_max when there is no idle time.
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
-Changes in v2
--update changelog
--do that right after its last use 
- to also cover error handling.
----
- drivers/cpuidle/cpuidle-big_little.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+We probably want move that paragraph to the comment above no ? Other
+than that, the change LGTM.
 
-diff --git a/drivers/cpuidle/cpuidle-big_little.c b/drivers/cpuidle/cpuidle-big_little.c
-index db2ede565f1a..650f063ef809 100644
---- a/drivers/cpuidle/cpuidle-big_little.c
-+++ b/drivers/cpuidle/cpuidle-big_little.c
-@@ -174,8 +174,12 @@ static int __init bl_idle_init(void)
- 	/*
- 	 * Initialize the driver just for a compliant set of machines
- 	 */
--	if (!of_match_node(compatible_machine_match, root))
-+	if (!of_match_node(compatible_machine_match, root)){
-+		of_node_put(root);
- 		return -ENODEV;
-+	}
-+
-+	of_node_put(root);
- 
- 	if (!mcpm_is_available())
- 		return -EUNATCH;
--- 
-2.17.0
+> +	 *
+> +	 * OTOH, for energy computation we need the estimated running time, so
+> +	 * do include util_dl and ignore dl_bw.
+> +	 */
+> +	if (type == ENERGY_UTIL)
+> +		util += dl_util;
+>  
+>  	/*
+>  	 * There is still idle time; further improve the number by using the
+> @@ -262,21 +258,18 @@ unsigned long schedutil_freq_util(int cp
+>  	util = scale_irq_capacity(util, irq, max);
+>  	util += irq;
+>  
+> -	if (type == FREQUENCY_UTIL) {
+> -		/*
+> -		 * Bandwidth required by DEADLINE must always be granted
+> -		 * while, for FAIR and RT, we use blocked utilization of
+> -		 * IDLE CPUs as a mechanism to gracefully reduce the
+> -		 * frequency when no tasks show up for longer periods of
+> -		 * time.
+> -		 *
+> -		 * Ideally we would like to set bw_dl as min/guaranteed
+> -		 * freq and util + bw_dl as requested freq. However,
+> -		 * cpufreq is not yet ready for such an interface. So,
+> -		 * we only do the latter for now.
+> -		 */
+> +	/*
+> +	 * Bandwidth required by DEADLINE must always be granted while, for
+> +	 * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+> +	 * to gracefully reduce the frequency when no tasks show up for longer
+> +	 * periods of time.
+> +	 *
+> +	 * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+> +	 * bw_dl as requested freq. However, cpufreq is not yet ready for such
+> +	 * an interface. So, we only do the latter for now.
+> +	 */
+> +	if (type == FREQUENCY_UTIL)
+>  		util += cpu_bw_dl(rq);
+> -	}
+>  
+>  	return min(max, util);
+>  }
+
+Thanks,
+Quentin
