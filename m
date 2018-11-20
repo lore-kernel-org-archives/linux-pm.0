@@ -1,74 +1,113 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v9 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Tue, 20 Nov 2018 10:01:44 +0000
-Message-ID: <20181120100141.ecx57puqurcogn53@queper01-lin>
-References: <20181119141857.8625-1-quentin.perret@arm.com>
- <20181119141857.8625-16-quentin.perret@arm.com>
- <20181120061925.t6j5jjepziq2gcsh@vireshk-i7>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
+Date: Tue, 20 Nov 2018 11:12:36 +0100
+Message-ID: <1542708756.2508.11.camel@pengutronix.de>
+References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
+         <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
+         <DB3PR0402MB391662A8DA6A1F43F26F095BF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <e4cf8bad-9a4f-32e5-2f0e-be44257b5fe2@linaro.org>
+         <DB3PR0402MB391604AB207C160F09D3595EF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+         <93eff9f1-922f-f5c1-9a88-debacdd68168@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181120061925.t6j5jjepziq2gcsh@vireshk-i7>
+In-Reply-To: <93eff9f1-922f-f5c1-9a88-debacdd68168@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Anson Huang <anson.huang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-On Tuesday 20 Nov 2018 at 11:49:25 (+0530), Viresh Kumar wrote:
-> On 19-11-18, 14:18, Quentin Perret wrote:
-> >  static int cpufreq_init(struct cpufreq_policy *policy)
-> >  {
-> > +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
-> >  	struct cpufreq_frequency_table *freq_table;
-> >  	struct opp_table *opp_table = NULL;
-> >  	struct private_data *priv;
-> > @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	unsigned int transition_latency;
-> >  	bool fallback = false;
-> >  	const char *name;
-> > -	int ret;
-> > +	int ret, nr_opp;
-> >  
-> >  	cpu_dev = get_cpu_device(policy->cpu);
-> >  	if (!cpu_dev) {
-> > @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  		ret = -EPROBE_DEFER;
-> >  		goto out_free_opp;
-> >  	}
-> > +	nr_opp = ret;
-> >  
-> >  	if (fallback) {
-> >  		cpumask_setall(policy->cpus);
-> > @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
-> >  	policy->cpuinfo.transition_latency = transition_latency;
-> >  	policy->dvfs_possible_from_any_cpu = true;
-> >  
-> > +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
-> > +
-> >  	return 0;
-> >  
-> >  out_free_cpufreq_table:
+Am Dienstag, den 20.11.2018, 10:29 +0100 schrieb Daniel Lezcano:
+> On 20/11/2018 09:58, Anson Huang wrote:
+> > Hi, Daniel
+> > 
+> > Best Regards!
+> > Anson Huang
+> > 
+> > > -----Original Message-----
+> > > From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+> > > Sent: 2018年11月20日 16:54
+> > > To: Anson Huang <anson.huang@nxp.com>; rui.zhang@intel.com;
+> > > edubezval@gmail.com; linux-pm@vger.kernel.org;
+> > > linux-kernel@vger.kernel.org
+> > > Cc: dl-linux-imx <linux-imx@nxp.com>
+> > > Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
+> > > 
+> > > On 20/11/2018 09:47, Anson Huang wrote:
+> > > > Hi, Daniel
+> > > > 
+> > > > Best Regards!
+> > > > Anson Huang
+> > > > 
+> > > > > -----Original Message-----
+> > > > > From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
+> > > > > Sent: 2018年11月20日 16:45
+> > > > > To: Anson Huang <anson.huang@nxp.com>; rui.zhang@intel.com;
+> > > > > edubezval@gmail.com; linux-pm@vger.kernel.org;
+> > > > > linux-kernel@vger.kernel.org
+> > > > > Cc: dl-linux-imx <linux-imx@nxp.com>
+> > > > > Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-
+> > > > > freq
+> > > > > 
+> > > > > On 24/10/2018 08:39, Anson Huang wrote:
+> > > > > > The thermal driver is a standalone driver for monitoring
+> > > > > > SoC
+> > > > > > temperature by enabling thermal sensor, so it can be
+> > > > > > enabled even
+> > > > > > when CONFIG_CPU_FREQ is NOT set. So remove the dependency
+> > > > > > with
+> > > > > 
+> > > > > CPU_THERMAL.
+> > > > > > 
+> > > > > > Add CONFIG_CPU_FREQ check for cpu-freq related operation in
+> > > > > > thermal
+> > > > > > driver to make thermal driver probe successfully when
+> > > > > > CONFIG_CPU_FREQ is NOT set.
+> > > > > > 
+> > > > > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > > > > > ---
+> > > > > 
+> > > > > Why not simply kill this legacy code ?
+> > > > 
+> > > > Because killing legacy code will have old dtb compatible issue,
+> > > > old
+> > > > dtb will NOT have cpufreq cooling function.
+> > > 
+> > > Yeah, I imagine that is the reason why you want to keep the
+> > > legacy code but do
+> > > you really care about old DTB based boards? Are they still
+> > > updated with newer
+> > > *upstream vanilla* kernels?
+> > 
+> > I am NOT sure if there is someone care about it, but I did receive
+> > many comments
+> > about old dtb compatible when I sent out other patches, so is it a
+> > solid requirement
+> > of old dtb compatible when doing upstream, or each sub-system or
+> > maintainer has
+> > different requirement about it? Actually I am happy to just remove
+> > the legacy
+> > code, because it makes the code more clean and easy reading. Who
+> > can make the
+> > decision?
 > 
-> I haven't gone deep into the series, but why don't we need something
-> like em_unregister_perf_domain()? That can be used if the cpufreq
-> driver goes away. Else loading/unloading/loading the cpufreq driver
-> may register the perf-domain callback again.
+> Yes, making sure to not break the compatibility makes the patch
+> submission easier. However, sometime it makes sense to put in
+> question
+> if keeping old (and hackish) code really matters.
+> 
+> Old boards are rarely updated with newer kernels and when that
+> happens,
+> usually the DT is updated also.
+> 
+> IMO, this decision is in the hands of the platform maintainers. I
+> suggest to send a patch removing the legacy code Cc'ing all of them.
 
-Right, that's a good point. Registering the perf-domain multiple times
-is harmless -- all but the first registration will be ignored. That
-_should_ be documented somewhere in patch 03. I'll double check and add
-the doc if that's not the case.
+On i.MX we usually try to keep DT compatibility as much as possible.
+There are cases where keeping the compatibility is just too much of a
+burden on maintenance, but IMHO this is not the case for the piece of
+code in question here.
 
-The overall idea so far has been to keep the EM framework as simple as
-possible. We allocate the EM once and it stays in memory forever. That
-makes it really easy for the scheduler (for instance) to manipulate
-pointers to perf domains without having to worry about them being
-unregistered. We could definitely do something smarter to
-register/unregister the PDs dynamically using refcount or something,
-but hopefully this is something we can do later, if need be.
-
-Thanks,
-Quentin
+Regards,
+Lucas
