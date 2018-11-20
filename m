@@ -1,98 +1,78 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Tue, 20 Nov 2018 10:29:50 +0100
-Message-ID: <93eff9f1-922f-f5c1-9a88-debacdd68168@linaro.org>
-References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
- <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
- <DB3PR0402MB391662A8DA6A1F43F26F095BF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <e4cf8bad-9a4f-32e5-2f0e-be44257b5fe2@linaro.org>
- <DB3PR0402MB391604AB207C160F09D3595EF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+From: Pankaj Gupta <pagupta@redhat.com>
+Subject: Re: [PATCH v1 5/8] hv_balloon: mark inflated pages PG_offline
+Date: Tue, 20 Nov 2018 04:37:16 -0500 (EST)
+Message-ID: <1380154502.35259416.1542706636322.JavaMail.zimbra@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com> <20181119101616.8901-6-david@redhat.com> <1747228.35250472.1542703532881.JavaMail.zimbra@redhat.com> <6258a58b-28c7-c055-0752-e8bd085b835f@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <DB3PR0402MB391604AB207C160F09D3595EF5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-Content-Language: en-US
+In-Reply-To: <6258a58b-28c7-c055-0752-e8bd085b835f@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Kairui Song <kasong@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20/11/2018 09:58, Anson Huang wrote:
-> Hi, Daniel
+
+> >> ---
+> >>  drivers/hv/hv_balloon.c | 14 ++++++++++++--
+> >>  1 file changed, 12 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
+> >> index 211f3fe3a038..47719862e57f 100644
+> >> --- a/drivers/hv/hv_balloon.c
+> >> +++ b/drivers/hv/hv_balloon.c
+> >> @@ -681,8 +681,13 @@ static struct notifier_block hv_memory_nb = {
+> >>  /* Check if the particular page is backed and can be onlined and online
+> >>  it.
+> >>  */
+> >>  static void hv_page_online_one(struct hv_hotadd_state *has, struct page
+> >>  *pg)
+> >>  {
+> >> -	if (!has_pfn_is_backed(has, page_to_pfn(pg)))
+> >> +	if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
+> >> +		if (!PageOffline(pg))
+> >> +			__SetPageOffline(pg);
+> >>  		return;
+> >> +	}
+> >> +	if (PageOffline(pg))
+> >> +		__ClearPageOffline(pg);
+> >>  
+> >>  	/* This frame is currently backed; online the page. */
+> >>  	__online_page_set_limits(pg);
+> >> @@ -1201,6 +1206,7 @@ static void free_balloon_pages(struct
+> >> hv_dynmem_device
+> >> *dm,
+> >>  
+> >>  	for (i = 0; i < num_pages; i++) {
+> >>  		pg = pfn_to_page(i + start_frame);
+> >> +		__ClearPageOffline(pg);
+> > 
+> > Just thinking, do we need to care for clearing PageOffline flag before
+> > freeing
+> > a balloon'd page?
 > 
-> Best Regards!
-> Anson Huang
+> Yes we have to otherwise the code will crash when trying to set PageBuddy.
 > 
->> -----Original Message-----
->> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->> Sent: 2018年11月20日 16:54
->> To: Anson Huang <anson.huang@nxp.com>; rui.zhang@intel.com;
->> edubezval@gmail.com; linux-pm@vger.kernel.org;
->> linux-kernel@vger.kernel.org
->> Cc: dl-linux-imx <linux-imx@nxp.com>
->> Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
->>
->> On 20/11/2018 09:47, Anson Huang wrote:
->>> Hi, Daniel
->>>
->>> Best Regards!
->>> Anson Huang
->>>
->>>> -----Original Message-----
->>>> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->>>> Sent: 2018年11月20日 16:45
->>>> To: Anson Huang <anson.huang@nxp.com>; rui.zhang@intel.com;
->>>> edubezval@gmail.com; linux-pm@vger.kernel.org;
->>>> linux-kernel@vger.kernel.org
->>>> Cc: dl-linux-imx <linux-imx@nxp.com>
->>>> Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
->>>>
->>>> On 24/10/2018 08:39, Anson Huang wrote:
->>>>> The thermal driver is a standalone driver for monitoring SoC
->>>>> temperature by enabling thermal sensor, so it can be enabled even
->>>>> when CONFIG_CPU_FREQ is NOT set. So remove the dependency with
->>>> CPU_THERMAL.
->>>>>
->>>>> Add CONFIG_CPU_FREQ check for cpu-freq related operation in thermal
->>>>> driver to make thermal driver probe successfully when
->>>>> CONFIG_CPU_FREQ is NOT set.
->>>>>
->>>>> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
->>>>> ---
->>>>
->>>> Why not simply kill this legacy code ?
->>>
->>> Because killing legacy code will have old dtb compatible issue, old
->>> dtb will NOT have cpufreq cooling function.
->>
->> Yeah, I imagine that is the reason why you want to keep the legacy code but do
->> you really care about old DTB based boards? Are they still updated with newer
->> *upstream vanilla* kernels?
+> (only one page type at a time may be set right now, and it makes sense.
+> A page that is offline cannot e.g. be a buddy page)
+
+o.k
 > 
-> I am NOT sure if there is someone care about it, but I did receive many comments
-> about old dtb compatible when I sent out other patches, so is it a solid requirement
-> of old dtb compatible when doing upstream, or each sub-system or maintainer has
-> different requirement about it? Actually I am happy to just remove the legacy
-> code, because it makes the code more clean and easy reading. Who can make the
-> decision?
+> So PageOffline is completely managed by the page owner.
 
-Yes, making sure to not break the compatibility makes the patch
-submission easier. However, sometime it makes sense to put in question
-if keeping old (and hackish) code really matters.
+Makes sense. Thanks for explaining.
 
-Old boards are rarely updated with newer kernels and when that happens,
-usually the DT is updated also.
-
-IMO, this decision is in the hands of the platform maintainers. I
-suggest to send a patch removing the legacy code Cc'ing all of them.
-
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Pankaj
+> 
+> > 
+> > Thanks,
+> > Pankaj
+> 
+> 
+> --
+> 
+> Thanks,
+> 
+> David / dhildenb
+> 
