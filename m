@@ -1,64 +1,94 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Tue, 20 Nov 2018 07:04:13 +0000
-Message-ID: <DB3PR0402MB3916F18E9BA6F2D885A3D0E2F5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal: imx: fix for dependency on cpu-freq
+Date: Tue, 20 Nov 2018 09:44:32 +0100
+Message-ID: <28d501b1-8016-cc1a-3f7c-ac485ab81aa2@linaro.org>
 References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Anson Huang <anson.huang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-R2VudGxlIFBpbmcuLi4NCg0KQmVzdCBSZWdhcmRzIQ0KQW5zb24gSHVhbmcNCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbnNvbiBIdWFuZw0KPiBTZW50OiAyMDE4xOox
-MNTCMjTI1SAxNDo0MA0KPiBUbzogcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWls
-LmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJu
-ZWwub3JnDQo+IENjOiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiBTdWJqZWN0
-OiBbUEFUQ0hdIHRoZXJtYWw6IGlteDogZml4IGZvciBkZXBlbmRlbmN5IG9uIGNwdS1mcmVxDQo+
-IA0KPiBUaGUgdGhlcm1hbCBkcml2ZXIgaXMgYSBzdGFuZGFsb25lIGRyaXZlciBmb3IgbW9uaXRv
-cmluZyBTb0MgdGVtcGVyYXR1cmUgYnkNCj4gZW5hYmxpbmcgdGhlcm1hbCBzZW5zb3IsIHNvIGl0
-IGNhbiBiZSBlbmFibGVkIGV2ZW4gd2hlbiBDT05GSUdfQ1BVX0ZSRVEgaXMNCj4gTk9UIHNldC4g
-U28gcmVtb3ZlIHRoZSBkZXBlbmRlbmN5IHdpdGggQ1BVX1RIRVJNQUwuDQo+IA0KPiBBZGQgQ09O
-RklHX0NQVV9GUkVRIGNoZWNrIGZvciBjcHUtZnJlcSByZWxhdGVkIG9wZXJhdGlvbiBpbiB0aGVy
-bWFsIGRyaXZlcg0KPiB0byBtYWtlIHRoZXJtYWwgZHJpdmVyIHByb2JlIHN1Y2Nlc3NmdWxseSB3
-aGVuIENPTkZJR19DUFVfRlJFUSBpcyBOT1QNCj4gc2V0Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
-QW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy90aGVy
-bWFsL0tjb25maWcgICAgICAgfCAyICstDQo+ICBkcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwu
-YyB8IDQgKysrKw0KPiAgMiBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDEgZGVsZXRp
-b24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyBiL2RyaXZl
-cnMvdGhlcm1hbC9LY29uZmlnIGluZGV4DQo+IDE3NzVkNDQuLmM4YTYzNTIgMTAwNjQ0DQo+IC0t
-LSBhL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9LY29u
-ZmlnDQo+IEBAIC0yMTIsNyArMjEyLDcgQEAgY29uZmlnIEhJU0lfVEhFUk1BTA0KPiANCj4gIGNv
-bmZpZyBJTVhfVEhFUk1BTA0KPiAgCXRyaXN0YXRlICJUZW1wZXJhdHVyZSBzZW5zb3IgZHJpdmVy
-IGZvciBGcmVlc2NhbGUgaS5NWCBTb0NzIg0KPiAtCWRlcGVuZHMgb24gKEFSQ0hfTVhDICYmIENQ
-VV9USEVSTUFMKSB8fCBDT01QSUxFX1RFU1QNCj4gKwlkZXBlbmRzIG9uIEFSQ0hfTVhDIHx8IENP
-TVBJTEVfVEVTVA0KPiAgCWRlcGVuZHMgb24gTlZNRU0gfHwgIU5WTUVNDQo+ICAJZGVwZW5kcyBv
-biBNRkRfU1lTQ09ODQo+ICAJZGVwZW5kcyBvbiBPRg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90
-aGVybWFsL2lteF90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPiBp
-bmRleCAxNTY2MTU0Li44NzM4NmQxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvaW14
-X3RoZXJtYWwuYw0KPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPiBAQCAt
-NjQ4LDYgKzY0OCw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkDQo+IG9mX2lt
-eF90aGVybWFsX21hdGNoW10gPSB7ICB9OyAgTU9EVUxFX0RFVklDRV9UQUJMRShvZiwNCj4gb2Zf
-aW14X3RoZXJtYWxfbWF0Y2gpOw0KPiANCj4gKyNpZmRlZiBDT05GSUdfQ1BVX0ZSRVENCj4gIC8q
-DQo+ICAgKiBDcmVhdGUgY29vbGluZyBkZXZpY2UgaW4gY2FzZSBubyAjY29vbGluZy1jZWxscyBw
-cm9wZXJ0eSBpcyBhdmFpbGFibGUgaW4NCj4gICAqIENQVSBub2RlDQo+IEBAIC02NjgsNiArNjY5
-LDcgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9yZWdpc3Rlcl9sZWdhY3lfY29vbGluZyhzdHJ1
-Y3QNCj4gaW14X3RoZXJtYWxfZGF0YSAqZGF0YSkNCj4gDQo+ICAJcmV0dXJuIDA7DQo+ICB9DQo+
-ICsjZW5kaWYNCj4gDQo+ICBzdGF0aWMgaW50IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0
-Zm9ybV9kZXZpY2UgKnBkZXYpICB7IEBAIC03NDMsNg0KPiArNzQ1LDcgQEAgc3RhdGljIGludCBp
-bXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgCXJlZ21h
-cF93cml0ZShtYXAsIGRhdGEtPnNvY2RhdGEtPnNlbnNvcl9jdHJsICsgUkVHX1NFVCwNCj4gIAkJ
-ICAgICBkYXRhLT5zb2NkYXRhLT5wb3dlcl9kb3duX21hc2spOw0KPiANCj4gKyNpZmRlZiBDT05G
-SUdfQ1BVX0ZSRVENCj4gIAlkYXRhLT5wb2xpY3kgPSBjcHVmcmVxX2NwdV9nZXQoMCk7DQo+ICAJ
-aWYgKCFkYXRhLT5wb2xpY3kpIHsNCj4gIAkJcHJfZGVidWcoIiVzOiBDUFVGcmVxIHBvbGljeSBu
-b3QgZm91bmRcbiIsIF9fZnVuY19fKTsgQEAgLTc1NSw2DQo+ICs3NTgsNyBAQCBzdGF0aWMgaW50
-IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJCQki
-ZmFpbGVkIHRvIHJlZ2lzdGVyIGNwdWZyZXEgY29vbGluZyBkZXZpY2U6ICVkXG4iLCByZXQpOw0K
-PiAgCQlyZXR1cm4gcmV0Ow0KPiAgCX0NCj4gKyNlbmRpZg0KPiANCj4gIAlkYXRhLT50aGVybWFs
-X2NsayA9IGRldm1fY2xrX2dldCgmcGRldi0+ZGV2LCBOVUxMKTsNCj4gIAlpZiAoSVNfRVJSKGRh
-dGEtPnRoZXJtYWxfY2xrKSkgew0KPiAtLQ0KPiAyLjcuNA0KDQo=
+On 24/10/2018 08:39, Anson Huang wrote:
+> The thermal driver is a standalone driver for monitoring SoC temperature
+> by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
+> is NOT set. So remove the dependency with CPU_THERMAL.
+> 
+> Add CONFIG_CPU_FREQ check for cpu-freq related operation in thermal
+> driver to make thermal driver probe successfully when CONFIG_CPU_FREQ
+> is NOT set.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+
+Why not simply kill this legacy code ?
+
+
+
+>  drivers/thermal/Kconfig       | 2 +-
+>  drivers/thermal/imx_thermal.c | 4 ++++
+>  2 files changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 1775d44..c8a6352 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -212,7 +212,7 @@ config HISI_THERMAL
+>  
+>  config IMX_THERMAL
+>  	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+> -	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
+> +	depends on ARCH_MXC || COMPILE_TEST
+>  	depends on NVMEM || !NVMEM
+>  	depends on MFD_SYSCON
+>  	depends on OF
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 1566154..87386d1 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -648,6 +648,7 @@ static const struct of_device_id of_imx_thermal_match[] = {
+>  };
+>  MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+>  
+> +#ifdef CONFIG_CPU_FREQ
+>  /*
+>   * Create cooling device in case no #cooling-cells property is available in
+>   * CPU node
+> @@ -668,6 +669,7 @@ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *data)
+>  
+>  	return 0;
+>  }
+> +#endif
+>  
+>  static int imx_thermal_probe(struct platform_device *pdev)
+>  {
+> @@ -743,6 +745,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
+>  		     data->socdata->power_down_mask);
+>  
+> +#ifdef CONFIG_CPU_FREQ
+>  	data->policy = cpufreq_cpu_get(0);
+>  	if (!data->policy) {
+>  		pr_debug("%s: CPUFreq policy not found\n", __func__);
+> @@ -755,6 +758,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  			"failed to register cpufreq cooling device: %d\n", ret);
+>  		return ret;
+>  	}
+> +#endif
+>  
+>  	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
+>  	if (IS_ERR(data->thermal_clk)) {
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
