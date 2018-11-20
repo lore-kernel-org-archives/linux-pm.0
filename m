@@ -1,57 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v9 15/15] OPTIONAL: cpufreq: dt: Register an Energy Model
-Date: Tue, 20 Nov 2018 11:49:25 +0530
-Message-ID: <20181120061925.t6j5jjepziq2gcsh@vireshk-i7>
-References: <20181119141857.8625-1-quentin.perret@arm.com>
- <20181119141857.8625-16-quentin.perret@arm.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
+Date: Tue, 20 Nov 2018 07:04:13 +0000
+Message-ID: <DB3PR0402MB3916F18E9BA6F2D885A3D0E2F5D90@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181119141857.8625-16-quentin.perret@arm.com>
+In-Reply-To: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: peterz@infradead.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-11-18, 14:18, Quentin Perret wrote:
->  static int cpufreq_init(struct cpufreq_policy *policy)
->  {
-> +	struct em_data_callback em_cb = EM_DATA_CB(of_est_power);
->  	struct cpufreq_frequency_table *freq_table;
->  	struct opp_table *opp_table = NULL;
->  	struct private_data *priv;
-> @@ -160,7 +203,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	unsigned int transition_latency;
->  	bool fallback = false;
->  	const char *name;
-> -	int ret;
-> +	int ret, nr_opp;
->  
->  	cpu_dev = get_cpu_device(policy->cpu);
->  	if (!cpu_dev) {
-> @@ -237,6 +280,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  		ret = -EPROBE_DEFER;
->  		goto out_free_opp;
->  	}
-> +	nr_opp = ret;
->  
->  	if (fallback) {
->  		cpumask_setall(policy->cpus);
-> @@ -280,6 +324,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.transition_latency = transition_latency;
->  	policy->dvfs_possible_from_any_cpu = true;
->  
-> +	em_register_perf_domain(policy->cpus, nr_opp, &em_cb);
-> +
->  	return 0;
->  
->  out_free_cpufreq_table:
-
-I haven't gone deep into the series, but why don't we need something
-like em_unregister_perf_domain()? That can be used if the cpufreq
-driver goes away. Else loading/unloading/loading the cpufreq driver
-may register the perf-domain callback again.
-
--- 
-viresh
+R2VudGxlIFBpbmcuLi4NCg0KQmVzdCBSZWdhcmRzIQ0KQW5zb24gSHVhbmcNCg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbnNvbiBIdWFuZw0KPiBTZW50OiAyMDE4xOox
+MNTCMjTI1SAxNDo0MA0KPiBUbzogcnVpLnpoYW5nQGludGVsLmNvbTsgZWR1YmV6dmFsQGdtYWls
+LmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnDQo+IENjOiBkbC1saW51eC1pbXggPGxpbnV4LWlteEBueHAuY29tPg0KPiBTdWJqZWN0
+OiBbUEFUQ0hdIHRoZXJtYWw6IGlteDogZml4IGZvciBkZXBlbmRlbmN5IG9uIGNwdS1mcmVxDQo+
+IA0KPiBUaGUgdGhlcm1hbCBkcml2ZXIgaXMgYSBzdGFuZGFsb25lIGRyaXZlciBmb3IgbW9uaXRv
+cmluZyBTb0MgdGVtcGVyYXR1cmUgYnkNCj4gZW5hYmxpbmcgdGhlcm1hbCBzZW5zb3IsIHNvIGl0
+IGNhbiBiZSBlbmFibGVkIGV2ZW4gd2hlbiBDT05GSUdfQ1BVX0ZSRVEgaXMNCj4gTk9UIHNldC4g
+U28gcmVtb3ZlIHRoZSBkZXBlbmRlbmN5IHdpdGggQ1BVX1RIRVJNQUwuDQo+IA0KPiBBZGQgQ09O
+RklHX0NQVV9GUkVRIGNoZWNrIGZvciBjcHUtZnJlcSByZWxhdGVkIG9wZXJhdGlvbiBpbiB0aGVy
+bWFsIGRyaXZlcg0KPiB0byBtYWtlIHRoZXJtYWwgZHJpdmVyIHByb2JlIHN1Y2Nlc3NmdWxseSB3
+aGVuIENPTkZJR19DUFVfRlJFUSBpcyBOT1QNCj4gc2V0Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTog
+QW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy90aGVy
+bWFsL0tjb25maWcgICAgICAgfCAyICstDQo+ICBkcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwu
+YyB8IDQgKysrKw0KPiAgMiBmaWxlcyBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDEgZGVsZXRp
+b24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyBiL2RyaXZl
+cnMvdGhlcm1hbC9LY29uZmlnIGluZGV4DQo+IDE3NzVkNDQuLmM4YTYzNTIgMTAwNjQ0DQo+IC0t
+LSBhL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9LY29u
+ZmlnDQo+IEBAIC0yMTIsNyArMjEyLDcgQEAgY29uZmlnIEhJU0lfVEhFUk1BTA0KPiANCj4gIGNv
+bmZpZyBJTVhfVEhFUk1BTA0KPiAgCXRyaXN0YXRlICJUZW1wZXJhdHVyZSBzZW5zb3IgZHJpdmVy
+IGZvciBGcmVlc2NhbGUgaS5NWCBTb0NzIg0KPiAtCWRlcGVuZHMgb24gKEFSQ0hfTVhDICYmIENQ
+VV9USEVSTUFMKSB8fCBDT01QSUxFX1RFU1QNCj4gKwlkZXBlbmRzIG9uIEFSQ0hfTVhDIHx8IENP
+TVBJTEVfVEVTVA0KPiAgCWRlcGVuZHMgb24gTlZNRU0gfHwgIU5WTUVNDQo+ICAJZGVwZW5kcyBv
+biBNRkRfU1lTQ09ODQo+ICAJZGVwZW5kcyBvbiBPRg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90
+aGVybWFsL2lteF90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPiBp
+bmRleCAxNTY2MTU0Li44NzM4NmQxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvaW14
+X3RoZXJtYWwuYw0KPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPiBAQCAt
+NjQ4LDYgKzY0OCw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkDQo+IG9mX2lt
+eF90aGVybWFsX21hdGNoW10gPSB7ICB9OyAgTU9EVUxFX0RFVklDRV9UQUJMRShvZiwNCj4gb2Zf
+aW14X3RoZXJtYWxfbWF0Y2gpOw0KPiANCj4gKyNpZmRlZiBDT05GSUdfQ1BVX0ZSRVENCj4gIC8q
+DQo+ICAgKiBDcmVhdGUgY29vbGluZyBkZXZpY2UgaW4gY2FzZSBubyAjY29vbGluZy1jZWxscyBw
+cm9wZXJ0eSBpcyBhdmFpbGFibGUgaW4NCj4gICAqIENQVSBub2RlDQo+IEBAIC02NjgsNiArNjY5
+LDcgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9yZWdpc3Rlcl9sZWdhY3lfY29vbGluZyhzdHJ1
+Y3QNCj4gaW14X3RoZXJtYWxfZGF0YSAqZGF0YSkNCj4gDQo+ICAJcmV0dXJuIDA7DQo+ICB9DQo+
+ICsjZW5kaWYNCj4gDQo+ICBzdGF0aWMgaW50IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0
+Zm9ybV9kZXZpY2UgKnBkZXYpICB7IEBAIC03NDMsNg0KPiArNzQ1LDcgQEAgc3RhdGljIGludCBp
+bXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgCXJlZ21h
+cF93cml0ZShtYXAsIGRhdGEtPnNvY2RhdGEtPnNlbnNvcl9jdHJsICsgUkVHX1NFVCwNCj4gIAkJ
+ICAgICBkYXRhLT5zb2NkYXRhLT5wb3dlcl9kb3duX21hc2spOw0KPiANCj4gKyNpZmRlZiBDT05G
+SUdfQ1BVX0ZSRVENCj4gIAlkYXRhLT5wb2xpY3kgPSBjcHVmcmVxX2NwdV9nZXQoMCk7DQo+ICAJ
+aWYgKCFkYXRhLT5wb2xpY3kpIHsNCj4gIAkJcHJfZGVidWcoIiVzOiBDUFVGcmVxIHBvbGljeSBu
+b3QgZm91bmRcbiIsIF9fZnVuY19fKTsgQEAgLTc1NSw2DQo+ICs3NTgsNyBAQCBzdGF0aWMgaW50
+IGlteF90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJCQki
+ZmFpbGVkIHRvIHJlZ2lzdGVyIGNwdWZyZXEgY29vbGluZyBkZXZpY2U6ICVkXG4iLCByZXQpOw0K
+PiAgCQlyZXR1cm4gcmV0Ow0KPiAgCX0NCj4gKyNlbmRpZg0KPiANCj4gIAlkYXRhLT50aGVybWFs
+X2NsayA9IGRldm1fY2xrX2dldCgmcGRldi0+ZGV2LCBOVUxMKTsNCj4gIAlpZiAoSVNfRVJSKGRh
+dGEtPnRoZXJtYWxfY2xrKSkgew0KPiAtLQ0KPiAyLjcuNA0KDQo=
