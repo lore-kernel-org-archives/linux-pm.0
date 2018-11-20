@@ -1,7 +1,7 @@
 From: Oskari Lemmela <oskari@lemmela.net>
-Subject: [PATCH v6 1/8] dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
-Date: Tue, 20 Nov 2018 19:52:04 +0200
-Message-ID: <20181120175211.3913-2-oskari@lemmela.net>
+Subject: [PATCH v6 2/8] ARM: dts: axp81x: add AC power supply subnode
+Date: Tue, 20 Nov 2018 19:52:05 +0200
+Message-ID: <20181120175211.3913-3-oskari@lemmela.net>
 References: <20181120175211.3913-1-oskari@lemmela.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181120175211.3913-1-oskari@lemmela.net>
@@ -10,38 +10,31 @@ To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark R
 Cc: Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@bootlin.com>, Vasily Khoruzhick <anarsoul@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Oskari Lemmela <oskari@lemmela.net>
 List-Id: linux-pm@vger.kernel.org
 
-The AXP803/AXP813 AC power supply can limit input current and voltage.
+Add AC power supply subnode for AXP81X PMIC.
 
 Signed-off-by: Oskari Lemmela <oskari@lemmela.net>
-Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Quentin Schulz <quentin.schulz@bootlin.com>
 Reviewed-by: Chen-Yu Tsai <wens@csie.org>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 Tested-by: Vasily Khoruzhick <anarsoul@gmail.com>
 ---
- .../devicetree/bindings/power/supply/axp20x_ac_power.txt       | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm/boot/dts/axp81x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-index 826e8a879121..7a1fb532abe5 100644
---- a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-@@ -4,6 +4,7 @@ Required Properties:
-  - compatible: One of:
- 			"x-powers,axp202-ac-power-supply"
- 			"x-powers,axp221-ac-power-supply"
-+			"x-powers,axp813-ac-power-supply"
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index 043c717dcef1..bd83962d3627 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -48,6 +48,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
  
- This node is a subnode of the axp20x PMIC.
- 
-@@ -13,6 +14,8 @@ reading ADC channels from the AXP20X ADC.
- The AXP22X is only able to tell if an AC power supply is present and
- usable.
- 
-+AXP813/AXP803 are able to limit current and supply voltage
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp813-ac-power-supply";
++		status = "disabled";
++	};
 +
- Example:
- 
- &axp209 {
+ 	axp_adc: adc {
+ 		compatible = "x-powers,axp813-adc";
+ 		#io-channel-cells = <1>;
 -- 
 2.17.1
