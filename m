@@ -1,100 +1,157 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH 4/4] PM / Domains: Propagate performance state updates
-Date: Wed, 21 Nov 2018 11:12:43 +0530
-Message-ID: <5efc76bb-7732-52b6-4684-82b35ad52343@codeaurora.org>
-References: <cover.1541399301.git.viresh.kumar@linaro.org>
- <7e1ea283f9eebce081af80ddb8d3ca5c9c76cd3b.1541399301.git.viresh.kumar@linaro.org>
- <71530b01-eefa-4778-0b17-d7774eb48356@codeaurora.org>
- <20181121051626.izb6dem62zoaf2c4@vireshk-i7>
- <68a3294f-5556-4b5f-f8c7-79c20b5c70fb@codeaurora.org>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: [PATCH V5 1/2] thermal: imx: fix for dependency on cpu-freq
+Date: Wed, 21 Nov 2018 05:49:36 +0000
+Message-ID: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <68a3294f-5556-4b5f-f8c7-79c20b5c70fb@codeaurora.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
+The thermal driver is a standalone driver for monitoring SoC temperature
+by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
+is NOT set. So remove the dependency with CPU_THERMAL.
 
-On 11/21/2018 11:01 AM, Rajendra Nayak wrote:
-> 
-> 
-> On 11/21/2018 10:46 AM, Viresh Kumar wrote:
->> On 21-11-18, 10:33, Rajendra Nayak wrote:
->>> Hi Viresh,
->>>
->>> On 11/5/2018 12:06 PM, Viresh Kumar wrote:
->>>> This commit updates genpd core to start propagating performance state
->>>> updates to master domains that have their set_performance_state()
->>>> callback set.
->>>>
->>>> A genpd handles two type of performance states now. The first one is the
->>>> performance state requirement put on the genpd by the devices and
->>>> sub-domains under it, which is already represented by
->>>> genpd->performance_state. The second type, introduced in this commit, is
->>>> the performance state requirement(s) put by the genpd on its master
->>>> domain(s). There is a separate value required for each master that the
->>>> genpd has and so a new field is added to the struct gpd_link
->>>> (link->performance_state), which represents the link between a genpd and
->>>> its master. The struct gpd_link also got another field
->>>> prev_performance_state, which is used by genpd core as a temporary
->>>> variable during transitions.
->>>>
->>>> We need to propagate setting performance state while powering-on a genpd
->>>> as well, as we ignore performance state requirements from sub-domains
->>>> which are powered-off. For this reason _genpd_power_on() also received
->>>> the additional parameter, depth, which is used for hierarchical locking
->>>> within genpd.
->>>>
->>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>> ---
->>>>    drivers/base/power/domain.c | 107 +++++++++++++++++++++++++++++-------
->>>>    include/linux/pm_domain.h   |   4 ++
->>>>    2 files changed, 92 insertions(+), 19 deletions(-)
->>>>
->>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>> index 6d2e9b3406f1..81e02c5f753f 100644
->>>> --- a/drivers/base/power/domain.c
->>>> +++ b/drivers/base/power/domain.c
->>>> @@ -239,28 +239,86 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
->>>>    static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
->>>>    #endif
->>>> +static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
->>>> +                       unsigned int state, int depth);
->>>> +
->>>>    static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
->>>> -                    unsigned int state)
->>>> +                    unsigned int state, int depth)
->>>>    {
->>>> +    struct generic_pm_domain *master;
->>>> +    struct gpd_link *link;
->>>> +    unsigned int mstate;
->>>>        int ret;
->>>>        if (!genpd_status_on(genpd))
->>>>            goto out;
->>>
->>> This check here would mean we only propogate performance state
->>> to masters if the genpd is ON?
->>
->> Yeah, isn't that what should we do anyway? It is similar to clk-enable
->> etc. Why increase the reference count if the device isn't enabled and
->> isn't using the clock ?
-> 
-> I would think this is analogous to a driver calling clk_set_rate() first and
-> then a clk_enable(), which is certainly valid.
-> So my question is, if calling a dev_pm_genpd_set_performance_state()
-> and then runtime enabling the device would work (and take care of propagating the performance
-> state). In my testing I found it does not.
+Introduce dummy function of legacy cooling register/unregister to make
+thermal driver probe successfully when CONFIG_CPU_FREQ is NOT set.
 
-And the reason for that seems to be that we update the genpd status to GPD_STATE_ACTIVE
-*after* we try to set the performance state, so we always hit this check which bails out
-thinking the genpd is not ON.
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+---
+ drivers/thermal/Kconfig       |  2 +-
+ drivers/thermal/imx_thermal.c | 47 ++++++++++++++++++++++++++++++++-------=
+----
+ 2 files changed, 36 insertions(+), 13 deletions(-)
 
-> 
->>
->> Also you can see that I have updated the genpd power-on code to start
->> propagation to make sure we don't miss anything.
->>
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5422523..93bd3bb 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -212,7 +212,7 @@ config HISI_THERMAL
+=20
+ config IMX_THERMAL
+ 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+-	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
++	depends on ARCH_MXC || COMPILE_TEST
+ 	depends on NVMEM || !NVMEM
+ 	depends on MFD_SYSCON
+ 	depends on OF
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 1566154..c924396 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -648,15 +648,24 @@ static const struct of_device_id of_imx_thermal_match=
+[] =3D {
+ };
+ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+=20
++#ifdef CONFIG_CPU_FREQ
+ /*
+  * Create cooling device in case no #cooling-cells property is available i=
+n
+  * CPU node
+  */
+ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *da=
+ta)
+ {
+-	struct device_node *np =3D of_get_cpu_node(data->policy->cpu, NULL);
++	struct device_node *np;
+ 	int ret;
+=20
++	data->policy =3D cpufreq_cpu_get(0);
++	if (!data->policy) {
++		pr_debug("%s: CPUFreq policy not found\n", __func__);
++		return -EPROBE_DEFER;
++	}
++
++	np =3D of_get_cpu_node(data->policy->cpu, NULL);
++
+ 	if (!np || !of_find_property(np, "#cooling-cells", NULL)) {
+ 		data->cdev =3D cpufreq_cooling_register(data->policy);
+ 		if (IS_ERR(data->cdev)) {
+@@ -669,6 +678,24 @@ static int imx_thermal_register_legacy_cooling(struct =
+imx_thermal_data *data)
+ 	return 0;
+ }
+=20
++static void imx_thermal_unregister_legacy_cooling(struct imx_thermal_data =
+*data)
++{
++	cpufreq_cooling_unregister(data->cdev);
++	cpufreq_cpu_put(data->policy);
++}
++
++#else
++
++static inline int imx_thermal_register_legacy_cooling(struct imx_thermal_d=
+ata *data)
++{
++	return 0;
++}
++
++static inline void imx_thermal_unregister_legacy_cooling(struct imx_therma=
+l_data *data)
++{
++}
++#endif
++
+ static int imx_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct imx_thermal_data *data;
+@@ -743,14 +770,11 @@ static int imx_thermal_probe(struct platform_device *=
+pdev)
+ 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
+ 		     data->socdata->power_down_mask);
+=20
+-	data->policy =3D cpufreq_cpu_get(0);
+-	if (!data->policy) {
+-		pr_debug("%s: CPUFreq policy not found\n", __func__);
+-		return -EPROBE_DEFER;
+-	}
+-
+ 	ret =3D imx_thermal_register_legacy_cooling(data);
+ 	if (ret) {
++		if (ret =3D=3D -EPROBE_DEFER)
++			return ret;
++
+ 		dev_err(&pdev->dev,
+ 			"failed to register cpufreq cooling device: %d\n", ret);
+ 		return ret;
+@@ -762,7 +786,7 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 		if (ret !=3D -EPROBE_DEFER)
+ 			dev_err(&pdev->dev,
+ 				"failed to get thermal clk: %d\n", ret);
+-		goto cpufreq_put;
++		goto legacy_cleanup;
+ 	}
+=20
+ 	/*
+@@ -775,7 +799,7 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 	ret =3D clk_prepare_enable(data->thermal_clk);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-		goto cpufreq_put;
++		goto legacy_cleanup;
+ 	}
+=20
+ 	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
+@@ -829,9 +853,8 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 	thermal_zone_device_unregister(data->tz);
+ clk_disable:
+ 	clk_disable_unprepare(data->thermal_clk);
+-cpufreq_put:
+-	cpufreq_cooling_unregister(data->cdev);
+-	cpufreq_cpu_put(data->policy);
++legacy_cleanup:
++	imx_thermal_unregister_legacy_cooling(data);
+=20
+ 	return ret;
+ }
+--=20
+2.7.4
