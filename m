@@ -1,59 +1,50 @@
-From: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support
- for qcom, smmu-v2 variant
-Date: Wed, 21 Nov 2018 17:38:03 +0000
-Message-ID: <20181121173803.GB9801@arm.com>
-References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
- <20181116112430.31248-6-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
+From: Lukasz Luba <l.luba@partner.samsung.com>
+Subject: [PATCH 0/6] devfreq: handle suspend/resume
+Date: Wed, 21 Nov 2018 19:01:35 +0100
+Message-ID: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
+References: <CGME20181121180156eucas1p225af7f4341a039264ff26f2a9ad9bb12@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20181116112430.31248-6-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-WytUaG9yXQoKT24gRnJpLCBOb3YgMTYsIDIwMTggYXQgMDQ6NTQ6MzBQTSArMDUzMCwgVml2ZWsg
-R2F1dGFtIHdyb3RlOgo+IHFjb20sc21tdS12MiBpcyBhbiBhcm0sc21tdS12MiBpbXBsZW1lbnRh
-dGlvbiB3aXRoIHNwZWNpZmljCj4gY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4KPiBPbiBt
-c204OTk2LCBtdWx0aXBsZSBjb3Jlcywgdml6LiBtZHNzLCB2aWRlbywgZXRjLiB1c2UgdGhpcwo+
-IHNtbXUuIE9uIHNkbTg0NSwgdGhpcyBzbW11IGlzIHVzZWQgd2l0aCBncHUuCj4gQWRkIGJpbmRp
-bmdzIGZvciB0aGUgc2FtZS4KPiAKPiBTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVr
-LmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KPiBSZXZpZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhA
-a2VybmVsLm9yZz4KPiBSZXZpZXdlZC1ieTogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9y
-Zz4KPiBUZXN0ZWQtYnk6IFNyaW5pdmFzIEthbmRhZ2F0bGEgPHNyaW5pdmFzLmthbmRhZ2F0bGFA
-bGluYXJvLm9yZz4KPiBSZXZpZXdlZC1ieTogUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJt
-LmNvbT4KPiAtLS0KPiAgZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIHwgMTMgKysrKysrKysrKysr
-Kwo+ICAxIGZpbGUgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKQo+IAo+IGRpZmYgLS1naXQgYS9k
-cml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiBpbmRl
-eCAyMDk4YzMxNDFmNWYuLmQzMTVjYTYzNzA5NyAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2lvbW11
-L2FybS1zbW11LmMKPiArKysgYi9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKPiBAQCAtMTIwLDYg
-KzEyMCw3IEBAIGVudW0gYXJtX3NtbXVfaW1wbGVtZW50YXRpb24gewo+ICAJR0VORVJJQ19TTU1V
-LAo+ICAJQVJNX01NVTUwMCwKPiAgCUNBVklVTV9TTU1VVjIsCj4gKwlRQ09NX1NNTVVWMiwKPiAg
-fTsKPiAgCj4gIHN0cnVjdCBhcm1fc21tdV9zMmNyIHsKPiBAQCAtMjAyNiw2ICsyMDI3LDE3IEBA
-IEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTQwMSwgQVJNX1NNTVVfVjFfNjRLLCBHRU5FUklD
-X1NNTVUpOwo+ICBBUk1fU01NVV9NQVRDSF9EQVRBKGFybV9tbXU1MDAsIEFSTV9TTU1VX1YyLCBB
-Uk1fTU1VNTAwKTsKPiAgQVJNX1NNTVVfTUFUQ0hfREFUQShjYXZpdW1fc21tdXYyLCBBUk1fU01N
-VV9WMiwgQ0FWSVVNX1NNTVVWMik7Cj4gIAo+ICtzdGF0aWMgY29uc3QgY2hhciAqIGNvbnN0IHFj
-b21fc21tdXYyX2Nsa3NbXSA9IHsKPiArCSJidXMiLCAiaWZhY2UiLAo+ICt9Owo+ICsKPiArc3Rh
-dGljIGNvbnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0gewo+ICsJ
-LnZlcnNpb24gPSBBUk1fU01NVV9WMiwKPiArCS5tb2RlbCA9IFFDT01fU01NVVYyLAo+ICsJLmNs
-a3MgPSBxY29tX3NtbXV2Ml9jbGtzLAo+ICsJLm51bV9jbGtzID0gQVJSQVlfU0laRShxY29tX3Nt
-bXV2Ml9jbGtzKSwKPiArfTsKClRoZXNlIHNlZW1zIHJlZHVuZGFudCBpZiB3ZSBnbyBkb3duIHRo
-ZSByb3V0ZSBwcm9wb3NlZCBieSBUaG9yLCB3aGVyZSB3ZQpqdXN0IHB1bGwgYWxsIG9mIHRoZSBj
-bG9ja3Mgb3V0IG9mIHRoZSBkZXZpY2UtdHJlZS4gSW4gd2hpY2ggY2FzZSwgd2h5CmRvIHdlIG5l
-ZWQgdGhpcyBtYXRjaF9kYXRhIGF0IGFsbD8KCldpbGwKX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9A
-bGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxt
-YW4vbGlzdGluZm8vZnJlZWRyZW5vCg==
+Hi all,
+
+This patch set aims to address the issue with devfreq devices' frequency
+during suspend/resume. It extends suspend/resume by calls to Devfreq
+framework. In the devfreq framework there is a small refactoring to avoid
+code duplication in changging frequency (patch 2) and there are extensions
+for suspending devices.
+
+It has been tested on Odroid u3 with Exynos 4412.
+
+The patch set draws on Tobias Jakobi's work posted ~2 years ago, who tried
+to solve issue with devfreq device's frequency during suspend/resume.
+During the discussion on LKML some corner cases and comments appeared
+related to the design. This patch set address them keeping in mind
+suggestions from Chanwoo Choi.
+Tobias's paches:
+https://www.spinics.net/lists/linux-samsung-soc/msg56602.html 
+
+Regards,
+Lukasz Luba
+
+Lukasz Luba (6):
+  devfreq: add basic fileds supporting suspend functionality
+  devfreq: refactor set_target frequency function
+  devfreq: add support for suspend/resume of a devfreq device
+  devfreq: add devfreq_suspend/resume() functions
+  drivers: power: suspend: call devfreq suspend/resume
+  arm: dts: exynos4: set opp-suspend for DMC and leftbus
+
+ arch/arm/boot/dts/exynos4210.dtsi |   2 +
+ arch/arm/boot/dts/exynos4412.dtsi |   2 +
+ drivers/base/power/main.c         |   3 +
+ drivers/devfreq/devfreq.c         | 159 ++++++++++++++++++++++++++++++--------
+ include/linux/devfreq.h           |  11 +++
+ 5 files changed, 146 insertions(+), 31 deletions(-)
+
+-- 
+2.7.4
