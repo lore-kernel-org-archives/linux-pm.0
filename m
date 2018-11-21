@@ -1,122 +1,155 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH 1/4] OPP: Add dev_pm_opp_xlate_performance_state() helper
-Date: Wed, 21 Nov 2018 10:34:54 +0530
-Message-ID: <45c19ad3-6039-9152-6e5a-51a5c062bdf4@codeaurora.org>
-References: <cover.1541399301.git.viresh.kumar@linaro.org>
- <cedbfc3a7fffc4c400908c4c3af518bea408d318.1541399301.git.viresh.kumar@linaro.org>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: [PATCH V4] thermal: imx: fix for dependency on cpu-freq
+Date: Wed, 21 Nov 2018 05:08:05 +0000
+Message-ID: <1542776563-6716-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cedbfc3a7fffc4c400908c4c3af518bea408d318.1541399301.git.viresh.kumar@linaro.org>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
+The thermal driver is a standalone driver for monitoring SoC temperature
+by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
+is NOT set. So remove the dependency with CPU_THERMAL.
 
+Introduce dummy function of legacy cooling register/unregister to make
+thermal driver probe successfully when CONFIG_CPU_FREQ is NOT set.
 
-On 11/5/2018 12:06 PM, Viresh Kumar wrote:
-> Introduce a new helper dev_pm_opp_xlate_performance_state() which will
-> be used to translate from pstate of a device to another one.
-> 
-> Initially this will be used by genpd to find pstate of a master domain
-> using its sub-domain's pstate.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/opp/core.c     | 49 ++++++++++++++++++++++++++++++++++++++++++
->   include/linux/pm_opp.h |  7 ++++++
->   2 files changed, 56 insertions(+)
-> 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 0eaa954b3f6c..010a4268e8dd 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -1707,6 +1707,55 @@ void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
->   		dev_err(virt_dev, "Failed to find required device entry\n");
->   }
->   
-> +/**
-> + * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
-> + * @src_table: OPP table which has dst_table as one of its required OPP table.
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+---
+changes since V3:
+	rename the label of "cpufreq_put" with "legacy_cleanup".
+ drivers/thermal/Kconfig       |  2 +-
+ drivers/thermal/imx_thermal.c | 44 +++++++++++++++++++++++++++++++--------=
+----
+ 2 files changed, 33 insertions(+), 13 deletions(-)
 
-So I have a case where the src_table and dst_table are shared/same. Can you explain how would
-it work in such a case?
-
-> + * @dst_table: Required OPP table of the src_table.
-> + * @pstate: Current performance state of the src_table.
-> + *
-> + * This Returns pstate of the OPP (present in @dst_table) pointed out by the
-> + * "required-opps" property of the OPP (present in @src_table) which has
-> + * performance state set to @pstate.
-> + *
-> + * Return: Positive performance state on success, otherwise 0 on errors.
-> + */
-> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
-> +						struct opp_table *dst_table,
-> +						unsigned int pstate)
-> +{
-> +	struct dev_pm_opp *opp;
-> +	unsigned int dest_pstate = 0;
-> +	int i;
-> +
-> +	for (i = 0; i < src_table->required_opp_count; i++) {
-> +		if (src_table->required_opp_tables[i] == dst_table)
-> +			break;
-> +	}
-> +
-> +	if (unlikely(i == src_table->required_opp_count)) {
-> +		pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
-> +		       __func__, src_table, dst_table);
-> +		return 0;
-> +	}
-> +
-> +	mutex_lock(&src_table->lock);
-> +
-> +	list_for_each_entry(opp, &src_table->opp_list, node) {
-> +		if (opp->pstate == pstate) {
-> +			dest_pstate = opp->required_opps[i]->pstate;
-> +			goto unlock;
-> +		}
-> +	}
-> +
-> +	pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
-> +	       dst_table);
-> +
-> +unlock:
-> +	mutex_unlock(&src_table->lock);
-> +
-> +	return dest_pstate;
-> +}
-> +
->   /**
->    * dev_pm_opp_add()  - Add an OPP table from a table definitions
->    * @dev:	device for which we do this operation
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 2b2c3fd985ab..5a64a81a1789 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -128,6 +128,7 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*s
->   void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
->   struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
->   void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
-> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
->   int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
->   int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
->   int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
-> @@ -280,6 +281,12 @@ static inline struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev
->   }
->   
->   static inline void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev) {}
-> +
-> +static inline unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
-> +{
-> +	return 0;
-> +}
-> +
->   static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->   {
->   	return -ENOTSUPP;
-> 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5422523..93bd3bb 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -212,7 +212,7 @@ config HISI_THERMAL
+=20
+ config IMX_THERMAL
+ 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+-	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
++	depends on ARCH_MXC || COMPILE_TEST
+ 	depends on NVMEM || !NVMEM
+ 	depends on MFD_SYSCON
+ 	depends on OF
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 1566154..328ee05 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -648,15 +648,24 @@ static const struct of_device_id of_imx_thermal_match=
+[] =3D {
+ };
+ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+=20
++#ifdef CONFIG_CPU_FREQ
+ /*
+  * Create cooling device in case no #cooling-cells property is available i=
+n
+  * CPU node
+  */
+ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *da=
+ta)
+ {
+-	struct device_node *np =3D of_get_cpu_node(data->policy->cpu, NULL);
++	struct device_node *np;
+ 	int ret;
+=20
++	data->policy =3D cpufreq_cpu_get(0);
++	if (!data->policy) {
++		pr_debug("%s: CPUFreq policy not found\n", __func__);
++		return -EPROBE_DEFER;
++	}
++
++	np =3D of_get_cpu_node(data->policy->cpu, NULL);
++
+ 	if (!np || !of_find_property(np, "#cooling-cells", NULL)) {
+ 		data->cdev =3D cpufreq_cooling_register(data->policy);
+ 		if (IS_ERR(data->cdev)) {
+@@ -669,6 +678,22 @@ static int imx_thermal_register_legacy_cooling(struct =
+imx_thermal_data *data)
+ 	return 0;
+ }
+=20
++static void imx_thermal_unregister_legacy_cooling(struct imx_thermal_data =
+*data)
++{
++	cpufreq_cooling_unregister(data->cdev);
++	cpufreq_cpu_put(data->policy);
++}
++#else
++static inline int imx_thermal_register_legacy_cooling(struct imx_thermal_d=
+ata *data)
++{
++	return 0;
++}
++
++static inline void imx_thermal_unregister_legacy_cooling(struct imx_therma=
+l_data *data)
++{
++}
++#endif
++
+ static int imx_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct imx_thermal_data *data;
+@@ -743,13 +768,9 @@ static int imx_thermal_probe(struct platform_device *p=
+dev)
+ 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
+ 		     data->socdata->power_down_mask);
+=20
+-	data->policy =3D cpufreq_cpu_get(0);
+-	if (!data->policy) {
+-		pr_debug("%s: CPUFreq policy not found\n", __func__);
+-		return -EPROBE_DEFER;
+-	}
+-
+ 	ret =3D imx_thermal_register_legacy_cooling(data);
++	if (ret =3D=3D -EPROBE_DEFER)
++		return ret;
+ 	if (ret) {
+ 		dev_err(&pdev->dev,
+ 			"failed to register cpufreq cooling device: %d\n", ret);
+@@ -762,7 +783,7 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 		if (ret !=3D -EPROBE_DEFER)
+ 			dev_err(&pdev->dev,
+ 				"failed to get thermal clk: %d\n", ret);
+-		goto cpufreq_put;
++		goto legacy_cleanup;
+ 	}
+=20
+ 	/*
+@@ -775,7 +796,7 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 	ret =3D clk_prepare_enable(data->thermal_clk);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-		goto cpufreq_put;
++		goto legacy_cleanup;
+ 	}
+=20
+ 	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
+@@ -829,9 +850,8 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ 	thermal_zone_device_unregister(data->tz);
+ clk_disable:
+ 	clk_disable_unprepare(data->thermal_clk);
+-cpufreq_put:
+-	cpufreq_cooling_unregister(data->cdev);
+-	cpufreq_cpu_put(data->policy);
++legacy_cleanup:
++	imx_thermal_unregister_legacy_cooling(data);
+=20
+ 	return ret;
+ }
+--=20
+2.7.4
