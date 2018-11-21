@@ -1,164 +1,68 @@
-From: Stephen Boyd <swboyd@chromium.org>
-Subject: Re: [PATCH 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Tue, 20 Nov 2018 16:59:30 -0800
-Message-ID: <154276197062.88331.8324696168748324451@swboyd.mtv.corp.google.com>
-References: <1539257761-23023-1-git-send-email-tdas@codeaurora.org>
- <1539257761-23023-3-git-send-email-tdas@codeaurora.org>
- <153981915373.5275.15971019914218464179@swboyd.mtv.corp.google.com>
- <0c51a12e-38d3-2df5-4f5f-6a687727e9bf@codeaurora.org>
- <154130523254.88331.12609105382114756048@swboyd.mtv.corp.google.com>
- <3aa7b871-9cf9-9626-11fe-b9aa6009b477@codeaurora.org>
- <20181116002337.GP22824@google.com>
+From: Pankaj Gupta <pagupta@redhat.com>
+Subject: Re: [PATCH v1 5/8] hv_balloon: mark inflated pages PG_offline
+Date: Tue, 20 Nov 2018 20:04:51 -0500 (EST)
+Message-ID: <1155749039.35435813.1542762291980.JavaMail.zimbra@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com> <20181119101616.8901-6-david@redhat.com> <1747228.35250472.1542703532881.JavaMail.zimbra@redhat.com> <6258a58b-28c7-c055-0752-e8bd085b835f@redhat.com> <1380154502.35259416.1542706636322.JavaMail.zimbra@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181116002337.GP22824@google.com>
+In-Reply-To: <1380154502.35259416.1542706636322.JavaMail.zimbra@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Kaehlcke <mka@chromium.org>, Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, Kairui Song <kasong@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Matthias Kaehlcke (2018-11-15 16:23:37)
-> On Sun, Nov 11, 2018 at 06:12:29PM +0530, Taniya Das wrote:
-> > On 11/4/2018 9:50 AM, Stephen Boyd wrote:
-> > > Quoting Taniya Das (2018-11-02 20:06:00)
-> > > > On 10/18/2018 5:02 AM, Stephen Boyd wrote:
-> > > > > Quoting Taniya Das (2018-10-11 04:36:01)
-> > > > > > --- a/drivers/cpufreq/Kconfig.arm
-> > > > > > +++ b/drivers/cpufreq/Kconfig.arm
-> > > > > > @@ -121,6 +121,17 @@ config ARM_QCOM_CPUFREQ_KRYO
-> > > > > > =
 
-> > > > > >             If in doubt, say N.
-> > > > > > =
+> > >> ---
+> > >>  drivers/hv/hv_balloon.c | 14 ++++++++++++--
+> > >>  1 file changed, 12 insertions(+), 2 deletions(-)
+> > >>
+> > >> diff --git a/drivers/hv/hv_balloon.c b/drivers/hv/hv_balloon.c
+> > >> index 211f3fe3a038..47719862e57f 100644
+> > >> --- a/drivers/hv/hv_balloon.c
+> > >> +++ b/drivers/hv/hv_balloon.c
+> > >> @@ -681,8 +681,13 @@ static struct notifier_block hv_memory_nb = {
+> > >>  /* Check if the particular page is backed and can be onlined and online
+> > >>  it.
+> > >>  */
+> > >>  static void hv_page_online_one(struct hv_hotadd_state *has, struct page
+> > >>  *pg)
+> > >>  {
+> > >> -	if (!has_pfn_is_backed(has, page_to_pfn(pg)))
+> > >> +	if (!has_pfn_is_backed(has, page_to_pfn(pg))) {
+> > >> +		if (!PageOffline(pg))
+> > >> +			__SetPageOffline(pg);
+> > >>  		return;
+> > >> +	}
+> > >> +	if (PageOffline(pg))
+> > >> +		__ClearPageOffline(pg);
+> > >>  
+> > >>  	/* This frame is currently backed; online the page. */
+> > >>  	__online_page_set_limits(pg);
+> > >> @@ -1201,6 +1206,7 @@ static void free_balloon_pages(struct
+> > >> hv_dynmem_device
+> > >> *dm,
+> > >>  
+> > >>  	for (i = 0; i < num_pages; i++) {
+> > >>  		pg = pfn_to_page(i + start_frame);
+> > >> +		__ClearPageOffline(pg);
+> > > 
+> > > Just thinking, do we need to care for clearing PageOffline flag before
+> > > freeing
+> > > a balloon'd page?
+> > 
+> > Yes we have to otherwise the code will crash when trying to set PageBuddy.
+> > 
+> > (only one page type at a time may be set right now, and it makes sense.
+> > A page that is offline cannot e.g. be a buddy page)
+> 
+> o.k
+> > 
+> > So PageOffline is completely managed by the page owner.
+> 
+> Makes sense. Thanks for explaining.
 
-> > > > > > +config ARM_QCOM_CPUFREQ_HW
-> > > > > > +       bool "QCOM CPUFreq HW driver"
-> > > > > =
+Looks good to me.
 
-> > > > > Is there any reason this can't be a module?
-> > > > > =
-
-> > > > =
-
-> > > > We do not have any use cases where we need to support it as module.
-> > > =
-
-> > > Ok, so it could easily be tristate then? Why not allow it?
-> > > =
-
-> > =
-
-> > I have checked other vendors CPUfreq drivers and those too support only
-> > "bool".
-> =
-
-> That's not entirely correct. Most drivers in Kconfig are 'tristate'
-> and about 50% of those in KConfig.arm are. I'd say make it 'tristate'
-> unless there are good reasons not to do so.
-
-Yes, please make tristate.
-
-> =
-
-> > > > > > diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufre=
-q/qcom-cpufreq-hw.c
-> > > > > > new file mode 100644
-> > > > > > index 0000000..fe1c264
-> > > > > > --- /dev/null
-> > > > > > +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > > > > > @@ -0,0 +1,354 @@
-> > > > > > +// SPDX-License-Identifier: GPL-2.0
-> > > > > > +/*
-> > > > > > + * Copyright (c) 2018, The Linux Foundation. All rights reserv=
-ed.
-> > > > > > + */
-> > > [...]
-> > > > > > +
-> > > > > > +static const u16 cpufreq_qcom_std_offsets[REG_ARRAY_SIZE] =3D {
-> > > > > =
-
-> > > > > Is this going to change in the future?
-> > > > > =
-
-> > > > =
-
-> > > > Yes, they could change and that was the reason to introduce the off=
-sets.
-> > > > This was discussed earlier too with Sudeep and was to add them.
-> > > > =
-
-> > > > > > +       [REG_ENABLE]            =3D 0x0,
-> > > =
-
-> > > This is only used once? Maybe it could be removed.
-> > > =
-
-> > > > > > +       [REG_LUT_TABLE]         =3D 0x110,
-> > > =
-
-> > > And this is only used during probe to figure out the supported
-> > > frequencies. So we definitely don't need to store around the registers
-> > > after probe in an array of iomem pointers. The only one that we need
-> > > after probe is the one below.
-> > > =
-
-> > > > > > +       [REG_PERF_STATE]        =3D 0x920,
-> > > > > > +};
-> > > > > > +
-> > =
-
-> > As these address offsets could change, so I am of the opinion to leave =
-them
-> > as it is.
-> =
-
-> As of now there is only one set of offsets. Let's just keep the code
-> simple while this is the case and address different offsets when it is
-> actually needed, as suggested by Stephen and Sudeep.
-
-Yes, please simplify by getting rid of this and not storing anything in
-the struct that's only used during probe.
-
-> =
-
-> > > =
-
-> > > With fast switching we can avoid incurring any extra instructions, so
-> > > please make another iomem pointer in the cpufreq_qcom struct just for
-> > > writing the index or if possible, just pass the iomem pointer that
-> > > points to the REG_PERF_STATE as the policy->driver_data variable here.
-> > > Then we have the address in hand without any extra load. If my
-> > > understanding is correct, we don't need to keep around anything besid=
-es
-> > > this register address anyway so we should be able to just load it and
-> > > write it immediately.
-> > > =
-
-> > =
-
-> > The c->reg_bases[] is just an index to the updated bases addresses. I a=
-m not
-> > clear as to why it would incur an extra instruction.
-> > =
-
-> > The below code would already take care of it.
-> > =
-
-> > +     for (i =3D REG_ENABLE; i < REG_ARRAY_SIZE; i++)
-> > +             c->reg_bases[i] =3D base + offsets[i];
-> > +
-> =
-
-> From a performance point of view using a direct iomem pointer
-> seems like a micro-optimization that probably doesn't have a
-> measurable impact. However I think the code shouldn't be more complex
-> than necessary, and at this point the indirection isn't needed.
-> =
-
-
-Yes it's a micro-optimization for sure, in the task switching path so it
-may actually be useful. Either way, I think we can greatly simplify by
-just having the iomem pointer be the only pointer that is stored in the
-policy driver_data.
+Acked-by: Pankaj gupta <pagupta@redhat.com>
