@@ -1,76 +1,64 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH 1/4] OPP: Add dev_pm_opp_xlate_performance_state() helper
-Date: Wed, 21 Nov 2018 11:48:19 +0530
-Message-ID: <0b40a76d-f779-391a-2770-4a3d368679a9@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Propagate performance state updates
+Date: Wed, 21 Nov 2018 12:06:46 +0530
+Message-ID: <20181121063646.37bha3vomxvzazzn@vireshk-i7>
 References: <cover.1541399301.git.viresh.kumar@linaro.org>
- <cedbfc3a7fffc4c400908c4c3af518bea408d318.1541399301.git.viresh.kumar@linaro.org>
- <45c19ad3-6039-9152-6e5a-51a5c062bdf4@codeaurora.org>
- <20181121051718.a5yo3ibhaihgrwra@vireshk-i7>
- <20181121060622.blnlvydbc4wo5y3y@vireshk-i7>
+ <7e1ea283f9eebce081af80ddb8d3ca5c9c76cd3b.1541399301.git.viresh.kumar@linaro.org>
+ <71530b01-eefa-4778-0b17-d7774eb48356@codeaurora.org>
+ <20181121051626.izb6dem62zoaf2c4@vireshk-i7>
+ <68a3294f-5556-4b5f-f8c7-79c20b5c70fb@codeaurora.org>
+ <5efc76bb-7732-52b6-4684-82b35ad52343@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181121060622.blnlvydbc4wo5y3y@vireshk-i7>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <5efc76bb-7732-52b6-4684-82b35ad52343@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 21-11-18, 11:12, Rajendra Nayak wrote:
+> And the reason for that seems to be that we update the genpd status to GPD_STATE_ACTIVE
+> *after* we try to set the performance state, so we always hit this check which bails out
+> thinking the genpd is not ON.
 
+Thanks for looking at it. Here is the (untested) fix, please try it
+out.
 
-On 11/21/2018 11:36 AM, Viresh Kumar wrote:
-> On 21-11-18, 10:47, Viresh Kumar wrote:
->> On 21-11-18, 10:34, Rajendra Nayak wrote:
->>>
->>>
->>> On 11/5/2018 12:06 PM, Viresh Kumar wrote:
->>>> Introduce a new helper dev_pm_opp_xlate_performance_state() which will
->>>> be used to translate from pstate of a device to another one.
->>>>
->>>> Initially this will be used by genpd to find pstate of a master domain
->>>> using its sub-domain's pstate.
->>>>
->>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>> ---
->>>>    drivers/opp/core.c     | 49 ++++++++++++++++++++++++++++++++++++++++++
->>>>    include/linux/pm_opp.h |  7 ++++++
->>>>    2 files changed, 56 insertions(+)
->>>>
->>>> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
->>>> index 0eaa954b3f6c..010a4268e8dd 100644
->>>> --- a/drivers/opp/core.c
->>>> +++ b/drivers/opp/core.c
->>>> @@ -1707,6 +1707,55 @@ void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
->>>>    		dev_err(virt_dev, "Failed to find required device entry\n");
->>>>    }
->>>> +/**
->>>> + * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
->>>> + * @src_table: OPP table which has dst_table as one of its required OPP table.
->>>
->>> So I have a case where the src_table and dst_table are shared/same. Can you explain how would
->>> it work in such a case?
->>
->> Can you give the example, as I am finding some issues with such shared
->> tables. Though the code may work just fine btw.
-> 
-> I may have found the problem you are facing here. Please try this diff
-> and tell me if you hitting it, check this in dmesg.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 84c13695af65..92be4a224b45 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -250,9 +250,6 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
+        unsigned int mstate;
+        int ret;
+ 
+-       if (!genpd_status_on(genpd))
+-               goto out;
+-
+        /* Propagate to masters of genpd */
+        list_for_each_entry(link, &genpd->slave_links, slave_node) {
+                master = link->master;
+@@ -286,7 +283,6 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
+        if (ret)
+                goto err;
+ 
+-out:
+        genpd->performance_state = state;
+        return 0;
+ 
+@@ -361,6 +357,11 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
+                return 0;
+ 
+ update_state:
++       if (!genpd_status_on(genpd)) {
++               genpd->performance_state = state;
++               return 0;
++       }
++
+        return _genpd_set_performance_state(genpd, state, depth);
+ }
 
-Yes, I do seem to be hitting this.
-
-> 
-> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-> index 3740822b4197..6c45774306b0 100644
-> --- a/drivers/opp/of.c
-> +++ b/drivers/opp/of.c
-> @@ -225,6 +225,7 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
->   free_required_tables:
->          _opp_table_free_required_tables(opp_table);
->   put_np:
-> +       dev_err(dev, "Failed to allocate required OPP tables\n");
->          of_node_put(np);
->   }
-> 
-> 
+-- 
+viresh
