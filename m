@@ -1,136 +1,58 @@
 From: Anson Huang <anson.huang@nxp.com>
-Subject: [PATCH V2] thermal: imx: fix for dependency on cpu-freq
-Date: Wed, 21 Nov 2018 01:58:16 +0000
-Message-ID: <1542765172-4004-1-git-send-email-Anson.Huang@nxp.com>
+Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
+Date: Wed, 21 Nov 2018 01:58:58 +0000
+Message-ID: <DB3PR0402MB3916F122EA873F847A115C91F5DA0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
+ <CAOh2x=kwGUto-TMsQORtx0CkgZSDsq6Mg1e=QKL=LeDPWJ=NPQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=kwGUto-TMsQORtx0CkgZSDsq6Mg1e=QKL=LeDPWJ=NPQ@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-The thermal driver is a standalone driver for monitoring SoC temperature
-by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
-is NOT set. So remove the dependency with CPU_THERMAL.
-
-Introduce dummy function of legacy cooling register/unregister to make
-thermal driver probe successfully when CONFIG_CPU_FREQ is NOT set.
-
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-changes since V1:
-	Introduce dummy function of legacy cooling register/unregister instead
-of adding #define check in .probe function, handle error path correctly whe=
-n
-CONFIG_CPU_FREQ is NOT set.
- drivers/thermal/Kconfig       |  2 +-
- drivers/thermal/imx_thermal.c | 39 ++++++++++++++++++++++++++++++---------
- 2 files changed, 31 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5422523..93bd3bb 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -212,7 +212,7 @@ config HISI_THERMAL
-=20
- config IMX_THERMAL
- 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
--	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
-+	depends on ARCH_MXC || COMPILE_TEST
- 	depends on NVMEM || !NVMEM
- 	depends on MFD_SYSCON
- 	depends on OF
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 1566154..44e0154 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -648,15 +648,24 @@ static const struct of_device_id of_imx_thermal_match=
-[] =3D {
- };
- MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
-=20
-+#ifdef CONFIG_CPU_FREQ
- /*
-  * Create cooling device in case no #cooling-cells property is available i=
-n
-  * CPU node
-  */
- static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *da=
-ta)
- {
--	struct device_node *np =3D of_get_cpu_node(data->policy->cpu, NULL);
-+	struct device_node *np;
- 	int ret;
-=20
-+	data->policy =3D cpufreq_cpu_get(0);
-+	if (!data->policy) {
-+		pr_debug("%s: CPUFreq policy not found\n", __func__);
-+		return -EPROBE_DEFER;
-+	}
-+
-+	np =3D of_get_cpu_node(data->policy->cpu, NULL);
-+
- 	if (!np || !of_find_property(np, "#cooling-cells", NULL)) {
- 		data->cdev =3D cpufreq_cooling_register(data->policy);
- 		if (IS_ERR(data->cdev)) {
-@@ -669,6 +678,23 @@ static int imx_thermal_register_legacy_cooling(struct =
-imx_thermal_data *data)
- 	return 0;
- }
-=20
-+static int imx_thermal_unregister_legacy_cooling(struct imx_thermal_data *=
-data)
-+{
-+	cpufreq_cooling_unregister(data->cdev);
-+	cpufreq_cpu_put(data->policy);
-+}
-+#else
-+static inline int imx_thermal_register_legacy_cooling(struct imx_thermal_d=
-ata *data)
-+{
-+	return 0;
-+}
-+
-+static inline int imx_thermal_unregister_legacy_cooling(struct imx_thermal=
-_data *data)
-+{
-+	return 0;
-+}
-+#endif
-+
- static int imx_thermal_probe(struct platform_device *pdev)
- {
- 	struct imx_thermal_data *data;
-@@ -743,13 +769,9 @@ static int imx_thermal_probe(struct platform_device *p=
-dev)
- 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
- 		     data->socdata->power_down_mask);
-=20
--	data->policy =3D cpufreq_cpu_get(0);
--	if (!data->policy) {
--		pr_debug("%s: CPUFreq policy not found\n", __func__);
--		return -EPROBE_DEFER;
--	}
--
- 	ret =3D imx_thermal_register_legacy_cooling(data);
-+	if (ret =3D=3D -EPROBE_DEFER)
-+		return ret;
- 	if (ret) {
- 		dev_err(&pdev->dev,
- 			"failed to register cpufreq cooling device: %d\n", ret);
-@@ -830,8 +852,7 @@ static int imx_thermal_probe(struct platform_device *pd=
-ev)
- clk_disable:
- 	clk_disable_unprepare(data->thermal_clk);
- cpufreq_put:
--	cpufreq_cooling_unregister(data->cdev);
--	cpufreq_cpu_put(data->policy);
-+	imx_thermal_unregister_legacy_cooling(data);
-=20
- 	return ret;
- }
---=20
-2.7.4
+SGksIFZpcmVzaA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1h
+ckBsaW5hcm8ub3JnXQ0KPiBTZW50OiAyMDE45bm0MTHmnIgyMOaXpSAxODo0OQ0KPiBUbzogQW5z
+b24gSHVhbmcgPGFuc29uLmh1YW5nQG54cC5jb20+DQo+IENjOiBaaGFuZyBSdWkgPHJ1aS56aGFu
+Z0BpbnRlbC5jb20+OyBFZHVhcmRvIFZhbGVudGluDQo+IDxlZHViZXp2YWxAZ21haWwuY29tPjsg
+TGludXggUE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgTGludXgNCj4gS2VybmVs
+IE1haWxpbmcgTGlzdCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlt
+eA0KPiA8bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6
+IGlteDogZml4IGZvciBkZXBlbmRlbmN5IG9uIGNwdS1mcmVxDQo+IA0KPiBXaGlsZSBJIGFtIGFs
+aWduZWQgd2l0aCB0aGUgZmFjdCB0aGF0IHdlIG5lZWQgdG8gY2FycnkgdGhpcyBjb2RlIGZvciBi
+YWNrd2FyZA0KPiBjb21wYXRpYmlsaXR5LCB0aGVyZSBhcmUgZmV3IHRoaW5ncyBJIHdvdWxkIHN1
+Z2dlc3QgdG8gaW1wcm92ZS4NCj4gDQo+IE9uIFdlZCwgT2N0IDI0LCAyMDE4IGF0IDEyOjEwIFBN
+IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPg0KPiB3cm90ZToNCj4gPiAgc3RhdGlj
+IGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAgeyBA
+QA0KPiA+IC03NDMsNiArNzQ1LDcgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1
+Y3QgcGxhdGZvcm1fZGV2aWNlDQo+ICpwZGV2KQ0KPiA+ICAgICAgICAgcmVnbWFwX3dyaXRlKG1h
+cCwgZGF0YS0+c29jZGF0YS0+c2Vuc29yX2N0cmwgKyBSRUdfU0VULA0KPiA+ICAgICAgICAgICAg
+ICAgICAgICAgIGRhdGEtPnNvY2RhdGEtPnBvd2VyX2Rvd25fbWFzayk7DQo+ID4NCj4gPiArI2lm
+ZGVmIENPTkZJR19DUFVfRlJFUQ0KPiA+ICAgICAgICAgZGF0YS0+cG9saWN5ID0gY3B1ZnJlcV9j
+cHVfZ2V0KDApOw0KPiA+ICAgICAgICAgaWYgKCFkYXRhLT5wb2xpY3kpIHsNCj4gPiAgICAgICAg
+ICAgICAgICAgcHJfZGVidWcoIiVzOiBDUFVGcmVxIHBvbGljeSBub3QgZm91bmRcbiIsIF9fZnVu
+Y19fKTsNCj4gPiBAQCAtNzU1LDYgKzc1OCw3IEBAIHN0YXRpYyBpbnQgaW14X3RoZXJtYWxfcHJv
+YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAgICAgICAgICAgICAgICAg
+ICAgICAgICAiZmFpbGVkIHRvIHJlZ2lzdGVyIGNwdWZyZXEgY29vbGluZyBkZXZpY2U6ICVkXG4i
+LA0KPiByZXQpOw0KPiA+ICAgICAgICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiA+ICAgICAgICAg
+fQ0KPiA+ICsjZW5kaWYNCj4gPg0KPiA+ICAgICAgICAgZGF0YS0+dGhlcm1hbF9jbGsgPSBkZXZt
+X2Nsa19nZXQoJnBkZXYtPmRldiwgTlVMTCk7DQo+ID4gICAgICAgICBpZiAoSVNfRVJSKGRhdGEt
+PnRoZXJtYWxfY2xrKSkgew0KPiANCj4gWW91IG1pc3NlZCB0aGUgZXJyb3IgaGFuZGxpbmcgY29k
+ZSB3aGljaCB1bnJlZ2lzdGVycyBjb29saW5nL2NwdWZyZXEgc3R1ZmYuDQo+IA0KPiBBbmQgaXQg
+d291bGQgYmUgYmV0dGVyIHRvIHdyaXRlIHRoaW5ncyBpbiBhIHNvbWV3aGF0IGJldHRlciB3YXks
+IGxpa2UgdGhpczoNCj4gDQo+ICNpZmRlZiBDT05GSUdfQ1BVX0ZSRVENCj4gDQo+IHN0YXRpYyBp
+bnQgaW14X3RoZXJtYWxfcmVnaXN0ZXJfbGVnYWN5X2Nvb2xpbmcoLi4uKQ0KPiB7DQo+ICAgICAg
+ICAgLi4uIGN1cnJlbnQgZnVuY3Rpb24gYm9keQ0KPiB9DQo+IA0KPiBzdGF0aWMgdm9pZCBpbXhf
+dGhlcm1hbF91bnJlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikNCj4gew0KPiAgICAgICAgIG5l
+dyByb3V0aW5lIGJvZHkgdG8gdW5yZWdpc3RlciB0aGluZ3MgfQ0KPiANCj4gI2Vsc2UNCj4gc3Rh
+dGljIGlubGluZSAgaW50IGlteF90aGVybWFsX3JlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikN
+Cj4gew0KPiAgICAgICAgIHJldHVybiAwOw0KPiB9DQo+IA0KPiBzdGF0aWMgdm9pZCBpbXhfdGhl
+cm1hbF91bnJlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikgeyB9DQo+IA0KPiAjZW5kaWYNCj4g
+DQo+IA0KPiBBbmQgdGhlbiB5b3UgY2FuIGdldCByaWQgb2YgaWZkZWYgaGFja2VyeSBpbiB0aGUg
+bWlkZGxlIG9mIHByb2JlKCkuDQoNClRoYW5rcyBmb3IgZ29vZCBzdWdnZXN0aW9uLCBwbGVhc2Ug
+aGVscCByZXZpZXcgdGhlIFYyIHBhdGNoIEkganVzdCBzZW50IG91dC4NCg0KQW5zb24uDQo=
