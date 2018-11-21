@@ -1,38 +1,82 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH V3] thermal: imx: fix for dependency on cpu-freq
-Date: Wed, 21 Nov 2018 05:08:35 +0000
-Message-ID: <DB3PR0402MB39168AB875C41ACD185F7CA0F5DA0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1542767703-1984-1-git-send-email-Anson.Huang@nxp.com>
- <CAOh2x==PecS4OzoX3UagBE0RjQL-0BBC=r=MAaO3cA2MczrA=A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] PM / Domains: Propagate performance state updates
+Date: Wed, 21 Nov 2018 10:46:26 +0530
+Message-ID: <20181121051626.izb6dem62zoaf2c4@vireshk-i7>
+References: <cover.1541399301.git.viresh.kumar@linaro.org>
+ <7e1ea283f9eebce081af80ddb8d3ca5c9c76cd3b.1541399301.git.viresh.kumar@linaro.org>
+ <71530b01-eefa-4778-0b17-d7774eb48356@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x==PecS4OzoX3UagBE0RjQL-0BBC=r=MAaO3cA2MczrA=A@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <71530b01-eefa-4778-0b17-d7774eb48356@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, dl-linux-imx <linux-imx@nxp.com>
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCkJlc3QgUmVnYXJkcyENCkFuc29uIEh1YW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gRnJvbTogVmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5v
-cmddDQo+IFNlbnQ6IDIwMTjlubQxMeaciDIx5pelIDExOjU0DQo+IFRvOiBBbnNvbiBIdWFuZyA8
-YW5zb24uaHVhbmdAbnhwLmNvbT4NCj4gQ2M6IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNv
-bT47IEVkdWFyZG8gVmFsZW50aW4NCj4gPGVkdWJlenZhbEBnbWFpbC5jb20+OyBEYW5pZWwgTGV6
-Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz47IExpbnV4DQo+IFBNIGxpc3QgPGxpbnV4
-LXBtQHZnZXIua2VybmVsLm9yZz47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QNCj4gPGxpbnV4
-LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBsLnN0YWNoQHBlbmd1dHJvbml4LmRlOyBkbC1saW51
-eC1pbXgNCj4gPGxpbnV4LWlteEBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFYzXSB0
-aGVybWFsOiBpbXg6IGZpeCBmb3IgZGVwZW5kZW5jeSBvbiBjcHUtZnJlcQ0KPiANCj4gT24gV2Vk
-LCBOb3YgMjEsIDIwMTggYXQgODoxMSBBTSBBbnNvbiBIdWFuZyA8YW5zb24uaHVhbmdAbnhwLmNv
-bT4NCj4gd3JvdGU6DQo+IA0KPiA+IEBAIC04MzAsOCArODUxLDcgQEAgc3RhdGljIGludCBpbXhf
-dGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlDQo+ICpwZGV2KQ0KPiA+ICBjbGtf
-ZGlzYWJsZToNCj4gPiAgICAgICAgIGNsa19kaXNhYmxlX3VucHJlcGFyZShkYXRhLT50aGVybWFs
-X2Nsayk7DQo+ID4gIGNwdWZyZXFfcHV0Og0KPiANCj4gV2hpbGUgYXQgaXQsIHJlbmFtZSB0aGlz
-IGxhYmVsIGFzIHdlbGwgdG8gc29tZXRoaW5nIGxpa2UgbGVnYWN5X2NsZWFudXAuDQoNCkRvbmUg
-d2l0aCBWNCBwYXRjaCwgdGhhbmtzLg0KDQpBbnNvbi4NCg0KPiANCj4gPiAtICAgICAgIGNwdWZy
-ZXFfY29vbGluZ191bnJlZ2lzdGVyKGRhdGEtPmNkZXYpOw0KPiA+IC0gICAgICAgY3B1ZnJlcV9j
-cHVfcHV0KGRhdGEtPnBvbGljeSk7DQo+ID4gKyAgICAgICBpbXhfdGhlcm1hbF91bnJlZ2lzdGVy
-X2xlZ2FjeV9jb29saW5nKGRhdGEpOw0KPiA+DQo+ID4gICAgICAgICByZXR1cm4gcmV0Ow0KPiA+
-ICB9DQo=
+On 21-11-18, 10:33, Rajendra Nayak wrote:
+> Hi Viresh,
+> 
+> On 11/5/2018 12:06 PM, Viresh Kumar wrote:
+> > This commit updates genpd core to start propagating performance state
+> > updates to master domains that have their set_performance_state()
+> > callback set.
+> > 
+> > A genpd handles two type of performance states now. The first one is the
+> > performance state requirement put on the genpd by the devices and
+> > sub-domains under it, which is already represented by
+> > genpd->performance_state. The second type, introduced in this commit, is
+> > the performance state requirement(s) put by the genpd on its master
+> > domain(s). There is a separate value required for each master that the
+> > genpd has and so a new field is added to the struct gpd_link
+> > (link->performance_state), which represents the link between a genpd and
+> > its master. The struct gpd_link also got another field
+> > prev_performance_state, which is used by genpd core as a temporary
+> > variable during transitions.
+> > 
+> > We need to propagate setting performance state while powering-on a genpd
+> > as well, as we ignore performance state requirements from sub-domains
+> > which are powered-off. For this reason _genpd_power_on() also received
+> > the additional parameter, depth, which is used for hierarchical locking
+> > within genpd.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >   drivers/base/power/domain.c | 107 +++++++++++++++++++++++++++++-------
+> >   include/linux/pm_domain.h   |   4 ++
+> >   2 files changed, 92 insertions(+), 19 deletions(-)
+> > 
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 6d2e9b3406f1..81e02c5f753f 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -239,28 +239,86 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
+> >   static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
+> >   #endif
+> > +static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
+> > +					   unsigned int state, int depth);
+> > +
+> >   static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
+> > -					unsigned int state)
+> > +					unsigned int state, int depth)
+> >   {
+> > +	struct generic_pm_domain *master;
+> > +	struct gpd_link *link;
+> > +	unsigned int mstate;
+> >   	int ret;
+> >   	if (!genpd_status_on(genpd))
+> >   		goto out;
+> 
+> This check here would mean we only propogate performance state
+> to masters if the genpd is ON?
+
+Yeah, isn't that what should we do anyway? It is similar to clk-enable
+etc. Why increase the reference count if the device isn't enabled and
+isn't using the clock ?
+
+Also you can see that I have updated the genpd power-on code to start
+propagation to make sure we don't miss anything.
+
+-- 
+viresh
