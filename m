@@ -1,29 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] thermal: imx: fix for dependency on cpu-freq
-Date: Wed, 21 Nov 2018 09:24:18 +0530
-Message-ID: <CAOh2x==PecS4OzoX3UagBE0RjQL-0BBC=r=MAaO3cA2MczrA=A@mail.gmail.com>
-References: <1542767703-1984-1-git-send-email-Anson.Huang@nxp.com>
+Subject: Re: [PATCH] cpufreq: pmac64: add of_node_put()
+Date: Wed, 21 Nov 2018 09:29:25 +0530
+Message-ID: <20181121035925.67fsysw6jyswb3op@vireshk-i7>
+References: <20181120125409.19314-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1542767703-1984-1-git-send-email-Anson.Huang@nxp.com>
+Content-Disposition: inline
+In-Reply-To: <20181120125409.19314-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: anson.huang@nxp.com
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, l.stach@pengutronix.de, linux-imx@nxp.com
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 21, 2018 at 8:11 AM Anson Huang <anson.huang@nxp.com> wrote:
+On 20-11-18, 07:54, Yangtao Li wrote:
+> use of_node_put to release the refcount of node.
+> 
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> ---
+>  drivers/cpufreq/pmac64-cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/pmac64-cpufreq.c b/drivers/cpufreq/pmac64-cpufreq.c
+> index be623dd7b9f2..1d32a863332d 100644
+> --- a/drivers/cpufreq/pmac64-cpufreq.c
+> +++ b/drivers/cpufreq/pmac64-cpufreq.c
+> @@ -411,6 +411,7 @@ static int __init g5_neo2_cpufreq_init(struct device_node *cpunode)
+>  		pfunc_set_vdnap0 = pmf_find_function(root, "set-vdnap0");
+>  		pfunc_vdnap0_complete =
+>  			pmf_find_function(root, "slewing-done");
+> +		of_node_put(root);
+>  		if (pfunc_set_vdnap0 == NULL ||
+>  		    pfunc_vdnap0_complete == NULL) {
+>  			pr_err("Can't find required platform function\n");
 
-> @@ -830,8 +851,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  clk_disable:
->         clk_disable_unprepare(data->thermal_clk);
->  cpufreq_put:
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-While at it, rename this label as well to something like legacy_cleanup.
-
-> -       cpufreq_cooling_unregister(data->cdev);
-> -       cpufreq_cpu_put(data->policy);
-> +       imx_thermal_unregister_legacy_cooling(data);
->
->         return ret;
->  }
+-- 
+viresh
