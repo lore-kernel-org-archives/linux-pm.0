@@ -1,78 +1,62 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: Re: [PATCH v9 13/15] sched/fair: Introduce an energy estimation
- helper function
-Date: Wed, 21 Nov 2018 16:05:27 +0000
-Message-ID: <20181121160524.ulj6n3shb2fdwboj@queper01-lin>
-References: <20181119141857.8625-1-quentin.perret@arm.com>
- <20181119141857.8625-14-quentin.perret@arm.com>
- <20181121142803.GF2113@hirez.programming.kicks-ass.net>
+From: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [RESEND PATCH v17 2/5] iommu/arm-smmu: Invoke
+ pm_runtime during probe, add/remove device
+Date: Wed, 21 Nov 2018 17:37:57 +0000
+Message-ID: <20181121173757.GA9801@arm.com>
+References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
+ <20181116112430.31248-3-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20181121142803.GF2113@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
+In-Reply-To: <20181116112430.31248-3-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday 21 Nov 2018 at 15:28:03 (+0100), Peter Zijlstra wrote:
-> On Mon, Nov 19, 2018 at 02:18:55PM +0000, Quentin Perret wrote:
-> > +static long
-> > +compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
-> > +{
-> > +	long util, max_util, sum_util, energy = 0;
-> > +	int cpu;
-> > +
-> > +	for (; pd; pd = pd->next) {
-> > +		max_util = sum_util = 0;
-> > +		/*
-> > +		 * The capacity state of CPUs of the current rd can be driven by
-> > +		 * CPUs of another rd if they belong to the same performance
-> > +		 * domain. So, account for the utilization of these CPUs too
-> > +		 * by masking pd with cpu_online_mask instead of the rd span.
-> > +		 *
-> > +		 * If an entire performance domain is outside of the current rd,
-> > +		 * it will not appear in its pd list and will not be accounted
-> > +		 * by compute_energy().
-> > +		 */
-> > +		for_each_cpu_and(cpu, perf_domain_span(pd), cpu_online_mask) {
-> 
-> Should that not be cpu_active_mask ?
-
-Hmm, I must admit I'm sometimes a bit confused by the exact difference
-between these masks, so maybe yeah ...
-
-IIUC, cpu_active_mask is basically the set of CPUs on which the
-scheduler is actually allowed to migrate tasks. Is that correct ?
-
-I have always seen cpu_online_mask as a superset of cpu_active_mask
-which can also include CPUs which are still running 'special' tasks
-(kthreads and things like that I assume) although not allowed for
-migration any more (or not yet) because we're in the process of
-hotplugging that CPU.
-
-So, the thing is, I'm not trying to select a CPU candidate for my task
-here, I'm trying to understand what's the energy impact of a migration.
-That involves all CPUs that are running _something_ in a perf domain
-no matter if they're allowed to run more tasks or not. I mean, raising
-the OPP will make running online && !active CPUs more expensive as well.
-That's why I thought cpu_online_mask was good match here.
-
-Or maybe I'm confused again :-)
-
-> 
-> > +			util = cpu_util_next(cpu, p, dst_cpu);
-> > +			util = schedutil_energy_util(cpu, util);
-> > +			max_util = max(util, max_util);
-> > +			sum_util += util;
-> > +		}
-> > +
-> > +		energy += em_pd_energy(pd->em_pd, max_util, sum_util);
-> > +	}
-> > +
-> > +	return energy;
-> > +}
-
-Thanks,
-Quentin
+T24gRnJpLCBOb3YgMTYsIDIwMTggYXQgMDQ6NTQ6MjdQTSArMDUzMCwgVml2ZWsgR2F1dGFtIHdy
+b3RlOgo+IEZyb206IFNyaWNoYXJhbiBSIDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gCj4g
+VGhlIHNtbXUgZGV2aWNlIHByb2JlL3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2aWNl
+IGNhbGxiYWNrcwo+IGdldHMgY2FsbGVkIHdoZW4gdGhlIHNtbXUgaXMgbm90IGxpbmtlZCB0byBp
+dHMgbWFzdGVyLCB0aGF0IGlzIHdpdGhvdXQKPiB0aGUgY29udGV4dCBvZiB0aGUgbWFzdGVyIGRl
+dmljZS4gU28gY2FsbGluZyBydW50aW1lIGFwaXMgaW4gdGhvc2UgcGxhY2VzCj4gc2VwYXJhdGVs
+eS4KPiBHbG9iYWwgbG9ja3MgYXJlIGFsc28gaW5pdGlhbGl6ZWQgYmVmb3JlIGVuYWJsaW5nIHJ1
+bnRpbWUgcG0gYXMgdGhlCj4gcnVudGltZV9yZXN1bWUoKSBjYWxscyBkZXZpY2VfcmVzZXQoKSB3
+aGljaCBkb2VzIHRsYl9zeW5jX2dsb2JhbCgpCj4gdGhhdCB1bHRpbWF0ZWx5IHJlcXVpcmVzIGxv
+Y2tzIHRvIGJlIGluaXRpYWxpemVkLgo+IAo+IFNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxz
+cmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gW3ZpdmVrOiBDbGVhbnVwIHBtIHJ1bnRpbWUgY2Fs
+bHNdCj4gU2lnbmVkLW9mZi1ieTogVml2ZWsgR2F1dGFtIDx2aXZlay5nYXV0YW1AY29kZWF1cm9y
+YS5vcmc+Cj4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4g
+VGVzdGVkLWJ5OiBTcmluaXZhcyBLYW5kYWdhdGxhIDxzcmluaXZhcy5rYW5kYWdhdGxhQGxpbmFy
+by5vcmc+Cj4gUmV2aWV3ZWQtYnk6IFJvYmluIE11cnBoeSA8cm9iaW4ubXVycGh5QGFybS5jb20+
+Cj4gLS0tCj4gIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDEwMSArKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKystLS0tLQo+ICAxIGZpbGUgY2hhbmdlZCwgOTEgaW5z
+ZXJ0aW9ucygrKSwgMTAgZGVsZXRpb25zKC0pCgpHaXZlbiB0aGF0IHlvdSdyZSBkb2luZyB0aGUg
+Z2V0L3B1dCBpbiB0aGUgVExCSSBvcHMgdW5jb25kaXRpb25hbGx5OgoKPiAgc3RhdGljIHZvaWQg
+YXJtX3NtbXVfZmx1c2hfaW90bGJfYWxsKHN0cnVjdCBpb21tdV9kb21haW4gKmRvbWFpbikKPiAg
+ewo+ICAJc3RydWN0IGFybV9zbW11X2RvbWFpbiAqc21tdV9kb21haW4gPSB0b19zbW11X2RvbWFp
+bihkb21haW4pOwo+ICsJc3RydWN0IGFybV9zbW11X2RldmljZSAqc21tdSA9IHNtbXVfZG9tYWlu
+LT5zbW11Owo+ICAKPiAtCWlmIChzbW11X2RvbWFpbi0+dGxiX29wcykKPiArCWlmIChzbW11X2Rv
+bWFpbi0+dGxiX29wcykgewo+ICsJCWFybV9zbW11X3JwbV9nZXQoc21tdSk7Cj4gIAkJc21tdV9k
+b21haW4tPnRsYl9vcHMtPnRsYl9mbHVzaF9hbGwoc21tdV9kb21haW4pOwo+ICsJCWFybV9zbW11
+X3JwbV9wdXQoc21tdSk7Cj4gKwl9Cj4gIH0KPiAgCj4gIHN0YXRpYyB2b2lkIGFybV9zbW11X2lv
+dGxiX3N5bmMoc3RydWN0IGlvbW11X2RvbWFpbiAqZG9tYWluKQo+ICB7Cj4gIAlzdHJ1Y3QgYXJt
+X3NtbXVfZG9tYWluICpzbW11X2RvbWFpbiA9IHRvX3NtbXVfZG9tYWluKGRvbWFpbik7Cj4gKwlz
+dHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11ID0gc21tdV9kb21haW4tPnNtbXU7Cj4gIAo+IC0J
+aWYgKHNtbXVfZG9tYWluLT50bGJfb3BzKQo+ICsJaWYgKHNtbXVfZG9tYWluLT50bGJfb3BzKSB7
+Cj4gKwkJYXJtX3NtbXVfcnBtX2dldChzbW11KTsKPiAgCQlzbW11X2RvbWFpbi0+dGxiX29wcy0+
+dGxiX3N5bmMoc21tdV9kb21haW4pOwo+ICsJCWFybV9zbW11X3JwbV9wdXQoc21tdSk7Cj4gKwl9
+CgpXaHkgZG8geW91IG5lZWQgdGhlbSBhcm91bmQgdGhlIG1hcC91bm1hcCBjYWxscyBhcyB3ZWxs
+PwoKV2lsbApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpG
+cmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0
+cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
