@@ -1,157 +1,45 @@
 From: Anson Huang <anson.huang@nxp.com>
-Subject: [PATCH V5 1/2] thermal: imx: fix for dependency on cpu-freq
-Date: Wed, 21 Nov 2018 05:49:36 +0000
-Message-ID: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH V5 2/2] thermal: imx: save one condition block for normal case
+ of nvmem initialization
+Date: Wed, 21 Nov 2018 05:49:40 +0000
+Message-ID: <1542779052-29536-2-git-send-email-Anson.Huang@nxp.com>
+References: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1542779052-29536-1-git-send-email-Anson.Huang@nxp.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
 Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-The thermal driver is a standalone driver for monitoring SoC temperature
-by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
-is NOT set. So remove the dependency with CPU_THERMAL.
-
-Introduce dummy function of legacy cooling register/unregister to make
-thermal driver probe successfully when CONFIG_CPU_FREQ is NOT set.
+Put return value checks of calling imx_init_from_nvmem_cells()
+into one block to save one condition block for normal case.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
- drivers/thermal/Kconfig       |  2 +-
- drivers/thermal/imx_thermal.c | 47 ++++++++++++++++++++++++++++++++-------=
-----
- 2 files changed, 36 insertions(+), 13 deletions(-)
+ drivers/thermal/imx_thermal.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5422523..93bd3bb 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -212,7 +212,7 @@ config HISI_THERMAL
-=20
- config IMX_THERMAL
- 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
--	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
-+	depends on ARCH_MXC || COMPILE_TEST
- 	depends on NVMEM || !NVMEM
- 	depends on MFD_SYSCON
- 	depends on OF
 diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 1566154..c924396 100644
+index c924396..bb6754a 100644
 --- a/drivers/thermal/imx_thermal.c
 +++ b/drivers/thermal/imx_thermal.c
-@@ -648,15 +648,24 @@ static const struct of_device_id of_imx_thermal_match=
-[] =3D {
- };
- MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+@@ -742,9 +742,10 @@ static int imx_thermal_probe(struct platform_device *p=
+dev)
 =20
-+#ifdef CONFIG_CPU_FREQ
- /*
-  * Create cooling device in case no #cooling-cells property is available i=
-n
-  * CPU node
-  */
- static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *da=
-ta)
- {
--	struct device_node *np =3D of_get_cpu_node(data->policy->cpu, NULL);
-+	struct device_node *np;
- 	int ret;
-=20
-+	data->policy =3D cpufreq_cpu_get(0);
-+	if (!data->policy) {
-+		pr_debug("%s: CPUFreq policy not found\n", __func__);
-+		return -EPROBE_DEFER;
-+	}
+ 	if (of_find_property(pdev->dev.of_node, "nvmem-cells", NULL)) {
+ 		ret =3D imx_init_from_nvmem_cells(pdev);
+-		if (ret =3D=3D -EPROBE_DEFER)
+-			return ret;
+ 		if (ret) {
++			if (ret =3D=3D -EPROBE_DEFER)
++				return ret;
 +
-+	np =3D of_get_cpu_node(data->policy->cpu, NULL);
-+
- 	if (!np || !of_find_property(np, "#cooling-cells", NULL)) {
- 		data->cdev =3D cpufreq_cooling_register(data->policy);
- 		if (IS_ERR(data->cdev)) {
-@@ -669,6 +678,24 @@ static int imx_thermal_register_legacy_cooling(struct =
-imx_thermal_data *data)
- 	return 0;
- }
-=20
-+static void imx_thermal_unregister_legacy_cooling(struct imx_thermal_data =
-*data)
-+{
-+	cpufreq_cooling_unregister(data->cdev);
-+	cpufreq_cpu_put(data->policy);
-+}
-+
-+#else
-+
-+static inline int imx_thermal_register_legacy_cooling(struct imx_thermal_d=
-ata *data)
-+{
-+	return 0;
-+}
-+
-+static inline void imx_thermal_unregister_legacy_cooling(struct imx_therma=
-l_data *data)
-+{
-+}
-+#endif
-+
- static int imx_thermal_probe(struct platform_device *pdev)
- {
- 	struct imx_thermal_data *data;
-@@ -743,14 +770,11 @@ static int imx_thermal_probe(struct platform_device *=
-pdev)
- 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
- 		     data->socdata->power_down_mask);
-=20
--	data->policy =3D cpufreq_cpu_get(0);
--	if (!data->policy) {
--		pr_debug("%s: CPUFreq policy not found\n", __func__);
--		return -EPROBE_DEFER;
--	}
--
- 	ret =3D imx_thermal_register_legacy_cooling(data);
- 	if (ret) {
-+		if (ret =3D=3D -EPROBE_DEFER)
-+			return ret;
-+
- 		dev_err(&pdev->dev,
- 			"failed to register cpufreq cooling device: %d\n", ret);
- 		return ret;
-@@ -762,7 +786,7 @@ static int imx_thermal_probe(struct platform_device *pd=
-ev)
- 		if (ret !=3D -EPROBE_DEFER)
- 			dev_err(&pdev->dev,
- 				"failed to get thermal clk: %d\n", ret);
--		goto cpufreq_put;
-+		goto legacy_cleanup;
- 	}
-=20
- 	/*
-@@ -775,7 +799,7 @@ static int imx_thermal_probe(struct platform_device *pd=
-ev)
- 	ret =3D clk_prepare_enable(data->thermal_clk);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
--		goto cpufreq_put;
-+		goto legacy_cleanup;
- 	}
-=20
- 	data->tz =3D thermal_zone_device_register("imx_thermal_zone",
-@@ -829,9 +853,8 @@ static int imx_thermal_probe(struct platform_device *pd=
-ev)
- 	thermal_zone_device_unregister(data->tz);
- clk_disable:
- 	clk_disable_unprepare(data->thermal_clk);
--cpufreq_put:
--	cpufreq_cooling_unregister(data->cdev);
--	cpufreq_cpu_put(data->policy);
-+legacy_cleanup:
-+	imx_thermal_unregister_legacy_cooling(data);
-=20
- 	return ret;
- }
+ 			dev_err(&pdev->dev, "failed to init from nvmem: %d\n",
+ 				ret);
+ 			return ret;
 --=20
 2.7.4
