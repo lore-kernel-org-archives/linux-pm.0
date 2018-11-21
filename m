@@ -1,226 +1,389 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: [PATCH v3] thermal: qoriq: add multiple sensors support
-Date: Wed, 21 Nov 2018 09:16:08 +0000
-Message-ID: <VI1PR04MB433317D3D03FFD29D65755F9F3DA0@VI1PR04MB4333.eurprd04.prod.outlook.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3] thermal: qoriq: add multiple sensors support
+Date: Wed, 21 Nov 2018 10:41:36 +0100
+Message-ID: <c061e602-efbe-7a83-144c-4a50924e724f@linaro.org>
 References: <20181030010008.27237-1-andy.tang@nxp.com>
  <VI1PR04MB4333200BCB4E2DABE1DC5B55F3C30@VI1PR04MB4333.eurprd04.prod.outlook.com>
  <VI1PR04MB433384F335FBE426117B2188F3DA0@VI1PR04MB4333.eurprd04.prod.outlook.com>
  <16bf9114-8403-a11a-0a29-f78bc139b480@linaro.org>
+ <VI1PR04MB433317D3D03FFD29D65755F9F3DA0@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=gbk
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <16bf9114-8403-a11a-0a29-f78bc139b480@linaro.org>
+In-Reply-To: <VI1PR04MB433317D3D03FFD29D65755F9F3DA0@VI1PR04MB4333.eurprd04.prod.outlook.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+To: Andy Tang <andy.tang@nxp.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgRGFuaWVsLA0KDQpUaGFua3MgZm9yIHlvdXIgZXhwbGFuYXRpb24uIFRoZSBwcm9ibGVtIGlz
-IHRoZXNlIHR3byB0cmVlcyBhcmUgbm90IHN5bmNlZCB3ZWxsLg0KTGV0J3MgdGFrZSBvdXIgZHJp
-dmVyKHFvcmlxX3RoZXJtYWwuYykgZm9yIGV4YW1wbGUuDQoNCkdpdCBsb2cgb24gUnVpJ3MgdHJl
-ZSBuZXh0IGJyYW5jaDoNCjJkZmVmNjUgdGhlcm1hbDogcW9yaXE6IFN3aXRjaCB0byBTUERYIGlk
-ZW50aWZpZXINCjFhODkzYTUgdGhlcm1hbDogcW9yaXE6IFNpbXBsaWZ5IHRoZSAnc2l0ZScgdmFy
-aWFibGUgYXNzaWdubWVudA0KZjE1MDZhNiB0aGVybWFsOiBxb3JpcTogVXNlIGRldm1fdGhlcm1h
-bF96b25lX29mX3NlbnNvcl9yZWdpc3RlcigpDQpjMzBkNWQ1IHRoZXJtYWw6IHFvcmlxOiBjb25z
-dGlmeSB0aGVybWFsX3pvbmVfb2ZfZGV2aWNlX29wcyBzdHJ1Y3R1cmVzDQowZTc3NDg4IHRoZXJt
-YWw6IHFvcmlxOiByZW1vdmUgdXNlbGVzcyBjYWxsIGZvciBvZl90aGVybWFsX2dldF90cmlwX3Bv
-aW50cygpDQo0MzUyODQ0IHRoZXJtYWw6IHFvcmlxOiBBZGQgdGhlcm1hbCBtYW5hZ2VtZW50IHN1
-cHBvcnQNCg0KR2l0IGxvZyBvbiBsaW51eC1zb2MtdGhlcm1hbCB0cmVlIGJyYW5jaCBuZXh0Og0K
-NjAxN2UyYSB0aGVybWFsOiBxb3JpcTogYWRkIGkubXg4bXEgc3VwcG9ydA0KOWI5NjU2NiB0aGVy
-bWFsOiBDb252ZXJ0IHRvIHVzaW5nICVwT0ZuIGluc3RlYWQgb2YgZGV2aWNlX25vZGUubmFtZQ0K
-YzMwZDVkNSB0aGVybWFsOiBxb3JpcTogY29uc3RpZnkgdGhlcm1hbF96b25lX29mX2RldmljZV9v
-cHMgc3RydWN0dXJlcw0KMGU3NzQ4OCB0aGVybWFsOiBxb3JpcTogcmVtb3ZlIHVzZWxlc3MgY2Fs
-bCBmb3Igb2ZfdGhlcm1hbF9nZXRfdHJpcF9wb2ludHMoKQ0KNDM1Mjg0NCB0aGVybWFsOiBxb3Jp
-cTogQWRkIHRoZXJtYWwgbWFuYWdlbWVudCBzdXBwb3J0DQoNCllvdSBjYW4gc2VlIHRoYXQgdGhl
-IGZpcnN0IDItMyBjb21taXRzIG9uIHRoZXNlIHR3byB0cmVzcyBhcmUgZGlmZmVyZW50Lg0KDQpU
-aGUgc3RyYW5nZSB0aGluZyBpcyB0aGV5IHNlZW1zIHN5bmMgd2VsbCBvbiBMaW51cycgdHJlZToN
-CjBlZjc3OTEgTWVyZ2UgYnJhbmNoICdsaW51cycgb2YgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHVi
-L3NjbS9saW51eC9rZXJuZWwvZ2l0L2V2YWxlbnRpL2xpbnV4LXNvYy10aGVybWFsDQo2MDE3ZTJh
-IHRoZXJtYWw6IHFvcmlxOiBhZGQgaS5teDhtcSBzdXBwb3J0DQo5Yjk2NTY2IHRoZXJtYWw6IENv
-bnZlcnQgdG8gdXNpbmcgJXBPRm4gaW5zdGVhZCBvZiBkZXZpY2Vfbm9kZS5uYW1lDQoyZGZlZjY1
-IHRoZXJtYWw6IHFvcmlxOiBTd2l0Y2ggdG8gU1BEWCBpZGVudGlmaWVyDQoxYTg5M2E1IHRoZXJt
-YWw6IHFvcmlxOiBTaW1wbGlmeSB0aGUgJ3NpdGUnIHZhcmlhYmxlIGFzc2lnbm1lbnQNCmYxNTA2
-YTYgdGhlcm1hbDogcW9yaXE6IFVzZSBkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0
-ZXIoKQ0KYzMwZDVkNSB0aGVybWFsOiBxb3JpcTogY29uc3RpZnkgdGhlcm1hbF96b25lX29mX2Rl
-dmljZV9vcHMgc3RydWN0dXJlcw0KMGU3NzQ4OCB0aGVybWFsOiBxb3JpcTogcmVtb3ZlIHVzZWxl
-c3MgY2FsbCBmb3Igb2ZfdGhlcm1hbF9nZXRfdHJpcF9wb2ludHMoKQ0KNDM1Mjg0NCB0aGVybWFs
-OiBxb3JpcTogQWRkIHRoZXJtYWwgbWFuYWdlbWVudCBzdXBwb3J0DQoNCkN1cnJlbnRseSBteSBw
-YXRjaCB3YXMgY3JlYXRlZCBiYXNlZCBvbiBSdW4ncyB0cmVlLCBwcm9iYWJseSBJIHNob3VsZCBy
-ZWJhc2UgaXQgdG8gc29jIHRyZWUuDQpCdXQgd2hpY2hldmVyIHRyZWUgSSB1c2UsIGl0IGNhbid0
-IGJlIG1lcmdlZCB0byBMaW51cycgdHJlZSB3aXRob3V0IGNvbmZsaWN0Lg0KDQpTb21ldGhpbmcg
-SSBtaXNzZWQ/DQoNCkJSLA0KQW5keQ0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBG
-cm9tOiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4NCj4gU2VudDog
-MjAxOMTqMTHUwjIxyNUgMTY6NDQNCj4gVG86IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+
-OyBydWkuemhhbmdAaW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tDQo+IENjOiBsaW51
-eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSCB2M10gdGhlcm1hbDogcW9yaXE6IGFkZCBtdWx0aXBsZSBzZW5zb3Jz
-IHN1cHBvcnQNCj4gDQo+IE9uIDIxLzExLzIwMTggMDI6MzQsIEFuZHkgVGFuZyB3cm90ZToNCj4g
-PiBIaSBhbGwsDQo+ID4NCj4gPiBEbyB5b3UgaGF2ZSBhbnkgY29tbWVudHMgb24gdGhpcyBwYXRj
-aD8NCj4gPg0KPiA+IEkgZm91bmQgZm9yIG91ciB0aGVybWFsIGRyaXZlcihxb3JpcV90aGVybWFs
-LmMpIHRoZXJlIGFyZSBkaWZmZXJlbnQNCj4gYmV0d2VlbiB0aGUgZm9sbG93aW5nIHR3byBnaXQg
-dHJlZXM6DQo+ID4gZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0
-L3J6aGFuZy9saW51eC5naXQNCj4gPiBicmFuY2g6IG5leHQNCj4gPg0KPiBnaXQ6Ly9naXQua2Vy
-bmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvZXZhbGVudGkvbGludXgtc29jLXRoZXJt
-YWwuZ2kNCj4gdC4NCj4gPiBicmFuY2g6IG5leHQNCj4gPg0KPiA+IENvdWxkIHlvdSBwbGVhc2Ug
-Y2xhcmlmeSB3aGljaCBnaXQgdHJlZS9icmFuY2ggc2hvdWxkIEkgdXNlPw0KPiANCj4gU29DIGNo
-YW5nZXMgYXJlIHN1Ym1pdHRlZCBhZ2FpbnN0IGxpbnV4LXNvYy10aGVybWFsLmdpdC4NCj4gDQo+
-IEdlbmVyaWMgdGhlcm1hbCBmcmFtZXdvcmsgYXJlIHNlbnQgYWdhaW5zdCBaaGFuZyBSdWkncyB0
-cmVlIGJ1dCBpdA0KPiBoYXBwZW5zIHNvbWV0aW1lcyBFZHVhcmRvIHBpY2sgdGhlbSBhbHNvIHdo
-ZW4gdGhlIGNoYW5nZXMgYXJlIHJlbGF0ZWQNCj4gdG8gU29DIGJlaGF2aW9yLg0KPiANCj4gSG93
-ZXZlciwgSSBhZ3JlZSB0aGF0IGNhbiBiZSBjb25mdXNpbmcgOikNCj4gDQo+IEVkdWFyZG8sIFJ1
-aSwNCj4gDQo+IGhvdyBhYm91dCB0byBhZGQgYSBzZWN0aW9uIGluIHRoZSBtYWludGFpbmVyIGhh
-bmRib29rIGZvciB0aGUgdGhlcm1hbCB0bw0KPiBjbGFyaWZ5IHRoZSBleHBlY3RhdGlvbnMgYW5k
-IHRoZSBmbG93Pw0KPiANCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJv
-bTogQW5keSBUYW5nDQo+ID4+IFNlbnQ6IDIwMTjE6jEx1MIxNMjVIDE1OjI5DQo+ID4+IFRvOiBy
-dWkuemhhbmdAaW50ZWwuY29tOyBkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnDQo+ID4+IENjOiBl
-ZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+ID4+IGxpbnV4
-LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPj4gU3ViamVjdDogUkU6IFtQQVRDSCB2M10gdGhl
-cm1hbDogcW9yaXE6IGFkZCBtdWx0aXBsZSBzZW5zb3JzIHN1cHBvcnQNCj4gPj4NCj4gPj4gUElO
-Ry4NCj4gPj4NCj4gPj4gQlIsDQo+ID4+IEFuZHkNCj4gPj4NCj4gPj4+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+ID4+PiBGcm9tOiBhbmR5LnRhbmdAbnhwLmNvbSA8YW5keS50YW5nQG54
-cC5jb20+DQo+ID4+PiBTZW50OiAyMDE4xOoxMNTCMzDI1SA5OjAwDQo+ID4+PiBUbzogcnVpLnpo
-YW5nQGludGVsLmNvbTsgZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZw0KPiA+Pj4gQ2M6IGVkdWJl
-enZhbEBnbWFpbC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gPj4+IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IEFuZHkgVGFuZyA8YW5keS50YW5nQG54cC5jb20+DQo+ID4+
-PiBTdWJqZWN0OiBbUEFUQ0ggdjNdIHRoZXJtYWw6IHFvcmlxOiBhZGQgbXVsdGlwbGUgc2Vuc29y
-cyBzdXBwb3J0DQo+ID4+Pg0KPiA+Pj4gRnJvbTogWXVhbnRpYW4gVGFuZyA8YW5keS50YW5nQG54
-cC5jb20+DQo+ID4+Pg0KPiA+Pj4gVGhlIFFvcklRIExheWVyc2NhcGUgU29DIGhhcyBzZXZlcmFs
-IHRoZXJtYWwgc2Vuc29ycyBidXQgdGhlDQo+IGN1cnJlbnQNCj4gPj4+IGRyaXZlciBvbmx5IHN1
-cHBvcnRzIG9uZS4NCj4gPj4+DQo+ID4+PiBNYXNzYWdlIHRoZSBjb2RlIHRvIGJlIHNlbnNvciBv
-cmllbnRlZCBhbmQgYWxsb3cgdGhlIHN1cHBvcnQgZm9yDQo+ID4+PiBtdWx0aXBsZSBzZW5zb3Jz
-Lg0KPiA+Pj4NCj4gPj4+IFNpZ25lZC1vZmYtYnk6IFl1YW50aWFuIFRhbmcgPGFuZHkudGFuZ0Bu
-eHAuY29tPg0KPiA+Pj4gUmV2aWV3ZWQtYnk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fu
-b0BsaW5hcm8ub3JnPg0KPiA+Pj4gLS0tDQo+ID4+PiB2MzoNCj4gPj4+ICAgLSBhZGQgUmV2aWV3
-ZWQtYnkNCj4gPj4+IHYyOg0KPiA+Pj4gICAtIHVwZGF0ZSB0aGUgY29tbWl0IG1lc3NhZ2UNCj4g
-Pj4+ICAgLSByZWZpbmUgdGhlIHFvcmlxX3RtdV9yZWdpc3Rlcl90bXVfem9uZSgpDQo+ID4+Pg0K
-PiA+Pj4gIGRyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMgfCAgMTAwDQo+ID4+PiArKysr
-KysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPj4+ICAxIGZpbGVzIGNoYW5n
-ZWQsIDQ2IGluc2VydGlvbnMoKyksIDU0IGRlbGV0aW9ucygtKQ0KPiA+Pj4NCj4gPj4+IGRpZmYg
-LS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jDQo+ID4+PiBiL2RyaXZlcnMv
-dGhlcm1hbC9xb3JpcV90aGVybWFsLmMgaW5kZXggNDUwZWQ2Ni4uOGJlYjM0NCAxMDA2NDQNCj4g
-Pj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPj4+ICsrKyBiL2Ry
-aXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPj4+IEBAIC01OSwxNCArNTksMjEgQEAg
-c3RydWN0IHFvcmlxX3RtdV9yZWdzIHsNCj4gPj4+ICAJdTMyIHR0cjNjcjsJCS8qIFRlbXBlcmF0
-dXJlIFJhbmdlIDMgQ29udHJvbCBSZWdpc3RlciAqLw0KPiA+Pj4gIH07DQo+ID4+Pg0KPiA+Pj4g
-K3N0cnVjdCBxb3JpcV90bXVfZGF0YTsNCj4gPj4+ICsNCj4gPj4+ICAvKg0KPiA+Pj4gICAqIFRo
-ZXJtYWwgem9uZSBkYXRhDQo+ID4+PiAgICovDQo+ID4+PiArc3RydWN0IHFvcmlxX3NlbnNvciB7
-DQo+ID4+PiArCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlCSp0emQ7DQo+ID4+PiArCXN0cnVj
-dCBxb3JpcV90bXVfZGF0YQkJKnFkYXRhOw0KPiA+Pj4gKwlpbnQJCQkJaWQ7DQo+ID4+PiArfTsN
-Cj4gPj4+ICsNCj4gPj4+ICBzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgew0KPiA+Pj4gLQlzdHJ1Y3Qg
-dGhlcm1hbF96b25lX2RldmljZSAqdHo7DQo+ID4+PiAgCXN0cnVjdCBxb3JpcV90bXVfcmVncyBf
-X2lvbWVtICpyZWdzOw0KPiA+Pj4gLQlpbnQgc2Vuc29yX2lkOw0KPiA+Pj4gIAlib29sIGxpdHRs
-ZV9lbmRpYW47DQo+ID4+PiArCXN0cnVjdCBxb3JpcV9zZW5zb3IJKnNlbnNvcltTSVRFU19NQVhd
-Ow0KPiA+Pj4gIH07DQo+ID4+Pg0KPiA+Pj4gIHN0YXRpYyB2b2lkIHRtdV93cml0ZShzdHJ1Y3Qg
-cW9yaXFfdG11X2RhdGEgKnAsIHUzMiB2YWwsIHZvaWQNCj4gPj4+IF9faW9tZW0NCj4gPj4+ICph
-ZGRyKSBAQCAtODcsNDggKzk0LDUxIEBAIHN0YXRpYyB1MzIgdG11X3JlYWQoc3RydWN0DQo+ID4+
-IHFvcmlxX3RtdV9kYXRhDQo+ID4+PiAqcCwgdm9pZCBfX2lvbWVtICphZGRyKQ0KPiA+Pj4NCj4g
-Pj4+ICBzdGF0aWMgaW50IHRtdV9nZXRfdGVtcCh2b2lkICpwLCBpbnQgKnRlbXApICB7DQo+ID4+
-PiArCXN0cnVjdCBxb3JpcV9zZW5zb3IgKnFzZW5zb3IgPSBwOw0KPiA+Pj4gKwlzdHJ1Y3QgcW9y
-aXFfdG11X2RhdGEgKnFkYXRhID0gcXNlbnNvci0+cWRhdGE7DQo+ID4+PiAgCXUzMiB2YWw7DQo+
-ID4+PiAtCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IHA7DQo+ID4+Pg0KPiA+Pj4gLQl2
-YWwgPSB0bXVfcmVhZChkYXRhLCAmZGF0YS0+cmVncy0+c2l0ZVtkYXRhLT5zZW5zb3JfaWRdLnRy
-aXRzcik7DQo+ID4+PiArCXZhbCA9IHRtdV9yZWFkKHFkYXRhLCAmcWRhdGEtPnJlZ3MtPnNpdGVb
-cXNlbnNvci0+aWRdLnRyaXRzcik7DQo+ID4+PiAgCSp0ZW1wID0gKHZhbCAmIDB4ZmYpICogMTAw
-MDsNCj4gPj4+DQo+ID4+PiAgCXJldHVybiAwOw0KPiA+Pj4gIH0NCj4gPj4+DQo+ID4+PiAtc3Rh
-dGljIGludCBxb3JpcV90bXVfZ2V0X3NlbnNvcl9pZCh2b2lkKQ0KPiA+Pj4gK3N0YXRpYyBjb25z
-dCBzdHJ1Y3QgdGhlcm1hbF96b25lX29mX2RldmljZV9vcHMgdG11X3R6X29wcyA9IHsNCj4gPj4+
-ICsJLmdldF90ZW1wID0gdG11X2dldF90ZW1wLA0KPiA+Pj4gK307DQo+ID4+PiArDQo+ID4+PiAr
-c3RhdGljIGludCBxb3JpcV90bXVfcmVnaXN0ZXJfdG11X3pvbmUoc3RydWN0IHBsYXRmb3JtX2Rl
-dmljZQ0KPiA+Pj4gKypwZGV2KQ0KPiA+Pj4gIHsNCj4gPj4+IC0JaW50IHJldCwgaWQ7DQo+ID4+
-PiAtCXN0cnVjdCBvZl9waGFuZGxlX2FyZ3Mgc2Vuc29yX3NwZWNzOw0KPiA+Pj4gLQlzdHJ1Y3Qg
-ZGV2aWNlX25vZGUgKm5wLCAqc2Vuc29yX25wOw0KPiA+Pj4gKwlzdHJ1Y3QgcW9yaXFfdG11X2Rh
-dGEgKnFkYXRhID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEocGRldik7DQo+ID4+PiArCWludCBpZCwg
-c2l0ZXMgPSAwOw0KPiA+Pj4NCj4gPj4+IC0JbnAgPSBvZl9maW5kX25vZGVfYnlfbmFtZShOVUxM
-LCAidGhlcm1hbC16b25lcyIpOw0KPiA+Pj4gLQlpZiAoIW5wKQ0KPiA+Pj4gLQkJcmV0dXJuIC1F
-Tk9ERVY7DQo+ID4+PiArCWZvciAoaWQgPSAwOyBpZCA8IFNJVEVTX01BWDsgaWQrKykgew0KPiA+
-Pj4gKwkJcWRhdGEtPnNlbnNvcltpZF0gPSBkZXZtX2t6YWxsb2MoJnBkZXYtPmRldiwNCj4gPj4+
-ICsJCQkJc2l6ZW9mKHN0cnVjdCBxb3JpcV9zZW5zb3IpLCBHRlBfS0VSTkVMKTsNCj4gPj4+ICsJ
-CWlmICghcWRhdGEtPnNlbnNvcltpZF0pDQo+ID4+PiArCQkJcmV0dXJuIC1FTk9NRU07DQo+ID4+
-Pg0KPiA+Pj4gLQlzZW5zb3JfbnAgPSBvZl9nZXRfbmV4dF9jaGlsZChucCwgTlVMTCk7DQo+ID4+
-PiAtCXJldCA9IG9mX3BhcnNlX3BoYW5kbGVfd2l0aF9hcmdzKHNlbnNvcl9ucCwNCj4gInRoZXJt
-YWwtc2Vuc29ycyIsDQo+ID4+PiAtCQkJIiN0aGVybWFsLXNlbnNvci1jZWxscyIsDQo+ID4+PiAt
-CQkJMCwgJnNlbnNvcl9zcGVjcyk7DQo+ID4+PiAtCWlmIChyZXQpIHsNCj4gPj4+IC0JCW9mX25v
-ZGVfcHV0KG5wKTsNCj4gPj4+IC0JCW9mX25vZGVfcHV0KHNlbnNvcl9ucCk7DQo+ID4+PiAtCQly
-ZXR1cm4gcmV0Ow0KPiA+Pj4gLQl9DQo+ID4+PiArCQlxZGF0YS0+c2Vuc29yW2lkXS0+aWQgPSBp
-ZDsNCj4gPj4+ICsJCXFkYXRhLT5zZW5zb3JbaWRdLT5xZGF0YSA9IHFkYXRhOw0KPiA+Pj4NCj4g
-Pj4+IC0JaWYgKHNlbnNvcl9zcGVjcy5hcmdzX2NvdW50ID49IDEpIHsNCj4gPj4+IC0JCWlkID0g
-c2Vuc29yX3NwZWNzLmFyZ3NbMF07DQo+ID4+PiAtCQlXQVJOKHNlbnNvcl9zcGVjcy5hcmdzX2Nv
-dW50ID4gMSwNCj4gPj4+IC0JCQkJIiVzOiB0b28gbWFueSBjZWxscyBpbiBzZW5zb3Igc3BlY2lm
-aWVyICVkXG4iLA0KPiA+Pj4gLQkJCQlzZW5zb3Jfc3BlY3MubnAtPm5hbWUsDQo+IHNlbnNvcl9z
-cGVjcy5hcmdzX2NvdW50KTsNCj4gPj4+IC0JfSBlbHNlIHsNCj4gPj4+IC0JCWlkID0gMDsNCj4g
-Pj4+IC0JfQ0KPiA+Pj4gKwkJcWRhdGEtPnNlbnNvcltpZF0tPnR6ZCA9DQo+ID4+PiBkZXZtX3Ro
-ZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoDQo+ID4+PiArCQkJCSZwZGV2LT5kZXYsIGlk
-LCBxZGF0YS0+c2Vuc29yW2lkXSwgJnRtdV90el9vcHMpOw0KPiA+Pj4gKwkJaWYgKElTX0VSUihx
-ZGF0YS0+c2Vuc29yW2lkXS0+dHpkKSkgew0KPiA+Pj4gKwkJCWlmIChQVFJfRVJSKHFkYXRhLT5z
-ZW5zb3JbaWRdLT50emQpID09IC1FTk9ERVYpDQo+ID4+PiArCQkJCWNvbnRpbnVlOw0KPiA+Pj4g
-KwkJCWVsc2UNCj4gPj4+ICsJCQkJcmV0dXJuIFBUUl9FUlIocWRhdGEtPnNlbnNvcltpZF0tPnR6
-ZCk7DQo+ID4+Pg0KPiA+Pj4gLQlvZl9ub2RlX3B1dChucCk7DQo+ID4+PiAtCW9mX25vZGVfcHV0
-KHNlbnNvcl9ucCk7DQo+ID4+PiArCQl9DQo+ID4+PiArDQo+ID4+PiArCQlzaXRlcyB8PSAweDEg
-PDwgKDE1IC0gaWQpOw0KPiA+Pj4gKwl9DQo+ID4+PiArCS8qIEVuYWJsZSBtb25pdG9yaW5nICov
-DQo+ID4+PiArCWlmIChzaXRlcyAhPSAwKQ0KPiA+Pj4gKwkJdG11X3dyaXRlKHFkYXRhLCBzaXRl
-cyB8IFRNUl9NRSB8IFRNUl9BTFBGLA0KPiA+Pj4gJnFkYXRhLT5yZWdzLT50bXIpOw0KPiA+Pj4N
-Cj4gPj4+IC0JcmV0dXJuIGlkOw0KPiA+Pj4gKwlyZXR1cm4gMDsNCj4gPj4+ICB9DQo+ID4+Pg0K
-PiA+Pj4gIHN0YXRpYyBpbnQgcW9yaXFfdG11X2NhbGlicmF0aW9uKHN0cnVjdCBwbGF0Zm9ybV9k
-ZXZpY2UgKnBkZXYpIEBADQo+ID4+PiAtMTc4LDE2ICsxODgsMTEgQEAgc3RhdGljIHZvaWQgcW9y
-aXFfdG11X2luaXRfZGV2aWNlKHN0cnVjdA0KPiA+Pj4gcW9yaXFfdG11X2RhdGEgKmRhdGEpDQo+
-ID4+PiAgCXRtdV93cml0ZShkYXRhLCBUTVJfRElTQUJMRSwgJmRhdGEtPnJlZ3MtPnRtcik7ICB9
-DQo+ID4+Pg0KPiA+Pj4gLXN0YXRpYyBjb25zdCBzdHJ1Y3QgdGhlcm1hbF96b25lX29mX2Rldmlj
-ZV9vcHMgdG11X3R6X29wcyA9IHsNCj4gPj4+IC0JLmdldF90ZW1wID0gdG11X2dldF90ZW1wLA0K
-PiA+Pj4gLX07DQo+ID4+PiAtDQo+ID4+PiAgc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3Ry
-dWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgIHsNCj4gPj4+ICAJaW50IHJldDsNCj4gPj4+ICAJ
-c3RydWN0IHFvcmlxX3RtdV9kYXRhICpkYXRhOw0KPiA+Pj4gIAlzdHJ1Y3QgZGV2aWNlX25vZGUg
-Km5wID0gcGRldi0+ZGV2Lm9mX25vZGU7DQo+ID4+PiAtCXUzMiBzaXRlOw0KPiA+Pj4NCj4gPj4+
-ICAJaWYgKCFucCkgew0KPiA+Pj4gIAkJZGV2X2VycigmcGRldi0+ZGV2LCAiRGV2aWNlIE9GLU5v
-ZGUgaXMgTlVMTCIpOyBAQA0KPiAtMjAzLDEzDQo+ID4+PiArMjA4LDYgQEAgc3RhdGljIGludCBx
-b3JpcV90bXVfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPj4+DQo+
-ID4+PiAgCWRhdGEtPmxpdHRsZV9lbmRpYW4gPSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2wobnAsICJs
-aXR0bGUtZW5kaWFuIik7DQo+ID4+Pg0KPiA+Pj4gLQlkYXRhLT5zZW5zb3JfaWQgPSBxb3JpcV90
-bXVfZ2V0X3NlbnNvcl9pZCgpOw0KPiA+Pj4gLQlpZiAoZGF0YS0+c2Vuc29yX2lkIDwgMCkgew0K
-PiA+Pj4gLQkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIGdldCBzZW5zb3IgaWRcbiIp
-Ow0KPiA+Pj4gLQkJcmV0ID0gLUVOT0RFVjsNCj4gPj4+IC0JCWdvdG8gZXJyX2lvbWFwOw0KPiA+
-Pj4gLQl9DQo+ID4+PiAtDQo+ID4+PiAgCWRhdGEtPnJlZ3MgPSBvZl9pb21hcChucCwgMCk7DQo+
-ID4+PiAgCWlmICghZGF0YS0+cmVncykgew0KPiA+Pj4gIAkJZGV2X2VycigmcGRldi0+ZGV2LCAi
-RmFpbGVkIHRvIGdldCBtZW1vcnkgcmVnaW9uXG4iKTsNCj4gQEANCj4gPj4+IC0yMjMsMTkgKzIy
-MSwxMyBAQCBzdGF0aWMgaW50IHFvcmlxX3RtdV9wcm9iZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2
-aWNlDQo+ID4+PiAqcGRldikNCj4gPj4+ICAJaWYgKHJldCA8IDApDQo+ID4+PiAgCQlnb3RvIGVy
-cl90bXU7DQo+ID4+Pg0KPiA+Pj4gLQlkYXRhLT50eiA9IGRldm1fdGhlcm1hbF96b25lX29mX3Nl
-bnNvcl9yZWdpc3RlcigmcGRldi0+ZGV2LA0KPiA+Pj4gLQkJCQkJCQlkYXRhLT5zZW5zb3JfaWQs
-DQo+ID4+PiAtCQkJCQkJCWRhdGEsICZ0bXVfdHpfb3BzKTsNCj4gPj4+IC0JaWYgKElTX0VSUihk
-YXRhLT50eikpIHsNCj4gPj4+IC0JCXJldCA9IFBUUl9FUlIoZGF0YS0+dHopOw0KPiA+Pj4gLQkJ
-ZGV2X2VycigmcGRldi0+ZGV2LA0KPiA+Pj4gLQkJCSJGYWlsZWQgdG8gcmVnaXN0ZXIgdGhlcm1h
-bCB6b25lIGRldmljZSAlZFxuIiwgcmV0KTsNCj4gPj4+IC0JCWdvdG8gZXJyX3RtdTsNCj4gPj4+
-ICsJcmV0ID0gcW9yaXFfdG11X3JlZ2lzdGVyX3RtdV96b25lKHBkZXYpOw0KPiA+Pj4gKwlpZiAo
-cmV0IDwgMCkgew0KPiA+Pj4gKwkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVkIHRvIHJlZ2lz
-dGVyIHNlbnNvcnNcbiIpOw0KPiA+Pj4gKwkJcmV0ID0gLUVOT0RFVjsNCj4gPj4+ICsJCWdvdG8g
-ZXJyX2lvbWFwOw0KPiA+Pj4gIAl9DQo+ID4+Pg0KPiA+Pj4gLQkvKiBFbmFibGUgbW9uaXRvcmlu
-ZyAqLw0KPiA+Pj4gLQlzaXRlID0gMHgxIDw8ICgxNSAtIGRhdGEtPnNlbnNvcl9pZCk7DQo+ID4+
-PiAtCXRtdV93cml0ZShkYXRhLCBzaXRlIHwgVE1SX01FIHwgVE1SX0FMUEYsICZkYXRhLT5yZWdz
-LT50bXIpOw0KPiA+Pj4NCj4gPj4+ICAJcmV0dXJuIDA7DQo+ID4+Pg0KPiA+Pj4gLS0NCj4gPj4+
-IDEuNy4xDQo+ID4NCj4gDQo+IA0KPiAtLQ0KPiANCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5r
-cy5wcm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRg0KPiB3d3cubGluYXJv
-Lm9yZyUyRiZhbXA7ZGF0YT0wMiU3QzAxJTdDYW5keS50YW5nJTQwbnhwLmNvbSU3Q2EwDQo+IGQy
-NjVmOTVhNDI0ZDMzMjU2YjA4ZDY0ZjhkNzRjOCU3QzY4NmVhMWQzYmMyYjRjNmZhOTJjZDk5YzVj
-DQo+IDMwMTYzNSU3QzAlN0MwJTdDNjM2NzgzODY2Mjk5Mzk5MjkwJmFtcDtzZGF0YT1BVnczWGRq
-bWlSTw0KPiBYUDdYejdNVE5NVmd6SThoWUc5YVdzUjAyb3BNWnFqTSUzRCZhbXA7cmVzZXJ2ZWQ9
-MD4NCj4gTGluYXJvLm9yZyCppiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MNCj4g
-DQo+IEZvbGxvdyBMaW5hcm86DQo+IDxodHRwczovL2VtZWEwMS5zYWZlbGlua3MucHJvdGVjdGlv
-bi5vdXRsb29rLmNvbS8/dXJsPWh0dHAlM0ElMkYlMkYNCj4gd3d3LmZhY2Vib29rLmNvbSUyRnBh
-Z2VzJTJGTGluYXJvJmFtcDtkYXRhPTAyJTdDMDElN0NhbmR5LnRhbg0KPiBnJTQwbnhwLmNvbSU3
-Q2EwZDI2NWY5NWE0MjRkMzMyNTZiMDhkNjRmOGQ3NGM4JTdDNjg2ZWExZDNiDQo+IGMyYjRjNmZh
-OTJjZDk5YzVjMzAxNjM1JTdDMCU3QzAlN0M2MzY3ODM4NjYyOTkzOTkyOTAmYW1wO3MNCj4gZGF0
-YT1OTTh3bTRyaSUyRjJrZEJXMEZkQ1NYckw1b2dnNm93UGZvUkdhY3FtJTJCS3NFdyUzRCZhDQo+
-IG1wO3Jlc2VydmVkPTA+IEZhY2Vib29rIHwNCj4gPGh0dHBzOi8vZW1lYTAxLnNhZmVsaW5rcy5w
-cm90ZWN0aW9uLm91dGxvb2suY29tLz91cmw9aHR0cCUzQSUyRiUyRnQNCj4gd2l0dGVyLmNvbSUy
-RiUyMyElMkZsaW5hcm9vcmcmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MG4NCj4geHAu
-Y29tJTdDYTBkMjY1Zjk1YTQyNGQzMzI1NmIwOGQ2NGY4ZDc0YzglN0M2ODZlYTFkM2JjMmI0YzYN
-Cj4gZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4Mzg2NjI5OTM5OTI5MCZhbXA7c2Rh
-dGE9DQo+IFdwbHF3cGlzZ21xcmYzeUxoVHpkbzVPNlR2TjJKZnU1SWpCVHZTNHhPV2slM0QmYW1w
-O3Jlc2VydmVkPTA+DQo+IFR3aXR0ZXIgfA0KPiA8aHR0cHM6Ly9lbWVhMDEuc2FmZWxpbmtzLnBy
-b3RlY3Rpb24ub3V0bG9vay5jb20vP3VybD1odHRwJTNBJTJGJTJGDQo+IHd3dy5saW5hcm8ub3Jn
-JTJGbGluYXJvLWJsb2clMkYmYW1wO2RhdGE9MDIlN0MwMSU3Q2FuZHkudGFuZyU0MA0KPiBueHAu
-Y29tJTdDYTBkMjY1Zjk1YTQyNGQzMzI1NmIwOGQ2NGY4ZDc0YzglN0M2ODZlYTFkM2JjMmI0Yw0K
-PiA2ZmE5MmNkOTljNWMzMDE2MzUlN0MwJTdDMCU3QzYzNjc4Mzg2NjI5OTM5OTI5MCZhbXA7c2Rh
-dGE9SQ0KPiBiNktGSVAzTE5QR3VERGIxZHBuT2xscnFBQXNjJTJCWk5DVXVKWlVQc282ayUzRCZh
-bXA7cmVzZXJ2ZQ0KPiBkPTA+IEJsb2cNCg0K
+On 21/11/2018 10:16, Andy Tang wrote:
+> Hi Daniel,
+> 
+> Thanks for your explanation. The problem is these two trees are not synced well.
+> Let's take our driver(qoriq_thermal.c) for example.
+> 
+> Git log on Rui's tree next branch:
+> 2dfef65 thermal: qoriq: Switch to SPDX identifier
+> 1a893a5 thermal: qoriq: Simplify the 'site' variable assignment
+> f1506a6 thermal: qoriq: Use devm_thermal_zone_of_sensor_register()
+> c30d5d5 thermal: qoriq: constify thermal_zone_of_device_ops structures
+> 0e77488 thermal: qoriq: remove useless call for of_thermal_get_trip_points()
+> 4352844 thermal: qoriq: Add thermal management support
+> 
+> Git log on linux-soc-thermal tree branch next:
+> 6017e2a thermal: qoriq: add i.mx8mq support
+> 9b96566 thermal: Convert to using %pOFn instead of device_node.name
+> c30d5d5 thermal: qoriq: constify thermal_zone_of_device_ops structures
+> 0e77488 thermal: qoriq: remove useless call for of_thermal_get_trip_points()
+> 4352844 thermal: qoriq: Add thermal management support
+> 
+> You can see that the first 2-3 commits on these two tress are different.
+> 
+> The strange thing is they seems sync well on Linus' tree:
+> 0ef7791 Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal
+> 6017e2a thermal: qoriq: add i.mx8mq support
+> 9b96566 thermal: Convert to using %pOFn instead of device_node.name
+> 2dfef65 thermal: qoriq: Switch to SPDX identifier
+> 1a893a5 thermal: qoriq: Simplify the 'site' variable assignment
+> f1506a6 thermal: qoriq: Use devm_thermal_zone_of_sensor_register()
+> c30d5d5 thermal: qoriq: constify thermal_zone_of_device_ops structures
+> 0e77488 thermal: qoriq: remove useless call for of_thermal_get_trip_points()
+> 4352844 thermal: qoriq: Add thermal management support
+> 
+> Currently my patch was created based on Run's tree, probably I should rebase it to soc tree.
+> But whichever tree I use, it can't be merged to Linus' tree without conflict.
+> 
+> Something I missed?
+
+No.
+
+Eduardo, Rui,
+
+why not create a 'thermal' group ala 'tip' group with a single tree and
+two branches:
+
+thermal/next
+thermal/fixes
+
+ - Rui takes the core changes.
+ - Eduardo takes the SoC changes.
+
+ - Both commit to thermal/next
+ - Both commit to thermal/fixes
+ - Both merge thermal/fixes into thermal/core as often as possible.
+
+That will help to have a more up to date branch, simplify the patch
+submission path and reduce the latency for the merge windows.
+
+If you need help, I can take care of applying the fixes only and merge
+them to thermal/next.
+
+That is how the tip subsystem works, Peter Ziljstra, Ingo Molnar, Thomas
+Gleixner, have all permissions to commit in the tip tree but they take
+care of their subsystems. If one is away for vacations or whatever,
+someone else can take over during the absence.
+
+
+
+
+
+>> -----Original Message-----
+>> From: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Sent: 2018年11月21日 16:44
+>> To: Andy Tang <andy.tang@nxp.com>; rui.zhang@intel.com;
+>> edubezval@gmail.com
+>> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>> Subject: Re: [PATCH v3] thermal: qoriq: add multiple sensors support
+>>
+>> On 21/11/2018 02:34, Andy Tang wrote:
+>>> Hi all,
+>>>
+>>> Do you have any comments on this patch?
+>>>
+>>> I found for our thermal driver(qoriq_thermal.c) there are different
+>> between the following two git trees:
+>>> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+>>> branch: next
+>>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.gi
+>> t.
+>>> branch: next
+>>>
+>>> Could you please clarify which git tree/branch should I use?
+>>
+>> SoC changes are submitted against linux-soc-thermal.git.
+>>
+>> Generic thermal framework are sent against Zhang Rui's tree but it
+>> happens sometimes Eduardo pick them also when the changes are related
+>> to SoC behavior.
+>>
+>> However, I agree that can be confusing :)
+>>
+>> Eduardo, Rui,
+>>
+>> how about to add a section in the maintainer handbook for the thermal to
+>> clarify the expectations and the flow?
+>>
+>>>> -----Original Message-----
+>>>> From: Andy Tang
+>>>> Sent: 2018年11月14日 15:29
+>>>> To: rui.zhang@intel.com; daniel.lezcano@linaro.org
+>>>> Cc: edubezval@gmail.com; linux-pm@vger.kernel.org;
+>>>> linux-kernel@vger.kernel.org
+>>>> Subject: RE: [PATCH v3] thermal: qoriq: add multiple sensors support
+>>>>
+>>>> PING.
+>>>>
+>>>> BR,
+>>>> Andy
+>>>>
+>>>>> -----Original Message-----
+>>>>> From: andy.tang@nxp.com <andy.tang@nxp.com>
+>>>>> Sent: 2018年10月30日 9:00
+>>>>> To: rui.zhang@intel.com; daniel.lezcano@linaro.org
+>>>>> Cc: edubezval@gmail.com; linux-pm@vger.kernel.org;
+>>>>> linux-kernel@vger.kernel.org; Andy Tang <andy.tang@nxp.com>
+>>>>> Subject: [PATCH v3] thermal: qoriq: add multiple sensors support
+>>>>>
+>>>>> From: Yuantian Tang <andy.tang@nxp.com>
+>>>>>
+>>>>> The QorIQ Layerscape SoC has several thermal sensors but the
+>> current
+>>>>> driver only supports one.
+>>>>>
+>>>>> Massage the code to be sensor oriented and allow the support for
+>>>>> multiple sensors.
+>>>>>
+>>>>> Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+>>>>> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>>> ---
+>>>>> v3:
+>>>>>   - add Reviewed-by
+>>>>> v2:
+>>>>>   - update the commit message
+>>>>>   - refine the qoriq_tmu_register_tmu_zone()
+>>>>>
+>>>>>  drivers/thermal/qoriq_thermal.c |  100
+>>>>> ++++++++++++++++++---------------------
+>>>>>  1 files changed, 46 insertions(+), 54 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/thermal/qoriq_thermal.c
+>>>>> b/drivers/thermal/qoriq_thermal.c index 450ed66..8beb344 100644
+>>>>> --- a/drivers/thermal/qoriq_thermal.c
+>>>>> +++ b/drivers/thermal/qoriq_thermal.c
+>>>>> @@ -59,14 +59,21 @@ struct qoriq_tmu_regs {
+>>>>>  	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+>>>>>  };
+>>>>>
+>>>>> +struct qoriq_tmu_data;
+>>>>> +
+>>>>>  /*
+>>>>>   * Thermal zone data
+>>>>>   */
+>>>>> +struct qoriq_sensor {
+>>>>> +	struct thermal_zone_device	*tzd;
+>>>>> +	struct qoriq_tmu_data		*qdata;
+>>>>> +	int				id;
+>>>>> +};
+>>>>> +
+>>>>>  struct qoriq_tmu_data {
+>>>>> -	struct thermal_zone_device *tz;
+>>>>>  	struct qoriq_tmu_regs __iomem *regs;
+>>>>> -	int sensor_id;
+>>>>>  	bool little_endian;
+>>>>> +	struct qoriq_sensor	*sensor[SITES_MAX];
+>>>>>  };
+>>>>>
+>>>>>  static void tmu_write(struct qoriq_tmu_data *p, u32 val, void
+>>>>> __iomem
+>>>>> *addr) @@ -87,48 +94,51 @@ static u32 tmu_read(struct
+>>>> qoriq_tmu_data
+>>>>> *p, void __iomem *addr)
+>>>>>
+>>>>>  static int tmu_get_temp(void *p, int *temp)  {
+>>>>> +	struct qoriq_sensor *qsensor = p;
+>>>>> +	struct qoriq_tmu_data *qdata = qsensor->qdata;
+>>>>>  	u32 val;
+>>>>> -	struct qoriq_tmu_data *data = p;
+>>>>>
+>>>>> -	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
+>>>>> +	val = tmu_read(qdata, &qdata->regs->site[qsensor->id].tritsr);
+>>>>>  	*temp = (val & 0xff) * 1000;
+>>>>>
+>>>>>  	return 0;
+>>>>>  }
+>>>>>
+>>>>> -static int qoriq_tmu_get_sensor_id(void)
+>>>>> +static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+>>>>> +	.get_temp = tmu_get_temp,
+>>>>> +};
+>>>>> +
+>>>>> +static int qoriq_tmu_register_tmu_zone(struct platform_device
+>>>>> +*pdev)
+>>>>>  {
+>>>>> -	int ret, id;
+>>>>> -	struct of_phandle_args sensor_specs;
+>>>>> -	struct device_node *np, *sensor_np;
+>>>>> +	struct qoriq_tmu_data *qdata = platform_get_drvdata(pdev);
+>>>>> +	int id, sites = 0;
+>>>>>
+>>>>> -	np = of_find_node_by_name(NULL, "thermal-zones");
+>>>>> -	if (!np)
+>>>>> -		return -ENODEV;
+>>>>> +	for (id = 0; id < SITES_MAX; id++) {
+>>>>> +		qdata->sensor[id] = devm_kzalloc(&pdev->dev,
+>>>>> +				sizeof(struct qoriq_sensor), GFP_KERNEL);
+>>>>> +		if (!qdata->sensor[id])
+>>>>> +			return -ENOMEM;
+>>>>>
+>>>>> -	sensor_np = of_get_next_child(np, NULL);
+>>>>> -	ret = of_parse_phandle_with_args(sensor_np,
+>> "thermal-sensors",
+>>>>> -			"#thermal-sensor-cells",
+>>>>> -			0, &sensor_specs);
+>>>>> -	if (ret) {
+>>>>> -		of_node_put(np);
+>>>>> -		of_node_put(sensor_np);
+>>>>> -		return ret;
+>>>>> -	}
+>>>>> +		qdata->sensor[id]->id = id;
+>>>>> +		qdata->sensor[id]->qdata = qdata;
+>>>>>
+>>>>> -	if (sensor_specs.args_count >= 1) {
+>>>>> -		id = sensor_specs.args[0];
+>>>>> -		WARN(sensor_specs.args_count > 1,
+>>>>> -				"%s: too many cells in sensor specifier %d\n",
+>>>>> -				sensor_specs.np->name,
+>> sensor_specs.args_count);
+>>>>> -	} else {
+>>>>> -		id = 0;
+>>>>> -	}
+>>>>> +		qdata->sensor[id]->tzd =
+>>>>> devm_thermal_zone_of_sensor_register(
+>>>>> +				&pdev->dev, id, qdata->sensor[id], &tmu_tz_ops);
+>>>>> +		if (IS_ERR(qdata->sensor[id]->tzd)) {
+>>>>> +			if (PTR_ERR(qdata->sensor[id]->tzd) == -ENODEV)
+>>>>> +				continue;
+>>>>> +			else
+>>>>> +				return PTR_ERR(qdata->sensor[id]->tzd);
+>>>>>
+>>>>> -	of_node_put(np);
+>>>>> -	of_node_put(sensor_np);
+>>>>> +		}
+>>>>> +
+>>>>> +		sites |= 0x1 << (15 - id);
+>>>>> +	}
+>>>>> +	/* Enable monitoring */
+>>>>> +	if (sites != 0)
+>>>>> +		tmu_write(qdata, sites | TMR_ME | TMR_ALPF,
+>>>>> &qdata->regs->tmr);
+>>>>>
+>>>>> -	return id;
+>>>>> +	return 0;
+>>>>>  }
+>>>>>
+>>>>>  static int qoriq_tmu_calibration(struct platform_device *pdev) @@
+>>>>> -178,16 +188,11 @@ static void qoriq_tmu_init_device(struct
+>>>>> qoriq_tmu_data *data)
+>>>>>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);  }
+>>>>>
+>>>>> -static const struct thermal_zone_of_device_ops tmu_tz_ops = {
+>>>>> -	.get_temp = tmu_get_temp,
+>>>>> -};
+>>>>> -
+>>>>>  static int qoriq_tmu_probe(struct platform_device *pdev)  {
+>>>>>  	int ret;
+>>>>>  	struct qoriq_tmu_data *data;
+>>>>>  	struct device_node *np = pdev->dev.of_node;
+>>>>> -	u32 site;
+>>>>>
+>>>>>  	if (!np) {
+>>>>>  		dev_err(&pdev->dev, "Device OF-Node is NULL"); @@
+>> -203,13
+>>>>> +208,6 @@ static int qoriq_tmu_probe(struct platform_device
+>> *pdev)
+>>>>>
+>>>>>  	data->little_endian = of_property_read_bool(np, "little-endian");
+>>>>>
+>>>>> -	data->sensor_id = qoriq_tmu_get_sensor_id();
+>>>>> -	if (data->sensor_id < 0) {
+>>>>> -		dev_err(&pdev->dev, "Failed to get sensor id\n");
+>>>>> -		ret = -ENODEV;
+>>>>> -		goto err_iomap;
+>>>>> -	}
+>>>>> -
+>>>>>  	data->regs = of_iomap(np, 0);
+>>>>>  	if (!data->regs) {
+>>>>>  		dev_err(&pdev->dev, "Failed to get memory region\n");
+>> @@
+>>>>> -223,19 +221,13 @@ static int qoriq_tmu_probe(struct
+>> platform_device
+>>>>> *pdev)
+>>>>>  	if (ret < 0)
+>>>>>  		goto err_tmu;
+>>>>>
+>>>>> -	data->tz = devm_thermal_zone_of_sensor_register(&pdev->dev,
+>>>>> -							data->sensor_id,
+>>>>> -							data, &tmu_tz_ops);
+>>>>> -	if (IS_ERR(data->tz)) {
+>>>>> -		ret = PTR_ERR(data->tz);
+>>>>> -		dev_err(&pdev->dev,
+>>>>> -			"Failed to register thermal zone device %d\n", ret);
+>>>>> -		goto err_tmu;
+>>>>> +	ret = qoriq_tmu_register_tmu_zone(pdev);
+>>>>> +	if (ret < 0) {
+>>>>> +		dev_err(&pdev->dev, "Failed to register sensors\n");
+>>>>> +		ret = -ENODEV;
+>>>>> +		goto err_iomap;
+>>>>>  	}
+>>>>>
+>>>>> -	/* Enable monitoring */
+>>>>> -	site = 0x1 << (15 - data->sensor_id);
+>>>>> -	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
+>>>>>
+>>>>>  	return 0;
+>>>>>
+>>>>> --
+>>>>> 1.7.1
+>>>
+>>
+>>
+>> --
+>>
+>> <https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2F
+>> www.linaro.org%2F&amp;data=02%7C01%7Candy.tang%40nxp.com%7Ca0
+>> d265f95a424d33256b08d64f8d74c8%7C686ea1d3bc2b4c6fa92cd99c5c
+>> 301635%7C0%7C0%7C636783866299399290&amp;sdata=AVw3XdjmiRO
+>> XP7Xz7MTNMVgzI8hYG9aWsR02opMZqjM%3D&amp;reserved=0>
+>> Linaro.org │ Open source software for ARM SoCs
+>>
+>> Follow Linaro:
+>> <https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2F
+>> www.facebook.com%2Fpages%2FLinaro&amp;data=02%7C01%7Candy.tan
+>> g%40nxp.com%7Ca0d265f95a424d33256b08d64f8d74c8%7C686ea1d3b
+>> c2b4c6fa92cd99c5c301635%7C0%7C0%7C636783866299399290&amp;s
+>> data=NM8wm4ri%2F2kdBW0FdCSXrL5ogg6owPfoRGacqm%2BKsEw%3D&a
+>> mp;reserved=0> Facebook |
+>> <https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2Ft
+>> witter.com%2F%23!%2Flinaroorg&amp;data=02%7C01%7Candy.tang%40n
+>> xp.com%7Ca0d265f95a424d33256b08d64f8d74c8%7C686ea1d3bc2b4c6
+>> fa92cd99c5c301635%7C0%7C0%7C636783866299399290&amp;sdata=
+>> Wplqwpisgmqrf3yLhTzdo5O6TvN2Jfu5IjBTvS4xOWk%3D&amp;reserved=0>
+>> Twitter |
+>> <https://emea01.safelinks.protection.outlook.com/?url=http%3A%2F%2F
+>> www.linaro.org%2Flinaro-blog%2F&amp;data=02%7C01%7Candy.tang%40
+>> nxp.com%7Ca0d265f95a424d33256b08d64f8d74c8%7C686ea1d3bc2b4c
+>> 6fa92cd99c5c301635%7C0%7C0%7C636783866299399290&amp;sdata=I
+>> b6KFIP3LNPGuDDb1dpnOllrqAAsc%2BZNCUuJZUPso6k%3D&amp;reserve
+>> d=0> Blog
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
