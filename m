@@ -1,112 +1,208 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH 3/6] devfreq: add support for suspend/resume of a devfreq
- device
-Date: Wed, 21 Nov 2018 19:01:38 +0100
-Message-ID: <1542823301-23563-4-git-send-email-l.luba@partner.samsung.com>
-References: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
- <CGME20181121180204eucas1p1c5891d498aa59c0e10dd3ba4727a4382@eucas1p1.samsung.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Subject: Re: [PATCH v10 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Wed, 21 Nov 2018 10:02:36 -0800
+Message-ID: <20181121180236.GS22824@google.com>
+References: <1542796967-5949-1-git-send-email-tdas@codeaurora.org>
+ <1542796967-5949-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: mark.rutland@arm.com, len.brown@intel.com, tony.luck@intel.com, keescook@chromium.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, anton@enomsg.org, rjw@rjwysocki.net, robh+dt@kernel.org, Lukasz Luba <l.luba@partner.samsung.com>, tjakobi@math.uni-bielefeld.de, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, pavel@ucw.cz, ccross@android.com, krzk@kernel.org, m.szyprowski@samsung.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1542796967-5949-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-The patch adds support for handling suspend/resume process.
-It uses atomic variables to make sure no race condition
-affects the process.
+On Wed, Nov 21, 2018 at 04:12:46PM +0530, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
+>  1 file changed, 172 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..90e396b
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,172 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +	Usage:		required
+> +	Value type:	<phandle> From common clock binding.
+> +	Definition:	clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +	Usage:		required
+> +	Value type:	<string> From common clock binding.
+> +	Definition:	must be "xo", "cpu_clk".
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the HW bases in
+> +			each frequency domain.
+> +- reg-names
+> +	Usage:		Optional
+> +	Value type:	<string>
+> +	Definition:	Frequency domain name i.e.
+> +			"freq-domain0", "freq-domain1".
+> +
+> +- freq-domain-cells:
+> +	Usage:		required.
+> +	Definition:	Number of cells in a freqency domain specifier.
+> +
+> +* Property qcom,freq-domain
+> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+> +
+> +
+> +Example:
+> +
+> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+> +DCVS state together.
+> +
+> +/ {
+> +	cpus {
+> +		#address-cells = <2>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x0>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_0>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_0: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +				L3_0: l3-cache {
+> +				      compatible = "cache";
+> +				};
+> +			};
+> +		};
+> +
+> +		CPU1: cpu@100 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x100>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_100>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_100: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU2: cpu@200 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x200>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_200>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_200: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU3: cpu@300 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x300>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_300>;
+> +			qcom,freq-domain = <&cpufreq_hw 0>;
+> +			L2_300: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU4: cpu@400 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x400>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_400>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_400: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU5: cpu@500 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x500>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_500>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_500: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU6: cpu@600 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x600>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_600>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_600: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +
+> +		CPU7: cpu@700 {
+> +			device_type = "cpu";
+> +			compatible = "qcom,kryo385";
+> +			reg = <0x0 0x700>;
+> +			enable-method = "psci";
+> +			next-level-cache = <&L2_700>;
+> +			qcom,freq-domain = <&cpufreq_hw 1>;
+> +			L2_700: l2-cache {
+> +				compatible = "cache";
+> +				next-level-cache = <&L3_0>;
+> +			};
+> +		};
+> +	};
+> +
+> + soc {
+> +	cpufreq_hw: cpufreq@17d43000 {
+> +		compatible = "qcom,cpufreq-hw";
+> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+> +		reg-names = "freq-domain0", "freq-domain1";
+> +
+> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+> +		clock-names = "xo", "gcc_cpuss_gpll0_clk_src";
 
-The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
-solve issue with devfreq device's frequency during suspend/resume.
-During the discussion on LKML some corner cases and comments appeared
-related to the design. This patch address them keeping in mind suggestions
-from Chanwoo Choi.
-
-Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
----
- drivers/devfreq/devfreq.c | 45 +++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 39 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index cf9c643..7e09de8 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -872,14 +872,33 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
-  */
- int devfreq_suspend_device(struct devfreq *devfreq)
- {
--	if (!devfreq)
--		return -EINVAL;
-+        int ret;
-+        unsigned long prev_freq;
-+        u32 flags = 0;
-+
-+        if (!devfreq)
-+                return -EINVAL;
-+
-+        if (devfreq->governor) {
-+		ret = devfreq->governor->event_handler(devfreq,
-+					DEVFREQ_GOV_SUSPEND, NULL);
-+		if (ret)
-+			return ret;
-+	}
- 
--	if (!devfreq->governor)
--		return 0;
-+	if (devfreq->suspend_freq) {
-+		if (atomic_inc_return(&devfreq->suspend_count) > 1)
-+			return 0;
- 
--	return devfreq->governor->event_handler(devfreq,
--				DEVFREQ_GOV_SUSPEND, NULL);
-+		ret = devfreq_set_target(devfreq, devfreq->suspend_freq,
-+					 &prev_freq, flags);
-+		if (ret)
-+			return ret;
-+
-+		devfreq->resume_freq = prev_freq;
-+	}
-+
-+        return 0;
- }
- EXPORT_SYMBOL(devfreq_suspend_device);
- 
-@@ -893,9 +912,23 @@ EXPORT_SYMBOL(devfreq_suspend_device);
-  */
- int devfreq_resume_device(struct devfreq *devfreq)
- {
-+        int ret;
-+        unsigned long prev_freq;
-+        u32 flags = 0;
-+
- 	if (!devfreq)
- 		return -EINVAL;
- 
-+	if (devfreq->suspend_freq) {
-+		if (atomic_dec_return(&devfreq->suspend_count) >= 1)
-+			return 0;
-+
-+		ret = devfreq_set_target(devfreq, devfreq->resume_freq,
-+					 &prev_freq, flags);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	if (!devfreq->governor)
- 		return 0;
- 
--- 
-2.7.4
+I don't have/find the document with the clock configuration of this
+IP block, but the 'clock-names' sound more like aliases for the actual
+clocks specified in the 'clocks' property (especially
+'gcc_cpuss_gpll0_clk_src') than input signals from the IP POV, which
+I'd expect to have more generic names.
