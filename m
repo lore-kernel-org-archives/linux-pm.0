@@ -1,69 +1,83 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: [PATCH 1/2] power: supply: add input voltage limit property.
-Date: Wed, 21 Nov 2018 16:34:43 +0100
-Message-ID: <20181121153444.24747-1-enric.balletbo@collabora.com>
+From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v1] makedumpfile: exclude pages that are logically offline
+Date: Wed, 21 Nov 2018 16:35:31 +0100
+Message-ID: <e5ac1f79-cd69-2b8e-41ee-873fea48afdd@redhat.com>
+References: <20181119101616.8901-1-david@redhat.com>
+ <20181119101835.9140-1-david@redhat.com>
+ <4AE2DC15AC0B8543882A74EA0D43DBEC03561222@BPXM09GP.gisp.nec.co.jp>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4AE2DC15AC0B8543882A74EA0D43DBEC03561222@BPXM09GP.gisp.nec.co.jp>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, sre@kernel.org
-Cc: Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+To: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, kexec-ml <kexec@lists.infradead.org>, "pv-drivers@vmware.com" <pv-drivers@vmware.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>
 List-Id: linux-pm@vger.kernel.org
 
-We have a problem with USBPD chargers which under certain conditions
-can result in system overheating if the voltage provided by the USBPD
-port is too high. While the preferred means to control this would be
-through devicetree or ACPI settings, this is not always possible, and
-we need to have a means to set a voltage limit.
+On 21.11.18 15:58, Kazuhito Hagio wrote:
+> Hi David,
+> 
+>> Linux marks pages that are logically offline via a page flag (map count).
+>> Such pages e.g. include pages infated as part of a balloon driver or
+>> pages that were not actually onlined when onlining the whole section.
+>>
+>> While the hypervisor usually allows to read such inflated memory, we
+>> basically read and dump data that is completely irrelevant. Also, this
+>> might result in quite some overhead in the hypervisor. In addition,
+>> we saw some problems under Hyper-V, whereby we can crash the kernel by
+>> dumping, when reading memory of a partially onlined memory segment
+>> (for memory added by the Hyper-V balloon driver).
+>>
+>> Therefore, don't read and dump pages that are marked as being logically
+>> offline.
+>>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>> ---
+>>  makedumpfile.c | 34 ++++++++++++++++++++++++++++++----
+>>  makedumpfile.h |  1 +
+>>  2 files changed, 31 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/makedumpfile.c b/makedumpfile.c
+>> index 8923538..b8bfd4c 100644
+>> --- a/makedumpfile.c
+>> +++ b/makedumpfile.c
+>> @@ -88,6 +88,7 @@ mdf_pfn_t pfn_cache_private;
+>>  mdf_pfn_t pfn_user;
+>>  mdf_pfn_t pfn_free;
+>>  mdf_pfn_t pfn_hwpoison;
+>> +mdf_pfn_t pfn_offline;
+>>
+>>  mdf_pfn_t num_dumped;
+>>
+>> @@ -249,6 +250,21 @@ isHugetlb(unsigned long dtor)
+>>                      && (SYMBOL(free_huge_page) == dtor));
+>>  }
+>>
+>> +static int
+>> +isOffline(unsigned long flags, unsigned int _mapcount)
+>> +{
+>> +	if (NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE) == NOT_FOUND_NUMBER)
+>> +		return FALSE;
+> 
+> This is NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE), isn't it?
+> If so, I will correct it when merging.
+> 
+> Otherwise, looks good to me.
+> 
+> Thanks!
+> Kazu
 
-This patch exposes a new property, similar to input current limit, to
-re-configure the maximum voltage from the external supply at runtime
-based on system-level knowledge or user input.
+Indeed,
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
+I will most probably resend either way along with a new mm series!
 
- Documentation/power/power_supply_class.txt | 2 ++
- drivers/power/supply/power_supply_sysfs.c  | 1 +
- include/linux/power_supply.h               | 1 +
- 3 files changed, 4 insertions(+)
+Thanks a lot!
 
-diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
-index 300d37896e51..7b4be615b4f8 100644
---- a/Documentation/power/power_supply_class.txt
-+++ b/Documentation/power/power_supply_class.txt
-@@ -137,6 +137,8 @@ power supply object.
- 
- INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
- the current drawn from a charging source.
-+INPUT_VOLTAGE_LIMIT - input voltage limit programmed by charger. Indicates
-+the voltage limit from a charging source.
- 
- CHARGE_CONTROL_LIMIT - current charge control limit setting
- CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index dce24f596160..5848742ebb59 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -275,6 +275,7 @@ static struct device_attribute power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(charge_control_limit),
- 	POWER_SUPPLY_ATTR(charge_control_limit_max),
- 	POWER_SUPPLY_ATTR(input_current_limit),
-+	POWER_SUPPLY_ATTR(input_voltage_limit),
- 	POWER_SUPPLY_ATTR(energy_full_design),
- 	POWER_SUPPLY_ATTR(energy_empty_design),
- 	POWER_SUPPLY_ATTR(energy_full),
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index f80769175c56..608ba88e32ee 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -122,6 +122,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
- 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-+	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
- 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
- 	POWER_SUPPLY_PROP_ENERGY_FULL,
+
 -- 
-2.19.1
+
+Thanks,
+
+David / dhildenb
