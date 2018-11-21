@@ -1,60 +1,92 @@
 From: David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v1 3/8] kexec: export PG_offline to VMCOREINFO
-Date: Wed, 21 Nov 2018 09:50:17 +0100
-Message-ID: <ddd5a6f4-59d0-474b-45d5-3589a21ebcd4@redhat.com>
+Subject: Re: [PATCH v1 6/8] vmw_balloon: mark inflated pages PG_offline
+Date: Wed, 21 Nov 2018 09:54:29 +0100
+Message-ID: <b62e3d4b-f8ff-8e6c-c1b4-b36d5d32179d@redhat.com>
 References: <20181119101616.8901-1-david@redhat.com>
- <20181119101616.8901-4-david@redhat.com>
- <20181121060458.GC7386@MiWiFi-R3L-srv>
+ <20181119101616.8901-7-david@redhat.com>
+ <9F78496F-EBAE-4248-80F0-0CB55CEFA238@vmware.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181121060458.GC7386@MiWiFi-R3L-srv>
+In-Reply-To: <9F78496F-EBAE-4248-80F0-0CB55CEFA238@vmware.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baoquan He <bhe@redhat.com>
-Cc: linux-mm@kvack.org, Michal Hocko <mhocko@suse.com>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, pv-drivers@vmware.com, Borislav Petkov <bp@alien8.de>, linux-doc@vger.kernel.org, kexec-ml <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, Omar Sandoval <osandov@fb.com>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>, "Michael S. Tsirkin" <mst@redhat.com>, xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org, devel@linuxdriverproject.org, Dave Young <dyoung@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Lianbo Jiang <lijiang@redhat.com>
+To: Nadav Amit <namit@vmware.com>
+Cc: linux-mm <linux-mm@kvack.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>, linux-fsdevel <linux-fsdevel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, xen-devel <xen-devel@lists.xenproject.org>, kexec-ml <kexec@lists.infradead.org>, pv-drivers <pv-drivers@vmware.com>, Xavier Deguillard <xdeguillard@vmware.com>, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Julien Freche <jfreche@vmware.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 21.11.18 07:04, Baoquan He wrote:
-> On 11/19/18 at 11:16am, David Hildenbrand wrote:
->> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
->> index 933cb3e45b98..093c9f917ed0 100644
->> --- a/kernel/crash_core.c
->> +++ b/kernel/crash_core.c
->> @@ -464,6 +464,8 @@ static int __init crash_save_vmcoreinfo_init(void)
->>  	VMCOREINFO_NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE);
->>  #ifdef CONFIG_HUGETLB_PAGE
->>  	VMCOREINFO_NUMBER(HUGETLB_PAGE_DTOR);
->> +#define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
->> +	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
->>  #endif
+On 21.11.18 04:22, Nadav Amit wrote:
+> Thanks for this patch!
 > 
-> This solution looks good to me. One small concern is why we don't
-> export PG_offline to vmcoreinfo directly, then define
-> PAGE_OFFLINE_MAPCOUNT_VALUE in makedumpfile. We have been exporting
-> kernel data/MACRO directly, why this one is exceptional.
+>> On Nov 19, 2018, at 2:16 AM, David Hildenbrand <david@redhat.com> wrote:
+>>
+>> Mark inflated and never onlined pages PG_offline, to tell the world that
+>> the content is stale and should not be dumped.
+>>
+>> Cc: Xavier Deguillard <xdeguillard@vmware.com>
+>> Cc: Nadav Amit <namit@vmware.com>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Cc: Julien Freche <jfreche@vmware.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: Matthew Wilcox <willy@infradead.org>
+>> Cc: Michal Hocko <mhocko@suse.com>
+>> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>> ---
+>> drivers/misc/vmw_balloon.c | 32 ++++++++++++++++++++++++++++++++
+>> 1 file changed, 32 insertions(+)
+>>
+>> diff --git a/drivers/misc/vmw_balloon.c b/drivers/misc/vmw_balloon.c
+>> index e6126a4b95d3..8cc8bd9a4e32 100644
+>> --- a/drivers/misc/vmw_balloon.c
+>> +++ b/drivers/misc/vmw_balloon.c
+>> @@ -544,6 +544,36 @@ unsigned int vmballoon_page_order(enum vmballoon_page_size_type page_size)
+>> 	return page_size == VMW_BALLOON_2M_PAGE ? VMW_BALLOON_2M_ORDER : 0;
+>> }
+>>
+>> +/**
+>> + * vmballoon_mark_page_offline() - mark a page as offline
+>> + * @page: pointer for the page
+> 
+> If possible, please add a period at the end of the sentence (yes, I know I
+> got it wrong in some places too).
+
+Sure :)
+
+> 
+>> + * @page_size: the size of the page.
+>> + */
+>> +static void
+>> +vmballoon_mark_page_offline(struct page *page,
+>> +			    enum vmballoon_page_size_type page_size)
+>> +{
+>> +	int i;
+>> +
+>> +	for (i = 0; i < 1ULL << vmballoon_page_order(page_size); i++)
+> 
+> Can you please do instead:
+> 
+> 	unsigned int;
+> 
+> 	for (i = 0; i < vmballoon_page_in_frames(page_size); i++)
 > 
 
-1. We are much more similar to PG_buddy (in contrast to actual page
-flags), and for PG_buddy it is historically handled like this (and I
-think it makes sense to expose these as actual MAPCOUNT_VALUEs).
+Will do, will have to move both functions a little bit down in the file
+(exactly one function).
 
-2. Right now only one page type per page is supported. Therefore only
-exactly one value in mapcount indicates e.g. PageBuddy()/PageOffline().
 
-Now, if we ever decide to change this (e.g. treat them like real flags),
-it is much easier to switch to PG_offline/PG_buddy then. We can directly
-see in makedumpfile that .*_MAPCOUNT_VALUE is no longer available but
-instead e.g. PG_offline and PG_buddy. Instead we would no see a change
-in makedumpfile and would have to rely on other properties.
-
-If there are no strong opinions I will leave it like this.
+> We would like to test it in the next few days, but in the meanwhile, after
+> you address these minor issues:
+> 
+> Acked-by: Nadav Amit <namit@vmware.com>
 
 Thanks!
 
-> Thanks
-> Baoquan
+> 
+> Thanks again,
+> Nadav 
 > 
 
 
