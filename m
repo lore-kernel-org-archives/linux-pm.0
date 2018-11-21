@@ -1,76 +1,133 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v1 3/8] kexec: export PG_offline to VMCOREINFO
-Date: Tue, 20 Nov 2018 20:59:43 -0500
-Message-ID: <20181120205822-mutt-send-email-mst@kernel.org>
-References: <20181119101616.8901-1-david@redhat.com>
- <20181119101616.8901-4-david@redhat.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: [PATCH V3] thermal: imx: fix for dependency on cpu-freq
+Date: Wed, 21 Nov 2018 02:40:25 +0000
+Message-ID: <1542767703-1984-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181119101616.8901-4-david@redhat.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Hildenbrand <david@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, Borislav Petkov <bp@alien8.de>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 19, 2018 at 11:16:11AM +0100, David Hildenbrand wrote:
-> Right now, pages inflated as part of a balloon driver will be dumped
-> by dump tools like makedumpfile. While XEN is able to check in the
-> crash kernel whether a certain pfn is actuall backed by memory in the
-> hypervisor (see xen_oldmem_pfn_is_ram) and optimize this case, dumps of
-> other balloon inflated memory will essentially result in zero pages getting
-> allocated by the hypervisor and the dump getting filled with this data.
-> 
-> The allocation and reading of zero pages can directly be avoided if a
-> dumping tool could know which pages only contain stale information not to
-> be dumped.
-> 
-> We now have PG_offline which can be (and already is by virtio-balloon)
-> used for marking pages as logically offline. Follow up patches will
-> make use of this flag also in other balloon implementations.
-> 
-> Let's export PG_offline via PAGE_OFFLINE_MAPCOUNT_VALUE, so
-> makedumpfile can directly skip pages that are logically offline and the
-> content therefore stale.
-> 
-> Please note that this is also helpful for a problem we were seeing under
-> Hyper-V: Dumping logically offline memory (pages kept fake offline while
-> onlining a section via online_page_callback) would under some condicions
-> result in a kernel panic when dumping them.
-> 
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-> Cc: Baoquan He <bhe@redhat.com>
-> Cc: Omar Sandoval <osandov@fb.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: "Michael S. Tsirkin" <mst@redhat.com>
-> Cc: Lianbo Jiang <lijiang@redhat.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+The thermal driver is a standalone driver for monitoring SoC temperature
+by enabling thermal sensor, so it can be enabled even when CONFIG_CPU_FREQ
+is NOT set. So remove the dependency with CPU_THERMAL.
 
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
+Introduce dummy function of legacy cooling register/unregister to make
+thermal driver probe successfully when CONFIG_CPU_FREQ is NOT set.
 
-> ---
->  kernel/crash_core.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
-> index 933cb3e45b98..093c9f917ed0 100644
-> --- a/kernel/crash_core.c
-> +++ b/kernel/crash_core.c
-> @@ -464,6 +464,8 @@ static int __init crash_save_vmcoreinfo_init(void)
->  	VMCOREINFO_NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE);
->  #ifdef CONFIG_HUGETLB_PAGE
->  	VMCOREINFO_NUMBER(HUGETLB_PAGE_DTOR);
-> +#define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
-> +	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
->  #endif
->  
->  	arch_crash_save_vmcoreinfo();
-> -- 
-> 2.17.2
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+---
+changes since V2:
+	fix build warning of no return value for imx_thermal_unregister_legacy_coo=
+ling.
+ drivers/thermal/Kconfig       |  2 +-
+ drivers/thermal/imx_thermal.c | 38 +++++++++++++++++++++++++++++---------
+ 2 files changed, 30 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5422523..93bd3bb 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -212,7 +212,7 @@ config HISI_THERMAL
+=20
+ config IMX_THERMAL
+ 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+-	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
++	depends on ARCH_MXC || COMPILE_TEST
+ 	depends on NVMEM || !NVMEM
+ 	depends on MFD_SYSCON
+ 	depends on OF
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 1566154..518e5a0 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -648,15 +648,24 @@ static const struct of_device_id of_imx_thermal_match=
+[] =3D {
+ };
+ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+=20
++#ifdef CONFIG_CPU_FREQ
+ /*
+  * Create cooling device in case no #cooling-cells property is available i=
+n
+  * CPU node
+  */
+ static int imx_thermal_register_legacy_cooling(struct imx_thermal_data *da=
+ta)
+ {
+-	struct device_node *np =3D of_get_cpu_node(data->policy->cpu, NULL);
++	struct device_node *np;
+ 	int ret;
+=20
++	data->policy =3D cpufreq_cpu_get(0);
++	if (!data->policy) {
++		pr_debug("%s: CPUFreq policy not found\n", __func__);
++		return -EPROBE_DEFER;
++	}
++
++	np =3D of_get_cpu_node(data->policy->cpu, NULL);
++
+ 	if (!np || !of_find_property(np, "#cooling-cells", NULL)) {
+ 		data->cdev =3D cpufreq_cooling_register(data->policy);
+ 		if (IS_ERR(data->cdev)) {
+@@ -669,6 +678,22 @@ static int imx_thermal_register_legacy_cooling(struct =
+imx_thermal_data *data)
+ 	return 0;
+ }
+=20
++static void imx_thermal_unregister_legacy_cooling(struct imx_thermal_data =
+*data)
++{
++	cpufreq_cooling_unregister(data->cdev);
++	cpufreq_cpu_put(data->policy);
++}
++#else
++static inline int imx_thermal_register_legacy_cooling(struct imx_thermal_d=
+ata *data)
++{
++	return 0;
++}
++
++static inline void imx_thermal_unregister_legacy_cooling(struct imx_therma=
+l_data *data)
++{
++}
++#endif
++
+ static int imx_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct imx_thermal_data *data;
+@@ -743,13 +768,9 @@ static int imx_thermal_probe(struct platform_device *p=
+dev)
+ 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
+ 		     data->socdata->power_down_mask);
+=20
+-	data->policy =3D cpufreq_cpu_get(0);
+-	if (!data->policy) {
+-		pr_debug("%s: CPUFreq policy not found\n", __func__);
+-		return -EPROBE_DEFER;
+-	}
+-
+ 	ret =3D imx_thermal_register_legacy_cooling(data);
++	if (ret =3D=3D -EPROBE_DEFER)
++		return ret;
+ 	if (ret) {
+ 		dev_err(&pdev->dev,
+ 			"failed to register cpufreq cooling device: %d\n", ret);
+@@ -830,8 +851,7 @@ static int imx_thermal_probe(struct platform_device *pd=
+ev)
+ clk_disable:
+ 	clk_disable_unprepare(data->thermal_clk);
+ cpufreq_put:
+-	cpufreq_cooling_unregister(data->cdev);
+-	cpufreq_cpu_put(data->policy);
++	imx_thermal_unregister_legacy_cooling(data);
+=20
+ 	return ret;
+ }
+--=20
+2.7.4
