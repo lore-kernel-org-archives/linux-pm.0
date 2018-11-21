@@ -1,58 +1,76 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: RE: [PATCH] thermal: imx: fix for dependency on cpu-freq
-Date: Wed, 21 Nov 2018 01:58:58 +0000
-Message-ID: <DB3PR0402MB3916F122EA873F847A115C91F5DA0@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1540362909-32481-1-git-send-email-Anson.Huang@nxp.com>
- <CAOh2x=kwGUto-TMsQORtx0CkgZSDsq6Mg1e=QKL=LeDPWJ=NPQ@mail.gmail.com>
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Subject: Re: [PATCH v1 3/8] kexec: export PG_offline to VMCOREINFO
+Date: Tue, 20 Nov 2018 20:59:43 -0500
+Message-ID: <20181120205822-mutt-send-email-mst@kernel.org>
+References: <20181119101616.8901-1-david@redhat.com>
+ <20181119101616.8901-4-david@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=kwGUto-TMsQORtx0CkgZSDsq6Mg1e=QKL=LeDPWJ=NPQ@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181119101616.8901-4-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl-linux-imx <linux-imx@nxp.com>
+To: David Hildenbrand <david@redhat.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Andrew Morton <akpm@linux-foundation.org>, Dave Young <dyoung@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Baoquan He <bhe@redhat.com>, Omar Sandoval <osandov@fb.com>, Arnd Bergmann <arnd@arndb.de>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, Lianbo Jiang <lijiang@redhat.com>, Borislav Petkov <bp@alien8.de>, Kazuhito Hagio <k-hagio@ab.jp.nec.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIFZpcmVzaA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQo+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFZpcmVzaCBLdW1hciBbbWFpbHRvOnZpcmVzaC5rdW1h
-ckBsaW5hcm8ub3JnXQ0KPiBTZW50OiAyMDE45bm0MTHmnIgyMOaXpSAxODo0OQ0KPiBUbzogQW5z
-b24gSHVhbmcgPGFuc29uLmh1YW5nQG54cC5jb20+DQo+IENjOiBaaGFuZyBSdWkgPHJ1aS56aGFu
-Z0BpbnRlbC5jb20+OyBFZHVhcmRvIFZhbGVudGluDQo+IDxlZHViZXp2YWxAZ21haWwuY29tPjsg
-TGludXggUE0gbGlzdCA8bGludXgtcG1Admdlci5rZXJuZWwub3JnPjsgTGludXgNCj4gS2VybmVs
-IE1haWxpbmcgTGlzdCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IGRsLWxpbnV4LWlt
-eA0KPiA8bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6
-IGlteDogZml4IGZvciBkZXBlbmRlbmN5IG9uIGNwdS1mcmVxDQo+IA0KPiBXaGlsZSBJIGFtIGFs
-aWduZWQgd2l0aCB0aGUgZmFjdCB0aGF0IHdlIG5lZWQgdG8gY2FycnkgdGhpcyBjb2RlIGZvciBi
-YWNrd2FyZA0KPiBjb21wYXRpYmlsaXR5LCB0aGVyZSBhcmUgZmV3IHRoaW5ncyBJIHdvdWxkIHN1
-Z2dlc3QgdG8gaW1wcm92ZS4NCj4gDQo+IE9uIFdlZCwgT2N0IDI0LCAyMDE4IGF0IDEyOjEwIFBN
-IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0BueHAuY29tPg0KPiB3cm90ZToNCj4gPiAgc3RhdGlj
-IGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAgeyBA
-QA0KPiA+IC03NDMsNiArNzQ1LDcgQEAgc3RhdGljIGludCBpbXhfdGhlcm1hbF9wcm9iZShzdHJ1
-Y3QgcGxhdGZvcm1fZGV2aWNlDQo+ICpwZGV2KQ0KPiA+ICAgICAgICAgcmVnbWFwX3dyaXRlKG1h
-cCwgZGF0YS0+c29jZGF0YS0+c2Vuc29yX2N0cmwgKyBSRUdfU0VULA0KPiA+ICAgICAgICAgICAg
-ICAgICAgICAgIGRhdGEtPnNvY2RhdGEtPnBvd2VyX2Rvd25fbWFzayk7DQo+ID4NCj4gPiArI2lm
-ZGVmIENPTkZJR19DUFVfRlJFUQ0KPiA+ICAgICAgICAgZGF0YS0+cG9saWN5ID0gY3B1ZnJlcV9j
-cHVfZ2V0KDApOw0KPiA+ICAgICAgICAgaWYgKCFkYXRhLT5wb2xpY3kpIHsNCj4gPiAgICAgICAg
-ICAgICAgICAgcHJfZGVidWcoIiVzOiBDUFVGcmVxIHBvbGljeSBub3QgZm91bmRcbiIsIF9fZnVu
-Y19fKTsNCj4gPiBAQCAtNzU1LDYgKzc1OCw3IEBAIHN0YXRpYyBpbnQgaW14X3RoZXJtYWxfcHJv
-YmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAgICAgICAgICAgICAgICAg
-ICAgICAgICAiZmFpbGVkIHRvIHJlZ2lzdGVyIGNwdWZyZXEgY29vbGluZyBkZXZpY2U6ICVkXG4i
-LA0KPiByZXQpOw0KPiA+ICAgICAgICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiA+ICAgICAgICAg
-fQ0KPiA+ICsjZW5kaWYNCj4gPg0KPiA+ICAgICAgICAgZGF0YS0+dGhlcm1hbF9jbGsgPSBkZXZt
-X2Nsa19nZXQoJnBkZXYtPmRldiwgTlVMTCk7DQo+ID4gICAgICAgICBpZiAoSVNfRVJSKGRhdGEt
-PnRoZXJtYWxfY2xrKSkgew0KPiANCj4gWW91IG1pc3NlZCB0aGUgZXJyb3IgaGFuZGxpbmcgY29k
-ZSB3aGljaCB1bnJlZ2lzdGVycyBjb29saW5nL2NwdWZyZXEgc3R1ZmYuDQo+IA0KPiBBbmQgaXQg
-d291bGQgYmUgYmV0dGVyIHRvIHdyaXRlIHRoaW5ncyBpbiBhIHNvbWV3aGF0IGJldHRlciB3YXks
-IGxpa2UgdGhpczoNCj4gDQo+ICNpZmRlZiBDT05GSUdfQ1BVX0ZSRVENCj4gDQo+IHN0YXRpYyBp
-bnQgaW14X3RoZXJtYWxfcmVnaXN0ZXJfbGVnYWN5X2Nvb2xpbmcoLi4uKQ0KPiB7DQo+ICAgICAg
-ICAgLi4uIGN1cnJlbnQgZnVuY3Rpb24gYm9keQ0KPiB9DQo+IA0KPiBzdGF0aWMgdm9pZCBpbXhf
-dGhlcm1hbF91bnJlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikNCj4gew0KPiAgICAgICAgIG5l
-dyByb3V0aW5lIGJvZHkgdG8gdW5yZWdpc3RlciB0aGluZ3MgfQ0KPiANCj4gI2Vsc2UNCj4gc3Rh
-dGljIGlubGluZSAgaW50IGlteF90aGVybWFsX3JlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikN
-Cj4gew0KPiAgICAgICAgIHJldHVybiAwOw0KPiB9DQo+IA0KPiBzdGF0aWMgdm9pZCBpbXhfdGhl
-cm1hbF91bnJlZ2lzdGVyX2xlZ2FjeV9jb29saW5nKC4uLikgeyB9DQo+IA0KPiAjZW5kaWYNCj4g
-DQo+IA0KPiBBbmQgdGhlbiB5b3UgY2FuIGdldCByaWQgb2YgaWZkZWYgaGFja2VyeSBpbiB0aGUg
-bWlkZGxlIG9mIHByb2JlKCkuDQoNClRoYW5rcyBmb3IgZ29vZCBzdWdnZXN0aW9uLCBwbGVhc2Ug
-aGVscCByZXZpZXcgdGhlIFYyIHBhdGNoIEkganVzdCBzZW50IG91dC4NCg0KQW5zb24uDQo=
+On Mon, Nov 19, 2018 at 11:16:11AM +0100, David Hildenbrand wrote:
+> Right now, pages inflated as part of a balloon driver will be dumped
+> by dump tools like makedumpfile. While XEN is able to check in the
+> crash kernel whether a certain pfn is actuall backed by memory in the
+> hypervisor (see xen_oldmem_pfn_is_ram) and optimize this case, dumps of
+> other balloon inflated memory will essentially result in zero pages getting
+> allocated by the hypervisor and the dump getting filled with this data.
+> 
+> The allocation and reading of zero pages can directly be avoided if a
+> dumping tool could know which pages only contain stale information not to
+> be dumped.
+> 
+> We now have PG_offline which can be (and already is by virtio-balloon)
+> used for marking pages as logically offline. Follow up patches will
+> make use of this flag also in other balloon implementations.
+> 
+> Let's export PG_offline via PAGE_OFFLINE_MAPCOUNT_VALUE, so
+> makedumpfile can directly skip pages that are logically offline and the
+> content therefore stale.
+> 
+> Please note that this is also helpful for a problem we were seeing under
+> Hyper-V: Dumping logically offline memory (pages kept fake offline while
+> onlining a section via online_page_callback) would under some condicions
+> result in a kernel panic when dumping them.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Dave Young <dyoung@redhat.com>
+> Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> Cc: Baoquan He <bhe@redhat.com>
+> Cc: Omar Sandoval <osandov@fb.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Matthew Wilcox <willy@infradead.org>
+> Cc: Michal Hocko <mhocko@suse.com>
+> Cc: "Michael S. Tsirkin" <mst@redhat.com>
+> Cc: Lianbo Jiang <lijiang@redhat.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
+> Signed-off-by: David Hildenbrand <david@redhat.com>
+
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
+
+> ---
+>  kernel/crash_core.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/kernel/crash_core.c b/kernel/crash_core.c
+> index 933cb3e45b98..093c9f917ed0 100644
+> --- a/kernel/crash_core.c
+> +++ b/kernel/crash_core.c
+> @@ -464,6 +464,8 @@ static int __init crash_save_vmcoreinfo_init(void)
+>  	VMCOREINFO_NUMBER(PAGE_BUDDY_MAPCOUNT_VALUE);
+>  #ifdef CONFIG_HUGETLB_PAGE
+>  	VMCOREINFO_NUMBER(HUGETLB_PAGE_DTOR);
+> +#define PAGE_OFFLINE_MAPCOUNT_VALUE	(~PG_offline)
+> +	VMCOREINFO_NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE);
+>  #endif
+>  
+>  	arch_crash_save_vmcoreinfo();
+> -- 
+> 2.17.2
