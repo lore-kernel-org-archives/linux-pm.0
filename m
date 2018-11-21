@@ -1,414 +1,69 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: [PATCH v10 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Wed, 21 Nov 2018 16:12:47 +0530
-Message-ID: <1542796967-5949-3-git-send-email-tdas@codeaurora.org>
-References: <1542796967-5949-1-git-send-email-tdas@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1542796967-5949-1-git-send-email-tdas@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
+From: William Kucharski <william.kucharski@oracle.com>
+Subject: Re: [PATCH v1 8/8] PM / Hibernate: exclude all PageOffline() pages
+Date: Wed, 21 Nov 2018 04:35:46 -0700
+Message-ID: <11E3C0B0-AEED-42C6-A21C-1820F4B47A68@oracle.com>
+References: <20181119101616.8901-1-david@redhat.com>
+ <20181119101616.8901-9-david@redhat.com>
+Mime-Version: 1.0 (Mac OS X Mail 12.2 \(3445.102.3\))
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <20181119101616.8901-9-david@redhat.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: David Hildenbrand <david@redhat.com>
+Cc: Len Brown <len.brown@intel.com>, Michal Hocko <mhocko@suse.com>, linux-pm@vger.kernel.org, pv-drivers@vmware.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-doc@vger.kernel.org, kexec-ml <kexec@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, Linux-MM <linux-mm@kvack.org>, "Michael S. Tsirkin" <mst@redhat.com>, Pavel Machek <pavel@ucw.cz>, xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org, devel@linuxdriverproject.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-The CPUfreq HW present in some QCOM chipsets offloads the steps necessary
-for changing the frequency of CPUs. The driver implements the cpufreq
-driver interface for this hardware engine.
+If you are adding PageOffline(page) to the condition list of the already existing if in
+saveable_highmem_page(), why explicitly add it as a separate statement in saveable_page()?
 
-Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-Signed-off-by: Taniya Das <tdas@codeaurora.org>
----
- drivers/cpufreq/Kconfig.arm       |  11 ++
- drivers/cpufreq/Makefile          |   1 +
- drivers/cpufreq/qcom-cpufreq-hw.c | 346 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 358 insertions(+)
- create mode 100644 drivers/cpufreq/qcom-cpufreq-hw.c
+It would seem more consistent to make the second check:
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 4e1131e..688f102 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -114,6 +114,17 @@ config ARM_QCOM_CPUFREQ_KRYO
+-	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
++	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page) ||
++		PageOffline(page))
 
- 	  If in doubt, say N.
+instead.
 
-+config ARM_QCOM_CPUFREQ_HW
-+	tristate "QCOM CPUFreq HW driver"
-+	depends on ARCH_QCOM || COMPILE_TEST
-+	help
-+	  Support for the CPUFreq HW driver.
-+	  Some QCOM chipsets have a HW engine to offload the steps
-+	  necessary for changing the frequency of the CPUs. Firmware loaded
-+	  in this engine exposes a programming interface to the OS.
-+	  The driver implements the cpufreq interface for this HW engine.
-+	  Say Y if you want to support CPUFreq HW.
-+
- config ARM_S3C_CPUFREQ
- 	bool
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index d5ee456..789b2e0 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -62,6 +62,7 @@ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
- obj-$(CONFIG_ARM_QCOM_CPUFREQ_KRYO)	+= qcom-cpufreq-kryo.o
-+obj-$(CONFIG_ARM_QCOM_CPUFREQ_HW)	+= qcom-cpufreq-hw.o
- obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
- obj-$(CONFIG_ARM_S3C2412_CPUFREQ)	+= s3c2412-cpufreq.o
- obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-new file mode 100644
-index 0000000..6390e85
---- /dev/null
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -0,0 +1,346 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2018, The Linux Foundation. All rights reserved.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+
-+#define LUT_MAX_ENTRIES			40U
-+#define CORE_COUNT_VAL(val)		(((val) & (GENMASK(18, 16))) >> 16)
-+#define LUT_ROW_SIZE			32
-+#define CLK_HW_DIV			2
-+
-+/* Register offsets */
-+#define REG_ENABLE			0x0
-+#define REG_LUT_TABLE			0x110
-+#define REG_PERF_STATE			0x920
-+
-+struct cpufreq_qcom {
-+	struct cpufreq_frequency_table *table;
-+	void __iomem *perf_base;
-+	cpumask_t related_cpus;
-+	unsigned int max_cores;
-+	unsigned long xo_rate;
-+	unsigned long cpu_hw_rate;
-+};
-+
-+static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-+
-+static int
-+qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
-+			     unsigned int index)
-+{
-+	struct cpufreq_qcom *c = policy->driver_data;
-+
-+	writel_relaxed(index, c->perf_base);
-+
-+	return 0;
-+}
-+
-+static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
-+{
-+	struct cpufreq_qcom *c;
-+	struct cpufreq_policy *policy;
-+	unsigned int index;
-+
-+	policy = cpufreq_cpu_get_raw(cpu);
-+	if (!policy)
-+		return 0;
-+
-+	c = policy->driver_data;
-+
-+	index = readl_relaxed(c->perf_base);
-+	index = min(index, LUT_MAX_ENTRIES - 1);
-+
-+	return policy->freq_table[index].frequency;
-+}
-+
-+static unsigned int
-+qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
-+			    unsigned int target_freq)
-+{
-+	struct cpufreq_qcom *c = policy->driver_data;
-+	int index;
-+
-+	index = policy->cached_resolved_idx;
-+	if (index < 0)
-+		return 0;
-+
-+	writel_relaxed(index, c->perf_base);
-+
-+	return policy->freq_table[index].frequency;
-+}
-+
-+static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_qcom *c;
-+
-+	c = qcom_freq_domain_map[policy->cpu];
-+	if (!c) {
-+		pr_err("No scaling support for CPU%d\n", policy->cpu);
-+		return -ENODEV;
-+	}
-+
-+	cpumask_copy(policy->cpus, &c->related_cpus);
-+
-+	policy->fast_switch_possible = true;
-+	policy->freq_table = c->table;
-+	policy->driver_data = c;
-+
-+	return 0;
-+}
-+
-+static struct freq_attr *qcom_cpufreq_hw_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	&cpufreq_freq_attr_scaling_boost_freqs,
-+	NULL
-+};
-+
-+static struct cpufreq_driver cpufreq_qcom_hw_driver = {
-+	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
-+			  CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= qcom_cpufreq_hw_target_index,
-+	.get		= qcom_cpufreq_hw_get,
-+	.init		= qcom_cpufreq_hw_cpu_init,
-+	.fast_switch    = qcom_cpufreq_hw_fast_switch,
-+	.name		= "qcom-cpufreq-hw",
-+	.attr		= qcom_cpufreq_hw_attr,
-+	.boost_enabled	= true,
-+};
-+
-+static int qcom_cpufreq_hw_read_lut(struct platform_device *pdev,
-+				    struct cpufreq_qcom *c, void __iomem *base)
-+{
-+	struct device *dev = &pdev->dev;
-+	u32 data, src, lval, i, core_count, prev_cc, prev_freq, cur_freq;
-+
-+	c->table = devm_kcalloc(dev, LUT_MAX_ENTRIES + 1,
-+				sizeof(*c->table), GFP_KERNEL);
-+	if (!c->table)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
-+		data = readl_relaxed(base + REG_LUT_TABLE + i * LUT_ROW_SIZE);
-+		src = (data & GENMASK(31, 30)) >> 30;
-+		lval = data & GENMASK(7, 0);
-+		core_count = CORE_COUNT_VAL(data);
-+
-+		if (src)
-+			c->table[i].frequency = c->xo_rate * lval / 1000;
-+		else
-+			c->table[i].frequency = c->cpu_hw_rate / 1000;
-+
-+		cur_freq = c->table[i].frequency;
-+
-+		dev_dbg(dev, "index=%d freq=%d, core_count %d\n",
-+			i, c->table[i].frequency, core_count);
-+
-+		if (core_count != c->max_cores)
-+			cur_freq = CPUFREQ_ENTRY_INVALID;
-+
-+		/*
-+		 * Two of the same frequencies with the same core counts means
-+		 * end of table.
-+		 */
-+		if (i > 0 && c->table[i - 1].frequency ==
-+		   c->table[i].frequency && prev_cc == core_count) {
-+			struct cpufreq_frequency_table *prev = &c->table[i - 1];
-+
-+			if (prev_freq == CPUFREQ_ENTRY_INVALID)
-+				prev->flags = CPUFREQ_BOOST_FREQ;
-+			break;
-+		}
-+		prev_cc = core_count;
-+		prev_freq = cur_freq;
-+	}
-+
-+	c->table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	return 0;
-+}
-+
-+static int qcom_get_related_cpus(int index, struct cpumask *m)
-+{
-+	struct device_node *cpu_np;
-+	struct of_phandle_args args;
-+	int cpu, ret;
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_np = of_cpu_device_node_get(cpu);
-+		if (!cpu_np)
-+			continue;
-+
-+		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-+						 "#freq-domain-cells", 0,
-+						  &args);
-+		of_node_put(cpu_np);
-+		if (ret < 0)
-+			continue;
-+
-+		if (index == args.args[0])
-+			cpumask_set_cpu(cpu, m);
-+	}
-+
-+	return 0;
-+}
-+
-+static int qcom_cpu_resources_init(struct platform_device *pdev,
-+				   unsigned int cpu, int index,
-+				   unsigned long xo_rate,
-+				   unsigned long cpu_hw_rate)
-+{
-+	struct cpufreq_qcom *c;
-+	struct resource *res;
-+	struct device *dev = &pdev->dev;
-+	void __iomem *base;
-+	int ret, cpu_r;
-+
-+	if (qcom_freq_domain_map[cpu])
-+		return 0;
-+
-+	c = devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
-+	if (!c)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, index);
-+	base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(base))
-+		return PTR_ERR(base);
-+
-+	/* HW should be in enabled state to proceed */
-+	if (!(readl_relaxed(base + REG_ENABLE) & 0x1)) {
-+		dev_err(dev, "Domain-%d cpufreq hardware not enabled\n", index);
-+		return -ENODEV;
-+	}
-+
-+	ret = qcom_get_related_cpus(index, &c->related_cpus);
-+	if (ret) {
-+		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
-+		return ret;
-+	}
-+
-+	c->max_cores = cpumask_weight(&c->related_cpus);
-+	if (!c->max_cores)
-+		return -ENOENT;
-+
-+	c->xo_rate = xo_rate;
-+	c->cpu_hw_rate = cpu_hw_rate;
-+	c->perf_base = base + REG_PERF_STATE;
-+
-+	ret = qcom_cpufreq_hw_read_lut(pdev, c, base);
-+	if (ret) {
-+		dev_err(dev, "Domain-%d failed to read LUT\n", index);
-+		return ret;
-+	}
-+
-+	for_each_cpu(cpu_r, &c->related_cpus)
-+		qcom_freq_domain_map[cpu_r] = c;
-+
-+	return 0;
-+}
-+
-+static int qcom_resources_init(struct platform_device *pdev)
-+{
-+	struct device_node *cpu_np;
-+	struct of_phandle_args args;
-+	struct clk *clk;
-+	unsigned int cpu;
-+	unsigned long xo_rate, cpu_hw_rate;
-+	int ret;
-+
-+	clk = clk_get(&pdev->dev, "xo");
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+
-+	xo_rate = clk_get_rate(clk);
-+
-+	clk_put(clk);
-+
-+	clk = clk_get(&pdev->dev, "gcc_cpuss_gpll0_clk_src");
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+
-+	cpu_hw_rate = clk_get_rate(clk) / CLK_HW_DIV;
-+
-+	clk_put(clk);
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_np = of_cpu_device_node_get(cpu);
-+		if (!cpu_np) {
-+			dev_dbg(&pdev->dev, "Failed to get cpu %d device\n",
-+				cpu);
-+			continue;
-+		}
-+
-+		ret = of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-+						 "#freq-domain-cells", 0,
-+						  &args);
-+		of_node_put(cpu_np);
-+		if (ret < 0)
-+			return ret;
-+
-+		ret = qcom_cpu_resources_init(pdev, cpu, args.args[0],
-+					      xo_rate, cpu_hw_rate);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int qcom_cpufreq_hw_driver_probe(struct platform_device *pdev)
-+{
-+	int rc;
-+
-+	/* Get the bases of cpufreq for domains */
-+	rc = qcom_resources_init(pdev);
-+	if (rc) {
-+		dev_err(&pdev->dev, "CPUFreq resource init failed\n");
-+		return rc;
-+	}
-+
-+	rc = cpufreq_register_driver(&cpufreq_qcom_hw_driver);
-+	if (rc) {
-+		dev_err(&pdev->dev, "CPUFreq HW driver failed to register\n");
-+		return rc;
-+	}
-+
-+	dev_dbg(&pdev->dev, "QCOM CPUFreq HW driver initialized\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id qcom_cpufreq_hw_match[] = {
-+	{ .compatible = "qcom,cpufreq-hw" },
-+	{}
-+};
-+
-+static struct platform_driver qcom_cpufreq_hw_driver = {
-+	.probe = qcom_cpufreq_hw_driver_probe,
-+	.driver = {
-+		.name = "qcom-cpufreq-hw",
-+		.of_match_table = qcom_cpufreq_hw_match,
-+	},
-+};
-+
-+static int __init qcom_cpufreq_hw_init(void)
-+{
-+	return platform_driver_register(&qcom_cpufreq_hw_driver);
-+}
-+subsys_initcall(qcom_cpufreq_hw_init);
-+
-+static void __exit qcom_cpufreq_hw_exit(void)
-+{
-+	cpufreq_unregister_driver(&cpufreq_qcom_hw_driver);
-+	platform_driver_unregister(&qcom_cpufreq_hw_driver);
-+}
-+module_exit(qcom_cpufreq_hw_exit);
-+
-+MODULE_DESCRIPTION("QTI CPUFREQ HW Driver");
-+MODULE_LICENSE("GPL v2");
---
-Qualcomm INDIA, on behalf of Qualcomm Innovation Center, Inc.is a member
-of the Code Aurora Forum, hosted by the  Linux Foundation.
+It's admittedly a nit but it just seems cleaner to either do that or, if your intention
+was to separate the Page checks from the swsusp checks, to break the calls to
+PageReserved() and PageOffline() into their own check in saveable_highmem_page().
+
+Thanks!
+    -- Bill
+     
+
+> On Nov 19, 2018, at 3:16 AM, David Hildenbrand <david@redhat.com> wrote:
+> 
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1222,7 +1222,7 @@ static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
+> 	BUG_ON(!PageHighMem(page));
+> 
+> 	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) ||
+> -	    PageReserved(page))
+> +	    PageReserved(page) || PageOffline(page))
+> 		return NULL;
+> 
+> 	if (page_is_guard(page))
+> @@ -1286,6 +1286,9 @@ static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+> 	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
+> 		return NULL;
+> 
+> +	if (PageOffline(page))
+> +		return NULL;
+> +
+> 	if (PageReserved(page)
+> 	    && (!kernel_page_present(page) || pfn_is_nosave(pfn)))
+> 		return NULL;
+> -- 
+> 2.17.2
+> 
