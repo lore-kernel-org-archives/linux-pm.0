@@ -1,7 +1,7 @@
 From: David Hildenbrand <david@redhat.com>
-Subject: [PATCH v2 7/8] PM / Hibernate: use pfn_to_online_page()
-Date: Thu, 22 Nov 2018 11:06:26 +0100
-Message-ID: <20181122100627.5189-8-david@redhat.com>
+Subject: [PATCH v2 8/8] PM / Hibernate: exclude all PageOffline() pages
+Date: Thu, 22 Nov 2018 11:06:27 +0100
+Message-ID: <20181122100627.5189-9-david@redhat.com>
 References: <20181122100627.5189-1-david@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181122100627.5189-1-david@redhat.com>
@@ -10,8 +10,12 @@ To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, David Hildenbrand <david@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Let's use pfn_to_online_page() instead of pfn_to_page() when checking
-for saveable pages to not save/restore offline memory sections.
+The content of pages that are marked PG_offline is not of interest
+(e.g. inflated by a balloon driver), let's skip these pages.
+
+In saveable_highmem_page(), move the PageReserved() check to a new
+check along with the PageOffline() check to separate it from the
+swsusp checks.
 
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Pavel Machek <pavel@ucw.cz>
@@ -20,40 +24,39 @@ Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Matthew Wilcox <willy@infradead.org>
 Cc: Michal Hocko <mhocko@suse.com>
 Cc: "Michael S. Tsirkin" <mst@redhat.com>
-Suggested-by: Michal Hocko <mhocko@kernel.org>
-Acked-by: Michal Hocko <mhocko@suse.com>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- kernel/power/snapshot.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/power/snapshot.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 640b2034edd6..87e6dd57819f 100644
+index 87e6dd57819f..4802b039b89f 100644
 --- a/kernel/power/snapshot.c
 +++ b/kernel/power/snapshot.c
-@@ -1215,8 +1215,8 @@ static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
- 	if (!pfn_valid(pfn))
- 		return NULL;
- 
--	page = pfn_to_page(pfn);
--	if (page_zone(page) != zone)
-+	page = pfn_to_online_page(pfn);
-+	if (!page || page_zone(page) != zone)
- 		return NULL;
+@@ -1221,8 +1221,10 @@ static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
  
  	BUG_ON(!PageHighMem(page));
-@@ -1277,8 +1277,8 @@ static struct page *saveable_page(struct zone *zone, unsigned long pfn)
- 	if (!pfn_valid(pfn))
+ 
+-	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page) ||
+-	    PageReserved(page))
++	if (swsusp_page_is_forbidden(page) ||  swsusp_page_is_free(page))
++		return NULL;
++
++	if (PageReserved(page) || PageOffline(page))
  		return NULL;
  
--	page = pfn_to_page(pfn);
--	if (page_zone(page) != zone)
-+	page = pfn_to_online_page(pfn);
-+	if (!page || page_zone(page) != zone)
+ 	if (page_is_guard(page))
+@@ -1286,6 +1288,9 @@ static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+ 	if (swsusp_page_is_forbidden(page) || swsusp_page_is_free(page))
  		return NULL;
  
- 	BUG_ON(PageHighMem(page));
++	if (PageOffline(page))
++		return NULL;
++
+ 	if (PageReserved(page)
+ 	    && (!kernel_page_present(page) || pfn_is_nosave(pfn)))
+ 		return NULL;
 -- 
 2.17.2
