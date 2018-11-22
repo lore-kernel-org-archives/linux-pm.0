@@ -1,75 +1,71 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [RESEND PATCH v17 2/5] iommu/arm-smmu: Invoke
- pm_runtime during probe, add/remove device
-Date: Thu, 22 Nov 2018 17:32:24 +0530
-Message-ID: <CAFp+6iEH7_XEcZNsbZfn6iBF5_o-ZKBj=DpturH7N85LU289qg@mail.gmail.com>
-References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
- <20181116112430.31248-3-vivek.gautam@codeaurora.org>
- <20181121173757.GA9801@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v9 13/15] sched/fair: Introduce an energy estimation
+ helper function
+Date: Thu, 22 Nov 2018 14:56:06 +0100
+Message-ID: <20181122135606.GG2113@hirez.programming.kicks-ass.net>
+References: <20181119141857.8625-1-quentin.perret@arm.com>
+ <20181119141857.8625-14-quentin.perret@arm.com>
+ <20181121142803.GF2113@hirez.programming.kicks-ass.net>
+ <20181121160524.ulj6n3shb2fdwboj@queper01-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181121173757.GA9801-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181121160524.ulj6n3shb2fdwboj@queper01-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgV2lsbCwKCk9uIFdlZCwgTm92IDIxLCAyMDE4IGF0IDExOjA5IFBNIFdpbGwgRGVhY29uIDx3
-aWxsLmRlYWNvbkBhcm0uY29tPiB3cm90ZToKPgo+IE9uIEZyaSwgTm92IDE2LCAyMDE4IGF0IDA0
-OjU0OjI3UE0gKzA1MzAsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiA+IEZyb206IFNyaWNoYXJhbiBS
-IDxzcmljaGFyYW5AY29kZWF1cm9yYS5vcmc+Cj4gPgo+ID4gVGhlIHNtbXUgZGV2aWNlIHByb2Jl
-L3JlbW92ZSBhbmQgYWRkL3JlbW92ZSBtYXN0ZXIgZGV2aWNlIGNhbGxiYWNrcwo+ID4gZ2V0cyBj
-YWxsZWQgd2hlbiB0aGUgc21tdSBpcyBub3QgbGlua2VkIHRvIGl0cyBtYXN0ZXIsIHRoYXQgaXMg
-d2l0aG91dAo+ID4gdGhlIGNvbnRleHQgb2YgdGhlIG1hc3RlciBkZXZpY2UuIFNvIGNhbGxpbmcg
-cnVudGltZSBhcGlzIGluIHRob3NlIHBsYWNlcwo+ID4gc2VwYXJhdGVseS4KPiA+IEdsb2JhbCBs
-b2NrcyBhcmUgYWxzbyBpbml0aWFsaXplZCBiZWZvcmUgZW5hYmxpbmcgcnVudGltZSBwbSBhcyB0
-aGUKPiA+IHJ1bnRpbWVfcmVzdW1lKCkgY2FsbHMgZGV2aWNlX3Jlc2V0KCkgd2hpY2ggZG9lcyB0
-bGJfc3luY19nbG9iYWwoKQo+ID4gdGhhdCB1bHRpbWF0ZWx5IHJlcXVpcmVzIGxvY2tzIHRvIGJl
-IGluaXRpYWxpemVkLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFNyaWNoYXJhbiBSIDxzcmljaGFy
-YW5AY29kZWF1cm9yYS5vcmc+Cj4gPiBbdml2ZWs6IENsZWFudXAgcG0gcnVudGltZSBjYWxsc10K
-PiA+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEu
-b3JnPgo+ID4gUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+Cj4g
-PiBUZXN0ZWQtYnk6IFNyaW5pdmFzIEthbmRhZ2F0bGEgPHNyaW5pdmFzLmthbmRhZ2F0bGFAbGlu
-YXJvLm9yZz4KPiA+IFJldmlld2VkLWJ5OiBSb2JpbiBNdXJwaHkgPHJvYmluLm11cnBoeUBhcm0u
-Y29tPgo+ID4gLS0tCj4gPiAgZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIHwgMTAxICsrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0tCj4gPiAgMSBmaWxlIGNoYW5n
-ZWQsIDkxIGluc2VydGlvbnMoKyksIDEwIGRlbGV0aW9ucygtKQo+Cj4gR2l2ZW4gdGhhdCB5b3Un
-cmUgZG9pbmcgdGhlIGdldC9wdXQgaW4gdGhlIFRMQkkgb3BzIHVuY29uZGl0aW9uYWxseToKPgo+
-ID4gIHN0YXRpYyB2b2lkIGFybV9zbW11X2ZsdXNoX2lvdGxiX2FsbChzdHJ1Y3QgaW9tbXVfZG9t
-YWluICpkb21haW4pCj4gPiAgewo+ID4gICAgICAgc3RydWN0IGFybV9zbW11X2RvbWFpbiAqc21t
-dV9kb21haW4gPSB0b19zbW11X2RvbWFpbihkb21haW4pOwo+ID4gKyAgICAgc3RydWN0IGFybV9z
-bW11X2RldmljZSAqc21tdSA9IHNtbXVfZG9tYWluLT5zbW11Owo+ID4KPiA+IC0gICAgIGlmIChz
-bW11X2RvbWFpbi0+dGxiX29wcykKPiA+ICsgICAgIGlmIChzbW11X2RvbWFpbi0+dGxiX29wcykg
-ewo+ID4gKyAgICAgICAgICAgICBhcm1fc21tdV9ycG1fZ2V0KHNtbXUpOwo+ID4gICAgICAgICAg
-ICAgICBzbW11X2RvbWFpbi0+dGxiX29wcy0+dGxiX2ZsdXNoX2FsbChzbW11X2RvbWFpbik7Cj4g
-PiArICAgICAgICAgICAgIGFybV9zbW11X3JwbV9wdXQoc21tdSk7Cj4gPiArICAgICB9Cj4gPiAg
-fQo+ID4KPiA+ICBzdGF0aWMgdm9pZCBhcm1fc21tdV9pb3RsYl9zeW5jKHN0cnVjdCBpb21tdV9k
-b21haW4gKmRvbWFpbikKPiA+ICB7Cj4gPiAgICAgICBzdHJ1Y3QgYXJtX3NtbXVfZG9tYWluICpz
-bW11X2RvbWFpbiA9IHRvX3NtbXVfZG9tYWluKGRvbWFpbik7Cj4gPiArICAgICBzdHJ1Y3QgYXJt
-X3NtbXVfZGV2aWNlICpzbW11ID0gc21tdV9kb21haW4tPnNtbXU7Cj4gPgo+ID4gLSAgICAgaWYg
-KHNtbXVfZG9tYWluLT50bGJfb3BzKQo+ID4gKyAgICAgaWYgKHNtbXVfZG9tYWluLT50bGJfb3Bz
-KSB7Cj4gPiArICAgICAgICAgICAgIGFybV9zbW11X3JwbV9nZXQoc21tdSk7Cj4gPiAgICAgICAg
-ICAgICAgIHNtbXVfZG9tYWluLT50bGJfb3BzLT50bGJfc3luYyhzbW11X2RvbWFpbik7Cj4gPiAr
-ICAgICAgICAgICAgIGFybV9zbW11X3JwbV9wdXQoc21tdSk7Cj4gPiArICAgICB9Cj4KPiBXaHkg
-ZG8geW91IG5lZWQgdGhlbSBhcm91bmQgdGhlIG1hcC91bm1hcCBjYWxscyBhcyB3ZWxsPwoKV2Ug
-c3RpbGwgaGF2ZSAudGxiX2FkZF9mbHVzaCBwYXRoPwoKVGhhbmtzClZpdmVrCj4KPiBXaWxsCj4g
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBpb21tdSBt
-YWlsaW5nIGxpc3QKPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9yZwo+IGh0dHBzOi8v
-bGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lvbW11CgoKCi0tIApR
-VUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRpb24gQ2VudGVyLCBJ
-bmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQgYnkgVGhlIExpbnV4
-IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZnJlZWRyZW5v
-Cg==
+On Wed, Nov 21, 2018 at 04:05:27PM +0000, Quentin Perret wrote:
+> On Wednesday 21 Nov 2018 at 15:28:03 (+0100), Peter Zijlstra wrote:
+> > On Mon, Nov 19, 2018 at 02:18:55PM +0000, Quentin Perret wrote:
+> > > +static long
+> > > +compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
+> > > +{
+> > > +	long util, max_util, sum_util, energy = 0;
+> > > +	int cpu;
+> > > +
+> > > +	for (; pd; pd = pd->next) {
+> > > +		max_util = sum_util = 0;
+> > > +		/*
+> > > +		 * The capacity state of CPUs of the current rd can be driven by
+> > > +		 * CPUs of another rd if they belong to the same performance
+> > > +		 * domain. So, account for the utilization of these CPUs too
+> > > +		 * by masking pd with cpu_online_mask instead of the rd span.
+> > > +		 *
+> > > +		 * If an entire performance domain is outside of the current rd,
+> > > +		 * it will not appear in its pd list and will not be accounted
+> > > +		 * by compute_energy().
+> > > +		 */
+> > > +		for_each_cpu_and(cpu, perf_domain_span(pd), cpu_online_mask) {
+> > 
+> > Should that not be cpu_active_mask ?
+> 
+> Hmm, I must admit I'm sometimes a bit confused by the exact difference
+> between these masks, so maybe yeah ...
+> 
+> IIUC, cpu_active_mask is basically the set of CPUs on which the
+> scheduler is actually allowed to migrate tasks. Is that correct ?
+
+Yep. Which is a strict subset of online. The difference only matters
+during hotplug. We take a CPU out of active before we take if offline
+and we add it to active only after the CPU is fully online and
+scheduling.
+
+> I have always seen cpu_online_mask as a superset of cpu_active_mask
+> which can also include CPUs which are still running 'special' tasks
+> (kthreads and things like that I assume) although not allowed for
+> migration any more (or not yet) because we're in the process of
+> hotplugging that CPU.
+
+Right.
+
+> So, the thing is, I'm not trying to select a CPU candidate for my task
+> here, I'm trying to understand what's the energy impact of a migration.
+> That involves all CPUs that are running _something_ in a perf domain
+> no matter if they're allowed to run more tasks or not. I mean, raising
+> the OPP will make running online && !active CPUs more expensive as well.
+> That's why I thought cpu_online_mask was good match here.
+
+Ah, fair enough. Thanks!
