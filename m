@@ -1,76 +1,48 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v5 04/15] sched/core: uclamp: add CPU's clamp groups
- refcounting
-Date: Thu, 22 Nov 2018 14:20:45 +0000
-Message-ID: <20181122142045.GM14309@e110439-lin>
-References: <20181029183311.29175-1-patrick.bellasi@arm.com>
- <20181029183311.29175-6-patrick.bellasi@arm.com>
- <20181111164754.GA3038@worktop>
- <20181113151127.GA7681@darkstar>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] power: supply: axp288_fuel_gauge: Change to use DEFINE_SHOW_ATTRIBUTE macro
+Date: Thu, 22 Nov 2018 09:25:51 -0500
+Message-ID: <20181122142551.25367-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181113151127.GA7681@darkstar>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Paul Turner <pjt@google.com>, Quentin Perret <quentin.perret@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@google.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle@google.com>, Suren Baghdasaryan <surenb@google.com>
+To: sre@kernel.org, hdegoede@redhat.com, wens@csie.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Nov 07:11, Patrick Bellasi wrote:
-> On 11-Nov 17:47, Peter Zijlstra wrote:
-> > On Mon, Oct 29, 2018 at 06:32:59PM +0000, Patrick Bellasi wrote:
+Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
 
-[...]
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/power/supply/axp288_fuel_gauge.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-> > > +		/* Both min and max clamps are MAX aggregated */
-> > > +		if (max_value < rq->uclamp.group[clamp_id][group_id].value)
-> > > +			max_value = rq->uclamp.group[clamp_id][group_id].value;
-> > 
-> > 		max_value = max(max_value, rq->uclamp.group[clamp_id][group_id].value);
-> 
-> Right, I get used to this pattern to avoid write instructions.
-> I guess that here, being just a function local variable, we don't
-> really care much...
-
-The above does not work also because we now use bitfields:
-
-In file included from ./include/linux/list.h:9:0,
-                 from ./include/linux/rculist.h:10,
-                 from ./include/linux/pid.h:5,
-                 from ./include/linux/sched.h:14,
-                 from kernel/sched/sched.h:5,
-                 from kernel/sched/core.c:8:
-   kernel/sched/core.c: In function ‘uclamp_cpu_update’:
-   kernel/sched/core.c:867:5: error: ‘typeof’ applied to a bit-field
-           rq->uclamp.group[clamp_id][group_id].value);
-           ^
-
-[...]
-
-> > > +	if (rq->uclamp.value[clamp_id] < p->uclamp[clamp_id].value)
-> > > +		rq->uclamp.value[clamp_id] = p->uclamp[clamp_id].value;
-> > 
-> > 	rq->uclamp.value[clamp_id] = max(rq->uclamp.value[clamp_id],
-> > 					 p->uclamp[clamp_id].value);
-> 
-> In this case instead, since we are updating a variable visible from
-> other CPUs, should not be preferred to avoid assignment when not
-> required ?
-
-And what about this ?
-
-> Is the compiler is smart enough to optimize the code above?
-> ... will check better.
-
-Did not really checked what the compiler does in the two cases but,
-given also the above, for consistency I would probably prefer to keep
-both max aggregation as originally defined.
-
-What do you think ?
-
+diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+index 084c8ba9749d..9ff2461820d8 100644
+--- a/drivers/power/supply/axp288_fuel_gauge.c
++++ b/drivers/power/supply/axp288_fuel_gauge.c
+@@ -307,22 +307,12 @@ static int fuel_gauge_debug_show(struct seq_file *s, void *data)
+ 	return 0;
+ }
+ 
+-static int debug_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, fuel_gauge_debug_show, inode->i_private);
+-}
+-
+-static const struct file_operations fg_debug_fops = {
+-	.open       = debug_open,
+-	.read       = seq_read,
+-	.llseek     = seq_lseek,
+-	.release    = single_release,
+-};
++DEFINE_SHOW_ATTRIBUTE(fuel_gauge_debug);
+ 
+ static void fuel_gauge_create_debugfs(struct axp288_fg_info *info)
+ {
+ 	info->debug_file = debugfs_create_file("fuelgauge", 0666, NULL,
+-		info, &fg_debug_fops);
++		info, &fuel_gauge_debug_fops);
+ }
+ 
+ static void fuel_gauge_remove_debugfs(struct axp288_fg_info *info)
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.17.0
