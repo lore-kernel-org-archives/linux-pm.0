@@ -1,46 +1,187 @@
-From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 3.18 1/7] cpufreq: imx6q: add return value check for voltage scale
-Date: Thu, 22 Nov 2018 14:57:43 -0500
-Message-ID: <20181122195749.14086-1-sashal@kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 2/6] devfreq: refactor set_target frequency function
+Date: Fri, 23 Nov 2018 08:45:45 +0900
+Message-ID: <5BF73FA9.7010402@samsung.com>
+References: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181121180202eucas1p27d3aa58411abeae03181c38b91fc67de@eucas1p2.samsung.com>
+        <1542823301-23563-3-git-send-email-l.luba@partner.samsung.com>
+        <5BF619EE.8090006@samsung.com>
+        <9eef3348-e86f-1113-3691-39ba3a620fb8@partner.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <9eef3348-e86f-1113-3691-39ba3a620fb8@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Anson Huang <anson.huang@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Anson Huang <anson.huang@nxp.com>
+Hi Lukasz,
 
-[ Upstream commit 6ef28a04d1ccf718eee069b72132ce4aa1e52ab9 ]
+On 2018년 11월 22일 19:40, Lukasz Luba wrote:
+> Hi Chanwoo Choi
+> 
+> On 11/22/18 3:52 AM, Chanwoo Choi wrote:
+>> On 2018년 11월 22일 03:01, Lukasz Luba wrote:
+>>> The refactoring is needed for the new client in devfreq: suspend.
+>>> To avoid code duplication, move it to the new local function
+>>> devfreq_set_target.
+>>>
+>>> The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
+>>> solve issue with devfreq device's frequency during suspend/resume.
+>>> During the discussion on LKML some corner cases and comments appeared
+>>> related to the design. This patch address them keeping in mind suggestions
+>>> from Chanwoo Choi.
+>>
+>> As I commented on patch1, please remove it.
+> OK
+>>
+>>>
+>>> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>>> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>>> ---
+>>>   drivers/devfreq/devfreq.c | 62 ++++++++++++++++++++++++++++-------------------
+>>>   1 file changed, 37 insertions(+), 25 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index e20e7e4..cf9c643 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -285,6 +285,42 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+>>>   	return 0;
+>>>   }
+>>>   
+>>> +static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+>>> +			      unsigned long *prev_freq, u32 flags)
+>>
+>> Please remove the unused space in front of 'unsigned long *prev_freq'.
+>> Use tab only for indentation.
+> OK
+>>
+>>> +{
+>>> +	struct devfreq_freqs freqs;
+>>> +	unsigned long cur_freq;
+>>> +	int err = 0;
+>>> +
+>>> +	if (devfreq->profile->get_cur_freq)
+>>> +		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+>>> +	else
+>>> +		cur_freq = devfreq->previous_freq;
+>>> +
+>>> +	freqs.old = cur_freq;
+>>> +	freqs.new = new_freq;
+>>> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+>>> +
+>>> +	err = devfreq->profile->target(devfreq->dev.parent, &new_freq, flags);
+>>> +	if (err) {
+>>> +		freqs.new = cur_freq;
+>>> +		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+>>> +		return err;
+>>> +	}
+>>> +
+>>> +	freqs.new = new_freq;
+>>> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+>>> +
+>>> +	if (devfreq_update_status(devfreq, new_freq))
+>>> +		dev_err(&devfreq->dev,
+>>> +			"Couldn't update frequency transition information.\n");
+>>> +
+>>> +	devfreq->previous_freq = new_freq;
+>>> +	*prev_freq = cur_freq;
+>>> +
+>>> +	return err;
+>>> +}
+>>> +
+>>>   /* Load monitoring helper functions for governors use */
+>>>   
+>>>   /**
+>>> @@ -296,7 +332,6 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+>>>    */
+>>>   int update_devfreq(struct devfreq *devfreq)
+>>>   {
+>>> -	struct devfreq_freqs freqs;
+>>>   	unsigned long freq, cur_freq, min_freq, max_freq;
+>>
+>>
+>> cur_freq is not used after modification. Remove it.
+>>
+>>>   	int err = 0;
+>>>   	u32 flags = 0;
+>>> @@ -333,31 +368,8 @@ int update_devfreq(struct devfreq *devfreq)
+>>>   		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+>>>   	}
+>>>   
+>>> -	if (devfreq->profile->get_cur_freq)
+>>> -		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+>>> -	else
+>>> -		cur_freq = devfreq->previous_freq;
+>>> -
+>>> -	freqs.old = cur_freq;
+>>> -	freqs.new = freq;
+>>> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+>>> +	return devfreq_set_target(devfreq, freq, &cur_freq, flags);
+>>
+>> You get the 'cur_freq' from devfreq_set_taget() for devfreq_suspend_device() on patch3.
+>> But, update_devfreq() and devfreq_resume_device() don't use the 'cur_freq' value
+>> from devfreq_set_target().
+>>
+>> Instead, getting 'cur_freq' for 'devfreq->resume_freq' in the devfreq_set_target().
+>> Please remove the 'cur_freq' parameter from devfreq_set_target.
+> 
+> I can remove the 3rd parameter from devfreq_set_target(),
+> but it implies that patch 1 and 3 cannot be merged. The function 
+> devfreq_set_target will use 'devfreq->resume_freq' so it must be in 
+> devfreq struct.
+> So, in v2 version there will be still 6 patches, with the 1st patch 
+> defining needed fields in devfreq struct.
+> Do you agree for that?
 
-Add return value check for voltage scale when ARM clock
-rate change fail.
+So, I replied again as following on my other reply[1] of patch2: 
+[1] https://lkml.org/lkml/2018/11/22/507
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/imx6q-cpufreq.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+But, you have to add following new code on patch3 instead of patch2.
+patch2 doesn't contain the following codes and then
+patch3 adds 'resume_freq' variable and adds the following code on patch3.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index c2d30765bf3d..a4ede00483d1 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -105,8 +105,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	/* Ensure the arm clock divider is what we expect */
- 	ret = clk_set_rate(arm_clk, new_freq * 1000);
- 	if (ret) {
-+		int ret1;
 +
- 		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
--		regulator_set_voltage_tol(arm_reg, volt_old, 0);
-+		ret1 = regulator_set_voltage_tol(arm_reg, volt_old, 0);
-+		if (ret1)
-+			dev_warn(cpu_dev,
-+				 "failed to restore vddarm voltage: %d\n", ret1);
- 		return ret;
- 	}
- 
++       if (devfreq->suspend_freq)
++               devfreq->resume_freq = cur_freq;
+
+> 
+>>
+>>>   
+>>> -	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+>>> -	if (err) {
+>>> -		freqs.new = cur_freq;
+>>> -		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+>>> -		return err;
+>>> -	}
+>>> -
+>>> -	freqs.new = freq;
+>>> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+>>> -
+>>> -	if (devfreq_update_status(devfreq, freq))
+>>> -		dev_err(&devfreq->dev,
+>>> -			"Couldn't update frequency transition information.\n");
+>>> -
+>>> -	devfreq->previous_freq = freq;
+>>> -	return err;
+>>>   }
+>>>   EXPORT_SYMBOL(update_devfreq);
+>>>   
+>>>
+>>
+>>
+> 
+> Regards,
+> Lukasz Luba
+> 
+> 
+
+
 -- 
-2.17.1
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
