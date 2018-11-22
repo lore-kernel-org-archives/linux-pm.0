@@ -1,158 +1,97 @@
-From: David Hildenbrand <david@redhat.com>
-Subject: [PATCH v2] makedumpfile: exclude pages that are logically offline
-Date: Thu, 22 Nov 2018 11:09:38 +0100
-Message-ID: <20181122100938.5567-1-david@redhat.com>
-References: <20181122100627.5189-1-david@redhat.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: [PATCH v2 1/2] power: supply: add input voltage limit property.
+Date: Thu, 22 Nov 2018 11:11:18 +0100
+Message-ID: <20181122101119.29194-1-enric.balletbo@collabora.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181122100627.5189-1-david@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, devel@linuxdriverproject.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org, xen-devel@lists.xenproject.org, kexec-ml <kexec@lists.infradead.org>, pv-drivers@vmware.com, Kazuhito Hagio <k-hagio@ab.jp.nec.com>, David Hildenbrand <david@redhat.com>
+To: linux-pm@vger.kernel.org, sre@kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Linux marks pages that are logically offline via a page flag (map count).
-Such pages e.g. include pages infated as part of a balloon driver or
-pages that were not actually onlined when onlining the whole section.
+We have a problem with USBPD chargers which under certain conditions
+can result in system overheating if the voltage provided by the USBPD
+port is too high. While the preferred means to control this would be
+through devicetree or ACPI settings, this is not always possible, and
+we need to have a means to set a voltage limit.
 
-While the hypervisor usually allows to read such inflated memory, we
-basically read and dump data that is completely irrelevant. Also, this
-might result in quite some overhead in the hypervisor. In addition,
-we saw some problems under Hyper-V, whereby we can crash the kernel by
-dumping, when reading memory of a partially onlined memory segment
-(for memory added by the Hyper-V balloon driver).
+This patch exposes a new property, similar to input current limit, to
+re-configure the maximum voltage from the external supply at runtime
+based on system-level knowledge or user input.
 
-Therefore, don't read and dump pages that are marked as being logically
-offline.
-
-Signed-off-by: David Hildenbrand <david@redhat.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Reviewed-by: Guenter Roeck <groeck@chromium.org>
 ---
 
-v1 -> v2:
-- Fix PAGE_BUDDY_MAPCOUNT_VALUE vs. PAGE_OFFLINE_MAPCOUNT_VALUE
+Changes in v2:
+- Document the new property in ABI/testing/sysfs-class-power.
+- Add the Reviewed-by Guenter Roeck tag.
 
- makedumpfile.c | 34 ++++++++++++++++++++++++++++++----
- makedumpfile.h |  1 +
- 2 files changed, 31 insertions(+), 4 deletions(-)
+ Documentation/ABI/testing/sysfs-class-power | 11 +++++++++++
+ Documentation/power/power_supply_class.txt  |  2 ++
+ drivers/power/supply/power_supply_sysfs.c   |  1 +
+ include/linux/power_supply.h                |  1 +
+ 4 files changed, 15 insertions(+)
 
-diff --git a/makedumpfile.c b/makedumpfile.c
-index 8923538..a5f2ea9 100644
---- a/makedumpfile.c
-+++ b/makedumpfile.c
-@@ -88,6 +88,7 @@ mdf_pfn_t pfn_cache_private;
- mdf_pfn_t pfn_user;
- mdf_pfn_t pfn_free;
- mdf_pfn_t pfn_hwpoison;
-+mdf_pfn_t pfn_offline;
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 5e23e22dce1b..4fb24b0a28df 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -335,6 +335,17 @@ Description:
+ 		Access: Read, Write
+ 		Valid values: Represented in microamps
  
- mdf_pfn_t num_dumped;
- 
-@@ -249,6 +250,21 @@ isHugetlb(unsigned long dtor)
-                     && (SYMBOL(free_huge_page) == dtor));
- }
- 
-+static int
-+isOffline(unsigned long flags, unsigned int _mapcount)
-+{
-+	if (NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE) == NOT_FOUND_NUMBER)
-+		return FALSE;
++What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
++Date:		Nov 2018
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Details the incoming VBUS voltage limit currently set in the
++		supply. Normally this is configured based on the type of
++		connection made.
 +
-+	if (flags & (1UL << NUMBER(PG_slab)))
-+		return FALSE;
++		Access: Read, Write
++		Valid values: Represented in microvolts
 +
-+	if (_mapcount == (int)NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE))
-+		return TRUE;
-+
-+	return FALSE;
-+}
-+
- static int
- is_cache_page(unsigned long flags)
- {
-@@ -2287,6 +2303,8 @@ write_vmcoreinfo_data(void)
- 	WRITE_NUMBER("PG_hwpoison", PG_hwpoison);
+ What:		/sys/class/power_supply/<supply_name>/online,
+ Date:		May 2007
+ Contact:	linux-pm@vger.kernel.org
+diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
+index 300d37896e51..7b4be615b4f8 100644
+--- a/Documentation/power/power_supply_class.txt
++++ b/Documentation/power/power_supply_class.txt
+@@ -137,6 +137,8 @@ power supply object.
  
- 	WRITE_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-+	WRITE_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE",
-+		     PAGE_OFFLINE_MAPCOUNT_VALUE);
- 	WRITE_NUMBER("phys_base", phys_base);
+ INPUT_CURRENT_LIMIT - input current limit programmed by charger. Indicates
+ the current drawn from a charging source.
++INPUT_VOLTAGE_LIMIT - input voltage limit programmed by charger. Indicates
++the voltage limit from a charging source.
  
- 	WRITE_NUMBER("HUGETLB_PAGE_DTOR", HUGETLB_PAGE_DTOR);
-@@ -2687,6 +2705,7 @@ read_vmcoreinfo(void)
- 	READ_SRCFILE("pud_t", pud_t);
- 
- 	READ_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-+	READ_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE", PAGE_OFFLINE_MAPCOUNT_VALUE);
- 	READ_NUMBER("phys_base", phys_base);
- #ifdef __aarch64__
- 	READ_NUMBER("VA_BITS", VA_BITS);
-@@ -6041,6 +6060,12 @@ __exclude_unnecessary_pages(unsigned long mem_map,
- 		else if (isHWPOISON(flags)) {
- 			pfn_counter = &pfn_hwpoison;
- 		}
-+		/*
-+		 * Exclude pages that are logically offline.
-+		 */
-+		else if (isOffline(flags, _mapcount)) {
-+			pfn_counter = &pfn_offline;
-+		}
- 		/*
- 		 * Unexcludable page
- 		 */
-@@ -7522,7 +7547,7 @@ write_elf_pages_cyclic(struct cache_data *cd_header, struct cache_data *cd_page)
- 	 */
- 	if (info->flag_cyclic) {
- 		pfn_zero = pfn_cache = pfn_cache_private = 0;
--		pfn_user = pfn_free = pfn_hwpoison = 0;
-+		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
- 		pfn_memhole = info->max_mapnr;
- 	}
- 
-@@ -8804,7 +8829,7 @@ write_kdump_pages_and_bitmap_cyclic(struct cache_data *cd_header, struct cache_d
- 		 * Reset counter for debug message.
- 		 */
- 		pfn_zero = pfn_cache = pfn_cache_private = 0;
--		pfn_user = pfn_free = pfn_hwpoison = 0;
-+		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
- 		pfn_memhole = info->max_mapnr;
- 
- 		/*
-@@ -9749,7 +9774,7 @@ print_report(void)
- 	pfn_original = info->max_mapnr - pfn_memhole;
- 
- 	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
--	    + pfn_user + pfn_free + pfn_hwpoison;
-+	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
- 	shrinking = (pfn_original - pfn_excluded) * 100;
- 	shrinking = shrinking / pfn_original;
- 
-@@ -9763,6 +9788,7 @@ print_report(void)
- 	REPORT_MSG("    User process data pages : 0x%016llx\n", pfn_user);
- 	REPORT_MSG("    Free pages              : 0x%016llx\n", pfn_free);
- 	REPORT_MSG("    Hwpoison pages          : 0x%016llx\n", pfn_hwpoison);
-+	REPORT_MSG("    Offline pages           : 0x%016llx\n", pfn_offline);
- 	REPORT_MSG("  Remaining pages  : 0x%016llx\n",
- 	    pfn_original - pfn_excluded);
- 	REPORT_MSG("  (The number of pages is reduced to %lld%%.)\n",
-@@ -9790,7 +9816,7 @@ print_mem_usage(void)
- 	pfn_original = info->max_mapnr - pfn_memhole;
- 
- 	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
--	    + pfn_user + pfn_free + pfn_hwpoison;
-+	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
- 	shrinking = (pfn_original - pfn_excluded) * 100;
- 	shrinking = shrinking / pfn_original;
- 	total_size = info->page_size * pfn_original;
-diff --git a/makedumpfile.h b/makedumpfile.h
-index f02f86d..e3a2b29 100644
---- a/makedumpfile.h
-+++ b/makedumpfile.h
-@@ -1927,6 +1927,7 @@ struct number_table {
- 	long    PG_hwpoison;
- 
- 	long	PAGE_BUDDY_MAPCOUNT_VALUE;
-+	long	PAGE_OFFLINE_MAPCOUNT_VALUE;
- 	long	SECTION_SIZE_BITS;
- 	long	MAX_PHYSMEM_BITS;
- 	long    HUGETLB_PAGE_DTOR;
+ CHARGE_CONTROL_LIMIT - current charge control limit setting
+ CHARGE_CONTROL_LIMIT_MAX - maximum charge control limit setting
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index dce24f596160..5848742ebb59 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -275,6 +275,7 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(charge_control_limit),
+ 	POWER_SUPPLY_ATTR(charge_control_limit_max),
+ 	POWER_SUPPLY_ATTR(input_current_limit),
++	POWER_SUPPLY_ATTR(input_voltage_limit),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+ 	POWER_SUPPLY_ATTR(energy_full),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index f80769175c56..608ba88e32ee 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -122,6 +122,7 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+ 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
+ 	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
++	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL,
 -- 
-2.17.2
+2.19.1
