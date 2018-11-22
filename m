@@ -1,206 +1,107 @@
-From: Guenter Roeck <groeck@google.com>
-Subject: Re: [PATCH v2 2/2] power: supply: cros: allow to set input voltage
- and current limit.
-Date: Thu, 22 Nov 2018 07:24:29 -0800
-Message-ID: <CABXOdTemckwTZx-q=VYfNYSeXKbY_YQ3wEYZtDvGYKt-U6KXYg@mail.gmail.com>
-References: <20181122101119.29194-1-enric.balletbo@collabora.com> <20181122101119.29194-2-enric.balletbo@collabora.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH v9 09/15] sched: Introduce sched_energy_present static key
+Date: Thu, 22 Nov 2018 15:25:40 +0000
+Message-ID: <20181122152538.jvgh3uvuo5a6lfs7@queper01-lin>
+References: <20181119141857.8625-1-quentin.perret@arm.com>
+ <20181119141857.8625-10-quentin.perret@arm.com>
+ <20181121130822.GE2113@hirez.programming.kicks-ass.net>
+ <20181121151444.t3zye5l5iycfni2s@queper01-lin>
+ <20181122091715.6kvhcbgoqrd54nbs@queper01-lin>
+ <20181122093237.goxmr4p5l4h2izid@queper01-lin>
+ <20181122102545.GQ2131@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181122101119.29194-2-enric.balletbo@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <20181122102545.GQ2131@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Sameer Nanda <snanda@chromium.org>, Gwendal Grignou <gwendal@chromium.org>, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, Benson Leung <bleung@chromium.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, mingo@redhat.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, chris.redpath@arm.com, patrick.bellasi@arm.com, valentin.schneider@arm.com, vincent.guittot@linaro.org, thara.gopinath@linaro.org, viresh.kumar@linaro.org, tkjos@google.com, joel@joelfernandes.org, smuckle@google.com, adharmap@codeaurora.org, skannan@codeaurora.org, pkondeti@codeaurora.org, juri.lelli@redhat.com, edubezval@gmail.com, srinivas.pandruvada@linux.intel.com, currojerez@riseup.net, javi.merino@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 22, 2018 at 2:11 AM Enric Balletbo i Serra
-<enric.balletbo@collabora.com> wrote:
->
-> This patch allows reading and writing the input voltage and current
-> limit through the POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT and
-> POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs properties. This allows
-> userspace to see current values and to re-configure these values at
-> runtime based on system-level knowledge or user input.
->
-> By default there is no limit, this is reported as a -1 when reading from
-> userspace. Writing a value will set the current or voltage limit in uA
-> or uV, and writing any negative value will remove that limit.
->
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+On Thursday 22 Nov 2018 at 11:25:45 (+0100), Peter Zijlstra wrote:
+> On Thu, Nov 22, 2018 at 09:32:39AM +0000, Quentin Perret wrote:
+> > Hmm, I went too fast, that's totally broken. But there's still something
+> > we can do with static_branch_{inc,dec} I think. I'll come back later
+> > with a better solution.
+> 
+> Right; if you count the rd's that have pd set, it should work-ish. Yes,
+> much cleaner if you can get it to work.
 
-Reviewed-by: Guenter Roeck <groeck@chromium.org>
+So, I came up with the following code which seems to work OK. It's not
+as I clean as I'd like, though. The fact that free_pd() can be called in
+softirq context is annoying to manipulate the static key ...
 
-> ---
->
-> Changes in v2:
-> - Fix the upper limit that can be set.
-> - Remove unnecessary else.
->
->  drivers/power/supply/cros_usbpd-charger.c | 116 ++++++++++++++++++++++
->  1 file changed, 116 insertions(+)
->
-> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/supply/cros_usbpd-charger.c
-> index 7e9c3984ef6a..3a9ea94c3de3 100644
-> --- a/drivers/power/supply/cros_usbpd-charger.c
-> +++ b/drivers/power/supply/cros_usbpd-charger.c
-> @@ -53,6 +53,8 @@ struct charger_data {
->  };
->
->  static enum power_supply_property cros_usbpd_charger_props[] = {
-> +       POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
-> +       POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
->         POWER_SUPPLY_PROP_ONLINE,
->         POWER_SUPPLY_PROP_STATUS,
->         POWER_SUPPLY_PROP_CURRENT_MAX,
-> @@ -80,6 +82,10 @@ static enum power_supply_usb_type cros_usbpd_charger_usb_types[] = {
->         POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID
->  };
->
-> +/* Input voltage/current limit in mV/mA. Default to none. */
-> +static u16 input_voltage_limit = EC_POWER_LIMIT_NONE;
-> +static u16 input_current_limit = EC_POWER_LIMIT_NONE;
-> +
->  static bool cros_usbpd_charger_port_is_dedicated(struct port_data *port)
->  {
->         return port->port_number >= port->charger->num_usbpd_ports;
-> @@ -324,6 +330,26 @@ static int cros_usbpd_charger_get_port_status(struct port_data *port,
->         return ret;
->  }
->
-> +static int cros_usbpd_charger_set_ext_power_limit(struct charger_data *charger,
-> +                                                 u16 current_lim,
-> +                                                 u16 voltage_lim)
-> +{
-> +       struct ec_params_external_power_limit_v1 req;
-> +       int ret;
-> +
-> +       req.current_lim = current_lim;
-> +       req.voltage_lim = voltage_lim;
-> +
-> +       ret = cros_usbpd_charger_ec_command(charger, 0,
-> +                                           EC_CMD_EXTERNAL_POWER_LIMIT,
-> +                                           &req, sizeof(req), NULL, 0);
-> +       if (ret < 0)
-> +               dev_err(charger->dev,
-> +                       "Unable to set the 'External Power Limit': %d\n", ret);
-> +
-> +       return ret;
-> +}
-> +
->  static void cros_usbpd_charger_power_changed(struct power_supply *psy)
->  {
->         struct port_data *port = power_supply_get_drvdata(psy);
-> @@ -396,6 +422,18 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
->         case POWER_SUPPLY_PROP_USB_TYPE:
->                 val->intval = port->psy_usb_type;
->                 break;
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
-> +                       val->intval = -1;
-> +               else
-> +                       val->intval = input_current_limit * 1000;
-> +               break;
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-> +                       val->intval = -1;
-> +               else
-> +                       val->intval = input_voltage_limit * 1000;
-> +               break;
->         case POWER_SUPPLY_PROP_MODEL_NAME:
->                 val->strval = port->model_name;
->                 break;
-> @@ -409,6 +447,81 @@ static int cros_usbpd_charger_get_prop(struct power_supply *psy,
->         return 0;
->  }
->
-> +static int cros_usbpd_charger_set_prop(struct power_supply *psy,
-> +                                      enum power_supply_property psp,
-> +                                      const union power_supply_propval *val)
-> +{
-> +       struct port_data *port = power_supply_get_drvdata(psy);
-> +       struct charger_data *charger = port->charger;
-> +       struct device *dev = charger->dev;
-> +       u16 intval;
-> +       int ret;
-> +
-> +       /* U16_MAX in mV/mA is the maximum supported value */
-> +       if (val->intval >= U16_MAX * 1000)
-> +               return -EINVAL;
-> +       /* A negative number is used to clear the limit */
-> +       if (val->intval < 0)
-> +               intval = EC_POWER_LIMIT_NONE;
-> +       else    /* Convert from uA/uV to mA/mV */
-> +               intval = val->intval / 1000;
-> +
-> +       switch (psp) {
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +               ret = cros_usbpd_charger_set_ext_power_limit(charger, intval,
-> +                                                       input_voltage_limit);
-> +               if (ret < 0)
-> +                       break;
-> +
-> +               input_current_limit = intval;
-> +               if (input_current_limit == EC_POWER_LIMIT_NONE)
-> +                       dev_info(dev,
-> +                         "External Current Limit cleared for all ports\n");
-> +               else
-> +                       dev_info(dev,
-> +                         "External Current Limit set to %dmA for all ports\n",
-> +                         input_current_limit);
-> +               break;
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               ret = cros_usbpd_charger_set_ext_power_limit(charger,
-> +                                                       input_current_limit,
-> +                                                       intval);
-> +               if (ret < 0)
-> +                       break;
-> +
-> +               input_voltage_limit = intval;
-> +               if (input_voltage_limit == EC_POWER_LIMIT_NONE)
-> +                       dev_info(dev,
-> +                         "External Voltage Limit cleared for all ports\n");
-> +               else
-> +                       dev_info(dev,
-> +                         "External Voltage Limit set to %dmV for all ports\n",
-> +                         input_voltage_limit);
-> +               break;
-> +       default:
-> +               ret = -EINVAL;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +static int cros_usbpd_charger_property_is_writeable(struct power_supply *psy,
-> +                                               enum power_supply_property psp)
-> +{
-> +       int ret;
-> +
-> +       switch (psp) {
-> +       case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +       case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
-> +               ret = 1;
-> +               break;
-> +       default:
-> +               ret = 0;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
->  static int cros_usbpd_charger_ec_event(struct notifier_block *nb,
->                                        unsigned long queued_during_suspend,
->                                        void *_notify)
-> @@ -525,6 +638,9 @@ static int cros_usbpd_charger_probe(struct platform_device *pd)
->
->                 psy_desc = &port->psy_desc;
->                 psy_desc->get_property = cros_usbpd_charger_get_prop;
-> +               psy_desc->set_property = cros_usbpd_charger_set_prop;
-> +               psy_desc->property_is_writeable =
-> +                               cros_usbpd_charger_property_is_writeable;
->                 psy_desc->external_power_changed =
->                                         cros_usbpd_charger_power_changed;
->                 psy_cfg.drv_data = port;
-> --
-> 2.19.1
->
+An alternative to this work item workaround is to do static_branch_dec()
+from build_perf_domains() and next to the three call sites of
+free_rootdomain() in order to avoid the call_rcu() context. Not very
+pretty either.
+
+Or we can just stick with your original suggestion to carry a boolean
+around.
+
+Any preference ?
+
+Thanks,
+Quentin
+
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -232,7 +232,7 @@ int sched_energy_aware_handler(struct ctl_table *table, int write,
+ }
+ #endif
+
+-static void free_pd(struct perf_domain *pd)
++static void _free_pd(struct perf_domain *pd)
+ {
+        struct perf_domain *tmp;
+
+@@ -243,6 +243,24 @@ static void free_pd(struct perf_domain *pd)
+        }
+ }
+
++static void dec_sched_energy_workfn(struct work_struct *work)
++{
++       static_branch_dec(&sched_energy_present);
++}
++static DECLARE_WORK(dec_sched_energy_work, dec_sched_energy_workfn);
++
++static void free_pd(struct perf_domain *pd)
++{
++       if (pd) {
++               /*
++                * XXX: The static key can't be modified from SOFTIRQ context,
++                * so do it using a work item.
++                */
++               schedule_work(&dec_sched_energy_work);
++               _free_pd(pd);
++       }
++}
++
+ static struct perf_domain *find_pd(struct perf_domain *pd, int cpu)
+ {
+        while (pd) {
+@@ -421,13 +410,14 @@ static void build_perf_domains(const struct cpumask *cpu_map)
+        /* Attach the new list of performance domains to the root domain. */
+        tmp = rd->pd;
+        rcu_assign_pointer(rd->pd, pd);
++       static_branch_inc_cpuslocked(&sched_energy_present);
+        if (tmp)
+                call_rcu(&tmp->rcu, destroy_perf_domain_rcu);
+
+        return;
+
+ free:
+-       free_pd(pd);
++       _free_pd(pd);
+        tmp = rd->pd;
+        rcu_assign_pointer(rd->pd, NULL);
+        if (tmp)
+@@ -2246,7 +2236,6 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
+ match3:
+                ;
+        }
+-       sched_energy_start(ndoms_new, doms_new);
+ #endif
+
+        /* Remember the new sched domains: */
