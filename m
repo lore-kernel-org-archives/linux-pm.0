@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.14 04/21] cpufreq: imx6q: add return value check for voltage scale
-Date: Thu, 22 Nov 2018 14:54:35 -0500
-Message-ID: <20181122195452.13520-4-sashal@kernel.org>
-References: <20181122195452.13520-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 04/15] cpufreq: imx6q: add return value check for voltage scale
+Date: Thu, 22 Nov 2018 14:56:10 -0500
+Message-ID: <20181122195621.13776-4-sashal@kernel.org>
+References: <20181122195621.13776-1-sashal@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181122195452.13520-1-sashal@kernel.org>
+In-Reply-To: <20181122195621.13776-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Anson Huang <anson.huang@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
@@ -26,10 +26,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 14466a9b01c0..63d28323a29c 100644
+index ef1fa8145419..fa86946d12aa 100644
 --- a/drivers/cpufreq/imx6q-cpufreq.c
 +++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -135,8 +135,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+@@ -130,8 +130,13 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
  	/* Ensure the arm clock divider is what we expect */
  	ret = clk_set_rate(arm_clk, new_freq * 1000);
  	if (ret) {
