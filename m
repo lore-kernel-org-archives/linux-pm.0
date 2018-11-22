@@ -1,88 +1,61 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 6/6] arm: dts: exynos4: set opp-suspend for DMC and
- leftbus
-Date: Thu, 22 Nov 2018 12:09:31 +0900
-Message-ID: <5BF61DEB.5010403@samsung.com>
-References: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181121180208eucas1p11482a783ab1b1bceb8c9f6a1f50682c3@eucas1p1.samsung.com>
-        <1542823301-23563-7-git-send-email-l.luba@partner.samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v10 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
+ HW driver
+Date: Thu, 22 Nov 2018 10:37:08 +0530
+Message-ID: <20181122050708.zictqzfne6odsywu@vireshk-i7>
+References: <1542796967-5949-1-git-send-email-tdas@codeaurora.org>
+ <1542796967-5949-3-git-send-email-tdas@codeaurora.org>
+ <20181121220614.GU22824@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1542823301-23563-7-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20181121220614.GU22824@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Taniya Das <tdas@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 2018년 11월 22일 03:01, Lukasz Luba wrote:
-> Mark the state for devfreq device while entring suspend/resume process.
+On 21-11-18, 14:06, Matthias Kaehlcke wrote:
+> On Wed, Nov 21, 2018 at 04:12:47PM +0530, Taniya Das wrote:
+> > +	.boost_enabled	= true,
 > 
-> The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
-> solve issue with devfreq device's frequency during suspend/resume.
-> During the discussion on LKML some corner cases and comments appeared
-> related to the design. This patch address them keeping in mind suggestions
-> from Chanwoo Choi.
+> I have no real expertise with cpufreq boost, but after reading a bit
+> through cpufreq code this seems wrong. Boost is enabled statically,
+> however the driver has neither a ->set_boost function nor does it call
+> cpufreq_enable_boost_support() which would use a default
+> implementation for ->set_boost. As a result boost support is
+> effectively disabled:
 > 
-> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  arch/arm/boot/dts/exynos4210.dtsi | 2 ++
->  arch/arm/boot/dts/exynos4412.dtsi | 2 ++
->  2 files changed, 4 insertions(+)
-
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
+> static bool cpufreq_boost_supported(void)
+> {
+>         return likely(cpufreq_driver) && cpufreq_driver->set_boost;
+> }
 > 
-> diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-> index b6091c2..4429b72 100644
-> --- a/arch/arm/boot/dts/exynos4210.dtsi
-> +++ b/arch/arm/boot/dts/exynos4210.dtsi
-> @@ -298,6 +298,7 @@
->  			opp-400000000 {
->  				opp-hz = /bits/ 64 <400000000>;
->  				opp-microvolt = <1150000>;
-> +				opp-suspend;
->  			};
->  		};
->  
-> @@ -367,6 +368,7 @@
->  			};
->  			opp-200000000 {
->  				opp-hz = /bits/ 64 <200000000>;
-> +				opp-suspend;
->  			};
->  		};
->  	};
-> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-> index 51f72f0..908c0c4 100644
-> --- a/arch/arm/boot/dts/exynos4412.dtsi
-> +++ b/arch/arm/boot/dts/exynos4412.dtsi
-> @@ -432,6 +432,7 @@
->  			opp-400000000 {
->  				opp-hz = /bits/ 64 <400000000>;
->  				opp-microvolt = <1050000>;
-> +				opp-suspend;
->  			};
->  		};
->  
-> @@ -520,6 +521,7 @@
->  			opp-200000000 {
->  				opp-hz = /bits/ 64 <200000000>;
->  				opp-microvolt = <1000000>;
-> +				opp-suspend;
->  			};
->  		};
->  
-> 
+> The driver should probably do the same as cpufreq-dt.c and call
+> cpufreq_enable_boost_support() if boost frequencies are available,
+> instead of 'enabling' boost statically.
 
+Feels like I have written the boost support in cpufreq core few decades back as
+I don't remember any of it :)
+
+But reading through the code this is what I understood.
+
+There are two parts of boosting.
+
+- Sysfs file available or not to enable/disable boost frequencies on the go.
+  This file gets created only when cpufreq_enable_boost_support() gets called.
+
+- Will cpufreq core consider boost frequencies or not while checking target
+  frequency again, this is governed by cpufreq_driver->boost field, which can be
+  set from driver or using the sysfs file mentioned above.
+
+In this driver, all we have done is to set the cpufreq_driver->boost field to
+true, which would allow cpufreq core to use boost frequencies as well. But that
+isn't any better than making them all normal frequencies and getting rid of
+boost stuff. The boosting stuff will be useful only if you want to disable some
+of them at runtime, based on heating, etc. And that is possible only after you
+create a sysfs file.
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
