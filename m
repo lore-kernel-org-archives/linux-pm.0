@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 4.9 04/15] cpufreq: imx6q: add return value check for voltage scale
-Date: Thu, 22 Nov 2018 14:56:10 -0500
-Message-ID: <20181122195621.13776-4-sashal@kernel.org>
-References: <20181122195621.13776-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 2/8] cpufreq: imx6q: add return value check for voltage scale
+Date: Thu, 22 Nov 2018 14:57:09 -0500
+Message-ID: <20181122195716.13961-2-sashal@kernel.org>
+References: <20181122195716.13961-1-sashal@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181122195621.13776-1-sashal@kernel.org>
+In-Reply-To: <20181122195716.13961-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Anson Huang <anson.huang@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
