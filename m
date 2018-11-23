@@ -1,42 +1,33 @@
-From: Juergen Gross <jgross@suse.com>
-Subject: Re: [PATCH v2 4/8] xen/balloon: mark inflated pages PG_offline
-Date: Fri, 23 Nov 2018 14:41:43 +0100
-Message-ID: <3d5250b7-870e-e702-a6e4-937d2362fea4@suse.com>
-References: <20181122100627.5189-1-david@redhat.com>
- <20181122100627.5189-5-david@redhat.com>
+From: Bart Van Assche <bvanassche@acm.org>
+Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order of
+ operations for deferred probe and remove
+Date: Fri, 23 Nov 2018 06:19:53 -0800
+Message-ID: <f9ccdf33-6b7a-cdb2-150b-3ab83892c96e@acm.org>
+References: <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
+ <201811061228.iteFLO2p%fengguang.wu@intel.com>
+ <1541548274.196084.197.camel@acm.org>
+ <d70f2bcb-0e1c-2d69-2692-329ef5cf81bc@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20181122100627.5189-5-david@redhat.com>
-Content-Language: de-DE
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org
-Cc: Stefano Stabellini <sstabellini@kernel.org>, linux-pm@vger.kernel.org, pv-drivers@vmware.com, linux-doc@vger.kernel.org, kexec-ml <kexec@lists.infradead.org>, linux-kernel@vger.kernel.org, Matthew Wilcox <willy@infradead.org>, Michal Hocko <mhocko@suse.com>, "Michael S. Tsirkin" <mst@redhat.com>, xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org, devel@linuxdriverproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d70f2bcb-0e1c-2d69-2692-329ef5cf81bc@intel.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rong Chen <rong.a.chen@intel.com>, kbuild test robot <lkp@intel.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On 22/11/2018 11:06, David Hildenbrand wrote:
-> Mark inflated and never onlined pages PG_offline, to tell the world that
-> the content is stale and should not be dumped.
+On 11/22/18 5:23 PM, Rong Chen wrote:
+> Kbuild robot printed all warnings and the below warning was found in 
+> patch 5/9.
 > 
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: Stefano Stabellini <sstabellini@kernel.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: "Michael S. Tsirkin" <mst@redhat.com>
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+> "include/linux/device.h:1056: warning: Function parameter or member 
+> 'async_probe' not described in 'device'"
 
-Reviewed-by: Juergen Gross <jgross@suse.com>
+Hi Rong,
 
+Thanks for having taken a look. That's indeed something that must be 
+fixed in patch 5/9.
 
-Juergen
+Bart.
