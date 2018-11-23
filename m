@@ -1,33 +1,42 @@
-From: Bart Van Assche <bvanassche@acm.org>
-Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order of
- operations for deferred probe and remove
-Date: Fri, 23 Nov 2018 06:19:53 -0800
-Message-ID: <f9ccdf33-6b7a-cdb2-150b-3ab83892c96e@acm.org>
-References: <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
- <201811061228.iteFLO2p%fengguang.wu@intel.com>
- <1541548274.196084.197.camel@acm.org>
- <d70f2bcb-0e1c-2d69-2692-329ef5cf81bc@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] thermal: tegra: soctherm: Change to use DEFINE_SHOW_ATTRIBUTE macro
+Date: Fri, 23 Nov 2018 09:50:58 -0500
+Message-ID: <20181123145058.27115-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d70f2bcb-0e1c-2d69-2692-329ef5cf81bc@intel.com>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rong Chen <rong.a.chen@intel.com>, kbuild test robot <lkp@intel.com>, Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com
+To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, thierry.reding@gmail.com, jonathanh@nvidia.com, keescook@chromium.org, nicoleotsuka@gmail.com, ezequiel@collabora.com, srplinux2008@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/22/18 5:23 PM, Rong Chen wrote:
-> Kbuild robot printed all warnings and the below warning was found in 
-> patch 5/9.
-> 
-> "include/linux/device.h:1056: warning: Function parameter or member 
-> 'async_probe' not described in 'device'"
+Use macro to simplify the code.
 
-Hi Rong,
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/thermal/tegra/soctherm.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-Thanks for having taken a look. That's indeed something that must be 
-fixed in patch 5/9.
-
-Bart.
+diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+index ed28110a3535..45b41b885f49 100644
+--- a/drivers/thermal/tegra/soctherm.c
++++ b/drivers/thermal/tegra/soctherm.c
+@@ -803,17 +803,7 @@ static int regs_show(struct seq_file *s, void *data)
+ 	return 0;
+ }
+ 
+-static int regs_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, regs_show, inode->i_private);
+-}
+-
+-static const struct file_operations regs_fops = {
+-	.open		= regs_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-	.release	= single_release,
+-};
++DEFINE_SHOW_ATTRIBUTE(regs);
+ 
+ static void soctherm_debug_init(struct platform_device *pdev)
+ {
+-- 
+2.17.0
