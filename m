@@ -1,13 +1,11 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH 1/7] ata: libahci_platform: comply to PHY framework
-Date: Fri, 23 Nov 2018 11:15:50 +0100
-Message-ID: <20181123101556.29888-2-miquel.raynal@bootlin.com>
-References: <20181123101556.29888-1-miquel.raynal@bootlin.com>
+Subject: [PATCH 0/7] Bring suspend to RAM support to MVEBU SATA
+Date: Fri, 23 Nov 2018 11:15:49 +0100
+Message-ID: <20181123101556.29888-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181123101556.29888-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,58 +19,36 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Current implementation of the libahci does not take into account the
-new PHY framework. Correct the situation by adding a call to
-phy_set_mode() before phy_power_on() and by adding calls to
-ahci_platform_enable/disable_phys() at suspend/resume_host() time.
-
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- drivers/ata/libahci_platform.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
-index 4b900fc659f7..9f33f72b674b 100644
---- a/drivers/ata/libahci_platform.c
-+++ b/drivers/ata/libahci_platform.c
-@@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
- 		if (rc)
- 			goto disable_phys;
- 
-+		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
-+		if (rc) {
-+			phy_exit(hpriv->phys[i]);
-+			goto disable_phys;
-+		}
-+
- 		rc = phy_power_on(hpriv->phys[i]);
- 		if (rc) {
- 			phy_exit(hpriv->phys[i]);
-@@ -738,6 +744,8 @@ int ahci_platform_suspend_host(struct device *dev)
- 	writel(ctl, mmio + HOST_CTL);
- 	readl(mmio + HOST_CTL); /* flush */
- 
-+	ahci_platform_disable_phys(hpriv);
-+
- 	return ata_host_suspend(host, PMSG_SUSPEND);
- }
- EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
-@@ -756,6 +764,7 @@ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
- int ahci_platform_resume_host(struct device *dev)
- {
- 	struct ata_host *host = dev_get_drvdata(dev);
-+	struct ahci_host_priv *hpriv = host->private_data;
- 	int rc;
- 
- 	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
-@@ -766,6 +775,8 @@ int ahci_platform_resume_host(struct device *dev)
- 		ahci_init_controller(host);
- 	}
- 
-+	ahci_platform_enable_phys(hpriv);
-+
- 	ata_host_resume(host);
- 
- 	return 0;
--- 
-2.19.1
+SGVsbG8sCgpBcyBwYXJ0IG9mIGFuIGVmZm9ydCB0byBicmluZyBzdXNwZW5kIHRvIFJBTSBzdXBw
+b3J0IHRvIEFybWFkYSAzNzAwClNvQ3MgKG1haW4gdGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMg
+c2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5kCnRoZSBTQVRBIElQLgoKRmlyc3QsIGEgY2hh
+bmdlIGluIHRoZSBsaWJhaGNpIHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkK
+ZnJhbWV3b3JrIGJ5IGZvbGxvd2luZyB0aGUgcGh5X3NldF9tb2RlKCkvcGh5X3Bvd2VyX29uKCkK
+c2VxdWVuY2UuIFRoZW4sIHRoZSBBSENJIE1WRUJVIGRyaXZlciBpcyBhIGJpdCB1cGRhdGVkIChw
+YXRjaCAyICYgMykKYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhl
+IEEzNzAwIGluIHBhdGNoIDQgKG9ubHkKZG9uZSBieSB0aGUgQm9vdGxvYWRlciBiZWZvcmUpLiBN
+aXNzaW5nIGNsb2NrIHN1cHBvcnQgaXMgaW1wbGVtZW50ZWQKaW4gcGF0Y2ggNSB0byBiZSBzdXJl
+IHRoZSBjbG9jayB3aWxsIGJlIHJlc3VtZWQgYmVmb3JlIHRoaXMgZHJpdmVyCihzZWUgWzFdIGZv
+ciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUpLgoKRmlu
+YWxseSwgZGV2aWNlIHRyZWVzIGFyZSB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIGhhcmR3YXJlOiB0
+aGUgbWlzc2luZwpQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NPYmluIERULCBhbmQgdGhlIGNs
+b2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKRFQgKHBhdGNoIDYgJiA3KS4gQmluZGluZ3MgYWxyZWFk
+eSBkb2N1bWVudCB0aGUgY2xvY2sgYW5kIHRoZSBQSFkgc28Kbm8gdXBkYXRlIGlzIG5lZWRlZCBv
+biB0aGlzIHJlZ2FyZC4KClsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwv
+bGludXgtYXJtLWtlcm5lbC8yMDE4LU5vdmVtYmVyLzYxNDUyNy5odG1sCgpUaGFua3MsCk1pcXXD
+qGwKCgpNaXF1ZWwgUmF5bmFsICg3KToKICBhdGE6IGxpYmFoY2lfcGxhdGZvcm06IGNvbXBseSB0
+byBQSFkgZnJhbWV3b3JrCiAgYXRhOiBhaGNpOiBtdmVidTogcmVtb3ZlIHN0YWxlIGNvbW1lbnQK
+ICBhdGE6IGFoY2k6IG12ZWJ1OiBkbyBBcm1hZGEgMzh4IGNvbmZpZ3VyYXRpb24gb25seSBvbiBy
+ZWxldmFudCBTb0NzCiAgYXRhOiBhaGNpOiBtdmVidTogYWRkIEFybWFkYSAzNzAwIGluaXRpYWxp
+emF0aW9uIG5lZWRlZCBmb3IgUzJSQU0KICBhdGE6IGFoY2k6IG12ZWJ1OiBhZGQgY2xvY2sgc3Vw
+cG9ydAogIEFSTTY0OiBkdHM6IG1hcnZlbGw6IGFybWFkYS0zN3h4OiBkZWNsYXJlIFNBVEEgY2xv
+Y2sKICBBUk02NDogZHRzOiBtYXJ2ZWxsOiBhcm1hZGEtMzcyMC1lc3ByZXNzb2JpbjogZGVjbGFy
+ZSBTQVRBIFBIWQogICAgcHJvcGVydHkKCiAuLi4vZHRzL21hcnZlbGwvYXJtYWRhLTM3MjAtZXNw
+cmVzc29iaW4uZHRzICAgfCAgMiArCiBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRh
+LTM3eHguZHRzaSAgfCAgMSArCiBkcml2ZXJzL2F0YS9haGNpX212ZWJ1LmMgICAgICAgICAgICAg
+ICAgICAgICAgfCA5MyArKysrKysrKysrKysrKy0tLS0tCiBkcml2ZXJzL2F0YS9saWJhaGNpX3Bs
+YXRmb3JtLmMgICAgICAgICAgICAgICAgfCAxMSArKysKIDQgZmlsZXMgY2hhbmdlZCwgODQgaW5z
+ZXJ0aW9ucygrKSwgMjMgZGVsZXRpb25zKC0pCgotLSAKMi4xOS4xCgoKX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5n
+IGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5p
+bmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
