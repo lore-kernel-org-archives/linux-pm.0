@@ -1,11 +1,14 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 0/6] Add hw overheat IRQ support to Marvell thermal driver
-Date: Fri, 23 Nov 2018 17:17:24 +0100
-Message-ID: <20181123161730.11289-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 2/6] MAINTAINERS: thermal: add entry for Marvell MVEBU
+ thermal driver
+Date: Fri, 23 Nov 2018 17:17:26 +0100
+Message-ID: <20181123161730.11289-3-miquel.raynal@bootlin.com>
+References: <20181123161730.11289-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181123161730.11289-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,34 +22,28 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpUaGlzIGlzIHRoZSBsYXN0IGJhdGNoIG9mIHBhdGNoZXMgYWJvdXQgdGhlIHRoZXJt
-YWwgZHJpdmVyIHRoYXQgd2FzCnN1c3BlbmRlZCwgd2FpdGluZyBmb3IgdGhlIElDVS9TRUkgc2Vy
-aWVzIHRvIGJlIG1lcmdlZC4gTm93IHRoYXQKZXZlcnl0aGluZyBpcyByZWFkeSBpbiBtYWlubGlu
-ZSwgbGV0J3MgYWRkIGhhcmR3YXJlIG92ZXJoZWF0IGludGVycnVwdApzdXBwb3J0IHRvIHRoaXMg
-ZHJpdmVyLgoKQmluZGluZ3MgYW5kIERUIGFyZSB1cGRhdGVkIGFjY29yZGluZ2x5LiBUaGUgaW50
-ZXJydXB0IHdpbGwgb25seSBiZQp0cmlnZ2VyZWQgaWYgdGhlIHBsYXRmb3JtIGdvZXMgYWJvdmUg
-MTAywrBDICh0aHJlc2hvbGQgc2V0IHRvIDEwMMKwQywKaHlzdGVyZXNpcyB0byA+IDLCsEMpLiBU
-aGUgaW50ZXJydXB0IHByb3BlcnR5IGlzIG9mIGNvdXJzZSBub3QKbWFuZGF0b3J5LgoKSW4gdGhl
-IG1lYW4gdGltZSwgSSBhZGQgbXlzZWxmIHRvIHRoZSBNQUlOVEFJTkVSUyBmaWxlIHRvIHJlY2Vp
-dmUgYW5kCnJldmlldyBwb3NzaWJsZSBmaXhlcy9uZXcgZmVhdHVyZXMuCgpDb21tZW50cyBhcmUg
-d2VsY29tZS4KClRoYW5rcywKTWlxdcOobAoKCkNoYW5nZXMgc2luY2UgdjE6Cj09PT09PT09PT09
-PT09PT09CiogVXNlIGEgdGhyZWFkZWQgSVJRIGhhbmRsZXIgdG8gYXZvaWQgYSBwb3RlbnRpYWwg
-bG9jayBkZXBlbmN5IHdoZW4KICBub3RpZnlpbmcgdGhlIGNvcmUgb2YgYW4gb3ZlcmhlYXQgc2l0
-dWF0aW9uLgoKCk1pcXVlbCBSYXluYWwgKDYpOgogIHRoZXJtYWw6IGFybWFkYTogYWRkIG92ZXJo
-ZWF0IGludGVycnVwdCBzdXBwb3J0CiAgTUFJTlRBSU5FUlM6IHRoZXJtYWw6IGFkZCBlbnRyeSBm
-b3IgTWFydmVsbCBNVkVCVSB0aGVybWFsIGRyaXZlcgogIGR0LWJpbmRpbmdzOiBhcDgwNjogZG9j
-dW1lbnQgdGhlIHRoZXJtYWwgaW50ZXJydXB0IGNhcGFiaWxpdGllcwogIGR0LWJpbmRpbmdzOiBj
-cDExMDogZG9jdW1lbnQgdGhlIHRoZXJtYWwgaW50ZXJydXB0IGNhcGFiaWxpdGllcwogIGFybTY0
-OiBkdHM6IG1hcnZlbGw6IGFkZCBpbnRlcnJ1cHQgc3VwcG9ydCB0byBhcDgwNiB0aGVybWFsIG5v
-ZGUKICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQgaW50ZXJydXB0IHN1cHBvcnQgdG8gY3AxMTAg
-dGhlcm1hbCBub2RlCgogLi4uL2FybS9tYXJ2ZWxsL2FwODA2LXN5c3RlbS1jb250cm9sbGVyLnR4
-dCAgIHwgICA4ICsKIC4uLi9hcm0vbWFydmVsbC9jcDExMC1zeXN0ZW0tY29udHJvbGxlci50eHQg
-ICB8ICAgOSArCiBNQUlOVEFJTkVSUyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-fCAgIDUgKwogYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS1hcDgwNi5kdHNpIHwg
-IDE4ICstCiBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWNwMTEwLmR0c2kgfCAg
-MTUgKy0KIGRyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jICAgICAgICAgICAgICB8IDI3
-MCArKysrKysrKysrKysrKysrKy0KIDYgZmlsZXMgY2hhbmdlZCwgMzE4IGluc2VydGlvbnMoKyks
-IDcgZGVsZXRpb25zKC0pCgotLSAKMi4xOS4xCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgt
-YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3Jn
-L21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+Add myself as Marvell MVEBU thermal driver maintainer.
+
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ MAINTAINERS | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f4855974f325..42028c06e4e5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8902,6 +8902,11 @@ L:	netdev@vger.kernel.org
+ S:	Maintained
+ F:	drivers/net/phy/marvell10g.c
+ 
++MARVELL MVEBU THERMAL DRIVER
++M:	Miquel Raynal <miquel.raynal@bootlin.com>
++S:	Maintained
++F:	drivers/thermal/armada_thermal.c
++
+ MARVELL MVNETA ETHERNET DRIVER
+ M:	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+ L:	netdev@vger.kernel.org
+-- 
+2.19.1
