@@ -1,74 +1,104 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support
- for qcom, smmu-v2 variant
-Date: Fri, 23 Nov 2018 14:43:06 +0530
-Message-ID: <CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow@mail.gmail.com>
+From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support for
+	qcom,smmu-v2 variant
+Date: Fri, 23 Nov 2018 18:22:06 +0900
+Message-ID: <CAAFQd5B-bZR8dmjARb8L4oqgET2YAjXhexAO0GKAvU4JoVU=7g@mail.gmail.com>
 References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
- <20181116112430.31248-6-vivek.gautam@codeaurora.org>
- <20181121173803.GB9801@arm.com>
+	<20181116112430.31248-6-vivek.gautam@codeaurora.org>
+	<20181121173803.GB9801@arm.com>
+	<CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181121173803.GB9801-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgV2lsbCwKCk9uIFdlZCwgTm92IDIxLCAyMDE4IGF0IDExOjA5IFBNIFdpbGwgRGVhY29uIDx3
-aWxsLmRlYWNvbkBhcm0uY29tPiB3cm90ZToKPgo+IFsrVGhvcl0KPgo+IE9uIEZyaSwgTm92IDE2
-LCAyMDE4IGF0IDA0OjU0OjMwUE0gKzA1MzAsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiA+IHFjb20s
-c21tdS12MiBpcyBhbiBhcm0sc21tdS12MiBpbXBsZW1lbnRhdGlvbiB3aXRoIHNwZWNpZmljCj4g
-PiBjbG9jayBhbmQgcG93ZXIgcmVxdWlyZW1lbnRzLgo+ID4gT24gbXNtODk5NiwgbXVsdGlwbGUg
-Y29yZXMsIHZpei4gbWRzcywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKPiA+IHNtbXUuIE9uIHNkbTg0
-NSwgdGhpcyBzbW11IGlzIHVzZWQgd2l0aCBncHUuCj4gPiBBZGQgYmluZGluZ3MgZm9yIHRoZSBz
-YW1lLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNv
-ZGVhdXJvcmEub3JnPgo+ID4gUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5v
-cmc+Cj4gPiBSZXZpZXdlZC1ieTogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPiA+
-IFRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5h
-cm8ub3JnPgo+ID4gUmV2aWV3ZWQtYnk6IFJvYmluIE11cnBoeSA8cm9iaW4ubXVycGh5QGFybS5j
-b20+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCAxMyArKysrKysrKysr
-KysrCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDEzIGluc2VydGlvbnMoKykKPiA+Cj4gPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-Cj4gPiBpbmRleCAyMDk4YzMxNDFmNWYuLmQzMTVjYTYzNzA5NyAxMDA2NDQKPiA+IC0tLSBhL2Ry
-aXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+ID4gKysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-Cj4gPiBAQCAtMTIwLDYgKzEyMCw3IEBAIGVudW0gYXJtX3NtbXVfaW1wbGVtZW50YXRpb24gewo+
-ID4gICAgICAgR0VORVJJQ19TTU1VLAo+ID4gICAgICAgQVJNX01NVTUwMCwKPiA+ICAgICAgIENB
-VklVTV9TTU1VVjIsCj4gPiArICAgICBRQ09NX1NNTVVWMiwKPiA+ICB9Owo+ID4KPiA+ICBzdHJ1
-Y3QgYXJtX3NtbXVfczJjciB7Cj4gPiBAQCAtMjAyNiw2ICsyMDI3LDE3IEBAIEFSTV9TTU1VX01B
-VENIX0RBVEEoYXJtX21tdTQwMSwgQVJNX1NNTVVfVjFfNjRLLCBHRU5FUklDX1NNTVUpOwo+ID4g
-IEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTUwMCwgQVJNX1NNTVVfVjIsIEFSTV9NTVU1MDAp
-Owo+ID4gIEFSTV9TTU1VX01BVENIX0RBVEEoY2F2aXVtX3NtbXV2MiwgQVJNX1NNTVVfVjIsIENB
-VklVTV9TTU1VVjIpOwo+ID4KPiA+ICtzdGF0aWMgY29uc3QgY2hhciAqIGNvbnN0IHFjb21fc21t
-dXYyX2Nsa3NbXSA9IHsKPiA+ICsgICAgICJidXMiLCAiaWZhY2UiLAo+ID4gK307Cj4gPiArCj4g
-PiArc3RhdGljIGNvbnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0g
-ewo+ID4gKyAgICAgLnZlcnNpb24gPSBBUk1fU01NVV9WMiwKPiA+ICsgICAgIC5tb2RlbCA9IFFD
-T01fU01NVVYyLAo+ID4gKyAgICAgLmNsa3MgPSBxY29tX3NtbXV2Ml9jbGtzLAo+ID4gKyAgICAg
-Lm51bV9jbGtzID0gQVJSQVlfU0laRShxY29tX3NtbXV2Ml9jbGtzKSwKPiA+ICt9Owo+Cj4gVGhl
-c2Ugc2VlbXMgcmVkdW5kYW50IGlmIHdlIGdvIGRvd24gdGhlIHJvdXRlIHByb3Bvc2VkIGJ5IFRo
-b3IsIHdoZXJlIHdlCj4ganVzdCBwdWxsIGFsbCBvZiB0aGUgY2xvY2tzIG91dCBvZiB0aGUgZGV2
-aWNlLXRyZWUuIEluIHdoaWNoIGNhc2UsIHdoeQo+IGRvIHdlIG5lZWQgdGhpcyBtYXRjaF9kYXRh
-IGF0IGFsbD8KCldoaWNoIGlzIGJldHRlcj8gRHJpdmVyIHJlbHlpbmcgc29sZWx5IG9uIHRoZSBk
-ZXZpY2UgdHJlZSB0byB0ZWxsCndoaWNoIGFsbCBjbG9ja3MKYXJlIHJlcXVpcmVkIHRvIGJlIGVu
-YWJsZWQsCm9yLCB0aGUgZHJpdmVyIGRlY2lkaW5nIGl0c2VsZiBiYXNlZCBvbiB0aGUgcGxhdGZv
-cm0ncyBtYXRjaCBkYXRhLAp0aGF0IGl0IHNob3VsZApoYXZlIFgsIFksICYgWiBjbG9ja3MgdGhh
-dCBzaG91bGQgYmUgc3VwcGxpZWQgZnJvbSB0aGUgZGV2aWNlIHRyZWUuCgpUaGFua3MKVml2ZWsK
-Cj4KPiBXaWxsCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KPiBpb21tdSBtYWlsaW5nIGxpc3QKPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-Zwo+IGh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lv
-bW11CgoKCi0tIApRVUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRp
-b24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQg
-YnkgVGhlIExpbnV4IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vZnJlZWRyZW5vCg==
+Hi Vivek, Will,
+
+On Fri, Nov 23, 2018 at 6:13 PM Vivek Gautam
+<vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>
+> Hi Will,
+>
+> On Wed, Nov 21, 2018 at 11:09 PM Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org> wrote:
+> >
+> > [+Thor]
+> >
+> > On Fri, Nov 16, 2018 at 04:54:30PM +0530, Vivek Gautam wrote:
+> > > qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+> > > clock and power requirements.
+> > > On msm8996, multiple cores, viz. mdss, video, etc. use this
+> > > smmu. On sdm845, this smmu is used with gpu.
+> > > Add bindings for the same.
+> > >
+> > > Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > > Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > > Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> > > Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > > Reviewed-by: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+> > > ---
+> > >  drivers/iommu/arm-smmu.c | 13 +++++++++++++
+> > >  1 file changed, 13 insertions(+)
+> > >
+> > > diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+> > > index 2098c3141f5f..d315ca637097 100644
+> > > --- a/drivers/iommu/arm-smmu.c
+> > > +++ b/drivers/iommu/arm-smmu.c
+> > > @@ -120,6 +120,7 @@ enum arm_smmu_implementation {
+> > >       GENERIC_SMMU,
+> > >       ARM_MMU500,
+> > >       CAVIUM_SMMUV2,
+> > > +     QCOM_SMMUV2,
+> > >  };
+> > >
+> > >  struct arm_smmu_s2cr {
+> > > @@ -2026,6 +2027,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
+> > >  ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+> > >  ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
+> > >
+> > > +static const char * const qcom_smmuv2_clks[] = {
+> > > +     "bus", "iface",
+> > > +};
+> > > +
+> > > +static const struct arm_smmu_match_data qcom_smmuv2 = {
+> > > +     .version = ARM_SMMU_V2,
+> > > +     .model = QCOM_SMMUV2,
+> > > +     .clks = qcom_smmuv2_clks,
+> > > +     .num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
+> > > +};
+> >
+> > These seems redundant if we go down the route proposed by Thor, where we
+> > just pull all of the clocks out of the device-tree. In which case, why
+> > do we need this match_data at all?
+>
+> Which is better? Driver relying solely on the device tree to tell
+> which all clocks
+> are required to be enabled,
+> or, the driver deciding itself based on the platform's match data,
+> that it should
+> have X, Y, & Z clocks that should be supplied from the device tree.
+
+The former would simplify the driver, but would also make it
+impossible to spot mistakes in DT, which would ultimately surface out
+as very hard to debug bugs (likely complete system lockups).
+
+For qcom_smmuv2, I believe we're eventually going to end up with
+platform-specific quirks anyway, so specifying the clocks too wouldn't
+hurt. Given that, I'd recommend sticking to the latter, i.e. what this
+patch does.
+
+Best regards,
+Tomasz
