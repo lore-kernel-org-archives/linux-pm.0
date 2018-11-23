@@ -1,86 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
-Date: Fri, 23 Nov 2018 11:40:47 +0100
-Message-ID: <4066059.ijq7GCtu0s@aspire.rjw.lan>
-References: <42865872.dmYH3PmblP@aspire.rjw.lan>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: [PATCH 1/3] dt-bindings: thermal: tegra-bpmp: Add Tegra194 support
+Date: Fri, 23 Nov 2018 13:18:37 +0100
+Message-ID: <20181123121839.18573-1-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <42865872.dmYH3PmblP@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jon Hunter <jonathanh@nvidia.com>, Mikko Perttunen <mperttunen@nvidia.com>, Rob Herring <robh+dt@kernel.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 23, 2018 11:35:38 AM CET Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The venerable menu governor does some thigns that are quite
-> questionable in my view.
-> 
-> First, it includes timer wakeups in the pattern detection data and
-> mixes them up with wakeups from other sources which in some cases
-> causes it to expect what essentially would be a timer wakeup in a
-> time frame in which no timer wakeups are possible (becuase it knows
-> the time until the next timer event and that is later than the
-> expected wakeup time).
-> 
-> Second, it uses the extra exit latency limit based on the predicted
-> idle duration and depending on the number of tasks waiting on I/O,
-> even though those tasks may run on a different CPU when they are
-> woken up.  Moreover, the time ranges used by it for the sleep length
-> correction factors depend on whether or not there are tasks waiting
-> on I/O, which again doesn't imply anything in particular, and they
-> are not correlated to the list of available idle states in any way
-> whatever.
-> 
-> Also, the pattern detection code in menu may end up considering
-> values that are too large to matter at all, in which cases running
-> it is a waste of time.
-> 
-> A major rework of the menu governor would be required to address
-> these issues and the performance of at least some workloads (tuned
-> specifically to the current behavior of the menu governor) is likely
-> to suffer from that.  It is thus better to introduce an entirely new
-> governor without them and let everybody use the governor that works
-> better with their actual workloads.
-> 
-> The new governor introduced here, the timer events oriented (TEO)
-> governor, uses the same basic strategy as menu: it always tries to
-> find the deepest idle state that can be used in the given conditions.
-> However, it applies a different approach to that problem.
-> 
-> First, it doesn't use "correction factors" for the time till the
-> closest timer, but instead it tries to correlate the measured idle
-> duration values with the available idle states and use that
-> information to pick up the idle state that is most likely to "match"
-> the upcoming CPU idle interval.
-> 
-> Second, it doesn't take the number of "I/O waiters" into account at
-> all and the pattern detection code in it avoids taking timer wakeups
-> into account.  It also only uses idle duration values less than the
-> current time till the closest timer (with the tick excluded) for that
-> purpose.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> v5 -> v6:
->  * Avoid applying poll_time_limit to non-polling idle states by mistake.
->  * Use idle duration measured by the governor for everything (as it likely is
->    more accurate than the one measured by the core).
+From: Thierry Reding <treding@nvidia.com>
 
-This particular change is actually missing, sorry about that.  It is not
-essential, however, so the v6 should be good enough as is for evaluation
-and review purposes.
+The thermal controller implementation on Tegra194 is very similar to the
+implementation on Tegra186. Add a compatible string for the new
+generation.
 
->  * Rename SPIKE to PULSE.
->  * Do not run pattern detection upfront.  Instead, use recent idle duration
->    values to refine the state selection after finding a candidate idle state.
->  * Do not use the expected idle duration as an extra latency constraint
->    (exit latency is less than the target residency for all of the idle states
->    known to me anyway, so this doesn't change anything in practice).
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ .../thermal/nvidia,tegra186-bpmp-thermal.txt      |  3 ++-
+ .../dt-bindings/thermal/tegra194-bpmp-thermal.h   | 15 +++++++++++++++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/thermal/tegra194-bpmp-thermal.h
 
-Thanks,
-Rafael
+diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+index 276387dd6815..e17c07be270b 100644
+--- a/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+@@ -15,7 +15,8 @@ Required properties:
+ - compatible:
+     Array of strings.
+     One of:
+-    - "nvidia,tegra186-bpmp-thermal".
++    - "nvidia,tegra186-bpmp-thermal"
++    - "nvidia,tegra194-bpmp-thermal"
+ - #thermal-sensor-cells: Cell for sensor index.
+     Single-cell integer.
+     Must be <1>.
+diff --git a/include/dt-bindings/thermal/tegra194-bpmp-thermal.h b/include/dt-bindings/thermal/tegra194-bpmp-thermal.h
+new file mode 100644
+index 000000000000..aa7fb08135ca
+--- /dev/null
++++ b/include/dt-bindings/thermal/tegra194-bpmp-thermal.h
+@@ -0,0 +1,15 @@
++/*
++ * This header provides constants for binding nvidia,tegra194-bpmp-thermal.
++ */
++
++#ifndef _DT_BINDINGS_THERMAL_TEGRA194_BPMP_THERMAL_H
++#define _DT_BINDINGS_THERMAL_TEGRA194_BPMP_THERMAL_H
++
++#define TEGRA194_BPMP_THERMAL_ZONE_CPU 2
++#define TEGRA194_BPMP_THERMAL_ZONE_GPU 3
++#define TEGRA194_BPMP_THERMAL_ZONE_AUX 4
++#define TEGRA194_BPMP_THERMAL_ZONE_PLLX 5
++#define TEGRA194_BPMP_THERMAL_ZONE_AO 6
++#define TEGRA194_BPMP_THERMAL_ZONE_TJ_MAX 7
++
++#endif
+-- 
+2.19.1
