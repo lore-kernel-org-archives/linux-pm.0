@@ -1,44 +1,67 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] OPP: Fix parsing of multiple phandles in "operating-points-v2" property
-Date: Fri, 23 Nov 2018 10:47:30 +0530
-Message-ID: <3e27c79c4b121a64e85f26ab8957e5d0a09ff28e.1542950247.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/4] OPP: Add dev_pm_opp_xlate_performance_state() helper
+Date: Fri, 23 Nov 2018 14:41:18 +0530
+Message-ID: <20181123091118.x73s345xhhr4simo@vireshk-i7>
+References: <cover.1541399301.git.viresh.kumar@linaro.org>
+ <cedbfc3a7fffc4c400908c4c3af518bea408d318.1541399301.git.viresh.kumar@linaro.org>
+ <45c19ad3-6039-9152-6e5a-51a5c062bdf4@codeaurora.org>
+ <20181121051718.a5yo3ibhaihgrwra@vireshk-i7>
+ <20181121060622.blnlvydbc4wo5y3y@vireshk-i7>
+ <0b40a76d-f779-391a-2770-4a3d368679a9@codeaurora.org>
+ <20181122060839.socq3vuaa4ycftzn@vireshk-i7>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181122060839.socq3vuaa4ycftzn@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We currently return error if more than one phandle is present in the
-"operating-points-v2" property, which is incorrect. We only want to
-check the count of phandles here and set index to 0 if only one phandle
-is present.
+On 22-11-18, 11:38, Viresh Kumar wrote:
+> So there are few complexities in the case where an OPP table points to itself in
+> the required-opp field. I looked at solving it up in the opp core but that gets
+> more and more messy.
+> 
+> Now there is actually a assumption within the OPP core. Your Mx domain should
+> get initialized before the Cx domain, as that is when the OPP tables are created
+> as well. This is because Cx's OPP table will point to Mx's OPP table (doesn't
+> matter if they share the same table or not) and so Mx's OPP table should come
+> first.
+> 
+> Can you check if that is already the case for you? If not, please try doing it
+> and lemme know if it works. It should.
+> 
+> I just want to avoid too much complexity in OPP core without much use.
 
-Fix it.
-
-Fixes: 5ed4cecd75e9 ("OPP: Pass OPP table to _of_add_opp_table_v{1|2}()")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/of.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 5a4b47958073..38a08805a30c 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -579,10 +579,8 @@ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
- 		 */
- 		count = of_count_phandle_with_args(dev->of_node,
- 						   "operating-points-v2", NULL);
--		if (count != 1)
--			return -ENODEV;
--
--		index = 0;
-+		if (count == 1)
-+			index = 0;
- 	}
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 7f338d39809a..09df3fbdb555 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1734,7 +1734,7 @@ unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
+        int i;
  
- 	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
+        for (i = 0; i < src_table->required_opp_count; i++) {
+-               if (src_table->required_opp_tables[i] == dst_table)
++               if (src_table->required_opp_tables[i]->np == dst_table->np)
+                        break;
+        }
+
+Try this fix and it should make it work for you.
+
+Having said that, the way you are representing all your domains with a
+single OPP table look incorrect. You are using the same OPP table for
+around 10 power domains, all provided by a single provider. This is
+absolutely fine. But the Mx domain doesn't have any dependency on any
+other domain actually and so its OPPs should never have the
+"required-opps" property, but it has those properties in your setup as
+you are trying to use the same OPP table. That may all work fine with
+the above patch (which is required anyway as it fixes a valid issue),
+but you may see a error warning that something failed for Mx domain,
+as it has required-opps property but no required device or genpd.
+
+Anyway, please test above first and then you can fix your tables :)
+
 -- 
-2.19.1.568.g152ad8e3369a
+viresh
