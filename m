@@ -1,86 +1,78 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.20-rc4
-Date: Fri, 23 Nov 2018 11:10:58 +0100
-Message-ID: <CAJZ5v0hpS244DB8nT82TyGFyyNkwg4rgHg834ocrt=+c7wa5CA@mail.gmail.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: [PATCH 1/7] ata: libahci_platform: comply to PHY framework
+Date: Fri, 23 Nov 2018 11:15:50 +0100
+Message-ID: <20181123101556.29888-2-miquel.raynal@bootlin.com>
+References: <20181123101556.29888-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181123101556.29888-1-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Hans de Goede <hdegoede@redhat.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Current implementation of the libahci does not take into account the
+new PHY framework. Correct the situation by adding a call to
+phy_set_mode() before phy_power_on() and by adding calls to
+ahci_platform_enable/disable_phys() at suspend/resume_host() time.
 
-Please pull from the tag
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/ata/libahci_platform.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.20-rc4
-
-with top-most commit 1d50088ca3956e5dcd2751a658e7869b9af10bb4
-
- Merge branches 'pm-cpufreq' and 'pm-sleep'
-
-on top of commit 9ff01193a20d391e8dbce4403dd5ef87c7eaaca6
-
- Linux 4.20-rc3
-
-to receive power management fixes for 4.20-rc4.
-
-These fix two issues in the Operating Performance Points (OPP)
-framework, one cpufreq driver issue, one problem related to the
-tasks freezer and a few build-related issues in the cpupower
-utility.
-
-Specifics:
-
- - Fix tasks freezer deadlock in de_thread() that occurs if one
-   of its sub-threads has been frozen already (Chanho Min).
-
- - Avoid registering a platform device by the ti-cpufreq driver
-   on platforms that cannot use it (Dave Gerlach).
-
- - Fix a mistake in the ti-opp-supply operating performance points
-   (OPP) driver that caused an incorrect reference voltage to be
-   used and make it adjust the minimum voltage dynamically to avoid
-   hangs or crashes in some cases (Keerthy).
-
- - Fix issues related to compiler flags in the cpupower utility
-   and correct a linking problem in it by renaming a file with
-   a duplicate name (Jiri Olsa, Konstantin Khlebnikov).
-
-Thanks!
-
-
----------------
-
-Chanho Min (1):
-      exec: make de_thread() freezable
-
-Dave Gerlach (1):
-      cpufreq: ti-cpufreq: Only register platform_device when supported
-
-Jiri Olsa (2):
-      tools cpupower debug: Allow to use outside build flags
-      tools cpupower: Override CFLAGS assignments
-
-Keerthy (2):
-      opp: ti-opp-supply: Dynamically update u_volt_min
-      opp: ti-opp-supply: Correct the supply in _get_optimal_vdd_voltage call
-
-Konstantin Khlebnikov (1):
-      tools/power/cpupower: fix compilation with STATIC=true
-
----------------
-
- drivers/cpufreq/ti-cpufreq.c               | 26 +++++++++++++++++++++-----
- drivers/opp/ti-opp-supply.c                |  5 ++++-
- fs/exec.c                                  |  5 +++--
- tools/power/cpupower/Makefile              | 12 ++++++------
- tools/power/cpupower/bench/Makefile        |  2 +-
- tools/power/cpupower/debug/x86_64/Makefile |  4 ++--
- tools/power/cpupower/lib/cpufreq.c         |  2 +-
- tools/power/cpupower/lib/cpuidle.c         |  2 +-
- tools/power/cpupower/lib/cpupower.c        |  4 ++--
- tools/power/cpupower/lib/cpupower_intern.h |  2 +-
- 10 files changed, 42 insertions(+), 22 deletions(-)
+diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
+index 4b900fc659f7..9f33f72b674b 100644
+--- a/drivers/ata/libahci_platform.c
++++ b/drivers/ata/libahci_platform.c
+@@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
+ 		if (rc)
+ 			goto disable_phys;
+ 
++		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
++		if (rc) {
++			phy_exit(hpriv->phys[i]);
++			goto disable_phys;
++		}
++
+ 		rc = phy_power_on(hpriv->phys[i]);
+ 		if (rc) {
+ 			phy_exit(hpriv->phys[i]);
+@@ -738,6 +744,8 @@ int ahci_platform_suspend_host(struct device *dev)
+ 	writel(ctl, mmio + HOST_CTL);
+ 	readl(mmio + HOST_CTL); /* flush */
+ 
++	ahci_platform_disable_phys(hpriv);
++
+ 	return ata_host_suspend(host, PMSG_SUSPEND);
+ }
+ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
+@@ -756,6 +764,7 @@ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
+ int ahci_platform_resume_host(struct device *dev)
+ {
+ 	struct ata_host *host = dev_get_drvdata(dev);
++	struct ahci_host_priv *hpriv = host->private_data;
+ 	int rc;
+ 
+ 	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
+@@ -766,6 +775,8 @@ int ahci_platform_resume_host(struct device *dev)
+ 		ahci_init_controller(host);
+ 	}
+ 
++	ahci_platform_enable_phys(hpriv);
++
+ 	ata_host_resume(host);
+ 
+ 	return 0;
+-- 
+2.19.1
