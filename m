@@ -1,67 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] OPP: Add dev_pm_opp_xlate_performance_state() helper
-Date: Fri, 23 Nov 2018 14:41:18 +0530
-Message-ID: <20181123091118.x73s345xhhr4simo@vireshk-i7>
-References: <cover.1541399301.git.viresh.kumar@linaro.org>
- <cedbfc3a7fffc4c400908c4c3af518bea408d318.1541399301.git.viresh.kumar@linaro.org>
- <45c19ad3-6039-9152-6e5a-51a5c062bdf4@codeaurora.org>
- <20181121051718.a5yo3ibhaihgrwra@vireshk-i7>
- <20181121060622.blnlvydbc4wo5y3y@vireshk-i7>
- <0b40a76d-f779-391a-2770-4a3d368679a9@codeaurora.org>
- <20181122060839.socq3vuaa4ycftzn@vireshk-i7>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support
+ for qcom, smmu-v2 variant
+Date: Fri, 23 Nov 2018 14:43:06 +0530
+Message-ID: <CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow@mail.gmail.com>
+References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
+ <20181116112430.31248-6-vivek.gautam@codeaurora.org>
+ <20181121173803.GB9801@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181122060839.socq3vuaa4ycftzn@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: ulf.hansson@linaro.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181121173803.GB9801-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Jordan Crouse <jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+ Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 22-11-18, 11:38, Viresh Kumar wrote:
-> So there are few complexities in the case where an OPP table points to itself in
-> the required-opp field. I looked at solving it up in the opp core but that gets
-> more and more messy.
-> 
-> Now there is actually a assumption within the OPP core. Your Mx domain should
-> get initialized before the Cx domain, as that is when the OPP tables are created
-> as well. This is because Cx's OPP table will point to Mx's OPP table (doesn't
-> matter if they share the same table or not) and so Mx's OPP table should come
-> first.
-> 
-> Can you check if that is already the case for you? If not, please try doing it
-> and lemme know if it works. It should.
-> 
-> I just want to avoid too much complexity in OPP core without much use.
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 7f338d39809a..09df3fbdb555 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1734,7 +1734,7 @@ unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
-        int i;
- 
-        for (i = 0; i < src_table->required_opp_count; i++) {
--               if (src_table->required_opp_tables[i] == dst_table)
-+               if (src_table->required_opp_tables[i]->np == dst_table->np)
-                        break;
-        }
-
-Try this fix and it should make it work for you.
-
-Having said that, the way you are representing all your domains with a
-single OPP table look incorrect. You are using the same OPP table for
-around 10 power domains, all provided by a single provider. This is
-absolutely fine. But the Mx domain doesn't have any dependency on any
-other domain actually and so its OPPs should never have the
-"required-opps" property, but it has those properties in your setup as
-you are trying to use the same OPP table. That may all work fine with
-the above patch (which is required anyway as it fixes a valid issue),
-but you may see a error warning that something failed for Mx domain,
-as it has required-opps property but no required device or genpd.
-
-Anyway, please test above first and then you can fix your tables :)
-
--- 
-viresh
+SGkgV2lsbCwKCk9uIFdlZCwgTm92IDIxLCAyMDE4IGF0IDExOjA5IFBNIFdpbGwgRGVhY29uIDx3
+aWxsLmRlYWNvbkBhcm0uY29tPiB3cm90ZToKPgo+IFsrVGhvcl0KPgo+IE9uIEZyaSwgTm92IDE2
+LCAyMDE4IGF0IDA0OjU0OjMwUE0gKzA1MzAsIFZpdmVrIEdhdXRhbSB3cm90ZToKPiA+IHFjb20s
+c21tdS12MiBpcyBhbiBhcm0sc21tdS12MiBpbXBsZW1lbnRhdGlvbiB3aXRoIHNwZWNpZmljCj4g
+PiBjbG9jayBhbmQgcG93ZXIgcmVxdWlyZW1lbnRzLgo+ID4gT24gbXNtODk5NiwgbXVsdGlwbGUg
+Y29yZXMsIHZpei4gbWRzcywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKPiA+IHNtbXUuIE9uIHNkbTg0
+NSwgdGhpcyBzbW11IGlzIHVzZWQgd2l0aCBncHUuCj4gPiBBZGQgYmluZGluZ3MgZm9yIHRoZSBz
+YW1lLgo+ID4KPiA+IFNpZ25lZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNv
+ZGVhdXJvcmEub3JnPgo+ID4gUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5v
+cmc+Cj4gPiBSZXZpZXdlZC1ieTogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9taXVtLm9yZz4KPiA+
+IFRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5h
+cm8ub3JnPgo+ID4gUmV2aWV3ZWQtYnk6IFJvYmluIE11cnBoeSA8cm9iaW4ubXVycGh5QGFybS5j
+b20+Cj4gPiAtLS0KPiA+ICBkcml2ZXJzL2lvbW11L2FybS1zbW11LmMgfCAxMyArKysrKysrKysr
+KysrCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDEzIGluc2VydGlvbnMoKykKPiA+Cj4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
+Cj4gPiBpbmRleCAyMDk4YzMxNDFmNWYuLmQzMTVjYTYzNzA5NyAxMDA2NDQKPiA+IC0tLSBhL2Ry
+aXZlcnMvaW9tbXUvYXJtLXNtbXUuYwo+ID4gKysrIGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
+Cj4gPiBAQCAtMTIwLDYgKzEyMCw3IEBAIGVudW0gYXJtX3NtbXVfaW1wbGVtZW50YXRpb24gewo+
+ID4gICAgICAgR0VORVJJQ19TTU1VLAo+ID4gICAgICAgQVJNX01NVTUwMCwKPiA+ICAgICAgIENB
+VklVTV9TTU1VVjIsCj4gPiArICAgICBRQ09NX1NNTVVWMiwKPiA+ICB9Owo+ID4KPiA+ICBzdHJ1
+Y3QgYXJtX3NtbXVfczJjciB7Cj4gPiBAQCAtMjAyNiw2ICsyMDI3LDE3IEBAIEFSTV9TTU1VX01B
+VENIX0RBVEEoYXJtX21tdTQwMSwgQVJNX1NNTVVfVjFfNjRLLCBHRU5FUklDX1NNTVUpOwo+ID4g
+IEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTUwMCwgQVJNX1NNTVVfVjIsIEFSTV9NTVU1MDAp
+Owo+ID4gIEFSTV9TTU1VX01BVENIX0RBVEEoY2F2aXVtX3NtbXV2MiwgQVJNX1NNTVVfVjIsIENB
+VklVTV9TTU1VVjIpOwo+ID4KPiA+ICtzdGF0aWMgY29uc3QgY2hhciAqIGNvbnN0IHFjb21fc21t
+dXYyX2Nsa3NbXSA9IHsKPiA+ICsgICAgICJidXMiLCAiaWZhY2UiLAo+ID4gK307Cj4gPiArCj4g
+PiArc3RhdGljIGNvbnN0IHN0cnVjdCBhcm1fc21tdV9tYXRjaF9kYXRhIHFjb21fc21tdXYyID0g
+ewo+ID4gKyAgICAgLnZlcnNpb24gPSBBUk1fU01NVV9WMiwKPiA+ICsgICAgIC5tb2RlbCA9IFFD
+T01fU01NVVYyLAo+ID4gKyAgICAgLmNsa3MgPSBxY29tX3NtbXV2Ml9jbGtzLAo+ID4gKyAgICAg
+Lm51bV9jbGtzID0gQVJSQVlfU0laRShxY29tX3NtbXV2Ml9jbGtzKSwKPiA+ICt9Owo+Cj4gVGhl
+c2Ugc2VlbXMgcmVkdW5kYW50IGlmIHdlIGdvIGRvd24gdGhlIHJvdXRlIHByb3Bvc2VkIGJ5IFRo
+b3IsIHdoZXJlIHdlCj4ganVzdCBwdWxsIGFsbCBvZiB0aGUgY2xvY2tzIG91dCBvZiB0aGUgZGV2
+aWNlLXRyZWUuIEluIHdoaWNoIGNhc2UsIHdoeQo+IGRvIHdlIG5lZWQgdGhpcyBtYXRjaF9kYXRh
+IGF0IGFsbD8KCldoaWNoIGlzIGJldHRlcj8gRHJpdmVyIHJlbHlpbmcgc29sZWx5IG9uIHRoZSBk
+ZXZpY2UgdHJlZSB0byB0ZWxsCndoaWNoIGFsbCBjbG9ja3MKYXJlIHJlcXVpcmVkIHRvIGJlIGVu
+YWJsZWQsCm9yLCB0aGUgZHJpdmVyIGRlY2lkaW5nIGl0c2VsZiBiYXNlZCBvbiB0aGUgcGxhdGZv
+cm0ncyBtYXRjaCBkYXRhLAp0aGF0IGl0IHNob3VsZApoYXZlIFgsIFksICYgWiBjbG9ja3MgdGhh
+dCBzaG91bGQgYmUgc3VwcGxpZWQgZnJvbSB0aGUgZGV2aWNlIHRyZWUuCgpUaGFua3MKVml2ZWsK
+Cj4KPiBXaWxsCj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KPiBpb21tdSBtYWlsaW5nIGxpc3QKPiBpb21tdUBsaXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
+Zwo+IGh0dHBzOi8vbGlzdHMubGludXhmb3VuZGF0aW9uLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lv
+bW11CgoKCi0tIApRVUFMQ09NTSBJTkRJQSwgb24gYmVoYWxmIG9mIFF1YWxjb21tIElubm92YXRp
+b24gQ2VudGVyLCBJbmMuIGlzIGEgbWVtYmVyCm9mIENvZGUgQXVyb3JhIEZvcnVtLCBob3N0ZWQg
+YnkgVGhlIExpbnV4IEZvdW5kYXRpb24KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KRnJlZWRyZW5vIG1haWxpbmcgbGlzdApGcmVlZHJlbm9AbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
+Zm8vZnJlZWRyZW5vCg==
