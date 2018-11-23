@@ -1,17 +1,14 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/7] ata: libahci_platform: comply to PHY framework
-Date: Fri, 23 Nov 2018 16:36:56 +0100
-Message-ID: <20181123153656.GD30913@lunn.ch>
-References: <20181123101556.29888-1-miquel.raynal@bootlin.com>
- <20181123101556.29888-2-miquel.raynal@bootlin.com>
- <20181123151806.GC30913@lunn.ch>
- <20181123152730.GU30658@n2100.armlinux.org.uk>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: [PATCH v2 3/6] dt-bindings: ap806: document the thermal interrupt
+ capabilities
+Date: Fri, 23 Nov 2018 17:17:27 +0100
+Message-ID: <20181123161730.11289-4-miquel.raynal@bootlin.com>
+References: <20181123161730.11289-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20181123152730.GU30658@n2100.armlinux.org.uk>
+In-Reply-To: <20181123161730.11289-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,23 +18,49 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Hans de Goede <hdegoede@redhat.com>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 23, 2018 at 03:27:30PM +0000, Russell King - ARM Linux wrote:
-> On Fri, Nov 23, 2018 at 04:18:06PM +0100, Andrew Lunn wrote:
-> > Russell King wrote a comphy driver for the Armada 3XX family. It only
-> > supports network PHYs. Did you check it does the right thing when
-> > passed PHY_MODE_SATA? This is slightly different to Hans's comment, in
-> > that i expect phy_set_mode() is implemented for the comphy driver, but
-> > it might not understand PHY_MODE_SATA and return an error?
-> 
-> It makes no difference until the comphy is wired up to the SATA
-> device in the appropriate DT files.  Until then, there's no way
-> that the comphy will ever see PHY_MODE_SATA.
+The thermal IP can produce interrupts on overheat situation.
+Describe them.
 
-O.K, great.
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ .../bindings/arm/marvell/ap806-system-controller.txt      | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Thanks
-	Andrew
+diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+index 3fd21bb7cb37..35e8dd2edfd2 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
+@@ -114,12 +114,18 @@ Documentation/devicetree/bindings/thermal/thermal.txt
+ The thermal IP can probe the temperature all around the processor. It
+ may feature several channels, each of them wired to one sensor.
+ 
++It is possible to setup an overheat interrupt by giving at least one
++critical point to any subnode of the thermal-zone node.
++
+ Required properties:
+ - compatible: must be one of:
+   * marvell,armada-ap806-thermal
+ - reg: register range associated with the thermal functions.
+ 
+ Optional properties:
++- interrupt-parent/interrupts: overheat interrupt handle. Should point to
++  line 18 of the SEI irqchip.
++  See interrupt-controller/interrupts.txt
+ - #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
+   to this IP and represents the channel ID. There is one sensor per
+   channel. O refers to the thermal IP internal channel, while positive
+@@ -133,6 +139,8 @@ ap_syscon1: system-controller@6f8000 {
+ 	ap_thermal: thermal-sensor@80 {
+ 		compatible = "marvell,armada-ap806-thermal";
+ 		reg = <0x80 0x10>;
++		interrupt-parent = <&sei>;
++		interrupts = <18>;
+ 		#thermal-sensor-cells = <1>;
+ 	};
+ };
+-- 
+2.19.1
