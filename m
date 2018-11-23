@@ -1,44 +1,61 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] thermal/intel_powerclamp: Change to use DEFINE_SHOW_ATTRIBUTE macro
-Date: Fri, 23 Nov 2018 09:55:22 -0500
-Message-ID: <20181123145523.27248-1-tiny.windzz@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 1/7] ata: libahci_platform: comply to PHY framework
+Date: Fri, 23 Nov 2018 16:18:06 +0100
+Message-ID: <20181123151806.GC30913@lunn.ch>
+References: <20181123101556.29888-1-miquel.raynal@bootlin.com>
+ <20181123101556.29888-2-miquel.raynal@bootlin.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20181123101556.29888-2-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@bootlin.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, linux-ide@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use macro to simplify the code.
+On Fri, Nov 23, 2018 at 11:15:50AM +0100, Miquel Raynal wrote:
+> Current implementation of the libahci does not take into account the
+> new PHY framework. Correct the situation by adding a call to
+> phy_set_mode() before phy_power_on() and by adding calls to
+> ahci_platform_enable/disable_phys() at suspend/resume_host() time.
+> 
+> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+> ---
+>  drivers/ata/libahci_platform.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
+> diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
+> index 4b900fc659f7..9f33f72b674b 100644
+> --- a/drivers/ata/libahci_platform.c
+> +++ b/drivers/ata/libahci_platform.c
+> @@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
+>  		if (rc)
+>  			goto disable_phys;
+>  
+> +		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
+> +		if (rc) {
+> +			phy_exit(hpriv->phys[i]);
+> +			goto disable_phys;
+> +		}
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
----
- drivers/thermal/intel_powerclamp.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+Hi Miquel
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index cde891c54cde..7571f7c2e7c9 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -708,19 +708,7 @@ static int powerclamp_debug_show(struct seq_file *m, void *unused)
- 	return 0;
- }
- 
--static int powerclamp_debug_open(struct inode *inode,
--			struct file *file)
--{
--	return single_open(file, powerclamp_debug_show, inode->i_private);
--}
--
--static const struct file_operations powerclamp_debug_fops = {
--	.open		= powerclamp_debug_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--	.owner		= THIS_MODULE,
--};
-+DEFINE_SHOW_ATTRIBUTE(powerclamp_debug);
- 
- static inline void powerclamp_create_debug_files(void)
- {
--- 
-2.17.0
+Russell King wrote a comphy driver for the Armada 3XX family. It only
+supports network PHYs. Did you check it does the right thing when
+passed PHY_MODE_SATA? This is slightly different to Hans's comment, in
+that i expect phy_set_mode() is implemented for the comphy driver, but
+it might not understand PHY_MODE_SATA and return an error?
+
+Maybe you should look at rc and keep going if EOPNOTSUPP is returned?
+
+      Andrew
