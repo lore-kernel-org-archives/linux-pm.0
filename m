@@ -1,60 +1,44 @@
-From: Rong Chen <rong.a.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order of
- operations for deferred probe and remove
-Date: Fri, 23 Nov 2018 09:23:47 +0800
-Message-ID: <d70f2bcb-0e1c-2d69-2692-329ef5cf81bc@intel.com>
-References: <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
- <201811061228.iteFLO2p%fengguang.wu@intel.com>
- <1541548274.196084.197.camel@acm.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] OPP: Fix parsing of multiple phandles in "operating-points-v2" property
+Date: Fri, 23 Nov 2018 10:47:30 +0530
+Message-ID: <3e27c79c4b121a64e85f26ab8957e5d0a09ff28e.1542950247.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <1541548274.196084.197.camel-HInyCGIudOg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>, kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kbuild-all-JC7UmRfGjtg@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+We currently return error if more than one phandle is present in the
+"operating-points-v2" property, which is incorrect. We only want to
+check the count of phandles here and set index to 0 if only one phandle
+is present.
 
+Fix it.
 
-On 11/07/2018 07:51 AM, Bart Van Assche wrote:
-> On Tue, 2018-11-06 at 12:10 +0800, kbuild test robot wrote:
->> Hi Alexander,
->>
->> Thank you for the patch! Perhaps something to improve:
->>
->> [auto build test WARNING on driver-core/master]
->>
->> url:    https://github.com/0day-ci/linux/commits/Alexander-Duyck/Add-NUMA-aware-async_schedule-calls/20181106-093800
->> reproduce: make htmldocs
->>
->> All warnings (new ones prefixed by >>):
->>
->>     include/net/mac80211.h:1001: warning: Function parameter or member 'status.is_valid_ack_signal' not described in 'ieee80211_tx_info'
->> [ ... ]
-> There are plenty of references in this report to header files not touched
-> by patch 5/9 in this series. I assume that this report indicates a bug in
-> the 0-day testing infrastructure?
->
-> Bart.
->
-Hi Bart,
+Fixes: 5ed4cecd75e9 ("OPP: Pass OPP table to _of_add_opp_table_v{1|2}()")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/of.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Kbuild robot printed all warnings and the below warning was found in 
-patch 5/9.
-
-"include/linux/device.h:1056: warning: Function parameter or member 
-'async_probe' not described in 'device'"
-
-Best Regards,
-Rong Chen
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 5a4b47958073..38a08805a30c 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -579,10 +579,8 @@ int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
+ 		 */
+ 		count = of_count_phandle_with_args(dev->of_node,
+ 						   "operating-points-v2", NULL);
+-		if (count != 1)
+-			return -ENODEV;
+-
+-		index = 0;
++		if (count == 1)
++			index = 0;
+ 	}
+ 
+ 	opp_table = dev_pm_opp_get_opp_table_indexed(dev, index);
+-- 
+2.19.1.568.g152ad8e3369a
