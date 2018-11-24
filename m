@@ -1,80 +1,33 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
-Date: Sat, 24 Nov 2018 00:22:04 +0100
-Message-ID: <20181123232203.GA3852@amd>
-References: <20181122101119.29194-1-enric.balletbo@collabora.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
+From: Yangtao Li <tiny.windzz@gmail.com>
+Subject: [PATCH] power/reset: axxia: Convert to using %pOFn instead of device_node.name
+Date: Sat, 24 Nov 2018 09:31:38 -0500
+Message-ID: <20181124143138.28999-1-tiny.windzz@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181122101119.29194-1-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+To: robh@kernel.org, sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+In preparation to remove the node name pointer from struct device_node,
+convert printf users to use the %pOFn format specifier.
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/power/reset/axxia-reset.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Hi!
-
-> We have a problem with USBPD chargers which under certain conditions
-> can result in system overheating if the voltage provided by the USBPD
-> port is too high. While the preferred means to control this would be
-> through devicetree or ACPI settings, this is not always possible, and
-> we need to have a means to set a voltage limit.
->=20
-> This patch exposes a new property, similar to input current limit, to
-> re-configure the maximum voltage from the external supply at runtime
-> based on system-level knowledge or user input.
-
-First, this should really be handled by dt / ACPI. If it is broken,
-that's a hardware bug, and we can do DMI-based blacklists in kernel.
-
-How are you supposed to fsck a system, for example?
-
-> +What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
-> +Date:		Nov 2018
-> +Contact:	linux-pm@vger.kernel.org
-> +Description:
-> +		Details the incoming VBUS voltage limit currently set in the
-> +		supply. Normally this is configured based on the type of
-> +		connection made.
-
-"Details"?
-
-Who can write to this value and when? What is the limit? If USB
-charger is plugged in, should it show 5.0V (because that's nominal on
-the USB) or 5.25V (because that is the real limit)?
-
-Who can write to this and when. And what happens on write? What
-happens if I write value that charger can't provide there?
-
-Does it set the voltage power supply should produce? Or maximal it can
-choose to produce?
-
-This really needs better documentation.
-
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlv4i5sACgkQMOfwapXb+vLmQACfX+ba61v27dkM11pVow8bPETy
-A+QAnjhSC4iTF6CvFqR/AUcL8p7j1D8i
-=fgBu
------END PGP SIGNATURE-----
-
---82I3+IH0IqGh5yIs--
+diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
+index 4e4cd1c8fe50..b16013265142 100644
+--- a/drivers/power/reset/axxia-reset.c
++++ b/drivers/power/reset/axxia-reset.c
+@@ -65,7 +65,7 @@ static int axxia_reset_probe(struct platform_device *pdev)
+ 
+ 	syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
+ 	if (IS_ERR(syscon)) {
+-		pr_err("%s: syscon lookup failed\n", dev->of_node->name);
++		pr_err("%pOFn: syscon lookup failed\n", dev->of_node);
+ 		return PTR_ERR(syscon);
+ 	}
+ 
+-- 
+2.17.0
