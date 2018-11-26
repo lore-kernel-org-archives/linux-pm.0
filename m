@@ -1,56 +1,84 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: [PATCH 1/2] cpufreq: imx6q: remove unused code
-Date: Mon, 26 Nov 2018 02:59:45 +0000
-Message-ID: <1543200853-10029-1-git-send-email-Anson.Huang@nxp.com>
+From: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support for
+	qcom,smmu-v2 variant
+Date: Mon, 26 Nov 2018 13:02:22 +0900
+Message-ID: <CAAFQd5DG7+Dp60T4EujtPqdMUYbYwdLTd8rS7wshz1WJ_1=LbQ@mail.gmail.com>
+References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
+	<20181116112430.31248-6-vivek.gautam@codeaurora.org>
+	<20181121173803.GB9801@arm.com>
+	<CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow@mail.gmail.com>
+	<CAAFQd5B-bZR8dmjARb8L4oqgET2YAjXhexAO0GKAvU4JoVU=7g@mail.gmail.com>
+	<CAFp+6iFhBRJWGY4Hj30tWedGpEUcnkBJrOvffmbpD2m9QMZB3A@mail.gmail.com>
+	<20181123183428.GD21183@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20181123183428.GD21183-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alex Williamson <alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-In voltage scale down path, the return value is NOT
-used at all, remove them to simplify the code.
+On Sat, Nov 24, 2018 at 3:34 AM Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org> wrote:
+>
+> On Fri, Nov 23, 2018 at 03:06:29PM +0530, Vivek Gautam wrote:
+> > On Fri, Nov 23, 2018 at 2:52 PM Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org> wrote:
+> > > On Fri, Nov 23, 2018 at 6:13 PM Vivek Gautam
+> > > <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+> > > > On Wed, Nov 21, 2018 at 11:09 PM Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org> wrote:
+> > > > > On Fri, Nov 16, 2018 at 04:54:30PM +0530, Vivek Gautam wrote:
+> > > > > > @@ -2026,6 +2027,17 @@ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
+> > > > > >  ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+> > > > > >  ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
+> > > > > >
+> > > > > > +static const char * const qcom_smmuv2_clks[] = {
+> > > > > > +     "bus", "iface",
+> > > > > > +};
+> > > > > > +
+> > > > > > +static const struct arm_smmu_match_data qcom_smmuv2 = {
+> > > > > > +     .version = ARM_SMMU_V2,
+> > > > > > +     .model = QCOM_SMMUV2,
+> > > > > > +     .clks = qcom_smmuv2_clks,
+> > > > > > +     .num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
+> > > > > > +};
+> > > > >
+> > > > > These seems redundant if we go down the route proposed by Thor, where we
+> > > > > just pull all of the clocks out of the device-tree. In which case, why
+> > > > > do we need this match_data at all?
+> > > >
+> > > > Which is better? Driver relying solely on the device tree to tell
+> > > > which all clocks
+> > > > are required to be enabled,
+> > > > or, the driver deciding itself based on the platform's match data,
+> > > > that it should
+> > > > have X, Y, & Z clocks that should be supplied from the device tree.
+> > >
+> > > The former would simplify the driver, but would also make it
+> > > impossible to spot mistakes in DT, which would ultimately surface out
+> > > as very hard to debug bugs (likely complete system lockups).
+> >
+> > Thanks.
+> > Yea, this is how I understand things presently. Relying on device tree
+> > puts the things out of driver's control.
+>
+> But it also has the undesirable effect of having to update the driver
+> code whenever we want to add support for a new SMMU implementation. If
+> we do this all in the DT, as Thor is trying to do, then older kernels
+> will work well with new hardware.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
- drivers/cpufreq/imx6q-cpufreq.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+Fair enough, if you're okay with that. Obviously one would still have
+to change the DT bindings to list the exact set of clocks for the new
+hardware variant, unless the convention changed recently.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufre=
-q.c
-index d8c3595..8cb9683 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -177,22 +177,16 @@ static int imx6q_set_target(struct cpufreq_policy *po=
-licy, unsigned int index)
- 	/* scaling down?  scale voltage after frequency */
- 	if (new_freq < old_freq) {
- 		ret =3D regulator_set_voltage_tol(arm_reg, volt, 0);
--		if (ret) {
-+		if (ret)
- 			dev_warn(cpu_dev,
- 				 "failed to scale vddarm down: %d\n", ret);
--			ret =3D 0;
--		}
- 		ret =3D regulator_set_voltage_tol(soc_reg, imx6_soc_volt[index], 0);
--		if (ret) {
-+		if (ret)
- 			dev_warn(cpu_dev, "failed to scale vddsoc down: %d\n", ret);
--			ret =3D 0;
--		}
- 		if (!IS_ERR(pu_reg)) {
- 			ret =3D regulator_set_voltage_tol(pu_reg, imx6_soc_volt[index], 0);
--			if (ret) {
-+			if (ret)
- 				dev_warn(cpu_dev, "failed to scale vddpu down: %d\n", ret);
--				ret =3D 0;
--			}
- 		}
- 	}
-=20
---=20
-2.7.4
+Best regards,
+Tomasz
