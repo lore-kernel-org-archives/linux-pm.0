@@ -1,44 +1,84 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH 1/6] devfreq: add basic fileds supporting suspend
- functionality
-Date: Mon, 26 Nov 2018 17:14:27 +0900
-Message-ID: <20181126081427epcms1p8801d251017da40b59d7e8391ee247fdb@epcms1p8>
-References: <1542823301-23563-2-git-send-email-l.luba@partner.samsung.com>
-        <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181121180201eucas1p1f1f96941c3d16a96722e65d5c21bfe80@epcms1p8>
-Reply-To: myungjoo.ham@samsung.com
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [RESEND PATCH v17 5/5] iommu/arm-smmu: Add support
+ for qcom, smmu-v2 variant
+Date: Mon, 26 Nov 2018 16:25:35 +0530
+Message-ID: <30fd45b5-50f0-7f2f-aab3-adc4528d21a8@codeaurora.org>
+References: <20181116112430.31248-1-vivek.gautam@codeaurora.org>
+ <20181116112430.31248-6-vivek.gautam@codeaurora.org>
+ <20181121173803.GB9801@arm.com>
+ <CAFp+6iELH7Mw3Ue2ksEyV+Ac8hG8--Ki69xrPCA4F-AcireRow@mail.gmail.com>
+ <CAAFQd5B-bZR8dmjARb8L4oqgET2YAjXhexAO0GKAvU4JoVU=7g@mail.gmail.com>
+ <CAFp+6iFhBRJWGY4Hj30tWedGpEUcnkBJrOvffmbpD2m9QMZB3A@mail.gmail.com>
+ <20181123183428.GD21183@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1542823301-23563-2-git-send-email-l.luba@partner.samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Cc: "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "keescook@chromium.org" <keescook@chromium.org>, "anton@enomsg.org" <anton@enomsg.org>, "ccross@android.com" <ccross@android.com>, "tony.luck@intel.com" <tony.luck@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "kgene@kernel.org" <kgene@kernel.org>, "krzk@kernel.org" <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <20181123183428.GD21183-5wv7dgnIgG8@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/freedreno>
+List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
+ <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
->The patch prepares devfreq device for handling suspend/resume functionality.
->The new fields will store needed information during this process.
->Devfreq framework handles opp-suspend DT entry and there is no need of
->modyfications in the drivers code.
->
->The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
->solve issue with devfreq device's frequency during suspend/resume.
->During the discussion on LKML some corner cases and comments appeared
->related to the design. This patch address them keeping in mind suggestions
->from Chanwoo Choi.
->
->Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
->Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
->Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-
-When you add new elements in a common struct (i.e., struct devfreq),
-please describe kindly in the doxygen entries so that developers
-may understand before reading all places where the new elements are
-used.
-
-You have added three new elements and there is no explanations on them.
-
-
-Cheers,
-MyungJoo
+Ck9uIDExLzI0LzIwMTggMTI6MDQgQU0sIFdpbGwgRGVhY29uIHdyb3RlOgo+IE9uIEZyaSwgTm92
+IDIzLCAyMDE4IGF0IDAzOjA2OjI5UE0gKzA1MzAsIFZpdmVrIEdhdXRhbSB3cm90ZToKPj4gT24g
+RnJpLCBOb3YgMjMsIDIwMTggYXQgMjo1MiBQTSBUb21hc3ogRmlnYSA8dGZpZ2FAY2hyb21pdW0u
+b3JnPiB3cm90ZToKPj4+IE9uIEZyaSwgTm92IDIzLCAyMDE4IGF0IDY6MTMgUE0gVml2ZWsgR2F1
+dGFtCj4+PiA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPiB3cm90ZToKPj4+PiBPbiBXZWQs
+IE5vdiAyMSwgMjAxOCBhdCAxMTowOSBQTSBXaWxsIERlYWNvbiA8d2lsbC5kZWFjb25AYXJtLmNv
+bT4gd3JvdGU6Cj4+Pj4+IE9uIEZyaSwgTm92IDE2LCAyMDE4IGF0IDA0OjU0OjMwUE0gKzA1MzAs
+IFZpdmVrIEdhdXRhbSB3cm90ZToKPj4+Pj4+IEBAIC0yMDI2LDYgKzIwMjcsMTcgQEAgQVJNX1NN
+TVVfTUFUQ0hfREFUQShhcm1fbW11NDAxLCBBUk1fU01NVV9WMV82NEssIEdFTkVSSUNfU01NVSk7
+Cj4+Pj4+PiAgIEFSTV9TTU1VX01BVENIX0RBVEEoYXJtX21tdTUwMCwgQVJNX1NNTVVfVjIsIEFS
+TV9NTVU1MDApOwo+Pj4+Pj4gICBBUk1fU01NVV9NQVRDSF9EQVRBKGNhdml1bV9zbW11djIsIEFS
+TV9TTU1VX1YyLCBDQVZJVU1fU01NVVYyKTsKPj4+Pj4+Cj4+Pj4+PiArc3RhdGljIGNvbnN0IGNo
+YXIgKiBjb25zdCBxY29tX3NtbXV2Ml9jbGtzW10gPSB7Cj4+Pj4+PiArICAgICAiYnVzIiwgImlm
+YWNlIiwKPj4+Pj4+ICt9Owo+Pj4+Pj4gKwo+Pj4+Pj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgYXJt
+X3NtbXVfbWF0Y2hfZGF0YSBxY29tX3NtbXV2MiA9IHsKPj4+Pj4+ICsgICAgIC52ZXJzaW9uID0g
+QVJNX1NNTVVfVjIsCj4+Pj4+PiArICAgICAubW9kZWwgPSBRQ09NX1NNTVVWMiwKPj4+Pj4+ICsg
+ICAgIC5jbGtzID0gcWNvbV9zbW11djJfY2xrcywKPj4+Pj4+ICsgICAgIC5udW1fY2xrcyA9IEFS
+UkFZX1NJWkUocWNvbV9zbW11djJfY2xrcyksCj4+Pj4+PiArfTsKPj4+Pj4gVGhlc2Ugc2VlbXMg
+cmVkdW5kYW50IGlmIHdlIGdvIGRvd24gdGhlIHJvdXRlIHByb3Bvc2VkIGJ5IFRob3IsIHdoZXJl
+IHdlCj4+Pj4+IGp1c3QgcHVsbCBhbGwgb2YgdGhlIGNsb2NrcyBvdXQgb2YgdGhlIGRldmljZS10
+cmVlLiBJbiB3aGljaCBjYXNlLCB3aHkKPj4+Pj4gZG8gd2UgbmVlZCB0aGlzIG1hdGNoX2RhdGEg
+YXQgYWxsPwo+Pj4+IFdoaWNoIGlzIGJldHRlcj8gRHJpdmVyIHJlbHlpbmcgc29sZWx5IG9uIHRo
+ZSBkZXZpY2UgdHJlZSB0byB0ZWxsCj4+Pj4gd2hpY2ggYWxsIGNsb2Nrcwo+Pj4+IGFyZSByZXF1
+aXJlZCB0byBiZSBlbmFibGVkLAo+Pj4+IG9yLCB0aGUgZHJpdmVyIGRlY2lkaW5nIGl0c2VsZiBi
+YXNlZCBvbiB0aGUgcGxhdGZvcm0ncyBtYXRjaCBkYXRhLAo+Pj4+IHRoYXQgaXQgc2hvdWxkCj4+
+Pj4gaGF2ZSBYLCBZLCAmIFogY2xvY2tzIHRoYXQgc2hvdWxkIGJlIHN1cHBsaWVkIGZyb20gdGhl
+IGRldmljZSB0cmVlLgo+Pj4gVGhlIGZvcm1lciB3b3VsZCBzaW1wbGlmeSB0aGUgZHJpdmVyLCBi
+dXQgd291bGQgYWxzbyBtYWtlIGl0Cj4+PiBpbXBvc3NpYmxlIHRvIHNwb3QgbWlzdGFrZXMgaW4g
+RFQsIHdoaWNoIHdvdWxkIHVsdGltYXRlbHkgc3VyZmFjZSBvdXQKPj4+IGFzIHZlcnkgaGFyZCB0
+byBkZWJ1ZyBidWdzIChsaWtlbHkgY29tcGxldGUgc3lzdGVtIGxvY2t1cHMpLgo+PiBUaGFua3Mu
+Cj4+IFllYSwgdGhpcyBpcyBob3cgSSB1bmRlcnN0YW5kIHRoaW5ncyBwcmVzZW50bHkuIFJlbHlp
+bmcgb24gZGV2aWNlIHRyZWUKPj4gcHV0cyB0aGUgdGhpbmdzIG91dCBvZiBkcml2ZXIncyBjb250
+cm9sLgo+IEJ1dCBpdCBhbHNvIGhhcyB0aGUgdW5kZXNpcmFibGUgZWZmZWN0IG9mIGhhdmluZyB0
+byB1cGRhdGUgdGhlIGRyaXZlcgo+IGNvZGUgd2hlbmV2ZXIgd2Ugd2FudCB0byBhZGQgc3VwcG9y
+dCBmb3IgYSBuZXcgU01NVSBpbXBsZW1lbnRhdGlvbi4gSWYKPiB3ZSBkbyB0aGlzIGFsbCBpbiB0
+aGUgRFQsIGFzIFRob3IgaXMgdHJ5aW5nIHRvIGRvLCB0aGVuIG9sZGVyIGtlcm5lbHMKPiB3aWxs
+IHdvcmsgd2VsbCB3aXRoIG5ldyBoYXJkd2FyZS4KPgo+PiBIaSBXaWxsLAo+PiBBbSBJIHVuYWJs
+ZSB0byB1bmRlcnN0YW5kIHRoZSBpbnRlbnRpb25zIGhlcmUgZm9yIFRob3IncyBjbG9jay1mZXRj
+aAo+PiBkZXNpZ24gY2hhbmdlPwo+IEknbSBoYXZpbmcgdHJvdWJsZSBwYXJzaW5nIHlvdXIgcXVl
+c3Rpb24sIHNvcnJ5LiBQbGVhc2Ugd29yayB3aXRoIFRob3IKPiBzbyB0aGF0IHdlIGhhdmUgYSBz
+aW5nbGUgd2F5IHRvIGdldCB0aGUgY2xvY2sgaW5mb3JtYXRpb24uIE15IHByZWZlcmVuY2UKPiBp
+cyB0byB0YWtlIGl0IGZyb20gdGhlIGZpcm13YXJlLCBmb3IgdGhlIHJlYXNvbiBJIHN0YXRlZCBh
+Ym92ZS4KSGkgV2lsbCwKClN1cmUsIHRoYW5rcy4gSSB3aWxsIHdvcmsgd2l0aCBUaG9yIHRvIGdl
+dCB0aGlzIGdvaW5nLgoKSGkgVGhvciwKRG9lcyBpdCBzb3VuZCBva2F5IHRvIHlvdSB0byBzcXVh
+c2ggeW91ciBwYXRjaCBbMV0gaW50byBteSBwYXRjaCBbMl0gd2l0aAp5b3VyICdTaWduZWQtb2Zm
+LWJ5JyB0YWc/Ckkgd2lsbCB1cGRhdGUgdGhlIGNvbW1pdCBsb2cgdG8gaW5jbHVkZSB0aGUgaW5m
+b3JtYXRpb24gYWJvdXQgZ2V0dGluZwpjbG9jayBkZXRhaWxzIGZyb20gZGV2aWNlIHRyZWUuCgpb
+MV0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDYyODcyNS8KWzJdIGh0dHBz
+Oi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA2ODYwNjEvCgpCZXN0IHJlZ2FyZHMKVml2
+ZWsKPgo+IFdpbGwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCkZyZWVkcmVubyBtYWlsaW5nIGxpc3QKRnJlZWRyZW5vQGxpc3RzLmZyZWVkZXNrdG9wLm9y
+ZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ZyZWVkcmVu
+bwo=
