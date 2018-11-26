@@ -1,7 +1,7 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: [PATCH 11/14] mfd: axp20x: Clean up included headers
-Date: Mon, 26 Nov 2018 17:27:52 +0200
-Message-ID: <1567a4f47e802c592a3f109c7b5e0656528e2a5c.1543245984.git-series.plaes@plaes.org>
+Subject: [PATCH 10/14] regulator: dts: set proper lradc vref on OLinuXino Lime2
+Date: Mon, 26 Nov 2018 17:27:51 +0200
+Message-ID: <b27515a1cfe3512253a3fbcda04a3367818520b9.1543245984.git-series.plaes@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -14,42 +14,30 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Olliver Schinagl <oliver@schinagl.nl>
 
-Add the bitops.h header as we need it, alphabetize header order.
+The lradc's analog reference voltage is set to 3.0 volt in the
+hardware. This is more or less set in copper for at least lradc0. Set the
+property in the dts to ensure the lradc is referenced properly.
 
 Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
 Signed-off-by: Priit Laes <plaes@plaes.org>
 ---
- drivers/mfd/axp20x.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 0be511d..da54399 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -16,18 +16,19 @@
-  * published by the Free Software Foundation.
-  */
+diff --git a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts b/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
+index 1b9867f..7142471 100644
+--- a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
++++ b/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
+@@ -154,6 +154,10 @@
+ 	};
+ };
  
--#include <linux/err.h>
-+#include <linux/acpi.h>
-+#include <linux/bitops.h>
- #include <linux/delay.h>
-+#include <linux/err.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
-+#include <linux/mfd/axp20x.h>
-+#include <linux/mfd/core.h>
- #include <linux/module.h>
-+#include <linux/of_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/regmap.h>
- #include <linux/regulator/consumer.h>
--#include <linux/mfd/axp20x.h>
--#include <linux/mfd/core.h>
--#include <linux/of_device.h>
--#include <linux/acpi.h>
- 
- #define AXP20X_OFF	0x80
- 
++&lradc {
++	vref-supply = <&reg_vcc3v0>;
++};
++
+ &mmc0 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&mmc0_pins_a>;
 -- 
 git-series 0.9.1
