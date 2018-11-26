@@ -1,7 +1,7 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: [PATCH 10/14] regulator: dts: set proper lradc vref on OLinuXino Lime2
-Date: Mon, 26 Nov 2018 17:27:51 +0200
-Message-ID: <b27515a1cfe3512253a3fbcda04a3367818520b9.1543245984.git-series.plaes@plaes.org>
+Subject: [PATCH 12/14] mfd: axp20x: use explicit bit defines
+Date: Mon, 26 Nov 2018 17:27:53 +0200
+Message-ID: <a0f3f8a763d948159de122b8071b5de4bfc785c0.1543245984.git-series.plaes@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -14,30 +14,26 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Olliver Schinagl <oliver@schinagl.nl>
 
-The lradc's analog reference voltage is set to 3.0 volt in the
-hardware. This is more or less set in copper for at least lradc0. Set the
-property in the dts to ensure the lradc is referenced properly.
+The AXP20X_OFF define is an actual specific bit, define it as such.
 
 Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
 Signed-off-by: Priit Laes <plaes@plaes.org>
 ---
- arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/mfd/axp20x.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts b/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
-index 1b9867f..7142471 100644
---- a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
-+++ b/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
-@@ -154,6 +154,10 @@
- 	};
- };
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index da54399..e1450a5 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -30,7 +30,7 @@
+ #include <linux/regmap.h>
+ #include <linux/regulator/consumer.h>
  
-+&lradc {
-+	vref-supply = <&reg_vcc3v0>;
-+};
-+
- &mmc0 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&mmc0_pins_a>;
+-#define AXP20X_OFF	0x80
++#define AXP20X_OFF	BIT(7)
+ 
+ #define AXP806_REG_ADDR_EXT_ADDR_MASTER_MODE	0
+ #define AXP806_REG_ADDR_EXT_ADDR_SLAVE_MODE	BIT(4)
 -- 
 git-series 0.9.1
