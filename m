@@ -1,99 +1,41 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: add of_node_put()
-Date: Mon, 26 Nov 2018 18:12:54 +0530
-Message-ID: <20181126124254.GC21536@in.ibm.com>
-References: <20181120125731.19368-1-tiny.windzz@gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Frank Lee <tiny.windzz@gmail.com>
+Subject: Re: [PATCH v2] cpufreq: powernv: add of_node_put()
+Date: Mon, 26 Nov 2018 21:00:23 +0800
+Message-ID: <CAEExFWu7rt8oOHFtrvy0h=gwhMaNFXHuaaOxTnLcQfZDXsy9yw@mail.gmail.com>
+References: <20181120160530.21015-1-tiny.windzz@gmail.com> <20181121040204.yjlnxaulet3o5u3r@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181120125731.19368-1-tiny.windzz@gmail.com>
+In-Reply-To: <20181121040204.yjlnxaulet3o5u3r@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: ego@linux.vnet.ibm.com
+Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Yangtao Li,
-
-On Tue, Nov 20, 2018 at 07:57:31AM -0500, Yangtao Li wrote:
-> use of_node_put() to release the refcount.
+On Wed, Nov 21, 2018 at 12:02 PM Viresh Kumar <viresh.kumar@linaro.org> wro=
+te:
 >
+> On 20-11-18, 11:05, Yangtao Li wrote:
+> > The of_find_node_by_path() returns a node pointer with refcount
+> > incremented,but there is the lack of use of the of_node_put() when
+> > done.Add the missing of_node_put() to release the refcount.
+> >
+> > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> > ---
+> > Changes in v2
+> > -update changelog
+> > ---
+> >  drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++------
+> >  1 file changed, 11 insertions(+), 6 deletions(-)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> --
+> viresh
+Hi Gautham=EF=BC=9A
 
-Thanks for the patch.
+Can you add your Reviewed-by here?
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 17 +++++++++++------
->  1 file changed, 11 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index bf6519cf64bc..7e7ad3879c4e 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -253,18 +253,18 @@ static int init_powernv_pstates(void)
-> 
->  	if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
->  		pr_warn("ibm,pstate-min node not found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
->  		pr_warn("ibm,pstate-max node not found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	if (of_property_read_u32(power_mgt, "ibm,pstate-nominal",
->  				 &pstate_nominal)) {
->  		pr_warn("ibm,pstate-nominal not found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
-> @@ -293,14 +293,14 @@ static int init_powernv_pstates(void)
->  	pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
->  	if (!pstate_ids) {
->  		pr_warn("ibm,pstate-ids not found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	pstate_freqs = of_get_property(power_mgt, "ibm,pstate-frequencies-mhz",
->  				      &len_freqs);
->  	if (!pstate_freqs) {
->  		pr_warn("ibm,pstate-frequencies-mhz not found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	if (len_ids != len_freqs) {
-> @@ -311,7 +311,7 @@ static int init_powernv_pstates(void)
->  	nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
->  	if (!nr_pstates) {
->  		pr_warn("No PStates found\n");
-> -		return -ENODEV;
-> +		goto out;
->  	}
-> 
->  	powernv_pstate_info.nr_pstates = nr_pstates;
-> @@ -352,7 +352,12 @@ static int init_powernv_pstates(void)
-> 
->  	/* End of list marker entry */
->  	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
-> +
-> +	of_node_put(power_mgt);
->  	return 0;
-> +out:
-> +	of_node_put(power_mgt);
-> +	return -ENODEV;
->  }
-> 
->  /* Returns the CPU frequency corresponding to the pstate_id. */
-> -- 
-> 2.17.0
-> 
+Thanks=EF=BC=8C
+Yangtao
