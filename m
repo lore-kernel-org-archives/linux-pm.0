@@ -1,249 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 5/5] PM / Domains: Propagate performance state updates
-Date: Mon, 26 Nov 2018 13:40:04 +0530
-Message-ID: <5a29ceb2704239a8efb4db2e47ca155a422a6e57.1543219386.git.viresh.kumar@linaro.org>
-References: <cover.1543219386.git.viresh.kumar@linaro.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 1/6] devfreq: add basic fileds supporting suspend
+ functionality
+Date: Mon, 26 Nov 2018 17:14:27 +0900
+Message-ID: <20181126081427epcms1p8801d251017da40b59d7e8391ee247fdb@epcms1p8>
+References: <1542823301-23563-2-git-send-email-l.luba@partner.samsung.com>
+        <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181121180201eucas1p1f1f96941c3d16a96722e65d5c21bfe80@epcms1p8>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1543219386.git.viresh.kumar@linaro.org>
+In-Reply-To: <1542823301-23563-2-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "keescook@chromium.org" <keescook@chromium.org>, "anton@enomsg.org" <anton@enomsg.org>, "ccross@android.com" <ccross@android.com>, "tony.luck@intel.com" <tony.luck@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "kgene@kernel.org" <kgene@kernel.org>, "krzk@kernel.org" <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This commit updates genpd core to start propagating performance state
-updates to master domains that have their set_performance_state()
-callback set.
+>The patch prepares devfreq device for handling suspend/resume functionality.
+>The new fields will store needed information during this process.
+>Devfreq framework handles opp-suspend DT entry and there is no need of
+>modyfications in the drivers code.
+>
+>The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
+>solve issue with devfreq device's frequency during suspend/resume.
+>During the discussion on LKML some corner cases and comments appeared
+>related to the design. This patch address them keeping in mind suggestions
+>from Chanwoo Choi.
+>
+>Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+>Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 
-A genpd handles two type of performance states now. The first one is the
-performance state requirement put on the genpd by the devices and
-sub-domains under it, which is already represented by
-genpd->performance_state. The second type, introduced in this commit, is
-the performance state requirement(s) put by the genpd on its master
-domain(s). There is a separate value required for each master that the
-genpd has and so a new field is added to the struct gpd_link
-(link->performance_state), which represents the link between a genpd and
-its master. The struct gpd_link also got another field
-prev_performance_state, which is used by genpd core as a temporary
-variable during transitions.
+When you add new elements in a common struct (i.e., struct devfreq),
+please describe kindly in the doxygen entries so that developers
+may understand before reading all places where the new elements are
+used.
 
-We need to propagate setting performance state while powering-on a genpd
-as well, as we ignore performance state requirements from sub-domains
-which are powered-off. For this reason _genpd_power_on() also received
-the additional parameter, depth, which is used for hierarchical locking
-within genpd.
+You have added three new elements and there is no explanations on them.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/domain.c | 113 ++++++++++++++++++++++++++++++------
- include/linux/pm_domain.h   |   4 ++
- 2 files changed, 98 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index d6b389a9f678..206e263abe90 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -239,24 +239,88 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
- static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- #endif
- 
-+static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-+					   unsigned int state, int depth);
-+
- static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
--					unsigned int state)
-+					unsigned int state, int depth)
- {
-+	struct generic_pm_domain *master;
-+	struct gpd_link *link;
-+	unsigned int mstate;
- 	int ret;
- 
-+	/* Propagate to masters of genpd */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		master = link->master;
-+
-+		if (!master->set_performance_state)
-+			continue;
-+
-+		if (unlikely(!state)) {
-+			mstate = 0;
-+		} else {
-+			/* Find master's performance state */
-+			mstate = dev_pm_opp_xlate_performance_state(genpd->opp_table,
-+					master->opp_table, state);
-+			if (unlikely(!mstate)) {
-+				ret = -EINVAL;
-+				goto err;
-+			}
-+		}
-+
-+		genpd_lock_nested(master, depth + 1);
-+
-+		link->prev_performance_state = link->performance_state;
-+		link->performance_state = mstate;
-+		ret = _genpd_reeval_performance_state(master, mstate, depth + 1);
-+		if (ret)
-+			link->performance_state = link->prev_performance_state;
-+
-+		genpd_unlock(master);
-+
-+		if (ret)
-+			goto err;
-+	}
-+
- 	ret = genpd->set_performance_state(genpd, state);
- 	if (ret)
--		return ret;
-+		goto err;
- 
- 	genpd->performance_state = state;
- 	return 0;
-+
-+err:
-+	/* Encountered an error, lets rollback */
-+	list_for_each_entry_continue_reverse(link, &genpd->slave_links,
-+					     slave_node) {
-+		master = link->master;
-+
-+		if (!master->set_performance_state)
-+			continue;
-+
-+		genpd_lock_nested(master, depth + 1);
-+
-+		mstate = link->prev_performance_state;
-+		link->performance_state = mstate;
-+
-+		if (_genpd_reeval_performance_state(master, mstate, depth + 1)) {
-+			pr_err("%s: Failed to roll back to %d performance state\n",
-+			       master->name, mstate);
-+		}
-+
-+		genpd_unlock(master);
-+	}
-+
-+	return ret;
- }
- 
- static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
--					   unsigned int state)
-+					   unsigned int state, int depth)
- {
- 	struct generic_pm_domain_data *pd_data;
- 	struct pm_domain_data *pdd;
-+	struct gpd_link *link;
- 
- 	/* New requested state is same as Max requested state */
- 	if (state == genpd->performance_state)
-@@ -274,18 +338,27 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 			state = pd_data->performance_state;
- 	}
- 
--	if (state == genpd->performance_state)
--		return 0;
--
- 	/*
--	 * We aren't propagating performance state changes of a subdomain to its
--	 * masters as we don't have hardware that needs it. Over that, the
--	 * performance states of subdomain and its masters may not have
--	 * one-to-one mapping and would require additional information. We can
--	 * get back to this once we have hardware that needs it. For that
--	 * reason, we don't have to consider performance state of the subdomains
--	 * of genpd here.
-+	 * Traverse all powered-on subdomains within the domain. This can be
-+	 * done without any additional locking as the link->performance_state
-+	 * field is protected by the master genpd->lock, which is already taken.
-+	 *
-+	 * Also note that link->performance_state (subdomain's performance state
-+	 * requirement to master domain) is different from
-+	 * link->slave->performance_state (current performance state requirement
-+	 * of the devices/sub-domains of the subdomain) and so can have a
-+	 * different value.
- 	 */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		if (!genpd_status_on(link->slave))
-+			continue;
-+
-+		if (link->performance_state > state)
-+			state = link->performance_state;
-+	}
-+
-+	if (state == genpd->performance_state)
-+		return 0;
- 
- update_state:
- 	if (!genpd_status_on(genpd)) {
-@@ -293,7 +366,7 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 		return 0;
- 	}
- 
--	return _genpd_set_performance_state(genpd, state);
-+	return _genpd_set_performance_state(genpd, state, depth);
- }
- 
- /**
-@@ -337,7 +410,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- 	prev = gpd_data->performance_state;
- 	gpd_data->performance_state = state;
- 
--	ret = _genpd_reeval_performance_state(genpd, state);
-+	ret = _genpd_reeval_performance_state(genpd, state, 0);
- 	if (ret)
- 		gpd_data->performance_state = prev;
- 
-@@ -347,7 +420,8 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
- 
--static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
-+static int
-+_genpd_power_on(struct generic_pm_domain *genpd, bool timed, int depth)
- {
- 	unsigned int state_idx = genpd->state_idx;
- 	ktime_t time_start;
-@@ -368,7 +442,8 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
- 
- 	if (unlikely(genpd->set_performance_state)) {
--		ret = genpd->set_performance_state(genpd, genpd->performance_state);
-+		ret = _genpd_set_performance_state(genpd,
-+					genpd->performance_state, depth);
- 		if (ret) {
- 			pr_warn("%s: Failed to set performance state %d (%d)\n",
- 				genpd->name, genpd->performance_state, ret);
-@@ -558,7 +633,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 		}
- 	}
- 
--	ret = _genpd_power_on(genpd, true);
-+	ret = _genpd_power_on(genpd, true, depth);
- 	if (ret)
- 		goto err;
- 
-@@ -963,7 +1038,7 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
- 			genpd_unlock(link->master);
- 	}
- 
--	_genpd_power_on(genpd, false);
-+	_genpd_power_on(genpd, false, depth);
- 
- 	genpd->status = GPD_STATE_ACTIVE;
- }
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 9ad101362aef..dd364abb649a 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -136,6 +136,10 @@ struct gpd_link {
- 	struct list_head master_node;
- 	struct generic_pm_domain *slave;
- 	struct list_head slave_node;
-+
-+	/* Sub-domain's per-master domain performance state */
-+	unsigned int performance_state;
-+	unsigned int prev_performance_state;
- };
- 
- struct gpd_timing_data {
--- 
-2.19.1.568.g152ad8e3369a
+Cheers,
+MyungJoo
