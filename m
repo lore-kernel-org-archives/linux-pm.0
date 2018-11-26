@@ -1,7 +1,7 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: [PATCH 06/14] regulator: axp20x: add software based soft_start for AXP209 LDO3
-Date: Mon, 26 Nov 2018 17:27:47 +0200
-Message-ID: <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
+Subject: [PATCH 14/14] power: supply: axp288: use the BIT() macro
+Date: Mon, 26 Nov 2018 17:27:55 +0200
+Message-ID: <c500c452040428a2a5fae32c48c9ba778df9fb17.1543245984.git-series.plaes@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -14,123 +14,102 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Olliver Schinagl <oliver@schinagl.nl>
 
-In the past, there have been words on various lists that if LDO3 is
-disabled in u-boot, but enabled in the DTS, the axp209 driver would
-fail to continue/hang. Several enable/disable patches have been
-issues to devicetree's in both the kernel and u-boot to address
-this issue.
-
-What really happened however, was that the AXP209 shuts down without
-a notice and without setting an interrupt. This is caused when LDO3
-gets overloaded, for example with large capacitors on the LDO3 output.
-
-Normally, we would expect that AXP209 would source 200 mA as per
-datasheet and set and trigger an interrupt when being overloaded.
-For some reason however, this does not happen.
-
-As a work-around, we use the soft-start constraint of the regulator
-node to first bring up the LDO3 to the lowest possible voltage and
-then enable the LDO. After that, we can set the requested voltage
-as usual.
-
-Combining this setting with the regulator-ramp-delay allows LDO3 to
-enable voltage slowly and staggered, potentially reducing overall
-inrush current.
+Make use of the recommended BIT() macro for bit defines.
 
 Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
 Signed-off-by: Priit Laes <plaes@plaes.org>
 ---
- drivers/regulator/axp20x-regulator.c | 57 ++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
+ drivers/power/supply/axp288_charger.c | 35 ++++++++++++++--------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
-index 1d9fa62..e8a895b 100644
---- a/drivers/regulator/axp20x-regulator.c
-+++ b/drivers/regulator/axp20x-regulator.c
-@@ -14,6 +14,7 @@
+diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+index 735658e..f8c6da9 100644
+--- a/drivers/power/supply/axp288_charger.c
++++ b/drivers/power/supply/axp288_charger.c
+@@ -16,6 +16,7 @@
   */
  
- #include <linux/bitops.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/init.h>
- #include <linux/mfd/axp20x.h>
-@@ -23,6 +24,7 @@
- #include <linux/platform_device.h>
+ #include <linux/acpi.h>
++#include <linux/bitops.h>
+ #include <linux/module.h>
+ #include <linux/device.h>
  #include <linux/regmap.h>
- #include <linux/regulator/driver.h>
-+#include <linux/regulator/machine.h>
- #include <linux/regulator/of_regulator.h>
+@@ -29,17 +30,17 @@
+ #include <linux/mfd/axp20x.h>
+ #include <linux/extcon.h>
  
- #define AXP20X_GPIO0_FUNC_MASK		GENMASK(3, 0)
-@@ -430,6 +432,59 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
- 	return regmap_update_bits(axp20x->regmap, reg, mask, cfg);
- }
+-#define PS_STAT_VBUS_TRIGGER		(1 << 0)
+-#define PS_STAT_BAT_CHRG_DIR		(1 << 2)
+-#define PS_STAT_VBAT_ABOVE_VHOLD	(1 << 3)
+-#define PS_STAT_VBUS_VALID		(1 << 4)
+-#define PS_STAT_VBUS_PRESENT		(1 << 5)
++#define PS_STAT_VBUS_TRIGGER		BIT(0)
++#define PS_STAT_BAT_CHRG_DIR		BIT(2)
++#define PS_STAT_VBAT_ABOVE_VHOLD	BIT(3)
++#define PS_STAT_VBUS_VALID		BIT(4)
++#define PS_STAT_VBUS_PRESENT		BIT(5)
  
-+static int axp20x_regulator_enable_regmap(struct regulator_dev *rdev)
-+{
-+	struct axp20x_dev *axp20x = rdev_get_drvdata(rdev);
-+	const struct regulator_desc *desc = rdev->desc;
-+
-+	if (!rdev)
-+		return -EINVAL;
-+
-+	switch (axp20x->variant) {
-+	case AXP209_ID:
-+		if ((desc->id == AXP20X_LDO3) &&
-+		    rdev->constraints && rdev->constraints->soft_start) {
-+			int v_out;
-+			int ret;
-+
-+			/*
-+			 * On some boards, the LDO3 can be overloaded when
-+			 * turning on, causing the entire PMIC to shutdown
-+			 * without warning. Turning it on at the minimal voltage
-+			 * and then setting the voltage to the requested value
-+			 * works reliably.
-+			 */
-+			if (regulator_is_enabled_regmap(rdev))
-+				break;
-+
-+			v_out = regulator_get_voltage_sel_regmap(rdev);
-+			if (v_out < 0)
-+				return v_out;
-+
-+			if (v_out == 0)
-+				break;
-+
-+			ret = regulator_set_voltage_sel_regmap(rdev, 0x00);
-+			/*
-+			 * A small pause is needed between
-+			 * setting the voltage and enabling the LDO to give the
-+			 * internal state machine time to process the request.
-+			 */
-+			usleep_range(1000, 5000);
-+			ret |= regulator_enable_regmap(rdev);
-+			ret |= regulator_set_voltage_sel_regmap(rdev, v_out);
-+
-+			return ret;
-+		}
-+		break;
-+	default:
-+		/* No quirks */
-+		break;
-+	}
-+
-+	return regulator_enable_regmap(rdev);
-+};
-+
- static const struct regulator_ops axp20x_ops_fixed = {
- 	.list_voltage		= regulator_list_voltage_linear,
- };
-@@ -447,7 +502,7 @@ static const struct regulator_ops axp20x_ops = {
- 	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
- 	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
- 	.list_voltage		= regulator_list_voltage_linear,
--	.enable			= regulator_enable_regmap,
-+	.enable			= axp20x_regulator_enable_regmap,
- 	.disable		= regulator_disable_regmap,
- 	.is_enabled		= regulator_is_enabled_regmap,
- 	.set_ramp_delay		= axp20x_set_ramp_delay,
+-#define CHRG_STAT_BAT_SAFE_MODE		(1 << 3)
+-#define CHRG_STAT_BAT_VALID		(1 << 4)
+-#define CHRG_STAT_BAT_PRESENT		(1 << 5)
+-#define CHRG_STAT_CHARGING		(1 << 6)
+-#define CHRG_STAT_PMIC_OTP		(1 << 7)
++#define CHRG_STAT_BAT_SAFE_MODE		BIT(3)
++#define CHRG_STAT_BAT_VALID		BIT(4)
++#define CHRG_STAT_BAT_PRESENT		BIT(5)
++#define CHRG_STAT_CHARGING		BIT(6)
++#define CHRG_STAT_PMIC_OTP		BIT(7)
+ 
+ #define VBUS_ISPOUT_CUR_LIM_MASK	0x03
+ #define VBUS_ISPOUT_CUR_LIM_BIT_POS	0
+@@ -52,33 +53,33 @@
+ #define VBUS_ISPOUT_VHOLD_SET_OFFSET	4000	/* 4000mV */
+ #define VBUS_ISPOUT_VHOLD_SET_LSB_RES	100	/* 100mV */
+ #define VBUS_ISPOUT_VHOLD_SET_4300MV	0x3	/* 4300mV */
+-#define VBUS_ISPOUT_VBUS_PATH_DIS	(1 << 7)
++#define VBUS_ISPOUT_VBUS_PATH_DIS	BIT(7)
+ 
+ #define CHRG_CCCV_CC_MASK		0xf		/* 4 bits */
+ #define CHRG_CCCV_CC_BIT_POS		0
+ #define CHRG_CCCV_CC_OFFSET		200		/* 200mA */
+ #define CHRG_CCCV_CC_LSB_RES		200		/* 200mA */
+-#define CHRG_CCCV_ITERM_20P		(1 << 4)	/* 20% of CC */
++#define CHRG_CCCV_ITERM_20P		BIT(4)		/* 20% of CC */
+ #define CHRG_CCCV_CV_MASK		0x60		/* 2 bits */
+ #define CHRG_CCCV_CV_BIT_POS		5
+ #define CHRG_CCCV_CV_4100MV		0x0		/* 4.10V */
+ #define CHRG_CCCV_CV_4150MV		0x1		/* 4.15V */
+ #define CHRG_CCCV_CV_4200MV		0x2		/* 4.20V */
+ #define CHRG_CCCV_CV_4350MV		0x3		/* 4.35V */
+-#define CHRG_CCCV_CHG_EN		(1 << 7)
++#define CHRG_CCCV_CHG_EN		BIT(7)
+ 
+ #define CNTL2_CC_TIMEOUT_MASK		0x3	/* 2 bits */
+ #define CNTL2_CC_TIMEOUT_OFFSET		6	/* 6 Hrs */
+ #define CNTL2_CC_TIMEOUT_LSB_RES	2	/* 2 Hrs */
+ #define CNTL2_CC_TIMEOUT_12HRS		0x3	/* 12 Hrs */
+-#define CNTL2_CHGLED_TYPEB		(1 << 4)
+-#define CNTL2_CHG_OUT_TURNON		(1 << 5)
++#define CNTL2_CHGLED_TYPEB		BIT(4)
++#define CNTL2_CHG_OUT_TURNON		BIT(5)
+ #define CNTL2_PC_TIMEOUT_MASK		0xC0
+ #define CNTL2_PC_TIMEOUT_OFFSET		40	/* 40 mins */
+ #define CNTL2_PC_TIMEOUT_LSB_RES	10	/* 10 mins */
+ #define CNTL2_PC_TIMEOUT_70MINS		0x3
+ 
+-#define CHRG_ILIM_TEMP_LOOP_EN		(1 << 3)
++#define CHRG_ILIM_TEMP_LOOP_EN		BIT(3)
+ #define CHRG_VBUS_ILIM_MASK		0xf0
+ #define CHRG_VBUS_ILIM_BIT_POS		4
+ #define CHRG_VBUS_ILIM_100MA		0x0	/* 100mA */
+@@ -94,7 +95,7 @@
+ #define CHRG_VLTFC_0C			0xA5	/* 0 DegC */
+ #define CHRG_VHTFC_45C			0x1F	/* 45 DegC */
+ 
+-#define FG_CNTL_OCV_ADJ_EN		(1 << 3)
++#define FG_CNTL_OCV_ADJ_EN		BIT(3)
+ 
+ #define CV_4100MV			4100	/* 4100mV */
+ #define CV_4150MV			4150	/* 4150mV */
 -- 
 git-series 0.9.1
