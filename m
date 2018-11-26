@@ -1,7 +1,7 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: [PATCH 05/14] dt-bindings: mfd: axp20x: add support for regulator-ramp-delay for AXP209
-Date: Mon, 26 Nov 2018 17:27:46 +0200
-Message-ID: <4333f81dfa1d9be082b09ab9ddf2694cb56285e2.1543245984.git-series.plaes@plaes.org>
+Subject: [PATCH 03/14] regulator: core: enable power when setting up constraints
+Date: Mon, 26 Nov 2018 17:27:44 +0200
+Message-ID: <1e2f8f5a5eeebd40431675675569012cb8e17473.1543245984.git-series.plaes@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
@@ -14,41 +14,64 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Olliver Schinagl <oliver@schinagl.nl>
 
-The AXP209 supports ramping up voltages on several regulators such as
-DCDC2 and LDO3, therefore we can use the standard 'regulator-ramp-delay'
-property for those 2 regulators.
+When a regulator is marked as always on, it is enabled early on, when
+checking and setting up constraints. It makes the assumption that the
+bootloader properly initialized the regulator, and just in case enables
+the regulator anyway.
 
-Note that the voltage ramp only works when the regulator is already
-enabled. E.g. when going from say 0.7 V to 3.6 V.
+Some constraints however currently get missed, such as the soft-start
+and ramp-delay. This causes the regulator to be enabled, without the
+soft-start and ramp-delay being applied, which in turn can cause
+high-currents or other start-up problems.
 
-When turning on the regulator, no voltage ramp is performed in hardware.
-
-What this means, is that if the bootloader brings up the voltage at 0.7 V,
-the ramp delay property is properly applied. If however, the bootloader
-leaves the power off, no ramp delay is applied when the power is
-enabled by the regulator framework.
+By moving the always-enabled constraints later in the constraints check,
+we can at least ensure all constraints for the regulator are followed.
 
 Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
 Signed-off-by: Priit Laes <plaes@plaes.org>
 ---
- Documentation/devicetree/bindings/mfd/axp20x.txt | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/regulator/core.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Documentation/devicetree/bindings/mfd/axp20x.txt
-index 188f037..5542212 100644
---- a/Documentation/devicetree/bindings/mfd/axp20x.txt
-+++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
-@@ -32,6 +32,11 @@ Required properties:
- - interrupt-controller: The PMIC has its own internal IRQs
- - #interrupt-cells: Should be set to 1
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 2c66b52..6e14610 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1158,17 +1158,6 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		}
+ 	}
  
-+Supported common regulator properties, see regulator.txt for more information:
-+- regulator-ramp-delay: sets the ramp up delay in uV/us
-+			AXP20x/DCDC2: 1600, 800
-+			AXP20x/LDO3:  1600, 800
+-	/* If the constraints say the regulator should be on at this point
+-	 * and we have control then make sure it is enabled.
+-	 */
+-	if (rdev->constraints->always_on || rdev->constraints->boot_on) {
+-		ret = _regulator_do_enable(rdev);
+-		if (ret < 0 && ret != -EINVAL) {
+-			rdev_err(rdev, "failed to enable\n");
+-			return ret;
+-		}
+-	}
+-
+ 	if ((rdev->constraints->ramp_delay || rdev->constraints->ramp_disable)
+ 		&& ops->set_ramp_delay) {
+ 		ret = ops->set_ramp_delay(rdev, rdev->constraints->ramp_delay);
+@@ -1214,6 +1203,17 @@ static int set_machine_constraints(struct regulator_dev *rdev,
+ 		}
+ 	}
+ 
++	/* If the constraints say the regulator should be on at this point
++	 * and we have control then make sure it is enabled.
++	 */
++	if (rdev->constraints->always_on || rdev->constraints->boot_on) {
++		ret = _regulator_do_enable(rdev);
++		if (ret < 0 && ret != -EINVAL) {
++			rdev_err(rdev, "failed to enable\n");
++			return ret;
++		}
++	}
 +
- Optional properties:
- - x-powers,dcdc-freq: defines the work frequency of DC-DC in KHz
- 		      AXP152/20X: range:  750-1875, Default: 1.5 MHz
+ 	print_constraints(rdev);
+ 	return 0;
+ }
 -- 
 git-series 0.9.1
