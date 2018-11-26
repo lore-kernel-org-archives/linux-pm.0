@@ -1,115 +1,158 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: [PATCH 14/14] power: supply: axp288: use the BIT() macro
-Date: Mon, 26 Nov 2018 17:27:55 +0200
-Message-ID: <c500c452040428a2a5fae32c48c9ba778df9fb17.1543245984.git-series.plaes@plaes.org>
+Subject: [PATCH 04/14] regulator: axp20x: add support for set_ramp_delay for
+ AXP209
+Date: Mon, 26 Nov 2018 17:27:45 +0200
+Message-ID: <314a16a39da769ef411a58f6fad45e5be65ec0e1.1543245984.git-series.plaes@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Priit Laes <plaes@plaes.org>, Olliver Schinagl <oliver@schinagl.nl>
+Cc: Olliver Schinagl <oliver@schinagl.nl>, Priit Laes <plaes@plaes.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Olliver Schinagl <oliver@schinagl.nl>
 
-Make use of the recommended BIT() macro for bit defines.
+The AXP209 supports ramping up voltages on several regulators such as
+DCDC2 and LDO3.
+
+This patch adds preliminary support for the regulator-ramp-delay property
+for these 2 regulators. Note that the voltage ramp only works when
+regulator is already enabled. E.g. when going from say 0.7 V to 3.6 V.
+
+When turning on the regulator, no voltage ramp is performed in hardware.
+
+What this means, is that if the bootloader brings up the voltage at 0.7 V,
+the ramp delay property is properly applied. If however, the bootloader
+leaves the power off, no ramp delay is applied when the power is
+enabled by the regulator framework.
 
 Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
 Signed-off-by: Priit Laes <plaes@plaes.org>
 ---
- drivers/power/supply/axp288_charger.c | 35 ++++++++++++++--------------
- 1 file changed, 18 insertions(+), 17 deletions(-)
+ drivers/regulator/axp20x-regulator.c | 85 +++++++++++++++++++++++++++++-
+ 1 file changed, 85 insertions(+)
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 735658e..f8c6da9 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -16,6 +16,7 @@
-  */
+diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
+index 9a2db28..1d9fa62 100644
+--- a/drivers/regulator/axp20x-regulator.c
++++ b/drivers/regulator/axp20x-regulator.c
+@@ -51,6 +51,17 @@
+ #define AXP20X_PWR_OUT_DCDC2_MASK	BIT_MASK(4)
+ #define AXP20X_PWR_OUT_LDO3_MASK	BIT_MASK(6)
  
- #include <linux/acpi.h>
-+#include <linux/bitops.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
-@@ -29,17 +30,17 @@
- #include <linux/mfd/axp20x.h>
- #include <linux/extcon.h>
++#define AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK	BIT_MASK(0)
++#define AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE(x) \
++	((x) << 0)
++#define AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK		BIT_MASK(1)
++#define AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE(x) \
++	((x) << 1)
++#define AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK		BIT_MASK(2)
++#define AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN		BIT(2)
++#define AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK		BIT_MASK(3)
++#define AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN		BIT(3)
++
+ #define AXP20X_LDO4_V_OUT_1250mV_START	0x0
+ #define AXP20X_LDO4_V_OUT_1250mV_STEPS	0
+ #define AXP20X_LDO4_V_OUT_1250mV_END	\
+@@ -346,6 +357,79 @@
+ 		.ops		= &axp20x_ops_range,				\
+ 	}
  
--#define PS_STAT_VBUS_TRIGGER		(1 << 0)
--#define PS_STAT_BAT_CHRG_DIR		(1 << 2)
--#define PS_STAT_VBAT_ABOVE_VHOLD	(1 << 3)
--#define PS_STAT_VBUS_VALID		(1 << 4)
--#define PS_STAT_VBUS_PRESENT		(1 << 5)
-+#define PS_STAT_VBUS_TRIGGER		BIT(0)
-+#define PS_STAT_BAT_CHRG_DIR		BIT(2)
-+#define PS_STAT_VBAT_ABOVE_VHOLD	BIT(3)
-+#define PS_STAT_VBUS_VALID		BIT(4)
-+#define PS_STAT_VBUS_PRESENT		BIT(5)
++static const int axp209_dcdc2_ldo3_slew_rates[] = {
++	1600,
++	 800,
++};
++
++static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
++{
++	struct axp20x_dev *axp20x = rdev_get_drvdata(rdev);
++	const struct regulator_desc *desc = rdev->desc;
++	u8 reg, mask, enable, cfg = 0xff;
++	const int *slew_rates;
++	int rate_count = 0;
++
++	if (!rdev)
++		return -EINVAL;
++
++	switch (axp20x->variant) {
++	case AXP209_ID:
++		if (desc->id == AXP20X_DCDC2) {
++			rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
++			reg = AXP20X_DCDC2_LDO3_V_RAMP;
++			mask = AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_RATE_MASK |
++			       AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN_MASK;
++			enable = (ramp > 0) ?
++				 AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN :
++				 !AXP20X_DCDC2_LDO3_V_RAMP_DCDC2_EN;
++			break;
++		}
++
++		if (desc->id == AXP20X_LDO3) {
++			slew_rates = axp209_dcdc2_ldo3_slew_rates;
++			rate_count = ARRAY_SIZE(axp209_dcdc2_ldo3_slew_rates);
++			reg = AXP20X_DCDC2_LDO3_V_RAMP;
++			mask = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE_MASK |
++			       AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN_MASK;
++			enable = (ramp > 0) ?
++				 AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN :
++				 !AXP20X_DCDC2_LDO3_V_RAMP_LDO3_EN;
++			break;
++		}
++
++		if (rate_count > 0)
++			break;
++
++		/* fall through */
++	default:
++		/* Not supported for this regulator */
++		return -ENOTSUPP;
++	}
++
++	if (ramp == 0) {
++		cfg = enable;
++	} else {
++		int i;
++
++		for (i = 0; i < rate_count; i++) {
++			if (ramp <= slew_rates[i])
++				cfg = AXP20X_DCDC2_LDO3_V_RAMP_LDO3_RATE(i);
++			else
++				break;
++		}
++
++		if (cfg == 0xff) {
++			dev_err(axp20x->dev, "unsupported ramp value %d", ramp);
++			return -EINVAL;
++		}
++
++		cfg |= enable;
++	}
++
++	return regmap_update_bits(axp20x->regmap, reg, mask, cfg);
++}
++
+ static const struct regulator_ops axp20x_ops_fixed = {
+ 	.list_voltage		= regulator_list_voltage_linear,
+ };
+@@ -366,6 +450,7 @@ static const struct regulator_ops axp20x_ops = {
+ 	.enable			= regulator_enable_regmap,
+ 	.disable		= regulator_disable_regmap,
+ 	.is_enabled		= regulator_is_enabled_regmap,
++	.set_ramp_delay		= axp20x_set_ramp_delay,
+ };
  
--#define CHRG_STAT_BAT_SAFE_MODE		(1 << 3)
--#define CHRG_STAT_BAT_VALID		(1 << 4)
--#define CHRG_STAT_BAT_PRESENT		(1 << 5)
--#define CHRG_STAT_CHARGING		(1 << 6)
--#define CHRG_STAT_PMIC_OTP		(1 << 7)
-+#define CHRG_STAT_BAT_SAFE_MODE		BIT(3)
-+#define CHRG_STAT_BAT_VALID		BIT(4)
-+#define CHRG_STAT_BAT_PRESENT		BIT(5)
-+#define CHRG_STAT_CHARGING		BIT(6)
-+#define CHRG_STAT_PMIC_OTP		BIT(7)
- 
- #define VBUS_ISPOUT_CUR_LIM_MASK	0x03
- #define VBUS_ISPOUT_CUR_LIM_BIT_POS	0
-@@ -52,33 +53,33 @@
- #define VBUS_ISPOUT_VHOLD_SET_OFFSET	4000	/* 4000mV */
- #define VBUS_ISPOUT_VHOLD_SET_LSB_RES	100	/* 100mV */
- #define VBUS_ISPOUT_VHOLD_SET_4300MV	0x3	/* 4300mV */
--#define VBUS_ISPOUT_VBUS_PATH_DIS	(1 << 7)
-+#define VBUS_ISPOUT_VBUS_PATH_DIS	BIT(7)
- 
- #define CHRG_CCCV_CC_MASK		0xf		/* 4 bits */
- #define CHRG_CCCV_CC_BIT_POS		0
- #define CHRG_CCCV_CC_OFFSET		200		/* 200mA */
- #define CHRG_CCCV_CC_LSB_RES		200		/* 200mA */
--#define CHRG_CCCV_ITERM_20P		(1 << 4)	/* 20% of CC */
-+#define CHRG_CCCV_ITERM_20P		BIT(4)		/* 20% of CC */
- #define CHRG_CCCV_CV_MASK		0x60		/* 2 bits */
- #define CHRG_CCCV_CV_BIT_POS		5
- #define CHRG_CCCV_CV_4100MV		0x0		/* 4.10V */
- #define CHRG_CCCV_CV_4150MV		0x1		/* 4.15V */
- #define CHRG_CCCV_CV_4200MV		0x2		/* 4.20V */
- #define CHRG_CCCV_CV_4350MV		0x3		/* 4.35V */
--#define CHRG_CCCV_CHG_EN		(1 << 7)
-+#define CHRG_CCCV_CHG_EN		BIT(7)
- 
- #define CNTL2_CC_TIMEOUT_MASK		0x3	/* 2 bits */
- #define CNTL2_CC_TIMEOUT_OFFSET		6	/* 6 Hrs */
- #define CNTL2_CC_TIMEOUT_LSB_RES	2	/* 2 Hrs */
- #define CNTL2_CC_TIMEOUT_12HRS		0x3	/* 12 Hrs */
--#define CNTL2_CHGLED_TYPEB		(1 << 4)
--#define CNTL2_CHG_OUT_TURNON		(1 << 5)
-+#define CNTL2_CHGLED_TYPEB		BIT(4)
-+#define CNTL2_CHG_OUT_TURNON		BIT(5)
- #define CNTL2_PC_TIMEOUT_MASK		0xC0
- #define CNTL2_PC_TIMEOUT_OFFSET		40	/* 40 mins */
- #define CNTL2_PC_TIMEOUT_LSB_RES	10	/* 10 mins */
- #define CNTL2_PC_TIMEOUT_70MINS		0x3
- 
--#define CHRG_ILIM_TEMP_LOOP_EN		(1 << 3)
-+#define CHRG_ILIM_TEMP_LOOP_EN		BIT(3)
- #define CHRG_VBUS_ILIM_MASK		0xf0
- #define CHRG_VBUS_ILIM_BIT_POS		4
- #define CHRG_VBUS_ILIM_100MA		0x0	/* 100mA */
-@@ -94,7 +95,7 @@
- #define CHRG_VLTFC_0C			0xA5	/* 0 DegC */
- #define CHRG_VHTFC_45C			0x1F	/* 45 DegC */
- 
--#define FG_CNTL_OCV_ADJ_EN		(1 << 3)
-+#define FG_CNTL_OCV_ADJ_EN		BIT(3)
- 
- #define CV_4100MV			4100	/* 4100mV */
- #define CV_4150MV			4150	/* 4150mV */
+ static const struct regulator_ops axp20x_ops_sw = {
 -- 
 git-series 0.9.1
