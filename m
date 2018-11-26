@@ -1,55 +1,58 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/5] PM / Domains: Allow performance state propagation
-Date: Mon, 26 Nov 2018 13:39:59 +0530
-Message-ID: <cover.1543219386.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/5] OPP: Improve _find_table_of_opp_np()
+Date: Mon, 26 Nov 2018 13:40:00 +0530
+Message-ID: <24e67ba3145090fb73609a6f681c4f8ff8f73594.1543219386.git.viresh.kumar@linaro.org>
+References: <cover.1543219386.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1543219386.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Make _find_table_of_opp_np() more efficient by using of_get_parent() to
+find the parent OPP table node.
 
-This series adds performance state propagation support in genpd core.
-The propagation happens from the sub-domains to their masters. More
-details can be found in the individual commit logs.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/of.c | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-This is tested on hikey960 by faking power domains in such a way that
-the CPU devices have two power domains and both of them have the same
-master domain. The CPU device, as well as its power domains have
-"required-opps" property set and the performance requirement from the
-CPU eventually configures all the domains (2 sub-domains and 1 master).
-
-Based on opp/linux-next branch (which is 4.20-rc1 +
-multiple-power-domain-support-in-opp-core + some OPP fixes).
-
-v1->V2:
-- First patch (1/5) is new and an improvement to earlier stuff.
-- Move genpd_status_on() check to _genpd_reeval_performance_state() from
-  _genpd_set_performance_state().
-- Improve dev_pm_opp_xlate_performance_state() to handle 1:1 pstate
-  mapping between genpd and its master and also to fix a problem while
-  finding the dst_table.
-- Handle pstate=0 case properly.
-
---
-viresh
-
-Viresh Kumar (5):
-  OPP: Improve _find_table_of_opp_np()
-  OPP: Add dev_pm_opp_xlate_performance_state() helper
-  PM / Domains: Save OPP table pointer in genpd
-  PM / Domains: Factorize dev_pm_genpd_set_performance_state()
-  PM / Domains: Propagate performance state updates
-
- drivers/base/power/domain.c | 211 +++++++++++++++++++++++++++---------
- drivers/opp/core.c          |  59 ++++++++++
- drivers/opp/of.c            |  14 ++-
- include/linux/pm_domain.h   |   6 +
- include/linux/pm_opp.h      |   7 ++
- 5 files changed, 244 insertions(+), 53 deletions(-)
-
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 840f85181a37..04968b6a9708 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -114,19 +114,25 @@ static struct device_node *of_parse_required_opp(struct device_node *np,
+ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
+ {
+ 	struct opp_table *opp_table;
+-	struct dev_pm_opp *opp;
++	struct device_node *opp_table_np;
+ 
+ 	lockdep_assert_held(&opp_table_lock);
+ 
++	opp_table_np = of_get_parent(opp_np);
++	if (!opp_table_np)
++		goto err;
++
++	/* It is safe to put the node now as all we need now is its address */
++	of_node_put(opp_table_np);
++
+ 	list_for_each_entry(opp_table, &opp_tables, node) {
+-		opp = _find_opp_of_np(opp_table, opp_np);
+-		if (opp) {
+-			dev_pm_opp_put(opp);
++		if (opp_table_np == opp_table->np) {
+ 			_get_opp_table_kref(opp_table);
+ 			return opp_table;
+ 		}
+ 	}
+ 
++err:
+ 	return ERR_PTR(-ENODEV);
+ }
+ 
 -- 
 2.19.1.568.g152ad8e3369a
