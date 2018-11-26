@@ -1,136 +1,55 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 0/2] driver: thermal: Move some drivers into subdirs
-Date: Mon, 26 Nov 2018 15:56:13 +0800
-Message-ID: <1543218973.2126.8.camel@intel.com>
-References: <cover.1538638640.git.amit.kucheria@linaro.org>
-         <CAHLCerMaJKaXD0pTdtMCK6C__WW-pXQ0AfY9L26dDT56szvz6A@mail.gmail.com>
-         <CAHLCerNFabr5-+b8U=ouLBidGJo+e+aDVW9ZyOQy9edJB3cERw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/5] PM / Domains: Allow performance state propagation
+Date: Mon, 26 Nov 2018 13:39:59 +0530
+Message-ID: <cover.1543219386.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAHLCerNFabr5-+b8U=ouLBidGJo+e+aDVW9ZyOQy9edJB3cERw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: ulf.hansson@linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@kernel.org>, Viresh Kumar <vireshk@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, rnayak@codeaurora.org, niklas.cassel@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 五, 2018-11-23 at 00:17 +0530, Amit Kucheria wrote:
-> On Fri, Oct 26, 2018 at 2:21 PM Amit Kucheria <amit.kucheria@linaro.o
-> rg> wrote:
-> > 
-> > 
-> > Hi Rui,
-> > 
-> > On Thu, Oct 4, 2018 at 1:22 PM Amit Kucheria <amit.kucheria@linaro.
-> > org> wrote:
-> > > 
-> > > 
-> > > Move the various drivers for Intel platforms into their own
-> > > subdir. Also
-> > > consolidate Qualcomm drivers into the qcom subdir.
-> > > 
-> > > This cleans up the directory making it easier to find things.
-> > Any comments on these changes?
-> Rui? Eduardo?
-> 
-the patches were not sent to linux-pm mailing list, and that's why I
-overlooked this patch set in patchwork.
+Hi,
 
-thanks,
-rui
-> > 
-> > > 
-> > > There is no great time to send patches that move files around,
-> > > but I'm told
-> > > that towards the end of the merge window is nicer. So here's an
-> > > attempt to
-> > > sneak it into 4.20 after everything else and hoping that these
-> > > files won't
-> > > change after 4.19-rc6. :-)
-> > > 
-> > > This was generated and compile-tested against 4.19-rc6. If you
-> > > would like
-> > > me to try again a bit later, I'm happy to do so.
-> > > 
-> > > Changes since v1:
-> > > - Removed a stray character that snuck into the Makefile
-> > > - Added Acks
-> > > - Rebased to v4.19-rc6
-> > > 
-> > > Amit Kucheria (2):
-> > >   drivers: thermal: Move various drivers for intel platforms into
-> > > a
-> > >     subdir
-> > >   drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom
-> > > subdir
-> > > 
-> > >  drivers/thermal/Kconfig                       | 94 +----------
-> > > --------
-> > >  drivers/thermal/Makefile                      | 10 +-
-> > >  drivers/thermal/intel/Kconfig                 | 77
-> > > +++++++++++++++
-> > >  drivers/thermal/intel/Makefile                | 12 +++
-> > >  .../{ => intel}/int340x_thermal/Kconfig       |  0
-> > >  .../{ => intel}/int340x_thermal/Makefile      |  0
-> > >  .../int340x_thermal/acpi_thermal_rel.c        |  0
-> > >  .../int340x_thermal/acpi_thermal_rel.h        |  0
-> > >  .../int340x_thermal/int3400_thermal.c         |  0
-> > >  .../int340x_thermal/int3402_thermal.c         |  0
-> > >  .../int340x_thermal/int3403_thermal.c         |  0
-> > >  .../int340x_thermal/int3406_thermal.c         |  0
-> > >  .../int340x_thermal/int340x_thermal_zone.c    |  0
-> > >  .../int340x_thermal/int340x_thermal_zone.h    |  0
-> > >  .../processor_thermal_device.c                |  0
-> > >  .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
-> > >  .../thermal/{ => intel}/intel_pch_thermal.c   |  0
-> > >  .../thermal/{ => intel}/intel_powerclamp.c    |  0
-> > >  .../{ => intel}/intel_quark_dts_thermal.c     |  0
-> > >  .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
-> > >  .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
-> > >  .../{ => intel}/intel_soc_dts_thermal.c       |  0
-> > >  .../{ => intel}/x86_pkg_temp_thermal.c        |  0
-> > >  drivers/thermal/qcom/Kconfig                  | 11 +++
-> > >  drivers/thermal/qcom/Makefile                 |  1 +
-> > >  .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  0
-> > >  26 files changed, 107 insertions(+), 98 deletions(-)
-> > >  create mode 100644 drivers/thermal/intel/Kconfig
-> > >  create mode 100644 drivers/thermal/intel/Makefile
-> > >  rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig
-> > > (100%)
-> > >  rename drivers/thermal/{ => intel}/int340x_thermal/Makefile
-> > > (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/acpi_thermal_rel.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/acpi_thermal_rel.h (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int3400_thermal.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int3402_thermal.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int3403_thermal.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int3406_thermal.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int340x_thermal_zone.c (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/int340x_thermal_zone.h (100%)
-> > >  rename drivers/thermal/{ =>
-> > > intel}/int340x_thermal/processor_thermal_device.c (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c
-> > > (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c
-> > > (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
-> > >  rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c
-> > > (100%)
-> > >  rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
-> > >  rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (100%)
-> > > 
-> > > --
-> > > 2.17.1
-> > > 
+This series adds performance state propagation support in genpd core.
+The propagation happens from the sub-domains to their masters. More
+details can be found in the individual commit logs.
+
+This is tested on hikey960 by faking power domains in such a way that
+the CPU devices have two power domains and both of them have the same
+master domain. The CPU device, as well as its power domains have
+"required-opps" property set and the performance requirement from the
+CPU eventually configures all the domains (2 sub-domains and 1 master).
+
+Based on opp/linux-next branch (which is 4.20-rc1 +
+multiple-power-domain-support-in-opp-core + some OPP fixes).
+
+v1->V2:
+- First patch (1/5) is new and an improvement to earlier stuff.
+- Move genpd_status_on() check to _genpd_reeval_performance_state() from
+  _genpd_set_performance_state().
+- Improve dev_pm_opp_xlate_performance_state() to handle 1:1 pstate
+  mapping between genpd and its master and also to fix a problem while
+  finding the dst_table.
+- Handle pstate=0 case properly.
+
+--
+viresh
+
+Viresh Kumar (5):
+  OPP: Improve _find_table_of_opp_np()
+  OPP: Add dev_pm_opp_xlate_performance_state() helper
+  PM / Domains: Save OPP table pointer in genpd
+  PM / Domains: Factorize dev_pm_genpd_set_performance_state()
+  PM / Domains: Propagate performance state updates
+
+ drivers/base/power/domain.c | 211 +++++++++++++++++++++++++++---------
+ drivers/opp/core.c          |  59 ++++++++++
+ drivers/opp/of.c            |  14 ++-
+ include/linux/pm_domain.h   |   6 +
+ include/linux/pm_opp.h      |   7 ++
+ 5 files changed, 244 insertions(+), 53 deletions(-)
+
+-- 
+2.19.1.568.g152ad8e3369a
