@@ -1,179 +1,140 @@
-From: Kazuhito Hagio <k-hagio@ab.jp.nec.com>
-Subject: RE: [PATCH v2] makedumpfile: exclude pages that are logically offline
-Date: Tue, 27 Nov 2018 16:32:07 +0000
-Message-ID: <4AE2DC15AC0B8543882A74EA0D43DBEC03561800@BPXM09GP.gisp.nec.co.jp>
-References: <20181122100627.5189-1-david@redhat.com>
- <20181122100938.5567-1-david@redhat.com>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: Re: [driver-core PATCH v5 5/9] driver core: Establish clear order
+ of operations for deferred probe and remove
+Date: Tue, 27 Nov 2018 08:49:30 -0800
+Message-ID: <b1ee672ccc2746ce57fb6a0def3d553faa462785.camel@linux.intel.com>
+References: <154145223352.29224.8912797012647157172.stgit@ahduyck-desk1.jf.intel.com>
+         <154145232484.29224.1635232599636954462.stgit@ahduyck-desk1.jf.intel.com>
+         <CAPcyv4ieNzbx5iN74ZCAKDesgYt_67iM_DC-A35M=Z9jfR+YAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20181122100938.5567-1-david@redhat.com>
-Content-Language: en-US
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: David Hildenbrand <david@redhat.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pv-drivers@vmware.com" <pv-drivers@vmware.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, kexec-ml <kexec@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "devel@linuxdriverproject.org" <devel@linuxdriverproject.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPcyv4ieNzbx5iN74ZCAKDesgYt_67iM_DC-A35M=Z9jfR+YAQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, linux-nvdimm <linux-nvdimm@lists.01.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, jiangshanlai@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Dave Jiang <dave.jiang@intel.com>, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-> Linux marks pages that are logically offline via a page flag (map count).
-> Such pages e.g. include pages infated as part of a balloon driver or
-> pages that were not actually onlined when onlining the whole section.
+On Mon, 2018-11-26 at 18:35 -0800, Dan Williams wrote:
+> On Mon, Nov 5, 2018 at 1:12 PM Alexander Duyck
+> <alexander.h.duyck@linux.intel.com> wrote:
+> > 
+> > This patch adds an additional bit to the device struct named async_probe.
+> > This additional bit allows us to guarantee ordering between probe and
+> > remove operations.
+> > 
+> > This allows us to guarantee that if we execute a remove operation or a
+> > driver load attempt on a given interface it will not attempt to update the
+> > driver member asynchronously following the earlier operation. Previously
+> > this guarantee was not present and could result in us attempting to remove
+> > a driver from an interface only to have it show up later when it is
+> > asynchronously loaded.
+> > 
+> > One change I made in addition is I replaced the use of "bool X:1" to define
+> > the bitfield to a "u8 X:1" setup in order to resolve some checkpatch
+> > warnings.
 > 
-> While the hypervisor usually allows to read such inflated memory, we
-> basically read and dump data that is completely irrelevant. Also, this
-> might result in quite some overhead in the hypervisor. In addition,
-> we saw some problems under Hyper-V, whereby we can crash the kernel by
-> dumping, when reading memory of a partially onlined memory segment
-> (for memory added by the Hyper-V balloon driver).
-> 
-> Therefore, don't read and dump pages that are marked as being logically
-> offline.
-> 
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+> The usage of "us" in the changelog through me off, please reword this
+> to explicitly state the subject like: "The additional bit allows the
+> driver core to guarantee ordering between probe and remove
+> operations."
 
-Thanks for the v2 update.
-I'm going to merge this patch after the kernel patches are merged
-and it tests fine with the kernel.
+Okay, I will work on the wording here.
 
-Kazu
+> > Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+> > ---
+> >  drivers/base/dd.c      |  104 +++++++++++++++++++++++++++---------------------
+> >  include/linux/device.h |    9 ++--
+> >  2 files changed, 64 insertions(+), 49 deletions(-)
+> > 
+> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > index e74cefeb5b69..ed19cf0d6f9a 100644
+> > --- a/drivers/base/dd.c
+> > +++ b/drivers/base/dd.c
+> > @@ -472,6 +472,8 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+> >                  drv->bus->name, __func__, drv->name, dev_name(dev));
+> >         WARN_ON(!list_empty(&dev->devres_head));
+> > 
+> > +       /* clear async_probe flag as we are no longer deferring driver load */
+> > +       dev->async_probe = false;
+> >  re_probe:
+> >         dev->driver = drv;
+> > 
+> > @@ -771,6 +773,10 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+> > 
+> >         device_lock(dev);
+> > 
+> > +       /* nothing to do if async_probe has been cleared */
+> > +       if (!dev->async_probe)
+> > +               goto out_unlock;
+> > +
+> >         if (dev->parent)
+> >                 pm_runtime_get_sync(dev->parent);
+> > 
+> > @@ -781,7 +787,7 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+> > 
+> >         if (dev->parent)
+> >                 pm_runtime_put(dev->parent);
+> > -
+> > +out_unlock:
+> >         device_unlock(dev);
+> > 
+> >         put_device(dev);
+> > @@ -826,6 +832,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+> >                          */
+> >                         dev_dbg(dev, "scheduling asynchronous probe\n");
+> >                         get_device(dev);
+> > +                       dev->async_probe = true;
+> >                         async_schedule(__device_attach_async_helper, dev);
+> >                 } else {
+> >                         pm_request_idle(dev);
+> > @@ -971,62 +978,69 @@ EXPORT_SYMBOL_GPL(driver_attach);
+> >   */
+> >  static void __device_release_driver(struct device *dev, struct device *parent)
+> >  {
+> > -       struct device_driver *drv;
+> > +       struct device_driver *drv = dev->driver;
+> > 
+> > -       drv = dev->driver;
+> > -       if (drv) {
+> > -               while (device_links_busy(dev)) {
+> > -                       __device_driver_unlock(dev, parent);
+> > +       /*
+> > +        * In the event that we are asked to release the driver on an
+> > +        * interface that is still waiting on a probe we can just terminate
+> > +        * the probe by setting async_probe to false. When the async call
+> > +        * is finally completed it will see this state and just exit.
+> > +        */
+> > +       dev->async_probe = false;
+> > +       if (!drv)
+> > +               return;
+> 
+> Patch 4 deleted the async_synchronize_full() that would have flushed
+> in-flight ->probe() relative to the current ->remove(). If remove runs
+> before probe then would seem to be deadlock condition, but if
+> ->remove() runs before probe then dev->driver is NULL and we abort. So
+> I'm struggling to see what value dev->async_probe provides over
+> dev->driver?
 
-> ---
-> 
-> v1 -> v2:
-> - Fix PAGE_BUDDY_MAPCOUNT_VALUE vs. PAGE_OFFLINE_MAPCOUNT_VALUE
-> 
->  makedumpfile.c | 34 ++++++++++++++++++++++++++++++----
->  makedumpfile.h |  1 +
->  2 files changed, 31 insertions(+), 4 deletions(-)
-> 
-> diff --git a/makedumpfile.c b/makedumpfile.c
-> index 8923538..a5f2ea9 100644
-> --- a/makedumpfile.c
-> +++ b/makedumpfile.c
-> @@ -88,6 +88,7 @@ mdf_pfn_t pfn_cache_private;
->  mdf_pfn_t pfn_user;
->  mdf_pfn_t pfn_free;
->  mdf_pfn_t pfn_hwpoison;
-> +mdf_pfn_t pfn_offline;
-> 
->  mdf_pfn_t num_dumped;
-> 
-> @@ -249,6 +250,21 @@ isHugetlb(unsigned long dtor)
->                      && (SYMBOL(free_huge_page) == dtor));
->  }
-> 
-> +static int
-> +isOffline(unsigned long flags, unsigned int _mapcount)
-> +{
-> +	if (NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE) == NOT_FOUND_NUMBER)
-> +		return FALSE;
-> +
-> +	if (flags & (1UL << NUMBER(PG_slab)))
-> +		return FALSE;
-> +
-> +	if (_mapcount == (int)NUMBER(PAGE_OFFLINE_MAPCOUNT_VALUE))
-> +		return TRUE;
-> +
-> +	return FALSE;
-> +}
-> +
->  static int
->  is_cache_page(unsigned long flags)
->  {
-> @@ -2287,6 +2303,8 @@ write_vmcoreinfo_data(void)
->  	WRITE_NUMBER("PG_hwpoison", PG_hwpoison);
-> 
->  	WRITE_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-> +	WRITE_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE",
-> +		     PAGE_OFFLINE_MAPCOUNT_VALUE);
->  	WRITE_NUMBER("phys_base", phys_base);
-> 
->  	WRITE_NUMBER("HUGETLB_PAGE_DTOR", HUGETLB_PAGE_DTOR);
-> @@ -2687,6 +2705,7 @@ read_vmcoreinfo(void)
->  	READ_SRCFILE("pud_t", pud_t);
-> 
->  	READ_NUMBER("PAGE_BUDDY_MAPCOUNT_VALUE", PAGE_BUDDY_MAPCOUNT_VALUE);
-> +	READ_NUMBER("PAGE_OFFLINE_MAPCOUNT_VALUE", PAGE_OFFLINE_MAPCOUNT_VALUE);
->  	READ_NUMBER("phys_base", phys_base);
->  #ifdef __aarch64__
->  	READ_NUMBER("VA_BITS", VA_BITS);
-> @@ -6041,6 +6060,12 @@ __exclude_unnecessary_pages(unsigned long mem_map,
->  		else if (isHWPOISON(flags)) {
->  			pfn_counter = &pfn_hwpoison;
->  		}
-> +		/*
-> +		 * Exclude pages that are logically offline.
-> +		 */
-> +		else if (isOffline(flags, _mapcount)) {
-> +			pfn_counter = &pfn_offline;
-> +		}
->  		/*
->  		 * Unexcludable page
->  		 */
-> @@ -7522,7 +7547,7 @@ write_elf_pages_cyclic(struct cache_data *cd_header, struct cache_data *cd_page)
->  	 */
->  	if (info->flag_cyclic) {
->  		pfn_zero = pfn_cache = pfn_cache_private = 0;
-> -		pfn_user = pfn_free = pfn_hwpoison = 0;
-> +		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
->  		pfn_memhole = info->max_mapnr;
->  	}
-> 
-> @@ -8804,7 +8829,7 @@ write_kdump_pages_and_bitmap_cyclic(struct cache_data *cd_header, struct cache_d
->  		 * Reset counter for debug message.
->  		 */
->  		pfn_zero = pfn_cache = pfn_cache_private = 0;
-> -		pfn_user = pfn_free = pfn_hwpoison = 0;
-> +		pfn_user = pfn_free = pfn_hwpoison = pfn_offline = 0;
->  		pfn_memhole = info->max_mapnr;
-> 
->  		/*
-> @@ -9749,7 +9774,7 @@ print_report(void)
->  	pfn_original = info->max_mapnr - pfn_memhole;
-> 
->  	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
-> -	    + pfn_user + pfn_free + pfn_hwpoison;
-> +	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
->  	shrinking = (pfn_original - pfn_excluded) * 100;
->  	shrinking = shrinking / pfn_original;
-> 
-> @@ -9763,6 +9788,7 @@ print_report(void)
->  	REPORT_MSG("    User process data pages : 0x%016llx\n", pfn_user);
->  	REPORT_MSG("    Free pages              : 0x%016llx\n", pfn_free);
->  	REPORT_MSG("    Hwpoison pages          : 0x%016llx\n", pfn_hwpoison);
-> +	REPORT_MSG("    Offline pages           : 0x%016llx\n", pfn_offline);
->  	REPORT_MSG("  Remaining pages  : 0x%016llx\n",
->  	    pfn_original - pfn_excluded);
->  	REPORT_MSG("  (The number of pages is reduced to %lld%%.)\n",
-> @@ -9790,7 +9816,7 @@ print_mem_usage(void)
->  	pfn_original = info->max_mapnr - pfn_memhole;
-> 
->  	pfn_excluded = pfn_zero + pfn_cache + pfn_cache_private
-> -	    + pfn_user + pfn_free + pfn_hwpoison;
-> +	    + pfn_user + pfn_free + pfn_hwpoison + pfn_offline;
->  	shrinking = (pfn_original - pfn_excluded) * 100;
->  	shrinking = shrinking / pfn_original;
->  	total_size = info->page_size * pfn_original;
-> diff --git a/makedumpfile.h b/makedumpfile.h
-> index f02f86d..e3a2b29 100644
-> --- a/makedumpfile.h
-> +++ b/makedumpfile.h
-> @@ -1927,6 +1927,7 @@ struct number_table {
->  	long    PG_hwpoison;
-> 
->  	long	PAGE_BUDDY_MAPCOUNT_VALUE;
-> +	long	PAGE_OFFLINE_MAPCOUNT_VALUE;
->  	long	SECTION_SIZE_BITS;
->  	long	MAX_PHYSMEM_BITS;
->  	long    HUGETLB_PAGE_DTOR;
-> --
-> 2.17.2
-> 
+So the issue addressed by patch 4 is a deadlock on the device driver
+lock. Also it didn't make much sense to flush per device when we really
+only needed to flush things once and then clean up the devices.
+
+What I am doing with the async_probe value is providing a way to
+gracefully shutdown any deferred probe calls that may be outstanding
+without having to resort to an explicit flush. The problem with the
+flush is that you have to release the device lock and as soon as you
+have done that the potential for something else to occur gets opended
+up. The general issue I have with just trying to use dev->driver is
+that it assumes the probe has already completed. That may not always be
+the case. My main concern would be with a device that is popping in and
+out of existence quickly so that something like a remove call is being
+made before the driver has been loaded. I would prefer all possible
+cases where probe and then remove is called in quick succession to
+result in no driver being loaded instead of a driver loading on a
+device that maybe shouldn't be there.
+
+As far as the remove before probe case that should have no effect with
+this code since it would just transition async_probe from false to
+false so the extra write would have no effect.
