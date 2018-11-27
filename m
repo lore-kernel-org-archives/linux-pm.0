@@ -1,45 +1,72 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH] power/reset: axxia: Convert to using %pOFn instead of device_node.name
-Date: Tue, 27 Nov 2018 10:51:09 -0600
-Message-ID: <CAL_JsqJ8XkowAJQjZoiuucAWqZuJh1ep2jCFor6NCq4pL3m-Cg@mail.gmail.com>
-References: <20181124143138.28999-1-tiny.windzz@gmail.com>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: Re: [driver-core PATCH v6 4/9] driver core: Move
+ async_synchronize_full call
+Date: Tue, 27 Nov 2018 09:38:01 -0800
+Message-ID: <ec672fcf5924ef267f35b11c13ddc50c815b1a9f.camel@linux.intel.com>
+References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
+         <154170042103.12967.5841784115552956171.stgit@ahduyck-desk1.jf.intel.com>
+         <CAPcyv4ibARHP1Gji2cZQ704BeiKL26Bh13G58eyB+PjQJSD58w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181124143138.28999-1-tiny.windzz@gmail.com>
+In-Reply-To: <CAPcyv4ibARHP1Gji2cZQ704BeiKL26Bh13G58eyB+PjQJSD58w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: tiny.windzz@gmail.com
-Cc: Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, linux-nvdimm <linux-nvdimm@lists.01.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, jiangshanlai@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Dave Jiang <dave.jiang@intel.com>, bvanassche@acm.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 24, 2018 at 8:31 AM Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> In preparation to remove the node name pointer from struct device_node,
-> convert printf users to use the %pOFn format specifier.
->
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  drivers/power/reset/axxia-reset.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, 2018-11-26 at 18:11 -0800, Dan Williams wrote:
+> On Thu, Nov 8, 2018 at 10:07 AM Alexander Duyck
+> <alexander.h.duyck@linux.intel.com> wrote:
+> > 
+> > Move the async_synchronize_full call out of __device_release_driver and
+> > into driver_detach.
+> > 
+> > The idea behind this is that the async_synchronize_full call will only
+> > guarantee that any existing async operations are flushed. This doesn't do
+> > anything to guarantee that a hotplug event that may occur while we are
+> > doing the release of the driver will not be asynchronously scheduled.
+> > 
+> > By moving this into the driver_detach path we can avoid potential deadlocks
+> > as we aren't holding the device lock at this point and we should not have
+> > the driver we want to flush loaded so the flush will take care of any
+> > asynchronous events the driver we are detaching might have scheduled.
+> > 
+> 
+> What problem is this patch solving in practice, because if there were
+> drivers issuing async work from probe they would need to be
+> responsible for flushing it themselves. That said it seems broken that
+> the async probing infrastructure takes the device_lock inside
+> async_schedule and then holds the lock when calling
+> async_syncrhonize_full. Is it just luck that this hasn't caused
+> deadlocks in practice?
 
-Thanks, but I already sent out the same patch and have queued it since
-no one picked it up.
+My understanding is that it has caused some deadlocks. There was
+another patch set that Bart Van Assche had submitted that was
+addressing this. I just tweaked my patch set to address both the issues
+he had seen as well as the performance improvements included in my
+original patch set.
 
-Rob
->
-> diff --git a/drivers/power/reset/axxia-reset.c b/drivers/power/reset/axxia-reset.c
-> index 4e4cd1c8fe50..b16013265142 100644
-> --- a/drivers/power/reset/axxia-reset.c
-> +++ b/drivers/power/reset/axxia-reset.c
-> @@ -65,7 +65,7 @@ static int axxia_reset_probe(struct platform_device *pdev)
->
->         syscon = syscon_regmap_lookup_by_phandle(dev->of_node, "syscon");
->         if (IS_ERR(syscon)) {
-> -               pr_err("%s: syscon lookup failed\n", dev->of_node->name);
-> +               pr_err("%pOFn: syscon lookup failed\n", dev->of_node);
->                 return PTR_ERR(syscon);
->         }
->
-> --
-> 2.17.0
->
+> Given that the device_lock is hidden from lockdep I think it would be
+> helpful to have a custom lock_map_acquire() setup, similar to the
+> workqueue core, to try to keep the locking rules enforced /
+> documented.
+> 
+> The only documentation I can find for async-probe deadlock avoidance
+> is the comment block in do_init_module() for async_probe_requested.
+
+Would it make sense to just add any lockdep or deadlock documentation
+as a seperate patch? I can work on it but I am not sure it makes sense
+to add to this patch since there is a chance this one will need to be
+backported to stable at some point.
+
+> Stepping back a bit, does this patch have anything to do with the
+> performance improvement, or is it a separate "by the way I also found
+> this" kind of patch?
+
+This is more of a seperate "by the way" type of patch based on the
+discussion Bart and I had about how to best address the issue. There
+may be some improvement since we only call async_synchronize_full once
+and only when we are removing the driver, but I don't think it would be
+very noticable.
