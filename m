@@ -1,119 +1,86 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v10 1/7] interconnect: Add generic on-chip interconnect
- API
-Date: Tue, 27 Nov 2018 10:35:15 -0800
-Message-ID: <5d16a4a57ed5529299d7b73e13a249add00b1afe.camel@perches.com>
-References: <20181127180349.29997-1-georgi.djakov@linaro.org>
-         <20181127180349.29997-2-georgi.djakov@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v3 0/2] driver: thermal: Move some drivers into subdirs
+Date: Wed, 28 Nov 2018 00:28:39 +0530
+Message-ID: <cover.1543343156.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181127180349.29997-2-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2018-11-27 at 20:03 +0200, Georgi Djakov wrote:
-> This patch introduces a new API to get requirements and configure the
-> interconnect buses across the entire chipset to fit with the current
-> demand.
+Move the various drivers for Intel platforms into their own subdir. Also
+consolidate Qualcomm drivers into the qcom subdir.
 
-trivial notes:
+This cleans up the directory making it easier to find things.
 
-> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-[]
-> +static int apply_constraints(struct icc_path *path)
-> +{
-> +	struct icc_node *next, *prev = NULL;
-> +	int ret = -EINVAL;
-> +	int i;
-> +
-> +	for (i = 0; i < path->num_nodes; i++, prev = next) {
-> +		struct icc_provider *p;
-> +
-> +		next = path->reqs[i].node;
-> +		/*
-> +		 * Both endpoints should be valid master-slave pairs of the
-> +		 * same interconnect provider that will be configured.
-> +		 */
-> +		if (!prev || next->provider != prev->provider)
-> +			continue;
-> +
-> +		p = next->provider;
-> +
-> +		/* set the constraints */
-> +		ret = p->set(prev, next);
-> +		if (ret)
-> +			goto out;
-> +	}
-> +out:
-> +	return ret;
-> +}
+There is no great time to send patches that move files around. So here's an
+attempt to sneak it into 4.21 before everything else.
 
-The use of ", prev = next" appears somewhat tricky code.
-Perhaps move the assignment of prev to the bottom of the loop.
-Perhaps the temporary p assignment isn't useful either.
+This was generated and compile-tested against 4.20-rc4. If you would like
+me to try again a bit later, I'm happy to do so.
 
-> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
-> +{
-[]
-> +	ret = apply_constraints(path);
-> +	if (ret)
-> +		pr_debug("interconnect: error applying constraints (%d)", ret);
+Changes since v2:
+- Rebased on top of 4.20-rc4
 
-Ideally all pr_<foo> formats should end in '\n'
+Changes since v1:
+- Removed a stray character that snuck into the Makefile
+- Added Acks
+- Rebased to v4.19-rc6
 
-> +static struct icc_node *icc_node_create_nolock(int id)
-> +{
-> +	struct icc_node *node;
-> +
-> +	/* check if node already exists */
-> +	node = node_find(id);
-> +	if (node)
-> +		goto out;
-> +
-> +	node = kzalloc(sizeof(*node), GFP_KERNEL);
-> +	if (!node) {
-> +		node = ERR_PTR(-ENOMEM);
-> +		goto out;
+Amit Kucheria (2):
+  drivers: thermal: Move various drivers for intel platforms into a
+    subdir
+  drivers: thermal: Move QCOM_SPMI_TEMP_ALARM into the qcom subdir
 
-Generally, this code appears to overly rely on goto when
-direct returns could be more readable.
+ drivers/thermal/Kconfig                       | 94 +------------------
+ drivers/thermal/Makefile                      | 12 +--
+ drivers/thermal/intel/Kconfig                 | 77 +++++++++++++++
+ drivers/thermal/intel/Makefile                | 12 +++
+ .../{ => intel}/int340x_thermal/Kconfig       |  0
+ .../{ => intel}/int340x_thermal/Makefile      |  0
+ .../int340x_thermal/acpi_thermal_rel.c        |  0
+ .../int340x_thermal/acpi_thermal_rel.h        |  0
+ .../int340x_thermal/int3400_thermal.c         |  0
+ .../int340x_thermal/int3402_thermal.c         |  0
+ .../int340x_thermal/int3403_thermal.c         |  0
+ .../int340x_thermal/int3406_thermal.c         |  0
+ .../int340x_thermal/int340x_thermal_zone.c    |  0
+ .../int340x_thermal/int340x_thermal_zone.h    |  0
+ .../processor_thermal_device.c                |  0
+ .../{ => intel}/intel_bxt_pmic_thermal.c      |  0
+ .../thermal/{ => intel}/intel_pch_thermal.c   |  0
+ .../thermal/{ => intel}/intel_powerclamp.c    |  0
+ .../{ => intel}/intel_quark_dts_thermal.c     |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.c  |  0
+ .../thermal/{ => intel}/intel_soc_dts_iosf.h  |  0
+ .../{ => intel}/intel_soc_dts_thermal.c       |  0
+ .../{ => intel}/x86_pkg_temp_thermal.c        |  0
+ drivers/thermal/qcom/Kconfig                  | 11 +++
+ drivers/thermal/qcom/Makefile                 |  1 +
+ .../thermal/{ => qcom}/qcom-spmi-temp-alarm.c |  0
+ 26 files changed, 108 insertions(+), 99 deletions(-)
+ create mode 100644 drivers/thermal/intel/Kconfig
+ create mode 100644 drivers/thermal/intel/Makefile
+ rename drivers/thermal/{ => intel}/int340x_thermal/Kconfig (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/Makefile (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/acpi_thermal_rel.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3400_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3402_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3403_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int3406_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.c (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/int340x_thermal_zone.h (100%)
+ rename drivers/thermal/{ => intel}/int340x_thermal/processor_thermal_device.c (100%)
+ rename drivers/thermal/{ => intel}/intel_bxt_pmic_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_pch_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_powerclamp.c (100%)
+ rename drivers/thermal/{ => intel}/intel_quark_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.c (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_iosf.h (100%)
+ rename drivers/thermal/{ => intel}/intel_soc_dts_thermal.c (100%)
+ rename drivers/thermal/{ => intel}/x86_pkg_temp_thermal.c (100%)
+ rename drivers/thermal/{ => qcom}/qcom-spmi-temp-alarm.c (100%)
 
-> +	}
-> +
-> +	id = idr_alloc(&icc_idr, node, id, id + 1, GFP_KERNEL);
-> +	if (WARN(id < 0, "couldn't get idr")) {
-
-This seems to unnecessarily hide the id < 0 test in a WARN
-
-Why is this a WARN and not a simpler
-	if (id < 0) {
-		[ pr_err(...); or WARN(1, ...); ]
-
-> +		kfree(node);
-> +		node = ERR_PTR(id);
-> +		goto out;
-> +	}
-> +
-> +	node->id = id;
-> +
-> +out:
-> +	return node;
-> +}
-[]
-> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
-[]
-> +/* macros for converting to icc units */
-> +#define bps_to_icc(x)	(1)
-> +#define kBps_to_icc(x)	(x)
-[]
-> +#define MBps_to_icc(x)	(x * 1000)
-> +#define GBps_to_icc(x)	(x * 1000 * 1000)
-> +#define kbps_to_icc(x)	(x / 8 + ((x) % 8 ? 1 : 0))
-> +#define Mbps_to_icc(x)	(x * 1000 / 8 )
-> +#define Gbps_to_icc(x)	(x * 1000 * 1000 / 8)
-
-The last 5 macros should parenthesize x
+-- 
+2.17.1
