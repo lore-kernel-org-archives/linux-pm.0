@@ -1,55 +1,43 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 3/3] x86/cpuid: Make cpuinfo_x86.x86_model_id global
-Date: Tue, 27 Nov 2018 17:55:49 +0200
-Message-ID: <CAHp75Vca7Vn5To5GWb_EtZ1ZKyzWnL2Wv3M3wrKVX=X8qmxUfw@mail.gmail.com>
-References: <20181114212843.16954-1-bp@alien8.de> <20181114212843.16954-4-bp@alien8.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v3 0/4] thermal: tsens: Add support for QCS404 platform
+Date: Tue, 27 Nov 2018 21:59:03 +0530
+Message-ID: <cover.1543335819.git.amit.kucheria@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181114212843.16954-4-bp@alien8.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-edac@vger.kernel.org, linux-hwmon@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, bjorn.andersson@linaro.org, edubezval@gmail.com, andy.gross@linaro.org, vkoul@kernel.org, khasim.mohammed@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 14, 2018 at 11:29 PM Borislav Petkov <bp@alien8.de> wrote:
->
-> From: Borislav Petkov <bp@suse.de>
->
-> ... and __ro_after_init. Since the brand string is being read earlier
-> now, in early_identify_cpu(), get_model_name() needs to read out the
-> extended CPUID level for the brand string. This is temporary only, until
-> the full CPUID read out has been added.
+Add support for the Qualcomm QCS404 platform that contains v1 of the TSENS
+IP. Introduce a fallback binding to handle "v1" functionality.
 
->  drivers/platform/x86/intel_ips.c     |  6 +++---
->  15 files changed, 35 insertions(+), 35 deletions(-)
+These patches have been tested on top of 4.20-rc3 + various qcs404-related
+DT patches now in Andy's ci-next branch[1].
 
+Changes since v2:
+- Fix a conversion error in the get_temp routine the caused negative
+  temperature readings (Reported by Khasim)
 
+Changes since v1:
+- Change p1 and p2 to be fixed-size arrays
+- Refactor DT entries to be sorted by address, Thanks Vinod
+- Added Acks
 
-> diff --git a/drivers/platform/x86/intel_ips.c b/drivers/platform/x86/intel_ips.c
-> index 225638a1b09e..4309f198cbad 100644
-> --- a/drivers/platform/x86/intel_ips.c
-> +++ b/drivers/platform/x86/intel_ips.c
-> @@ -1367,11 +1367,11 @@ static struct ips_mcp_limits *ips_detect_cpu(struct ips_driver *ips)
->         else
->                 ips->turbo_toggle_allowed = false;
->
-> -       if (strstr(boot_cpu_data.x86_model_id, "CPU       M"))
-> +       if (strstr(x86_model_id, "CPU       M"))
->                 limits = &ips_sv_limits;
-> -       else if (strstr(boot_cpu_data.x86_model_id, "CPU       L"))
-> +       else if (strstr(x86_model_id, "CPU       L"))
->                 limits = &ips_lv_limits;
-> -       else if (strstr(boot_cpu_data.x86_model_id, "CPU       U"))
-> +       else if (strstr(x86_model_id, "CPU       U"))
->                 limits = &ips_ulv_limits;
->         else {
->                 dev_info(ips->dev, "No CPUID match found.\n");
+Amit Kucheria (4):
+  dt: thermal: tsens: Add bindings for qcs404
+  drivers: thermal: tsens: Add generic support for TSENS v1 IP
+  arm64: dts: qcom: qcs404: Add tsens controller
+  arm64: dts: qcom: qcs404: Add thermal zones for each sensor
 
-Acked-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+ .../bindings/thermal/qcom-tsens.txt           |   3 +
+ arch/arm64/boot/dts/qcom/qcs404.dtsi          | 226 ++++++++++++++++++
+ drivers/thermal/qcom/Makefile                 |   2 +-
+ drivers/thermal/qcom/tsens-common.c           |   2 +-
+ drivers/thermal/qcom/tsens-v1.c               | 196 +++++++++++++++
+ drivers/thermal/qcom/tsens.c                  |   3 +
+ drivers/thermal/qcom/tsens.h                  |   3 +-
+ 7 files changed, 432 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/thermal/qcom/tsens-v1.c
 
-for PDx86 bits
-
---
-With Best Regards,
-Andy Shevchenko
+-- 
+2.17.1
