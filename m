@@ -1,84 +1,58 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v18 4/5] dt-bindings: arm-smmu: Add bindings for
- qcom, smmu-v2
-Date: Tue, 27 Nov 2018 15:41:44 +0530
-Message-ID: <20181127101145.7682-5-vivek.gautam@codeaurora.org>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: [PATCH v18 5/5] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+Date: Tue, 27 Nov 2018 15:41:45 +0530
+Message-ID: <20181127101145.7682-6-vivek.gautam@codeaurora.org>
 References: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181127101145.7682-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: joro@8bytes.org, robh+dt@kernel.org, robin.murphy@arm.com, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org
+Cc: alex.williamson@redhat.com, mark.rutland@arm.com, rjw@rjwysocki.net, robdclark@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, freedreno@lists.freedesktop.org, sboyd@kernel.org, tfiga@chromium.org, jcrouse@codeaurora.org, sricharan@codeaurora.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org, thor.thayer@linux.intel.com, Vivek Gautam <vivek.gautam@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-QWRkIGJpbmRpbmdzIGRvYyBmb3IgUWNvbSdzIHNtbXUtdjIgaW1wbGVtZW50YXRpb24uCgpTaWdu
-ZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBjb2RlYXVyb3JhLm9yZz4KUmV2
-aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+ClRlc3RlZC1ieTogU3Jp
-bml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5hcm8ub3JnPgpSZXZpZXdl
-ZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4KUmV2aWV3ZWQtYnk6IFJvYmluIE11
-cnBoeSA8cm9iaW4ubXVycGh5QGFybS5jb20+Ci0tLQogLi4uL2RldmljZXRyZWUvYmluZGluZ3Mv
-aW9tbXUvYXJtLHNtbXUudHh0ICAgICAgICAgfCAzOSArKysrKysrKysrKysrKysrKysrKysrCiAx
-IGZpbGUgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQgYi9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0CmluZGV4IDhhNmZmY2UxMmFm
-NS4uYTY1MDRiMzdjYzIxIDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0CisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9pb21tdS9hcm0sc21tdS50eHQKQEAgLTE3LDEwICsxNywxNiBAQCBjb25kaXRpb25z
-LgogICAgICAgICAgICAgICAgICAgICAgICAgImFybSxtbXUtNDAxIgogICAgICAgICAgICAgICAg
-ICAgICAgICAgImFybSxtbXUtNTAwIgogICAgICAgICAgICAgICAgICAgICAgICAgImNhdml1bSxz
-bW11LXYyIgorICAgICAgICAgICAgICAgICAgICAgICAgInFjb20sc21tdS12MiIKIAogICAgICAg
-ICAgICAgICAgICAgZGVwZW5kaW5nIG9uIHRoZSBwYXJ0aWN1bGFyIGltcGxlbWVudGF0aW9uIGFu
-ZC9vciB0aGUKICAgICAgICAgICAgICAgICAgIHZlcnNpb24gb2YgdGhlIGFyY2hpdGVjdHVyZSBp
-bXBsZW1lbnRlZC4KIAorICAgICAgICAgICAgICAgICAgUWNvbSBTb0NzIG11c3QgY29udGFpbiwg
-YXMgYmVsb3csIFNvQy1zcGVjaWZpYyBjb21wYXRpYmxlcworICAgICAgICAgICAgICAgICAgYWxv
-bmcgd2l0aCAicWNvbSxzbW11LXYyIjoKKyAgICAgICAgICAgICAgICAgICJxY29tLG1zbTg5OTYt
-c21tdS12MiIsICJxY29tLHNtbXUtdjIiLAorICAgICAgICAgICAgICAgICAgInFjb20sc2RtODQ1
-LXNtbXUtdjIiLCAicWNvbSxzbW11LXYyIi4KKwogLSByZWcgICAgICAgICAgIDogQmFzZSBhZGRy
-ZXNzIGFuZCBzaXplIG9mIHRoZSBTTU1VLgogCiAtICNnbG9iYWwtaW50ZXJydXB0cyA6IFRoZSBu
-dW1iZXIgb2YgZ2xvYmFsIGludGVycnVwdHMgZXhwb3NlZCBieSB0aGUKQEAgLTcxLDYgKzc3LDIy
-IEBAIGNvbmRpdGlvbnMuCiAgICAgICAgICAgICAgICAgICBvciB1c2luZyBzdHJlYW0gbWF0Y2hp
-bmcgd2l0aCAjaW9tbXUtY2VsbHMgPSA8Mj4sIGFuZAogICAgICAgICAgICAgICAgICAgbWF5IGJl
-IGlnbm9yZWQgaWYgcHJlc2VudCBpbiBzdWNoIGNhc2VzLgogCistIGNsb2NrLW5hbWVzOiAgICBM
-aXN0IG9mIHRoZSBuYW1lcyBvZiBjbG9ja3MgaW5wdXQgdG8gdGhlIGRldmljZS4gVGhlCisgICAg
-ICAgICAgICAgICAgICByZXF1aXJlZCBsaXN0IGRlcGVuZHMgb24gcGFydGljdWxhciBpbXBsZW1l
-bnRhdGlvbiBhbmQKKyAgICAgICAgICAgICAgICAgIGlzIGFzIGZvbGxvd3M6CisgICAgICAgICAg
-ICAgICAgICAtIGZvciAicWNvbSxzbW11LXYyIjoKKyAgICAgICAgICAgICAgICAgICAgLSAiYnVz
-IjogY2xvY2sgcmVxdWlyZWQgZm9yIGRvd25zdHJlYW0gYnVzIGFjY2VzcyBhbmQKKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgZm9yIHRoZSBzbW11IHB0dywKKyAgICAgICAgICAgICAgICAg
-ICAgLSAiaWZhY2UiOiBjbG9jayByZXF1aXJlZCB0byBhY2Nlc3Mgc21tdSdzIHJlZ2lzdGVycwor
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHRocm91Z2ggdGhlIFRDVSdzIHByb2dyYW1t
-aW5nIGludGVyZmFjZS4KKyAgICAgICAgICAgICAgICAgIC0gdW5zcGVjaWZpZWQgZm9yIG90aGVy
-IGltcGxlbWVudGF0aW9ucy4KKworLSBjbG9ja3M6ICAgICAgICAgU3BlY2lmaWVycyBmb3IgYWxs
-IGNsb2NrcyBsaXN0ZWQgaW4gdGhlIGNsb2NrLW5hbWVzIHByb3BlcnR5LAorICAgICAgICAgICAg
-ICAgICAgYXMgcGVyIGdlbmVyaWMgY2xvY2sgYmluZGluZ3MuCisKKy0gcG93ZXItZG9tYWluczog
-IFNwZWNpZmllcnMgZm9yIHBvd2VyIGRvbWFpbnMgcmVxdWlyZWQgdG8gYmUgcG93ZXJlZCBvbiBm
-b3IKKyAgICAgICAgICAgICAgICAgIHRoZSBTTU1VIHRvIG9wZXJhdGUsIGFzIHBlciBnZW5lcmlj
-IHBvd2VyIGRvbWFpbiBiaW5kaW5ncy4KKwogKiogRGVwcmVjYXRlZCBwcm9wZXJ0aWVzOgogCiAt
-IG1tdS1tYXN0ZXJzIChkZXByZWNhdGVkIGluIGZhdm91ciBvZiB0aGUgZ2VuZXJpYyAiaW9tbXVz
-IiBiaW5kaW5nKSA6CkBAIC0xMzcsMyArMTU5LDIwIEBAIGNvbmRpdGlvbnMuCiAgICAgICAgICAg
-ICAgICAgaW9tbXUtbWFwID0gPDAgJnNtbXUzIDAgMHg0MDA+OwogICAgICAgICAgICAgICAgIC4u
-LgogICAgICAgICB9OworCisJLyogUWNvbSdzIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uICov
-CisJc21tdTQ6IGlvbW11QGQwMDAwMCB7CisJCWNvbXBhdGlibGUgPSAicWNvbSxtc204OTk2LXNt
-bXUtdjIiLCAicWNvbSxzbW11LXYyIjsKKwkJcmVnID0gPDB4ZDAwMDAwIDB4MTAwMDA+OworCisJ
-CSNnbG9iYWwtaW50ZXJydXB0cyA9IDwxPjsKKwkJaW50ZXJydXB0cyA9IDxHSUNfU1BJIDczIElS
-UV9UWVBFX0xFVkVMX0hJR0g+LAorCQkJICAgICA8R0lDX1NQSSAzMjAgSVJRX1RZUEVfTEVWRUxf
-SElHSD4sCisJCQkgICAgIDxHSUNfU1BJIDMyMSBJUlFfVFlQRV9MRVZFTF9ISUdIPjsKKwkJI2lv
-bW11LWNlbGxzID0gPDE+OworCQlwb3dlci1kb21haW5zID0gPCZtbWNjIE1EU1NfR0RTQz47CisK
-KwkJY2xvY2tzID0gPCZtbWNjIFNNTVVfTURQX0FYSV9DTEs+LAorCQkJIDwmbW1jYyBTTU1VX01E
-UF9BSEJfQ0xLPjsKKwkJY2xvY2stbmFtZXMgPSAiYnVzIiwgImlmYWNlIjsKKwl9OwotLSAKUVVB
-TENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0aW9uIENlbnRlciwgSW5j
-LiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVkIGJ5IFRoZSBMaW51eCBG
-b3VuZGF0aW9uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-XwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcK
-aHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+clock and power requirements.
+On msm8996, multiple cores, viz. mdss, video, etc. use this
+smmu. On sdm845, this smmu is used with gpu.
+Add bindings for the same.
+
+Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Tomasz Figa <tfiga@chromium.org>
+Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+---
+ drivers/iommu/arm-smmu.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index f02e0f58e696..29ce9e10abd4 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -121,6 +121,7 @@ enum arm_smmu_implementation {
+ 	GENERIC_SMMU,
+ 	ARM_MMU500,
+ 	CAVIUM_SMMUV2,
++	QCOM_SMMUV2,
+ };
+ 
+ struct arm_smmu_s2cr {
+@@ -2031,6 +2032,7 @@ ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
+ ARM_SMMU_MATCH_DATA(arm_mmu401, ARM_SMMU_V1_64K, GENERIC_SMMU);
+ ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+ ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
++ARM_SMMU_MATCH_DATA(qcom_smmuv2, ARM_SMMU_V2, QCOM_SMMUV2);
+ 
+ static const struct of_device_id arm_smmu_of_match[] = {
+ 	{ .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
+@@ -2039,6 +2041,7 @@ static const struct of_device_id arm_smmu_of_match[] = {
+ 	{ .compatible = "arm,mmu-401", .data = &arm_mmu401 },
+ 	{ .compatible = "arm,mmu-500", .data = &arm_mmu500 },
+ 	{ .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
++	{ .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
