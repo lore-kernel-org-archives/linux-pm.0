@@ -1,75 +1,158 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: [PATCH 2/2] dt-bindings: thermal: add binding doc for i.MX system
- controller thermal driver
-Date: Tue, 27 Nov 2018 06:01:27 +0000
-Message-ID: <1543298147-8155-2-git-send-email-Anson.Huang@nxp.com>
-References: <1543298147-8155-1-git-send-email-Anson.Huang@nxp.com>
+From: Maxime Ripard <maxime.ripard@bootlin.com>
+Subject: Re: [PATCH 06/14] regulator: axp20x: add software based soft_start
+ for AXP209 LDO3
+Date: Tue, 27 Nov 2018 10:36:19 +0100
+Message-ID: <20181127093619.72ensythkx2mhdf5@flea>
+References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
+ <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="xycxlit5uzxdvqgf"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1543298147-8155-1-git-send-email-Anson.Huang@nxp.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+To: Priit Laes <plaes@plaes.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-NXP i.MX8QXP is an ARMv8 SoC with a Cortex-M4 core inside as
-system controller, the system controller is in charge of system
-power, clock and thermal sensors etc. management, Linux kernel
-has to communicate with system controller via MU (message unit)
-IPC to get temperature from thermal sensors, this patch adds
-binding doc for i.MX system controller thermal driver.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
- .../devicetree/bindings/thermal/imx-sc-thermal.txt | 33 ++++++++++++++++++=
-++++
- 1 file changed, 33 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/imx-sc-therma=
-l.txt
+--xycxlit5uzxdvqgf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-sc-thermal.txt b=
-/Documentation/devicetree/bindings/thermal/imx-sc-thermal.txt
-new file mode 100644
-index 0000000..2f5b0a2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx-sc-thermal.txt
-@@ -0,0 +1,33 @@
-+* Temperature Monitor (TEMPMON) on NXP i.MX SoCs with System Controller
-+
-+Required properties:
-+- compatible : Must be "nxp,imx8qxp-sc-thermal";
-+- tsens-num : Total number of thermal sensors supported;
-+- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description=
-.
-+
-+Example:
-+tsens: thermal-sensor {
-+	compatible =3D "nxp,imx8qxp-sc-thermal";
-+	tsens-num =3D <1>;
-+	#thermal-sensor-cells =3D <1>;
-+};
-+
-+thermal_zones: thermal-zones {
-+	cpu-thermal0 {
-+		polling-delay-passive =3D <250>;
-+		polling-delay =3D <2000>;
-+		thermal-sensors =3D <&tsens 355>;
-+		trips {
-+			cpu_alert0: trip0 {
-+				temperature =3D <107000>;
-+				hysteresis =3D <2000>;
-+				type =3D "passive";
-+			};
-+			cpu_crit0: trip1 {
-+				temperature =3D <127000>;
-+				hysteresis =3D <2000>;
-+				type =3D "critical";
-+			};
-+		};
-+	};
-+};
+On Mon, Nov 26, 2018 at 05:27:47PM +0200, Priit Laes wrote:
+> From: Olliver Schinagl <oliver@schinagl.nl>
+>=20
+> In the past, there have been words on various lists that if LDO3 is
+> disabled in u-boot, but enabled in the DTS, the axp209 driver would
+> fail to continue/hang. Several enable/disable patches have been
+> issues to devicetree's in both the kernel and u-boot to address
+> this issue.
+>=20
+> What really happened however, was that the AXP209 shuts down without
+> a notice and without setting an interrupt. This is caused when LDO3
+> gets overloaded, for example with large capacitors on the LDO3 output.
+>=20
+> Normally, we would expect that AXP209 would source 200 mA as per
+> datasheet and set and trigger an interrupt when being overloaded.
+> For some reason however, this does not happen.
+>=20
+> As a work-around, we use the soft-start constraint of the regulator
+> node to first bring up the LDO3 to the lowest possible voltage and
+> then enable the LDO. After that, we can set the requested voltage
+> as usual.
+>=20
+> Combining this setting with the regulator-ramp-delay allows LDO3 to
+> enable voltage slowly and staggered, potentially reducing overall
+> inrush current.
+>=20
+> Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
+> Signed-off-by: Priit Laes <plaes@plaes.org>
+> ---
+>  drivers/regulator/axp20x-regulator.c | 57 ++++++++++++++++++++++++++++-
+>  1 file changed, 56 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp=
+20x-regulator.c
+> index 1d9fa62..e8a895b 100644
+> --- a/drivers/regulator/axp20x-regulator.c
+> +++ b/drivers/regulator/axp20x-regulator.c
+> @@ -14,6 +14,7 @@
+>   */
+> =20
+>  #include <linux/bitops.h>
+> +#include <linux/delay.h>
+>  #include <linux/err.h>
+>  #include <linux/init.h>
+>  #include <linux/mfd/axp20x.h>
+> @@ -23,6 +24,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
+>  #include <linux/regulator/driver.h>
+> +#include <linux/regulator/machine.h>
+>  #include <linux/regulator/of_regulator.h>
+> =20
+>  #define AXP20X_GPIO0_FUNC_MASK		GENMASK(3, 0)
+> @@ -430,6 +432,59 @@ static int axp20x_set_ramp_delay(struct regulator_de=
+v *rdev, int ramp)
+>  	return regmap_update_bits(axp20x->regmap, reg, mask, cfg);
+>  }
+> =20
+> +static int axp20x_regulator_enable_regmap(struct regulator_dev *rdev)
+> +{
+> +	struct axp20x_dev *axp20x =3D rdev_get_drvdata(rdev);
+> +	const struct regulator_desc *desc =3D rdev->desc;
+> +
+> +	if (!rdev)
+> +		return -EINVAL;
+> +
+> +	switch (axp20x->variant) {
+> +	case AXP209_ID:
+> +		if ((desc->id =3D=3D AXP20X_LDO3) &&
+> +		    rdev->constraints && rdev->constraints->soft_start) {
+> +			int v_out;
+> +			int ret;
+> +
+> +			/*
+> +			 * On some boards, the LDO3 can be overloaded when
+> +			 * turning on, causing the entire PMIC to shutdown
+> +			 * without warning. Turning it on at the minimal voltage
+> +			 * and then setting the voltage to the requested value
+> +			 * works reliably.
+> +			 */
+> +			if (regulator_is_enabled_regmap(rdev))
+> +				break;
+> +
+> +			v_out =3D regulator_get_voltage_sel_regmap(rdev);
+> +			if (v_out < 0)
+> +				return v_out;
+> +
+> +			if (v_out =3D=3D 0)
+> +				break;
+> +
+> +			ret =3D regulator_set_voltage_sel_regmap(rdev, 0x00);
+> +			/*
+> +			 * A small pause is needed between
+> +			 * setting the voltage and enabling the LDO to give the
+> +			 * internal state machine time to process the request.
+> +			 */
+> +			usleep_range(1000, 5000);
+> +			ret |=3D regulator_enable_regmap(rdev);
+> +			ret |=3D regulator_set_voltage_sel_regmap(rdev, v_out);
+> +
+> +			return ret;
+> +		}
+> +		break;
+> +	default:
+> +		/* No quirks */
+> +		break;
+> +	}
+> +
+> +	return regulator_enable_regmap(rdev);
+> +};
+> +
+
+This is some pretty generic code, and could be useful to some other
+users. I guess a generic function would be better for this.
+
+Maxime
+
 --=20
-2.7.4
+Maxime Ripard, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
+
+--xycxlit5uzxdvqgf
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCW/0QEwAKCRDj7w1vZxhR
+xfK7AQChUMMNT4uSC1kZ02rxEKq7jj7Aj5OReZePaYE4dhhT3AEAxCb3fgaVByKb
+fqP//z/kqitXwJZsC7CqrIwUGFrtUQ0=
+=YAe9
+-----END PGP SIGNATURE-----
+
+--xycxlit5uzxdvqgf--
