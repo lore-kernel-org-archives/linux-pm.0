@@ -1,74 +1,57 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 10/14] regulator: dts: set proper lradc vref on OLinuXino
- Lime2
-Date: Tue, 27 Nov 2018 10:47:30 +0100
-Message-ID: <20181127094730.dewrb5ri6uyebl2e@flea>
-References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
- <b27515a1cfe3512253a3fbcda04a3367818520b9.1543245984.git-series.plaes@plaes.org>
- <20181127093735.amfqfcsxzreajte4@flea>
- <CAGb2v66odUU9OOwon4URR-+P_jFw2rV+8PLVzrnLmFpKtqT8gA@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v18 0/5] iommu/arm-smmu: Add runtime pm/sleep support
+Date: Tue, 27 Nov 2018 15:41:40 +0530
+Message-ID: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="hldriuc2m2xqr5kq"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGb2v66odUU9OOwon4URR-+P_jFw2rV+8PLVzrnLmFpKtqT8gA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Priit Laes <plaes@plaes.org>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Oliver Schinagl <oliver@schinagl.nl>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Looks like this is going to be the final respin before this support
+finally lands.
+The change isn't much from v17_resend series [1] besides taking
+Thor's change [2] for clocks.
 
---hldriuc2m2xqr5kq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes since v17:
+ - Addressing Will's comment to embed Thor's change [2] for pulling
+   clocks information from device tree. This is done by squashing
+   Thor's change [2] in v17's 1/5 patch [3].
+ - Another minor change is addition of runtime pm hooks to
+   arm_smmu_iova_to_phys_hard().
 
-On Tue, Nov 27, 2018 at 05:41:10PM +0800, Chen-Yu Tsai wrote:
-> On Tue, Nov 27, 2018 at 5:37 PM Maxime Ripard <maxime.ripard@bootlin.com>=
- wrote:
-> >
-> > On Mon, Nov 26, 2018 at 05:27:51PM +0200, Priit Laes wrote:
-> > > From: Olliver Schinagl <oliver@schinagl.nl>
-> > >
-> > > The lradc's analog reference voltage is set to 3.0 volt in the
-> > > hardware. This is more or less set in copper for at least lradc0. Set=
- the
-> > > property in the dts to ensure the lradc is referenced properly.
-> > >
-> > > Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
-> > > Signed-off-by: Priit Laes <plaes@plaes.org>
-> >
-> > I'm not sure why that patch is part of this series, but I applied
-> > it. Thanks!
->=20
-> Please help fix up the subject. Should read
->=20
-> "ARM: dts: sun7i: set proper lradc vref on OLinuXino Lime2"
->=20
-> or
->=20
-> "ARM: dts: sun7i: olinoxino-lime2: set proper lradc vref"
+Previous version of this patch series is @ [1].
+Also refer to [4] for change logs for previous versions.
 
-Yes, I've noticed it while applying, and this is already fixed :)
+[1] https://lore.kernel.org/patchwork/cover/1013166/
+[2] https://lore.kernel.org/patchwork/patch/996143/
+[3] https://lore.kernel.org/patchwork/patch/1013167/
+[4] https://lore.kernel.org/patchwork/cover/979429/
 
-Thanks for the reminder!
-Maxime
+Sricharan R (3):
+  iommu/arm-smmu: Add pm_runtime/sleep ops
+  iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
+  iommu/arm-smmu: Add the device_link between masters and smmu
 
---=20
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Vivek Gautam (2):
+  dt-bindings: arm-smmu: Add bindings for qcom,smmu-v2
+  iommu/arm-smmu: Add support for qcom,smmu-v2 variant
 
---hldriuc2m2xqr5kq
-Content-Type: application/pgp-signature; name="signature.asc"
+ .../devicetree/bindings/iommu/arm,smmu.txt         |  39 ++++
+ drivers/iommu/arm-smmu.c                           | 212 +++++++++++++++++++--
+ 2 files changed, 239 insertions(+), 12 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCW/0SsgAKCRDj7w1vZxhR
-xXITAQDbWa/mzPFfiJALRj6XfjXQSresZPgzPppLQh2uz7waawD/QmzIbaTdQJch
-HKeJlhuKNx1wUUNTe7mPbqun+NcIVwY=
-=GjQp
------END PGP SIGNATURE-----
-
---hldriuc2m2xqr5kq--
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
