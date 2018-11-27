@@ -1,94 +1,119 @@
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: Re: [driver-core PATCH v6 6/9] driver core: Probe devices
- asynchronously instead of the driver
-Date: Tue, 27 Nov 2018 10:32:21 -0800
-Message-ID: <CAPcyv4gNR+x=FB=V92M89-WMQe7YburYRwPhEy0jX71U52nFeQ@mail.gmail.com>
-References: <154170028986.12967.2108024712555179678.stgit@ahduyck-desk1.jf.intel.com>
- <154170043123.12967.3591757325647337726.stgit@ahduyck-desk1.jf.intel.com>
- <CAPcyv4g0LNJZ38NKMXsBY+GgmGbHR4VrTM1gkm3m4bg6fOrfsw@mail.gmail.com> <785e7a944b60cd237680075064477efad1e9c39a.camel@linux.intel.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v10 1/7] interconnect: Add generic on-chip interconnect
+ API
+Date: Tue, 27 Nov 2018 10:35:15 -0800
+Message-ID: <5d16a4a57ed5529299d7b73e13a249add00b1afe.camel@perches.com>
+References: <20181127180349.29997-1-georgi.djakov@linaro.org>
+         <20181127180349.29997-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <785e7a944b60cd237680075064477efad1e9c39a.camel@linux.intel.com>
+In-Reply-To: <20181127180349.29997-2-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: alexander.h.duyck@linux.intel.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, linux-nvdimm <linux-nvdimm@lists.01.org>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, jiangshanlai@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, zwisler@kernel.org, Dave Jiang <dave.jiang@intel.com>, bvanassche@acm.org
+To: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, mturquette@baylibre.com, khilman@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, bjorn.andersson@linaro.org, amit.kucheria@linaro.org, seansw@qti.qualcomm.com, daidavid1@codeaurora.org, evgreen@chromium.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, abailon@baylibre.com, maxime.ripard@bootlin.com, arnd@arndb.de, thierry.reding@gmail.com, ksitaraman@nvidia.com, sanjayc@nvidia.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 27, 2018 at 9:58 AM Alexander Duyck
-<alexander.h.duyck@linux.intel.com> wrote:
->
-> On Mon, 2018-11-26 at 18:48 -0800, Dan Williams wrote:
-> > On Thu, Nov 8, 2018 at 10:07 AM Alexander Duyck
-> > <alexander.h.duyck@linux.intel.com> wrote:
-> > >
-> > > Probe devices asynchronously instead of the driver. This results in us
-> > > seeing the same behavior if the device is registered before the driver or
-> > > after. This way we can avoid serializing the initialization should the
-> > > driver not be loaded until after the devices have already been added.
-> > >
-> > > The motivation behind this is that if we have a set of devices that
-> > > take a significant amount of time to load we can greatly reduce the time to
-> > > load by processing them in parallel instead of one at a time. In addition,
-> > > each device can exist on a different node so placing a single thread on one
-> > > CPU to initialize all of the devices for a given driver can result in poor
-> > > performance on a system with multiple nodes.
-> >
-> > Do you have numbers on effects of this change individually? Is this
-> > change necessary for the libnvdimm init speedup, or is it independent?
->
-> It depends on the case. I was using X86_PMEM_LEGACY_DEVICE to spawn a
-> couple of 32GB persistent memory devices. I had to use this patch and
-> the async_probe option to get them loading in parallel versus serial as
-> the driver load order is a bit different.
->
-> Basically as long as all the necessary drivers are loaded for libnvdimm
-> you are good, however if the device can get probed before the driver is
-> loaded you run into issues as the loading will be serialized without
-> this patch.
+On Tue, 2018-11-27 at 20:03 +0200, Georgi Djakov wrote:
+> This patch introduces a new API to get requirements and configure the
+> interconnect buses across the entire chipset to fit with the current
+> demand.
 
-I think we could achieve the same with something like the following:
+trivial notes:
 
-diff --git a/drivers/acpi/nfit/core.c b/drivers/acpi/nfit/core.c
-index 77f188cd8023..66c9827efdb4 100644
---- a/drivers/acpi/nfit/core.c
-+++ b/drivers/acpi/nfit/core.c
-@@ -3718,5 +3718,6 @@ static __exit void nfit_exit(void)
+> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+[]
+> +static int apply_constraints(struct icc_path *path)
+> +{
+> +	struct icc_node *next, *prev = NULL;
+> +	int ret = -EINVAL;
+> +	int i;
+> +
+> +	for (i = 0; i < path->num_nodes; i++, prev = next) {
+> +		struct icc_provider *p;
+> +
+> +		next = path->reqs[i].node;
+> +		/*
+> +		 * Both endpoints should be valid master-slave pairs of the
+> +		 * same interconnect provider that will be configured.
+> +		 */
+> +		if (!prev || next->provider != prev->provider)
+> +			continue;
+> +
+> +		p = next->provider;
+> +
+> +		/* set the constraints */
+> +		ret = p->set(prev, next);
+> +		if (ret)
+> +			goto out;
+> +	}
+> +out:
+> +	return ret;
+> +}
 
- module_init(nfit_init);
- module_exit(nfit_exit);
-+MODULE_SOFTDEP("pre: nd_pmem");
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Intel Corporation");
+The use of ", prev = next" appears somewhat tricky code.
+Perhaps move the assignment of prev to the bottom of the loop.
+Perhaps the temporary p assignment isn't useful either.
 
-...to ensure that the pmem driver is loaded and ready to service
-devices before they start being discovered.
+> +int icc_set(struct icc_path *path, u32 avg_bw, u32 peak_bw)
+> +{
+[]
+> +	ret = apply_constraints(path);
+> +	if (ret)
+> +		pr_debug("interconnect: error applying constraints (%d)", ret);
 
->
-> > > I am using the driver_data member of the device struct to store the driver
-> > > pointer while we wait on the deferred probe call. This should be safe to do
-> > > as the value will either be set to NULL on a failed probe or driver load
-> > > followed by unload, or the driver value itself will be set on a successful
-> > > driver load. In addition I have used the async_probe flag to add additional
-> > > protection as it will be cleared if someone overwrites the driver_data
-> > > member as a part of loading the driver.
-> >
-> > I would not put it past a device-driver to call dev_get_drvdata()
-> > before dev_set_drvdata(), to check "has this device already been
-> > initialized". So I don't think it is safe to assume that the core can
-> > stash this information in ->driver_data. Why not put this
-> > infrastructure in struct device_private?
->
-> The data should be cleared before we even get to the probe call so I am
-> not sure that is something we would need to worry about.
+Ideally all pr_<foo> formats should end in '\n'
 
-Yes it "should", but I have the sense that I have seen code that looks
-at dev_get_drvdata() != NULL when it really should be looking at
-dev->driver. Maybe not in leaf drivers, but bus code.
+> +static struct icc_node *icc_node_create_nolock(int id)
+> +{
+> +	struct icc_node *node;
+> +
+> +	/* check if node already exists */
+> +	node = node_find(id);
+> +	if (node)
+> +		goto out;
+> +
+> +	node = kzalloc(sizeof(*node), GFP_KERNEL);
+> +	if (!node) {
+> +		node = ERR_PTR(-ENOMEM);
+> +		goto out;
 
-> As far as why I didn't use device_private, it was mostly just for the
-> sake of space savings. I only had to add one bit to an existing
-> bitfield to make the async_probe approach work, and the drvdata just
-> seemed like the obvious place to put the deferred driver.
+Generally, this code appears to overly rely on goto when
+direct returns could be more readable.
 
-It seems device_private already has deferred_probe data, why not async_probe?
+> +	}
+> +
+> +	id = idr_alloc(&icc_idr, node, id, id + 1, GFP_KERNEL);
+> +	if (WARN(id < 0, "couldn't get idr")) {
+
+This seems to unnecessarily hide the id < 0 test in a WARN
+
+Why is this a WARN and not a simpler
+	if (id < 0) {
+		[ pr_err(...); or WARN(1, ...); ]
+
+> +		kfree(node);
+> +		node = ERR_PTR(id);
+> +		goto out;
+> +	}
+> +
+> +	node->id = id;
+> +
+> +out:
+> +	return node;
+> +}
+[]
+> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+[]
+> +/* macros for converting to icc units */
+> +#define bps_to_icc(x)	(1)
+> +#define kBps_to_icc(x)	(x)
+[]
+> +#define MBps_to_icc(x)	(x * 1000)
+> +#define GBps_to_icc(x)	(x * 1000 * 1000)
+> +#define kbps_to_icc(x)	(x / 8 + ((x) % 8 ? 1 : 0))
+> +#define Mbps_to_icc(x)	(x * 1000 / 8 )
+> +#define Gbps_to_icc(x)	(x * 1000 * 1000 / 8)
+
+The last 5 macros should parenthesize x
