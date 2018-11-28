@@ -1,79 +1,56 @@
-From: Anson Huang <anson.huang@nxp.com>
-Subject: [PATCH V3 4/4] ARM64: dts: imx: add i.MX8QXP thermal support
-Date: Wed, 28 Nov 2018 09:59:15 +0000
-Message-ID: <1543398783-3185-5-git-send-email-Anson.Huang__10328.4483812333$1543399079$gmane$org@nxp.com>
-References: <1543398783-3185-1-git-send-email-Anson.Huang@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] Documentation: admin-guide: PM: Add cpuidle document
+Date: Wed, 28 Nov 2018 11:01:20 +0100
+Message-ID: <CAJZ5v0j4B6ODKzJ+XWvMS_dc6BpQcYkK6=L-zg8wcWXQxMcFhQ@mail.gmail.com>
+References: <4064391.AYvOMBeiDo@aspire.rjw.lan> <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
+ <CAJZ5v0hnX512AheTwhpj09+eyiyv6txsgGQcT2afWiB2JjjCzw@mail.gmail.com> <20181128093137.a5d4kwgfdthlsolw@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1543398783-3185-1-git-send-email-Anson.Huang@nxp.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Aisheng DONG <aisheng.dong@nxp.com>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "arnd@arndb.de" <arnd@arndb.de>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "olof@lixom.net" <olof@lixom.net>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "LW@KARO-electronics.de" <LW@KARO-elec>
-Cc: dl-linux-imx <linux-imx@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181128093137.a5d4kwgfdthlsolw@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add i.MX8QXP CPU thermal zone support.
+On Wed, Nov 28, 2018 at 10:31 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 28-11-18, 10:11, Rafael J. Wysocki wrote:
+> > On Wed, Nov 28, 2018 at 6:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > >
+> > > On 26-11-18, 14:11, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > Important information is missing from user/admin cpuidle documentation
+> > > > available today, so add a new user/admin document for cpuidle containing
+> > > > current and comprehensive information to admin-guide and drop the old
+> > > > .txt documents it is replacing.
+> > > >
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > > >  Documentation/admin-guide/pm/cpuidle.rst       |  603 +++++++++++++++++++++++++
+> > > >  Documentation/admin-guide/pm/working-state.rst |    1
+> > > >  Documentation/cpuidle/core.txt                 |   23
+> > > >  Documentation/cpuidle/sysfs.txt                |   98 ----
+> > > >  4 files changed, 604 insertions(+), 121 deletions(-)
+> > >
+> > > Nice work Rafael. Minor nits below..
+> >
+> > Thanks for the typo fixes.  The spellchecker I have here evidently doesn't work.
+>
+> I have this in my .vimrc and I am shown these spelling mistakes somewhat
+> forcefully :)
+>
+> set spell spelllang=en_us
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-no change since V2.
- arch/arm64/boot/dts/freescale/imx8qxp.dtsi | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+Interestingly enough, it appears to work when I turn the automatic
+spellchecking, which I don't do for code as a rule, because it
+distracts me.  I will need to do that for docs going forward it seems,
+though.
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-index 5e8b554..ef57db6 100644
---- a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-@@ -9,6 +9,7 @@
- #include <dt-bindings/firmware/imx/rsrc.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/pinctrl/pads-imx8qxp.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- #include "imx8-ca35.dtsi"
- 
-@@ -85,6 +86,32 @@
- 		};
- 	};
- 
-+	tsens: thermal-sensor {
-+		compatible = "nxp,imx8qxp-sc-thermal";
-+		tsens-num = <1>;
-+		#thermal-sensor-cells = <1>;
-+	};
-+
-+	thermal_zones: thermal-zones {
-+		cpu-thermal0 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <2000>;
-+			thermal-sensors = <&tsens 355>;
-+			trips {
-+				cpu_alert0: trip0 {
-+					temperature = <107000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cpu_crit0: trip1 {
-+					temperature = <127000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
-+
- 	adma_subsys: bus@59000000 {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
--- 
-2.7.4
+BTW, I didn't respond to the remark about the ladder governor.  I have
+no plans to describe it at this time and that can be done at any time
+later easily enough if anyone wants to do it.
+
+Thanks,
+Rafael
