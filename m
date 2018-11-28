@@ -1,49 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] Documentation: admin-guide: PM: Add cpuidle document
-Date: Wed, 28 Nov 2018 10:11:16 +0100
-Message-ID: <CAJZ5v0hnX512AheTwhpj09+eyiyv6txsgGQcT2afWiB2JjjCzw@mail.gmail.com>
-References: <4064391.AYvOMBeiDo@aspire.rjw.lan> <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 02/14] regulator: axp20x: name voltage ramping define
+ properly
+Date: Wed, 28 Nov 2018 09:26:34 +0000
+Message-ID: <20181128092634.GX4272@dell>
+References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
+ <66ac03ac0e34e196e0469927c0feb3c98bc35837.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <66ac03ac0e34e196e0469927c0feb3c98bc35837.1543245984.git-series.plaes@plaes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Sudeep Holla <sudeep.holla@arm.com>
+To: Priit Laes <plaes@plaes.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 28, 2018 at 6:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 26-11-18, 14:11, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Important information is missing from user/admin cpuidle documentation
-> > available today, so add a new user/admin document for cpuidle containing
-> > current and comprehensive information to admin-guide and drop the old
-> > .txt documents it is replacing.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  Documentation/admin-guide/pm/cpuidle.rst       |  603 +++++++++++++++++++++++++
-> >  Documentation/admin-guide/pm/working-state.rst |    1
-> >  Documentation/cpuidle/core.txt                 |   23
-> >  Documentation/cpuidle/sysfs.txt                |   98 ----
-> >  4 files changed, 604 insertions(+), 121 deletions(-)
->
-> Nice work Rafael. Minor nits below..
+On Mon, 26 Nov 2018, Priit Laes wrote:
 
-Thanks for the typo fixes.  The spellchecker I have here evidently doesn't work.
+> From: Olliver Schinagl <oliver@schinagl.nl>
+> 
+> The current axp20x names the ramping register 'scal' which probably
+> means scaling. Since the register really has nothing to do with
+> scaling, but really is the voltage ramp we rename it appropriately.
+> 
+> Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
+> Signed-off-by: Priit Laes <plaes@plaes.org>
+> ---
+>  include/linux/mfd/axp20x.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-[cut]
+This is clearly not a regulator patch.
 
-> Maybe I missed, but I couldn't find any text that says what state 0, 1, ... N
-> mean.
+Please change the subject line to "mfd", 
 
-There is a paragraph on that above.
+Once changed you can add my:
 
-> Like which is the deepest idle state and which one is the shallowest.
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
-But this part is missing, good catch!
-
-Thanks,
-Rafael
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
