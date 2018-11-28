@@ -1,161 +1,49 @@
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-Subject: Re: [PATCH V2 2/4] thermal: imx_sc: add i.MX system controller
- thermal support
-Date: Wed, 28 Nov 2018 10:08:57 +0100
-Message-ID: <20181128100857.1181263d@karo-electronics.de>
-References: <1543384349-2851-1-git-send-email-Anson.Huang@nxp.com>
- <1543384349-2851-3-git-send-email-Anson.Huang@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] Documentation: admin-guide: PM: Add cpuidle document
+Date: Wed, 28 Nov 2018 10:11:16 +0100
+Message-ID: <CAJZ5v0hnX512AheTwhpj09+eyiyv6txsgGQcT2afWiB2JjjCzw@mail.gmail.com>
+References: <4064391.AYvOMBeiDo@aspire.rjw.lan> <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1543384349-2851-3-git-send-email-Anson.Huang@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "heiko@sntech.de" <heiko@sntech.de>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, dl-linux-imx <linux-imx@nxp.com>, Andy Gross <andy.gross@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@li>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiBXZWQsIDI4IE5vdiAyMDE4IDA1OjU4OjIyICswMDAwIEFuc29uIEh1YW5nIHdyb3Rl
-Ogo+IGkuTVg4UVhQIGlzIGFuIEFSTXY4IFNvQyB3aGljaCBoYXMgYSBDb3J0ZXgtTTQgc3lzdGVt
-IGNvbnRyb2xsZXIKPiBpbnNpZGUsIHRoZSBzeXN0ZW0gY29udHJvbGxlciBpcyBpbiBjaGFyZ2Ug
-b2YgY29udHJvbGxpbmcgcG93ZXIsCj4gY2xvY2sgYW5kIHRoZXJtYWwgc2Vuc29ycyBldGMuLgo+
-IAo+IFRoaXMgcGF0Y2ggYWRkcyBpLk1YIHN5c3RlbSBjb250cm9sbGVyIHRoZXJtYWwgZHJpdmVy
-IHN1cHBvcnQsCj4gTGludXgga2VybmVsIGhhcyB0byBjb21tdW5pY2F0ZSB3aXRoIHN5c3RlbSBj
-b250cm9sbGVyIHZpYSBNVQo+IChtZXNzYWdlIHVuaXQpIElQQyB0byBnZXQgZWFjaCB0aGVybWFs
-IHNlbnNvcidzIHRlbXBlcmF0dXJlLAo+IGl0IHN1cHBvcnRzIG11bHRpcGxlIHNlbnNvcnMgd2hp
-Y2ggYXJlIHBhc3NlZCBmcm9tIGRldmljZSB0cmVlLAo+IHBsZWFzZSBzZWUgdGhlIGJpbmRpbmcg
-ZG9jIGZvciBkZXRhaWxzLgo+IAo+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1YW5nIDxBbnNvbi5I
-dWFuZ0BueHAuY29tPgo+IC0tLQo+IGNoYW5nZXMgc2luY2UgVjE6Cj4gCXJlbW92ZSBib2lsZXIg
-cGxhdGUgbGljZW5zZSB0ZXh0Owo+IAlyZW1vdmUgdW5uZWNlc3Nhcnkga2ZyZWUgZHVyaW5nIHBy
-b2JlOwo+IAlyZW1vdmUgYnVpbGQgd2FybmluZyBvZiBjb21wYXJpbmcgdW5zaWduZWQgaW50IHdp
-dGggPCAwOwo+ICBkcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyAgICAgICAgICB8ICAxMSArKysKPiAg
-ZHJpdmVycy90aGVybWFsL01ha2VmaWxlICAgICAgICAgfCAgIDEgKwo+ICBkcml2ZXJzL3RoZXJt
-YWwvaW14X3NjX3RoZXJtYWwuYyB8IDIwMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysKPiAgMyBmaWxlcyBjaGFuZ2VkLCAyMTMgaW5zZXJ0aW9ucygrKQo+ICBjcmVhdGUg
-bW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL2lteF9zY190aGVybWFsLmMKPiAKPiBkaWZmIC0t
-Z2l0IGEvZHJpdmVycy90aGVybWFsL0tjb25maWcgYi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZwo+
-IGluZGV4IDBlNjllZGMuLjg0ZTg1MGMgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy90aGVybWFsL0tj
-b25maWcKPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvS2NvbmZpZwo+IEBAIC0yMjIsNiArMjIyLDE3
-IEBAIGNvbmZpZyBJTVhfVEhFUk1BTAo+ICAJICBjcHVmcmVxIGlzIHVzZWQgYXMgdGhlIGNvb2xp
-bmcgZGV2aWNlIHRvIHRocm90dGxlIENQVXMgd2hlbiB0aGUKPiAgCSAgcGFzc2l2ZSB0cmlwIGlz
-IGNyb3NzZWQuCj4gIAo+ICtjb25maWcgSU1YX1NDX1RIRVJNQUwKPiArCXRyaXN0YXRlICJUZW1w
-ZXJhdHVyZSBzZW5zb3IgZHJpdmVyIGZvciBOWFAgaS5NWCBTb0NzIHdpdGggU3lzdGVtIENvbnRy
-b2xsZXIiCj4gKwlkZXBlbmRzIG9uIEFSQ0hfTVhDIHx8IENPTVBJTEVfVEVTVAo+ICsJZGVwZW5k
-cyBvbiBPRgo+ICsJaGVscAo+ICsJICBTdXBwb3J0IGZvciBUZW1wZXJhdHVyZSBNb25pdG9yIChU
-RU1QTU9OKSBmb3VuZCBvbiBOWFAgaS5NWCBTb0NzIHdpdGgKPiArCSAgc3lzdGVtIGNvbnRyb2xs
-ZXIgaW5zaWRlLCBMaW51eCBrZXJuZWwgaGFzIHRvIGNvbW11bmljYXRlIHdpdGggc3lzdGVtCj4g
-KwkgIGNvbnRyb2xsZXIgdmlhIE1VIChtZXNzYWdlIHVuaXQpIElQQyB0byBnZXQgdGVtcGVyYXR1
-cmUgZnJvbSB0aGVybWFsCj4gKwkgIHNlbnNvci4gSXQgc3VwcG9ydHMgb25lIGNyaXRpY2FsIHRy
-aXAgcG9pbnQgYW5kIG9uZQo+ICsJICBwYXNzaXZlIHRyaXAgcG9pbnQgZm9yIGVhY2ggdGhlcm1h
-bCBzZW5zb3IuCj4gKwo+ICBjb25maWcgTUFYNzc2MjBfVEhFUk1BTAo+ICAJdHJpc3RhdGUgIlRl
-bXBlcmF0dXJlIHNlbnNvciBkcml2ZXIgZm9yIE1heGltIE1BWDc3NjIwIFBNSUMiCj4gIAlkZXBl
-bmRzIG9uIE1GRF9NQVg3NzYyMAo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvTWFrZWZp
-bGUgYi9kcml2ZXJzL3RoZXJtYWwvTWFrZWZpbGUKPiBpbmRleCA2MTAzNDRlLi4xYjEzZjZhIDEw
-MDY0NAo+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZQo+ICsrKyBiL2RyaXZlcnMvdGhl
-cm1hbC9NYWtlZmlsZQo+IEBAIC00MSw2ICs0MSw3IEBAIG9iai0kKENPTkZJR19EQjg1MDBfVEhF
-Uk1BTCkJKz0gZGI4NTAwX3RoZXJtYWwubwo+ICBvYmotJChDT05GSUdfQVJNQURBX1RIRVJNQUwp
-CSs9IGFybWFkYV90aGVybWFsLm8KPiAgb2JqLSQoQ09ORklHX1RBTkdPX1RIRVJNQUwpCSs9IHRh
-bmdvX3RoZXJtYWwubwo+ICBvYmotJChDT05GSUdfSU1YX1RIRVJNQUwpCSs9IGlteF90aGVybWFs
-Lm8KPiArb2JqLSQoQ09ORklHX0lNWF9TQ19USEVSTUFMKQkrPSBpbXhfc2NfdGhlcm1hbC5vCj4g
-IG9iai0kKENPTkZJR19NQVg3NzYyMF9USEVSTUFMKQkrPSBtYXg3NzYyMF90aGVybWFsLm8KPiAg
-b2JqLSQoQ09ORklHX1FPUklRX1RIRVJNQUwpCSs9IHFvcmlxX3RoZXJtYWwubwo+ICBvYmotJChD
-T05GSUdfREE5MDYyX1RIRVJNQUwpCSs9IGRhOTA2Mi10aGVybWFsLm8KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy90aGVybWFsL2lteF9zY190aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3Nj
-X3RoZXJtYWwuYwo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAwMC4uODkwNTM3
-Zgo+IC0tLSAvZGV2L251bGwKPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvaW14X3NjX3RoZXJtYWwu
-Ywo+IEBAIC0wLDAgKzEsMjAxIEBACj4gKy8vIFNQRFgtTGljZW5zZS1JZGVudGlmaWVyOiBHUEwt
-Mi4wKwo+ICsvKgo+ICsgKiBDb3B5cmlnaHQgMjAxOCBOWFAuCj4gKyAqLwo+ICsKPiArI2luY2x1
-ZGUgPGxpbnV4L2Vyci5oPgo+ICsjaW5jbHVkZSA8bGludXgvZmlybXdhcmUvaW14L3NjaS5oPgo+
-ICsjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9vZi5oPgo+ICsj
-aW5jbHVkZSA8bGludXgvb2ZfZGV2aWNlLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9k
-ZXZpY2UuaD4KPiArI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KPiArI2luY2x1ZGUgPGxpbnV4L3Ro
-ZXJtYWwuaD4KPiArCj4gKyNpbmNsdWRlICJ0aGVybWFsX2NvcmUuaCIKPiArCj4gKyNkZWZpbmUg
-SU1YX1NDX01JU0NfRlVOQ19HRVRfVEVNUAkxMwo+ICsjZGVmaW5lIElNWF9TQ19DX1RFTVAJCQkw
-Cj4gKwo+ICtzdHJ1Y3QgaW14X3NjX2lwYyAqdGhlcm1hbF9pcGNfaGFuZGxlOwo+ICsKc3RhdGlj
-PwoKPiArc3RydWN0IGlteF9zY19zZW5zb3Igewo+ICsJc3RydWN0IHRoZXJtYWxfem9uZV9kZXZp
-Y2UgKnR6ZDsKPiArCXUzMiByZXNvdXJjZV9pZDsKPiArfTsKPiArCj4gK3N0cnVjdCBpbXhfc2Nf
-dGhlcm1hbF9kYXRhIHsKPiArCXN0cnVjdCBpbXhfc2Nfc2Vuc29yICpzZW5zb3I7Cj4gK307Cj4g
-Kwo+ICtzdHJ1Y3QgaW14X3NjX21zZ19yZXFfbWlzY19nZXRfdGVtcCB7Cj4gKwlzdHJ1Y3QgaW14
-X3NjX3JwY19tc2cgaGRyOwo+ICsJdTE2IHJlc291cmNlX2lkOwo+ICsJdTggdHlwZTsKPiArfSBf
-X3BhY2tlZDsKPiArCj4gK3N0cnVjdCBpbXhfc2NfbXNnX3Jlc3BfbWlzY19nZXRfdGVtcCB7Cj4g
-KwlzdHJ1Y3QgaW14X3NjX3JwY19tc2cgaGRyOwo+ICsJdTE2IGNlbHNpdXM7Cj4gKwl1OCB0ZW50
-aHM7Cj4gK30gX19wYWNrZWQ7Cj4gKwo+ICtzdGF0aWMgaW50IGlteF9zY190aGVybWFsX2dldF90
-ZW1wKHZvaWQgKmRhdGEsIGludCAqdGVtcCkKPiArewo+ICsJc3RydWN0IGlteF9zY19tc2dfcmVz
-cF9taXNjX2dldF90ZW1wICpyZXNwOwo+ICsJc3RydWN0IGlteF9zY19tc2dfcmVxX21pc2NfZ2V0
-X3RlbXAgbXNnOwo+ICsJc3RydWN0IGlteF9zY19ycGNfbXNnICpoZHIgPSAmbXNnLmhkcjsKPiAr
-CXN0cnVjdCBpbXhfc2Nfc2Vuc29yICpzZW5zb3IgPSBkYXRhOwo+ICsJaW50IHJldDsKPiArCj4g
-Kwltc2cucmVzb3VyY2VfaWQgPSBzZW5zb3ItPnJlc291cmNlX2lkOwo+ICsJbXNnLnR5cGUgPSBJ
-TVhfU0NfQ19URU1QOwo+ICsKPiArCWhkci0+dmVyID0gSU1YX1NDX1JQQ19WRVJTSU9OOwo+ICsJ
-aGRyLT5zdmMgPSBJTVhfU0NfUlBDX1NWQ19NSVNDOwo+ICsJaGRyLT5mdW5jID0gSU1YX1NDX01J
-U0NfRlVOQ19HRVRfVEVNUDsKPiArCWhkci0+c2l6ZSA9IDI7Cj4gKwo+ICsJcmV0ID0gaW14X3Nj
-dV9jYWxsX3JwYyh0aGVybWFsX2lwY19oYW5kbGUsICZtc2csIHRydWUpOwo+ICsJaWYgKHJldCkg
-ewo+ICsJCXByX2VycigicmVhZCB0ZW1wIHNlbnNvciAlZCBmYWlsZWQsIHJldCAlZFxuIiwKPiAr
-CQkJc2Vuc29yLT5yZXNvdXJjZV9pZCwgcmV0KTsKPiArCQlyZXR1cm4gcmV0Owo+ICsJfQo+ICsK
-PiArCXJlc3AgPSAoc3RydWN0IGlteF9zY19tc2dfcmVzcF9taXNjX2dldF90ZW1wICopJm1zZzsK
-PiArCSp0ZW1wID0gcmVzcC0+Y2Vsc2l1cyAqIDEwMDAgKyByZXNwLT50ZW50aHMgKiAxMDA7Cj4g
-Kwo+ICsJcmV0dXJuIDA7Cj4gK30KPiArCj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgdGhlcm1hbF96
-b25lX29mX2RldmljZV9vcHMgaW14X3NjX3RoZXJtYWxfb3BzID0gewo+ICsJLmdldF90ZW1wID0g
-aW14X3NjX3RoZXJtYWxfZ2V0X3RlbXAsCj4gK307Cj4gKwo+ICtzdGF0aWMgaW50IGlteF9zY190
-aGVybWFsX3JlZ2lzdGVyX3NlbnNvcihzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICsJ
-CQkJCSAgc3RydWN0IGlteF9zY19zZW5zb3IgKnNlbnNvcikKPiArewo+ICsJc3RydWN0IHRoZXJt
-YWxfem9uZV9kZXZpY2UgKnR6ZDsKPiArCj4gKwl0emQgPSBkZXZtX3RoZXJtYWxfem9uZV9vZl9z
-ZW5zb3JfcmVnaXN0ZXIoJnBkZXYtPmRldiwKPiArCQkJCQkJICAgc2Vuc29yLT5yZXNvdXJjZV9p
-ZCwKPiArCQkJCQkJICAgc2Vuc29yLAo+ICsJCQkJCQkgICAmaW14X3NjX3RoZXJtYWxfb3BzKTsK
-PiArCWlmIChJU19FUlIodHpkKSkgewo+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0
-byByZWdpc3RlciBzZW5zb3I6ICVkXG4iLAo+ICsJCQlzZW5zb3ItPnJlc291cmNlX2lkKTsKPiAr
-CQlyZXR1cm4gLUVJTlZBTDsKcmV0dXJuIFBUUl9FUlIodHpkKT8KCj4gKwl9Cj4gKwo+ICsJc2Vu
-c29yLT50emQgPSB0emQ7Cj4gKwo+ICsJcmV0dXJuIDA7Cj4gK30KPiArCj4gK3N0YXRpYyBpbnQg
-aW14X3NjX3RoZXJtYWxfZ2V0X3NlbnNvcl9pZChzdHJ1Y3QgZGV2aWNlX25vZGUgKnNlbnNvcl9u
-cCwgdTMyICppZCkKPiArewo+ICsJc3RydWN0IG9mX3BoYW5kbGVfYXJncyBzZW5zb3Jfc3BlY3M7
-Cj4gKwlpbnQgcmV0Owo+ICsKPiArCXJldCA9IG9mX3BhcnNlX3BoYW5kbGVfd2l0aF9hcmdzKHNl
-bnNvcl9ucCwgInRoZXJtYWwtc2Vuc29ycyIsCj4gKwkJCSIjdGhlcm1hbC1zZW5zb3ItY2VsbHMi
-LAo+ICsJCQkwLCAmc2Vuc29yX3NwZWNzKTsKPiArCWlmIChyZXQpCj4gKwkJcmV0dXJuIHJldDsK
-PiArCj4gKwlpZiAoc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQgPj0gMSkgewo+ICsJCSppZCA9IHNl
-bnNvcl9zcGVjcy5hcmdzWzBdOwo+ICsJCVdBUk4oc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQgPiAx
-LAo+ICsJCQkJIiVwT0ZuOiB0b28gbWFueSBjZWxscyBpbiBzZW5zb3Igc3BlY2lmaWVyICVkXG4i
-LAo+ICsJCQkJc2Vuc29yX3NwZWNzLm5wLCBzZW5zb3Jfc3BlY3MuYXJnc19jb3VudCk7Cj4gKwl9
-IGVsc2Ugewo+ICsJCXJldHVybiAtRUlOVkFMOwo+ICsJfQo+ICsKPiArCXJldHVybiAwOwo+ICt9
-Cj4gKwo+ICtzdGF0aWMgaW50IGlteF9zY190aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9k
-ZXZpY2UgKnBkZXYpCj4gK3sKPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAgPSBwZGV2LT5kZXYu
-b2Zfbm9kZTsKPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqc2Vuc29yX25wID0gTlVMTDsKPiArCXN0
-cnVjdCBpbXhfc2NfdGhlcm1hbF9kYXRhICpkYXRhOwo+ICsJc3RydWN0IGlteF9zY19zZW5zb3Ig
-KnNlbnNvcnM7Cj4gKwl1MzIgc2Vuc29yX251bTsKPiArCWludCByZXQsIGk7Cj4gKwo+ICsJcmV0
-ID0gaW14X3NjdV9nZXRfaGFuZGxlKCZ0aGVybWFsX2lwY19oYW5kbGUpOwo+ICsJaWYgKHJldCkg
-ewo+ICsJCWlmIChyZXQgPT0gLUVQUk9CRV9ERUZFUikKPiArCQkJcmV0dXJuIHJldDsKPiArCj4g
-KwkJZGV2X2VycigmcGRldi0+ZGV2LCAiZmFpbGVkIHRvIGdldCBpcGMgaGFuZGxlOiAlZCFcbiIs
-IHJldCk7Cj4gKwkJcmV0dXJuIHJldDsKPiArCX0KPiArCj4gKwlkYXRhID0gZGV2bV9remFsbG9j
-KCZwZGV2LT5kZXYsIHNpemVvZigqZGF0YSksIEdGUF9LRVJORUwpOwo+ICsJaWYgKCFkYXRhKQo+
-ICsJCXJldHVybiAtRU5PTUVNOwo+ICsKPiArCXJldCA9IG9mX3Byb3BlcnR5X3JlYWRfdTMyKG5w
-LCAidHNlbnMtbnVtIiwgJnNlbnNvcl9udW0pOwo+ICsJaWYgKHJldCB8fCAhc2Vuc29yX251bSkg
-ewo+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byBnZXQgdmFsaWQgdGVtcCBzZW5z
-b3IgbnVtYmVyIVxuIik7Cj4gKwkJcmV0dXJuIC1FSU5WQUw7Cj4gKwl9Cj4gKwo+ICsJc2Vuc29y
-cyA9IGRldm1fa3phbGxvYygmcGRldi0+ZGV2LCBzaXplb2YoKmRhdGEtPnNlbnNvcikgKiBzZW5z
-b3JfbnVtLAo+ICsJCQkgICAgICAgR0ZQX0tFUk5FTCk7Cj4gKwlpZiAoIXNlbnNvcnMpCj4gKwkJ
-cmV0dXJuIC1FTk9NRU07Cj4gKwo+ICsJZGF0YS0+c2Vuc29yID0gc2Vuc29yczsKPiArCj4gKwlu
-cCA9IG9mX2ZpbmRfbm9kZV9ieV9uYW1lKE5VTEwsICJ0aGVybWFsLXpvbmVzIik7Cj4gKwlpZiAo
-IW5wKQo+ICsJCXJldHVybiAtRU5PREVWOwo+ICsKPiArCWZvciAoaSA9IDA7IGkgPCBzZW5zb3Jf
-bnVtOyBpKyspIHsKPiArCQlzdHJ1Y3QgaW14X3NjX3NlbnNvciAqc2Vuc29yID0gJmRhdGEtPnNl
-bnNvcltpXTsKPiArCj4gKwkJc2Vuc29yX25wID0gb2ZfZ2V0X25leHRfY2hpbGQobnAsIHNlbnNv
-cl9ucCk7Cj4gKwkJcmV0ID0gaW14X3NjX3RoZXJtYWxfZ2V0X3NlbnNvcl9pZChzZW5zb3JfbnAs
-ICZzZW5zb3ItPnJlc291cmNlX2lkKTsKPiArCQlpZiAocmV0IDwgMCkgewo+ICsJCQlkZXZfZXJy
-KCZwZGV2LT5kZXYsCj4gKwkJCQkiZmFpbGVkIHRvIGdldCB2YWxpZCBzZW5zb3IgcmVzb3VyY2Ug
-aWQ6ICVkXG4iLAo+ICsJCQkJcmV0KTsKPiArCQkJYnJlYWs7Cj4gKwkJfQo+ICsKPiArCQlyZXQg
-PSBpbXhfc2NfdGhlcm1hbF9yZWdpc3Rlcl9zZW5zb3IocGRldiwgc2Vuc29yKTsKPiArCQlpZiAo
-cmV0KSB7Cj4gKwkJCWRldl9lcnIoJnBkZXYtPmRldiwgImZhaWxlZCB0byByZWdpc3RlciB0aGVy
-bWFsIHNlbnNvcjogJWRcbiIsCj4gKwkJCQlyZXQpOwo+ICsJCQlicmVhazsKPiArCQl9Cj4gKwl9
-Cj4gKwo+ICsJb2Zfbm9kZV9wdXQobnApOwo+ICsJb2Zfbm9kZV9wdXQoc2Vuc29yX25wKTsKPiAr
-Cj4gKwlyZXR1cm4gcmV0Owo+ICt9Cj4gKwo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2Rldmlj
-ZV9pZCBpbXhfc2NfdGhlcm1hbF90YWJsZVtdID0gewo+ICsJeyAuY29tcGF0aWJsZSA9ICJueHAs
-aW14OHF4cC1zYy10aGVybWFsIiwgfSwKPiArCXt9LAo+ICt9OwpzL3t9LC97fS8KCgpMb3RoYXIg
-V2HDn21hbm4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5m
-cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LWFybS1rZXJuZWwK
+On Wed, Nov 28, 2018 at 6:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 26-11-18, 14:11, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Important information is missing from user/admin cpuidle documentation
+> > available today, so add a new user/admin document for cpuidle containing
+> > current and comprehensive information to admin-guide and drop the old
+> > .txt documents it is replacing.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  Documentation/admin-guide/pm/cpuidle.rst       |  603 +++++++++++++++++++++++++
+> >  Documentation/admin-guide/pm/working-state.rst |    1
+> >  Documentation/cpuidle/core.txt                 |   23
+> >  Documentation/cpuidle/sysfs.txt                |   98 ----
+> >  4 files changed, 604 insertions(+), 121 deletions(-)
+>
+> Nice work Rafael. Minor nits below..
+
+Thanks for the typo fixes.  The spellchecker I have here evidently doesn't work.
+
+[cut]
+
+> Maybe I missed, but I couldn't find any text that says what state 0, 1, ... N
+> mean.
+
+There is a paragraph on that above.
+
+> Like which is the deepest idle state and which one is the shallowest.
+
+But this part is missing, good catch!
+
+Thanks,
+Rafael
