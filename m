@@ -1,47 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Documentation: admin-guide: PM: Add cpuidle document
-Date: Wed, 28 Nov 2018 15:01:37 +0530
-Message-ID: <20181128093137.a5d4kwgfdthlsolw@vireshk-i7>
-References: <4064391.AYvOMBeiDo@aspire.rjw.lan>
- <20181128054835.gnhistcfxy25rmwf@vireshk-i7>
- <CAJZ5v0hnX512AheTwhpj09+eyiyv6txsgGQcT2afWiB2JjjCzw@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 11/14] mfd: axp20x: Clean up included headers
+Date: Wed, 28 Nov 2018 09:33:07 +0000
+Message-ID: <20181128093306.GA4272@dell>
+References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
+ <1567a4f47e802c592a3f109c7b5e0656528e2a5c.1543245984.git-series.plaes@plaes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hnX512AheTwhpj09+eyiyv6txsgGQcT2afWiB2JjjCzw@mail.gmail.com>
+In-Reply-To: <1567a4f47e802c592a3f109c7b5e0656528e2a5c.1543245984.git-series.plaes@plaes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Sudeep Holla <sudeep.holla@arm.com>
+To: Priit Laes <plaes@plaes.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@bootlin.com>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-On 28-11-18, 10:11, Rafael J. Wysocki wrote:
-> On Wed, Nov 28, 2018 at 6:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 26-11-18, 14:11, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > Important information is missing from user/admin cpuidle documentation
-> > > available today, so add a new user/admin document for cpuidle containing
-> > > current and comprehensive information to admin-guide and drop the old
-> > > .txt documents it is replacing.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >  Documentation/admin-guide/pm/cpuidle.rst       |  603 +++++++++++++++++++++++++
-> > >  Documentation/admin-guide/pm/working-state.rst |    1
-> > >  Documentation/cpuidle/core.txt                 |   23
-> > >  Documentation/cpuidle/sysfs.txt                |   98 ----
-> > >  4 files changed, 604 insertions(+), 121 deletions(-)
-> >
-> > Nice work Rafael. Minor nits below..
+On Mon, 26 Nov 2018, Priit Laes wrote:
+
+> From: Olliver Schinagl <oliver@schinagl.nl>
 > 
-> Thanks for the typo fixes.  The spellchecker I have here evidently doesn't work.
+> Add the bitops.h header as we need it, alphabetize header order.
+> 
+> Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
+> Signed-off-by: Priit Laes <plaes@plaes.org>
+> ---
+>  drivers/mfd/axp20x.c | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
 
-I have this in my .vimrc and I am shown these spelling mistakes somewhat
-forcefully :)
+Nit: You are making 2 separate functional changes here.  In future
+please submit functional changes in separate patches.
 
-set spell spelllang=en_us
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
 -- 
-viresh
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
