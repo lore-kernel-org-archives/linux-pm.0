@@ -1,112 +1,46 @@
-From: Maxime Ripard <maxime.ripard@bootlin.com>
-Subject: Re: [PATCH 09/14] regulator: dts: add full voltage range to LDO4 on
- the Lime2
-Date: Wed, 28 Nov 2018 10:56:39 +0100
-Message-ID: <20181128095639.t4ogsk6ovyu2yaxu@flea>
-References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
- <0b1aa5b28cb5efe17c04150a181ef1fa4027bc55.1543245984.git-series.plaes@plaes.org>
- <20181127093852.2iavgo4xipjnu25l@flea>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: [PATCH V3 3/4] defconfig: arm64: add i.MX system controller thermal
+ support
+Date: Wed, 28 Nov 2018 09:59:07 +0000
+Message-ID: <1543398783-3185-4-git-send-email-Anson.Huang__4784.89002348414$1543399055$gmane$org@nxp.com>
+References: <1543398783-3185-1-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2lymjsckr36agz46"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181127093852.2iavgo4xipjnu25l@flea>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Priit Laes <plaes@plaes.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1543398783-3185-1-git-send-email-Anson.Huang@nxp.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Aisheng DONG <aisheng.dong@nxp.com>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "arnd@arndb.de" <arnd@arndb.de>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "olof@lixom.net" <olof@lixom.net>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "LW@KARO-electronics.de" <LW@KARO-elec>
+Cc: dl-linux-imx <linux-imx@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
+This patch enables CONFIG_IMX_SC_THERMAL as module.
 
---2lymjsckr36agz46
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-On Tue, Nov 27, 2018 at 10:38:52AM +0100, Maxime Ripard wrote:
-> On Mon, Nov 26, 2018 at 05:27:50PM +0200, Priit Laes wrote:
-> > From: Olliver Schinagl <oliver@schinagl.nl>
-> >=20
-> > With commit b43776d65a33b46092 ("ARM: dts: sunxi: Use axp209.dtsi for
-> > Olinuxino Lime2") we force them an arbitrary 2.8 volts. Granted, for
-> > LDO3 this may be less arbitrary, but for LDO4 this is just wrong.
-> >=20
-> > In the defense of LDO3, LDO3 is the regulator that feeds port bank E,
-> > which has no other purpose then a CSI/TS interface, however the case
-> > may still be, that the connected IO may be just as well be 3.3 volts.
-> > The big misnomer is however, that the schematic names GPIO-2 pin4
-> > LDO3_2.8V, rather then VDD-CSI0 or similar.
-> >=20
-> > This is much worse for LDO4 however, which is not referenced on any
-> > pin, is now set to 2.8 volts, but port bank G can also support various
-> > other peripherals such as UARTS etc.
-> >=20
-> > By having 2.8 volts however for LDO4, we thus now have peripherals that
-> > no longer function properly all of the time.
-> >=20
-> > Ideally, we want to set a supply voltage for each port bank, but the
-> > monolithic nature of the sunxi pinctroller currently prevents this and
-> > as such, the board should at least configure the LDO4 with the proper
-> > ranges.
-> >=20
-> > Until we can set the consumer at the port bank level, a child
-> > device-tree has to do something like:
-> >=20
-> > &reg_ldo4 {
-> >     regulator-min-microvolt =3D <3300000>;
-> >     regulator-max-microvolt =3D <3300000>;
-> > };
-> >=20
-> > While doing this the same way results in the same solution currently,
-> > we force the hack into the final devicetree rather then having it wrong
-> > at the board level.
-> >=20
-> > Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
-> > Signed-off-by: Priit Laes <plaes@plaes.org>
-> > ---
-> >  arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts | 7 ++++---
-> >  1 file changed, 4 insertions(+), 3 deletions(-)
-> >=20
-> > diff --git a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts b/arch/arm=
-/boot/dts/sun7i-a20-olinuxino-lime2.dts
-> > index ffafe97..1b9867f 100644
-> > --- a/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
-> > +++ b/arch/arm/boot/dts/sun7i-a20-olinuxino-lime2.dts
-> > @@ -250,9 +250,10 @@
-> >  };
-> > =20
-> >  &reg_ldo4 {
-> > -	regulator-min-microvolt =3D <2800000>;
-> > -	regulator-max-microvolt =3D <2800000>;
-> > -	regulator-name =3D "vddio-csi1";
-> > +	regulator-always-on;
-> > +	regulator-min-microvolt =3D <1250000>;
-> > +	regulator-max-microvolt =3D <3300000>;
-> > +	regulator-name =3D "vdd-io-pg";
->=20
-> As we discussed on the U-Boot ML already, this shouldn't be made
-> always-on but tied to the consumer device (the pinctrl one) instead.
-
-Can you test that patch (not tested):
-http://code.bulix.org/h02vha-514284?raw
-
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
-
---2lymjsckr36agz46
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCW/5mVwAKCRDj7w1vZxhR
-xVFQAQC+r68rQ7ExhxasRM817Bj/h9jucmxZwlh2jfs6MPvaCAD/RTi/ro68kT5N
-o+HYB8oNcmvZ0LlofxDy6ZXY8yxEMw4=
-=MtaY
------END PGP SIGNATURE-----
-
---2lymjsckr36agz46--
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index abd80c5..9f12324 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -376,6 +376,7 @@ CONFIG_SENSORS_RASPBERRYPI_HWMON=m
+ CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
++CONFIG_IMX_SC_THERMAL=m
+ CONFIG_ROCKCHIP_THERMAL=m
+ CONFIG_RCAR_GEN3_THERMAL=y
+ CONFIG_ARMADA_THERMAL=y
+-- 
+2.7.4
