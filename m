@@ -1,79 +1,57 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal/drivers/hisi: Fix bad initialization
-Date: Thu, 29 Nov 2018 19:28:28 +0100
-Message-ID: <835c09ee-17e1-cfdb-842b-f5f2d977689a@linaro.org>
-References: <1543516016-28186-1-git-send-email-daniel.lezcano@linaro.org>
+From: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [driver-core PATCH v7 2/9] driver core: Establish clear order of
+ operations for deferred probe and remove
+Date: Thu, 29 Nov 2018 10:55:08 -0800
+Message-ID: <CAPcyv4j2w6ygzuP-vEKPk6NGLCEB6FcKTVFQkUqr3HC471xJsg@mail.gmail.com>
+References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <CAPcyv4gMswOJ3VTaY6P7f=iG_jNBKZyynn22CLrEBB13Fq-8vQ@mail.gmail.com>
+ <a5b33ae899fc4131abf0f26af33a6c6b7f462431.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1543516016-28186-1-git-send-email-daniel.lezcano@linaro.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: vincent.guittot@linaro.org, john.stultz@linaro.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <a5b33ae899fc4131abf0f26af33a6c6b7f462431.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Nov 29, 2018 at 10:07 AM Alexander Duyck
+<alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+>
+> On Wed, 2018-11-28 at 17:57 -0800, Dan Williams wrote:
+[..]
+> > I think the flag should be named "cancel" and set it in the
+> > device_del() path. Otherwise this is encoding code flow state in the
+> > struct rather than device-state that the code needs to comprehend.
+>
+> Instead of "cancel" what would you think of "dead"? In my mind once we
+> call device_del we are essentially working with a dead device object so
+> that might make more sense in terms of a state rather than "cancel"
+> which doesn't really tell us what should be canceled.
 
-Sorry typo in Vincent's email address, fixed now.
+That sounds good to me.
 
-On 29/11/2018 19:26, Daniel Lezcano wrote:
-> Without this patch, the thermal driver on hi6220 and hi3660 is broken.
-> 
-> That is due because part of the posted patchset was merged but a small
-> change in the DT was dropped.
-> 
-> The hi6220 and hi3660 do not have an interrupt name in the DT, so
-> finding interrupt by name fails.
-> 
-> In addition, the hi3660 only defines one thermal zone in the DT and we
-> are trying to register two sensors assuming we have two thermal zones
-> in the DT.
-> 
-> Fix this by adding a couple of line of code to add back compatibility
-> with older DT and change the sensors number to 1 for the hi3660.
-> 
-> Fixes: 2cffaeff083f (thermal/drivers/hisi: Use platform_get_irq_byname)
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/hisi_thermal.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index c4111a9..3ab0e63 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -424,7 +424,7 @@ static int hi3660_thermal_probe(struct hisi_thermal_data *data)
->  	struct platform_device *pdev = data->pdev;
->  	struct device *dev = &pdev->dev;
->  
-> -	data->nr_sensors = 2;
-> +	data->nr_sensors = 1;
->  
->  	data->sensor = devm_kzalloc(dev, sizeof(*data->sensor) *
->  				    data->nr_sensors, GFP_KERNEL);
-> @@ -590,8 +590,13 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  		}
->  
->  		ret = platform_get_irq_byname(pdev, sensor->irq_name);
-> -		if (ret < 0)
-> -			return ret;
-> +		if (ret <= 0) {
-> +			ret = platform_get_irq(pdev, 0);
-> +			if (ret <=  0) {
-> +				dev_err(dev, "Failed get interrupt: %d\n", ret);
-> +				return ret;
-> +			}
-> +		}
->  
->  		ret = devm_request_threaded_irq(dev, ret, NULL,
->  						hisi_thermal_alarm_irq_thread,
-> 
+> Looking over the code I could probably set it before we start calling
+> the notifiers for BUS_NOTIFY_DEL_DEVICE. The only thing I am not sure
+> about is if we would need to add any sort of synchronization primitives
+> around it.
+>
 
+I think it needs to be something like a barrier:
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+    dev->dead;
+    device_lock();
+    device_unlock();
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+...where you can be sure that anyone after that device_unlock() has
+acted on dev->dead, or will see dev->dead.
