@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 12/27] drivers: firmware: psci: Simplify state node parsing
-Date: Thu, 29 Nov 2018 18:46:45 +0100
-Message-ID: <20181129174700.16585-13-ulf.hansson@linaro.org>
+Subject: [PATCH v10 14/27] drivers: firmware: psci: Simplify error path of psci_dt_init()
+Date: Thu, 29 Nov 2018 18:46:47 +0100
+Message-ID: <20181129174700.16585-15-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
@@ -10,69 +10,93 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Instead of iterating through all the state nodes in DT, to find out how
-many states that needs to be allocated, let's use the number already known
-by the cpuidle driver. In this way we can drop the iteration altogether.
+Instead of having each psci init function taking care of the of_node_put(),
+let's deal with that from psci_dt_init(), as this enables a bit simpler
+error path for each psci init function.
 
+Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
 ---
 
 Changes in v10:
-	- New patch.
+	- None.
 
 ---
- drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ drivers/firmware/psci/psci.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index d50b46a0528f..cbfc936d251c 100644
+index 631e20720a22..6bfa47cbd174 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
- static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 			struct device_node *cpu_node, int cpu)
- {
--	int i, ret = 0, count = 0;
-+	int i, ret = 0, num_state_nodes = drv->state_count - 1;
- 	u32 *psci_states;
- 	struct device_node *state_node;
+@@ -609,9 +609,9 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	int err;
  
--	/* Count idle states */
--	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--					      count))) {
--		count++;
--		of_node_put(state_node);
--	}
+ 	err = get_set_conduit_method(np);
 -
--	if (!count)
--		return -ENODEV;
--
--	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-+	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
-+			GFP_KERNEL);
- 	if (!psci_states)
- 		return -ENOMEM;
- 
--	for (i = 0; i < count; i++) {
-+	for (i = 0; i < num_state_nodes; i++) {
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		if (!state_node)
-+			break;
+ 	if (err)
+-		goto out_put_node;
++		return err;
 +
- 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
- 		of_node_put(state_node);
+ 	/*
+ 	 * Starting with v0.2, the PSCI specification introduced a call
+ 	 * (PSCI_VERSION) that allows probing the firmware version, so
+@@ -619,11 +619,7 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	 * can be carried out according to the specific version reported
+ 	 * by firmware
+ 	 */
+-	err = psci_probe();
+-
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return psci_probe();
+ }
  
-@@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
+ /*
+@@ -635,9 +631,8 @@ static int __init psci_0_1_init(struct device_node *np)
+ 	int err;
+ 
+ 	err = get_set_conduit_method(np);
+-
+ 	if (err)
+-		goto out_put_node;
++		return err;
+ 
+ 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
+ 
+@@ -661,9 +656,7 @@ static int __init psci_0_1_init(struct device_node *np)
+ 		psci_ops.migrate = psci_migrate;
  	}
  
-+	if (i != num_state_nodes) {
-+		ret = -ENODEV;
-+		goto free_mem;
-+	}
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return 0;
+ }
+ 
+ static const struct of_device_id psci_of_match[] __initconst = {
+@@ -678,6 +671,7 @@ int __init psci_dt_init(void)
+ 	struct device_node *np;
+ 	const struct of_device_id *matched_np;
+ 	psci_initcall_t init_fn;
++	int ret;
+ 
+ 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
+ 
+@@ -685,7 +679,10 @@ int __init psci_dt_init(void)
+ 		return -ENODEV;
+ 
+ 	init_fn = (psci_initcall_t)matched_np->data;
+-	return init_fn(np);
++	ret = init_fn(np);
 +
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
++	of_node_put(np);
++	return ret;
+ }
+ 
+ #ifdef CONFIG_ACPI
 -- 
 2.17.1
