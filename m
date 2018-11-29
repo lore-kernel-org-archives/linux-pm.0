@@ -1,88 +1,294 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v18 1/5] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Thu, 29 Nov 2018 20:25:20 +0530
-Message-ID: <CAFp+6iEC8hobAdVF5nLdhQdCUqbi1xa4Vi-NLugGshV=dg+h1A@mail.gmail.com>
-References: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
-	<20181127101145.7682-2-vivek.gautam@codeaurora.org>
-	<154342225921.88331.14467967828250776155@swboyd.mtv.corp.google.com>
-	<0d76b669-6c4f-7c3b-50a1-084201f2c07a@arm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V4 2/4] thermal: imx_sc: add i.MX system controller
+ thermal support
+Date: Thu, 29 Nov 2018 08:49:09 -0800
+Message-ID: <20181129164908.GB2688@localhost.localdomain>
+References: <1543458696-4741-1-git-send-email-Anson.Huang@nxp.com>
+ <1543458696-4741-3-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <0d76b669-6c4f-7c3b-50a1-084201f2c07a-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
-	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1543458696-4741-3-git-send-email-Anson.Huang@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, Aisheng DONG <aisheng.dong@nxp.com>, Andy Gross <andy.gross@linaro.org>, "heiko@sntech.de" <heiko@sntech.de>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "arnd@arndb.de" <arnd@arndb.de>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "olof@lixom.net" <olof@lixom.net>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, shawnguo@ker
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 28, 2018 at 10:07 PM Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org> wrote:
->
-> On 28/11/2018 16:24, Stephen Boyd wrote:
-> > Quoting Vivek Gautam (2018-11-27 02:11:41)
-> >> @@ -1966,6 +1970,23 @@ static const struct of_device_id arm_smmu_of_match[] = {
-> >>   };
-> >>   MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
-> >>
-> >> +static void arm_smmu_fill_clk_data(struct arm_smmu_device *smmu,
-> >> +                                  const char * const *clks)
-> >> +{
-> >> +       int i;
-> >> +
-> >> +       if (smmu->num_clks < 1)
-> >> +               return;
-> >> +
-> >> +       smmu->clks = devm_kcalloc(smmu->dev, smmu->num_clks,
-> >> +                                 sizeof(*smmu->clks), GFP_KERNEL);
-> >> +       if (!smmu->clks)
-> >> +               return;
-> >> +
-> >> +       for (i = 0; i < smmu->num_clks; i++)
-> >> +               smmu->clks[i].id = clks[i];
-> >
-> > Is this clk_bulk_get_all()?
+On Thu, Nov 29, 2018 at 02:37:32AM +0000, Anson Huang wrote:
+> i.MX8QXP is an ARMv8 SoC which has a Cortex-M4 system controller
+> inside, the system controller is in charge of controlling power,
+> clock and thermal sensors etc..
+> 
+> This patch adds i.MX system controller thermal driver support,
+> Linux kernel has to communicate with system controller via MU
+> (message unit) IPC to get each thermal sensor's temperature,
+> it supports multiple sensors which are passed from device tree,
+> please see the binding doc for details.
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> ---
+> ChangeLog:
+> V3->V4:
+>   *merge request/response message structure into one struction;
+>   *change the compatible string to start with "fsl" instead of "nxp" to align with other nodes in dtb.
+> ---
+>  drivers/thermal/Kconfig          |  11 +++
+>  drivers/thermal/Makefile         |   1 +
+>  drivers/thermal/imx_sc_thermal.c | 205 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 217 insertions(+)
+>  create mode 100644 drivers/thermal/imx_sc_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 0e69edc..84e850c 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -222,6 +222,17 @@ config IMX_THERMAL
+>  	  cpufreq is used as the cooling device to throttle CPUs when the
+>  	  passive trip is crossed.
+>  
+> +config IMX_SC_THERMAL
+> +	tristate "Temperature sensor driver for NXP i.MX SoCs with System Controller"
+> +	depends on ARCH_MXC || COMPILE_TEST
+> +	depends on OF
+> +	help
+> +	  Support for Temperature Monitor (TEMPMON) found on NXP i.MX SoCs with
+> +	  system controller inside, Linux kernel has to communicate with system
+> +	  controller via MU (message unit) IPC to get temperature from thermal
+> +	  sensor. It supports one critical trip point and one
+> +	  passive trip point for each thermal sensor.
+> +
+>  config MAX77620_THERMAL
+>  	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
+>  	depends on MFD_MAX77620
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 610344e..1b13f6a 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -41,6 +41,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+>  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+>  obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+>  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+> +obj-$(CONFIG_IMX_SC_THERMAL)	+= imx_sc_thermal.o
+>  obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
+>  obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
+>  obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
+> diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
+> new file mode 100644
+> index 0000000..ce8e2de
+> --- /dev/null
+> +++ b/drivers/thermal/imx_sc_thermal.c
+> @@ -0,0 +1,205 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * Copyright 2018 NXP.
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/firmware/imx/sci.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +#include <linux/thermal.h>
+> +
+> +#include "thermal_core.h"
+> +
+> +#define IMX_SC_MISC_FUNC_GET_TEMP	13
+> +#define IMX_SC_C_TEMP			0
+> +
+> +static struct imx_sc_ipc *thermal_ipc_handle;
+> +
+> +struct imx_sc_sensor {
+> +	struct thermal_zone_device *tzd;
+> +	u32 resource_id;
+> +};
+> +
+> +struct imx_sc_thermal_data {
+> +	struct imx_sc_sensor *sensor;
+> +};
+> +
+> +struct req_get_temp {
+> +	u16 resource_id;
+> +	u8 type;
+> +} __packed;
+> +
+> +struct resp_get_temp {
+> +	u16 celsius;
+> +	u8 tenths;
+> +} __packed;
+> +
+> +struct imx_sc_msg_misc_get_temp {
+> +	struct imx_sc_rpc_msg hdr;
+> +	union {
+> +		struct req_get_temp req;
+> +		struct resp_get_temp resp;
+> +	} data;
+> +} __packed;
+> +
+> +static int imx_sc_thermal_get_temp(void *data, int *temp)
+> +{
+> +	struct imx_sc_msg_misc_get_temp msg;
+> +	struct imx_sc_rpc_msg *hdr = &msg.hdr;
+> +	struct imx_sc_sensor *sensor = data;
+> +	int ret;
+> +
+> +	msg.data.req.resource_id = sensor->resource_id;
+> +	msg.data.req.type = IMX_SC_C_TEMP;
+> +
+> +	hdr->ver = IMX_SC_RPC_VERSION;
+> +	hdr->svc = IMX_SC_RPC_SVC_MISC;
+> +	hdr->func = IMX_SC_MISC_FUNC_GET_TEMP;
+> +	hdr->size = 2;
+> +
+> +	ret = imx_scu_call_rpc(thermal_ipc_handle, &msg, true);
+> +	if (ret) {
+> +		pr_err("read temp sensor %d failed, ret %d\n",
+> +			sensor->resource_id, ret);
+> +		return ret;
+> +	}
+> +
+> +	*temp = msg.data.resp.celsius * 1000 + msg.data.resp.tenths * 100;
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct thermal_zone_of_device_ops imx_sc_thermal_ops = {
+> +	.get_temp = imx_sc_thermal_get_temp,
+> +};
+> +
+> +static int imx_sc_thermal_register_sensor(struct platform_device *pdev,
+> +					  struct imx_sc_sensor *sensor)
+> +{
+> +	struct thermal_zone_device *tzd;
+> +
+> +	tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+> +						   sensor->resource_id,
+> +						   sensor,
+> +						   &imx_sc_thermal_ops);
+> +	if (IS_ERR(tzd)) {
+> +		dev_err(&pdev->dev, "failed to register sensor: %d\n",
+> +			sensor->resource_id);
+> +		return PTR_ERR(tzd);
+> +	}
+> +
+> +	sensor->tzd = tzd;
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_sc_thermal_get_sensor_id(struct device_node *sensor_np, u32 *id)
+> +{
+> +	struct of_phandle_args sensor_specs;
+> +	int ret;
+> +
+> +	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+> +			"#thermal-sensor-cells",
+> +			0, &sensor_specs);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (sensor_specs.args_count >= 1) {
+> +		*id = sensor_specs.args[0];
+> +		WARN(sensor_specs.args_count > 1,
+> +				"%pOFn: too many cells in sensor specifier %d\n",
+> +				sensor_specs.np, sensor_specs.args_count);
+> +	} else {
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int imx_sc_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np = pdev->dev.of_node;
+> +	struct device_node *sensor_np = NULL;
+> +	struct imx_sc_thermal_data *data;
+> +	struct imx_sc_sensor *sensors;
+> +	u32 sensor_num;
+> +	int ret, i;
+> +
+> +	ret = imx_scu_get_handle(&thermal_ipc_handle);
+> +	if (ret) {
+> +		if (ret == -EPROBE_DEFER)
+> +			return ret;
+> +
+> +		dev_err(&pdev->dev, "failed to get ipc handle: %d!\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	ret = of_property_read_u32(np, "tsens-num", &sensor_num);
+> +	if (ret || !sensor_num) {
+> +		dev_err(&pdev->dev, "failed to get valid temp sensor number!\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	sensors = devm_kzalloc(&pdev->dev, sizeof(*data->sensor) * sensor_num,
+> +			       GFP_KERNEL);
+> +	if (!sensors)
+> +		return -ENOMEM;
+> +
+> +	data->sensor = sensors;
+> +
+> +	np = of_find_node_by_name(NULL, "thermal-zones");
+> +	if (!np)
+> +		return -ENODEV;
+> +
+> +	for (i = 0; i < sensor_num; i++) {
+> +		struct imx_sc_sensor *sensor = &data->sensor[i];
+> +
+> +		sensor_np = of_get_next_child(np, sensor_np);
+> +		ret = imx_sc_thermal_get_sensor_id(sensor_np, &sensor->resource_id);
 
->From what I remember, and now I could go back to v7 and check [1], we parked
-clk_bulk_get out of OF's sole purview as we also have
-arm_smmu_device_acpi_probe() besides arm_smmu_device_dt_probe().
+Interesting.. another driver willing to have a get sensor id from DT.
+Can you please describe why you need this? Why not simply registering
+all sensors?
 
-arm_smmu_device_dt_probe() could get the clocks from dt and fill in
-the clock bulk data, and
-similarly, arm_smmu_device_acpi_probe() could fill the clock bulk data
-by getting it from ACPI.
-
-clk_bulk_get_all() seems like going only the OF way.
-Is there another way here to have something common between ACPI
-and OF, and then do the clk_bulk_get?
-
-[1] https://lore.kernel.org/patchwork/patch/881365/
-
-Thanks & regards
-Vivek
-
->
-> Ooh, did that finally get merged while we weren't looking? Great!
->
-> Much as I don't want to drag this series out to a v19, it *would* be
-> neat if we no longer need to open-code that bit...
->
-> Robin.
-> _______________________________________________
-> iommu mailing list
-> iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-> https://lists.linuxfoundation.org/mailman/listinfo/iommu
-
-
-
---
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+> +		if (ret < 0) {
+> +			dev_err(&pdev->dev,
+> +				"failed to get valid sensor resource id: %d\n",
+> +				ret);
+> +			break;
+> +		}
+> +
+> +		ret = imx_sc_thermal_register_sensor(pdev, sensor);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
+> +				ret);
+> +			break;
+> +		}
+> +	}
+> +
+> +	of_node_put(np);
+> +	of_node_put(sensor_np);
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct of_device_id imx_sc_thermal_table[] = {
+> +	{ .compatible = "fsl,imx8qxp-sc-thermal", },
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(of, imx_sc_thermal_table);
+> +
+> +static struct platform_driver imx_sc_thermal_driver = {
+> +		.probe = imx_sc_thermal_probe,
+> +		.driver = {
+> +			.name = "imx-sc-thermal",
+> +			.of_match_table = imx_sc_thermal_table,
+> +		},
+> +};
+> +module_platform_driver(imx_sc_thermal_driver);
+> +
+> +MODULE_AUTHOR("Anson Huang <Anson.Huang@nxp.com>");
+> +MODULE_DESCRIPTION("Thermal driver for NXP i.MX SoCs with system controller");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 2.7.4
+> 
