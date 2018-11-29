@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [PATCH V4 4/4] ARM64: dts: imx: add i.MX8QXP thermal support
-Date: Thu, 29 Nov 2018 08:50:07 -0800
-Message-ID: <20181129165006.GC2688@localhost.localdomain>
+Date: Thu, 29 Nov 2018 08:50:41 -0800
+Message-ID: <20181129165040.GD2688@localhost.localdomain>
 References: <1543458696-4741-1-git-send-email-Anson.Huang@nxp.com>
  <1543458696-4741-5-git-send-email-Anson.Huang@nxp.com>
 Mime-Version: 1.0
@@ -66,10 +66,10 @@ On Thu, Nov 29, 2018 at 02:37:47AM +0000, Anson Huang wrote:
 > +					temperature = <107000>;
 > +					hysteresis = <2000>;
 > +					type = "passive";
+
+Passive, but yet no cooling maps?
+
 > +				};
-
-A passive trip but no cooling maps?
-
 > +				cpu_crit0: trip1 {
 > +					temperature = <127000>;
 > +					hysteresis = <2000>;
