@@ -1,164 +1,161 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] Documentation: admin-guide: PM: Add cpuidle document
-Date: Thu, 29 Nov 2018 19:03:09 +0100
-Message-ID: <CAPDyKFqE8PqEnvYkz=VwBrOtqrsCJLvjLsVvV60MDdUjbMWpew@mail.gmail.com>
-References: <9986634.fXZiTbRPzQ@aspire.rjw.lan> <CAPDyKFp_1nCF7nn0dXYbm_kJDo+0rp8O1nGPFH+NrS3wz8RW1Q@mail.gmail.com>
- <CAJZ5v0gkJMYQEqVScOY_9_MWpWKfw_Ji1csEoiRu+YVy24BrTg@mail.gmail.com>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [driver-core PATCH v7 2/9] driver core: Establish clear order
+ of operations for deferred probe and remove
+Date: Thu, 29 Nov 2018 10:07:13 -0800
+Message-ID: <a5b33ae899fc4131abf0f26af33a6c6b7f462431.camel@linux.intel.com>
+References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <CAPcyv4gMswOJ3VTaY6P7f=iG_jNBKZyynn22CLrEBB13Fq-8vQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gkJMYQEqVScOY_9_MWpWKfw_Ji1csEoiRu+YVy24BrTg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, jacob.jun.pan@linux.intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-doc@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, ggherdovich@suse.cz, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <CAPcyv4gMswOJ3VTaY6P7f=iG_jNBKZyynn22CLrEBB13Fq-8vQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Nov 2018 at 11:28, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Nov 29, 2018 at 9:07 AM Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >
-> > On Wed, 28 Nov 2018 at 12:47, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > Important information is missing from user/admin cpuidle documentation
-> > > available today, so add a new user/admin document for cpuidle containing
-> > > current and comprehensive information to admin-guide and drop the old
-> > > .txt documents it is replacing.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> >
-> > Wow! Great work!
-> >
-> > [...]
-> >
-> > > +.. _idle-states-representation:
-> > > +
-> > > +Representation of Idle States
-> > > +=============================
-> > > +
-> > > +For the CPU idle time management purposes all of the physical idle states
-> > > +supported by the processor have to be represented as a one-dimensional array of
-> > > +|struct cpuidle_state| objects each allowing an individual (logical) CPU to ask
-> > > +the processor hardware to enter an idle state of certain properties.  If there
-> > > +is a hierarchy of units in the processor, one |struct cpuidle_state| object can
-> > > +cover a combination of idle states supported by the units at different levels of
-> > > +the hierarchy.  In that case, the `target residency and exit latency parameters
-> > > +of it <idle-loop_>`_, must reflect the properties of the idle state at the
-> > > +deepest level (i.e. the idle state of the unit containing all of the other
-> > > +units).
-> > > +
-> > > +For example, take a processor with two cores in a larger unit referred to as
-> > > +a "module" and suppose that asking the hardware to enter a specific idle state
-> > > +(say "X") at the "core" level by one core will trigger the module to try to
-> > > +enter a specific idle state of its own (say "MX") if the other core is in idle
-> > > +state "X" already.  In other words, asking for idle state "X" at the "core"
-> > > +level gives the hardware a license to go as deep as to idle state "MX" at the
-> > > +"module" level, but there is no guarantee that this is going to happen (the core
-> > > +asking for idle state "X" may just end up in that state by itself instead).
-> >
-> > This is a good description of a HW like x86 and ARM64 (using PSCI in
-> > platform coordinated mode).
-> >
-> > However, for "legacy" ARM products, having at least two cores in a
-> > module, this description does in many cases *not* match how the HW
-> > works. I wonder about other architectures.
->
-> Well, this is an example and it is very clearly presented this way IMO
-> (it says "for example" upfront and then "suppose" etc).
->
-> Basically, the purpose of it is to explain that the parameters shown
-> in sysfs may be effective.
->
-> > My point is, I think it would be fair to mention that the above
-> > description is specific to certain HWs. In other words, for HWs that
-> > leaves the entire state synchronization of the last man standing
-> > algorithm to be managed by a FW, the cpuidle framework plays well. But
-> > for others it has limitations.
->
-> I can add it after this entire paragraph I think.  Something like
->
-> "There are processors without direct coordination between different
-> levels of the hierarchy of units inside them, however.  In those cases
-> asking for an idle state at the "core" level does not automatically
-> affect the "module" level, for example, in any way and the CPUIdle
-> driver is responsible for the entire handling of the hierarchy.  Then,
-> the definition of the idle state objects is entirely up to the driver,
-> but still the physical properties of the idle state that the processor
-> hardware finally goes into must always follow the parameters used by
-> the governor for idle state selection (for instance, the actual exit
-> latency of that idle state must not exceed the exit latency parameter
-> of the idle state object selected by the governor)."
+On Wed, 2018-11-28 at 17:57 -0800, Dan Williams wrote:
+> On Wed, Nov 28, 2018 at 4:32 PM Alexander Duyck
+> <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+> > 
+> > Add an additional bit flag to the device struct named async_probe. This
+> > additional flag allows us to guarantee ordering between probe and remove
+> > operations.
+> > 
+> > This allows us to guarantee that if we execute a remove operation on a
+> 
+> You missed the review comment on the usage of "us". I've long been an
+> abuser of this as well saying "we" and "us" to casually refer to
+> whatever part of the kernel I'm currently modifying. The problem is
+> that it is ambiguous and assumes the reader happens translates the
+> "us" / "we" to the same specific subject you had in mind. It leaves
+> room for confusion that can be eliminated by explicitly referencing
+> the expected agent, subject, object in mind.
+> 
+> I long blew off suggestions to correct usages like this, but it
+> finally sunk in for me after reading Thomas' rewrite of a "we" and
+> "this" laden changelog, and why he and other tip-maintainers want to
+> push back on the usage in the tip tree, see the "Changelog" section of
+> the guidance in "[patch 2/2] Documentation/process: Add tip tree
+> handbook": https://lkml.org/lkml/2018/11/7/932.
+> 
+> Patch review is quicker without the speed bumps of translating
+> occurrences of the "we" and "us"
 
-I like this! This leaves some room for understanding that cpuidle has
-limitations when in comes down to these kind of platforms, which seems
-like reasonable statement to include.
+It wasn't my intention to blow it off. I have gone through and updated
+it in my repo and I can see how it can be confusing as in one spot  I
+wasn't sure if the "we"/"us" was the probe or the remove routine.
 
-With that, feel free to add:
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > given interface it will not attempt to update the driver member
+> > asynchronously following the earlier operation. Previously this guarantee
+> > was not present and could result in us attempting to remove a driver from
+> > an interface only to have it attempt to attach the driver later when we
+> > finally complete the deferred asynchronous probe call.
+> > 
+> > Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
+> > Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> > ---
+> >  drivers/base/dd.c      |   16 ++++++++++++++++
+> >  include/linux/device.h |    3 +++
+> >  2 files changed, 19 insertions(+)
+> > 
+> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > index 88713f182086..ef3f70a7cb5a 100644
+> > --- a/drivers/base/dd.c
+> > +++ b/drivers/base/dd.c
+> > @@ -774,6 +774,10 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+> > 
+> >         device_lock(dev);
+> > 
+> > +       /* nothing to do if async_probe has been cleared */
+> > +       if (!dev->async_probe)
+> > +               goto out_unlock;
+> > +
+> >         if (dev->parent)
+> >                 pm_runtime_get_sync(dev->parent);
+> > 
+> > @@ -785,6 +789,9 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+> >         if (dev->parent)
+> >                 pm_runtime_put(dev->parent);
+> > 
+> > +       /* We made our attempt at an async_probe, clear the flag */
+> > +       dev->async_probe = false;
+> > +out_unlock:
+> >         device_unlock(dev);
+> > 
+> >         put_device(dev);
+> > @@ -829,6 +836,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+> >                          */
+> >                         dev_dbg(dev, "scheduling asynchronous probe\n");
+> >                         get_device(dev);
+> > +                       dev->async_probe = true;
+> >                         async_schedule(__device_attach_async_helper, dev);
+> >                 } else {
+> >                         pm_request_idle(dev);
+> > @@ -929,6 +937,14 @@ static void __device_release_driver(struct device *dev, struct device *parent)
+> >  {
+> >         struct device_driver *drv;
+> > 
+> > +       /*
+> > +        * In the event that we are asked to release the driver on an
+> > +        * interface that is still waiting on a probe we can just terminate
+> > +        * the probe by setting async_probe to false. When the async call
+> > +        * is finally completed it will see this state and just exit.
+> > +        */
+> > +       dev->async_probe = false;
+> > +
+> >         drv = dev->driver;
+> >         if (drv) {
+> >                 while (device_links_busy(dev)) {
+> > diff --git a/include/linux/device.h b/include/linux/device.h
+> > index 1b25c7a43f4c..4d2eb2c74149 100644
+> > --- a/include/linux/device.h
+> > +++ b/include/linux/device.h
+> > @@ -957,6 +957,8 @@ struct dev_links_info {
+> >   *              device.
+> >   * @dma_coherent: this particular device is dma coherent, even if the
+> >   *             architecture supports non-coherent devices.
+> > + * @async_probe: This device has an asynchronous probe event pending. Should
+> > + *              only be updated while holding device lock.
+> >   *
+> >   * At the lowest level, every device in a Linux system is represented by an
+> >   * instance of struct device. The device structure contains the information
+> > @@ -1051,6 +1053,7 @@ struct device {
+> >      defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+> >         bool                    dma_coherent:1;
+> >  #endif
+> > +       bool                    async_probe:1;
+> 
+> I think this flag is misnamed, the wrong polarity and should be set in
+> the device removal path, not the driver detach path. The wider problem
+> is the removal of a device while actions initiated by its arrival may
+> still be in flight, or have yet to start. It's not just the probe path
+> in the driver-core that might be interested in this state, but also
+> bus implementations that kick off their own async operations.
 
->
-> >
-> > > +Then, the target residency of the |struct cpuidle_state| object representing
-> > > +idle state "X" must reflect the minimum time to spend in idle state "MX" of
-> > > +the module (including the time needed to enter it), because that is the minimum
-> > > +time the CPU needs to be idle to save any energy in case the hardware enters
-> > > +that state.  Analogously, the exit latency parameter of that object must cover
-> > > +the exit time of idle state "MX" of the module (and usually its entry time too),
-> > > +because that is the maximum delay between a wakeup signal and the time the CPU
-> > > +will start to execute the first new instruction (assuming that both cores in the
-> > > +module will always be ready to execute instructions as soon as the module
-> > > +becomes operational as a whole).
-> >
-> > For the HW working as you described, this is a nice clarification, thanks!
-> >
-> > [...]
-> >
-> > > +
-> > > +.. _cpu-pm-qos:
-> > > +
-> > > +Power Management Quality of Service for CPUs
-> > > +============================================
-> > > +
-> > > +The power management quality of service (PM QoS) framework in the Linux kernel
-> > > +allows kernel code and user space processes to set constraints on various
-> > > +energy-efficiency features of the kernel to prevent performance from dropping
-> > > +below a required level.  The PM QoS constraints can be set globally, in
-> > > +predefined categories referred to as PM QoS classes, or against individual
-> > > +devices.
-> > > +
-> > > +CPU idle time management can be affected by PM QoS in two ways, through the
-> > > +global constraint in the ``PM_QOS_CPU_DMA_LATENCY`` class and through the
-> >
-> > No objections to the description, it's really nice! However, the
-> > naming of this QOS class, is to me, rather confusing.
->
-> Yes, it is confusing.
->
-> > I realize renaming the sysfs node is not an option,
->
-> That is a device special file, but yes, renaming it is not an option.
-> And since the name of the PM QoS class reflects the name of the device
-> special file associated with it, I'd rather not rename the class
-> either, as that would just move the confusion point, so to speak.
+Okay, so increase the scope so that the information is usable outside
+of driver core.
 
-Okay.
+> I think the flag should be named "cancel" and set it in the
+> device_del() path. Otherwise this is encoding code flow state in the
+> struct rather than device-state that the code needs to comprehend.
 
->
-> > but maybe we should make a tree wide change to rename the class to something more
-> > descriptive. What do you think?
->
-> IMO it would be fine to introduce an alternative symbol, say
->
-> #define PM_QOS_CPU_WAKEUP_LATENCY PM_QOS_CPU_DMA_LATENCY
->
-> and use the alternative (PM_QOS_CPU_WAKEUP_LATENCY in this case) in
-> the cpuidle subsystem.
->
-> But that's just cosmetics. :-)
+Instead of "cancel" what would you think of "dead"? In my mind once we
+call device_del we are essentially working with a dead device object so
+that might make more sense in terms of a state rather than "cancel"
+which doesn't really tell us what should be canceled.
 
-Yes, so then we just rather keep it as is. :-)
-
-Kind regards
-Uffe
+Looking over the code I could probably set it before we start calling
+the notifiers for BUS_NOTIFY_DEL_DEVICE. The only thing I am not sure
+about is if we would need to add any sort of synchronization primitives
+around it.
