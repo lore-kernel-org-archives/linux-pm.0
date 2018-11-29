@@ -1,97 +1,249 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 11/27] drivers: firmware: psci: Split psci_dt_cpu_init_idle()
-Date: Thu, 29 Nov 2018 18:46:44 +0100
-Message-ID: <20181129174700.16585-12-ulf.hansson@linaro.org>
+Subject: [PATCH v10 08/27] ARM/ARM64: cpuidle: Let back-end init ops take the driver as input
+Date: Thu, 29 Nov 2018 18:46:41 +0100
+Message-ID: <20181129174700.16585-9-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Let's split the psci_dt_cpu_init_idle() function into two functions, as to
-allow following changes to re-use some of the code.
+To allow arch back-end init ops to operate on the cpuidle driver for the
+corresponding CPU, let's pass along a pointer to the struct cpuidle_driver*
+and forward it the relevant layers of callbacks for ARM/ARM64.
+
+Following changes for the PSCI firmware driver starts making use of this.
 
 Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Andy Gross <andy.gross@linaro.org>
+Cc: David Brown <david.brown@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- None.
+	- New patch!
+
+I am seeking an ack from relevant maintainers. Please ping me if you need
+further information about the hole series.
+
+Thanks!
+Ulf Hanssson
 
 ---
- drivers/firmware/psci/psci.c | 42 ++++++++++++++++++++----------------
- 1 file changed, 23 insertions(+), 19 deletions(-)
+ arch/arm/include/asm/cpuidle.h   | 4 ++--
+ arch/arm/kernel/cpuidle.c        | 5 +++--
+ arch/arm64/include/asm/cpu_ops.h | 4 +++-
+ arch/arm64/include/asm/cpuidle.h | 6 ++++--
+ arch/arm64/kernel/cpuidle.c      | 6 +++---
+ drivers/cpuidle/cpuidle-arm.c    | 2 +-
+ drivers/firmware/psci.c          | 7 ++++---
+ drivers/soc/qcom/spm.c           | 3 ++-
+ include/linux/psci.h             | 4 +++-
+ 9 files changed, 25 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 878c4dcf0118..d50b46a0528f 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -270,10 +270,27 @@ static int __init psci_features(u32 psci_func_id)
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index 6b2ff7243b4b..bee0a7847733 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -32,7 +32,7 @@ struct device_node;
+ 
+ struct cpuidle_ops {
+ 	int (*suspend)(unsigned long arg);
+-	int (*init)(struct device_node *, int cpu);
++	int (*init)(struct cpuidle_driver *, struct device_node *, int cpu);
+ };
+ 
+ struct of_cpuidle_method {
+@@ -47,6 +47,6 @@ struct of_cpuidle_method {
+ 
+ extern int arm_cpuidle_suspend(int index);
+ 
+-extern int arm_cpuidle_init(int cpu);
++extern int arm_cpuidle_init(struct cpuidle_driver *drv, int cpu);
+ 
+ #endif
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index fda5579123a8..43778c9b373d 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -122,6 +122,7 @@ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
+ 
+ /**
+  * arm_cpuidle_init() - Initialize cpuidle_ops for a specific cpu
++ * @drv: the drv to be initialized
+  * @cpu: the cpu to be initialized
+  *
+  * Initialize the cpuidle ops with the device for the cpu and then call
+@@ -137,7 +138,7 @@ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
+  *  -ENXIO if the HW reports a failure or a misconfiguration,
+  *  -ENOMEM if the HW report an memory allocation failure 
+  */
+-int __init arm_cpuidle_init(int cpu)
++int __init arm_cpuidle_init(struct cpuidle_driver *drv, int cpu)
+ {
+ 	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
+ 	int ret;
+@@ -147,7 +148,7 @@ int __init arm_cpuidle_init(int cpu)
+ 
+ 	ret = arm_cpuidle_read_ops(cpu_node, cpu);
+ 	if (!ret)
+-		ret = cpuidle_ops[cpu].init(cpu_node, cpu);
++		ret = cpuidle_ops[cpu].init(drv, cpu_node, cpu);
+ 
+ 	of_node_put(cpu_node);
+ 
+diff --git a/arch/arm64/include/asm/cpu_ops.h b/arch/arm64/include/asm/cpu_ops.h
+index 8f03446cf89f..8db870c29f1b 100644
+--- a/arch/arm64/include/asm/cpu_ops.h
++++ b/arch/arm64/include/asm/cpu_ops.h
+@@ -19,6 +19,8 @@
+ #include <linux/init.h>
+ #include <linux/threads.h>
+ 
++struct cpuidle_driver;
++
+ /**
+  * struct cpu_operations - Callback operations for hotplugging CPUs.
+  *
+@@ -58,7 +60,7 @@ struct cpu_operations {
+ 	int		(*cpu_kill)(unsigned int cpu);
+ #endif
+ #ifdef CONFIG_CPU_IDLE
+-	int		(*cpu_init_idle)(unsigned int);
++	int		(*cpu_init_idle)(struct cpuidle_driver *, unsigned int);
+ 	int		(*cpu_suspend)(unsigned long);
+ #endif
+ };
+diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
+index 3c5ddb429ea2..3fd3efb61649 100644
+--- a/arch/arm64/include/asm/cpuidle.h
++++ b/arch/arm64/include/asm/cpuidle.h
+@@ -4,11 +4,13 @@
+ 
+ #include <asm/proc-fns.h>
+ 
++struct cpuidle_driver;
++
+ #ifdef CONFIG_CPU_IDLE
+-extern int arm_cpuidle_init(unsigned int cpu);
++extern int arm_cpuidle_init(struct cpuidle_driver *drv, unsigned int cpu);
+ extern int arm_cpuidle_suspend(int index);
+ #else
+-static inline int arm_cpuidle_init(unsigned int cpu)
++static inline int arm_cpuidle_init(struct cpuidle_driver *drv, unsigned int cpu)
+ {
+ 	return -EOPNOTSUPP;
+ }
+diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+index f2d13810daa8..aaf9dc5cb87a 100644
+--- a/arch/arm64/kernel/cpuidle.c
++++ b/arch/arm64/kernel/cpuidle.c
+@@ -18,13 +18,13 @@
+ #include <asm/cpuidle.h>
+ #include <asm/cpu_ops.h>
+ 
+-int arm_cpuidle_init(unsigned int cpu)
++int arm_cpuidle_init(struct cpuidle_driver *drv, unsigned int cpu)
+ {
+ 	int ret = -EOPNOTSUPP;
+ 
+ 	if (cpu_ops[cpu] && cpu_ops[cpu]->cpu_suspend &&
+ 			cpu_ops[cpu]->cpu_init_idle)
+-		ret = cpu_ops[cpu]->cpu_init_idle(cpu);
++		ret = cpu_ops[cpu]->cpu_init_idle(drv, cpu);
+ 
+ 	return ret;
+ }
+@@ -51,7 +51,7 @@ int arm_cpuidle_suspend(int index)
+ 
+ int acpi_processor_ffh_lpi_probe(unsigned int cpu)
+ {
+-	return arm_cpuidle_init(cpu);
++	return arm_cpuidle_init(NULL, cpu);
+ }
+ 
+ int acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index 3a407a3ef22b..39413973b21d 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -106,7 +106,7 @@ static int __init arm_idle_init_cpu(int cpu)
+ 	 * Call arch CPU operations in order to initialize
+ 	 * idle states suspend back-end specific data
+ 	 */
+-	ret = arm_cpuidle_init(cpu);
++	ret = arm_cpuidle_init(drv, cpu);
+ 
+ 	/*
+ 	 * Allow the initialization to continue for other CPUs, if the reported
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index c80ec1d03274..878c4dcf0118 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -270,7 +270,8 @@ static int __init psci_features(u32 psci_func_id)
  #ifdef CONFIG_CPU_IDLE
  static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
  
-+static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
-+{
-+	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
-+
-+	if (err) {
-+		pr_warn("%pOF missing arm,psci-suspend-param property\n", np);
-+		return err;
-+	}
-+
-+	if (!psci_power_state_is_valid(*state)) {
-+		pr_warn("Invalid PSCI power state %#x\n", *state);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 			struct device_node *cpu_node, int cpu)
+-static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
++static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
++			struct device_node *cpu_node, int cpu)
  {
--	int i, ret, count = 0;
-+	int i, ret = 0, count = 0;
+ 	int i, ret, count = 0;
  	u32 *psci_states;
+@@ -371,7 +372,7 @@ static int __maybe_unused psci_acpi_cpu_init_idle(unsigned int cpu)
+ }
+ #endif
+ 
+-int psci_cpu_init_idle(unsigned int cpu)
++int psci_cpu_init_idle(struct cpuidle_driver *drv, unsigned int cpu)
+ {
+ 	struct device_node *cpu_node;
+ 	int ret;
+@@ -390,7 +391,7 @@ int psci_cpu_init_idle(unsigned int cpu)
+ 	if (!cpu_node)
+ 		return -ENODEV;
+ 
+-	ret = psci_dt_cpu_init_idle(cpu_node, cpu);
++	ret = psci_dt_cpu_init_idle(drv, cpu_node, cpu);
+ 
+ 	of_node_put(cpu_node);
+ 
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index 53807e839664..6e967f0a8608 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -208,7 +208,8 @@ static const struct of_device_id qcom_idle_state_match[] __initconst = {
+ 	{ },
+ };
+ 
+-static int __init qcom_cpuidle_init(struct device_node *cpu_node, int cpu)
++static int __init qcom_cpuidle_init(struct cpuidle_driver *drv,
++			struct device_node *cpu_node, int cpu)
+ {
+ 	const struct of_device_id *match_id;
  	struct device_node *state_node;
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 8b1b3b5935ab..4f29a3bff379 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -20,9 +20,11 @@
+ #define PSCI_POWER_STATE_TYPE_STANDBY		0
+ #define PSCI_POWER_STATE_TYPE_POWER_DOWN	1
  
-@@ -292,29 +309,16 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
- 		return -ENOMEM;
- 
- 	for (i = 0; i < count; i++) {
--		u32 state;
--
- 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
-+		of_node_put(state_node);
- 
--		ret = of_property_read_u32(state_node,
--					   "arm,psci-suspend-param",
--					   &state);
--		if (ret) {
--			pr_warn(" * %pOF missing arm,psci-suspend-param property\n",
--				state_node);
--			of_node_put(state_node);
-+		if (ret)
- 			goto free_mem;
--		}
- 
--		of_node_put(state_node);
--		pr_debug("psci-power-state %#x index %d\n", state, i);
--		if (!psci_power_state_is_valid(state)) {
--			pr_warn("Invalid PSCI power state %#x\n", state);
--			ret = -EINVAL;
--			goto free_mem;
--		}
--		psci_states[i] = state;
-+		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
- 	}
++struct cpuidle_driver;
 +
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
- 	return 0;
+ bool psci_tos_resident_on(int cpu);
+ 
+-int psci_cpu_init_idle(unsigned int cpu);
++int psci_cpu_init_idle(struct cpuidle_driver *drv, unsigned int cpu);
+ int psci_cpu_suspend_enter(unsigned long index);
+ 
+ enum psci_conduit {
 -- 
 2.17.1
