@@ -1,43 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] Documentation: admin-guide: PM: Add cpuidle document
-Date: Thu, 29 Nov 2018 09:54:06 +0530
-Message-ID: <20181129042406.f2h2yt25atwnhz26@vireshk-i7>
-References: <9986634.fXZiTbRPzQ@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sasha Levin <sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 38/68] cpufreq: ti-cpufreq: Only register platform_device when supported
+Date: Thu, 29 Nov 2018 00:55:29 -0500
+Message-ID: <20181129055559.159228-38-sashal@kernel.org>
+References: <20181129055559.159228-1-sashal@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9986634.fXZiTbRPzQ@aspire.rjw.lan>
+In-Reply-To: <20181129055559.159228-1-sashal@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jonathan Corbet <corbet@lwn.net>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Sudeep Holla <sudeep.holla@arm.com>
+To: stable@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28-11-18, 12:47, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Important information is missing from user/admin cpuidle documentation
-> available today, so add a new user/admin document for cpuidle containing
-> current and comprehensive information to admin-guide and drop the old
-> .txt documents it is replacing.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2:
->    * Fix typos.
->    * Improve description of the state0, state1, etc directories to cover the
->      relationship between their numbers and the represented idle states depth
->      (Viresh).
-> 
-> ---
->  Documentation/admin-guide/pm/cpuidle.rst       |  604 +++++++++++++++++++++++++
->  Documentation/admin-guide/pm/working-state.rst |    1 
->  Documentation/cpuidle/core.txt                 |   23 
->  Documentation/cpuidle/sysfs.txt                |   98 ----
->  4 files changed, 605 insertions(+), 121 deletions(-)
+From: Dave Gerlach <d-gerlach@ti.com>
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+[ Upstream commit d98ccfc3948ab63152494bb6b9c17e15295c0310 ]
 
+Currently the ti-cpufreq driver blindly registers a 'ti-cpufreq' to force
+the driver to probe on any platforms where the driver is built in.
+However, this should only happen on platforms that actually can make use
+of the driver. There is already functionality in place to match the
+SoC compatible so let's factor this out into a separate call and
+make sure we find a match before creating the ti-cpufreq platform device.
+
+Reviewed-by: Johan Hovold <johan@kernel.org>
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/cpufreq/ti-cpufreq.c | 26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 3f0e2a14895a..22b53bf26817 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -201,19 +201,28 @@ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{},
+ };
+ 
++static const struct of_device_id *ti_cpufreq_match_node(void)
++{
++	struct device_node *np;
++	const struct of_device_id *match;
++
++	np = of_find_node_by_path("/");
++	match = of_match_node(ti_cpufreq_of_match, np);
++	of_node_put(np);
++
++	return match;
++}
++
+ static int ti_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	u32 version[VERSION_COUNT];
+-	struct device_node *np;
+ 	const struct of_device_id *match;
+ 	struct opp_table *ti_opp_table;
+ 	struct ti_cpufreq_data *opp_data;
+ 	const char * const reg_names[] = {"vdd", "vbb"};
+ 	int ret;
+ 
+-	np = of_find_node_by_path("/");
+-	match = of_match_node(ti_cpufreq_of_match, np);
+-	of_node_put(np);
++	match = dev_get_platdata(&pdev->dev);
+ 	if (!match)
+ 		return -ENODEV;
+ 
+@@ -290,7 +299,14 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
+ 
+ static int ti_cpufreq_init(void)
+ {
+-	platform_device_register_simple("ti-cpufreq", -1, NULL, 0);
++	const struct of_device_id *match;
++
++	/* Check to ensure we are on a compatible platform */
++	match = ti_cpufreq_match_node();
++	if (match)
++		platform_device_register_data(NULL, "ti-cpufreq", -1, match,
++					      sizeof(*match));
++
+ 	return 0;
+ }
+ module_init(ti_cpufreq_init);
 -- 
-viresh
+2.17.1
