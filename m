@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 21/27] drivers: firmware: psci: Add a helper to attach a CPU to its PM domain
-Date: Thu, 29 Nov 2018 18:46:54 +0100
-Message-ID: <20181129174700.16585-22-ulf.hansson@linaro.org>
+Subject: [PATCH v10 22/27] drivers: firmware: psci: Attach the CPU's device to its PM domain
+Date: Thu, 29 Nov 2018 18:46:55 +0100
+Message-ID: <20181129174700.16585-23-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
@@ -10,72 +10,70 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Introduce a new PSCI DT helper function, psci_dt_attach_cpu(), which takes
-a CPU number as an in-parameter and attaches the CPU's struct device to its
-corresponding PM domain. Additionally, the helper prepares the CPU to be
-power managed via runtime PM, which is the last step needed to enable the
-interaction with the PM domain through the runtime PM callbacks.
+In order to allow the CPU to be power managed through a potential PM domain
+and the corresponding topology, it needs to be attached to it. For that
+reason, check if the PM domain data structures have been initiated for PSCI
+and if so, let's try to attach the CPU device to its PM domain.
+
+However, before attaching the CPU to its PM domain, we need to check
+whether the PSCI firmware supports OS initiated mode or not. If that isn't
+the case, we rely solely on the cpuidle framework to deal with the idle
+state selection, which means we need to parse DT and convert the
+hierarchical described domain idle states into regular cpuidle states,
+hence let's do that.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- New patch: Replaces "PM / Domains: Add helper functions to
-	  attach/detach CPUs to/from genpd".
+	- Attach CPU devices to their PM domains, regardless of OSI mode or PC
+	  mode.
+	- For PC mode, convert domain idle states to generic cpuidle states
+	  to let the cpuidle driver manage them.
 
 ---
- drivers/firmware/psci/psci.h           |  1 +
- drivers/firmware/psci/psci_pm_domain.c | 19 +++++++++++++++++++
- 2 files changed, 20 insertions(+)
+ drivers/firmware/psci/psci.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
-index 05af462cc96e..fbc9980dee69 100644
---- a/drivers/firmware/psci/psci.h
-+++ b/drivers/firmware/psci/psci.h
-@@ -15,6 +15,7 @@ int psci_dt_parse_state_node(struct device_node *np, u32 *state);
- int psci_dt_init_pm_domains(struct device_node *np);
- int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
- 			struct device_node *cpu_node, u32 *psci_states);
-+int psci_dt_attach_cpu(int cpu);
- #else
- static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
- #endif
-diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
-index 6c9d6a644c7f..b0fa7da8a0ce 100644
---- a/drivers/firmware/psci/psci_pm_domain.c
-+++ b/drivers/firmware/psci/psci_pm_domain.c
-@@ -12,8 +12,10 @@
- #include <linux/device.h>
- #include <linux/kernel.h>
- #include <linux/pm_domain.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-+#include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/cpu_pm.h>
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 5b481e91ccab..94cd0431b004 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -327,7 +327,7 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 	u32 *psci_states;
+ 	struct device_node *state_node;
  
-@@ -367,4 +369,21 @@ int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
+-	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
++	psci_states = kcalloc(CPUIDLE_STATE_MAX, sizeof(*psci_states),
+ 			GFP_KERNEL);
+ 	if (!psci_states)
+ 		return -ENOMEM;
+@@ -351,6 +351,26 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 		goto free_mem;
+ 	}
  
++	/*
++	 * If the hierarchical CPU topology is used, let's attach the CPU device
++	 * to its corresponding PM domain. If OSI mode isn't supported, pick up
++	 * the additional cpuidle states, from the domain idle states described
++	 * in the hierarchical DT layout, as to enable the cpuidle driver to
++	 * manage them.
++	 */
++	if (psci_dt_topology) {
++		if (!psci_has_osi_support()) {
++			ret = psci_dt_pm_domains_parse_states(drv, cpu_node,
++							      psci_states);
++			if (ret)
++				goto free_mem;
++		}
++
++		ret = psci_dt_attach_cpu(cpu);
++		if (ret)
++			goto free_mem;
++	}
++
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
  	return 0;
- }
-+
-+int psci_dt_attach_cpu(int cpu)
-+{
-+	struct device *dev = get_cpu_device(cpu);
-+	int ret;
-+
-+	ret = dev_pm_domain_attach(dev, true);
-+	if (ret)
-+		return ret;
-+
-+	pm_runtime_irq_safe(dev);
-+	pm_runtime_get_noresume(dev);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
-+
-+	return 0;
-+}
- #endif
 -- 
 2.17.1
