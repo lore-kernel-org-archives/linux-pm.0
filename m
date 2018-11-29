@@ -1,90 +1,88 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH v2] power: supply: bq24190_charger: add support for bq24196 variant
-Date: Thu, 29 Nov 2018 15:07:15 +0100
-Message-ID: <2186433.S1hFpfxTzA@phil>
-References: <20181113124753.29948-1-heiko@sntech.de>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v18 1/5] iommu/arm-smmu: Add pm_runtime/sleep ops
+Date: Thu, 29 Nov 2018 20:25:20 +0530
+Message-ID: <CAFp+6iEC8hobAdVF5nLdhQdCUqbi1xa4Vi-NLugGshV=dg+h1A@mail.gmail.com>
+References: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
+	<20181127101145.7682-2-vivek.gautam@codeaurora.org>
+	<154342225921.88331.14467967828250776155@swboyd.mtv.corp.google.com>
+	<0d76b669-6c4f-7c3b-50a1-084201f2c07a@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181113124753.29948-1-heiko@sntech.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <0d76b669-6c4f-7c3b-50a1-084201f2c07a-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
+	Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sebastian,
+On Wed, Nov 28, 2018 at 10:07 PM Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org> wrote:
+>
+> On 28/11/2018 16:24, Stephen Boyd wrote:
+> > Quoting Vivek Gautam (2018-11-27 02:11:41)
+> >> @@ -1966,6 +1970,23 @@ static const struct of_device_id arm_smmu_of_match[] = {
+> >>   };
+> >>   MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
+> >>
+> >> +static void arm_smmu_fill_clk_data(struct arm_smmu_device *smmu,
+> >> +                                  const char * const *clks)
+> >> +{
+> >> +       int i;
+> >> +
+> >> +       if (smmu->num_clks < 1)
+> >> +               return;
+> >> +
+> >> +       smmu->clks = devm_kcalloc(smmu->dev, smmu->num_clks,
+> >> +                                 sizeof(*smmu->clks), GFP_KERNEL);
+> >> +       if (!smmu->clks)
+> >> +               return;
+> >> +
+> >> +       for (i = 0; i < smmu->num_clks; i++)
+> >> +               smmu->clks[i].id = clks[i];
+> >
+> > Is this clk_bulk_get_all()?
 
-Am Dienstag, 13. November 2018, 13:47:53 CET schrieb Heiko Stuebner:
-> From: Heiko Stuebner <heiko.stuebner@bq.com>
-> 
-> The bq24196 is another variant of the bq24190 charger ic.
-> Its register set is identical to the bq24192 and it even reuses
-> the same part number (0x5).
-> 
-> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+>From what I remember, and now I could go back to v7 and check [1], we parked
+clk_bulk_get out of OF's sole purview as we also have
+arm_smmu_device_acpi_probe() besides arm_smmu_device_dt_probe().
 
-any opinion on the underlying bq24192 and this bq24196 support?
-It's a month now for Brian's patches and 2 weeks for my small bq24196
-addition, so it would be cool to know if there needs to be done more
-to get it included.
+arm_smmu_device_dt_probe() could get the clocks from dt and fill in
+the clock bulk data, and
+similarly, arm_smmu_device_acpi_probe() could fill the clock bulk data
+by getting it from ACPI.
+
+clk_bulk_get_all() seems like going only the OF way.
+Is there another way here to have something common between ACPI
+and OF, and then do the clk_bulk_get?
+
+[1] https://lore.kernel.org/patchwork/patch/881365/
+
+Thanks & regards
+Vivek
+
+>
+> Ooh, did that finally get merged while we weren't looking? Great!
+>
+> Much as I don't want to drag this series out to a v19, it *would* be
+> neat if we no longer need to open-code that bit...
+>
+> Robin.
+> _______________________________________________
+> iommu mailing list
+> iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+> https://lists.linuxfoundation.org/mailman/listinfo/iommu
 
 
-Thanks
-Heiko
 
-> ---
-> This should go on top of the bq24192 support patches from Brian Masney /
-> Jonathan Marek [0]
-> 
-> [0] https://patchwork.kernel.org/patch/10663409/
-> 
-> changes in v2:
-> - add missing compatible to dt-binding
-> 
->  Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
->  drivers/power/supply/bq24190_charger.c                     | 4 +++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> index c8ac028bd3c7..ffe2be408bb6 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> @@ -5,6 +5,7 @@ Required properties:
->      * "ti,bq24190"
->      * "ti,bq24192"
->      * "ti,bq24192i"
-> +    * "ti,bq24196"
->  - reg: integer, I2C address of the charger.
->  - interrupts[-extended]: configuration for charger INT pin.
->  
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 4e64e6ac95c5..effa7c3c21e6 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -143,7 +143,7 @@
->  #define BQ24190_REG_VPRS_PN_MASK		(BIT(5) | BIT(4) | BIT(3))
->  #define BQ24190_REG_VPRS_PN_SHIFT		3
->  #define BQ24190_REG_VPRS_PN_24190			0x4
-> -#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193 */
-> +#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193, 24196 */
->  #define BQ24190_REG_VPRS_PN_24192I			0x3
->  #define BQ24190_REG_VPRS_TS_PROFILE_MASK	BIT(2)
->  #define BQ24190_REG_VPRS_TS_PROFILE_SHIFT	2
-> @@ -1973,6 +1973,7 @@ static const struct i2c_device_id bq24190_i2c_ids[] = {
->  	{ "bq24190" },
->  	{ "bq24192" },
->  	{ "bq24192i" },
-> +	{ "bq24196" },
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
-> @@ -1982,6 +1983,7 @@ static const struct of_device_id bq24190_of_match[] = {
->  	{ .compatible = "ti,bq24190", },
->  	{ .compatible = "ti,bq24192", },
->  	{ .compatible = "ti,bq24192i", },
-> +	{ .compatible = "ti,bq24196", },
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(of, bq24190_of_match);
-> 
+--
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
