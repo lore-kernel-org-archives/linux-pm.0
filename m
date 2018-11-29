@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 15/27] drivers: firmware: psci: Announce support for OS initiated suspend mode
-Date: Thu, 29 Nov 2018 18:46:48 +0100
-Message-ID: <20181129174700.16585-16-ulf.hansson@linaro.org>
+Subject: [PATCH v10 17/27] drivers: firmware: psci: Prepare to support PM domains
+Date: Thu, 29 Nov 2018 18:46:50 +0100
+Message-ID: <20181129174700.16585-18-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
@@ -10,91 +10,122 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PSCI firmware v1.0+, supports two different modes for CPU_SUSPEND. The
-Platform Coordinated mode, which is the default and mandatory mode, while
-support for the OS initiated mode is optional.
+Following changes are about to implement support for PM domains to PSCI.
+Those changes are mainly going to be implemented in a new separate file,
+hence a couple of the internal PSCI functions needs to be shared to be
+accessible. So, let's do that via adding new PSCI header file.
 
-This change introduces initial support for the OS initiated mode, in way
-that it adds the related PSCI bits from the spec and prints a message in
-the log to inform whether the mode is supported by the PSCI FW.
+Moreover, the changes deploying support for PM domains, needs to be able to
+switch the PSCI FW into the OS initiated mode. For that reason, let's add a
+new function that deals with this and share it via the new PSCI header
+file.
 
-Cc: Lina Iyer <ilina@codeaurora.org>
-Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- None.
+	- New patch. Re-places the earlier patch: "drivers: firmware: psci:
+	  Share a few internal PSCI functions".
 
 ---
- drivers/firmware/psci/psci.c | 21 ++++++++++++++++++++-
- include/uapi/linux/psci.h    |  5 +++++
- 2 files changed, 25 insertions(+), 1 deletion(-)
+ drivers/firmware/psci/psci.c | 28 +++++++++++++++++++++-------
+ drivers/firmware/psci/psci.h | 14 ++++++++++++++
+ 2 files changed, 35 insertions(+), 7 deletions(-)
+ create mode 100644 drivers/firmware/psci/psci.h
 
 diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index 6bfa47cbd174..4f0cbc95e41b 100644
+index 8dbcdecc2ae4..623591b541a4 100644
 --- a/drivers/firmware/psci/psci.c
 +++ b/drivers/firmware/psci/psci.c
-@@ -95,6 +95,11 @@ static inline bool psci_has_ext_power_state(void)
+@@ -34,6 +34,8 @@
+ #include <asm/smp_plat.h>
+ #include <asm/suspend.h>
+ 
++#include "psci.h"
++
+ /*
+  * While a 64-bit OS can make calls with SMC32 calling conventions, for some
+  * calls it is necessary to use SMC64 to pass or return 64-bit values.
+@@ -90,23 +92,35 @@ static u32 psci_function_id[PSCI_FN_MAX];
+ static DEFINE_PER_CPU(u32, domain_state);
+ static u32 psci_cpu_suspend_feature;
+ 
+-static inline u32 psci_get_domain_state(void)
++u32 psci_get_domain_state(void)
+ {
+ 	return __this_cpu_read(domain_state);
+ }
+ 
+-static inline void psci_set_domain_state(u32 state)
++void psci_set_domain_state(u32 state)
+ {
+ 	__this_cpu_write(domain_state, state);
+ }
+ 
++bool psci_set_osi_mode(void)
++{
++	int ret;
++
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			PSCI_1_0_SUSPEND_MODE_OSI, 0, 0);
++	if (ret)
++		pr_warn("failed to enable OSI mode: %d\n", ret);
++
++	return !ret;
++}
++
+ static inline bool psci_has_ext_power_state(void)
+ {
+ 	return psci_cpu_suspend_feature &
  				PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK;
  }
  
-+static inline bool psci_has_osi_support(void)
-+{
-+	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
-+}
-+
- static inline bool psci_power_state_loses_context(u32 state)
+-static inline bool psci_has_osi_support(void)
++bool psci_has_osi_support(void)
  {
- 	const u32 mask = psci_has_ext_power_state() ?
-@@ -659,10 +664,24 @@ static int __init psci_0_1_init(struct device_node *np)
+ 	return psci_cpu_suspend_feature & PSCI_1_0_OS_INITIATED;
+ }
+@@ -285,10 +299,7 @@ static int __init psci_features(u32 psci_func_id)
+ 			      psci_func_id, 0, 0);
+ }
+ 
+-#ifdef CONFIG_CPU_IDLE
+-static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
+-
+-static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
++int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+ {
+ 	int err = of_property_read_u32(np, "arm,psci-suspend-param", state);
+ 
+@@ -305,6 +316,9 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
  	return 0;
  }
  
-+static int __init psci_1_0_init(struct device_node *np)
-+{
-+	int err;
++#ifdef CONFIG_CPU_IDLE
++static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
 +
-+	err = psci_0_2_init(np);
-+	if (err)
-+		return err;
+ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 			struct device_node *cpu_node, int cpu)
+ {
+diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+new file mode 100644
+index 000000000000..7d9d38fd57e1
+--- /dev/null
++++ b/drivers/firmware/psci/psci.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0 */
 +
-+	if (psci_has_osi_support())
-+		pr_info("OSI mode supported.\n");
++#ifndef __PSCI_H
++#define __PSCI_H
 +
-+	return 0;
-+}
++struct device_node;
 +
- static const struct of_device_id psci_of_match[] __initconst = {
- 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
- 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
--	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
-+	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
- 	{},
- };
- 
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index b3bcabe380da..581f72085c33 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -49,6 +49,7 @@
- 
- #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
- #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
-+#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
- 
- #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
- 
-@@ -97,6 +98,10 @@
- #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
- 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
- 
-+#define PSCI_1_0_OS_INITIATED			BIT(0)
-+#define PSCI_1_0_SUSPEND_MODE_PC		0
-+#define PSCI_1_0_SUSPEND_MODE_OSI		1
++bool psci_set_osi_mode(void);
++u32 psci_get_domain_state(void);
++void psci_set_domain_state(u32 state);
++bool psci_has_osi_support(void);
++int psci_dt_parse_state_node(struct device_node *np, u32 *state);
 +
- /* PSCI return values (inclusive of all PSCI versions) */
- #define PSCI_RET_SUCCESS			0
- #define PSCI_RET_NOT_SUPPORTED			-1
++#endif /* __PSCI_H */
 -- 
 2.17.1
