@@ -1,92 +1,180 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 03/27] timer: Export next wakeup time of a CPU
-Date: Thu, 29 Nov 2018 18:46:36 +0100
-Message-ID: <20181129174700.16585-4-ulf.hansson@linaro.org>
+Subject: [PATCH v10 04/27] PM / Domains: Add genpd governor for CPUs
+Date: Thu, 29 Nov 2018 18:46:37 +0100
+Message-ID: <20181129174700.16585-5-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Lina Iyer <lina.iyer@linaro.org>
+As it's now perfectly possible that a PM domain managed by genpd contains
+devices belonging to CPUs, we should start to take into account the
+residency values for the idle states during the state selection process.
+The residency value specifies the minimum duration of time, the CPU or a
+group of CPUs, needs to spend in an idle state to not waste energy entering
+it.
 
-Knowing the sleep duration of CPUs, is known to be needed while selecting
-the most energy efficient idle state for a CPU or a group of CPUs.
+To deal with this, let's add a new genpd governor, pm_domain_cpu_gov, that
+may be used for a PM domain that have CPU devices attached or if the CPUs
+are attached through subdomains.
 
-However, to be able to compute the sleep duration, we need to know at what
-time the next expected wakeup is for the CPU. Therefore, let's export this
-information via a new function, tick_nohz_get_next_wakeup(). Following
-changes make use of it.
+The new governor computes the minimum expected idle duration time for the
+online CPUs being attached to the PM domain and its subdomains. Then in the
+state selection process, trying the deepest state first, it verifies that
+the idle duration time satisfies the state's residency value.
+
+It should be noted that, when computing the minimum expected idle duration
+time, we use the information from tick_nohz_get_next_wakeup(), to find the
+next wakeup for the related CPUs. Future wise, this may deserve to be
+improved, as there are more reasons to why a CPU may be woken up from idle.
 
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Lina Iyer <ilina@codeaurora.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Co-developed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- Updated function header of tick_nohz_get_next_wakeup().
+	- Fold in patch that extended the new genpd CPU governor to cope with
+	  QoS constraints, as to avoid confusion.
+	- Simplified the code according to suggestions from Rafael.
 
 ---
- include/linux/tick.h     |  8 ++++++++
- kernel/time/tick-sched.c | 13 +++++++++++++
- 2 files changed, 21 insertions(+)
+ drivers/base/power/domain_governor.c | 61 +++++++++++++++++++++++++++-
+ include/linux/pm_domain.h            |  3 ++
+ 2 files changed, 63 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 55388ab45fd4..e48f6b26b425 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -125,6 +125,7 @@ extern bool tick_nohz_idle_got_tick(void);
- extern ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next);
- extern unsigned long tick_nohz_get_idle_calls(void);
- extern unsigned long tick_nohz_get_idle_calls_cpu(int cpu);
-+extern ktime_t tick_nohz_get_next_wakeup(int cpu);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
- extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 99896fbf18e4..61a7c3c03c98 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -10,6 +10,9 @@
+ #include <linux/pm_domain.h>
+ #include <linux/pm_qos.h>
+ #include <linux/hrtimer.h>
++#include <linux/cpumask.h>
++#include <linux/ktime.h>
++#include <linux/tick.h>
  
-@@ -151,6 +152,13 @@ static inline ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
- 	*delta_next = TICK_NSEC;
- 	return *delta_next;
- }
-+
-+static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	/* Next wake up is the tick period, assume it starts now */
-+	return ktime_add(ktime_get(), TICK_NSEC);
-+}
-+
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
- static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
- 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 69e673b88474..7a9166506503 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -1089,6 +1089,19 @@ unsigned long tick_nohz_get_idle_calls(void)
- 	return ts->idle_calls;
- }
- 
-+/**
-+ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-+ * @cpu: the particular CPU to get next wake up for
-+ *
-+ * Called for idle CPUs only.
-+ */
-+ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	struct clock_event_device *dev = per_cpu(tick_cpu_device.evtdev, cpu);
-+
-+	return dev->next_event;
-+}
-+
- static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+ static int dev_update_qos_constraint(struct device *dev, void *data)
  {
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+@@ -211,8 +214,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
+ 	struct gpd_link *link;
+ 
+-	if (!genpd->max_off_time_changed)
++	if (!genpd->max_off_time_changed) {
++		genpd->state_idx = genpd->cached_power_down_state_idx;
+ 		return genpd->cached_power_down_ok;
++	}
+ 
+ 	/*
+ 	 * We have to invalidate the cached results for the masters, so
+@@ -237,6 +242,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 		genpd->state_idx--;
+ 	}
+ 
++	genpd->cached_power_down_state_idx = genpd->state_idx;
+ 	return genpd->cached_power_down_ok;
+ }
+ 
+@@ -245,6 +251,54 @@ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+ 	return false;
+ }
+ 
++static bool cpu_power_down_ok(struct dev_pm_domain *pd)
++{
++	struct generic_pm_domain *genpd = pd_to_genpd(pd);
++	ktime_t domain_wakeup, cpu_wakeup;
++	s64 idle_duration_ns;
++	int cpu, i;
++
++	/* Validate dev PM QoS constraints. */
++	if (!default_power_down_ok(pd))
++		return false;
++
++	if (!(genpd->flags & GENPD_FLAG_CPU_DOMAIN))
++		return true;
++
++	/*
++	 * Find the next wakeup for any of the online CPUs within the PM domain
++	 * and its subdomains. Note, we only need the genpd->cpus, as it already
++	 * contains a mask of all CPUs from subdomains.
++	 */
++	domain_wakeup = ktime_set(KTIME_SEC_MAX, 0);
++	for_each_cpu_and(cpu, genpd->cpus, cpu_online_mask) {
++		cpu_wakeup = tick_nohz_get_next_wakeup(cpu);
++		if (ktime_before(cpu_wakeup, domain_wakeup))
++			domain_wakeup = cpu_wakeup;
++	}
++
++	/* The minimum idle duration is from now - until the next wakeup. */
++	idle_duration_ns = ktime_to_ns(ktime_sub(domain_wakeup, ktime_get()));
++	if (idle_duration_ns <= 0)
++		return false;
++
++	/*
++	 * Find the deepest idle state that has its residency value satisfied
++	 * and by also taking into account the power off latency for the state.
++	 * Start at the state picked by the dev PM QoS constraint validation.
++	 */
++	i = genpd->state_idx;
++	do {
++		if (idle_duration_ns >= (genpd->states[i].residency_ns +
++		    genpd->states[i].power_off_latency_ns)) {
++			genpd->state_idx = i;
++			return true;
++		}
++	} while (--i >= 0);
++
++	return false;
++}
++
+ struct dev_power_governor simple_qos_governor = {
+ 	.suspend_ok = default_suspend_ok,
+ 	.power_down_ok = default_power_down_ok,
+@@ -257,3 +311,8 @@ struct dev_power_governor pm_domain_always_on_gov = {
+ 	.power_down_ok = always_on_power_down_ok,
+ 	.suspend_ok = default_suspend_ok,
+ };
++
++struct dev_power_governor pm_domain_cpu_gov = {
++	.suspend_ok = default_suspend_ok,
++	.power_down_ok = cpu_power_down_ok,
++};
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 5a4673605d22..969a9b36c0db 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -116,6 +116,7 @@ struct generic_pm_domain {
+ 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
+ 	bool max_off_time_changed;
+ 	bool cached_power_down_ok;
++	bool cached_power_down_state_idx;
+ 	int (*attach_dev)(struct generic_pm_domain *domain,
+ 			  struct device *dev);
+ 	void (*detach_dev)(struct generic_pm_domain *domain,
+@@ -195,6 +196,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
++extern struct dev_power_governor pm_domain_cpu_gov;
+ #else
+ 
+ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+@@ -238,6 +240,7 @@ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
+ 
+ #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+ #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
++#define pm_domain_cpu_gov		(*(struct dev_power_governor *)(NULL))
+ #endif
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
 -- 
 2.17.1
