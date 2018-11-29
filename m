@@ -1,92 +1,47 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 24/27] drivers: firmware: psci: Support CPU hotplug for the hierarchical model
-Date: Thu, 29 Nov 2018 18:46:57 +0100
-Message-ID: <20181129174700.16585-25-ulf.hansson@linaro.org>
+Subject: [PATCH v10 25/27] arm64: kernel: Respect the hierarchical CPU topology in DT for PSCI
+Date: Thu, 29 Nov 2018 18:46:58 +0100
+Message-ID: <20181129174700.16585-26-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-When the hierarchical CPU topology is used and when a CPU has been put
-offline (hotplug), that same CPU prevents its PM domain and thus also
-potential master PM domains, from being powered off. This is because genpd
-observes the CPU's struct device to remain being active from a runtime PM
-point of view.
+To let the PSCI driver parse for the hierarchical CPU topology in DT and
+thus potentially initiate the corresponding PM domain data structures,
+let's call psci_dt_topology_init() from the existing topology_init()
+subsys_initcall.
 
-To deal with this, let's decrease the runtime PM usage count by calling
-pm_runtime_put_sync_suspend() of the CPU's struct device when putting it
-offline. Consequentially, we must then increase the runtime PM usage for
-the CPU, while putting it online again.
-
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- Make it work when the hierarchical CPU topology is used, which may be
-	  used both for OSI and PC mode.
-	- Rework the code to prevent "BUG: sleeping function called from
-	  invalid context".
----
- drivers/firmware/psci/psci.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+	- None.
 
-diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-index b03bccce0a5d..f62c4963eb62 100644
---- a/drivers/firmware/psci/psci.c
-+++ b/drivers/firmware/psci/psci.c
-@@ -15,6 +15,7 @@
- 
- #include <linux/acpi.h>
- #include <linux/arm-smccc.h>
-+#include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/errno.h>
- #include <linux/linkage.h>
-@@ -199,9 +200,20 @@ static int psci_cpu_suspend(u32 state, unsigned long entry_point)
- 
- static int psci_cpu_off(u32 state)
+---
+ arch/arm64/kernel/setup.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/arm64/kernel/setup.c b/arch/arm64/kernel/setup.c
+index f4fc1e0544b7..4d59a72f8b0b 100644
+--- a/arch/arm64/kernel/setup.c
++++ b/arch/arm64/kernel/setup.c
+@@ -364,6 +364,9 @@ static int __init topology_init(void)
  {
-+	struct device *dev;
- 	int err;
- 	u32 fn;
+ 	int i;
  
-+	/*
-+	 * When the hierarchical CPU topology is used, decrease the runtime PM
-+	 * usage count for the current CPU, as to allow other parts in the
-+	 * topology to enter low power states.
-+	 */
-+	if (psci_dt_topology) {
-+		dev = get_cpu_device(smp_processor_id());
-+		pm_runtime_put_sync_suspend(dev);
-+	}
++	if (acpi_disabled)
++		psci_dt_topology_init();
 +
- 	fn = psci_function_id[PSCI_FN_CPU_OFF];
- 	err = invoke_psci_fn(fn, state, 0, 0);
- 	return psci_to_linux_errno(err);
-@@ -209,6 +221,7 @@ static int psci_cpu_off(u32 state)
- 
- static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
- {
-+	struct device *dev;
- 	int err;
- 	u32 fn;
- 
-@@ -216,6 +229,13 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
- 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
- 	/* Clear the domain state to start fresh. */
- 	psci_set_domain_state(0);
-+
-+	/* Increase runtime PM usage count if the hierarchical CPU toplogy. */
-+	if (!err && psci_dt_topology) {
-+		dev = get_cpu_device(cpuid);
-+		pm_runtime_get_sync(dev);
-+	}
-+
- 	return psci_to_linux_errno(err);
- }
+ 	for_each_online_node(i)
+ 		register_one_node(i);
  
 -- 
 2.17.1
