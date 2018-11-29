@@ -1,148 +1,73 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal/drivers/hisi: Fix bad initialization
-Date: Thu, 29 Nov 2018 22:43:58 +0100
-Message-ID: <4f3b1c28-5a5f-8f0a-aa5f-321ab557ce44@linaro.org>
-References: <1543516016-28186-1-git-send-email-daniel.lezcano@linaro.org>
- <20181129193658.GA6844@localhost.localdomain>
+From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [driver-core PATCH v7 2/9] driver core: Establish clear order
+ of operations for deferred probe and remove
+Date: Thu, 29 Nov 2018 13:53:57 -0800
+Message-ID: <53173cf971f5fbd33d744a1734dda87cb66c4206.camel@linux.intel.com>
+References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <CAPcyv4gMswOJ3VTaY6P7f=iG_jNBKZyynn22CLrEBB13Fq-8vQ@mail.gmail.com>
+ <a5b33ae899fc4131abf0f26af33a6c6b7f462431.camel@linux.intel.com>
+ <CAPcyv4j2w6ygzuP-vEKPk6NGLCEB6FcKTVFQkUqr3HC471xJsg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181129193658.GA6844@localhost.localdomain>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, vincent.guittot@linaro.org, john.stultz@linaro.org, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <CAPcyv4j2w6ygzuP-vEKPk6NGLCEB6FcKTVFQkUqr3HC471xJsg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: "Brown, Len" <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Linux-pm mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29/11/2018 20:36, Eduardo Valentin wrote:
-> On Thu, Nov 29, 2018 at 07:26:56PM +0100, Daniel Lezcano wrote:
->> Without this patch, the thermal driver on hi6220 and hi3660 is broken.
->>
->> That is due because part of the posted patchset was merged but a small
->> change in the DT was dropped.
->>
->> The hi6220 and hi3660 do not have an interrupt name in the DT, so
->> finding interrupt by name fails.
->>
->> In addition, the hi3660 only defines one thermal zone in the DT and we
->> are trying to register two sensors assuming we have two thermal zones
->> in the DT.
->>
->> Fix this by adding a couple of line of code to add back compatibility
->> with older DT and change the sensors number to 1 for the hi3660.
+On Thu, 2018-11-29 at 10:55 -0800, Dan Williams wrote:
+> On Thu, Nov 29, 2018 at 10:07 AM Alexander Duyck
+> <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org> wrote:
+> > 
+> > On Wed, 2018-11-28 at 17:57 -0800, Dan Williams wrote:
 > 
-> Is this a case of adding dt versioning for those nodes?
-
-I'm not sure how to do that, can you point me to some code ?
-
->> Fixes: 2cffaeff083f (thermal/drivers/hisi: Use platform_get_irq_byname)
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>  drivers/thermal/hisi_thermal.c | 11 ++++++++---
->>  1 file changed, 8 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
->> index c4111a9..3ab0e63 100644
->> --- a/drivers/thermal/hisi_thermal.c
->> +++ b/drivers/thermal/hisi_thermal.c
->> @@ -424,7 +424,7 @@ static int hi3660_thermal_probe(struct hisi_thermal_data *data)
->>  	struct platform_device *pdev = data->pdev;
->>  	struct device *dev = &pdev->dev;
->>  
->> -	data->nr_sensors = 2;
->> +	data->nr_sensors = 1;
+> [..]
+> > > I think the flag should be named "cancel" and set it in the
+> > > device_del() path. Otherwise this is encoding code flow state in the
+> > > struct rather than device-state that the code needs to comprehend.
+> > 
+> > Instead of "cancel" what would you think of "dead"? In my mind once we
+> > call device_del we are essentially working with a dead device object so
+> > that might make more sense in terms of a state rather than "cancel"
+> > which doesn't really tell us what should be canceled.
 > 
-> For bisectability (heh.. is that even a word?), would you please send
-> one fix per patch?
-
-I thought it was preferable to fix both into a single patch but if you
-prefer two different patches, no problem.
-
->>  
->>  	data->sensor = devm_kzalloc(dev, sizeof(*data->sensor) *
->>  				    data->nr_sensors, GFP_KERNEL);
->> @@ -590,8 +590,13 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->>  		}
->>  
->>  		ret = platform_get_irq_byname(pdev, sensor->irq_name);
->> -		if (ret < 0)
->> -			return ret;
->> +		if (ret <= 0) {
+> That sounds good to me.
 > 
-> Maybe a simple <  is enough? reading it seams awkward. From a glance, I
-> dont think platform_get_irq* ever returns 0.
+> > Looking over the code I could probably set it before we start calling
+> > the notifiers for BUS_NOTIFY_DEL_DEVICE. The only thing I am not sure
+> > about is if we would need to add any sort of synchronization primitives
+> > around it.
+> > 
 > 
->> +			ret = platform_get_irq(pdev, 0);
->> +			if (ret <=  0) {
+> I think it needs to be something like a barrier:
 > 
-> Same here.
+>     dev->dead;
+>     device_lock();
+>     device_unlock();
+> 
+> ...where you can be sure that anyone after that device_unlock() has
+> acted on dev->dead, or will see dev->dead.
 
-Actually, I'm not sure. of_irq_parse_and_map can return zero and it is
-an error. Concerning platform_get_irq() I don't know, the last line is:
+Actually what I think I will do is set dev->dead to true with the
+device lock held at the start of device_del. So something like:
+	device_lock();
+	dev->dead = true;
+	device_unlock();
 
-	return r ? r->start : -ENXIO;
-
-Can 'start' be zero there?
-
-The usage is also unclear:
-
-git grep -C 1 platform_get_irq drivers/
-
-drivers/ata/libahci_platform.c: irq = platform_get_irq(pdev, 0);
-drivers/ata/libahci_platform.c- if (irq <= 0) {
---
-drivers/ata/pata_arasan_cf.c-   /* if irq is 0, support only PIO */
-drivers/ata/pata_arasan_cf.c:   acdev->irq = platform_get_irq(pdev, 0);
-drivers/ata/pata_arasan_cf.c-   if (acdev->irq)
-[...]
-
-drivers/ata/pata_rb532_cf.c-
-drivers/ata/pata_rb532_cf.c:    irq = platform_get_irq(pdev, 0);
-drivers/ata/pata_rb532_cf.c-    if (irq <= 0) {
---
-drivers/ata/sata_highbank.c-
-drivers/ata/sata_highbank.c:    irq = platform_get_irq(pdev, 0);
-drivers/ata/sata_highbank.c-    if (irq <= 0) {
---
-drivers/base/platform.c:        while ((ret = platform_get_irq(dev, nr))
->= 0)
-drivers/base/platform.c-                nr++;
---
-drivers/char/hw_random/imx-rngc.c-
-drivers/char/hw_random/imx-rngc.c:      irq = platform_get_irq(pdev, 0);
-drivers/char/hw_random/imx-rngc.c-      if (irq <= 0) {
---
-drivers/char/hw_random/omap-rng.c-
-of_device_is_compatible(dev->of_node, "inside-secure,safexcel-eip76")) {
-drivers/char/hw_random/omap-rng.c:              irq =
-platform_get_irq(pdev, 0);
-drivers/char/hw_random/omap-rng.c-              if (irq < 0) {
-
-etc...
-
-So in some places, if irq <= 0 (sata_highbank.c) it is considered an
-error, if irq is different from zero it is correct (pata_arasan_cf.c)
-and if it is >= 0 it is also correct (platform.c)
-
-May be Linus can clarify ? (added in Cc)
-
-
->> +				dev_err(dev, "Failed get interrupt: %d\n", ret);
->> +				return ret;
->> +			}
->> +		}
->>  
->>  		ret = devm_request_threaded_irq(dev, ret, NULL,
->>  						hisi_thermal_alarm_irq_thread,
->> -- 
->> 2.7.4
->>
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+It seems like that would probably make the most sense and be consistent
+with the handling of other bits such as dev->offline. It means adding
+one more call to device_lock/unlock but it guarantees that the update
+behavior is consistent with the other bitfields near it and that we
+cannot have an asynchronous probe routine trying to run while we are
+tearing out the bus/class/sysfs from underneath the device.
