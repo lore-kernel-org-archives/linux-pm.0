@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 09/27] drivers: firmware: psci: Move psci to separate directory
-Date: Thu, 29 Nov 2018 18:46:42 +0100
-Message-ID: <20181129174700.16585-10-ulf.hansson@linaro.org>
+Subject: [PATCH v10 12/27] drivers: firmware: psci: Simplify state node parsing
+Date: Thu, 29 Nov 2018 18:46:45 +0100
+Message-ID: <20181129174700.16585-13-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
@@ -10,120 +10,69 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Some following changes extends the PSCI driver with some additional new
-files.  Let's avoid to continue cluttering the toplevel firmware directory
-and first move the PSCI files into a PSCI sub-directory.
+Instead of iterating through all the state nodes in DT, to find out how
+many states that needs to be allocated, let's use the number already known
+by the cpuidle driver. In this way we can drop the iteration altogether.
 
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- None.
+	- New patch.
 
 ---
- drivers/firmware/Kconfig                   | 15 +--------------
- drivers/firmware/Makefile                  |  3 +--
- drivers/firmware/psci/Kconfig              | 13 +++++++++++++
- drivers/firmware/psci/Makefile             |  4 ++++
- drivers/firmware/{ => psci}/psci.c         |  0
- drivers/firmware/{ => psci}/psci_checker.c |  0
- 6 files changed, 19 insertions(+), 16 deletions(-)
- create mode 100644 drivers/firmware/psci/Kconfig
- create mode 100644 drivers/firmware/psci/Makefile
- rename drivers/firmware/{ => psci}/psci.c (100%)
- rename drivers/firmware/{ => psci}/psci_checker.c (100%)
+ drivers/firmware/psci/psci.c | 25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-index 7273e5082b41..0400afb2fec7 100644
---- a/drivers/firmware/Kconfig
-+++ b/drivers/firmware/Kconfig
-@@ -5,20 +5,6 @@
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index d50b46a0528f..cbfc936d251c 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -290,26 +290,20 @@ static int psci_dt_parse_state_node(struct device_node *np, u32 *state)
+ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 			struct device_node *cpu_node, int cpu)
+ {
+-	int i, ret = 0, count = 0;
++	int i, ret = 0, num_state_nodes = drv->state_count - 1;
+ 	u32 *psci_states;
+ 	struct device_node *state_node;
  
- menu "Firmware Drivers"
- 
--config ARM_PSCI_FW
--	bool
+-	/* Count idle states */
+-	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+-					      count))) {
+-		count++;
+-		of_node_put(state_node);
+-	}
 -
--config ARM_PSCI_CHECKER
--	bool "ARM PSCI checker"
--	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
--	help
--	  Run the PSCI checker during startup. This checks that hotplug and
--	  suspend operations work correctly when using PSCI.
+-	if (!count)
+-		return -ENODEV;
 -
--	  The torture tests may interfere with the PSCI checker by turning CPUs
--	  on and off through hotplug, so for now torture tests and PSCI checker
--	  are mutually exclusive.
--
- config ARM_SCMI_PROTOCOL
- 	bool "ARM System Control and Management Interface (SCMI) Message Protocol"
- 	depends on ARM || ARM64 || COMPILE_TEST
-@@ -258,6 +244,7 @@ config TI_SCI_PROTOCOL
- config HAVE_ARM_SMCCC
- 	bool
+-	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
++	psci_states = kcalloc(num_state_nodes, sizeof(*psci_states),
++			GFP_KERNEL);
+ 	if (!psci_states)
+ 		return -ENOMEM;
  
-+source "drivers/firmware/psci/Kconfig"
- source "drivers/firmware/broadcom/Kconfig"
- source "drivers/firmware/google/Kconfig"
- source "drivers/firmware/efi/Kconfig"
-diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
-index 3158dffd9914..6670ebe21463 100644
---- a/drivers/firmware/Makefile
-+++ b/drivers/firmware/Makefile
-@@ -2,8 +2,6 @@
- #
- # Makefile for the linux kernel.
- #
--obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
--obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
- obj-$(CONFIG_ARM_SCPI_PROTOCOL)	+= arm_scpi.o
- obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pm_domain.o
- obj-$(CONFIG_ARM_SDE_INTERFACE)	+= arm_sdei.o
-@@ -24,6 +22,7 @@ CFLAGS_qcom_scm-32.o :=$(call as-instr,.arch armv7-a\n.arch_extension sec,-DREQU
- obj-$(CONFIG_TI_SCI_PROTOCOL)	+= ti_sci.o
- 
- obj-$(CONFIG_ARM_SCMI_PROTOCOL)	+= arm_scmi/
-+obj-y				+= psci/
- obj-y				+= broadcom/
- obj-y				+= meson/
- obj-$(CONFIG_GOOGLE_FIRMWARE)	+= google/
-diff --git a/drivers/firmware/psci/Kconfig b/drivers/firmware/psci/Kconfig
-new file mode 100644
-index 000000000000..26a3b32bf7ab
---- /dev/null
-+++ b/drivers/firmware/psci/Kconfig
-@@ -0,0 +1,13 @@
-+config ARM_PSCI_FW
-+	bool
+-	for (i = 0; i < count; i++) {
++	for (i = 0; i < num_state_nodes; i++) {
+ 		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
++		if (!state_node)
++			break;
 +
-+config ARM_PSCI_CHECKER
-+	bool "ARM PSCI checker"
-+	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
-+	help
-+	  Run the PSCI checker during startup. This checks that hotplug and
-+	  suspend operations work correctly when using PSCI.
+ 		ret = psci_dt_parse_state_node(state_node, &psci_states[i]);
+ 		of_node_put(state_node);
+ 
+@@ -319,6 +313,11 @@ static int psci_dt_cpu_init_idle(struct cpuidle_driver *drv,
+ 		pr_debug("psci-power-state %#x index %d\n", psci_states[i], i);
+ 	}
+ 
++	if (i != num_state_nodes) {
++		ret = -ENODEV;
++		goto free_mem;
++	}
 +
-+	  The torture tests may interfere with the PSCI checker by turning CPUs
-+	  on and off through hotplug, so for now torture tests and PSCI checker
-+	  are mutually exclusive.
-diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
-new file mode 100644
-index 000000000000..1956b882470f
---- /dev/null
-+++ b/drivers/firmware/psci/Makefile
-@@ -0,0 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0
-+#
-+obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
-+obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci/psci.c
-similarity index 100%
-rename from drivers/firmware/psci.c
-rename to drivers/firmware/psci/psci.c
-diff --git a/drivers/firmware/psci_checker.c b/drivers/firmware/psci/psci_checker.c
-similarity index 100%
-rename from drivers/firmware/psci_checker.c
-rename to drivers/firmware/psci/psci_checker.c
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
+ 	return 0;
 -- 
 2.17.1
