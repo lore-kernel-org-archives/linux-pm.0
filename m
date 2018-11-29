@@ -1,69 +1,103 @@
-From: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: [driver-core PATCH v7 1/9] driver core: Move async_synchronize_full
- call
-Date: Wed, 28 Nov 2018 16:32:11 -0800
-Message-ID: <154345153162.18040.15354788106932190561.stgit@ahduyck-desk1.amr.corp.intel.com>
+From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Subject: [driver-core PATCH v7 2/9] driver core: Establish clear order of
+ operations for deferred probe and remove
+Date: Wed, 28 Nov 2018 16:32:16 -0800
+Message-ID: <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
 References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-In-Reply-To: <154345118835.18040.17186161872550839244.stgit-+uVpp3jiz/SWyQ3uPIV3rPooFf0ArEBIu+b9c/7xato@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: mcgrof@kernel.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, alexander.h.duyck@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Move the async_synchronize_full call out of __device_release_driver and
-into driver_detach.
+Add an additional bit flag to the device struct named async_probe. This
+additional flag allows us to guarantee ordering between probe and remove
+operations.
 
-The idea behind this is that the async_synchronize_full call will only
-guarantee that any existing async operations are flushed. This doesn't do
-anything to guarantee that a hotplug event that may occur while we are
-doing the release of the driver will not be asynchronously scheduled.
+This allows us to guarantee that if we execute a remove operation on a
+given interface it will not attempt to update the driver member
+asynchronously following the earlier operation. Previously this guarantee
+was not present and could result in us attempting to remove a driver from
+an interface only to have it attempt to attach the driver later when we
+finally complete the deferred asynchronous probe call.
 
-By moving this into the driver_detach path we can avoid potential deadlocks
-as we aren't holding the device lock at this point and we should not have
-the driver we want to flush loaded so the flush will take care of any
-asynchronous events the driver we are detaching might have scheduled.
-
-Fixes: 765230b5f084 ("driver-core: add asynchronous probing support for drivers")
-Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
-Reviewed-by: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 ---
- drivers/base/dd.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/dd.c      |   16 ++++++++++++++++
+ include/linux/device.h |    3 +++
+ 2 files changed, 19 insertions(+)
 
 diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 689ac9dc6d81..88713f182086 100644
+index 88713f182086..ef3f70a7cb5a 100644
 --- a/drivers/base/dd.c
 +++ b/drivers/base/dd.c
-@@ -931,9 +931,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
+@@ -774,6 +774,10 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
  
+ 	device_lock(dev);
+ 
++	/* nothing to do if async_probe has been cleared */
++	if (!dev->async_probe)
++		goto out_unlock;
++
+ 	if (dev->parent)
+ 		pm_runtime_get_sync(dev->parent);
+ 
+@@ -785,6 +789,9 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+ 	if (dev->parent)
+ 		pm_runtime_put(dev->parent);
+ 
++	/* We made our attempt at an async_probe, clear the flag */
++	dev->async_probe = false;
++out_unlock:
+ 	device_unlock(dev);
+ 
+ 	put_device(dev);
+@@ -829,6 +836,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+ 			 */
+ 			dev_dbg(dev, "scheduling asynchronous probe\n");
+ 			get_device(dev);
++			dev->async_probe = true;
+ 			async_schedule(__device_attach_async_helper, dev);
+ 		} else {
+ 			pm_request_idle(dev);
+@@ -929,6 +937,14 @@ static void __device_release_driver(struct device *dev, struct device *parent)
+ {
+ 	struct device_driver *drv;
+ 
++	/*
++	 * In the event that we are asked to release the driver on an
++	 * interface that is still waiting on a probe we can just terminate
++	 * the probe by setting async_probe to false. When the async call
++	 * is finally completed it will see this state and just exit.
++	 */
++	dev->async_probe = false;
++
  	drv = dev->driver;
  	if (drv) {
--		if (driver_allows_async_probing(drv))
--			async_synchronize_full();
--
  		while (device_links_busy(dev)) {
- 			device_unlock(dev);
- 			if (parent)
-@@ -1039,6 +1036,9 @@ void driver_detach(struct device_driver *drv)
- 	struct device_private *dev_prv;
- 	struct device *dev;
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 1b25c7a43f4c..4d2eb2c74149 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -957,6 +957,8 @@ struct dev_links_info {
+  *              device.
+  * @dma_coherent: this particular device is dma coherent, even if the
+  *		architecture supports non-coherent devices.
++ * @async_probe: This device has an asynchronous probe event pending. Should
++ *		 only be updated while holding device lock.
+  *
+  * At the lowest level, every device in a Linux system is represented by an
+  * instance of struct device. The device structure contains the information
+@@ -1051,6 +1053,7 @@ struct device {
+     defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+ 	bool			dma_coherent:1;
+ #endif
++	bool			async_probe:1;
+ };
  
-+	if (driver_allows_async_probing(drv))
-+		async_synchronize_full();
-+
- 	for (;;) {
- 		spin_lock(&drv->p->klist_devices.k_lock);
- 		if (list_empty(&drv->p->klist_devices.k_list)) {
+ static inline struct device *kobj_to_dev(struct kobject *kobj)
