@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v10 27/27] arm64: dts: hikey: Convert to the hierarchical CPU topology layout
-Date: Thu, 29 Nov 2018 18:47:00 +0100
-Message-ID: <20181129174700.16585-28-ulf.hansson@linaro.org>
+Subject: [PATCH v10 20/27] drivers: firmware: psci: Introduce psci_dt_topology_init()
+Date: Thu, 29 Nov 2018 18:46:53 +0100
+Message-ID: <20181129174700.16585-21-ulf.hansson@linaro.org>
 References: <20181129174700.16585-1-ulf.hansson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20181129174700.16585-1-ulf.hansson@linaro.org>
@@ -10,196 +10,88 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com
 Cc: "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <ilina@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To enable the OS to manage last-man standing activities for a CPU, while an
-idle state for a group of CPUs is selected, let's convert the Hikey
-platform into using the hierarchical CPU topology layout.
+To be able to initiate the PM domain data structures, let's export a new
+init function, psci_dt_topology_init() and make it call
+psci_dt_init_pm_domains(). Following changes to the ARM64 code, invokes
+this new init function.
 
+At first glance, it may seem like feasible idea to hook into the existing
+psci_dt_init() function, instead of adding yet another init function for
+PSCI. However, this doesn't work because psci_dt_init() is called early in
+the boot sequence, which means allocating dynamic data structures isn't yet
+possible.
+
+Moreover, additional following changes need to understand whether the
+hierarchical PM domain topology has been successfully initialized,
+therefore let's store the result from the initialization attempt into an
+internal PSCI flag.
+
+Cc: Lina Iyer <ilina@codeaurora.org>
+Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v10:
-	- New patch.
+	- Simplified patch, by moving PSCI OSI related changes out into other
+	  more appropriate patches.
+	- Add a flag to store the result of the PM domain initialization.
+	- Updated and clarified changelog.
 
 ---
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 87 ++++++++++++++++++++---
- 1 file changed, 76 insertions(+), 11 deletions(-)
+ drivers/firmware/psci/psci.c | 18 ++++++++++++++++++
+ include/linux/psci.h         |  2 ++
+ 2 files changed, 20 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index 97d5bf2c6ec5..fa5b385cfbc4 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -20,6 +20,64 @@
- 	psci {
- 		compatible = "arm,psci-0.2";
- 		method = "smc";
-+
-+		CPU_PD0: cpu-pd0 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD1: cpu-pd1 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD2: cpu-pd2 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD3: cpu-pd3 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD0>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD4: cpu-pd4 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD5: cpu-pd5 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD6: cpu-pd6 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CPU_PD7: cpu-pd7 {
-+			#power-domain-cells = <0>;
-+			power-domains = <&CLUSTER_PD1>;
-+			domain-idle-states = <&CPU_SLEEP>;
-+		};
-+
-+		CLUSTER_PD0: cluster-pd0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP>;
-+		};
-+
-+		CLUSTER_PD1: cluster-pd1 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP>;
-+		};
- 	};
+diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+index 19af2093151b..5b481e91ccab 100644
+--- a/drivers/firmware/psci/psci.c
++++ b/drivers/firmware/psci/psci.c
+@@ -91,6 +91,7 @@ static u32 psci_function_id[PSCI_FN_MAX];
  
- 	cpus {
-@@ -70,9 +128,8 @@
- 			};
+ static DEFINE_PER_CPU(u32, domain_state);
+ static u32 psci_cpu_suspend_feature;
++static bool psci_dt_topology;
  
- 			CLUSTER_SLEEP: cluster-sleep {
--				compatible = "arm,idle-state";
--				local-timer-stop;
--				arm,psci-suspend-param = <0x1010000>;
-+				compatible = "domain-idle-state";
-+				arm,psci-suspend-param = <0x1000000>;
- 				entry-latency-us = <1000>;
- 				exit-latency-us = <700>;
- 				min-residency-us = <2700>;
-@@ -88,9 +145,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD0>;
-+			power-domain-names = "psci";
- 		};
+ u32 psci_get_domain_state(void)
+ {
+@@ -741,6 +742,23 @@ int __init psci_dt_init(void)
+ 	return ret;
+ }
  
- 		cpu1: cpu@1 {
-@@ -101,9 +159,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD1>;
-+			power-domain-names = "psci";
- 		};
++int __init psci_dt_topology_init(void)
++{
++	struct device_node *np;
++	int ret;
++
++	np = of_find_matching_node_and_match(NULL, psci_of_match, NULL);
++	if (!np)
++		return -ENODEV;
++
++	/* Initialize the CPU PM domains based on topology described in DT. */
++	ret = psci_dt_init_pm_domains(np);
++	psci_dt_topology = ret > 0;
++
++	of_node_put(np);
++	return ret;
++}
++
+ #ifdef CONFIG_ACPI
+ /*
+  * We use PSCI 0.2+ when ACPI is deployed on ARM64 and it's
+diff --git a/include/linux/psci.h b/include/linux/psci.h
+index 4f29a3bff379..16beccccbbcc 100644
+--- a/include/linux/psci.h
++++ b/include/linux/psci.h
+@@ -55,8 +55,10 @@ extern struct psci_operations psci_ops;
  
- 		cpu2: cpu@2 {
-@@ -114,9 +173,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD2>;
-+			power-domain-names = "psci";
- 		};
+ #if defined(CONFIG_ARM_PSCI_FW)
+ int __init psci_dt_init(void);
++int __init psci_dt_topology_init(void);
+ #else
+ static inline int psci_dt_init(void) { return 0; }
++static inline int psci_dt_topology_init(void) { return 0; }
+ #endif
  
- 		cpu3: cpu@3 {
-@@ -127,9 +187,10 @@
- 			next-level-cache = <&CLUSTER0_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD3>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu4: cpu@100 {
-@@ -140,9 +201,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD4>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu5: cpu@101 {
-@@ -153,9 +215,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD5>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu6: cpu@102 {
-@@ -166,9 +229,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD6>;
-+			power-domain-names = "psci";
- 		};
- 
- 		cpu7: cpu@103 {
-@@ -179,9 +243,10 @@
- 			next-level-cache = <&CLUSTER1_L2>;
- 			clocks = <&stub_clock 0>;
- 			operating-points-v2 = <&cpu_opp_table>;
--			cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
- 			#cooling-cells = <2>; /* min followed by max */
- 			dynamic-power-coefficient = <311>;
-+			power-domains = <&CPU_PD7>;
-+			power-domain-names = "psci";
- 		};
- 
- 		CLUSTER0_L2: l2-cache0 {
+ #if defined(CONFIG_ARM_PSCI_FW) && defined(CONFIG_ACPI)
 -- 
 2.17.1
