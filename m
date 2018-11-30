@@ -1,167 +1,43 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V2 4/5] PM / Domains: Factorize dev_pm_genpd_set_performance_state()
-Date: Fri, 30 Nov 2018 09:54:58 +0100
-Message-ID: <CAPDyKFroPQBwx1ryYor=Zo9xdmHAsboSffWi7Dq_5g-Xs8SVwQ@mail.gmail.com>
-References: <cover.1543219386.git.viresh.kumar@linaro.org> <401e29cb9e8d762e076253220f4a5dc22464e9fa.1543219386.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 3/5] PM / Domains: Save OPP table pointer in genpd
+Date: Fri, 30 Nov 2018 14:35:21 +0530
+Message-ID: <20181130090521.etwm56dcvfgk5qkl@vireshk-i7>
+References: <cover.1543219386.git.viresh.kumar@linaro.org>
+ <f95b514f7b3b3ab6ac00c9871e91513c9c3a09a3.1543219386.git.viresh.kumar@linaro.org>
+ <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <401e29cb9e8d762e076253220f4a5dc22464e9fa.1543219386.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> Separate out _genpd_set_performance_state() and
-> _genpd_reeval_performance_state() from
-> dev_pm_genpd_set_performance_state() to handle performance state update
-> related stuff. This will be used by a later commit.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 30-11-18, 09:53, Ulf Hansson wrote:
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 8e554e6a82a2..0d928359b880 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -1907,12 +1907,21 @@ int of_genpd_add_provider_simple(struct device_node *np,
+> >                                 ret);
+> >                         goto unlock;
+> >                 }
+> > +
+> > +               /*
+> > +                * Save table for faster processing while setting performance
+> > +                * state.
+> > +                */
+> > +               genpd->opp_table = dev_pm_opp_get_opp_table(&genpd->dev);
+> > +               WARN_ON(!genpd->opp_table);
+> 
+> The WARN_ON seems lazy. Why not implement a proper error path?
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+We just added the table before this call and so we should get the table no
+matter what. Initially I wanted to add a BUG_ON() but then I relaxed it a bit :)
 
-Kind regards
-Uffe
+There is no point of error path here as that will never run.
 
-> ---
->  drivers/base/power/domain.c | 105 +++++++++++++++++++++---------------
->  1 file changed, 62 insertions(+), 43 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 0d928359b880..d6b389a9f678 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -239,6 +239,63 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
->  static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
->  #endif
->
-> +static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-> +                                       unsigned int state)
-> +{
-> +       int ret;
-> +
-> +       ret = genpd->set_performance_state(genpd, state);
-> +       if (ret)
-> +               return ret;
-> +
-> +       genpd->performance_state = state;
-> +       return 0;
-> +}
-> +
-> +static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-> +                                          unsigned int state)
-> +{
-> +       struct generic_pm_domain_data *pd_data;
-> +       struct pm_domain_data *pdd;
-> +
-> +       /* New requested state is same as Max requested state */
-> +       if (state == genpd->performance_state)
-> +               return 0;
-> +
-> +       /* New requested state is higher than Max requested state */
-> +       if (state > genpd->performance_state)
-> +               goto update_state;
-> +
-> +       /* Traverse all devices within the domain */
-> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-> +               pd_data = to_gpd_data(pdd);
-> +
-> +               if (pd_data->performance_state > state)
-> +                       state = pd_data->performance_state;
-> +       }
-> +
-> +       if (state == genpd->performance_state)
-> +               return 0;
-> +
-> +       /*
-> +        * We aren't propagating performance state changes of a subdomain to its
-> +        * masters as we don't have hardware that needs it. Over that, the
-> +        * performance states of subdomain and its masters may not have
-> +        * one-to-one mapping and would require additional information. We can
-> +        * get back to this once we have hardware that needs it. For that
-> +        * reason, we don't have to consider performance state of the subdomains
-> +        * of genpd here.
-> +        */
-> +
-> +update_state:
-> +       if (!genpd_status_on(genpd)) {
-> +               genpd->performance_state = state;
-> +               return 0;
-> +       }
-> +
-> +       return _genpd_set_performance_state(genpd, state);
-> +}
-> +
->  /**
->   * dev_pm_genpd_set_performance_state- Set performance state of device's power
->   * domain.
-> @@ -257,10 +314,9 @@ static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
->  int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
->  {
->         struct generic_pm_domain *genpd;
-> -       struct generic_pm_domain_data *gpd_data, *pd_data;
-> -       struct pm_domain_data *pdd;
-> +       struct generic_pm_domain_data *gpd_data;
->         unsigned int prev;
-> -       int ret = 0;
-> +       int ret;
->
->         genpd = dev_to_genpd(dev);
->         if (IS_ERR(genpd))
-> @@ -281,47 +337,10 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
->         prev = gpd_data->performance_state;
->         gpd_data->performance_state = state;
->
-> -       /* New requested state is same as Max requested state */
-> -       if (state == genpd->performance_state)
-> -               goto unlock;
-> -
-> -       /* New requested state is higher than Max requested state */
-> -       if (state > genpd->performance_state)
-> -               goto update_state;
-> -
-> -       /* Traverse all devices within the domain */
-> -       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-> -               pd_data = to_gpd_data(pdd);
-> -
-> -               if (pd_data->performance_state > state)
-> -                       state = pd_data->performance_state;
-> -       }
-> -
-> -       if (state == genpd->performance_state)
-> -               goto unlock;
-> -
-> -       /*
-> -        * We aren't propagating performance state changes of a subdomain to its
-> -        * masters as we don't have hardware that needs it. Over that, the
-> -        * performance states of subdomain and its masters may not have
-> -        * one-to-one mapping and would require additional information. We can
-> -        * get back to this once we have hardware that needs it. For that
-> -        * reason, we don't have to consider performance state of the subdomains
-> -        * of genpd here.
-> -        */
-> -
-> -update_state:
-> -       if (genpd_status_on(genpd)) {
-> -               ret = genpd->set_performance_state(genpd, state);
-> -               if (ret) {
-> -                       gpd_data->performance_state = prev;
-> -                       goto unlock;
-> -               }
-> -       }
-> -
-> -       genpd->performance_state = state;
-> +       ret = _genpd_reeval_performance_state(genpd, state);
-> +       if (ret)
-> +               gpd_data->performance_state = prev;
->
-> -unlock:
->         genpd_unlock(genpd);
->
->         return ret;
-> --
-> 2.19.1.568.g152ad8e3369a
->
+-- 
+viresh
