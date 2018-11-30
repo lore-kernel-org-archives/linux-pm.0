@@ -1,78 +1,34 @@
-From: Luis Chamberlain <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [driver-core PATCH v7 1/9] driver core: Move
- async_synchronize_full call
-Date: Fri, 30 Nov 2018 15:21:37 -0800
-Message-ID: <20181130232137.GE28501@garbanzo.do-not-panic.com>
-References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
- <154345153162.18040.15354788106932190561.stgit@ahduyck-desk1.amr.corp.intel.com>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Subject: Re: [PATCH RFC 00/15] Zero ****s, hugload of hugs <3
+Date: Fri, 30 Nov 2018 15:28:54 -0800
+Message-ID: <20181130232854.GA464@linux.intel.com>
+References: <20181130195652.7syqys76646kpaph@linux-r8p5>
+ <20181130205521.GA21006@linux.intel.com>
+ <1543611662.3031.20.camel@HansenPartnership.com>
+ <20181130214405.GG23772@linux.intel.com>
+ <1543615069.3031.27.camel@HansenPartnership.com>
+ <20181130221219.GA25537@linux.intel.com>
+ <20181130151459.3ca2f5c8@lwn.net>
+ <20181130222605.GA26261@linux.intel.com>
+ <1543617045.3031.41.camel@HansenPartnership.com>
+ <20181130224019.GA27562@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <154345153162.18040.15354788106932190561.stgit-+uVpp3jiz/SWyQ3uPIV3rPooFf0ArEBIu+b9c/7xato@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+In-Reply-To: <20181130224019.GA27562@linux.intel.com>
+Sender: netdev-owner@vger.kernel.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, Davidlohr Bueso <dave@stgolabs.net>, Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>, Amir Goldstein <amir73il@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Axtens <dja@axtens.net>, "David S. Miller" <davem@davemloft.net>, Dominik Brodowski <linux@dominikbrodowski.net>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Eric Dumazet <edumazet@google.com>, federico.vaga@vaga.pv.it, Geert Uytterhoeven <geert+renesas@glider.be>, Helge Deller <deller@gmx.de>, Joshua Kinard <kumba@gentoo.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>linux-
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 28, 2018 at 04:32:11PM -0800, Alexander Duyck wrote:
-> Move the async_synchronize_full call out of __device_release_driver and
-> into driver_detach.
-> 
-> The idea behind this is that the async_synchronize_full call will only
-> guarantee that any existing async operations are flushed. This doesn't do
-> anything to guarantee that a hotplug event that may occur while we are
-> doing the release of the driver will not be asynchronously scheduled.
-> 
-> By moving this into the driver_detach path we can avoid potential deadlocks
-> as we aren't holding the device lock at this point and we should not have
-> the driver we want to flush loaded so the flush will take care of any
-> asynchronous events the driver we are detaching might have scheduled.
-> 
-> Fixes: 765230b5f084 ("driver-core: add asynchronous probing support for drivers")
-> Reviewed-by: Bart Van Assche <bvanassche-HInyCGIudOg@public.gmane.org>
-> Reviewed-by: Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+On Fri, Nov 30, 2018 at 02:40:19PM -0800, Jarkko Sakkinen wrote:
+> Got you... Well I now read the 2nd amendment now through, and yeah, kind
+> of way I work/function anyway.
 
-Reviewed-by: Luis Chamberlain <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Ugh, looked up the word from dictionary for something that makes
+additions to some guidelines because did not know the english word.
+Not meant as a political reference of any kind. Just don't know
+any better English word.
 
-  Luis
-
-> ---
->  drivers/base/dd.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index 689ac9dc6d81..88713f182086 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -931,9 +931,6 @@ static void __device_release_driver(struct device *dev, struct device *parent)
->  
->  	drv = dev->driver;
->  	if (drv) {
-> -		if (driver_allows_async_probing(drv))
-> -			async_synchronize_full();
-> -
->  		while (device_links_busy(dev)) {
->  			device_unlock(dev);
->  			if (parent)
-> @@ -1039,6 +1036,9 @@ void driver_detach(struct device_driver *drv)
->  	struct device_private *dev_prv;
->  	struct device *dev;
->  
-> +	if (driver_allows_async_probing(drv))
-> +		async_synchronize_full();
-> +
->  	for (;;) {
->  		spin_lock(&drv->p->klist_devices.k_lock);
->  		if (list_empty(&drv->p->klist_devices.k_list)) {
-> 
+/Jarkko
