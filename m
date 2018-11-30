@@ -1,55 +1,61 @@
-From: Yangtao Li <tiny.windzz@gmail.com>
-Subject: [PATCH] cpufreq: nforce2: Remove meaningless return
-Date: Fri, 30 Nov 2018 09:25:57 -0500
-Message-ID: <20181130142557.2623-1-tiny.windzz@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: [PATCH v2 2/6] ata: ahci: mvebu: remove stale comment
+Date: Fri, 30 Nov 2018 16:38:29 +0100
+Message-ID: <20181130153833.11421-3-miquel.raynal@bootlin.com>
+References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181130153833.11421-1-miquel.raynal@bootlin.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Hans de Goede <hdegoede@redhat.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In a function whose return type is void, returning on the last line is
-not required.So remove it.Also move the module declaration to the end.
+For Armada-38x (32-bit) SoCs, PM platform support has been added since:
+commit 32f9494c9dfd ("ARM: mvebu: prepare pm-board.c for the
+                      introduction of Armada 38x support")
+commit 3cbd6a6ca81c ("ARM: mvebu: Add standby support")
 
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+For Armada 64-bit SoCs, like the A3700 also using this AHCI driver, PM
+platform support has always existed.
+
+There are even suspend/resume hooks in this driver since:
+commit d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
+
+Remove the stale comment at the end of this driver stating that all
+the above does not exist yet.
+
+Fixes: d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/cpufreq/cpufreq-nforce2.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/ata/ahci_mvebu.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
-index dbf82f36d270..ccff1f2a7c25 100644
---- a/drivers/cpufreq/cpufreq-nforce2.c
-+++ b/drivers/cpufreq/cpufreq-nforce2.c
-@@ -47,10 +47,6 @@ static int fid;
- static int min_fsb;
- static int max_fsb;
+diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
+index f9cb51be38eb..128d6f22926d 100644
+--- a/drivers/ata/ahci_mvebu.c
++++ b/drivers/ata/ahci_mvebu.c
+@@ -197,11 +197,6 @@ static const struct of_device_id ahci_mvebu_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, ahci_mvebu_of_match);
  
--MODULE_AUTHOR("Sebastian Witt <se.witt@gmx.net>");
--MODULE_DESCRIPTION("nForce2 FSB changing cpufreq driver");
--MODULE_LICENSE("GPL");
--
- module_param(fid, int, 0444);
- module_param(min_fsb, int, 0444);
- 
-@@ -123,8 +119,6 @@ static void nforce2_write_pll(int pll)
- 	/* Now write the value in all 64 registers */
- 	for (temp = 0; temp <= 0x3f; temp++)
- 		pci_write_config_dword(nforce2_dev, NFORCE2_PLLREG, pll);
--
--	return;
- }
- 
- /**
-@@ -436,6 +430,9 @@ static void __exit nforce2_exit(void)
- 	cpufreq_unregister_driver(&nforce2_driver);
- }
- 
-+MODULE_AUTHOR("Sebastian Witt <se.witt@gmx.net>");
-+MODULE_DESCRIPTION("nForce2 FSB changing cpufreq driver");
-+MODULE_LICENSE("GPL");
-+
- module_init(nforce2_init);
- module_exit(nforce2_exit);
--
+-/*
+- * We currently don't provide power management related operations,
+- * since there is no suspend/resume support at the platform level for
+- * Armada 38x for the moment.
+- */
+ static struct platform_driver ahci_mvebu_driver = {
+ 	.probe = ahci_mvebu_probe,
+ 	.remove = ata_platform_remove_one,
 -- 
-2.17.0
+2.19.1
