@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 4/6] ata: ahci: mvebu: add Armada 3700 initialization
- needed for S2RAM
-Date: Fri, 30 Nov 2018 16:38:31 +0100
-Message-ID: <20181130153833.11421-5-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 6/6] ARM64: dts: marvell: armada-3720-espressobin: declare
+ SATA PHY property
+Date: Fri, 30 Nov 2018 16:38:33 +0100
+Message-ID: <20181130153833.11421-7-miquel.raynal@bootlin.com>
 References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,108 +22,26 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-A3700 comphy initialization is done in the firmware (TF-A). Looking at
-the SATA PHY initialization routine, there is a comment about "vendor
-specific" registers. Two registers are mentioned. They are not
-initialized there in the firmware because they are AHCI related, while
-the firmware at this location does only PHY configuration. The
-solution to avoid doing such initialization is relying on U-Boot.
+The SATA node is wired to the third PHY of the COMPHY IP.
 
-While this work at boot time, U-Boot is definitely not going to run
-during a resume after suspending to RAM.
-
-Two possible solutions were considered:
-* Fixing the firmware.
-* Fixing the kernel driver.
-
-The first solution would take ages to propagate, while the second
-solution is easy to implement as the driver as been a little bit
-reworked to prepare for such platform configuration. Hence, this patch
-adds an Armada 3700 configuration function to set these two registers
-both at boot time (in the probe) and after a suspend (in the resume
-path).
-
+Suggested-by: Grzegorz Jaszczyk <jaz@semihalf.com>
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/ata/ahci_mvebu.c | 31 +++++++++++++++++++++----------
- 1 file changed, 21 insertions(+), 10 deletions(-)
+ arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
-index 7839a5df1fd2..761d67c5bc31 100644
---- a/drivers/ata/ahci_mvebu.c
-+++ b/drivers/ata/ahci_mvebu.c
-@@ -30,6 +30,7 @@
- 
- struct ahci_mvebu_plat_data {
- 	int (*plat_config)(struct ahci_host_priv *hpriv);
-+	unsigned int flags;
+diff --git a/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts b/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
+index 3ab25ad402b9..e947ef61d946 100644
+--- a/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
++++ b/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
+@@ -51,6 +51,8 @@
+ /* J6 */
+ &sata {
+ 	status = "okay";
++	phys = <&comphy2 0>;
++	phy-names = "sata-phy";
  };
  
- static void ahci_mvebu_mbus_config(struct ahci_host_priv *hpriv,
-@@ -82,6 +83,19 @@ static int ahci_mvebu_armada_380_config(struct ahci_host_priv *hpriv)
- 	return rc;
- }
- 
-+static int ahci_mvebu_armada_3700_config(struct ahci_host_priv *hpriv)
-+{
-+	u32 reg;
-+
-+	writel(0, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_ADDR);
-+
-+	reg = readl(hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
-+	reg |= BIT(6);
-+	writel(reg, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
-+
-+	return 0;
-+}
-+
- /**
-  * ahci_mvebu_stop_engine
-  *
-@@ -148,8 +162,7 @@ static int ahci_mvebu_resume(struct platform_device *pdev)
- 	struct ahci_host_priv *hpriv = host->private_data;
- 	const struct ahci_mvebu_plat_data *pdata = hpriv->plat_data;
- 
--	if (pdata->plat_config)
--		pdata->plat_config(hpriv);
-+	pdata->plat_config(hpriv);
- 
- 	return ahci_platform_resume_host(&pdev->dev);
- }
-@@ -179,7 +192,7 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
- 	if (!pdata)
- 		return -EINVAL;
- 
--	hpriv = ahci_platform_get_resources(pdev, 0);
-+	hpriv = ahci_platform_get_resources(pdev, pdata->flags);
- 	if (IS_ERR(hpriv))
- 		return PTR_ERR(hpriv);
- 
-@@ -191,12 +204,9 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
- 
- 	hpriv->stop_engine = ahci_mvebu_stop_engine;
- 
--	pdata = hpriv->plat_data;
--	if (pdata->plat_config) {
--		rc = pdata->plat_config(hpriv);
--		if (rc)
--			goto disable_resources;
--	}
-+	rc = pdata->plat_config(hpriv);
-+	if (rc)
-+		goto disable_resources;
- 
- 	rc = ahci_platform_init_host(pdev, hpriv, &ahci_mvebu_port_info,
- 				     &ahci_platform_sht);
-@@ -215,7 +225,8 @@ static const struct ahci_mvebu_plat_data ahci_mvebu_armada_380_plat_data = {
- };
- 
- static const struct ahci_mvebu_plat_data ahci_mvebu_armada_3700_plat_data = {
--	.plat_config = NULL,
-+	.plat_config = ahci_mvebu_armada_3700_config,
-+	.flags = AHCI_HFLAG_MANAGE_PHYS,
- };
- 
- static const struct of_device_id ahci_mvebu_of_match[] = {
+ /* J1 */
 -- 
 2.19.1
