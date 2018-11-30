@@ -1,11 +1,13 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 0/6] Bring suspend to RAM support to MVEBU SATA
-Date: Fri, 30 Nov 2018 16:38:27 +0100
-Message-ID: <20181130153833.11421-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 1/6] ata: libahci_platform: comply to PHY framework
+Date: Fri, 30 Nov 2018 16:38:28 +0100
+Message-ID: <20181130153833.11421-2-miquel.raynal@bootlin.com>
+References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,50 +21,95 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpBcyBwYXJ0IG9mIGFuIGVmZm9ydCB0byBicmluZyBzdXNwZW5kIHRvIFJBTSBzdXBw
-b3J0IHRvIEFybWFkYSAzNzAwClNvQ3MgKG1haW4gdGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMg
-c2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5kCnRoZSBTQVRBIElQLgoKRmlyc3QsIGEgY2hh
-bmdlIGluIHRoZSBsaWJhaGNpIHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkK
-ZnJhbWV3b3JrIGJ5IGZvbGxvd2luZyB0aGUgcGh5X3NldF9tb2RlKCkvcGh5X3Bvd2VyX29uKCkK
-c2VxdWVuY2UuIFRoZW4sIHRoZSBBSENJIE1WRUJVIGRyaXZlciBpcyBhIGJpdCB1cGRhdGVkIChw
-YXRjaCAyICYgMykKYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhl
-IEEzNzAwIGluIHBhdGNoIDQgKG9ubHkKZG9uZSBieSB0aGUgQm9vdGxvYWRlciBiZWZvcmUpLiBN
-aXNzaW5nIGNsb2NrIHN1cHBvcnQgaXMgaW1wbGVtZW50ZWQKaW4gcGF0Y2ggNSB0byBiZSBzdXJl
-IHRoZSBjbG9jayB3aWxsIGJlIHJlc3VtZWQgYmVmb3JlIHRoaXMgZHJpdmVyCihzZWUgWzFdIGZv
-ciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUpLgoKRmlu
-YWxseSwgZGV2aWNlIHRyZWVzIGFyZSB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIGhhcmR3YXJlOiB0
-aGUgbWlzc2luZwpQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NPYmluIERULCBhbmQgdGhlIGNs
-b2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKRFQgKHBhdGNoIDYgJiA3KS4gQmluZGluZ3MgYWxyZWFk
-eSBkb2N1bWVudCB0aGUgY2xvY2sgYW5kIHRoZSBQSFkgc28Kbm8gdXBkYXRlIGlzIG5lZWRlZCBv
-biB0aGlzIHJlZ2FyZC4KClsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwv
-bGludXgtYXJtLWtlcm5lbC8yMDE4LU5vdmVtYmVyLzYxNDUyNy5odG1sCgpUaGFua3MsCk1pcXXD
-qGwKCkNoYW5nZXMgc2luY2UgdjE6Cj09PT09PT09PT09PT09PT09CiogVGhlIGNsb2NrIGlzIGF1
-dG9tYXRpY2FsbHkgcmVxdWVzdGVkIGJ5IHRoZSBsaWJhaGNpX3BsYXRmb3JtLmMKICBkcml2ZXIs
-IGRvaW5nIGl0IGluIHRoZSBtdmVidSBkcml2ZXIgaXMgcmVkdW5kYW50LCByZW1vdmUgdGhlIHBh
-dGNoCiAgYWRkaW5nIGNsb2NrIHN1cHBvcnQgYXMgY2xvY2sgc3VwcG9ydCBhbHJlYWR5IGV4aXN0
-cy4KKiBDaGFuZ2VkIGF1dGhvcnNoaXAgb2YgcGF0Y2ggYWRkaW5nIGEgU0FUQSBlbnVtIGluIHRo
-ZSBQSFkgY29yZS4KKiBBZGRlZCBTdWdnZXN0ZWQtYnkgdGFnIHRvIHRoZSBwYXRjaCBmaXhpbmcg
-dGhlIFNBVEEgbm9kZSBzY29wZSBpbiBEVCwKICB0byB0aGUgcGF0Y2ggYWRkaW5nIFBIWSBmcmFt
-ZXdvcmsgY29tcGxpYW5jZSB0byB0aGUKICBsaWJhaGNpX3BsYXRmb3JtIGRyaXZlciBhbmQgdG8g
-dGhlIERUIHBhdGNoIGFkZGluZyB0aGUgU0FUQSBQSFkKICBwcm9wZXJ0eS4KKiBBZGQgYSBmbGFn
-IHRvIGRvIG5vdCBkaXNhYmxlL2VuYWJsZSB0aGUgUEhZIGZvciBjb21wYXRpYmlsaXR5CiAgcmVh
-c29ucyBhbmQgdG8gYXZvaWQgdG8gYnJlYWsgdW50ZXN0ZWQgYm9hcmRzIHdpdGggdGhpcyBjaGFu
-Z2UuCiAgVGhlIGZsYWcgaXMgY2FsbGVkIEFIQ0lfSEZMQUdfTUFOQUdFX1BIWVMuCiogVGhlIG12
-ZWJ1IGFoY2kgZHJpdmVyIGlzIGVkaXRlZCB0byBlbmFibGUgdGhpcyBmbGFnIG9ubHkgb24gQTM3
-MDAuCgoKTWlxdWVsIFJheW5hbCAoNik6CiAgYXRhOiBsaWJhaGNpX3BsYXRmb3JtOiBjb21wbHkg
-dG8gUEhZIGZyYW1ld29yawogIGF0YTogYWhjaTogbXZlYnU6IHJlbW92ZSBzdGFsZSBjb21tZW50
-CiAgYXRhOiBhaGNpOiBtdmVidTogZG8gQXJtYWRhIDM4eCBjb25maWd1cmF0aW9uIG9ubHkgb24g
-cmVsZXZhbnQgU29DcwogIGF0YTogYWhjaTogbXZlYnU6IGFkZCBBcm1hZGEgMzcwMCBpbml0aWFs
-aXphdGlvbiBuZWVkZWQgZm9yIFMyUkFNCiAgQVJNNjQ6IGR0czogbWFydmVsbDogYXJtYWRhLTM3
-eHg6IGRlY2xhcmUgU0FUQSBjbG9jawogIEFSTTY0OiBkdHM6IG1hcnZlbGw6IGFybWFkYS0zNzIw
-LWVzcHJlc3NvYmluOiBkZWNsYXJlIFNBVEEgUEhZCiAgICBwcm9wZXJ0eQoKIC4uLi9kdHMvbWFy
-dmVsbC9hcm1hZGEtMzcyMC1lc3ByZXNzb2Jpbi5kdHMgICB8ICAyICsKIGFyY2gvYXJtNjQvYm9v
-dC9kdHMvbWFydmVsbC9hcm1hZGEtMzd4eC5kdHNpICB8ICAxICsKIGRyaXZlcnMvYXRhL2FoY2ku
-aCAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyICsKIGRyaXZlcnMvYXRhL2FoY2lfbXZl
-YnUuYyAgICAgICAgICAgICAgICAgICAgICB8IDg4ICsrKysrKysrKysrKysrLS0tLS0KIGRyaXZl
-cnMvYXRhL2xpYmFoY2lfcGxhdGZvcm0uYyAgICAgICAgICAgICAgICB8IDE5ICsrKy0KIDUgZmls
-ZXMgY2hhbmdlZCwgODcgaW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pCgotLSAKMi4xOS4x
-CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
-YXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQu
-b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJt
-LWtlcm5lbAo=
+Current implementation of the libahci does not take into account the
+new PHY framework. Correct the situation by adding a call to
+phy_set_mode() before phy_power_on() and by adding calls to
+ahci_platform_enable/disable_phys() at suspend/resume_host() time.
+
+Suggested-by: Grzegorz Jaszczyk <jaz@semihalf.com>
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/ata/ahci.h             |  2 ++
+ drivers/ata/libahci_platform.c | 19 ++++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/ata/ahci.h b/drivers/ata/ahci.h
+index ef356e70e6de..982638b37fee 100644
+--- a/drivers/ata/ahci.h
++++ b/drivers/ata/ahci.h
+@@ -254,6 +254,8 @@ enum {
+ 	AHCI_HFLAG_IS_MOBILE		= (1 << 25), /* mobile chipset, use
+ 							SATA_MOBILE_LPM_POLICY
+ 							as default lpm_policy */
++	AHCI_HFLAG_MANAGE_PHYS		= (1 << 26), /* let the core manage the
++							PHYs when relevant */
+ 
+ 	/* ap->flags bits */
+ 
+diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
+index 4b900fc659f7..f5a64eb1fea8 100644
+--- a/drivers/ata/libahci_platform.c
++++ b/drivers/ata/libahci_platform.c
+@@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
+ 		if (rc)
+ 			goto disable_phys;
+ 
++		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
++		if (rc) {
++			phy_exit(hpriv->phys[i]);
++			goto disable_phys;
++		}
++
+ 		rc = phy_power_on(hpriv->phys[i]);
+ 		if (rc) {
+ 			phy_exit(hpriv->phys[i]);
+@@ -378,7 +384,8 @@ static int ahci_platform_get_regulator(struct ahci_host_priv *hpriv, u32 port,
+  * 3) 0 - AHCI_MAX_CLKS clocks, as specified in the devs devicetree node,
+  *    or for non devicetree enabled platforms a single clock
+  * 4) resets, if flags has AHCI_PLATFORM_GET_RESETS (optional)
+- * 5) phys (optional)
++ * 5) phys (optional), PHY handling during suspend/resume will be skipped if the
++ *    flag AHCI_HFLAG_MANAGE_PHYS is missing.
+  *
+  * RETURNS:
+  * The allocated ahci_host_priv on success, otherwise an ERR_PTR value
+@@ -458,6 +465,9 @@ struct ahci_host_priv *ahci_platform_get_resources(struct platform_device *pdev,
+ 		}
+ 	}
+ 
++	if (flags & AHCI_HFLAG_MANAGE_PHYS)
++		hpriv->flags |= AHCI_HFLAG_MANAGE_PHYS;
++
+ 	hpriv->nports = child_nodes = of_get_child_count(dev->of_node);
+ 
+ 	/*
+@@ -738,6 +748,9 @@ int ahci_platform_suspend_host(struct device *dev)
+ 	writel(ctl, mmio + HOST_CTL);
+ 	readl(mmio + HOST_CTL); /* flush */
+ 
++	if (hpriv->flags & AHCI_HFLAG_MANAGE_PHYS)
++		ahci_platform_disable_phys(hpriv);
++
+ 	return ata_host_suspend(host, PMSG_SUSPEND);
+ }
+ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
+@@ -756,6 +769,7 @@ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
+ int ahci_platform_resume_host(struct device *dev)
+ {
+ 	struct ata_host *host = dev_get_drvdata(dev);
++	struct ahci_host_priv *hpriv = host->private_data;
+ 	int rc;
+ 
+ 	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
+@@ -766,6 +780,9 @@ int ahci_platform_resume_host(struct device *dev)
+ 		ahci_init_controller(host);
+ 	}
+ 
++	if (hpriv->flags & AHCI_HFLAG_MANAGE_PHYS)
++		ahci_platform_enable_phys(hpriv);
++
+ 	ata_host_resume(host);
+ 
+ 	return 0;
+-- 
+2.19.1
