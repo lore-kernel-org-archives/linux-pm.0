@@ -1,67 +1,144 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v6 0/8] AXP8x3 AC and battery power supply support
-Date: Fri, 30 Nov 2018 16:31:28 +0800
-Message-ID: <CAGb2v65Bwve25jwdGHHK9j03RxQ3tKwme51762DjyQK2femG6g@mail.gmail.com>
-References: <20181120175211.3913-1-oskari@lemmela.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 2/5] OPP: Add dev_pm_opp_xlate_performance_state() helper
+Date: Fri, 30 Nov 2018 09:45:55 +0100
+Message-ID: <CAPDyKFo+P0oUoPuNCJV4eumn-cqrM5_LBOvY3qQ9qy_HY5Lt2g@mail.gmail.com>
+References: <cover.1543219386.git.viresh.kumar@linaro.org> <8bb37fb6120221ded6abb53e69c86620aade20f6.1543219386.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181120175211.3913-1-oskari@lemmela.net>
+In-Reply-To: <8bb37fb6120221ded6abb53e69c86620aade20f6.1543219386.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, oskari@lemmela.net
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Quentin Schulz <quentin.schulz@bootlin.com>, Vasily Khoruzhick <anarsoul@gmail.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 21, 2018 at 1:52 AM Oskari Lemmela <oskari@lemmela.net> wrote:
+On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> AXP813 AC power supply support with input current and
-> voltage limiting support.
->
-> AXP803 AC and battery power supply support.
->
-> Changes in v6:
-> * Collected tags
-> * Rebase to master
-> * Dropped AXP803 compatible patches
->
-> Changes in v5:
-> * Return correct input current limit for values 0x6 and 0x7
-> * Add specific compatibles for AXP803
-> * Change commit messages
-> * Add Vasily Khoruzhick Pinebook DTS patch
->
-> Changes in v4:
-> * Change order of axp20x-gpio in axp20x.c
-> * Fix indentation and spaces to tabs in axp20x.c
->
-> Changes in v3:
-> * Reorder ac_power_supply DT node
-> * Rename axp20x_ac_power_set_property function
-> * Split mfd commit
->
-> Changes in v2:
-> * Reuse axp813 compatibles for axp803
-> * Refactor axp20x_ac_power.c
->
->
-> Oskari Lemmela (7):
->   dt-bindings: power: supply: axp20x: add AXP813 AC power DT binding
->   ARM: dts: axp81x: add AC power supply subnode
->   arm64: dts: allwinner: axp803: add AC and battery power supplies
->   arm64: dts: allwinner: a64: sopine-baseboard: enable power supplies
->   power: supply: add AC power supply driver for AXP813
->   mfd: axp20x: Add AC power supply cell for AXP813
->   mfd: axp20x: Add supported cells for AXP803
->
-> Vasily Khoruzhick (1):
->   arm64: dts: allwinner: a64: pinebook: enable power supplies
+> Introduce a new helper dev_pm_opp_xlate_performance_state() which will
+> be used to translate from pstate of a device to another one.
 
-Since this series has been fully reviewed, and the devices it
-adds/enables aren't critical, i.e. won't cause the system to fail
-if the drivers are missing, I've merged the dts patches for 4.21.
+I don't get this, could you please elaborate?
 
-Hopefully Sebastian and Lee will get around to merging the driver
-patches.
+>
+> Initially this will be used by genpd to find pstate of a master domain
+> using its sub-domain's pstate.
 
-Thanks.
-ChenYu
+I assume pstate is the performance state of a genpd that you refer to,
+no? Please try to be a bit more descriptive in your changelogs, to
+avoid confusions.
+
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/opp/core.c     | 59 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  7 +++++
+>  2 files changed, 66 insertions(+)
+>
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 0eaa954b3f6c..99b71f60b6d8 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -1707,6 +1707,65 @@ void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table,
+>                 dev_err(virt_dev, "Failed to find required device entry\n");
+>  }
+>
+> +/**
+> + * dev_pm_opp_xlate_performance_state() - Find required OPP's pstate for src_table.
+> + * @src_table: OPP table which has dst_table as one of its required OPP table.
+> + * @dst_table: Required OPP table of the src_table.
+> + * @pstate: Current performance state of the src_table.
+> + *
+> + * This Returns pstate of the OPP (present in @dst_table) pointed out by the
+> + * "required-opps" property of the OPP (present in @src_table) which has
+> + * performance state set to @pstate.
+> + *
+> + * Return: Positive performance state on success, otherwise 0 on errors.
+> + */
+> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table,
+> +                                               struct opp_table *dst_table,
+> +                                               unsigned int pstate)
+> +{
+> +       struct dev_pm_opp *opp;
+> +       unsigned int dest_pstate = 0;
+> +       int i;
+> +
+> +       /*
+> +        * Normally the src_table will have the "required_opps" property set to
+> +        * point to one of the OPPs in the dst_table, but in some cases the
+> +        * genpd and its master have one to one mapping of performance states
+> +        * and so none of them have the "required-opps" property set. Return the
+> +        * pstate of the src_table as it is in such cases.
+
+This comment is good, but I also think some of this important
+information is missing in the changelog.
+
+> +        */
+> +       if (!src_table->required_opp_count)
+> +               return pstate;
+> +
+> +       for (i = 0; i < src_table->required_opp_count; i++) {
+> +               if (src_table->required_opp_tables[i]->np == dst_table->np)
+> +                       break;
+> +       }
+> +
+> +       if (unlikely(i == src_table->required_opp_count)) {
+> +               pr_err("%s: Couldn't find matching OPP table (%p: %p)\n",
+> +                      __func__, src_table, dst_table);
+> +               return 0;
+> +       }
+> +
+> +       mutex_lock(&src_table->lock);
+> +
+> +       list_for_each_entry(opp, &src_table->opp_list, node) {
+> +               if (opp->pstate == pstate) {
+> +                       dest_pstate = opp->required_opps[i]->pstate;
+> +                       goto unlock;
+> +               }
+> +       }
+> +
+> +       pr_err("%s: Couldn't find matching OPP (%p: %p)\n", __func__, src_table,
+> +              dst_table);
+> +
+> +unlock:
+> +       mutex_unlock(&src_table->lock);
+> +
+> +       return dest_pstate;
+> +}
+> +
+>  /**
+>   * dev_pm_opp_add()  - Add an OPP table from a table definitions
+>   * @dev:       device for which we do this operation
+> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+> index 2b2c3fd985ab..5a64a81a1789 100644
+> --- a/include/linux/pm_opp.h
+> +++ b/include/linux/pm_opp.h
+> @@ -128,6 +128,7 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*s
+>  void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+>  struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev, struct device *virt_dev, int index);
+>  void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev);
+> +unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate);
+>  int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+>  int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+>  int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+> @@ -280,6 +281,12 @@ static inline struct opp_table *dev_pm_opp_set_genpd_virt_dev(struct device *dev
+>  }
+>
+>  static inline void dev_pm_opp_put_genpd_virt_dev(struct opp_table *opp_table, struct device *virt_dev) {}
+> +
+> +static inline unsigned int dev_pm_opp_xlate_performance_state(struct opp_table *src_table, struct opp_table *dst_table, unsigned int pstate)
+> +{
+> +       return 0;
+> +}
+> +
+>  static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+>  {
+>         return -ENOTSUPP;
+> --
+> 2.19.1.568.g152ad8e3369a
+>
+
+Besides the comments, I think this makes sense to me. Although, let me
+review the rest in the series before making a final call.
+
+Kind regards
+Uffe
