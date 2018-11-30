@@ -1,123 +1,124 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor
- for tickless systems
-Date: Fri, 30 Nov 2018 09:51:19 +0100
-Message-ID: <CAJZ5v0j6AEjztoFfpQAc3NgQ5JtsWgRqscoE_u1eespVM-Cnmw@mail.gmail.com>
-References: <001901d48881$29ea59d0$7dbf0d70$@net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V2 3/5] PM / Domains: Save OPP table pointer in genpd
+Date: Fri, 30 Nov 2018 09:53:07 +0100
+Message-ID: <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
+References: <cover.1543219386.git.viresh.kumar@linaro.org> <f95b514f7b3b3ab6ac00c9871e91513c9c3a09a3.1543219386.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001901d48881$29ea59d0$7dbf0d70$@net>
+In-Reply-To: <f95b514f7b3b3ab6ac00c9871e91513c9c3a09a3.1543219386.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Giovanni Gherdovich <ggherdovich@suse.cz>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Doug,
+On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> We will need these going forward in hotpath, i.e. from within
+> dev_pm_genpd_set_performance_state().
 
-On Fri, Nov 30, 2018 at 8:49 AM Doug Smythies <dsmythies@telus.net> wrote:
->
-> Hi Rafael,
->
-> On 2018.11.23 02:36 Rafael J. Wysocki wrote:
->
-> ... [snip]...
->
-> > +/**
-> > + * teo_find_shallower_state - Find shallower idle state matching given duration.
-> > + * @drv: cpuidle driver containing state data.
-> > + * @dev: Target CPU.
-> > + * @state_idx: Index of the capping idle state.
-> > + * @duration_us: Idle duration value to match.
-> > + */
-> > +static int teo_find_shallower_state(struct cpuidle_driver *drv,
-> > +                                 struct cpuidle_device *dev, int state_idx,
-> > +                                 unsigned int duration_us)
-> > +{
-> > +     int i;
-> > +
-> > +     for (i = state_idx - 1; i > 0; i--) {
-> > +             if (drv->states[i].disabled || dev->states_usage[i].disable)
-> > +                     continue;
-> > +
-> > +             if (drv->states[i].target_residency <= duration_us)
-> > +                     break;
-> > +     }
-> > +     return i;
-> > +}
->
-> I think this subroutine has a problem when idle state 0
-> is disabled.
+Well, as for patch2, please try to be a bit more descriptive of why
+and what this patch does.
 
-You are right, thanks!
+>
+> Lets fetch and save them while the OPP tables are added.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 23 +++++++++++++++++++++--
+>  include/linux/pm_domain.h   |  2 ++
+>  2 files changed, 23 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 8e554e6a82a2..0d928359b880 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1907,12 +1907,21 @@ int of_genpd_add_provider_simple(struct device_node *np,
+>                                 ret);
+>                         goto unlock;
+>                 }
+> +
+> +               /*
+> +                * Save table for faster processing while setting performance
+> +                * state.
+> +                */
+> +               genpd->opp_table = dev_pm_opp_get_opp_table(&genpd->dev);
+> +               WARN_ON(!genpd->opp_table);
 
-> Perhaps something like this might help:
->
-> diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
-> index bc1c9a2..5b97639 100644
-> --- a/drivers/cpuidle/governors/teo.c
-> +++ b/drivers/cpuidle/governors/teo.c
-> @@ -196,7 +196,8 @@ static void teo_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  }
->
->  /**
-> - * teo_find_shallower_state - Find shallower idle state matching given duration.
-> + * teo_find_shallower_state - Find shallower idle state matching given
-> + * duration, if possible.
->   * @drv: cpuidle driver containing state data.
->   * @dev: Target CPU.
->   * @state_idx: Index of the capping idle state.
-> @@ -208,13 +209,15 @@ static int teo_find_shallower_state(struct cpuidle_driver *drv,
->  {
->         int i;
->
-> -       for (i = state_idx - 1; i > 0; i--) {
-> +       for (i = state_idx - 1; i >= 0; i--) {
->                 if (drv->states[i].disabled || dev->states_usage[i].disable)
->                         continue;
->
->                 if (drv->states[i].target_residency <= duration_us)
->                         break;
+The WARN_ON seems lazy. Why not implement a proper error path?
+
 >         }
-> +       if (i < 0)
-> +               i = state_idx;
->         return i;
->  }
-
-I'll do something slightly similar, but equivalent.
-
 >
-> @@ -264,7 +267,6 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
->                         if (max_early_idx >= 0 &&
->                             count < cpu_data->states[i].early_hits)
->                                 count = cpu_data->states[i].early_hits;
-> -
->                         continue;
+>         ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
+>         if (ret) {
+> -               if (genpd->set_performance_state)
+> +               if (genpd->set_performance_state) {
+> +                       dev_pm_opp_put_opp_table(genpd->opp_table);
+>                         dev_pm_opp_of_remove_table(&genpd->dev);
+> +               }
+>
+>                 goto unlock;
+>         }
+> @@ -1965,6 +1974,13 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>                                         i, ret);
+>                                 goto error;
+>                         }
+> +
+> +                       /*
+> +                        * Save table for faster processing while setting
+> +                        * performance state.
+> +                        */
+> +                       genpd->opp_table = dev_pm_opp_get_opp_table_indexed(&genpd->dev, i);
+> +                       WARN_ON(!genpd->opp_table);
 >                 }
 >
-> There is an additional issue where if idle state 0 is disabled (with the above suggested code patch),
-> idle state usage seems to fall to deeper states than idle state 1.
-> This is not the expected behaviour.
-
-No, it isn't.
-
-> Kernel 4.20-rc3 works as expected.
-> I have not figured this issue out yet, in the code.
+>                 genpd->provider = &np->fwnode;
+> @@ -1989,8 +2005,10 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>                 genpd->provider = NULL;
+>                 genpd->has_provider = false;
 >
-> Example (1 minute per sample. Number of entries/exits per state):
->     State 0     State 1     State 2     State 3     State 4    Watts
->    28235143,         83,         26,         17,        837,  64.900
->     5583238,     657079,    5884941,    8498552,   30986831,  62.433 << Transition sample, after idle state 0 disabled
->           0,     793517,    7186099,   10559878,   38485721,  61.900 << ?? should have all gone into Idle state 1
->           0,     795414,    7340703,   10553117,   38513456,  62.050
->           0,     807028,    7288195,   10574113,   38523524,  62.167
->           0,     814983,    7403534,   10575108,   38571228,  62.167
->           0,     838302,    7747127,   10552289,   38556054,  62.183
->     9664999,     544473,    4914512,    6942037,   25295361,  63.633 << Transition sample, after idle state 0 enabled
->    27893504,         96,         40,          9,        912,  66.500
->    26556343,         83,         29,          7,        814,  66.683
->    27929227,         64,         20,         10,        931,  66.683
+> -               if (genpd->set_performance_state)
+> +               if (genpd->set_performance_state) {
+> +                       dev_pm_opp_put_opp_table(genpd->opp_table);
+>                         dev_pm_opp_of_remove_table(&genpd->dev);
+> +               }
+>         }
+>
+>         mutex_unlock(&gpd_list_lock);
+> @@ -2024,6 +2042,7 @@ void of_genpd_del_provider(struct device_node *np)
+>                                         if (!gpd->set_performance_state)
+>                                                 continue;
+>
+> +                                       dev_pm_opp_put_opp_table(gpd->opp_table);
+>                                         dev_pm_opp_of_remove_table(&gpd->dev);
+>                                 }
+>                         }
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 642036952553..9ad101362aef 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -73,6 +73,7 @@ struct genpd_power_state {
+>
+>  struct genpd_lock_ops;
+>  struct dev_pm_opp;
+> +struct opp_table;
+>
+>  struct generic_pm_domain {
+>         struct device dev;
+> @@ -94,6 +95,7 @@ struct generic_pm_domain {
+>         unsigned int performance_state; /* Aggregated max performance state */
+>         int (*power_off)(struct generic_pm_domain *domain);
+>         int (*power_on)(struct generic_pm_domain *domain);
+> +       struct opp_table *opp_table;    /* OPP table of the genpd */
+>         unsigned int (*opp_to_performance_state)(struct generic_pm_domain *genpd,
+>                                                  struct dev_pm_opp *opp);
+>         int (*set_performance_state)(struct generic_pm_domain *genpd,
+> --
+> 2.19.1.568.g152ad8e3369a
+>
 
-I see.
+Similar as for patch2, this makes sense to me. Although, let me review
+the complete series before giving a final call.
 
-OK, I'll look into this too, thanks!
+Kind regards
+Uffe
