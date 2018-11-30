@@ -1,34 +1,123 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: Re: [PATCH RFC 00/15] Zero ****s, hugload of hugs <3
-Date: Fri, 30 Nov 2018 15:28:54 -0800
-Message-ID: <20181130232854.GA464@linux.intel.com>
-References: <20181130195652.7syqys76646kpaph@linux-r8p5>
- <20181130205521.GA21006@linux.intel.com>
- <1543611662.3031.20.camel@HansenPartnership.com>
- <20181130214405.GG23772@linux.intel.com>
- <1543615069.3031.27.camel@HansenPartnership.com>
- <20181130221219.GA25537@linux.intel.com>
- <20181130151459.3ca2f5c8@lwn.net>
- <20181130222605.GA26261@linux.intel.com>
- <1543617045.3031.41.camel@HansenPartnership.com>
- <20181130224019.GA27562@linux.intel.com>
+From: Luis Chamberlain <mcgrof@kernel.org>
+Subject: Re: [driver-core PATCH v7 2/9] driver core: Establish clear order of
+ operations for deferred probe and remove
+Date: Fri, 30 Nov 2018 15:40:38 -0800
+Message-ID: <20181130234038.GF28501@garbanzo.do-not-panic.com>
+References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
+ <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181130224019.GA27562@linux.intel.com>
-Sender: netdev-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jonathan Corbet <corbet@lwn.net>, Davidlohr Bueso <dave@stgolabs.net>, Kees Cook <keescook@chromium.org>, LKML <linux-kernel@vger.kernel.org>, Amir Goldstein <amir73il@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Daniel Axtens <dja@axtens.net>, "David S. Miller" <davem@davemloft.net>, Dominik Brodowski <linux@dominikbrodowski.net>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Eric Dumazet <edumazet@google.com>, federico.vaga@vaga.pv.it, Geert Uytterhoeven <geert+renesas@glider.be>, Helge Deller <deller@gmx.de>, Joshua Kinard <kumba@gentoo.org>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>linux-
+In-Reply-To: <154345153672.18040.3771035148218843351.stgit@ahduyck-desk1.amr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alexander Duyck <alexander.h.duyck@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, dmitry.torokhov@gmail.com, brendanhiggins@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 30, 2018 at 02:40:19PM -0800, Jarkko Sakkinen wrote:
-> Got you... Well I now read the 2nd amendment now through, and yeah, kind
-> of way I work/function anyway.
+On Wed, Nov 28, 2018 at 04:32:16PM -0800, Alexander Duyck wrote:
+> Add an additional bit flag to the device struct named async_probe. This
+> additional flag allows us to guarantee ordering between probe and remove
+> operations.
+> 
+> This allows us to guarantee that if we execute a remove operation on a
+> given interface it will not attempt to update the driver member
+> asynchronously following the earlier operation. Previously this guarantee
+> was not present and could result in us attempting to remove a driver from
+> an interface only to have it attempt to attach the driver later when we
+> finally complete the deferred asynchronous probe call.
+> 
+> Reviewed-by: Bart Van Assche <bvanassche@acm.org>
+> Signed-off-by: Alexander Duyck <alexander.h.duyck@linux.intel.com>
 
-Ugh, looked up the word from dictionary for something that makes
-additions to some guidelines because did not know the english word.
-Not meant as a political reference of any kind. Just don't know
-any better English word.
+Reviewed-by: Luis Chamberlain <mcgrof@kernel.org>
 
-/Jarkko
+This is the sort of corner case that is best if we had a test case for
+it, as it is hard to reproduce and -- how do we know we won't regress
+later? Not sure if it helps but we have lib/test_kmod.c and its
+respective tools/testing/selftests/kmod/kmod.sh, a new enum kmod_test_case
+might be in order for device emulation creeping up / disappearing
+during a custom mock driver using async probe.
+
+Yeah.. I know.. "yes this seems good but how about later"? While we're going
+through the motions here and have your attention on this I think it
+would be valuable for this now. This is the sort of code that won't
+change often, but if modified *can* really break things badly.
+
+  Luis
+
+> ---
+>  drivers/base/dd.c      |   16 ++++++++++++++++
+>  include/linux/device.h |    3 +++
+>  2 files changed, 19 insertions(+)
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 88713f182086..ef3f70a7cb5a 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -774,6 +774,10 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+>  
+>  	device_lock(dev);
+>  
+> +	/* nothing to do if async_probe has been cleared */
+> +	if (!dev->async_probe)
+> +		goto out_unlock;
+> +
+>  	if (dev->parent)
+>  		pm_runtime_get_sync(dev->parent);
+>  
+> @@ -785,6 +789,9 @@ static void __device_attach_async_helper(void *_dev, async_cookie_t cookie)
+>  	if (dev->parent)
+>  		pm_runtime_put(dev->parent);
+>  
+> +	/* We made our attempt at an async_probe, clear the flag */
+> +	dev->async_probe = false;
+> +out_unlock:
+>  	device_unlock(dev);
+>  
+>  	put_device(dev);
+> @@ -829,6 +836,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+>  			 */
+>  			dev_dbg(dev, "scheduling asynchronous probe\n");
+>  			get_device(dev);
+> +			dev->async_probe = true;
+>  			async_schedule(__device_attach_async_helper, dev);
+>  		} else {
+>  			pm_request_idle(dev);
+> @@ -929,6 +937,14 @@ static void __device_release_driver(struct device *dev, struct device *parent)
+>  {
+>  	struct device_driver *drv;
+>  
+> +	/*
+> +	 * In the event that we are asked to release the driver on an
+> +	 * interface that is still waiting on a probe we can just terminate
+> +	 * the probe by setting async_probe to false. When the async call
+> +	 * is finally completed it will see this state and just exit.
+> +	 */
+> +	dev->async_probe = false;
+> +
+>  	drv = dev->driver;
+>  	if (drv) {
+>  		while (device_links_busy(dev)) {
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 1b25c7a43f4c..4d2eb2c74149 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -957,6 +957,8 @@ struct dev_links_info {
+>   *              device.
+>   * @dma_coherent: this particular device is dma coherent, even if the
+>   *		architecture supports non-coherent devices.
+> + * @async_probe: This device has an asynchronous probe event pending. Should
+> + *		 only be updated while holding device lock.
+>   *
+>   * At the lowest level, every device in a Linux system is represented by an
+>   * instance of struct device. The device structure contains the information
+> @@ -1051,6 +1053,7 @@ struct device {
+>      defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+>  	bool			dma_coherent:1;
+>  #endif
+> +	bool			async_probe:1;
+>  };
+>  
+>  static inline struct device *kobj_to_dev(struct kobject *kobj)
+> 
