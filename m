@@ -1,13 +1,11 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 2/6] ata: ahci: mvebu: remove stale comment
-Date: Fri, 30 Nov 2018 16:38:29 +0100
-Message-ID: <20181130153833.11421-3-miquel.raynal@bootlin.com>
-References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 0/6] Bring suspend to RAM support to MVEBU SATA
+Date: Fri, 30 Nov 2018 16:38:27 +0100
+Message-ID: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,41 +19,50 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-For Armada-38x (32-bit) SoCs, PM platform support has been added since:
-commit 32f9494c9dfd ("ARM: mvebu: prepare pm-board.c for the
-                      introduction of Armada 38x support")
-commit 3cbd6a6ca81c ("ARM: mvebu: Add standby support")
-
-For Armada 64-bit SoCs, like the A3700 also using this AHCI driver, PM
-platform support has always existed.
-
-There are even suspend/resume hooks in this driver since:
-commit d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
-
-Remove the stale comment at the end of this driver stating that all
-the above does not exist yet.
-
-Fixes: d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- drivers/ata/ahci_mvebu.c | 5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
-index f9cb51be38eb..128d6f22926d 100644
---- a/drivers/ata/ahci_mvebu.c
-+++ b/drivers/ata/ahci_mvebu.c
-@@ -197,11 +197,6 @@ static const struct of_device_id ahci_mvebu_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, ahci_mvebu_of_match);
- 
--/*
-- * We currently don't provide power management related operations,
-- * since there is no suspend/resume support at the platform level for
-- * Armada 38x for the moment.
-- */
- static struct platform_driver ahci_mvebu_driver = {
- 	.probe = ahci_mvebu_probe,
- 	.remove = ata_platform_remove_one,
--- 
-2.19.1
+SGVsbG8sCgpBcyBwYXJ0IG9mIGFuIGVmZm9ydCB0byBicmluZyBzdXNwZW5kIHRvIFJBTSBzdXBw
+b3J0IHRvIEFybWFkYSAzNzAwClNvQ3MgKG1haW4gdGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMg
+c2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5kCnRoZSBTQVRBIElQLgoKRmlyc3QsIGEgY2hh
+bmdlIGluIHRoZSBsaWJhaGNpIHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkK
+ZnJhbWV3b3JrIGJ5IGZvbGxvd2luZyB0aGUgcGh5X3NldF9tb2RlKCkvcGh5X3Bvd2VyX29uKCkK
+c2VxdWVuY2UuIFRoZW4sIHRoZSBBSENJIE1WRUJVIGRyaXZlciBpcyBhIGJpdCB1cGRhdGVkIChw
+YXRjaCAyICYgMykKYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhl
+IEEzNzAwIGluIHBhdGNoIDQgKG9ubHkKZG9uZSBieSB0aGUgQm9vdGxvYWRlciBiZWZvcmUpLiBN
+aXNzaW5nIGNsb2NrIHN1cHBvcnQgaXMgaW1wbGVtZW50ZWQKaW4gcGF0Y2ggNSB0byBiZSBzdXJl
+IHRoZSBjbG9jayB3aWxsIGJlIHJlc3VtZWQgYmVmb3JlIHRoaXMgZHJpdmVyCihzZWUgWzFdIGZv
+ciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUpLgoKRmlu
+YWxseSwgZGV2aWNlIHRyZWVzIGFyZSB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIGhhcmR3YXJlOiB0
+aGUgbWlzc2luZwpQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NPYmluIERULCBhbmQgdGhlIGNs
+b2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKRFQgKHBhdGNoIDYgJiA3KS4gQmluZGluZ3MgYWxyZWFk
+eSBkb2N1bWVudCB0aGUgY2xvY2sgYW5kIHRoZSBQSFkgc28Kbm8gdXBkYXRlIGlzIG5lZWRlZCBv
+biB0aGlzIHJlZ2FyZC4KClsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwv
+bGludXgtYXJtLWtlcm5lbC8yMDE4LU5vdmVtYmVyLzYxNDUyNy5odG1sCgpUaGFua3MsCk1pcXXD
+qGwKCkNoYW5nZXMgc2luY2UgdjE6Cj09PT09PT09PT09PT09PT09CiogVGhlIGNsb2NrIGlzIGF1
+dG9tYXRpY2FsbHkgcmVxdWVzdGVkIGJ5IHRoZSBsaWJhaGNpX3BsYXRmb3JtLmMKICBkcml2ZXIs
+IGRvaW5nIGl0IGluIHRoZSBtdmVidSBkcml2ZXIgaXMgcmVkdW5kYW50LCByZW1vdmUgdGhlIHBh
+dGNoCiAgYWRkaW5nIGNsb2NrIHN1cHBvcnQgYXMgY2xvY2sgc3VwcG9ydCBhbHJlYWR5IGV4aXN0
+cy4KKiBDaGFuZ2VkIGF1dGhvcnNoaXAgb2YgcGF0Y2ggYWRkaW5nIGEgU0FUQSBlbnVtIGluIHRo
+ZSBQSFkgY29yZS4KKiBBZGRlZCBTdWdnZXN0ZWQtYnkgdGFnIHRvIHRoZSBwYXRjaCBmaXhpbmcg
+dGhlIFNBVEEgbm9kZSBzY29wZSBpbiBEVCwKICB0byB0aGUgcGF0Y2ggYWRkaW5nIFBIWSBmcmFt
+ZXdvcmsgY29tcGxpYW5jZSB0byB0aGUKICBsaWJhaGNpX3BsYXRmb3JtIGRyaXZlciBhbmQgdG8g
+dGhlIERUIHBhdGNoIGFkZGluZyB0aGUgU0FUQSBQSFkKICBwcm9wZXJ0eS4KKiBBZGQgYSBmbGFn
+IHRvIGRvIG5vdCBkaXNhYmxlL2VuYWJsZSB0aGUgUEhZIGZvciBjb21wYXRpYmlsaXR5CiAgcmVh
+c29ucyBhbmQgdG8gYXZvaWQgdG8gYnJlYWsgdW50ZXN0ZWQgYm9hcmRzIHdpdGggdGhpcyBjaGFu
+Z2UuCiAgVGhlIGZsYWcgaXMgY2FsbGVkIEFIQ0lfSEZMQUdfTUFOQUdFX1BIWVMuCiogVGhlIG12
+ZWJ1IGFoY2kgZHJpdmVyIGlzIGVkaXRlZCB0byBlbmFibGUgdGhpcyBmbGFnIG9ubHkgb24gQTM3
+MDAuCgoKTWlxdWVsIFJheW5hbCAoNik6CiAgYXRhOiBsaWJhaGNpX3BsYXRmb3JtOiBjb21wbHkg
+dG8gUEhZIGZyYW1ld29yawogIGF0YTogYWhjaTogbXZlYnU6IHJlbW92ZSBzdGFsZSBjb21tZW50
+CiAgYXRhOiBhaGNpOiBtdmVidTogZG8gQXJtYWRhIDM4eCBjb25maWd1cmF0aW9uIG9ubHkgb24g
+cmVsZXZhbnQgU29DcwogIGF0YTogYWhjaTogbXZlYnU6IGFkZCBBcm1hZGEgMzcwMCBpbml0aWFs
+aXphdGlvbiBuZWVkZWQgZm9yIFMyUkFNCiAgQVJNNjQ6IGR0czogbWFydmVsbDogYXJtYWRhLTM3
+eHg6IGRlY2xhcmUgU0FUQSBjbG9jawogIEFSTTY0OiBkdHM6IG1hcnZlbGw6IGFybWFkYS0zNzIw
+LWVzcHJlc3NvYmluOiBkZWNsYXJlIFNBVEEgUEhZCiAgICBwcm9wZXJ0eQoKIC4uLi9kdHMvbWFy
+dmVsbC9hcm1hZGEtMzcyMC1lc3ByZXNzb2Jpbi5kdHMgICB8ICAyICsKIGFyY2gvYXJtNjQvYm9v
+dC9kdHMvbWFydmVsbC9hcm1hZGEtMzd4eC5kdHNpICB8ICAxICsKIGRyaXZlcnMvYXRhL2FoY2ku
+aCAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyICsKIGRyaXZlcnMvYXRhL2FoY2lfbXZl
+YnUuYyAgICAgICAgICAgICAgICAgICAgICB8IDg4ICsrKysrKysrKysrKysrLS0tLS0KIGRyaXZl
+cnMvYXRhL2xpYmFoY2lfcGxhdGZvcm0uYyAgICAgICAgICAgICAgICB8IDE5ICsrKy0KIDUgZmls
+ZXMgY2hhbmdlZCwgODcgaW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pCgotLSAKMi4xOS4x
+CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgt
+YXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQu
+b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJt
+LWtlcm5lbAo=
