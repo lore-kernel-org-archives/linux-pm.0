@@ -1,24 +1,84 @@
-From: pr-tracker-bot@kernel.org
-Subject: Re: [GIT PULL] Power management fixes for v4.20-rc4
-Date: Fri, 30 Nov 2018 00:15:01 +0000
-Message-ID: <20181130001501.4660.73072.pr-tracker-bot@pdx-korg-gitolite-1.ci.codeaurora.org>
-References: <CAJZ5v0hgS2fyWLDyeeGzqyFyeie26KnswNnc=aX3RYoP5Zv7vg@mail.gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hgS2fyWLDyeeGzqyFyeie26KnswNnc=aX3RYoP5Zv7vg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH V4 4/4] ARM64: dts: imx: add i.MX8QXP thermal support
+Date: Fri, 30 Nov 2018 01:11:22 +0000
+Message-ID: <DB3PR0402MB39165F272CF5417E2D4C2F24F5D30@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+References: <1543458696-4741-1-git-send-email-Anson.Huang@nxp.com>
+ <1543458696-4741-5-git-send-email-Anson.Huang@nxp.com>
+ <20181129165040.GD2688@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181129165040.GD2688@localhost.localdomain>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "heiko@sntech.de" <heiko@sntech.de>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>, "LW@KARO-electronics.de" <LW@KARO-electronics.de>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, dl-linux-imx <linux-imx@nxp.com>, Andy Gross <andy.gross@linaro.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "enric.balletbo@collabora.com" <enric.balletbo@collabora.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "ezequiel@collabora.com" <ezequiel@collabora.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-ker>
 List-Id: linux-pm@vger.kernel.org
 
-The pull request you sent on Thu, 29 Nov 2018 21:51:44 +0100:
-
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-4.20-rc5
-
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/2f8406891fed8be5aa5f535b7b5c37bba3272b1a
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+SGksIEVkdWFyZG8NCg0KQmVzdCBSZWdhcmRzIQ0KQW5zb24gSHVhbmcNCg0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFZHVhcmRvIFZhbGVudGluIFttYWlsdG86ZWR1YmV6
+dmFsQGdtYWlsLmNvbV0NCj4gU2VudDogMjAxOMTqMTHUwjMwyNUgMDo1MQ0KPiBUbzogQW5zb24g
+SHVhbmcgPGFuc29uLmh1YW5nQG54cC5jb20+DQo+IENjOiBydWkuemhhbmdAaW50ZWwuY29tOyBk
+YW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnOyByb2JoK2R0QGtlcm5lbC5vcmc7DQo+IG1hcmsucnV0
+bGFuZEBhcm0uY29tOyBjYXRhbGluLm1hcmluYXNAYXJtLmNvbTsgd2lsbC5kZWFjb25AYXJtLmNv
+bTsNCj4gQWlzaGVuZyBET05HIDxhaXNoZW5nLmRvbmdAbnhwLmNvbT47IEFuZHkgR3Jvc3MNCj4g
+PGFuZHkuZ3Jvc3NAbGluYXJvLm9yZz47IGhlaWtvQHNudGVjaC5kZTsgaG9ybXMrcmVuZXNhc0B2
+ZXJnZS5uZXQuYXU7DQo+IGFybmRAYXJuZGIuZGU7IGFtaXQua3VjaGVyaWFAbGluYXJvLm9yZzsg
+ZW5yaWMuYmFsbGV0Ym9AY29sbGFib3JhLmNvbTsNCj4gZXplcXVpZWxAY29sbGFib3JhLmNvbTsg
+b2xvZkBsaXhvbS5uZXQ7IGJqb3JuLmFuZGVyc3NvbkBsaW5hcm8ub3JnOw0KPiBzaGF3bmd1b0Br
+ZXJuZWwub3JnOyBMV0BLQVJPLWVsZWN0cm9uaWNzLmRlOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
+cmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnOw0KPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGRsLWxpbnV4
+LWlteCA8bGludXgtaW14QG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjQgNC80XSBB
+Uk02NDogZHRzOiBpbXg6IGFkZCBpLk1YOFFYUCB0aGVybWFsIHN1cHBvcnQNCj4gDQo+IE9uIFRo
+dSwgTm92IDI5LCAyMDE4IGF0IDAyOjM3OjQ3QU0gKzAwMDAsIEFuc29uIEh1YW5nIHdyb3RlOg0K
+PiA+IEFkZCBpLk1YOFFYUCBDUFUgdGhlcm1hbCB6b25lIHN1cHBvcnQuDQo+ID4NCj4gPiBTaWdu
+ZWQtb2ZmLWJ5OiBBbnNvbiBIdWFuZyA8QW5zb24uSHVhbmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4g
+PiBDaGFuZ2VMb2c6DQo+ID4gVjMtPlY0Og0KPiA+ICAgKm1vdmUgdGhlIHRzZW5zIG5vZGUgdG8g
+aW5zaWRlIG9mIFNDVSBub2RlIGFzIGl0IGlzIGJlbG9uZ2luZyB0byBTQ1UuDQo+ID4gLS0tDQo+
+ID4gIGFyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2lteDhxeHAuZHRzaSB8IDI3DQo+ID4g
+KysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyNyBpbnNl
+cnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9mcmVl
+c2NhbGUvaW14OHF4cC5kdHNpDQo+ID4gYi9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9p
+bXg4cXhwLmR0c2kNCj4gPiBpbmRleCA5YjA4Njg4Li40OGY2MjJjIDEwMDY0NA0KPiA+IC0tLSBh
+L2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2lteDhxeHAuZHRzaQ0KPiA+ICsrKyBiL2Fy
+Y2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2lteDhxeHAuZHRzaQ0KPiA+IEBAIC05LDYgKzks
+NyBAQA0KPiA+ICAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvZmlybXdhcmUvaW14L3JzcmMuaD4gICNp
+bmNsdWRlDQo+ID4gPGR0LWJpbmRpbmdzL2dwaW8vZ3Bpby5oPiAgI2luY2x1ZGUNCj4gPiA8ZHQt
+YmluZGluZ3MvcGluY3RybC9wYWRzLWlteDhxeHAuaD4NCj4gPiArI2luY2x1ZGUgPGR0LWJpbmRp
+bmdzL3RoZXJtYWwvdGhlcm1hbC5oPg0KPiA+DQo+ID4gICNpbmNsdWRlICJpbXg4LWNhMzUuZHRz
+aSINCj4gPg0KPiA+IEBAIC04Nyw2ICs4OCwxMiBAQA0KPiA+ICAJCXJ0YzogcnRjIHsNCj4gPiAg
+CQkJY29tcGF0aWJsZSA9ICJmc2wsaW14OHF4cC1zYy1ydGMiOw0KPiA+ICAJCX07DQo+ID4gKw0K
+PiA+ICsJCXRzZW5zOiB0aGVybWFsLXNlbnNvciB7DQo+ID4gKwkJCWNvbXBhdGlibGUgPSAiZnNs
+LGlteDhxeHAtc2MtdGhlcm1hbCI7DQo+ID4gKwkJCXRzZW5zLW51bSA9IDwxPjsNCj4gPiArCQkJ
+I3RoZXJtYWwtc2Vuc29yLWNlbGxzID0gPDE+Ow0KPiA+ICsJCX07DQo+ID4gIAl9Ow0KPiA+DQo+
+ID4gIAlhZG1hX3N1YnN5czogYnVzQDU5MDAwMDAwIHsNCj4gPiBAQCAtNDEwLDQgKzQxNywyNCBA
+QA0KPiA+ICAJCSNzaXplLWNlbGxzID0gPDE+Ow0KPiA+ICAJCXJhbmdlcyA9IDwweDVmMDAwMDAw
+IDB4MCAweDVmMDAwMDAwIDB4MTAwMDAwMD47DQo+ID4gIAl9Ow0KPiA+ICsNCj4gPiArCXRoZXJt
+YWxfem9uZXM6IHRoZXJtYWwtem9uZXMgew0KPiA+ICsJCWNwdS10aGVybWFsMCB7DQo+ID4gKwkJ
+CXBvbGxpbmctZGVsYXktcGFzc2l2ZSA9IDwyNTA+Ow0KPiA+ICsJCQlwb2xsaW5nLWRlbGF5ID0g
+PDIwMDA+Ow0KPiA+ICsJCQl0aGVybWFsLXNlbnNvcnMgPSA8JnRzZW5zIDM1NT47DQo+ID4gKwkJ
+CXRyaXBzIHsNCj4gPiArCQkJCWNwdV9hbGVydDA6IHRyaXAwIHsNCj4gPiArCQkJCQl0ZW1wZXJh
+dHVyZSA9IDwxMDcwMDA+Ow0KPiA+ICsJCQkJCWh5c3RlcmVzaXMgPSA8MjAwMD47DQo+ID4gKwkJ
+CQkJdHlwZSA9ICJwYXNzaXZlIjsNCj4gDQo+IFBhc3NpdmUsIGJ1dCB5ZXQgbm8gY29vbGluZyBt
+YXBzPw0KDQpUaGUgY3B1LWZyZXEgZHJpdmVyIGZvciBpLk1YOFFYUCBpcyBOT1QgcmVhZHkgeWV0
+LCBhbmQgTk9UDQpzdXJlIHdoZW4gaXQgd2lsbCBiZSByZWFkeSwgc28gSSBjYW4gTk9UIHRlc3Qg
+dGhlIGNvb2xpbmcgZnVuY3Rpb24gbm93LA0KdGhhdCBpcyB3aHkgSSBkaWQgTk9UIGFkZCB0aGUg
+Y29vbGluZyBtYXBzLCBwbGFuIHRvIGFkZCB0aGUgQ1BVIGNvb2xpbmcNCm1hcCBhZnRlciBjcHUt
+ZnJlcSBpcyByZWFkeS4NCg0KQW5zb24uDQoNCj4gDQo+ID4gKwkJCQl9Ow0KPiA+ICsJCQkJY3B1
+X2NyaXQwOiB0cmlwMSB7DQo+ID4gKwkJCQkJdGVtcGVyYXR1cmUgPSA8MTI3MDAwPjsNCj4gPiAr
+CQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KPiA+ICsJCQkJCXR5cGUgPSAiY3JpdGljYWwiOw0K
+PiA+ICsJCQkJfTsNCj4gPiArCQkJfTsNCj4gPiArCQl9Ow0KPiA+ICsJfTsNCj4gPiAgfTsNCj4g
+PiAtLQ0KPiA+IDIuNy40DQo+ID4NCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJu
+ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
