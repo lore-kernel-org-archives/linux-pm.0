@@ -1,125 +1,104 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 5/5] PM / Domains: Propagate performance state updates
-Date: Fri, 30 Nov 2018 16:36:50 +0530
-Message-ID: <20181130110650.6ni2ft3wud7gn6jz@vireshk-i7>
-References: <cover.1543219386.git.viresh.kumar@linaro.org>
- <5a29ceb2704239a8efb4db2e47ca155a422a6e57.1543219386.git.viresh.kumar@linaro.org>
- <CAPDyKFpp1iPQ08QQjoi9b4RGUo2Zw_L_vjy8xtnSpg34gn--eA@mail.gmail.com>
- <20181130095912.7hutbsrihpg4gez4@vireshk-i7>
- <CAPDyKFocp63hUOYOJ3HUXBj2CcHZGXMQ6n873SmMSfpDhRjB7g@mail.gmail.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
+Date: Fri, 30 Nov 2018 13:19:15 +0100
+Message-ID: <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
+References: <20181122101119.29194-1-enric.balletbo@collabora.com>
+ <20181123232203.GA3852@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFocp63hUOYOJ3HUXBj2CcHZGXMQ6n873SmMSfpDhRjB7g@mail.gmail.com>
+In-Reply-To: <20181123232203.GA3852@amd>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-11-18, 11:18, Ulf Hansson wrote:
-> On Fri, 30 Nov 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Sure, but the ordering of locks is always subdomain first and then master.
-> > Considering the case of Qcom, we have two domains Cx (sub-domain) and Mx (master).
-> >
-> > On first genpd_power_on(Cx) call, we will first call genpd_power_on(Mx) which
-> > will just power it on as none of its master will have perf-state support. We
-> > then call _genpd_power_on(Cx) which will also not do anything with Mx as its own
-> > (Cx's) pstate would be 0 at that time. But even if it had a valid value, it will
-> > propagate just fine with all proper locking in place.
+Hi Pavel,
+
+Thanks for the feedback.
+
+On 24/11/18 0:22, Pavel Machek wrote:
+> Hi!
 > 
-> Can you explain that, it's not super easy to follow the flow.
-
-Sorry, I somehow assumed you would know it already :)
-
-> So what will happen if Cx has a value that needs to be propagated?
-> What locks will be taken, and in what order?
+>> We have a problem with USBPD chargers which under certain conditions
+>> can result in system overheating if the voltage provided by the USBPD
+>> port is too high. While the preferred means to control this would be
+>> through devicetree or ACPI settings, this is not always possible, and
+>> we need to have a means to set a voltage limit.
+>>
+>> This patch exposes a new property, similar to input current limit, to
+>> re-configure the maximum voltage from the external supply at runtime
+>> based on system-level knowledge or user input.
 > 
-> Following, what if we had a Bx domain, being the subdomain of Cx, and
-> it too had a value that needs to be propagated.
+> First, this should really be handled by dt / ACPI. If it is broken,
+> that's a hardware bug, and we can do DMI-based blacklists in kernel.
+> 
 
-Lets take the worst example, we have Bx (sub-domain of Cx), Cx (sub-domain of
-Mx) and Dx (master). Normal power-on/off will always have the values 0, so lets
-consider resume sequence where all the domains will have a value pstate value.
-And please forgive me for any bugs I have introduced in the following
-super-complex sequence :)
+I think that handle this via dt / ACPI is not possible for our use case. It can
+be a hardware bug or a hardware/user constrain, let me try to explain better
+with an example.
 
-genpd_runtime_resume(dev) //domain Bx
-    -> genpd_lock(Bx)
-    -> genpd_power_on(Bx)
- 
-        -> genpd_lock(Cx)
-        -> genpd_power_on(Cx)
- 
-            -> genpd_lock(Dx)
-            -> genpd_power_on(Dx)
- 
-                -> _genpd_power_on(Dx)
-                    -> _genpd_set_performance_state(Dx, Dxstate) {
-                        //Doesn't have any masters
-                        -> genpd->set_performance_state(Dx, Dxstate);
-                    }
- 
-            -> genpd_unlock(Dx)
- 
-            -> _genpd_power_on(Cx)
-                -> _genpd_set_performance_state(Cx, Cxstate) {
-                    //have one master, Dx
-                    -> genpd_lock(Dx)
-                        -> _genpd_set_performance_state(Dx, Dxstate) {
-                            //Doesn't have any masters
-                            -> genpd->set_performance_state(Dx, Dxstate);
-                        }
- 
-                    -> genpd_unlock(Dx)
- 
-                    // Change Cx state
-                    -> genpd->set_performance_state(Cx, Cxstate);
-                }
- 
-        -> genpd_unlock(Cx)
- 
-        -> _genpd_power_on(Bx)
-            -> _genpd_set_performance_state(Bx, Bxstate) {
-                //have one master, Cx
-                -> genpd_lock(Cx)
-                -> _genpd_set_performance_state(Cx, Cxstate) {
-                    //have one master, Dx
-                    -> genpd_lock(Dx)
-                        -> _genpd_set_performance_state(Dx, Dxstate) {
-                            //Doesn't have any masters
-                            -> genpd->set_performance_state(Dx, Dxstate);
-                        }
- 
-                    -> genpd_unlock(Dx)
- 
-                    // Change Cx state
-                    -> genpd->set_performance_state(Cx, Cxstate);
-                }
-                -> genpd_unlock(Cx)
- 
-                -> genpd->set_performance_state(Bx, Bxstate);
-            }
- 
-    -> genpd_unlock(Bx)
+On Pixel C's devices, userspace uses this to set a USB input limit of 5V when
+the screen is on for thermal reasons, but those go away when the screen is
+off/system is sleeping, so we allow 9V and 12V levels when sleeping.
 
+> How are you supposed to fsck a system, for example?
+> 
 
+hmm, I'm not sure I get the question, sorry, could you rephrase?
 
-> It sounds like we will
-> do the propagation one time per level. Is that really necessary,
-> couldn't we just do it once, after the power on sequence have been
-> completed?
+>> +What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
+>> +Date:		Nov 2018
+>> +Contact:	linux-pm@vger.kernel.org
+>> +Description:
+>> +		Details the incoming VBUS voltage limit currently set in the
+>> +		supply. Normally this is configured based on the type of
+>> +		connection made.
+> 
+> "Details"?
+> 
+> Who can write to this value and when? What is the limit? If USB
+> charger is plugged in, should it show 5.0V (because that's nominal on
+> the USB) or 5.25V (because that is the real limit)?
+> 
 
-It will be a BIG hack somewhere, isn't it ? How will we know when has the time
-come to shoot the final sequence of set_performance_state() ? And where will we
-do it? genpd_runtime_resume() ? And then we will have more problems, for example
-Rajendra earlier compared this stuff to clk framework where it is possible to do
-clk_set_rate() first and then only call clk_enable() and the same should be
-possible with genpd as well, i.e. set performance state first and then only
-enable the device/domain. And so we need this right within genpd_power_on().
+The voltages here refer to the Typical or Nominal values defined by the USB
+specification for a Fixed power supply (or Fixed PDO). 5.0V, 5.25V, 4.75V,
+5.5V... all of those are considered "5V" according to the USB specifications.
 
-I know things are repetitive here, but that's the right way of doing it IMHO.
-What do you say ?
+At the 5V level (defined in the USB PD specification as vSafe5V), a nominal
+power source is allowed to have a voltage between 4.75V and 5.50V (5V -5%/
++10%). For simplicity, we refer to this range as 5V, the typical value.
+For all higher voltage levels other than vSafe5V, MIN voltage is PDO Voltage *
+0.95, and MAX voltage is PDO Voltage * 1.05, where PDO Voltage is the Typical
+value (9V, 12V, 15V, 20V). [1]
 
--- 
-viresh
+> Who can write to this and when. And what happens on write? What
+> happens if I write value that charger can't provide there?
+> 
+> Does it set the voltage power supply should produce? Or maximal it can
+> choose to produce?
+> 
+
+This defines a maximal voltage. If you write a value it can't provide,
+it should go down to the next lowest level, and barring that, 5V is
+always allowed.
+
+That makes me think that maybe I should also improve the implementation.
+
+> This really needs better documentation.
+
+Ack, I'll send a next version improving that.
+
+Make sense to you?
+
+Thanks
+ Enric
+
+[1] USB PD Specification revision 2.0, Version 1.3, Table 7-22
+
+> 
+> 								Pavel
+> 
