@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v2 6/6] ARM64: dts: marvell: armada-3720-espressobin: declare
- SATA PHY property
-Date: Fri, 30 Nov 2018 16:38:33 +0100
-Message-ID: <20181130153833.11421-7-miquel.raynal@bootlin.com>
+Subject: [PATCH v2 3/6] ata: ahci: mvebu: do Armada 38x configuration only on
+ relevant SoCs
+Date: Fri, 30 Nov 2018 16:38:30 +0100
+Message-ID: <20181130153833.11421-4-miquel.raynal@bootlin.com>
 References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,26 +22,149 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The SATA node is wired to the third PHY of the COMPHY IP.
+At the beginning, only Armada 38x SoCs where supported by the
+ahci_mvebu.c driver. Commit 15d3ce7b63bd ("ata: ahci_mvebu: add
+support for Armada 3700 variant") introduced Armada 3700 support. As
+opposed to Armada 38x SoCs, the 3700 variants do not have to configure
+mbus and the regret option. This patch took care of avoiding such
+configuration when not needed in the probe function, but failed to do
+the same in the resume path. While doing so looks harmless by
+experience, let's clean the driver logic and avoid doing this useless
+configuration with Armada 3700 SoCs.
 
-Suggested-by: Grzegorz Jaszczyk <jaz@semihalf.com>
+Because the logic is very similar between these two places, it has
+been decided to factorize this code and put it in a "Armada 38x
+configuration function". This function is part of a new
+(per-compatible) platform data structure, so that the addition of such
+configuration function for Armada 3700 will be eased.
+
+Fixes: 15d3ce7b63bd ("ata: ahci_mvebu: add support for Armada 3700 variant")
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/ata/ahci_mvebu.c | 68 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 51 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts b/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
-index 3ab25ad402b9..e947ef61d946 100644
---- a/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
-+++ b/arch/arm64/boot/dts/marvell/armada-3720-espressobin.dts
-@@ -51,6 +51,8 @@
- /* J6 */
- &sata {
- 	status = "okay";
-+	phys = <&comphy2 0>;
-+	phy-names = "sata-phy";
- };
+diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
+index 128d6f22926d..7839a5df1fd2 100644
+--- a/drivers/ata/ahci_mvebu.c
++++ b/drivers/ata/ahci_mvebu.c
+@@ -28,6 +28,10 @@
+ #define AHCI_WINDOW_BASE(win)	(0x64 + ((win) << 4))
+ #define AHCI_WINDOW_SIZE(win)	(0x68 + ((win) << 4))
  
- /* J1 */
++struct ahci_mvebu_plat_data {
++	int (*plat_config)(struct ahci_host_priv *hpriv);
++};
++
+ static void ahci_mvebu_mbus_config(struct ahci_host_priv *hpriv,
+ 				   const struct mbus_dram_target_info *dram)
+ {
+@@ -62,6 +66,22 @@ static void ahci_mvebu_regret_option(struct ahci_host_priv *hpriv)
+ 	writel(0x80, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
+ }
+ 
++static int ahci_mvebu_armada_380_config(struct ahci_host_priv *hpriv)
++{
++	const struct mbus_dram_target_info *dram;
++	int rc = 0;
++
++	dram = mv_mbus_dram_info();
++	if (dram)
++		ahci_mvebu_mbus_config(hpriv, dram);
++	else
++		rc = -ENODEV;
++
++	ahci_mvebu_regret_option(hpriv);
++
++	return rc;
++}
++
+ /**
+  * ahci_mvebu_stop_engine
+  *
+@@ -126,13 +146,10 @@ static int ahci_mvebu_resume(struct platform_device *pdev)
+ {
+ 	struct ata_host *host = platform_get_drvdata(pdev);
+ 	struct ahci_host_priv *hpriv = host->private_data;
+-	const struct mbus_dram_target_info *dram;
++	const struct ahci_mvebu_plat_data *pdata = hpriv->plat_data;
+ 
+-	dram = mv_mbus_dram_info();
+-	if (dram)
+-		ahci_mvebu_mbus_config(hpriv, dram);
+-
+-	ahci_mvebu_regret_option(hpriv);
++	if (pdata->plat_config)
++		pdata->plat_config(hpriv);
+ 
+ 	return ahci_platform_resume_host(&pdev->dev);
+ }
+@@ -154,28 +171,31 @@ static struct scsi_host_template ahci_platform_sht = {
+ 
+ static int ahci_mvebu_probe(struct platform_device *pdev)
+ {
++	const struct ahci_mvebu_plat_data *pdata;
+ 	struct ahci_host_priv *hpriv;
+-	const struct mbus_dram_target_info *dram;
+ 	int rc;
+ 
++	pdata = of_device_get_match_data(&pdev->dev);
++	if (!pdata)
++		return -EINVAL;
++
+ 	hpriv = ahci_platform_get_resources(pdev, 0);
+ 	if (IS_ERR(hpriv))
+ 		return PTR_ERR(hpriv);
+ 
++	hpriv->plat_data = (void *)pdata;
++
+ 	rc = ahci_platform_enable_resources(hpriv);
+ 	if (rc)
+ 		return rc;
+ 
+ 	hpriv->stop_engine = ahci_mvebu_stop_engine;
+ 
+-	if (of_device_is_compatible(pdev->dev.of_node,
+-				    "marvell,armada-380-ahci")) {
+-		dram = mv_mbus_dram_info();
+-		if (!dram)
+-			return -ENODEV;
+-
+-		ahci_mvebu_mbus_config(hpriv, dram);
+-		ahci_mvebu_regret_option(hpriv);
++	pdata = hpriv->plat_data;
++	if (pdata->plat_config) {
++		rc = pdata->plat_config(hpriv);
++		if (rc)
++			goto disable_resources;
+ 	}
+ 
+ 	rc = ahci_platform_init_host(pdev, hpriv, &ahci_mvebu_port_info,
+@@ -190,9 +210,23 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
+ 	return rc;
+ }
+ 
++static const struct ahci_mvebu_plat_data ahci_mvebu_armada_380_plat_data = {
++	.plat_config = ahci_mvebu_armada_380_config,
++};
++
++static const struct ahci_mvebu_plat_data ahci_mvebu_armada_3700_plat_data = {
++	.plat_config = NULL,
++};
++
+ static const struct of_device_id ahci_mvebu_of_match[] = {
+-	{ .compatible = "marvell,armada-380-ahci", },
+-	{ .compatible = "marvell,armada-3700-ahci", },
++	{
++		.compatible = "marvell,armada-380-ahci",
++		.data = &ahci_mvebu_armada_380_plat_data,
++	},
++	{
++		.compatible = "marvell,armada-3700-ahci",
++		.data = &ahci_mvebu_armada_3700_plat_data,
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, ahci_mvebu_of_match);
 -- 
 2.19.1
