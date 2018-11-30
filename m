@@ -1,138 +1,125 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V2 5/5] PM / Domains: Propagate performance state updates
-Date: Fri, 30 Nov 2018 11:18:14 +0100
-Message-ID: <CAPDyKFocp63hUOYOJ3HUXBj2CcHZGXMQ6n873SmMSfpDhRjB7g@mail.gmail.com>
-References: <cover.1543219386.git.viresh.kumar@linaro.org> <5a29ceb2704239a8efb4db2e47ca155a422a6e57.1543219386.git.viresh.kumar@linaro.org>
- <CAPDyKFpp1iPQ08QQjoi9b4RGUo2Zw_L_vjy8xtnSpg34gn--eA@mail.gmail.com> <20181130095912.7hutbsrihpg4gez4@vireshk-i7>
+Date: Fri, 30 Nov 2018 16:36:50 +0530
+Message-ID: <20181130110650.6ni2ft3wud7gn6jz@vireshk-i7>
+References: <cover.1543219386.git.viresh.kumar@linaro.org>
+ <5a29ceb2704239a8efb4db2e47ca155a422a6e57.1543219386.git.viresh.kumar@linaro.org>
+ <CAPDyKFpp1iPQ08QQjoi9b4RGUo2Zw_L_vjy8xtnSpg34gn--eA@mail.gmail.com>
+ <20181130095912.7hutbsrihpg4gez4@vireshk-i7>
+ <CAPDyKFocp63hUOYOJ3HUXBj2CcHZGXMQ6n873SmMSfpDhRjB7g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181130095912.7hutbsrihpg4gez4@vireshk-i7>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFocp63hUOYOJ3HUXBj2CcHZGXMQ6n873SmMSfpDhRjB7g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 30 Nov 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 30-11-18, 10:44, Ulf Hansson wrote:
-> > On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > >
-> > > This commit updates genpd core to start propagating performance state
-> > > updates to master domains that have their set_performance_state()
-> > > callback set.
-> > >
-> > > A genpd handles two type of performance states now. The first one is the
-> > > performance state requirement put on the genpd by the devices and
-> > > sub-domains under it, which is already represented by
-> > > genpd->performance_state.
+On 30-11-18, 11:18, Ulf Hansson wrote:
+> On Fri, 30 Nov 2018 at 10:59, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Sure, but the ordering of locks is always subdomain first and then master.
+> > Considering the case of Qcom, we have two domains Cx (sub-domain) and Mx (master).
 > >
-> > This isn't correct.
-> >
-> > Currently genpd->performance_state reflects the aggregation of the
-> > state requirements from each device that is attached to it. Not from
-> > subdomains.
->
-> Okay, will improve the changelog.
->
-> > > The second type, introduced in this commit, is
-> > > the performance state requirement(s) put by the genpd on its master
-> > > domain(s). There is a separate value required for each master that the
-> > > genpd has and so a new field is added to the struct gpd_link
-> > > (link->performance_state), which represents the link between a genpd and
-> > > its master. The struct gpd_link also got another field
-> > > prev_performance_state, which is used by genpd core as a temporary
-> > > variable during transitions.
-> > >
-> > > We need to propagate setting performance state while powering-on a genpd
-> > > as well, as we ignore performance state requirements from sub-domains
-> > > which are powered-off. For this reason _genpd_power_on() also received
-> > > the additional parameter, depth, which is used for hierarchical locking
-> > > within genpd.
-> > >
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > >  drivers/base/power/domain.c | 113 ++++++++++++++++++++++++++++++------
-> > >  include/linux/pm_domain.h   |   4 ++
-> > >  2 files changed, 98 insertions(+), 19 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > > index d6b389a9f678..206e263abe90 100644
-> > > --- a/drivers/base/power/domain.c
-> > > +++ b/drivers/base/power/domain.c
-> > > @@ -239,24 +239,88 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
-> > >  static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
-> > >  #endif
-> > >
-> > > +static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-> > > +                                          unsigned int state, int depth);
-> > > +
-> >
-> > I don't like forward declarations like these, as in most cases it
-> > means that the code can be re-worked and improved.
-> >
-> > However, because of the recursiveness code in genpd, I understand that
-> > it may be needed for some cases. Anyway, please have look and see if
-> > you can rid of it.
->
-> Will see if I can do it any better, though I really doubt it :)
->
-> > >  static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-> > > -                                       unsigned int state)
-> > > +                                       unsigned int state, int depth)
->
->
-> > > -static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
-> > > +static int
-> > > +_genpd_power_on(struct generic_pm_domain *genpd, bool timed, int depth)
-> >
-> > Cosmetics, but please move the new parameter below instead of moving
-> > "static int" above.
-> >
-> > >  {
-> > >         unsigned int state_idx = genpd->state_idx;
-> > >         ktime_t time_start;
-> > > @@ -368,7 +442,8 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
-> > >         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> > >
-> > >         if (unlikely(genpd->set_performance_state)) {
-> > > -               ret = genpd->set_performance_state(genpd, genpd->performance_state);
-> > > +               ret = _genpd_set_performance_state(genpd,
-> > > +                                       genpd->performance_state, depth);
-> >
-> > This is going to be a problem for genpd_sync_power_on() as in some
-> > cases we can't allow to use locks.
->
-> So we pass the use_lock parameter to this routine as well ?
+> > On first genpd_power_on(Cx) call, we will first call genpd_power_on(Mx) which
+> > will just power it on as none of its master will have perf-state support. We
+> > then call _genpd_power_on(Cx) which will also not do anything with Mx as its own
+> > (Cx's) pstate would be 0 at that time. But even if it had a valid value, it will
+> > propagate just fine with all proper locking in place.
+> 
+> Can you explain that, it's not super easy to follow the flow.
 
-Maybe.
+Sorry, I somehow assumed you would know it already :)
 
->
-> > Moreover I am wondering how this plays with genpd_power_on(), as when
-> > it calls _genpd_power_on() the first time, that is done by holding the
-> > top-level master's lock - and all locks in that hierarchy. In other
-> > words we are always powering on the top most master first, then step
-> > by step we move down in the hierarchy to power on the genpds.
->
-> Sure, but the ordering of locks is always subdomain first and then master.
-> Considering the case of Qcom, we have two domains Cx (sub-domain) and Mx (master).
->
-> On first genpd_power_on(Cx) call, we will first call genpd_power_on(Mx) which
-> will just power it on as none of its master will have perf-state support. We
-> then call _genpd_power_on(Cx) which will also not do anything with Mx as its own
-> (Cx's) pstate would be 0 at that time. But even if it had a valid value, it will
-> propagate just fine with all proper locking in place.
+> So what will happen if Cx has a value that needs to be propagated?
+> What locks will be taken, and in what order?
+> 
+> Following, what if we had a Bx domain, being the subdomain of Cx, and
+> it too had a value that needs to be propagated.
 
-Can you explain that, it's not super easy to follow the flow.
+Lets take the worst example, we have Bx (sub-domain of Cx), Cx (sub-domain of
+Mx) and Dx (master). Normal power-on/off will always have the values 0, so lets
+consider resume sequence where all the domains will have a value pstate value.
+And please forgive me for any bugs I have introduced in the following
+super-complex sequence :)
 
-So what will happen if Cx has a value that needs to be propagated?
-What locks will be taken, and in what order?
+genpd_runtime_resume(dev) //domain Bx
+    -> genpd_lock(Bx)
+    -> genpd_power_on(Bx)
+ 
+        -> genpd_lock(Cx)
+        -> genpd_power_on(Cx)
+ 
+            -> genpd_lock(Dx)
+            -> genpd_power_on(Dx)
+ 
+                -> _genpd_power_on(Dx)
+                    -> _genpd_set_performance_state(Dx, Dxstate) {
+                        //Doesn't have any masters
+                        -> genpd->set_performance_state(Dx, Dxstate);
+                    }
+ 
+            -> genpd_unlock(Dx)
+ 
+            -> _genpd_power_on(Cx)
+                -> _genpd_set_performance_state(Cx, Cxstate) {
+                    //have one master, Dx
+                    -> genpd_lock(Dx)
+                        -> _genpd_set_performance_state(Dx, Dxstate) {
+                            //Doesn't have any masters
+                            -> genpd->set_performance_state(Dx, Dxstate);
+                        }
+ 
+                    -> genpd_unlock(Dx)
+ 
+                    // Change Cx state
+                    -> genpd->set_performance_state(Cx, Cxstate);
+                }
+ 
+        -> genpd_unlock(Cx)
+ 
+        -> _genpd_power_on(Bx)
+            -> _genpd_set_performance_state(Bx, Bxstate) {
+                //have one master, Cx
+                -> genpd_lock(Cx)
+                -> _genpd_set_performance_state(Cx, Cxstate) {
+                    //have one master, Dx
+                    -> genpd_lock(Dx)
+                        -> _genpd_set_performance_state(Dx, Dxstate) {
+                            //Doesn't have any masters
+                            -> genpd->set_performance_state(Dx, Dxstate);
+                        }
+ 
+                    -> genpd_unlock(Dx)
+ 
+                    // Change Cx state
+                    -> genpd->set_performance_state(Cx, Cxstate);
+                }
+                -> genpd_unlock(Cx)
+ 
+                -> genpd->set_performance_state(Bx, Bxstate);
+            }
+ 
+    -> genpd_unlock(Bx)
 
-Following, what if we had a Bx domain, being the subdomain of Cx, and
-it too had a value that needs to be propagated. It sounds like we will
-do the propagation one time per level. Is that really necessary,
-couldn't we just do it once, after the power on sequence have been
-completed?
 
-Kind regards
-Uffe
+
+> It sounds like we will
+> do the propagation one time per level. Is that really necessary,
+> couldn't we just do it once, after the power on sequence have been
+> completed?
+
+It will be a BIG hack somewhere, isn't it ? How will we know when has the time
+come to shoot the final sequence of set_performance_state() ? And where will we
+do it? genpd_runtime_resume() ? And then we will have more problems, for example
+Rajendra earlier compared this stuff to clk framework where it is possible to do
+clk_set_rate() first and then only call clk_enable() and the same should be
+possible with genpd as well, i.e. set performance state first and then only
+enable the device/domain. And so we need this right within genpd_power_on().
+
+I know things are repetitive here, but that's the right way of doing it IMHO.
+What do you say ?
+
+-- 
+viresh
