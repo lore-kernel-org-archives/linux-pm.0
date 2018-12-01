@@ -1,54 +1,61 @@
-From: Luis Chamberlain <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [driver-core PATCH v7 4/9] driver core: Probe devices
- asynchronously instead of the driver
-Date: Fri, 30 Nov 2018 18:48:47 -0800
-Message-ID: <20181201024847.GH28501@garbanzo.do-not-panic.com>
-References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
- <154345154692.18040.8161459765233879389.stgit@ahduyck-desk1.amr.corp.intel.com>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Subject: Re: [PATCH RFC 00/15] Zero ****s, hugload of hugs <3
+Date: Fri, 30 Nov 2018 20:08:05 -0800
+Message-ID: <20181201040805.GA14569@linux.intel.com>
+References: <CAGXu5j+jBNBsD3pvUSfEh6Lc5T1YMpbM0HeG1c6BHiJe+cKVOQ@mail.gmail.com>
+ <d7c34289-f03a-b641-cc9c-00395306511d@kernel.dk>
+ <20181130.123507.1940310466680455876.davem@davemloft.net>
+ <2007856.n5V9iKLVsV@eth7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <154345154692.18040.8161459765233879389.stgit-+uVpp3jiz/SWyQ3uPIV3rPooFf0ArEBIu+b9c/7xato@public.gmane.org>
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: Alexander Duyck <alexander.h.duyck-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, bvanassche-HInyCGIudOg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendanhiggins-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, zwisler-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+In-Reply-To: <2007856.n5V9iKLVsV@eth7>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Abuse <abuse@2.abuse.bgcomp.co.uk>
+Cc: linux-mips@linux-mips.org, geert+renesas@glider.be, linux-doc@vger.kernel.org, nouveau@lists.freedesktop.org, amir73il@gmail.com, linux@dominikbrodowski.net, linux-ide@vger.kernel.org, edumazet@google.com, linux-mtd@lists.infradead.org, makita.toshiaki@lab.ntt.co.jp, yanjun.zhu@oracle.com, dave@stgolabs.net, linux-scsi@vger.kernel.org, corbet@lwn.net, deller@gmx.de, federico.vaga@vaga.pv.it, yhs@fb.com, pabeni@redhat.com, linux-media@vger.kernel.org, pmladek@suse.com, keescook@chromium.org, linux-pm@vger.kernel.org, shannon.nelson@oracle.com, sean.wang@mediatek.com, rostedt@goodmis.org, sbrivio@redhat.com, linux-m68k@lists.linux-m68k.org, dri-devel@lists.freedesktop.org, matthias.bgg@gmail.com, andriy.shevchenko@linux.intel.com, dja@axtens.net, axboe@kernel.dk, willemb@google.com, linux-parisc@vger.kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 28, 2018 at 04:32:26PM -0800, Alexander Duyck wrote:
-> Probe devices asynchronously instead of the driver.
-
-> +static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
-> +{
-> +	struct device *dev = _dev;
-> +	struct device_driver *drv;
-> +
-> +	__device_driver_lock(dev, dev->parent);
-> +
-> +	/*
-> +	 * If someone attempted to bind a driver either successfully or
-> +	 * unsuccessfully before we got here we should just skip the driver
-> +	 * probe call.
-> +	 */
-> +	drv = dev_get_drv_async(dev);
-> +	if (drv && !dev->driver)
-> +		driver_probe_device(drv, dev);
-
-I believe this should mean drivers which have async work on probe can
-deadlock. For instance, if a driver does call async_schedule() or a
-derivative call does this for it, the kernel will call
-async_synchronize_full() and I believe we deadlock.
-
-Are we sure most subsystems which would use async probe will not have
-an async_schedule() call?
-
-  Luis
+T24gRnJpLCBOb3YgMzAsIDIwMTggYXQgMDg6Mzk6MDFQTSArMDAwMCwgQWJ1c2Ugd3JvdGU6Cj4g
+T24gRnJpZGF5LCAzMCBOb3ZlbWJlciAyMDE4IDIwOjM1OjA3IEdNVCBEYXZpZCBNaWxsZXIgd3Jv
+dGU6Cj4gPiBGcm9tOiBKZW5zIEF4Ym9lIDxheGJvZUBrZXJuZWwuZGs+Cj4gPiBEYXRlOiBGcmks
+IDMwIE5vdiAyMDE4IDEzOjEyOjI2IC0wNzAwCj4gPiAKPiA+ID4gT24gMTEvMzAvMTggMTI6NTYg
+UE0sIERhdmlkbG9ociBCdWVzbyB3cm90ZToKPiA+ID4+IE9uIEZyaSwgMzAgTm92IDIwMTgsIEtl
+ZXMgQ29vayB3cm90ZToKPiA+ID4+IAo+ID4gPj4+IE9uIEZyaSwgTm92IDMwLCAyMDE4IGF0IDEx
+OjI3IEFNIEphcmtrbyBTYWtraW5lbgo+ID4gPj4+IDxqYXJra28uc2Fra2luZW5AbGludXguaW50
+ZWwuY29tPiB3cm90ZToKPiA+ID4+Pj4KPiA+ID4+Pj4gSW4gb3JkZXIgdG8gY29tcGx5IHdpdGgg
+dGhlIENvQywgcmVwbGFjZSAqKioqIHdpdGggYSBodWcuCj4gPiA+PiAKPiA+ID4+IEkgaG9wZSB0
+aGlzIGlzIHNvbWUga2luZCBvZiBqb2tlLiBIb3cgd291bGQgYW55b25lIGdldCBvZmZlbmRlZCBi
+eSByZWFkaW5nCj4gPiA+PiB0ZWNobmljYWwgY29tbWVudHM/IFRoaXMgaXMgYWxsIGJleW9uZCBt
+ZS4uLgo+ID4gPiAKPiA+ID4gQWdyZWUsIHRoaXMgaXMgaW5zYW5pdHkuCj4gPiAKPiA+IEFuZCBl
+dmVuIHdvcnNlIGl0IGlzIGNlbnNvcnNoaXAuCj4gPiAKPiAKPiBGdWNrCj4gRnVjawo+IEZ1Y2sK
+PiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+
+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4g
+RnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBG
+dWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1
+Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVj
+awo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNr
+Cj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sK
+PiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+
+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4g
+RnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBG
+dWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1
+Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVjawo+IEZ1Y2sKPiBGdWNrCj4gRnVj
+awo+IEZ1Y2sKPiBGdWNrCj4gCj4gSSBhc3N1bWUgSSB3aWxsIG5vdyBiZSBiYXJyZWQuCj4gCj4g
+CgpUaGFuayB5b3UgZm9yIHRha2luZyB0aGUgb3Bwb3J0dW5pdHkgdG8gcHJhY3RpY2UgZnJlZSBz
+cGVlY2ggaW4gdGhlCmFsd2F5cyBzbyB3ZWxjb21pbmcgYW5kIGluY2x1c2l2ZSBvbi1saW5lIHdv
+cmxkIDotKSBOb3cgSSdsbCBqdXN0IGhhdmUKdG8gZmluZCBteSBub3RlYm9vayBhbmQgd3JpdGUg
+dGhpcyBwcm9zZSBkb3duIHNvIHRoYXQgSSdsbCBuZXZlciBmb3JnZXQKaXQuIFRoYW5rcyBhZ2Fp
+bi4KCi9KYXJra28KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVs
+Cg==
