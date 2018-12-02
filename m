@@ -1,129 +1,227 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
-Date: Sat, 1 Dec 2018 16:09:34 +0100
-Message-ID: <20181201150934.GA7052@amd>
-References: <20181122101119.29194-1-enric.balletbo@collabora.com>
- <20181123232203.GA3852@amd>
- <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v10 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Sun, 2 Dec 2018 09:13:43 +0530
+Message-ID: <bb1f83af-13db-cd62-6868-2d34beefdace@codeaurora.org>
+References: <1542796967-5949-1-git-send-email-tdas@codeaurora.org>
+ <1542796967-5949-2-git-send-email-tdas@codeaurora.org>
+ <20181121180236.GS22824@google.com> <20181126185808.GA32621@bogus>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="4Ckj6UjgE2iN1+kY"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
+In-Reply-To: <20181126185808.GA32621@bogus>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>
+To: Rob Herring <robh@kernel.org>, Matthias Kaehlcke <mka@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, amit.kucheria@linaro.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
+Hello Rob,
 
---4Ckj6UjgE2iN1+kY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 11/27/2018 12:28 AM, Rob Herring wrote:
+> On Wed, Nov 21, 2018 at 10:02:36AM -0800, Matthias Kaehlcke wrote:
+>> On Wed, Nov 21, 2018 at 04:12:46PM +0530, Taniya Das wrote:
+>>> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+>>> SoCs. This is required for managing the cpu frequency transitions which are
+>>> controlled by the hardware engine.
+>>>
+>>> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+>>> ---
+>>>   .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
+>>>   1 file changed, 172 insertions(+)
+>>>   create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>>> new file mode 100644
+>>> index 0000000..90e396b
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+>>> @@ -0,0 +1,172 @@
+>>> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+>>> +
+>>> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+>>> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+>>> +for multiple clusters.
+>>> +
+>>> +Properties:
+>>> +- compatible
+>>> +	Usage:		required
+>>> +	Value type:	<string>
+>>> +	Definition:	must be "qcom,cpufreq-hw".
+>>> +
+>>> +- clocks
+>>> +	Usage:		required
+>>> +	Value type:	<phandle> From common clock binding.
+>>> +	Definition:	clock handle for XO clock and GPLL0 clock.
+>>> +
+>>> +- clock-names
+>>> +	Usage:		required
+>>> +	Value type:	<string> From common clock binding.
+>>> +	Definition:	must be "xo", "cpu_clk".
+>>> +
+>>> +- reg
+>>> +	Usage:		required
+>>> +	Value type:	<prop-encoded-array>
+>>> +	Definition:	Addresses and sizes for the memory of the HW bases in
+>>> +			each frequency domain.
+>>> +- reg-names
+>>> +	Usage:		Optional
+>>> +	Value type:	<string>
+>>> +	Definition:	Frequency domain name i.e.
+>>> +			"freq-domain0", "freq-domain1".
+>>> +
+>>> +- freq-domain-cells:
+>>> +	Usage:		required.
+>>> +	Definition:	Number of cells in a freqency domain specifier.
+>>> +
+>>> +* Property qcom,freq-domain
+>>> +Devices supporting freq-domain must set their "qcom,freq-domain" property with
+>>> +phandle to a cpufreq_hw followed by the Domain ID(0/1) in the CPU DT node.
+>>> +
+>>> +
+>>> +Example:
+>>> +
+>>> +Example 1: Dual-cluster, Quad-core per cluster. CPUs within a cluster switch
+>>> +DCVS state together.
+>>> +
+>>> +/ {
+>>> +	cpus {
+>>> +		#address-cells = <2>;
+>>> +		#size-cells = <0>;
+>>> +
+>>> +		CPU0: cpu@0 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x0>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_0>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>>> +			L2_0: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +				L3_0: l3-cache {
+>>> +				      compatible = "cache";
+>>> +				};
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU1: cpu@100 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x100>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_100>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>>> +			L2_100: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU2: cpu@200 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x200>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_200>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>>> +			L2_200: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU3: cpu@300 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x300>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_300>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 0>;
+>>> +			L2_300: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU4: cpu@400 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x400>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_400>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>>> +			L2_400: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU5: cpu@500 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x500>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_500>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>>> +			L2_500: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU6: cpu@600 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x600>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_600>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>>> +			L2_600: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +
+>>> +		CPU7: cpu@700 {
+>>> +			device_type = "cpu";
+>>> +			compatible = "qcom,kryo385";
+>>> +			reg = <0x0 0x700>;
+>>> +			enable-method = "psci";
+>>> +			next-level-cache = <&L2_700>;
+>>> +			qcom,freq-domain = <&cpufreq_hw 1>;
+>>> +			L2_700: l2-cache {
+>>> +				compatible = "cache";
+>>> +				next-level-cache = <&L3_0>;
+>>> +			};
+>>> +		};
+>>> +	};
+>>> +
+>>> + soc {
+>>> +	cpufreq_hw: cpufreq@17d43000 {
+>>> +		compatible = "qcom,cpufreq-hw";
+>>> +		reg = <0x17d43000 0x1400>, <0x17d45800 0x1400>;
+>>> +		reg-names = "freq-domain0", "freq-domain1";
+>>> +
+>>> +		clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
+>>> +		clock-names = "xo", "gcc_cpuss_gpll0_clk_src";
+>>
+>> I don't have/find the document with the clock configuration of this
+>> IP block, but the 'clock-names' sound more like aliases for the actual
+>> clocks specified in the 'clocks' property (especially
+>> 'gcc_cpuss_gpll0_clk_src') than input signals from the IP POV, which
+>> I'd expect to have more generic names.
+> 
+> Also, this doesn't match the documented value above.
+> 
+> Rob
+> 
 
-Hi!
+Thanks, updated it in the latest patch.
 
-> >> We have a problem with USBPD chargers which under certain conditions
-> >> can result in system overheating if the voltage provided by the USBPD
-> >> port is too high. While the preferred means to control this would be
-> >> through devicetree or ACPI settings, this is not always possible, and
-> >> we need to have a means to set a voltage limit.
-> >>
-> >> This patch exposes a new property, similar to input current limit, to
-> >> re-configure the maximum voltage from the external supply at runtime
-> >> based on system-level knowledge or user input.
-> >=20
-> > First, this should really be handled by dt / ACPI. If it is broken,
-> > that's a hardware bug, and we can do DMI-based blacklists in kernel.
-> >=20
->=20
-> I think that handle this via dt / ACPI is not possible for our use case. =
-It can
-> be a hardware bug or a hardware/user constrain, let me try to explain bet=
-ter
-> with an example.
->=20
-> On Pixel C's devices, userspace uses this to set a USB input limit of 5V =
-when
-> the screen is on for thermal reasons, but those go away when the screen is
-> off/system is sleeping, so we allow 9V and 12V levels when sleeping.
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
 
-So, on pixel C, what happens if userland ignores the constraint, keeps
-display on and sets charger to 12V?
-
-> > How are you supposed to fsck a system, for example?
-> >=20
->=20
-> hmm, I'm not sure I get the question, sorry, could you rephrase?
-
-Ok, so I have just booted with init=3D/bin/bash, and would like to run
-fsck.ext4 on my root filesystem.
-
-> >> +What:		/sys/class/power_supply/<supply_name>/input_voltage_limit
-> >> +Date:		Nov 2018
-> >> +Contact:	linux-pm@vger.kernel.org
-> >> +Description:
-> >> +		Details the incoming VBUS voltage limit currently set in the
-> >> +		supply. Normally this is configured based on the type of
-> >> +		connection made.
-> >=20
-> > "Details"?
-> >=20
-> > Who can write to this value and when? What is the limit? If USB
-> > charger is plugged in, should it show 5.0V (because that's nominal on
-> > the USB) or 5.25V (because that is the real limit)?
->=20
-> The voltages here refer to the Typical or Nominal values defined by the U=
-SB
-> specification for a Fixed power supply (or Fixed PDO). 5.0V, 5.25V, 4.75V,
-> 5.5V... all of those are considered "5V" according to the USB specificati=
-ons.
->=20
-> At the 5V level (defined in the USB PD specification as vSafe5V), a nomin=
-al
-> power source is allowed to have a voltage between 4.75V and 5.50V (5V -5%/
-> +10%). For simplicity, we refer to this range as 5V, the typical value.
-> For all higher voltage levels other than vSafe5V, MIN voltage is PDO Volt=
-age *
-> 0.95, and MAX voltage is PDO Voltage * 1.05, where PDO Voltage is the Typ=
-ical
-> value (9V, 12V, 15V, 20V). [1]
-
-> > Who can write to this and when. And what happens on write? What
-> > happens if I write value that charger can't provide there?
-> >=20
-> > Does it set the voltage power supply should produce? Or maximal it can
-> > choose to produce?
-> >=20
->=20
-> This defines a maximal voltage. If you write a value it can't provide,
-> it should go down to the next lowest level, and barring that, 5V is
-> always allowed.
->=20
-> That makes me think that maybe I should also improve the implementation.
->=20
-> > This really needs better documentation.
->=20
-> Ack, I'll send a next version improving that.
-
-Thanks.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---4Ckj6UjgE2iN1+kY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlwCpC4ACgkQMOfwapXb+vJ7uACcCRDA8FIQmuQCK/hagMsggeRk
-D5kAnA+7vLPHIhWH3NHCkoY8AhnasD5b
-=Rpx/
------END PGP SIGNATURE-----
-
---4Ckj6UjgE2iN1+kY--
+--
