@@ -1,169 +1,418 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v10 18/27] drivers: firmware: psci: Add support for PM
- domains using genpd
-Date: Mon, 3 Dec 2018 21:03:34 +0100
-Message-ID: <CAPDyKFq1EQcwDqf737=t5OyhiTQ_RNyxO8rUaVShYPiN8ow3yw@mail.gmail.com>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-19-ulf.hansson@linaro.org> <20181203163717.GN18262@codeaurora.org>
+From: Mathieu Malaterre <malat@debian.org>
+Subject: Re: [PATCH 2/7] powerpc: change CONFIG_6xx to CONFIG_PPC_BOOK3S_32
+Date: Mon, 3 Dec 2018 22:15:28 +0100
+Message-ID: <CA+7wUsx3iZhPH0uwukRNXaT_ZygaqKNXaNf=kcwoJ9nGqTb2Mw@mail.gmail.com>
+References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr>
+ <73b5e7a43bb5979ac534d1c236adb2e04f9d6307.1542395798.git.christophe.leroy@c-s.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181203163717.GN18262@codeaurora.org>
+In-Reply-To: <73b5e7a43bb5979ac534d1c236adb2e04f9d6307.1542395798.git.christophe.leroy@c-s.fr>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lina Iyer <ilina@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, rjw@rjwysocki.net, viresh.kumar@linaro.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 3 Dec 2018 at 17:37, Lina Iyer <ilina@codeaurora.org> wrote:
+On Sat, Nov 17, 2018 at 11:29 AM Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
 >
-> On Thu, Nov 29 2018 at 10:49 -0700, Ulf Hansson wrote:
-> >When the hierarchical CPU topology layout is used in DT, we need to setup
-> >the corresponding PM domain data structures, as to allow a CPU and a group
-> >of CPUs to be power managed accordingly. Let's enable this by deploying
-> >support through the genpd interface.
-> >
-> >Additionally, when the OS initiated mode is supported by the PSCI FW, let's
-> >also parse the domain idle states DT bindings as to make genpd responsible
-> >for the state selection, when the states are compatible with
-> >"domain-idle-state". Otherwise, when only Platform Coordinated mode is
-> >supported, we rely solely on the state selection to be managed through the
-> >regular cpuidle framework.
-> >
-> >If the initialization of the PM domain data structures succeeds and the OS
-> >initiated mode is supported, we try to switch to it. In case it fails,
-> >let's fall back into a degraded mode, rather than bailing out and returning
-> >an error code.
-> >
-> >Due to that the OS initiated mode may become enabled, we need to adjust to
-> >maintain backwards compatibility for a kernel started through a kexec call.
-> >Do this by explicitly switch to Platform Coordinated mode during boot.
-> >
-> >To try to initiate the PM domain data structures, the PSCI driver shall
-> >call the new function, psci_dt_init_pm_domains(). However, this is done
-> >from following changes.
-> >
-> >Cc: Lina Iyer <ilina@codeaurora.org>
-> >Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
-> >Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >---
-> >
-> >Changes in V10:
-> >       - Enable the PM domains to be used for both PC and OSI mode.
-> >       - Fixup error paths.
-> >       - Move the management of kexec started kernels into this patch.
-> >       - Rewrite changelog.
-> >
-> >---
-> > drivers/firmware/psci/Makefile         |   2 +-
-> > drivers/firmware/psci/psci.c           |   7 +-
-> > drivers/firmware/psci/psci.h           |   6 +
-> > drivers/firmware/psci/psci_pm_domain.c | 262 +++++++++++++++++++++++++
-> > 4 files changed, 275 insertions(+), 2 deletions(-)
-> > create mode 100644 drivers/firmware/psci/psci_pm_domain.c
-> >
-> >diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
-> >index 1956b882470f..ff300f1fec86 100644
-> >--- a/drivers/firmware/psci/Makefile
-> >+++ b/drivers/firmware/psci/Makefile
-> >@@ -1,4 +1,4 @@
-> > # SPDX-License-Identifier: GPL-2.0
-> > #
-> >-obj-$(CONFIG_ARM_PSCI_FW)     += psci.o
-> >+obj-$(CONFIG_ARM_PSCI_FW)     += psci.o psci_pm_domain.o
-> > obj-$(CONFIG_ARM_PSCI_CHECKER)        += psci_checker.o
-> >diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
-> >index 623591b541a4..19af2093151b 100644
-> >--- a/drivers/firmware/psci/psci.c
-> >+++ b/drivers/firmware/psci/psci.c
-> >@@ -704,9 +704,14 @@ static int __init psci_1_0_init(struct device_node *np)
-> >       if (err)
-> >               return err;
-> >
-> >-      if (psci_has_osi_support())
-> >+      if (psci_has_osi_support()) {
-> >               pr_info("OSI mode supported.\n");
-> >
-> >+              /* Make sure we default to PC mode. */
-> >+              invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-> >+                             PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
-> >+      }
-> >+
-> >       return 0;
-> > }
-> >
-> >diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
-> >index 7d9d38fd57e1..8cf6d7206fab 100644
-> >--- a/drivers/firmware/psci/psci.h
-> >+++ b/drivers/firmware/psci/psci.h
-> >@@ -11,4 +11,10 @@ void psci_set_domain_state(u32 state);
-> > bool psci_has_osi_support(void);
-> > int psci_dt_parse_state_node(struct device_node *np, u32 *state);
-> >
-> >+#ifdef CONFIG_CPU_IDLE
-> >+int psci_dt_init_pm_domains(struct device_node *np);
-> >+#else
-> >+static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
-> >+#endif
-> >+
-> > #endif /* __PSCI_H */
-> >diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
-> >new file mode 100644
-> >index 000000000000..d0dc38e96f85
-> >--- /dev/null
-> >+++ b/drivers/firmware/psci/psci_pm_domain.c
-> >@@ -0,0 +1,262 @@
-> >+// SPDX-License-Identifier: GPL-2.0
-> >+/*
-> >+ * PM domains for CPUs via genpd - managed by PSCI.
-> >+ *
-> >+ * Copyright (C) 2018 Linaro Ltd.
-> >+ * Author: Ulf Hansson <ulf.hansson@linaro.org>
-> >+ *
-> >+ */
-> >+
-> >+#define pr_fmt(fmt) "psci: " fmt
-> >+
-> >+#include <linux/device.h>
-> >+#include <linux/kernel.h>
-> >+#include <linux/pm_domain.h>
-> >+#include <linux/slab.h>
-> >+#include <linux/string.h>
-> >+
-> >+#include "psci.h"
-> >+
-> >+#ifdef CONFIG_CPU_IDLE
-> >+
-> >+struct psci_pd_provider {
-> >+      struct list_head link;
-> >+      struct device_node *node;
-> >+};
-> >+
-> >+static LIST_HEAD(psci_pd_providers);
-> >+static bool osi_mode_enabled;
-> >+
-> >+static int psci_pd_power_off(struct generic_pm_domain *pd)
-> >+{
-> >+      struct genpd_power_state *state = &pd->states[pd->state_idx];
-> >+      u32 *pd_state;
-> >+      u32 composite_pd_state;
-> >+
-> >+      /* If we have failed to enable OSI mode, then abort power off. */
-> >+      if (psci_has_osi_support() && !osi_mode_enabled)
-> >+              return -EBUSY;
-> >+
-> >+      if (!state->data)
-> >+              return 0;
-> >+
-> >+      /* When OSI mode is enabled, set the corresponding domain state. */
-> >+      pd_state = state->data;
-> >+      composite_pd_state = *pd_state | psci_get_domain_state();
-> This should not be needed. The domain_state should be 0x0 being set
-> after coming out of idle.
-> >+      psci_set_domain_state(composite_pd_state);
-> The three lines can be summarized as:
->         psci_set_domain_state(*state->data);
+> Today we have:
+>
+> config PPC_BOOK3S_32
+>         bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
+>         [depends on PPC32 within a choice]
+>
+> config PPC_BOOK3S
+>         def_bool y
+>         depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
+>
+> config 6xx
+>         def_bool y
+>         depends on PPC32 && PPC_BOOK3S
+>
+> 6xx is therefore redundant with PPC_BOOK3S_32.
+>
+> In order to make the code clearer, lets use preferably PPC_BOOK3S_32.
+> This will allow to remove CONFIG_6xx in a later patch.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/Makefile                     |  2 +-
+>  arch/powerpc/include/asm/cache.h          |  2 +-
+>  arch/powerpc/include/asm/mmu.h            |  2 +-
+>  arch/powerpc/include/asm/reg.h            |  2 +-
+>  arch/powerpc/include/asm/time.h           |  2 +-
+>  arch/powerpc/kernel/Makefile              |  2 +-
+>  arch/powerpc/kernel/cpu_setup_6xx.S       |  2 +-
+>  arch/powerpc/kernel/entry_32.S            | 10 +++++-----
+>  arch/powerpc/kernel/head_32.S             | 14 +++++++-------
+>  arch/powerpc/kernel/misc_32.S             |  4 ++--
+>  arch/powerpc/kernel/pmc.c                 |  2 +-
+>  arch/powerpc/kernel/setup_32.c            |  2 +-
+>  arch/powerpc/kernel/sysfs.c               |  2 +-
+>  arch/powerpc/mm/mmu_decl.h                |  2 +-
+>  arch/powerpc/oprofile/Makefile            |  2 +-
+>  arch/powerpc/oprofile/common.c            |  2 +-
+>  arch/powerpc/platforms/powermac/cache.S   |  4 ++--
+>  arch/powerpc/platforms/powermac/feature.c |  2 +-
+>  arch/powerpc/platforms/powermac/sleep.S   |  4 ++--
+>  arch/powerpc/sysdev/Makefile              |  2 +-
+>  20 files changed, 33 insertions(+), 33 deletions(-)
+>
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 8a2ce14d68d0..e259b8a2dd44 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -241,7 +241,7 @@ KBUILD_CFLAGS       += $(call cc-option,-fno-dwarf2-cfi-asm)
+>  # often slow when they are implemented at all
+>  KBUILD_CFLAGS          += $(call cc-option,-mno-string)
+>
+> -ifdef CONFIG_6xx
+> +ifdef CONFIG_PPC_BOOK3S_32
+>  KBUILD_CFLAGS          += -mcpu=powerpc
+>  endif
 
-Sure, let me change accordingly and thanks for spotting this!
+I never quite understood this part. Let say I want to specify 'power4'
+in arch/powerpc/platforms/Kconfig.cputype as new TARGET_CPU. The line
+above will always append -mcpu=powerpc *after* a TARGET_CPU=power4
+which defeat the whole purpose, right ?
 
-Kind regards
-Uffe
+> diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
+> index 66298461b640..40ea5b3781c6 100644
+> --- a/arch/powerpc/include/asm/cache.h
+> +++ b/arch/powerpc/include/asm/cache.h
+> @@ -71,7 +71,7 @@ extern struct ppc64_caches ppc64_caches;
+>  #else
+>  #define __read_mostly __attribute__((__section__(".data..read_mostly")))
+>
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>  extern long _get_L2CR(void);
+>  extern long _get_L3CR(void);
+>  extern void _set_L2CR(unsigned long);
+> diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
+> index eb20eb3b8fb0..47b651deff5b 100644
+> --- a/arch/powerpc/include/asm/mmu.h
+> +++ b/arch/powerpc/include/asm/mmu.h
+> @@ -48,7 +48,7 @@
+>  #define MMU_FTR_USE_HIGH_BATS          ASM_CONST(0x00010000)
+>
+>  /* Enable >32-bit physical addresses on 32-bit processor, only used
+> - * by CONFIG_6xx currently as BookE supports that from day 1
+> + * by CONFIG_PPC_BOOK3S_32 currently as BookE supports that from day 1
+>   */
+>  #define MMU_FTR_BIG_PHYS               ASM_CONST(0x00020000)
+>
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index de52c3166ba4..0d2139a0d5b9 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -582,7 +582,7 @@
+>  #define HID0_POWER9_RADIX      __MASK(63 - 8)
+>
+>  #define SPRN_HID1      0x3F1           /* Hardware Implementation Register 1 */
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>  #define HID1_EMCP      (1<<31)         /* 7450 Machine Check Pin Enable */
+>  #define HID1_DFS       (1<<22)         /* 7447A Dynamic Frequency Scaling */
+>  #define HID1_PC0       (1<<16)         /* 7450 PLL_CFG[0] */
+> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+> index b80d492ceb29..54bf7e68a7e1 100644
+> --- a/arch/powerpc/include/asm/time.h
+> +++ b/arch/powerpc/include/asm/time.h
+> @@ -43,7 +43,7 @@ struct div_result {
+>
+>  /* Accessor functions for the timebase (RTC on 601) registers. */
+>  /* If one day CONFIG_POWER is added just define __USE_RTC as 1 */
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>  #define __USE_RTC()    (cpu_has_feature(CPU_FTR_USE_RTC))
+>  #else
+>  #define __USE_RTC()    0
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 53d4b8d5b54d..a5a6a243f3cf 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -69,7 +69,7 @@ obj-$(CONFIG_FA_DUMP)         += fadump.o
+>  ifdef CONFIG_PPC32
+>  obj-$(CONFIG_E500)             += idle_e500.o
+>  endif
+> -obj-$(CONFIG_6xx)              += idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+> +obj-$(CONFIG_PPC_BOOK3S_32)    += idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+>  obj-$(CONFIG_TAU)              += tau_6xx.o
+>  obj-$(CONFIG_HIBERNATION)      += swsusp.o suspend.o
+>  ifdef CONFIG_FSL_BOOKE
+> diff --git a/arch/powerpc/kernel/cpu_setup_6xx.S b/arch/powerpc/kernel/cpu_setup_6xx.S
+> index fa3c2c91290c..8c069e96c478 100644
+> --- a/arch/powerpc/kernel/cpu_setup_6xx.S
+> +++ b/arch/powerpc/kernel/cpu_setup_6xx.S
+> @@ -326,7 +326,7 @@ _GLOBAL(__save_cpu_setup)
+>         lis     r5,cpu_state_storage@h
+>         ori     r5,r5,cpu_state_storage@l
+>
+> -       /* Save HID0 (common to all CONFIG_6xx cpus) */
+> +       /* Save HID0 (common to all CONFIG_PPC_BOOK3S_32 cpus) */
+>         mfspr   r3,SPRN_HID0
+>         stw     r3,CS_HID0(r5)
+>
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 77decded1175..0768dfd8a64e 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -200,14 +200,14 @@ transfer_to_handler:
+>         cmplw   r1,r9                   /* if r1 <= ksp_limit */
+>         ble-    stack_ovf               /* then the kernel stack overflowed */
+>  5:
+> -#if defined(CONFIG_6xx) || defined(CONFIG_E500)
+> +#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
+>         CURRENT_THREAD_INFO(r9, r1)
+>         tophys(r9,r9)                   /* check local flags */
+>         lwz     r12,TI_LOCAL_FLAGS(r9)
+>         mtcrf   0x01,r12
+>         bt-     31-TLF_NAPPING,4f
+>         bt-     31-TLF_SLEEPING,7f
+> -#endif /* CONFIG_6xx || CONFIG_E500 */
+> +#endif /* CONFIG_PPC_BOOK3S_32 || CONFIG_E500 */
+>         .globl transfer_to_handler_cont
+>  transfer_to_handler_cont:
+>  3:
+> @@ -273,7 +273,7 @@ reenable_mmu:                               /* re-enable mmu so we can */
+>         RFI                             /* jump to handler, enable MMU */
+>  #endif /* CONFIG_TRACE_IRQFLAGS */
+>
+> -#if defined (CONFIG_6xx) || defined(CONFIG_E500)
+> +#if defined (CONFIG_PPC_BOOK3S_32) || defined(CONFIG_E500)
+>  4:     rlwinm  r12,r12,0,~_TLF_NAPPING
+>         stw     r12,TI_LOCAL_FLAGS(r9)
+>         b       power_save_ppc32_restore
+> @@ -612,7 +612,7 @@ ppc_swapcontext:
+>  handle_page_fault:
+>         stw     r4,_DAR(r1)
+>         addi    r3,r1,STACK_FRAME_OVERHEAD
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>         andis.  r0,r5,DSISR_DABRMATCH@h
+>         bne-    handle_dabr_fault
+>  #endif
+> @@ -629,7 +629,7 @@ handle_page_fault:
+>         bl      bad_page_fault
+>         b       ret_from_except_full
+>
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>         /* We have a data breakpoint exception - handle it */
+>  handle_dabr_fault:
+>         SAVE_NVGPRS(r1)
+> diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
+> index 61ca27929355..118c3b216e60 100644
+> --- a/arch/powerpc/kernel/head_32.S
+> +++ b/arch/powerpc/kernel/head_32.S
+> @@ -176,10 +176,10 @@ __after_mmu_off:
+>         bl      reloc_offset
+>         li      r24,0                   /* cpu# */
+>         bl      call_setup_cpu          /* Call setup_cpu for this CPU */
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>         bl      reloc_offset
+>         bl      init_idle_6xx
+> -#endif /* CONFIG_6xx */
+> +#endif /* CONFIG_PPC_BOOK3S_32 */
+>
+>
+>  /*
+> @@ -836,10 +836,10 @@ __secondary_start:
+>         lis     r3,-KERNELBASE@h
+>         mr      r4,r24
+>         bl      call_setup_cpu          /* Call setup_cpu for this CPU */
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>         lis     r3,-KERNELBASE@h
+>         bl      init_idle_6xx
+> -#endif /* CONFIG_6xx */
+> +#endif /* CONFIG_PPC_BOOK3S_32 */
+>
+>         /* get current_thread_info and current */
+>         lis     r1,secondary_ti@ha
+> @@ -880,14 +880,14 @@ __secondary_start:
+>
+>  /*
+>   * Those generic dummy functions are kept for CPUs not
+> - * included in CONFIG_6xx
+> + * included in CONFIG_PPC_BOOK3S_32
+>   */
+> -#if !defined(CONFIG_6xx)
+> +#if !defined(CONFIG_PPC_BOOK3S_32)
+>  _ENTRY(__save_cpu_setup)
+>         blr
+>  _ENTRY(__restore_cpu_setup)
+>         blr
+> -#endif /* !defined(CONFIG_6xx) */
+> +#endif /* !defined(CONFIG_PPC_BOOK3S_32) */
+>
+>
+>  /*
+> diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
+> index 695b24a2d954..57d2ffb2d45c 100644
+> --- a/arch/powerpc/kernel/misc_32.S
+> +++ b/arch/powerpc/kernel/misc_32.S
+> @@ -153,7 +153,7 @@ _GLOBAL(call_setup_cpu)
+>         mtctr   r5
+>         bctr
+>
+> -#if defined(CONFIG_CPU_FREQ_PMAC) && defined(CONFIG_6xx)
+> +#if defined(CONFIG_CPU_FREQ_PMAC) && defined(CONFIG_PPC_BOOK3S_32)
+>
+>  /* This gets called by via-pmu.c to switch the PLL selection
+>   * on 750fx CPU. This function should really be moved to some
+> @@ -223,7 +223,7 @@ _GLOBAL(low_choose_7447a_dfs)
+>         mtmsr   r7
+>         blr
+>
+> -#endif /* CONFIG_CPU_FREQ_PMAC && CONFIG_6xx */
+> +#endif /* CONFIG_CPU_FREQ_PMAC && CONFIG_PPC_BOOK3S_32 */
+>
+>  /*
+>   * complement mask on the msr then "or" some values on.
+> diff --git a/arch/powerpc/kernel/pmc.c b/arch/powerpc/kernel/pmc.c
+> index 58eaa3ddf7b9..2de71faca911 100644
+> --- a/arch/powerpc/kernel/pmc.c
+> +++ b/arch/powerpc/kernel/pmc.c
+> @@ -29,7 +29,7 @@ static void dummy_perf(struct pt_regs *regs)
+>  {
+>  #if defined(CONFIG_FSL_EMB_PERFMON)
+>         mtpmr(PMRN_PMGC0, mfpmr(PMRN_PMGC0) & ~PMGC0_PMIE);
+> -#elif defined(CONFIG_PPC64) || defined(CONFIG_6xx)
+> +#elif defined(CONFIG_PPC64) || defined(CONFIG_PPC_BOOK3S_32)
+>         if (cur_cpu_spec->pmc_type == PPC_PMC_IBM)
+>                 mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~(MMCR0_PMXE|MMCR0_PMAO));
+>  #else
+> diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+> index 81909600013a..972c98d1e208 100644
+> --- a/arch/powerpc/kernel/setup_32.c
+> +++ b/arch/powerpc/kernel/setup_32.c
+> @@ -240,7 +240,7 @@ void __init exc_lvl_early_init(void)
+>
+>  void __init setup_power_save(void)
+>  {
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>         if (cpu_has_feature(CPU_FTR_CAN_DOZE) ||
+>             cpu_has_feature(CPU_FTR_CAN_NAP))
+>                 ppc_md.power_save = ppc6xx_idle;
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index 755dc98a57ae..e8e93c2c7d03 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -457,7 +457,7 @@ static ssize_t __used \
+>  #define HAS_PPC_PMC_CLASSIC    1
+>  #define HAS_PPC_PMC_IBM                1
+>  #define HAS_PPC_PMC_PA6T       1
+> -#elif defined(CONFIG_6xx)
+> +#elif defined(CONFIG_PPC_BOOK3S_32)
+>  #define HAS_PPC_PMC_CLASSIC    1
+>  #define HAS_PPC_PMC_IBM                1
+>  #define HAS_PPC_PMC_G4         1
+> diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+> index 8574fbbc45e0..c4a717da65eb 100644
+> --- a/arch/powerpc/mm/mmu_decl.h
+> +++ b/arch/powerpc/mm/mmu_decl.h
+> @@ -155,7 +155,7 @@ struct tlbcam {
+>  };
+>  #endif
+>
+> -#if defined(CONFIG_6xx) || defined(CONFIG_FSL_BOOKE) || defined(CONFIG_PPC_8xx)
+> +#if defined(CONFIG_PPC_BOOK3S_32) || defined(CONFIG_FSL_BOOKE) || defined(CONFIG_PPC_8xx)
+>  /* 6xx have BATS */
+>  /* FSL_BOOKE have TLBCAM */
+>  /* 8xx have LTLB */
+> diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
+> index 8d26d7416481..bb2d94c8cbe6 100644
+> --- a/arch/powerpc/oprofile/Makefile
+> +++ b/arch/powerpc/oprofile/Makefile
+> @@ -16,4 +16,4 @@ oprofile-$(CONFIG_OPROFILE_CELL) += op_model_cell.o \
+>                 cell/spu_task_sync.o
+>  oprofile-$(CONFIG_PPC_BOOK3S_64) += op_model_power4.o op_model_pa6t.o
+>  oprofile-$(CONFIG_FSL_EMB_PERFMON) += op_model_fsl_emb.o
+> -oprofile-$(CONFIG_6xx) += op_model_7450.o
+> +oprofile-$(CONFIG_PPC_BOOK3S_32) += op_model_7450.o
+> diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
+> index bf094c5a4bd9..a11132865504 100644
+> --- a/arch/powerpc/oprofile/common.c
+> +++ b/arch/powerpc/oprofile/common.c
+> @@ -212,7 +212,7 @@ int __init oprofile_arch_init(struct oprofile_operations *ops)
+>                         model = &op_model_pa6t;
+>                         break;
+>  #endif
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>                 case PPC_OPROFILE_G4:
+>                         model = &op_model_7450;
+>                         break;
+> diff --git a/arch/powerpc/platforms/powermac/cache.S b/arch/powerpc/platforms/powermac/cache.S
+> index 27862feee4a5..f0641b6e6075 100644
+> --- a/arch/powerpc/platforms/powermac/cache.S
+> +++ b/arch/powerpc/platforms/powermac/cache.S
+> @@ -28,7 +28,7 @@
+>   */
+>
+>  _GLOBAL(flush_disable_caches)
+> -#ifndef CONFIG_6xx
+> +#ifndef CONFIG_PPC_BOOK3S_32
+>         blr
+>  #else
+>  BEGIN_FTR_SECTION
+> @@ -356,4 +356,4 @@ END_FTR_SECTION_IFSET(CPU_FTR_L3CR)
+>         mtmsr   r11             /* restore DR and EE */
+>         isync
+>         blr
+> -#endif /* CONFIG_6xx */
+> +#endif /* CONFIG_PPC_BOOK3S_32 */
+> diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+> index ed2f54b3f173..073ff4544083 100644
+> --- a/arch/powerpc/platforms/powermac/feature.c
+> +++ b/arch/powerpc/platforms/powermac/feature.c
+> @@ -51,7 +51,7 @@
+>  #define DBG(fmt...)
+>  #endif
+>
+> -#ifdef CONFIG_6xx
+> +#ifdef CONFIG_PPC_BOOK3S_32
+>  extern int powersave_lowspeed;
+>  #endif
+>
+> diff --git a/arch/powerpc/platforms/powermac/sleep.S b/arch/powerpc/platforms/powermac/sleep.S
+> index f89808b9713d..fb64b09cad9d 100644
+> --- a/arch/powerpc/platforms/powermac/sleep.S
+> +++ b/arch/powerpc/platforms/powermac/sleep.S
+> @@ -56,7 +56,7 @@
+>   * vector that will be called by the ROM on wakeup
+>   */
+>  _GLOBAL(low_sleep_handler)
+> -#ifndef CONFIG_6xx
+> +#ifndef CONFIG_PPC_BOOK3S_32
+>         blr
+>  #else
+>         mflr    r0
+> @@ -394,5 +394,5 @@ sleep_storage:
+>         .long 0
+>         .balign L1_CACHE_BYTES, 0
+>
+> -#endif /* CONFIG_6xx */
+> +#endif /* CONFIG_PPC_BOOK3S_32 */
+>         .section .text
+> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+> index 2caa4defdfb6..aaf23283ba0c 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -48,7 +48,7 @@ obj-$(CONFIG_PPC_MPC512x)     += mpc5xxx_clocks.o
+>  obj-$(CONFIG_PPC_MPC52xx)      += mpc5xxx_clocks.o
+>
+>  ifdef CONFIG_SUSPEND
+> -obj-$(CONFIG_6xx)              += 6xx-suspend.o
+> +obj-$(CONFIG_PPC_BOOK3S_32)    += 6xx-suspend.o
+>  endif
+>
+>  obj-$(CONFIG_PPC_SCOM)         += scom.o
+> --
+> 2.13.3
+>
