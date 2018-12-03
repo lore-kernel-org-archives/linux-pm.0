@@ -1,78 +1,28 @@
-From: Alexander Duyck <alexander.h.duyck@linux.intel.com>
-Subject: Re: [driver-core PATCH v7 4/9] driver core: Probe devices
- asynchronously instead of the driver
-Date: Mon, 03 Dec 2018 08:44:43 -0800
-Message-ID: <c60069cf68cd0c674f31f7690406bb97dd39c8da.camel@linux.intel.com>
-References: <154345118835.18040.17186161872550839244.stgit@ahduyck-desk1.amr.corp.intel.com>
-         <154345154692.18040.8161459765233879389.stgit@ahduyck-desk1.amr.corp.intel.com>
-         <20181201024847.GH28501@garbanzo.do-not-panic.com>
+From: Stephen Boyd <swboyd@chromium.org>
+Subject: Re: [PATCH v11 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware
+ bindings
+Date: Mon, 03 Dec 2018 08:55:17 -0800
+Message-ID: <154385611714.88331.8566017812494618071@swboyd.mtv.corp.google.com>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181201024847.GH28501@garbanzo.do-not-panic.com>
+In-Reply-To: <1543722903-10989-2-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Luis Chamberlain <mcgrof@kernel.org>
-Cc: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, linux-nvdimm@lists.01.org, tj@kernel.org, akpm@linux-foundation.org, linux-pm@vger.kernel.org, jiangshanlai@gmail.com, rafael@kernel.org, len.brown@intel.com, pavel@ucw.cz, zwisler@kernel.org, dan.j.williams@intel.com, dave.jiang@intel.com, bvanassche@acm.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, brendanhiggins@google.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Taniya Das <tdas@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2018-11-30 at 18:48 -0800, Luis Chamberlain wrote:
-> On Wed, Nov 28, 2018 at 04:32:26PM -0800, Alexander Duyck wrote:
-> > Probe devices asynchronously instead of the driver.
-> > +static void __driver_attach_async_helper(void *_dev, async_cookie_t cookie)
-> > +{
-> > +	struct device *dev = _dev;
-> > +	struct device_driver *drv;
-> > +
-> > +	__device_driver_lock(dev, dev->parent);
-> > +
-> > +	/*
-> > +	 * If someone attempted to bind a driver either successfully or
-> > +	 * unsuccessfully before we got here we should just skip the driver
-> > +	 * probe call.
-> > +	 */
-> > +	drv = dev_get_drv_async(dev);
-> > +	if (drv && !dev->driver)
-> > +		driver_probe_device(drv, dev);
-> 
-> I believe this should mean drivers which have async work on probe can
-> deadlock. For instance, if a driver does call async_schedule() or a
-> derivative call does this for it, the kernel will call
-> async_synchronize_full() and I believe we deadlock.
-> 
-> Are we sure most subsystems which would use async probe will not have
-> an async_schedule() call?
-> 
->   Luis
+Quoting Taniya Das (2018-12-01 19:55:02)
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which a=
+re
+> controlled by the hardware engine.
+> =
 
-So the async_schedule call isn't a problem. I would only be an issue if
-they are calling async_sychronize_full while we are holding a lock
-and/or mutex. To mitigate that I believe many drivers are just using
-the domain version of things instead of using the global async calls.
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
 
-An issue like what you have described would already exist if there is
-code like that floating around out there. As is this patch isn't
-changing the fact that a driver can load asynchronously. All it is
-doing is allowing each device to be handled asynchronously instead of
-having just one thread work its way though all the devices one at a
-time.
-
-The earlier bug we were addressing in patch 1/9 was something like what
-you were describing where we were performing an async_synchronize_full
-while holding the device lock. I would think the requirement if you are
-going to are going to use async within a driver is to use the domain
-specific version instead of just synchronizing entire domains, or if
-you must synchronize the entire domain you should not be doing so while
-holding any locks and/or mutexs.
-
-One of the reasons why I am using a flag to perform the synchronization
-between the device_add and device_del in patch 2 is because technically
-any driver can be turned into an asynchronous probing driver by just
-adding the kernel parameter <driver>.async_probe. That flag is somewhat
-hidden here as dev_get_drv_async was checking for the async_probe flag
-in this version of the patch. In the future I plan to replace the
-"async_probe" flag with a "dead" flag to indicate that the device is in
-the process of doing through a device_del which should accomplish the
-same thing.
-
-- Alex
+Reviewed-by: Stephen Boyd <swboyd@chromium.org>
