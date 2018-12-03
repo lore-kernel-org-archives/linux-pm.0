@@ -1,9 +1,9 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 4/5] drivers: power: suspend: call devfreq suspend/resume
-Date: Mon,  3 Dec 2018 15:31:14 +0100
-Message-ID: <1543847475-7600-5-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v2 5/5] arm: dts: exynos4: opp-suspend in DMC and leftbus
+Date: Mon,  3 Dec 2018 15:31:15 +0100
+Message-ID: <1543847475-7600-6-git-send-email-l.luba@partner.samsung.com>
 References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181203143134eucas1p1edd70b0f4dca115f6f154555d8829427@eucas1p1.samsung.com>
+        <CGME20181203143135eucas1p165fe6183ae90de7906f9683cb41ff4c1@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
@@ -12,46 +12,58 @@ To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, lin
 Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Devfreq framework supports suspend of its devices.
-Call the the devfreq interface and allow devfreq devices preserve/restore
-their states during suspend/resume.
+Mark the state for devfreq device while entring suspend/resume process.
 
 The patch is based on earlier work by Tobias Jakobi.
 
 Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- drivers/base/power/main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/arm/boot/dts/exynos4210.dtsi | 2 ++
+ arch/arm/boot/dts/exynos4412.dtsi | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index a690fd4..0992e67 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -32,6 +32,7 @@
- #include <trace/events/power.h>
- #include <linux/cpufreq.h>
- #include <linux/cpuidle.h>
-+#include <linux/devfreq.h>
- #include <linux/timer.h>
+diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
+index b6091c2..4429b72 100644
+--- a/arch/arm/boot/dts/exynos4210.dtsi
++++ b/arch/arm/boot/dts/exynos4210.dtsi
+@@ -298,6 +298,7 @@
+ 			opp-400000000 {
+ 				opp-hz = /bits/ 64 <400000000>;
+ 				opp-microvolt = <1150000>;
++				opp-suspend;
+ 			};
+ 		};
  
- #include "../base.h"
-@@ -1078,6 +1079,7 @@ void dpm_resume(pm_message_t state)
- 	dpm_show_time(starttime, state, 0, NULL);
+@@ -367,6 +368,7 @@
+ 			};
+ 			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
++				opp-suspend;
+ 			};
+ 		};
+ 	};
+diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
+index 51f72f0..908c0c4 100644
+--- a/arch/arm/boot/dts/exynos4412.dtsi
++++ b/arch/arm/boot/dts/exynos4412.dtsi
+@@ -432,6 +432,7 @@
+ 			opp-400000000 {
+ 				opp-hz = /bits/ 64 <400000000>;
+ 				opp-microvolt = <1050000>;
++				opp-suspend;
+ 			};
+ 		};
  
- 	cpufreq_resume();
-+	devfreq_resume();
- 	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
- }
+@@ -520,6 +521,7 @@
+ 			opp-200000000 {
+ 				opp-hz = /bits/ 64 <200000000>;
+ 				opp-microvolt = <1000000>;
++				opp-suspend;
+ 			};
+ 		};
  
-@@ -1852,6 +1854,7 @@ int dpm_suspend(pm_message_t state)
- 	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
- 	might_sleep();
- 
-+	devfreq_suspend();
- 	cpufreq_suspend();
- 
- 	mutex_lock(&dpm_list_mtx);
 -- 
 2.7.4
