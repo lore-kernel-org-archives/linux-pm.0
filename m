@@ -1,49 +1,74 @@
-From: Abuse <abuse@2.abuse.bgcomp.co.uk>
-Subject: Re: [PATCH RFC 00/15] Zero ****s, hugload of hugs <3
-Date: Fri, 30 Nov 2018 20:39:01 +0000
-Message-ID: <2007856.n5V9iKLVsV@eth7>
-References: <CAGXu5j+jBNBsD3pvUSfEh6Lc5T1YMpbM0HeG1c6BHiJe+cKVOQ@mail.gmail.com>
- <d7c34289-f03a-b641-cc9c-00395306511d@kernel.dk>
- <20181130.123507.1940310466680455876.davem@davemloft.net>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v11 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ
+ Firmware bindings
+Date: Mon, 3 Dec 2018 17:09:07 -0600
+Message-ID: <20181203230907.GA17086@bogus>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-2-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181130.123507.1940310466680455876.davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: David Miller <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>
-Cc: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, amir73il-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edumazet-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, makita.toshiaki-Zyj7fXuS5i5L9jVzuh4AOg@public.gmane.org, yanjun.zhu-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dave-h16yJtLeMjHk1uMJSBkQmQ@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, corbet-T1hC0tSOHrs@public.gmane.org, deller-Mmb7MZpHnFY@public.gmane.org, rostedt-nx8X9YLhiw1AfugRpC6u6w@public.gmane.org, federico.vaga-VIMSii5OdOuonA0d6jMUrA@public.gmane.org, yhs-b10kYP2dOMg@public.gmane.org, pabeni-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pmladek-IBi9RG/b67k@public.gmane.org, keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shannon.nelson-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, linux-X3ehHDuj6sIIGcDfoQAp7OTW4wlIGRCZ@public.gmane.org, sbrivio-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, jarkko.sakkinen-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, dja-Yfaxwxk/+vWsTnJN9+BGXg@public.gmane.org, axboe-tSWWG44O7X1aa/9Udqfwiw@public.gmane.org, willemb-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev@vger
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1543722903-10989-2-git-send-email-tdas@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpZGF5LCAzMCBOb3ZlbWJlciAyMDE4IDIwOjM1OjA3IEdNVCBEYXZpZCBNaWxsZXIgd3Jv
-dGU6Cj4gRnJvbTogSmVucyBBeGJvZSA8YXhib2VAa2VybmVsLmRrPgo+IERhdGU6IEZyaSwgMzAg
-Tm92IDIwMTggMTM6MTI6MjYgLTA3MDAKPiAKPiA+IE9uIDExLzMwLzE4IDEyOjU2IFBNLCBEYXZp
-ZGxvaHIgQnVlc28gd3JvdGU6Cj4gPj4gT24gRnJpLCAzMCBOb3YgMjAxOCwgS2VlcyBDb29rIHdy
-b3RlOgo+ID4+IAo+ID4+PiBPbiBGcmksIE5vdiAzMCwgMjAxOCBhdCAxMToyNyBBTSBKYXJra28g
-U2Fra2luZW4KPiA+Pj4gPGphcmtrby5zYWtraW5lbkBsaW51eC5pbnRlbC5jb20+IHdyb3RlOgo+
-ID4+Pj4KPiA+Pj4+IEluIG9yZGVyIHRvIGNvbXBseSB3aXRoIHRoZSBDb0MsIHJlcGxhY2UgKioq
-KiB3aXRoIGEgaHVnLgo+ID4+IAo+ID4+IEkgaG9wZSB0aGlzIGlzIHNvbWUga2luZCBvZiBqb2tl
-LiBIb3cgd291bGQgYW55b25lIGdldCBvZmZlbmRlZCBieSByZWFkaW5nCj4gPj4gdGVjaG5pY2Fs
-IGNvbW1lbnRzPyBUaGlzIGlzIGFsbCBiZXlvbmQgbWUuLi4KPiA+IAo+ID4gQWdyZWUsIHRoaXMg
-aXMgaW5zYW5pdHkuCj4gCj4gQW5kIGV2ZW4gd29yc2UgaXQgaXMgY2Vuc29yc2hpcC4KPiAKCkZ1
-Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNr
-CkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpG
-dWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVj
-awpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sK
-RnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1
-Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNr
-CkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpG
-dWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVj
-awpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sKRnVjawpGdWNrCkZ1Y2sK
-CkkgYXNzdW1lIEkgd2lsbCBub3cgYmUgYmFycmVkLgoKCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
-bGlzdGluZm8vbm91dmVhdQo=
+On Sun, Dec 02, 2018 at 09:25:02AM +0530, Taniya Das wrote:
+> Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
+> SoCs. This is required for managing the cpu frequency transitions which are
+> controlled by the hardware engine.
+> 
+> Signed-off-by: Taniya Das <tdas@codeaurora.org>
+> ---
+>  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++++++++++
+>  1 file changed, 172 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> new file mode 100644
+> index 0000000..2b82965
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -0,0 +1,172 @@
+> +Qualcomm Technologies, Inc. CPUFREQ Bindings
+> +
+> +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, Inc. (QTI)
+> +SoCs to manage frequency in hardware. It is capable of controlling frequency
+> +for multiple clusters.
+> +
+> +Properties:
+> +- compatible
+> +	Usage:		required
+> +	Value type:	<string>
+> +	Definition:	must be "qcom,cpufreq-hw".
+> +
+> +- clocks
+> +	Usage:		required
+> +	Value type:	<phandle> From common clock binding.
+> +	Definition:	clock handle for XO clock and GPLL0 clock.
+> +
+> +- clock-names
+> +	Usage:		required
+> +	Value type:	<string> From common clock binding.
+> +	Definition:	must be "xo", "alternate".
+> +
+> +- reg
+> +	Usage:		required
+> +	Value type:	<prop-encoded-array>
+> +	Definition:	Addresses and sizes for the memory of the HW bases in
+> +			each frequency domain.
+> +- reg-names
+> +	Usage:		Optional
+> +	Value type:	<string>
+> +	Definition:	Frequency domain name i.e.
+> +			"freq-domain0", "freq-domain1".
+> +
+> +- freq-domain-cells:
+
+#freq-domain-cells
+
+Otherwise,
+
+Reviewed-by: Rob Herring <robh@kernel.org>
