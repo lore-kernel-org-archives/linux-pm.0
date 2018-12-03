@@ -1,146 +1,105 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: v4.14 fix for Hikey 960 unbalanced IRQ enablement
-Date: Mon, 3 Dec 2018 19:33:33 +0100
-Message-ID: <6be6e40e-ce45-59ed-85e6-53b338b21dda@linaro.org>
-References: <20181203133107.4002-1-rafael.tinoco@linaro.org>
- <20181203141442.GA19335@kroah.com>
- <dc468512-7a73-3d69-fe9e-d660db85ee5b@linaro.org>
- <20181203151946.GG235790@sasha-vm> <20181203180521.GA15996@kroah.com>
+From: Benson Leung <bleung@google.com>
+Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
+Date: Mon, 3 Dec 2018 11:58:45 -0800
+Message-ID: <20181203195845.GA120704@google.com>
+References: <20181122101119.29194-1-enric.balletbo@collabora.com>
+ <20181123232203.GA3852@amd>
+ <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
+ <20181201150934.GA7052@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181203180521.GA15996@kroah.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20181201150934.GA7052@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>, Sasha Levin <sashal@kernel.org>
-Cc: Rafael David Tinoco <rafael.tinoco@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, bleung@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On 03/12/2018 19:05, Greg KH wrote:
-> On Mon, Dec 03, 2018 at 10:19:46AM -0500, Sasha Levin wrote:
->> On Mon, Dec 03, 2018 at 03:42:41PM +0100, Daniel Lezcano wrote:
->>> On 03/12/2018 15:14, Greg KH wrote:
->>>> On Mon, Dec 03, 2018 at 11:31:02AM -0200, Rafael David Tinoco wrote:
->>>>> Sasha, could you consider including this cherry-picked patchset in v4.14.
->>>>>
->>>>> Kernel v4.14 might suffer from the following unbalanced enablement for the board Hikey 960:
->>>>>
->>>>> Nov  5 12:02:54 hikey kernel: [   22.148194] Unbalanced enable for IRQ 44
->>>>> Nov  5 12:02:54 hikey kernel: [   22.152193] ------------[ cut here ]------------
->>>>> Nov  5 12:02:54 hikey kernel: [   22.156872] WARNING: CPU: 2 PID: 509 at /home/inaddy/work/sources/linux/stable/stable-linux-4.14.y/kernel/irq/manage.c:525 __enable_irq+0x78/0x80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.249606] CPU: 2 PID: 509 Comm: kworker/2:2 Not tainted 4.14.79 #1
->>>>> Nov  5 12:02:54 hikey kernel: [   22.255975] Hardware name: HiKey Development Board (DT)
->>>>> Nov  5 12:02:54 hikey kernel: [   22.261248] Workqueue: events_freezable thermal_zone_device_check
->>>>> Nov  5 12:02:54 hikey kernel: [   22.267368] task: ffff8000616e0e00 task.stack: ffff00000b5f0000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.273312] PC is at __enable_irq+0x78/0x80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.277516] LR is at __enable_irq+0x78/0x80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.281718] pc : [<ffff00000813e010>] lr : [<ffff00000813e010>] pstate: 000001c5
->>>>> Nov  5 12:02:54 hikey kernel: [   22.289129] sp : ffff00000b5f3c80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.292457] x29: ffff00000b5f3c80 x28: 0000000000000000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.297804] x27: ffff80005c139e38 x26: ffff000008a71870
->>>>> Nov  5 12:02:54 hikey kernel: [   22.303148] x25: 0000000000000000 x24: 0000000000000002
->>>>> Nov  5 12:02:54 hikey kernel: [   22.308492] x23: ffff00000b5f3d9c x22: ffff80005d565e88
->>>>> Nov  5 12:02:54 hikey kernel: [   22.313836] x21: 000000000000f980 x20: 000000000000002c
->>>>> Nov  5 12:02:54 hikey kernel: [   22.319181] x19: ffff800061726000 x18: 0000000000000010
->>>>> Nov  5 12:02:54 hikey kernel: [   22.324524] x17: 0000000000000000 x16: 0000000000000000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.329868] x15: ffffffffffffffff x14: ffff000009269c08
->>>>> Nov  5 12:02:54 hikey kernel: [   22.335213] x13: ffff00008940678f x12: ffff000009406797
->>>>> Nov  5 12:02:54 hikey kernel: [   22.340558] x11: ffff000009290000 x10: ffff00000b5f3980
->>>>> Nov  5 12:02:54 hikey kernel: [   22.345902] x9 : 00000000ffffffd0 x8 : ffff00000862c298
->>>>> Nov  5 12:02:54 hikey kernel: [   22.351246] x7 : 6c62616e65206465 x6 : 00000000000001b2
->>>>> Nov  5 12:02:54 hikey kernel: [   22.356589] x5 : 0000000000000000 x4 : 0000000000000000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.361931] x3 : 0000000000000000 x2 : ffff800063e824c8
->>>>> Nov  5 12:02:54 hikey kernel: [   22.367275] x1 : 000080005af95000 x0 : 000000000000001c
->>>>> Nov  5 12:02:54 hikey kernel: [   22.372618] Call trace:
->>>>> Nov  5 12:02:54 hikey kernel: [   22.375088] Exception stack(0xffff00000b5f3b40 to 0xffff00000b5f3c80)
->>>>> Nov  5 12:02:54 hikey kernel: [   22.381560] 3b40: 000000000000001c 000080005af95000 ffff800063e824c8 0000000000000000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.389417] 3b60: 0000000000000000 0000000000000000 00000000000001b2 6c62616e65206465
->>>>> Nov  5 12:02:54 hikey kernel: [   22.397276] 3b80: ffff00000862c298 00000000ffffffd0 ffff00000b5f3980 ffff000009290000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.405136] 3ba0: ffff000009406797 ffff00008940678f ffff000009269c08 ffffffffffffffff
->>>>> Nov  5 12:02:54 hikey kernel: [   22.412994] 3bc0: 0000000000000000 0000000000000000 0000000000000010 ffff800061726000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.420852] 3be0: 000000000000002c 000000000000f980 ffff80005d565e88 ffff00000b5f3d9c
->>>>> Nov  5 12:02:54 hikey kernel: [   22.428710] 3c00: 0000000000000002 0000000000000000 ffff000008a71870 ffff80005c139e38
->>>>> Nov  5 12:02:54 hikey kernel: [   22.436569] 3c20: 0000000000000000 ffff00000b5f3c80 ffff00000813e010 ffff00000b5f3c80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.444426] 3c40: ffff00000813e010 00000000000001c5 0000000000000000 0000000000000000
->>>>> Nov  5 12:02:54 hikey kernel: [   22.452286] 3c60: ffffffffffffffff ffff800061800618 ffff00000b5f3c80 ffff00000813e010
->>>>> Nov  5 12:02:54 hikey kernel: [   22.460144] [<ffff00000813e010>] __enable_irq+0x78/0x80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.465394] [<ffff00000813e058>] enable_irq+0x40/0x78
->>>>> Nov  5 12:02:54 hikey kernel: [   22.470493] [<ffff000000e228a8>] hisi_thermal_get_temp+0x1b0/0x1d8 [hisi_thermal]
->>>>> Nov  5 12:02:54 hikey kernel: [   22.478008] [<ffff0000087121a8>] of_thermal_get_temp+0x38/0x50
->>>>> Nov  5 12:02:54 hikey kernel: [   22.483869] [<ffff000008711790>] thermal_zone_get_temp+0x58/0x80
->>>>> Nov  5 12:02:54 hikey kernel: [   22.489903] [<ffff00000870e7bc>] thermal_zone_device_update.part.4+0x2c/0x1a8
->>>>> Nov  5 12:02:54 hikey kernel: [   22.497066] [<ffff00000870e9c8>] thermal_zone_device_check+0x40/0x50
->>>>> Nov  5 12:02:54 hikey kernel: [   22.503457] [<ffff0000080f1674>] process_one_work+0x19c/0x3d0
->>>>> Nov  5 12:02:54 hikey kernel: [   22.509236] [<ffff0000080f18f4>] worker_thread+0x4c/0x428
->>>>> Nov  5 12:02:54 hikey kernel: [   22.514664] [<ffff0000080f84fc>] kthread+0x134/0x138
->>>>> Nov  5 12:02:54 hikey kernel: [   22.519659] [<ffff000008085154>] ret_from_fork+0x10/0x1c
->>>>> Nov  5 12:02:54 hikey kernel: [   22.524988] ---[ end trace 328d4bb2d9b066a0 ]---
->>>>>
->>>>> This issue was solved when "hisi_thermal_alarm_irq" function was removed so only
->>>>> "hisi_thermal_alarm_irq_thread" would exist. This has fixed the issue for the
->>>>> unbalanced enablement since there is no more:
->>>>>
->>>>> 	disable_irq_nosync(irq);
->>>>> 	data->irq_enabled = false;
->>>>>
->>>>> logic being done in parallel to the threaded handler AND the
->>>>> thermal_zone_device_update() call only happens now if the temperature is already
->>>>> above the threshold.
->>>>>
->>>>
->>>> So should we revert a patch instead of taking these new ones?  Would
->>>> that be easier and is this a "real" issue or just an annoying warning
->>>> splat in the kernel log?
->>>
->>> Actually, this warning is introduced with the driver and all the
->>> plumbers around to fix an irq bouncing. There is no patch to revert
->>> without removing the driver.
->>
->> Greg,
->>
->> Patch 5 in this series seems to explain the best what is happening here:
->>
->>> With the following changes, we fix all in one:
->>>
->>> - Do the setup, one time, at probe time
->>>
->>> - Add the IRQF_ONESHOT, ack the interrupt in the threaded handler
->>>
->>> - Remove the interrupt handler
->>>
->>> - Set the correct value for the LAG register
->>>
->>> - Remove all the irq_enabled stuff in the code as the interruption
->>>   handling is fixed
->>>
->>> - Remove the 3ms delay
->>>
->>> - Reorder the initialization routine to be in the right order
->>
->> We can't revert anything because the breakage was there since the driver
->> was introduced.
-> 
-> So the driver was broken in 4.14, why not just use 4.19 instead?  This
-> isn't a 4.14 regression, it's something that obviously no one has
-> noticed for a year now, so why backport these big patches to 4.14 now?
 
-It was not broken before this series but wobbly with a high latency to
-read the temperature and an unusual interrupt handling scheme to work
-around an uncatched register misconfiguration.
+--bp/iNruPH9dso1Pn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think it was noticed but without finding the root cause of the issue.
-This one is definitively solved with these patches and the resulting
-code is consistent with the other thermal drivers.
+Hi Pavel,
 
-All these patches were applied to Android-4.14 if worth to mention.
+On Sat, Dec 01, 2018 at 04:09:34PM +0100, Pavel Machek wrote:
+> > I think that handle this via dt / ACPI is not possible for our use case=
+=2E It can
+> > be a hardware bug or a hardware/user constrain, let me try to explain b=
+etter
+> > with an example.
+> >=20
+> > On Pixel C's devices, userspace uses this to set a USB input limit of 5=
+V when
+> > the screen is on for thermal reasons, but those go away when the screen=
+ is
+> > off/system is sleeping, so we allow 9V and 12V levels when sleeping.
+>=20
+> So, on pixel C, what happens if userland ignores the constraint, keeps
+> display on and sets charger to 12V?
 
+I was the software tech lead for the Google Pixel C and was involved in this
+particular code change in 2015 before the release of the product.
 
+So there's nothing fundamentally broken about the hardware that would cause
+the Pixel C to malfunction if we were charging at 9V or 12V instead of 5V
+when the screen is on, ie if userspace doesn't change this.
 
+This is part of the Pixel C's thermal management strategy to effectively
+limit the input power to 5V 3A when the screen is on. When the screen is on,
+the display, the CPU, and the GPU all contribute more heat to the system
+than while the screen is off, and we made a tradeoff to throttle the charger
+in order to give more of the thermal budget to those other components.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+What would happen is that you wouldn't meet Google's skin temperature targe=
+ts
+on the system if the charger was allowed to run at 9V or 12V with the screen
+on.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+For folks hacking on Pixel Cs (which is now outside of Google's official su=
+pport
+window for Android) and customizing their own kernel and userspace
+this would be acceptable, but we wanted to expose this feature in the power
+supply properties because the feature does exist in the Emedded Controller
+firmware of the Pixel C and all of Google's Chromebooks with USB-C made sin=
+ce
+2015 in case someone running an up to date kernel wanted to limit the charg=
+ing
+power for thermal or other reasons.
+
+Thanks,
+Benson
+
+--=20
+Benson Leung
+Staff Software Engineer
+Chrome OS Kernel
+Google Inc.
+bleung@google.com
+Chromium OS Project
+bleung@chromium.org
+
+--bp/iNruPH9dso1Pn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE6gYDF28Li+nEiKLaHwn1ewov5lgFAlwFivIACgkQHwn1ewov
+5lg8+hAAkU3bSc1yCGH1bSwmoNTjpDQHMs/45GRZKQsgfDOKkraVTOm2BM5WriGQ
+r5fB85winldp6rdghBT9Epa+zVNYEANaQwcesgoWhgbaqBhpRdyXFLyWLVsGCg/8
+2mqfJri7T/uRGLzwFlLVwJwJk/5OrzaNPVPDBTHdfpVirSeYdU34QdiNeDP/TQ8n
+TtWE//JApbXb9vB+F+QKlrrU6ImIm0jrukAM6eR+chi8rXPAt2TW1cmlb9JcJxDg
+1h9U1uRevKat7zXZ64+LPayQ7R9v64oUMIeKSHapgCXrOqCL0PDlcI4wbVhdK1Cn
+h39OEGmhoaub/csJLkUSrn/wjKoLg39edefcZ+sQ5BPosWDrAmvCHh0fZoqKsjfv
+Zi3dHFw4qgp/O3vpkvJMcRgpN621FWnNCG7/pRBgr3W+L6HlTXW1s+WADzSkgbzW
+4A40LDTWB/4trGv/CKSZgTX93AZhmj7GNdVZyr/XUfKIZWcaNQhMHAPTYttLtFbp
+X9jN0YGZvIQ+JaZQyGqEYDxm3rOiidRf40LPrMpoza93npG6FIeGDvAa42XfllHk
+AWnmJDxusgJb+oZmKIQMAe9k2jHxafSqzCFjnH57T/6vD1Tn5YYmqJy+b4gAbI83
+9IexSFTWAyAbwYg+/pRzcaUnzKCYirLxJSe+585uWEcoilITZ0c=
+=Rk1S
+-----END PGP SIGNATURE-----
+
+--bp/iNruPH9dso1Pn--
