@@ -1,86 +1,166 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
-Date: Mon, 3 Dec 2018 08:23:56 -0800
-Message-ID: <001a01d48b24$9aa38c00$cfeaa400$@net>
-References: <42865872.dmYH3PmblP@aspire.rjw.lan> T62Cgz3BqpqCWT62HgcJvj
+From: Lina Iyer <ilina@codeaurora.org>
+Subject: Re: [PATCH v10 18/27] drivers: firmware: psci: Add support for PM
+ domains using genpd
+Date: Mon, 3 Dec 2018 09:37:17 -0700
+Message-ID: <20181203163717.GN18262@codeaurora.org>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-19-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: T62Cgz3BqpqCWT62HgcJvj
-Content-Language: en-ca
+Content-Disposition: inline
+In-Reply-To: <20181129174700.16585-19-ulf.hansson@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: 'Giovanni Gherdovich' <ggherdovich@suse.cz>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'Frederic Weisbecker' <frederic@kernel.org>, 'Mel Gorman' <mgorman@suse.de>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Linux PM' <linux-pm@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Giovanni,
+On Thu, Nov 29 2018 at 10:49 -0700, Ulf Hansson wrote:
+>When the hierarchical CPU topology layout is used in DT, we need to setup
+>the corresponding PM domain data structures, as to allow a CPU and a group
+>of CPUs to be power managed accordingly. Let's enable this by deploying
+>support through the genpd interface.
+>
+>Additionally, when the OS initiated mode is supported by the PSCI FW, let's
+>also parse the domain idle states DT bindings as to make genpd responsible
+>for the state selection, when the states are compatible with
+>"domain-idle-state". Otherwise, when only Platform Coordinated mode is
+>supported, we rely solely on the state selection to be managed through the
+>regular cpuidle framework.
+>
+>If the initialization of the PM domain data structures succeeds and the OS
+>initiated mode is supported, we try to switch to it. In case it fails,
+>let's fall back into a degraded mode, rather than bailing out and returning
+>an error code.
+>
+>Due to that the OS initiated mode may become enabled, we need to adjust to
+>maintain backwards compatibility for a kernel started through a kexec call.
+>Do this by explicitly switch to Platform Coordinated mode during boot.
+>
+>To try to initiate the PM domain data structures, the PSCI driver shall
+>call the new function, psci_dt_init_pm_domains(). However, this is done
+>from following changes.
+>
+>Cc: Lina Iyer <ilina@codeaurora.org>
+>Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>---
+>
+>Changes in V10:
+>	- Enable the PM domains to be used for both PC and OSI mode.
+>	- Fixup error paths.
+>	- Move the management of kexec started kernels into this patch.
+>	- Rewrite changelog.
+>
+>---
+> drivers/firmware/psci/Makefile         |   2 +-
+> drivers/firmware/psci/psci.c           |   7 +-
+> drivers/firmware/psci/psci.h           |   6 +
+> drivers/firmware/psci/psci_pm_domain.c | 262 +++++++++++++++++++++++++
+> 4 files changed, 275 insertions(+), 2 deletions(-)
+> create mode 100644 drivers/firmware/psci/psci_pm_domain.c
+>
+>diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+>index 1956b882470f..ff300f1fec86 100644
+>--- a/drivers/firmware/psci/Makefile
+>+++ b/drivers/firmware/psci/Makefile
+>@@ -1,4 +1,4 @@
+> # SPDX-License-Identifier: GPL-2.0
+> #
+>-obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
+>+obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o psci_pm_domain.o
+> obj-$(CONFIG_ARM_PSCI_CHECKER)	+= psci_checker.o
+>diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+>index 623591b541a4..19af2093151b 100644
+>--- a/drivers/firmware/psci/psci.c
+>+++ b/drivers/firmware/psci/psci.c
+>@@ -704,9 +704,14 @@ static int __init psci_1_0_init(struct device_node *np)
+> 	if (err)
+> 		return err;
+>
+>-	if (psci_has_osi_support())
+>+	if (psci_has_osi_support()) {
+> 		pr_info("OSI mode supported.\n");
+>
+>+		/* Make sure we default to PC mode. */
+>+		invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
+>+			       PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
+>+	}
+>+
+> 	return 0;
+> }
+>
+>diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+>index 7d9d38fd57e1..8cf6d7206fab 100644
+>--- a/drivers/firmware/psci/psci.h
+>+++ b/drivers/firmware/psci/psci.h
+>@@ -11,4 +11,10 @@ void psci_set_domain_state(u32 state);
+> bool psci_has_osi_support(void);
+> int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+>
+>+#ifdef CONFIG_CPU_IDLE
+>+int psci_dt_init_pm_domains(struct device_node *np);
+>+#else
+>+static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
+>+#endif
+>+
+> #endif /* __PSCI_H */
+>diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
+>new file mode 100644
+>index 000000000000..d0dc38e96f85
+>--- /dev/null
+>+++ b/drivers/firmware/psci/psci_pm_domain.c
+>@@ -0,0 +1,262 @@
+>+// SPDX-License-Identifier: GPL-2.0
+>+/*
+>+ * PM domains for CPUs via genpd - managed by PSCI.
+>+ *
+>+ * Copyright (C) 2018 Linaro Ltd.
+>+ * Author: Ulf Hansson <ulf.hansson@linaro.org>
+>+ *
+>+ */
+>+
+>+#define pr_fmt(fmt) "psci: " fmt
+>+
+>+#include <linux/device.h>
+>+#include <linux/kernel.h>
+>+#include <linux/pm_domain.h>
+>+#include <linux/slab.h>
+>+#include <linux/string.h>
+>+
+>+#include "psci.h"
+>+
+>+#ifdef CONFIG_CPU_IDLE
+>+
+>+struct psci_pd_provider {
+>+	struct list_head link;
+>+	struct device_node *node;
+>+};
+>+
+>+static LIST_HEAD(psci_pd_providers);
+>+static bool osi_mode_enabled;
+>+
+>+static int psci_pd_power_off(struct generic_pm_domain *pd)
+>+{
+>+	struct genpd_power_state *state = &pd->states[pd->state_idx];
+>+	u32 *pd_state;
+>+	u32 composite_pd_state;
+>+
+>+	/* If we have failed to enable OSI mode, then abort power off. */
+>+	if (psci_has_osi_support() && !osi_mode_enabled)
+>+		return -EBUSY;
+>+
+>+	if (!state->data)
+>+		return 0;
+>+
+>+	/* When OSI mode is enabled, set the corresponding domain state. */
+>+	pd_state = state->data;
+>+	composite_pd_state = *pd_state | psci_get_domain_state();
+This should not be needed. The domain_state should be 0x0 being set
+after coming out of idle.
+>+	psci_set_domain_state(composite_pd_state);
+The three lines can be summarized as:
+	psci_set_domain_state(*state->data);
 
-Perhaps I should go off-list for this, not sure.
-
-I had the thought that I should be able to get similar
-results as your "8x-SKYLAKE-UMA" on my test computer,
-i7-2600K. Or that at least it was worth trying, just
-to see. I couldn't find the same or similar test
-on Phoronix, and my attempts to do similar, for example,
-with iperf, didn't show differences between the baseline
-kernel and one with the teov6 patch.
-
-So I tried the test set you referenced [1]:
-
-On 2018.12.01 06:18 Giovanni Gherdovich wrote:
-...
-> * netperf on loopback over TCP
->    * global-dhp__network-netperf-unbound
-
-I assume this means that I am supposed to do:
-
-cp config-global-dhp__network-netperf-unbound config
-
-from the configs directory. Anyway that config file
-looks correct. Then:
-
-./run-mmtests.sh --no-monitor 3.0-nomonitor
-
-...
-
-> * sockperf on loopback over UDP, mode "throughput"
->    * global-dhp__network-sockperf-unbound
-
-Similarly (from the appropriate directories): 
-
-cp config-global-dhp__network-sockperf-unbound config
-./run-mmtests.sh --no-monitor 3.0-nomonitor
-
-My issue is that I do not understand the output or how it
-might correlate with your tables.
-
-I get, for example:
-
-   3    1   1     0.13s     0.68s     0.80s  1003894.302 1003779.613
-   3    1   1     0.16s     0.64s     0.80s  1008900.053 1008215.336
-   3    1   1     0.14s     0.66s     0.80s  1009630.439 1008990.265
-...
-
-But I don't know what that means, nor have I been able to find
-a description anywhere.
-
-In the README file, I did see that for reporting I am 
-somehow supposed to use compare-kernels.sh, but
-I couldn't figure that out.
-
-By the way, I am running these tests as a regular user, but
-they seem to want to modify:
-
-/sys/kernel/mm/transparent_hugepage/enabled
-
-which requires root privilege. I don't really want to mess
-with that stuff for these tests.
- 
-> [1] https://github.com/gormanm/mmtests
-
-Can you help me to produce meaningful results to compare with
-your results?
-
-... Doug
+Thanks,
+Lina
