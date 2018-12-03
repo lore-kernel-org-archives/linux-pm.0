@@ -1,76 +1,118 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal/int340x_thermal: Add additional UUIDs
-Date: Mon, 03 Dec 2018 23:08:27 +0800
-Message-ID: <1543849707.2841.9.camel@intel.com>
-References: <20181010083007.239938-1-matthewgarrett@google.com>
-         <20181010083007.239938-2-matthewgarrett@google.com>
+From: Sasha Levin <sashal@kernel.org>
+Subject: Re: v4.14 fix for Hikey 960 unbalanced IRQ enablement
+Date: Mon, 3 Dec 2018 10:19:46 -0500
+Message-ID: <20181203151946.GG235790@sasha-vm>
+References: <20181203133107.4002-1-rafael.tinoco@linaro.org>
+ <20181203141442.GA19335@kroah.com>
+ <dc468512-7a73-3d69-fe9e-d660db85ee5b@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181010083007.239938-2-matthewgarrett@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthew Garrett <matthewgarrett@google.com>, linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Matthew Garrett <mjg59@google.com>, Nisha Aram <nisha.aram@intel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <dc468512-7a73-3d69-fe9e-d660db85ee5b@linaro.org>
+Sender: stable-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Rafael David Tinoco <rafael.tinoco@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Matthew,
+On Mon, Dec 03, 2018 at 03:42:41PM +0100, Daniel Lezcano wrote:
+>On 03/12/2018 15:14, Greg KH wrote:
+>> On Mon, Dec 03, 2018 at 11:31:02AM -0200, Rafael David Tinoco wrote:
+>>> Sasha, could you consider including this cherry-picked patchset in v4.14.
+>>>
+>>> Kernel v4.14 might suffer from the following unbalanced enablement for the board Hikey 960:
+>>>
+>>> Nov  5 12:02:54 hikey kernel: [   22.148194] Unbalanced enable for IRQ 44
+>>> Nov  5 12:02:54 hikey kernel: [   22.152193] ------------[ cut here ]------------
+>>> Nov  5 12:02:54 hikey kernel: [   22.156872] WARNING: CPU: 2 PID: 509 at /home/inaddy/work/sources/linux/stable/stable-linux-4.14.y/kernel/irq/manage.c:525 __enable_irq+0x78/0x80
+>>> Nov  5 12:02:54 hikey kernel: [   22.249606] CPU: 2 PID: 509 Comm: kworker/2:2 Not tainted 4.14.79 #1
+>>> Nov  5 12:02:54 hikey kernel: [   22.255975] Hardware name: HiKey Development Board (DT)
+>>> Nov  5 12:02:54 hikey kernel: [   22.261248] Workqueue: events_freezable thermal_zone_device_check
+>>> Nov  5 12:02:54 hikey kernel: [   22.267368] task: ffff8000616e0e00 task.stack: ffff00000b5f0000
+>>> Nov  5 12:02:54 hikey kernel: [   22.273312] PC is at __enable_irq+0x78/0x80
+>>> Nov  5 12:02:54 hikey kernel: [   22.277516] LR is at __enable_irq+0x78/0x80
+>>> Nov  5 12:02:54 hikey kernel: [   22.281718] pc : [<ffff00000813e010>] lr : [<ffff00000813e010>] pstate: 000001c5
+>>> Nov  5 12:02:54 hikey kernel: [   22.289129] sp : ffff00000b5f3c80
+>>> Nov  5 12:02:54 hikey kernel: [   22.292457] x29: ffff00000b5f3c80 x28: 0000000000000000
+>>> Nov  5 12:02:54 hikey kernel: [   22.297804] x27: ffff80005c139e38 x26: ffff000008a71870
+>>> Nov  5 12:02:54 hikey kernel: [   22.303148] x25: 0000000000000000 x24: 0000000000000002
+>>> Nov  5 12:02:54 hikey kernel: [   22.308492] x23: ffff00000b5f3d9c x22: ffff80005d565e88
+>>> Nov  5 12:02:54 hikey kernel: [   22.313836] x21: 000000000000f980 x20: 000000000000002c
+>>> Nov  5 12:02:54 hikey kernel: [   22.319181] x19: ffff800061726000 x18: 0000000000000010
+>>> Nov  5 12:02:54 hikey kernel: [   22.324524] x17: 0000000000000000 x16: 0000000000000000
+>>> Nov  5 12:02:54 hikey kernel: [   22.329868] x15: ffffffffffffffff x14: ffff000009269c08
+>>> Nov  5 12:02:54 hikey kernel: [   22.335213] x13: ffff00008940678f x12: ffff000009406797
+>>> Nov  5 12:02:54 hikey kernel: [   22.340558] x11: ffff000009290000 x10: ffff00000b5f3980
+>>> Nov  5 12:02:54 hikey kernel: [   22.345902] x9 : 00000000ffffffd0 x8 : ffff00000862c298
+>>> Nov  5 12:02:54 hikey kernel: [   22.351246] x7 : 6c62616e65206465 x6 : 00000000000001b2
+>>> Nov  5 12:02:54 hikey kernel: [   22.356589] x5 : 0000000000000000 x4 : 0000000000000000
+>>> Nov  5 12:02:54 hikey kernel: [   22.361931] x3 : 0000000000000000 x2 : ffff800063e824c8
+>>> Nov  5 12:02:54 hikey kernel: [   22.367275] x1 : 000080005af95000 x0 : 000000000000001c
+>>> Nov  5 12:02:54 hikey kernel: [   22.372618] Call trace:
+>>> Nov  5 12:02:54 hikey kernel: [   22.375088] Exception stack(0xffff00000b5f3b40 to 0xffff00000b5f3c80)
+>>> Nov  5 12:02:54 hikey kernel: [   22.381560] 3b40: 000000000000001c 000080005af95000 ffff800063e824c8 0000000000000000
+>>> Nov  5 12:02:54 hikey kernel: [   22.389417] 3b60: 0000000000000000 0000000000000000 00000000000001b2 6c62616e65206465
+>>> Nov  5 12:02:54 hikey kernel: [   22.397276] 3b80: ffff00000862c298 00000000ffffffd0 ffff00000b5f3980 ffff000009290000
+>>> Nov  5 12:02:54 hikey kernel: [   22.405136] 3ba0: ffff000009406797 ffff00008940678f ffff000009269c08 ffffffffffffffff
+>>> Nov  5 12:02:54 hikey kernel: [   22.412994] 3bc0: 0000000000000000 0000000000000000 0000000000000010 ffff800061726000
+>>> Nov  5 12:02:54 hikey kernel: [   22.420852] 3be0: 000000000000002c 000000000000f980 ffff80005d565e88 ffff00000b5f3d9c
+>>> Nov  5 12:02:54 hikey kernel: [   22.428710] 3c00: 0000000000000002 0000000000000000 ffff000008a71870 ffff80005c139e38
+>>> Nov  5 12:02:54 hikey kernel: [   22.436569] 3c20: 0000000000000000 ffff00000b5f3c80 ffff00000813e010 ffff00000b5f3c80
+>>> Nov  5 12:02:54 hikey kernel: [   22.444426] 3c40: ffff00000813e010 00000000000001c5 0000000000000000 0000000000000000
+>>> Nov  5 12:02:54 hikey kernel: [   22.452286] 3c60: ffffffffffffffff ffff800061800618 ffff00000b5f3c80 ffff00000813e010
+>>> Nov  5 12:02:54 hikey kernel: [   22.460144] [<ffff00000813e010>] __enable_irq+0x78/0x80
+>>> Nov  5 12:02:54 hikey kernel: [   22.465394] [<ffff00000813e058>] enable_irq+0x40/0x78
+>>> Nov  5 12:02:54 hikey kernel: [   22.470493] [<ffff000000e228a8>] hisi_thermal_get_temp+0x1b0/0x1d8 [hisi_thermal]
+>>> Nov  5 12:02:54 hikey kernel: [   22.478008] [<ffff0000087121a8>] of_thermal_get_temp+0x38/0x50
+>>> Nov  5 12:02:54 hikey kernel: [   22.483869] [<ffff000008711790>] thermal_zone_get_temp+0x58/0x80
+>>> Nov  5 12:02:54 hikey kernel: [   22.489903] [<ffff00000870e7bc>] thermal_zone_device_update.part.4+0x2c/0x1a8
+>>> Nov  5 12:02:54 hikey kernel: [   22.497066] [<ffff00000870e9c8>] thermal_zone_device_check+0x40/0x50
+>>> Nov  5 12:02:54 hikey kernel: [   22.503457] [<ffff0000080f1674>] process_one_work+0x19c/0x3d0
+>>> Nov  5 12:02:54 hikey kernel: [   22.509236] [<ffff0000080f18f4>] worker_thread+0x4c/0x428
+>>> Nov  5 12:02:54 hikey kernel: [   22.514664] [<ffff0000080f84fc>] kthread+0x134/0x138
+>>> Nov  5 12:02:54 hikey kernel: [   22.519659] [<ffff000008085154>] ret_from_fork+0x10/0x1c
+>>> Nov  5 12:02:54 hikey kernel: [   22.524988] ---[ end trace 328d4bb2d9b066a0 ]---
+>>>
+>>> This issue was solved when "hisi_thermal_alarm_irq" function was removed so only
+>>> "hisi_thermal_alarm_irq_thread" would exist. This has fixed the issue for the
+>>> unbalanced enablement since there is no more:
+>>>
+>>> 	disable_irq_nosync(irq);
+>>> 	data->irq_enabled = false;
+>>>
+>>> logic being done in parallel to the threaded handler AND the
+>>> thermal_zone_device_update() call only happens now if the temperature is already
+>>> above the threshold.
+>>>
+>>
+>> So should we revert a patch instead of taking these new ones?  Would
+>> that be easier and is this a "real" issue or just an annoying warning
+>> splat in the kernel log?
+>
+>Actually, this warning is introduced with the driver and all the
+>plumbers around to fix an irq bouncing. There is no patch to revert
+>without removing the driver.
 
-On 三, 2018-10-10 at 01:30 -0700, Matthew Garrett wrote:
-> Platforms support more DPTF policies than the driver currently
-> exposes.
-> Add them. This effectively reverts
-> 31908f45a583e8f21db37f402b6e8d5739945afd which removed several UUIDs
-> without explaining why.
-> 
-I'm going to apply this patch series, just with two minor changes,
-1. 31908f45a583e8f21db37f402b6e8d5739945afd does not follow the git
-commit description style 'commit <12+ chars of sha1> ("<title line>")'
-2. the UUIDs were removed previously because these policies were not
-used.
+Greg,
 
-thanks,
-rui
+Patch 5 in this series seems to explain the best what is happening here:
 
-> Signed-off-by: Matthew Garrett <mjg59@google.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Nisha Aram <nisha.aram@intel.com>
-> ---
->  drivers/thermal/int340x_thermal/int3400_thermal.c | 14
-> ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> index e26b01c05e82..51c9097eaf7a 100644
-> --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> @@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
->  	INT3400_THERMAL_PASSIVE_1,
->  	INT3400_THERMAL_ACTIVE,
->  	INT3400_THERMAL_CRITICAL,
-> +	INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
-> +	INT3400_THERMAL_EMERGENCY_CALL_MODE,
-> +	INT3400_THERMAL_PASSIVE_2,
-> +	INT3400_THERMAL_POWER_BOSS,
-> +	INT3400_THERMAL_VIRTUAL_SENSOR,
-> +	INT3400_THERMAL_COOLING_MODE,
-> +	INT3400_THERMAL_HARDWARE_DUTY_CYCLING,
->  	INT3400_THERMAL_MAXIMUM_UUID,
->  };
->  
-> @@ -29,6 +36,13 @@ static char
-> *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
->  	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
->  	"3A95C389-E4B8-4629-A526-C52C88626BAE",
->  	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
-> +	"63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
-> +	"5349962F-71E6-431D-9AE8-0A635B710AEE",
-> +	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
-> +	"F5A35014-C209-46A4-993A-EB56DE7530A1",
-> +	"6ED722A7-9240-48A5-B479-31EEF723D7CF",
-> +	"16CAF1B7-DD38-40ED-B1C1-1B8A1913D531",
-> +	"BE84BABF-C4D4-403D-B495-3128FD44dAC1",
->  };
->  
->  struct int3400_thermal_priv {
+>With the following changes, we fix all in one:
+>
+> - Do the setup, one time, at probe time
+>
+> - Add the IRQF_ONESHOT, ack the interrupt in the threaded handler
+>
+> - Remove the interrupt handler
+>
+> - Set the correct value for the LAG register
+>
+> - Remove all the irq_enabled stuff in the code as the interruption
+>   handling is fixed
+>
+> - Remove the 3ms delay
+>
+> - Reorder the initialization routine to be in the right order
+
+We can't revert anything because the breakage was there since the driver
+was introduced.
