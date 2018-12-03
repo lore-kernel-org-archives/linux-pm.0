@@ -1,59 +1,57 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 0/5] devfreq: handle suspend/resume
-Date: Mon,  3 Dec 2018 15:31:10 +0100
-Message-ID: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-References: <CGME20181203143127eucas1p2604fc066139a32fdffe996212b42b40e@eucas1p2.samsung.com>
+Subject: [PATCH v2 4/5] drivers: power: suspend: call devfreq suspend/resume
+Date: Mon,  3 Dec 2018 15:31:14 +0100
+Message-ID: <1543847475-7600-5-git-send-email-l.luba@partner.samsung.com>
+References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181203143134eucas1p1edd70b0f4dca115f6f154555d8829427@eucas1p1.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Devfreq framework supports suspend of its devices.
+Call the the devfreq interface and allow devfreq devices preserve/restore
+their states during suspend/resume.
 
-This v2 patch set aims to address the issue with devfreq devices' frequency
-during suspend/resume. It extends suspend/resume by calls to Devfreq
-framework. In the devfreq framework there is a small refactoring to avoid
-code duplication in changging frequency (patch 1) and there are extensions
-for suspending devices. The suspending device has now chance to set proper
-state when the system is going for suspend. This phase is the right place
-to set needed frequences for the next resume process.
+The patch is based on earlier work by Tobias Jakobi.
 
-It has been tested on Odroid u3 with Exynos 4412.
+Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+---
+ drivers/base/power/main.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The patch set draws on Tobias Jakobi's work posted ~2 years ago, who tried
-to solve issue with devfreq device's frequency during suspend/resume.
-During the discussion on LKML some corner cases and comments appeared
-related to the design. This patch set address them keeping in mind
-suggestions from Chanwoo Choi.
-Tobias's paches:
-https://www.spinics.net/lists/linux-samsung-soc/msg56602.html 
-
-Changes:
-v2:
-- refactored patchset and merget patch 1 and 3 as suggested by Chanwoo Choi,
-- changed devfreq_{susped|resume}_device functions,
-- added doxygen information for new entres in 'struct devfreq',
-- devfreq_set_target skipped one argument, now resume_freq is set inside,
-- minor changes addresing comments from maintainers regarding the style,
-
-Regards,
-Lukasz Luba
-
-Lukasz Luba (5):
-  devfreq: refactor set_target frequency function
-  devfreq: add support for suspend/resume of a devfreq device
-  devfreq: add devfreq_suspend/resume() functions
-  drivers: power: suspend: call devfreq suspend/resume
-  arm: dts: exynos4: opp-suspend in DMC and leftbus
-
- arch/arm/boot/dts/exynos4210.dtsi |   2 +
- arch/arm/boot/dts/exynos4412.dtsi |   2 +
- drivers/base/power/main.c         |   3 +
- drivers/devfreq/devfreq.c         | 155 +++++++++++++++++++++++++++++---------
- include/linux/devfreq.h           |  13 ++++
- 5 files changed, 141 insertions(+), 34 deletions(-)
-
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index a690fd4..0992e67 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -32,6 +32,7 @@
+ #include <trace/events/power.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpuidle.h>
++#include <linux/devfreq.h>
+ #include <linux/timer.h>
+ 
+ #include "../base.h"
+@@ -1078,6 +1079,7 @@ void dpm_resume(pm_message_t state)
+ 	dpm_show_time(starttime, state, 0, NULL);
+ 
+ 	cpufreq_resume();
++	devfreq_resume();
+ 	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
+ }
+ 
+@@ -1852,6 +1854,7 @@ int dpm_suspend(pm_message_t state)
+ 	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
+ 	might_sleep();
+ 
++	devfreq_suspend();
+ 	cpufreq_suspend();
+ 
+ 	mutex_lock(&dpm_list_mtx);
 -- 
 2.7.4
