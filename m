@@ -1,201 +1,90 @@
-From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: Re: [PATCH 3/6] devfreq: add support for suspend/resume of a
- devfreq device
-Date: Mon, 3 Dec 2018 15:05:10 +0100
-Message-ID: <1aaf315b-f262-dad1-0e82-548410d10b5e@partner.samsung.com>
-References: <1542823301-23563-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181121180204eucas1p1c5891d498aa59c0e10dd3ba4727a4382@eucas1p1.samsung.com>
-        <1542823301-23563-4-git-send-email-l.luba@partner.samsung.com>
-        <5BF61B3A.9050402@samsung.com>
-        <cce4f194-b574-a12c-e876-f11a6f245940@partner.samsung.com>
-        <5BF7419E.90006@samsung.com>
-        <734d0941-c885-4d36-274b-23843d6626c1@partner.samsung.com>
-        <5BFB3C17.40502@samsung.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: v4.14 fix for Hikey 960 unbalanced IRQ enablement
+Date: Mon, 3 Dec 2018 15:14:42 +0100
+Message-ID: <20181203141442.GA19335@kroah.com>
+References: <20181203133107.4002-1-rafael.tinoco@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5BFB3C17.40502@samsung.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20181203133107.4002-1-rafael.tinoco@linaro.org>
+Sender: stable-owner@vger.kernel.org
+To: Rafael David Tinoco <rafael.tinoco@linaro.org>
+Cc: sashal@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chanwoo Choi,
+On Mon, Dec 03, 2018 at 11:31:02AM -0200, Rafael David Tinoco wrote:
+> Sasha, could you consider including this cherry-picked patchset in v4.14.
+> 
+> Kernel v4.14 might suffer from the following unbalanced enablement for the board Hikey 960:
+> 
+> Nov  5 12:02:54 hikey kernel: [   22.148194] Unbalanced enable for IRQ 44
+> Nov  5 12:02:54 hikey kernel: [   22.152193] ------------[ cut here ]------------
+> Nov  5 12:02:54 hikey kernel: [   22.156872] WARNING: CPU: 2 PID: 509 at /home/inaddy/work/sources/linux/stable/stable-linux-4.14.y/kernel/irq/manage.c:525 __enable_irq+0x78/0x80
+> Nov  5 12:02:54 hikey kernel: [   22.249606] CPU: 2 PID: 509 Comm: kworker/2:2 Not tainted 4.14.79 #1
+> Nov  5 12:02:54 hikey kernel: [   22.255975] Hardware name: HiKey Development Board (DT)
+> Nov  5 12:02:54 hikey kernel: [   22.261248] Workqueue: events_freezable thermal_zone_device_check
+> Nov  5 12:02:54 hikey kernel: [   22.267368] task: ffff8000616e0e00 task.stack: ffff00000b5f0000
+> Nov  5 12:02:54 hikey kernel: [   22.273312] PC is at __enable_irq+0x78/0x80
+> Nov  5 12:02:54 hikey kernel: [   22.277516] LR is at __enable_irq+0x78/0x80
+> Nov  5 12:02:54 hikey kernel: [   22.281718] pc : [<ffff00000813e010>] lr : [<ffff00000813e010>] pstate: 000001c5
+> Nov  5 12:02:54 hikey kernel: [   22.289129] sp : ffff00000b5f3c80
+> Nov  5 12:02:54 hikey kernel: [   22.292457] x29: ffff00000b5f3c80 x28: 0000000000000000 
+> Nov  5 12:02:54 hikey kernel: [   22.297804] x27: ffff80005c139e38 x26: ffff000008a71870 
+> Nov  5 12:02:54 hikey kernel: [   22.303148] x25: 0000000000000000 x24: 0000000000000002 
+> Nov  5 12:02:54 hikey kernel: [   22.308492] x23: ffff00000b5f3d9c x22: ffff80005d565e88 
+> Nov  5 12:02:54 hikey kernel: [   22.313836] x21: 000000000000f980 x20: 000000000000002c 
+> Nov  5 12:02:54 hikey kernel: [   22.319181] x19: ffff800061726000 x18: 0000000000000010 
+> Nov  5 12:02:54 hikey kernel: [   22.324524] x17: 0000000000000000 x16: 0000000000000000 
+> Nov  5 12:02:54 hikey kernel: [   22.329868] x15: ffffffffffffffff x14: ffff000009269c08 
+> Nov  5 12:02:54 hikey kernel: [   22.335213] x13: ffff00008940678f x12: ffff000009406797 
+> Nov  5 12:02:54 hikey kernel: [   22.340558] x11: ffff000009290000 x10: ffff00000b5f3980 
+> Nov  5 12:02:54 hikey kernel: [   22.345902] x9 : 00000000ffffffd0 x8 : ffff00000862c298 
+> Nov  5 12:02:54 hikey kernel: [   22.351246] x7 : 6c62616e65206465 x6 : 00000000000001b2 
+> Nov  5 12:02:54 hikey kernel: [   22.356589] x5 : 0000000000000000 x4 : 0000000000000000 
+> Nov  5 12:02:54 hikey kernel: [   22.361931] x3 : 0000000000000000 x2 : ffff800063e824c8 
+> Nov  5 12:02:54 hikey kernel: [   22.367275] x1 : 000080005af95000 x0 : 000000000000001c 
+> Nov  5 12:02:54 hikey kernel: [   22.372618] Call trace:
+> Nov  5 12:02:54 hikey kernel: [   22.375088] Exception stack(0xffff00000b5f3b40 to 0xffff00000b5f3c80)
+> Nov  5 12:02:54 hikey kernel: [   22.381560] 3b40: 000000000000001c 000080005af95000 ffff800063e824c8 0000000000000000
+> Nov  5 12:02:54 hikey kernel: [   22.389417] 3b60: 0000000000000000 0000000000000000 00000000000001b2 6c62616e65206465
+> Nov  5 12:02:54 hikey kernel: [   22.397276] 3b80: ffff00000862c298 00000000ffffffd0 ffff00000b5f3980 ffff000009290000
+> Nov  5 12:02:54 hikey kernel: [   22.405136] 3ba0: ffff000009406797 ffff00008940678f ffff000009269c08 ffffffffffffffff
+> Nov  5 12:02:54 hikey kernel: [   22.412994] 3bc0: 0000000000000000 0000000000000000 0000000000000010 ffff800061726000
+> Nov  5 12:02:54 hikey kernel: [   22.420852] 3be0: 000000000000002c 000000000000f980 ffff80005d565e88 ffff00000b5f3d9c
+> Nov  5 12:02:54 hikey kernel: [   22.428710] 3c00: 0000000000000002 0000000000000000 ffff000008a71870 ffff80005c139e38
+> Nov  5 12:02:54 hikey kernel: [   22.436569] 3c20: 0000000000000000 ffff00000b5f3c80 ffff00000813e010 ffff00000b5f3c80
+> Nov  5 12:02:54 hikey kernel: [   22.444426] 3c40: ffff00000813e010 00000000000001c5 0000000000000000 0000000000000000
+> Nov  5 12:02:54 hikey kernel: [   22.452286] 3c60: ffffffffffffffff ffff800061800618 ffff00000b5f3c80 ffff00000813e010
+> Nov  5 12:02:54 hikey kernel: [   22.460144] [<ffff00000813e010>] __enable_irq+0x78/0x80
+> Nov  5 12:02:54 hikey kernel: [   22.465394] [<ffff00000813e058>] enable_irq+0x40/0x78
+> Nov  5 12:02:54 hikey kernel: [   22.470493] [<ffff000000e228a8>] hisi_thermal_get_temp+0x1b0/0x1d8 [hisi_thermal]
+> Nov  5 12:02:54 hikey kernel: [   22.478008] [<ffff0000087121a8>] of_thermal_get_temp+0x38/0x50
+> Nov  5 12:02:54 hikey kernel: [   22.483869] [<ffff000008711790>] thermal_zone_get_temp+0x58/0x80
+> Nov  5 12:02:54 hikey kernel: [   22.489903] [<ffff00000870e7bc>] thermal_zone_device_update.part.4+0x2c/0x1a8
+> Nov  5 12:02:54 hikey kernel: [   22.497066] [<ffff00000870e9c8>] thermal_zone_device_check+0x40/0x50
+> Nov  5 12:02:54 hikey kernel: [   22.503457] [<ffff0000080f1674>] process_one_work+0x19c/0x3d0
+> Nov  5 12:02:54 hikey kernel: [   22.509236] [<ffff0000080f18f4>] worker_thread+0x4c/0x428
+> Nov  5 12:02:54 hikey kernel: [   22.514664] [<ffff0000080f84fc>] kthread+0x134/0x138
+> Nov  5 12:02:54 hikey kernel: [   22.519659] [<ffff000008085154>] ret_from_fork+0x10/0x1c
+> Nov  5 12:02:54 hikey kernel: [   22.524988] ---[ end trace 328d4bb2d9b066a0 ]---
+> 
+> This issue was solved when "hisi_thermal_alarm_irq" function was removed so only
+> "hisi_thermal_alarm_irq_thread" would exist. This has fixed the issue for the
+> unbalanced enablement since there is no more:
+> 
+> 	disable_irq_nosync(irq);
+> 	data->irq_enabled = false;
+> 
+> logic being done in parallel to the threaded handler AND the
+> thermal_zone_device_update() call only happens now if the temperature is already
+> above the threshold.
+> 
 
-On 11/26/18 1:19 AM, Chanwoo Choi wrote:
-> Hi Lukasz,
-> 
-> I add the one more comment for devfreq_resume_device()
-> 
-> On 2018년 11월 23일 19:01, Lukasz Luba wrote:
->> Hi Chanwoo Choi,
->>
->> On 11/23/18 12:54 AM, Chanwoo Choi wrote:
->>> Hi Lukasz,
->>>
->>> I add one more comment about devfreq_resume_device().
->>>
->>> On 2018년 11월 22일 20:00, Lukasz Luba wrote:
->>>>
->>>>
->>>> On 11/22/18 3:58 AM, Chanwoo Choi wrote:
->>>>> On 2018년 11월 22일 03:01, Lukasz Luba wrote:
->>>>>> The patch adds support for handling suspend/resume process.
->>>>>> It uses atomic variables to make sure no race condition
->>>>>> affects the process.
->>>>>>
->>>>>> The patch draws on Tobias Jakobi's work posted ~2 years ago, who tried to
->>>>>> solve issue with devfreq device's frequency during suspend/resume.
->>>>>> During the discussion on LKML some corner cases and comments appeared
->>>>>> related to the design. This patch address them keeping in mind suggestions
->>>>>> from Chanwoo Choi.
->>>>>
->>>>> Please remove the duplicate information about patch history.
->>>>>
->>>>>>
->>>>>> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
->>>>>> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
->>>>>> ---
->>>>>>     drivers/devfreq/devfreq.c | 45 +++++++++++++++++++++++++++++++++++++++------
->>>>>>     1 file changed, 39 insertions(+), 6 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>>> index cf9c643..7e09de8 100644
->>>>>> --- a/drivers/devfreq/devfreq.c
->>>>>> +++ b/drivers/devfreq/devfreq.c
->>>>>> @@ -872,14 +872,33 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
->>>>>>      */
->>>>>>     int devfreq_suspend_device(struct devfreq *devfreq)
->>>>>>     {
->>>>>> -	if (!devfreq)
->>>>>> -		return -EINVAL;
->>>>>> +        int ret;
->>>>>
->>>>> Move 'ret' definition under 'if (devfreq->suspend_freq) {'
->>>>> because 'ret' is used if suspend_freq isn't zero.
->>>> Not only there, 6 lines above 'ret' is used for
->>>> devfreq->governor->event_handler().
->>>
->>> OK.
->>>
->>>>>
->>>>>> +        unsigned long prev_freq;
->>>>>> +        u32 flags = 0;
->>>>>> +
->>>>>> +        if (!devfreq)
->>>>>> +                return -EINVAL;
->>>>>> +
->>>>>> +        if (devfreq->governor) {
->>>>>> +		ret = devfreq->governor->event_handler(devfreq,
->>>>>> +					DEVFREQ_GOV_SUSPEND, NULL);
->>>>>> +		if (ret)
->>>>>> +			return ret;
->>>>>> +	}
->>>>>>     
->>>>>> -	if (!devfreq->governor)
->>>>>> -		return 0;
->>>>>> +	if (devfreq->suspend_freq) {
->>>>>> +		if (atomic_inc_return(&devfreq->suspend_count) > 1)
->>>>>> +			return 0;
->>>>>>     
->>>>>> -	return devfreq->governor->event_handler(devfreq,
->>>>>> -				DEVFREQ_GOV_SUSPEND, NULL);
->>>>>> +		ret = devfreq_set_target(devfreq, devfreq->suspend_freq,
->>>>>> +					 &prev_freq, flags);
->>>>>
->>>>> Remove the 'prev_freq' parameter.
->>>> OK
->>>>>
->>>>>> +		if (ret)
->>>>>> +			return ret;
->>>>>> +
->>>>>> +		devfreq->resume_freq = prev_freq;
->>>>>
->>>>> As I commented on patch2, if devfreq_set_taget save the current frequency
->>>>> to 'devfreq->resume_freq', this line is not needed.
->>>> OK
->>>>>
->>>>>
->>>>>> +	}
->>>>>> +
->>>>>> +        return 0;
->>>>>>     }
->>>>>>     EXPORT_SYMBOL(devfreq_suspend_device);
->>>>>>     
->>>>>> @@ -893,9 +912,23 @@ EXPORT_SYMBOL(devfreq_suspend_device);
->>>>>>      */
->>>>>>     int devfreq_resume_device(struct devfreq *devfreq)
->>>>>>     {
->>>>>> +        int ret;
->>>>>
->>>>> Move 'ret' definition under 'if (devfreq->suspend_freq) {'
->>>>> because 'ret' is used if suspend_freq isn't zero.
->>>> OK
->>>
->>> If you change the devfreq_resume_device() according to my new comment,
->>> please ignore it.
->>>
->>>>>
->>>>>> +        unsigned long prev_freq;
->>>>>
->>>>> Remove prev_freq variable which is not used on this function.
->>>>> After calling devfreq_set_target, prev_freq is not used.
->>>> OK
->>>>>
->>>>>> +        u32 flags = 0;
->>>>>> +
->>>>>>     	if (!devfreq)
->>>>>>     		return -EINVAL;
->>>>>>     
->>>>>> +	if (devfreq->suspend_freq) {
-> 
-> In devfreq_resume_device(), it should check the 'devfreq->resume_freq'
-> instead of 'devfreq->suspend_freq'.
-OK, I will fix it.
+So should we revert a patch instead of taking these new ones?  Would
+that be easier and is this a "real" issue or just an annoying warning
+splat in the kernel log?
 
-Regards,
-Lukasz
+thanks,
 
-> 
-> 
->>>>>> +		if (atomic_dec_return(&devfreq->suspend_count) >= 1)
->>>>>> +			return 0;
->>>>>> +
->>>>>> +		ret = devfreq_set_target(devfreq, devfreq->resume_freq,
->>>>>> +					 &prev_freq, flags);
->>>>>
->>>>> Remove the 'prev_freq' parameter.
->>>> OK
->>>>>
->>>>>> +		if (ret)
->>>>>> +			return ret;
->>>>>> +	}
->>>>>> +
->>>>>>     	if (!devfreq->governor)
->>>>>>     		return 0;
->>>
->>> Please change the code as following because you uses the following type
->>> in the devfreq_suspend_device(). If there is any special issue, please
->>> keep the same format in order to improve the readability.
->>>
->>> 	if (devfreq->governor) {
->>> 		ret = devfreq->governor->event_handler(devfreq,
->>> 				DEVFREQ_GOV_RESUME, NULL);
->>> 		if (ret)
->>> 			return ret;
->>> 	}
->>>
->>>
->> OK, I will change the code to keep the same format.
->> Thank you for the review.
->>
->> Regards,
->> Lukasz
->>
->>
->>
-> 
-> 
+greg k-h
