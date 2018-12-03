@@ -1,127 +1,100 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: v4.14 fix for Hikey 960 unbalanced IRQ enablement
-Date: Mon, 3 Dec 2018 15:42:41 +0100
-Message-ID: <dc468512-7a73-3d69-fe9e-d660db85ee5b@linaro.org>
-References: <20181203133107.4002-1-rafael.tinoco@linaro.org>
- <20181203141442.GA19335@kroah.com>
+From: Miquel Raynal <miquel.raynal@bootlin.com>
+Subject: Re: [PATCH v2 1/6] ata: libahci_platform: comply to PHY framework
+Date: Mon, 3 Dec 2018 15:46:35 +0100
+Message-ID: <20181203154635.3c6df0d3@xps13>
+References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
+ <20181130153833.11421-2-miquel.raynal@bootlin.com>
+ <0517746d-3fca-db57-8dca-8976910dad9c@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20181203141442.GA19335@kroah.com>
-Content-Language: en-US
-Sender: stable-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>, Rafael David Tinoco <rafael.tinoco@linaro.org>
-Cc: sashal@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <0517746d-3fca-db57-8dca-8976910dad9c@redhat.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Jens Axboe <axboe@kernel.dk>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/12/2018 15:14, Greg KH wrote:
-> On Mon, Dec 03, 2018 at 11:31:02AM -0200, Rafael David Tinoco wrote:
->> Sasha, could you consider including this cherry-picked patchset in v4.14.
->>
->> Kernel v4.14 might suffer from the following unbalanced enablement for the board Hikey 960:
->>
->> Nov  5 12:02:54 hikey kernel: [   22.148194] Unbalanced enable for IRQ 44
->> Nov  5 12:02:54 hikey kernel: [   22.152193] ------------[ cut here ]------------
->> Nov  5 12:02:54 hikey kernel: [   22.156872] WARNING: CPU: 2 PID: 509 at /home/inaddy/work/sources/linux/stable/stable-linux-4.14.y/kernel/irq/manage.c:525 __enable_irq+0x78/0x80
->> Nov  5 12:02:54 hikey kernel: [   22.249606] CPU: 2 PID: 509 Comm: kworker/2:2 Not tainted 4.14.79 #1
->> Nov  5 12:02:54 hikey kernel: [   22.255975] Hardware name: HiKey Development Board (DT)
->> Nov  5 12:02:54 hikey kernel: [   22.261248] Workqueue: events_freezable thermal_zone_device_check
->> Nov  5 12:02:54 hikey kernel: [   22.267368] task: ffff8000616e0e00 task.stack: ffff00000b5f0000
->> Nov  5 12:02:54 hikey kernel: [   22.273312] PC is at __enable_irq+0x78/0x80
->> Nov  5 12:02:54 hikey kernel: [   22.277516] LR is at __enable_irq+0x78/0x80
->> Nov  5 12:02:54 hikey kernel: [   22.281718] pc : [<ffff00000813e010>] lr : [<ffff00000813e010>] pstate: 000001c5
->> Nov  5 12:02:54 hikey kernel: [   22.289129] sp : ffff00000b5f3c80
->> Nov  5 12:02:54 hikey kernel: [   22.292457] x29: ffff00000b5f3c80 x28: 0000000000000000 
->> Nov  5 12:02:54 hikey kernel: [   22.297804] x27: ffff80005c139e38 x26: ffff000008a71870 
->> Nov  5 12:02:54 hikey kernel: [   22.303148] x25: 0000000000000000 x24: 0000000000000002 
->> Nov  5 12:02:54 hikey kernel: [   22.308492] x23: ffff00000b5f3d9c x22: ffff80005d565e88 
->> Nov  5 12:02:54 hikey kernel: [   22.313836] x21: 000000000000f980 x20: 000000000000002c 
->> Nov  5 12:02:54 hikey kernel: [   22.319181] x19: ffff800061726000 x18: 0000000000000010 
->> Nov  5 12:02:54 hikey kernel: [   22.324524] x17: 0000000000000000 x16: 0000000000000000 
->> Nov  5 12:02:54 hikey kernel: [   22.329868] x15: ffffffffffffffff x14: ffff000009269c08 
->> Nov  5 12:02:54 hikey kernel: [   22.335213] x13: ffff00008940678f x12: ffff000009406797 
->> Nov  5 12:02:54 hikey kernel: [   22.340558] x11: ffff000009290000 x10: ffff00000b5f3980 
->> Nov  5 12:02:54 hikey kernel: [   22.345902] x9 : 00000000ffffffd0 x8 : ffff00000862c298 
->> Nov  5 12:02:54 hikey kernel: [   22.351246] x7 : 6c62616e65206465 x6 : 00000000000001b2 
->> Nov  5 12:02:54 hikey kernel: [   22.356589] x5 : 0000000000000000 x4 : 0000000000000000 
->> Nov  5 12:02:54 hikey kernel: [   22.361931] x3 : 0000000000000000 x2 : ffff800063e824c8 
->> Nov  5 12:02:54 hikey kernel: [   22.367275] x1 : 000080005af95000 x0 : 000000000000001c 
->> Nov  5 12:02:54 hikey kernel: [   22.372618] Call trace:
->> Nov  5 12:02:54 hikey kernel: [   22.375088] Exception stack(0xffff00000b5f3b40 to 0xffff00000b5f3c80)
->> Nov  5 12:02:54 hikey kernel: [   22.381560] 3b40: 000000000000001c 000080005af95000 ffff800063e824c8 0000000000000000
->> Nov  5 12:02:54 hikey kernel: [   22.389417] 3b60: 0000000000000000 0000000000000000 00000000000001b2 6c62616e65206465
->> Nov  5 12:02:54 hikey kernel: [   22.397276] 3b80: ffff00000862c298 00000000ffffffd0 ffff00000b5f3980 ffff000009290000
->> Nov  5 12:02:54 hikey kernel: [   22.405136] 3ba0: ffff000009406797 ffff00008940678f ffff000009269c08 ffffffffffffffff
->> Nov  5 12:02:54 hikey kernel: [   22.412994] 3bc0: 0000000000000000 0000000000000000 0000000000000010 ffff800061726000
->> Nov  5 12:02:54 hikey kernel: [   22.420852] 3be0: 000000000000002c 000000000000f980 ffff80005d565e88 ffff00000b5f3d9c
->> Nov  5 12:02:54 hikey kernel: [   22.428710] 3c00: 0000000000000002 0000000000000000 ffff000008a71870 ffff80005c139e38
->> Nov  5 12:02:54 hikey kernel: [   22.436569] 3c20: 0000000000000000 ffff00000b5f3c80 ffff00000813e010 ffff00000b5f3c80
->> Nov  5 12:02:54 hikey kernel: [   22.444426] 3c40: ffff00000813e010 00000000000001c5 0000000000000000 0000000000000000
->> Nov  5 12:02:54 hikey kernel: [   22.452286] 3c60: ffffffffffffffff ffff800061800618 ffff00000b5f3c80 ffff00000813e010
->> Nov  5 12:02:54 hikey kernel: [   22.460144] [<ffff00000813e010>] __enable_irq+0x78/0x80
->> Nov  5 12:02:54 hikey kernel: [   22.465394] [<ffff00000813e058>] enable_irq+0x40/0x78
->> Nov  5 12:02:54 hikey kernel: [   22.470493] [<ffff000000e228a8>] hisi_thermal_get_temp+0x1b0/0x1d8 [hisi_thermal]
->> Nov  5 12:02:54 hikey kernel: [   22.478008] [<ffff0000087121a8>] of_thermal_get_temp+0x38/0x50
->> Nov  5 12:02:54 hikey kernel: [   22.483869] [<ffff000008711790>] thermal_zone_get_temp+0x58/0x80
->> Nov  5 12:02:54 hikey kernel: [   22.489903] [<ffff00000870e7bc>] thermal_zone_device_update.part.4+0x2c/0x1a8
->> Nov  5 12:02:54 hikey kernel: [   22.497066] [<ffff00000870e9c8>] thermal_zone_device_check+0x40/0x50
->> Nov  5 12:02:54 hikey kernel: [   22.503457] [<ffff0000080f1674>] process_one_work+0x19c/0x3d0
->> Nov  5 12:02:54 hikey kernel: [   22.509236] [<ffff0000080f18f4>] worker_thread+0x4c/0x428
->> Nov  5 12:02:54 hikey kernel: [   22.514664] [<ffff0000080f84fc>] kthread+0x134/0x138
->> Nov  5 12:02:54 hikey kernel: [   22.519659] [<ffff000008085154>] ret_from_fork+0x10/0x1c
->> Nov  5 12:02:54 hikey kernel: [   22.524988] ---[ end trace 328d4bb2d9b066a0 ]---
->>
->> This issue was solved when "hisi_thermal_alarm_irq" function was removed so only
->> "hisi_thermal_alarm_irq_thread" would exist. This has fixed the issue for the
->> unbalanced enablement since there is no more:
->>
->> 	disable_irq_nosync(irq);
->> 	data->irq_enabled = false;
->>
->> logic being done in parallel to the threaded handler AND the
->> thermal_zone_device_update() call only happens now if the temperature is already
->> above the threshold.
->>
-> 
-> So should we revert a patch instead of taking these new ones?  Would
-> that be easier and is this a "real" issue or just an annoying warning
-> splat in the kernel log?
-
-Actually, this warning is introduced with the driver and all the
-plumbers around to fix an irq bouncing. There is no patch to revert
-without removing the driver.
-
-What the log in the series does not tell is the driver was initially
-built around a supposed issue with the thermal sensor, that is multiple
-interrupts firing for the same event.
-
-Those happen when a specific threshold is reached (down to up and up to
-down) and a hysteresis should have been specified in the register in
-order to prevent multiple interrupts firing when the limit is crossed.
-
-All the code in the driver was built to overcome this issue because the
-root cause was not spotted: the hysteresis register was not correctly
-set and it was reset at every update. The driver 'workarounded' that by
-creating some kind of irq enabled flag, a sensor reset every time it was
-read and other hacks to make it work (it results in a worst temperature
-measurement accuracy also because the temperature buffer on the chip is
-flushed).
-
-These 5 patches not only fixes the irq issue but also sanitize the
-driver. There is no longer a reset of the sensor, no irq bouncing and no
-5ms delay when the sensor is read.
-
-
-
-
-
-
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+SGkgSGFucywKCkhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhhdC5jb20+IHdyb3RlIG9uIFN1
+biwgMiBEZWMgMjAxOCAxNDoxOTo0OQorMDEwMDoKCj4gSGksCj4gCj4gT24gMzAtMTEtMTggMTY6
+MzgsIE1pcXVlbCBSYXluYWwgd3JvdGU6Cj4gPiBDdXJyZW50IGltcGxlbWVudGF0aW9uIG9mIHRo
+ZSBsaWJhaGNpIGRvZXMgbm90IHRha2UgaW50byBhY2NvdW50IHRoZQo+ID4gbmV3IFBIWSBmcmFt
+ZXdvcmsuIENvcnJlY3QgdGhlIHNpdHVhdGlvbiBieSBhZGRpbmcgYSBjYWxsIHRvCj4gPiBwaHlf
+c2V0X21vZGUoKSBiZWZvcmUgcGh5X3Bvd2VyX29uKCkgYW5kIGJ5IGFkZGluZyBjYWxscyB0bwo+
+ID4gYWhjaV9wbGF0Zm9ybV9lbmFibGUvZGlzYWJsZV9waHlzKCkgYXQgc3VzcGVuZC9yZXN1bWVf
+aG9zdCgpIHRpbWUuCj4gPiAKPiA+IFN1Z2dlc3RlZC1ieTogR3J6ZWdvcnogSmFzemN6eWsgPGph
+ekBzZW1paGFsZi5jb20+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwu
+cmF5bmFsQGJvb3RsaW4uY29tPiAgCj4gCj4gTXVjaCBiZXR0ZXIuIFNvbWUgcmVtYXJrcyBpbmxp
+bmUuCj4gCj4gPiAtLS0KPiA+ICAgZHJpdmVycy9hdGEvYWhjaS5oICAgICAgICAgICAgIHwgIDIg
+KysKPiA+ICAgZHJpdmVycy9hdGEvbGliYWhjaV9wbGF0Zm9ybS5jIHwgMTkgKysrKysrKysrKysr
+KysrKysrLQo+ID4gICAyIGZpbGVzIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDEgZGVsZXRp
+b24oLSkKPiA+IAo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYXRhL2FoY2kuaCBiL2RyaXZlcnMv
+YXRhL2FoY2kuaAo+ID4gaW5kZXggZWYzNTZlNzBlNmRlLi45ODI2MzhiMzdmZWUgMTAwNjQ0Cj4g
+PiAtLS0gYS9kcml2ZXJzL2F0YS9haGNpLmgKPiA+ICsrKyBiL2RyaXZlcnMvYXRhL2FoY2kuaAo+
+ID4gQEAgLTI1NCw2ICsyNTQsOCBAQCBlbnVtIHsKPiA+ICAgCUFIQ0lfSEZMQUdfSVNfTU9CSUxF
+CQk9ICgxIDw8IDI1KSwgLyogbW9iaWxlIGNoaXBzZXQsIHVzZQo+ID4gICAJCQkJCQkJU0FUQV9N
+T0JJTEVfTFBNX1BPTElDWQo+ID4gICAJCQkJCQkJYXMgZGVmYXVsdCBscG1fcG9saWN5ICovCj4g
+PiArCUFIQ0lfSEZMQUdfTUFOQUdFX1BIWVMJCT0gKDEgPDwgMjYpLCAvKiBsZXQgdGhlIGNvcmUg
+bWFuYWdlIHRoZQo+ID4gKwkJCQkJCQlQSFlzIHdoZW4gcmVsZXZhbnQgKi8gIAo+IAo+IFVzaW5n
+IGEgaGZsYWcgZm9yIHRoaXMgaXMgYSBnb29kIGlkZWEsIGJ1dCB0aGUgTUFOQUdFX1BIWVMgbmFt
+ZXMgaXMgYSBiaXQKPiBnZW5lcmljLCBldmVuIGlmIHRoaXMgaXMgbm90IHNldCB0aGVuIGFoY2lf
+cGxhdGZvcm1fZW5hYmxlX3Jlc291cmNlcygpIHdpbGwKPiBzdGlsbCBlbmFibGUgdGhlIHBoeS4g
+U28gSSB3b3VsZCBuYW1lIHRoaXMgQUhDSV9IRkxBR19TVVNQRU5EX1BIWVMgdG8gbWFrZQo+IGNs
+ZWFyIHRoaXMgb25seSBpbmZsdWVuY2VzIHN1c3BlbmQvcmVzdW1lIGJlaGF2aW9yLgoKSSB1bmRl
+cnN0YW5kIGFuZCB3aWxsIG1vZGlmeSB0aGUgSEZMQUcgbmFtZSBhcyB5b3Ugc3VnZ2VzdC4KCj4g
+Cj4gQWxzbyBzZWUgYmVsb3cuCj4gCj4gPiAgIAkvKiBhcC0+ZmxhZ3MgYml0cyAqLyAgCj4gPiAg
+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYXRhL2xpYmFoY2lfcGxhdGZvcm0uYyBiL2RyaXZlcnMv
+YXRhL2xpYmFoY2lfcGxhdGZvcm0uYyAgCj4gPiBpbmRleCA0YjkwMGZjNjU5ZjcuLmY1YTY0ZWIx
+ZmVhOCAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvYXRhL2xpYmFoY2lfcGxhdGZvcm0uYwo+ID4g
+KysrIGIvZHJpdmVycy9hdGEvbGliYWhjaV9wbGF0Zm9ybS5jCj4gPiBAQCAtNTYsNiArNTYsMTIg
+QEAgc3RhdGljIGludCBhaGNpX3BsYXRmb3JtX2VuYWJsZV9waHlzKHN0cnVjdCBhaGNpX2hvc3Rf
+cHJpdiAqaHByaXYpCj4gPiAgIAkJaWYgKHJjKQo+ID4gICAJCQlnb3RvIGRpc2FibGVfcGh5czsg
+IAo+ID4gICA+ICsJCXJjID0gcGh5X3NldF9tb2RlKGhwcml2LT5waHlzW2ldLCBQSFlfTU9ERV9T
+QVRBKTsgIAo+ID4gKwkJaWYgKHJjKSB7Cj4gPiArCQkJcGh5X2V4aXQoaHByaXYtPnBoeXNbaV0p
+Owo+ID4gKwkJCWdvdG8gZGlzYWJsZV9waHlzOwo+ID4gKwkJfQo+ID4gKwo+ID4gICAJCXJjID0g
+cGh5X3Bvd2VyX29uKGhwcml2LT5waHlzW2ldKTsKPiA+ICAgCQlpZiAocmMpIHsKPiA+ICAgCQkJ
+cGh5X2V4aXQoaHByaXYtPnBoeXNbaV0pOwo+ID4gQEAgLTM3OCw3ICszODQsOCBAQCBzdGF0aWMg
+aW50IGFoY2lfcGxhdGZvcm1fZ2V0X3JlZ3VsYXRvcihzdHJ1Y3QgYWhjaV9ob3N0X3ByaXYgKmhw
+cml2LCB1MzIgcG9ydCwKPiA+ICAgICogMykgMCAtIEFIQ0lfTUFYX0NMS1MgY2xvY2tzLCBhcyBz
+cGVjaWZpZWQgaW4gdGhlIGRldnMgZGV2aWNldHJlZSBub2RlLAo+ID4gICAgKiAgICBvciBmb3Ig
+bm9uIGRldmljZXRyZWUgZW5hYmxlZCBwbGF0Zm9ybXMgYSBzaW5nbGUgY2xvY2sKPiA+ICAgICog
+NCkgcmVzZXRzLCBpZiBmbGFncyBoYXMgQUhDSV9QTEFURk9STV9HRVRfUkVTRVRTIChvcHRpb25h
+bCkKPiA+IC0gKiA1KSBwaHlzIChvcHRpb25hbCkKPiA+ICsgKiA1KSBwaHlzIChvcHRpb25hbCks
+IFBIWSBoYW5kbGluZyBkdXJpbmcgc3VzcGVuZC9yZXN1bWUgd2lsbCBiZSBza2lwcGVkIGlmIHRo
+ZQo+ID4gKyAqICAgIGZsYWcgQUhDSV9IRkxBR19NQU5BR0VfUEhZUyBpcyBtaXNzaW5nLgo+ID4g
+ICAgKgo+ID4gICAgKiBSRVRVUk5TOgo+ID4gICAgKiBUaGUgYWxsb2NhdGVkIGFoY2lfaG9zdF9w
+cml2IG9uIHN1Y2Nlc3MsIG90aGVyd2lzZSBhbiBFUlJfUFRSIHZhbHVlCj4gPiBAQCAtNDU4LDYg
+KzQ2NSw5IEBAIHN0cnVjdCBhaGNpX2hvc3RfcHJpdiAqYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3Vy
+Y2VzKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsCj4gPiAgIAkJfQo+ID4gICAJfSAgCj4g
+PiAgID4gKwlpZiAoZmxhZ3MgJiBBSENJX0hGTEFHX01BTkFHRV9QSFlTKSAgCj4gPiArCQlocHJp
+di0+ZmxhZ3MgfD0gQUhDSV9IRkxBR19NQU5BR0VfUEhZUzsKPiA+ICsKPiA+ICAgCWhwcml2LT5u
+cG9ydHMgPSBjaGlsZF9ub2RlcyA9IG9mX2dldF9jaGlsZF9jb3VudChkZXYtPm9mX25vZGUpOyAg
+Cj4gPiAgID4gICAJLyogIAo+IAo+IEludGVycHJldGluZyBhIGZsYWcgcGFzc2VkIHRvIGFoY2lf
+cGxhdGZvcm1fZ2V0X3Jlc291cmNlcyB1c2luZyBhCj4gQUhDSV9IRkxBR18qIG1hc2sgaXMgYXNr
+aW5nIGZvciB0cm91YmxlIGluIHRoZSBmdXR1cmUuCj4gCj4gU2luY2UgeW91IGFyZSB1c2luZyBh
+IGhmbGFnIGZvciB0aGlzLCB5b3UgY2FuIGp1c3QgZHJvcCB0aGlzIGNodW5rIC8gY2hhbmdlCj4g
+YW5kIGluIHRoZSBjYWxsZXIgb2YgYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2VzKCkgZG86Cj4g
+Cj4gCWhwcml2ID0gYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2VzKHBkZXYsIC4uLik7Cj4gCWlm
+IChJU19FUlIoaHByaXYpKQo+IAkJLi4uCj4gCj4gCWhwcml2LT5mbGFncyB8PSBBSENJX0hGTEFH
+X01BTkFHRV9QSFlTOwo+IAo+IFNldHR0aW5nIGhmbGFncyBsaWtlIHRoaXMgYWZ0ZXIgY2FsbGlu
+ZyBhaGNpX3BsYXRmb3JtX2dldF9yZXNvdXJjZXMoKQo+IGlzIGFscmVhZHkgZG9uZSBpbiBzZXZl
+cmFsIHBsYWNlLgoKSW5kZWVkLCB0aGlzIGlzIGNsb3NlIHRvIG15IGZpcnN0IGRyYWZ0IGJ1dCBh
+ZnRlciByZS1yZWFkaW5nIHlvdXIKcHJldmlvdXMgcmV2aWV3IEkgdW5kZXJzdG9vZCB5b3Ugd2Fu
+dGVkIHRoaXMgZmxhZyB0byBiZSBwYXNzZWQgdG8KYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2Vz
+KCkuCgpJIGRvIGFncmVlIHRoYXQgdGhlIGN1cnJlbnQgZm9ybSBpcyBhIGJpdCByZWR1bmRhbnQg
+c28gSSB3aWxsIGxldCB1c2VycwphZGQgdGhlIGZsYWcgbWFudWFsbHkgZHVyaW5nIHRoZSBwcm9i
+ZSBhZnRlciB0aGUKYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2VzKCkgY2FsbCwgYXMgc3VnZ2Vz
+dGVkLgoKPiAKPiBPbmNlIHRoaXMgaXMgY2hhbmdlZCwgdGhpcyBwYXRjaCBsb29rcyBnb29kIHRv
+IGdvIHVwc3RyZWFtIHRvIG1lLgo+IAo+IFJlZ2FyZHMsCj4gCj4gSGFucwo+IAo+IAo+IAoKVGhh
+bmtzIGZvciB0aGUgcmV2aWV3IQpNaXF1w6hsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
+cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
