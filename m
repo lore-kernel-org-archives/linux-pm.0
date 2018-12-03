@@ -1,139 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v6] cpuidle: New timer events oriented governor for tickless systems
-Date: Tue, 04 Dec 2018 00:47:31 +0100
-Message-ID: <2107394.tME3olEdyg@aspire.rjw.lan>
-References: <001901d48881$29ea59d0$7dbf0d70$@net> <CAJZ5v0j6AEjztoFfpQAc3NgQ5JtsWgRqscoE_u1eespVM-Cnmw@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] power: reset: gpio-poweroff: add ability to specific
+ active and inactive delays
+Date: Mon, 3 Dec 2018 17:49:23 -0600
+Message-ID: <20181203234923.GA29934@bogus>
+References: <20181111214538.32477-1-heiko@sntech.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j6AEjztoFfpQAc3NgQ5JtsWgRqscoE_u1eespVM-Cnmw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20181111214538.32477-1-heiko@sntech.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Giovanni Gherdovich <ggherdovich@suse.cz>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Frederic Weisbecker <frederic@kernel.org>, Mel Gorman <mgorman@suse.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 30, 2018 9:51:19 AM CET Rafael J. Wysocki wrote:
-> Hi Doug,
+On Sun, 11 Nov 2018 22:45:38 +0100, Heiko Stuebner wrote:
+> From: Heiko Stuebner <heiko.stuebner@bq.com>
 > 
-> On Fri, Nov 30, 2018 at 8:49 AM Doug Smythies <dsmythies@telus.net> wrote:
-> >
-> > Hi Rafael,
-> >
-> > On 2018.11.23 02:36 Rafael J. Wysocki wrote:
-> >
-> > ... [snip]...
-> >
-> > > +/**
-> > > + * teo_find_shallower_state - Find shallower idle state matching given duration.
-> > > + * @drv: cpuidle driver containing state data.
-> > > + * @dev: Target CPU.
-> > > + * @state_idx: Index of the capping idle state.
-> > > + * @duration_us: Idle duration value to match.
-> > > + */
-> > > +static int teo_find_shallower_state(struct cpuidle_driver *drv,
-> > > +                                 struct cpuidle_device *dev, int state_idx,
-> > > +                                 unsigned int duration_us)
-> > > +{
-> > > +     int i;
-> > > +
-> > > +     for (i = state_idx - 1; i > 0; i--) {
-> > > +             if (drv->states[i].disabled || dev->states_usage[i].disable)
-> > > +                     continue;
-> > > +
-> > > +             if (drv->states[i].target_residency <= duration_us)
-> > > +                     break;
-> > > +     }
-> > > +     return i;
-> > > +}
-> >
-> > I think this subroutine has a problem when idle state 0
-> > is disabled.
+> Similar to gpio-reset allow to specify active and inactive delays
+> while keeping the 100ms defaults that were used previously all the time.
 > 
-> You are right, thanks!
+> The dt-properties are named the same as in gpio-reset but get an "-ms"
+> suffix as properties should contain such a suffix specifying its unit.
 > 
-> > Perhaps something like this might help:
-> >
-> > diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
-> > index bc1c9a2..5b97639 100644
-> > --- a/drivers/cpuidle/governors/teo.c
-> > +++ b/drivers/cpuidle/governors/teo.c
-> > @@ -196,7 +196,8 @@ static void teo_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-> >  }
-> >
-> >  /**
-> > - * teo_find_shallower_state - Find shallower idle state matching given duration.
-> > + * teo_find_shallower_state - Find shallower idle state matching given
-> > + * duration, if possible.
-> >   * @drv: cpuidle driver containing state data.
-> >   * @dev: Target CPU.
-> >   * @state_idx: Index of the capping idle state.
-> > @@ -208,13 +209,15 @@ static int teo_find_shallower_state(struct cpuidle_driver *drv,
-> >  {
-> >         int i;
-> >
-> > -       for (i = state_idx - 1; i > 0; i--) {
-> > +       for (i = state_idx - 1; i >= 0; i--) {
-> >                 if (drv->states[i].disabled || dev->states_usage[i].disable)
-> >                         continue;
-> >
-> >                 if (drv->states[i].target_residency <= duration_us)
-> >                         break;
-> >         }
-> > +       if (i < 0)
-> > +               i = state_idx;
-> >         return i;
-> >  }
+> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+> ---
+>  .../devicetree/bindings/power/reset/gpio-poweroff.txt  |  2 ++
+>  drivers/power/reset/gpio-poweroff.c                    | 10 ++++++++--
+>  2 files changed, 10 insertions(+), 2 deletions(-)
 > 
-> I'll do something slightly similar, but equivalent.
 
-I actually ended up fixing it differently, as the above will cause state_idx
-to be returned even if some states shallower than state_idx are enabled, but
-their target residencies are higher than duration_us.  In that case, though,
-it still is more correct to return the shallowest enabled state rather than
-state_idx.
-
-> >
-> > @@ -264,7 +267,6 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
-> >                         if (max_early_idx >= 0 &&
-> >                             count < cpu_data->states[i].early_hits)
-> >                                 count = cpu_data->states[i].early_hits;
-> > -
-> >                         continue;
-> >                 }
-> >
-> > There is an additional issue where if idle state 0 is disabled (with the above suggested code patch),
-> > idle state usage seems to fall to deeper states than idle state 1.
-> > This is not the expected behaviour.
-> 
-> No, it isn't.
-> 
-> > Kernel 4.20-rc3 works as expected.
-> > I have not figured this issue out yet, in the code.
-> >
-> > Example (1 minute per sample. Number of entries/exits per state):
-> >     State 0     State 1     State 2     State 3     State 4    Watts
-> >    28235143,         83,         26,         17,        837,  64.900
-> >     5583238,     657079,    5884941,    8498552,   30986831,  62.433 << Transition sample, after idle state 0 disabled
-> >           0,     793517,    7186099,   10559878,   38485721,  61.900 << ?? should have all gone into Idle state 1
-> >           0,     795414,    7340703,   10553117,   38513456,  62.050
-> >           0,     807028,    7288195,   10574113,   38523524,  62.167
-> >           0,     814983,    7403534,   10575108,   38571228,  62.167
-> >           0,     838302,    7747127,   10552289,   38556054,  62.183
-> >     9664999,     544473,    4914512,    6942037,   25295361,  63.633 << Transition sample, after idle state 0 enabled
-> >    27893504,         96,         40,          9,        912,  66.500
-> >    26556343,         83,         29,          7,        814,  66.683
-> >    27929227,         64,         20,         10,        931,  66.683
-> 
-> I see.
-> 
-> OK, I'll look into this too, thanks!
-
-This probably is the artifact of the fix for the teo_find_shallower_state()
-issue.
-
-Anyway, I'm not able to reproduce this with the teo_find_shallower_state() issue
-fixed differently.
-
-Thanks,
-Rafael
+Reviewed-by: Rob Herring <robh@kernel.org>
