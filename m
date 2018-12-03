@@ -1,114 +1,77 @@
-From: Ian Kumlien <ian.kumlien@gmail.com>
-Subject: Re: pcc_cpufreq: high LA
-Date: Mon, 3 Dec 2018 14:06:52 +0100
-Message-ID: <CAA85sZtt0_GWjYe_CZSzF5RdHg6Q6M+jy-bmDf4rMFZeoS1ejw@mail.gmail.com>
-References: <CAA85sZthkwZ0yhfwXZ5dAJitqsod71O1478e44tz0NNLJVsvGg@mail.gmail.com>
+From: Rafael David Tinoco <rafael.tinoco@linaro.org>
+Subject: v4.14 fix for Hikey 960 unbalanced IRQ enablement
+Date: Mon,  3 Dec 2018 11:31:02 -0200
+Message-ID: <20181203133107.4002-1-rafael.tinoco@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAA85sZthkwZ0yhfwXZ5dAJitqsod71O1478e44tz0NNLJVsvGg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: sashal@kernel.org
+Cc: rafael.tinoco@linaro.org, gregkh@linuxfoundation.org, rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-No response? Should pcc_cpufreq be assumed as broken since it actually
-kills machines?
+Sasha, could you consider including this cherry-picked patchset in v4.14.
 
-Should I submit a patch that removes it?
+Kernel v4.14 might suffer from the following unbalanced enablement for the board Hikey 960:
 
-On Tue, Nov 20, 2018 at 3:05 PM Ian Kumlien <ian.kumlien@gmail.com> wrote:
->
-> Hi,
->
-> We've had this happen a few times now, pcc_cpufreq is loaded and the
-> machine has a LA of 33 with kworkers consuming *all CPU*
->
-> We have had this happen before, looking at it has been pushed to the
-> leaky-stack^tm in my mind and...
->
-> 32 cores:
-> processor : 31
-> vendor_id : GenuineIntel
-> cpu family : 6
-> model : 62
-> model name : Intel(R) Xeon(R) CPU E5-2650 v2 @ 2.60GHz
-> stepping : 4
-> microcode : 0x42d
-> cpu MHz : 2053.444
-> cache size : 20480 KB
-> ----
->
-> System Information:
-> Manufacturer: HP
-> Product Name: ProLiant SL210t Gen8
-> ---
->
-> The only warning I can see, which seems unrelated is:
-> [6928231.623398] WARNING: CPU: 11 PID: 0 at kernel/irq/matrix.c:371
-> irq_matrix_free+0x35/0xe0
-> [6928231.623402] Modules linked in: 8021q garp mrp ipt_MASQUERADE
-> nf_nat_masquerade_ipv4 iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4
-> nf_nat_ipv4 xt_addrtype iptable_filter xt_conntrack nf_nat
-> nf_conntrack dm_thin_pool dm_persistent_data dm_bio_prison dm_bufio
-> libcrc32c loop bonding sb_edac x86_pkg_temp_thermal intel_powerclamp
-> coretemp kvm_intel kvm irqbypass crct10dif_pclmul crc32_pclmul
-> ghash_clmulni_intel pcbc aesni_intel crypto_simd cryptd glue_helper
-> intel_cstate intel_rapl_perf iTCO_wdt iTCO_vendor_support joydev
-> input_leds acpi_power_meter pcspkr hpilo sg ipmi_si ipmi_devintf
-> ipmi_msghandler hpwdt ioatdma lpc_ich shpchp pcc_cpufreq mfd_core
-> ip_tables ext4 mbcache jbd2 raid1 sd_mod crc32c_intel serio_raw
-> drm_kms_helper ahci syscopyarea sysfillrect libahci sysimgblt
-> fb_sys_fops ttm libata drm igb
-> [6928231.623490]  i2c_algo_bit ixgbe mdio ptp pps_core dca dm_mirror
-> dm_region_hash dm_log dm_mod
-> [6928231.623507] CPU: 11 PID: 0 Comm: swapper/11 Not tainted
-> 4.17.0-1.el7.elrepo.x86_64 #1
-> [6928231.623509] Hardware name: HP ProLiant SL210t Gen8/, BIOS P83 05/21/2018
-> [6928231.623514] RIP: 0010:irq_matrix_free+0x35/0xe0
-> [6928231.623516] RSP: 0018:ffff88203f4c3f58 EFLAGS: 00010002
-> [6928231.623519] RAX: 0000000000026d00 RBX: ffff880ffaf64340 RCX:
-> 0000000000000000
-> [6928231.623521] RDX: 000000000000000b RSI: 000000000000000b RDI:
-> ffff880fff038800
-> [6928231.623523] RBP: ffff88203f4c3f80 R08: 0000000000000101 R09:
-> 0000000000000000
-> [6928231.623525] R10: 0000000000000000 R11: 0000000000000000 R12:
-> ffff88203f4c0000
-> [6928231.623527] R13: 0000000000000000 R14: 000000000000000b R15:
-> ffff880fff038800
-> [6928231.623530] FS:  0000000000000000(0000) GS:ffff88203f4c0000(0000)
-> knlGS:0000000000000000
-> [6928231.623532] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [6928231.623534] CR2: 00007fc429b73d20 CR3: 000000000220a006 CR4:
-> 00000000001606e0
-> [6928231.623537] Call Trace:
-> [6928231.623541]  <IRQ>
-> [6928231.623554]  free_moved_vector+0x58/0x110
-> [6928231.623563]  smp_irq_move_cleanup_interrupt+0xa2/0xc1
-> [6928231.623572]  irq_move_cleanup_interrupt+0xc/0x20
-> [6928231.623574]  </IRQ>
-> [6928231.623582] RIP: 0010:cpuidle_enter_state+0xdd/0x270
-> [6928231.623583] RSP: 0018:ffffc9000631fe48 EFLAGS: 00000246 ORIG_RAX:
-> ffffffffffffffdf
-> [6928231.623586] RAX: ffff88203f4e2c00 RBX: ffffe8ffff6da700 RCX:
-> 000000000000001f
-> [6928231.623588] RDX: 0000000000000000 RSI: fff0a6fbff885c1c RDI:
-> 0000000000000000
-> [6928231.623590] RBP: ffffc9000631fe80 R08: 0000000000002036 R09:
-> 00000000000043d0
-> [6928231.623592] R10: 000000000000133e R11: 0000000000000018 R12:
-> 0000000000000004
-> [6928231.623594] R13: 000000000000000b R14: ffffffff82364b60 R15:
-> 00189d309ada9b44
-> [6928231.623599]  ? cpuidle_enter_state+0xcc/0x270
-> [6928231.623603]  cpuidle_enter+0x17/0x20
-> [6928231.623611]  call_cpuidle+0x23/0x40
-> [6928231.623614]  do_idle+0x1d2/0x270
-> [6928231.623619]  cpu_startup_entry+0x73/0x80
-> [6928231.623624]  start_secondary+0x1ae/0x200
-> [6928231.623632]  secondary_startup_64+0xa5/0xb0
-> [6928231.623634] Code: 57 49 89 ff 41 56 41 89 f6 41 55 41 89 d5 89 f2
-> 41 54 4c 8b 24 d5 60 c7 12 82 53 48 8b 47 28 44 39 6f 04 77 06 44 3b
-> 6f 08 72 0d <0f> 0b 5b 41 5c 41 5d 41 5e 41 5f 5d c3 49 01 c4 44 89 e8
-> f0 49
-> [6928231.623693] ---[ end trace 6436d0c28a5009d4 ]---
+Nov  5 12:02:54 hikey kernel: [   22.148194] Unbalanced enable for IRQ 44
+Nov  5 12:02:54 hikey kernel: [   22.152193] ------------[ cut here ]------------
+Nov  5 12:02:54 hikey kernel: [   22.156872] WARNING: CPU: 2 PID: 509 at /home/inaddy/work/sources/linux/stable/stable-linux-4.14.y/kernel/irq/manage.c:525 __enable_irq+0x78/0x80
+Nov  5 12:02:54 hikey kernel: [   22.249606] CPU: 2 PID: 509 Comm: kworker/2:2 Not tainted 4.14.79 #1
+Nov  5 12:02:54 hikey kernel: [   22.255975] Hardware name: HiKey Development Board (DT)
+Nov  5 12:02:54 hikey kernel: [   22.261248] Workqueue: events_freezable thermal_zone_device_check
+Nov  5 12:02:54 hikey kernel: [   22.267368] task: ffff8000616e0e00 task.stack: ffff00000b5f0000
+Nov  5 12:02:54 hikey kernel: [   22.273312] PC is at __enable_irq+0x78/0x80
+Nov  5 12:02:54 hikey kernel: [   22.277516] LR is at __enable_irq+0x78/0x80
+Nov  5 12:02:54 hikey kernel: [   22.281718] pc : [<ffff00000813e010>] lr : [<ffff00000813e010>] pstate: 000001c5
+Nov  5 12:02:54 hikey kernel: [   22.289129] sp : ffff00000b5f3c80
+Nov  5 12:02:54 hikey kernel: [   22.292457] x29: ffff00000b5f3c80 x28: 0000000000000000 
+Nov  5 12:02:54 hikey kernel: [   22.297804] x27: ffff80005c139e38 x26: ffff000008a71870 
+Nov  5 12:02:54 hikey kernel: [   22.303148] x25: 0000000000000000 x24: 0000000000000002 
+Nov  5 12:02:54 hikey kernel: [   22.308492] x23: ffff00000b5f3d9c x22: ffff80005d565e88 
+Nov  5 12:02:54 hikey kernel: [   22.313836] x21: 000000000000f980 x20: 000000000000002c 
+Nov  5 12:02:54 hikey kernel: [   22.319181] x19: ffff800061726000 x18: 0000000000000010 
+Nov  5 12:02:54 hikey kernel: [   22.324524] x17: 0000000000000000 x16: 0000000000000000 
+Nov  5 12:02:54 hikey kernel: [   22.329868] x15: ffffffffffffffff x14: ffff000009269c08 
+Nov  5 12:02:54 hikey kernel: [   22.335213] x13: ffff00008940678f x12: ffff000009406797 
+Nov  5 12:02:54 hikey kernel: [   22.340558] x11: ffff000009290000 x10: ffff00000b5f3980 
+Nov  5 12:02:54 hikey kernel: [   22.345902] x9 : 00000000ffffffd0 x8 : ffff00000862c298 
+Nov  5 12:02:54 hikey kernel: [   22.351246] x7 : 6c62616e65206465 x6 : 00000000000001b2 
+Nov  5 12:02:54 hikey kernel: [   22.356589] x5 : 0000000000000000 x4 : 0000000000000000 
+Nov  5 12:02:54 hikey kernel: [   22.361931] x3 : 0000000000000000 x2 : ffff800063e824c8 
+Nov  5 12:02:54 hikey kernel: [   22.367275] x1 : 000080005af95000 x0 : 000000000000001c 
+Nov  5 12:02:54 hikey kernel: [   22.372618] Call trace:
+Nov  5 12:02:54 hikey kernel: [   22.375088] Exception stack(0xffff00000b5f3b40 to 0xffff00000b5f3c80)
+Nov  5 12:02:54 hikey kernel: [   22.381560] 3b40: 000000000000001c 000080005af95000 ffff800063e824c8 0000000000000000
+Nov  5 12:02:54 hikey kernel: [   22.389417] 3b60: 0000000000000000 0000000000000000 00000000000001b2 6c62616e65206465
+Nov  5 12:02:54 hikey kernel: [   22.397276] 3b80: ffff00000862c298 00000000ffffffd0 ffff00000b5f3980 ffff000009290000
+Nov  5 12:02:54 hikey kernel: [   22.405136] 3ba0: ffff000009406797 ffff00008940678f ffff000009269c08 ffffffffffffffff
+Nov  5 12:02:54 hikey kernel: [   22.412994] 3bc0: 0000000000000000 0000000000000000 0000000000000010 ffff800061726000
+Nov  5 12:02:54 hikey kernel: [   22.420852] 3be0: 000000000000002c 000000000000f980 ffff80005d565e88 ffff00000b5f3d9c
+Nov  5 12:02:54 hikey kernel: [   22.428710] 3c00: 0000000000000002 0000000000000000 ffff000008a71870 ffff80005c139e38
+Nov  5 12:02:54 hikey kernel: [   22.436569] 3c20: 0000000000000000 ffff00000b5f3c80 ffff00000813e010 ffff00000b5f3c80
+Nov  5 12:02:54 hikey kernel: [   22.444426] 3c40: ffff00000813e010 00000000000001c5 0000000000000000 0000000000000000
+Nov  5 12:02:54 hikey kernel: [   22.452286] 3c60: ffffffffffffffff ffff800061800618 ffff00000b5f3c80 ffff00000813e010
+Nov  5 12:02:54 hikey kernel: [   22.460144] [<ffff00000813e010>] __enable_irq+0x78/0x80
+Nov  5 12:02:54 hikey kernel: [   22.465394] [<ffff00000813e058>] enable_irq+0x40/0x78
+Nov  5 12:02:54 hikey kernel: [   22.470493] [<ffff000000e228a8>] hisi_thermal_get_temp+0x1b0/0x1d8 [hisi_thermal]
+Nov  5 12:02:54 hikey kernel: [   22.478008] [<ffff0000087121a8>] of_thermal_get_temp+0x38/0x50
+Nov  5 12:02:54 hikey kernel: [   22.483869] [<ffff000008711790>] thermal_zone_get_temp+0x58/0x80
+Nov  5 12:02:54 hikey kernel: [   22.489903] [<ffff00000870e7bc>] thermal_zone_device_update.part.4+0x2c/0x1a8
+Nov  5 12:02:54 hikey kernel: [   22.497066] [<ffff00000870e9c8>] thermal_zone_device_check+0x40/0x50
+Nov  5 12:02:54 hikey kernel: [   22.503457] [<ffff0000080f1674>] process_one_work+0x19c/0x3d0
+Nov  5 12:02:54 hikey kernel: [   22.509236] [<ffff0000080f18f4>] worker_thread+0x4c/0x428
+Nov  5 12:02:54 hikey kernel: [   22.514664] [<ffff0000080f84fc>] kthread+0x134/0x138
+Nov  5 12:02:54 hikey kernel: [   22.519659] [<ffff000008085154>] ret_from_fork+0x10/0x1c
+Nov  5 12:02:54 hikey kernel: [   22.524988] ---[ end trace 328d4bb2d9b066a0 ]---
+
+This issue was solved when "hisi_thermal_alarm_irq" function was removed so only
+"hisi_thermal_alarm_irq_thread" would exist. This has fixed the issue for the
+unbalanced enablement since there is no more:
+
+	disable_irq_nosync(irq);
+	data->irq_enabled = false;
+
+logic being done in parallel to the threaded handler AND the
+thermal_zone_device_update() call only happens now if the temperature is already
+above the threshold.
