@@ -1,74 +1,45 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v18 1/5] iommu/arm-smmu: Add
- pm_runtime/sleep ops
-Date: Mon, 3 Dec 2018 12:13:38 +0530
-Message-ID: <CAFp+6iH-T3KsUH8SDoLDfmJ6x_iHxtHGDySuKib0L_u46G6h6w@mail.gmail.com>
-References: <20181127101145.7682-1-vivek.gautam@codeaurora.org>
- <20181127101145.7682-2-vivek.gautam@codeaurora.org>
- <154342225921.88331.14467967828250776155@swboyd.mtv.corp.google.com>
- <0d76b669-6c4f-7c3b-50a1-084201f2c07a@arm.com>
- <CAFp+6iEC8hobAdVF5nLdhQdCUqbi1xa4Vi-NLugGshV=dg+h1A@mail.gmail.com>
- <20181130181536.GA15274@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 3/5] PM / Domains: Save OPP table pointer in genpd
+Date: Mon, 3 Dec 2018 12:27:11 +0530
+Message-ID: <20181203065711.lugbr3a7uqtasmli@vireshk-i7>
+References: <cover.1543219386.git.viresh.kumar@linaro.org>
+ <f95b514f7b3b3ab6ac00c9871e91513c9c3a09a3.1543219386.git.viresh.kumar@linaro.org>
+ <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181130181536.GA15274-5wv7dgnIgG8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-msm <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-Y9sIeH5OGRo@public.gmane.org:IOMMU DRIVERS <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>,
- Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, " <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, freedreno <freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBOb3YgMzAsIDIwMTggYXQgMTE6NDUgUE0gV2lsbCBEZWFjb24gPHdpbGwuZGVhY29u
-QGFybS5jb20+IHdyb3RlOgo+Cj4gT24gVGh1LCBOb3YgMjksIDIwMTggYXQgMDg6MjU6MjBQTSAr
-MDUzMCwgVml2ZWsgR2F1dGFtIHdyb3RlOgo+ID4gT24gV2VkLCBOb3YgMjgsIDIwMTggYXQgMTA6
-MDcgUE0gUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNvbT4gd3JvdGU6Cj4gPiA+Cj4g
-PiA+IE9uIDI4LzExLzIwMTggMTY6MjQsIFN0ZXBoZW4gQm95ZCB3cm90ZToKPiA+ID4gPiBRdW90
-aW5nIFZpdmVrIEdhdXRhbSAoMjAxOC0xMS0yNyAwMjoxMTo0MSkKPiA+ID4gPj4gQEAgLTE5NjYs
-NiArMTk3MCwyMyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBhcm1fc21tdV9v
-Zl9tYXRjaFtdID0gewo+ID4gPiA+PiAgIH07Cj4gPiA+ID4+ICAgTU9EVUxFX0RFVklDRV9UQUJM
-RShvZiwgYXJtX3NtbXVfb2ZfbWF0Y2gpOwo+ID4gPiA+Pgo+ID4gPiA+PiArc3RhdGljIHZvaWQg
-YXJtX3NtbXVfZmlsbF9jbGtfZGF0YShzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11LAo+ID4g
-PiA+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnN0IGNoYXIgKiBjb25z
-dCAqY2xrcykKPiA+ID4gPj4gK3sKPiA+ID4gPj4gKyAgICAgICBpbnQgaTsKPiA+ID4gPj4gKwo+
-ID4gPiA+PiArICAgICAgIGlmIChzbW11LT5udW1fY2xrcyA8IDEpCj4gPiA+ID4+ICsgICAgICAg
-ICAgICAgICByZXR1cm47Cj4gPiA+ID4+ICsKPiA+ID4gPj4gKyAgICAgICBzbW11LT5jbGtzID0g
-ZGV2bV9rY2FsbG9jKHNtbXUtPmRldiwgc21tdS0+bnVtX2Nsa3MsCj4gPiA+ID4+ICsgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICBzaXplb2YoKnNtbXUtPmNsa3MpLCBHRlBfS0VSTkVM
-KTsKPiA+ID4gPj4gKyAgICAgICBpZiAoIXNtbXUtPmNsa3MpCj4gPiA+ID4+ICsgICAgICAgICAg
-ICAgICByZXR1cm47Cj4gPiA+ID4+ICsKPiA+ID4gPj4gKyAgICAgICBmb3IgKGkgPSAwOyBpIDwg
-c21tdS0+bnVtX2Nsa3M7IGkrKykKPiA+ID4gPj4gKyAgICAgICAgICAgICAgIHNtbXUtPmNsa3Nb
-aV0uaWQgPSBjbGtzW2ldOwo+ID4gPiA+Cj4gPiA+ID4gSXMgdGhpcyBjbGtfYnVsa19nZXRfYWxs
-KCk/Cj4gPgo+ID4gRnJvbSB3aGF0IEkgcmVtZW1iZXIsIGFuZCBub3cgSSBjb3VsZCBnbyBiYWNr
-IHRvIHY3IGFuZCBjaGVjayBbMV0sIHdlIHBhcmtlZAo+ID4gY2xrX2J1bGtfZ2V0IG91dCBvZiBP
-RidzIHNvbGUgcHVydmlldyBhcyB3ZSBhbHNvIGhhdmUKPiA+IGFybV9zbW11X2RldmljZV9hY3Bp
-X3Byb2JlKCkgYmVzaWRlcyBhcm1fc21tdV9kZXZpY2VfZHRfcHJvYmUoKS4KPiA+Cj4gPiBhcm1f
-c21tdV9kZXZpY2VfZHRfcHJvYmUoKSBjb3VsZCBnZXQgdGhlIGNsb2NrcyBmcm9tIGR0IGFuZCBm
-aWxsIGluCj4gPiB0aGUgY2xvY2sgYnVsayBkYXRhLCBhbmQKPiA+IHNpbWlsYXJseSwgYXJtX3Nt
-bXVfZGV2aWNlX2FjcGlfcHJvYmUoKSBjb3VsZCBmaWxsIHRoZSBjbG9jayBidWxrIGRhdGEKPiA+
-IGJ5IGdldHRpbmcgaXQgZnJvbSBBQ1BJLgo+ID4KPiA+IGNsa19idWxrX2dldF9hbGwoKSBzZWVt
-cyBsaWtlIGdvaW5nIG9ubHkgdGhlIE9GIHdheS4KPiA+IElzIHRoZXJlIGFub3RoZXIgd2F5IGhl
-cmUgdG8gaGF2ZSBzb21ldGhpbmcgY29tbW9uIGJldHdlZW4gQUNQSQo+ID4gYW5kIE9GLCBhbmQg
-dGhlbiBkbyB0aGUgY2xrX2J1bGtfZ2V0Pwo+Cj4gSSdkIHNheSBqdXN0IGdvIHdpdGggY2xrX2J1
-bGtfZ2V0X2FsbCgpIGFuZCBpZiBzb21lYm9keSByZWFsbHkgd2FudHMgdG8KPiBtZXNzIHdpdGgg
-dGhlIFNNTVUgY2xvY2tzIG9uIGEgc3lzdGVtIGJvb3RlZCB2aWEgQUNQSSwgdGhlbiBpdCdzIHRo
-ZWlyCj4gcHJvYmxlbSB0byBzb2x2ZS4gTXkgdW5kZXJzdGFuZGluZyBpcyB0aGF0IHRoZSBkZXNp
-Z24gb2YgSU9SVCBtYWtlcyB0aGlzCj4gbmV4dCB0byBpbXBvc3NpYmxlIHRvIHNvbHZlIGFueXdh
-eSwgYmVjYXVzZSBhIHN0YXRpYyB0YWJsZSBpcyB1c2VkIGFuZAo+IHRoZXJlZm9yZSB3ZSdyZSB1
-bmFibGUgdG8gcnVuIHdoYXRldmVyIEFTTCBtZXRob2RzIG5lZWQgdG8gYmUgaW52b2tlZCB0bwo+
-IG1lc3Mgd2l0aCB0aGUgY2xvY2tzLgoKU3VyZSB0aGVuLiBJIHdpbGwgcmVzcGluIHRoaXMgcGF0
-Y2gtc2VyaWVzLgoKPgo+IFdpbGwKCgoKLS0gClFVQUxDT01NIElORElBLCBvbiBiZWhhbGYgb2Yg
-UXVhbGNvbW0gSW5ub3ZhdGlvbiBDZW50ZXIsIEluYy4gaXMgYSBtZW1iZXIKb2YgQ29kZSBBdXJv
-cmEgRm9ydW0sIGhvc3RlZCBieSBUaGUgTGludXggRm91bmRhdGlvbgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZy
-ZWVkcmVub0BsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9mcmVlZHJlbm8K
+On 30-11-18, 09:53, Ulf Hansson wrote:
+> On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > We will need these going forward in hotpath, i.e. from within
+> > dev_pm_genpd_set_performance_state().
+> 
+> Well, as for patch2, please try to be a bit more descriptive of why
+> and what this patch does.
+
+    PM / Domains: Save OPP table pointer in genpd
+    
+    dev_pm_genpd_set_performance_state() will be required to call
+    dev_pm_opp_xlate_performance_state() going forward to translate from
+    performance state of a sub-domain to performance state of its master.
+    And dev_pm_opp_xlate_performance_state() needs pointers to the OPP
+    tables of both genpd and its master.
+    
+    Lets fetch and save them while the OPP tables are added. Fetching the
+    OPP tables should never fail as we just added the OPP tables and so add
+    a WARN_ON() for such a bug instead of full error paths.
+    
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+
+Good enough ?
+
+-- 
+viresh
