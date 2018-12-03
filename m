@@ -1,9 +1,10 @@
 From: Lukasz Luba <l.luba@partner.samsung.com>
-Subject: [PATCH v2 5/5] arm: dts: exynos4: opp-suspend in DMC and leftbus
-Date: Mon,  3 Dec 2018 15:31:15 +0100
-Message-ID: <1543847475-7600-6-git-send-email-l.luba@partner.samsung.com>
+Subject: [PATCH v2 2/5] devfreq: add support for suspend/resume of a devfreq
+ device
+Date: Mon,  3 Dec 2018 15:31:12 +0100
+Message-ID: <1543847475-7600-3-git-send-email-l.luba@partner.samsung.com>
 References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181203143135eucas1p165fe6183ae90de7906f9683cb41ff4c1@eucas1p1.samsung.com>
+        <CGME20181203143131eucas1p217f22ac6d19682a54a57658a06980914@eucas1p2.samsung.com>
 Content-Type: text/plain; charset="utf-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
@@ -12,58 +13,137 @@ To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, lin
 Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, Lukasz Luba <l.luba@partner.samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Mark the state for devfreq device while entring suspend/resume process.
+The patch prepares devfreq device for handling suspend/resume
+functionality.  The new fields will store needed information during this
+process.  Devfreq framework handles opp-suspend DT entry and there is no
+need of modyfications in the drivers code.  It uses atomic variables to
+make sure no race condition affects the process.
 
 The patch is based on earlier work by Tobias Jakobi.
 
 Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
 ---
- arch/arm/boot/dts/exynos4210.dtsi | 2 ++
- arch/arm/boot/dts/exynos4412.dtsi | 2 ++
- 2 files changed, 4 insertions(+)
+ drivers/devfreq/devfreq.c | 51 +++++++++++++++++++++++++++++++++++++++--------
+ include/linux/devfreq.h   |  7 +++++++
+ 2 files changed, 50 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index b6091c2..4429b72 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -298,6 +298,7 @@
- 			opp-400000000 {
- 				opp-hz = /bits/ 64 <400000000>;
- 				opp-microvolt = <1150000>;
-+				opp-suspend;
- 			};
- 		};
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a9fd61b..36bed24 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -316,6 +316,10 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+ 			"Couldn't update frequency transition information.\n");
  
-@@ -367,6 +368,7 @@
- 			};
- 			opp-200000000 {
- 				opp-hz = /bits/ 64 <200000000>;
-+				opp-suspend;
- 			};
- 		};
- 	};
-diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-index 51f72f0..908c0c4 100644
---- a/arch/arm/boot/dts/exynos4412.dtsi
-+++ b/arch/arm/boot/dts/exynos4412.dtsi
-@@ -432,6 +432,7 @@
- 			opp-400000000 {
- 				opp-hz = /bits/ 64 <400000000>;
- 				opp-microvolt = <1050000>;
-+				opp-suspend;
- 			};
- 		};
+ 	devfreq->previous_freq = new_freq;
++
++	if (devfreq->suspend_freq)
++		devfreq->resume_freq = cur_freq;
++
+ 	return err;
+ }
  
-@@ -520,6 +521,7 @@
- 			opp-200000000 {
- 				opp-hz = /bits/ 64 <200000000>;
- 				opp-microvolt = <1000000>;
-+				opp-suspend;
- 			};
- 		};
+@@ -667,6 +671,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	}
+ 	devfreq->max_freq = devfreq->scaling_max_freq;
  
++	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
++	atomic_set(&devfreq->suspend_count, 0);
++
+ 	dev_set_name(&devfreq->dev, "devfreq%d",
+ 				atomic_inc_return(&devfreq_no));
+ 	err = device_register(&devfreq->dev);
+@@ -867,14 +874,28 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
+  */
+ int devfreq_suspend_device(struct devfreq *devfreq)
+ {
++	int ret;
++
+ 	if (!devfreq)
+ 		return -EINVAL;
+ 
+-	if (!devfreq->governor)
+-		return 0;
++	if (devfreq->governor) {
++		ret = devfreq->governor->event_handler(devfreq,
++					DEVFREQ_GOV_SUSPEND, NULL);
++		if (ret)
++			return ret;
++	}
++
++	if (devfreq->suspend_freq) {
++		if (atomic_inc_return(&devfreq->suspend_count) > 1)
++			return 0;
++
++		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
++		if (ret)
++			return ret;
++	}
+ 
+-	return devfreq->governor->event_handler(devfreq,
+-				DEVFREQ_GOV_SUSPEND, NULL);
++	return 0;
+ }
+ EXPORT_SYMBOL(devfreq_suspend_device);
+ 
+@@ -888,14 +909,28 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+  */
+ int devfreq_resume_device(struct devfreq *devfreq)
+ {
++	int ret;
++
+ 	if (!devfreq)
+ 		return -EINVAL;
+ 
+-	if (!devfreq->governor)
+-		return 0;
++	if (devfreq->resume_freq) {
++		if (atomic_dec_return(&devfreq->suspend_count) >= 1)
++			return 0;
+ 
+-	return devfreq->governor->event_handler(devfreq,
+-				DEVFREQ_GOV_RESUME, NULL);
++		ret = devfreq_set_target(devfreq, devfreq->resume_freq, 0);
++		if (ret)
++			return ret;
++	}
++
++	if (devfreq->governor) {
++		ret = devfreq->governor->event_handler(devfreq,
++					DEVFREQ_GOV_RESUME, NULL);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
+ }
+ EXPORT_SYMBOL(devfreq_resume_device);
+ 
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index e4963b0..d985199 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -131,6 +131,9 @@ struct devfreq_dev_profile {
+  * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
+  * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
+  * @stop_polling:	 devfreq polling status of a device.
++ * @suspend_freq:	 frequency of a device set during suspend phase.
++ * @resume_freq:	 frequency of a device set in resume phase.
++ * @suspend_count:	 suspend requests counter for a device.
+  * @total_trans:	Number of devfreq transitions
+  * @trans_table:	Statistics of devfreq transitions
+  * @time_in_state:	Statistics of devfreq states
+@@ -167,6 +170,10 @@ struct devfreq {
+ 	unsigned long scaling_max_freq;
+ 	bool stop_polling;
+ 
++	unsigned long suspend_freq;
++	unsigned long resume_freq;
++	atomic_t suspend_count;
++
+ 	/* information for device frequency transition */
+ 	unsigned int total_trans;
+ 	unsigned int *trans_table;
 -- 
 2.7.4
