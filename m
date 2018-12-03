@@ -1,45 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 3/5] PM / Domains: Save OPP table pointer in genpd
-Date: Mon, 3 Dec 2018 12:27:11 +0530
-Message-ID: <20181203065711.lugbr3a7uqtasmli@vireshk-i7>
-References: <cover.1543219386.git.viresh.kumar@linaro.org>
- <f95b514f7b3b3ab6ac00c9871e91513c9c3a09a3.1543219386.git.viresh.kumar@linaro.org>
- <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v2 06/17] Platform: OLPC: Add XO-1.75 EC driver
+Date: Mon, 3 Dec 2018 09:54:40 +0200
+Message-ID: <CAHp75Vc9pbj-jTQ86qV54FDtxzzoY-vvgH9qtvoFWWY1JQOMew@mail.gmail.com>
+References: <20181116162403.49854-1-lkundrak@v3.sk> <20181116162403.49854-7-lkundrak@v3.sk>
+ <20181202231328.GB23087@wrath>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFrUBwagtfwCezqw2ujPBVVtQNqz4rKgAG0Yyy18FZv+wA@mail.gmail.com>
+In-Reply-To: <20181202231328.GB23087@wrath>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Niklas Cassel <niklas.cassel@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Darren Hart <dvhart@infradead.org>
+Cc: Lubomir Rintel <lkundrak@v3.sk>, Mark Brown <broonie@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, quozl@laptop.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-spi <linux-spi@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, devel@driverdev.osuosl.orgLinux
 List-Id: linux-pm@vger.kernel.org
 
-On 30-11-18, 09:53, Ulf Hansson wrote:
-> On Mon, 26 Nov 2018 at 09:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Mon, Dec 3, 2018 at 1:13 AM Darren Hart <dvhart@infradead.org> wrote:
+> On Fri, Nov 16, 2018 at 05:23:52PM +0100, Lubomir Rintel wrote:
+> > It's based off the driver from the OLPC kernel sources. Somewhat
+> > modernized and cleaned up, for better or worse.
 > >
-> > We will need these going forward in hotpath, i.e. from within
-> > dev_pm_genpd_set_performance_state().
-> 
-> Well, as for patch2, please try to be a bit more descriptive of why
-> and what this patch does.
+> > Modified to plug into the olpc-ec driver infrastructure (so that battery
+> > interface and debugfs could be reused) and the SPI slave framework.
 
-    PM / Domains: Save OPP table pointer in genpd
-    
-    dev_pm_genpd_set_performance_state() will be required to call
-    dev_pm_opp_xlate_performance_state() going forward to translate from
-    performance state of a sub-domain to performance state of its master.
-    And dev_pm_opp_xlate_performance_state() needs pointers to the OPP
-    tables of both genpd and its master.
-    
-    Lets fetch and save them while the OPP tables are added. Fetching the
-    OPP tables should never fail as we just added the OPP tables and so add
-    a WARN_ON() for such a bug instead of full error paths.
-    
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > - Count the terminating NUL in LOG_BUF_SIZE
+> > - Make olpc_xo175_ec_is_valid_cmd() return -EINVAL instead of -1
+> >   on error
+> > - Spell keyboard/touchpad in full for CHAN_KEYBOARD/TOUCHPAD messages
+> > - Use a #define for PM wakeup processing time
+> > - Log a message on unknown event
+> > - Escape logging payload with %*pE
+> > - Replace an open-coded min()
+> > - Correct an error code on short read
+> > - replaced PM callback #ifdefs with __maybe_unusedm SET_RUNTIME_PM_OPS
+> >   and SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
+> > - dev_get_drvdata() instead of a round-trip through platform device
+> > - s/unsigned char x/u8 x/ in olpc_xo175_ec_resume()
+> > - Use GENMASK() instead of 0xffff for the event mask
+> > - Replace cmd tx/resp rx buffers with structures
+> > - Turned suspend hint arguments into a struct, and tidied up the comment
+>
+> Just from these comments, each of these could be a separate patch. You
+> can group related things together, or those that change the same line or
+> function for example. Order them with cleanups / non-functional-changes
+> first, followed by functional changes.
+>
+> >
+> > Basically all of the above is based on the review by Andy Shevchenko.
+>
+> Andy, what was your intent for Lubomir here? From the above, this looks
+> like it should be several patches to me.
 
-
-Good enough ?
+This is a new module, I don't see why it can't be one patch. For the
+existing code I agree with you.
 
 -- 
-viresh
+With Best Regards,
+Andy Shevchenko
