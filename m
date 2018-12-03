@@ -1,67 +1,55 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: nforce2: Remove meaningless return
-Date: Mon, 3 Dec 2018 10:13:49 +0100
-Message-ID: <CAJZ5v0hPPWx6ZbTPRLRMj_0zSF91ApS3BWgYGj31GqzhX45sYw@mail.gmail.com>
-References: <20181130142557.2623-1-tiny.windzz@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] driver core: remove define_genpd_open_function() and
+ define_genpd_debugfs_fops()
+Date: Mon, 3 Dec 2018 10:23:59 +0100
+Message-ID: <20181203092359.GA21500@amd>
+References: <20181201015154.4718-1-tiny.windzz@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181130142557.2623-1-tiny.windzz@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20181201015154.4718-1-tiny.windzz@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: tiny.windzz@gmail.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Yangtao Li <tiny.windzz@gmail.com>
+Cc: gregkh@linuxfoundation.org, rafael@kernel.org, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, broonie@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Nov 30, 2018 at 3:26 PM Yangtao Li <tiny.windzz@gmail.com> wrote:
->
-> In a function whose return type is void, returning on the last line is
-> not required.So remove it.Also move the module declaration to the end.
 
-The last piece is not reflected by the subject.
+--KsGdsel6WgEHnImy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also, why do you move the MODULE_ stuff around at all?
+On Fri 2018-11-30 20:51:54, Yangtao Li wrote:
+> We already have the DEFINE_SHOW_ATTRIBUTE,There is no need to define such
+> a macro,so remove define_genpd_open_function and define_genpd_debugfs_fop=
+s.
+> Also use DEFINE_SHOW_ATTRIBUTE to simplify somecode.
 
->
+"and there", ", so".
+
 > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> ---
->  drivers/cpufreq/cpufreq-nforce2.c | 11 ++++-------
->  1 file changed, 4 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
-> index dbf82f36d270..ccff1f2a7c25 100644
-> --- a/drivers/cpufreq/cpufreq-nforce2.c
-> +++ b/drivers/cpufreq/cpufreq-nforce2.c
-> @@ -47,10 +47,6 @@ static int fid;
->  static int min_fsb;
->  static int max_fsb;
->
-> -MODULE_AUTHOR("Sebastian Witt <se.witt@gmx.net>");
-> -MODULE_DESCRIPTION("nForce2 FSB changing cpufreq driver");
-> -MODULE_LICENSE("GPL");
-> -
->  module_param(fid, int, 0444);
->  module_param(min_fsb, int, 0444);
->
-> @@ -123,8 +119,6 @@ static void nforce2_write_pll(int pll)
->         /* Now write the value in all 64 registers */
->         for (temp = 0; temp <= 0x3f; temp++)
->                 pci_write_config_dword(nforce2_dev, NFORCE2_PLLREG, pll);
-> -
-> -       return;
->  }
->
->  /**
-> @@ -436,6 +430,9 @@ static void __exit nforce2_exit(void)
->         cpufreq_unregister_driver(&nforce2_driver);
->  }
->
-> +MODULE_AUTHOR("Sebastian Witt <se.witt@gmx.net>");
-> +MODULE_DESCRIPTION("nForce2 FSB changing cpufreq driver");
-> +MODULE_LICENSE("GPL");
-> +
->  module_init(nforce2_init);
->  module_exit(nforce2_exit);
-> -
-> --
-> 2.17.0
->
+
+Otherwise looks good.
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--KsGdsel6WgEHnImy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlwE9i4ACgkQMOfwapXb+vK+3QCgrzj/A2MVArH+6HYu9tslOC3+
+FEUAn3yBGHd80WYr+KsdPk9YQZiQpKta
+=Ore1
+-----END PGP SIGNATURE-----
+
+--KsGdsel6WgEHnImy--
