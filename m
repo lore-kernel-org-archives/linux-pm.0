@@ -1,55 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] driver core: remove define_genpd_open_function() and
- define_genpd_debugfs_fops()
-Date: Mon, 3 Dec 2018 10:23:59 +0100
-Message-ID: <20181203092359.GA21500@amd>
-References: <20181201015154.4718-1-tiny.windzz@gmail.com>
+From: Alexandre Torgue <alexandre.torgue@st.com>
+Subject: Re: [PATCH 3/3] ARM: dts: stm32: add thermal sensor support on
+ STM32MP157c
+Date: Mon, 3 Dec 2018 10:47:27 +0100
+Message-ID: <5feb7b44-aff0-1d53-bdf6-79e06dcb3a2f@st.com>
+References: <1538734081-26585-1-git-send-email-david.hernandezsanchez@st.com>
+ <1538734081-26585-4-git-send-email-david.hernandezsanchez@st.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="KsGdsel6WgEHnImy"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181201015154.4718-1-tiny.windzz@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yangtao Li <tiny.windzz@gmail.com>
-Cc: gregkh@linuxfoundation.org, rafael@kernel.org, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, broonie@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1538734081-26585-4-git-send-email-david.hernandezsanchez@st.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: David HERNANDEZ SANCHEZ <david.hernandezsanchez@st.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Coquelin <mcoquelin.stm32@gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-stm32@st-md-mailman.stormreply.com" <linux-stm32@st-md-mailman.stormreply.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi David,
 
---KsGdsel6WgEHnImy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 10/5/18 12:08 PM, David HERNANDEZ SANCHEZ wrote:
+> Add configuration on DT for thermal sensor driver
+> 
+> Signed-off-by: David Hernandez Sanchez <david.hernandezsanchez@st.com>
+> 
+> diff --git a/arch/arm/boot/dts/stm32mp157c.dtsi 
+> b/arch/arm/boot/dts/stm32mp157c.dtsi
+> index 661be94..e90b9f6 100644
+> --- a/arch/arm/boot/dts/stm32mp157c.dtsi
+> +++ b/arch/arm/boot/dts/stm32mp157c.dtsi
+> @@ -84,6 +84,31 @@
 
-On Fri 2018-11-30 20:51:54, Yangtao Li wrote:
-> We already have the DEFINE_SHOW_ATTRIBUTE,There is no need to define such
-> a macro,so remove define_genpd_open_function and define_genpd_debugfs_fop=
-s.
-> Also use DEFINE_SHOW_ATTRIBUTE to simplify somecode.
+Applied on stm32-next.
 
-"and there", ", so".
-
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-
-Otherwise looks good.
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---KsGdsel6WgEHnImy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlwE9i4ACgkQMOfwapXb+vK+3QCgrzj/A2MVArH+6HYu9tslOC3+
-FEUAn3yBGHd80WYr+KsdPk9YQZiQpKta
-=Ore1
------END PGP SIGNATURE-----
-
---KsGdsel6WgEHnImy--
+Thanks.
+Alex
