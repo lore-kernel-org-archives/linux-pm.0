@@ -1,141 +1,76 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 1/6] ata: libahci_platform: comply to PHY framework
-Date: Mon, 3 Dec 2018 15:55:55 +0100
-Message-ID: <c57d8bc7-141d-a915-4d5e-8504c522b4fe@redhat.com>
-References: <20181130153833.11421-1-miquel.raynal@bootlin.com>
- <20181130153833.11421-2-miquel.raynal@bootlin.com>
- <0517746d-3fca-db57-8dca-8976910dad9c@redhat.com>
- <20181203154635.3c6df0d3@xps13>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] thermal/int340x_thermal: Add additional UUIDs
+Date: Mon, 03 Dec 2018 23:08:27 +0800
+Message-ID: <1543849707.2841.9.camel@intel.com>
+References: <20181010083007.239938-1-matthewgarrett@google.com>
+         <20181010083007.239938-2-matthewgarrett@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181203154635.3c6df0d3@xps13>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@bootlin.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Gregory Clement <gregory.clement@bootlin.com>, linux-pm@vger.kernel.org, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Jens Axboe <axboe@kernel.dk>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181010083007.239938-2-matthewgarrett@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matthew Garrett <matthewgarrett@google.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Matthew Garrett <mjg59@google.com>, Nisha Aram <nisha.aram@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi, Matthew,
 
-On 03-12-18 15:46, Miquel Raynal wrote:
-> Hi Hans,
+On 三, 2018-10-10 at 01:30 -0700, Matthew Garrett wrote:
+> Platforms support more DPTF policies than the driver currently
+> exposes.
+> Add them. This effectively reverts
+> 31908f45a583e8f21db37f402b6e8d5739945afd which removed several UUIDs
+> without explaining why.
 > 
-> Hans de Goede <hdegoede@redhat.com> wrote on Sun, 2 Dec 2018 14:19:49
-> +0100:
+I'm going to apply this patch series, just with two minor changes,
+1. 31908f45a583e8f21db37f402b6e8d5739945afd does not follow the git
+commit description style 'commit <12+ chars of sha1> ("<title line>")'
+2. the UUIDs were removed previously because these policies were not
+used.
+
+thanks,
+rui
+
+> Signed-off-by: Matthew Garrett <mjg59@google.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Nisha Aram <nisha.aram@intel.com>
+> ---
+>  drivers/thermal/int340x_thermal/int3400_thermal.c | 14
+> ++++++++++++++
+>  1 file changed, 14 insertions(+)
 > 
->> Hi,
->>
->> On 30-11-18 16:38, Miquel Raynal wrote:
->>> Current implementation of the libahci does not take into account the
->>> new PHY framework. Correct the situation by adding a call to
->>> phy_set_mode() before phy_power_on() and by adding calls to
->>> ahci_platform_enable/disable_phys() at suspend/resume_host() time.
->>>
->>> Suggested-by: Grzegorz Jaszczyk <jaz@semihalf.com>
->>> Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
->>
->> Much better. Some remarks inline.
->>
->>> ---
->>>    drivers/ata/ahci.h             |  2 ++
->>>    drivers/ata/libahci_platform.c | 19 ++++++++++++++++++-
->>>    2 files changed, 20 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/ata/ahci.h b/drivers/ata/ahci.h
->>> index ef356e70e6de..982638b37fee 100644
->>> --- a/drivers/ata/ahci.h
->>> +++ b/drivers/ata/ahci.h
->>> @@ -254,6 +254,8 @@ enum {
->>>    	AHCI_HFLAG_IS_MOBILE		= (1 << 25), /* mobile chipset, use
->>>    							SATA_MOBILE_LPM_POLICY
->>>    							as default lpm_policy */
->>> +	AHCI_HFLAG_MANAGE_PHYS		= (1 << 26), /* let the core manage the
->>> +							PHYs when relevant */
->>
->> Using a hflag for this is a good idea, but the MANAGE_PHYS names is a bit
->> generic, even if this is not set then ahci_platform_enable_resources() will
->> still enable the phy. So I would name this AHCI_HFLAG_SUSPEND_PHYS to make
->> clear this only influences suspend/resume behavior.
-> 
-> I understand and will modify the HFLAG name as you suggest.
-> 
->>
->> Also see below.
->>
->>>    	/* ap->flags bits */
->>>    > diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
->>> index 4b900fc659f7..f5a64eb1fea8 100644
->>> --- a/drivers/ata/libahci_platform.c
->>> +++ b/drivers/ata/libahci_platform.c
->>> @@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
->>>    		if (rc)
->>>    			goto disable_phys;
->>>    > +		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
->>> +		if (rc) {
->>> +			phy_exit(hpriv->phys[i]);
->>> +			goto disable_phys;
->>> +		}
->>> +
->>>    		rc = phy_power_on(hpriv->phys[i]);
->>>    		if (rc) {
->>>    			phy_exit(hpriv->phys[i]);
->>> @@ -378,7 +384,8 @@ static int ahci_platform_get_regulator(struct ahci_host_priv *hpriv, u32 port,
->>>     * 3) 0 - AHCI_MAX_CLKS clocks, as specified in the devs devicetree node,
->>>     *    or for non devicetree enabled platforms a single clock
->>>     * 4) resets, if flags has AHCI_PLATFORM_GET_RESETS (optional)
->>> - * 5) phys (optional)
->>> + * 5) phys (optional), PHY handling during suspend/resume will be skipped if the
->>> + *    flag AHCI_HFLAG_MANAGE_PHYS is missing.
->>>     *
->>>     * RETURNS:
->>>     * The allocated ahci_host_priv on success, otherwise an ERR_PTR value
->>> @@ -458,6 +465,9 @@ struct ahci_host_priv *ahci_platform_get_resources(struct platform_device *pdev,
->>>    		}
->>>    	}
->>>    > +	if (flags & AHCI_HFLAG_MANAGE_PHYS)
->>> +		hpriv->flags |= AHCI_HFLAG_MANAGE_PHYS;
->>> +
->>>    	hpriv->nports = child_nodes = of_get_child_count(dev->of_node);
->>>    >   	/*
->>
->> Interpreting a flag passed to ahci_platform_get_resources using a
->> AHCI_HFLAG_* mask is asking for trouble in the future.
->>
->> Since you are using a hflag for this, you can just drop this chunk / change
->> and in the caller of ahci_platform_get_resources() do:
->>
->> 	hpriv = ahci_platform_get_resources(pdev, ...);
->> 	if (IS_ERR(hpriv))
->> 		...
->>
->> 	hpriv->flags |= AHCI_HFLAG_MANAGE_PHYS;
->>
->> Settting hflags like this after calling ahci_platform_get_resources()
->> is already done in several place.
-> 
-> Indeed, this is close to my first draft but after re-reading your
-> previous review I understood you wanted this flag to be passed to
-> ahci_platform_get_resources().
-
-Yes that was my initial thought, but sine you are using a hflag for
-it that is no longer a good idea.
-
-> I do agree that the current form is a bit redundant so I will let users
-> add the flag manually during the probe after the
-> ahci_platform_get_resources() call, as suggested.
-
-Sounds good, thanks.
-
-Regards,
-
-Hans
+> diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c
+> b/drivers/thermal/int340x_thermal/int3400_thermal.c
+> index e26b01c05e82..51c9097eaf7a 100644
+> --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
+> +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+> @@ -22,6 +22,13 @@ enum int3400_thermal_uuid {
+>  	INT3400_THERMAL_PASSIVE_1,
+>  	INT3400_THERMAL_ACTIVE,
+>  	INT3400_THERMAL_CRITICAL,
+> +	INT3400_THERMAL_ADAPTIVE_PERFORMANCE,
+> +	INT3400_THERMAL_EMERGENCY_CALL_MODE,
+> +	INT3400_THERMAL_PASSIVE_2,
+> +	INT3400_THERMAL_POWER_BOSS,
+> +	INT3400_THERMAL_VIRTUAL_SENSOR,
+> +	INT3400_THERMAL_COOLING_MODE,
+> +	INT3400_THERMAL_HARDWARE_DUTY_CYCLING,
+>  	INT3400_THERMAL_MAXIMUM_UUID,
+>  };
+>  
+> @@ -29,6 +36,13 @@ static char
+> *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
+>  	"42A441D6-AE6A-462b-A84B-4A8CE79027D3",
+>  	"3A95C389-E4B8-4629-A526-C52C88626BAE",
+>  	"97C68AE7-15FA-499c-B8C9-5DA81D606E0A",
+> +	"63BE270F-1C11-48FD-A6F7-3AF253FF3E2D",
+> +	"5349962F-71E6-431D-9AE8-0A635B710AEE",
+> +	"9E04115A-AE87-4D1C-9500-0F3E340BFE75",
+> +	"F5A35014-C209-46A4-993A-EB56DE7530A1",
+> +	"6ED722A7-9240-48A5-B479-31EEF723D7CF",
+> +	"16CAF1B7-DD38-40ED-B1C1-1B8A1913D531",
+> +	"BE84BABF-C4D4-403D-B495-3128FD44dAC1",
+>  };
+>  
+>  struct int3400_thermal_priv {
