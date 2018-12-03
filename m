@@ -1,105 +1,169 @@
-From: Benson Leung <bleung@google.com>
-Subject: Re: [PATCH v2 1/2] power: supply: add input voltage limit property.
-Date: Mon, 3 Dec 2018 11:58:45 -0800
-Message-ID: <20181203195845.GA120704@google.com>
-References: <20181122101119.29194-1-enric.balletbo@collabora.com>
- <20181123232203.GA3852@amd>
- <c122a1f9-70d7-7129-f139-4a0449c366a5@collabora.com>
- <20181201150934.GA7052@amd>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v10 18/27] drivers: firmware: psci: Add support for PM
+ domains using genpd
+Date: Mon, 3 Dec 2018 21:03:34 +0100
+Message-ID: <CAPDyKFq1EQcwDqf737=t5OyhiTQ_RNyxO8rUaVShYPiN8ow3yw@mail.gmail.com>
+References: <20181129174700.16585-1-ulf.hansson@linaro.org>
+ <20181129174700.16585-19-ulf.hansson@linaro.org> <20181203163717.GN18262@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181201150934.GA7052@amd>
+In-Reply-To: <20181203163717.GN18262@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, sre@kernel.org, Sameer Nanda <snanda@chromium.org>, gwendal@chromium.org, linux-kernel@vger.kernel.org, groeck@chromium.org, Adam.Thomson.Opensource@diasemi.com, kernel@collabora.com, bleung@chromium.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, bleung@google.com
+To: Lina Iyer <ilina@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Raju P.L.S.S.S.N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon, 3 Dec 2018 at 17:37, Lina Iyer <ilina@codeaurora.org> wrote:
+>
+> On Thu, Nov 29 2018 at 10:49 -0700, Ulf Hansson wrote:
+> >When the hierarchical CPU topology layout is used in DT, we need to setup
+> >the corresponding PM domain data structures, as to allow a CPU and a group
+> >of CPUs to be power managed accordingly. Let's enable this by deploying
+> >support through the genpd interface.
+> >
+> >Additionally, when the OS initiated mode is supported by the PSCI FW, let's
+> >also parse the domain idle states DT bindings as to make genpd responsible
+> >for the state selection, when the states are compatible with
+> >"domain-idle-state". Otherwise, when only Platform Coordinated mode is
+> >supported, we rely solely on the state selection to be managed through the
+> >regular cpuidle framework.
+> >
+> >If the initialization of the PM domain data structures succeeds and the OS
+> >initiated mode is supported, we try to switch to it. In case it fails,
+> >let's fall back into a degraded mode, rather than bailing out and returning
+> >an error code.
+> >
+> >Due to that the OS initiated mode may become enabled, we need to adjust to
+> >maintain backwards compatibility for a kernel started through a kexec call.
+> >Do this by explicitly switch to Platform Coordinated mode during boot.
+> >
+> >To try to initiate the PM domain data structures, the PSCI driver shall
+> >call the new function, psci_dt_init_pm_domains(). However, this is done
+> >from following changes.
+> >
+> >Cc: Lina Iyer <ilina@codeaurora.org>
+> >Co-developed-by: Lina Iyer <lina.iyer@linaro.org>
+> >Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >---
+> >
+> >Changes in V10:
+> >       - Enable the PM domains to be used for both PC and OSI mode.
+> >       - Fixup error paths.
+> >       - Move the management of kexec started kernels into this patch.
+> >       - Rewrite changelog.
+> >
+> >---
+> > drivers/firmware/psci/Makefile         |   2 +-
+> > drivers/firmware/psci/psci.c           |   7 +-
+> > drivers/firmware/psci/psci.h           |   6 +
+> > drivers/firmware/psci/psci_pm_domain.c | 262 +++++++++++++++++++++++++
+> > 4 files changed, 275 insertions(+), 2 deletions(-)
+> > create mode 100644 drivers/firmware/psci/psci_pm_domain.c
+> >
+> >diff --git a/drivers/firmware/psci/Makefile b/drivers/firmware/psci/Makefile
+> >index 1956b882470f..ff300f1fec86 100644
+> >--- a/drivers/firmware/psci/Makefile
+> >+++ b/drivers/firmware/psci/Makefile
+> >@@ -1,4 +1,4 @@
+> > # SPDX-License-Identifier: GPL-2.0
+> > #
+> >-obj-$(CONFIG_ARM_PSCI_FW)     += psci.o
+> >+obj-$(CONFIG_ARM_PSCI_FW)     += psci.o psci_pm_domain.o
+> > obj-$(CONFIG_ARM_PSCI_CHECKER)        += psci_checker.o
+> >diff --git a/drivers/firmware/psci/psci.c b/drivers/firmware/psci/psci.c
+> >index 623591b541a4..19af2093151b 100644
+> >--- a/drivers/firmware/psci/psci.c
+> >+++ b/drivers/firmware/psci/psci.c
+> >@@ -704,9 +704,14 @@ static int __init psci_1_0_init(struct device_node *np)
+> >       if (err)
+> >               return err;
+> >
+> >-      if (psci_has_osi_support())
+> >+      if (psci_has_osi_support()) {
+> >               pr_info("OSI mode supported.\n");
+> >
+> >+              /* Make sure we default to PC mode. */
+> >+              invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
+> >+                             PSCI_1_0_SUSPEND_MODE_PC, 0, 0);
+> >+      }
+> >+
+> >       return 0;
+> > }
+> >
+> >diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
+> >index 7d9d38fd57e1..8cf6d7206fab 100644
+> >--- a/drivers/firmware/psci/psci.h
+> >+++ b/drivers/firmware/psci/psci.h
+> >@@ -11,4 +11,10 @@ void psci_set_domain_state(u32 state);
+> > bool psci_has_osi_support(void);
+> > int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+> >
+> >+#ifdef CONFIG_CPU_IDLE
+> >+int psci_dt_init_pm_domains(struct device_node *np);
+> >+#else
+> >+static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
+> >+#endif
+> >+
+> > #endif /* __PSCI_H */
+> >diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
+> >new file mode 100644
+> >index 000000000000..d0dc38e96f85
+> >--- /dev/null
+> >+++ b/drivers/firmware/psci/psci_pm_domain.c
+> >@@ -0,0 +1,262 @@
+> >+// SPDX-License-Identifier: GPL-2.0
+> >+/*
+> >+ * PM domains for CPUs via genpd - managed by PSCI.
+> >+ *
+> >+ * Copyright (C) 2018 Linaro Ltd.
+> >+ * Author: Ulf Hansson <ulf.hansson@linaro.org>
+> >+ *
+> >+ */
+> >+
+> >+#define pr_fmt(fmt) "psci: " fmt
+> >+
+> >+#include <linux/device.h>
+> >+#include <linux/kernel.h>
+> >+#include <linux/pm_domain.h>
+> >+#include <linux/slab.h>
+> >+#include <linux/string.h>
+> >+
+> >+#include "psci.h"
+> >+
+> >+#ifdef CONFIG_CPU_IDLE
+> >+
+> >+struct psci_pd_provider {
+> >+      struct list_head link;
+> >+      struct device_node *node;
+> >+};
+> >+
+> >+static LIST_HEAD(psci_pd_providers);
+> >+static bool osi_mode_enabled;
+> >+
+> >+static int psci_pd_power_off(struct generic_pm_domain *pd)
+> >+{
+> >+      struct genpd_power_state *state = &pd->states[pd->state_idx];
+> >+      u32 *pd_state;
+> >+      u32 composite_pd_state;
+> >+
+> >+      /* If we have failed to enable OSI mode, then abort power off. */
+> >+      if (psci_has_osi_support() && !osi_mode_enabled)
+> >+              return -EBUSY;
+> >+
+> >+      if (!state->data)
+> >+              return 0;
+> >+
+> >+      /* When OSI mode is enabled, set the corresponding domain state. */
+> >+      pd_state = state->data;
+> >+      composite_pd_state = *pd_state | psci_get_domain_state();
+> This should not be needed. The domain_state should be 0x0 being set
+> after coming out of idle.
+> >+      psci_set_domain_state(composite_pd_state);
+> The three lines can be summarized as:
+>         psci_set_domain_state(*state->data);
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sure, let me change accordingly and thanks for spotting this!
 
-Hi Pavel,
-
-On Sat, Dec 01, 2018 at 04:09:34PM +0100, Pavel Machek wrote:
-> > I think that handle this via dt / ACPI is not possible for our use case=
-=2E It can
-> > be a hardware bug or a hardware/user constrain, let me try to explain b=
-etter
-> > with an example.
-> >=20
-> > On Pixel C's devices, userspace uses this to set a USB input limit of 5=
-V when
-> > the screen is on for thermal reasons, but those go away when the screen=
- is
-> > off/system is sleeping, so we allow 9V and 12V levels when sleeping.
->=20
-> So, on pixel C, what happens if userland ignores the constraint, keeps
-> display on and sets charger to 12V?
-
-I was the software tech lead for the Google Pixel C and was involved in this
-particular code change in 2015 before the release of the product.
-
-So there's nothing fundamentally broken about the hardware that would cause
-the Pixel C to malfunction if we were charging at 9V or 12V instead of 5V
-when the screen is on, ie if userspace doesn't change this.
-
-This is part of the Pixel C's thermal management strategy to effectively
-limit the input power to 5V 3A when the screen is on. When the screen is on,
-the display, the CPU, and the GPU all contribute more heat to the system
-than while the screen is off, and we made a tradeoff to throttle the charger
-in order to give more of the thermal budget to those other components.
-
-What would happen is that you wouldn't meet Google's skin temperature targe=
-ts
-on the system if the charger was allowed to run at 9V or 12V with the screen
-on.
-
-For folks hacking on Pixel Cs (which is now outside of Google's official su=
-pport
-window for Android) and customizing their own kernel and userspace
-this would be acceptable, but we wanted to expose this feature in the power
-supply properties because the feature does exist in the Emedded Controller
-firmware of the Pixel C and all of Google's Chromebooks with USB-C made sin=
-ce
-2015 in case someone running an up to date kernel wanted to limit the charg=
-ing
-power for thermal or other reasons.
-
-Thanks,
-Benson
-
---=20
-Benson Leung
-Staff Software Engineer
-Chrome OS Kernel
-Google Inc.
-bleung@google.com
-Chromium OS Project
-bleung@chromium.org
-
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE6gYDF28Li+nEiKLaHwn1ewov5lgFAlwFivIACgkQHwn1ewov
-5lg8+hAAkU3bSc1yCGH1bSwmoNTjpDQHMs/45GRZKQsgfDOKkraVTOm2BM5WriGQ
-r5fB85winldp6rdghBT9Epa+zVNYEANaQwcesgoWhgbaqBhpRdyXFLyWLVsGCg/8
-2mqfJri7T/uRGLzwFlLVwJwJk/5OrzaNPVPDBTHdfpVirSeYdU34QdiNeDP/TQ8n
-TtWE//JApbXb9vB+F+QKlrrU6ImIm0jrukAM6eR+chi8rXPAt2TW1cmlb9JcJxDg
-1h9U1uRevKat7zXZ64+LPayQ7R9v64oUMIeKSHapgCXrOqCL0PDlcI4wbVhdK1Cn
-h39OEGmhoaub/csJLkUSrn/wjKoLg39edefcZ+sQ5BPosWDrAmvCHh0fZoqKsjfv
-Zi3dHFw4qgp/O3vpkvJMcRgpN621FWnNCG7/pRBgr3W+L6HlTXW1s+WADzSkgbzW
-4A40LDTWB/4trGv/CKSZgTX93AZhmj7GNdVZyr/XUfKIZWcaNQhMHAPTYttLtFbp
-X9jN0YGZvIQ+JaZQyGqEYDxm3rOiidRf40LPrMpoza93npG6FIeGDvAa42XfllHk
-AWnmJDxusgJb+oZmKIQMAe9k2jHxafSqzCFjnH57T/6vD1Tn5YYmqJy+b4gAbI83
-9IexSFTWAyAbwYg+/pRzcaUnzKCYirLxJSe+585uWEcoilITZ0c=
-=Rk1S
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+Kind regards
+Uffe
