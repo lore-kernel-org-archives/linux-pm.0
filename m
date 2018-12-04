@@ -1,90 +1,40 @@
-From: Lina Iyer <ilina@codeaurora.org>
-Subject: Re: [PATCH v10 21/27] drivers: firmware: psci: Add a helper to
- attach a CPU to its PM domain
-Date: Tue, 4 Dec 2018 11:45:53 -0700
-Message-ID: <20181204184553.GO18262@codeaurora.org>
-References: <20181129174700.16585-1-ulf.hansson@linaro.org>
- <20181129174700.16585-22-ulf.hansson@linaro.org>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH 16/17] thermal: bcm2835: Switch to SPDX identifier
+Date: Tue, 4 Dec 2018 20:02:03 +0100 (CET)
+Message-ID: <14157893.342483.1543950123698@email.ionos.de>
+References: <1541868927-8337-1-git-send-email-stefan.wahren@i2se.com>
+ <1dab2b64-0588-d4a9-e8b8-e151cd707f44@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181129174700.16585-22-ulf.hansson@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, "Raju P . L . S . S . S . N" <rplsssn@codeaurora.org>, Stephen Boyd <sboyd@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1dab2b64-0588-d4a9-e8b8-e151cd707f44-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rpi-kernel/>
+List-Post: <mailto:linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "linux-rpi-kernel" <linux-rpi-kernel-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 29 2018 at 10:50 -0700, Ulf Hansson wrote:
->Introduce a new PSCI DT helper function, psci_dt_attach_cpu(), which takes
->a CPU number as an in-parameter and attaches the CPU's struct device to its
->corresponding PM domain. Additionally, the helper prepares the CPU to be
->power managed via runtime PM, which is the last step needed to enable the
->interaction with the PM domain through the runtime PM callbacks.
->
->Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->---
->
->Changes in v10:
->	- New patch: Replaces "PM / Domains: Add helper functions to
->	  attach/detach CPUs to/from genpd".
->
->---
-> drivers/firmware/psci/psci.h           |  1 +
-> drivers/firmware/psci/psci_pm_domain.c | 19 +++++++++++++++++++
-> 2 files changed, 20 insertions(+)
->
->diff --git a/drivers/firmware/psci/psci.h b/drivers/firmware/psci/psci.h
->index 05af462cc96e..fbc9980dee69 100644
->--- a/drivers/firmware/psci/psci.h
->+++ b/drivers/firmware/psci/psci.h
->@@ -15,6 +15,7 @@ int psci_dt_parse_state_node(struct device_node *np, u32 *state);
-> int psci_dt_init_pm_domains(struct device_node *np);
-> int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
-> 			struct device_node *cpu_node, u32 *psci_states);
->+int psci_dt_attach_cpu(int cpu);
-> #else
-> static inline int psci_dt_init_pm_domains(struct device_node *np) { return 0; }
-> #endif
->diff --git a/drivers/firmware/psci/psci_pm_domain.c b/drivers/firmware/psci/psci_pm_domain.c
->index 6c9d6a644c7f..b0fa7da8a0ce 100644
->--- a/drivers/firmware/psci/psci_pm_domain.c
->+++ b/drivers/firmware/psci/psci_pm_domain.c
->@@ -12,8 +12,10 @@
-> #include <linux/device.h>
-> #include <linux/kernel.h>
-> #include <linux/pm_domain.h>
->+#include <linux/pm_runtime.h>
-> #include <linux/slab.h>
-> #include <linux/string.h>
->+#include <linux/cpu.h>
-> #include <linux/cpuidle.h>
-> #include <linux/cpu_pm.h>
->
->@@ -367,4 +369,21 @@ int psci_dt_pm_domains_parse_states(struct cpuidle_driver *drv,
->
-> 	return 0;
-> }
->+
->+int psci_dt_attach_cpu(int cpu)
->+{
->+	struct device *dev = get_cpu_device(cpu);
->+	int ret;
->+
->+	ret = dev_pm_domain_attach(dev, true);
->+	if (ret)
->+		return ret;
->+
->+	pm_runtime_irq_safe(dev);
->+	pm_runtime_get_noresume(dev);
->+	pm_runtime_set_active(dev);
-You would want to set this only if the CPU is online. Otherwise we will
-not power down the domain, if the CPU was never brought online.
->+	pm_runtime_enable(dev);
->+
->+	return 0;
->+}
-> #endif
->-- 
->2.17.1
->
+
+> Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> hat am 12. November 2018 um 07:57 geschrieben:
+> 
+> 
+> On 10/11/2018 17:55, Stefan Wahren wrote:
+> > Adopt the SPDX license identifier headers to ease license compliance
+> > management.
+> > 
+> > Cc: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+> > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+> > ---
+> 
+> Acked-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> 
+
+gentle ping ...
