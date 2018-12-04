@@ -1,61 +1,95 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v19 3/5] iommu/arm-smmu: Add the device_link between masters
-	and smmu
-Date: Tue,  4 Dec 2018 11:52:11 +0530
-Message-ID: <20181204062213.6875-4-vivek.gautam@codeaurora.org>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: [PATCH v19 4/5] dt-bindings: arm-smmu: Add bindings for qcom,smmu-v2
+Date: Tue,  4 Dec 2018 11:52:12 +0530
+Message-ID: <20181204062213.6875-5-vivek.gautam@codeaurora.org>
 References: <20181204062213.6875-1-vivek.gautam@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <20181204062213.6875-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20181204062213.6875-1-vivek.gautam@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: joro@8bytes.org, robh+dt@kernel.org, robin.murphy@arm.com, will.deacon@arm.com, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org
+Cc: alex.williamson@redhat.com, mark.rutland@arm.com, rjw@rjwysocki.net, robdclark@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, freedreno@lists.freedesktop.org, sboyd@kernel.org, tfiga@chromium.org, jcrouse@codeaurora.org, sricharan@codeaurora.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org, thor.thayer@linux.intel.com, Vivek Gautam <vivek.gautam@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Add bindings doc for Qcom's smmu-v2 implementation.
 
-Finally add the device link between the master device and
-smmu, so that the smmu gets runtime enabled/disabled only when the
-master needs it. This is done from add_device callback which gets
-called once when the master is added to the smmu.
-
-Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+Reviewed-by: Tomasz Figa <tfiga@chromium.org>
+Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
 ---
 
 Changes since v18:
  None.
 
- drivers/iommu/arm-smmu.c | 3 +++
- 1 file changed, 3 insertions(+)
+ .../devicetree/bindings/iommu/arm,smmu.txt         | 39 ++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index 1917d214c4d9..b6b11642b3a9 100644
---- a/drivers/iommu/arm-smmu.c
-+++ b/drivers/iommu/arm-smmu.c
-@@ -1500,6 +1500,9 @@ static int arm_smmu_add_device(struct device *dev)
+diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+index 8a6ffce12af5..a6504b37cc21 100644
+--- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
++++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+@@ -17,10 +17,16 @@ conditions.
+                         "arm,mmu-401"
+                         "arm,mmu-500"
+                         "cavium,smmu-v2"
++                        "qcom,smmu-v2"
  
- 	iommu_device_link(&smmu->iommu, dev);
+                   depending on the particular implementation and/or the
+                   version of the architecture implemented.
  
-+	device_link_add(dev, smmu->dev,
-+			DL_FLAG_PM_RUNTIME | DL_FLAG_AUTOREMOVE_SUPPLIER);
++                  Qcom SoCs must contain, as below, SoC-specific compatibles
++                  along with "qcom,smmu-v2":
++                  "qcom,msm8996-smmu-v2", "qcom,smmu-v2",
++                  "qcom,sdm845-smmu-v2", "qcom,smmu-v2".
 +
- 	return 0;
+ - reg           : Base address and size of the SMMU.
  
- out_cfg_free:
+ - #global-interrupts : The number of global interrupts exposed by the
+@@ -71,6 +77,22 @@ conditions.
+                   or using stream matching with #iommu-cells = <2>, and
+                   may be ignored if present in such cases.
+ 
++- clock-names:    List of the names of clocks input to the device. The
++                  required list depends on particular implementation and
++                  is as follows:
++                  - for "qcom,smmu-v2":
++                    - "bus": clock required for downstream bus access and
++                             for the smmu ptw,
++                    - "iface": clock required to access smmu's registers
++                               through the TCU's programming interface.
++                  - unspecified for other implementations.
++
++- clocks:         Specifiers for all clocks listed in the clock-names property,
++                  as per generic clock bindings.
++
++- power-domains:  Specifiers for power domains required to be powered on for
++                  the SMMU to operate, as per generic power domain bindings.
++
+ ** Deprecated properties:
+ 
+ - mmu-masters (deprecated in favour of the generic "iommus" binding) :
+@@ -137,3 +159,20 @@ conditions.
+                 iommu-map = <0 &smmu3 0 0x400>;
+                 ...
+         };
++
++	/* Qcom's arm,smmu-v2 implementation */
++	smmu4: iommu@d00000 {
++		compatible = "qcom,msm8996-smmu-v2", "qcom,smmu-v2";
++		reg = <0xd00000 0x10000>;
++
++		#global-interrupts = <1>;
++		interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
++		#iommu-cells = <1>;
++		power-domains = <&mmcc MDSS_GDSC>;
++
++		clocks = <&mmcc SMMU_MDP_AXI_CLK>,
++			 <&mmcc SMMU_MDP_AHB_CLK>;
++		clock-names = "bus", "iface";
++	};
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
