@@ -1,12 +1,15 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH] Revert "arm64: dts: marvell: add CPU Idle power state support
- on Armada 7K/8K"
-Date: Tue,  4 Dec 2018 17:46:02 +0200
-Message-ID: <3ece60154be74bd6534387db8da578194f823b43.1543938362.git.baruch@tkos.co.il>
+From: Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: Re: [PATCH] Revert "arm64: dts: marvell: add CPU Idle power state
+ support on Armada 7K/8K"
+Date: Tue, 04 Dec 2018 17:21:25 +0100
+Message-ID: <87o9a1w9dm.fsf@bootlin.com>
+References: <3ece60154be74bd6534387db8da578194f823b43.1543938362.git.baruch@tkos.co.il>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <3ece60154be74bd6534387db8da578194f823b43.1543938362.git.baruch@tkos.co.il>
+ (Baruch Siach's message of "Tue, 4 Dec 2018 17:46:02 +0200")
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -16,92 +19,66 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@bootlin.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, orenbh <orenbh@marvell.com>
-Cc: Baruch Siach <baruch@tkos.co.il>, Sergey Matyukevich <geomatsi@gmail.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Sergey Matyukevich <geomatsi@gmail.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, orenbh <orenbh@marvell.com>, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 8ed46368776b3bc93d74c1f8f2bfb9fd8a9ad805.
-
-This commit breaks boot on Armada 8K based systems. Reverting it makes
-affected systems boot again.
-
-Reported-by: Sergey Matyukevich <geomatsi@gmail.com>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- .../boot/dts/marvell/armada-ap806-quad.dtsi   |  4 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi | 27 -------------------
- 2 files changed, 31 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806-quad.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806-quad.dtsi
-index 64632c873888..01ea662afba8 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806-quad.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806-quad.dtsi
-@@ -20,28 +20,24 @@
- 			compatible = "arm,cortex-a72", "arm,armv8";
- 			reg = <0x000>;
- 			enable-method = "psci";
--			cpu-idle-states = <&CPU_SLEEP_0>;
- 		};
- 		cpu1: cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a72", "arm,armv8";
- 			reg = <0x001>;
- 			enable-method = "psci";
--			cpu-idle-states = <&CPU_SLEEP_0>;
- 		};
- 		cpu2: cpu@100 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a72", "arm,armv8";
- 			reg = <0x100>;
- 			enable-method = "psci";
--			cpu-idle-states = <&CPU_SLEEP_0>;
- 		};
- 		cpu3: cpu@101 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a72", "arm,armv8";
- 			reg = <0x101>;
- 			enable-method = "psci";
--			cpu-idle-states = <&CPU_SLEEP_0>;
- 		};
- 	};
- };
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 073610ac0a53..7d94c1fa592a 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -28,33 +28,6 @@
- 		method = "smc";
- 	};
- 
--	cpus {
--		#address-cells = <1>;
--		#size-cells = <0>;
--
--		idle_states {
--			entry_method = "arm,pcsi";
--
--			CPU_SLEEP_0: cpu-sleep-0 {
--				compatible = "arm,idle-state";
--				local-timer-stop;
--				arm,psci-suspend-param = <0x0010000>;
--				entry-latency-us = <80>;
--				exit-latency-us  = <160>;
--				min-residency-us = <320>;
--			};
--
--			CLUSTER_SLEEP_0: cluster-sleep-0 {
--				compatible = "arm,idle-state";
--				local-timer-stop;
--				arm,psci-suspend-param = <0x1010000>;
--				entry-latency-us = <500>;
--				exit-latency-us = <1000>;
--				min-residency-us = <2500>;
--			};
--		};
--	};
--
- 	ap806 {
- 		#address-cells = <2>;
- 		#size-cells = <2>;
--- 
-2.19.2
+SGkgQmFydWNoIGFuZCBTZXJnZXksCiAKIE9uIG1hci4sIGTDqWMuIDA0IDIwMTgsIEJhcnVjaCBT
+aWFjaCA8YmFydWNoQHRrb3MuY28uaWw+IHdyb3RlOgoKPiBUaGlzIHJldmVydHMgY29tbWl0IDhl
+ZDQ2MzY4Nzc2YjNiYzkzZDc0YzFmOGYyYmZiOWZkOGE5YWQ4MDUuCj4KPiBUaGlzIGNvbW1pdCBi
+cmVha3MgYm9vdCBvbiBBcm1hZGEgOEsgYmFzZWQgc3lzdGVtcy4gUmV2ZXJ0aW5nIGl0IG1ha2Vz
+Cj4gYWZmZWN0ZWQgc3lzdGVtcyBib290IGFnYWluLgo+Cj4gUmVwb3J0ZWQtYnk6IFNlcmdleSBN
+YXR5dWtldmljaCA8Z2VvbWF0c2lAZ21haWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IEJhcnVjaCBT
+aWFjaCA8YmFydWNoQHRrb3MuY28uaWw+CgpJIHdvdWxkIGxpa2UgdG8ga25vdyBtb3JlIGFib3V0
+IGl0IGJlY2F1c2Ugb24gdGhlIE1jQmluIEkgdXNlIHRoZXJlIGlzCm5vIGlzc3VlIHdpdGggNC4y
+MC1yYzEuCgpEbyB5b3Ugb2JzZXJ2ZSB0aGlzIGlzc3VlIHdpdGggdGhlIGFybTY0IGRlZmNvbmZp
+ZyBvciBkbyB5b3UgaGF2ZSBzb21lCnNwZWNpZmljIGNvbmZpZ3VyYXRpb24gb3B0aW9uPwoKVGhh
+bmtzLAoKR3JlZ29yeQoKCgo+IC0tLQo+ICAuLi4vYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtYXA4
+MDYtcXVhZC5kdHNpICAgfCAgNCAtLS0KPiAgYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2Fy
+bWFkYS1hcDgwNi5kdHNpIHwgMjcgLS0tLS0tLS0tLS0tLS0tLS0tLQo+ICAyIGZpbGVzIGNoYW5n
+ZWQsIDMxIGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMv
+bWFydmVsbC9hcm1hZGEtYXA4MDYtcXVhZC5kdHNpIGIvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2
+ZWxsL2FybWFkYS1hcDgwNi1xdWFkLmR0c2kKPiBpbmRleCA2NDYzMmM4NzM4ODguLjAxZWE2NjJh
+ZmJhOCAxMDA2NDQKPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWFw
+ODA2LXF1YWQuZHRzaQo+ICsrKyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEt
+YXA4MDYtcXVhZC5kdHNpCj4gQEAgLTIwLDI4ICsyMCwyNCBAQAo+ICAJCQljb21wYXRpYmxlID0g
+ImFybSxjb3J0ZXgtYTcyIiwgImFybSxhcm12OCI7Cj4gIAkJCXJlZyA9IDwweDAwMD47Cj4gIAkJ
+CWVuYWJsZS1tZXRob2QgPSAicHNjaSI7Cj4gLQkJCWNwdS1pZGxlLXN0YXRlcyA9IDwmQ1BVX1NM
+RUVQXzA+Owo+ICAJCX07Cj4gIAkJY3B1MTogY3B1QDEgewo+ICAJCQlkZXZpY2VfdHlwZSA9ICJj
+cHUiOwo+ICAJCQljb21wYXRpYmxlID0gImFybSxjb3J0ZXgtYTcyIiwgImFybSxhcm12OCI7Cj4g
+IAkJCXJlZyA9IDwweDAwMT47Cj4gIAkJCWVuYWJsZS1tZXRob2QgPSAicHNjaSI7Cj4gLQkJCWNw
+dS1pZGxlLXN0YXRlcyA9IDwmQ1BVX1NMRUVQXzA+Owo+ICAJCX07Cj4gIAkJY3B1MjogY3B1QDEw
+MCB7Cj4gIAkJCWRldmljZV90eXBlID0gImNwdSI7Cj4gIAkJCWNvbXBhdGlibGUgPSAiYXJtLGNv
+cnRleC1hNzIiLCAiYXJtLGFybXY4IjsKPiAgCQkJcmVnID0gPDB4MTAwPjsKPiAgCQkJZW5hYmxl
+LW1ldGhvZCA9ICJwc2NpIjsKPiAtCQkJY3B1LWlkbGUtc3RhdGVzID0gPCZDUFVfU0xFRVBfMD47
+Cj4gIAkJfTsKPiAgCQljcHUzOiBjcHVAMTAxIHsKPiAgCQkJZGV2aWNlX3R5cGUgPSAiY3B1IjsK
+PiAgCQkJY29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE3MiIsICJhcm0sYXJtdjgiOwo+ICAJCQly
+ZWcgPSA8MHgxMDE+Owo+ICAJCQllbmFibGUtbWV0aG9kID0gInBzY2kiOwo+IC0JCQljcHUtaWRs
+ZS1zdGF0ZXMgPSA8JkNQVV9TTEVFUF8wPjsKPiAgCQl9Owo+ICAJfTsKPiAgfTsKPiBkaWZmIC0t
+Z2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS1hcDgwNi5kdHNpIGIvYXJj
+aC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS1hcDgwNi5kdHNpCj4gaW5kZXggMDczNjEw
+YWMwYTUzLi43ZDk0YzFmYTU5MmEgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9t
+YXJ2ZWxsL2FybWFkYS1hcDgwNi5kdHNpCj4gKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2
+ZWxsL2FybWFkYS1hcDgwNi5kdHNpCj4gQEAgLTI4LDMzICsyOCw2IEBACj4gIAkJbWV0aG9kID0g
+InNtYyI7Cj4gIAl9Owo+ICAKPiAtCWNwdXMgewo+IC0JCSNhZGRyZXNzLWNlbGxzID0gPDE+Owo+
+IC0JCSNzaXplLWNlbGxzID0gPDA+Owo+IC0KPiAtCQlpZGxlX3N0YXRlcyB7Cj4gLQkJCWVudHJ5
+X21ldGhvZCA9ICJhcm0scGNzaSI7Cj4gLQo+IC0JCQlDUFVfU0xFRVBfMDogY3B1LXNsZWVwLTAg
+ewo+IC0JCQkJY29tcGF0aWJsZSA9ICJhcm0saWRsZS1zdGF0ZSI7Cj4gLQkJCQlsb2NhbC10aW1l
+ci1zdG9wOwo+IC0JCQkJYXJtLHBzY2ktc3VzcGVuZC1wYXJhbSA9IDwweDAwMTAwMDA+Owo+IC0J
+CQkJZW50cnktbGF0ZW5jeS11cyA9IDw4MD47Cj4gLQkJCQlleGl0LWxhdGVuY3ktdXMgID0gPDE2
+MD47Cj4gLQkJCQltaW4tcmVzaWRlbmN5LXVzID0gPDMyMD47Cj4gLQkJCX07Cj4gLQo+IC0JCQlD
+TFVTVEVSX1NMRUVQXzA6IGNsdXN0ZXItc2xlZXAtMCB7Cj4gLQkJCQljb21wYXRpYmxlID0gImFy
+bSxpZGxlLXN0YXRlIjsKPiAtCQkJCWxvY2FsLXRpbWVyLXN0b3A7Cj4gLQkJCQlhcm0scHNjaS1z
+dXNwZW5kLXBhcmFtID0gPDB4MTAxMDAwMD47Cj4gLQkJCQllbnRyeS1sYXRlbmN5LXVzID0gPDUw
+MD47Cj4gLQkJCQlleGl0LWxhdGVuY3ktdXMgPSA8MTAwMD47Cj4gLQkJCQltaW4tcmVzaWRlbmN5
+LXVzID0gPDI1MDA+Owo+IC0JCQl9Owo+IC0JCX07Cj4gLQl9Owo+IC0KPiAgCWFwODA2IHsKPiAg
+CQkjYWRkcmVzcy1jZWxscyA9IDwyPjsKPiAgCQkjc2l6ZS1jZWxscyA9IDwyPjsKPiAtLSAKPiAy
+LjE5LjIKPgo+Cj4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X18KPiBsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdAo+IGxpbnV4LWFybS1rZXJuZWxAbGlz
+dHMuaW5mcmFkZWFkLm9yZwo+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlz
+dGluZm8vbGludXgtYXJtLWtlcm5lbAoKLS0gCkdyZWdvcnkgQ2xlbWVudCwgQm9vdGxpbgpFbWJl
+ZGRlZCBMaW51eCBhbmQgS2VybmVsIGVuZ2luZWVyaW5nCmh0dHA6Ly9ib290bGluLmNvbQoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtl
+cm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0
+dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5l
+bAo=
