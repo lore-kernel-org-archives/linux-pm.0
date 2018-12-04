@@ -1,8 +1,7 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 4/7] ata: ahci: mvebu: add Armada 3700 initialization
- needed for S2RAM
-Date: Tue,  4 Dec 2018 20:28:28 +0100
-Message-ID: <20181204192831.12440-5-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 6/7] ARM64: dts: marvell: armada-37xx: declare SATA clock
+Date: Tue,  4 Dec 2018 20:28:30 +0100
+Message-ID: <20181204192831.12440-7-miquel.raynal@bootlin.com>
 References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,90 +21,24 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-A3700 comphy initialization is done in the firmware (TF-A). Looking at
-the SATA PHY initialization routine, there is a comment about "vendor
-specific" registers. Two registers are mentioned. They are not
-initialized there in the firmware because they are AHCI related, while
-the firmware at this location does only PHY configuration. The
-solution to avoid doing such initialization is relying on U-Boot.
-
-While this work at boot time, U-Boot is definitely not going to run
-during a resume after suspending to RAM.
-
-Two possible solutions were considered:
-* Fixing the firmware.
-* Fixing the kernel driver.
-
-The first solution would take ages to propagate, while the second
-solution is easy to implement as the driver as been a little bit
-reworked to prepare for such platform configuration. Hence, this patch
-adds an Armada 3700 configuration function to set these two registers
-both at boot time (in the probe) and after a suspend (in the resume
-path).
+The SATA IP get its clock from the north-bridge.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- drivers/ata/ahci_mvebu.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
-index 7839a5df1fd2..bbab688d3c34 100644
---- a/drivers/ata/ahci_mvebu.c
-+++ b/drivers/ata/ahci_mvebu.c
-@@ -82,6 +82,19 @@ static int ahci_mvebu_armada_380_config(struct ahci_host_priv *hpriv)
- 	return rc;
- }
+diff --git a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
+index 036d6fd6c9ef..65bf774516ec 100644
+--- a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
+@@ -389,6 +389,7 @@
+ 				compatible = "marvell,armada-3700-ahci";
+ 				reg = <0xe0000 0x178>;
+ 				interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
++				clocks = <&nb_periph_clk 1>;
+ 				status = "disabled";
+ 			};
  
-+static int ahci_mvebu_armada_3700_config(struct ahci_host_priv *hpriv)
-+{
-+	u32 reg;
-+
-+	writel(0, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_ADDR);
-+
-+	reg = readl(hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
-+	reg |= BIT(6);
-+	writel(reg, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
-+
-+	return 0;
-+}
-+
- /**
-  * ahci_mvebu_stop_engine
-  *
-@@ -148,8 +161,7 @@ static int ahci_mvebu_resume(struct platform_device *pdev)
- 	struct ahci_host_priv *hpriv = host->private_data;
- 	const struct ahci_mvebu_plat_data *pdata = hpriv->plat_data;
- 
--	if (pdata->plat_config)
--		pdata->plat_config(hpriv);
-+	pdata->plat_config(hpriv);
- 
- 	return ahci_platform_resume_host(&pdev->dev);
- }
-@@ -191,12 +203,9 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
- 
- 	hpriv->stop_engine = ahci_mvebu_stop_engine;
- 
--	pdata = hpriv->plat_data;
--	if (pdata->plat_config) {
--		rc = pdata->plat_config(hpriv);
--		if (rc)
--			goto disable_resources;
--	}
-+	rc = pdata->plat_config(hpriv);
-+	if (rc)
-+		goto disable_resources;
- 
- 	rc = ahci_platform_init_host(pdev, hpriv, &ahci_mvebu_port_info,
- 				     &ahci_platform_sht);
-@@ -215,7 +224,7 @@ static const struct ahci_mvebu_plat_data ahci_mvebu_armada_380_plat_data = {
- };
- 
- static const struct ahci_mvebu_plat_data ahci_mvebu_armada_3700_plat_data = {
--	.plat_config = NULL,
-+	.plat_config = ahci_mvebu_armada_3700_config,
- };
- 
- static const struct of_device_id ahci_mvebu_of_match[] = {
 -- 
 2.19.1
