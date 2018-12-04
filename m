@@ -1,91 +1,35 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v11 1/2] dt-bindings: cpufreq: Introduce QCOM CPUFREQ Firmware
- bindings
-Date: Mon, 03 Dec 2018 15:57:53 -0800
-Message-ID: <154388147333.88331.17115812518434146640@swboyd.mtv.corp.google.com>
-References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
- <1543722903-10989-2-git-send-email-tdas@codeaurora.org>
- <20181203230907.GA17086@bogus>
+From: Moritz Fischer <moritz.fischer.private@gmail.com>
+Subject: Re: [PATCH] power: reset: gpio-poweroff: add ability to specific
+ active and inactive delays
+Date: Mon, 3 Dec 2018 16:22:20 -0800
+Message-ID: <CAJYdmeOyYAiN4jpKzOAepXRgSrzWgO4qWjvV+9qMMYzA2OzL6A@mail.gmail.com>
+References: <20181111214538.32477-1-heiko@sntech.de> <20181203234923.GA29934@bogus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181203230907.GA17086@bogus>
+In-Reply-To: <20181203234923.GA29934@bogus>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Taniya Das <tdas@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
+To: Rob Herring <robh@kernel.org>
+Cc: heiko@sntech.de, sre@kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, Devicetree List <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, heiko.stuebner@bq.com
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Rob Herring (2018-12-03 15:09:07)
-> On Sun, Dec 02, 2018 at 09:25:02AM +0530, Taniya Das wrote:
-> > Add QCOM cpufreq firmware device bindings for Qualcomm Technology Inc's
-> > SoCs. This is required for managing the cpu frequency transitions which=
- are
-> > controlled by the hardware engine.
-> > =
-
-> > Signed-off-by: Taniya Das <tdas@codeaurora.org>
+On Mon, Dec 3, 2018 at 3:49 PM Rob Herring <robh@kernel.org> wrote:
+>
+> On Sun, 11 Nov 2018 22:45:38 +0100, Heiko Stuebner wrote:
+> > From: Heiko Stuebner <heiko.stuebner@bq.com>
+> >
+> > Similar to gpio-reset allow to specify active and inactive delays
+> > while keeping the 100ms defaults that were used previously all the time.
+> >
+> > The dt-properties are named the same as in gpio-reset but get an "-ms"
+> > suffix as properties should contain such a suffix specifying its unit.
+> >
+> > Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
 > > ---
-> >  .../bindings/cpufreq/cpufreq-qcom-hw.txt           | 172 +++++++++++++=
-++++++++
-> >  1 file changed, 172 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-q=
-com-hw.txt
-> > =
-
-> > diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.=
-txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> > new file mode 100644
-> > index 0000000..2b82965
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> > @@ -0,0 +1,172 @@
-> > +Qualcomm Technologies, Inc. CPUFREQ Bindings
-> > +
-> > +CPUFREQ HW is a hardware engine used by some Qualcomm Technologies, In=
-c. (QTI)
-> > +SoCs to manage frequency in hardware. It is capable of controlling fre=
-quency
-> > +for multiple clusters.
-> > +
-> > +Properties:
-> > +- compatible
-> > +     Usage:          required
-> > +     Value type:     <string>
-> > +     Definition:     must be "qcom,cpufreq-hw".
-> > +
-> > +- clocks
-> > +     Usage:          required
-> > +     Value type:     <phandle> From common clock binding.
-> > +     Definition:     clock handle for XO clock and GPLL0 clock.
-> > +
-> > +- clock-names
-> > +     Usage:          required
-> > +     Value type:     <string> From common clock binding.
-> > +     Definition:     must be "xo", "alternate".
-> > +
-> > +- reg
-> > +     Usage:          required
-> > +     Value type:     <prop-encoded-array>
-> > +     Definition:     Addresses and sizes for the memory of the HW base=
-s in
-> > +                     each frequency domain.
-> > +- reg-names
-> > +     Usage:          Optional
-> > +     Value type:     <string>
-> > +     Definition:     Frequency domain name i.e.
-> > +                     "freq-domain0", "freq-domain1".
-> > +
-> > +- freq-domain-cells:
-> =
-
-> #freq-domain-cells
-> =
-
-> Otherwise,
-> =
-
+> >  .../devicetree/bindings/power/reset/gpio-poweroff.txt  |  2 ++
+> >  drivers/power/reset/gpio-poweroff.c                    | 10 ++++++++--
+> >  2 files changed, 10 insertions(+), 2 deletions(-)
+> >
+>
 > Reviewed-by: Rob Herring <robh@kernel.org>
-
-Or should it be #qcom,freq-domain-cells? That would match the same stem
-of the property used in the cpu node.
+Reviewed-by: Moritz Fischer <mdf@kernel.org>
