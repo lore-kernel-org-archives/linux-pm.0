@@ -1,138 +1,58 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 3/5] devfreq: add devfreq_suspend/resume() functions
-Date: Tue, 04 Dec 2018 15:19:32 +0900
-Message-ID: <5C061C74.808@samsung.com>
-References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181203143132eucas1p128c029a7c7461e1127924a08e4a71811@eucas1p1.samsung.com>
-        <1543847475-7600-4-git-send-email-l.luba@partner.samsung.com>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v19 0/5] iommu/arm-smmu: Add runtime pm/sleep support
+Date: Tue,  4 Dec 2018 11:52:08 +0530
+Message-ID: <20181204062213.6875-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1543847475-7600-4-git-send-email-l.luba@partner.samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+Changes since v18:
+ - Addressing Stephen's comment [5]:
+     Replaced the entire clock bulk data filling and handling with
+     devm_clk_bulk_get_all().
 
-On 2018년 12월 03일 23:31, Lukasz Luba wrote:
-> This patch adds implementation for global suspend/resume for
-> devfreq framework. System suspend will next use these functions.
-> 
-> The patch is based on earlier work by Tobias Jakobi.
+Changes since v17:
+ - Addressing Will's comment to embed Thor's change [2] for pulling
+   clocks information from device tree. This is done by squashing
+   Thor's change [2] in v17's 1/5 patch [3].
+ - Another minor change is addition of runtime pm hooks to
+   arm_smmu_iova_to_phys_hard().
 
-Please remove it from each patch description.
+Previous version of this patch series is @ [1].
+Also refer to [4] for change logs for previous versions.
 
-> 
-> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/devfreq.h   |  6 ++++++
->  2 files changed, 48 insertions(+)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 36bed24..7d60423 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -935,6 +935,48 @@ int devfreq_resume_device(struct devfreq *devfreq)
->  EXPORT_SYMBOL(devfreq_resume_device);
->  
->  /**
-> + * devfreq_suspend() - Suspend devfreq governors and devices
-> + *
-> + * Called during system wide Suspend/Hibernate cycles for suspending governors
-> + * and devices preserving the state for resume. On some platforms the devfreq
-> + * device must have precise state (frequency) after resume in order to provide
-> + * fully operating setup.
-> + */
-> +void devfreq_suspend(void)
-> +{
-> +	struct devfreq *devfreq;
-> +	int ret;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	list_for_each_entry(devfreq, &devfreq_list, node) {
-> +		ret = devfreq_suspend_device(devfreq);
-> +		if (ret)
-> +			dev_warn(&devfreq->dev, "device suspend failed\n");
+[1] https://lore.kernel.org/patchwork/cover/1017699/
+[2] https://lore.kernel.org/patchwork/patch/996143/
+[3] https://lore.kernel.org/patchwork/patch/1013167/
+[4] https://lore.kernel.org/patchwork/cover/979429/
+[5] https://lore.kernel.org/patchwork/patch/1017700/
 
-When I checked the cpufreq_suspend(), cpufreq_suspend() prints message as 'err' level.
-I think that dev_err is more proper than dev_warn.
+Sricharan R (3):
+  iommu/arm-smmu: Add pm_runtime/sleep ops
+  iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
+  iommu/arm-smmu: Add the device_link between masters and smmu
 
-I'm not sure what is more correct log.
-But, 'devfreq->dev' device has the separate suspend/resume function.
-So, I think that devfreq_suspend() should print error log containing
-that it is error by devfreq framework.
+Vivek Gautam (2):
+  dt-bindings: arm-smmu: Add bindings for qcom,smmu-v2
+  iommu/arm-smmu: Add support for qcom,smmu-v2 variant
 
-"device suspend failed"
--> "failed to suspend devfreq device"
-
-> +	}
-> +	mutex_unlock(&devfreq_list_lock);
-> +}
-> +
-> +/**
-> + * devfreq_resume() - Resume devfreq governors and devices
-> + *
-> + * Called during system wide Suspend/Hibernate cycle for resuming governors and
-> + * devices that are suspended with devfreq_suspend().
-> + */
-> +void devfreq_resume(void)
-> +{
-> +	struct devfreq *devfreq;
-> +	int ret;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	list_for_each_entry(devfreq, &devfreq_list, node) {
-> +		ret = devfreq_resume_device(devfreq);
-> +		if (ret)
-> +			dev_warn(&devfreq->dev, "device resume failed\n");
-
-ditto.
-
-"device resume failed"
--> "failed to resume devfreq device"
-
-
-> +	}
-> +	mutex_unlock(&devfreq_list_lock);
-> +}
-> +
-> +/**
->   * devfreq_add_governor() - Add devfreq governor
->   * @governor:	the devfreq governor to be added
->   */
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index d985199..fbffa74 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -205,6 +205,9 @@ extern void devm_devfreq_remove_device(struct device *dev,
->  extern int devfreq_suspend_device(struct devfreq *devfreq);
->  extern int devfreq_resume_device(struct devfreq *devfreq);
->  
-> +extern void devfreq_suspend(void);
-> +extern void devfreq_resume(void);
-> +
->  /**
->   * update_devfreq() - Reevaluate the device and configure frequency
->   * @devfreq:	the devfreq device
-> @@ -331,6 +334,9 @@ static inline int devfreq_resume_device(struct devfreq *devfreq)
->  	return 0;
->  }
->  
-> +static inline void devfreq_suspend(void) {}
-> +static inline void devfreq_resume(void) {}
-> +
->  static inline struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
->  					   unsigned long *freq, u32 flags)
->  {
-> 
+ .../devicetree/bindings/iommu/arm,smmu.txt         |  39 +++++
+ drivers/iommu/arm-smmu.c                           | 170 +++++++++++++++++++--
+ 2 files changed, 197 insertions(+), 12 deletions(-)
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
