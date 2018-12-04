@@ -1,8 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 3/6] dt-bindings: ap806: document the thermal interrupt
+Subject: [PATCH v3 4/6] dt-bindings: cp110: document the thermal interrupt
  capabilities
-Date: Tue,  4 Dec 2018 20:03:29 +0100
-Message-ID: <20181204190332.10351-4-miquel.raynal@bootlin.com>
+Date: Tue,  4 Dec 2018 20:03:30 +0100
+Message-ID: <20181204190332.10351-5-miquel.raynal@bootlin.com>
 References: <20181204190332.10351-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -27,38 +27,40 @@ Describe them.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- .../bindings/arm/marvell/ap806-system-controller.txt      | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ .../bindings/arm/marvell/cp110-system-controller.txt     | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-index 3fd21bb7cb37..35e8dd2edfd2 100644
---- a/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/ap806-system-controller.txt
-@@ -114,12 +114,18 @@ Documentation/devicetree/bindings/thermal/thermal.txt
+diff --git a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+index 81ce742d2760..4db4119a6d19 100644
+--- a/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
++++ b/Documentation/devicetree/bindings/arm/marvell/cp110-system-controller.txt
+@@ -199,6 +199,9 @@ Thermal:
  The thermal IP can probe the temperature all around the processor. It
  may feature several channels, each of them wired to one sensor.
  
 +It is possible to setup an overheat interrupt by giving at least one
 +critical point to any subnode of the thermal-zone node.
 +
- Required properties:
- - compatible: must be one of:
-   * marvell,armada-ap806-thermal
+ For common binding part and usage, refer to
+ Documentation/devicetree/bindings/thermal/thermal.txt
+ 
+@@ -208,6 +211,11 @@ Required properties:
  - reg: register range associated with the thermal functions.
  
  Optional properties:
-+- interrupt-parent/interrupts: overheat interrupt handle. Should point to
-+  line 18 of the SEI irqchip.
++- interrupts-extended: overheat interrupt handle. Should point to
++  a line of the ICU-SEI irqchip (116 is what is usually used by the
++  firmware). The ICU-SEI will redirect towards interrupt line #37 of the
++  AP SEI which is shared across all CPs.
 +  See interrupt-controller/interrupts.txt
  - #thermal-sensor-cells: shall be <1> when thermal-zones subnodes refer
    to this IP and represents the channel ID. There is one sensor per
-   channel. O refers to the thermal IP internal channel, while positive
-@@ -133,6 +139,8 @@ ap_syscon1: system-controller@6f8000 {
- 	ap_thermal: thermal-sensor@80 {
- 		compatible = "marvell,armada-ap806-thermal";
- 		reg = <0x80 0x10>;
-+		interrupt-parent = <&sei>;
-+		interrupts = <18>;
+   channel. O refers to the thermal IP internal channel.
+@@ -220,6 +228,7 @@ CP110_LABEL(syscon1): system-controller@6f8000 {
+ 	CP110_LABEL(thermal): thermal-sensor@70 {
+ 		compatible = "marvell,armada-cp110-thermal";
+ 		reg = <0x70 0x10>;
++		interrupts-extended = <&CP110_LABEL(icu_sei) 116 IRQ_TYPE_LEVEL_HIGH>;
  		#thermal-sensor-cells = <1>;
  	};
  };
