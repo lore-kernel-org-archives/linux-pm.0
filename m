@@ -1,60 +1,65 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v19 5/5] iommu/arm-smmu: Add support for qcom,
- smmu-v2 variant
-Date: Tue,  4 Dec 2018 11:52:13 +0530
-Message-ID: <20181204062213.6875-6-vivek.gautam@codeaurora.org>
-References: <20181204062213.6875-1-vivek.gautam@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] opp: Add API for getting voltage from supplies
+Date: Tue, 4 Dec 2018 13:51:58 +0530
+Message-ID: <20181204082158.rb7uzdiwmcotwoxh@vireshk-i7>
+References: <1543906760-15631-1-git-send-email-Nick.Fan@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20181204062213.6875-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1543906760-15631-1-git-send-email-Nick.Fan@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Fan <Nick.Fan@mediatek.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, tfiga@chromium.org, Chiawen.Lee@mediatek.com, erin.lo@mediatek.com
 List-Id: linux-pm@vger.kernel.org
 
-cWNvbSxzbW11LXYyIGlzIGFuIGFybSxzbW11LXYyIGltcGxlbWVudGF0aW9uIHdpdGggc3BlY2lm
-aWMKY2xvY2sgYW5kIHBvd2VyIHJlcXVpcmVtZW50cy4KT24gbXNtODk5NiwgbXVsdGlwbGUgY29y
-ZXMsIHZpei4gbWRzcywgdmlkZW8sIGV0Yy4gdXNlIHRoaXMKc21tdS4gT24gc2RtODQ1LCB0aGlz
-IHNtbXUgaXMgdXNlZCB3aXRoIGdwdS4KQWRkIGJpbmRpbmdzIGZvciB0aGUgc2FtZS4KClNpZ25l
-ZC1vZmYtYnk6IFZpdmVrIEdhdXRhbSA8dml2ZWsuZ2F1dGFtQGNvZGVhdXJvcmEub3JnPgpSZXZp
-ZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4KUmV2aWV3ZWQtYnk6IFRvbWFz
-eiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5vcmc+ClRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRs
-YSA8c3Jpbml2YXMua2FuZGFnYXRsYUBsaW5hcm8ub3JnPgpSZXZpZXdlZC1ieTogUm9iaW4gTXVy
-cGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNvbT4KLS0tCgpDaGFuZ2VzIHNpbmNlIHYxODoKIE5vbmUu
-CgogZHJpdmVycy9pb21tdS9hcm0tc21tdS5jIHwgMyArKysKIDEgZmlsZSBjaGFuZ2VkLCAzIGlu
-c2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMgYi9kcml2
-ZXJzL2lvbW11L2FybS1zbW11LmMKaW5kZXggYjZiMTE2NDJiM2E5Li5iYTE4ZDg5ZDQ3MzIgMTAw
-NjQ0Ci0tLSBhL2RyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYworKysgYi9kcml2ZXJzL2lvbW11L2Fy
-bS1zbW11LmMKQEAgLTEyMCw2ICsxMjAsNyBAQCBlbnVtIGFybV9zbW11X2ltcGxlbWVudGF0aW9u
-IHsKIAlHRU5FUklDX1NNTVUsCiAJQVJNX01NVTUwMCwKIAlDQVZJVU1fU01NVVYyLAorCVFDT01f
-U01NVVYyLAogfTsKIAogc3RydWN0IGFybV9zbW11X3MyY3IgewpAQCAtMjAzMCw2ICsyMDMxLDcg
-QEAgQVJNX1NNTVVfTUFUQ0hfREFUQShzbW11X2dlbmVyaWNfdjIsIEFSTV9TTU1VX1YyLCBHRU5F
-UklDX1NNTVUpOwogQVJNX1NNTVVfTUFUQ0hfREFUQShhcm1fbW11NDAxLCBBUk1fU01NVV9WMV82
-NEssIEdFTkVSSUNfU01NVSk7CiBBUk1fU01NVV9NQVRDSF9EQVRBKGFybV9tbXU1MDAsIEFSTV9T
-TU1VX1YyLCBBUk1fTU1VNTAwKTsKIEFSTV9TTU1VX01BVENIX0RBVEEoY2F2aXVtX3NtbXV2Miwg
-QVJNX1NNTVVfVjIsIENBVklVTV9TTU1VVjIpOworQVJNX1NNTVVfTUFUQ0hfREFUQShxY29tX3Nt
-bXV2MiwgQVJNX1NNTVVfVjIsIFFDT01fU01NVVYyKTsKIAogc3RhdGljIGNvbnN0IHN0cnVjdCBv
-Zl9kZXZpY2VfaWQgYXJtX3NtbXVfb2ZfbWF0Y2hbXSA9IHsKIAl7IC5jb21wYXRpYmxlID0gImFy
-bSxzbW11LXYxIiwgLmRhdGEgPSAmc21tdV9nZW5lcmljX3YxIH0sCkBAIC0yMDM4LDYgKzIwNDAs
-NyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBhcm1fc21tdV9vZl9tYXRjaFtd
-ID0gewogCXsgLmNvbXBhdGlibGUgPSAiYXJtLG1tdS00MDEiLCAuZGF0YSA9ICZhcm1fbW11NDAx
-IH0sCiAJeyAuY29tcGF0aWJsZSA9ICJhcm0sbW11LTUwMCIsIC5kYXRhID0gJmFybV9tbXU1MDAg
-fSwKIAl7IC5jb21wYXRpYmxlID0gImNhdml1bSxzbW11LXYyIiwgLmRhdGEgPSAmY2F2aXVtX3Nt
-bXV2MiB9LAorCXsgLmNvbXBhdGlibGUgPSAicWNvbSxzbW11LXYyIiwgLmRhdGEgPSAmcWNvbV9z
-bW11djIgfSwKIAl7IH0sCiB9OwogTU9EVUxFX0RFVklDRV9UQUJMRShvZiwgYXJtX3NtbXVfb2Zf
-bWF0Y2gpOwotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5vdmF0
-aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9zdGVk
-IGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9mcmVlZHJlbm8K
+On 04-12-18, 14:59, Nick Fan wrote:
+> Add API to get voltage for multiple supplies from opp table
+
+And who needs to use this new API ? It would be better to add the user in the
+same series to make sure this really gets used.
+
+> Signed-off-by: Nick Fan <Nick.Fan@mediatek.com>
+> ---
+>  drivers/opp/core.c     | 28 ++++++++++++++++++++++++++++
+>  include/linux/pm_opp.h |  3 +++
+>  2 files changed, 31 insertions(+)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 2c2df4e..ee73546 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -113,6 +113,34 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
+>  
+>  /**
+> + * dev_pm_opp_get_voltage_supply() - Gets the voltage corresponding to an opp
+> + * with index
+> + * @opp:        opp for which voltage has to be returned for
+> + * @index:      index to specify the returned supplies
+> + *
+> + * Return: voltage in micro volt corresponding to the opp with index, else
+> + * return 0
+> + *
+> + * This is useful for devices with multiple power supplies.
+> + */
+> +unsigned long dev_pm_opp_get_voltage_supply(struct dev_pm_opp *opp,
+> +					    unsigned int index)
+
+How will the users of this API get the index ?
+
+> +{
+> +	if (IS_ERR_OR_NULL(opp)) {
+> +		pr_err("%s: Invalid parameters\n", __func__);
+> +		return 0;
+> +	}
+> +
+> +	if (index >= opp->opp_table->regulator_count) {
+> +		pr_err("%s: Invalid supply index: %u\n", __func__, index);
+> +		return 0;
+> +	}
+> +
+> +	return opp->supplies[index].u_volt;
+
+-- 
+viresh
