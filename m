@@ -1,106 +1,133 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/7] powerpc: change CONFIG_6xx to CONFIG_PPC_BOOK3S_32
-Date: Tue, 04 Dec 2018 14:55:36 +1100
-Message-ID: <877egqhrnr.fsf@concordia.ellerman.id.au>
-References: <aeeaafbdf0357f8bdb8ffd86822a0ddfd5521fd6.1542395798.git.christophe.leroy@c-s.fr> <73b5e7a43bb5979ac534d1c236adb2e04f9d6307.1542395798.git.christophe.leroy@c-s.fr> <CA+7wUsx3iZhPH0uwukRNXaT_ZygaqKNXaNf=kcwoJ9nGqTb2Mw@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 1/5] devfreq: refactor set_target frequency function
+Date: Tue, 04 Dec 2018 13:39:45 +0900
+Message-ID: <5C060511.8020802@samsung.com>
+References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181203143129eucas1p2955b6becc60ee57110cbc52f6e4f60c5@eucas1p2.samsung.com>
+        <1543847475-7600-2-git-send-email-l.luba@partner.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+7wUsx3iZhPH0uwukRNXaT_ZygaqKNXaNf=kcwoJ9nGqTb2Mw@mail.gmail.com>
+In-reply-to: <1543847475-7600-2-git-send-email-l.luba@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mathieu Malaterre <malat@debian.org>, Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, rjw@rjwysocki.net, viresh.kumar@linaro.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Mathieu Malaterre <malat@debian.org> writes:
-> On Sat, Nov 17, 2018 at 11:29 AM Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->>
->> Today we have:
->>
->> config PPC_BOOK3S_32
->>         bool "512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx"
->>         [depends on PPC32 within a choice]
->>
->> config PPC_BOOK3S
->>         def_bool y
->>         depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
->>
->> config 6xx
->>         def_bool y
->>         depends on PPC32 && PPC_BOOK3S
->>
->> 6xx is therefore redundant with PPC_BOOK3S_32.
->>
->> In order to make the code clearer, lets use preferably PPC_BOOK3S_32.
->> This will allow to remove CONFIG_6xx in a later patch.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>  arch/powerpc/Makefile                     |  2 +-
->>  arch/powerpc/include/asm/cache.h          |  2 +-
->>  arch/powerpc/include/asm/mmu.h            |  2 +-
->>  arch/powerpc/include/asm/reg.h            |  2 +-
->>  arch/powerpc/include/asm/time.h           |  2 +-
->>  arch/powerpc/kernel/Makefile              |  2 +-
->>  arch/powerpc/kernel/cpu_setup_6xx.S       |  2 +-
->>  arch/powerpc/kernel/entry_32.S            | 10 +++++-----
->>  arch/powerpc/kernel/head_32.S             | 14 +++++++-------
->>  arch/powerpc/kernel/misc_32.S             |  4 ++--
->>  arch/powerpc/kernel/pmc.c                 |  2 +-
->>  arch/powerpc/kernel/setup_32.c            |  2 +-
->>  arch/powerpc/kernel/sysfs.c               |  2 +-
->>  arch/powerpc/mm/mmu_decl.h                |  2 +-
->>  arch/powerpc/oprofile/Makefile            |  2 +-
->>  arch/powerpc/oprofile/common.c            |  2 +-
->>  arch/powerpc/platforms/powermac/cache.S   |  4 ++--
->>  arch/powerpc/platforms/powermac/feature.c |  2 +-
->>  arch/powerpc/platforms/powermac/sleep.S   |  4 ++--
->>  arch/powerpc/sysdev/Makefile              |  2 +-
->>  20 files changed, 33 insertions(+), 33 deletions(-)
->>
->> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
->> index 8a2ce14d68d0..e259b8a2dd44 100644
->> --- a/arch/powerpc/Makefile
->> +++ b/arch/powerpc/Makefile
->> @@ -241,7 +241,7 @@ KBUILD_CFLAGS       += $(call cc-option,-fno-dwarf2-cfi-asm)
->>  # often slow when they are implemented at all
->>  KBUILD_CFLAGS          += $(call cc-option,-mno-string)
->>
->> -ifdef CONFIG_6xx
->> +ifdef CONFIG_PPC_BOOK3S_32
->>  KBUILD_CFLAGS          += -mcpu=powerpc
->>  endif
->
-> I never quite understood this part. Let say I want to specify 'power4'
-> in arch/powerpc/platforms/Kconfig.cputype as new TARGET_CPU. The line
-> above will always append -mcpu=powerpc *after* a TARGET_CPU=power4
-> which defeat the whole purpose, right ?
+Hi Lukasz,
 
-Yes, I think you're right.
+On 2018년 12월 03일 23:31, Lukasz Luba wrote:
+> The refactoring is needed for the new client in devfreq: suspend.
+> To avoid code duplication, move it to the new local function
+> devfreq_set_target.
+> 
+> The patch is based on earlier work by Tobias Jakobi.
 
-The code above was added in 2006 in f48b8296b315 ("[PATCH] powerpc32:
-Set cpu explicitly in kernel compiles").
+As I already commented, Please remove it. You already mentioned it on cover-letter.
+If you want to contain the contribution history of Tobias, you might better
+to add 'Signed-off-by' or others.
 
-Back then the target CPU selection was 64-bit only, so setting it to
-powerpc always for 6xx was fine.
+> 
+> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+> ---
+>  drivers/devfreq/devfreq.c | 62 +++++++++++++++++++++++++++--------------------
+>  1 file changed, 36 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 1414130..a9fd61b 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -285,6 +285,40 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+>  	return 0;
+>  }
+>  
+> +static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+> +			      u32 flags)
+> +{
+> +	struct devfreq_freqs freqs;
+> +	unsigned long cur_freq;
+> +	int err = 0;
+> +
+> +	if (devfreq->profile->get_cur_freq)
+> +		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+> +	else
+> +		cur_freq = devfreq->previous_freq;
+> +
+> +	freqs.old = cur_freq;
+> +	freqs.new = new_freq;
+> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+> +
+> +	err = devfreq->profile->target(devfreq->dev.parent, &new_freq, flags);
+> +	if (err) {
+> +		freqs.new = cur_freq;
+> +		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+> +		return err;
+> +	}
+> +
+> +	freqs.new = new_freq;
+> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+> +
+> +	if (devfreq_update_status(devfreq, new_freq))
+> +		dev_err(&devfreq->dev,
+> +			"Couldn't update frequency transition information.\n");
+> +
+> +	devfreq->previous_freq = new_freq;
+> +	return err;
+> +}
+> +
+>  /* Load monitoring helper functions for governors use */
+>  
+>  /**
+> @@ -296,8 +330,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+>   */
+>  int update_devfreq(struct devfreq *devfreq)
+>  {
+> -	struct devfreq_freqs freqs;
+> -	unsigned long freq, cur_freq, min_freq, max_freq;
+> +	unsigned long freq, min_freq, max_freq;
+>  	int err = 0;
+>  	u32 flags = 0;
+>  
+> @@ -333,31 +366,8 @@ int update_devfreq(struct devfreq *devfreq)
+>  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+>  	}
+>  
+> -	if (devfreq->profile->get_cur_freq)
+> -		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+> -	else
+> -		cur_freq = devfreq->previous_freq;
+> -
+> -	freqs.old = cur_freq;
+> -	freqs.new = freq;
+> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+> +	return devfreq_set_target(devfreq, freq, flags);
+>  
+> -	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
+> -	if (err) {
+> -		freqs.new = cur_freq;
+> -		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+> -		return err;
+> -	}
+> -
+> -	freqs.new = freq;
+> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+> -
+> -	if (devfreq_update_status(devfreq, freq))
+> -		dev_err(&devfreq->dev,
+> -			"Couldn't update frequency transition information.\n");
+> -
+> -	devfreq->previous_freq = freq;
+> -	return err;
+>  }
+>  EXPORT_SYMBOL(update_devfreq);
+>  
+> 
 
-It was only recently that Christophe made the target CPU selection
-available on 32-bit, see 0e00a8c9fd92 ("powerpc: Allow CPU selection
-also on PPC32").
 
-So since that commit the above has been overriding any specific CPU
-selection it seems, eg:
-  gcc -Wp,-MD,init/.do_mounts.o.d ...
-  -mcpu=powerpc -mbig-endian -m32 ...
-  -mcpu=e300c2 ...
-  -mcpu=powerpc ...
-  ../init/do_mounts.c
-
-That seems like a bug.
-
-It would be good to clean up the CPU selection logic, it's a bit of a
-mess. But for now it's probably best to just move the above snippet
-prior to the TARGET_CPU logic.
-
-cheers
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
