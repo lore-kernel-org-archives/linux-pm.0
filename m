@@ -1,7 +1,8 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 6/7] ARM64: dts: marvell: armada-37xx: declare SATA clock
-Date: Tue,  4 Dec 2018 20:28:30 +0100
-Message-ID: <20181204192831.12440-7-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 5/7] ata: ahci: mvebu: request PHY suspend/resume for
+ Armada 3700
+Date: Tue,  4 Dec 2018 20:28:29 +0100
+Message-ID: <20181204192831.12440-6-miquel.raynal@bootlin.com>
 References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,24 +22,43 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The SATA IP get its clock from the north-bridge.
+A feature has been added in the libahci driver: the possibility to set
+a new flag in hpriv->flags to let the core handle PHY suspend/resume
+automatically. Make use of this feature to make suspend to RAM work
+with SATA drives on A3700.
 
 Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
 ---
- arch/arm64/boot/dts/marvell/armada-37xx.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/ata/ahci_mvebu.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
-index 036d6fd6c9ef..65bf774516ec 100644
---- a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
-@@ -389,6 +389,7 @@
- 				compatible = "marvell,armada-3700-ahci";
- 				reg = <0xe0000 0x178>;
- 				interrupts = <GIC_SPI 27 IRQ_TYPE_LEVEL_HIGH>;
-+				clocks = <&nb_periph_clk 1>;
- 				status = "disabled";
- 			};
+diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
+index bbab688d3c34..d4bba3ace45d 100644
+--- a/drivers/ata/ahci_mvebu.c
++++ b/drivers/ata/ahci_mvebu.c
+@@ -30,6 +30,7 @@
  
+ struct ahci_mvebu_plat_data {
+ 	int (*plat_config)(struct ahci_host_priv *hpriv);
++	unsigned int flags;
+ };
+ 
+ static void ahci_mvebu_mbus_config(struct ahci_host_priv *hpriv,
+@@ -195,6 +196,7 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
+ 	if (IS_ERR(hpriv))
+ 		return PTR_ERR(hpriv);
+ 
++	hpriv->flags |= pdata->flags;
+ 	hpriv->plat_data = (void *)pdata;
+ 
+ 	rc = ahci_platform_enable_resources(hpriv);
+@@ -225,6 +227,7 @@ static const struct ahci_mvebu_plat_data ahci_mvebu_armada_380_plat_data = {
+ 
+ static const struct ahci_mvebu_plat_data ahci_mvebu_armada_3700_plat_data = {
+ 	.plat_config = ahci_mvebu_armada_3700_config,
++	.flags = AHCI_HFLAG_SUSPEND_PHYS,
+ };
+ 
+ static const struct of_device_id ahci_mvebu_of_match[] = {
 -- 
 2.19.1
