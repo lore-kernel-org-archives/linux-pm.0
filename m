@@ -1,52 +1,49 @@
-From: Taniya Das <tdas@codeaurora.org>
-Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
- driver
-Date: Tue, 4 Dec 2018 14:57:19 +0530
-Message-ID: <99d25f02-e595-d4e8-25c4-3c4c206f79a6@codeaurora.org>
-References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
- <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
- <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
+From: Joseph Lo <josephl@nvidia.com>
+Subject: [PATCH 12/19] cpufreq: tegra124: extend to support Tegra210
+Date: Tue, 4 Dec 2018 17:25:41 +0800
+Message-ID: <20181204092548.3038-13-josephl@nvidia.com>
+References: <20181204092548.3038-1-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Stephen Boyd <swboyd@chromium.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181204092548.3038-1-josephl@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thierry Reding <thierry.reding@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Jonathan Hunter <jonathanh@nvidia.com>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Joseph Lo <josephl@nvidia.com>, linux-tegra@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Viresh,
+Tegra210 uses the same methodology as Tegra124 for CPUFreq controlling
+that based on DFLL clock. So extending this driver to support Tegra210.
 
-On 12/4/2018 10:42 AM, Viresh Kumar wrote:
-> Hi Taniya,
-> 
-> Sorry that I haven't been reviewing it much from last few iterations as I was
-> letting others get this into a better shape. Thanks for your efforts..
-> 
-> On 02-12-18, 09:25, Taniya Das wrote:
->> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> 
->> +struct cpufreq_qcom {
->> +	struct cpufreq_frequency_table *table;
->> +	void __iomem *perf_state_reg;
->> +	cpumask_t related_cpus;
->> +};
->> +
->> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-> 
-> Now that the code is much more simplified, I am not sure if you need this
-> per-cpu structure at all. The only place where you are using it is in
-> qcom_cpufreq_hw_cpu_init() and probe(). Why not merge qcom_cpu_resources_init()
-> completely into qcom_cpufreq_hw_cpu_init() and get rid of this structure
-> entirely ?
-> 
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Joseph Lo <josephl@nvidia.com>
+---
+ drivers/cpufreq/tegra124-cpufreq.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Yes, we still would require the per-cpu.
-
+diff --git a/drivers/cpufreq/tegra124-cpufreq.c b/drivers/cpufreq/tegra124-cpufreq.c
+index 448d00763d00..1af955fb715c 100644
+--- a/drivers/cpufreq/tegra124-cpufreq.c
++++ b/drivers/cpufreq/tegra124-cpufreq.c
+@@ -159,7 +159,8 @@ static int __init tegra_cpufreq_init(void)
+ 	int ret;
+ 	struct platform_device *pdev;
+ 
+-	if (!of_machine_is_compatible("nvidia,tegra124"))
++	if (!(of_machine_is_compatible("nvidia,tegra124") ||
++		of_machine_is_compatible("nvidia,tegra210")))
+ 		return -ENODEV;
+ 
+ 	/*
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation.
-
---
+2.19.2
