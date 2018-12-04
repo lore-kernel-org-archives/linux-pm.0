@@ -1,13 +1,11 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 1/7] ata: libahci_platform: comply to PHY framework
-Date: Tue,  4 Dec 2018 20:28:25 +0100
-Message-ID: <20181204192831.12440-2-miquel.raynal@bootlin.com>
-References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
+Date: Tue,  4 Dec 2018 20:28:24 +0100
+Message-ID: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,80 +19,60 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Current implementation of the libahci does not take into account the
-new PHY framework. Correct the situation by adding a call to
-phy_set_mode() before phy_power_on().
-
-PHYs should also be handled at suspend/resume time. For this, call
-ahci_platform_enable/disable_phys() at suspend/resume_host() time. These
-calls are guarded by a HFLAG (AHCI_HFLAG_SUSPEND_PHYS) that the user of
-the libahci driver must set manually in hpriv->flags at probe time. This
-is to avoid breaking users that have not been tested with this change.
-
-Suggested-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
----
- drivers/ata/ahci.h             |  2 ++
- drivers/ata/libahci_platform.c | 13 +++++++++++++
- 2 files changed, 15 insertions(+)
-
-diff --git a/drivers/ata/ahci.h b/drivers/ata/ahci.h
-index ef356e70e6de..8810475f307a 100644
---- a/drivers/ata/ahci.h
-+++ b/drivers/ata/ahci.h
-@@ -254,6 +254,8 @@ enum {
- 	AHCI_HFLAG_IS_MOBILE		= (1 << 25), /* mobile chipset, use
- 							SATA_MOBILE_LPM_POLICY
- 							as default lpm_policy */
-+	AHCI_HFLAG_SUSPEND_PHYS		= (1 << 26), /* handle PHYs during
-+							suspend/resume */
- 
- 	/* ap->flags bits */
- 
-diff --git a/drivers/ata/libahci_platform.c b/drivers/ata/libahci_platform.c
-index 4b900fc659f7..81b1a3332ed6 100644
---- a/drivers/ata/libahci_platform.c
-+++ b/drivers/ata/libahci_platform.c
-@@ -56,6 +56,12 @@ static int ahci_platform_enable_phys(struct ahci_host_priv *hpriv)
- 		if (rc)
- 			goto disable_phys;
- 
-+		rc = phy_set_mode(hpriv->phys[i], PHY_MODE_SATA);
-+		if (rc) {
-+			phy_exit(hpriv->phys[i]);
-+			goto disable_phys;
-+		}
-+
- 		rc = phy_power_on(hpriv->phys[i]);
- 		if (rc) {
- 			phy_exit(hpriv->phys[i]);
-@@ -738,6 +744,9 @@ int ahci_platform_suspend_host(struct device *dev)
- 	writel(ctl, mmio + HOST_CTL);
- 	readl(mmio + HOST_CTL); /* flush */
- 
-+	if (hpriv->flags & AHCI_HFLAG_SUSPEND_PHYS)
-+		ahci_platform_disable_phys(hpriv);
-+
- 	return ata_host_suspend(host, PMSG_SUSPEND);
- }
- EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
-@@ -756,6 +765,7 @@ EXPORT_SYMBOL_GPL(ahci_platform_suspend_host);
- int ahci_platform_resume_host(struct device *dev)
- {
- 	struct ata_host *host = dev_get_drvdata(dev);
-+	struct ahci_host_priv *hpriv = host->private_data;
- 	int rc;
- 
- 	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
-@@ -766,6 +776,9 @@ int ahci_platform_resume_host(struct device *dev)
- 		ahci_init_controller(host);
- 	}
- 
-+	if (hpriv->flags & AHCI_HFLAG_SUSPEND_PHYS)
-+		ahci_platform_enable_phys(hpriv);
-+
- 	ata_host_resume(host);
- 
- 	return 0;
--- 
-2.19.1
+SGVsbG8sCgpBcyBwYXJ0IG9mIGFuIGVmZm9ydCB0byBicmluZyBzdXNwZW5kIHRvIFJBTSBzdXBw
+b3J0IHRvIEFybWFkYSAzNzAwClNvQ3MgKG1haW4gdGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMg
+c2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5kCnRoZSBTQVRBIElQLgoKRmlyc3QsIGEgY2hh
+bmdlIGluIHRoZSBsaWJhaGNpIHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkK
+ZnJhbWV3b3JrIGJ5IGZvbGxvd2luZyB0aGUgcGh5X3NldF9tb2RlKCkvcGh5X3Bvd2VyX29uKCkK
+c2VxdWVuY2UuIFRoZW4sIHRoZSBBSENJIE1WRUJVIGRyaXZlciBpcyBhIGJpdCB1cGRhdGVkIChw
+YXRjaCAyICYgMykKYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhl
+IEEzNzAwIGluIHBhdGNoIDQgKG9ubHkKZG9uZSBieSB0aGUgQm9vdGxvYWRlciBiZWZvcmUpLiBN
+aXNzaW5nIGNsb2NrIHN1cHBvcnQgaXMgaW1wbGVtZW50ZWQKaW4gcGF0Y2ggNSB0byBiZSBzdXJl
+IHRoZSBjbG9jayB3aWxsIGJlIHJlc3VtZWQgYmVmb3JlIHRoaXMgZHJpdmVyCihzZWUgWzFdIGZv
+ciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUpLgoKRmlu
+YWxseSwgZGV2aWNlIHRyZWVzIGFyZSB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIGhhcmR3YXJlOiB0
+aGUgbWlzc2luZwpQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NPYmluIERULCBhbmQgdGhlIGNs
+b2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKRFQgKHBhdGNoIDYgJiA3KS4gQmluZGluZ3MgYWxyZWFk
+eSBkb2N1bWVudCB0aGUgY2xvY2sgYW5kIHRoZSBQSFkgc28Kbm8gdXBkYXRlIGlzIG5lZWRlZCBv
+biB0aGlzIHJlZ2FyZC4KClsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwv
+bGludXgtYXJtLWtlcm5lbC8yMDE4LU5vdmVtYmVyLzYxNDUyNy5odG1sCgpUaGFua3MsCk1pcXXD
+qGwKCkNoYW5nZXMgc2luY2UgdjI6Cj09PT09PT09PT09PT09PT09CiogUmVuYW1lIEFIQ0lfSEZM
+QUdfTUFOQUdFX1BIWVMgLT4gQUhDSV9IRkxBR19TVVNQRU5EX1BIWVMgdG8gY2xlYXJseQogIHN0
+YXRlIHRoYXQgaXQgb25seSBoYXMgYW4gZWZmZWN0IGF0IHN1c3BlbmQvcmVzdW1lIHRpbWUuCiog
+VGhlIGhmbGFnIGlzIG5vdCBwYXNzZWQgdG8gYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2VzKCkg
+YW55bW9yZSBidXQKICBhZGRlZCBtYW51YWxseSBieSB0aGUgdXNlcnMgKGluIG91ciBjYXNlLCBh
+aGNpX212ZWJ1LmMpIGluIHRoZQogIHByb2JlLgoqIFJlZmFjdG9yIGEgYml0IHRoZSBwYXRjaCBi
+cmluZ2luIFMyUkFNIHN1cHBvcnQgdG8gdGhlIGFoY2lfbXZlYnUKICBkcml2ZXIgYnkgc3BsaXR0
+aW5nIHRoZSBjaGFuZ2VzOiBvbmUgcGF0Y2gganVzdCBmb3IgcmVnaXN0ZXJzCiAgaW5pdGlhbGl6
+YXRpb24sIGFub3RoZXIgb25lIHRvIG1ha2UgdXNlIG9mIHRoZSBhYm92ZSBoZmxhZy4KCkNoYW5n
+ZXMgc2luY2UgdjE6Cj09PT09PT09PT09PT09PT09CiogVGhlIGNsb2NrIGlzIGF1dG9tYXRpY2Fs
+bHkgcmVxdWVzdGVkIGJ5IHRoZSBsaWJhaGNpX3BsYXRmb3JtLmMKICBkcml2ZXIsIGRvaW5nIGl0
+IGluIHRoZSBtdmVidSBkcml2ZXIgaXMgcmVkdW5kYW50LCByZW1vdmUgdGhlIHBhdGNoCiAgYWRk
+aW5nIGNsb2NrIHN1cHBvcnQgYXMgY2xvY2sgc3VwcG9ydCBhbHJlYWR5IGV4aXN0cy4KKiBDaGFu
+Z2VkIGF1dGhvcnNoaXAgb2YgcGF0Y2ggYWRkaW5nIGEgU0FUQSBlbnVtIGluIHRoZSBQSFkgY29y
+ZS4KKiBBZGRlZCBTdWdnZXN0ZWQtYnkgdGFnIHRvIHRoZSBwYXRjaCBmaXhpbmcgdGhlIFNBVEEg
+bm9kZSBzY29wZSBpbiBEVCwKICB0byB0aGUgcGF0Y2ggYWRkaW5nIFBIWSBmcmFtZXdvcmsgY29t
+cGxpYW5jZSB0byB0aGUKICBsaWJhaGNpX3BsYXRmb3JtIGRyaXZlciBhbmQgdG8gdGhlIERUIHBh
+dGNoIGFkZGluZyB0aGUgU0FUQSBQSFkKICBwcm9wZXJ0eS4KKiBBZGQgYSBmbGFnIHRvIGRvIG5v
+dCBkaXNhYmxlL2VuYWJsZSB0aGUgUEhZIGZvciBjb21wYXRpYmlsaXR5CiAgcmVhc29ucyBhbmQg
+dG8gYXZvaWQgdG8gYnJlYWsgdW50ZXN0ZWQgYm9hcmRzIHdpdGggdGhpcyBjaGFuZ2UuCiAgVGhl
+IGZsYWcgaXMgY2FsbGVkIEFIQ0lfSEZMQUdfTUFOQUdFX1BIWVMuCiogVGhlIG12ZWJ1IGFoY2kg
+ZHJpdmVyIGlzIGVkaXRlZCB0byBlbmFibGUgdGhpcyBmbGFnIG9ubHkgb24gQTM3MDAuCgoKTWlx
+dWVsIFJheW5hbCAoNyk6CiAgYXRhOiBsaWJhaGNpX3BsYXRmb3JtOiBjb21wbHkgdG8gUEhZIGZy
+YW1ld29yawogIGF0YTogYWhjaTogbXZlYnU6IHJlbW92ZSBzdGFsZSBjb21tZW50CiAgYXRhOiBh
+aGNpOiBtdmVidTogZG8gQXJtYWRhIDM4eCBjb25maWd1cmF0aW9uIG9ubHkgb24gcmVsZXZhbnQg
+U29DcwogIGF0YTogYWhjaTogbXZlYnU6IGFkZCBBcm1hZGEgMzcwMCBpbml0aWFsaXphdGlvbiBu
+ZWVkZWQgZm9yIFMyUkFNCiAgYXRhOiBhaGNpOiBtdmVidTogcmVxdWVzdCBQSFkgc3VzcGVuZC9y
+ZXN1bWUgZm9yIEFybWFkYSAzNzAwCiAgQVJNNjQ6IGR0czogbWFydmVsbDogYXJtYWRhLTM3eHg6
+IGRlY2xhcmUgU0FUQSBjbG9jawogIEFSTTY0OiBkdHM6IG1hcnZlbGw6IGFybWFkYS0zNzIwLWVz
+cHJlc3NvYmluOiBkZWNsYXJlIFNBVEEgUEhZCiAgICBwcm9wZXJ0eQoKIC4uLi9kdHMvbWFydmVs
+bC9hcm1hZGEtMzcyMC1lc3ByZXNzb2Jpbi5kdHMgICB8ICAyICsKIGFyY2gvYXJtNjQvYm9vdC9k
+dHMvbWFydmVsbC9hcm1hZGEtMzd4eC5kdHNpICB8ICAxICsKIGRyaXZlcnMvYXRhL2FoY2kuaCAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyICsKIGRyaXZlcnMvYXRhL2FoY2lfbXZlYnUu
+YyAgICAgICAgICAgICAgICAgICAgICB8IDg3ICsrKysrKysrKysrKysrLS0tLS0KIGRyaXZlcnMv
+YXRhL2xpYmFoY2lfcGxhdGZvcm0uYyAgICAgICAgICAgICAgICB8IDEzICsrKwogNSBmaWxlcyBj
+aGFuZ2VkLCA4MiBpbnNlcnRpb25zKCspLCAyMyBkZWxldGlvbnMoLSkKCi0tIAoyLjE5LjEKCgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
+a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
+aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
+bmVsCg==
