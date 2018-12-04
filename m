@@ -1,65 +1,34 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] opp: Add API for getting voltage from supplies
-Date: Tue, 4 Dec 2018 13:51:58 +0530
-Message-ID: <20181204082158.rb7uzdiwmcotwoxh@vireshk-i7>
-References: <1543906760-15631-1-git-send-email-Nick.Fan@mediatek.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: nforce2: Remove meaningless return
+Date: Tue, 4 Dec 2018 09:46:21 +0100
+Message-ID: <CAJZ5v0iApdOc+kgpUrJGSvtmTsXfCFksWg2PsNekOKHaZbffrA@mail.gmail.com>
+References: <20181130142557.2623-1-tiny.windzz@gmail.com> <CAJZ5v0hPPWx6ZbTPRLRMj_0zSF91ApS3BWgYGj31GqzhX45sYw@mail.gmail.com>
+ <CAEExFWuZmcTLF+hFahucUuHzp81OXTxm5sJu_AooCz+jZJUnvA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1543906760-15631-1-git-send-email-Nick.Fan@mediatek.com>
+In-Reply-To: <CAEExFWuZmcTLF+hFahucUuHzp81OXTxm5sJu_AooCz+jZJUnvA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Fan <Nick.Fan@mediatek.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, tfiga@chromium.org, Chiawen.Lee@mediatek.com, erin.lo@mediatek.com
+To: tiny.windzz@gmail.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04-12-18, 14:59, Nick Fan wrote:
-> Add API to get voltage for multiple supplies from opp table
+On Tue, Dec 4, 2018 at 2:15 AM Frank Lee <tiny.windzz@gmail.com> wrote:
+>
+> On Mon, Dec 3, 2018 at 5:14 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Fri, Nov 30, 2018 at 3:26 PM Yangtao Li <tiny.windzz@gmail.com> wrote:
+> > >
+> > > In a function whose return type is void, returning on the last line is
+> > > not required.So remove it.Also move the module declaration to the end.
+> >
+> > The last piece is not reflected by the subject.
+> >
+> > Also, why do you move the MODULE_ stuff around at all?
+> When writing a driver, in most cases MODULE_  are put to the end.
+> Why not modify this? it is more in line with the habits of most people.
 
-And who needs to use this new API ? It would be better to add the user in the
-same series to make sure this really gets used.
+If you write a new driver, then yes.
 
-> Signed-off-by: Nick Fan <Nick.Fan@mediatek.com>
-> ---
->  drivers/opp/core.c     | 28 ++++++++++++++++++++++++++++
->  include/linux/pm_opp.h |  3 +++
->  2 files changed, 31 insertions(+)
-> 
-> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> index 2c2df4e..ee73546 100644
-> --- a/drivers/opp/core.c
-> +++ b/drivers/opp/core.c
-> @@ -113,6 +113,34 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
->  
->  /**
-> + * dev_pm_opp_get_voltage_supply() - Gets the voltage corresponding to an opp
-> + * with index
-> + * @opp:        opp for which voltage has to be returned for
-> + * @index:      index to specify the returned supplies
-> + *
-> + * Return: voltage in micro volt corresponding to the opp with index, else
-> + * return 0
-> + *
-> + * This is useful for devices with multiple power supplies.
-> + */
-> +unsigned long dev_pm_opp_get_voltage_supply(struct dev_pm_opp *opp,
-> +					    unsigned int index)
-
-How will the users of this API get the index ?
-
-> +{
-> +	if (IS_ERR_OR_NULL(opp)) {
-> +		pr_err("%s: Invalid parameters\n", __func__);
-> +		return 0;
-> +	}
-> +
-> +	if (index >= opp->opp_table->regulator_count) {
-> +		pr_err("%s: Invalid supply index: %u\n", __func__, index);
-> +		return 0;
-> +	}
-> +
-> +	return opp->supplies[index].u_volt;
-
--- 
-viresh
+But why do you want to modify existing drivers this way?  What value
+do you see in those changes, exactly?
