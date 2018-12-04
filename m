@@ -1,50 +1,56 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 06/14] regulator: axp20x: add software based soft_start
- for AXP209 LDO3
-Date: Tue, 4 Dec 2018 15:09:54 +0000
-Message-ID: <20181204150954.GC6809@sirena.org.uk>
-References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
- <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
- <20181127093619.72ensythkx2mhdf5@flea>
- <20181204133144.eqd3dk3jgqm4fbk4@plaes.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 5/7] sched/fair: Enable CFS periodic tick to update
+ thermal pressure
+Date: Tue, 4 Dec 2018 16:43:58 +0100
+Message-ID: <CAKfTPtB18Fh3neT7d6m0fgthE6Zo0am4i9WQ9OriD3FCuZgrRw@mail.gmail.com>
+References: <1539102302-9057-1-git-send-email-thara.gopinath@linaro.org> <1539102302-9057-6-git-send-email-thara.gopinath@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="qjNfmADvan18RZcF"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181204133144.eqd3dk3jgqm4fbk4@plaes.org>
+In-Reply-To: <1539102302-9057-6-git-send-email-thara.gopinath@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Priit Laes <plaes@plaes.org>
-Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
+To: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Zhang Rui <rui.zhang@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Kachhap <amit.kachhap@gmail.com>, viresh kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Quentin Perret <quentin.perret@arm.com>, Ionela Voinescu <ionela.voinescu@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Thara,
 
---qjNfmADvan18RZcF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Tue, 9 Oct 2018 at 18:25, Thara Gopinath <thara.gopinath@linaro.org> wrote:
+>
+> Introduce support in CFS periodic tick to trigger the process of
+> computing average thermal pressure for a cpu.
+>
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> ---
+>  kernel/sched/fair.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index b39fb59..7deb1d0 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -21,6 +21,7 @@
+>   *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra
+>   */
+>  #include "sched.h"
+> +#include "thermal.h"
+>
+>  #include <trace/events/sched.h>
+>
+> @@ -9557,6 +9558,8 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
+>
+>         if (static_branch_unlikely(&sched_numa_balancing))
+>                 task_tick_numa(rq, curr);
+> +
+> +       update_periodic_maxcap(rq);
 
-On Tue, Dec 04, 2018 at 01:31:44PM +0000, Priit Laes wrote:
+You have to call update_periodic_maxcap() in update_blocked_averages() too
+Otherwise, the thermal pressure will not always be updated correctly
+for tickless system
 
-> Yes, makes sense. Although, should we then also distinguish between
-> regulators which support soft-start in hardware and devices which emulate
-> it by delay, like in this case?
-
-Drivers should not be emulating soft start, if they need a ramp delay
-they should set that in their descriptor and let the framework do it.
-
---qjNfmADvan18RZcF
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlwGmMEACgkQJNaLcl1U
-h9CpFQf/SOm+w6bfzdiV1mRAj1uTKpc8/3V/4pVfrGTWO1zcbprN9Bhwx/eucEeR
-hNTs3C6ApYsMW3cYqgbc/FhcNvsTCF4dLs73wkRpTOYV011dtkvJfnyFJZ0gD1ko
-R+G/vg+PO7DAogzZVPbU2/LezobGagpma578ucZVUdesyv4PVOx6RB4Llg07sfIn
-NFGEMfRjjOziJpg24raKgigiZBx54Cz9q7e0b19pJAeYl+Xb1I05QNN2C66Vf853
-ZdLfvbyC+4ucB02jZmydtJqf1YYG58KwcI+2wcx4CCYxzbC7pP3yVGfUxlzLxZjR
-0+ZWUI+2xKFwR1VBuHpWQJ9whgroQg==
-=cKg0
------END PGP SIGNATURE-----
-
---qjNfmADvan18RZcF--
+>  }
+>
+>  /*
+> --
+> 2.1.4
+>
