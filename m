@@ -1,26 +1,41 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/5] dt-bindings: power: supply: Add nvmem properties to
- calibrate FGU
-Date: Tue, 4 Dec 2018 15:09:32 -0600
-Message-ID: <20181204210932.GA26066@bogus>
-References: <cover.1542185618.git.baolin.wang@linaro.org>
- <09143dca85a260cb6c3abc5efcf09075a8050265.1542185618.git.baolin.wang@linaro.org>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v6 20/20] PM: Switch to use %ptR
+Date: Tue,  4 Dec 2018 23:23:30 +0200
+Message-ID: <20181204212330.69515-21-andriy.shevchenko@linux.intel.com>
+References: <20181204212330.69515-1-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <09143dca85a260cb6c3abc5efcf09075a8050265.1542185618.git.baolin.wang@linaro.org>
+In-Reply-To: <20181204212330.69515-1-andriy.shevchenko@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, yuanjiang.yu@unisoc.com, baolin.wang@linaro.org, broonie@kernel.org
+To: Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-rtc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Joe Perches <joe@perches.com>, Mark Salyzyn <salyzyn@android.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org, Rasmus Villemoes <rasmus.villemoes@prevas.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 14 Nov 2018 17:07:04 +0800, Baolin Wang wrote:
-> Add nvmem properties to calibrate FGU from eFuse controller.
-> 
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
->  .../devicetree/bindings/power/supply/sc27xx-fg.txt |    4 ++++
->  1 file changed, 4 insertions(+)
-> 
+Use %ptR instead of open coded variant to print content of
+struct rtc_time in human readable format.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/base/power/trace.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index 1cda505d6a85..b11f47a1e819 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -118,9 +118,7 @@ static unsigned int read_magic_time(void)
+ 	unsigned int val;
+ 
+ 	mc146818_get_time(&time);
+-	pr_info("RTC time: %2d:%02d:%02d, date: %02d/%02d/%02d\n",
+-		time.tm_hour, time.tm_min, time.tm_sec,
+-		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
++	pr_info("RTC time: %ptRt, date: %ptRd\n", &time, &time);
+ 	val = time.tm_year;				/* 100 years */
+ 	if (val > 100)
+ 		val -= 100;
+-- 
+2.19.2
