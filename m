@@ -1,140 +1,84 @@
 From: Priit Laes <plaes@plaes.org>
-Subject: Re: [PATCH 06/14] regulator: axp20x: add software based soft_start
- for AXP209 LDO3
-Date: Tue, 4 Dec 2018 13:31:44 +0000
-Message-ID: <20181204133144.eqd3dk3jgqm4fbk4@plaes.org>
+Subject: Re: [PATCH 09/14] regulator: dts: add full voltage range to LDO4 on
+ the Lime2
+Date: Tue, 4 Dec 2018 14:47:59 +0000
+Message-ID: <20181204144759.thsvooby6txag2yr@plaes.org>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
- <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
- <20181127093619.72ensythkx2mhdf5@flea>
+ <0b1aa5b28cb5efe17c04150a181ef1fa4027bc55.1543245984.git-series.plaes@plaes.org>
+ <20181127093852.2iavgo4xipjnu25l@flea>
+ <20181128095639.t4ogsk6ovyu2yaxu@flea>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181127093619.72ensythkx2mhdf5@flea>
+In-Reply-To: <20181128095639.t4ogsk6ovyu2yaxu@flea>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Maxime Ripard <maxime.ripard@bootlin.com>
 Cc: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 27, 2018 at 10:36:19AM +0100, Maxime Ripard wrote:
-> On Mon, Nov 26, 2018 at 05:27:47PM +0200, Priit Laes wrote:
-> > From: Olliver Schinagl <oliver@schinagl.nl>
-> > 
-> > In the past, there have been words on various lists that if LDO3 is
-> > disabled in u-boot, but enabled in the DTS, the axp209 driver would
-> > fail to continue/hang. Several enable/disable patches have been
-> > issues to devicetree's in both the kernel and u-boot to address
-> > this issue.
-> > 
-> > What really happened however, was that the AXP209 shuts down without
-> > a notice and without setting an interrupt. This is caused when LDO3
-> > gets overloaded, for example with large capacitors on the LDO3 output.
-> > 
-> > Normally, we would expect that AXP209 would source 200 mA as per
-> > datasheet and set and trigger an interrupt when being overloaded.
-> > For some reason however, this does not happen.
-> > 
-> > As a work-around, we use the soft-start constraint of the regulator
-> > node to first bring up the LDO3 to the lowest possible voltage and
-> > then enable the LDO. After that, we can set the requested voltage
-> > as usual.
-> > 
-> > Combining this setting with the regulator-ramp-delay allows LDO3 to
-> > enable voltage slowly and staggered, potentially reducing overall
-> > inrush current.
-> > 
-> > Signed-off-by: Olliver Schinagl <oliver@schinagl.nl>
-> > Signed-off-by: Priit Laes <plaes@plaes.org>
-> > ---
-> >  drivers/regulator/axp20x-regulator.c | 57 ++++++++++++++++++++++++++++-
-> >  1 file changed, 56 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
-> > index 1d9fa62..e8a895b 100644
-> > --- a/drivers/regulator/axp20x-regulator.c
-> > +++ b/drivers/regulator/axp20x-regulator.c
-> > @@ -14,6 +14,7 @@
-> >   */
-> >  
-> >  #include <linux/bitops.h>
-> > +#include <linux/delay.h>
-> >  #include <linux/err.h>
-> >  #include <linux/init.h>
-> >  #include <linux/mfd/axp20x.h>
-> > @@ -23,6 +24,7 @@
-> >  #include <linux/platform_device.h>
-> >  #include <linux/regmap.h>
-> >  #include <linux/regulator/driver.h>
-> > +#include <linux/regulator/machine.h>
-> >  #include <linux/regulator/of_regulator.h>
-> >  
-> >  #define AXP20X_GPIO0_FUNC_MASK		GENMASK(3, 0)
-> > @@ -430,6 +432,59 @@ static int axp20x_set_ramp_delay(struct regulator_dev *rdev, int ramp)
-> >  	return regmap_update_bits(axp20x->regmap, reg, mask, cfg);
-> >  }
-> >  
-> > +static int axp20x_regulator_enable_regmap(struct regulator_dev *rdev)
-> > +{
-> > +	struct axp20x_dev *axp20x = rdev_get_drvdata(rdev);
-> > +	const struct regulator_desc *desc = rdev->desc;
-> > +
-> > +	if (!rdev)
-> > +		return -EINVAL;
-> > +
-> > +	switch (axp20x->variant) {
-> > +	case AXP209_ID:
-> > +		if ((desc->id == AXP20X_LDO3) &&
-> > +		    rdev->constraints && rdev->constraints->soft_start) {
-> > +			int v_out;
-> > +			int ret;
-> > +
-> > +			/*
-> > +			 * On some boards, the LDO3 can be overloaded when
-> > +			 * turning on, causing the entire PMIC to shutdown
-> > +			 * without warning. Turning it on at the minimal voltage
-> > +			 * and then setting the voltage to the requested value
-> > +			 * works reliably.
-> > +			 */
-> > +			if (regulator_is_enabled_regmap(rdev))
-> > +				break;
-> > +
-> > +			v_out = regulator_get_voltage_sel_regmap(rdev);
-> > +			if (v_out < 0)
-> > +				return v_out;
-> > +
-> > +			if (v_out == 0)
-> > +				break;
-> > +
-> > +			ret = regulator_set_voltage_sel_regmap(rdev, 0x00);
-> > +			/*
-> > +			 * A small pause is needed between
-> > +			 * setting the voltage and enabling the LDO to give the
-> > +			 * internal state machine time to process the request.
-> > +			 */
-> > +			usleep_range(1000, 5000);
-> > +			ret |= regulator_enable_regmap(rdev);
-> > +			ret |= regulator_set_voltage_sel_regmap(rdev, v_out);
-> > +
-> > +			return ret;
-> > +		}
-> > +		break;
-> > +	default:
-> > +		/* No quirks */
-> > +		break;
-> > +	}
-> > +
-> > +	return regulator_enable_regmap(rdev);
-> > +};
-> > +
+On Wed, Nov 28, 2018 at 10:56:39AM +0100, Maxime Ripard wrote:
+> On Tue, Nov 27, 2018 at 10:38:52AM +0100, Maxime Ripard wrote:
+> > On Mon, Nov 26, 2018 at 05:27:50PM +0200, Priit Laes wrote:
+> > > From: Olliver Schinagl <oliver@schinagl.nl>
+> > > 
+> > > With commit b43776d65a33b46092 ("ARM: dts: sunxi: Use axp209.dtsi for
+> > > Olinuxino Lime2") we force them an arbitrary 2.8 volts. Granted, for
+> > > LDO3 this may be less arbitrary, but for LDO4 this is just wrong.
+> > > 
+[ ... ]
+> > As we discussed on the U-Boot ML already, this shouldn't be made
+> > always-on but tied to the consumer device (the pinctrl one) instead.
 > 
-> This is some pretty generic code, and could be useful to some other
-> users. I guess a generic function would be better for this.
+> Can you test that patch (not tested):
+> http://code.bulix.org/h02vha-514284?raw
 
-Yes, makes sense. Although, should we then also distinguish between
-regulators which support soft-start in hardware and devices which emulate
-it by delay, like in this case?
+Quick test (after applying this: http://code.bulix.org/w01xab-518044?raw )
+results in failure:
+
+[snip]
+dmesg -t |egrep "(regu|seria)"
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pb not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: Linked as a consumer to regulator.0
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pb not found, using dummy regulator
+1c28000.serial: ttyS0 at MMIO 0x1c28000 (irq = 47, base_baud = 1500000) is a U6_16550A
+sun4i-pinctrl 1c20800.pinctrl: Couldn't get bank PG regulator
+sun4i-pinctrl 1c20800.pinctrl: pin-198 (1c28c00.serial) status -22
+dw-apb-uart 1c28c00.serial: Error applying setting, reverse things back
+dw-apb-uart: probe of 1c28c00.serial failed with error -22
+sun4i-pinctrl 1c20800.pinctrl: Couldn't get bank PG regulator
+sun4i-pinctrl 1c20800.pinctrl: pin-202 (1c29000.serial) status -22
+dw-apb-uart 1c29000.serial: Error applying setting, reverse things back
+dw-apb-uart: probe of 1c29000.serial failed with error -22
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
+...
+[/snip]
+
+And I cannot actually see the link between pinctrl and ldo4. There's currently only this link:
+
+sun4i-pinctrl 1c20800.pinctrl: Linked as a consumer to regulator.0
+
+$ cat /sys/class/regulator/regulator.0/name
+regulator-dummy
 
 
-Päikest,
-Priit
+> 
+> Thanks!
+> Maxime
+> 
+> -- 
+> Maxime Ripard, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
