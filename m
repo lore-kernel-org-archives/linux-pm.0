@@ -1,11 +1,14 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 0/7] Bring suspend to RAM support to MVEBU SATA
-Date: Tue,  4 Dec 2018 20:28:24 +0100
-Message-ID: <20181204192831.12440-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 3/7] ata: ahci: mvebu: do Armada 38x configuration only on
+ relevant SoCs
+Date: Tue,  4 Dec 2018 20:28:27 +0100
+Message-ID: <20181204192831.12440-4-miquel.raynal@bootlin.com>
+References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,60 +22,149 @@ To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemo
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpBcyBwYXJ0IG9mIGFuIGVmZm9ydCB0byBicmluZyBzdXNwZW5kIHRvIFJBTSBzdXBw
-b3J0IHRvIEFybWFkYSAzNzAwClNvQ3MgKG1haW4gdGFyZ2V0OiBFU1BSRVNTT2JpbiksIHRoaXMg
-c2VyaWVzIGhhbmRsZXMgdGhlIHdvcmsgYXJvdW5kCnRoZSBTQVRBIElQLgoKRmlyc3QsIGEgY2hh
-bmdlIGluIHRoZSBsaWJhaGNpIHBsYXRmb3JtIGFkZHMgc3VwcG9ydCBmb3IgdGhlIG5ldyBQSFkK
-ZnJhbWV3b3JrIGJ5IGZvbGxvd2luZyB0aGUgcGh5X3NldF9tb2RlKCkvcGh5X3Bvd2VyX29uKCkK
-c2VxdWVuY2UuIFRoZW4sIHRoZSBBSENJIE1WRUJVIGRyaXZlciBpcyBhIGJpdCB1cGRhdGVkIChw
-YXRjaCAyICYgMykKYW5kIGEgbWlzc2luZyBpbml0aWFsaXphdGlvbiBpcyBhZGRlZCBmb3IgdGhl
-IEEzNzAwIGluIHBhdGNoIDQgKG9ubHkKZG9uZSBieSB0aGUgQm9vdGxvYWRlciBiZWZvcmUpLiBN
-aXNzaW5nIGNsb2NrIHN1cHBvcnQgaXMgaW1wbGVtZW50ZWQKaW4gcGF0Y2ggNSB0byBiZSBzdXJl
-IHRoZSBjbG9jayB3aWxsIGJlIHJlc3VtZWQgYmVmb3JlIHRoaXMgZHJpdmVyCihzZWUgWzFdIGZv
-ciB0aGUgc2VyaWVzIGFkZGluZyBkZXZpY2UgbGlua3MgdG8gdGhlIGNsb2NrIGNvcmUpLgoKRmlu
-YWxseSwgZGV2aWNlIHRyZWVzIGFyZSB1cGRhdGVkIHRvIHJlZmxlY3QgdGhlIGhhcmR3YXJlOiB0
-aGUgbWlzc2luZwpQSFkgaXMgYWRkZWQgdG8gdGhlIEVTUFJFU1NPYmluIERULCBhbmQgdGhlIGNs
-b2NrIGlzIGFkZGVkIHRvIHRoZSBTb0MKRFQgKHBhdGNoIDYgJiA3KS4gQmluZGluZ3MgYWxyZWFk
-eSBkb2N1bWVudCB0aGUgY2xvY2sgYW5kIHRoZSBQSFkgc28Kbm8gdXBkYXRlIGlzIG5lZWRlZCBv
-biB0aGlzIHJlZ2FyZC4KClsxXSBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwv
-bGludXgtYXJtLWtlcm5lbC8yMDE4LU5vdmVtYmVyLzYxNDUyNy5odG1sCgpUaGFua3MsCk1pcXXD
-qGwKCkNoYW5nZXMgc2luY2UgdjI6Cj09PT09PT09PT09PT09PT09CiogUmVuYW1lIEFIQ0lfSEZM
-QUdfTUFOQUdFX1BIWVMgLT4gQUhDSV9IRkxBR19TVVNQRU5EX1BIWVMgdG8gY2xlYXJseQogIHN0
-YXRlIHRoYXQgaXQgb25seSBoYXMgYW4gZWZmZWN0IGF0IHN1c3BlbmQvcmVzdW1lIHRpbWUuCiog
-VGhlIGhmbGFnIGlzIG5vdCBwYXNzZWQgdG8gYWhjaV9wbGF0Zm9ybV9nZXRfcmVzb3VyY2VzKCkg
-YW55bW9yZSBidXQKICBhZGRlZCBtYW51YWxseSBieSB0aGUgdXNlcnMgKGluIG91ciBjYXNlLCBh
-aGNpX212ZWJ1LmMpIGluIHRoZQogIHByb2JlLgoqIFJlZmFjdG9yIGEgYml0IHRoZSBwYXRjaCBi
-cmluZ2luIFMyUkFNIHN1cHBvcnQgdG8gdGhlIGFoY2lfbXZlYnUKICBkcml2ZXIgYnkgc3BsaXR0
-aW5nIHRoZSBjaGFuZ2VzOiBvbmUgcGF0Y2gganVzdCBmb3IgcmVnaXN0ZXJzCiAgaW5pdGlhbGl6
-YXRpb24sIGFub3RoZXIgb25lIHRvIG1ha2UgdXNlIG9mIHRoZSBhYm92ZSBoZmxhZy4KCkNoYW5n
-ZXMgc2luY2UgdjE6Cj09PT09PT09PT09PT09PT09CiogVGhlIGNsb2NrIGlzIGF1dG9tYXRpY2Fs
-bHkgcmVxdWVzdGVkIGJ5IHRoZSBsaWJhaGNpX3BsYXRmb3JtLmMKICBkcml2ZXIsIGRvaW5nIGl0
-IGluIHRoZSBtdmVidSBkcml2ZXIgaXMgcmVkdW5kYW50LCByZW1vdmUgdGhlIHBhdGNoCiAgYWRk
-aW5nIGNsb2NrIHN1cHBvcnQgYXMgY2xvY2sgc3VwcG9ydCBhbHJlYWR5IGV4aXN0cy4KKiBDaGFu
-Z2VkIGF1dGhvcnNoaXAgb2YgcGF0Y2ggYWRkaW5nIGEgU0FUQSBlbnVtIGluIHRoZSBQSFkgY29y
-ZS4KKiBBZGRlZCBTdWdnZXN0ZWQtYnkgdGFnIHRvIHRoZSBwYXRjaCBmaXhpbmcgdGhlIFNBVEEg
-bm9kZSBzY29wZSBpbiBEVCwKICB0byB0aGUgcGF0Y2ggYWRkaW5nIFBIWSBmcmFtZXdvcmsgY29t
-cGxpYW5jZSB0byB0aGUKICBsaWJhaGNpX3BsYXRmb3JtIGRyaXZlciBhbmQgdG8gdGhlIERUIHBh
-dGNoIGFkZGluZyB0aGUgU0FUQSBQSFkKICBwcm9wZXJ0eS4KKiBBZGQgYSBmbGFnIHRvIGRvIG5v
-dCBkaXNhYmxlL2VuYWJsZSB0aGUgUEhZIGZvciBjb21wYXRpYmlsaXR5CiAgcmVhc29ucyBhbmQg
-dG8gYXZvaWQgdG8gYnJlYWsgdW50ZXN0ZWQgYm9hcmRzIHdpdGggdGhpcyBjaGFuZ2UuCiAgVGhl
-IGZsYWcgaXMgY2FsbGVkIEFIQ0lfSEZMQUdfTUFOQUdFX1BIWVMuCiogVGhlIG12ZWJ1IGFoY2kg
-ZHJpdmVyIGlzIGVkaXRlZCB0byBlbmFibGUgdGhpcyBmbGFnIG9ubHkgb24gQTM3MDAuCgoKTWlx
-dWVsIFJheW5hbCAoNyk6CiAgYXRhOiBsaWJhaGNpX3BsYXRmb3JtOiBjb21wbHkgdG8gUEhZIGZy
-YW1ld29yawogIGF0YTogYWhjaTogbXZlYnU6IHJlbW92ZSBzdGFsZSBjb21tZW50CiAgYXRhOiBh
-aGNpOiBtdmVidTogZG8gQXJtYWRhIDM4eCBjb25maWd1cmF0aW9uIG9ubHkgb24gcmVsZXZhbnQg
-U29DcwogIGF0YTogYWhjaTogbXZlYnU6IGFkZCBBcm1hZGEgMzcwMCBpbml0aWFsaXphdGlvbiBu
-ZWVkZWQgZm9yIFMyUkFNCiAgYXRhOiBhaGNpOiBtdmVidTogcmVxdWVzdCBQSFkgc3VzcGVuZC9y
-ZXN1bWUgZm9yIEFybWFkYSAzNzAwCiAgQVJNNjQ6IGR0czogbWFydmVsbDogYXJtYWRhLTM3eHg6
-IGRlY2xhcmUgU0FUQSBjbG9jawogIEFSTTY0OiBkdHM6IG1hcnZlbGw6IGFybWFkYS0zNzIwLWVz
-cHJlc3NvYmluOiBkZWNsYXJlIFNBVEEgUEhZCiAgICBwcm9wZXJ0eQoKIC4uLi9kdHMvbWFydmVs
-bC9hcm1hZGEtMzcyMC1lc3ByZXNzb2Jpbi5kdHMgICB8ICAyICsKIGFyY2gvYXJtNjQvYm9vdC9k
-dHMvbWFydmVsbC9hcm1hZGEtMzd4eC5kdHNpICB8ICAxICsKIGRyaXZlcnMvYXRhL2FoY2kuaCAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyICsKIGRyaXZlcnMvYXRhL2FoY2lfbXZlYnUu
-YyAgICAgICAgICAgICAgICAgICAgICB8IDg3ICsrKysrKysrKysrKysrLS0tLS0KIGRyaXZlcnMv
-YXRhL2xpYmFoY2lfcGxhdGZvcm0uYyAgICAgICAgICAgICAgICB8IDEzICsrKwogNSBmaWxlcyBj
-aGFuZ2VkLCA4MiBpbnNlcnRpb25zKCspLCAyMyBkZWxldGlvbnMoLSkKCi0tIAoyLjE5LjEKCgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
-a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
-bmVsCg==
+At the beginning, only Armada 38x SoCs where supported by the
+ahci_mvebu.c driver. Commit 15d3ce7b63bd ("ata: ahci_mvebu: add
+support for Armada 3700 variant") introduced Armada 3700 support. As
+opposed to Armada 38x SoCs, the 3700 variants do not have to configure
+mbus and the regret option. This patch took care of avoiding such
+configuration when not needed in the probe function, but failed to do
+the same in the resume path. While doing so looks harmless by
+experience, let's clean the driver logic and avoid doing this useless
+configuration with Armada 3700 SoCs.
+
+Because the logic is very similar between these two places, it has
+been decided to factorize this code and put it in a "Armada 38x
+configuration function". This function is part of a new
+(per-compatible) platform data structure, so that the addition of such
+configuration function for Armada 3700 will be eased.
+
+Fixes: 15d3ce7b63bd ("ata: ahci_mvebu: add support for Armada 3700 variant")
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/ata/ahci_mvebu.c | 68 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 51 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
+index 128d6f22926d..7839a5df1fd2 100644
+--- a/drivers/ata/ahci_mvebu.c
++++ b/drivers/ata/ahci_mvebu.c
+@@ -28,6 +28,10 @@
+ #define AHCI_WINDOW_BASE(win)	(0x64 + ((win) << 4))
+ #define AHCI_WINDOW_SIZE(win)	(0x68 + ((win) << 4))
+ 
++struct ahci_mvebu_plat_data {
++	int (*plat_config)(struct ahci_host_priv *hpriv);
++};
++
+ static void ahci_mvebu_mbus_config(struct ahci_host_priv *hpriv,
+ 				   const struct mbus_dram_target_info *dram)
+ {
+@@ -62,6 +66,22 @@ static void ahci_mvebu_regret_option(struct ahci_host_priv *hpriv)
+ 	writel(0x80, hpriv->mmio + AHCI_VENDOR_SPECIFIC_0_DATA);
+ }
+ 
++static int ahci_mvebu_armada_380_config(struct ahci_host_priv *hpriv)
++{
++	const struct mbus_dram_target_info *dram;
++	int rc = 0;
++
++	dram = mv_mbus_dram_info();
++	if (dram)
++		ahci_mvebu_mbus_config(hpriv, dram);
++	else
++		rc = -ENODEV;
++
++	ahci_mvebu_regret_option(hpriv);
++
++	return rc;
++}
++
+ /**
+  * ahci_mvebu_stop_engine
+  *
+@@ -126,13 +146,10 @@ static int ahci_mvebu_resume(struct platform_device *pdev)
+ {
+ 	struct ata_host *host = platform_get_drvdata(pdev);
+ 	struct ahci_host_priv *hpriv = host->private_data;
+-	const struct mbus_dram_target_info *dram;
++	const struct ahci_mvebu_plat_data *pdata = hpriv->plat_data;
+ 
+-	dram = mv_mbus_dram_info();
+-	if (dram)
+-		ahci_mvebu_mbus_config(hpriv, dram);
+-
+-	ahci_mvebu_regret_option(hpriv);
++	if (pdata->plat_config)
++		pdata->plat_config(hpriv);
+ 
+ 	return ahci_platform_resume_host(&pdev->dev);
+ }
+@@ -154,28 +171,31 @@ static struct scsi_host_template ahci_platform_sht = {
+ 
+ static int ahci_mvebu_probe(struct platform_device *pdev)
+ {
++	const struct ahci_mvebu_plat_data *pdata;
+ 	struct ahci_host_priv *hpriv;
+-	const struct mbus_dram_target_info *dram;
+ 	int rc;
+ 
++	pdata = of_device_get_match_data(&pdev->dev);
++	if (!pdata)
++		return -EINVAL;
++
+ 	hpriv = ahci_platform_get_resources(pdev, 0);
+ 	if (IS_ERR(hpriv))
+ 		return PTR_ERR(hpriv);
+ 
++	hpriv->plat_data = (void *)pdata;
++
+ 	rc = ahci_platform_enable_resources(hpriv);
+ 	if (rc)
+ 		return rc;
+ 
+ 	hpriv->stop_engine = ahci_mvebu_stop_engine;
+ 
+-	if (of_device_is_compatible(pdev->dev.of_node,
+-				    "marvell,armada-380-ahci")) {
+-		dram = mv_mbus_dram_info();
+-		if (!dram)
+-			return -ENODEV;
+-
+-		ahci_mvebu_mbus_config(hpriv, dram);
+-		ahci_mvebu_regret_option(hpriv);
++	pdata = hpriv->plat_data;
++	if (pdata->plat_config) {
++		rc = pdata->plat_config(hpriv);
++		if (rc)
++			goto disable_resources;
+ 	}
+ 
+ 	rc = ahci_platform_init_host(pdev, hpriv, &ahci_mvebu_port_info,
+@@ -190,9 +210,23 @@ static int ahci_mvebu_probe(struct platform_device *pdev)
+ 	return rc;
+ }
+ 
++static const struct ahci_mvebu_plat_data ahci_mvebu_armada_380_plat_data = {
++	.plat_config = ahci_mvebu_armada_380_config,
++};
++
++static const struct ahci_mvebu_plat_data ahci_mvebu_armada_3700_plat_data = {
++	.plat_config = NULL,
++};
++
+ static const struct of_device_id ahci_mvebu_of_match[] = {
+-	{ .compatible = "marvell,armada-380-ahci", },
+-	{ .compatible = "marvell,armada-3700-ahci", },
++	{
++		.compatible = "marvell,armada-380-ahci",
++		.data = &ahci_mvebu_armada_380_plat_data,
++	},
++	{
++		.compatible = "marvell,armada-3700-ahci",
++		.data = &ahci_mvebu_armada_3700_plat_data,
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, ahci_mvebu_of_match);
+-- 
+2.19.1
