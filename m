@@ -1,11 +1,13 @@
 From: Miquel Raynal <miquel.raynal@bootlin.com>
-Subject: [PATCH v3 0/6] Add hw overheat IRQ support to Marvell thermal driver
-Date: Tue,  4 Dec 2018 20:03:26 +0100
-Message-ID: <20181204190332.10351-1-miquel.raynal@bootlin.com>
+Subject: [PATCH v3 2/7] ata: ahci: mvebu: remove stale comment
+Date: Tue,  4 Dec 2018 20:28:26 +0100
+Message-ID: <20181204192831.12440-3-miquel.raynal@bootlin.com>
+References: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20181204192831.12440-1-miquel.raynal@bootlin.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -15,57 +17,45 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, Marc Zyngier <marc.zyngier@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Rob Herring <robh+dt@kernel.org>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
+To: Gregory Clement <gregory.clement@bootlin.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jens Axboe <axboe@kernel.dk>, Hans de Goede <hdegoede@redhat.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@bootlin.com>, Maxime Chevallier <maxime.chevallier@bootlin.com>, Nadav Haklai <nadavh@marvell.com>, linux-ide@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpUaGlzIGlzIHRoZSBsYXN0IGJhdGNoIG9mIHBhdGNoZXMgYWJvdXQgdGhlIHRoZXJt
-YWwgZHJpdmVyIHRoYXQgd2FzCnN1c3BlbmRlZCwgd2FpdGluZyBmb3IgdGhlIElDVS9TRUkgc2Vy
-aWVzIHRvIGJlIG1lcmdlZC4gTm93IHRoYXQKZXZlcnl0aGluZyBpcyByZWFkeSBpbiBtYWlubGlu
-ZSwgbGV0J3MgYWRkIGhhcmR3YXJlIG92ZXJoZWF0IGludGVycnVwdApzdXBwb3J0IHRvIHRoaXMg
-ZHJpdmVyLgoKQmluZGluZ3MgYW5kIERUIGFyZSB1cGRhdGVkIGFjY29yZGluZ2x5LiBUaGUgaW50
-ZXJydXB0IHdpbGwgb25seSBiZQp0cmlnZ2VyZWQgaWYgdGhlIHBsYXRmb3JtIGdvZXMgYWJvdmUg
-fjEwMsKwQyAodGhyZXNob2xkIHNldCB0byAxMDDCsEMsCmh5c3RlcmVzaXMgdG8gPiAywrBDKS4g
-VGhlIGludGVycnVwdCBwcm9wZXJ0eSBpcyBvZiBjb3Vyc2Ugbm90Cm1hbmRhdG9yeS4KCkluIHRo
-ZSBtZWFuIHRpbWUsIEkgYWRkIG15c2VsZiB0byB0aGUgTUFJTlRBSU5FUlMgZmlsZSB0byByZWNl
-aXZlIGFuZApyZXZpZXcgcG9zc2libGUgZml4ZXMvbmV3IGZlYXR1cmVzLgoKVGhhbmtzLApNaXF1
-w6hsCgpDaGFuZ2VzIHNpbmNlIHYyOgo9PT09PT09PT09PT09PT09PQoqIFJlbW92ZSB1c2VsZXNz
-IGdvdG8gc3RhdGVtZW50LgoqIE1vdmUgdGhlIGh5c3RlcmVzaXMgYXJyYXkgb3V0IG9mIHRoZSBm
-dW5jdGlvbiB1c2luZyBpdCBhbmQgZGVjbGFyZQogIHRoZSBhcnJheSBzdGF0aWNhbGx5IGluc3Rl
-YWQgdGhhdCBkb2luZyBzbyBvbiB0aGUgc3RhY2suCiogUmVtb3ZlIHVubmVjZXNzYXJ5IGNhc3Qu
-CiogT24gZXJyb3IsIGF2b2lkIHJldHVybmluZyBhIHZhbHVlIG5vdCBjb21wYXRpYmxlIHdpdGgg
-aXJxcmV0dXJuX3QgaW4KICB0aGUgSVJRIGhhbmRsZXIgKGFuZCB3aGVuIGRvaW5nIHNvLCByZS1l
-bmFibGUgaW50ZXJydXB0cwogIGZpcnN0KS4gVGhpcyBpcyBzaW1wbHkgaGFuZGxlZCB3aXRoIGEg
-Z290byBzdGF0ZW1lbnQuCiogMCBpcyBub3QgYSB2YWxpZCBpbnRlcnJ1cHQsIHRha2UgdGhpcyBp
-bnRvIGFjY291bnQgZHVyaW5nIHZhcmlhYmxlcwogIHZhbGlkYXRpb24uCgpDaGFuZ2VzICpub3Qq
-IGFkZHJlc3NlZCBzaW5jZSB2MjoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KKiBP
-dmVyaGVhdCBpbnRlcnJ1cHQgY29uZmlndXJhdGlvbiBoYXMgY2VydGFpbiBsaW1pdGF0aW9ucyBv
-biB3aGljaAogIE1hcmMgYXNrZWQgcXVlc3Rpb25zLiBJIGRvbid0IGtub3cgaWYvd2hhdCBJIG5l
-ZWQgdG8gY2hhbmdlIHNvCiAga2VlcGluZyBpdCBsaWtlIHRoaXMgZm9yIHRoaXMgdmVyc2lvbi4K
-KiBFZHVhcmRvIHBvaW50ZWQgdGhhdCBvbmNlIGEgY3JpdGljYWwgbGV2ZWwgaGFzIGJlZW4gcmVh
-Y2hlZCwgdGhlcmUKICBpcyBubyB3YXkgYmFjaywgdGhlIHN5c3RlbSB3aWxsIHNodXRkb3duLiBJ
-IGRlc2lnbmVkIHRoZSBoYW5kbGVyIHRvCiAgcmVjb3ZlciBmcm9tIHRoYXQgYW5kIHRvIGVuYWJs
-ZSB0aGUgSVJRIGFnYWluIGlmIG5lZWRlZCwgYnV0IG1heWJlCiAgdGhpcyBpcyB1c2VsZXNzIGFu
-ZCBzaG91bGQgYmUgcmVtb3ZlZC4gV2hpbGUgd2FpdGluZyBmb3IgaGlzIGFuc3dlciwKICBJIGFt
-IHNlbmRpbmcgYW5vdGhlciB2ZXJzaW9uIGFuZCB3aWxsIGNvcnJlY3QgaW4gYSB2NCBpZiBuZWVk
-ZWQuCgpDaGFuZ2VzIHNpbmNlIHYxOgo9PT09PT09PT09PT09PT09PQoqIFVzZSBhIHRocmVhZGVk
-IElSUSBoYW5kbGVyIHRvIGF2b2lkIGEgcG90ZW50aWFsIGxvY2sgZGVwZW5jeSB3aGVuCiAgbm90
-aWZ5aW5nIHRoZSBjb3JlIG9mIGFuIG92ZXJoZWF0IHNpdHVhdGlvbi4KCgpNaXF1ZWwgUmF5bmFs
-ICg2KToKICB0aGVybWFsOiBhcm1hZGE6IGFkZCBvdmVyaGVhdCBpbnRlcnJ1cHQgc3VwcG9ydAog
-IE1BSU5UQUlORVJTOiB0aGVybWFsOiBhZGQgZW50cnkgZm9yIE1hcnZlbGwgTVZFQlUgdGhlcm1h
-bCBkcml2ZXIKICBkdC1iaW5kaW5nczogYXA4MDY6IGRvY3VtZW50IHRoZSB0aGVybWFsIGludGVy
-cnVwdCBjYXBhYmlsaXRpZXMKICBkdC1iaW5kaW5nczogY3AxMTA6IGRvY3VtZW50IHRoZSB0aGVy
-bWFsIGludGVycnVwdCBjYXBhYmlsaXRpZXMKICBhcm02NDogZHRzOiBtYXJ2ZWxsOiBhZGQgaW50
-ZXJydXB0IHN1cHBvcnQgdG8gYXA4MDYgdGhlcm1hbCBub2RlCiAgYXJtNjQ6IGR0czogbWFydmVs
-bDogYWRkIGludGVycnVwdCBzdXBwb3J0IHRvIGNwMTEwIHRoZXJtYWwgbm9kZQoKIC4uLi9hcm0v
-bWFydmVsbC9hcDgwNi1zeXN0ZW0tY29udHJvbGxlci50eHQgICB8ICAgOCArCiAuLi4vYXJtL21h
-cnZlbGwvY3AxMTAtc3lzdGVtLWNvbnRyb2xsZXIudHh0ICAgfCAgIDkgKwogTUFJTlRBSU5FUlMg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICA1ICsKIGFyY2gvYXJtNjQvYm9v
-dC9kdHMvbWFydmVsbC9hcm1hZGEtYXA4MDYuZHRzaSB8ICAxOCArLQogYXJjaC9hcm02NC9ib290
-L2R0cy9tYXJ2ZWxsL2FybWFkYS1jcDExMC5kdHNpIHwgIDE1ICstCiBkcml2ZXJzL3RoZXJtYWwv
-YXJtYWRhX3RoZXJtYWwuYyAgICAgICAgICAgICAgfCAyNzAgKysrKysrKysrKysrKysrKystCiA2
-IGZpbGVzIGNoYW5nZWQsIDMxOCBpbnNlcnRpb25zKCspLCA3IGRlbGV0aW9ucygtKQoKLS0gCjIu
-MTkuMQoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
-ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LWFybS1rZXJuZWwK
+For Armada-38x (32-bit) SoCs, PM platform support has been added since:
+commit 32f9494c9dfd ("ARM: mvebu: prepare pm-board.c for the
+                      introduction of Armada 38x support")
+commit 3cbd6a6ca81c ("ARM: mvebu: Add standby support")
+
+For Armada 64-bit SoCs, like the A3700 also using this AHCI driver, PM
+platform support has always existed.
+
+There are even suspend/resume hooks in this driver since:
+commit d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
+
+Remove the stale comment at the end of this driver stating that all
+the above does not exist yet.
+
+Fixes: d6ecf15814888 ("ata: ahci_mvebu: add suspend/resume support")
+Signed-off-by: Miquel Raynal <miquel.raynal@bootlin.com>
+---
+ drivers/ata/ahci_mvebu.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/drivers/ata/ahci_mvebu.c b/drivers/ata/ahci_mvebu.c
+index f9cb51be38eb..128d6f22926d 100644
+--- a/drivers/ata/ahci_mvebu.c
++++ b/drivers/ata/ahci_mvebu.c
+@@ -197,11 +197,6 @@ static const struct of_device_id ahci_mvebu_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, ahci_mvebu_of_match);
+ 
+-/*
+- * We currently don't provide power management related operations,
+- * since there is no suspend/resume support at the platform level for
+- * Armada 38x for the moment.
+- */
+ static struct platform_driver ahci_mvebu_driver = {
+ 	.probe = ahci_mvebu_probe,
+ 	.remove = ata_platform_remove_one,
+-- 
+2.19.1
