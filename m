@@ -1,84 +1,50 @@
-From: Priit Laes <plaes@plaes.org>
-Subject: Re: [PATCH 09/14] regulator: dts: add full voltage range to LDO4 on
- the Lime2
-Date: Tue, 4 Dec 2018 14:47:59 +0000
-Message-ID: <20181204144759.thsvooby6txag2yr@plaes.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 06/14] regulator: axp20x: add software based soft_start
+ for AXP209 LDO3
+Date: Tue, 4 Dec 2018 15:09:54 +0000
+Message-ID: <20181204150954.GC6809@sirena.org.uk>
 References: <cover.156212c9c5df493e098556cad9793a07dcab5e32.1543245984.git-series.plaes@plaes.org>
- <0b1aa5b28cb5efe17c04150a181ef1fa4027bc55.1543245984.git-series.plaes@plaes.org>
- <20181127093852.2iavgo4xipjnu25l@flea>
- <20181128095639.t4ogsk6ovyu2yaxu@flea>
+ <41cb1b4dac3a15595c89fa962b78d3f68f370021.1543245984.git-series.plaes@plaes.org>
+ <20181127093619.72ensythkx2mhdf5@flea>
+ <20181204133144.eqd3dk3jgqm4fbk4@plaes.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="qjNfmADvan18RZcF"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181128095639.t4ogsk6ovyu2yaxu@flea>
+In-Reply-To: <20181204133144.eqd3dk3jgqm4fbk4@plaes.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@bootlin.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
+To: Priit Laes <plaes@plaes.org>
+Cc: Maxime Ripard <maxime.ripard@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Liam Girdwood <lgirdwood@gmail.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Olliver Schinagl <oliver@schinagl.nl>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 28, 2018 at 10:56:39AM +0100, Maxime Ripard wrote:
-> On Tue, Nov 27, 2018 at 10:38:52AM +0100, Maxime Ripard wrote:
-> > On Mon, Nov 26, 2018 at 05:27:50PM +0200, Priit Laes wrote:
-> > > From: Olliver Schinagl <oliver@schinagl.nl>
-> > > 
-> > > With commit b43776d65a33b46092 ("ARM: dts: sunxi: Use axp209.dtsi for
-> > > Olinuxino Lime2") we force them an arbitrary 2.8 volts. Granted, for
-> > > LDO3 this may be less arbitrary, but for LDO4 this is just wrong.
-> > > 
-[ ... ]
-> > As we discussed on the U-Boot ML already, this shouldn't be made
-> > always-on but tied to the consumer device (the pinctrl one) instead.
-> 
-> Can you test that patch (not tested):
-> http://code.bulix.org/h02vha-514284?raw
 
-Quick test (after applying this: http://code.bulix.org/w01xab-518044?raw )
-results in failure:
+--qjNfmADvan18RZcF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-[snip]
-dmesg -t |egrep "(regu|seria)"
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pb not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: Linked as a consumer to regulator.0
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pb not found, using dummy regulator
-1c28000.serial: ttyS0 at MMIO 0x1c28000 (irq = 47, base_baud = 1500000) is a U6_16550A
-sun4i-pinctrl 1c20800.pinctrl: Couldn't get bank PG regulator
-sun4i-pinctrl 1c20800.pinctrl: pin-198 (1c28c00.serial) status -22
-dw-apb-uart 1c28c00.serial: Error applying setting, reverse things back
-dw-apb-uart: probe of 1c28c00.serial failed with error -22
-sun4i-pinctrl 1c20800.pinctrl: Couldn't get bank PG regulator
-sun4i-pinctrl 1c20800.pinctrl: pin-202 (1c29000.serial) status -22
-dw-apb-uart 1c29000.serial: Error applying setting, reverse things back
-dw-apb-uart: probe of 1c29000.serial failed with error -22
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-sun4i-pinctrl 1c20800.pinctrl: 1c20800.pinctrl supply vcc-pa not found, using dummy regulator
-...
-[/snip]
+On Tue, Dec 04, 2018 at 01:31:44PM +0000, Priit Laes wrote:
 
-And I cannot actually see the link between pinctrl and ldo4. There's currently only this link:
+> Yes, makes sense. Although, should we then also distinguish between
+> regulators which support soft-start in hardware and devices which emulate
+> it by delay, like in this case?
 
-sun4i-pinctrl 1c20800.pinctrl: Linked as a consumer to regulator.0
+Drivers should not be emulating soft start, if they need a ramp delay
+they should set that in their descriptor and let the framework do it.
 
-$ cat /sys/class/regulator/regulator.0/name
-regulator-dummy
+--qjNfmADvan18RZcF
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-> 
-> Thanks!
-> Maxime
-> 
-> -- 
-> Maxime Ripard, Bootlin
-> Embedded Linux and Kernel engineering
-> https://bootlin.com
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlwGmMEACgkQJNaLcl1U
+h9CpFQf/SOm+w6bfzdiV1mRAj1uTKpc8/3V/4pVfrGTWO1zcbprN9Bhwx/eucEeR
+hNTs3C6ApYsMW3cYqgbc/FhcNvsTCF4dLs73wkRpTOYV011dtkvJfnyFJZ0gD1ko
+R+G/vg+PO7DAogzZVPbU2/LezobGagpma578ucZVUdesyv4PVOx6RB4Llg07sfIn
+NFGEMfRjjOziJpg24raKgigiZBx54Cz9q7e0b19pJAeYl+Xb1I05QNN2C66Vf853
+ZdLfvbyC+4ucB02jZmydtJqf1YYG58KwcI+2wcx4CCYxzbC7pP3yVGfUxlzLxZjR
+0+ZWUI+2xKFwR1VBuHpWQJ9whgroQg==
+=cKg0
+-----END PGP SIGNATURE-----
+
+--qjNfmADvan18RZcF--
