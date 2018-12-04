@@ -1,133 +1,41 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 1/5] devfreq: refactor set_target frequency function
-Date: Tue, 04 Dec 2018 13:39:45 +0900
-Message-ID: <5C060511.8020802@samsung.com>
-References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
-        <CGME20181203143129eucas1p2955b6becc60ee57110cbc52f6e4f60c5@eucas1p2.samsung.com>
-        <1543847475-7600-2-git-send-email-l.luba@partner.samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq
+ HW driver
+Date: Tue, 4 Dec 2018 10:42:31 +0530
+Message-ID: <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1543847475-7600-2-git-send-email-l.luba@partner.samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
+To: Taniya Das <tdas@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Stephen Boyd <swboyd@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+Hi Taniya,
 
-On 2018년 12월 03일 23:31, Lukasz Luba wrote:
-> The refactoring is needed for the new client in devfreq: suspend.
-> To avoid code duplication, move it to the new local function
-> devfreq_set_target.
-> 
-> The patch is based on earlier work by Tobias Jakobi.
+Sorry that I haven't been reviewing it much from last few iterations as I was
+letting others get this into a better shape. Thanks for your efforts..
 
-As I already commented, Please remove it. You already mentioned it on cover-letter.
-If you want to contain the contribution history of Tobias, you might better
-to add 'Signed-off-by' or others.
+On 02-12-18, 09:25, Taniya Das wrote:
+> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
 
-> 
-> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
-> ---
->  drivers/devfreq/devfreq.c | 62 +++++++++++++++++++++++++++--------------------
->  1 file changed, 36 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 1414130..a9fd61b 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -285,6 +285,40 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
->  	return 0;
->  }
->  
-> +static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
-> +			      u32 flags)
-> +{
-> +	struct devfreq_freqs freqs;
-> +	unsigned long cur_freq;
-> +	int err = 0;
+> +struct cpufreq_qcom {
+> +	struct cpufreq_frequency_table *table;
+> +	void __iomem *perf_state_reg;
+> +	cpumask_t related_cpus;
+> +};
 > +
-> +	if (devfreq->profile->get_cur_freq)
-> +		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
-> +	else
-> +		cur_freq = devfreq->previous_freq;
-> +
-> +	freqs.old = cur_freq;
-> +	freqs.new = new_freq;
-> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
-> +
-> +	err = devfreq->profile->target(devfreq->dev.parent, &new_freq, flags);
-> +	if (err) {
-> +		freqs.new = cur_freq;
-> +		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
-> +		return err;
-> +	}
-> +
-> +	freqs.new = new_freq;
-> +	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
-> +
-> +	if (devfreq_update_status(devfreq, new_freq))
-> +		dev_err(&devfreq->dev,
-> +			"Couldn't update frequency transition information.\n");
-> +
-> +	devfreq->previous_freq = new_freq;
-> +	return err;
-> +}
-> +
->  /* Load monitoring helper functions for governors use */
->  
->  /**
-> @@ -296,8 +330,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
->   */
->  int update_devfreq(struct devfreq *devfreq)
->  {
-> -	struct devfreq_freqs freqs;
-> -	unsigned long freq, cur_freq, min_freq, max_freq;
-> +	unsigned long freq, min_freq, max_freq;
->  	int err = 0;
->  	u32 flags = 0;
->  
-> @@ -333,31 +366,8 @@ int update_devfreq(struct devfreq *devfreq)
->  		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
->  	}
->  
-> -	if (devfreq->profile->get_cur_freq)
-> -		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
-> -	else
-> -		cur_freq = devfreq->previous_freq;
-> -
-> -	freqs.old = cur_freq;
-> -	freqs.new = freq;
-> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
-> +	return devfreq_set_target(devfreq, freq, flags);
->  
-> -	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
-> -	if (err) {
-> -		freqs.new = cur_freq;
-> -		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
-> -		return err;
-> -	}
-> -
-> -	freqs.new = freq;
-> -	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
-> -
-> -	if (devfreq_update_status(devfreq, freq))
-> -		dev_err(&devfreq->dev,
-> -			"Couldn't update frequency transition information.\n");
-> -
-> -	devfreq->previous_freq = freq;
-> -	return err;
->  }
->  EXPORT_SYMBOL(update_devfreq);
->  
-> 
+> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
 
+Now that the code is much more simplified, I am not sure if you need this
+per-cpu structure at all. The only place where you are using it is in
+qcom_cpufreq_hw_cpu_init() and probe(). Why not merge qcom_cpu_resources_init()
+completely into qcom_cpufreq_hw_cpu_init() and get rid of this structure
+entirely ?
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+viresh
