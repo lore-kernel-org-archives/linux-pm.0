@@ -1,34 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: nforce2: Remove meaningless return
-Date: Tue, 4 Dec 2018 09:46:21 +0100
-Message-ID: <CAJZ5v0iApdOc+kgpUrJGSvtmTsXfCFksWg2PsNekOKHaZbffrA@mail.gmail.com>
-References: <20181130142557.2623-1-tiny.windzz@gmail.com> <CAJZ5v0hPPWx6ZbTPRLRMj_0zSF91ApS3BWgYGj31GqzhX45sYw@mail.gmail.com>
- <CAEExFWuZmcTLF+hFahucUuHzp81OXTxm5sJu_AooCz+jZJUnvA@mail.gmail.com>
+From: Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW
+ driver
+Date: Tue, 4 Dec 2018 14:57:19 +0530
+Message-ID: <99d25f02-e595-d4e8-25c4-3c4c206f79a6@codeaurora.org>
+References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
+ <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
+ <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAEExFWuZmcTLF+hFahucUuHzp81OXTxm5sJu_AooCz+jZJUnvA@mail.gmail.com>
+In-Reply-To: <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: tiny.windzz@gmail.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com, Stephen Boyd <swboyd@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 4, 2018 at 2:15 AM Frank Lee <tiny.windzz@gmail.com> wrote:
->
-> On Mon, Dec 3, 2018 at 5:14 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Fri, Nov 30, 2018 at 3:26 PM Yangtao Li <tiny.windzz@gmail.com> wrote:
-> > >
-> > > In a function whose return type is void, returning on the last line is
-> > > not required.So remove it.Also move the module declaration to the end.
-> >
-> > The last piece is not reflected by the subject.
-> >
-> > Also, why do you move the MODULE_ stuff around at all?
-> When writing a driver, in most cases MODULE_  are put to the end.
-> Why not modify this? it is more in line with the habits of most people.
+Hello Viresh,
 
-If you write a new driver, then yes.
+On 12/4/2018 10:42 AM, Viresh Kumar wrote:
+> Hi Taniya,
+> 
+> Sorry that I haven't been reviewing it much from last few iterations as I was
+> letting others get this into a better shape. Thanks for your efforts..
+> 
+> On 02-12-18, 09:25, Taniya Das wrote:
+>> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+> 
+>> +struct cpufreq_qcom {
+>> +	struct cpufreq_frequency_table *table;
+>> +	void __iomem *perf_state_reg;
+>> +	cpumask_t related_cpus;
+>> +};
+>> +
+>> +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
+> 
+> Now that the code is much more simplified, I am not sure if you need this
+> per-cpu structure at all. The only place where you are using it is in
+> qcom_cpufreq_hw_cpu_init() and probe(). Why not merge qcom_cpu_resources_init()
+> completely into qcom_cpufreq_hw_cpu_init() and get rid of this structure
+> entirely ?
+> 
 
-But why do you want to modify existing drivers this way?  What value
-do you see in those changes, exactly?
+Yes, we still would require the per-cpu.
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation.
+
+--
