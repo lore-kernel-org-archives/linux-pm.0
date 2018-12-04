@@ -1,108 +1,296 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v19 1/5] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Tue,  4 Dec 2018 11:52:09 +0530
-Message-ID: <20181204062213.6875-2-vivek.gautam@codeaurora.org>
+Subject: [PATCH v19 2/5] iommu/arm-smmu: Invoke pm_runtime across the driver
+Date: Tue,  4 Dec 2018 11:52:10 +0530
+Message-ID: <20181204062213.6875-3-vivek.gautam@codeaurora.org>
 References: <20181204062213.6875-1-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
 In-Reply-To: <20181204062213.6875-1-vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/freedreno>
-List-Post: <mailto:freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/freedreno>,
- <mailto:freedreno-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Freedreno" <freedreno-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
 To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robin.murphy-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, jcrouse-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, thor.thayer-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, robdclark-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alex.williamson-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KClRoZSBzbW11IG5l
-ZWRzIHRvIGJlIGZ1bmN0aW9uYWwgb25seSB3aGVuIHRoZSByZXNwZWN0aXZlCm1hc3RlcidzIHVz
-aW5nIGl0IGFyZSBhY3RpdmUuIFRoZSBkZXZpY2VfbGluayBmZWF0dXJlCmhlbHBzIHRvIHRyYWNr
-IHN1Y2ggZnVuY3Rpb25hbCBkZXBlbmRlbmNpZXMsIHNvIHRoYXQgdGhlCmlvbW11IGdldHMgcG93
-ZXJlZCB3aGVuIHRoZSBtYXN0ZXIgZGV2aWNlIGVuYWJsZXMgaXRzZWxmCnVzaW5nIHBtX3J1bnRp
-bWUuIFNvIGJ5IGFkYXB0aW5nIHRoZSBzbW11IGRyaXZlciBmb3IKcnVudGltZSBwbSwgYWJvdmUg
-c2FpZCBkZXBlbmRlbmN5IGNhbiBiZSBhZGRyZXNzZWQuCgpUaGlzIHBhdGNoIGFkZHMgdGhlIHBt
-IHJ1bnRpbWUvc2xlZXAgY2FsbGJhY2tzIHRvIHRoZQpkcml2ZXIgYW5kIHRoZSBjb3JyZXNwb25k
-aW5nIGJ1bGsgY2xvY2sgaGFuZGxpbmcgZm9yIGFsbAp0aGUgY2xvY2tzIG5lZWRlZCBieSBzbW11
-LgoKQWxzbywgd2hpbGUgd2UgZW5hYmxlIHRoZSBydW50aW1lIHBtLCBhZGQgYSBwbSBzbGVlcCBz
-dXNwZW5kCmNhbGxiYWNrIHRoYXQgcHVzaGVzIGRldmljZXMgdG8gbG93IHBvd2VyIHN0YXRlIGJ5
-IHR1cm5pbmcKdGhlIGNsb2NrcyBvZmYgaW4gYSBzeXN0ZW0gc2xlZXAuCkFkZCBjb3JyZXNwb25k
-aW5nIGNsb2NrIGVuYWJsZSBwYXRoIGluIHJlc3VtZSBjYWxsYmFjayBhcyB3ZWxsLgoKU2lnbmVk
-LW9mZi1ieTogU3JpY2hhcmFuIFIgPHNyaWNoYXJhbkBjb2RlYXVyb3JhLm9yZz4KU2lnbmVkLW9m
-Zi1ieTogQXJjaGl0IFRhbmVqYSA8YXJjaGl0dEBjb2RlYXVyb3JhLm9yZz4KW1Rob3I6IFJld29y
-ayB0byBnZXQgY2xvY2tzIGZyb20gZGV2aWNlIHRyZWVdClNpZ25lZC1vZmYtYnk6IFRob3IgVGhh
-eWVyIDx0aG9yLnRoYXllckBsaW51eC5pbnRlbC5jb20+Clt2aXZlazogcmV3b3JrIGZvciBjbG9j
-ayBhbmQgcG0gb3BzXQpTaWduZWQtb2ZmLWJ5OiBWaXZlayBHYXV0YW0gPHZpdmVrLmdhdXRhbUBj
-b2RlYXVyb3JhLm9yZz4KUmV2aWV3ZWQtYnk6IFRvbWFzeiBGaWdhIDx0ZmlnYUBjaHJvbWl1bS5v
-cmc+ClRlc3RlZC1ieTogU3Jpbml2YXMgS2FuZGFnYXRsYSA8c3Jpbml2YXMua2FuZGFnYXRsYUBs
-aW5hcm8ub3JnPgpSZXZpZXdlZC1ieTogUm9iaW4gTXVycGh5IDxyb2Jpbi5tdXJwaHlAYXJtLmNv
-bT4KVGVzdGVkLWJ5OiBUaG9yIFRoYXllciA8dGhvci50aGF5ZXJAbGludXguaW50ZWwuY29tPgot
-LS0KCkNoYW5nZXMgc2luY2UgdjE4OgogLSBSZXBsYWNlZCB0aGUgZW50aXJlIGNsb2NrIGJ1bGsg
-ZGF0YSBmaWxsaW5nIGFuZCBoYW5kbGluZyB3aXRoCiAgIGRldm1fY2xrX2J1bGtfZ2V0X2FsbCgp
-LgoKIGRyaXZlcnMvaW9tbXUvYXJtLXNtbXUuYyB8IDU4ICsrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKy0tLQogMSBmaWxlIGNoYW5nZWQsIDU1IGluc2VydGlvbnMo
-KyksIDMgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9pb21tdS9hcm0tc21tdS5j
-IGIvZHJpdmVycy9pb21tdS9hcm0tc21tdS5jCmluZGV4IDVhMjhhZTg5MjUwNC4uNjAyYjY3ZDRm
-MmQ2IDEwMDY0NAotLS0gYS9kcml2ZXJzL2lvbW11L2FybS1zbW11LmMKKysrIGIvZHJpdmVycy9p
-b21tdS9hcm0tc21tdS5jCkBAIC00OCw2ICs0OCw3IEBACiAjaW5jbHVkZSA8bGludXgvb2ZfaW9t
-bXUuaD4KICNpbmNsdWRlIDxsaW51eC9wY2kuaD4KICNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9k
-ZXZpY2UuaD4KKyNpbmNsdWRlIDxsaW51eC9wbV9ydW50aW1lLmg+CiAjaW5jbHVkZSA8bGludXgv
-c2xhYi5oPgogI2luY2x1ZGUgPGxpbnV4L3NwaW5sb2NrLmg+CiAKQEAgLTIwNiw2ICsyMDcsOCBA
-QCBzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlIHsKIAl1MzIJCQkJbnVtX2dsb2JhbF9pcnFzOwogCXUz
-MgkJCQludW1fY29udGV4dF9pcnFzOwogCXVuc2lnbmVkIGludAkJCSppcnFzOworCXN0cnVjdCBj
-bGtfYnVsa19kYXRhCQkqY2xrczsKKwlpbnQJCQkJbnVtX2Nsa3M7CiAKIAl1MzIJCQkJY2F2aXVt
-X2lkX2Jhc2U7IC8qIFNwZWNpZmljIHRvIENhdml1bSAqLwogCkBAIC0xOTQ3LDcgKzE5NTAsNyBA
-QCBzdHJ1Y3QgYXJtX3NtbXVfbWF0Y2hfZGF0YSB7CiB9OwogCiAjZGVmaW5lIEFSTV9TTU1VX01B
-VENIX0RBVEEobmFtZSwgdmVyLCBpbXApCVwKLXN0YXRpYyBzdHJ1Y3QgYXJtX3NtbXVfbWF0Y2hf
-ZGF0YSBuYW1lID0geyAudmVyc2lvbiA9IHZlciwgLm1vZGVsID0gaW1wIH0KK3N0YXRpYyBjb25z
-dCBzdHJ1Y3QgYXJtX3NtbXVfbWF0Y2hfZGF0YSBuYW1lID0geyAudmVyc2lvbiA9IHZlciwgLm1v
-ZGVsID0gaW1wIH0KIAogQVJNX1NNTVVfTUFUQ0hfREFUQShzbW11X2dlbmVyaWNfdjEsIEFSTV9T
-TU1VX1YxLCBHRU5FUklDX1NNTVUpOwogQVJNX1NNTVVfTUFUQ0hfREFUQShzbW11X2dlbmVyaWNf
-djIsIEFSTV9TTU1VX1YyLCBHRU5FUklDX1NNTVUpOwpAQCAtMjE1MCw2ICsyMTUzLDE3IEBAIHN0
-YXRpYyBpbnQgYXJtX3NtbXVfZGV2aWNlX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
-ZXYpCiAJCXNtbXUtPmlycXNbaV0gPSBpcnE7CiAJfQogCisJZXJyID0gZGV2bV9jbGtfYnVsa19n
-ZXRfYWxsKGRldiwgJnNtbXUtPmNsa3MpOworCWlmIChlcnIgPCAwKSB7CisJCWRldl9lcnIoZGV2
-LCAiZmFpbGVkIHRvIGdldCBjbG9ja3MgJWRcbiIsIGVycik7CisJCXJldHVybiBlcnI7CisJfQor
-CXNtbXUtPm51bV9jbGtzID0gZXJyOworCisJZXJyID0gY2xrX2J1bGtfcHJlcGFyZV9lbmFibGUo
-c21tdS0+bnVtX2Nsa3MsIHNtbXUtPmNsa3MpOworCWlmIChlcnIpCisJCXJldHVybiBlcnI7CisK
-IAllcnIgPSBhcm1fc21tdV9kZXZpY2VfY2ZnX3Byb2JlKHNtbXUpOwogCWlmIChlcnIpCiAJCXJl
-dHVybiBlcnI7CkBAIC0yMjM2LDYgKzIyNTAsOSBAQCBzdGF0aWMgaW50IGFybV9zbW11X2Rldmlj
-ZV9yZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikKIAogCS8qIFR1cm4gdGhlIHRo
-aW5nIG9mZiAqLwogCXdyaXRlbChzQ1IwX0NMSUVOVFBELCBBUk1fU01NVV9HUjBfTlMoc21tdSkg
-KyBBUk1fU01NVV9HUjBfc0NSMCk7CisKKwljbGtfYnVsa19kaXNhYmxlX3VucHJlcGFyZShzbW11
-LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7CisKIAlyZXR1cm4gMDsKIH0KIApAQCAtMjI0NCwxNSAr
-MjI2MSw1MCBAQCBzdGF0aWMgdm9pZCBhcm1fc21tdV9kZXZpY2Vfc2h1dGRvd24oc3RydWN0IHBs
-YXRmb3JtX2RldmljZSAqcGRldikKIAlhcm1fc21tdV9kZXZpY2VfcmVtb3ZlKHBkZXYpOwogfQog
-Ci1zdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3BtX3Jlc3VtZShzdHJ1Y3QgZGV2
-aWNlICpkZXYpCitzdGF0aWMgaW50IF9fbWF5YmVfdW51c2VkIGFybV9zbW11X3J1bnRpbWVfcmVz
-dW1lKHN0cnVjdCBkZXZpY2UgKmRldikKIHsKIAlzdHJ1Y3QgYXJtX3NtbXVfZGV2aWNlICpzbW11
-ID0gZGV2X2dldF9kcnZkYXRhKGRldik7CisJaW50IHJldDsKKworCXJldCA9IGNsa19idWxrX2Vu
-YWJsZShzbW11LT5udW1fY2xrcywgc21tdS0+Y2xrcyk7CisJaWYgKHJldCkKKwkJcmV0dXJuIHJl
-dDsKIAogCWFybV9zbW11X2RldmljZV9yZXNldChzbW11KTsKKwogCXJldHVybiAwOwogfQogCi1z
-dGF0aWMgU0lNUExFX0RFVl9QTV9PUFMoYXJtX3NtbXVfcG1fb3BzLCBOVUxMLCBhcm1fc21tdV9w
-bV9yZXN1bWUpOworc3RhdGljIGludCBfX21heWJlX3VudXNlZCBhcm1fc21tdV9ydW50aW1lX3N1
-c3BlbmQoc3RydWN0IGRldmljZSAqZGV2KQoreworCXN0cnVjdCBhcm1fc21tdV9kZXZpY2UgKnNt
-bXUgPSBkZXZfZ2V0X2RydmRhdGEoZGV2KTsKKworCWNsa19idWxrX2Rpc2FibGUoc21tdS0+bnVt
-X2Nsa3MsIHNtbXUtPmNsa3MpOworCisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyBpbnQgX19tYXli
-ZV91bnVzZWQgYXJtX3NtbXVfcG1fcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKK3sKKwlpZiAo
-cG1fcnVudGltZV9zdXNwZW5kZWQoZGV2KSkKKwkJcmV0dXJuIDA7CisKKwlyZXR1cm4gYXJtX3Nt
-bXVfcnVudGltZV9yZXN1bWUoZGV2KTsKK30KKworc3RhdGljIGludCBfX21heWJlX3VudXNlZCBh
-cm1fc21tdV9wbV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKK3sKKwlpZiAocG1fcnVudGlt
-ZV9zdXNwZW5kZWQoZGV2KSkKKwkJcmV0dXJuIDA7CisKKwlyZXR1cm4gYXJtX3NtbXVfcnVudGlt
-ZV9zdXNwZW5kKGRldik7Cit9CisKK3N0YXRpYyBjb25zdCBzdHJ1Y3QgZGV2X3BtX29wcyBhcm1f
-c21tdV9wbV9vcHMgPSB7CisJU0VUX1NZU1RFTV9TTEVFUF9QTV9PUFMoYXJtX3NtbXVfcG1fc3Vz
-cGVuZCwgYXJtX3NtbXVfcG1fcmVzdW1lKQorCVNFVF9SVU5USU1FX1BNX09QUyhhcm1fc21tdV9y
-dW50aW1lX3N1c3BlbmQsCisJCQkgICBhcm1fc21tdV9ydW50aW1lX3Jlc3VtZSwgTlVMTCkKK307
-CiAKIHN0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGFybV9zbW11X2RyaXZlciA9IHsKIAku
-ZHJpdmVyCT0gewotLSAKUVVBTENPTU0gSU5ESUEsIG9uIGJlaGFsZiBvZiBRdWFsY29tbSBJbm5v
-dmF0aW9uIENlbnRlciwgSW5jLiBpcyBhIG1lbWJlcgpvZiBDb2RlIEF1cm9yYSBGb3J1bSwgaG9z
-dGVkIGJ5IFRoZSBMaW51eCBGb3VuZGF0aW9uCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpGcmVlZHJlbm8gbWFpbGluZyBsaXN0CkZyZWVkcmVub0BsaXN0
-cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9s
-aXN0aW5mby9mcmVlZHJlbm8K
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+
+Enable pm-runtime on devices that implement a pm domain. Then,
+add pm runtime hooks to several iommu_ops to power cycle the
+smmu device for explicit TLB invalidation requests, and
+register space accesses, etc.
+We need these hooks when the smmu, linked to its master through
+device links, has to be powered-up without the master device
+being in context.
+
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+[vivek: Cleanup pm runtime calls]
+Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Reviewed-by: Tomasz Figa <tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Tested-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reviewed-by: Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>
+---
+
+Changes since v18:
+ None.
+
+ drivers/iommu/arm-smmu.c | 108 ++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 98 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index 602b67d4f2d6..1917d214c4d9 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -270,6 +270,20 @@ static struct arm_smmu_option_prop arm_smmu_options[] = {
+ 	{ 0, NULL},
+ };
+ 
++static inline int arm_smmu_rpm_get(struct arm_smmu_device *smmu)
++{
++	if (pm_runtime_enabled(smmu->dev))
++		return pm_runtime_get_sync(smmu->dev);
++
++	return 0;
++}
++
++static inline void arm_smmu_rpm_put(struct arm_smmu_device *smmu)
++{
++	if (pm_runtime_enabled(smmu->dev))
++		pm_runtime_put(smmu->dev);
++}
++
+ static struct arm_smmu_domain *to_smmu_domain(struct iommu_domain *dom)
+ {
+ 	return container_of(dom, struct arm_smmu_domain, domain);
+@@ -929,11 +943,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+ 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
+ 	struct arm_smmu_device *smmu = smmu_domain->smmu;
+ 	struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
+-	int irq;
++	int ret, irq;
+ 
+ 	if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
+ 		return;
+ 
++	ret = arm_smmu_rpm_get(smmu);
++	if (ret < 0)
++		return;
++
+ 	/*
+ 	 * Disable the context bank and free the page tables before freeing
+ 	 * it.
+@@ -948,6 +966,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+ 
+ 	free_io_pgtable_ops(smmu_domain->pgtbl_ops);
+ 	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
++
++	arm_smmu_rpm_put(smmu);
+ }
+ 
+ static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
+@@ -1229,10 +1249,15 @@ static int arm_smmu_attach_dev(struct iommu_domain *domain, struct device *dev)
+ 		return -ENODEV;
+ 
+ 	smmu = fwspec_smmu(fwspec);
++
++	ret = arm_smmu_rpm_get(smmu);
++	if (ret < 0)
++		return ret;
++
+ 	/* Ensure that the domain is finalised */
+ 	ret = arm_smmu_init_domain_context(domain, smmu);
+ 	if (ret < 0)
+-		return ret;
++		goto rpm_put;
+ 
+ 	/*
+ 	 * Sanity check the domain. We don't support domains across
+@@ -1242,49 +1267,74 @@ static int arm_smmu_attach_dev(struct iommu_domain *domain, struct device *dev)
+ 		dev_err(dev,
+ 			"cannot attach to SMMU %s whilst already attached to domain on SMMU %s\n",
+ 			dev_name(smmu_domain->smmu->dev), dev_name(smmu->dev));
+-		return -EINVAL;
++		ret = -EINVAL;
++		goto rpm_put;
+ 	}
+ 
+ 	/* Looks ok, so add the device to the domain */
+-	return arm_smmu_domain_add_master(smmu_domain, fwspec);
++	ret = arm_smmu_domain_add_master(smmu_domain, fwspec);
++
++rpm_put:
++	arm_smmu_rpm_put(smmu);
++	return ret;
+ }
+ 
+ static int arm_smmu_map(struct iommu_domain *domain, unsigned long iova,
+ 			phys_addr_t paddr, size_t size, int prot)
+ {
+ 	struct io_pgtable_ops *ops = to_smmu_domain(domain)->pgtbl_ops;
++	struct arm_smmu_device *smmu = to_smmu_domain(domain)->smmu;
++	int ret;
+ 
+ 	if (!ops)
+ 		return -ENODEV;
+ 
+-	return ops->map(ops, iova, paddr, size, prot);
++	arm_smmu_rpm_get(smmu);
++	ret = ops->map(ops, iova, paddr, size, prot);
++	arm_smmu_rpm_put(smmu);
++
++	return ret;
+ }
+ 
+ static size_t arm_smmu_unmap(struct iommu_domain *domain, unsigned long iova,
+ 			     size_t size)
+ {
+ 	struct io_pgtable_ops *ops = to_smmu_domain(domain)->pgtbl_ops;
++	struct arm_smmu_device *smmu = to_smmu_domain(domain)->smmu;
++	size_t ret;
+ 
+ 	if (!ops)
+ 		return 0;
+ 
+-	return ops->unmap(ops, iova, size);
++	arm_smmu_rpm_get(smmu);
++	ret = ops->unmap(ops, iova, size);
++	arm_smmu_rpm_put(smmu);
++
++	return ret;
+ }
+ 
+ static void arm_smmu_flush_iotlb_all(struct iommu_domain *domain)
+ {
+ 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
++	struct arm_smmu_device *smmu = smmu_domain->smmu;
+ 
+-	if (smmu_domain->tlb_ops)
++	if (smmu_domain->tlb_ops) {
++		arm_smmu_rpm_get(smmu);
+ 		smmu_domain->tlb_ops->tlb_flush_all(smmu_domain);
++		arm_smmu_rpm_put(smmu);
++	}
+ }
+ 
+ static void arm_smmu_iotlb_sync(struct iommu_domain *domain)
+ {
+ 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
++	struct arm_smmu_device *smmu = smmu_domain->smmu;
+ 
+-	if (smmu_domain->tlb_ops)
++	if (smmu_domain->tlb_ops) {
++		arm_smmu_rpm_get(smmu);
+ 		smmu_domain->tlb_ops->tlb_sync(smmu_domain);
++		arm_smmu_rpm_put(smmu);
++	}
+ }
+ 
+ static phys_addr_t arm_smmu_iova_to_phys_hard(struct iommu_domain *domain,
+@@ -1299,6 +1349,11 @@ static phys_addr_t arm_smmu_iova_to_phys_hard(struct iommu_domain *domain,
+ 	u32 tmp;
+ 	u64 phys;
+ 	unsigned long va, flags;
++	int ret;
++
++	ret = arm_smmu_rpm_get(smmu);
++	if (ret < 0)
++		return 0;
+ 
+ 	cb_base = ARM_SMMU_CB(smmu, cfg->cbndx);
+ 
+@@ -1327,6 +1382,8 @@ static phys_addr_t arm_smmu_iova_to_phys_hard(struct iommu_domain *domain,
+ 		return 0;
+ 	}
+ 
++	arm_smmu_rpm_put(smmu);
++
+ 	return (phys & GENMASK_ULL(39, 12)) | (iova & 0xfff);
+ }
+ 
+@@ -1431,7 +1488,13 @@ static int arm_smmu_add_device(struct device *dev)
+ 	while (i--)
+ 		cfg->smendx[i] = INVALID_SMENDX;
+ 
++	ret = arm_smmu_rpm_get(smmu);
++	if (ret < 0)
++		goto out_cfg_free;
++
+ 	ret = arm_smmu_master_alloc_smes(dev);
++	arm_smmu_rpm_put(smmu);
++
+ 	if (ret)
+ 		goto out_cfg_free;
+ 
+@@ -1451,7 +1514,7 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	struct iommu_fwspec *fwspec = dev->iommu_fwspec;
+ 	struct arm_smmu_master_cfg *cfg;
+ 	struct arm_smmu_device *smmu;
+-
++	int ret;
+ 
+ 	if (!fwspec || fwspec->ops != &arm_smmu_ops)
+ 		return;
+@@ -1459,8 +1522,15 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	cfg  = fwspec->iommu_priv;
+ 	smmu = cfg->smmu;
+ 
++	ret = arm_smmu_rpm_get(smmu);
++	if (ret < 0)
++		return;
++
+ 	iommu_device_unlink(&smmu->iommu, dev);
+ 	arm_smmu_master_free_smes(fwspec);
++
++	arm_smmu_rpm_put(smmu);
++
+ 	iommu_group_remove_device(dev);
+ 	kfree(fwspec->iommu_priv);
+ 	iommu_fwspec_free(dev);
+@@ -2213,6 +2283,17 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 	arm_smmu_device_reset(smmu);
+ 	arm_smmu_test_smr_masks(smmu);
+ 
++	/*
++	 * We want to avoid touching dev->power.lock in fastpaths unless
++	 * it's really going to do something useful - pm_runtime_enabled()
++	 * can serve as an ideal proxy for that decision. So, conditionally
++	 * enable pm_runtime.
++	 */
++	if (dev->pm_domain) {
++		pm_runtime_set_active(dev);
++		pm_runtime_enable(dev);
++	}
++
+ 	/*
+ 	 * For ACPI and generic DT bindings, an SMMU will be probed before
+ 	 * any device which might need it, so we want the bus ops in place
+@@ -2248,10 +2329,17 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+ 	if (!bitmap_empty(smmu->context_map, ARM_SMMU_MAX_CBS))
+ 		dev_err(&pdev->dev, "removing device with active domains!\n");
+ 
++	arm_smmu_rpm_get(smmu);
+ 	/* Turn the thing off */
+ 	writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
++	arm_smmu_rpm_put(smmu);
++
++	if (pm_runtime_enabled(smmu->dev))
++		pm_runtime_force_suspend(smmu->dev);
++	else
++		clk_bulk_disable(smmu->num_clks, smmu->clks);
+ 
+-	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clks);
++	clk_bulk_unprepare(smmu->num_clks, smmu->clks);
+ 
+ 	return 0;
+ }
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
