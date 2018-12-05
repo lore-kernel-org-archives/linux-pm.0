@@ -1,86 +1,110 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 3/4] power: reset: at91-poweroff: check shdwc data
- structure at the beginning of probe
-Date: Wed, 5 Dec 2018 23:38:25 +0100
-Message-ID: <20181205223825.vkye6tgvan2laxlu@earth.universe>
+Subject: Re: [PATCH 2/4] power: reset: at91-poweroff: move shdwc related data
+ to one structure
+Date: Wed, 5 Dec 2018 23:40:52 +0100
+Message-ID: <20181205224052.34o3cmh3y3htchcj@earth.universe>
 References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-4-git-send-email-claudiu.beznea@microchip.com>
+ <1541416443-4321-3-git-send-email-claudiu.beznea@microchip.com>
+ <20181106210933.GU24212@piout.net>
+ <6719a808-e704-3c63-f592-3b90d44ccbfe@microchip.com>
+ <20181107172340.GF21694@piout.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="molrisa3iqg5uhvw"
+        protocol="application/pgp-signature"; boundary="7jup4dhfa2jvl5qs"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1541416443-4321-4-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <20181107172340.GF21694@piout.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Claudiu.Beznea@microchip.com
-Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Claudiu.Beznea@microchip.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---molrisa3iqg5uhvw
+--7jup4dhfa2jvl5qs
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Nov 05, 2018 at 11:14:28AM +0000, Claudiu.Beznea@microchip.com wrot=
-e:
-> Check at91_shdwc before continuing with probe since we want only one inst=
-ance of
-> this driver. Inspired from commit 9f1e44774be5 ("power: reset: at91-power=
-off:
-> do not procede if at91_shdwc is allocated").
+On Wed, Nov 07, 2018 at 06:23:40PM +0100, Alexandre Belloni wrote:
+> On 07/11/2018 14:54:17+0000, Claudiu.Beznea@microchip.com wrote:
+> > Hi Alexandre,
+> >=20
+> > On 06.11.2018 23:09, Alexandre Belloni wrote:
+> > > Hi Claudiu,
+> > >=20
+> > > On 05/11/2018 11:14:26+0000, Claudiu.Beznea@microchip.com wrote:
+> > >>  static int __init at91_poweroff_probe(struct platform_device *pdev)
+> > >> @@ -154,16 +160,22 @@ static int __init at91_poweroff_probe(struct p=
+latform_device *pdev)
+> > >>  	u32 ddr_type;
+> > >>  	int ret;
+> > >> =20
+> > >> +	at91_shdwc =3D devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_K=
+ERNEL);
+> > >> +	if (!at91_shdwc)
+> > >> +		return -ENOMEM;
+> > >> +
+> > >=20
+> > > Is there any real benefit that will offset the time lost for that
+> > > allocation at boot time?
+> >=20
+> > No, I haven't run benchmarks on this. I only wanted to have them groupe=
+d in
+> > one structure. Please let me know if you have some tests in mind.
+> >=20
 >=20
-> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
-> ---
+> Well, it is probably not much but small things adds up. Having it as a
+> global structure is probably good enough.
 
-This depends on patch 2, so I skipped this one.
+I suppose I will get a new patch with this change?
 
 -- Sebastian
 
->  drivers/power/reset/at91-poweroff.c | 3 +++
->  1 file changed, 3 insertions(+)
 >=20
-> diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at=
-91-poweroff.c
-> index 48661e04a3de..e75d8f0f0526 100644
-> --- a/drivers/power/reset/at91-poweroff.c
-> +++ b/drivers/power/reset/at91-poweroff.c
-> @@ -160,6 +160,9 @@ static int __init at91_poweroff_probe(struct platform=
-_device *pdev)
->  	u32 ddr_type;
->  	int ret;
-> =20
-> +	if (at91_shdwc)
-> +		return -EBUSY;
-> +
->  	at91_shdwc =3D devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL=
-);
->  	if (!at91_shdwc)
->  		return -ENOMEM;
+> > >=20
+> > > I understand you are then testing at91_shdwc to know whether the driv=
+er
+> > > already probed once. But, the driver will never probe twice as there =
+is
+> > > only one shutdown controller on the SoC and anyway, If it was to probe
+> > > twice, it will still work as expected.
+> >=20
+> > I had in mind the scenario where the driver would be compiled as module=
+=2E I
+> > know insmod already does this checking. I'm ok to remove this checking.=
+ I
+> > will do it in next version. With this I will also remove devm_kzalloc()=
+ of
+> > at91_shdwc.
+> >=20
+>=20
+> Thanks,
+>=20
 > --=20
-> 2.7.4
->=20
+> Alexandre Belloni, Bootlin
+> Embedded Linux and Kernel engineering
+> https://bootlin.com
 
---molrisa3iqg5uhvw
+--7jup4dhfa2jvl5qs
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIU2EACgkQ2O7X88g7
-+prIDA//U8cbco0f57BpAw5fvYKg3OUiZ+k8pD1BhqrSsM/VfXF9PZm4uDQAP0EU
-jcNmwCYrjV8jX0a9RA/ub29pj4Bl53608IN1cb9h4mnDuuyjVoX/T92gI6gbk+MT
-dQow9HmkDB4ICCwefrthCd7IIwSXDlxf/COyMj8wZoSIih1/BtKnzjvnnw7ahPQX
-btK/HrbGU/RLe1QgXq7X0VTnr6PPFB8XVbkoHr94yVO2jwKclbkB69wUK7NkHq5S
-ahU/X3NPaFAEgH8xfZyw+jFMdxK8HVux5RsKOidIPJab9PE3sFb2VCgwIpMkNHQz
-fIJiG9rL0JxUXKEa9mNl9pnGKG3LO0FmqGZqX9tuqs8EfvqmL9sI2B0+TKkqj41S
-lm7N7O8gO4yRBCR8NmVDrCL+ZOxwqchKN0C4+RMBtiOxumtIyfX82h6RGI3vZW2n
-n7QpoRPYeIlFByTd6yYGZPnsvDxs5thwpG0Wn4VmKlbGYO1ZzQjjK9aFuPSmRuGk
-IqIsFH6TszJfQ00quVcxMBwrq9GxmJCXzwGeCLWq5ZRUm7iKLgf5R3664tdgLlnh
-OddntHIGRcWF1q+/p2gAu1TSlB2vJZldgX/kHvHN8ARA3+i6ZMYeKYcobGOJP4yS
-P0UR7v2GYyPT40XVNmpdycCrHxUsClOt862xMxbVBiBoTI7Babc=
-=chEH
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIU/QACgkQ2O7X88g7
++prpcBAApVtD/m59e95DIdgGh2IqxIfqkmorBI4Yy/SQD7QokwmVns/8AUPhwxDO
+SdulNqMPGCkm7QvUODDMJ91VSUwv6nnBY7ABu0R6eBi188c0V1g0qukrX4j0fbQh
+7q+HxhcmWJddtkSE3QSYzsVb9+hrtwaYy47zehqzDNiloxJj0P6iFQbZmXJwIr2/
+rVRLnMk99Aj+fUGcpu1Far2ojzftVFvsUGm80kYS8iMi6kS3zhxzXweo9QZr0wNb
+O9trFVRGI7Y/jxdQGNevc8zJGMmfLXRpN7JZ4Mwyidckc2OWwMNXe+3TBmOZy/Wi
+Fckz5OKKymitxe3d41XLwnsxNglAmDwz7HLTLdpszabYH89FnkgXFvh5csHZq9E4
+NMapiMD8uhZevVF2b5Gkk0PQGnijV+OZNsM0AzyJIWj41rq2+OfJgaJ3vMNDeMGn
+mbzUYjCxw0FfKlwvigTRYq/4c/NdS5vdmfnNsyshg70/ctCcXyHBPPR6GAWTX4tG
+XEdIoGfexgIFT8lvspSEucRtsS2e25bvBCDB8gvstvXBllrt8FJqhZ78dnxFzr1Z
+Bn+KlwCoatA7Y4w7A0zPrHIY93m9zyuBXhkAsSkKmXh0YN4nPtGyAmRcT78f985s
+2TiN3zGNwG6o5g0dHF8k6NlzhoNnI6mvgZYMlNwCtUUTBt0SC0c=
+=YuLw
 -----END PGP SIGNATURE-----
 
---molrisa3iqg5uhvw--
+--7jup4dhfa2jvl5qs--
