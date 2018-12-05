@@ -1,299 +1,251 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v11 2/2] cpufreq: qcom-hw: Add support for QCOM cpufreq HW driver
-Date: Tue, 04 Dec 2018 15:05:26 -0800
-Message-ID: <154396472692.88331.13742924031474269133@swboyd.mtv.corp.google.com>
-References: <1543722903-10989-1-git-send-email-tdas@codeaurora.org>
- <1543722903-10989-3-git-send-email-tdas@codeaurora.org>
- <20181204051231.mm5ixli7ckpfzvd4@vireshk-i7>
- <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 2/5] devfreq: add support for suspend/resume of a
+ devfreq device
+Date: Wed, 05 Dec 2018 09:09:36 +0900
+Message-ID: <5C071740.7090000@samsung.com>
+References: <1543847475-7600-1-git-send-email-l.luba@partner.samsung.com>
+        <CGME20181203143131eucas1p217f22ac6d19682a54a57658a06980914@eucas1p2.samsung.com>
+        <1543847475-7600-3-git-send-email-l.luba@partner.samsung.com>
+        <5C06124B.5030409@samsung.com> <5C06140E.7010603@samsung.com>
+        <5C061A57.7040002@samsung.com>
+        <7662d626-5c3e-aec5-05e4-c6cd2e56ef49@partner.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <154396249199.88331.1800559141437859959@swboyd.mtv.corp.google.com>
+In-reply-to: <7662d626-5c3e-aec5-05e4-c6cd2e56ef49@partner.samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Taniya Das <tdas@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>, devicetree@vger.kernel.org, robh@kernel.org, skannan@codeaurora.org, linux-arm-msm@vger.kernel.org, evgreen@google.com
+To: Lukasz Luba <l.luba@partner.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: tjakobi@math.uni-bielefeld.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, keescook@chromium.org, anton@enomsg.org, ccross@android.com, tony.luck@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, kgene@kernel.org, krzk@kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Stephen Boyd (2018-12-04 14:28:11)
-> Quoting Viresh Kumar (2018-12-03 21:12:31)
-> > Hi Taniya,
-> > =
+Hi Lukasz,
 
-> > Sorry that I haven't been reviewing it much from last few iterations as=
- I was
-> > letting others get this into a better shape. Thanks for your efforts..
-> > =
+On 2018년 12월 04일 18:53, Lukasz Luba wrote:
+> Hi Chanwoo,
+> 
+> On 12/4/18 7:10 AM, Chanwoo Choi wrote:
+>> Hi Lukasz,
+>>
+>> I add the comment about 'suspend_count'.
+>>
+>> On 2018년 12월 04일 14:43, Chanwoo Choi wrote:
+>>> Hi,
+>>>
+>>> On 2018년 12월 04일 14:36, Chanwoo Choi wrote:
+>>>> Hi Lukasz,
+>>>>
+>>>> Looks good to me. But, I add the some comments.
+>>>> If you will fix it, feel free to add my tag:
+>>>> Reviewed-by: Chanwoo choi <cw00.choi@samsung.com>
+>>>
+>>> Sorry. Fix typo 'choi' to 'Choi' as following.
+>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>
+>>>>
+>>>> On 2018년 12월 03일 23:31, Lukasz Luba wrote:
+>>>>> The patch prepares devfreq device for handling suspend/resume
+>>>>> functionality.  The new fields will store needed information during this
+>>>>
+>>>> nitpick. Remove unneeded space. There are two spaces between '.' and 'The new'.
+>>>>
+>>>>> process.  Devfreq framework handles opp-suspend DT entry and there is no
+>>>>
+>>>> ditto.
+>>>>
+>>>>> need of modyfications in the drivers code.  It uses atomic variables to
+>>>>
+>>>> ditto.
+>>>>
+>>>>> make sure no race condition affects the process.
+>>>>>
+>>>>> The patch is based on earlier work by Tobias Jakobi.
+>>>>
+>>>> Please remove it from each patch description.
+>>>>
+>>>>>
+>>>>> Suggested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>>>>> Suggested-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>> Signed-off-by: Lukasz Luba <l.luba@partner.samsung.com>
+>>>>> ---
+>>>>>   drivers/devfreq/devfreq.c | 51 +++++++++++++++++++++++++++++++++++++++--------
+>>>>>   include/linux/devfreq.h   |  7 +++++++
+>>>>>   2 files changed, 50 insertions(+), 8 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>>> index a9fd61b..36bed24 100644
+>>>>> --- a/drivers/devfreq/devfreq.c
+>>>>> +++ b/drivers/devfreq/devfreq.c
+>>>>> @@ -316,6 +316,10 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
+>>>>>   			"Couldn't update frequency transition information.\n");
+>>>>>   
+>>>>>   	devfreq->previous_freq = new_freq;
+>>>>> +
+>>>>> +	if (devfreq->suspend_freq)
+>>>>> +		devfreq->resume_freq = cur_freq;
+>>>>> +
+>>>>>   	return err;
+>>>>>   }
+>>>>>   
+>>>>> @@ -667,6 +671,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>>>   	}
+>>>>>   	devfreq->max_freq = devfreq->scaling_max_freq;
+>>>>>   
+>>>>> +	devfreq->suspend_freq = dev_pm_opp_get_suspend_opp_freq(dev);
+>>>>> +	atomic_set(&devfreq->suspend_count, 0);
+>>>>> +
+>>>>>   	dev_set_name(&devfreq->dev, "devfreq%d",
+>>>>>   				atomic_inc_return(&devfreq_no));
+>>>>>   	err = device_register(&devfreq->dev);
+>>>>> @@ -867,14 +874,28 @@ EXPORT_SYMBOL(devm_devfreq_remove_device);
+>>>>>    */
+>>>>>   int devfreq_suspend_device(struct devfreq *devfreq)
+>>>>>   {
+>>>>> +	int ret;
+>>>>> +
+>>>>>   	if (!devfreq)
+>>>>>   		return -EINVAL;
+>>>>>   
+>>>>> -	if (!devfreq->governor)
+>>>>> -		return 0;
+>>>>> +	if (devfreq->governor) {
+>>>>> +		ret = devfreq->governor->event_handler(devfreq,
+>>>>> +					DEVFREQ_GOV_SUSPEND, NULL);
+>>>>> +		if (ret)
+>>>>> +			return ret;
+>>>>> +	}
+>>>>> +
+>>>>> +	if (devfreq->suspend_freq) {
+>>>>> +		if (atomic_inc_return(&devfreq->suspend_count) > 1)
+>>>>> +			return 0;
+>>>>> +
+>>>>> +		ret = devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
+>>>>> +		if (ret)
+>>>>> +			return ret;
+>>>>> +	}
+>>
+>> In this patch, if some users call 'devfreq_suspend_device' twice,
+>> 'devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_SUSPEND, NULL)'
+>> is called twice but devfreq_set_target() is called only one.
+>> I knew that it is no problem for operation.
+>>
+>> But,
+>> I think that you better to use 'suspend_count' as the reference count
+>> of devfreq_suspend/resume_device(). But, if you use 'suspend_count'
+>> in order to check whether this devfreq is suspended or not,
+>> we can reduce the unneeded redundant call when calling it twice.
+>>
+>> clock and regulator used the 'reference count' method in order to
+>> remove the redundant call.
+> 
+> I think I've got the point. I will move the atomic check just
+> after the !devfreq check. Something like the code bellow is what you
+> would like to see?
+> ---8<-----
+> if (!devfreq)
+> 	return -EINVAL;
+> if (atomic_inc_return(&devfreq->suspend_count) > 1)
+> 	return0;
 
-> > On 02-12-18, 09:25, Taniya Das wrote:
-> > > +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> > =
+Looks good to me. I agree.
 
-> > > +struct cpufreq_qcom {
-> > > +     struct cpufreq_frequency_table *table;
-> > > +     void __iomem *perf_state_reg;
-> > > +     cpumask_t related_cpus;
-> > > +};
-> > > +
-> > > +static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-> > =
+> 
+> ---->8-------
+>>
+>>
+>>>>>   
+>>>>> -	return devfreq->governor->event_handler(devfreq,
+>>>>> -				DEVFREQ_GOV_SUSPEND, NULL);
+>>>>> +	return 0;
+>>>>>   }
+>>>>>   EXPORT_SYMBOL(devfreq_suspend_device);
+>>>>>   
+>>>>> @@ -888,14 +909,28 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+>>>>>    */
+>>>>>   int devfreq_resume_device(struct devfreq *devfreq)
+>>>>>   {
+>>>>> +	int ret;
+>>>>> +
+>>>>>   	if (!devfreq)
+>>>>>   		return -EINVAL;
+>>>>>   
+>>>>> -	if (!devfreq->governor)
+>>>>> -		return 0;
+>>>>> +	if (devfreq->resume_freq) {
+>>>>> +		if (atomic_dec_return(&devfreq->suspend_count) >= 1)
+>>>>> +			return 0;
+>>
+>> ditto.
+> Same approach here:
+> ---8<-----
+> if (!devfreq)
+> 	return -EINVAL;
+> if (atomic_dec_return(&devfreq->suspend_count) >= 1)
+> 	return 0;
 
-> > Now that the code is much more simplified, I am not sure if you need th=
-is
-> > per-cpu structure at all. The only place where you are using it is in
-> > qcom_cpufreq_hw_cpu_init() and probe(). Why not merge qcom_cpu_resource=
-s_init()
-> > completely into qcom_cpufreq_hw_cpu_init() and get rid of this structure
-> > entirely ?
-> > =
+Looks good to me.
 
-> =
+> ---->8-------
+> 
+> Regards,
+> Lukasz
+>>
+>>>>>   
+>>>>> -	return devfreq->governor->event_handler(devfreq,
+>>>>> -				DEVFREQ_GOV_RESUME, NULL);
+>>>>> +		ret = devfreq_set_target(devfreq, devfreq->resume_freq, 0);
+>>>>> +		if (ret)
+>>>>> +			return ret;
+>>>>> +	}
+>>>>> +
+>>>>> +	if (devfreq->governor) {
+>>>>> +		ret = devfreq->governor->event_handler(devfreq,
+>>>>> +					DEVFREQ_GOV_RESUME, NULL);
+>>>>> +		if (ret)
+>>>>> +			return ret;
+>>>>> +	}
+>>>>> +
+>>>>> +	return 0;
+>>>>>   }
+>>>>>   EXPORT_SYMBOL(devfreq_resume_device);
+>>>>>   
+>>>>> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+>>>>> index e4963b0..d985199 100644
+>>>>> --- a/include/linux/devfreq.h
+>>>>> +++ b/include/linux/devfreq.h
+>>>>> @@ -131,6 +131,9 @@ struct devfreq_dev_profile {
+>>>>>    * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
+>>>>>    * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
+>>>>>    * @stop_polling:	 devfreq polling status of a device.
+>>>>> + * @suspend_freq:	 frequency of a device set during suspend phase.
+>>>>> + * @resume_freq:	 frequency of a device set in resume phase.
+>>>>> + * @suspend_count:	 suspend requests counter for a device.
+>>>>>    * @total_trans:	Number of devfreq transitions
+>>>>>    * @trans_table:	Statistics of devfreq transitions
+>>>>>    * @time_in_state:	Statistics of devfreq states
+>>>>> @@ -167,6 +170,10 @@ struct devfreq {
+>>>>>   	unsigned long scaling_max_freq;
+>>>>>   	bool stop_polling;
+>>>>>   
+>>>>> +	unsigned long suspend_freq;
+>>>>> +	unsigned long resume_freq;
+>>>>> +	atomic_t suspend_count;
+>>>>> +
+>>>>>   	/* information for device frequency transition */
+>>>>>   	unsigned int total_trans;
+>>>>>   	unsigned int *trans_table;
+>>>>>
+>>>>
+>>>>
+>>>
+>>>
+>>
+>>
+> 
+> 
 
-> Good point. Here's an untested patch to handle that. It removes the
-> related functionality and makes an array of pointers to the domains that
-> are created each time qcom_cpu_resources_init() is called.
-> =
 
-> ---8<----
-> =
-
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpu=
-freq-hw.c
-> index 8dc6b73c2f22..04e7cfd70316 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -23,14 +23,14 @@
->  #define REG_LUT_TABLE                  0x110
->  #define REG_PERF_STATE                 0x920
->  =
-
-> +#define MAX_FREQ_DOMAINS               2
-> +
->  struct cpufreq_qcom {
->         struct cpufreq_frequency_table *table;
->         void __iomem *perf_state_reg;
->         cpumask_t related_cpus;
->  };
->  =
-
-> -static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
-> -
->  static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
->                                         unsigned int index)
->  {
-> @@ -76,9 +76,14 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct=
- cpufreq_policy *policy,
->  =
-
->  static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->  {
-> +       struct cpufreq_qcom **freq_domain_map;
->         struct cpufreq_qcom *c;
->  =
-
-> -       c =3D qcom_freq_domain_map[policy->cpu];
-> +       freq_domain_map =3D cpufreq_get_driver_data();
-> +       if (!freq_domain_map)
-> +               return -ENODEV;
-> +
-> +       c =3D freq_domain_map[policy->cpu];
-
-And this fails now because it indexes based on cpu number. We have to
-parse the frequency domain out of the cpunode again to fix that.
-
-Here's the updated (still untested) patch and I also just allocated the
-freq domain array up front instead of in each domain init routine to
-simplify some more.
-
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufr=
-eq-hw.c
-index 8dc6b73c2f22..bc0d734f7e3c 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -23,14 +23,14 @@
- #define REG_LUT_TABLE			0x110
- #define REG_PERF_STATE			0x920
- =
-
-+#define MAX_FREQ_DOMAINS		2
-+
- struct cpufreq_qcom {
- 	struct cpufreq_frequency_table *table;
- 	void __iomem *perf_state_reg;
- 	cpumask_t related_cpus;
- };
- =
-
--static struct cpufreq_qcom *qcom_freq_domain_map[NR_CPUS];
--
- static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 					unsigned int index)
- {
-@@ -76,9 +76,26 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct c=
-pufreq_policy *policy,
- =
-
- static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- {
--	struct cpufreq_qcom *c;
-+	struct cpufreq_qcom *freq_domain_map, *c;
-+	struct device_node *cpu_np;
-+	struct of_phandle_args args;
-+	int ret;
-+
-+	freq_domain_map =3D cpufreq_get_driver_data();
-+	if (!freq_domain_map)
-+		return -ENODEV;
-+
-+	cpu_np =3D of_cpu_device_node_get(policy->cpu);
-+	if (!cpu_np)
-+		return -ENODEV;
-+
-+	ret =3D of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
-+					 "#freq-domain-cells", 0, &args);
-+	of_node_put(cpu_np);
-+	if (ret)
-+		return ret;
- =
-
--	c =3D qcom_freq_domain_map[policy->cpu];
-+	c =3D &freq_domain_map[args.args[0]];
- 	if (!c) {
- 		pr_err("No scaling support for CPU%d\n", policy->cpu);
- 		return -ENODEV;
-@@ -171,43 +188,15 @@ static int qcom_cpufreq_hw_read_lut(struct device *de=
-v, struct cpufreq_qcom *c,
- 	return 0;
- }
- =
-
--static void qcom_get_related_cpus(int index, struct cpumask *m)
--{
--	struct device_node *cpu_np;
--	struct of_phandle_args args;
--	int cpu, ret;
--
--	for_each_possible_cpu(cpu) {
--		cpu_np =3D of_cpu_device_node_get(cpu);
--		if (!cpu_np)
--			continue;
--
--		ret =3D of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
--						 "#freq-domain-cells", 0,
--						  &args);
--		of_node_put(cpu_np);
--		if (ret < 0)
--			continue;
--
--		if (index =3D=3D args.args[0])
--			cpumask_set_cpu(cpu, m);
--	}
--}
--
- static int qcom_cpu_resources_init(struct platform_device *pdev,
--				   unsigned int cpu, int index,
--				   unsigned long xo_rate,
--				   unsigned long cpu_hw_rate)
-+				   int index, unsigned long xo_rate,
-+				   unsigned long cpu_hw_rate,
-+				   struct cpufreq_qcom *c)
- {
--	struct cpufreq_qcom *c;
- 	struct resource *res;
- 	struct device *dev =3D &pdev->dev;
- 	void __iomem *base;
--	int ret, cpu_r;
--
--	c =3D devm_kzalloc(dev, sizeof(*c), GFP_KERNEL);
--	if (!c)
--		return -ENOMEM;
-+	int ret;
- =
-
- 	res =3D platform_get_resource(pdev, IORESOURCE_MEM, index);
- 	base =3D devm_ioremap_resource(dev, res);
-@@ -220,12 +209,6 @@ static int qcom_cpu_resources_init(struct platform_dev=
-ice *pdev,
- 		return -ENODEV;
- 	}
- =
-
--	qcom_get_related_cpus(index, &c->related_cpus);
--	if (!cpumask_weight(&c->related_cpus)) {
--		dev_err(dev, "Domain-%d failed to get related CPUs\n", index);
--		return -ENOENT;
--	}
--
- 	c->perf_state_reg =3D base + REG_PERF_STATE;
- =
-
- 	ret =3D qcom_cpufreq_hw_read_lut(dev, c, base, xo_rate, cpu_hw_rate);
-@@ -234,9 +217,6 @@ static int qcom_cpu_resources_init(struct platform_devi=
-ce *pdev,
- 		return ret;
- 	}
- =
-
--	for_each_cpu(cpu_r, &c->related_cpus)
--		qcom_freq_domain_map[cpu_r] =3D c;
--
- 	return 0;
- }
- =
-
-@@ -245,9 +225,16 @@ static int qcom_cpufreq_hw_driver_probe(struct platfor=
-m_device *pdev)
- 	struct device_node *cpu_np;
- 	struct of_phandle_args args;
- 	struct clk *clk;
--	unsigned int cpu;
-+	unsigned int cpu, domain;
- 	unsigned long xo_rate, cpu_hw_rate;
- 	int ret;
-+	struct cpufreq_qcom *freq_domain_map, *freq_domain;
-+
-+	freq_domain_map =3D devm_kcalloc(&pdev->dev, MAX_FREQ_DOMAINS,
-+				       sizeof(*freq_domain_map), GFP_KERNEL);
-+	cpufreq_qcom_hw_driver.driver_data =3D freq_domain_map;
-+	if (!freq_domain_map)
-+		return -ENOMEM;
- =
-
- 	clk =3D clk_get(&pdev->dev, "xo");
- 	if (IS_ERR(clk))
-@@ -273,16 +260,26 @@ static int qcom_cpufreq_hw_driver_probe(struct platfo=
-rm_device *pdev)
- =
-
- 		ret =3D of_parse_phandle_with_args(cpu_np, "qcom,freq-domain",
- 						 "#freq-domain-cells", 0,
--						  &args);
-+						 &args);
- 		of_node_put(cpu_np);
- 		if (ret)
- 			return ret;
- =
-
--		if (qcom_freq_domain_map[cpu])
-+		domain =3D args.args[0];
-+		if (WARN_ON(domain >=3D MAX_FREQ_DOMAINS))
-+			continue;
-+
-+		freq_domain =3D &freq_domain_map[domain];
-+		cpumask_set_cpu(cpu, &freq_domain->related_cpus);
-+		/*
-+		 * If we've already populated the frequency table for this domain
-+		 * just mark it related and get out of here
-+		 */
-+		if (cpumask_weight(&freq_domain->related_cpus) > 1)
- 			continue;
- =
-
--		ret =3D qcom_cpu_resources_init(pdev, cpu, args.args[0],
--					      xo_rate, cpu_hw_rate);
-+		ret =3D qcom_cpu_resources_init(pdev, domain, xo_rate,
-+					      cpu_hw_rate, freq_domain);
- 		if (ret)
- 			return ret;
- 	}
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
