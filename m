@@ -1,161 +1,121 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v2 4/7] power: supply: bq24190_charger: add extcon
- support for USB OTG
-Date: Wed, 5 Dec 2018 22:56:44 +0100
-Message-ID: <20181205215644.icx7jpisfhpd2edb@earth.universe>
-References: <20181101001149.13453-1-masneyb@onstation.org>
- <20181101001149.13453-5-masneyb@onstation.org>
+Subject: Re: [PATCH v2] power: supply: bq24190_charger: add support for
+ bq24196 variant
+Date: Wed, 5 Dec 2018 23:03:40 +0100
+Message-ID: <20181205220340.soejl65puivnwhz7@earth.universe>
+References: <20181113124753.29948-1-heiko@sntech.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="pxuayx6qoqhqiddd"
+        protocol="application/pgp-signature"; boundary="djcjq7k5hkgqkwzd"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20181101001149.13453-5-masneyb@onstation.org>
+In-Reply-To: <20181113124753.29948-1-heiko@sntech.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Masney <masneyb@onstation.org>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, andy.gross@linaro.org, david.brown@linaro.org, bjorn.andersson@linaro.org, linus.walleij@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-gpio@vger.kernel.org, jonathan@marek.ca
+To: Heiko Stuebner <heiko@sntech.de>
+Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, Heiko Stuebner <heiko.stuebner@bq.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---pxuayx6qoqhqiddd
+--djcjq7k5hkgqkwzd
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Oct 31, 2018 at 08:11:46PM -0400, Brian Masney wrote:
-> Add extcon support so that we can notify USB drivers of cable state
-> changes. Based on work from Jonathan Marek. USB OTG was tested on a LG
-> Nexus 5 (hammerhead) phone.
+On Tue, Nov 13, 2018 at 01:47:53PM +0100, Heiko Stuebner wrote:
+> From: Heiko Stuebner <heiko.stuebner@bq.com>
 >=20
-> Signed-off-by: Brian Masney <masneyb@onstation.org>
+> The bq24196 is another variant of the bq24190 charger ic.
+> Its register set is identical to the bq24192 and it even reuses
+> the same part number (0x5).
+>=20
+> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
 > ---
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/supply/bq24190_charger.c | 37 +++++++++++++++++++++++++-
->  1 file changed, 36 insertions(+), 1 deletion(-)
+> This should go on top of the bq24192 support patches from Brian Masney /
+> Jonathan Marek [0]
 >=20
+> [0] https://patchwork.kernel.org/patch/10663409/
+>=20
+> changes in v2:
+> - add missing compatible to dt-binding
+>=20
+>  Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
+>  drivers/power/supply/bq24190_charger.c                     | 4 +++-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b=
+/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> index c8ac028bd3c7..ffe2be408bb6 100644
+> --- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+> @@ -5,6 +5,7 @@ Required properties:
+>      * "ti,bq24190"
+>      * "ti,bq24192"
+>      * "ti,bq24192i"
+> +    * "ti,bq24196"
+>  - reg: integer, I2C address of the charger.
+>  - interrupts[-extended]: configuration for charger INT pin.
+> =20
 > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
 y/bq24190_charger.c
-> index 9e7f3e33458a..4e64e6ac95c5 100644
+> index 4e64e6ac95c5..effa7c3c21e6 100644
 > --- a/drivers/power/supply/bq24190_charger.c
 > +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -21,6 +21,7 @@
->  #include <linux/workqueue.h>
->  #include <linux/gpio.h>
->  #include <linux/i2c.h>
-> +#include <linux/extcon-provider.h>
-> =20
->  #define	BQ24190_MANUFACTURER	"Texas Instruments"
-> =20
-> @@ -159,6 +160,7 @@
->  struct bq24190_dev_info {
->  	struct i2c_client		*client;
->  	struct device			*dev;
-> +	struct extcon_dev		*edev;
->  	struct power_supply		*charger;
->  	struct power_supply		*battery;
->  	struct delayed_work		input_current_limit_work;
-> @@ -174,6 +176,11 @@ struct bq24190_dev_info {
->  	u8				watchdog;
+> @@ -143,7 +143,7 @@
+>  #define BQ24190_REG_VPRS_PN_MASK		(BIT(5) | BIT(4) | BIT(3))
+>  #define BQ24190_REG_VPRS_PN_SHIFT		3
+>  #define BQ24190_REG_VPRS_PN_24190			0x4
+> -#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193 */
+> +#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193, 24196 */
+>  #define BQ24190_REG_VPRS_PN_24192I			0x3
+>  #define BQ24190_REG_VPRS_TS_PROFILE_MASK	BIT(2)
+>  #define BQ24190_REG_VPRS_TS_PROFILE_SHIFT	2
+> @@ -1973,6 +1973,7 @@ static const struct i2c_device_id bq24190_i2c_ids[]=
+ =3D {
+>  	{ "bq24190" },
+>  	{ "bq24192" },
+>  	{ "bq24192i" },
+> +	{ "bq24196" },
+>  	{ },
 >  };
-> =20
-> +static const unsigned int bq24190_usb_extcon_cable[] =3D {
-> +	EXTCON_USB,
-> +	EXTCON_NONE,
-> +};
-> +
->  /*
->   * The tables below provide a 2-way mapping for the value that goes in
->   * the register field and the real-world value that it represents.
-> @@ -1528,6 +1535,20 @@ static const struct power_supply_desc bq24190_batt=
-ery_desc =3D {
->  	.property_is_writeable	=3D bq24190_battery_property_is_writeable,
+>  MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+> @@ -1982,6 +1983,7 @@ static const struct of_device_id bq24190_of_match[]=
+ =3D {
+>  	{ .compatible =3D "ti,bq24190", },
+>  	{ .compatible =3D "ti,bq24192", },
+>  	{ .compatible =3D "ti,bq24192i", },
+> +	{ .compatible =3D "ti,bq24196", },
+>  	{ },
 >  };
-> =20
-> +static int bq24190_configure_usb_otg(struct bq24190_dev_info *bdi, u8 ss=
-_reg)
-> +{
-> +	bool otg_enabled;
-> +	int ret;
-> +
-> +	otg_enabled =3D !!(ss_reg & BQ24190_REG_SS_VBUS_STAT_MASK);
-> +	ret =3D extcon_set_state_sync(bdi->edev, EXTCON_USB, otg_enabled);
-> +	if (ret < 0)
-> +		dev_err(bdi->dev, "Can't set extcon state to %d: %d\n",
-> +			otg_enabled, ret);
-> +
-> +	return ret;
-> +}
-> +
->  static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  {
->  	const u8 battery_mask_ss =3D BQ24190_REG_SS_CHRG_STAT_MASK;
-> @@ -1597,8 +1618,10 @@ static void bq24190_check_status(struct bq24190_de=
-v_info *bdi)
->  		bdi->ss_reg =3D ss_reg;
->  	}
-> =20
-> -	if (alert_charger || alert_battery)
-> +	if (alert_charger || alert_battery) {
->  		power_supply_changed(bdi->charger);
-> +		bq24190_configure_usb_otg(bdi, ss_reg);
-> +	}
->  	if (alert_battery && bdi->battery)
->  		power_supply_changed(bdi->battery);
-> =20
-> @@ -1732,6 +1755,14 @@ static int bq24190_probe(struct i2c_client *client,
->  		return -EINVAL;
->  	}
-> =20
-> +	bdi->edev =3D devm_extcon_dev_allocate(dev, bq24190_usb_extcon_cable);
-> +	if (IS_ERR(bdi->edev))
-> +		return PTR_ERR(bdi->edev);
-> +
-> +	ret =3D devm_extcon_dev_register(dev, bdi->edev);
-> +	if (ret < 0)
-> +		return ret;
-> +
->  	pm_runtime_enable(dev);
->  	pm_runtime_use_autosuspend(dev);
->  	pm_runtime_set_autosuspend_delay(dev, 600);
-> @@ -1778,6 +1809,10 @@ static int bq24190_probe(struct i2c_client *client,
->  		goto out_charger;
->  	}
-> =20
-> +	ret =3D bq24190_configure_usb_otg(bdi, bdi->ss_reg);
-> +	if (ret < 0)
-> +		goto out_charger;
-> +
->  	ret =3D bq24190_sysfs_create_group(bdi);
->  	if (ret < 0) {
->  		dev_err(dev, "Can't create sysfs entries\n");
+>  MODULE_DEVICE_TABLE(of, bq24190_of_match);
 > --=20
-> 2.17.2
+> 2.18.0
 >=20
 
---pxuayx6qoqhqiddd
+--djcjq7k5hkgqkwzd
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwISZsACgkQ2O7X88g7
-+pp7Ig//RFKKi1+HQ2lMv/3spEdJZK9mtsO6/vt7JRvHN9DTj1a1y8bMaqP3OJ1n
-E45GxJ+KkvVhBqyxu3wZfyfgbh1kpXXu/JJYO2t3F2FfsT+7/YBdm2/mAMJM1DTt
-GZiFOy9VBYjsA7KreyimN1L3BGOhI1DUItvzFFHZGQqft1ic2yuA/9eLNn5bUgm0
-TxLX86e0RsOWS2msMjNoIt53d+8+sLtdlaQjpO7xMdmgqxtCUtsJkH75XyP7CxA0
-ehWY38bdtvV4s+QQyBNXKmZ9MJ+gZAahdvi0s1gzJcRZaut8EXN5ps+pjAdKpro6
-zR//Ofhk13ZFN9/SuTafiJx5vqUEFPXFzn8t7xCw1fsD4OLiy7sFMe37X/YAQypD
-EynyXAhAjsidSsRgfCpHH2igJzmi/0PLch4us4bjAvL2mpgHiDs5iN/C8ot3bU0B
-uo/lHwhbQtD4GNQq7U2C/pmgeLSkHzfyiaP/2k1GaBUVclDoXcD4cHc8BwNWeAlX
-bXfS56yj/gDUGEz0ZkGNt71vLqhY4nzHFpFeHNdIC7HrU6U6FiJOVyMsbfwDlsZq
-K4xBVWhy8dhS/8XeDlyY/yVimaMKItpCsVh+Ow0HBM+8eW6XeqyNvsz5cBvgLl/W
-LbtHnsrLN+UD5cHvUyNb3pr0vf0g5ThpUvYU/SaG9s6HCrHUBCY=
-=4yC/
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwISzsACgkQ2O7X88g7
++pp9MA/9GEAMpunDV0xEdz9AtlAi76d7vg9nJYtONi1lKe65JJaPTWnZq2O2sl+r
+6aDZ/z3O68iZDN8AoFtVLijXNNNnN2Y6K3hEJQt6XxSNUE5NI4upeis/uFhbpreU
+0mThrwHyhlHJ0jzGAakKHNmj92LAcle7hMj9hd0znbYy5bLWi6K2rfT0D8g+dR08
+sbwwunnIK0VAvHutmcBjwvduoglyn0wCSCqYOqyKx8VZvU7Ii2Of8/Y8bK53VHbE
+O3vu2f/KFdkEwWjdGzGh2JSkiqGnv6txTxRtcFPwSXKTTpofciRK4cnsx9FNZsa+
+6T6+k4FeGHgL0X2uw9FrVsXeO+jxkKIIRsjl6F05FbpIw41HBgvhL1IBOD84R0s3
+uZIeVKz2zk1TOqDlLYCzqQackSmeMMIBJxfXD7fTkSPyvoX3Bql/CUHFUkhyLiPa
+pJ6hp1lGqhOA3y1RASxEFwtQs36BhwgkQiJ/EkYeLFAEjGhTs6nYMhDf8Bfn1syf
+d9jitXPPDAougC2Ad+GNYghbUmK5f0VjULxTDw092A8oQsBtzTui9kuNYrtfhPwP
+ho/5QpScPdRJTrwhszhd7Bpn3FrM3afzsmdHFtEHgTiHeQHN2QOPYfvnjlUoS+jn
++BNVEUdBmAyer2uAHJ05XzwLzCEam9CPjo3L5IZHf0xl1D32xLc=
+=4VUa
 -----END PGP SIGNATURE-----
 
---pxuayx6qoqhqiddd--
+--djcjq7k5hkgqkwzd--
