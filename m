@@ -1,83 +1,86 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH 4/4] power: reset: at91-poweroff: remove
- at91_ramc_of_match
-Date: Wed, 5 Dec 2018 23:37:30 +0100
-Message-ID: <20181205223730.t6g7lssazxb3zn5y@earth.universe>
+Subject: Re: [PATCH 3/4] power: reset: at91-poweroff: check shdwc data
+ structure at the beginning of probe
+Date: Wed, 5 Dec 2018 23:38:25 +0100
+Message-ID: <20181205223825.vkye6tgvan2laxlu@earth.universe>
 References: <1541416443-4321-1-git-send-email-claudiu.beznea@microchip.com>
- <1541416443-4321-5-git-send-email-claudiu.beznea@microchip.com>
+ <1541416443-4321-4-git-send-email-claudiu.beznea@microchip.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="l2nol2svzs2s2rpq"
+        protocol="application/pgp-signature"; boundary="molrisa3iqg5uhvw"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1541416443-4321-5-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <1541416443-4321-4-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Claudiu.Beznea@microchip.com
 Cc: Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---l2nol2svzs2s2rpq
+--molrisa3iqg5uhvw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Nov 05, 2018 at 11:14:31AM +0000, Claudiu.Beznea@microchip.com wrot=
+On Mon, Nov 05, 2018 at 11:14:28AM +0000, Claudiu.Beznea@microchip.com wrot=
 e:
-> Remove at91_ramc_of_match[] since it is not used anywhere in this code.
+> Check at91_shdwc before continuing with probe since we want only one inst=
+ance of
+> this driver. Inspired from commit 9f1e44774be5 ("power: reset: at91-power=
+off:
+> do not procede if at91_shdwc is allocated").
 >=20
 > Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 > ---
 
-Thanks, queued.
+This depends on patch 2, so I skipped this one.
 
 -- Sebastian
 
->  drivers/power/reset/at91-poweroff.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  drivers/power/reset/at91-poweroff.c | 3 +++
+>  1 file changed, 3 insertions(+)
 >=20
 > diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at=
 91-poweroff.c
-> index e75d8f0f0526..43b4cccb7d0c 100644
+> index 48661e04a3de..e75d8f0f0526 100644
 > --- a/drivers/power/reset/at91-poweroff.c
 > +++ b/drivers/power/reset/at91-poweroff.c
-> @@ -232,11 +232,6 @@ static int __exit at91_poweroff_remove(struct platfo=
-rm_device *pdev)
->  	return 0;
->  }
+> @@ -160,6 +160,9 @@ static int __init at91_poweroff_probe(struct platform=
+_device *pdev)
+>  	u32 ddr_type;
+>  	int ret;
 > =20
-> -static const struct of_device_id at91_ramc_of_match[] =3D {
-> -	{ .compatible =3D "atmel,sama5d3-ddramc", },
-> -	{ /* sentinel */ }
-> -};
-> -
->  static const struct of_device_id at91_poweroff_of_match[] =3D {
->  	{ .compatible =3D "atmel,at91sam9260-shdwc", },
->  	{ .compatible =3D "atmel,at91sam9rl-shdwc", },
+> +	if (at91_shdwc)
+> +		return -EBUSY;
+> +
+>  	at91_shdwc =3D devm_kzalloc(&pdev->dev, sizeof(*at91_shdwc), GFP_KERNEL=
+);
+>  	if (!at91_shdwc)
+>  		return -ENOMEM;
 > --=20
 > 2.7.4
 >=20
 
---l2nol2svzs2s2rpq
+--molrisa3iqg5uhvw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIUyoACgkQ2O7X88g7
-+pqHKQ/9Ge+YB+XoMROdq10+kL7QzL8MWhXFtfXS8PE6tOug4Zw+vr5RnxzjMe6c
-8+DAoomnpn92ULenGXDR4S5rdn5tEvPro40D7XchP1I0V9yzLVIPPhtFMx3/VYi+
-/v86epgT5ZiZzPDJQMsq080PXTDzU2evTdRdgSgY5tDNFyh+OuTNMTgkGWtFYy3x
-mSDWPaOIz1DR5WXeh1Ct94kZ98HeS3+NbJNopi5iztiGK8i10T4JERuhjlDT/WQ4
-H9qt8O6BN8dyMCcKTSSZPaAKeZfNL+LZGrECCDkvtwuCr/tuW3sTCag9wWLS+GOV
-ipyOexz3Ev0qe346X87yUnJI/xlgRnIFltVuLujUy4otb594/K/TQa7XsvtPcEtm
-HA8ObDoDUtbwqry2ABC1Z3IdulNtyAnU4IbJH0OxAn9auv/Fq6NaDGKUtq0bpbjS
-LTU8aJStiT5hZkJLqZxp8nfkkdamMT7z6ltxowzNFytkjYsxHl32+xYggNL893Up
-tsqiRHn1+s+KgjUjBFYuykkI7ryHkm6UTsZ/W7f4quxvQ1MtC4LwhNoe2Dg51f4O
-vg+SQeE/S4GNwM6tIYpfN+5qRwxsVk0vjtufQsvkJkcXEj6bOwt/WaH/IpouMDt/
-yU1pRKYM1GEJRP2Nw37pbLn8RF5LM6E0mAt3nc1NsbVLprUP3GM=
-=goHB
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwIU2EACgkQ2O7X88g7
++prIDA//U8cbco0f57BpAw5fvYKg3OUiZ+k8pD1BhqrSsM/VfXF9PZm4uDQAP0EU
+jcNmwCYrjV8jX0a9RA/ub29pj4Bl53608IN1cb9h4mnDuuyjVoX/T92gI6gbk+MT
+dQow9HmkDB4ICCwefrthCd7IIwSXDlxf/COyMj8wZoSIih1/BtKnzjvnnw7ahPQX
+btK/HrbGU/RLe1QgXq7X0VTnr6PPFB8XVbkoHr94yVO2jwKclbkB69wUK7NkHq5S
+ahU/X3NPaFAEgH8xfZyw+jFMdxK8HVux5RsKOidIPJab9PE3sFb2VCgwIpMkNHQz
+fIJiG9rL0JxUXKEa9mNl9pnGKG3LO0FmqGZqX9tuqs8EfvqmL9sI2B0+TKkqj41S
+lm7N7O8gO4yRBCR8NmVDrCL+ZOxwqchKN0C4+RMBtiOxumtIyfX82h6RGI3vZW2n
+n7QpoRPYeIlFByTd6yYGZPnsvDxs5thwpG0Wn4VmKlbGYO1ZzQjjK9aFuPSmRuGk
+IqIsFH6TszJfQ00quVcxMBwrq9GxmJCXzwGeCLWq5ZRUm7iKLgf5R3664tdgLlnh
+OddntHIGRcWF1q+/p2gAu1TSlB2vJZldgX/kHvHN8ARA3+i6ZMYeKYcobGOJP4yS
+P0UR7v2GYyPT40XVNmpdycCrHxUsClOt862xMxbVBiBoTI7Babc=
+=chEH
 -----END PGP SIGNATURE-----
 
---l2nol2svzs2s2rpq--
+--molrisa3iqg5uhvw--
