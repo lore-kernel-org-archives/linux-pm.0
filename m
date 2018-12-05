@@ -1,121 +1,190 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: Re: [PATCH v2] power: supply: bq24190_charger: add support for
- bq24196 variant
-Date: Wed, 5 Dec 2018 23:03:40 +0100
-Message-ID: <20181205220340.soejl65puivnwhz7@earth.universe>
-References: <20181113124753.29948-1-heiko@sntech.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] cpuidle: Add 'high' and 'low' idle state metrics
+Date: Wed, 05 Dec 2018 23:33:40 +0100
+Message-ID: <3956581.Kf8ajzdeNX@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="djcjq7k5hkgqkwzd"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20181113124753.29948-1-heiko@sntech.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, mdf@kernel.org, Heiko Stuebner <heiko.stuebner@bq.com>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Giovanni Gherdovich <ggherdovich@suse.cz>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] cpuidle: Add 'high' and 'low' idle state metrics
 
---djcjq7k5hkgqkwzd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Add two new metrics for CPU idle states, "high" and "low", to count
+the number of times the given state had been asked for (or entered
+from the kernel's perspective), but the observed idle duration turned
+out to be too high or too low for it (respectively).
 
-Hi,
+These mertics help to estimate the quality of the CPU idle governor
+in use.
 
-On Tue, Nov 13, 2018 at 01:47:53PM +0100, Heiko Stuebner wrote:
-> From: Heiko Stuebner <heiko.stuebner@bq.com>
->=20
-> The bq24196 is another variant of the bq24190 charger ic.
-> Its register set is identical to the bq24192 and it even reuses
-> the same part number (0x5).
->=20
-> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
-> ---
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Thanks, queued.
+-> v2: Compute the "low" metric as the number of times the entered
+       state has been too shallow for sure (and not just probably)
+       by taking that state's exit latency into account when computing
+       it (the "high" metric computation did that in the previous version
+       too).
 
--- Sebastian
+---
+ Documentation/ABI/testing/sysfs-devices-system-cpu |    7 ++++
+ Documentation/admin-guide/pm/cpuidle.rst           |   10 ++++++
+ drivers/cpuidle/cpuidle.c                          |   31 ++++++++++++++++++++-
+ drivers/cpuidle/sysfs.c                            |    6 ++++
+ include/linux/cpuidle.h                            |    2 +
+ 5 files changed, 55 insertions(+), 1 deletion(-)
 
-> This should go on top of the bq24192 support patches from Brian Masney /
-> Jonathan Marek [0]
->=20
-> [0] https://patchwork.kernel.org/patch/10663409/
->=20
-> changes in v2:
-> - add missing compatible to dt-binding
->=20
->  Documentation/devicetree/bindings/power/supply/bq24190.txt | 1 +
->  drivers/power/supply/bq24190_charger.c                     | 4 +++-
->  2 files changed, 4 insertions(+), 1 deletion(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b=
-/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> index c8ac028bd3c7..ffe2be408bb6 100644
-> --- a/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
-> @@ -5,6 +5,7 @@ Required properties:
->      * "ti,bq24190"
->      * "ti,bq24192"
->      * "ti,bq24192i"
-> +    * "ti,bq24196"
->  - reg: integer, I2C address of the charger.
->  - interrupts[-extended]: configuration for charger INT pin.
-> =20
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index 4e64e6ac95c5..effa7c3c21e6 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -143,7 +143,7 @@
->  #define BQ24190_REG_VPRS_PN_MASK		(BIT(5) | BIT(4) | BIT(3))
->  #define BQ24190_REG_VPRS_PN_SHIFT		3
->  #define BQ24190_REG_VPRS_PN_24190			0x4
-> -#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193 */
-> +#define BQ24190_REG_VPRS_PN_24192			0x5 /* Also 24193, 24196 */
->  #define BQ24190_REG_VPRS_PN_24192I			0x3
->  #define BQ24190_REG_VPRS_TS_PROFILE_MASK	BIT(2)
->  #define BQ24190_REG_VPRS_TS_PROFILE_SHIFT	2
-> @@ -1973,6 +1973,7 @@ static const struct i2c_device_id bq24190_i2c_ids[]=
- =3D {
->  	{ "bq24190" },
->  	{ "bq24192" },
->  	{ "bq24192i" },
-> +	{ "bq24196" },
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
-> @@ -1982,6 +1983,7 @@ static const struct of_device_id bq24190_of_match[]=
- =3D {
->  	{ .compatible =3D "ti,bq24190", },
->  	{ .compatible =3D "ti,bq24192", },
->  	{ .compatible =3D "ti,bq24192i", },
-> +	{ .compatible =3D "ti,bq24196", },
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(of, bq24190_of_match);
-> --=20
-> 2.18.0
->=20
-
---djcjq7k5hkgqkwzd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlwISzsACgkQ2O7X88g7
-+pp9MA/9GEAMpunDV0xEdz9AtlAi76d7vg9nJYtONi1lKe65JJaPTWnZq2O2sl+r
-6aDZ/z3O68iZDN8AoFtVLijXNNNnN2Y6K3hEJQt6XxSNUE5NI4upeis/uFhbpreU
-0mThrwHyhlHJ0jzGAakKHNmj92LAcle7hMj9hd0znbYy5bLWi6K2rfT0D8g+dR08
-sbwwunnIK0VAvHutmcBjwvduoglyn0wCSCqYOqyKx8VZvU7Ii2Of8/Y8bK53VHbE
-O3vu2f/KFdkEwWjdGzGh2JSkiqGnv6txTxRtcFPwSXKTTpofciRK4cnsx9FNZsa+
-6T6+k4FeGHgL0X2uw9FrVsXeO+jxkKIIRsjl6F05FbpIw41HBgvhL1IBOD84R0s3
-uZIeVKz2zk1TOqDlLYCzqQackSmeMMIBJxfXD7fTkSPyvoX3Bql/CUHFUkhyLiPa
-pJ6hp1lGqhOA3y1RASxEFwtQs36BhwgkQiJ/EkYeLFAEjGhTs6nYMhDf8Bfn1syf
-d9jitXPPDAougC2Ad+GNYghbUmK5f0VjULxTDw092A8oQsBtzTui9kuNYrtfhPwP
-ho/5QpScPdRJTrwhszhd7Bpn3FrM3afzsmdHFtEHgTiHeQHN2QOPYfvnjlUoS+jn
-+BNVEUdBmAyer2uAHJ05XzwLzCEam9CPjo3L5IZHf0xl1D32xLc=
-=4VUa
------END PGP SIGNATURE-----
-
---djcjq7k5hkgqkwzd--
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -202,7 +202,6 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+ 	ktime_t time_start, time_end;
+-	s64 diff;
+ 
+ 	/*
+ 	 * Tell the time framework to switch to a broadcast timer because our
+@@ -248,6 +247,9 @@ int cpuidle_enter_state(struct cpuidle_d
+ 		local_irq_enable();
+ 
+ 	if (entered_state >= 0) {
++		s64 diff, delay = drv->states[entered_state].exit_latency;
++		int i;
++
+ 		/*
+ 		 * Update cpuidle counters
+ 		 * This can be moved to within driver enter routine,
+@@ -260,6 +262,33 @@ int cpuidle_enter_state(struct cpuidle_d
+ 		dev->last_residency = (int)diff;
+ 		dev->states_usage[entered_state].time += dev->last_residency;
+ 		dev->states_usage[entered_state].usage++;
++
++		if (diff < drv->states[entered_state].target_residency) {
++			for (i = entered_state - 1; i >= 0; i--) {
++				if (drv->states[i].disabled ||
++				    dev->states_usage[i].disable)
++					continue;
++
++				/* Shallower states are enabled, so update. */
++				dev->states_usage[entered_state].high++;
++				break;
++			}
++		} else if (diff > delay) {
++			for (i = entered_state + 1; i < drv->state_count; i++) {
++				if (drv->states[i].disabled ||
++				    dev->states_usage[i].disable)
++					continue;
++
++				/*
++				 * Update if a deeper state would have been a
++				 * better match for the observed idle duration.
++				 */
++				if (diff - delay >= drv->states[i].target_residency)
++					dev->states_usage[entered_state].low++;
++
++				break;
++			}
++		}
+ 	} else {
+ 		dev->last_residency = 0;
+ 	}
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -33,6 +33,8 @@ struct cpuidle_state_usage {
+ 	unsigned long long	disable;
+ 	unsigned long long	usage;
+ 	unsigned long long	time; /* in US */
++	unsigned long long	high; /* Number of times it's been too deep */
++	unsigned long long	low;  /* Number of times it's been too shallow */
+ #ifdef CONFIG_SUSPEND
+ 	unsigned long long	s2idle_usage;
+ 	unsigned long long	s2idle_time; /* in US */
+Index: linux-pm/drivers/cpuidle/sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/sysfs.c
++++ linux-pm/drivers/cpuidle/sysfs.c
+@@ -301,6 +301,8 @@ define_show_state_str_function(name)
+ define_show_state_str_function(desc)
+ define_show_state_ull_function(disable)
+ define_store_state_ull_function(disable)
++define_show_state_ull_function(high)
++define_show_state_ull_function(low)
+ 
+ define_one_state_ro(name, show_state_name);
+ define_one_state_ro(desc, show_state_desc);
+@@ -310,6 +312,8 @@ define_one_state_ro(power, show_state_po
+ define_one_state_ro(usage, show_state_usage);
+ define_one_state_ro(time, show_state_time);
+ define_one_state_rw(disable, show_state_disable, store_state_disable);
++define_one_state_ro(high, show_state_high);
++define_one_state_ro(low, show_state_low);
+ 
+ static struct attribute *cpuidle_state_default_attrs[] = {
+ 	&attr_name.attr,
+@@ -320,6 +324,8 @@ static struct attribute *cpuidle_state_d
+ 	&attr_usage.attr,
+ 	&attr_time.attr,
+ 	&attr_disable.attr,
++	&attr_high.attr,
++	&attr_low.attr,
+ 	NULL
+ };
+ 
+Index: linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/cpuidle.rst
++++ linux-pm/Documentation/admin-guide/pm/cpuidle.rst
+@@ -404,9 +404,19 @@ object corresponding to it, as follows:
+ ``disable``
+ 	Whether or not this idle state is disabled.
+ 
++``high``
++	Total number of times this idle state had been asked for, but the
++	observed idle duration was certainly too short to match its target
++	residency.
++
+ ``latency``
+ 	Exit latency of the idle state in microseconds.
+ 
++``low``
++	Total number of times this idle state had been asked for, but cerainly
++	a deeper idle state would have been a better match for the observed idle
++	duration.
++
+ ``name``
+ 	Name of the idle state.
+ 
+Index: linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+===================================================================
+--- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ linux-pm/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -145,6 +145,8 @@ What:		/sys/devices/system/cpu/cpuX/cpui
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/power
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/time
+ 		/sys/devices/system/cpu/cpuX/cpuidle/stateN/usage
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/high
++		/sys/devices/system/cpu/cpuX/cpuidle/stateN/low
+ Date:		September 2007
+ KernelVersion:	v2.6.24
+ Contact:	Linux power management list <linux-pm@vger.kernel.org>
+@@ -166,6 +168,11 @@ Description:
+ 
+ 		usage: (RO) Number of times this state was entered (a count).
+ 
++		high: (RO) Number of times this state was entered, but the
++		      observed CPU target residency was too high for it (a count).
++
++		low: (RO) Number of times this state was entered, but the
++		     observed CPU target residency was too low for it (a count).
+ 
+ What:		/sys/devices/system/cpu/cpuX/cpuidle/stateN/desc
+ Date:		February 2008
