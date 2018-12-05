@@ -1,15 +1,16 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v10 3/7] interconnect: Allow endpoints translation via DT
-Date: Wed, 5 Dec 2018 17:59:34 +0200
-Message-ID: <5590be39-de5a-f962-3d6f-835552e5956f@linaro.org>
+Subject: Re: [PATCH v10 5/7] interconnect: qcom: Add sdm845 interconnect
+ provider driver
+Date: Wed, 5 Dec 2018 18:00:44 +0200
+Message-ID: <cfcb39ba-860c-5a3f-911f-ab52b5250390@linaro.org>
 References: <20181127180349.29997-1-georgi.djakov@linaro.org>
- <20181127180349.29997-4-georgi.djakov@linaro.org>
- <CAE=gft5Z7-Ri07iZesq57bqLpsStvJF3y_TSm+Cz=h-pGqJzyw@mail.gmail.com>
+ <20181127180349.29997-6-georgi.djakov@linaro.org>
+ <CAE=gft4tO96n0vAubo1_vvcTO4yarDcTNOTuL6cLpmLDDNxrfA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE=gft5Z7-Ri07iZesq57bqLpsStvJF3y_TSm+Cz=h-pGqJzyw@mail.gmail.com>
+In-Reply-To: <CAE=gft4tO96n0vAubo1_vvcTO4yarDcTNOTuL6cLpmLDDNxrfA@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
 To: Evan Green <evgreen@chromium.org>
@@ -18,173 +19,126 @@ List-Id: linux-pm@vger.kernel.org
 
 Hi Evan,
 
-On 12/1/18 02:38, Evan Green wrote:
+On 12/1/18 02:39, Evan Green wrote:
 > On Tue, Nov 27, 2018 at 10:04 AM Georgi Djakov <georgi.djakov@linaro.org> wrote:
 >>
->> Currently we support only platform data for specifying the interconnect
->> endpoints. As now the endpoints are hard-coded into the consumer driver
->> this may lead to complications when a single driver is used by multiple
->> SoCs, which may have different interconnect topology.
->> To avoid cluttering the consumer drivers, introduce a translation function
->> to help us get the board specific interconnect data from device-tree.
+>> From: David Dai <daidavid1@codeaurora.org>
 >>
+>> Introduce Qualcomm SDM845 specific provider driver using the
+>> interconnect framework.
+>>
+>> Signed-off-by: David Dai <daidavid1@codeaurora.org>
 >> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 >> ---
->>  drivers/interconnect/core.c           | 156 ++++++++++++++++++++++++++
->>  include/linux/interconnect-provider.h |  17 +++
->>  include/linux/interconnect.h          |   7 ++
->>  3 files changed, 180 insertions(+)
+>>  .../bindings/interconnect/qcom,sdm845.txt     |  24 +
+>>  drivers/interconnect/Kconfig                  |   5 +
+>>  drivers/interconnect/Makefile                 |   1 +
+>>  drivers/interconnect/qcom/Kconfig             |  13 +
+>>  drivers/interconnect/qcom/Makefile            |   5 +
+>>  drivers/interconnect/qcom/sdm845.c            | 836 ++++++++++++++++++
+>>  .../dt-bindings/interconnect/qcom,sdm845.h    | 143 +++
+>>  7 files changed, 1027 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+>>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>>  create mode 100644 drivers/interconnect/qcom/Makefile
+>>  create mode 100644 drivers/interconnect/qcom/sdm845.c
+>>  create mode 100644 include/dt-bindings/interconnect/qcom,sdm845.h
 >>
->> diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
->> index 3ae8e5a58969..ebc42ef9fa46 100644
->> --- a/drivers/interconnect/core.c
->> +++ b/drivers/interconnect/core.c
->> @@ -15,6 +15,7 @@
->>  #include <linux/module.h>
->>  #include <linux/mutex.h>
->>  #include <linux/slab.h>
->> +#include <linux/of.h>
->>  #include <linux/overflow.h>
->>
->>  static DEFINE_IDR(icc_idr);
->> @@ -193,6 +194,159 @@ static int apply_constraints(struct icc_path *path)
->>         return ret;
->>  }
->>
->> +/* of_icc_xlate_onecell() - Xlate function using a single index.
+>> diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+>> new file mode 100644
+>> index 000000000000..d45150e99665
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
+>> @@ -0,0 +1,24 @@
+>> +Qualcomm SDM845 Network-On-Chip interconnect driver binding
+>> +-----------------------------------------------------------
+>> +
+>> +SDM845 interconnect providers support system bandwidth requirements through
+>> +RPMh hardware accelerators known as Bus Clock Manager(BCM). The provider is able
+>> +to communicate with the BCM through the Resource State Coordinator(RSC)
+>> +associated with each execution environment. Provider nodes must reside within
+>> +an RPMh device node pertaining to their RSC and each provider maps to
+>> +a single RPMh resource.
+>> +
+>> +Required properties :
+>> +- compatible : shall contain only one of the following:
+>> +                       "qcom,sdm845-rsc-hlos"
 > 
-> It would be nice if translate were spelled out instead of xlate in the
-> description portion (throughout).
+> I wonder if maybe hlos isn't necessary. Unless you somehow imagine
+> secure mode would have a device tree entry in here as well? Probably
+> not.
 
-Ok, done.
+Ok, will remove it. David, please chime in if you have any concerns with
+this.
 
->> + * @spec: OF phandle args to map into an interconnect node.
->> + * @data: private data (pointer to struct icc_onecell_data)
->> + *
->> + * This is a generic xlate function that can be used to model simple
->> + * interconnect providers that have one device tree node and provide
->> + * multiple interconnect nodes. A single cell is used as an index into
->> + * an array of icc nodes specified in the icc_onecell_data struct when
->> + * registering the provider.
->> + */
-[..]
->> +/**
->> + * of_icc_get() - get a path handle from a DT node based on name
->> + * @dev: device pointer for the consumer device
->> + * @name: interconnect path name
->> + *
->> + * This function will search for a path two endpoints and return an
+>> +- #interconnect-cells : should contain 1
+>> +
+>> +Examples:
+>> +
+>> +apps_rsc: rsc {
+>> +               qnoc: qnoc-rsc-hlos {
+>> +                       compatible = "qcom,sdm845-rsc-hlos";
+>> +                       #interconnect-cells = <1>;
+>> +               };
+>> +};
+>> +
+> ...
+>> diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
+>> new file mode 100644
+>> index 000000000000..1678de91ca52
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/sdm845.c
+>> @@ -0,0 +1,836 @@
+> ...
+>> +
+>> +static void tcs_list_gen(struct list_head *bcm_list,
+>> +                        struct tcs_cmd *tcs_list, int *n)
 > 
-> path between two endpoints
+> We could make the prototype of this function be:
 > 
+> static void tcs_list_gen(struct list_head *bcm_list,
+>         struct tcs_cmd tcs_list[SDM845_MAX_VCD], int n[SDM845_MAX_VCD])
+> 
+> which would catch errors if somebody later passed in an array that
+> wasn't the right size, since we blindly memset below.
 
-Ok.
-
->> + * icc_path handle on success. Use icc_put() to release constraints when
->> + * they are not needed anymore.
->> + * If the interconnect API is disabled, NULL is returned and the consumer
->> + * drivers will still build. Drivers are free to handle this specifically,
->> + * but they don't have to. NULL is also returned when the "interconnects"
-> 
-> I'm not sure the sentence starting with "Drivers are free" adds much.
-> Also, you mention that null is returned when the interconnect API is
-> disabled both above and below. We probably only need it once.
-> 
-
-So it depends on the driver how to handle it. If an enabled interconnect
-is a hard requirement for a driver to work, it can choose to fail. If it
-is optional, the driver can succeed and continue and all bandwidth
-requests will be silently ignored.
-
->> + * DT property is missing.
->> + *
->> + * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
->> + * when the API is disabled or the "interconnects" DT property is missing.
->> + */
->> +struct icc_path *of_icc_get(struct device *dev, const char *name)
->> +{
->> +       struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
->> +       struct icc_node *src_node, *dst_node;
->> +       struct device_node *np = NULL;
->> +       struct of_phandle_args src_args, dst_args;
->> +       int idx = 0;
->> +       int ret;
->> +
->> +       if (!dev || !dev->of_node)
->> +               return ERR_PTR(-ENODEV);
->> +
->> +       np = dev->of_node;
->> +
->> +       /*
->> +        * When the consumer DT node do not have "interconnects" property
->> +        * return a NULL path to skip setting constraints.
->> +        */
->> +       if (!of_find_property(np, "interconnects", NULL))
->> +               return NULL;
->> +
->> +       /*
->> +        * We use a combination of phandle and specifier for endpoint. For now
->> +        * lets support only global ids and extend this is the future if needed
-> 
-> s/is the future/in the future/
-
-Ok.
-
->> +        * without breaking DT compatibility.
->> +        */
->> +       if (name) {
->> +               idx = of_property_match_string(np, "interconnect-names", name);
->> +               if (idx < 0)
->> +                       return ERR_PTR(idx);
->> +       }
->> +
->> +       ret = of_parse_phandle_with_args(np, "interconnects",
->> +                                        "#interconnect-cells", idx * 2,
->> +                                        &src_args);
->> +       if (ret)
->> +               return ERR_PTR(ret);
->> +
->> +       of_node_put(src_args.np);
->> +
->> +       if (!src_args.args_count || src_args.args_count > 1)
-> 
-> This could be src_args.argc_count != 1
-> 
->> +               return ERR_PTR(-EINVAL);
->> +
->> +       ret = of_parse_phandle_with_args(np, "interconnects",
->> +                                        "#interconnect-cells", idx * 2 + 1,
->> +                                        &dst_args);
->> +       if (ret)
->> +               return ERR_PTR(ret);
->> +
->> +       of_node_put(dst_args.np);
->> +
->> +       if (!dst_args.args_count || dst_args.args_count > 1)
-> 
-> Similarly, this could be dst_args.args_count != 1
-
-Yes, and actually it might be even better if i move these checks to
-of_icc_get_from_provider().
-
->> +               return ERR_PTR(-EINVAL);
->> +
->> +       src_node = of_icc_get_from_provider(&src_args);
->> +
->> +       if (IS_ERR(src_node)) {
->> +               if (PTR_ERR(src_node) != -EPROBE_DEFER)
->> +                       dev_err(dev, "error finding src node: %ld\n",
->> +                               PTR_ERR(src_node));
->> +               return ERR_CAST(src_node);
->> +       }
->> +
->> +       dst_node = of_icc_get_from_provider(&dst_args);
->> +
-[..]>
-> With these nits fixed:
-> 
-> Reviewed-by: Evan Green <evgreen@chromium.org>
-> 
+Yes, sounds good. I will try to optimize it.
 
 Thanks,
 Georgi
+
+>> +{
+>> +       struct qcom_icc_bcm *bcm;
+>> +       bool commit;
+>> +       size_t idx = 0, batch = 0, cur_vcd_size = 0;
+>> +
+>> +       memset(n, 0, sizeof(int) * SDM845_MAX_VCD);
+>> +
+>> +       list_for_each_entry(bcm, bcm_list, list) {
+>> +               commit = false;
+>> +               cur_vcd_size++;
+>> +               if ((list_is_last(&bcm->list, bcm_list)) ||
+>> +                   bcm->aux_data.vcd != list_next_entry(bcm, list)->aux_data.vcd) {
+>> +                       commit = true;
+>> +                       cur_vcd_size = 0;
+>> +               }
+>> +               tcs_cmd_gen(&tcs_list[idx], bcm->vote_x, bcm->vote_y,
+>> +                           bcm->addr, commit);
+>> +               idx++;
+>> +               n[batch]++;
+>> +               /*
+>> +                * Batch the BCMs in such a way that we do not split them in
+>> +                * multiple payloads when they are under the same VCD. This is
+>> +                * to ensure that every BCM is committed since we only set the
+>> +                * commit bit on the last BCM request of every VCD.
+>> +                */
+>> +               if (n[batch] >= MAX_RPMH_PAYLOAD) {
+>> +                       if (!commit) {
+>> +                               n[batch] -= cur_vcd_size;
+>> +                               n[batch + 1] = cur_vcd_size;
+>> +                       }
+>> +                       batch++;
+>> +               }
+>> +       }
+>> +}
+>> +
