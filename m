@@ -1,90 +1,45 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] Revert "arm64: dts: marvell: add CPU Idle power state
- support on Armada 7K/8K"
-Date: Wed, 5 Dec 2018 10:10:35 +0000
-Message-ID: <20181205101035.GA31059@e107155-lin>
-References: <87k1kowf7i.fsf@bootlin.com>
+From: Mauro Carvalho Chehab <mchehab@kernel.org>
+Subject: Re: [PATCH 7/8] media: sti/bdisp: don't pass GFP_DMA32 to
+ dma_alloc_attrs
+Date: Wed, 5 Dec 2018 08:31:29 -0200
+Message-ID: <20181205083129.20b6b0be@coco.lan>
+References: <20181013151707.32210-1-hch@lst.de>
+ <20181013151707.32210-8-hch@lst.de>
+ <CA+M3ks5KO-Yr_PEczaENhTfirthFz2gW1uv4bwZe5mjy3-jZyg@mail.gmail.com>
+ <20181017072020.GD23407@lst.de>
+ <CA+M3ks5ebGDgFtMS5mSYz38AnyrTMQr8C_JkbFEzp=k+izJjUQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <87k1kowf7i.fsf@bootlin.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@bootlin.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, Sergey Matyukevich <geomatsi@gmail.com>, linux-pm@vger.kernel.org, orenbh <orenbh@marvell.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CA+M3ks5ebGDgFtMS5mSYz38AnyrTMQr8C_JkbFEzp=k+izJjUQ@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-spi@vger.kernel.org, Hans Verkuil <hans.verkuil@cisco.com>, linux-tegra@vger.kernel.org, Christoph Hellwig <hch@lst.de>, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 05, 2018 at 09:27:45AM +0100, Gregory CLEMENT wrote:
-> Hi Baruch,
->  =
-
->  On mer., d=E9c. 05 2018, Baruch Siach <baruch@tkos.co.il> wrote:
-> =
-
-> > Hi Gregory,
-> >
-> > On Tue, Dec 04, 2018 at 06:48:43PM +0200, Baruch Siach wrote:
-> >> On Tue, Dec 04, 2018 at 05:21:25PM +0100, Gregory CLEMENT wrote:
-> >> >  On mar., d=E9c. 04 2018, Baruch Siach <baruch@tkos.co.il> wrote:
-> >> > > This reverts commit 8ed46368776b3bc93d74c1f8f2bfb9fd8a9ad805.
-> >> > >
-> >> > > This commit breaks boot on Armada 8K based systems. Reverting it m=
-akes
-> >> > > affected systems boot again.
-> >> > >
-> >> > > Reported-by: Sergey Matyukevich <geomatsi@gmail.com>
-> >> > > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> >> > =
-
-> >> > I would like to know more about it because on the McBin I use there =
-is
-> >> > no issue with 4.20-rc1.
-> >> > =
-
-> >> > Do you observe this issue with the arm64 defconfig or do you have so=
-me
-> >> > specific configuration option?
-> >> =
-
-> >> I tested the attached defconfig on Clearfog GT-8K and on another custo=
-m Armada =
-
-> >> 8K based board.
-> >> =
-
-> >> Tomorrow I'll test Macchiatobin with this config and the arm64 defconf=
-ig.
-> >
-> > I reproduced same issue on a Macchiatobin board with both this config a=
-nd the =
-
-> > arm64 defconfig. The latter produced this splat:
-> =
-
-> OK thanks, for this, I also got the confirmation by my colleagues. The
-> only difference I can think of, is the firmware, but the surprising
-> thing, is that I have an old firmware: 17.06.2 and that with a recent
-> one, it doesn't work.
-> =
-
-> So I will apply it in mvebu/fixes.
-> =
-
-
-Sorry if it's too late. But I would rather disable the states that are
-broken on old firmware and see if it's possible for bootloader or boot
-firmware loading DT can modify the status to "enabled" if it can detect
-the firmware version.
-
---
-Regards,
-Sudeep
+RW0gVGh1LCAxOCBPY3QgMjAxOCAxNDowMDo0MCArMDIwMApCZW5qYW1pbiBHYWlnbmFyZCA8YmVu
+amFtaW4uZ2FpZ25hcmRAbGluYXJvLm9yZz4gZXNjcmV2ZXU6Cgo+IExlIG1lci4gMTcgb2N0LiAy
+MDE4IMOgIDA5OjIwLCBDaHJpc3RvcGggSGVsbHdpZyA8aGNoQGxzdC5kZT4gYSDDqWNyaXQgOgo+
+ID4KPiA+IE9uIE1vbiwgT2N0IDE1LCAyMDE4IGF0IDExOjEyOjU1QU0gKzAyMDAsIEJlbmphbWlu
+IEdhaWduYXJkIHdyb3RlOiAgCj4gPiA+IExlIHNhbS4gMTMgb2N0LiAyMDE4IMOgIDE3OjE4LCBD
+aHJpc3RvcGggSGVsbHdpZyA8aGNoQGxzdC5kZT4gYSDDqWNyaXQgOiAgCj4gPiA+ID4KPiA+ID4g
+PiBUaGUgRE1BIEFQSSBkb2VzIGl0cyBvd24gem9uZSBkZWNpc2lvbnMgYmFzZWQgb24gdGhlIGNv
+aGVyZW50X2RtYV9tYXNrLgo+ID4gPiA+Cj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogQ2hyaXN0b3Bo
+IEhlbGx3aWcgPGhjaEBsc3QuZGU+ICAKPiA+ID4KPiA+ID4gUmV2aWV3ZWQtYnk6IEJlbmphbWlu
+IEdhaWduYXJkIDxiZW5qYW1pbi5nYWlnbmFyZEBsaW5hcm8ub3JnPiAgCj4gPgo+ID4gQ2FuIHlv
+dSBwaWNrIGl0IHVwIHRocm91Z2ggdGhlIG1lZGlhIHRyZWU/ICAKPiAKPiBObyBidXQgTWF1cm9z
+IG9yIEhhbnMgKGluIENDKSBjYW4gYWRkIGl0LgoKSSdtIGFkZGluZyBpdC4gU29ycnkgZm9yIHRo
+ZSBkZWxheS4gQWxsIHRob3NlIHRyaXBzIGZvciBNUy9LUyBtYWRlCmhhcmRlciB0byBoYW5kbGUg
+aXQgZWFybGllci4KClRoYW5rcywKTWF1cm8KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMu
+ZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlz
+dGluZm8vZHJpLWRldmVsCg==
